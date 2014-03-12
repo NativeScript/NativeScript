@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin</OutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <TypeScriptToolsVersion>0.9</TypeScriptToolsVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>BCL</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
+    <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Android'">
+    <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateResourceNeverLockTypeAssemblies>true</GenerateResourceNeverLockTypeAssemblies>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>63708</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:63708/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <ItemGroup>
+    <TypeScriptCompile Include="Application\application.android.ts">
+      <DependentUpon>application.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Application\application_common.ts">
+      <DependentUpon>application.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Application\application.d.ts" />
+    <TypeScriptCompile Include="Application\application.ios.ts">
+      <DependentUpon>application.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Database\database.android.ts">
+      <DependentUpon>database.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Database\database.d.ts" />
+    <TypeScriptCompile Include="Database\database.ios.ts">
+      <DependentUpon>database.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="declarations.d.ts" />
+    <TypeScriptCompile Include="declarations.android.d.ts">
+      <DependentUpon>declarations.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Camera\camera.android.ts">
+      <DependentUpon>camera.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Camera\camera.d.ts" />
+    <TypeScriptCompile Include="Camera\camera.ios.ts">
+      <DependentUpon>camera.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Database\database_query_result.ts">
+      <DependentUpon>database.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="declarations.ios.d.ts">
+      <DependentUpon>declarations.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="FileSystem\file_system.d.ts" />
+    <TypeScriptCompile Include="FileSystem\file_system.ts">
+      <DependentUpon>file_system.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="FileSystem\file_system_access.android.ts">
+      <DependentUpon>file_system_access.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="FileSystem\file_system_access.d.ts" />
+    <TypeScriptCompile Include="FileSystem\file_system_access.ios.ts">
+      <DependentUpon>file_system_access.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Image\image.ios.ts">
+      <DependentUpon>image.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Image\image.android.ts">
+      <DependentUpon>image.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Image\image.d.ts" />
+    <TypeScriptCompile Include="Location\location.android.ts">
+      <DependentUpon>location.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Location\location.d.ts" />
+    <TypeScriptCompile Include="Location\location.ios.ts">
+      <DependentUpon>location.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Location\location_types.ts">
+      <DependentUpon>location.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="UserPreferences\user_preferences.android.ts">
+      <DependentUpon>user_preferences.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="UserPreferences\user_preferences.d.ts" />
+    <TypeScriptCompile Include="UserPreferences\user_preferences.ios.ts">
+      <DependentUpon>user_preferences.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Utils\utils_android.ts" />
+    <TypeScriptCompile Include="Utils\utils_ios.ts" />
+    <TypeScriptCompile Include="WebClient\web_client.android.ts">
+      <DependentUpon>web_client.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="WebClient\web_client.ios.ts">
+      <DependentUpon>web_client.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="WebClient\web_client.d.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Database\Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Image\Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="UserPreferences\Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="WebClient\Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Readme.md" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
+    <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
+    <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Android'">
+    <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
+    <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />
+  <UsingTask TaskName="BuildTasks.CopyForPlatformBuildTask" AssemblyFile="../../Build/bin/BuildTasks.dll" />
+  <Target Name="AfterBuild">
+    <CopyForPlatformBuildTask Condition=" '$(Configuration)' == 'Android' or '$(Configuration)' == 'iOS' " TargetPlatform="$(Configuration)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" />
+  </Target>
+</Project>

@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BCL", "BCL.csproj", "{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Android|Any CPU = Android|Any CPU
+		iOS|Any CPU = iOS|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android|Any CPU.ActiveCfg = Android|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android|Any CPU.Build.0 = Android|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS|Any CPU.ActiveCfg = iOS|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS|Any CPU.Build.0 = iOS|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
