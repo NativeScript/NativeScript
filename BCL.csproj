@@ -63,13 +63,6 @@
     <TypeScriptCompile Include="Application\application.ios.ts">
       <DependentUpon>application.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Database\database.android.ts">
-      <DependentUpon>database.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="Database\database.d.ts" />
-    <TypeScriptCompile Include="Database\database.ios.ts">
-      <DependentUpon>database.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="declarations.d.ts" />
     <TypeScriptCompile Include="declarations.android.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>
@@ -80,9 +73,6 @@
     <TypeScriptCompile Include="Camera\camera.d.ts" />
     <TypeScriptCompile Include="Camera\camera.ios.ts">
       <DependentUpon>camera.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="Database\database_query_result.ts">
-      <DependentUpon>database.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="declarations.ios.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>
@@ -131,9 +121,6 @@
       <DependentUpon>web_client.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="WebClient\web_client.d.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Database\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Image\Readme.md" />
