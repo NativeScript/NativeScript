@@ -1,4 +1,4 @@
-﻿module tk {
+﻿export module tk {
     export module ui {
         export enum ImageType {
             PNG = 0,

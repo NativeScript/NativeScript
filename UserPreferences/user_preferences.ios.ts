@@ -1,6 +1,6 @@
 ﻿import utils_module = require("Utils/utils_ios"); 
 
-module tk {
+export module tk {
     // TODO: Think better naming and namespaces - e.g. tk.storage
     export module preferences {
 
