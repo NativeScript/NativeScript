@@ -58,4 +58,24 @@ declare module Foundation {
         static defaultManager(): NSFileManager;
         URLsForDirectoryInDomains(directory: number, mask: number): any;
     }
+
+    export class NSString {
+        static initWithDataEncoding(data: any, encoding: any) : any;
+    }
+
+    export class NSURLSessionConfiguration {
+        static defaultSessionConfiguration(): any;
+    }
+
+    export class NSOperationQueue {
+        static mainQueue(): any;
+    }
+
+    export class NSURLSession {
+        static sessionWithConfigurationDelegateDelegateQueue(config: any, param: any, queue : any): any;
+    }
+
+    export class NSURL {
+        static URLWithString(url : string): any;
+    }
 }

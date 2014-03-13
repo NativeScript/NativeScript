@@ -1,5 +1,4 @@
 ﻿import image_module = require("Image/image");
-// TODO: Not implemented for iOS
 
 export module tk {
     export module web {
@@ -11,25 +10,42 @@ export module tk {
               * Downloads string from url.
               */
             public downloadString(url: string, successCallback: (result: string) => void, errorCallback?: (e: Error) => void) {
-                try {
+                Client.getDataFromUrl(url, function (data) {
                     if (successCallback) {
-                        // successCallback(result);
+                        successCallback(Foundation.NSString.initWithDataEncoding(data, 4));
                     }
-                } catch (ex) {
-
-                    if (errorCallback) {
-                        errorCallback(ex);
-                    }
-                }
+                }, errorCallback);
             }
 
             public downloadImage(url: string, successCallback: (image: image_module.tk.ui.Image) => void, errorCallback?: (e: Error) => void) {
-                try {
+                Client.getDataFromUrl(url, function (data) {
                     if (successCallback) {
-                        // successCallback(response);
+                        var image = new image_module.tk.ui.Image();
+                        image.loadFromData(data);
+                        successCallback(image);
                     }
-                } catch (ex) {
+                }, errorCallback);
+            }
 
+            private static getDataFromUrl(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void)
+            {
+                try {
+                    var sessionConfig = Foundation.NSURLSessionConfiguration.defaultSessionConfiguration();
+                    var queue = Foundation.NSOperationQueue.mainQueue();
+                    var session = Foundation.NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, null, queue);
+                    var dataTask = session.dataTaskWithURLCompletionHandler(Foundation.NSURL.URLWithString(url), function (data, response, error) {
+                        if (error) {
+                            if (errorCallback) {
+                                errorCallback(error.description);
+                            }
+                        } else if (successCallback) {
+                            successCallback(data);
+                        }
+                    });
+
+                    dataTask.resume();
+                    session.finishTasksAndInvalidate();
+                } catch (ex) {
                     if (errorCallback) {
                         errorCallback(ex);
                     }
