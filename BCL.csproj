@@ -163,7 +163,7 @@
     <TypeScriptSourceMap>True</TypeScriptSourceMap>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />
-  <UsingTask TaskName="BuildTasks.CopyForPlatformBuildTask" AssemblyFile="../../Build/bin/BuildTasks.dll" />
+  <UsingTask TaskName="BuildTasks.CopyForPlatformBuildTask" AssemblyFile="../../Build/lib/BuildTasks.dll" />
   <Target Name="AfterBuild">
     <CopyForPlatformBuildTask Condition=" '$(Configuration)' == 'Android' or '$(Configuration)' == 'iOS' " TargetPlatform="$(Configuration)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" />
   </Target>

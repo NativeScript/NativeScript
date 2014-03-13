@@ -1,6 +1,4 @@
-﻿//import file_system_module = require("FileSystem/file_system");
-//import entities = file_system_module.tk.io;
-
+﻿// TODO: Implement "hidden" notation so that such declarations are not included in the d.ts file we will provide for the users.
 //@hidden
 export declare module tk {
     export module io {

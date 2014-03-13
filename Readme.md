@@ -13,3 +13,9 @@ The output of this project is located at (../bin/)
 
 There are two build configurations - iOS and Android. Depending on the configuration, the custom build task will prepare the `bin/iOS` and `bin/Android` folders
 where the files only needed for the specified platform will be copied.
+
+### Useful links
+
+[VSCommands](http://vscommands.squaredinfinity.com/)
+
+Adds the option to "Group Items" (DependentUpon tag) within the Visual Studio Solution Explorer. Select several items, right-click -> Group Items.

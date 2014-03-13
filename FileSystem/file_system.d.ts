@@ -22,12 +22,12 @@
             /**
               * Renames the current entity using the specified name.
               */
-            public rename(newName: string, onSuccess: Function, onError: Function);
+            public rename(newName: string, onSuccess?: Function, onError?: Function);
         }
 
         export class File extends FileSystemEntity {
             /**
-              * Gets the extension of the entity.
+              * Gets the extension of the file.
               */
             public extension: string;
             /**
