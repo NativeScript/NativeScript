@@ -7,12 +7,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BCL", "BCL.csproj", "{2313F
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Android_Deploy|Any CPU = Android_Deploy|Any CPU
 		Android|Any CPU = Android|Any CPU
+		iOS_Deploy|Any CPU = iOS_Deploy|Any CPU
 		iOS|Any CPU = iOS|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android_Deploy|Any CPU.ActiveCfg = Android_Deploy|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android_Deploy|Any CPU.Build.0 = Android_Deploy|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android|Any CPU.ActiveCfg = Android|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android|Any CPU.Build.0 = Android|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS_Deploy|Any CPU.ActiveCfg = iOS_Deploy|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS_Deploy|Any CPU.Build.0 = iOS_Deploy|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS|Any CPU.ActiveCfg = iOS|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS|Any CPU.Build.0 = iOS|Any CPU
 	EndGlobalSection
