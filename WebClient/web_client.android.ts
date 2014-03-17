@@ -9,7 +9,7 @@ export module tk {
             /**
               * Downloads string from url.
               */
-            public downloadString(url: string, successCallback: (result: string) => void, errorCallback?: (e: Error) => void) {
+            public getString(url: string, successCallback: (result: string) => void, errorCallback?: (e: Error) => void) {
                 try {
                     if (successCallback) {
                         var httpClient = new org.apache.http.impl.client.DefaultHttpClient();
@@ -28,7 +28,7 @@ export module tk {
                 }
             }
 
-            public downloadImage(url: string, successCallback: (image: image_module.tk.ui.Image) => void, errorCallback?: (e: Error) => void) {
+            public getImage(url: string, successCallback: (result: image_module.tk.ui.Image) => void, errorCallback?: (e: Error) => void) {
                 try {
                     if (successCallback) {
                         var image = new image_module.tk.ui.Image();
