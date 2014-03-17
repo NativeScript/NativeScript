@@ -9,16 +9,24 @@ export module tk {
             /**
               * Downloads string from url.
               */
-            public downloadString(url: string, successCallback: (result: string) => void, errorCallback?: (e: Error) => void) {
-                Client.getDataFromUrl(url, function (data) {
+            public getString(url: string, successCallback: (result: string) => void, errorCallback?: (e: Error) => void) {
+                Client.get(url, function (data) {
                     if (successCallback) {
                         successCallback(Foundation.NSString.initWithDataEncoding(data, 4));
                     }
                 }, errorCallback);
             }
 
-            public downloadImage(url: string, successCallback: (image: image_module.tk.ui.Image) => void, errorCallback?: (e: Error) => void) {
-                Client.getDataFromUrl(url, function (data) {
+            public getJSON(url: string, successCallback: (result: Object) => void, errorCallback?: (e: Error) => void) {
+                this.getString(url, function (data) {
+                    if (successCallback) {
+                        successCallback(JSON.parse(data));
+                    }
+                }, errorCallback);
+            }
+
+            public getImage(url: string, successCallback: (result: image_module.tk.ui.Image) => void, errorCallback?: (e: Error) => void) {
+                Client.get(url, function (data) {
                     if (successCallback) {
                         var image = new image_module.tk.ui.Image();
                         image.loadFromData(data);
@@ -27,8 +35,7 @@ export module tk {
                 }, errorCallback);
             }
 
-            private static getDataFromUrl(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void)
-            {
+            public static get(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
                 try {
                     var sessionConfig = Foundation.NSURLSessionConfiguration.defaultSessionConfiguration();
                     var queue = Foundation.NSOperationQueue.mainQueue();
