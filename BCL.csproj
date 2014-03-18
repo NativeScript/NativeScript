@@ -149,6 +149,7 @@
     <Content Include="Readme.md" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Deploy\Eclipse\" />
     <Folder Include="Deploy\xCode\" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
@@ -184,6 +185,9 @@
   -->
   <PropertyGroup Condition=" '$(Configuration)' == 'iOS_Deploy'">
     <JSConfig>Deploy\xCode\Configuration.xml</JSConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Android_Deploy'">
+    <JSConfig>Deploy\Eclipse\Configuration.xml</JSConfig>
   </PropertyGroup>
   <UsingTask TaskName="BuildTasks.CopyForPlatformBuildTask" AssemblyFile="../../Build/lib/BuildTasks.dll" />
   <Target Name="AfterBuild">
