@@ -1,4 +1,5 @@
-﻿export module tk {
+﻿
+export module tk {
     export enum TargetOS {
         iOS,
         Android,
