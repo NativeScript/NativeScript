@@ -79,3 +79,7 @@ declare module Foundation {
         static URLWithString(url : string): any;
     }
 }
+
+declare module QuartzCore {
+    function CACurrentMediaTime(): number;
+}

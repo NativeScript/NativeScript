@@ -137,9 +137,21 @@
     <TypeScriptCompile Include="WebClient\web_client.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="_references.ts" />
+    <TypeScriptCompile Include="Console\console.android.ts">
+      <DependentUpon>console.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Console\console.d.ts" />
+    <TypeScriptCompile Include="Console\console.ios.ts">
+      <DependentUpon>console.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Console\console_common.ts">
+      <DependentUpon>console.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <Content Include="Image\Readme.md" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="libjs.d.ts" />
     <Content Include="UserPreferences\Readme.md" />
   </ItemGroup>
   <ItemGroup>
@@ -150,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Deploy\Eclipse\" />
+    <Content Include="Console\Readme.md" />
     <Folder Include="Deploy\xCode\" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
@@ -193,4 +206,8 @@
   <Target Name="AfterBuild">
     <CopyForPlatformBuildTask TargetPlatform="$(Configuration)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" JSConfigFile="$(JSConfig)" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -30,7 +30,7 @@
         }
 
         export class LocationChangeListener {
-            onLocationChange(location: Location);
+            //onLocationChange(location: Location);
         }
 
         export class RegionChangeListener {

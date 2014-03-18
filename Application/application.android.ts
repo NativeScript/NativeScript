@@ -1,5 +1,9 @@
 ﻿import app_common_module = require("Application/application_common");
+import console_module = require("Console/console_common");
+
 var currentApp = app_common_module.tk.ui.Application.current;
+declare var exports;
+exports.tk = app_common_module.tk;
 
 export module tk {
     // TODO: This is tricky, we have a module named android down in the hierarchy and we need to declare it here
@@ -96,6 +100,7 @@ export module tk {
                 currentApp.os = app_common_module.tk.TargetOS.Android;
                 currentApp.android = app;
                 app.init();
+                console = new console_module.tk.TKConsole();
             }
 
             class Application {

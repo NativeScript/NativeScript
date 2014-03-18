@@ -108,6 +108,20 @@ declare module android {
             static getExternalStorageDirectory(): java.io.File;
         }
     }
+
+    export module util {
+        export class Base64 {
+            static encodeToString(bytes: Array<any>, flags: number): string;
+        }
+
+        export class Log {
+            static v(tag: string, message: string): void;
+            static d(tag: string, message: string): void;
+            static w(tag: string, message: string): void;
+            static i(tag: string, message: string): void;
+            static e(tag: string, message: string): void;
+        }
+    }
 }
 
 declare module java {
@@ -197,6 +211,10 @@ declare module java {
         export class Float {
             constructor(strNum: string);
             floatValue(): any;
+        }
+
+        export class System {
+            static nanoTime(): number;
         }
     }
 
@@ -296,15 +314,6 @@ declare module java {
         }
     }
 }
-
-declare module android {
-    export module util {
-        export class Base64 {
-            static encodeToString(bytes: Array<any>, flags: number): string;
-        }
-    }
-}
-
 
 declare module android {
     export module widget {
