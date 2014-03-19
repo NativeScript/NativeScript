@@ -3,6 +3,10 @@
 export module tk {
     export module io {
         export class FileSystemAccess {
+            private keyFileType = "NSFileType";
+            private keyModificationTime = "NSFileModificationDate";
+            private keyReadonly = "NSFileImmutable";
+
             public getReadonly(path: string): boolean {
                 // TODO: Not implemented
                 return false;
@@ -77,6 +81,13 @@ export module tk {
             public writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any) {
                 // TODO: Not implemented
             }
+
+            //private getKnownPath(folderType: number): string {
+            //    var fileManager = Foundation.NSFileManager.defaultManager();
+
+
+            //    return folder;
+            //}
         }
     }
 }
