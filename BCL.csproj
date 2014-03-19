@@ -198,13 +198,20 @@
   -->
   <PropertyGroup Condition=" '$(Configuration)' == 'iOS_Deploy'">
     <JSConfig>Deploy\xCode\Configuration.xml</JSConfig>
+    <JSMainFile>main.js</JSMainFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Android_Deploy'">
     <JSConfig>Deploy\Eclipse\Configuration.xml</JSConfig>
+    <JSMainFile>app.js</JSMainFile>
   </PropertyGroup>
   <UsingTask TaskName="BuildTasks.CopyForPlatformBuildTask" AssemblyFile="../../Build/lib/BuildTasks.dll" />
   <Target Name="AfterBuild">
-    <CopyForPlatformBuildTask TargetPlatform="$(Configuration)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" JSConfigFile="$(JSConfig)" />
+    <CopyForPlatformBuildTask TargetPlatform="$(Configuration)" 
+                              Platforms="iOS;Android" 
+                              InputFiles="@(GeneratedJavascript)" 
+                              DestinationFolder="$(OutputPath)\$(Configuration)\" 
+                              JSConfigFile="$(JSConfig)" 
+                              AppMainJSFile="$(JSMainFile)"/>
   </Target>
   <PropertyGroup>
     <PostBuildEvent>
