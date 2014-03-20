@@ -37,6 +37,11 @@ export module tk {
                 return (this._nativeImage != null);
             }
 
+            public loadFromBitmap(source: any): boolean {
+                this._nativeImage = source;
+                return (this._nativeImage != null);
+            }
+
             public saveToFile(path: string, format: ImageType, quality?: number): boolean {
                 if (this._nativeImage) {
                     var targetFormat = android.graphics.Bitmap.CompressFormat.PNG;

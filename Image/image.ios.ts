@@ -27,6 +27,11 @@
                 return (this._nativeImage != null);
             }
 
+            public loadFromBitmap(source: any): boolean {
+                this._nativeImage = source;
+                return (this._nativeImage != null);
+            }
+
             public saveToFile(path: string, format: ImageType, quality?: number): boolean {
                 if (null == this._nativeImage) {
                     return false;

@@ -20,7 +20,6 @@ export module tk {
                                     errorCallback(e.toString());
                                     return;
                                 }
-
                                 successCallback(result);
                             }
                         })).get();
@@ -45,9 +44,20 @@ export module tk {
             public getImage(url: string, successCallback: (result: image_module.tk.ui.Image) => void, errorCallback?: (e: Error) => void) {
                 try {
                     if (successCallback) {
-                        var image = new image_module.tk.ui.Image();
-                        image.loadFromData(new java.net.URL(url).getContent());
-                        successCallback(image);
+                        var context = app_module.tk.ui.Application.current.android.context;
+                        com.koushikdutta.ion.Ion.with(context, url).asBitmap().setCallback(new com.koushikdutta.async.future.FutureCallback({
+                            onCompleted: function (e, result) {
+                                if (e && errorCallback) {
+                                    errorCallback(e.toString());
+                                    return;
+                                }
+
+                                var image = new image_module.tk.ui.Image();
+                                image.loadFromBitmap(result);
+
+                                successCallback(image);
+                            }
+                        })).get();
                     }
                 } catch (ex) {
 
