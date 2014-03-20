@@ -124,6 +124,7 @@ export module tk {
                 constructor(nativeApp: any) {
                     this.nativeApp = nativeApp;
                     this.packageName = nativeApp.getPackageName();
+                    this.context = nativeApp.getApplicationContext();
                 }
 
                 public init() {

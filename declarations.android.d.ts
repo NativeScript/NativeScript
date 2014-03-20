@@ -338,3 +338,22 @@ declare module android {
 
 declare var app;
 declare var telerik;
+
+declare module com {
+    export module koushikdutta {
+
+        export module ion {
+            export class Ion {
+                static with(context: any, url : string) : any;
+            }
+        }
+
+        export module async {
+            export module future {
+                export class FutureCallback {
+                    constructor(context: any);
+                }
+            }
+        }
+    }
+}
