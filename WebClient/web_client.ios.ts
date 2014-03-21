@@ -35,7 +35,7 @@ export module tk {
                 }, errorCallback);
             }
 
-            public static get(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
+            private static get(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
                 try {
                     var sessionConfig = Foundation.NSURLSessionConfiguration.defaultSessionConfiguration();
                     var queue = Foundation.NSOperationQueue.mainQueue();

@@ -68,7 +68,7 @@ export module tk {
                 }
             }
 
-            public static get(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
+            private static get(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
                 try {
 
                 } catch (ex) {
