@@ -6,44 +6,44 @@
         }
 
         export class Image {
-            private _nativeImage: any;
+            public ios: any;
 
             constructor() {
-                this._nativeImage = null;
+                this.ios = null;
             }
 
             public loadFromResource(name: string): boolean {
-                this._nativeImage = UIKit.UIImage.imageNamed(name);
-                return (this._nativeImage != null);
+                this.ios = UIKit.UIImage.imageNamed(name);
+                return (this.ios != null);
             }
 
             public loadFromFile(path: string): boolean {
-                this._nativeImage = UIKit.UIImage.imageWithContentsOfFile(path);
-                return (this._nativeImage != null);
+                this.ios = UIKit.UIImage.imageWithContentsOfFile(path);
+                return (this.ios != null);
             }
 
             public loadFromData(data: any): boolean {
-                this._nativeImage = UIKit.UIImage.imageWithData(data);
-                return (this._nativeImage != null);
+                this.ios = UIKit.UIImage.imageWithData(data);
+                return (this.ios != null);
             }
 
             public loadFromBitmap(source: any): boolean {
-                this._nativeImage = source;
-                return (this._nativeImage != null);
+                this.ios = source;
+                return (this.ios != null);
             }
 
             public saveToFile(path: string, format: ImageType, quality?: number): boolean {
-                if (null == this._nativeImage) {
+                if (null == this.ios) {
                     return false;
                 }
                 var res = false;
                 var data = null;
                 switch (format) {
                     case ImageType.JPEG:
-                        data = UIKit.UIImageJPEGRepresentation(this._nativeImage, ('undefined' == typeof quality) ? 1.0 : quality);
+                        data = UIKit.UIImageJPEGRepresentation(this.ios, ('undefined' == typeof quality) ? 1.0 : quality);
                         break;
                     case ImageType.PNG:
-                        data = UIKit.UIImagePNGRepresentation(this._nativeImage);
+                        data = UIKit.UIImagePNGRepresentation(this.ios);
                         break;
                 }
                 if (null != data) {
@@ -53,11 +53,11 @@
             }
 
             public getHeight(): number {
-                return (this._nativeImage) ? this._nativeImage.size().height : NaN;
+                return (this.ios) ? this.ios.size().height : NaN;
             }
 
             public getWidth(): number {
-                return (this._nativeImage) ? this._nativeImage.size().width : NaN;
+                return (this.ios) ? this.ios.size().width : NaN;
             }
         }
     }

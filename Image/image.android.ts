@@ -8,10 +8,10 @@ export module tk {
         }
 
         export class Image {
-            private _nativeImage: any;
+            public android: any;
 
             constructor() {
-                this._nativeImage = null;
+                this.android = null;
             }
 
             public loadFromResource(name: string): boolean {
@@ -20,30 +20,30 @@ export module tk {
                 if (res) {
                     var identifier: number = res.getIdentifier(name, 'drawable', androidApp.packageName);
                     if (0 < identifier) {
-                        this._nativeImage = android.graphics.BitmapFactory.decodeResource(res, identifier);
-                        return (this._nativeImage != null);
+                        this.android = android.graphics.BitmapFactory.decodeResource(res, identifier);
+                        return (this.android != null);
                     }
                 }
                 return false;
             }
 
             public loadFromFile(path: string): boolean {
-                this._nativeImage = android.graphics.BitmapFactory.decodeFile(path, null);
-                return (this._nativeImage != null);
+                this.android = android.graphics.BitmapFactory.decodeFile(path, null);
+                return (this.android != null);
             }
 
             public loadFromData(data: any): boolean {
-                this._nativeImage = android.graphics.BitmapFactory.decodeStream(data);
-                return (this._nativeImage != null);
+                this.android = android.graphics.BitmapFactory.decodeStream(data);
+                return (this.android != null);
             }
 
             public loadFromBitmap(source: any): boolean {
-                this._nativeImage = source;
-                return (this._nativeImage != null);
+                this.android = source;
+                return (this.android != null);
             }
 
             public saveToFile(path: string, format: ImageType, quality?: number): boolean {
-                if (this._nativeImage) {
+                if (this.android) {
                     var targetFormat = android.graphics.Bitmap.CompressFormat.PNG;
                     switch (format) {
                         case ImageType.JPEG:
@@ -54,7 +54,7 @@ export module tk {
                     // TODO add exception handling
                     var outputStream = new java.io.BufferedOutputStream(new java.io.FileOutputStream(path));
                     // FIXME compress is not found
-                    var res = this._nativeImage.compress(targetFormat, outputStream);
+                    var res = this.android.compress(targetFormat, outputStream);
                     outputStream.close();
                     return res;
                 }
@@ -62,11 +62,11 @@ export module tk {
             }
 
             public getHeight(): number {
-                return (this._nativeImage) ? this._nativeImage.getHeight() : NaN;
+                return (this.android) ? this.android.getHeight() : NaN;
             }
 
             public getWidth(): number {
-                return (this._nativeImage) ? this._nativeImage.getWidth() : NaN;
+                return (this.android) ? this.android.getWidth() : NaN;
             }
         }
     }
