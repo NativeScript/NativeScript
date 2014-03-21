@@ -12,7 +12,7 @@
     /**
       * Gets the Folder object representing the parent of this entity. Will be null for a root folder like Documents or Temporary.
       */
-    public getParent(onSuccess: (folder: Folder) => any, onError?: (error: any) => any);
+    public getParent(onError?: (error: any) => any): Folder;
     /**
       * Deletes the current Entity from the file system.
       */

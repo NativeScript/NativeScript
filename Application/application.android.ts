@@ -130,6 +130,7 @@ export module tk {
                 public init() {
                     this._eventsToken = initEvents();
                     this.nativeApp.registerActivityLifecycleCallbacks(this._eventsToken);
+                    this.context = this.nativeApp.getApplicationContext();
                 }
             }
         }

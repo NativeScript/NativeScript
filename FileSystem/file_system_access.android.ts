@@ -1,5 +1,6 @@
 ﻿import app_module = require("Application/application");
 
+
 export class FileSystemAccess {
     private _encoding = "UTF-8";
     private _pathSeparator = "/";
@@ -14,18 +15,18 @@ export class FileSystemAccess {
         return new Date(javaFile.lastModified());
     }
 
-    public getParent(path: string, onSuccess: (path: string) => any, onError?: (error: any) => any) {
+    public getParent(path: string, onError?: (error: any) => any): string {
         try {
             var javaFile = new java.io.File(path);
-            if (onSuccess) {
-                var parent = javaFile.getParentFile();
-                onSuccess(parent.getPath());
-            }
+            var parent = javaFile.getParentFile();
+            return parent.getPath();
         } catch (exception) {
             // TODO: unified approach for error messages
             if (onError) {
                 onError(exception);
             }
+
+            return undefined;
         }
     }
 

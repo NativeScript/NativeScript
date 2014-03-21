@@ -60,8 +60,9 @@ declare module Foundation {
     }
 
     export class NSString {
+        static initWithString(s: string): NSString;
         static initWithDataEncoding(data: any, encoding: any): any;
-        static initWithString(source: string): any;
+        stringByDeletingLastPathComponent(): string;
     }
 
     export class NSURLSessionConfiguration {
@@ -77,7 +78,14 @@ declare module Foundation {
     }
 
     export class NSURL {
-        static URLWithString(url : string): any;
+        static URLWithString(url: string): any;
+        path(): string;
+        relativePath(): string;
+        relativeString(): string;
+    }
+
+    export class NSDate {
+        timeIntervalSince1970(): number;
     }
 
     export class NSMutableURLRequest {

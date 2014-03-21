@@ -1,10 +1,11 @@
 ﻿// TODO: Implement "hidden" notation so that such declarations are not included in the d.ts file we will provide for the users.
 //@hidden
+
 export declare class FileSystemAccess {
     getReadonly(path: string): boolean;
     getLastModified(path: string): Date;
 
-    getParent(path: string, onSuccess: (path: string) => any, onError?: (error: any) => any);
+    getParent(path: string, onError?: (error: any) => any): string;
     getFile(path: string, onSuccess: (path: string) => any, onError?: (error: any) => any);
     getFolder(path: string, onSuccess: (path: string) => any, onError?: (error: any) => any);
     enumFiles(path: string, onSuccess: (files: Array<string>) => any, onError?: (error: any) => any);
@@ -20,3 +21,4 @@ export declare class FileSystemAccess {
     readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any);
     writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any);
 }
+ 
