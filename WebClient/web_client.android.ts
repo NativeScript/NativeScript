@@ -21,7 +21,7 @@ export class Client {
                         }
                         successCallback(result);
                     }
-                })).get();
+                }));
             }
         } catch (ex) {
 
@@ -62,7 +62,7 @@ export class Client {
 
                         successCallback(image);
                     }
-                })).get();
+                }));
             }
         } catch (ex) {
 
