@@ -55,7 +55,7 @@ export module tk {
                     var dataTask = session.dataTaskWithURLCompletionHandler(Foundation.NSURL.URLWithString(url), function (data, response, error) {
                         if (error) {
                             if (errorCallback) {
-                                errorCallback(error.description);
+                                errorCallback(new Error(error.localizedDescription()));
                             }
                         } else if (successCallback) {
                             successCallback(data);

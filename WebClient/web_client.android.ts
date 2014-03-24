@@ -17,7 +17,7 @@ export module tk {
                         com.koushikdutta.ion.Ion.with(context, url).asString().setCallback(new com.koushikdutta.async.future.FutureCallback({
                             onCompleted: function (e, result) {
                                 if (e && errorCallback) {
-                                    errorCallback(e.toString());
+                                    errorCallback(new Error(e.toString()));
                                     return;
                                 }
                                 successCallback(result);
@@ -55,7 +55,7 @@ export module tk {
                         com.koushikdutta.ion.Ion.with(context, url).asBitmap().setCallback(new com.koushikdutta.async.future.FutureCallback({
                             onCompleted: function (e, result) {
                                 if (e && errorCallback) {
-                                    errorCallback(e.toString());
+                                    errorCallback(new Error(e.toString()));
                                     return;
                                 }
 
