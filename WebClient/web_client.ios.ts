@@ -10,19 +10,31 @@ export module tk {
               * Downloads string from url.
               */
             public getString(url: string, successCallback: (result: string) => void, errorCallback?: (e: Error) => void) {
-                Client.get(url, function (data) {
-                    if (successCallback) {
-                        successCallback(Foundation.NSString.initWithDataEncoding(data, 4));
+                try {
+                    Client.get(url, function (data) {
+                        if (successCallback) {
+                            successCallback(Foundation.NSString.initWithDataEncoding(data, 4));
+                        }
+                    }, errorCallback);
+                } catch (ex) {
+                    if (errorCallback) {
+                        errorCallback(ex);
                     }
-                }, errorCallback);
+                }
             }
 
             public getJSON(url: string, successCallback: (result: Object) => void, errorCallback?: (e: Error) => void) {
-                this.getString(url, function (data) {
-                    if (successCallback) {
-                        successCallback(JSON.parse(data));
+                try {
+                    this.getString(url, function (data) {
+                        if (successCallback) {
+                            successCallback(JSON.parse(data));
+                        }
+                    }, errorCallback);
+                } catch (ex) {
+                    if (errorCallback) {
+                        errorCallback(ex);
                     }
-                }, errorCallback);
+                }
             }
 
             public getImage(url: string, successCallback: (result: image_module.tk.ui.Image) => void, errorCallback?: (e: Error) => void) {

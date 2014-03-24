@@ -34,11 +34,18 @@ export module tk {
             }
 
             public getJSON(url: string, successCallback: (result: Object) => void, errorCallback?: (e: Error) => void) {
-                this.getString(url, function (data) {
-                    if (successCallback) {
-                        successCallback(JSON.parse(data));
+                try
+                {
+                    this.getString(url, function (data) {
+                        if (successCallback) {
+                            successCallback(JSON.parse(data));
+                        }
+                    }, errorCallback);
+                } catch (ex) {
+                    if (errorCallback) {
+                        errorCallback(ex);
                     }
-                }, errorCallback);
+                }
             }
 
             public getImage(url: string, successCallback: (result: image_module.tk.ui.Image) => void, errorCallback?: (e: Error) => void) {
