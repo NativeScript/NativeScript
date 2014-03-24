@@ -108,6 +108,9 @@
     <TypeScriptCompile Include="Image\image.android.ts">
       <DependentUpon>image.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="Image\image_types.ts">
+      <DependentUpon>image.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="Image\image.d.ts" />
     <TypeScriptCompile Include="Location\location.android.ts">
       <DependentUpon>location.d.ts</DependentUpon>
@@ -161,8 +164,10 @@
     <Content Include="Readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Deploy\Eclipse\" />
     <Content Include="Console\Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Deploy\Eclipse\" />
     <Folder Include="Deploy\xCode\" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
@@ -206,12 +211,7 @@
   </PropertyGroup>
   <UsingTask TaskName="BuildTasks.CopyForPlatformBuildTask" AssemblyFile="../../Build/lib/BuildTasks.dll" />
   <Target Name="AfterBuild">
-    <CopyForPlatformBuildTask TargetPlatform="$(Configuration)" 
-                              Platforms="iOS;Android" 
-                              InputFiles="@(GeneratedJavascript)" 
-                              DestinationFolder="$(OutputPath)\$(Configuration)\" 
-                              JSConfigFile="$(JSConfig)" 
-                              AppMainJSFile="$(JSMainFile)"/>
+    <CopyForPlatformBuildTask TargetPlatform="$(Configuration)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" JSConfigFile="$(JSConfig)" AppMainJSFile="$(JSMainFile)" />
   </Target>
   <PropertyGroup>
     <PostBuildEvent>

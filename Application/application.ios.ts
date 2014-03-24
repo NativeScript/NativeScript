@@ -36,12 +36,12 @@ export module tk {
                 currentApp.os = app_common_module.tk.TargetOS.iOS;
                 currentApp.ios = app;
                 app.init();
-                console = new console_module.tk.TKConsole();
+                console = new console_module.TKConsole();
             }
 
             class Application {
                 public nativeApp: any;
-                public rootController: any; 
+                public rootController: any;
 
                 constructor(nativeApp: any) {
                     this.nativeApp = nativeApp;
@@ -49,8 +49,8 @@ export module tk {
 
                 public init() {
                     UIKit.UIResponder.extends({/*TODO: Empty parameter here, needs API improvement*/}, {
-                            name: "KimeraAppDelegate",
-                        }).implements({
+                        name: "KimeraAppDelegate",
+                    }).implements({
                             protocol: "UIApplicationDelegate",
                             implementation: {
                                 applicationDidFinishLaunchingWithOptions: function () {

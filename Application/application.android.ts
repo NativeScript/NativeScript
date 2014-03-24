@@ -100,7 +100,7 @@ export module tk {
                 currentApp.os = app_common_module.tk.TargetOS.Android;
                 currentApp.android = app;
                 app.init();
-                console = new console_module.tk.TKConsole();
+                console = new console_module.TKConsole();
             }
 
             class Application {

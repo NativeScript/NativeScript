@@ -1,44 +1,40 @@
 ﻿import types = require("Location/location_types");
 
-export module tk {
-    export module location {
-        export class LocationManager {
+export class LocationManager {
 
-            public isLocationEnabled(): boolean {
-                // TODO add proper implementation
-                return true;
-            }
+    public isLocationEnabled(): boolean {
+        // TODO add proper implementation
+        return true;
+    }
 
-            constructor() {
+    constructor() {
 
-            }
+    }
 
-            // in meters
-            // we might need some predefined values here like 'any' and 'high'
-            public desiredAccuracy: number;
+    // in meters
+    // we might need some predefined values here like 'any' and 'high'
+    public desiredAccuracy: number;
 
-            // listeners
-            public locationChangeListener: types.tk.location.LocationChangeListener;
+    // listeners
+    public locationChangeListener: types.LocationChangeListener;
 
-            // monitoring
+    // monitoring
 
-            public startLocationMonitoring() {
+    public startLocationMonitoring() {
 
-            }
+    }
 
-            public stopLocationMonitoring() {
+    public stopLocationMonitoring() {
 
-            }
+    }
 
-            // other
+    // other
 
-            public getLastKnownLocation(): types.tk.location.LocationPoint {
-                return null;
-            }
+    public getLastKnownLocation(): types.LocationPoint {
+        return null;
+    }
 
-            public distanceInMeters(loc1: types.tk.location.LocationPoint, loc2: types.tk.location.LocationPoint): number {
-                return 0;
-            }
-        }
+    public distanceInMeters(loc1: types.LocationPoint, loc2: types.LocationPoint): number {
+        return 0;
     }
 }

@@ -1,19 +1,12 @@
-﻿export declare module tk {
-    export module ui {
-        export enum ImageType {
-            PNG = 0,
-            JPEG = 1,
-        }
+﻿import types_module = require("Image/image_types");
 
-        export class Image {
-            loadFromResource(name: string): boolean;
-            loadFromFile(path: string): boolean;
-            loadFromData(data: any): boolean;
-            loadFromBitmap(source: any): boolean;
-            saveToFile(path: string, format: ImageType, quality?: number): boolean;
+export declare class Image {
+    loadFromResource(name: string): boolean;
+    loadFromFile(path: string): boolean;
+    loadFromData(data: any): boolean;
+    loadFromBitmap(source: any): boolean;
+    saveToFile(path: string, format: types_module.ImageType, quality?: number): boolean;
 
-            getHeight(): number;
-            getWidth(): number;
-        }
-    }
+    getHeight(): number;
+    getWidth(): number;
 }

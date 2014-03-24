@@ -1,103 +1,97 @@
 ﻿import utils_module = require("Utils/utils_android");
 import app_module = require("Application/application");
 
-export module tk {
-    // TODO: Think better naming and namespaces - e.g. tk.storage
-    export module preferences {
+export class UserPreferences {
+    private sharedPreferences: any;
 
-        export class UserPreferences {
-            private sharedPreferences: any;
+    constructor() {
+        this.sharedPreferences = app_module.tk.ui.Application.current.android.context.getSharedPreferences("prefs.db", 0);
+    }
 
-            constructor() {
-                this.sharedPreferences = app_module.tk.ui.Application.current.android.context.getSharedPreferences("prefs.db", 0);
-            }
+    public containsKey(key: string): boolean {
+        return this.sharedPreferences.contains(key);
+    }
 
-            public containsKey(key: string): boolean {
-                return this.sharedPreferences.contains(key);
-            }
-
-            public getBoolean(key: string, defaultValue?: boolean): boolean {
-                if ("undefined" == typeof defaultValue) {
-                    defaultValue = false;
-                }
-                return this.sharedPreferences.getBoolean(key, defaultValue);
-            }
-
-            public getDouble(key: string, defaultValue?: number): number {
-                if ("undefined" == typeof defaultValue) {
-                    defaultValue = 0.0;
-                }
-                Log('getting double for key ' + key + ' with default ' + defaultValue + ' result: ' + this.sharedPreferences.getFloat(key, defaultValue));
-                return this.sharedPreferences.getFloat(key, defaultValue);
-            }
-
-            public getInt(key: string, defaultValue?: number): number {
-                if ("undefined" == typeof defaultValue) {
-                    defaultValue = 0;
-                }
-                return this.sharedPreferences.getInt(key, defaultValue);
-            }
-
-            public getLong(key: string, defaultValue?: number): number {
-                if ("undefined" == typeof defaultValue) {
-                    defaultValue = 0;
-                }
-                return this.sharedPreferences.getLong(key, defaultValue);
-            }
-
-            public getString(key: string, defaultValue?: string): string {
-                if ("undefined" == typeof defaultValue) {
-                    defaultValue = null; // is this ok?
-                }
-                return this.sharedPreferences.getString(key, defaultValue);
-            }
-
-            public getStrings(key: string, defaultValue?: string[]): string[] {
-                if ("undefined" == typeof defaultValue) {
-                    defaultValue = [];
-                }
-                var hashSet = utils_module.tk.utils.Collections.stringArrayToStringSet(defaultValue);
-                var res = this.sharedPreferences.getStringSet(key, hashSet);
-                return utils_module.tk.utils.Collections.stringSetToStringArray(res);
-            }
-
-            public setBoolean(key: string, value: boolean) {
-                var editor = this.sharedPreferences.edit();
-                editor.putBoolean(key, value);
-                editor.commit();
-            }
-
-            public setDouble(key: string, value: number) {
-                var editor = this.sharedPreferences.edit();
-                Log('setting double for key ' + key + ' with value ' + value);
-                editor.putFloat(key, float(value));
-                editor.commit();
-            }
-
-            public setInt(key: string, value: number) {
-                var editor = this.sharedPreferences.edit();
-                editor.putInt(key, value);
-                editor.commit();
-            }
-
-            public setLong(key: string, value: number) {
-                var editor = this.sharedPreferences.edit();
-                editor.putLong(key, long(value));
-                editor.commit();
-            }
-
-            public setString(key: string, value: string) {
-                var editor = this.sharedPreferences.edit();
-                editor.putString(key, value);
-                editor.commit();
-            }
-
-            public setStrings(key: string, values: string[]) {
-                var editor = this.sharedPreferences.edit();
-                var hashSet = utils_module.tk.utils.Collections.stringArrayToStringSet(values);
-                editor.putStringSet(key, hashSet);
-                editor.commit();
-            }
+    public getBoolean(key: string, defaultValue?: boolean): boolean {
+        if ("undefined" == typeof defaultValue) {
+            defaultValue = false;
         }
+        return this.sharedPreferences.getBoolean(key, defaultValue);
+    }
+
+    public getDouble(key: string, defaultValue?: number): number {
+        if ("undefined" == typeof defaultValue) {
+            defaultValue = 0.0;
+        }
+        Log('getting double for key ' + key + ' with default ' + defaultValue + ' result: ' + this.sharedPreferences.getFloat(key, defaultValue));
+        return this.sharedPreferences.getFloat(key, defaultValue);
+    }
+
+    public getInt(key: string, defaultValue?: number): number {
+        if ("undefined" == typeof defaultValue) {
+            defaultValue = 0;
+        }
+        return this.sharedPreferences.getInt(key, defaultValue);
+    }
+
+    public getLong(key: string, defaultValue?: number): number {
+        if ("undefined" == typeof defaultValue) {
+            defaultValue = 0;
+        }
+        return this.sharedPreferences.getLong(key, defaultValue);
+    }
+
+    public getString(key: string, defaultValue?: string): string {
+        if ("undefined" == typeof defaultValue) {
+            defaultValue = null; // is this ok?
+        }
+        return this.sharedPreferences.getString(key, defaultValue);
+    }
+
+    public getStrings(key: string, defaultValue?: string[]): string[] {
+        if ("undefined" == typeof defaultValue) {
+            defaultValue = [];
+        }
+        var hashSet = utils_module.tk.utils.Collections.stringArrayToStringSet(defaultValue);
+        var res = this.sharedPreferences.getStringSet(key, hashSet);
+        return utils_module.tk.utils.Collections.stringSetToStringArray(res);
+    }
+
+    public setBoolean(key: string, value: boolean) {
+        var editor = this.sharedPreferences.edit();
+        editor.putBoolean(key, value);
+        editor.commit();
+    }
+
+    public setDouble(key: string, value: number) {
+        var editor = this.sharedPreferences.edit();
+        Log('setting double for key ' + key + ' with value ' + value);
+        editor.putFloat(key, float(value));
+        editor.commit();
+    }
+
+    public setInt(key: string, value: number) {
+        var editor = this.sharedPreferences.edit();
+        editor.putInt(key, value);
+        editor.commit();
+    }
+
+    public setLong(key: string, value: number) {
+        var editor = this.sharedPreferences.edit();
+        editor.putLong(key, long(value));
+        editor.commit();
+    }
+
+    public setString(key: string, value: string) {
+        var editor = this.sharedPreferences.edit();
+        editor.putString(key, value);
+        editor.commit();
+    }
+
+    public setStrings(key: string, values: string[]) {
+        var editor = this.sharedPreferences.edit();
+        var hashSet = utils_module.tk.utils.Collections.stringArrayToStringSet(values);
+        editor.putStringSet(key, hashSet);
+        editor.commit();
     }
 }
