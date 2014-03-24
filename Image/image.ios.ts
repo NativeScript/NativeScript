@@ -1,4 +1,7 @@
-﻿import image_module = require("Image/image");
+﻿export enum ImageType {
+    PNG = 0,
+    JPEG = 1,
+}
 
 export class Image {
     public ios: any;
@@ -27,17 +30,17 @@ export class Image {
         return (this.ios != null);
     }
 
-    public saveToFile(path: string, format: image_module.ImageType, quality?: number): boolean {
+    public saveToFile(path: string, format: ImageType, quality?: number): boolean {
         if (null == this.ios) {
             return false;
         }
         var res = false;
         var data = null;
         switch (format) {
-            case image_module.ImageType.JPEG:
+            case ImageType.JPEG:
                 data = UIKit.UIImageJPEGRepresentation(this.ios, ('undefined' == typeof quality) ? 1.0 : quality);
                 break;
-            case image_module.ImageType.PNG:
+            case ImageType.PNG:
                 data = UIKit.UIImagePNGRepresentation(this.ios);
                 break;
         }

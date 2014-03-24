@@ -1,5 +1,9 @@
 ﻿import app_module = require("Application/application");
-import image_module = require("Image/image");
+
+export enum ImageType {
+    PNG = 0,
+    JPEG = 1,
+}
 
 export class Image {
     public android: any;
@@ -36,11 +40,11 @@ export class Image {
         return (this.android != null);
     }
 
-    public saveToFile(path: string, format: image_module.ImageType, quality?: number): boolean {
+    public saveToFile(path: string, format: ImageType, quality?: number): boolean {
         if (this.android) {
             var targetFormat = android.graphics.Bitmap.CompressFormat.PNG;
             switch (format) {
-                case image_module.ImageType.JPEG:
+                case ImageType.JPEG:
                     targetFormat = android.graphics.Bitmap.CompressFormat.JPEG;
                     break;
             }
