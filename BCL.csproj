@@ -108,9 +108,6 @@
     <TypeScriptCompile Include="Image\image.android.ts">
       <DependentUpon>image.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Image\image_types.ts">
-      <DependentUpon>image.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="Image\image.d.ts" />
     <TypeScriptCompile Include="Location\location.android.ts">
       <DependentUpon>location.d.ts</DependentUpon>

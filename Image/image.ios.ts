@@ -1,4 +1,4 @@
-﻿import types_module = require("Image/image_types");
+﻿import image_module = require("Image/image");
 
 export class Image {
     public ios: any;
@@ -27,17 +27,17 @@ export class Image {
         return (this.ios != null);
     }
 
-    public saveToFile(path: string, format: types_module.ImageType, quality?: number): boolean {
+    public saveToFile(path: string, format: image_module.ImageType, quality?: number): boolean {
         if (null == this.ios) {
             return false;
         }
         var res = false;
         var data = null;
         switch (format) {
-            case types_module.ImageType.JPEG:
+            case image_module.ImageType.JPEG:
                 data = UIKit.UIImageJPEGRepresentation(this.ios, ('undefined' == typeof quality) ? 1.0 : quality);
                 break;
-            case types_module.ImageType.PNG:
+            case image_module.ImageType.PNG:
                 data = UIKit.UIImagePNGRepresentation(this.ios);
                 break;
         }
