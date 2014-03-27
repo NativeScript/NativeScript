@@ -137,6 +137,14 @@
     <TypeScriptCompile Include="WebClient\web_client.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="WebClient\index.ts" />
+    <TypeScriptCompile Include="UserPreferences\index.ts" />
+    <TypeScriptCompile Include="Location\index.ts" />
+    <TypeScriptCompile Include="Image\index.ts" />
+    <TypeScriptCompile Include="FileSystem\index.ts" />
+    <TypeScriptCompile Include="Console\index.ts" />
+    <TypeScriptCompile Include="Camera\index.ts" />
+    <TypeScriptCompile Include="Application\index.ts" />
     <Content Include="_references.ts" />
     <TypeScriptCompile Include="Console\console.android.ts">
       <DependentUpon>console.d.ts</DependentUpon>
