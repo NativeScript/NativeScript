@@ -51,8 +51,12 @@ export class Image {
 
             // TODO add exception handling
             var outputStream = new java.io.BufferedOutputStream(new java.io.FileOutputStream(path));
-            // FIXME compress is not found
-            var res = this.android.compress(targetFormat, outputStream);
+
+            if (!quality) {
+                quality = 100;
+            }
+
+            var res = this.android.compress(targetFormat, quality, outputStream);
             outputStream.close();
             return res;
         }
