@@ -69,4 +69,32 @@ export class Client {
             }
         }
     }
+
+    private static post(url: string, postData: string, successCallback?: (result: any) => void, errorCallback?: (e: Error) => void) {
+        try {
+            var sessionConfig = Foundation.NSURLSessionConfiguration.defaultSessionConfiguration();
+            var queue = Foundation.NSOperationQueue.mainQueue();
+            var session = Foundation.NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, null, queue);
+
+            var urlRequest = Foundation.NSMutableURLRequest.requestWithURL(Foundation.NSURL.URLWithString(url));
+            urlRequest.setHTTPMethod("POST");
+            urlRequest.setHTTPBody(Foundation.NSString.initWithString(postData).dataUsingEncoding(4));
+
+            var dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest, function (data, response, error) {
+                if (error) {
+                    if (errorCallback) {
+                        errorCallback(new Error(error.localizedDescription()));
+                    }
+                } else if (successCallback) {
+                    successCallback(data);
+                }
+            });
+
+            dataTask.resume();
+        } catch (ex) {
+            if (errorCallback) {
+                errorCallback(ex);
+            }
+        }
+    }
 }

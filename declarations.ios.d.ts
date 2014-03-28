@@ -60,7 +60,8 @@ declare module Foundation {
     }
 
     export class NSString {
-        static initWithDataEncoding(data: any, encoding: any) : any;
+        static initWithDataEncoding(data: any, encoding: any): any;
+        static initWithString(source: string): any;
     }
 
     export class NSURLSessionConfiguration {
@@ -77,6 +78,10 @@ declare module Foundation {
 
     export class NSURL {
         static URLWithString(url : string): any;
+    }
+
+    export class NSMutableURLRequest {
+        static requestWithURL(url: any): any;
     }
 }
 
