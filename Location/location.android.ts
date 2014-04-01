@@ -27,6 +27,9 @@ export class LocationManager {
             },
 
             onProviderEnabled: function (provider: string) {
+            },
+
+            onStatusChanged: function(arg1: string, arg2: number, arg3: android.os.Bundle): void {
             }
         });
     }

@@ -145,6 +145,7 @@
     <TypeScriptCompile Include="Console\index.ts" />
     <TypeScriptCompile Include="Camera\index.ts" />
     <TypeScriptCompile Include="Application\index.ts" />
+    <TypeScriptCompile Include="android17.d.ts" />
     <Content Include="_references.ts" />
     <TypeScriptCompile Include="Console\console.android.ts">
       <DependentUpon>console.d.ts</DependentUpon>

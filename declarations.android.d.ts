@@ -2,6 +2,7 @@
 // Android specific TypeScript declarations
 // TODO: This is temporary, until we have the TS definitions for the native APIs
 
+/*
 declare module org {
     export module json {
         export class JSONArray {
@@ -335,6 +336,7 @@ declare module android {
         }
     }
 }
+*/
 
 declare var app;
 declare var telerik;
