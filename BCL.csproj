@@ -209,7 +209,7 @@
   -->
   <PropertyGroup Condition=" '$(Configuration)' == 'iOS_Deploy'">
     <JSConfig>Deploy\xCode\Configuration.xml</JSConfig>
-    <JSMainFile>main.js</JSMainFile>
+    <JSMainFile>app.js</JSMainFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Android_Deploy'">
     <JSConfig>Deploy\Eclipse\Configuration.xml</JSConfig>
