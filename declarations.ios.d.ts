@@ -63,6 +63,7 @@ declare module Foundation {
         static initWithString(s: string): NSString;
         static initWithDataEncoding(data: any, encoding: any): any;
         stringByDeletingLastPathComponent(): string;
+        dataUsingEncoding(encoding: number): any;
     }
 
     export class NSURLSessionConfiguration {
