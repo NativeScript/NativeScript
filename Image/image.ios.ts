@@ -51,10 +51,10 @@ export class Image {
     }
 
     public getHeight(): number {
-        return (this.ios) ? this.ios.size().height : NaN;
+        return (this.ios) ? this.ios.size.height : NaN;
     }
 
     public getWidth(): number {
-        return (this.ios) ? this.ios.size().width : NaN;
+        return (this.ios) ? this.ios.size.width : NaN;
     }
 }

@@ -56,14 +56,14 @@ export module tk {
                                 applicationDidFinishLaunchingWithOptions: function () {
                                     log("Application launched: applicationDidFinishLaunchingWithOptions.");
 
-                                    this.window = new UIKit.UIWindow(UIKit.UIScreen.mainScreen().bounds());
-                                    this.window.setBackgroundColor(UIKit.UIColor.whiteColor());
+                                    this.window = new UIKit.UIWindow(UIKit.UIScreen.mainScreen().bounds);
+                                    this.window.backgroundColor = UIKit.UIColor.whiteColor();
 
                                     var iosApp = <Application>currentApp.ios;
                                     //this.window.setRootViewController(iosApp.rootController);
 
                                     if (currentApp.onLaunch) {
-                                        this.window.setRootViewController(currentApp.onLaunch());
+                                        this.window.rootViewController = currentApp.onLaunch();
                                     } else {
                                         log("Missing TK.UI.Application.current.onLaunch");
                                     }

@@ -12,7 +12,7 @@ export class Client {
         try {
             Client.get(url, function (data) {
                 if (successCallback) {
-                    successCallback(Foundation.NSString.initWithDataEncoding(data, 4));
+                    successCallback(Foundation.NSString.initWithDataEncoding(data, 4).toString());
                 }
             }, errorCallback);
         } catch (ex) {
