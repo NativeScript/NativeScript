@@ -57,7 +57,8 @@ export class FileSystemAccess {
             }
 
             if (javaFile.isDirectory()) {
-                var filesList: Array<java.io.File> = javaFile.listFiles();
+                // TODO: javaFile.listFiles() return native.Array<java.io.File> but it is java array and not a js/ts array.
+                var filesList:any = javaFile.listFiles();
                 var filePaths = new Array<string>();
 
                 var length = filesList.length,
