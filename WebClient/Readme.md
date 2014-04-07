@@ -1,7 +1,7 @@
 ﻿Sample code:
 ```
-    var webClientModule = require("WebClient/web_client");
-    var webClient = webClientModule.tk.web.Client;
+    var webClientModule = require("WebClient");
+    var webClient = webClientModule.Client;
 
     var client = new webClient();
 
