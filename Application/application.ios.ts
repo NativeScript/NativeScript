@@ -58,17 +58,15 @@ export module tk {
 
                                     this.window = new UIKit.UIWindow(UIKit.UIScreen.mainScreen().bounds);
                                     this.window.backgroundColor = UIKit.UIColor.whiteColor();
+                                    this.window.makeKeyAndVisible();
 
                                     var iosApp = <Application>currentApp.ios;
-                                    //this.window.setRootViewController(iosApp.rootController);
 
                                     if (currentApp.onLaunch) {
                                         this.window.rootViewController = currentApp.onLaunch();
                                     } else {
                                         log("Missing TK.UI.Application.current.onLaunch");
                                     }
-
-                                    this.window.makeKeyAndVisible();
 
                                     log("applicationDidFinishLaunchingWithOptions finished.");
                                     return true;
