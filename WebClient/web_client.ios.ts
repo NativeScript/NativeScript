@@ -3,6 +3,7 @@
   */
 
 import image_module = require("Image/image");
+import promises_module = require("Promises/promises");
 
 export class Client {
     /**
@@ -20,6 +21,12 @@ export class Client {
                 errorCallback(ex);
             }
         }
+    }
+
+    public static getString(url : string) {
+        var d = new promises_module.Promises.Deferred();
+        new Client().getString(url, r => d.resolve(r), e => d.reject(e));
+        return d.promise();
     }
 
     public getJSON(url: string, successCallback: (result: Object) => void, errorCallback?: (e: Error) => void) {
@@ -46,7 +53,18 @@ export class Client {
         }, errorCallback);
     }
 
-    private static get(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
+    private static get(url: string, successCallback?: (result: any) => void, errorCallback?: (e: Error) => void) {
+        if (!successCallback && !errorCallback)
+        {
+            var d = new promises_module.Promises.Deferred();
+            Client.getUrl(url, r => d.resolve(r), e => d.reject(e));
+            return d.promise();
+        }
+
+        Client.getUrl(url, successCallback, errorCallback);
+    }
+
+    private static getUrl(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
         try {
             var sessionConfig = Foundation.NSURLSessionConfiguration.defaultSessionConfiguration();
             var queue = Foundation.NSOperationQueue.mainQueue();
