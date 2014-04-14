@@ -3,7 +3,7 @@
   */
 
 import image_module = require("Image/image");
-import promises_module = require("promises/promises");
+import promises = require("promises/promises");
 
 export class HttpClient {
     /**
@@ -24,7 +24,7 @@ export class HttpClient {
     }
 
     public static getString(url : string) {
-        var d = new promises_module.Promises.Deferred();
+        var d = new promises.Deferred();
         new HttpClient().getString(url, r => d.resolve(r), e => d.reject(e));
         return d.promise();
     }
@@ -56,7 +56,7 @@ export class HttpClient {
     private static get(url: string, successCallback?: (result: any) => void, errorCallback?: (e: Error) => void) {
         if (!successCallback && !errorCallback)
         {
-            var d = new promises_module.Promises.Deferred();
+            var d = new promises.Deferred();
             HttpClient.getUrl(url, r => d.resolve(r), e => d.reject(e));
             return d.promise();
         }
