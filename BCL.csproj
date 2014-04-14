@@ -128,16 +128,16 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="Utils\utils_android.ts" />
     <TypeScriptCompile Include="Utils\utils_ios.ts" />
-    <TypeScriptCompile Include="WebClient\web_client.android.ts">
-      <DependentUpon>web_client.d.ts</DependentUpon>
+    <TypeScriptCompile Include="net\http_client.android.ts">
+      <DependentUpon>http_client.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="WebClient\web_client.ios.ts">
-      <DependentUpon>web_client.d.ts</DependentUpon>
+    <TypeScriptCompile Include="net\http_client.ios.ts">
+      <DependentUpon>http_client.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="WebClient\web_client.d.ts" />
+    <TypeScriptCompile Include="net\http_client.d.ts" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="WebClient\index.ts" />
+    <TypeScriptCompile Include="net\index.ts" />
     <TypeScriptCompile Include="UserPreferences\index.ts" />
     <TypeScriptCompile Include="Location\index.ts" />
     <TypeScriptCompile Include="Image\index.ts" />
@@ -146,8 +146,8 @@
     <TypeScriptCompile Include="Camera\index.ts" />
     <TypeScriptCompile Include="Application\index.ts" />
     <TypeScriptCompile Include="android17.d.ts" />
-    <TypeScriptCompile Include="Promises\promises.ts" />
-    <TypeScriptCompile Include="Promises\index.ts" />
+    <TypeScriptCompile Include="promises\promises.ts" />
+    <TypeScriptCompile Include="promises\index.ts" />
     <Content Include="_references.ts" />
     <TypeScriptCompile Include="Console\console.android.ts">
       <DependentUpon>console.d.ts</DependentUpon>
@@ -166,7 +166,7 @@
     <Content Include="UserPreferences\Readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="WebClient\Readme.md" />
+    <Content Include="net\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Readme.md" />

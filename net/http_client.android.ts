@@ -5,7 +5,7 @@
 import image_module = require("Image/image");
 import app_module = require("Application/application");
 
-export class Client {
+export class HttpClient {
     /**
       * Downloads string from url.
       */

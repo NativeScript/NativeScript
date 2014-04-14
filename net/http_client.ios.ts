@@ -3,15 +3,15 @@
   */
 
 import image_module = require("Image/image");
-import promises_module = require("Promises/promises");
+import promises_module = require("promises/promises");
 
-export class Client {
+export class HttpClient {
     /**
       * Downloads string from url.
       */
     public getString(url: string, successCallback: (result: string) => void, errorCallback?: (e: Error) => void) {
         try {
-            Client.get(url, function (data) {
+        HttpClient.get(url, function (data) {
                 if (successCallback) {
                     successCallback(Foundation.NSString.initWithDataEncoding(data, 4).toString());
                 }
@@ -25,7 +25,7 @@ export class Client {
 
     public static getString(url : string) {
         var d = new promises_module.Promises.Deferred();
-        new Client().getString(url, r => d.resolve(r), e => d.reject(e));
+        new HttpClient().getString(url, r => d.resolve(r), e => d.reject(e));
         return d.promise();
     }
 
@@ -44,7 +44,7 @@ export class Client {
     }
 
     public getImage(url: string, successCallback: (result: image_module.Image) => void, errorCallback?: (e: Error) => void) {
-        Client.get(url, function (data) {
+        HttpClient.get(url, function (data) {
             if (successCallback) {
                 var image = new image_module.Image();
                 image.loadFromData(data);
@@ -57,11 +57,11 @@ export class Client {
         if (!successCallback && !errorCallback)
         {
             var d = new promises_module.Promises.Deferred();
-            Client.getUrl(url, r => d.resolve(r), e => d.reject(e));
+            HttpClient.getUrl(url, r => d.resolve(r), e => d.reject(e));
             return d.promise();
         }
 
-        Client.getUrl(url, successCallback, errorCallback);
+        HttpClient.getUrl(url, successCallback, errorCallback);
     }
 
     private static getUrl(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
