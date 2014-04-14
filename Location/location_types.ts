@@ -4,7 +4,7 @@
     HIGH = 3,
 }
 
-export class LocationPoint {
+export class Location {
     public latitude: number;
     public longitude: number;
 
@@ -17,7 +17,7 @@ export class LocationPoint {
 
     public direction: number; // in degrees
 
-    public timestamp: any;
+    public timestamp: Date;
 }
 
 export class LocationRegion {

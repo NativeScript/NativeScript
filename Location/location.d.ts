@@ -27,8 +27,25 @@ export declare class LocationRegion {
     public raduis: number; // radius in meters
 }
 
+export declare class Location {
+    public latitude: number;
+    public longitude: number;
+
+    public altitude: number;
+
+    public horizontalAccuracy: number;
+    public verticalAccuracy: number;
+
+    public speed: number; // in m/s ?
+
+    public direction: number; // in degrees
+
+    public timestamp: Date;
+}
+
 export declare class LocationChangeListener {
-    //onLocationChange(location: Location);
+    onLocationChange(location: Location);
+    onLocationError(error: string);
 }
 
 export declare class RegionChangeListener {
@@ -39,6 +56,7 @@ export declare class RegionChangeListener {
 export declare class LocationManager {
     isLocationEnabled(): boolean;
     desiredAccuracy: number;
+    updateDistance: number;
 
     // listeners
     locationChangeListener: LocationChangeListener;
@@ -53,10 +71,10 @@ export declare class LocationManager {
 
     // monitoring
 
-    startLocationMonitoring();
+    startLocationMonitoring(onLocation: (location: Location) => any, onError?: (error: string) => any);
     stopLocationMonitoring();
 
     // other
-    getLastKnownLocation(): LocationPoint;
-    distanceInMeters(loc1: LocationPoint, loc2: LocationPoint): number;
+    getLastKnownLocation(): Location;
+    distanceInMeters(loc1: Location, loc2: Location): number;
 }

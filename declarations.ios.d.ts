@@ -46,6 +46,10 @@ declare module UIKit {
 }
 
 declare module Foundation {
+    export class NSObject {
+        static extends(...optionalParams: any[]): any;
+    }
+
     export class NSUserDefaults {
         static standardUserDefaults(): any;
     }
@@ -96,4 +100,26 @@ declare module Foundation {
 
 declare module QuartzCore {
     function CACurrentMediaTime(): number;
+}
+
+declare module CoreLocation {
+    export class CLLocationManager {
+        static locationServicesEnabled(): boolean;
+        delegate: any;
+        distanceFilter: number;
+        desiredAccuracy: number;
+        startUpdatingLocation(): void;
+        stopUpdatingLocation(): void;
+        location: CLLocation;
+    }
+
+    export class CLLocation {
+        coordinate: any;
+        altitude: number;
+        horizontalAccuracy: number;
+        verticalAccuracy: number;
+        timestamp: Foundation.NSDate;
+        speed: number;
+        course: number;
+    }
 }

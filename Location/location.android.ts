@@ -77,11 +77,11 @@ export class LocationManager {
 
     // other
 
-    public getLastKnownLocation(): types_module.LocationPoint {
+    public getLastKnownLocation(): types_module.Location {
         return null;
     }
 
-    public distanceInMeters(loc1: types_module.LocationPoint, loc2: types_module.LocationPoint): number {
+    public distanceInMeters(loc1: types_module.Location, loc2: types_module.Location): number {
         return 0;
     }
 }
