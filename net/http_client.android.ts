@@ -38,6 +38,7 @@ export class http {
         return d.promise();
     }
 
+    // TODO: Accept: application/json header for JSON calls and check the response for Image not url!
     private static get(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
         try {
             var isImage = url.match(/\.(jpeg|jpg|gif|png)$/) != null;
