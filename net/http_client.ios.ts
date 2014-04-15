@@ -9,8 +9,8 @@ export class http {
     /**
       * Gets string from url.
       */
-    public static getString(url : string) : promises.Promise {
-        var d = new promises.Deferred();
+    public static getString(url: string): promises.Promise<string> {
+        var d = promises.defer<string>();
         http.get(url, r => d.resolve(Foundation.NSString.initWithDataEncoding(r, 4).toString()), e => d.reject(e));
         return d.promise();
     }
@@ -18,8 +18,8 @@ export class http {
     /**
       * Gets JSON from url.
       */
-    public static getJSON(url: string) : promises.Promise {
-        var d = new promises.Deferred();
+    public static getJSON<T>(url: string): promises.Promise<T> {
+        var d = promises.defer<T>();
         http.get(url, r => d.resolve(JSON.parse(Foundation.NSString.initWithDataEncoding(r, 4).toString())), e => d.reject(e));
         return d.promise();
     }
@@ -27,8 +27,8 @@ export class http {
     /**
       * Gets image from url.
       */
-    public static getImage(url: string) : promises.Promise {
-        var d = new promises.Deferred();
+    public static getImage(url: string): promises.Promise<image_module.Image> {
+        var d = promises.defer<image_module.Image>();
         http.get(url, r => {
             var image = new image_module.Image();
             image.loadFromData(r);

@@ -5,7 +5,7 @@ import image_module = require("Image/image");
 import promises = require("promises/promises");
 
 export declare class http {
-    private static getString(url: string): promises.Promise;
-    private static getJSON(url: string): promises.Promise;
-    private static getImage(url: string): promises.Promise;
+    static getString(url: string): promises.Promise<string>;
+    static getJSON<T>(url: string): promises.Promise<T>;
+    static getImage(url: string): promises.Promise<image_module.Image>;
 }
