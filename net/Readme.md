@@ -1,5 +1,5 @@
 ﻿Sample code:
-```
+```js
     var http = require("net").http;
 
     http.getString("http://www.reddit.com/").then(function(result) {
