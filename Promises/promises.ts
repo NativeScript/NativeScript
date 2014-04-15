@@ -1,5 +1,3 @@
-
-
 export function when(...promises: Promise[]): Promise {
     var all_done = new Deferred();
     var results = [];
@@ -31,7 +29,7 @@ export class Promise {
 
     constructor(private deferred: Deferred) { }
 
-    then(callback: Function, error: Function): Promise {
+    then(callback: Function, error?: Function): Promise {
         return this.deferred.then(callback, error);
     }
 

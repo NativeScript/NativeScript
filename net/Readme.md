@@ -1,19 +1,16 @@
 ﻿Sample code:
 ```
-    var webClientModule = require("WebClient");
-    var webClient = webClientModule.Client;
+    var http = require("net").http;
 
-    var client = new webClient();
-
-    client.getString("http://www.reddit.com/", function(result) {
+    http.getString("http://www.reddit.com/").then(function(result) {
            // Result is string!
     }, function(e) { console.log("Error:" + e.message); });
                                                       
-    client.getJSON("http://www.reddit.com/r/aww.json?limit=10", function(result) {
+    http.getJSON("http://www.reddit.com/r/aww.json?limit=10").then(function(result) {
            // Result is JSON!  
     }, function(e) { console.log("Error:" + e.message); });
 
-    client.getImage("http://www.telerik.com/sfimages/default-source/Homepage/hp_any_approachf6e4079a7a99493a8ab2e367b9cb3f7d.png", function(result) {
+    http.getImage("http://www.telerik.com/sfimages/default-source/Homepage/hp_any_approachf6e4079a7a99493a8ab2e367b9cb3f7d.png").then(function(result) {
            // Result is tk.ui.Image!
     }, function(e) { console.log("Error:" + e.message); });
 

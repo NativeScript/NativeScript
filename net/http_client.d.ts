@@ -1,11 +1,11 @@
 ﻿/**
-  * The Client interface.
+  * The http client interface.
   */
 import image_module = require("Image/image");
+import promises = require("promises/promises");
 
-export declare class HttpClient {
-    private static get(url: string, successCallback?: (result: any) => void, errorCallback?: (e: Error) => void)
-    getString(url: string, successCallback?: (result: string) => void, errorCallback?: (e: Error) => void)
-    getJSON(url: string, successCallback?: (result: Object) => void, errorCallback?: (e: Error) => void)
-    getImage(url: string, successCallback?: (result: image_module.Image) => void, errorCallback?: (e: Error) => void)
+export declare class http {
+    private static getString(url: string): promises.Promise;
+    private static getJSON(url: string): promises.Promise;
+    private static getImage(url: string): promises.Promise;
 }

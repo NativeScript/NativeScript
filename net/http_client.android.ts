@@ -1,85 +1,74 @@
 ﻿/**
-  * Android specific WebClient implementation.
+  * Android specific http client implementation.
   */
 
 import image_module = require("Image/image");
 import app_module = require("Application/application");
+import promises = require("promises/promises");
 
-export class HttpClient {
+export class http {
     /**
-      * Downloads string from url.
+      * Gets string from url.
       */
-    public getString(url: string, successCallback: (result: string) => void, errorCallback?: (e: Error) => void) {
-        try {
-            if (successCallback) {
-                var context = app_module.tk.ui.Application.current.android.context;
-                com.koushikdutta.ion.Ion.with(context, url).asString().setCallback(new com.koushikdutta.async.future.FutureCallback({
-                    onCompleted: function (e, result) {
-                        if (e && errorCallback) {
-                            errorCallback(new Error(e.toString()));
-                            return;
-                        }
-                        successCallback(result);
-                    }
-                }));
-            }
-        } catch (ex) {
+    public static getString(url: string): promises.Promise {
+        var d = new promises.Deferred();
 
-            if (errorCallback) {
-                errorCallback(ex);
-            }
-
-        }
-    }
-
-    public getJSON(url: string, successCallback: (result: Object) => void, errorCallback?: (e: Error) => void) {
-        try {
-            this.getString(url, function (data) {
-                if (successCallback) {
-                    successCallback(JSON.parse(data));
+        var context = app_module.tk.ui.Application.current.android.context;
+        com.koushikdutta.ion.Ion.with(context, url).asString().setCallback(new com.koushikdutta.async.future.FutureCallback({
+            onCompleted: function (e, result) {
+                if (e) {
+                    d.reject(e);
+                    return;
                 }
-            }, errorCallback);
-        } catch (ex) {
-            if (errorCallback) {
-                errorCallback(ex);
+                d.resolve(result);
             }
-        }
+        }));
+
+        return d.promise();
     }
 
-    public getImage(url: string, successCallback: (result: image_module.Image) => void, errorCallback?: (e: Error) => void) {
-        try {
-            if (successCallback) {
-                var context = app_module.tk.ui.Application.current.android.context;
-                com.koushikdutta.ion.Ion.with(context, url).asBitmap().setCallback(new com.koushikdutta.async.future.FutureCallback({
-                    onCompleted: function (e, result) {
-                        if (e && errorCallback) {
-                            errorCallback(new Error(e.toString()));
-                            return;
-                        }
+    /**
+      * Gets JSON from url.
+      */
+    public static getJSON(url: string): promises.Promise {
+        var d = new promises.Deferred();
 
-                        var image = new image_module.Image();
-                        image.loadFromBitmap(result);
-
-                        successCallback(image);
-                    }
-                }));
+        var context = app_module.tk.ui.Application.current.android.context;
+        com.koushikdutta.ion.Ion.with(context, url).asString().setCallback(new com.koushikdutta.async.future.FutureCallback({
+            onCompleted: function (e, result) {
+                if (e) {
+                    d.reject(e);
+                    return;
+                }
+                d.resolve(JSON.parse(result));
             }
-        } catch (ex) {
+        }));
 
-            if (errorCallback) {
-                errorCallback(ex);
-            }
-
-        }
+        return d.promise();
     }
 
-    private static get(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
-        try {
+    /**
+      * Gets image from url.
+      */
+    public static getImage(url: string): promises.Promise {
+        var d = new promises.Deferred();
 
-        } catch (ex) {
-            if (errorCallback) {
-                errorCallback(ex);
+        var context = app_module.tk.ui.Application.current.android.context;
+        com.koushikdutta.ion.Ion.with(context, url).asBitmap().setCallback(new com.koushikdutta.async.future.FutureCallback({
+            onCompleted: function (e, result) {
+                if (e) {
+                    d.reject(e);
+                    return;
+                }
+
+                var image = new image_module.Image();
+                image.loadFromBitmap(result);
+
+                d.resolve(image);
             }
-        }
+        }));
+
+
+        return d.promise();
     }
 }
