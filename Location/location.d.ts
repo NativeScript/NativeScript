@@ -28,19 +28,19 @@ export declare class LocationRegion {
 }
 
 export declare class Location {
-    public latitude: number;
-    public longitude: number;
+    latitude: number;
+    longitude: number;
 
-    public altitude: number;
+    altitude: number;
 
-    public horizontalAccuracy: number;
-    public verticalAccuracy: number;
+    horizontalAccuracy: number;
+    verticalAccuracy: number;
 
-    public speed: number; // in m/s ?
+    speed: number; // in m/s ?
 
-    public direction: number; // in degrees
+    direction: number; // in degrees
 
-    public timestamp: Date;
+    timestamp: Date;
 }
 
 export declare class LocationChangeListener {
@@ -54,9 +54,12 @@ export declare class RegionChangeListener {
 }
 
 export declare class LocationManager {
-    isLocationEnabled(): boolean;
+    static isLocationEnabled(): boolean;
     desiredAccuracy: number;
     updateDistance: number;
+    // minimum time interval between location updates, in milliseconds (android only)
+    minimumUpdateTime: number;
+    isStarted: boolean;
 
     // listeners
     locationChangeListener: LocationChangeListener;

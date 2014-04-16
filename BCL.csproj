@@ -178,6 +178,9 @@
     <Folder Include="Deploy\Eclipse\" />
     <Folder Include="Deploy\xCode\" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Location\Readme.md" />
+  </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
     <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
     <TypeScriptRemoveComments>True</TypeScriptRemoveComments>

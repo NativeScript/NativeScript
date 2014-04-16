@@ -32,7 +32,7 @@ export class http {
         var d = promises.defer<image_module.Image>();
         http.get(url, r => {
             var image = new image_module.Image();
-            image.loadFromBitmap(r);
+            image.loadFromNativeBitmap(r);
             d.resolve(image);
         }, e => d.reject(e));
         return d.promise();

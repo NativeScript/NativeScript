@@ -12,6 +12,26 @@ export class Image {
         this.android = null;
     }
 
+    public static imageFromResource(name: string): Image {
+        var image = new Image();
+        return image.loadFromResource(name) ? image : null;
+    }
+
+    public static imageFromFile(path: string): Image {
+        var image = new Image();
+        return image.loadFromFile(path) ? image : null;
+    }
+
+    public static imageFromData(data: any): Image {
+        var image = new Image();
+        return image.loadFromData(data) ? image : null;
+    }
+
+    public static imageFromNativeBitmap(source: any): Image {
+        var image = new Image();
+        return image.loadFromNativeBitmap(source) ? image : null;
+    }
+
     public loadFromResource(name: string): boolean {
         var androidApp = app_module.tk.ui.Application.current.android;
         var res = androidApp.context.getResources();
@@ -35,7 +55,7 @@ export class Image {
         return (this.android != null);
     }
 
-    public loadFromBitmap(source: any): boolean {
+    public loadFromNativeBitmap(source: any): boolean {
         this.android = source;
         return (this.android != null);
     }

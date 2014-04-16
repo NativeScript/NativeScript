@@ -2,20 +2,6 @@
 
 export class LocationManager {
 
-    private isStarted: boolean;
-    private locationManager: CoreLocation.CLLocationManager;
-
-    public isLocationEnabled(): boolean {
-        return CoreLocation.CLLocationManager.locationServicesEnabled();
-    }
-
-    constructor() {
-        this.isStarted = false;
-        this.desiredAccuracy = types.DesiredAccuracy.HIGH;
-        this.updateDistance = -1; // kCLDistanceFilterNone
-        this.locationManager = new CoreLocation.CLLocationManager();
-    }
-
     // in meters
     // we might need some predefined values here like 'any' and 'high'
     public desiredAccuracy: number;
@@ -23,10 +9,19 @@ export class LocationManager {
     // The minimum distance (measured in meters) a device must move horizontally before an update event is generated.
     public updateDistance: number;
 
-    // listeners
-    //public locationChangeListener: types.LocationChangeListener;
+    public isStarted: boolean;
+    private iosLocationManager: CoreLocation.CLLocationManager;
 
-    // monitoring
+    public static isLocationEnabled(): boolean {
+        return CoreLocation.CLLocationManager.locationServicesEnabled();
+    }
+
+    constructor() {
+        this.isStarted = false;
+        this.desiredAccuracy = types.DesiredAccuracy.HIGH;
+        this.updateDistance = -1; // kCLDistanceFilterNone
+        this.iosLocationManager = new CoreLocation.CLLocationManager();
+    }
 
     private static locationFromCLLocation(clLocation: CoreLocation.CLLocation): types.Location {
         var location = new types.Location();
@@ -38,10 +33,11 @@ export class LocationManager {
         location.speed = clLocation.speed;
         location.direction = clLocation.course;
         location.timestamp = new Date(clLocation.timestamp.timeIntervalSince1970() * 1000);
-        console.dump(location);
+        //console.dump(location);
         return location;
     }
 
+    // monitoring
     public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: string) => any) {
         if (!this.isStarted) {
             var LocationListener = Foundation.NSObject.extends({
@@ -73,10 +69,10 @@ export class LocationManager {
 
             var listener = new LocationListener();
             listener.setupWithFunctions(onLocation, onError);
-            this.locationManager.delegate = listener;
-            this.locationManager.desiredAccuracy = this.desiredAccuracy;
-            this.locationManager.distanceFilter = this.updateDistance;
-            this.locationManager.startUpdatingLocation();
+            this.iosLocationManager.delegate = listener;
+            this.iosLocationManager.desiredAccuracy = this.desiredAccuracy;
+            this.iosLocationManager.distanceFilter = this.updateDistance;
+            this.iosLocationManager.startUpdatingLocation();
         }
         else if (onError) {
             onError('location monitoring already started');
@@ -85,7 +81,7 @@ export class LocationManager {
 
     public stopLocationMonitoring() {
         if (this.isStarted) {
-            this.locationManager.stopUpdatingLocation();
+            this.iosLocationManager.stopUpdatingLocation();
             this.isStarted = false;
         }
     }
@@ -93,7 +89,7 @@ export class LocationManager {
     // other
 
     public getLastKnownLocation(): types.Location {
-        var clLocation = this.locationManager.location;
+        var clLocation = this.iosLocationManager.location;
         if (null != clLocation) {
             return LocationManager.locationFromCLLocation(clLocation);
         }
