@@ -1,6 +1,5 @@
 ﻿import file_access_module = require("FileSystem/file_system_access");
 
-
 // The FileSystemAccess implementation, used through all the APIs.
 var fileAccess;
 var getFileAccess = function (): file_access_module.FileSystemAccess {
@@ -9,7 +8,7 @@ var getFileAccess = function (): file_access_module.FileSystemAccess {
     }
 
     return fileAccess;
-}
+};
 
 // we are defining these as private variables within the IO scope and will use them to access the corresponding properties for each FSEntity instance.
 // this allows us to encapsulate (hide) the explicit property setters and force the users go through the exposed APIs to receive FSEntity instances.
@@ -18,8 +17,35 @@ var pathProperty = "_path";
 var isKnownProperty = "_isKnown";
 var fileLockedProperty = "_locked";
 var extensionProperty = "_extension";
-var readonlyProperty = "_readonly";
 var lastModifiedProperty = "_lastModified";
+
+var createFile = function (info: { path: string; name: string; extension: string }) {
+    var file = new File();
+    file[pathProperty] = info.path;
+    file[nameProperty] = info.name;
+    file[extensionProperty] = info.extension;
+
+    return file;
+};
+
+var createFolder = function (info: { path: string; name: string; }) {
+    var documents = KnownFolders.documents();
+    if (info.path === documents.path) {
+        return documents;
+    }
+
+    var temp = KnownFolders.temporary();
+    if (info.path === temp.path) {
+        return temp;
+    }
+
+    var folder = new Folder();
+
+    folder[pathProperty] = info.path;
+    folder[nameProperty] = info.name;
+
+    return folder;
+};
 
 /**
     * Represents the basic file system entity - a File or a Folder.
@@ -29,13 +55,14 @@ export class FileSystemEntity {
         * Gets the Folder object representing the parent of this entity. Will be null for a root folder like Documents or Temporary.
         */
     public getParent(onError?: (error: any) => any): Folder {
-        var path = getFileAccess().getParent(this.path, onError);
+        var folderInfo = getFileAccess().getParent(this.path, onError);
+        if (!folderInfo) {
+            return undefined;
+        }
 
-        var folder = new Folder();
-        folder[pathProperty] = path;
-
-        return folder;
+        return createFolder(folderInfo);
     }
+
     /**
         * Deletes the current entity from the file system.
         */
@@ -46,35 +73,65 @@ export class FileSystemEntity {
             getFileAccess().deleteFolder(this.path, this[isKnownProperty], onSuccess, onError);
         }
     }
+
     /**
         * Renames the current entity using the specified name.
         */
     public rename(newName: string, onSuccess?: () => any, onError?: (error: any) => any) {
-        // TODO: No implementation
+        if (this instanceof Folder) {
+            if (this[isKnownProperty]) {
+                if (onError) {
+                    onError(new Error("Cannot rename known folder."));
+                }
+
+                return;
+            }
+        }
+
+        var parentFolder = this.getParent();
+        if (!parentFolder) {
+            if (onError) {
+                onError(new Error("No parent folder."));
+            }
+
+            return;
+        }
+
+        var fileAccess = getFileAccess();
+        var path = parentFolder.path;
+        var newPath = fileAccess.concatPath(path, newName);
+
+        var that = this;
+        var localSucceess = function () {
+            that[pathProperty] = newPath;
+            that[nameProperty] = newName;
+
+            if (that instanceof File) {
+                that[extensionProperty] = fileAccess.getFileExtension(newPath);
+            }
+
+            if (onSuccess) {
+                onSuccess();
+            }
+        }
+
+        fileAccess.rename(this.path, newPath, localSucceess, onError);
     }
+
     /**
         * Gets the name of the entity.
         */
     get name(): string {
         return this[nameProperty];
     }
+
     /**
         * Gets the fully-qualified path (including the extension for a File) of the entity.
         */
     get path(): string {
         return this[pathProperty];
     }
-    /**
-        * Gets a value indicating whether this entity is read-only (no write persmissions).
-        */
-    get readonly(): boolean {
-        var value = this[readonlyProperty];
-        if (this[readonlyProperty] === undefined) {
-            value = this[readonlyProperty] = getFileAccess().getReadonly(this.path);
-        }
 
-        return value;
-    }
     /**
         * Gets the fully-qualified path (including the extension for a File) of the entity.
         */
@@ -95,16 +152,13 @@ export class File extends FileSystemEntity {
     /**
         * Gets the File instance associated with the specified path.
         */
-    public static fromPath(path: string, onSuccess: (file: File) => any, onError?: (error: any) => any) {
-        var localSuccess = function (path: string) {
-            var file = new File();
-            file[pathProperty] = path;
-
-            if (onSuccess) {
-                onSuccess(file);
-            }
+    public static fromPath(path: string, onError?: (error: any) => any) {
+        var fileInfo = getFileAccess().getFile(path, onError);
+        if (!fileInfo) {
+            return undefined;
         }
-        getFileAccess().getFile(path, localSuccess, onError);
+
+        return createFile(fileInfo);
     }
     /**
         * Checks whether a File with the specified path already exists.
@@ -112,12 +166,7 @@ export class File extends FileSystemEntity {
     public static exists(path: string): boolean {
         return getFileAccess().fileExists(path);
     }
-    /**
-        * Deletes the current File from the file system.
-        */
-    public delete(onSuccess?: () => any, onError?: (error: any) => any) {
-        getFileAccess().deleteFile(this.path, onSuccess, onError);
-    }
+
     /**
         * Creates a FileReader object over this file and locks the file until the reader is released.
         */
@@ -162,15 +211,12 @@ export class Folder extends FileSystemEntity {
         * Attempts to access a Folder at the specified path and creates a new Folder if there is no existing one.
         */
     public static fromPath(path: string, onSuccess: (folder: Folder) => any, onError?: (error: any) => any) {
-        var localSuccess = function (path: string) {
-            var folder = new Folder();
-            folder[pathProperty] = path;
-
-            if (onSuccess) {
-                onSuccess(folder);
-            }
+        var folderInfo = getFileAccess().getFolder(path, onError);
+        if (!folderInfo) {
+            return undefined;
         }
-        getFileAccess().getFolder(path, localSuccess, onError);
+
+        return createFolder(folderInfo);
     }
 
     /**
@@ -199,13 +245,6 @@ export class Folder extends FileSystemEntity {
     }
 
     /**
-        * Deletes the current Folder (recursively) from the file system.
-        */
-    public delete(onSuccess?: () => any, onError?: (error: any) => any) {
-        getFileAccess().deleteFolder(this.path, this.isKnown, onSuccess, onError);
-    }
-
-    /**
         * Deletes all the files and folders (recursively), contained within this Folder.
         */
     public empty(onSuccess?: () => any, onError?: (error: any) => any) {
@@ -222,60 +261,53 @@ export class Folder extends FileSystemEntity {
     /**
         * Attempts to open a File with the specified name within this Folder and optionally creates a new File if there is no existing one.
         */
-    public getFile(name: string, onSuccess: (file: File) => any, onError?: (error: any) => any, createIfNonExisting?: boolean) {
-        var localSuccess = function (filePath: string) {
-            var newFile = new File();
-
-            newFile[pathProperty] = filePath;
-            newFile[nameProperty] = name;
-
-            if (onSuccess) {
-                onSuccess(newFile);
-            }
-        }
+    public getFile(name: string, onError?: (error: any) => any): File {
         var fileAccess = getFileAccess();
         var path = fileAccess.concatPath(this.path, name);
-        fileAccess.getFile(path, localSuccess, onError);
+
+        var fileInfo = fileAccess.getFile(path, onError);
+        if (!fileInfo) {
+            return undefined;
+        }
+
+        return createFile(fileInfo);
     }
 
     /**
         * Attempts to open a Folder with the specified name within this Folder and optionally creates a new Folder if there is no existing one.
         */
-    public getFolder(name: string, onSuccess: (folder: Folder) => any, onError?: (error: any) => any) {
-        var localSuccess = function (filePath: string) {
-            var newFolder = new Folder();
-
-            newFolder[pathProperty] = filePath;
-            newFolder[nameProperty] = name;
-
-            if (onSuccess) {
-                onSuccess(newFolder);
-            }
-        }
-
+    public getFolder(name: string, onError?: (error: any) => any): Folder {
         var fileAccess = getFileAccess();
         var path = fileAccess.concatPath(this.path, name);
-        fileAccess.getFolder(path, localSuccess, onError);
+
+        var folderInfo = fileAccess.getFolder(path, onError);
+        if (!folderInfo) {
+            return undefined;
+        }
+
+        return createFolder(folderInfo);
     }
 
     /**
-        * Gets all the top-level files residing within this Folder.
+        * Gets all the top-level FileSystem entities residing within this Folder.
         */
-    public enumFiles(onSuccess: (files: Array<File>) => any, onError?: (error: any) => any) {
-        var localSuccess = function (paths: Array<string>) {
+    public enumEntities(onSuccess: (files: Array<FileSystemEntity>) => any, onError?: (error: any) => any) {
+        var localSuccess = function (fileInfos: Array<{ path: string; name: string; extension: string }>) {
             if (onSuccess) {
-                var files = new Array<File>();
+                var entities = new Array<FileSystemEntity>();
                 var i,
                     path: string,
-                    file: File;
+                    entity: FileSystemEntity;
 
-                for (i = 0; i < files.length; i++) {
-                    file = new File();
-                    file[pathProperty] = files[i];
-                    files.push(file);
+                for (i = 0; i < fileInfos.length; i++) {
+                    if (fileInfos[i].extension) {
+                        entities.push(createFile(fileInfos[i]));
+                    } else {
+                        entities.push(createFolder(fileInfos[i]));
+                    }
                 }
 
-                onSuccess(files);
+                onSuccess(entities);
             }
         }
         getFileAccess().enumFiles(this.path, localSuccess, onError);

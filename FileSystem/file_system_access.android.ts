@@ -3,23 +3,19 @@
 
 export class FileSystemAccess {
     private _encoding = "UTF-8";
-    private _pathSeparator = "/";
-
-    public getReadonly(path: string): boolean {
-        var javaFile = new java.io.File(path);
-        return javaFile.exists() && !javaFile.canWrite();
-    }
+    private _pathSeparator = java.io.File.separator;
 
     public getLastModified(path: string): Date {
         var javaFile = new java.io.File(path);
         return new Date(javaFile.lastModified());
     }
 
-    public getParent(path: string, onError?: (error: any) => any): string {
+    public getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
         try {
             var javaFile = new java.io.File(path);
             var parent = javaFile.getParentFile();
-            return parent.getPath();
+
+            return { path: parent.getAbsolutePath(), name: parent.getName() };
         } catch (exception) {
             // TODO: unified approach for error messages
             if (onError) {
@@ -30,25 +26,24 @@ export class FileSystemAccess {
         }
     }
 
-    public getFile(path: string, onSuccess: (path: string) => any, onError?: (error: any) => any) {
-        this.ensureFile(new java.io.File(path), onSuccess, onError);
+    public getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string } {
+        return this.ensureFile(new java.io.File(path), false, onError);
     }
 
-    public getFolder(path: string, onSuccess: (path: string) => any, onError?: (error: any) => any) {
+    public getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
         var javaFile = new java.io.File(path);
-        if (javaFile.exists() && !javaFile.isDirectory()) {
-            if (onError) {
-                onError("The path " + path + "exists and is not a directory");
-            }
-        } else {
-            this.ensureFile(javaFile, onSuccess, onError);
+        var dirInfo = this.ensureFile(javaFile, true, onError);
+        if (!dirInfo) {
+            return undefined;
         }
+
+        return { path: dirInfo.path, name: dirInfo.name };
     }
 
-    public enumFiles(path: string, onSuccess: (files: Array<string>) => any, onError?: (error: any) => any) {
+    public enumFiles(path: string, onSuccess: (files: Array<{ path: string; name: string; extension: string }>) => any, onError?: (error: any) => any) {
         try {
             var javaFile = new java.io.File(path);
-            if (!javaFile.isDirectory()) {
+            if (!javaFile.getCanonicalFile().isDirectory()) {
                 if (onError) {
                     onError("There is no folder existing at path " + path);
                 }
@@ -56,27 +51,31 @@ export class FileSystemAccess {
                 return;
             }
 
-            if (javaFile.isDirectory()) {
-                // TODO: javaFile.listFiles() return native.Array<java.io.File> but it is java array and not a js/ts array.
-                var filesList:any = javaFile.listFiles();
-                var filePaths = new Array<string>();
+            var filesList: any = javaFile.listFiles();
+            var fileInfos = new Array<{ path: string; name: string; extension: string }>();
 
-                var length = filesList.length,
-                    i,
-                    filePath;
+            var length = filesList.length,
+                i,
+                filePath,
+                info;
 
-                for (i = 0; i < length; i++) {
-                    javaFile = filesList[i];
+            for (i = 0; i < length; i++) {
+                javaFile = filesList[i];
 
-                    if (javaFile.isFile()) {
-                        filePath = javaFile.getPath();
-                        filesList.push(filePath);
-                    }
+                info = {
+                    path: javaFile.getAbsolutePath(),
+                    name: javaFile.getName()
+                };
+
+                if (javaFile.isFile()) {
+                    info.extension = this.getFileExtension(info.path);
                 }
 
-                if (onSuccess) {
-                    onSuccess(filePaths);
-                }
+                fileInfos.push(info);
+            }
+
+            if (onSuccess) {
+                onSuccess(fileInfos);
             }
 
         } catch (exception) {
@@ -93,7 +92,13 @@ export class FileSystemAccess {
 
     public folderExists(path: string): boolean {
         var file = new java.io.File(path);
-        return file.exists() && file.isDirectory();
+        var exists = file.exists();
+        var dir = file.isDirectory();
+        var isFile = file.isFile();
+        var hidden = file.isHidden();
+
+        // return file.exists() && file.getCanonicalFile().isDirectory();
+        return exists && dir;
     }
 
     public concatPath(left: string, right: string): string {
@@ -128,7 +133,7 @@ export class FileSystemAccess {
     public deleteFolder(path: string, isKnown?: boolean, onSuccess?: () => any, onError?: (error: any) => any) {
         try {
             var javaFile = new java.io.File(path);
-            if (!javaFile.isDirectory()) {
+            if (!javaFile.getCanonicalFile().isDirectory()) {
                 if (onError) {
                     onError({ message: "The specified parameter is not a Folder entity." });
                 }
@@ -162,7 +167,7 @@ export class FileSystemAccess {
     public emptyFolder(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
         try {
             var javaFile = new java.io.File(path);
-            if (!javaFile.isDirectory()) {
+            if (!javaFile.getCanonicalFile().isDirectory()) {
                 if (onError) {
                     onError({ message: "The specified parameter is not a Folder entity." });
                 }
@@ -184,20 +189,48 @@ export class FileSystemAccess {
         }
     }
 
-    public rename(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
-        // TODO: No implementation
+    public rename(path: string, newPath: string, onSuccess?: () => any, onError?: (error: any) => any) {
+        var javaFile = new java.io.File(path);
+        if (!javaFile.exists()) {
+            if (onError) {
+                onError(new Error("The file to rename does not exist"));
+            }
+
+            return;
+        }
+
+        var newFile = new java.io.File(newPath);
+        if (newFile.exists()) {
+            if (onError) {
+                onError(new Error("A file with the same name already exists."));
+            }
+
+            return;
+        }
+
+        if (!javaFile.renameTo(newFile)) {
+            if (onError) {
+                onError(new Error("Failed to rename file '" + path + "' to '" + newPath + "'"));
+            }
+
+            return;
+        }
+
+        if (onSuccess) {
+            onSuccess();
+        }
     }
 
     public getDocumentsFolderPath(): string {
         var context = app_module.tk.ui.Application.current.android.context;
         var dir: java.io.File = context.getFilesDir();
-        return dir.getPath();
+        return dir.getAbsolutePath();
     }
 
     public getTempFolderPath(): string {
         var context = app_module.tk.ui.Application.current.android.context;
         var dir: java.io.File = context.getCacheDir();
-        return dir.getPath();
+        return dir.getAbsolutePath();
     }
 
     public readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any) {
@@ -242,11 +275,10 @@ export class FileSystemAccess {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileOutputStream(javaFile);
             var writer = new java.io.OutputStreamWriter(stream, this._encoding);
-            var bufferedWriter = new java.io.BufferedWriter(writer);
 
-            bufferedWriter.write(content);
-            bufferedWriter.close();
-
+            writer.write(content);
+            writer.close();
+            
             if (onSuccess) {
                 onSuccess();
             }
@@ -266,7 +298,7 @@ export class FileSystemAccess {
 
         for (i = 0; i < filesList.length; i++) {
             childFile = filesList[i];
-            if (childFile.isDirectory()) {
+            if (childFile.getCanonicalFile().isDirectory()) {
                 success = this.deleteFolderContent(childFile);
                 if (!success) {
                     break;
@@ -279,25 +311,47 @@ export class FileSystemAccess {
         return success;
     }
 
-    private ensureFile(javaFile: java.io.File, onSuccess: (path: string) => any, onError?: (error: any) => any) {
+    private ensureFile(javaFile: java.io.File, isFolder: boolean, onError?: (error: any) => any): { path: string; name: string; extension: string } {
         try {
             if (!javaFile.exists()) {
-                if (!javaFile.createNewFile()) {
+                var created;
+                if (isFolder) {
+                    created = javaFile.mkdirs();
+                } else {
+                    created = javaFile.createNewFile();
+                }
+
+                if (!created) {
                     // TODO: unified approach for error messages
                     if (onError) {
-                        onError("Failed to create new file for path " + javaFile.getPath());
+                        onError("Failed to create new java File for path " + javaFile.getAbsolutePath());
                     }
+
+                    return undefined;
+                } else {
+                    javaFile.setReadable(true);
+                    javaFile.setWritable(true);
                 }
             }
 
-            if (onSuccess) {
-                onSuccess(javaFile.getPath());
-            }
+            var path = javaFile.getAbsolutePath();
+            return { path: path, name: javaFile.getName(), extension: this.getFileExtension(path) };
         } catch (exception) {
             // TODO: unified approach for error messages
             if (onError) {
                 onError(exception);
             }
+
+            return undefined;
         }
+    }
+
+    public getFileExtension(path: string): string {
+        var dotIndex = path.lastIndexOf(".");
+        if (dotIndex && dotIndex >= 0 && dotIndex < path.length) {
+            return path.substring(dotIndex);
+        }
+
+        return undefined;
     }
 }
