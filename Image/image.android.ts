@@ -33,7 +33,7 @@ export class Image {
     }
 
     public loadFromResource(name: string): boolean {
-        var androidApp = app_module.tk.ui.Application.current.android;
+        var androidApp = app_module.Application.current.android;
         var res = androidApp.context.getResources();
         if (res) {
             var identifier: number = res.getIdentifier(name, 'drawable', androidApp.packageName);

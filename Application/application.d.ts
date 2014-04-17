@@ -1,50 +1,40 @@
-﻿export declare module tk {
-    export enum TargetOS {
-        iOS,
-        Android,
-        //WP
-    }
+﻿export declare enum TargetOS {
+    iOS,
+    Android
+}
 
-    export module ui {
-        export class Application {
-            static current: Application;
-            public os: TargetOS;
+export declare class Application {
+    static current: Application;
+    public os: TargetOS;
 
-            public onLaunch: () => any;
-            public onSuspend: () => any;
-            public onResume: () => any;
-            public onExit: () => any;
-            public onLowMemory: () => any;
+    public onLaunch: () => any;
+    public onSuspend: () => any;
+    public onResume: () => any;
+    public onExit: () => any;
+    public onLowMemory: () => any;
 
-            public android: android.Application;
-            public ios: ios.Application;
-        }
+    public android: AndroidApplication;
+    public ios: iOSApplication;
+}
 
-        export module android {
-            export function initApp(nativeApp: any);
-            export class Application {
-                public nativeApp: any; // TODO: android.app
-                public context: any; // TODO: android.context
-                public currentActivity: any; // TODO: android.activity 
-                public startActivity: any; // TODO: android.activity 
-                public packageName: string;
+export declare function init(nativeApp: any);
 
-                // TODO: Provide type information once definitions are done - e.g. activity: android.widget.activity
-                public onActivityCreated: (activity: any, bundle: any) => any;
-                public onActivityDestroyed: (activity: any) => any;
-                public onActivityStarted: (activity: any) => any;
-                public onActivityPaused: (activity: any) => any;
-                public onActivityResumed: (activity: any) => any;
-                public onActivityStopped: (activity: any) => any;
-                public onSaveActivityState: (activity: any, bundle: any) => any;
-            }
-        }
+export declare class AndroidApplication {
+    public nativeApp: android.app.Application;
+    public context: android.content.Context;
+    public currentActivity: android.app.Activity;
+    public startActivity: android.app.Activity;
+    public packageName: string;
 
-        export module ios {
-            export function initApp(nativeApp: any);
-            export class Application {
-                public rootController: any;
-            }
-        }
-    }
+    public onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => any;
+    public onActivityDestroyed: (activity: android.app.Activity) => any;
+    public onActivityStarted: (activity: android.app.Activity) => any;
+    public onActivityPaused: (activity: android.app.Activity) => any;
+    public onActivityResumed: (activity: android.app.Activity) => any;
+    public onActivityStopped: (activity: android.app.Activity) => any;
+    public onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => any;
+}
+
+export declare class iOSApplication {
+    public rootController: any;
 }

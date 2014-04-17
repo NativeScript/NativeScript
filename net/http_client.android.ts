@@ -43,7 +43,7 @@ export class http {
         try {
             var isImage = url.match(/\.(jpeg|jpg|gif|png)$/) != null;
 
-            var context = app_module.tk.ui.Application.current.android.context;
+            var context = app_module.Application.current.android.context;
             var request = com.koushikdutta.ion.Ion.with(context, url);
 
             request = isImage ? request.asBitmap() : request.asString();

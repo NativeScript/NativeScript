@@ -21,96 +21,90 @@ log("JavaScript loading ended.");
 */
 
 import app_common_module = require("Application/application_common");
-import console_module = require("Console/console_common");
+var currentApp = app_common_module.Application.current;
 
-var currentApp = app_common_module.tk.ui.Application.current;
+// merge the exports of the application_common file with the exports of this file
 declare var exports;
-exports.tk = app_common_module.tk;
+exports.TargetOS = app_common_module.TargetOS;
+exports.Application = app_common_module.Application;
 
-export module tk {
-    export module ui {
-        export module ios {
-            // TODO: Declarations
-            export var initApp = function (nativeApp: any) {
-                var app = new Application(nativeApp);
-                currentApp.os = app_common_module.tk.TargetOS.iOS;
-                currentApp.ios = app;
-                app.init();
-                console = new console_module.TKConsole();
-            }
+// TODO: Declarations
+export var init = function (nativeApp: any) {
+    var app = new iOSApplication(nativeApp);
+    currentApp.os = app_common_module.TargetOS.iOS;
+    currentApp.ios = app;
+    app.init();
+}
 
-            class Application {
-                public nativeApp: any;
-                public rootController: any;
+class iOSApplication {
+    public nativeApp: any;
+    public rootController: any;
 
-                constructor(nativeApp: any) {
-                    this.nativeApp = nativeApp;
-                }
-
-                public init() {
-                    UIKit.UIResponder.extends({/*TODO: Empty parameter here, needs API improvement*/}, {
-                        name: "KimeraAppDelegate",
-                    }).implements({
-                            protocol: "UIApplicationDelegate",
-                            implementation: {
-                                applicationDidFinishLaunchingWithOptions: function () {
-                                    log("Application launched: applicationDidFinishLaunchingWithOptions.");
-
-                                    this.window = new UIKit.UIWindow(UIKit.UIScreen.mainScreen().bounds);
-                                    this.window.backgroundColor = UIKit.UIColor.whiteColor();
-                                    this.window.makeKeyAndVisible();
-
-                                    var iosApp = <Application>currentApp.ios;
-
-                                    if (currentApp.onLaunch) {
-                                        this.window.rootViewController = currentApp.onLaunch();
-                                    } else {
-                                        log("Missing TK.UI.Application.current.onLaunch");
-                                    }
-
-                                    log("applicationDidFinishLaunchingWithOptions finished.");
-                                    return true;
-                                },
-
-                                applicationDidBecomeActive: function (application) {
-                                    log("applicationDidBecomeActive: " + application);
-                                    if (currentApp.onResume) {
-                                        currentApp.onResume();
-                                    }
-                                },
-
-                                applicationWillResignActive: function (application) {
-                                    log("applicationWillResignActive: " + application);
-                                },
-
-                                applicationDidEnterBackground: function (application) {
-                                    log("applicationDidEnterBackground: " + application);
-                                    if (currentApp.onSuspend) {
-                                        currentApp.onSuspend();
-                                    }
-                                },
-
-                                applicationWillEnterForeground: function (application) {
-                                    log("applicationWillEnterForeground: " + application);
-                                },
-
-                                applicationWillTerminate: function (application) {
-                                    log("applicationWillTerminate: " + application);
-                                    if (currentApp.onExit) {
-                                        currentApp.onExit();
-                                    }
-                                },
-
-                                applicationDidReceiveMemoryWarning: function (application) {
-                                    log("applicationDidReceiveMemoryWarning: " + application);
-                                    if (currentApp.onLowMemory) {
-                                        currentApp.onLowMemory();
-                                    }
-                                }
-                            }
-                        });
-                }
-            }
-        }
+    constructor(nativeApp: any) {
+        this.nativeApp = nativeApp;
     }
-} 
+
+    public init() {
+        UIKit.UIResponder.extends({/*TODO: Empty parameter here, needs API improvement*/}, {
+            name: "KimeraAppDelegate",
+        }).implements({
+                protocol: "UIApplicationDelegate",
+                implementation: {
+                    applicationDidFinishLaunchingWithOptions: function () {
+                        log("Application launched: applicationDidFinishLaunchingWithOptions.");
+
+                        this.window = new UIKit.UIWindow(UIKit.UIScreen.mainScreen().bounds);
+                        this.window.backgroundColor = UIKit.UIColor.whiteColor();
+                        this.window.makeKeyAndVisible();
+
+                        var iosApp = currentApp.ios;
+
+                        if (currentApp.onLaunch) {
+                            this.window.rootViewController = currentApp.onLaunch();
+                        } else {
+                            log("Missing TK.UI.Application.current.onLaunch");
+                        }
+
+                        log("applicationDidFinishLaunchingWithOptions finished.");
+                        return true;
+                    },
+
+                    applicationDidBecomeActive: function (application) {
+                        log("applicationDidBecomeActive: " + application);
+                        if (currentApp.onResume) {
+                            currentApp.onResume();
+                        }
+                    },
+
+                    applicationWillResignActive: function (application) {
+                        log("applicationWillResignActive: " + application);
+                    },
+
+                    applicationDidEnterBackground: function (application) {
+                        log("applicationDidEnterBackground: " + application);
+                        if (currentApp.onSuspend) {
+                            currentApp.onSuspend();
+                        }
+                    },
+
+                    applicationWillEnterForeground: function (application) {
+                        log("applicationWillEnterForeground: " + application);
+                    },
+
+                    applicationWillTerminate: function (application) {
+                        log("applicationWillTerminate: " + application);
+                        if (currentApp.onExit) {
+                            currentApp.onExit();
+                        }
+                    },
+
+                    applicationDidReceiveMemoryWarning: function (application) {
+                        log("applicationDidReceiveMemoryWarning: " + application);
+                        if (currentApp.onLowMemory) {
+                            currentApp.onLowMemory();
+                        }
+                    }
+                }
+            });
+    }
+}

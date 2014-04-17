@@ -222,13 +222,13 @@ export class FileSystemAccess {
     }
 
     public getDocumentsFolderPath(): string {
-        var context = app_module.tk.ui.Application.current.android.context;
+        var context = app_module.Application.current.android.context;
         var dir: java.io.File = context.getFilesDir();
         return dir.getAbsolutePath();
     }
 
     public getTempFolderPath(): string {
-        var context = app_module.tk.ui.Application.current.android.context;
+        var context = app_module.Application.current.android.context;
         var dir: java.io.File = context.getCacheDir();
         return dir.getAbsolutePath();
     }

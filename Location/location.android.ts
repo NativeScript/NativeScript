@@ -20,7 +20,7 @@ export class LocationManager {
     public static isLocationEnabled(): boolean {
         var criteria = new android.location.Criteria();
         criteria.setAccuracy(1); // low ? fine ? who knows what 1 means (bug in android docs?)
-        var lm = app_module.tk.ui.Application.current.android.context.getSystemService('location');
+        var lm = app_module.Application.current.android.context.getSystemService('location');
         return (lm.getBestProvider(criteria, true) != null) ? true : false;
     }
 
@@ -31,7 +31,7 @@ export class LocationManager {
         this.minimumUpdateTime = 200;
         this.isStarted = false;
 
-        this.androidLocationManager = app_module.tk.ui.Application.current.android.context.getSystemService('location');
+        this.androidLocationManager = app_module.Application.current.android.context.getSystemService('location');
     }
 
     private static locationFromAndroidLocation(androidLocation: android.location.Location): types.Location {

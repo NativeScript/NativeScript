@@ -5,7 +5,7 @@ export class UserPreferences {
     private sharedPreferences: any;
 
     constructor() {
-        this.sharedPreferences = app_module.tk.ui.Application.current.android.context.getSharedPreferences("prefs.db", 0);
+        this.sharedPreferences = app_module.Application.current.android.context.getSharedPreferences("prefs.db", 0);
     }
 
     public containsKey(key: string): boolean {

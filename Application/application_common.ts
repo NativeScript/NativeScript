@@ -1,26 +1,26 @@
-﻿export module tk {
-    export enum TargetOS {
-        iOS,
-        Android,
-        //WP
+﻿import console_module = require("Console/console_common");
+
+export enum TargetOS {
+    iOS,
+    Android
+}
+    
+export class Application {
+    public os: TargetOS;
+
+    constructor() {
+        console = new console_module.TKConsole();
     }
 
-    export module ui {
-        export class Application {
+    public onLaunch: () => any;
+    public onSuspend: () => any;
+    public onResume: () => any;
+    public onExit: () => any;
+    public onLowMemory: () => any;
 
-            public os: TargetOS;
+    public static current: Application = new Application();
 
-            public onLaunch: () => any;
-            public onSuspend: () => any;
-            public onResume: () => any;
-            public onExit: () => any;
-            public onLowMemory: () => any;
-
-            public static current: Application = new Application();
-
-            // TODO: These fields are declared by the application.d.ts file and intellisense will come from there
-            public android: any;
-            public ios: any;
-        }
-    }
-}  
+    // TODO: These fields are declared by the application.d.ts file and intellisense will come from there
+    public android: any;
+    public ios: any;
+}
