@@ -18,6 +18,9 @@ export class Location {
     public direction: number; // in degrees
 
     public timestamp: Date;
+
+    public androidNative: any;  // android Location
+    public iosNative: any;      // iOS native location
 }
 
 export class LocationRegion {

@@ -1,6 +1,8 @@
 ﻿Initializing location:
 
 ```
+var LocationManager = require("Location").LocationManager;
+
 console.log('is location enabled: ' + LocationManager.isLocationEnabled());
 
 this.locationManager = new LocationManager();

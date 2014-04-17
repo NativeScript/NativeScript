@@ -90,6 +90,7 @@ declare module Foundation {
     }
 
     export class NSDate {
+        static dateWithTimeIntervalSince1970(datetime: number);
         timeIntervalSince1970(): number;
     }
 
@@ -114,6 +115,7 @@ declare module CoreLocation {
     }
 
     export class CLLocation {
+        static initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(coordinate: any, altitude: number, horizontalAccuracy: number, verticalAccuracy: number, course: number, speed: number, timestamp: Foundation.NSDate);
         coordinate: any;
         altitude: number;
         horizontalAccuracy: number;
@@ -122,4 +124,6 @@ declare module CoreLocation {
         speed: number;
         course: number;
     }
+
+    function CLLocationCoordinate2DMake(latitude: number, longitude: number) : any;
 }

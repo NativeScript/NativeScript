@@ -12,17 +12,6 @@ export class LocationManager {
     public isStarted: boolean;
     private iosLocationManager: CoreLocation.CLLocationManager;
 
-    public static isLocationEnabled(): boolean {
-        return CoreLocation.CLLocationManager.locationServicesEnabled();
-    }
-
-    constructor() {
-        this.isStarted = false;
-        this.desiredAccuracy = types.DesiredAccuracy.HIGH;
-        this.updateDistance = -1; // kCLDistanceFilterNone
-        this.iosLocationManager = new CoreLocation.CLLocationManager();
-    }
-
     private static locationFromCLLocation(clLocation: CoreLocation.CLLocation): types.Location {
         var location = new types.Location();
         location.latitude = clLocation.coordinate.latitude;
@@ -33,12 +22,45 @@ export class LocationManager {
         location.speed = clLocation.speed;
         location.direction = clLocation.course;
         location.timestamp = new Date(clLocation.timestamp.timeIntervalSince1970() * 1000);
+        location.iosNative = clLocation;
         //console.dump(location);
         return location;
     }
 
+    private static iosLocationFromLocation(location: types.Location): CoreLocation.CLLocation {
+        var hAccuracy = location.horizontalAccuracy ? location.horizontalAccuracy : -1;
+        var vAccuracy = location.verticalAccuracy ? location.verticalAccuracy : -1;
+        var speed = location.speed ? location.speed : -1;
+        var course = location.direction ? location.direction : -1;
+        var altitude = location.altitude ? location.altitude : -1;
+        var timestamp = location.timestamp ? Foundation.NSDate.dateWithTimeIntervalSince1970(location.timestamp.getTime()) : null;
+        var iosLocation = CoreLocation.CLLocation.initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(CoreLocation.CLLocationCoordinate2DMake(location.latitude, location.longitude), altitude, hAccuracy, vAccuracy, course, speed, timestamp);
+        return iosLocation;
+    }
+
+    public static isLocationEnabled(): boolean {
+        return CoreLocation.CLLocationManager.locationServicesEnabled();
+    }
+
+    public static distanceInMeters(loc1: types.Location, loc2: types.Location): number {
+        if (!loc1.iosNative) {
+            loc1.iosNative = LocationManager.iosLocationFromLocation(loc1);
+        }
+        if (!loc2.iosNative) {
+            loc2.iosNative = LocationManager.iosLocationFromLocation(loc2);
+        }
+        return loc1.iosNative.distanceFromLocation(loc2.iosNative);
+    }
+
+    constructor() {
+        this.isStarted = false;
+        this.desiredAccuracy = types.DesiredAccuracy.HIGH;
+        this.updateDistance = -1; // kCLDistanceFilterNone
+        this.iosLocationManager = new CoreLocation.CLLocationManager();
+    }
+
     // monitoring
-    public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: string) => any) {
+    public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: Error) => any) {
         if (!this.isStarted) {
             var LocationListener = Foundation.NSObject.extends({
                 setupWithFunctions: function (onLocation, onError) {
@@ -59,9 +81,9 @@ export class LocationManager {
                     },
 
                     locationManagerDidFailWithError: function (manager, error) {
-                        console.log('location error received ' + error.localizedDescription());
+                        console.error('location error received ' + error.localizedDescription());
                         if (this.onError) {
-                            this.onError(error.localizedDescription());
+                            this.onError(new Error(error.localizedDescription()));
                         }
                     }
                 }
@@ -75,7 +97,7 @@ export class LocationManager {
             this.iosLocationManager.startUpdatingLocation();
         }
         else if (onError) {
-            onError('location monitoring already started');
+            onError(new Error('location monitoring already started'));
         }
     }
 
@@ -94,10 +116,5 @@ export class LocationManager {
             return LocationManager.locationFromCLLocation(clLocation);
         }
         return null;
-    }
-
-    public distanceInMeters(loc1: types.Location, loc2: types.Location): number {
-        // TODO
-        return 0;
     }
 }

@@ -41,7 +41,7 @@ export class http {
     // TODO: Accept: application/json header for JSON calls and check the response for Image not url!
     private static get(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
         try {
-            var isImage = url.match(/\.(jpeg|jpg|gif|png)$/) != null;
+            var isImage = url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
 
             var context = app_module.Application.current.android.context;
             var request = com.koushikdutta.ion.Ion.with(context, url);
