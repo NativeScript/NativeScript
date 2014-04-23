@@ -66,7 +66,7 @@ export class UserPreferences {
     public getStrings(key: string, defaultValue?: string[]): string[] {
         if (this.containsKey(key)) {
             var nsArray = this.userDefaults.stringArrayForKey(key);
-            var jsArray = utils_module.tk.utils.Collections.nsArrayToJSArray(nsArray);
+            var jsArray = utils_module.Collections.nsArrayToJSArray(nsArray);
             return jsArray;
         }
         if ("undefined" == typeof defaultValue) {
@@ -101,7 +101,7 @@ export class UserPreferences {
     }
 
     public setStrings(key: string, values: string[]) {
-        var nsArray = utils_module.tk.utils.Collections.jsArrayToNSArray(values);
+        var nsArray = utils_module.Collections.jsArrayToNSArray(values);
         this.userDefaults.setObjectForKey(nsArray, key);
         this.userDefaults.synchronize();
     }

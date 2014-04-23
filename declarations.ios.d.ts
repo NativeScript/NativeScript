@@ -47,6 +47,9 @@ declare module UIKit {
 }
 
 declare module Foundation {
+    export class NSError extends NSObject {
+    }
+
     export class NSObject {
         static extends(...optionalParams: any[]): any;
     }
@@ -62,13 +65,36 @@ declare module Foundation {
     export class NSFileManager {
         static defaultManager(): NSFileManager;
         URLsForDirectoryInDomains(directory: number, mask: number): any;
+        attributesOfItemAtPathError(path: string, error: any): any;
+        fileExistsAtPath(path: string): boolean;
+        fileExistsAtPathIsDirectory(path: string, isDir: boolean): boolean;
+        createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path: string, intermediateDirs: boolean, attributes: any, error: any): boolean;
+        displayNameAtPath(path: string): string;
+        createFileAtPathContentsAttributes(path: string, data: any, attributes: any): boolean;
+        enumeratorAtPath(path: string): any;
+        contentsOfDirectoryAtPathError(path: string, error: any);
+        removeItemAtPathError(path: string, error: any): boolean;
+        moveItemAtPathToPathError(sourcePath: string, destPath: string, error: any);
+        contentsAtPath(path: string): NSData;
+    }
+
+    export class NSData extends NSObject {
+
     }
 
     export class NSString {
         static initWithString(s: string): NSString;
         static initWithDataEncoding(data: any, encoding: any): any;
+        static pathWithComponents(paths: NSArray): NSString;
+        static stringWithContentsOfFileEncodingError(path: string, encoding: number, error: any): NSString;
         stringByDeletingLastPathComponent(): string;
+        stringByDeletingPathExtension(): string;
         dataUsingEncoding(encoding: number): any;
+        writeToFileAtomicallyEncodingError(path: string, atomically: boolean, encoding: number, error: any): boolean;
+    }
+
+    export class NSArray extends NSObject {
+        static arrayWithObjectsWithArguments(...params: any[]): NSArray;
     }
 
     export class NSURLSessionConfiguration {
@@ -84,10 +110,12 @@ declare module Foundation {
     }
 
     export class NSURL {
-        static URLWithString(url: string): any;
+        static URLWithString(url: string): NSURL;
+        static fileURLWithPathIsDirectory(path: string, isDirectory: boolean): NSURL;
         path(): string;
         relativePath(): string;
         relativeString(): string;
+        pathExtension(): string;
     }
 
     export class NSDate {
@@ -128,4 +156,7 @@ declare module CoreLocation {
 
     function CLLocationCoordinate2DMake(latitude: number, longitude: number) : any;
 }
-*/
+
+declare var NativePointer: any;
+declare var PrimitiveType: any;
+declare var RefValue: any;

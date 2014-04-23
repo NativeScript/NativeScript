@@ -52,9 +52,9 @@ export class UserPreferences {
         if ("undefined" == typeof defaultValue) {
             defaultValue = [];
         }
-        var hashSet = utils_module.tk.utils.Collections.stringArrayToStringSet(defaultValue);
+        var hashSet = utils_module.Collections.stringArrayToStringSet(defaultValue);
         var res = this.sharedPreferences.getStringSet(key, hashSet);
-        return utils_module.tk.utils.Collections.stringSetToStringArray(res);
+        return utils_module.Collections.stringSetToStringArray(res);
     }
 
     public setBoolean(key: string, value: boolean) {
@@ -90,7 +90,7 @@ export class UserPreferences {
 
     public setStrings(key: string, values: string[]) {
         var editor = this.sharedPreferences.edit();
-        var hashSet = utils_module.tk.utils.Collections.stringArrayToStringSet(values);
+        var hashSet = utils_module.Collections.stringArrayToStringSet(values);
         editor.putStringSet(key, hashSet);
         editor.commit();
     }

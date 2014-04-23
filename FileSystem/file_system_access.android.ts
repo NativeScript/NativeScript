@@ -346,7 +346,7 @@ export class FileSystemAccess {
         }
     }
 
-    public getFileExtension(path: string): string {
+    private getFileExtension(path: string): string {
         var dotIndex = path.lastIndexOf(".");
         if (dotIndex && dotIndex >= 0 && dotIndex < path.length) {
             return path.substring(dotIndex);
