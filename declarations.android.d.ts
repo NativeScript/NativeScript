@@ -346,7 +346,8 @@ declare module com {
 
         export module ion {
             export class Ion {
-                static with(context: any, url : string) : any;
+                static with(context: any, url: string): any;
+                static getDefault(context: any): any;
             }
         }
 
@@ -354,6 +355,26 @@ declare module com {
             export module future {
                 export class FutureCallback {
                     constructor(context: any);
+                }
+            }
+
+            export module http {
+
+                export module libcore {
+                    export class RawHeaders {
+                        constructor();
+                        add(name: string, v: string);
+                    }
+                }
+
+                export class AsyncHttpClient  {
+                    static getDefaultInstance(): any;
+                }
+
+                export module callback {
+                    export class HttpConnectCallback {
+                        constructor(params: any);
+                    }
                 }
             }
         }

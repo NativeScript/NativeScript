@@ -1,66 +1,61 @@
 ﻿/**
   * Android specific http client implementation.
   */
-
 import image_module = require("Image/image");
 import app_module = require("Application/application");
 import promises = require("promises/promises");
 
-export class http {
-    /**
-      * Gets string from url.
-      */
-    public static getString(url: string): promises.Promise<string> {
-        var d = promises.defer<string>();
-        http.get(url, r => d.resolve(r), e => d.reject(e));
-        return d.promise();
-    }
+import http = require("net/http_client");
 
-    /**
-      * Gets JSON from url.
-      */
-    public static getJSON<T>(url: string): promises.Promise<T> {
-        var d = promises.defer<T>();
-        http.get(url, r => d.resolve(JSON.parse(r)), e => d.reject(e));
-        return d.promise();
-    }
+/*
+// merge common
+import http_common = require("net/http_common");
+declare var exports;
+exports.getString = http_common.getString;
+exports.getJSON = http_common.getJSON;
+exports.getImage = http_common.getImage;
+*/
 
-    /**
-      * Gets image from url.
-      */
-    public static getImage(url: string): promises.Promise<image_module.Image> {
-        var d = promises.defer<image_module.Image>();
-        http.get(url, r => {
-            var image = new image_module.Image();
-            image.loadFromNativeBitmap(r);
-            d.resolve(image);
-        }, e => d.reject(e));
-        return d.promise();
-    }
+// TODO: Replace with similar to iOS implementation!
+export function request(options: http.HttpRequestOptions): promises.Promise<http.HttpResponse> {
+    var d = promises.defer<http.HttpResponse>();
 
-    // TODO: Accept: application/json header for JSON calls and check the response for Image not url!
-    private static get(url: string, successCallback: (result: any) => void, errorCallback?: (e: Error) => void) {
-        try {
-            var isImage = url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
+    try {
+        var headers = new com.koushikdutta.async.http.libcore.RawHeaders();
 
-            var context = app_module.Application.current.android.context;
-            var request = com.koushikdutta.ion.Ion.with(context, url);
-
-            request = isImage ? request.asBitmap() : request.asString();
-
-            request.setCallback(new com.koushikdutta.async.future.FutureCallback({
-                onCompleted: function (error, data) {
-                    if (error && errorCallback) {
-                        errorCallback(new Error(error.toString()));
-                    } else if (successCallback) {
-                        successCallback(data);
-                    }
+        if (options.headers && options.headers.length) {
+            for (var i = 0, l = options.headers.length; i < l; i++) {
+                var header = options.headers[i];
+                headers.add(header.name, header.value)
                 }
-            }));
-        } catch (ex) {
-            if (errorCallback) {
-                errorCallback(ex);
-            }
         }
+
+        var isImage = options.url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
+
+        var context = app_module.Application.current.android.context;
+        var request = com.koushikdutta.ion.Ion.with(context, options.url);
+
+        request = isImage ? request.asBitmap() : request.asString();
+
+        request.setCallback(new com.koushikdutta.async.future.FutureCallback({
+            onCompleted: function (error, data) {
+                if (error) {
+                    d.reject(error);
+                } else {
+                    d.resolve({
+                        body: {
+                            toString: () => { return data },
+                            toJSON: () => { return JSON.parse(data) },
+                            toImage: () => { return image_module.Image.imageFromNativeBitmap(data); }
+                        },
+                        statusCode: 0,
+                        headers: []
+                    });
+                }
+            }
+        }));
+    } catch (ex) {
+        d.reject(ex);
     }
+    return d.promise();
 }

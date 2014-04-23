@@ -148,6 +148,7 @@
     <TypeScriptCompile Include="android17.d.ts" />
     <TypeScriptCompile Include="promises\promises.ts" />
     <TypeScriptCompile Include="promises\index.ts" />
+    <TypeScriptCompile Include="net\http_common.ts" />
     <Content Include="_references.ts" />
     <TypeScriptCompile Include="Console\console.android.ts">
       <DependentUpon>console.d.ts</DependentUpon>

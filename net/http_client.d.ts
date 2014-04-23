@@ -4,28 +4,32 @@
 import image_module = require("Image/image");
 import promises = require("promises/promises");
 
-export declare class http {
-    static getString(url: string): promises.Promise<string>;
-    static getJSON<T>(url: string): promises.Promise<T>;
-    static getImage(url: string): promises.Promise<image_module.Image>;
+export declare function getString(url: string): promises.Promise<string>;
+export declare function getJSON<T>(url: string): promises.Promise<T>;
+export declare function getImage(url: string): promises.Promise<image_module.Image>;
 
-    static request(options: IHttpRequestOptions, successCallback: (r: IHttpResponse) => void, errorCallback?: (e: Error) => void);
-}
+export declare function request(options: HttpRequestOptions): promises.Promise<HttpResponse>;
 
-export interface IHttpRequestOptions {
+export interface HttpRequestOptions {
     url: string;
     method: string;
-    headers?: IHttpHeader[];
-    body?: string;
+    headers?: HttpHeader[];
+    body?: any;
 }
 
-export interface IHttpHeader {
+export interface HttpHeader {
     name: string;
     value: string;
 }
 
-export interface IHttpResponse {
+export interface HttpResponse {
     statusCode: number;
-    headers: IHttpHeader[];
-    body: any;
+    headers: HttpHeader[];
+    body: HttpContent;
+}
+
+export interface HttpContent {
+    toString: () => string;
+    toJSON: () => any;
+    toImage: () => image_module.Image;
 }
