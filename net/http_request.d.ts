@@ -4,10 +4,6 @@
 import image_module = require("Image/image");
 import promises = require("promises/promises");
 
-export declare function getString(url: string): promises.Promise<string>;
-export declare function getJSON<T>(url: string): promises.Promise<T>;
-export declare function getImage(url: string): promises.Promise<image_module.Image>;
-
 export declare function request(options: HttpRequestOptions): promises.Promise<HttpResponse>;
 
 export interface HttpRequestOptions {

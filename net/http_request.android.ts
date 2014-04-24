@@ -1,20 +1,10 @@
 ﻿/**
   * Android specific http client implementation.
   */
-import image_module = require("Image/image");
 import app_module = require("Application/application");
+import image_module = require("Image/image");
 import promises = require("promises/promises");
-
-import http = require("net/http_client");
-
-/*
-// merge common
-import http_common = require("net/http_common");
-declare var exports;
-exports.getString = http_common.getString;
-exports.getJSON = http_common.getJSON;
-exports.getImage = http_common.getImage;
-*/
+import http = require("net/http_request");
 
 // TODO: Replace with similar to iOS implementation!
 export function request(options: http.HttpRequestOptions): promises.Promise<http.HttpResponse> {

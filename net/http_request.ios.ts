@@ -3,16 +3,7 @@
   */
 import image = require("Image/image");
 import promises = require("promises/promises");
-import http = require("net/http_client");
-
-/*
-// merge common
-import http_common = require("net/http_common");
-declare var exports;
-exports.getString = http_common.getString;
-exports.getJSON = http_common.getJSON;
-exports.getImage = http_common.getImage;
-*/
+import http = require("net/http_request");
 
 export function request(options: http.HttpRequestOptions): promises.Promise<http.HttpResponse> {
     var d = promises.defer<http.HttpResponse>();
@@ -36,12 +27,13 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
             }
         }
 
-        urlRequest.setHTTPBody(Foundation.NSString.initWithString(options.content.toString()).dataUsingEncoding(4));
+        var content = options.content ? options.content.toString() : "";
+        urlRequest.setHTTPBody(Foundation.NSString.initWithString(content).dataUsingEncoding(4));
 
         var dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest,
             function (data, response, error) {
                 if (error) {
-                    d.reject(error);
+                    d.reject(new Error(error.localizedDescription()));
                 } else {
 
                     var headers = new Array<http.HttpHeader>();

@@ -128,13 +128,13 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="Utils\utils_android.ts" />
     <TypeScriptCompile Include="Utils\utils_ios.ts" />
-    <TypeScriptCompile Include="net\http_client.android.ts">
-      <DependentUpon>http_client.d.ts</DependentUpon>
+    <TypeScriptCompile Include="net\http_request.android.ts">
+      <DependentUpon>http_request.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="net\http_client.ios.ts">
-      <DependentUpon>http_client.d.ts</DependentUpon>
+    <TypeScriptCompile Include="net\http_request.ios.ts">
+      <DependentUpon>http_request.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="net\http_client.d.ts" />
+    <TypeScriptCompile Include="net\http_request.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="net\index.ts" />
@@ -148,7 +148,7 @@
     <TypeScriptCompile Include="android17.d.ts" />
     <TypeScriptCompile Include="promises\promises.ts" />
     <TypeScriptCompile Include="promises\index.ts" />
-    <TypeScriptCompile Include="net\http_common.ts" />
+    <TypeScriptCompile Include="net\http.ts" />
     <Content Include="_references.ts" />
     <TypeScriptCompile Include="Console\console.android.ts">
       <DependentUpon>console.d.ts</DependentUpon>

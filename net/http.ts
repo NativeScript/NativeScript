@@ -1,6 +1,10 @@
 import image_module = require("Image/image");
 import promises = require("promises/promises");
-import http = require("net/http_client");
+import http = require("net/http_request");
+
+// merge request
+declare var exports;
+exports.request = http.request;
 
 /**
   * Gets string from url.

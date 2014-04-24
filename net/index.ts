@@ -1,2 +1,2 @@
 ﻿declare var module, require;
-module.exports = require("net/http_client");
+module.exports = require("net/http");
