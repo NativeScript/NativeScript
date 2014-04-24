@@ -2,6 +2,7 @@
 // iOS specific TypeScript declarations
 // TODO: This is temporary, until we have the TS definitions for the native APIs
 
+/*
 declare module UIKit {
 
     export class UIResponder {
@@ -127,3 +128,4 @@ declare module CoreLocation {
 
     function CLLocationCoordinate2DMake(latitude: number, longitude: number) : any;
 }
+*/
