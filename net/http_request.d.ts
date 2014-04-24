@@ -9,18 +9,13 @@ export declare function request(options: HttpRequestOptions): promises.Promise<H
 export interface HttpRequestOptions {
     url: string;
     method: string;
-    headers?: HttpHeader[];
+    headers?: any;
     content?: any;
-}
-
-export interface HttpHeader {
-    name: string;
-    value: string;
 }
 
 export interface HttpResponse {
     statusCode: number;
-    headers: HttpHeader[];
+    headers: any;
     content?: HttpContent;
 }
 

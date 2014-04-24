@@ -32,36 +32,33 @@
 
     // Get request
     http.request({
-        url: "http://ip.jsontest.com/",
-        method: "GET",
-        headers: [{ name: "Content-Type", value: "application/json" }]
+       url: "http://ip.jsontest.com/",
+       method: "GET",
+       headers: { "Content-Type" : "application/json" }
     }).then(function (r) {
-        var status = r.statusCode;
+       var status = r.statusCode;
 
-        for (var i = 0, l = r.headers.length; i < l; i++) {
-            var header = r.headers[i];
-        }
-
-        var result = r.content.toJSON();
-
-    }).fail(function (e) { });
+       for (var header in r.headers) {
+           //
+       }
+     
+       var result = r.content.toJSON();
+    }).fail(function (e) {  });
 
     // Post request
     http.request({
         url: "http://posttestserver.com/post.php?dump&html&dir=test",
         method: "POST",
-        headers: [{ name: "Content-Type", value: "application/x-www-form-urlencoded" }],
+        headers: { "Content-Type" : "application/x-www-form-urlencoded" },
         content: "MyVariableOne=ValueOne&MyVariableTwo=ValueTwo"
     }).then(function (r) {
-        log("Status code:" + r.statusCode);
+       var status = r.statusCode;
 
-        for (var i = 0, l = r.headers.length; i < l; i++) {
-            var header = r.headers[i];
-            log(header.name + ":" + header.value);
-        }
-
-        log("Content:" + r.content.toString())
-
+       for (var header in r.headers) {
+           //
+       }
+     
+       var result = r.content.toJSON();
     }).fail(function (e) { log(e) });
 
     http.getString("http://www.reddit.com/").then(function(result) {

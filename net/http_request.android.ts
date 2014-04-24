@@ -11,11 +11,10 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
     try {
         var headers = new com.koushikdutta.async.http.libcore.RawHeaders();
 
-        if (options.headers && options.headers.length) {
-            for (var i = 0, l = options.headers.length; i < l; i++) {
-                var header = options.headers[i];
-                headers.add(header.name, header.value)
-                }
+        if (options.headers) {
+            for (var key in options.headers) {
+                headers.add(key, options.headers[key])
+            }
         }
 
         var isImage = options.url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
@@ -37,7 +36,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                             toImage: () => { return require("Image/image").Image.imageFromNativeBitmap(data); }
                         },
                         statusCode: 0,
-                        headers: []
+                        headers: {}
                     });
                 }
             }

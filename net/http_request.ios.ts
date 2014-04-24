@@ -16,13 +16,13 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
         var urlRequest = Foundation.NSMutableURLRequest.requestWithURL(
             Foundation.NSURL.URLWithString(options.url));
 
-        urlRequest.setHTTPMethod(options.method);
+        if (options.method) {
+            urlRequest.setHTTPMethod(options.method);
+        }
 
-        if (options.headers && options.headers.length) {
-            for (var i = 0, l = options.headers.length; i < l; i++) {
-                var header = options.headers[i];
-
-                urlRequest.setValueForHTTPHeaderField(header.name, header.value);
+        if (options.headers) {
+            for (var header in options.headers) {
+                urlRequest.setValueForHTTPHeaderField(options.headers[header], header);
             }
         }
 
@@ -36,14 +36,13 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                     d.reject(new Error(error.localizedDescription()));
                 } else {
 
-                    var headers = new Array<http.HttpHeader>();
+                    var headers = {};
                     var headerFields = response.allHeaderFields();
                     var keys = headerFields.allKeys();
 
                     for (var i = 0, l = keys.count(); i < l; i++) {
                         var key = keys.objectAtIndex(i);
-
-                        headers.push({ name: key, value: headerFields.valueForKey(key) });
+                        headers[key] = headerFields.valueForKey(key);
                     }
 
                     d.resolve({
