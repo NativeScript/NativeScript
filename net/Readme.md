@@ -15,14 +15,14 @@
     }).fail(function(e) { console.log("Error:" + e.message); });
 
     http.request({ url: "http://www.reddit.com/r/aww.json?limit=10", method: "GET" }).then(function(r) {
-        console.log("Headers count:" + r.headers.length);
-             
+        console.log("Status code:" + r.statusCode);
+        
         for (var i = 0, l = r.headers.length; i < l; i++) {
             var header = r.headers[i];
             console.log(header.name + ":" + header.value);
         }
              
-        log("Content:" + r.content.toString()); // You can use also toJSON() and toImage() to convert the content.
+        console.log("Content:" + r.content.toString()); // You can use also toJSON() and toImage() to convert the content.
              
     }).fail(function(e) { console.log("Error:" + e.message); });
 
