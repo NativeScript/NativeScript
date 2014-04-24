@@ -52,7 +52,7 @@
            //
        }
      
-       var result = r.content.toJSON();
+       var result = r.content.toString();
     }).fail(function (e) { log(e) });
 
     http.getString("http://www.reddit.com/").then(function(result) {
