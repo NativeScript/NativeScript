@@ -3,7 +3,7 @@
     var http = require("net");
     
     // Universal request method. You can use HttpRequestOptions to set varios properties, HttpHeader to get/set desired headers, HttpResponse to get status code, headers and content and
-    // HttpContent to get/set body for request/response:
+    // HttpContent to get body of response:
 
     interface HttpRequestOptions {
         url: string;
