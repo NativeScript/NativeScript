@@ -9,18 +9,13 @@
     interface HttpRequestOptions {
         url: string;
         method: string;
-        headers?: HttpHeader[];
+        headers?: any;
         content?: HttpContent;
-    }
-
-    interface HttpHeader {
-        name: string;
-        value: string;
     }
 
     interface HttpResponse {
         statusCode: number;
-        headers: HttpHeader[];
+        headers: any;
         content?: HttpContent;
     }
 
