@@ -9,7 +9,7 @@ export function getString(url: string): promises.Promise<string> {
     var d = promises.defer<string>();
 
     http.request({ url: url, method: "GET" })
-        .then(r => d.resolve(r.body.toString()))
+        .then(r => d.resolve(r.content.toString()))
         .fail(e => d.reject(e));
 
     return d.promise();
@@ -22,7 +22,7 @@ export function getJSON<T>(url: string): promises.Promise<T> {
     var d = promises.defer<T>();
 
     http.request({ url: url, method: "GET" })
-        .then(r => d.resolve(r.body.toJSON()))
+        .then(r => d.resolve(r.content.toJSON()))
         .fail(e => d.reject(e));
 
     return d.promise();
@@ -35,7 +35,7 @@ export function getImage(url: string): promises.Promise<image_module.Image> {
     var d = promises.defer<image_module.Image>();
 
     http.request({ url: url, method: "GET" })
-        .then(r => d.resolve(r.body.toImage()))
+        .then(r => d.resolve(r.content.toImage()))
         .fail(e => d.reject(e));
 
     return d.promise();

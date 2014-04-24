@@ -43,7 +43,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                     d.reject(error);
                 } else {
                     d.resolve({
-                        body: {
+                        content: {
                             toString: () => { return data },
                             toJSON: () => { return JSON.parse(data) },
                             toImage: () => { return image_module.Image.imageFromNativeBitmap(data); }

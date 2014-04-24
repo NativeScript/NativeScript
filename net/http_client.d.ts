@@ -14,7 +14,7 @@ export interface HttpRequestOptions {
     url: string;
     method: string;
     headers?: HttpHeader[];
-    body?: any;
+    content?: HttpContent;
 }
 
 export interface HttpHeader {
@@ -25,7 +25,7 @@ export interface HttpHeader {
 export interface HttpResponse {
     statusCode: number;
     headers: HttpHeader[];
-    body: HttpContent;
+    content?: HttpContent;
 }
 
 export interface HttpContent {

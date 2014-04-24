@@ -36,9 +36,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
             }
         }
 
-        if (typeof (options.body) == "string") {
-            urlRequest.setHTTPBody(Foundation.NSString.initWithString(options.body).dataUsingEncoding(4));
-        }
+        urlRequest.setHTTPBody(Foundation.NSString.initWithString(options.content.toString()).dataUsingEncoding(4));
 
         var dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest,
             function (data, response, error) {
@@ -57,7 +55,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                     }
 
                     d.resolve({
-                        body: {
+                        content: {
                             toString: () => { return NSDataToString(data); },
                             toJSON: () => { return JSON.parse(NSDataToString(data)); },
                             toImage: () => { return image.Image.imageFromData(data); }
