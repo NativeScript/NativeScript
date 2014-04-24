@@ -1,7 +1,6 @@
 ﻿/**
   * iOS specific http client implementation.
   */
-import image = require("Image/image");
 import promises = require("promises/promises");
 import http = require("net/http_request");
 
@@ -51,7 +50,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                         content: {
                             toString: () => { return NSDataToString(data); },
                             toJSON: () => { return JSON.parse(NSDataToString(data)); },
-                            toImage: () => { return image.Image.imageFromData(data); }
+                            toImage: () => { return require("Image/image").Image.imageFromData(data); }
                         },
                         statusCode: response.statusCode(),
                         headers: headers

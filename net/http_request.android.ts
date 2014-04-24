@@ -1,8 +1,6 @@
 ﻿/**
   * Android specific http client implementation.
   */
-import app_module = require("Application/application");
-import image_module = require("Image/image");
 import promises = require("promises/promises");
 import http = require("net/http_request");
 
@@ -22,7 +20,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
 
         var isImage = options.url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
 
-        var context = app_module.Application.current.android.context;
+        var context = require("Application/application").Application.current.android.context;
         var request = com.koushikdutta.ion.Ion.with(context, options.url);
 
         request = isImage ? request.asBitmap() : request.asString();
@@ -36,7 +34,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                         content: {
                             toString: () => { return data },
                             toJSON: () => { return JSON.parse(data) },
-                            toImage: () => { return image_module.Image.imageFromNativeBitmap(data); }
+                            toImage: () => { return require("Image/image").Image.imageFromNativeBitmap(data); }
                         },
                         statusCode: 0,
                         headers: []
