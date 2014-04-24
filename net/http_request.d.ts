@@ -10,7 +10,7 @@ export interface HttpRequestOptions {
     url: string;
     method: string;
     headers?: HttpHeader[];
-    content?: HttpContent;
+    content?: any;
 }
 
 export interface HttpHeader {

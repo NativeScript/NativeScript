@@ -27,8 +27,9 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
             }
         }
 
-        var content = options.content ? options.content.toString() : "";
-        urlRequest.setHTTPBody(Foundation.NSString.initWithString(content).dataUsingEncoding(4));
+        if (typeof options.content == "string") {
+            urlRequest.setHTTPBody(Foundation.NSString.initWithString(options.content).dataUsingEncoding(4));
+        }
 
         var dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest,
             function (data, response, error) {
@@ -52,7 +53,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                             toJSON: () => { return JSON.parse(NSDataToString(data)); },
                             toImage: () => { return image.Image.imageFromData(data); }
                         },
-                        statusCode: response.statusCode,
+                        statusCode: response.statusCode(),
                         headers: headers
                     });
                 }
