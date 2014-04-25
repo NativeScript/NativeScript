@@ -56,15 +56,15 @@
     }).fail(function (e) { console.log(e) });
 
     // PUT request
-    var postData = YOUR_IMAGE_DATA;
+    var data = YOUR_IMAGE_DATA;
     http.request({
         url: "http://httpbin.org/put",
         method: "PUT",
         headers: {
             "Content-Type": "image/jpg",
-            "Content-Length": postData.length() + ""
+            "Content-Length": data.length() + ""
         },
-        content: postData
+        content: data
     }).then(function (r) {
         console.log(r.content.toString())
     }).fail(function (e) { console.log(e) });
