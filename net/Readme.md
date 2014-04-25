@@ -24,7 +24,7 @@
         toImage: () => image_module.Image;
     }
 
-    // Get request
+    // GET request
     http.request({
        url: "http://ip.jsontest.com/",
        method: "GET",
@@ -37,9 +37,9 @@
        }
      
        var result = r.content.toJSON();
-    }).fail(function (e) {  });
+    }).fail(function (e) { console.log(e) });
 
-    // Post request
+    // POST request
     http.request({
         url: "http://posttestserver.com/post.php?dump&html&dir=test",
         method: "POST",
@@ -53,18 +53,32 @@
        }
      
        var result = r.content.toString();
-    }).fail(function (e) { log(e) });
+    }).fail(function (e) { console.log(e) });
+
+    // PUT request
+    var postData = YOUR_IMAGE_DATA;
+    http.request({
+        url: "http://httpbin.org/put",
+        method: "PUT",
+        headers: {
+            "Content-Type": "image/jpg",
+            "Content-Length": postData.length() + ""
+        },
+        content: postData
+    }).then(function (r) {
+        console.log(r.content.toString())
+    }).fail(function (e) { console.log(e) });
 
     http.getString("http://www.reddit.com/").then(function(result) {
            // Result is string!
-    }).fail(function(e) { console.log("Error:" + e.message); });
+    }).fail(function(e) { console.log(e); });
                                                       
     http.getJSON("http://www.reddit.com/r/aww.json?limit=10").then(function(result) {
            // Result is JSON!  
-    }).fail(function(e) { console.log("Error:" + e.message); });
+    }).fail(function(e) { console.log(e); });
 
     http.getImage("http://www.google.com/images/errors/logo_sm_2.png").then(function(result) {
            // Result is tk.ui.Image!
-    }).fail(function(e) { console.log("Error:" + e.message); });
+    }).fail(function(e) { console.log(e); });
 
 ```

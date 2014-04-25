@@ -29,6 +29,9 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
         if (typeof options.content == "string") {
             urlRequest.setHTTPBody(Foundation.NSString.initWithString(options.content).dataUsingEncoding(4));
         }
+        else {
+            urlRequest.setHTTPBody(options.content);
+        }
 
         var dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest,
             function (data, response, error) {
@@ -51,6 +54,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                             toJSON: () => { return JSON.parse(NSDataToString(data)); },
                             toImage: () => { return require("Image/image").Image.imageFromData(data); }
                         },
+                        data : data,
                         statusCode: response.statusCode(),
                         headers: headers
                     });
