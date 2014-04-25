@@ -2,160 +2,164 @@
 // iOS specific TypeScript declarations
 // TODO: This is temporary, until we have the TS definitions for the native APIs
 
-/*
-declare module UIKit {
 
-    export class UIResponder {
-        static extends(param1: any, param2: any): any;
-    }
+//declare module UIKit {
 
-    export class UIWindow {
-        constructor(frame: any);
-    }
+//    export class UIResponder {
+//        static extends(param1: any, param2: any): any;
+//    }
 
-    export class UIScreen {
-        static mainScreen(): any;
-    }
+//    export class UIWindow {
+//        constructor(frame: any);
+//    }
 
-    export class UIColor {
-        static whiteColor: any;
-    }
+//    export class UIScreen {
+//        static mainScreen(): any;
+//    }
 
-    export class UINavigationController {
-        constructor(rootController: any);
-    }
+//    export class UIColor {
+//        static whiteColor: any;
+//    }
 
-    export class UIImageView {
-        constructor();
-        setImage(image: any);
-    }
+//    export class UINavigationController {
+//        constructor(rootController: any);
+//    }
 
-    export class UILabel {
-        constructor();
-        setText(text: string);
-        sizeToFit();
-    }
+//    export class UIImageView {
+//        constructor();
+//        setImage(image: any);
+//    }
 
-    export class UIImage {
-        static imageNamed(name: string): UIImage;
-        static imageWithContentsOfFile(path: string): UIImage;
-        static imageWithData(data: any): UIImage;
-    }
+//    export class UILabel {
+//        constructor();
+//        setText(text: string);
+//        sizeToFit();
+//    }
 
-    function UIImagePNGRepresentation(image: UIImage);
-    function UIImageJPEGRepresentation(image: UIImage, compressionQuality: number);
-}
+//    export class UIImage {
+//        static imageNamed(name: string): UIImage;
+//        static imageWithContentsOfFile(path: string): UIImage;
+//        static imageWithData(data: any): UIImage;
+//    }
 
-declare module Foundation {
-    export class NSError extends NSObject {
-    }
+//    function UIImagePNGRepresentation(image: UIImage);
+//    function UIImageJPEGRepresentation(image: UIImage, compressionQuality: number);
+//}
 
-    export class NSObject {
-        static extends(...optionalParams: any[]): any;
-    }
+//declare module Foundation {
+//    export class NSError extends NSObject {
+//    }
 
-    export class NSUserDefaults {
-        static standardUserDefaults(): any;
-    }
+//    export class NSObject {
+//        static extends(...optionalParams: any[]): any;
+//    }
 
-    export class NSMutableArray {
-        addObject(obj: any);
-    }
+//    export class NSUserDefaults {
+//        static standardUserDefaults(): any;
+//    }
 
-    export class NSFileManager {
-        static defaultManager(): NSFileManager;
-        URLsForDirectoryInDomains(directory: number, mask: number): any;
-        attributesOfItemAtPathError(path: string, error: any): any;
-        fileExistsAtPath(path: string): boolean;
-        fileExistsAtPathIsDirectory(path: string, isDir: boolean): boolean;
-        createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path: string, intermediateDirs: boolean, attributes: any, error: any): boolean;
-        displayNameAtPath(path: string): string;
-        createFileAtPathContentsAttributes(path: string, data: any, attributes: any): boolean;
-        enumeratorAtPath(path: string): any;
-        contentsOfDirectoryAtPathError(path: string, error: any);
-        removeItemAtPathError(path: string, error: any): boolean;
-        moveItemAtPathToPathError(sourcePath: string, destPath: string, error: any);
-        contentsAtPath(path: string): NSData;
-    }
+//    export class NSMutableArray {
+//        addObject(obj: any);
+//    }
 
-    export class NSData extends NSObject {
+//    export class NSFileManager {
+//        static defaultManager(): NSFileManager;
+//        URLsForDirectoryInDomains(directory: number, mask: number): any;
+//        attributesOfItemAtPathError(path: string, error: any): any;
+//        fileExistsAtPath(path: string): boolean;
+//        fileExistsAtPathIsDirectory(path: string, isDir: boolean): boolean;
+//        createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path: string, intermediateDirs: boolean, attributes: any, error: any): boolean;
+//        displayNameAtPath(path: string): string;
+//        createFileAtPathContentsAttributes(path: string, data: any, attributes: any): boolean;
+//        enumeratorAtPath(path: string): any;
+//        contentsOfDirectoryAtPathError(path: string, error: any);
+//        removeItemAtPathError(path: string, error: any): boolean;
+//        moveItemAtPathToPathError(sourcePath: string, destPath: string, error: any);
+//        contentsAtPath(path: string): NSData;
+//    }
 
-    }
+//    export class NSData extends NSObject {
 
-    export class NSString {
-        static initWithString(s: string): NSString;
-        static initWithDataEncoding(data: any, encoding: any): any;
-        static pathWithComponents(paths: NSArray): NSString;
-        static stringWithContentsOfFileEncodingError(path: string, encoding: number, error: any): NSString;
-        stringByDeletingLastPathComponent(): string;
-        stringByDeletingPathExtension(): string;
-        dataUsingEncoding(encoding: number): any;
-        writeToFileAtomicallyEncodingError(path: string, atomically: boolean, encoding: number, error: any): boolean;
-    }
+//    }
 
-    export class NSArray extends NSObject {
-        static arrayWithObjectsWithArguments(...params: any[]): NSArray;
-    }
+//    export class NSString {
+//        static initWithString(s: string): NSString;
+//        static initWithDataEncoding(data: any, encoding: any): any;
+//        static pathWithComponents(paths: NSArray): NSString;
+//        static stringWithContentsOfFileEncodingError(path: string, encoding: number, error: any): NSString;
+//        stringByDeletingLastPathComponent(): string;
+//        stringByDeletingPathExtension(): string;
+//        dataUsingEncoding(encoding: number): any;
+//        writeToFileAtomicallyEncodingError(path: string, atomically: boolean, encoding: number, error: any): boolean;
+//    }
 
-    export class NSURLSessionConfiguration {
-        static defaultSessionConfiguration(): any;
-    }
+//    export class NSArray extends NSObject {
+//        static arrayWithObjectsWithArguments(...params: any[]): NSArray;
+//    }
 
-    export class NSOperationQueue {
-        static mainQueue(): any;
-    }
+//    export class NSURLSessionConfiguration {
+//        static defaultSessionConfiguration(): any;
+//    }
 
-    export class NSURLSession {
-        static sessionWithConfigurationDelegateDelegateQueue(config: any, param: any, queue : any): any;
-    }
+//    export class NSOperationQueue {
+//        static mainQueue(): any;
+//    }
 
-    export class NSURL {
-        static URLWithString(url: string): NSURL;
-        static fileURLWithPathIsDirectory(path: string, isDirectory: boolean): NSURL;
-        path(): string;
-        relativePath(): string;
-        relativeString(): string;
-        pathExtension(): string;
-    }
+//    export class NSURLSession {
+//        static sessionWithConfigurationDelegateDelegateQueue(config: any, param: any, queue : any): any;
+//    }
 
-    export class NSDate {
-        static dateWithTimeIntervalSince1970(datetime: number);
-        timeIntervalSince1970(): number;
-    }
+//    export class NSURL {
+//        static URLWithString(url: string): NSURL;
+//        static fileURLWithPathIsDirectory(path: string, isDirectory: boolean): NSURL;
+//        path(): string;
+//        relativePath(): string;
+//        relativeString(): string;
+//        pathExtension(): string;
+//    }
 
-    export class NSMutableURLRequest {
-        static requestWithURL(url: any): any;
-    }
-}
+//    export class NSDate {
+//        static dateWithTimeIntervalSince1970(datetime: number);
+//        timeIntervalSince1970(): number;
+//    }
 
-declare module QuartzCore {
-    function CACurrentMediaTime(): number;
-}
+//    export class NSMutableURLRequest {
+//        static requestWithURL(url: any): any;
+//    }
+//}
 
-declare module CoreLocation {
-    export class CLLocationManager {
-        static locationServicesEnabled(): boolean;
-        delegate: any;
-        distanceFilter: number;
-        desiredAccuracy: number;
-        startUpdatingLocation(): void;
-        stopUpdatingLocation(): void;
-        location: CLLocation;
-    }
+//declare module QuartzCore {
+//    function CACurrentMediaTime(): number;
+//}
 
-    export class CLLocation {
-        static initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(coordinate: any, altitude: number, horizontalAccuracy: number, verticalAccuracy: number, course: number, speed: number, timestamp: Foundation.NSDate);
-        coordinate: any;
-        altitude: number;
-        horizontalAccuracy: number;
-        verticalAccuracy: number;
-        timestamp: Foundation.NSDate;
-        speed: number;
-        course: number;
-    }
+//declare module CoreLocation {
+//    export class CLLocationManager {
+//        static locationServicesEnabled(): boolean;
+//        delegate: any;
+//        distanceFilter: number;
+//        desiredAccuracy: number;
+//        startUpdatingLocation(): void;
+//        stopUpdatingLocation(): void;
+//        location: CLLocation;
+//    }
 
-    function CLLocationCoordinate2DMake(latitude: number, longitude: number) : any;
-}
+//    export class CLLocation {
+//        static initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(coordinate: any, altitude: number, horizontalAccuracy: number, verticalAccuracy: number, course: number, speed: number, timestamp: Foundation.NSDate);
+//        coordinate: any;
+//        altitude: number;
+//        horizontalAccuracy: number;
+//        verticalAccuracy: number;
+//        timestamp: Foundation.NSDate;
+//        speed: number;
+//        course: number;
+//    }
+
+//    function CLLocationCoordinate2DMake(latitude: number, longitude: number) : any;
+//}
+
+//declare var NativePointer: any;
+//declare var PrimitiveType: any;
+//declare var RefValue: any;
 
 declare var NativePointer: any;
 declare var PrimitiveType: any;
