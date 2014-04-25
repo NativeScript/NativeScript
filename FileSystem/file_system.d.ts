@@ -102,16 +102,16 @@ export declare class Folder extends FileSystemEntity {
 /**
   * Provides access to the top-level Folders instances that are accessible from the application. Use these as entry points to access the FileSystem.
   */
-export declare class KnownFolders {
+export declare module knownFolders {
     /**
     * Gets the Documents folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
     */
-    public static documents(): Folder;
+    export function documents(): Folder;
 
     /**
     * Gets the Temporary (Caches) folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
     */
-    public static temporary(): Folder;
+    export function temp(): Folder;
 }
 
 /**

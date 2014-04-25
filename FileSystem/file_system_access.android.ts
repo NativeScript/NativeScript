@@ -349,7 +349,8 @@ export class FileSystemAccess {
     private getFileExtension(path: string): string {
         var dotIndex = path.lastIndexOf(".");
         if (dotIndex && dotIndex >= 0 && dotIndex < path.length) {
-            return path.substring(dotIndex);
+            // return the extension without the "." (like in iOS)
+            return path.substring(dotIndex + 1);
         }
 
         return undefined;

@@ -29,12 +29,12 @@ var createFile = function (info: { path: string; name: string; extension: string
 };
 
 var createFolder = function (info: { path: string; name: string; }) {
-    var documents = KnownFolders.documents();
+    var documents = knownFolders.documents();
     if (info.path === documents.path) {
         return documents;
     }
 
-    var temp = KnownFolders.temporary();
+    var temp = knownFolders.temp();
     if (info.path === temp.path) {
         return temp;
     }
@@ -48,12 +48,12 @@ var createFolder = function (info: { path: string; name: string; }) {
 };
 
 /**
-    * Represents the basic file system entity - a File or a Folder.
-    */
+* Represents the basic file system entity - a File or a Folder.
+*/
 export class FileSystemEntity {
     /**
-        * Gets the Folder object representing the parent of this entity. Will be null for a root folder like Documents or Temporary.
-        */
+    * Gets the Folder object representing the parent of this entity. Will be null for a root folder like Documents or Temporary.
+    */
     public getParent(onError?: (error: any) => any): Folder {
         var folderInfo = getFileAccess().getParent(this.path, onError);
         if (!folderInfo) {
@@ -64,8 +64,8 @@ export class FileSystemEntity {
     }
 
     /**
-        * Deletes the current entity from the file system.
-        */
+    * Deletes the current entity from the file system.
+    */
     public delete(onSuccess?: () => any, onError?: (error: any) => any) {
         if (this instanceof File) {
             getFileAccess().deleteFile(this.path, onSuccess, onError);
@@ -75,8 +75,8 @@ export class FileSystemEntity {
     }
 
     /**
-        * Renames the current entity using the specified name.
-        */
+    * Renames the current entity using the specified name.
+    */
     public rename(newName: string, onSuccess?: () => any, onError?: (error: any) => any) {
         if (this instanceof Folder) {
             if (this[isKnownProperty]) {
@@ -119,8 +119,8 @@ export class FileSystemEntity {
     }
 
     /**
-        * Gets the name of the entity.
-        */
+    * Gets the name of the entity.
+    */
     get name(): string {
         return this[nameProperty];
     }
@@ -160,6 +160,7 @@ export class File extends FileSystemEntity {
 
         return createFile(fileInfo);
     }
+
     /**
         * Checks whether a File with the specified path already exists.
         */
@@ -174,6 +175,7 @@ export class File extends FileSystemEntity {
         this.checkAccess();
         return new FileReader(this);
     }
+
     /**
         * Creates a FileWriter object over this file and locks the file until the writer is released.
         */
@@ -181,12 +183,14 @@ export class File extends FileSystemEntity {
         this.checkAccess();
         return new FileWriter(this);
     }
+
     /**
         * Gets the extension of the entity.
         */
     get extension(): string {
         return this[extensionProperty];
     }
+
     /**
         * Gets a value indicating whether the file is currently locked, meaning a background operation associated with this file is running.
         */
@@ -204,12 +208,12 @@ export class File extends FileSystemEntity {
 }
 
 /**
-    * Represents a Folder entity.
-    */
+* Represents a Folder entity.
+*/
 export class Folder extends FileSystemEntity {
     /**
-        * Attempts to access a Folder at the specified path and creates a new Folder if there is no existing one.
-        */
+    * Attempts to access a Folder at the specified path and creates a new Folder if there is no existing one.
+    */
     public static fromPath(path: string, onSuccess: (folder: Folder) => any, onError?: (error: any) => any) {
         var folderInfo = getFileAccess().getFolder(path, onError);
         if (!folderInfo) {
@@ -220,15 +224,15 @@ export class Folder extends FileSystemEntity {
     }
 
     /**
-        * Checks whether a Folder with the specified path already exists.
-        */
+    * Checks whether a Folder with the specified path already exists.
+    */
     public static exists(path: string): boolean {
         return getFileAccess().folderExists(path);
     }
 
     /**
-        * Checks whether this Folder contains a file with the specified name.
-        */
+    * Checks whether this Folder contains a file with the specified name.
+    */
     public containsFile(name: string): boolean {
         var fileAccess = getFileAccess();
         var path = fileAccess.concatPath(this.path, name);
@@ -236,8 +240,8 @@ export class Folder extends FileSystemEntity {
     }
 
     /**
-        * Checks whether this Folder contains a Folder with the specified name.
-        */
+    * Checks whether this Folder contains a Folder with the specified name.
+    */
     public containsFolder(name: string): boolean {
         var fileAccess = getFileAccess();
         var path = fileAccess.concatPath(this.path, name);
@@ -245,22 +249,22 @@ export class Folder extends FileSystemEntity {
     }
 
     /**
-        * Deletes all the files and folders (recursively), contained within this Folder.
-        */
+    * Deletes all the files and folders (recursively), contained within this Folder.
+    */
     public empty(onSuccess?: () => any, onError?: (error: any) => any) {
         getFileAccess().emptyFolder(this.path, onSuccess, onError);
     }
 
     /**
-        * Determines whether this instance is a KnownFolder (accessed through the KnownFolders object).
-        */
+    * Determines whether this instance is a KnownFolder (accessed through the KnownFolders object).
+    */
     get isKnown(): boolean {
         return this[isKnownProperty];
     }
 
     /**
-        * Attempts to open a File with the specified name within this Folder and optionally creates a new File if there is no existing one.
-        */
+    * Attempts to open a File with the specified name within this Folder and optionally creates a new File if there is no existing one.
+    */
     public getFile(name: string, onError?: (error: any) => any): File {
         var fileAccess = getFileAccess();
         var path = fileAccess.concatPath(this.path, name);
@@ -274,8 +278,8 @@ export class Folder extends FileSystemEntity {
     }
 
     /**
-        * Attempts to open a Folder with the specified name within this Folder and optionally creates a new Folder if there is no existing one.
-        */
+    * Attempts to open a Folder with the specified name within this Folder and optionally creates a new Folder if there is no existing one.
+    */
     public getFolder(name: string, onError?: (error: any) => any): Folder {
         var fileAccess = getFileAccess();
         var path = fileAccess.concatPath(this.path, name);
@@ -289,8 +293,8 @@ export class Folder extends FileSystemEntity {
     }
 
     /**
-        * Gets all the top-level FileSystem entities residing within this Folder.
-        */
+    * Gets all the top-level FileSystem entities residing within this Folder.
+    */
     public enumEntities(onSuccess: (files: Array<FileSystemEntity>) => any, onError?: (error: any) => any) {
         var localSuccess = function (fileInfos: Array<{ path: string; name: string; extension: string }>) {
             if (onSuccess) {
@@ -315,44 +319,44 @@ export class Folder extends FileSystemEntity {
 }
 
 /**
-    * Provides access to the top-level Folders instances that are accessible from the application. Use these as entry points to access the FileSystem.
+* Provides access to the top-level Folders instances that are accessible from the application. Use these as entry points to access the FileSystem.
+*/
+export module knownFolders {
+    var _documents: Folder;
+    var _temp: Folder;
+
+    /**
+    * Gets the Documents folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
     */
-export class KnownFolders {
-    private static _documents: Folder;
-    private static _temp: Folder;
-
-    /**
-        * Gets the Documents folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
-        */
-    public static documents(): Folder {
-        if (!KnownFolders._documents) {
+    export var documents = function (): Folder {
+        if (!_documents) {
             var path = getFileAccess().getDocumentsFolderPath();
-            KnownFolders._documents = new Folder();
-            KnownFolders._documents[pathProperty] = path;
-            KnownFolders._documents[isKnownProperty] = true;
+            _documents = new Folder();
+            _documents[pathProperty] = path;
+            _documents[isKnownProperty] = true;
         }
 
-        return KnownFolders._documents;
-    }
+        return _documents;
+    };
 
     /**
-        * Gets the Temporary (Caches) folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
-        */
-    public static temporary(): Folder {
-        if (!KnownFolders._temp) {
+    * Gets the Temporary (Caches) folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
+    */
+    export var temp = function (): Folder {
+        if (!_temp) {
             var path = getFileAccess().getTempFolderPath();
-            KnownFolders._temp = new Folder();
-            KnownFolders._temp[pathProperty] = path;
-            KnownFolders._temp[isKnownProperty] = true;
+            _temp = new Folder();
+            _temp[pathProperty] = path;
+            _temp[isKnownProperty] = true;
         }
 
-        return KnownFolders._temp;
+        return _temp;
     }
 }
 
 /**
-    * Base class for FileReader and FileWriter APIs.
-    */
+* Base class for FileReader and FileWriter APIs.
+*/
 export class FileAccess {
     private _file;
 
@@ -362,36 +366,36 @@ export class FileAccess {
     }
 
     /**
-        * Unlocks the file and allows other operations over it.
-        */
+    * Unlocks the file and allows other operations over it.
+    */
     public release() {
         this._file[fileLockedProperty] = false;
         this._file = undefined;
     }
 
     /**
-        * Gets the underlying File instance.
-        */
+    * Gets the underlying File instance.
+    */
     get file(): File {
         return this._file;
     }
 }
 
 /**
-    * Enables reading the content of a File entity.
-    */
+* Enables reading the content of a File entity.
+*/
 export class FileReader extends FileAccess {
     /**
-        * Reads the content of the underlying File as a UTF8 encoded string.
-        */
+    * Reads the content of the underlying File as a UTF8 encoded string.
+    */
     public readText(onSuccess: (content: string) => any, onError?: (error: any) => any) {
         getFileAccess().readText(this.file.path, onSuccess, onError);
     }
 }
 
 /**
-    * Enables saving data to a File entity.
-    */
+* Enables saving data to a File entity.
+*/
 export class FileWriter extends FileAccess {
     public writeText(content: string, onSuccess?: () => any, onError?: (error: any) => any) {
         getFileAccess().writeText(this.file.path, content, onSuccess, onError);
