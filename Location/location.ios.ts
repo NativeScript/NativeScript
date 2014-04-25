@@ -10,7 +10,9 @@ export class LocationManager {
     public updateDistance: number;
 
     public isStarted: boolean;
+
     private iosLocationManager: CoreLocation.CLLocationManager;
+    private listener: any;
 
     private static locationFromCLLocation(clLocation: CoreLocation.CLLocation): types.Location {
         var location = new types.Location();
@@ -89,9 +91,9 @@ export class LocationManager {
                 }
             });
 
-            var listener = new LocationListener();
-            listener.setupWithFunctions(onLocation, onError);
-            this.iosLocationManager.delegate = listener;
+            this.listener = new LocationListener();
+            this.listener.setupWithFunctions(onLocation, onError);
+            this.iosLocationManager.delegate = this.listener;
             this.iosLocationManager.desiredAccuracy = this.desiredAccuracy;
             this.iosLocationManager.distanceFilter = this.updateDistance;
             this.iosLocationManager.startUpdatingLocation();

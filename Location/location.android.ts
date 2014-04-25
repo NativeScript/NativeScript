@@ -73,7 +73,7 @@ export class LocationManager {
     constructor() {
         // put some defaults
         this.desiredAccuracy = types.DesiredAccuracy.HIGH;
-        this.updateDistance = 10; 
+        this.updateDistance = 0; 
         this.minimumUpdateTime = 200;
         this.isStarted = false;
 

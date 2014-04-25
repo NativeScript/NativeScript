@@ -30,12 +30,6 @@ export class LocationRegion {
     public raduis: number; // radius in meters
 }
 
-// TODO: This might be implemented with a callback, no need of special type.
-export class LocationChangeListener {
-    //onLocationChange(location: Location) {
-    //}
-}
-
 // TODO: This might be implemented with two callbacks, no need of special type.
 export class RegionChangeListener {
     onRegionEnter(region: LocationRegion) {
