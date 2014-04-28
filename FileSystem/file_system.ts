@@ -64,9 +64,9 @@ export class FileSystemEntity {
     }
 
     /**
-    * Deletes the current entity from the file system.
+    * Removes the current entity from the file system.
     */
-    public delete(onSuccess?: () => any, onError?: (error: any) => any) {
+    public remove(onSuccess?: () => any, onError?: (error: any) => any) {
         if (this instanceof File) {
             getFileAccess().deleteFile(this.path, onSuccess, onError);
         } else if (this instanceof Folder) {
@@ -233,25 +233,21 @@ export class Folder extends FileSystemEntity {
     /**
     * Checks whether this Folder contains a file with the specified name.
     */
-    public containsFile(name: string): boolean {
+    public contains(name: string): boolean {
         var fileAccess = getFileAccess();
         var path = fileAccess.concatPath(this.path, name);
-        return fileAccess.fileExists(path);
-    }
 
-    /**
-    * Checks whether this Folder contains a Folder with the specified name.
-    */
-    public containsFolder(name: string): boolean {
-        var fileAccess = getFileAccess();
-        var path = fileAccess.concatPath(this.path, name);
+        if (fileAccess.fileExists(path)) {
+            return true;
+        }
+
         return fileAccess.folderExists(path);
     }
 
     /**
-    * Deletes all the files and folders (recursively), contained within this Folder.
+    * Removes all the files and folders (recursively), contained within this Folder.
     */
-    public empty(onSuccess?: () => any, onError?: (error: any) => any) {
+    public clear(onSuccess?: () => any, onError?: (error: any) => any) {
         getFileAccess().emptyFolder(this.path, onSuccess, onError);
     }
 
@@ -295,7 +291,7 @@ export class Folder extends FileSystemEntity {
     /**
     * Gets all the top-level FileSystem entities residing within this Folder.
     */
-    public enumEntities(onSuccess: (files: Array<FileSystemEntity>) => any, onError?: (error: any) => any) {
+    public getEntities(onSuccess: (files: Array<FileSystemEntity>) => any, onError?: (error: any) => any) {
         var localSuccess = function (fileInfos: Array<{ path: string; name: string; extension: string }>) {
             if (onSuccess) {
                 var entities = new Array<FileSystemEntity>();
@@ -314,7 +310,30 @@ export class Folder extends FileSystemEntity {
                 onSuccess(entities);
             }
         }
-        getFileAccess().enumFiles(this.path, localSuccess, onError);
+        getFileAccess().getEntities(this.path, localSuccess, onError);
+    }
+
+    /**
+    Enumerates all the top-level FileSystem entities residing within this folder.
+    The first parameter is a callback that receives the current entity. 
+    If the callback returns false this will mean for the iteration to stop.
+    */
+    public eachEntity(onEntity: (entity: FileSystemEntity) => boolean, onError?: (error: any) => any) {
+        if (!onEntity) {
+            return;
+        }
+
+        var localSuccess = function (fileInfo: { path: string; name: string; extension: string }): boolean {
+            var entity;
+            if (fileInfo.extension) {
+                entity = createFile(fileInfo);
+            } else {
+                entity = createFolder(fileInfo);
+            }
+
+            return onEntity(entity);
+        }
+        getFileAccess().eachEntity(this.path, localSuccess, onError);
     }
 }
 

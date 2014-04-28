@@ -40,48 +40,38 @@ export class FileSystemAccess {
         return { path: dirInfo.path, name: dirInfo.name };
     }
 
-    public enumFiles(path: string, onSuccess: (files: Array<{ path: string; name: string; extension: string }>) => any, onError?: (error: any) => any) {
-        try {
-            var javaFile = new java.io.File(path);
-            if (!javaFile.getCanonicalFile().isDirectory()) {
-                if (onError) {
-                    onError("There is no folder existing at path " + path);
-                }
+    public eachEntity(path: string, onEntity: (file: { path: string; name: string; extension: string }) => boolean, onError?: (error: any) => any) {
+        if (!onEntity) {
+            return;
+        }
 
-                return;
-            }
+        this.enumEntities(path, onEntity, onError);
+    }
 
-            var filesList: any = javaFile.listFiles();
-            var fileInfos = new Array<{ path: string; name: string; extension: string }>();
+    public getEntities(path: string, onSuccess: (files: Array<{ path: string; name: string; extension: string }>) => any, onError?: (error: any) => any) {
+        if (!onSuccess) {
+            return;
+        }
 
-            var length = filesList.length,
-                i,
-                filePath,
-                info;
+        var fileInfos = new Array<{ path: string; name: string; extension: string }>();
+        var onEntity = function (entity: { path: string; name: string; extension: string }): boolean {
+            fileInfos.push(entity);
+            return true;
+        }
 
-            for (i = 0; i < length; i++) {
-                javaFile = filesList[i];
-
-                info = {
-                    path: javaFile.getAbsolutePath(),
-                    name: javaFile.getName()
-                };
-
-                if (javaFile.isFile()) {
-                    info.extension = this.getFileExtension(info.path);
-                }
-
-                fileInfos.push(info);
-            }
-
-            if (onSuccess) {
-                onSuccess(fileInfos);
-            }
-
-        } catch (exception) {
+        var errorOccurred;
+        var localError = function (error: any) {
             if (onError) {
-                onError(exception);
+                onError(error);
             }
+
+            errorOccurred = true;
+        }
+
+        this.enumEntities(path, onEntity, localError);
+
+        if (!errorOccurred) {
+            onSuccess(fileInfos);
         }
     }
 
@@ -346,13 +336,56 @@ export class FileSystemAccess {
         }
     }
 
+    // TODO: This method is the same as in the iOS implementation.
+    // Make it in a separate file / module so it can be reused from both implementations.
     private getFileExtension(path: string): string {
         var dotIndex = path.lastIndexOf(".");
         if (dotIndex && dotIndex >= 0 && dotIndex < path.length) {
-            // return the extension without the "." (like in iOS)
-            return path.substring(dotIndex + 1);
+            return path.substring(dotIndex);
         }
 
-        return undefined;
+        return "";
+    }
+
+    private enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {
+        try {
+            var javaFile = new java.io.File(path);
+            if (!javaFile.getCanonicalFile().isDirectory()) {
+                if (onError) {
+                    onError("There is no folder existing at path " + path);
+                }
+
+                return;
+            }
+
+            var filesList = javaFile.listFiles();
+            var length = filesList.length,
+                i,
+                filePath,
+                info,
+                retVal;
+
+            for (i = 0; i < length; i++) {
+                javaFile = filesList[i];
+
+                info = {
+                    path: javaFile.getAbsolutePath(),
+                    name: javaFile.getName()
+                };
+
+                if (javaFile.isFile()) {
+                    info.extension = this.getFileExtension(info.path);
+                }
+
+                retVal = callback(info);
+                if (retVal != undefined && !retVal) {
+                    break;
+                }
+            }
+        } catch (exception) {
+            if (onError) {
+                onError(exception);
+            }
+        }
     }
 }

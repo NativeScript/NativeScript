@@ -7,7 +7,10 @@ export declare class FileSystemAccess {
     getParent(path: string, onError?: (error: any) => any): { path: string; name: string };
     getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string };
     getFolder(path: string, onError?: (error: any) => any): { path: string; name: string };
-    enumFiles(path: string, onSuccess: (files: Array<{ path: string; name: string; extension: string }>) => any, onError?: (error: any) => any);
+
+    getEntities(path: string, onSuccess: (files: Array<{ path: string; name: string; extension: string }>) => any, onError?: (error: any) => any);
+    eachEntity(path: string, onSuccess: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error: any) => any);
+
     fileExists(path: string): boolean;
     folderExists(path: string): boolean;
     concatPath(left: string, right: string): string;

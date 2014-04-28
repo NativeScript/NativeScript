@@ -3,22 +3,27 @@
       * Gets the Date object specifying the last time this entity was modified.
       */
     public lastModified: Date;
+
     /**
       * Gets the name of the entity.
       */
     public name: string;
+
     /**
       * Gets the fully-qualified path (including the extension for a File) of the entity.
       */
     public path: string;
+
     /**
       * Gets the Folder object representing the parent of this entity. Will be null for a root folder like Documents or Temporary.
       */
     public getParent(onError?: (error: any) => any): Folder;
+
     /**
-      * Deletes the current Entity from the file system.
+      * Removes (deletes) the current Entity from the file system.
       */
-    public delete(onSuccess?: () => any, onError?: (error: any) => any);
+    public remove(onSuccess?: () => any, onError?: (error: any) => any);
+
     /**
     * Renames the current entity using the specified name.
     */
@@ -27,25 +32,30 @@
 
 export declare class File extends FileSystemEntity {
     /**
+      * Checks whether a File with the specified path already exists.
+      */
+    public static exists(path: string): boolean;
+
+    /**
       * Gets the extension of the file.
       */
     public extension: string;
+
     /**
       * Gets a value indicating whether the file is currently locked, meaning a background operation associated with this file is running.
       */
     public isLocked: boolean;
+
     /**
       * Gets or creates a File entity at the specified path.
       */
     public static fromPath(path: string, onError?: (error: any) => any): File;
-    /**
-      * Checks whether a File with the specified path already exists.
-      */
-    public static exists(path: string): boolean;
+    
     /**
       * Creates a FileReader object over this file and locks the file until the reader is released.
       */
     public openRead(): FileReader;
+
     /**
       * Creates a FileWriter object over this file and locks the file until the writer is released.
       */
@@ -69,19 +79,15 @@ export declare class Folder extends FileSystemEntity {
     public static exists(path: string): boolean;
 
     /**
-      * Checks whether this Folder contains a file with the specified name.
+    Checks whether this Folder contains an Entity with the specified name.
+    The path of the folder is added to the name to resolve the complete path to check for.
       */
-    public containsFile(name: string): boolean;
-
-    /**
-      * Checks whether this Folder contains a Folder with the specified name.
-      */
-    public containsFolder(name: string): boolean;
+    public contains(name: string): boolean;
 
     /**
       * Deletes all the files and folders (recursively), contained within this Folder.
       */
-    public empty(onSuccess?: () => any, onError?: (error: any) => any);
+    public clear(onSuccess?: () => any, onError?: (error: any) => any);
 
     /**
       * Gets or creates a File entity with the specified name within this Folder.
@@ -89,15 +95,22 @@ export declare class Folder extends FileSystemEntity {
     public getFile(name: string, onError?: (error: any) => any): File;
 
     /**
-      * Gets or creates a Folder entity with the specified name within this Folder.
-      */
+    * Gets or creates a Folder entity with the specified name within this Folder.
+    */
     public getFolder(name: string, onError?: (error: any) => any): Folder;
 
     /**
-    * Gets all the top-level FileSystem entities residing within this Folder.
+    * Gets all the top-level entities residing within this folder.
     */
-    public enumEntities(onSuccess: (entities: Array<FileSystemEntity>) => any, onError?: (error: any) => any);
-}
+    public getEntities(onSuccess: (entities: Array<FileSystemEntity>) => any, onError?: (error) => any);
+
+    /**
+    Enumerates all the top-level FileSystem entities residing within this folder.
+    The first parameter is a callback that receives the current entity.
+    If the callback returns false this will mean for the iteration to stop.
+    */
+    public eachEntity(onEntity: (entity: FileSystemEntity) => boolean, onError?: (error: any) => any);
+    }
 
 /**
   * Provides access to the top-level Folders instances that are accessible from the application. Use these as entry points to access the FileSystem.

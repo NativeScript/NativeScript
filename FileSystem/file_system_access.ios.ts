@@ -114,48 +114,38 @@ export class FileSystemAccess {
         }
     }
 
-    public enumFiles(path: string, onSuccess: (files: Array<{ path: string; name: string; extension: string }>) => any, onError?: (error: any) => any) {
-        try {
-            var fileManager = Foundation.NSFileManager.defaultManager();
-            var files = fileManager.contentsOfDirectoryAtPathError(path, null);
-
-            if (!files) {
-                if (onError) {
-                    onError(new Error("Failed to enum files for forlder '" + path + "'"));
-                }
-
-                return;
-            }
-
-            var fileInfos = new Array<{ path: string; name: string; extension: string }>();
-            var file,
-                i,
-                info;
-
-
-            for (i = 0; i < files.count(); i++) {
-                file = files.objectAtIndex(i);
-
-                info = {
-                    path: this.concatPath(path, file),
-                    name: file
-                };
-
-                if (!this.folderExists(file)) {
-                    info.extension = this.getFileExtension(info.path);
-                }
-
-                fileInfos.push(info);
-            }
-
-            if (onSuccess) {
-                onSuccess(fileInfos);
-            }
+    public eachEntity(path: string, onEntity: (file: { path: string; name: string; extension: string }) => any, onError?: (error: any) => any) {
+        if (!onEntity) {
+            return;
         }
-        catch (ex) {
+
+        this.enumEntities(path, onEntity, onError);
+    }
+
+    public getEntities(path: string, onSuccess: (files: Array<{ path: string; name: string; extension: string }>) => any, onError?: (error: any) => any) {
+        if (!onSuccess) {
+            return;
+        }
+
+        var fileInfos = new Array<{ path: string; name: string; extension: string }>();
+        var onEntity = function (entity: { path: string; name: string; extension: string }): boolean {
+            fileInfos.push(entity);
+            return true;
+        }
+
+        var errorOccurred;
+        var localError = function (error: any) {
             if (onError) {
-                onError(ex);
+                onError(error);
             }
+
+            errorOccurred = true;
+        }
+
+        this.enumEntities(path, onEntity, onError);
+
+        if (!errorOccurred) {
+            onSuccess(fileInfos);
         }
     }
 
@@ -213,7 +203,7 @@ export class FileSystemAccess {
             }
         }
 
-        this.enumFiles(path, filesEnum, onError);
+        this.getEntities(path, filesEnum, onError);
     }
 
     public rename(path: string, newPath: string, onSuccess?: () => any, onError?: (error: any) => any) {
@@ -267,9 +257,24 @@ export class FileSystemAccess {
         return url.path();
     }
 
+    // TODO: This method is the same as in the iOS implementation. 
+    // Make it in a separate file / module so it can be reused from both implementations.
     private getFileExtension(path: string): string {
-        var url = Foundation.NSURL.fileURLWithPathIsDirectory(path, false);
-        return url.pathExtension();
+        // TODO [For Panata]: The definitions currently specify "any" as a return value of this method
+        //var nsString = Foundation.NSString.stringWithString(path);
+        //var extension = nsString.pathExtension();
+
+        //if (extension && extension.length > 0) {
+        //    extension = extension.concat(".", extension);
+        //}
+
+        //return extension;
+        var dotIndex = path.lastIndexOf(".");
+        if (dotIndex && dotIndex >= 0 && dotIndex < path.length) {
+            return path.substring(dotIndex);
+        }
+
+        return "";
     }
 
     private deleteEntity(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
@@ -281,6 +286,52 @@ export class FileSystemAccess {
         } else {
             if (onSuccess) {
                 onSuccess();
+            }
+        }
+    }
+
+    private enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {
+        try {
+            var fileManager = Foundation.NSFileManager.defaultManager();
+            var files = fileManager.contentsOfDirectoryAtPathError(path, null);
+
+            if (!files) {
+                if (onError) {
+                    onError(new Error("Failed to enum files for forlder '" + path + "'"));
+                }
+
+                return;
+            }
+
+            var fileInfos = new Array<{ path: string; name: string; extension: string }>();
+            var file,
+                i,
+                info,
+                retVal;
+
+
+            for (i = 0; i < files.count(); i++) {
+                file = files.objectAtIndex(i);
+
+                info = {
+                    path: this.concatPath(path, file),
+                    name: file
+                };
+
+                if (!this.folderExists(file)) {
+                    info.extension = this.getFileExtension(info.path);
+                }
+
+                retVal = callback(info);
+                if (retVal != undefined && !retVal) {
+                    // the callback returned false meaning we should stop the iteration
+                    break;
+                }
+            }
+        }
+        catch (ex) {
+            if (onError) {
+                onError(ex);
             }
         }
     }
