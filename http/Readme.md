@@ -1,6 +1,6 @@
 ﻿Sample code:
 ```js
-    var http = require("net");
+    var http = require("http");
     
     // Universal request method. You can use HttpRequestOptions to set varios properties like url, headers, etc., 
     // HttpResponse to get status code, headers and content and HttpContent to get body of response:

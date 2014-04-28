@@ -2,7 +2,7 @@
   * Android specific http client implementation.
   */
 import promises = require("promises/promises");
-import http = require("net/http_request");
+import http = require("http/http_request");
 
 // TODO: Replace with similar to iOS implementation!
 export function request(options: http.HttpRequestOptions): promises.Promise<http.HttpResponse> {
@@ -31,6 +31,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                 } else {
                     d.resolve({
                         content: {
+                            raw: data,
                             toString: () => { return data },
                             toJSON: () => { return JSON.parse(data) },
                             toImage: () => { return require("Image/image").Image.imageFromNativeBitmap(data); }

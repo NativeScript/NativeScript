@@ -20,6 +20,7 @@ export interface HttpResponse {
 }
 
 export interface HttpContent {
+    raw: any;
     toString: () => string;
     toJSON: () => any;
     toImage: () => image_module.Image;

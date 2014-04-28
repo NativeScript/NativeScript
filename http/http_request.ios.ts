@@ -2,7 +2,7 @@
   * iOS specific http client implementation.
   */
 import promises = require("promises/promises");
-import http = require("net/http_request");
+import http = require("http/http_request");
 
 export function request(options: http.HttpRequestOptions): promises.Promise<http.HttpResponse> {
     var d = promises.defer<http.HttpResponse>();
@@ -38,7 +38,6 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                 if (error) {
                     d.reject(new Error(error.localizedDescription()));
                 } else {
-
                     var headers = {};
                     var headerFields = response.allHeaderFields();
                     var keys = headerFields.allKeys();
@@ -50,11 +49,11 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
 
                     d.resolve({
                         content: {
+                            raw: data,
                             toString: () => { return NSDataToString(data); },
                             toJSON: () => { return JSON.parse(NSDataToString(data)); },
                             toImage: () => { return require("Image/image").Image.imageFromData(data); }
                         },
-                        data : data,
                         statusCode: response.statusCode(),
                         headers: headers
                     });
