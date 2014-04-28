@@ -1,4 +1,4 @@
-﻿export declare enum DesiredAccuracy {
+﻿export declare enum Accuracy {
     // in meters
     ANY,
     HIGH,
@@ -26,26 +26,11 @@ export declare class Location {
 
     timestamp: Date;
 
-    public androidNative: any;  // android Location
-    public iosNative: any;      // iOS CLLocation
+    public android: any;  // android Location
+    public ios: any;      // iOS CLLocation
 }
 
-export declare class RegionChangeListener {
-    onRegionEnter(region: LocationRegion);
-    onRegionExit(region: LocationRegion);
-}
-
-export declare class LocationManager {
-    /**
-    * Report are location services switched ON for this device (on Android) or application (iOS)
-    */
-    static isLocationEnabled(): boolean;
-
-    /**
-    * Measure distance in meters between two locations
-    */
-    static distanceInMeters(loc1: Location, loc2: Location): number;
-
+export declare class Options {
     /**
     * Specifies desired accuracy in meters. Defaults to DesiredAccuracy.HIGH
     */
@@ -60,6 +45,33 @@ export declare class LocationManager {
     * Minimum time interval between location updates, in milliseconds (android only)
     */
     minimumUpdateTime: number;
+}
+
+export declare class LocationManager {
+    /**
+    * Report are location services switched ON for this device (on Android) or application (iOS)
+    */
+    static isEnabled(): boolean;
+
+    /**
+    * Measure distance in meters between two locations
+    */
+    static distance(loc1: Location, loc2: Location): number;
+
+    /**
+    * Specifies desired accuracy in meters. Defaults to DesiredAccuracy.HIGH
+    */
+    desiredAccuracy: number;
+
+    /**
+    * Update distance filter in meters. Specifies how often to update. Default on iOS is no filter, on Android it is 0 meters
+    */
+    updateDistance: number;
+
+    /**
+    * Minimum time interval between location updates, in milliseconds (ignored on iOS)
+    */
+    minimumUpdateTime: number;
 
     /**
     * True if location listener is already started. In this case all other start requests will be ignored
@@ -71,7 +83,7 @@ export declare class LocationManager {
     /**
     * Starts location monitoring. 
     */
-    startLocationMonitoring(onLocation: (location: Location) => any, onError?: (error: Error) => any);
+    startLocationMonitoring(onLocation: (location: Location) => any, onError?: (error: Error) => any, options?: Options);
 
     /**
     * Stops location monitoring
@@ -83,5 +95,5 @@ export declare class LocationManager {
     /**
     * Returns last known location from device's location services or null of no known last location
     */
-    getLastKnownLocation(): Location;
+    lastKnownLocation: Location;
 }

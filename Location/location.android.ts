@@ -1,9 +1,13 @@
 ﻿import types = require("Location/location_types");
 import app_module = require("Application/application");
 
+// merge types
+declare var exports;
+exports.Location = types.Location;
+exports.Accuracy = types.Accuracy;
+
 export class LocationManager {
     // in meters
-    // we might need some predefined values here like 'any' and 'high'
     public desiredAccuracy: number;
 
     // The minimum distance (measured in meters) a device must move horizontally before an update event is generated.
@@ -15,7 +19,7 @@ export class LocationManager {
     public isStarted: boolean;
     private androidLocationManager: any;
 
-    private _locationListener: any;
+    private locationListener: any;
 
     private static locationFromAndroidLocation(androidLocation: android.location.Location): types.Location {
         var location = new types.Location();
@@ -27,7 +31,7 @@ export class LocationManager {
         location.speed = androidLocation.getSpeed();
         location.direction = androidLocation.getBearing();
         location.timestamp = new Date(androidLocation.getTime());
-        location.androidNative = androidLocation;
+        location.android = androidLocation;
         //console.dump(location);
         return location;
     }
@@ -53,42 +57,42 @@ export class LocationManager {
         return androidLocation;
     }
 
-    public static isLocationEnabled(): boolean {
+    public static isEnabled(): boolean {
         var criteria = new android.location.Criteria();
         criteria.setAccuracy(1); // low ? fine ? who knows what 1 means (bug in android docs?)
-        var lm = app_module.Application.current.android.context.getSystemService('location');
+        var lm = app_module.Application.current.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
         return (lm.getBestProvider(criteria, true) != null) ? true : false;
     }
 
-    public static distanceInMeters(loc1: types.Location, loc2: types.Location): number {
-        if (!loc1.androidNative) {
-            loc1.androidNative = LocationManager.androidLocationFromLocation(loc1);
+    public static distance(loc1: types.Location, loc2: types.Location): number {
+        if (!loc1.android) {
+            loc1.android = LocationManager.androidLocationFromLocation(loc1);
         }
-        if (!loc2.androidNative) {
-            loc2.androidNative = LocationManager.androidLocationFromLocation(loc2);
+        if (!loc2.android) {
+            loc2.android = LocationManager.androidLocationFromLocation(loc2);
         }
-        return loc1.androidNative.distanceTo(loc2.androidNative);
+        return loc1.android.distanceTo(loc2.android);
     }
 
     constructor() {
         // put some defaults
-        this.desiredAccuracy = types.DesiredAccuracy.HIGH;
+        this.desiredAccuracy = types.Accuracy.HIGH;
         this.updateDistance = 0; 
         this.minimumUpdateTime = 200;
         this.isStarted = false;
 
-        this.androidLocationManager = app_module.Application.current.android.context.getSystemService('location');
+        this.androidLocationManager = app_module.Application.current.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
     }
 
     ////////////////////////
     // monitoring
     ////////////////////////
 
-    public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: Error) => any) {
+    public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: Error) => any, options?: types.Options) {
         if (!this.isStarted) {
             var criteria = new android.location.Criteria();
-            criteria.setAccuracy((this.desiredAccuracy === types.DesiredAccuracy.HIGH) ? 1 : 2);
-            this._locationListener = <any>new android.location.LocationListener({
+            criteria.setAccuracy((this.desiredAccuracy === types.Accuracy.HIGH) ? 1 : 2);
+            this.locationListener = <any>new android.location.LocationListener({
                 onLocationChanged: function (location: android.location.Location) {
                     if (this._onLocation) {
                         this._onLocation(LocationManager.locationFromAndroidLocation(location));
@@ -104,10 +108,20 @@ export class LocationManager {
                 onStatusChanged: function (arg1: string, arg2: number, arg3: android.os.Bundle): void {
                 }
             });
-            this._locationListener._onLocation = onLocation;
-            this._locationListener._onError = onError;
+
+            if (options) {
+                if (options.desiredAccuracy)
+                    this.desiredAccuracy = options.desiredAccuracy;
+                if (options.updateDistance)
+                    this.updateDistance = options.updateDistance;
+                if (options.minimumUpdateTime)
+                    this.minimumUpdateTime = options.minimumUpdateTime;
+            }
+
+            this.locationListener._onLocation = onLocation;
+            this.locationListener._onError = onError;
             try {
-                this.androidLocationManager.requestLocationUpdates(long(this.minimumUpdateTime), float(this.updateDistance), criteria, this._locationListener, null);
+                this.androidLocationManager.requestLocationUpdates(long(this.minimumUpdateTime), float(this.updateDistance), criteria, this.locationListener, null);
                 this.isStarted = true;
             }
             catch (e) {
@@ -124,7 +138,7 @@ export class LocationManager {
 
     public stopLocationMonitoring() {
         if (this.isStarted) {
-            this.androidLocationManager.removeUpdates(this._locationListener);
+            this.androidLocationManager.removeUpdates(this.locationListener);
             this.isStarted = false;
         }
     }
@@ -133,9 +147,9 @@ export class LocationManager {
     // other
     ////////////////////////
 
-    public getLastKnownLocation(): types.Location {
+    get lastKnownLocation(): types.Location {
         var criteria = new android.location.Criteria();
-        criteria.setAccuracy((this.desiredAccuracy === types.DesiredAccuracy.HIGH) ? 1 : 2);
+        criteria.setAccuracy((this.desiredAccuracy === types.Accuracy.HIGH) ? 1 : 2);
         try {
             var providers = this.androidLocationManager.getProviders(criteria, false);
             var it = providers.iterator();

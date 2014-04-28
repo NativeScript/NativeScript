@@ -1,4 +1,11 @@
-﻿import types = require("Location/location_types");
+﻿
+import types = require("Location/location_types");
+
+// merge types
+declare var exports;
+exports.Location = types.Location;
+exports.Accuracy = types.Accuracy;
+exports.Options = types.Options;
 
 export class LocationManager {
 
@@ -24,7 +31,7 @@ export class LocationManager {
         location.speed = clLocation.speed;
         location.direction = clLocation.course;
         location.timestamp = new Date(clLocation.timestamp.timeIntervalSince1970() * 1000);
-        location.iosNative = clLocation;
+        location.ios = clLocation;
         //console.dump(location);
         return location;
     }
@@ -40,29 +47,34 @@ export class LocationManager {
         return iosLocation;
     }
 
-    public static isLocationEnabled(): boolean {
-        return CoreLocation.CLLocationManager.locationServicesEnabled();
+    public static isEnabled(): boolean {
+        if (CoreLocation.CLLocationManager.locationServicesEnabled()) {
+            //return CoreLocation.CLLocationManager.authorizationStatus() === CoreLocation.CLAuthorizationStatus.kCLAuthorizationStatusAuthorized;
+            // FIXME: issue reported https://github.com/telerik/Kimera/issues/122
+            return true;
+        }
+        return false;
     }
 
-    public static distanceInMeters(loc1: types.Location, loc2: types.Location): number {
-        if (!loc1.iosNative) {
-            loc1.iosNative = LocationManager.iosLocationFromLocation(loc1);
+    public static distance(loc1: types.Location, loc2: types.Location): number {
+        if (!loc1.ios) {
+            loc1.ios = LocationManager.iosLocationFromLocation(loc1);
         }
-        if (!loc2.iosNative) {
-            loc2.iosNative = LocationManager.iosLocationFromLocation(loc2);
+        if (!loc2.ios) {
+            loc2.ios = LocationManager.iosLocationFromLocation(loc2);
         }
-        return loc1.iosNative.distanceFromLocation(loc2.iosNative);
+        return loc1.ios.distanceFromLocation(loc2.ios);
     }
 
     constructor() {
         this.isStarted = false;
-        this.desiredAccuracy = types.DesiredAccuracy.HIGH;
+        this.desiredAccuracy = types.Accuracy.HIGH;
         this.updateDistance = -1; // kCLDistanceFilterNone
         this.iosLocationManager = new CoreLocation.CLLocationManager();
     }
 
     // monitoring
-    public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: Error) => any) {
+    public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: Error) => any, options?: types.Options) {
         if (!this.isStarted) {
             var LocationListener = Foundation.NSObject.extends({
                 setupWithFunctions: function (onLocation, onError) {
@@ -91,12 +103,20 @@ export class LocationManager {
                 }
             });
 
+            if (options) {
+                if (options.desiredAccuracy)
+                    this.desiredAccuracy = options.desiredAccuracy;
+                if (options.updateDistance)
+                    this.updateDistance = options.updateDistance;
+            }
+
             this.listener = new LocationListener();
             this.listener.setupWithFunctions(onLocation, onError);
             this.iosLocationManager.delegate = this.listener;
             this.iosLocationManager.desiredAccuracy = this.desiredAccuracy;
             this.iosLocationManager.distanceFilter = this.updateDistance;
             this.iosLocationManager.startUpdatingLocation();
+            this.isStarted = true;
         }
         else if (onError) {
             onError(new Error('location monitoring already started'));
@@ -106,13 +126,15 @@ export class LocationManager {
     public stopLocationMonitoring() {
         if (this.isStarted) {
             this.iosLocationManager.stopUpdatingLocation();
+            this.iosLocationManager.delegate = null;
+            this.listener = null;
             this.isStarted = false;
         }
     }
 
     // other
 
-    public getLastKnownLocation(): types.Location {
+    get lastKnownLocation(): types.Location {
         var clLocation = this.iosLocationManager.location;
         if (null != clLocation) {
             return LocationManager.locationFromCLLocation(clLocation);

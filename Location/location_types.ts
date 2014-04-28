@@ -1,4 +1,4 @@
-﻿export enum DesiredAccuracy {
+﻿export enum Accuracy {
     // in meters
     ANY = 300,
     HIGH = 3,
@@ -19,8 +19,25 @@ export class Location {
 
     public timestamp: Date;
 
-    public androidNative: any;  // android Location
-    public iosNative: any;      // iOS native location
+    public android: any;  // android Location
+    public ios: any;      // iOS native location
+}
+
+export declare class Options {
+    /**
+    * Specifies desired accuracy in meters. Defaults to DesiredAccuracy.HIGH
+    */
+    public desiredAccuracy: number;
+
+    /**
+    * Update distance filter in meters. Specifies how often to update. Default on iOS is no filter, on Android it is 0 meters
+    */
+    public updateDistance: number;
+
+    /**
+    * Minimum time interval between location updates, in milliseconds (ignored on iOS)
+    */
+    public minimumUpdateTime: number;
 }
 
 export class LocationRegion {
@@ -28,12 +45,4 @@ export class LocationRegion {
     public longitude: number;
 
     public raduis: number; // radius in meters
-}
-
-// TODO: This might be implemented with two callbacks, no need of special type.
-export class RegionChangeListener {
-    onRegionEnter(region: LocationRegion) {
-    }
-    onRegionExit(region: LocationRegion) {
-    }
 }
