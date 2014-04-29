@@ -9,39 +9,58 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
     var d = promises.defer<http.HttpResponse>();
 
     try {
-        var headers = new com.koushikdutta.async.http.libcore.RawHeaders();
+        var context = require("Application/application").Application.current.android.context;
+        var request = com.koushikdutta.ion.Ion.getDefault(context).configure().getAsyncHttpRequestFactory()
+            .createAsyncHttpRequest(java.net.URI.create(options.url), options.method, null);
 
         if (options.headers) {
             for (var key in options.headers) {
-                headers.add(key, options.headers[key])
+                request.addHeader(key, options.headers[key])
             }
         }
 
-        var isImage = options.url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
+        if (typeof options.timeout == "number") {
+            request.setTimeout(options.timeout);
+        }
 
-        var context = require("Application/application").Application.current.android.context;
-        var request = com.koushikdutta.ion.Ion.with(context, options.url);
+        if (typeof options.content == "string") {
+            request.setBody(new com.koushikdutta.async.http.body.StringBody(options.content));
+        }
 
-        request = isImage ? request.asBitmap() : request.asString();
-
-        request.setCallback(new com.koushikdutta.async.future.FutureCallback({
-            onCompleted: function (error, data) {
+        var StringCallback = com.koushikdutta.async.http.AsyncHttpClient.StringCallback.extends({
+            onCompleted: function (error, response, result) {
                 if (error) {
                     d.reject(error);
                 } else {
+                    var headers = {};
+                    var rawHeaders = response.getHeaders().headers;
+
+                    for (var i = 0, l = rawHeaders.length(); i < l; i++) {
+                        var key = rawHeaders.getFieldName(i);
+                        headers[key] = rawHeaders.getValue(i);
+                    }
+
                     d.resolve({
                         content: {
-                            raw: data,
-                            toString: () => { return data },
-                            toJSON: () => { return JSON.parse(data) },
-                            toImage: () => { return require("Image/image").Image.imageFromNativeBitmap(data); }
+                            raw: result,
+                            toString: () => { return result },
+                            toJSON: () => { return JSON.parse(result) },
+                            toImage: () =>
+                            {
+                                // TODO: Implement this!
+                                return null;
+                                //return require("Image/image").Image.imageFromNativeBitmap(response);
+                            }
                         },
-                        statusCode: 0,
-                        headers: {}
+                        statusCode: rawHeaders.getResponseCode(),
+                        headers: headers
                     });
                 }
             }
-        }));
+        });
+
+        com.koushikdutta.async.http.AsyncHttpClient.getDefaultInstance().execute(request, new StringCallback());
+
     } catch (ex) {
         d.reject(ex);
     }

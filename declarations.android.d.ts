@@ -367,13 +367,24 @@ declare module com {
                     }
                 }
 
-                export class AsyncHttpClient  {
-                    static getDefaultInstance(): any;
+                export module AsyncHttpClient  {
+                    function getDefaultInstance(): any;
+
+                    export class StringCallback {
+                        constructor(params: any);
+                        static extends(params: any);
+                    }
                 }
 
                 export module callback {
                     export class HttpConnectCallback {
                         constructor(params: any);
+                    }
+                }
+
+                export module body {
+                    export class StringBody {
+                        constructor(source: string);
                     }
                 }
             }

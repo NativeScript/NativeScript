@@ -11,6 +11,7 @@ export interface HttpRequestOptions {
     method: string;
     headers?: any;
     content?: any;
+    timeout?: number;
 }
 
 export interface HttpResponse {
