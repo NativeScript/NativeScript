@@ -20,8 +20,10 @@ export declare class FileSystemAccess {
     rename(path: string, newPath: string, onSuccess?: () => any, onError?: (error: any) => any): void;
     getDocumentsFolderPath(): string;
     getTempFolderPath(): string;
-    readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any);
-    writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any);
+
+    readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: string);
+    writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: string);
+
     getFileExtension(path: string): string;
 }
  

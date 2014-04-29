@@ -52,14 +52,14 @@ export declare class File extends FileSystemEntity {
     public static fromPath(path: string, onError?: (error: any) => any): File;
     
     /**
-      * Creates a FileReader object over this file and locks the file until the reader is released.
+      * Reads the content of the file as a string using the specified encoding (defaults to UTF-8).
       */
-    public openRead(): FileReader;
+    public readText(onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: string);
 
     /**
-      * Creates a FileWriter object over this file and locks the file until the writer is released.
+      * Writes the provided string to the file, using the specified encoding (defaults to UTF-8).
       */
-    public openWrite(): FileWriter;
+    public writeText(content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: string);
 }
 
 export declare class Folder extends FileSystemEntity {
@@ -110,7 +110,7 @@ export declare class Folder extends FileSystemEntity {
     If the callback returns false this will mean for the iteration to stop.
     */
     public eachEntity(onEntity: (entity: FileSystemEntity) => boolean, onError?: (error: any) => any);
-    }
+}
 
 /**
   * Provides access to the top-level Folders instances that are accessible from the application. Use these as entry points to access the FileSystem.
@@ -127,39 +127,39 @@ export declare module knownFolders {
     export function temp(): Folder;
 }
 
-/**
-  * Base class for FileReader and FileWriter APIs.
-  */
-export declare class FileAccess {
-    constructor(file: File);
+///**
+//  * Base class for FileReader and FileWriter APIs.
+//  */
+//export declare class FileAccess {
+//    constructor(file: File);
 
-    /**
-    * Unlocks the file and allows other operations over it.
-    */
-    public release();
+//    /**
+//    * Unlocks the file and allows other operations over it.
+//    */
+//    public release();
 
-    /**
-    * Gets the underlying File instance.
-    */
-    file: File;
-}
+//    /**
+//    * Gets the underlying File instance.
+//    */
+//    file: File;
+//}
 
-/**
-  * Enables reading the content of a File entity.
-  */
-export declare class FileReader extends FileAccess {
-/**
-* Reads the content of the underlying File as a UTF8 encoded string.
-*/
-public readText(onSuccess: (content: string) => any, onError?: (error: any) => any);
-}
+///**
+//  * Enables reading the content of a File entity.
+//  */
+//export declare class FileReader extends FileAccess {
+///**
+//* Reads the content of the underlying File as a UTF8 encoded string.
+//*/
+//public readText(onSuccess: (content: string) => any, onError?: (error: any) => any);
+//}
 
-/**
-  * Enables saving data to a File entity.
-  */
-export declare class FileWriter extends FileAccess {
-    /**
-    * Enables saving string to a File entity.
-    */
-    public writeText(content: string, onSuccess?: () => any, onError?: (error: any) => any);
-}
+///**
+//  * Enables saving data to a File entity.
+//  */
+//export declare class FileWriter extends FileAccess {
+//    /**
+//    * Enables saving string to a File entity.
+//    */
+//    public writeText(content: string, onSuccess?: () => any, onError?: (error: any) => any);
+//}

@@ -1,8 +1,7 @@
-﻿import app_module = require("Application/application");
-
+﻿import appModule = require("Application/application");
+import textModule = require("text/text");
 
 export class FileSystemAccess {
-    private _encoding = "UTF-8";
     private _pathSeparator = java.io.File.separator;
 
     public getLastModified(path: string): Date {
@@ -212,22 +211,27 @@ export class FileSystemAccess {
     }
 
     public getDocumentsFolderPath(): string {
-        var context = app_module.Application.current.android.context;
-        var dir: java.io.File = context.getFilesDir();
+        var context = appModule.Application.current.android.context;
+        var dir = context.getFilesDir();
         return dir.getAbsolutePath();
     }
 
     public getTempFolderPath(): string {
-        var context = app_module.Application.current.android.context;
-        var dir: java.io.File = context.getCacheDir();
+        var context = appModule.Application.current.android.context;
+        var dir = context.getCacheDir();
         return dir.getAbsolutePath();
     }
 
-    public readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any) {
+    public readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: string) {
         try {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileInputStream(javaFile);
-            var reader = new java.io.InputStreamReader(stream, this._encoding);
+
+            var actualEncoding = encoding;
+            if (!actualEncoding) {
+                actualEncoding = textModule.encoding.UTF_8;
+            }
+            var reader = new java.io.InputStreamReader(stream, actualEncoding);
             var bufferedReader = new java.io.BufferedReader(reader);
 
             // TODO: We will need to read the entire file to a CharBuffer instead of reading it line by line
@@ -243,8 +247,9 @@ export class FileSystemAccess {
                 if (result.length > 0) {
                     // add the new line manually to the result
                     // TODO: Try with CharBuffer at a later stage, when the Bridge allows it
-                    // result += "\n";
+                    result += "\n";
                 }
+
                 result += line;
             }
 
@@ -260,15 +265,20 @@ export class FileSystemAccess {
         }
     }
 
-    public writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any) {
+    public writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: string) {
         try {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileOutputStream(javaFile);
-            var writer = new java.io.OutputStreamWriter(stream, this._encoding);
+
+            var actualEncoding = encoding;
+            if (!actualEncoding) {
+                actualEncoding = textModule.encoding.UTF_8;
+            }
+            var writer = new java.io.OutputStreamWriter(stream, actualEncoding);
 
             writer.write(content);
             writer.close();
-            
+
             if (onSuccess) {
                 onSuccess();
             }

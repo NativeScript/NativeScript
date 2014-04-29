@@ -162,31 +162,15 @@ export class File extends FileSystemEntity {
     }
 
     /**
-        * Checks whether a File with the specified path already exists.
-        */
+    * Checks whether a File with the specified path already exists.
+    */
     public static exists(path: string): boolean {
         return getFileAccess().fileExists(path);
     }
 
     /**
-        * Creates a FileReader object over this file and locks the file until the reader is released.
-        */
-    public openRead(): FileReader {
-        this.checkAccess();
-        return new FileReader(this);
-    }
-
-    /**
-        * Creates a FileWriter object over this file and locks the file until the writer is released.
-        */
-    public openWrite(): FileWriter {
-        this.checkAccess();
-        return new FileWriter(this);
-    }
-
-    /**
-        * Gets the extension of the entity.
-        */
+    * Gets the extension of the entity.
+    */
     get extension(): string {
         return this[extensionProperty];
     }
@@ -198,11 +182,63 @@ export class File extends FileSystemEntity {
         return this[fileLockedProperty];
     }
 
+    /**
+      * Reads the content of the file as a string using the specified encoding (defaults to UTF-8).
+      */
+    public readText(onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: string) {
+        if (!onSuccess) {
+            return;
+        }
+
+        this.checkAccess();
+        this[fileLockedProperty] = true;
+
+        var that = this;
+        var localSuccess = function (content: string) {
+            that[fileLockedProperty] = false;
+            onSuccess(content);
+        }
+
+        var localError = function (error) {
+            that[fileLockedProperty] = false;
+            if (onError) {
+                onError(error);
+            }
+        }
+
+        // TODO: Asyncronous
+        getFileAccess().readText(this.path, localSuccess, localError, encoding);
+    }
+
+    /**
+      * Writes the provided string to the file, using the specified encoding. Any previous content will be overwritten.
+      */
+    public writeText(content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: string) {
+        this.checkAccess();
+        this[fileLockedProperty] = true;
+
+        var that = this;
+        var localSuccess = function () {
+            that[fileLockedProperty] = false;
+            if (onSuccess) {
+                onSuccess();
+            }
+        };
+
+        var localError = function (error) {
+            that[fileLockedProperty] = false;
+            if (onError) {
+                onError(error);
+            }
+        };
+
+        // TODO: Asyncronous
+        getFileAccess().writeText(this.path, content, localSuccess, localError, encoding);
+    }
+
     private checkAccess() {
         if (this.isLocked) {
-            throw {
-                message: "Cannot access a locked file."
-            };
+            throw new Error("Cannot access a locked file.");
         }
     }
 }
@@ -370,53 +406,5 @@ export module knownFolders {
         }
 
         return _temp;
-    }
-}
-
-/**
-* Base class for FileReader and FileWriter APIs.
-*/
-export class FileAccess {
-    private _file;
-
-    constructor(file: File) {
-        this._file = file;
-        this._file[fileLockedProperty] = true;
-    }
-
-    /**
-    * Unlocks the file and allows other operations over it.
-    */
-    public release() {
-        this._file[fileLockedProperty] = false;
-        this._file = undefined;
-    }
-
-    /**
-    * Gets the underlying File instance.
-    */
-    get file(): File {
-        return this._file;
-    }
-}
-
-/**
-* Enables reading the content of a File entity.
-*/
-export class FileReader extends FileAccess {
-    /**
-    * Reads the content of the underlying File as a UTF8 encoded string.
-    */
-    public readText(onSuccess: (content: string) => any, onError?: (error: any) => any) {
-        getFileAccess().readText(this.file.path, onSuccess, onError);
-    }
-}
-
-/**
-* Enables saving data to a File entity.
-*/
-export class FileWriter extends FileAccess {
-    public writeText(content: string, onSuccess?: () => any, onError?: (error: any) => any) {
-        getFileAccess().writeText(this.file.path, content, onSuccess, onError);
     }
 }

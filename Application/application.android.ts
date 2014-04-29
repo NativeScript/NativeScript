@@ -1,11 +1,10 @@
 ﻿import app_common_module = require("Application/application_common");
-var currentApp = app_common_module.Application.current;
 
 // merge the exports of the application_common file with the exports of this file
 declare var exports;
-exports.TargetOS = app_common_module.TargetOS;
-exports.Application = app_common_module.Application;
+require("Utils/module_merge").merge(app_common_module, exports);
 
+var currentApp = app_common_module.Application.current;
 var callbacks = android.app.Application.ActivityLifecycleCallbacks;
 
 var initEvents = function () {

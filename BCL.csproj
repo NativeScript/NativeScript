@@ -119,6 +119,14 @@
     <TypeScriptCompile Include="Location\location_types.ts">
       <DependentUpon>location.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="text\index.ts" />
+    <TypeScriptCompile Include="text\text.android.ts">
+      <DependentUpon>text.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="text\text.d.ts" />
+    <TypeScriptCompile Include="text\text.ios.ts">
+      <DependentUpon>text.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="UserPreferences\user_preferences.android.ts">
       <DependentUpon>user_preferences.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -126,6 +134,7 @@
     <TypeScriptCompile Include="UserPreferences\user_preferences.ios.ts">
       <DependentUpon>user_preferences.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="Utils\module_merge.ts" />
     <TypeScriptCompile Include="Utils\utils_android.ts" />
     <TypeScriptCompile Include="Utils\utils_ios.ts" />
     <TypeScriptCompile Include="http\http_request.android.ts">

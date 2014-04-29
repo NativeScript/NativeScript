@@ -1,5 +1,6 @@
 ﻿import app_module = require("Application/application");
 import utilsModule = require("Utils/utils_ios");
+import textModule = require("text/text");
 
 // TODO: Implement all the APIs receiving callback using async blocks
 // TODO: Check whether we need try/catch blocks for the iOS implementation
@@ -225,8 +226,13 @@ export class FileSystemAccess {
         return this.getKnownPath(this.cachesDir);
     }
 
-    public readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any) {
-        var nsString = Foundation.NSString.stringWithContentsOfFileEncodingError(path, this.NSUTF8StringEncoding, null);
+    public readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: string) {
+        var actualEncoding = encoding;
+        if (!actualEncoding) {
+            actualEncoding = textModule.encoding.UTF_8;
+        }
+
+        var nsString = Foundation.NSString.stringWithContentsOfFileEncodingError(path, actualEncoding, null);
         if (!nsString) {
             if (onError) {
                 onError(new Error("Failed to read file at path '" + path + "'"));
@@ -236,11 +242,16 @@ export class FileSystemAccess {
         }
     }
 
-    public writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any) {
+    public writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: string) {
         var nsString = Foundation.NSString.initWithString(content);
 
+        var actualEncoding = encoding;
+        if (!actualEncoding) {
+            actualEncoding = textModule.encoding.UTF_8;
+        }
+
         // TODO: verify the useAuxiliaryFile parameter should be false
-        if (!nsString.writeToFileAtomicallyEncodingError(path, false, this.NSUTF8StringEncoding, null)) {
+        if (!nsString.writeToFileAtomicallyEncodingError(path, false, actualEncoding, null)) {
             if (onError) {
                 onError(new Error("Failed to write to file '" + path + "'"));
             }
