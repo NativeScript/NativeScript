@@ -1,4 +1,6 @@
-﻿export declare class FileSystemEntity {
+﻿import promises = require("promises/promises");
+
+export declare class FileSystemEntity {
     /**
       * Gets the Date object specifying the last time this entity was modified.
       */
@@ -17,17 +19,17 @@
     /**
       * Gets the Folder object representing the parent of this entity. Will be null for a root folder like Documents or Temporary.
       */
-    public getParent(onError?: (error: any) => any): Folder;
+    public getParent(): Folder;
 
     /**
       * Removes (deletes) the current Entity from the file system.
       */
-    public remove(onSuccess?: () => any, onError?: (error: any) => any);
+    public remove(): promises.Promise<any>;
 
     /**
     * Renames the current entity using the specified name.
     */
-    public rename(newName: string, onSuccess?: () => any, onError?: (error) => any);
+    public rename(newName: string): promises.Promise<any>;
 }
 
 export declare class File extends FileSystemEntity {
@@ -49,17 +51,17 @@ export declare class File extends FileSystemEntity {
     /**
       * Gets or creates a File entity at the specified path.
       */
-    public static fromPath(path: string, onError?: (error: any) => any): File;
+    public static fromPath(path: string): File;
     
     /**
       * Reads the content of the file as a string using the specified encoding (defaults to UTF-8).
       */
-    public readText(onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: string);
+    public readText(encoding?: string): promises.Promise<string>;
 
     /**
       * Writes the provided string to the file, using the specified encoding (defaults to UTF-8).
       */
-    public writeText(content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: string);
+    public writeText(content: string, encoding?: string): promises.Promise<any>;
 }
 
 export declare class Folder extends FileSystemEntity {
@@ -71,7 +73,7 @@ export declare class Folder extends FileSystemEntity {
     /**
       * Gets or creates a Folder entity at the specified path.
       */
-    public static fromPath(path: string, onError?: (error: any) => any): Folder;
+    public static fromPath(path: string): Folder;
 
     /**
       * Checks whether a Folder with the specified path already exists.
@@ -87,29 +89,29 @@ export declare class Folder extends FileSystemEntity {
     /**
       * Deletes all the files and folders (recursively), contained within this Folder.
       */
-    public clear(onSuccess?: () => any, onError?: (error: any) => any);
+    public clear(): promises.Promise<any>;
 
     /**
       * Gets or creates a File entity with the specified name within this Folder.
       */
-    public getFile(name: string, onError?: (error: any) => any): File;
+    public getFile(name: string): File;
 
     /**
     * Gets or creates a Folder entity with the specified name within this Folder.
     */
-    public getFolder(name: string, onError?: (error: any) => any): Folder;
+    public getFolder(name: string): Folder;
 
     /**
     * Gets all the top-level entities residing within this folder.
     */
-    public getEntities(onSuccess: (entities: Array<FileSystemEntity>) => any, onError?: (error) => any);
+    public getEntities(): promises.Promise<Array<FileSystemEntity>>;
 
     /**
     Enumerates all the top-level FileSystem entities residing within this folder.
     The first parameter is a callback that receives the current entity.
     If the callback returns false this will mean for the iteration to stop.
     */
-    public eachEntity(onEntity: (entity: FileSystemEntity) => boolean, onError?: (error: any) => any);
+    public eachEntity(onEntity: (entity: FileSystemEntity) => boolean);
 }
 
 /**
@@ -126,40 +128,3 @@ export declare module knownFolders {
     */
     export function temp(): Folder;
 }
-
-///**
-//  * Base class for FileReader and FileWriter APIs.
-//  */
-//export declare class FileAccess {
-//    constructor(file: File);
-
-//    /**
-//    * Unlocks the file and allows other operations over it.
-//    */
-//    public release();
-
-//    /**
-//    * Gets the underlying File instance.
-//    */
-//    file: File;
-//}
-
-///**
-//  * Enables reading the content of a File entity.
-//  */
-//export declare class FileReader extends FileAccess {
-///**
-//* Reads the content of the underlying File as a UTF8 encoded string.
-//*/
-//public readText(onSuccess: (content: string) => any, onError?: (error: any) => any);
-//}
-
-///**
-//  * Enables saving data to a File entity.
-//  */
-//export declare class FileWriter extends FileAccess {
-//    /**
-//    * Enables saving string to a File entity.
-//    */
-//    public writeText(content: string, onSuccess?: () => any, onError?: (error: any) => any);
-//}

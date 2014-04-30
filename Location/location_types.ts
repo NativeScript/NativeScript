@@ -23,7 +23,7 @@ export class Location {
     public ios: any;      // iOS native location
 }
 
-export declare class Options {
+export class Options {
     /**
     * Specifies desired accuracy in meters. Defaults to DesiredAccuracy.HIGH
     */

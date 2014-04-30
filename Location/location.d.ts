@@ -4,12 +4,13 @@
     HIGH,
 }
 
-export declare class LocationRegion {
-    public latitude: number;
-    public longitude: number;
+// For future usage
+//export declare class LocationRegion {
+//    public latitude: number;
+//    public longitude: number;
 
-    public raduis: number; // radius in meters
-}
+//    public raduis: number; // radius in meters
+//}
 
 export declare class Location {
     latitude: number;

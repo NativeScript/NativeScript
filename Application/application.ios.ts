@@ -46,7 +46,7 @@ class iOSApplication {
 
     public init() {
         UIKit.UIResponder.extends({/*TODO: Empty parameter here, needs API improvement*/}, {
-            name: "KimeraAppDelegate",
+            name: "TNSAppDelegate",
         }).implements({
                 protocol: "UIApplicationDelegate",
                 implementation: {

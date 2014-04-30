@@ -1,4 +1,5 @@
 ﻿import file_access_module = require("FileSystem/file_system_access");
+import promises = require("promises/promises");
 
 // The FileSystemAccess implementation, used through all the APIs.
 var fileAccess;
@@ -54,7 +55,11 @@ export class FileSystemEntity {
     /**
     * Gets the Folder object representing the parent of this entity. Will be null for a root folder like Documents or Temporary.
     */
-    public getParent(onError?: (error: any) => any): Folder {
+    public getParent(): Folder {
+        var onError = function (error) {
+            throw error;
+        }
+
         var folderInfo = getFileAccess().getParent(this.path, onError);
         if (!folderInfo) {
             return undefined;
@@ -66,35 +71,43 @@ export class FileSystemEntity {
     /**
     * Removes the current entity from the file system.
     */
-    public remove(onSuccess?: () => any, onError?: (error: any) => any) {
-        if (this instanceof File) {
-            getFileAccess().deleteFile(this.path, onSuccess, onError);
-        } else if (this instanceof Folder) {
-            getFileAccess().deleteFolder(this.path, this[isKnownProperty], onSuccess, onError);
+    public remove(): promises.Promise<any> {
+        var fileAccess = getFileAccess();
+        var promise = promises.defer<any>();
+
+        var localSucces = function () {
+            promise.resolve();
         }
+        var localError = function (error: any) {
+            promise.reject(error);
+        }
+
+        if (this instanceof File) {
+            fileAccess.deleteFile(this.path, localSucces, localError);
+        } else if (this instanceof Folder) {
+            fileAccess.deleteFolder(this.path, this[isKnownProperty], localSucces, localError);
+        }
+
+        return promise.promise();
     }
 
     /**
     * Renames the current entity using the specified name.
     */
-    public rename(newName: string, onSuccess?: () => any, onError?: (error: any) => any) {
+    public rename(newName: string): promises.Promise<any> {
+        var deferred = promises.defer<any>();
+
         if (this instanceof Folder) {
             if (this[isKnownProperty]) {
-                if (onError) {
-                    onError(new Error("Cannot rename known folder."));
-                }
-
-                return;
+                deferred.reject(new Error("Cannot rename known folder."));
+                return deferred.promise();
             }
         }
 
         var parentFolder = this.getParent();
         if (!parentFolder) {
-            if (onError) {
-                onError(new Error("No parent folder."));
-            }
-
-            return;
+            deferred.reject(new Error("No parent folder."));
+            return deferred.promise();
         }
 
         var fileAccess = getFileAccess();
@@ -110,12 +123,16 @@ export class FileSystemEntity {
                 that[extensionProperty] = fileAccess.getFileExtension(newPath);
             }
 
-            if (onSuccess) {
-                onSuccess();
-            }
+            deferred.resolve();
         }
 
-        fileAccess.rename(this.path, newPath, localSucceess, onError);
+        var localError = function (error) {
+            deferred.reject(error);
+        }
+
+        fileAccess.rename(this.path, newPath, localSucceess, localError);
+
+        return deferred.promise();
     }
 
     /**
@@ -152,7 +169,11 @@ export class File extends FileSystemEntity {
     /**
         * Gets the File instance associated with the specified path.
         */
-    public static fromPath(path: string, onError?: (error: any) => any) {
+    public static fromPath(path: string) {
+        var onError = function (error) {
+            throw error;
+        }
+
         var fileInfo = getFileAccess().getFile(path, onError);
         if (!fileInfo) {
             return undefined;
@@ -185,55 +206,53 @@ export class File extends FileSystemEntity {
     /**
       * Reads the content of the file as a string using the specified encoding (defaults to UTF-8).
       */
-    public readText(onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: string) {
-        if (!onSuccess) {
-            return;
-        }
-
+    public readText(encoding?: string): promises.Promise<string> {
         this.checkAccess();
+
+        var deferred = promises.defer<string>();
         this[fileLockedProperty] = true;
 
         var that = this;
         var localSuccess = function (content: string) {
             that[fileLockedProperty] = false;
-            onSuccess(content);
+            deferred.resolve(content);
         }
 
         var localError = function (error) {
             that[fileLockedProperty] = false;
-            if (onError) {
-                onError(error);
-            }
+            deferred.reject(error);
         }
 
         // TODO: Asyncronous
         getFileAccess().readText(this.path, localSuccess, localError, encoding);
+
+        return deferred.promise();
     }
 
     /**
       * Writes the provided string to the file, using the specified encoding. Any previous content will be overwritten.
       */
-    public writeText(content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: string) {
+    public writeText(content: string, encoding?: string): promises.Promise<any> {
         this.checkAccess();
+
+        var deferred = promises.defer<string>();
         this[fileLockedProperty] = true;
 
         var that = this;
         var localSuccess = function () {
             that[fileLockedProperty] = false;
-            if (onSuccess) {
-                onSuccess();
-            }
+            deferred.resolve();
         };
 
         var localError = function (error) {
             that[fileLockedProperty] = false;
-            if (onError) {
-                onError(error);
-            }
+            deferred.reject(error);
         };
 
         // TODO: Asyncronous
         getFileAccess().writeText(this.path, content, localSuccess, localError, encoding);
+
+        return deferred.promise();
     }
 
     private checkAccess() {
@@ -250,7 +269,11 @@ export class Folder extends FileSystemEntity {
     /**
     * Attempts to access a Folder at the specified path and creates a new Folder if there is no existing one.
     */
-    public static fromPath(path: string, onSuccess: (folder: Folder) => any, onError?: (error: any) => any) {
+    public static fromPath(path: string): Folder {
+        var onError = function (error) {
+            throw error;
+        }
+
         var folderInfo = getFileAccess().getFolder(path, onError);
         if (!folderInfo) {
             return undefined;
@@ -283,8 +306,19 @@ export class Folder extends FileSystemEntity {
     /**
     * Removes all the files and folders (recursively), contained within this Folder.
     */
-    public clear(onSuccess?: () => any, onError?: (error: any) => any) {
+    public clear(): promises.Promise<any> {
+        var deferred = promises.defer<any>();
+
+        var onSuccess = function () {
+            deferred.resolve();
+        }
+        var onError = function (error) {
+            deferred.reject(error);
+        }
+
         getFileAccess().emptyFolder(this.path, onSuccess, onError);
+
+        return deferred.promise();
     }
 
     /**
@@ -297,9 +331,13 @@ export class Folder extends FileSystemEntity {
     /**
     * Attempts to open a File with the specified name within this Folder and optionally creates a new File if there is no existing one.
     */
-    public getFile(name: string, onError?: (error: any) => any): File {
+    public getFile(name: string): File {
         var fileAccess = getFileAccess();
         var path = fileAccess.concatPath(this.path, name);
+
+        var onError = function (error) {
+            throw error;
+        }
 
         var fileInfo = fileAccess.getFile(path, onError);
         if (!fileInfo) {
@@ -312,9 +350,13 @@ export class Folder extends FileSystemEntity {
     /**
     * Attempts to open a Folder with the specified name within this Folder and optionally creates a new Folder if there is no existing one.
     */
-    public getFolder(name: string, onError?: (error: any) => any): Folder {
+    public getFolder(name: string): Folder {
         var fileAccess = getFileAccess();
         var path = fileAccess.concatPath(this.path, name);
+
+        var onError = function (error) {
+            throw error;
+        }
 
         var folderInfo = fileAccess.getFolder(path, onError);
         if (!folderInfo) {
@@ -327,26 +369,33 @@ export class Folder extends FileSystemEntity {
     /**
     * Gets all the top-level FileSystem entities residing within this Folder.
     */
-    public getEntities(onSuccess: (files: Array<FileSystemEntity>) => any, onError?: (error: any) => any) {
-        var localSuccess = function (fileInfos: Array<{ path: string; name: string; extension: string }>) {
-            if (onSuccess) {
-                var entities = new Array<FileSystemEntity>();
-                var i,
-                    path: string,
-                    entity: FileSystemEntity;
+    public getEntities(): promises.Promise<Array<FileSystemEntity>> {
+        var deferred = promises.defer<Array<FileSystemEntity>>();
 
-                for (i = 0; i < fileInfos.length; i++) {
-                    if (fileInfos[i].extension) {
-                        entities.push(createFile(fileInfos[i]));
-                    } else {
-                        entities.push(createFolder(fileInfos[i]));
-                    }
+        var onSuccess = function (fileInfos: Array<{ path: string; name: string; extension: string }>) {
+            var entities = new Array<FileSystemEntity>();
+            var i,
+                path: string,
+                entity: FileSystemEntity;
+
+            for (i = 0; i < fileInfos.length; i++) {
+                if (fileInfos[i].extension) {
+                    entities.push(createFile(fileInfos[i]));
+                } else {
+                    entities.push(createFolder(fileInfos[i]));
                 }
-
-                onSuccess(entities);
             }
+
+            deferred.resolve(entities);
         }
-        getFileAccess().getEntities(this.path, localSuccess, onError);
+
+        var onError = function (error) {
+            throw error;
+        }
+
+        getFileAccess().getEntities(this.path, onSuccess, onError);
+
+        return deferred.promise();
     }
 
     /**
@@ -354,12 +403,12 @@ export class Folder extends FileSystemEntity {
     The first parameter is a callback that receives the current entity. 
     If the callback returns false this will mean for the iteration to stop.
     */
-    public eachEntity(onEntity: (entity: FileSystemEntity) => boolean, onError?: (error: any) => any) {
+    public eachEntity(onEntity: (entity: FileSystemEntity) => boolean) {
         if (!onEntity) {
             return;
         }
 
-        var localSuccess = function (fileInfo: { path: string; name: string; extension: string }): boolean {
+        var onSuccess = function (fileInfo: { path: string; name: string; extension: string }): boolean {
             var entity;
             if (fileInfo.extension) {
                 entity = createFile(fileInfo);
@@ -369,7 +418,12 @@ export class Folder extends FileSystemEntity {
 
             return onEntity(entity);
         }
-        getFileAccess().eachEntity(this.path, localSuccess, onError);
+
+        var onError = function (error) {
+            throw error;
+        }
+
+        getFileAccess().eachEntity(this.path, onSuccess, onError);
     }
 }
 

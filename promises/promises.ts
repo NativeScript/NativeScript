@@ -169,7 +169,7 @@ export interface Deferred<Value> extends PromiseState<Value> {
     promise(): Promise<Value>;
 
     /// Resolve the promise.
-    resolve(result: Value): Deferred<Value>;
+    resolve(result?: Value): Deferred<Value>;
     /// Reject the promise.
     reject(err: Rejection): Deferred<Value>;
 

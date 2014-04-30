@@ -1,11 +1,8 @@
-﻿
-import types = require("Location/location_types");
+﻿import types = require("Location/location_types");
 
-// merge types
+// merge the exports of the types module with the exports of this file
 declare var exports;
-exports.Location = types.Location;
-exports.Accuracy = types.Accuracy;
-exports.Options = types.Options;
+require("Utils/module_merge").merge(types, exports);
 
 export class LocationManager {
 
