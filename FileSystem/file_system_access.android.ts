@@ -2,7 +2,7 @@
 import textModule = require("text/text");
 
 export class FileSystemAccess {
-    private _pathSeparator = java.io.File.separator;
+    private _pathSeparator = java.io.File.separator.toString();
 
     public getLastModified(path: string): Date {
         var javaFile = new java.io.File(path);
@@ -88,10 +88,6 @@ export class FileSystemAccess {
 
         // return file.exists() && file.getCanonicalFile().isDirectory();
         return exists && dir;
-    }
-
-    public concatPath(left: string, right: string): string {
-        return left + this._pathSeparator + right;
     }
 
     public deleteFile(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
@@ -397,5 +393,39 @@ export class FileSystemAccess {
                 onError(exception);
             }
         }
+    }
+
+    public getPathSeparator(): string {
+        return this._pathSeparator;
+    }
+
+    public normalizePath(path: string): string {
+        var file = new java.io.File(path);
+        return file.getAbsolutePath();
+    }
+
+    public joinPath(left: string, right: string): string {
+        var file1 = new java.io.File(left);
+        var file2 = new java.io.File(file1, right);
+
+        return file2.getAbsolutePath();
+    }
+
+    public joinPaths(paths: string[]): string {
+        if (!paths || paths.length === 0) {
+            return "";
+        }
+
+        if (paths.length === 1) {
+            return paths[0];
+        }
+
+        var i,
+            result = paths[0];
+        for (i = 1; i < paths.length; i++) {
+            result = this.joinPath(result, paths[i]);
+        }
+
+        return this.normalizePath(result);
     }
 }

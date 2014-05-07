@@ -13,7 +13,7 @@ export declare class FileSystemAccess {
 
     fileExists(path: string): boolean;
     folderExists(path: string): boolean;
-    concatPath(left: string, right: string): string;
+    
     deleteFile(path: string, onSuccess?: () => any, onError?: (error: any) => any);
     deleteFolder(path: string, isKnown: boolean, onSuccess?: () => any, onError?: (error: any) => any);
     emptyFolder(path: string, onSuccess?: () => any, onError?: (error: any) => any): void;
@@ -25,5 +25,11 @@ export declare class FileSystemAccess {
     writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: string);
 
     getFileExtension(path: string): string;
+
+    // path methods
+    getPathSeparator(): string;
+    normalizePath(path: string): string;
+    joinPath(left: string, right: string): string;
+    joinPaths(paths: string[]): string;
 }
  

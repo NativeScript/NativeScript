@@ -346,4 +346,37 @@ export class FileSystemAccess {
             }
         }
     }
+
+    public getPathSeparator(): string {
+        return "/";
+    }
+
+    public normalizePath(path: string): string {
+        var nsString: Foundation.NSString = Foundation.NSString.stringWithString(path);
+        var normalized = nsString.stringByStandardizingPath();
+
+        return normalized;
+    }
+
+    public joinPath(left: string, right: string): string {
+        var nsString: Foundation.NSString = Foundation.NSString.stringWithString(left);
+        return nsString.stringByAppendingPathComponent(right);
+    }
+
+    public joinPaths(paths: string[]): string {
+        if (!paths || paths.length === 0) {
+            return "";
+        }
+
+        var nsArray = new Foundation.NSMutableArray(paths.length);
+
+        var i;
+        for (i = 0; i < paths.length; i++) {
+            nsArray.addObject(paths[i]);
+        }
+
+        // TODO: Static methods return NSString instance to enable its methods
+        var nsString: any = Foundation.NSString.pathWithComponents(nsArray);
+        return nsString.stringByStandardizingPath();
+    }
 }

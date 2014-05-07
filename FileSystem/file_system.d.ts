@@ -128,3 +128,23 @@ export declare module knownFolders {
     */
     export function temp(): Folder;
 }
+
+/**
+* Enables path-specific operations like join, extension, etc.
+*/
+export declare module path {
+    /**
+    * Normalizes a path, taking care of occurrances like ".." and "//"
+    */
+    export function normalize(path: string): string;
+
+    /**
+    * Joins all the provided string components, forming a valid and normalized path.
+    */
+    export function join(...paths: string[]): string;
+
+    /**
+    * Gets the string used to separate file paths.
+    */
+    export var separator: string;
+}

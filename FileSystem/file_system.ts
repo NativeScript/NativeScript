@@ -112,7 +112,7 @@ export class FileSystemEntity {
 
         var fileAccess = getFileAccess();
         var path = parentFolder.path;
-        var newPath = fileAccess.concatPath(path, newName);
+        var newPath = fileAccess.joinPath(path, newName);
 
         var that = this;
         var localSucceess = function () {
@@ -294,7 +294,7 @@ export class Folder extends FileSystemEntity {
     */
     public contains(name: string): boolean {
         var fileAccess = getFileAccess();
-        var path = fileAccess.concatPath(this.path, name);
+        var path = fileAccess.joinPath(this.path, name);
 
         if (fileAccess.fileExists(path)) {
             return true;
@@ -333,7 +333,7 @@ export class Folder extends FileSystemEntity {
     */
     public getFile(name: string): File {
         var fileAccess = getFileAccess();
-        var path = fileAccess.concatPath(this.path, name);
+        var path = fileAccess.joinPath(this.path, name);
 
         var onError = function (error) {
             throw error;
@@ -352,7 +352,7 @@ export class Folder extends FileSystemEntity {
     */
     public getFolder(name: string): Folder {
         var fileAccess = getFileAccess();
-        var path = fileAccess.concatPath(this.path, name);
+        var path = fileAccess.joinPath(this.path, name);
 
         var onError = function (error) {
             throw error;
@@ -461,4 +461,29 @@ export module knownFolders {
 
         return _temp;
     }
+}
+
+/**
+* Enables path-specific operations like join, extension, etc.
+*/
+export module path {
+    /**
+    * Normalizes a path, taking care of occurrances like ".." and "//"
+    */
+    export function normalize(path: string): string {
+        return getFileAccess().normalizePath(path);
+    }
+
+    /**
+    * Joins all the provided string components, forming a valid and normalized path.
+    */
+    export function join(...paths: string[]): string {
+        var fileAccess = getFileAccess();
+        return fileAccess.joinPaths(paths);
+    }
+
+    /**
+    * Gets the string used to separate file paths.
+    */
+    export var separator = getFileAccess().getPathSeparator();
 }
