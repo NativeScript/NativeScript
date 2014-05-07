@@ -1,14 +1,13 @@
-﻿import app_common_module = require("Application/application_common");
+﻿import appModule = require("Application/application_common");
 
 // merge the exports of the application_common file with the exports of this file
 declare var exports;
-require("Utils/module_merge").merge(app_common_module, exports);
+require("Utils/module_merge").merge(appModule, exports);
 
-var currentApp = app_common_module.Application.current;
 var callbacks = android.app.Application.ActivityLifecycleCallbacks;
 
 var initEvents = function () {
-    var androidApp = app_common_module.Application.current.android;
+    var androidApp = appModule.current.android;
     var lifecycleCallbacks = new callbacks({
         onActivityCreated: function (activity: any, bundle: any) {
             if (!androidApp.startActivity) {
@@ -92,8 +91,8 @@ var initEvents = function () {
 
 export var init = function (nativeApp: android.app.Application) {
     var app = new AndroidApplication(nativeApp);
-    currentApp.os = app_common_module.TargetOS.Android;
-    currentApp.android = app;
+    appModule.current.os = appModule.TargetOS.Android;
+    appModule.current.android = app;
     app.init();
 }
 

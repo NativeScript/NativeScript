@@ -1,11 +1,11 @@
 ﻿import utils_module = require("Utils/utils_android");
-import app_module = require("Application/application");
+import appModule = require("Application/application");
 
 export class UserPreferences {
     private sharedPreferences: any;
 
     constructor() {
-        this.sharedPreferences = app_module.Application.current.android.context.getSharedPreferences("prefs.db", 0);
+        this.sharedPreferences = appModule.current.android.context.getSharedPreferences("prefs.db", 0);
     }
 
     public containsKey(key: string): boolean {

@@ -1,5 +1,5 @@
 ﻿import types = require("Location/location_types");
-import app_module = require("Application/application");
+import appModule = require("Application/application");
 
 // merge the exports of the types module with the exports of this file
 declare var exports;
@@ -59,7 +59,7 @@ export class LocationManager {
     public static isEnabled(): boolean {
         var criteria = new android.location.Criteria();
         criteria.setAccuracy(1); // low ? fine ? who knows what 1 means (bug in android docs?)
-        var lm = app_module.Application.current.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
+        var lm = appModule.current.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
         return (lm.getBestProvider(criteria, true) != null) ? true : false;
     }
 
@@ -80,7 +80,7 @@ export class LocationManager {
         this.minimumUpdateTime = 200;
         this.isStarted = false;
 
-        this.androidLocationManager = app_module.Application.current.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
+        this.androidLocationManager = appModule.current.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
     }
 
     ////////////////////////

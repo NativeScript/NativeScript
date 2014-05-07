@@ -1,4 +1,4 @@
-﻿import app_module = require("Application/application");
+﻿import appModule = require("Application/application");
 
 export enum ImageType {
     PNG = 0,
@@ -33,7 +33,7 @@ export class Image {
     }
 
     public loadFromResource(name: string): boolean {
-        var androidApp = app_module.Application.current.android;
+        var androidApp = appModule.current.android;
         var res = androidApp.context.getResources();
         if (res) {
             var identifier: number = res.getIdentifier(name, 'drawable', androidApp.packageName);

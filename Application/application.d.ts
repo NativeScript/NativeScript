@@ -3,8 +3,9 @@
     Android
 }
 
+export declare var current: Application;
+
 export declare class Application {
-    static current: Application;
     public os: TargetOS;
 
     public onLaunch: () => any;

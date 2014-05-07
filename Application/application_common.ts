@@ -18,9 +18,9 @@ export class Application {
     public onExit: () => any;
     public onLowMemory: () => any;
 
-    public static current: Application = new Application();
-
     // TODO: These fields are declared by the application.d.ts file and intellisense will come from there
     public android: any;
     public ios: any;
 }
+
+export var current = new Application();
