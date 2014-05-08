@@ -2,14 +2,16 @@
 * Defines the available target operating systems.
 */
 export declare enum TargetOS {
+    /**
+    * iOS operating system.
+    */
     iOS,
+
+    /**
+    * Android operating system.
+    */
     Android
 }
-
-/**
-* The current singleton instance of the application object.
-*/
-export declare var current: Application;
 
 /**
 * The abstraction of an Application object, common for each target OS.
@@ -47,12 +49,16 @@ export declare class Application {
     public onLowMemory: () => any;
 
     /**
-    * This is the Android-specific application object instance. It encapsulates methods and properties specific to the Android platform.
+    * This is the Android-specific application object instance. 
+    * Encapsulates methods and properties specific to the Android platform.
+    * Will be undefined when TargetOS is iOS.
     */
     public android: AndroidApplication;
 
     /**
-    * This is the iOS-specific application object instance. It encapsulates methods and properties specific to the iOS platform.
+    * This is the iOS-specific application object instance.
+    * Encapsulates methods and properties specific to the iOS platform.
+    * Will be undefined when TargetOS is Android.
     */
     public ios: iOSApplication;
 }
@@ -67,7 +73,7 @@ export declare class AndroidApplication {
     public nativeApp: android.app.Application;
 
     /**
-    * The android.content.Context object instance.
+    * The application android.content.Context object instance.
     */
     public context: android.content.Context;
 
@@ -132,11 +138,18 @@ export declare class AndroidApplication {
 * The abstraction of an iOS-specific application object.
 */
 export declare class iOSApplication {
-    // TODO: what methods/properties we can put here
-    public rootController: any;
+    /**
+    * The root view controller for the application.
+    */
+    public rootController: UIKit.UIViewController;
 }
 
 /**
 * Entry point for the module. Initializes the Application singleton and hooks application lifecycle events.
 */
 export declare function init(nativeApp: any);
+
+/**
+* The current singleton instance of the application object.
+*/
+export declare var current: Application;

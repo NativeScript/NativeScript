@@ -1,5 +1,5 @@
 /**
-* Encapsulates methods used to report some information to the console.
+* Encapsulates methods used to print some information in the console.
 * Instance of this class is declared in the global JavaScript context and is accessible by directly calling console.[xxx] methods.
 */
 export declare class Console {
@@ -16,27 +16,27 @@ export declare class Console {
     /**
     * Asserts a boolean condition and prints a message in case the assert fails.
     */
-    public assert(test: boolean, message: string, ...optionalParams: any[]): void;
+    public assert(test: boolean, message: string, ...formatParams: any[]): void;
 
     /**
     * Reports some information.
     */
-    public info(message: any, ...optionalParams: any[]): void;
+    public info(message: any, ...formatParams: any[]): void;
 
     /**
     * Reports a warning.
     */
-    public warn(message: any, ...optionalParams: any[]): void;
+    public warn(message: any, ...formatParams: any[]): void;
 
     /**
     * Reports an error.
     */
-    public error(message: any, ...optionalParams: any[]): void;
+    public error(message: any, ...formatParams: any[]): void;
 
     /**
     * Verbously logs a message.
     */
-    public log(message: any, ...optionalParams: any[]): void;
+    public log(message: any, ...formatParams: any[]): void;
 
     /**
     * Prints the current stack trace in the console.

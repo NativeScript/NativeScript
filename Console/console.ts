@@ -235,7 +235,7 @@ export class Console {
         }
     }
 
-    public assert(test: boolean, message: string, ...optionalParams: any[]): void {
+    public assert(test: boolean, message: string, ...formatParams: any[]): void {
         if (!test) {
             Array.prototype.shift.apply(arguments);
             helperModule.error(this.formatParams.apply(this, arguments));
@@ -265,19 +265,19 @@ export class Console {
         }
     }
 
-    public info(message: any, ...optionalParams: any[]): void {
+    public info(message: any, ...formatParams: any[]): void {
         helperModule.info(this.formatParams.apply(this, arguments));
     }
 
-    public warn(message: any, ...optionalParams: any[]): void {
+    public warn(message: any, ...formatParams: any[]): void {
         helperModule.warn(this.formatParams.apply(this, arguments));
     }
 
-    public error(message: any, ...optionalParams: any[]): void {
+    public error(message: any, ...formatParams: any[]): void {
         helperModule.error(this.formatParams.apply(this, arguments));
     }
 
-    public log(message: any, ...optionalParams: any[]): void {
+    public log(message: any, ...formatParams: any[]): void {
         helperModule.log(this.formatParams.apply(this, arguments));
     }
 
