@@ -13,7 +13,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
 
         var context = require("Application/application").Application.current.android.context;
 
-        if (isImage) {
+        if (isImage && options.method && options.method.toLowerCase() == "get") {
             var request = com.koushikdutta.ion.Ion.with(context, options.url);
             request.asBitmap().setCallback(new com.koushikdutta.async.future.FutureCallback({
                 onCompleted: function (error, data) {
@@ -41,7 +41,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
             if (options.headers) {
                 for (var key in options.headers) {
                     request.addHeader(key, options.headers[key])
-            }
+                }
             }
 
             if (typeof options.timeout == "number") {
@@ -74,11 +74,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                                 toString: () => { return result },
                                 toJSON: () => { return JSON.parse(result) },
                                 toImage: () => {
-                                    var imageAsBytes = new java.lang.String(result).getBytes();
-                                    var bmp = android.graphics.BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
-                                    // TODO: Implement this!
-                                    //return null;
-                                    return require("Image/image").Image.imageFromNativeBitmap(bmp);
+                                    return null;
                                 }
                             },
                             statusCode: rawHeaders.getResponseCode(),
