@@ -154,7 +154,7 @@ export class LocationManager {
             var it = providers.iterator();
             while (it.hasNext()) {
                 var element = it.next();
-                console.log('found provider: ' + element);
+                //console.log('found provider: ' + element);
                 var location = this.androidLocationManager.getLastKnownLocation(element);
                 if (location) {
                     return LocationManager.locationFromAndroidLocation(location);

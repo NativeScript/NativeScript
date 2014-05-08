@@ -85,7 +85,7 @@ export class LocationManager {
 
                 implementation: {
                     locationManagerDidUpdateLocations: function (manager, locations) {
-                        console.log('location received: ' + locations.count());
+                        //console.log('location received: ' + locations.count());
                         for (var i = 0; i < locations.count(); i++) {
                             this.onLocation(LocationManager.locationFromCLLocation(locations.objectAtIndex(i)));
                         }
