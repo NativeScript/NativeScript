@@ -285,15 +285,6 @@ export class TKConsole {
     }
 
     public trace(): void {
-        // unsless we have a proper way to get the target OS this cannot be used
-        // currently this introduced a console <=> application cyclic dependency
-
-        //this._nativeClass.log('=== trace(): JS stack ===')
-        //    if (i.TargetOS.Android == targetOS) {
-        //    var e = <any>new Error('console.trace()');
-        //    this.log(e.stack);
-        //}
-        //else if (i.TargetOS.iOS == targetOS) {
         var callstack = [];
         var currentFunction = arguments.callee.caller;
         while (currentFunction) {
@@ -306,7 +297,6 @@ export class TKConsole {
             currentFunction = currentFunction.caller;
             this.log(callstack.join('\n'));
         }
-        //}
     }
 
     public dump(obj: any): void {
