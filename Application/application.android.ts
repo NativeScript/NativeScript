@@ -13,10 +13,6 @@ var initEvents = function () {
             if (!androidApp.startActivity) {
                 androidApp.startActivity = activity;
 
-                //if (UI.Application.current.onLaunch) {
-                //    UI.Application.current.onLaunch();
-                //}
-
                 if (androidApp.onActivityCreated) {
                     androidApp.onActivityCreated(activity, bundle);
                 }

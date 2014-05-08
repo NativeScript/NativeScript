@@ -1,12 +1,9 @@
+import helperModule = require("Console/console_helper");
 
-import native_module = require("Console/console");
-
-export class TKConsole {
-    private _nativeClass: any;
+export class Console {
     private _timers: any;
 
     constructor() {
-        this._nativeClass = native_module.ConsoleHelper;
         this._timers = {};
     }
 
@@ -216,7 +213,7 @@ export class TKConsole {
     public time(reportName: string): void {
         var name = reportName ? '__' + reportName : '__internal_console_time__';
         if (('undefined' === typeof (this._timers[name])) || (this._timers.hasOwnProperty(name))) {
-            this._timers[name] = this._nativeClass.timeMillis();
+            this._timers[name] = helperModule.timeMillis();
         }
         else {
             this.warn('invalid name for timer console.time(' + reportName + ')');
@@ -228,7 +225,7 @@ export class TKConsole {
         if (this._timers.hasOwnProperty(name)) {
             var val = this._timers[name];
             if (val) {
-                var time = this._nativeClass.timeMillis();
+                var time = helperModule.timeMillis();
                 this.info('console.time(' + reportName + '): %.6f ms', (time - val));
                 this._timers[name] = undefined;
             }
@@ -241,7 +238,7 @@ export class TKConsole {
     public assert(test: boolean, message: string, ...optionalParams: any[]): void {
         if (!test) {
             Array.prototype.shift.apply(arguments);
-            this._nativeClass.error(this.formatParams.apply(this, arguments));
+            helperModule.error(this.formatParams.apply(this, arguments));
 
             // duplicating trace code here because android version shows only 2 frames and if we call trace()
             // this would be assert() and trace() which leaves all important stack frames out of our view
@@ -269,19 +266,19 @@ export class TKConsole {
     }
 
     public info(message: any, ...optionalParams: any[]): void {
-        this._nativeClass.info(this.formatParams.apply(this, arguments));
+        helperModule.info(this.formatParams.apply(this, arguments));
     }
 
     public warn(message: any, ...optionalParams: any[]): void {
-        this._nativeClass.warn(this.formatParams.apply(this, arguments));
+        helperModule.warn(this.formatParams.apply(this, arguments));
     }
 
     public error(message: any, ...optionalParams: any[]): void {
-        this._nativeClass.error(this.formatParams.apply(this, arguments));
+        helperModule.error(this.formatParams.apply(this, arguments));
     }
 
     public log(message: any, ...optionalParams: any[]): void {
-        this._nativeClass.log(this.formatParams.apply(this, arguments));
+        helperModule.log(this.formatParams.apply(this, arguments));
     }
 
     public trace(): void {

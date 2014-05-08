@@ -1,4 +1,4 @@
-﻿import console_module = require("Console/console_common");
+﻿import consoleModule = require("Console/console");
 
 export enum TargetOS {
     iOS,
@@ -9,7 +9,8 @@ export class Application {
     public os: TargetOS;
 
     constructor() {
-        console = new console_module.TKConsole();
+        // TODO: This is put in the global context, is this the preferred approach
+        console = new consoleModule.Console();
     }
 
     public onLaunch: () => any;

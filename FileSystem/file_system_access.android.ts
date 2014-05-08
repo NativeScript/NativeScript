@@ -384,7 +384,7 @@ export class FileSystemAccess {
                 }
 
                 retVal = callback(info);
-                if (retVal != undefined && !retVal) {
+                if (retVal === false) {
                     break;
                 }
             }

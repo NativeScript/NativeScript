@@ -77,6 +77,16 @@
     <TypeScriptCompile Include="Application\application.ios.ts">
       <DependentUpon>application.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="Console\console.ts">
+      <DependentUpon>console.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Console\console_helper.android.ts">
+      <DependentUpon>console_helper.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Console\console_helper.d.ts" />
+    <TypeScriptCompile Include="Console\console_helper.ios.ts">
+      <DependentUpon>console_helper.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="declarations.d.ts" />
     <TypeScriptCompile Include="declarations.android.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>
@@ -160,16 +170,7 @@
     <TypeScriptCompile Include="http\http.ts" />
     <TypeScriptCompile Include="ios7.d.ts" />
     <Content Include="_references.ts" />
-    <TypeScriptCompile Include="Console\console.android.ts">
-      <DependentUpon>console.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="Console\console.d.ts" />
-    <TypeScriptCompile Include="Console\console.ios.ts">
-      <DependentUpon>console.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="Console\console_common.ts">
-      <DependentUpon>console.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <Content Include="Image\Readme.md" />
   </ItemGroup>
   <ItemGroup>

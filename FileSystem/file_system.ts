@@ -154,7 +154,7 @@ export class FileSystemEntity {
         */
     get lastModified(): Date {
         var value = this[lastModifiedProperty];
-        if (this[lastModifiedProperty] === undefined) {
+        if (!this[lastModifiedProperty]) {
             value = this[lastModifiedProperty] = getFileAccess().getLastModified(this.path);
         }
 

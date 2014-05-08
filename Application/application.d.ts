@@ -90,7 +90,6 @@ export declare class AndroidApplication {
     * This method is called by the JavaScript Bridge when navigation to a new activity is triggered.
     * The return value of this method should be com.tns.NativeScriptActivity.extends implementation.
     */
-    // TODO: Why is the android.content.Intent module rather than a class?
     public getActivity: (intent: android.content.Intent) => any;
 
     /**

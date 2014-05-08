@@ -334,7 +334,7 @@ export class FileSystemAccess {
                 }
 
                 retVal = callback(info);
-                if (retVal != undefined && !retVal) {
+                if (retVal === false) {
                     // the callback returned false meaning we should stop the iteration
                     break;
                 }
