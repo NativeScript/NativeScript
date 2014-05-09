@@ -29,8 +29,7 @@ require("Utils/module_merge").merge(appModule, exports);
 // TODO: Declarations
 export var init = function (nativeApp: any) {
     var app = new iOSApplication(nativeApp);
-    appModule.current.os = appModule.TargetOS.iOS;
-    appModule.current.ios = app;
+    exports.ios = app;
     app.init();
 }
 
@@ -55,10 +54,8 @@ class iOSApplication {
                         this.window.backgroundColor = UIKit.UIColor.whiteColor();
                         this.window.makeKeyAndVisible();
 
-                        var iosApp = appModule.current.ios;
-
-                        if (appModule.current.onLaunch) {
-                            this.window.rootViewController = appModule.current.onLaunch();
+                        if (appModule.onLaunch) {
+                            this.window.rootViewController = appModule.onLaunch();
                         } else {
                             log("Missing TK.UI.Application.current.onLaunch");
                         }
@@ -69,8 +66,8 @@ class iOSApplication {
 
                     applicationDidBecomeActive: function (application) {
                         log("applicationDidBecomeActive: " + application);
-                        if (appModule.current.onResume) {
-                            appModule.current.onResume();
+                        if (appModule.onResume) {
+                            appModule.onResume();
                         }
                     },
 
@@ -80,8 +77,8 @@ class iOSApplication {
 
                     applicationDidEnterBackground: function (application) {
                         log("applicationDidEnterBackground: " + application);
-                        if (appModule.current.onSuspend) {
-                            appModule.current.onSuspend();
+                        if (appModule.onSuspend) {
+                            appModule.onSuspend();
                         }
                     },
 
@@ -91,15 +88,15 @@ class iOSApplication {
 
                     applicationWillTerminate: function (application) {
                         log("applicationWillTerminate: " + application);
-                        if (appModule.current.onExit) {
-                            appModule.current.onExit();
+                        if (appModule.onExit) {
+                            appModule.onExit();
                         }
                     },
 
                     applicationDidReceiveMemoryWarning: function (application) {
                         log("applicationDidReceiveMemoryWarning: " + application);
-                        if (appModule.current.onLowMemory) {
-                            appModule.current.onLowMemory();
+                        if (appModule.onLowMemory) {
+                            appModule.onLowMemory();
                         }
                     }
                 }

@@ -7,7 +7,7 @@ require("Utils/module_merge").merge(appModule, exports);
 var callbacks = android.app.Application.ActivityLifecycleCallbacks;
 
 var initEvents = function () {
-    var androidApp = appModule.current.android;
+    var androidApp = exports.android;
     var lifecycleCallbacks = new callbacks({
         onActivityCreated: function (activity: any, bundle: any) {
             if (!androidApp.startActivity) {
@@ -87,8 +87,7 @@ var initEvents = function () {
 
 export var init = function (nativeApp: android.app.Application) {
     var app = new AndroidApplication(nativeApp);
-    appModule.current.os = appModule.TargetOS.Android;
-    appModule.current.android = app;
+    exports.android = app;
     app.init();
 }
 

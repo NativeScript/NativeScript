@@ -13,7 +13,7 @@ export class Image {
     }
 
     public loadFromResource(name: string): boolean {
-        var androidApp = appModule.current.android;
+        var androidApp = appModule.android;
         var res = androidApp.context.getResources();
         if (res) {
             var identifier: number = res.getIdentifier(name, 'drawable', androidApp.packageName);

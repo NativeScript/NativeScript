@@ -59,7 +59,7 @@ export class LocationManager {
     public static isEnabled(): boolean {
         var criteria = new android.location.Criteria();
         criteria.setAccuracy(1); // low ? fine ? who knows what 1 means (bug in android docs?)
-        var lm = appModule.current.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
+        var lm = appModule.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
         return (lm.getBestProvider(criteria, true) != null) ? true : false;
     }
 
@@ -80,7 +80,7 @@ export class LocationManager {
         this.minimumUpdateTime = 200;
         this.isStarted = false;
 
-        this.androidLocationManager = appModule.current.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
+        this.androidLocationManager = appModule.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
     }
 
     ////////////////////////

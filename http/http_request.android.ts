@@ -11,7 +11,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
 
         var isImage = options.url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
 
-        var context = require("Application/application").Application.current.android.context;
+        var context = require("Application/application").android.context;
 
         if (isImage && options.method && options.method.toLowerCase() == "get") {
             var request = com.koushikdutta.ion.Ion.with(context, options.url);

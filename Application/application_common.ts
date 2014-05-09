@@ -1,27 +1,23 @@
 ﻿import consoleModule = require("Console/console");
 
-export enum TargetOS {
-    iOS,
-    Android
-}
-    
-export class Application {
-    public os: TargetOS;
+// TODO: This is put in the global context, is this the preferred approach
+console = new consoleModule.Console();
 
-    constructor() {
-        // TODO: This is put in the global context, is this the preferred approach
-        console = new consoleModule.Console();
-    }
-
-    public onLaunch: () => any;
-    public onSuspend: () => any;
-    public onResume: () => any;
-    public onExit: () => any;
-    public onLowMemory: () => any;
-
-    // TODO: These fields are declared by the application.d.ts file and intellisense will come from there
-    public android: any;
-    public ios: any;
+export var onLaunch = function (): any {
 }
 
-export var current = new Application();
+export var onSuspend = function (): void {
+}
+
+export var onResume = function (): void {
+}
+
+export var onExit = function (): void {
+}
+
+export var onLowMemory = function (): void {
+}
+
+export var android = undefined;
+
+export var ios = undefined;

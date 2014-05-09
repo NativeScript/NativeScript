@@ -1,67 +1,42 @@
 ﻿/**
-* Defines the available target operating systems.
+* The main entry point event. This method is expected to return an instance of the root UI for the application.
+* This will be an Activity extends for Android and a RootViewController for iOS.
 */
-export declare enum TargetOS {
-    /**
-    * iOS operating system.
-    */
-    iOS,
-
-    /**
-    * Android operating system.
-    */
-    Android
-}
+export declare function onLaunch(): any;
 
 /**
-* The abstraction of an Application object, common for each target OS.
+* This method will be called when the Application is suspended.
 */
-export declare class Application {
-    /**
-    * The target operating system of the application.
-    */
-    public os: TargetOS;
+export declare function onSuspend();
 
-    /**
-    * The main entry point event. This method is expected to return an instance of the root UI for the application.
-    * This will be an Activity extends for Android and a RootViewController for iOS.
-    */
-    public onLaunch: () => any;
+/**
+* This method will be called when the Application is resumed after it has been suspended.
+*/
+export declare function onResume();
 
-    /**
-    * This method will be called when the Application is suspended.
-    */
-    public onSuspend: () => any;
+/**
+* This method will be called when the Application is about to exit.
+*/
+export declare function onExit();
 
-    /**
-    * This method will be called when the Application is resumed after it has been suspended.
-    */
-    public onResume: () => any;
+/**
+* This method will be called when there is low memory on the target device.
+*/
+export declare function onLowMemory();
 
-    /**
-    * This method will be called when the Application is about to exit.
-    */
-    public onExit: () => any;
+/**
+* This is the Android-specific application object instance.
+* Encapsulates methods and properties specific to the Android platform.
+* Will be undefined when TargetOS is iOS.
+*/
+export declare var android: AndroidApplication;
 
-    /**
-    * This method will be called when there is low memory on the target device.
-    */
-    public onLowMemory: () => any;
-
-    /**
-    * This is the Android-specific application object instance. 
-    * Encapsulates methods and properties specific to the Android platform.
-    * Will be undefined when TargetOS is iOS.
-    */
-    public android: AndroidApplication;
-
-    /**
-    * This is the iOS-specific application object instance.
-    * Encapsulates methods and properties specific to the iOS platform.
-    * Will be undefined when TargetOS is Android.
-    */
-    public ios: iOSApplication;
-}
+/**
+* This is the iOS-specific application object instance.
+* Encapsulates methods and properties specific to the iOS platform.
+* Will be undefined when TargetOS is Android.
+*/
+export declare var ios: iOSApplication;
 
 /**
 * The abstraction of an Android-specific application object.
@@ -148,8 +123,3 @@ export declare class iOSApplication {
 * Entry point for the module. Initializes the Application singleton and hooks application lifecycle events.
 */
 export declare function init(nativeApp: any);
-
-/**
-* The current singleton instance of the application object.
-*/
-export declare var current: Application;
