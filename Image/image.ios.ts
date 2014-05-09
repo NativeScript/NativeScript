@@ -1,33 +1,13 @@
-﻿export enum ImageType {
-    PNG = 0,
-    JPEG = 1,
+﻿export enum ImageFormat {
+    PNG,
+    JPEG,
 }
 
 export class Image {
-    public ios: any;
+    public ios: UIKit.UIImage;
 
     constructor() {
         this.ios = null;
-    }
-
-    public static imageFromResource(name: string): Image {
-        var image = new Image();
-        return image.loadFromResource(name) ? image : null;
-    }
-
-    public static imageFromFile(path: string): Image {
-        var image = new Image();
-        return image.loadFromFile(path) ? image : null;
-    }
-
-    public static imageFromData(data: any): Image {
-        var image = new Image();
-        return image.loadFromData(data) ? image : null;
-    }
-
-    public static imageFromNativeBitmap(source: any): Image {
-        var image = new Image();
-        return image.loadFromNativeBitmap(source) ? image : null;
     }
 
     public loadFromResource(name: string): boolean {
@@ -45,22 +25,22 @@ export class Image {
         return (this.ios != null);
     }
 
-    public loadFromNativeBitmap(source: any): boolean {
+    public setNativeBitmap(source: any): boolean {
         this.ios = source;
         return (this.ios != null);
     }
 
-    public saveToFile(path: string, format: ImageType, quality?: number): boolean {
+    public saveToFile(path: string, format: ImageFormat, quality?: number): boolean {
         if (null == this.ios) {
             return false;
         }
         var res = false;
         var data = null;
         switch (format) {
-            case ImageType.JPEG:
+            case ImageFormat.JPEG:
                 data = UIKit.UIImageJPEGRepresentation(this.ios, ('undefined' == typeof quality) ? 1.0 : quality);
                 break;
-            case ImageType.PNG:
+            case ImageFormat.PNG:
                 data = UIKit.UIImagePNGRepresentation(this.ios);
                 break;
         }
@@ -70,11 +50,32 @@ export class Image {
         return res;
     }
 
-    public getHeight(): number {
+    get height(): number {
         return (this.ios) ? this.ios.size.height : NaN;
     }
 
-    public getWidth(): number {
+    get width(): number {
         return (this.ios) ? this.ios.size.width : NaN;
     }
+}
+
+// TODO: These functions are the same in each platform, think for some common code separation
+export function fromResource(name: string): Image {
+    var image = new Image();
+    return image.loadFromResource(name) ? image : null;
+}
+
+export function fromFile(path: string): Image {
+    var image = new Image();
+    return image.loadFromFile(path) ? image : null;
+}
+
+export function fromData(data: any): Image {
+    var image = new Image();
+    return image.loadFromData(data) ? image : null;
+}
+
+export function fromNativeBitmap(source: any): Image {
+    var image = new Image();
+    return image.setNativeBitmap(source) ? image : null;
 }

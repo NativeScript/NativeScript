@@ -1,35 +1,15 @@
 ﻿import appModule = require("Application/application");
 
-export enum ImageType {
-    PNG = 0,
-    JPEG = 1,
+export enum ImageFormat {
+    PNG,
+    JPEG,
 }
 
 export class Image {
-    public android: any;
+    public android: android.graphics.Bitmap;
 
     constructor() {
         this.android = null;
-    }
-
-    public static imageFromResource(name: string): Image {
-        var image = new Image();
-        return image.loadFromResource(name) ? image : null;
-    }
-
-    public static imageFromFile(path: string): Image {
-        var image = new Image();
-        return image.loadFromFile(path) ? image : null;
-    }
-
-    public static imageFromData(data: any): Image {
-        var image = new Image();
-        return image.loadFromData(data) ? image : null;
-    }
-
-    public static imageFromNativeBitmap(source: any): Image {
-        var image = new Image();
-        return image.loadFromNativeBitmap(source) ? image : null;
     }
 
     public loadFromResource(name: string): boolean {
@@ -55,16 +35,16 @@ export class Image {
         return (this.android != null);
     }
 
-    public loadFromNativeBitmap(source: any): boolean {
+    public setNativeBitmap(source: any): boolean {
         this.android = source;
         return (this.android != null);
     }
 
-    public saveToFile(path: string, format: ImageType, quality?: number): boolean {
+    public saveToFile(path: string, format: ImageFormat, quality?: number): boolean {
         if (this.android) {
             var targetFormat = android.graphics.Bitmap.CompressFormat.PNG;
             switch (format) {
-                case ImageType.JPEG:
+                case ImageFormat.JPEG:
                     targetFormat = android.graphics.Bitmap.CompressFormat.JPEG;
                     break;
             }
@@ -72,7 +52,7 @@ export class Image {
             // TODO add exception handling
             var outputStream = new java.io.BufferedOutputStream(new java.io.FileOutputStream(path));
 
-            if (!quality) {
+            if (typeof quality == "undefined") {
                 quality = 100;
             }
 
@@ -83,11 +63,32 @@ export class Image {
         return false;
     }
 
-    public getHeight(): number {
+    get height(): number {
         return (this.android) ? this.android.getHeight() : NaN;
     }
 
-    public getWidth(): number {
+    get width(): number {
         return (this.android) ? this.android.getWidth() : NaN;
     }
+}
+
+// TODO: These functions are the same in each platform, think for some common code separation
+export function fromResource(name: string): Image {
+    var image = new Image();
+    return image.loadFromResource(name) ? image : null;
+}
+
+export function fromFile(path: string): Image {
+    var image = new Image();
+    return image.loadFromFile(path) ? image : null;
+}
+
+export function fromData(data: any): Image {
+    var image = new Image();
+    return image.loadFromData(data) ? image : null;
+}
+
+export function fromNativeBitmap(source: any): Image {
+    var image = new Image();
+    return image.setNativeBitmap(source) ? image : null;
 }
