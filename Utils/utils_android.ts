@@ -22,3 +22,11 @@
         return arr;
     }
 }
+
+export function setTimeout(callback, milliseconds) {
+    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(
+        new java.lang.Runnable({
+            run: function () { callback(); }
+        }),
+        milliseconds);
+}
