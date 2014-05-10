@@ -169,6 +169,14 @@
     <TypeScriptCompile Include="promises\index.ts" />
     <TypeScriptCompile Include="http\http.ts" />
     <TypeScriptCompile Include="ios7.d.ts" />
+    <TypeScriptCompile Include="globals\globals.android.ts">
+      <DependentUpon>globals.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="globals\globals.d.ts" />
+    <TypeScriptCompile Include="globals\globals.ios.ts">
+      <DependentUpon>globals.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="globals\index.ts" />
     <Content Include="_references.ts" />
     <TypeScriptCompile Include="Console\console.d.ts" />
     <Content Include="Image\Readme.md" />
