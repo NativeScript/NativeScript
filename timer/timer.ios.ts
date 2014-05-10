@@ -1,5 +1,5 @@
 ﻿/**
-  * iOS specific global functions implementation.
+  * iOS specific timer functions implementation.
   */
 var timeoutCallbacks = {};
 

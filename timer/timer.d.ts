@@ -1,5 +1,5 @@
 ﻿/**
-  * global functions.
+  * Timer functions.
   */
 export declare function setTimeout(callback: Function, milliseconds: number): number;
 export declare function clearTimeout(id: number): void;

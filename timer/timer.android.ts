@@ -1,5 +1,5 @@
 ﻿/**
-  * Android specific global functions implementation.
+  * Android specific timer functions implementation.
   */
 var timeoutHandler;
 var timeoutCallbacks = {};

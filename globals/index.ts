@@ -1,8 +1,8 @@
 ﻿declare var module, setTimeout, clearTimeout, setInterval, clearInterval;
-import globals = require("globals/globals");
-module.exports = globals;
+import timer = require("timer/timer");
+module.exports = timer;
 
-setTimeout = globals.setTimeout;
-clearTimeout = globals.clearTimeout;
-setInterval = globals.setInterval;
-clearInterval = globals.clearTimeout;
+setTimeout = timer.setTimeout;
+clearTimeout = timer.clearTimeout;
+setInterval = timer.setInterval;
+clearInterval = timer.clearTimeout;
