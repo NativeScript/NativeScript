@@ -1,10 +1,58 @@
 ﻿/**
   * Android specific global functions implementation.
   */
-export function setTimeout(callback: Function, milliseconds: number): void {
-    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(
-        new java.lang.Runnable({
-            run: function () { callback(); }
-        }),
-        long(milliseconds));
+var timeoutHandler;
+var timeoutCallbacks = {};
+
+function createHadlerAndGetId() : number {
+    if (!timeoutHandler) {
+        timeoutHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    }
+
+    return new Date().getUTCMilliseconds();
+}
+
+export function setTimeout(callback: Function, milliseconds: number): number {
+    var id = createHadlerAndGetId();
+
+    var runnable = new java.lang.Runnable({
+        run: function () {
+            callback();
+            timeoutCallbacks[id] = null;
+        }
+    });
+
+    if (!timeoutCallbacks[id]) {
+        timeoutCallbacks[id] = runnable;
+    }
+
+    timeoutHandler.postDelayed(runnable, long(milliseconds));
+
+    return id;
+}
+
+export function clearTimeout(id: number): void {
+    if (timeoutCallbacks[id]) {
+        timeoutHandler.removeCallbacks(timeoutCallbacks[id]);
+        timeoutCallbacks[id] = null;
+    }
+}
+
+export function setInterval(callback: Function, milliseconds: number): number {
+    var id = createHadlerAndGetId();
+
+    var runnable = new java.lang.Runnable({
+        run: function () {
+            callback();
+            timeoutHandler.postDelayed(runnable, long(milliseconds));
+        }
+    });
+
+    if (!timeoutCallbacks[id]) {
+        timeoutCallbacks[id] = runnable;
+    }
+
+    timeoutHandler.postDelayed(runnable, long(milliseconds));
+
+    return id;
 }
