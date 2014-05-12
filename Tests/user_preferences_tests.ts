@@ -1,5 +1,5 @@
 ﻿
-var TKUnit = require("TestModules/TKUnit");
+var TKUnit = require("Tests/TKUnit");
 var UserPreferences = require("UserPreferences");
 
 var stringKey:string = "stringKey";

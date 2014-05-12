@@ -8,7 +8,7 @@ var fs = require("FileSystem");
 // The pre-required `fs` module is used throughout the following code snippets.
 // </snippet>
 
-var TKUnit = require("TestModules/TKUnit");
+var TKUnit = require("Tests/TKUnit");
 
 // <snippet name="file-system">
 // ## Create
