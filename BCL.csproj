@@ -46,13 +46,23 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'iOS_Tests'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Android_Tests'">
+    <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>True</UseIIS>
+          <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>63708</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
@@ -129,6 +139,12 @@
     <TypeScriptCompile Include="Location\location_types.ts">
       <DependentUpon>location.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="Tests\file_system_tests.ts" />
+    <TypeScriptCompile Include="Tests\http_tests.ts" />
+    <TypeScriptCompile Include="Tests\index.ts" />
+    <TypeScriptCompile Include="Tests\location_tests.ts" />
+    <TypeScriptCompile Include="Tests\testRunner.ts" />
+    <TypeScriptCompile Include="Tests\TKUnit.ts" />
     <TypeScriptCompile Include="text\index.ts" />
     <TypeScriptCompile Include="text\text.android.ts">
       <DependentUpon>text.d.ts</DependentUpon>
@@ -177,7 +193,6 @@
     <TypeScriptCompile Include="UserPreferences\user_preferences_common.ts">
       <DependentUpon>user_preferences.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <Content Include="_references.ts" />
     <TypeScriptCompile Include="Console\console.d.ts" />
     <TypeScriptCompile Include="timer\timer.d.ts" />
     <TypeScriptCompile Include="timer\timer.ios.ts">
@@ -227,9 +242,6 @@
     <TypeScriptSourceMap>True</TypeScriptSourceMap>
     <TypeScriptTarget>ES5</TypeScriptTarget>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <TypeScriptSourceMap>True</TypeScriptSourceMap>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'iOS_Deploy'">
     <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
     <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
@@ -242,21 +254,51 @@
     <TypeScriptSourceMap>True</TypeScriptSourceMap>
     <TypeScriptTarget>ES5</TypeScriptTarget>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Android_Tests'">
+    <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'iOS_Tests'">
+    <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
+    <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+  </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />
   <!--
   Custom build tasks
   -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'iOS'">
+    <TargetOS>iOS</TargetOS>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'iOS_Deploy'">
+    <TargetOS>iOS</TargetOS>
     <JSConfig>Deploy\xCode\Configuration.xml</JSConfig>
-    <JSMainFile>app.js</JSMainFile>
+    <JSMainFile>bootstrap.js</JSMainFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'iOS_Tests'">
+    <TargetOS>iOS</TargetOS>
+    <JSConfig>Deploy\xCode\Configuration.xml</JSConfig>
+    <JSMainFile>bootstrap.js</JSMainFile>
+    <CopyTests>true</CopyTests>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Android'">
+    <TargetOS>Android</TargetOS>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Android_Deploy'">
+    <TargetOS>Android</TargetOS>
     <JSConfig>Deploy\Eclipse\Configuration.xml</JSConfig>
-    <JSMainFile>app.js</JSMainFile>
+    <JSMainFile>bootstrap.js</JSMainFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Android_Tests'">
+    <TargetOS>Android</TargetOS>
+    <JSConfig>Deploy\Eclipse\Configuration.xml</JSConfig>
+    <JSMainFile>bootstrap.js</JSMainFile>
+    <CopyTests>true</CopyTests>
   </PropertyGroup>
   <UsingTask TaskName="BuildTasks.CopyForPlatformBuildTask" AssemblyFile="../../Build/lib/BuildTasks.dll" />
   <Target Name="AfterBuild">
-    <CopyForPlatformBuildTask TargetPlatform="$(Configuration)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" JSConfigFile="$(JSConfig)" AppMainJSFile="$(JSMainFile)" />
+    <CopyForPlatformBuildTask TargetPlatform="$(TargetOS)" IncludeTests="$(CopyTests)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" JSConfigFile="$(JSConfig)" AppMainJSFile="$(JSMainFile)" />
   </Target>
   <PropertyGroup>
     <PostBuildEvent>
