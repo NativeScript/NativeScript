@@ -12,7 +12,11 @@ function createHadlerAndGetId() : number {
     return new Date().getUTCMilliseconds();
 }
 
-export function setTimeout(callback: Function, milliseconds: number): number {
+export function setTimeout(callback: Function, milliseconds?: number): number {
+    if (typeof (milliseconds) !== "number") {
+        milliseconds = 0;
+    }
+
     var id = createHadlerAndGetId();
 
     var runnable = new java.lang.Runnable({
@@ -38,7 +42,11 @@ export function clearTimeout(id: number): void {
     }
 }
 
-export function setInterval(callback: Function, milliseconds: number): number {
+export function setInterval(callback: Function, milliseconds?: number): number {
+    if (typeof (milliseconds) !== "number") {
+        milliseconds = 0;
+    }
+
     var id = createHadlerAndGetId();
 
     var runnable = new java.lang.Runnable({

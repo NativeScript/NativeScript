@@ -16,7 +16,11 @@ function createTimerAndGetId(callback: Function, milliseconds: number, shouldRep
     return id;
 }
 
-export function setTimeout(callback: Function, milliseconds: number): number {
+export function setTimeout(callback: Function, milliseconds?: number): number {
+    if (typeof(milliseconds) !== "number") {
+        milliseconds = 0;
+    }
+
     return createTimerAndGetId(callback, milliseconds, false);
 }
 
@@ -28,5 +32,9 @@ export function clearTimeout(id: number): void {
 }
 
 export function setInterval(callback: Function, milliseconds: number): number {
+    if (typeof (milliseconds) !== "number") {
+        milliseconds = 0;
+    }
+
     return createTimerAndGetId(callback, milliseconds, true);
 }
