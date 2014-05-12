@@ -1,7 +1,4 @@
-﻿import consoleModule = require("Console/console");
-
-// TODO: This is put in the global context, is this the preferred approach
-console = new consoleModule.Console();
+﻿require("globals");
 
 export var onLaunch = function (): any {
 }

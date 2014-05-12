@@ -1,7 +1,7 @@
 ﻿// TODO: we should use Foundation.NSLog() but it currently does not work
 // TODO: Is there a better way to implement the info/warn/error
 
-export var log = function (message: string) {
+export var helper_log = function (message: string) {
     log('log: ' + message);
 }
 

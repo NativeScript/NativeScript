@@ -1,6 +1,6 @@
 ﻿var TAG = 'JS';
 
-export var log = function (message: string) {
+export var helper_log = function (message: string) {
     android.util.Log.v(TAG, message);
 }
 

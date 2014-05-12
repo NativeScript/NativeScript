@@ -278,7 +278,7 @@ export class Console {
     }
 
     public log(message: any, ...formatParams: any[]): void {
-        helperModule.log(this.formatParams.apply(this, arguments));
+        helperModule.helper_log(this.formatParams.apply(this, arguments));
     }
 
     public trace(): void {
