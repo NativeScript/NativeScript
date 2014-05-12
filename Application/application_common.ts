@@ -1,19 +1,14 @@
 ﻿require("globals");
 
-export var onLaunch = function (): any {
-}
+export var onLaunch: () => any = undefined;
 
-export var onSuspend = function (): void {
-}
+export var onSuspend: () => any = undefined;
 
-export var onResume = function (): void {
-}
+export var onResume: () => any = undefined;
 
-export var onExit = function (): void {
-}
+export var onExit: () => any = undefined;
 
-export var onLowMemory = function (): void {
-}
+export var onLowMemory: () => any = undefined;
 
 export var android = undefined;
 

@@ -1,108 +1,106 @@
-﻿import utils_module = require("Utils/utils_ios"); 
+﻿import Common = require("UserPreferences/user_preferences_common");
 
-export class UserPreferences {
+var userDefaults = Foundation.NSUserDefaults.standardUserDefaults();
 
-    private userDefaults: any;
-
-    constructor() {
-        this.userDefaults = Foundation.NSUserDefaults.standardUserDefaults();
-    }
-
-    public containsKey(key: string): boolean {
-        // FIXME: is there a better way to do this check?
-        return this.userDefaults.objectForKey(key) ? true : false;
-    }
-
-    public getBoolean(key: string, defaultValue?: boolean): boolean {
-        if (this.containsKey(key)) {
-            return this.userDefaults.boolForKey(key);
-        }
-        if ("undefined" == typeof defaultValue) {
-            defaultValue = false;
-        }
-        return defaultValue;
-    }
-
-    public getDouble(key: string, defaultValue?: number): number {
-        if (this.containsKey(key)) {
-            return this.userDefaults.doubleForKey(key);
-        }
-        if ("undefined" == typeof defaultValue) {
-            defaultValue = 0.0;
-        }
-        return defaultValue;
-    }
-
-    public getInt(key: string, defaultValue?: number): number {
-        if (this.containsKey(key)) {
-            return this.userDefaults.integerForKey(key);
-        }
-        if ("undefined" == typeof defaultValue) {
-            defaultValue = 0;
-        }
-        return defaultValue;
-    }
-
-    public getLong(key: string, defaultValue?: number): number {
-        if (this.containsKey(key)) {
-            return this.userDefaults.integerForKey(key);
-        }
-        if ("undefined" == typeof defaultValue) {
-            defaultValue = 0;
-        }
-        return defaultValue;
-    }
-
-    public getString(key: string, defaultValue?: string): string {
-        if (this.containsKey(key)) {
-            return this.userDefaults.stringForKey(key);
-        }
-        if ("undefined" == typeof defaultValue) {
-            defaultValue = "";
-        }
-        return defaultValue;
-    }
-
-    public getStrings(key: string, defaultValue?: string[]): string[] {
-        if (this.containsKey(key)) {
-            var nsArray = this.userDefaults.stringArrayForKey(key);
-            var jsArray = utils_module.Collections.nsArrayToJSArray(nsArray);
-            return jsArray;
-        }
-        if ("undefined" == typeof defaultValue) {
-            defaultValue = [];
-        }
-        return defaultValue;
-    }
-
-    public setBoolean(key: string, value: boolean) {
-        this.userDefaults.setBoolForKey(value, key);
-        this.userDefaults.synchronize();
-    }
-
-    public setDouble(key: string, value: number) {
-        this.userDefaults.setDoubleForKey(value, key);
-        this.userDefaults.synchronize();
-    }
-
-    public setInt(key: string, value: number) {
-        this.userDefaults.setIntegerForKey(value, key);
-        this.userDefaults.synchronize();
-    }
-
-    public setLong(key: string, value: number) {
-        this.userDefaults.setIntegerForKey(value, key);
-        this.userDefaults.synchronize();
-    }
-
-    public setString(key: string, value: string) {
-        this.userDefaults.setObjectForKey(value, key);
-        this.userDefaults.synchronize();
-    }
-
-    public setStrings(key: string, values: string[]) {
-        var nsArray = utils_module.Collections.jsArrayToNSArray(values);
-        this.userDefaults.setObjectForKey(nsArray, key);
-        this.userDefaults.synchronize();
-    }
+export var hasKey = function (key: string): boolean {
+    Common.checkKey(key);
+    return (null != userDefaults.objectForKey(key)) ? true : false;
 }
+
+// getters
+export var getBoolean = function (key: string, defaultValue?: boolean): boolean {
+    Common.checkKey(key);
+    if (hasKey(key)) {
+        return userDefaults.boolForKey(key);
+    }
+    return defaultValue;
+}
+
+export var getString = function (key: string, defaultValue?: string): string {
+    Common.checkKey(key);
+    if (hasKey(key)) {
+        return userDefaults.stringForKey(key);
+    }
+    return defaultValue;
+}
+
+export var getNumber = function (key: string, defaultValue?: number): number {
+    Common.checkKey(key);
+    if (hasKey(key)) {
+        return userDefaults.doubleForKey(key);
+    }
+    return defaultValue;
+}
+
+// setters
+export var setBoolean = function (key: string, value: boolean): void {
+    Common.checkKey(key);
+    Common.ensureValidValue(value, "boolean");
+    userDefaults.setBoolForKey(value, key);
+    userDefaults.synchronize();
+}
+
+export var setString = function (key: string, value: string): void {
+    Common.checkKey(key);
+    Common.ensureValidValue(value, "string");
+    userDefaults.setObjectForKey(value, key);
+    userDefaults.synchronize();
+}
+
+export var setNumber = function (key: string, value: number): void {
+    Common.checkKey(key);
+    Common.ensureValidValue(value, "number");
+    userDefaults.setDoubleForKey(value, key);
+    userDefaults.synchronize();
+}
+
+/*
+these are commented out to be used only if requested by users or otherwise needed
+
+import utils_module = require("Utils/utils_ios"); 
+
+export var getStringArray = function (key: string, defaultValue?: string[]): string[] {
+    Common.checkKey(key);
+    if (hasKey(key)) {
+        var nsArray = userDefaults.stringArrayForKey(key);
+        var jsArray = utils_module.Collections.nsArrayToJSArray(nsArray);
+        return jsArray;
+    }
+    return defaultValue;
+}
+
+export var getInt = function (key: string, defaultValue?: number): number {
+    Common.checkKey(key);
+    if (hasKey(key)) {
+        return userDefaults.integerForKey(key);
+    }
+    return defaultValue;
+}
+
+export var getLong = function (key: string, defaultValue?: number): number {
+    Common.checkKey(key);
+    if (hasKey(key)) {
+        return Math.ceil(userDefaults.doubleForKey(key));
+    }
+    return defaultValue;
+}
+
+export var setStringArray = function (key: string, values: string[]): void {
+    Common.checkKey(key);
+    var nsArray = utils_module.Collections.jsArrayToNSArray(values);
+    userDefaults.setObjectForKey(nsArray, key);
+    userDefaults.synchronize();
+}
+
+export var setInt = function (key: string, value: number): void {
+    Common.checkKey(key);
+    userDefaults.setIntegerForKey(value, key);
+    userDefaults.synchronize();
+}
+
+export var setLong = function (key: string, value: number): void {
+    Common.checkKey(key);
+    userDefaults.setDoubleForKey(Math.ceil(value), key);
+    userDefaults.synchronize();
+}
+*/

@@ -174,12 +174,16 @@
     <TypeScriptCompile Include="timer\timer.android.ts">
       <DependentUpon>timer.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="UserPreferences\user_preferences_common.ts">
+      <DependentUpon>user_preferences.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <Content Include="_references.ts" />
+    <TypeScriptCompile Include="Console\console.d.ts" />
     <TypeScriptCompile Include="timer\timer.d.ts" />
     <TypeScriptCompile Include="timer\timer.ios.ts">
       <DependentUpon>timer.d.ts</DependentUpon>
     </TypeScriptCompile>
     <Content Include="_references.ts" />
-    <TypeScriptCompile Include="Console\console.d.ts" />
     <Content Include="Image\Readme.md" />
   </ItemGroup>
   <ItemGroup>

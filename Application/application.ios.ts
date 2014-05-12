@@ -54,10 +54,10 @@ class iOSApplication {
                         this.window.backgroundColor = UIKit.UIColor.whiteColor();
                         this.window.makeKeyAndVisible();
 
-                        if (appModule.onLaunch) {
-                            this.window.rootViewController = appModule.onLaunch();
+                        if (exports.onLaunch) {
+                            this.window.rootViewController = exports.onLaunch();
                         } else {
-                            log("Missing TK.UI.Application.current.onLaunch");
+                            log("Missing Application.onLaunch");
                         }
 
                         log("applicationDidFinishLaunchingWithOptions finished.");
@@ -66,8 +66,8 @@ class iOSApplication {
 
                     applicationDidBecomeActive: function (application) {
                         log("applicationDidBecomeActive: " + application);
-                        if (appModule.onResume) {
-                            appModule.onResume();
+                        if (exports.onResume) {
+                            exports.onResume();
                         }
                     },
 
@@ -77,8 +77,8 @@ class iOSApplication {
 
                     applicationDidEnterBackground: function (application) {
                         log("applicationDidEnterBackground: " + application);
-                        if (appModule.onSuspend) {
-                            appModule.onSuspend();
+                        if (exports.onSuspend) {
+                            exports.onSuspend();
                         }
                     },
 
@@ -88,15 +88,15 @@ class iOSApplication {
 
                     applicationWillTerminate: function (application) {
                         log("applicationWillTerminate: " + application);
-                        if (appModule.onExit) {
-                            appModule.onExit();
+                        if (exports.onExit) {
+                            exports.onExit();
                         }
                     },
 
                     applicationDidReceiveMemoryWarning: function (application) {
                         log("applicationDidReceiveMemoryWarning: " + application);
-                        if (appModule.onLowMemory) {
-                            appModule.onLowMemory();
+                        if (exports.onLowMemory) {
+                            exports.onLowMemory();
                         }
                     }
                 }
