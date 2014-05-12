@@ -30,3 +30,5 @@ OR
 	...
 	timer.clearInterval(intervalId)
 ```
+
+The second parameter for setTimeout and setInterval is optional with default value of 0.
