@@ -89,8 +89,57 @@ export var wait = function(ms)
         Foundation.NSRunLoop.currentRunLoop().runUntilDate(Foundation.NSDate.dateWithTimeIntervalSinceNow(ms / 1000));
     }
     else if (Application.android) {
-        java.lang.Thread.sleep(long(ms));
-        java.lang.Thread.yield();
+        // java.lang.Thread.sleep(long(ms));
+        // java.lang.Thread.yield();
+        // TODO: Not yet fully implemented
+        // doModal();
+    }
+}
+
+var doModal = function () {
+    var clsMsgQueue = java.lang.Class.forName("android.os.MessageQueue");
+    var clsMsg = java.lang.Class.forName("android.os.Message");
+
+    var nextMethod: java.lang.reflect.Method;
+    var methods = clsMsgQueue.getDeclaredMethods();
+    var i;
+    for (i = 0; i < methods.length; i++) {
+        if (methods[i].getName() === "next") {
+            nextMethod = methods[i];
+            break;
+        }
+    }
+
+    nextMethod.setAccessible(true);
+
+    var targetField;
+    var fields = clsMsg.getDeclaredFields();
+    for (i = 0; i < fields.length; i++) {
+        if (fields[i].getName() === "target") {
+            targetField = fields[i];
+            break;
+        }
+    }
+
+    targetField.setAccessible(true);
+
+    var quitModal = false;
+    var queue = android.os.Looper.myQueue();
+
+    var msg;
+    var obj = new Array(0);
+    while (!quitModal) {
+        msg = nextMethod.invoke(queue, [{}]);
+        if (msg) {
+            var target = targetField.get(msg);
+            if (!target) {
+                // No target is a magic identifier for the quit message.
+                quitModal = true;
+            } else {
+                target.dispatchMessage(msg);
+            }
+            msg.recycle();
+        }
     }
 }
  
