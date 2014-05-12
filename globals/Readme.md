@@ -2,5 +2,8 @@
 ```js
     require("globals");
 
-	setTimeout(function(){ log("Test"); }, 2000);
+	setTimeout(function(){ console.log("Test"); }, 2000);
+
 ```
+
+Global functions/objects are: setTimeout, clearTimeout, setInterval, clearInterval and console. 
