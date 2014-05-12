@@ -18,7 +18,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
             request.asBitmap().setCallback(new com.koushikdutta.async.future.FutureCallback({
                 onCompleted: function (error, data) {
                     if (error) {
-                        d.reject(error);
+                        d.reject(new Error(error.toString()));
                     } else {
                         d.resolve({
                             content: {
@@ -58,7 +58,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
             var StringCallback = com.koushikdutta.async.http.AsyncHttpClient.StringCallback.extends({
                 onCompleted: function (error, response, result) {
                     if (error) {
-                        d.reject(error);
+                        d.reject(new Error(error.toString()));
                     } else {
                         var headers = {};
                         var rawHeaders = response.getHeaders().headers;
