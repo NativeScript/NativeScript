@@ -58,6 +58,13 @@ export var setNumber = function(key: string, value: number): void {
     editor.commit();
 }
 
+export var remove = function (key: string): void {
+    Common.checkKey(key);
+    var editor = sharedPreferences.edit();
+    editor.remove(key);
+    editor.commit();
+}
+
 /*
 these are commented out to be used only if requested by users or otherwise needed
 

@@ -198,6 +198,7 @@
     <TypeScriptCompile Include="timer\timer.ios.ts">
       <DependentUpon>timer.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="Tests\user_preferences_tests.ts" />
     <Content Include="_references.ts" />
     <Content Include="Image\Readme.md" />
   </ItemGroup>
