@@ -41,7 +41,7 @@ export var test_getImage = function () {
 };
 
 export var test_getImage_fail = function () {
-    http.getImage("htadvtp://www.google.com/images/errors/logo_sm_2.png").fail(function (e) {
+    http.getImage("htadvtp://www.google.com/images/errors/logo_sm_2.pngm").fail(function (e) {
         TKUnit.assert(e instanceof Error, "Result from getImage().fail() should be Error!");
     });
 };
