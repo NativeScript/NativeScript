@@ -1,6 +1,19 @@
-﻿Sample code:
+﻿
+Used to store strings, booleans and numbers in built-in key/value store
+Uses SharedPreferences on Android and NSUserDefaults on iOS
+
+Sample code:
 
 ```
-// TODO: Add API usage
-// TODO: We may think to expose an instance through the Application class - e.g. tk.ui.Application.userPreferences, like in Windows (Phone) 8.
+UserPreferences.setBoolean("boolKey", false);
+var bValue = UserPreferences.getBoolean("boolKey");
+
+var sValue = UserPreferences.getString("noSuchStringKey", "No string value");
+// will return "No string value" if there is no such value
+
+var weHaveKey = UserPreferences.hasKey("boolKey");
+
+if (weHaveKey) {
+	UserPreferences.remove("boolKey");
+}
 ```
