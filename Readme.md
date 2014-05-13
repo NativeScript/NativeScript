@@ -21,27 +21,32 @@ There are four different configurations of the project:
 2. Android_Deploy <br/>
    Same as the Android configuration plus the generated javascript is copied to the tns_modules folder in the targeted Eclipse project.
    The path to the project is taken from the `BCL/Deploy/Eclipse/Configuration.xml` file. The expected XML structure is:
-   ```xml
+
+```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <JSFolder>
   <Path>C:\Work\Git\xPlatCore\Applications\Android\UnitTestApp\assets\tns_modules</Path>
 </JSFolder>
-   ```
+```
+
 3. Android_Tests <br/>
    Same as Android_Deploy plus the Tests folder in the BCL is copied to the output directory.
 
 4. iOS <br/>
    This configuration will create a `bin/iOS` folder and output all the iOS-related files there.
+
 5. iOS_Deploy <br/>
    Same as the iOS configuration plus the generated javascript is copied to the JS folder in the testing xCode project. 
    The path to the project is taken from the `BCL/Deploy/xCode/Configuration.xml` file. The expected XML structure is:
-   ```xml
+
+```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <JSFolder>
   <Path>Z:\Kimera\JDBridgeApp\JDBridgeApp\js</Path>
 </JSFolder>
-   ```
+```
    In order to use this path you will need to map a shared MAC's folder and access it from your PC.
+
 6. iOS_Tests <br/>
    Same as iOS_Deploy plus the Tests folder in the BCL is copied to the output directory.
 
