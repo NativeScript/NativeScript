@@ -1,5 +1,5 @@
-﻿import app_module = require("Application/application");
-import utilsModule = require("Utils/utils_ios");
+﻿import app_module = require("application/application");
+import utilsModule = require("utils/utils_ios");
 import textModule = require("text/text");
 
 // TODO: Implement all the APIs receiving callback using async blocks

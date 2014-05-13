@@ -77,66 +77,67 @@
     </VisualStudio>
   </ProjectExtensions>
   <ItemGroup>
-    <TypeScriptCompile Include="Application\application.android.ts">
+    <TypeScriptCompile Include="application\application.android.ts">
       <DependentUpon>application.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Application\application_common.ts">
+    <TypeScriptCompile Include="application\application_common.ts">
       <DependentUpon>application.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Application\application.d.ts" />
-    <TypeScriptCompile Include="Application\application.ios.ts">
+    <TypeScriptCompile Include="application\application.d.ts" />
+    <TypeScriptCompile Include="application\application.ios.ts">
       <DependentUpon>application.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Console\console.ts">
+    <TypeScriptCompile Include="console\console.ts">
       <DependentUpon>console.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Console\console_helper.android.ts">
+    <TypeScriptCompile Include="console\console_helper.android.ts">
       <DependentUpon>console_helper.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Console\console_helper.d.ts" />
-    <TypeScriptCompile Include="Console\console_helper.ios.ts">
+    <TypeScriptCompile Include="console\console_helper.d.ts" />
+    <TypeScriptCompile Include="console\console_helper.ios.ts">
       <DependentUpon>console_helper.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="declarations.d.ts" />
     <TypeScriptCompile Include="declarations.android.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Camera\camera.android.ts">
+    <TypeScriptCompile Include="camera\camera.android.ts">
       <DependentUpon>camera.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Camera\camera.d.ts" />
-    <TypeScriptCompile Include="Camera\camera.ios.ts">
+    <TypeScriptCompile Include="camera\camera.d.ts" />
+    <TypeScriptCompile Include="camera\camera.ios.ts">
       <DependentUpon>camera.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="declarations.ios.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="FileSystem\file_system.d.ts" />
-    <TypeScriptCompile Include="FileSystem\file_system.ts">
+    <TypeScriptCompile Include="filesystem\file_system.d.ts" />
+    <TypeScriptCompile Include="filesystem\file_system.ts">
       <DependentUpon>file_system.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="FileSystem\file_system_access.android.ts">
+    <TypeScriptCompile Include="filesystem\file_system_access.android.ts">
       <DependentUpon>file_system_access.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="FileSystem\file_system_access.d.ts" />
-    <TypeScriptCompile Include="FileSystem\file_system_access.ios.ts">
+    <TypeScriptCompile Include="filesystem\file_system_access.d.ts" />
+    <TypeScriptCompile Include="filesystem\file_system_access.ios.ts">
       <DependentUpon>file_system_access.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Image\image.ios.ts">
+    <TypeScriptCompile Include="image\image.android.ts">
       <DependentUpon>image.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Image\image.android.ts">
+    <TypeScriptCompile Include="image\image.d.ts" />
+    <TypeScriptCompile Include="image\image.ios.ts">
       <DependentUpon>image.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Image\image.d.ts" />
-    <TypeScriptCompile Include="Location\location.android.ts">
+    <TypeScriptCompile Include="image\index.ts" />
+    <TypeScriptCompile Include="location\location.android.ts">
       <DependentUpon>location.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Location\location.d.ts" />
-    <TypeScriptCompile Include="Location\location.ios.ts">
+    <TypeScriptCompile Include="location\location.d.ts" />
+    <TypeScriptCompile Include="location\location.ios.ts">
       <DependentUpon>location.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Location\location_types.ts">
+    <TypeScriptCompile Include="location\location_types.ts">
       <DependentUpon>location.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="Tests\file_system_tests.ts" />
@@ -153,16 +154,9 @@
     <TypeScriptCompile Include="text\text.ios.ts">
       <DependentUpon>text.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="UserPreferences\user_preferences.android.ts">
-      <DependentUpon>user_preferences.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="UserPreferences\user_preferences.d.ts" />
-    <TypeScriptCompile Include="UserPreferences\user_preferences.ios.ts">
-      <DependentUpon>user_preferences.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="Utils\module_merge.ts" />
-    <TypeScriptCompile Include="Utils\utils_android.ts" />
-    <TypeScriptCompile Include="Utils\utils_ios.ts" />
+    <TypeScriptCompile Include="utils\module_merge.ts" />
+    <TypeScriptCompile Include="utils\utils_android.ts" />
+    <TypeScriptCompile Include="utils\utils_ios.ts" />
     <TypeScriptCompile Include="http\http_request.android.ts">
       <DependentUpon>http_request.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -173,13 +167,11 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="http\index.ts" />
-    <TypeScriptCompile Include="UserPreferences\index.ts" />
-    <TypeScriptCompile Include="Location\index.ts" />
-    <TypeScriptCompile Include="Image\index.ts" />
-    <TypeScriptCompile Include="FileSystem\index.ts" />
-    <TypeScriptCompile Include="Console\index.ts" />
-    <TypeScriptCompile Include="Camera\index.ts" />
-    <TypeScriptCompile Include="Application\index.ts" />
+    <TypeScriptCompile Include="location\index.ts" />
+    <TypeScriptCompile Include="filesystem\index.ts" />
+    <TypeScriptCompile Include="console\index.ts" />
+    <TypeScriptCompile Include="camera\index.ts" />
+    <TypeScriptCompile Include="application\index.ts" />
     <TypeScriptCompile Include="android17.d.ts" />
     <TypeScriptCompile Include="promises\promises.ts" />
     <TypeScriptCompile Include="promises\index.ts" />
@@ -190,21 +182,28 @@
     <TypeScriptCompile Include="timer\timer.android.ts">
       <DependentUpon>timer.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="UserPreferences\user_preferences_common.ts">
-      <DependentUpon>user_preferences.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="Console\console.d.ts" />
+    <TypeScriptCompile Include="console\console.d.ts" />
     <TypeScriptCompile Include="timer\timer.d.ts" />
     <TypeScriptCompile Include="timer\timer.ios.ts">
       <DependentUpon>timer.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Tests\user_preferences_tests.ts" />
+    <TypeScriptCompile Include="Tests\local_settings_tests.ts" />
+    <Content Include="image\Readme.md" />
+    <Content Include="localsettings\index.ts" />
+    <Content Include="localsettings\local_settings.android.ts">
+      <DependentUpon>local_settings.d.ts</DependentUpon>
+    </Content>
+    <Content Include="localsettings\local_settings.d.ts" />
+    <Content Include="localsettings\local_settings.ios.ts">
+      <DependentUpon>local_settings.d.ts</DependentUpon>
+    </Content>
+    <Content Include="localsettings\local_settings_common.ts">
+      <DependentUpon>local_settings.d.ts</DependentUpon>
+    </Content>
     <Content Include="_references.ts" />
-    <Content Include="Image\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="libjs.d.ts" />
-    <Content Include="UserPreferences\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="http\Readme.md" />
@@ -213,17 +212,17 @@
     <Content Include="Readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Console\Readme.md" />
+    <Content Include="console\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Deploy\Eclipse\" />
     <Folder Include="Deploy\xCode\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Location\Readme.md" />
+    <Content Include="location\Readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Application\Readme.md" />
+    <Content Include="application\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="globals\Readme.md" />
@@ -236,6 +235,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Tests\Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="localsettings\Readme.md" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
     <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>

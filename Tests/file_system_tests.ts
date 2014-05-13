@@ -3,7 +3,7 @@
 // # File System
 // Using the file system requires the FileSystem module.
 // ``` JavaScript
-var fs = require("FileSystem");
+var fs = require("filesystem");
 // ```
 // The pre-required `fs` module is used throughout the following code snippets.
 // </snippet>

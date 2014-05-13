@@ -20,11 +20,11 @@ log("JavaScript loading ended.");
 
 */
 
-import appModule = require("Application/application_common");
+import appModule = require("application/application_common");
 
 // merge the exports of the application_common file with the exports of this file
 declare var exports;
-require("Utils/module_merge").merge(appModule, exports);
+require("utils/module_merge").merge(appModule, exports);
 
 // TODO: Declarations
 export var init = function (nativeApp: any) {

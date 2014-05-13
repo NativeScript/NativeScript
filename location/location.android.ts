@@ -1,9 +1,9 @@
-﻿import types = require("Location/location_types");
-import appModule = require("Application/application");
+﻿import types = require("location/location_types");
+import appModule = require("application/application");
 
 // merge the exports of the types module with the exports of this file
 declare var exports;
-require("Utils/module_merge").merge(types, exports);
+require("utils/module_merge").merge(types, exports);
 
 export class LocationManager {
     // in meters

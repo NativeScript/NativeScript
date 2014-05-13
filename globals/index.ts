@@ -1,6 +1,6 @@
 ﻿declare var setTimeout, clearTimeout, setInterval, clearInterval;
 import timer = require("timer/timer");
-import consoleModule = require("Console/console");
+import consoleModule = require("console/console");
 
 setTimeout = timer.setTimeout;
 clearTimeout = timer.clearTimeout;

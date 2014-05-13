@@ -1,4 +1,4 @@
-import helperModule = require("Console/console_helper");
+import helperModule = require("console/console_helper");
 
 export class Console {
     private _timers: any;

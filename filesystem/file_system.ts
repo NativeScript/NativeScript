@@ -1,4 +1,4 @@
-﻿import file_access_module = require("FileSystem/file_system_access");
+﻿import file_access_module = require("filesystem/file_system_access");
 import promises = require("promises/promises");
 
 // The FileSystemAccess implementation, used through all the APIs.

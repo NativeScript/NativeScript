@@ -1,4 +1,4 @@
-﻿import appModule = require("Application/application");
+﻿import appModule = require("application/application");
 
 export enum ImageFormat {
     PNG,

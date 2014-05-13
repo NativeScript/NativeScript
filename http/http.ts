@@ -1,4 +1,4 @@
-import image_module = require("Image/image");
+import image_module = require("image/image");
 import promises = require("promises/promises");
 import http = require("http/http_request");
 
