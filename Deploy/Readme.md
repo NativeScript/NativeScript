@@ -1,6 +1,6 @@
 ﻿You can specify output folder for Eclipse and xCode using Configuration.xml placed in respective folder. For example:
 
-##Android 
+## Android 
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -9,10 +9,18 @@
 </JSFolder> 
 ```
 
-##xCode
+## xCode
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <JSFolder>
   <Path>Z:\TNSBridgeApp\TNSBridgeApp\TNSBridgeApp\tns_modules\</Path>
+</JSFolder> 
+```
+
+## UnitTestApp - Ready to run
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<JSFolder>
+  <Path>C:\Work\Git\xPlatCore\Applications\Android\UnitTestApp\assets\tns_modules</Path>
 </JSFolder> 
 ```
