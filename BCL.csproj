@@ -231,6 +231,12 @@
   <ItemGroup>
     <Content Include="timer\Readme.md" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Deploy\Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Tests\Readme.md" />
+  </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
     <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
     <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
