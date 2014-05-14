@@ -122,12 +122,16 @@
     <TypeScriptCompile Include="filesystem\file_system_access.ios.ts">
       <DependentUpon>file_system_access.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="image\image.android.ts">
+    <TypeScriptCompile Include="image\image.ts">
       <DependentUpon>image.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="image\image.d.ts" />
-    <TypeScriptCompile Include="image\image.ios.ts">
-      <DependentUpon>image.d.ts</DependentUpon>
+    <TypeScriptCompile Include="image\image_impl.android.ts">
+      <DependentUpon>image_impl.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="image\image_impl.d.ts" />
+    <TypeScriptCompile Include="image\image_impl.ios.ts">
+      <DependentUpon>image_impl.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="image\index.ts" />
     <TypeScriptCompile Include="location\location.android.ts">
@@ -142,6 +146,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="Tests\file_system_tests.ts" />
     <TypeScriptCompile Include="Tests\http_tests.ts" />
+    <TypeScriptCompile Include="Tests\image-tests.ts" />
     <TypeScriptCompile Include="Tests\index.ts" />
     <TypeScriptCompile Include="Tests\location_tests.ts" />
     <TypeScriptCompile Include="Tests\testRunner.ts" />

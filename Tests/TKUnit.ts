@@ -70,7 +70,7 @@ export var runTestModule = function (module, moduleName) {
     console.info("--- " + moduleName + " TESTS COMPLETE --- (" + totalSuccess + " of " + totalTests + ") OK, " + (totalTests - totalSuccess) + " failed");
 };
 
-export var assert = function (test: boolean, message?: string) {
+export var assert = function (test: any, message?: string) {
     if (!test) {
         throw new Error(message);
     }
@@ -85,9 +85,14 @@ export var wait = function (ms) {
     }
 };
 
-export var waitUntilReady = function (isReady, timeoutSec) {
+export var waitUntilReady = function (isReady: () => boolean, timeoutSec?: number) {
     if (!isReady) {
         return;
+    }
+
+    if (!timeoutSec) {
+        // TODO: How much should be the default timeout in seconds?
+        timeoutSec = 20;
     }
 
     if (Application.ios) {
@@ -109,7 +114,7 @@ export var waitUntilReady = function (isReady, timeoutSec) {
     }
 };
 
-var doModalAndroid = function (quitLoop, timeoutSec) {
+var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number) {
     if (!quitLoop) {
         return;
     }
@@ -123,31 +128,27 @@ var doModalAndroid = function (quitLoop, timeoutSec) {
     for (i = 0; i < methods.length; i++) {
         if (methods[i].getName() === "next") {
             nextMethod = methods[i];
+            nextMethod.setAccessible(true);
             break;
         }
     }
-
-    nextMethod.setAccessible(true);
 
     var targetField;
     var fields = clsMsg.getDeclaredFields();
     for (i = 0; i < fields.length; i++) {
         if (fields[i].getName() === "target") {
             targetField = fields[i];
+            targetField.setAccessible(true);
             break;
         }
     }
 
-    targetField.setAccessible(true);
-
     var queue = android.os.Looper.myQueue();
 
     var quit = false;
-    if (timeoutSec) {
-        timer.setTimeout(function () {
-            quit = true;
-        }, timeoutSec * 1000);
-    }
+    timer.setTimeout(function () {
+        quit = true;
+    }, timeoutSec * 1000);
 
     var msg;
 
@@ -163,7 +164,7 @@ var doModalAndroid = function (quitLoop, timeoutSec) {
             msg.recycle();
         }
 
-        if (quitLoop()) {
+        if (!quit && quitLoop()) {
             quit = true;
         }
     }

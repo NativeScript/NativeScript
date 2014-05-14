@@ -80,4 +80,7 @@ export declare function fromData(data: any): Image;
 */
 export declare function fromNativeBitmap(source: any): Image;
 
-// export declare function fromUrl
+/**
+* Downloads the image from the provided Url and creates a new Image instance from it.
+*/
+export declare function fromUrl(url: string): promises.Promise<Image>;

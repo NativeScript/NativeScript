@@ -2,6 +2,7 @@
 // <snippet name="file-system">
 // # File System
 // Using the file system requires the FileSystem module.
+// TODO: var fs = require("filesystem"); => this will break the intellisense of the tests
 // ``` JavaScript
 import fs = require("filesystem/file_system");
 // ```
@@ -347,7 +348,7 @@ export var testGetParent = function () {
     TKUnit.assert(<any>file, "Failed to create file in the Documents folder.");
     // </hide>
     //// The parent folder of the file would be the documents folder.
-    var parent = file.getParent();
+    var parent = file.parent;
     // <hide>
     TKUnit.assert(documents == parent, "The parent folder should be the Documents folder.");
     file.remove();

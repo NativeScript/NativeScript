@@ -17,9 +17,11 @@ export declare class FileSystemEntity {
     public path: string;
 
     /**
-      * Gets the Folder object representing the parent of this entity. Will be null for a root folder like Documents or Temporary.
-      */
-    public getParent(): Folder;
+    * Gets the Folder object representing the parent of this entity. 
+    * Will be null for a root folder like Documents or Temporary.
+    * This property is readonly.
+    */
+    public parent: Folder;
 
     /**
       * Removes (deletes) the current Entity from the file system.
