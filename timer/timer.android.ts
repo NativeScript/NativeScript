@@ -4,7 +4,7 @@
 var timeoutHandler;
 var timeoutCallbacks = {};
 
-function createHadlerAndGetId() : number {
+function createHadlerAndGetId(): number {
     if (!timeoutHandler) {
         timeoutHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     }
@@ -16,7 +16,7 @@ export function setTimeout(callback: Function, milliseconds = 0): number {
     var id = createHadlerAndGetId();
 
     var runnable = new java.lang.Runnable({
-        run: function () {
+        run: () => {
             callback();
             timeoutCallbacks[id] = null;
         }
@@ -42,7 +42,7 @@ export function setInterval(callback: Function, milliseconds = 0): number {
     var id = createHadlerAndGetId();
 
     var runnable = new java.lang.Runnable({
-        run: function () {
+        run: () => {
             callback();
             timeoutHandler.postDelayed(runnable, long(milliseconds));
         }
