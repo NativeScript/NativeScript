@@ -1,4 +1,4 @@
-﻿declare var setTimeout, clearTimeout, setInterval, clearInterval;
+﻿declare var setTimeout, clearTimeout, setInterval, clearInterval, console;
 import timer = require("timer/timer");
 import consoleModule = require("console/console");
 

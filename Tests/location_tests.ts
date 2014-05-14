@@ -19,19 +19,14 @@ export var testLocation = function () {
             console.log('Location error received: ' + error);
             locationReceived = error;
         }
-    );
+        );
 
-    var timeoutAfter = 50; // 5 seconds timeout
-    while (typeof locationReceived == 'undefined') {
-        if (0 >= --timeoutAfter) {
-            locationReceived = 'Location search timed out!';
-            break;
-        }
-        TKUnit.wait(100);
+    var isReady = function () {
+        return locationReceived;
     }
 
+    TKUnit.waitUntilReady(isReady, 3);
     locationManager.stopLocationMonitoring();
-
     TKUnit.assert(true === locationReceived, locationReceived);
 };
 

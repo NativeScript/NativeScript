@@ -1,5 +1,4 @@
-﻿
-/* Notes:
+﻿/* Notes:
 
  1. all test function names should begin with 'test'
  2. (if exists) at the beginning of module test setUpModule() module function is called
@@ -10,23 +9,23 @@
  
 */
 
-var Application = require("application");
+import Application = require("application/application");
+import timer = require("timer/timer");
 
-var runTest = function(test, testName) {
+var runTest = function (test, testName) {
     test();
     console.info("--- [" + testName + "] OK");
-}
+};
 
-export var runTestModule = function(module, moduleName){
+export var runTestModule = function (module, moduleName) {
     console.info("--- " + moduleName + " TESTS BEGIN ---");
     console.time(moduleName);
-    
+
     try {
         if (module.setUpModule) {
             module.setUpModule();
         }
-    }
-    catch (e) {
+    } catch (e) {
         console.error("--- [" + moduleName + ".setUpModule()] FAILED: " + e.message);
     }
 
@@ -34,29 +33,26 @@ export var runTestModule = function(module, moduleName){
     var totalSuccess = 0;
     for (var testName in module) {
         var testFunction = module[testName];
-        if ((typeof(testFunction) === "function") && (testName.substring(0, 4) == "test")) {
+        if ((typeof (testFunction) === "function") && (testName.substring(0, 4) == "test")) {
             try {
                 if (module.setUp) {
                     module.setUp();
                 }
-            }
-            catch (e) {
+            } catch (e) {
                 console.error("--- [" + moduleName + ".setUp()] FAILED: " + e.message);
             }
             try {
                 totalTests++;
                 runTest(testFunction, testName);
                 totalSuccess++;
-            }
-            catch (e) {
+            } catch (e) {
                 console.error("--- [" + testName + "] FAILED: " + e.message);
             }
             try {
                 if (module.tearDown) {
                     module.tearDown();
                 }
-            }
-            catch (e) {
+            } catch (e) {
                 console.error("--- [" + moduleName + ".tearDown()] FAILED: " + e.message);
             }
         }
@@ -66,41 +62,62 @@ export var runTestModule = function(module, moduleName){
         if (module.tearDownModule) {
             module.tearDownModule();
         }
-    }
-    catch (e) {
+    } catch (e) {
         console.error("--- [" + moduleName + ".tearDownModule()] FAILED: " + e.message);
     }
-    
+
     console.timeEnd(moduleName);
     console.info("--- " + moduleName + " TESTS COMPLETE --- (" + totalSuccess + " of " + totalTests + ") OK, " + (totalTests - totalSuccess) + " failed");
-}
+};
 
-export var assert = function(test: boolean, message?: string)
-{
-    //console.assert(test, message);
+export var assert = function (test: boolean, message?: string) {
     if (!test) {
         throw new Error(message);
     }
-}
+};
 
-export var wait = function(ms)
-{
+export var wait = function (ms) {
     if (Application.ios) {
         Foundation.NSRunLoop.currentRunLoop().runUntilDate(Foundation.NSDate.dateWithTimeIntervalSinceNow(ms / 1000));
+    } else if (Application.android) {
+        java.lang.Thread.sleep(long(ms));
+        java.lang.Thread.yield();
     }
-    else if (Application.android) {
-        // java.lang.Thread.sleep(long(ms));
-        // java.lang.Thread.yield();
-        // TODO: Not yet fully implemented
-        // doModal();
-    }
-}
+};
 
-var doModal = function () {
+export var waitUntilReady = function (isReady, timeoutSec) {
+    if (!isReady) {
+        return;
+    }
+
+    if (Application.ios) {
+        var waitTime = 20 / 1000;
+        var totalWaitTime = 0;
+        while (true) {
+            Foundation.NSRunLoop.currentRunLoop().runUntilDate(Foundation.NSDate.dateWithTimeIntervalSinceNow(waitTime));
+            if (isReady()) {
+                break;
+            }
+
+            totalWaitTime += waitTime;
+            if (timeoutSec && totalWaitTime >= timeoutSec) {
+                break;
+            }
+        }
+    } else if (Application.android) {
+        doModalAndroid(isReady, timeoutSec);
+    }
+};
+
+var doModalAndroid = function (quitLoop, timeoutSec) {
+    if (!quitLoop) {
+        return;
+    }
+
     var clsMsgQueue = java.lang.Class.forName("android.os.MessageQueue");
     var clsMsg = java.lang.Class.forName("android.os.Message");
 
-    var nextMethod: java.lang.reflect.Method;
+    var nextMethod;
     var methods = clsMsgQueue.getDeclaredMethods();
     var i;
     for (i = 0; i < methods.length; i++) {
@@ -123,23 +140,31 @@ var doModal = function () {
 
     targetField.setAccessible(true);
 
-    var quitModal = false;
     var queue = android.os.Looper.myQueue();
 
+    var quit = false;
+    if (timeoutSec) {
+        timer.setTimeout(function () {
+            quit = true;
+        }, timeoutSec * 1000);
+    }
+
     var msg;
-    var obj = new Array(0);
-    while (!quitModal) {
-        msg = nextMethod.invoke(queue, [{}]);
+
+    while (!quit) {
+        msg = nextMethod.invoke(queue, null);
         if (msg) {
             var target = targetField.get(msg);
             if (!target) {
-                // No target is a magic identifier for the quit message.
-                quitModal = true;
+                quit = true;
             } else {
                 target.dispatchMessage(msg);
             }
             msg.recycle();
         }
+
+        if (quitLoop()) {
+            quit = true;
+        }
     }
-}
- 
+};
