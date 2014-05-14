@@ -62,7 +62,7 @@ export var testPathSeparator = function () {
 
 export var testFileFromPath = function () {
     // <snippet name="file-system">
-    // ### Get or Create a Folder With Path
+    // ### Get or Create a File With Path
     // The following example writes some text to a file created for path.
     // It will create a new file or overwrite an existing file.
     // ``` JavaScript
@@ -99,7 +99,7 @@ export var testFileFromPath = function () {
 
 export var testFolderFromPath = function () {
     // <snippet name="file-system">
-    // ### Get or Create a File With Path
+    // ### Get or Create a Folder With Path
     // ``` JavaScript
     var path = fs.path.join(fs.knownFolders.documents().path, "music");
     var folder = fs.Folder.fromPath(path);
