@@ -189,17 +189,17 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="Tests\local_settings_tests.ts" />
     <Content Include="image\Readme.md" />
-    <Content Include="localsettings\index.ts" />
-    <Content Include="localsettings\local_settings.android.ts">
+    <TypeScriptCompile Include="localsettings\index.ts" />
+    <TypeScriptCompile Include="localsettings\local_settings.android.ts">
       <DependentUpon>local_settings.d.ts</DependentUpon>
-    </Content>
-    <Content Include="localsettings\local_settings.d.ts" />
-    <Content Include="localsettings\local_settings.ios.ts">
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="localsettings\local_settings.d.ts" />
+    <TypeScriptCompile Include="localsettings\local_settings.ios.ts">
       <DependentUpon>local_settings.d.ts</DependentUpon>
-    </Content>
-    <Content Include="localsettings\local_settings_common.ts">
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="localsettings\local_settings_common.ts">
       <DependentUpon>local_settings.d.ts</DependentUpon>
-    </Content>
+    </TypeScriptCompile>
     <Content Include="_references.ts" />
   </ItemGroup>
   <ItemGroup>
