@@ -273,6 +273,11 @@
     <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
     <TypeScriptTarget>ES5</TypeScriptTarget>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Documentation'">
+    <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+  </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />
   <!--
   Custom build tasks
@@ -289,6 +294,10 @@
     <TargetOS>iOS</TargetOS>
     <JSConfig>Deploy\xCode\Configuration.xml</JSConfig>
     <JSMainFile>bootstrap.js</JSMainFile>
+    <CopyTests>true</CopyTests>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Documentation'">
+    <TargetOS>Documentation</TargetOS>
     <CopyTests>true</CopyTests>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Android'">

@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30324.0
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BCL", "BCL.csproj", "{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}"
 EndProject
 Global
@@ -10,6 +8,7 @@ Global
 		Android_Deploy|Any CPU = Android_Deploy|Any CPU
 		Android_Tests|Any CPU = Android_Tests|Any CPU
 		Android|Any CPU = Android|Any CPU
+		Documentation|Any CPU = Documentation|Any CPU
 		iOS_Deploy|Any CPU = iOS_Deploy|Any CPU
 		iOS_Tests|Any CPU = iOS_Tests|Any CPU
 		iOS|Any CPU = iOS|Any CPU
@@ -21,6 +20,8 @@ Global
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android_Tests|Any CPU.Build.0 = Android_Tests|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android|Any CPU.ActiveCfg = Android|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android|Any CPU.Build.0 = Android|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Documentation|Any CPU.ActiveCfg = Documentation|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Documentation|Any CPU.Build.0 = Documentation|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS_Deploy|Any CPU.ActiveCfg = iOS_Deploy|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS_Deploy|Any CPU.Build.0 = iOS_Deploy|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS_Tests|Any CPU.ActiveCfg = iOS_Tests|Any CPU

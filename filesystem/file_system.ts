@@ -48,13 +48,8 @@ var createFolder = function (info: { path: string; name: string; }) {
     return folder;
 };
 
-/**
-* Represents the basic file system entity - a File or a Folder.
-*/
 export class FileSystemEntity {
-    /**
-    * Gets the Folder object representing the parent of this entity. Will be null for a root folder like Documents or Temporary.
-    */
+
     public getParent(): Folder {
         var onError = function (error) {
             throw error;
@@ -68,9 +63,6 @@ export class FileSystemEntity {
         return createFolder(folderInfo);
     }
 
-    /**
-    * Removes the current entity from the file system.
-    */
     public remove(): promises.Promise<any> {
         var fileAccess = getFileAccess();
         var promise = promises.defer<any>();
@@ -91,9 +83,6 @@ export class FileSystemEntity {
         return promise.promise();
     }
 
-    /**
-    * Renames the current entity using the specified name.
-    */
     public rename(newName: string): promises.Promise<any> {
         var deferred = promises.defer<any>();
 
@@ -135,23 +124,14 @@ export class FileSystemEntity {
         return deferred.promise();
     }
 
-    /**
-    * Gets the name of the entity.
-    */
     get name(): string {
         return this[nameProperty];
     }
 
-    /**
-        * Gets the fully-qualified path (including the extension for a File) of the entity.
-        */
     get path(): string {
         return this[pathProperty];
     }
 
-    /**
-        * Gets the fully-qualified path (including the extension for a File) of the entity.
-        */
     get lastModified(): Date {
         var value = this[lastModifiedProperty];
         if (!this[lastModifiedProperty]) {
@@ -162,13 +142,8 @@ export class FileSystemEntity {
     }
 }
 
-/**
-    * Represents a File entity.
-    */
 export class File extends FileSystemEntity {
-    /**
-        * Gets the File instance associated with the specified path.
-        */
+
     public static fromPath(path: string) {
         var onError = function (error) {
             throw error;
@@ -182,30 +157,18 @@ export class File extends FileSystemEntity {
         return createFile(fileInfo);
     }
 
-    /**
-    * Checks whether a File with the specified path already exists.
-    */
     public static exists(path: string): boolean {
         return getFileAccess().fileExists(path);
     }
 
-    /**
-    * Gets the extension of the entity.
-    */
     get extension(): string {
         return this[extensionProperty];
     }
 
-    /**
-        * Gets a value indicating whether the file is currently locked, meaning a background operation associated with this file is running.
-        */
     get isLocked(): boolean {
         return this[fileLockedProperty];
     }
 
-    /**
-      * Reads the content of the file as a string using the specified encoding (defaults to UTF-8).
-      */
     public readText(encoding?: string): promises.Promise<string> {
         this.checkAccess();
 
@@ -229,9 +192,6 @@ export class File extends FileSystemEntity {
         return deferred.promise();
     }
 
-    /**
-      * Writes the provided string to the file, using the specified encoding. Any previous content will be overwritten.
-      */
     public writeText(content: string, encoding?: string): promises.Promise<any> {
         this.checkAccess();
 
@@ -262,13 +222,8 @@ export class File extends FileSystemEntity {
     }
 }
 
-/**
-* Represents a Folder entity.
-*/
 export class Folder extends FileSystemEntity {
-    /**
-    * Attempts to access a Folder at the specified path and creates a new Folder if there is no existing one.
-    */
+
     public static fromPath(path: string): Folder {
         var onError = function (error) {
             throw error;
@@ -282,16 +237,10 @@ export class Folder extends FileSystemEntity {
         return createFolder(folderInfo);
     }
 
-    /**
-    * Checks whether a Folder with the specified path already exists.
-    */
     public static exists(path: string): boolean {
         return getFileAccess().folderExists(path);
     }
 
-    /**
-    * Checks whether this Folder contains a file with the specified name.
-    */
     public contains(name: string): boolean {
         var fileAccess = getFileAccess();
         var path = fileAccess.joinPath(this.path, name);
@@ -303,9 +252,6 @@ export class Folder extends FileSystemEntity {
         return fileAccess.folderExists(path);
     }
 
-    /**
-    * Removes all the files and folders (recursively), contained within this Folder.
-    */
     public clear(): promises.Promise<any> {
         var deferred = promises.defer<any>();
 
@@ -321,16 +267,10 @@ export class Folder extends FileSystemEntity {
         return deferred.promise();
     }
 
-    /**
-    * Determines whether this instance is a KnownFolder (accessed through the KnownFolders object).
-    */
     get isKnown(): boolean {
         return this[isKnownProperty];
     }
 
-    /**
-    * Attempts to open a File with the specified name within this Folder and optionally creates a new File if there is no existing one.
-    */
     public getFile(name: string): File {
         var fileAccess = getFileAccess();
         var path = fileAccess.joinPath(this.path, name);
@@ -347,9 +287,6 @@ export class Folder extends FileSystemEntity {
         return createFile(fileInfo);
     }
 
-    /**
-    * Attempts to open a Folder with the specified name within this Folder and optionally creates a new Folder if there is no existing one.
-    */
     public getFolder(name: string): Folder {
         var fileAccess = getFileAccess();
         var path = fileAccess.joinPath(this.path, name);
@@ -366,9 +303,6 @@ export class Folder extends FileSystemEntity {
         return createFolder(folderInfo);
     }
 
-    /**
-    * Gets all the top-level FileSystem entities residing within this Folder.
-    */
     public getEntities(): promises.Promise<Array<FileSystemEntity>> {
         var deferred = promises.defer<Array<FileSystemEntity>>();
 
@@ -398,11 +332,6 @@ export class Folder extends FileSystemEntity {
         return deferred.promise();
     }
 
-    /**
-    Enumerates all the top-level FileSystem entities residing within this folder.
-    The first parameter is a callback that receives the current entity. 
-    If the callback returns false this will mean for the iteration to stop.
-    */
     public eachEntity(onEntity: (entity: FileSystemEntity) => boolean) {
         if (!onEntity) {
             return;
@@ -427,16 +356,10 @@ export class Folder extends FileSystemEntity {
     }
 }
 
-/**
-* Provides access to the top-level Folders instances that are accessible from the application. Use these as entry points to access the FileSystem.
-*/
 export module knownFolders {
     var _documents: Folder;
     var _temp: Folder;
 
-    /**
-    * Gets the Documents folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
-    */
     export var documents = function (): Folder {
         if (!_documents) {
             var path = getFileAccess().getDocumentsFolderPath();
@@ -448,9 +371,6 @@ export module knownFolders {
         return _documents;
     };
 
-    /**
-    * Gets the Temporary (Caches) folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
-    */
     export var temp = function (): Folder {
         if (!_temp) {
             var path = getFileAccess().getTempFolderPath();
@@ -463,27 +383,16 @@ export module knownFolders {
     }
 }
 
-/**
-* Enables path-specific operations like join, extension, etc.
-*/
 export module path {
-    /**
-    * Normalizes a path, taking care of occurrances like ".." and "//"
-    */
+
     export function normalize(path: string): string {
         return getFileAccess().normalizePath(path);
     }
 
-    /**
-    * Joins all the provided string components, forming a valid and normalized path.
-    */
     export function join(...paths: string[]): string {
         var fileAccess = getFileAccess();
         return fileAccess.joinPaths(paths);
     }
 
-    /**
-    * Gets the string used to separate file paths.
-    */
     export var separator = getFileAccess().getPathSeparator();
 }
