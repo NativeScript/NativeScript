@@ -2,7 +2,7 @@
 /*
 Current launch sequence for iOS looks like:
 
-var app = require("Application/application");
+var app = require("application/application");
 
 app.tk.ui.Application.current.onLaunch = function() {
     log("tk.ui.Application.current.onLaunch");

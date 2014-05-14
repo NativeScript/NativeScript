@@ -13,7 +13,7 @@ app.init({
 		return com.tns.NativeScriptActivity.extends({});
 	},
 	onCreate: function() {
-		require("Application").init(this);
+		require("application").init(this);
 		require("Tests").runAll();
 	} 
 });

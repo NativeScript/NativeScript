@@ -1,2 +1,2 @@
 ﻿declare var module, require;
-module.exports = require("Camera/camera");
+module.exports = require("camera/camera");

@@ -63,7 +63,7 @@ export var remove = function (key: string): void {
 /*
 these are commented out to be used only if requested by users or otherwise needed
 
-import utils_module = require("Utils/utils_ios"); 
+import utils_module = require("utils/utils_ios"); 
 
 export var getStringArray = function (key: string, defaultValue?: string[]): string[] {
     Common.checkKey(key);

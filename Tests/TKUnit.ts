@@ -10,7 +10,7 @@
  
 */
 
-var Application = require("Application");
+var Application = require("application");
 
 var runTest = function(test, testName) {
     test();
