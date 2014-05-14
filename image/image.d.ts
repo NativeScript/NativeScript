@@ -1,4 +1,6 @@
-﻿/**
+﻿import promises = require("promises/promises");
+
+/**
 * Defines the recognized image formats.
 */
 export declare enum ImageFormat {
@@ -77,3 +79,5 @@ export declare function fromData(data: any): Image;
 * The native bitmap object will update either the android or ios properties, depending on the target os.
 */
 export declare function fromNativeBitmap(source: any): Image;
+
+// export declare function fromUrl
