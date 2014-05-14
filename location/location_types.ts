@@ -23,21 +23,31 @@ export class Location {
     public ios: any;      // iOS native location
 }
 
-export class Options {
+export interface Options {
     /**
     * Specifies desired accuracy in meters. Defaults to DesiredAccuracy.HIGH
     */
-    public desiredAccuracy: number;
+    desiredAccuracy?: number;
 
     /**
     * Update distance filter in meters. Specifies how often to update. Default on iOS is no filter, on Android it is 0 meters
     */
-    public updateDistance: number;
+    updateDistance?: number;
 
     /**
     * Minimum time interval between location updates, in milliseconds (ignored on iOS)
     */
-    public minimumUpdateTime: number;
+    minimumUpdateTime?: number;
+
+    /**
+    * how old locations to receive in ms.
+    */
+    maximumAge?: number;
+
+    /**
+    * how long to wait for a location in ms.
+    */
+    timeout?: number;
 }
 
 export class LocationRegion {

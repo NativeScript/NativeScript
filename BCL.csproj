@@ -205,6 +205,9 @@
     <TypeScriptCompile Include="localsettings\local_settings_common.ts">
       <DependentUpon>local_settings.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="location\location_common.ts">
+      <DependentUpon>location.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <Content Include="_references.ts" />
   </ItemGroup>
   <ItemGroup>
