@@ -36,7 +36,7 @@ export var test_getImage_isDefined = function () {
 
 export var test_getImage = function () {
     http.getImage("http://www.google.com/images/errors/logo_sm_2.png").then(function (result) {
-        TKUnit.assert(result instanceof require("Image").Image, "Result from getImage() should be valid Image object!");
+        TKUnit.assert(result instanceof require("image").Image, "Result from getImage() should be valid Image object!");
     });
 };
 
