@@ -80,9 +80,6 @@
     <TypeScriptCompile Include="application\application.android.ts">
       <DependentUpon>application.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="application\application_common.ts">
-      <DependentUpon>application.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="application\application.d.ts" />
     <TypeScriptCompile Include="application\application.ios.ts">
       <DependentUpon>application.d.ts</DependentUpon>
@@ -190,6 +187,7 @@
     <TypeScriptCompile Include="image\image-impl.ios.ts">
       <DependentUpon>image-impl.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="application\application-common.ts" />
     <Content Include="image\Readme.md" />
     <TypeScriptCompile Include="local-settings\index.ts" />
     <TypeScriptCompile Include="local-settings\local-settings.d.ts" />
