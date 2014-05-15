@@ -1,14 +1,18 @@
 ﻿var TKUnit = require("Tests/TKUnit");
-var fsTests = require("Tests/file-system-tests");
-var httpTests = require("Tests/http-tests");
-var locationTests = require("Tests/location-tests");
-var localSettingsTests = require("Tests/local-settings-tests");
-var imageTests = require("Tests/image-tests");
 
-export var runAll = function () {
-    TKUnit.runTestModule(imageTests, "IMAGE");
-    TKUnit.runTestModule(fsTests, "FILE SYSTEM");
-    TKUnit.runTestModule(httpTests, "HTTP");
-    TKUnit.runTestModule(locationTests, "LOCATION");
-    TKUnit.runTestModule(localSettingsTests, "LOCAL SETTINGS");
+var allTests = {};
+allTests["FILE SYSTEM"] = require("Tests/file-system-tests");
+allTests["HTTP"] = require("Tests/http-tests");
+allTests["LOCATION"] = require("Tests/location-tests");
+allTests["LOCAL SETTINGS"] = require("Tests/local-settings-tests");
+allTests["IMAGE SOURCE"] = require("Tests/image-tests");
+
+export var runAll = function (moduleName?: string) {
+    for (var name in allTests) {
+        if(moduleName && (moduleName.toLowerCase() !== name.toLowerCase())) {
+            continue;
+        }
+
+        TKUnit.runTestModule(allTests[name], name);
+    }
 }

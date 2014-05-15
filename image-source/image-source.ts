@@ -1,5 +1,5 @@
 ﻿import app = require("application/application");
-import impl = require("image/image-native");
+import native = require("image-source/image-source-native");
 import promises = require("promises/promises");
 import http = require("http/http");
 
@@ -8,7 +8,7 @@ export enum ImageFormat {
     JPEG,
 }
 
-export class Image {
+export class ImageSource {
     public android: android.graphics.Bitmap;
     public ios: UIKit.UIImage;
 
@@ -17,30 +17,30 @@ export class Image {
     }
 
     public loadFromResource(name: string): boolean {
-        var nativeInstance = impl.fromResource(name);
+        var nativeInstance = native.fromResource(name);
         this.setNativeInstance(nativeInstance);
         return nativeInstance != null;
     }
 
     public loadFromFile(path: string): boolean {
-        var nativeInstance = impl.fromFile(path);
+        var nativeInstance = native.fromFile(path);
         this.setNativeInstance(nativeInstance);
         return (nativeInstance != null);
     }
 
     public loadFromData(data: any): boolean {
-        var nativeInstance = impl.fromData(data);
+        var nativeInstance = native.fromData(data);
         this.setNativeInstance(nativeInstance);
         return (nativeInstance != null);
     }
 
-    public setNativeBitmap(source: any): boolean {
+    public setNativeSource(source: any): boolean {
         this.setNativeInstance(source);
         return source != null;
     }
 
     public saveToFile(path: string, format: ImageFormat, quality?: number): boolean {
-        return impl.saveToFile(this.getNativeInstance(), path, format, quality);
+        return native.saveToFile(this.getNativeInstance(), path, format, quality);
     }
 
     get height(): number {
@@ -85,26 +85,26 @@ export class Image {
     }
 }
 
-export function fromResource(name: string): Image {
-    var image = new Image();
+export function fromResource(name: string): ImageSource {
+    var image = new ImageSource();
     return image.loadFromResource(name) ? image : null;
 }
 
-export function fromFile(path: string): Image {
-    var image = new Image();
+export function fromFile(path: string): ImageSource {
+    var image = new ImageSource();
     return image.loadFromFile(path) ? image : null;
 }
 
-export function fromData(data: any): Image {
-    var image = new Image();
+export function fromData(data: any): ImageSource {
+    var image = new ImageSource();
     return image.loadFromData(data) ? image : null;
 }
 
-export function fromNativeBitmap(source: any): Image {
-    var image = new Image();
-    return image.setNativeBitmap(source) ? image : null;
+export function fromNativeSource(source: any): ImageSource {
+    var image = new ImageSource();
+    return image.setNativeSource(source) ? image : null;
 }
 
-export function fromUrl(url: string): promises.Promise<Image> {
+export function fromUrl(url: string): promises.Promise<ImageSource> {
     return http.getImage(url);
 }

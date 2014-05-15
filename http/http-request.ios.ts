@@ -54,7 +54,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                             raw: data,
                             toString: () => { return NSDataToString(data); },
                             toJSON: () => { return JSON.parse(NSDataToString(data)); },
-                            toImage: () => { return require("image").fromData(data); }
+                            toImage: () => { return require("image-source").fromData(data); }
                         },
                         statusCode: response.statusCode(),
                         headers: headers

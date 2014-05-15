@@ -110,18 +110,18 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="file-system\file-system.d.ts" />
     <TypeScriptCompile Include="file-system\file-system-access.d.ts" />
-    <TypeScriptCompile Include="image\image-native.android.ts">
-      <DependentUpon>image-native.d.ts</DependentUpon>
+    <TypeScriptCompile Include="image-source\image-source-native.android.ts">
+      <DependentUpon>image-source-native.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="image\image-native.ios.ts">
-      <DependentUpon>image-native.d.ts</DependentUpon>
+    <TypeScriptCompile Include="image-source\image-source-native.ios.ts">
+      <DependentUpon>image-source-native.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="image\image.ts">
-      <DependentUpon>image.d.ts</DependentUpon>
+    <TypeScriptCompile Include="image-source\image-source.d.ts" />
+    <TypeScriptCompile Include="image-source\image-source-native.d.ts" />
+    <TypeScriptCompile Include="image-source\image-source.ts">
+      <DependentUpon>image-source.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="image\image.d.ts" />
-    <TypeScriptCompile Include="image\image-native.d.ts" />
-    <TypeScriptCompile Include="image\index.ts" />
+    <TypeScriptCompile Include="image-source\index.ts" />
     <TypeScriptCompile Include="location\location.android.ts">
       <DependentUpon>location.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -188,7 +188,7 @@
       <DependentUpon>http-request.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="application\application-common.ts" />
-    <Content Include="image\Readme.md" />
+    <Content Include="image-source\Readme.md" />
     <TypeScriptCompile Include="local-settings\index.ts" />
     <TypeScriptCompile Include="local-settings\local-settings.d.ts" />
     <TypeScriptCompile Include="local-settings\local-settings.android.ts">

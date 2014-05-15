@@ -121,7 +121,7 @@ export var test_getImage = function () {
     // </snippet>
 
     TKUnit.waitUntilReady(isReady, 3);
-    TKUnit.assert(result instanceof require("image").Image, "Result from getImage() should be valid Image object!");
+    TKUnit.assert(result instanceof require("image-source").ImageSource, "Result from getImage() should be valid ImageSource object!");
 };
 
 export var test_getImage_fail = function () {

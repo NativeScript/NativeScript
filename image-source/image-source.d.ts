@@ -9,9 +9,9 @@ export declare enum ImageFormat {
 }
 
 /**
-* Encapsulates the common abstraction behind a platform specific image object.
+* Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
 */
-export declare class Image {
+export declare class ImageSource {
     /**
     * Gets the height of this instance. This is a read-only property.
     */
@@ -48,10 +48,10 @@ export declare class Image {
     loadFromData(data: any): boolean;
 
     /**
-    * Sets the provided native bitmap object.
+    * Sets the provided native source object (typically a Bitmap).
     * This will update either the android or ios properties, depending on the target os.
     */
-    setNativeBitmap(source: any): boolean;
+    setNativeSource(source: any): boolean;
 
     /**
     * Saves this instance to the specified file, using the provided image format and quality.
@@ -62,25 +62,25 @@ export declare class Image {
 /**
 * Creates a new Image instance and loads it from the specified resource name.
 */
-export declare function fromResource(name: string): Image;
+export declare function fromResource(name: string): ImageSource;
 
 /**
 * Creates a new Image instance and loads it from the specified file.
 */
-export declare function fromFile(path: string): Image;
+export declare function fromFile(path: string): ImageSource;
 
 /**
 * Creates a new Image instance and loads it from the specified resource name.
 */
-export declare function fromData(data: any): Image;
+export declare function fromData(data: any): ImageSource;
 
 /**
-* Creates a new Image instance and sets the provided native bitmap object.
-* The native bitmap object will update either the android or ios properties, depending on the target os.
+* Creates a new Image instance and sets the provided native source object (typically a Bitmap).
+* The native source object will update either the android or ios properties, depending on the target os.
 */
-export declare function fromNativeBitmap(source: any): Image;
+export declare function fromNativeSource(source: any): ImageSource;
 
 /**
 * Downloads the image from the provided Url and creates a new Image instance from it.
 */
-export declare function fromUrl(url: string): promises.Promise<Image>;
+export declare function fromUrl(url: string): promises.Promise<ImageSource>;

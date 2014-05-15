@@ -25,7 +25,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                                 raw: data,
                                 toString: () => { return null },
                                 toJSON: () => { return null },
-                                toImage: () => { return require("image").fromNativeBitmap(data); }
+                                toImage: () => { return require("image-source").fromNativeSource(data); }
                             },
                             statusCode: 0,
                             headers: {}

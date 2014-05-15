@@ -1,7 +1,7 @@
 ﻿/**
   * The http client interface.
   */
-import image_module = require("image/image");
+import image_module = require("image-source/image-source");
 import promises = require("promises/promises");
 
 export declare function request(options: HttpRequestOptions): promises.Promise<HttpResponse>;
@@ -24,5 +24,5 @@ export interface HttpContent {
     raw: any;
     toString: () => string;
     toJSON: () => any;
-    toImage: () => image_module.Image;
+    toImage: () => image_module.ImageSource;
 }

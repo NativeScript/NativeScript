@@ -1,19 +1,19 @@
-﻿import image = require("image/image"); 
+﻿import imageSource = require("image-source/image-source"); 
 import app = require("application/application"); 
 import fs = require("file-system/file-system"); 
 import TKUnit = require("Tests/TKUnit"); 
 
 export var testFromResource = function () {
-    var img = image.fromResource(getTestImageName());
+    var img = imageSource.fromResource(getTestImageName());
     TKUnit.assert(img.height > 0, "image.fromResource failed");
 }
 
 export var testFromUrl = function () {
     var completed;
-    var result: image.Image;
+    var result: imageSource.ImageSource;
 
-    image.fromUrl("http://www.google.com/images/errors/logo_sm_2.png")
-        .then(function (res: image.Image) {
+    imageSource.fromUrl("http://www.google.com/images/errors/logo_sm_2.png")
+        .then(function (res: imageSource.ImageSource) {
             completed = true;
             result = res;
         })
@@ -31,11 +31,11 @@ export var testFromUrl = function () {
 }
 
 export var testSaveToFile = function () {
-    var img = image.fromResource(getTestImageName());
+    var img = imageSource.fromResource(getTestImageName());
     var folder = fs.knownFolders.documents();
     var path = fs.path.join(folder.path, "Test.png");
 
-    var saved = img.saveToFile(path, image.ImageFormat.PNG);
+    var saved = img.saveToFile(path, imageSource.ImageFormat.PNG);
     TKUnit.assert(saved, "Image not saved to file");
     TKUnit.assert(fs.File.exists(path), "Image not saved to file");
 }
@@ -44,7 +44,7 @@ export var testFromFile = function () {
     var folder = fs.knownFolders.documents();
     var path = fs.path.join(folder.path, "Test.png");
 
-    var img = image.fromFile(path);
+    var img = imageSource.fromFile(path);
     
     TKUnit.assert(img.height > 0, "image.fromResource failed");
 
@@ -55,7 +55,7 @@ export var testFromFile = function () {
 }
 
 export var testNativeFields = function () {
-    var img = image.fromResource(getTestImageName());
+    var img = imageSource.fromResource(getTestImageName());
     if (app.android) {
         TKUnit.assert(img.android != null, "Image.android not updated.");
     } else if (app.ios) {

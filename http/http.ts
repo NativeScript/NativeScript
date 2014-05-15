@@ -1,4 +1,4 @@
-import image_module = require("image/image");
+import image_module = require("image-source/image-source");
 import promises = require("promises/promises");
 import http = require("http/http-request");
 
@@ -37,8 +37,8 @@ export function getJSON<T>(url: string): promises.Promise<T> {
 /**
   * Gets image from url.
   */
-export function getImage(url: string): promises.Promise<image_module.Image> {
-    var d = promises.defer<image_module.Image>();
+export function getImage(url: string): promises.Promise<image_module.ImageSource> {
+    var d = promises.defer<image_module.ImageSource>();
 
     http.request({ url: url, method: "GET" })
         .then(r => d.resolve(r.content.toImage()))
