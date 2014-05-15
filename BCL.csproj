@@ -192,7 +192,6 @@
     <TypeScriptCompile Include="application\application-common.ts" />
     <Content Include="image-source\Readme.md" />
     <TypeScriptCompile Include="http\http.d.ts" />
-    <Content Include="image\Readme.md" />
     <TypeScriptCompile Include="local-settings\index.ts" />
     <TypeScriptCompile Include="local-settings\local-settings.d.ts" />
     <TypeScriptCompile Include="local-settings\local-settings.android.ts">
