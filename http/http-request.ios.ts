@@ -16,9 +16,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
         var urlRequest = Foundation.NSMutableURLRequest.requestWithURL(
             Foundation.NSURL.URLWithString(options.url));
 
-        if (options.method) {
-            urlRequest.setHTTPMethod(options.method);
-        }
+        urlRequest.setHTTPMethod(typeof options.method !== "undefined" ? options.method : "GET");
 
         if (options.headers) {
             for (var header in options.headers) {

@@ -22,7 +22,17 @@ export var test_getString = function () {
 };
 
 export var test_getString_fail = function () {
-    http.getString("hgfttp://httpbin.org/get").fail(function (e) { TKUnit.assert(e instanceof Error, "Result from getString().fail() should be Error!"); });
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
+    http.getString("hgfttp://httpbin.org/get").fail(function (e) {
+        completed = true;
+        result = e;
+    });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(result instanceof Error, "Result from getString().fail() should be Error!");
 };
 
 export var test_getJSON_isDefined = function () {
@@ -30,13 +40,31 @@ export var test_getJSON_isDefined = function () {
 };
 
 export var test_getJSON = function () {
-    http.getJSON("http://httpbin.org/get").then(function (result) {
-        TKUnit.assert(typeof (JSON.stringify(result)) === "string", "Result from getJSON() should be valid JSON object!");
-    });
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
+    http.getJSON("http://httpbin.org/get").then(function (r) {
+        completed = true;
+        result = r;
+    }).fail(function (e) { console.log(e); });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(typeof (JSON.stringify(result)) === "string", "Result from getJSON() should be valid JSON object!");
 };
 
 export var test_getJSON_fail = function () {
-    http.getJSON("hgfttp://httpbin.org/get").fail(function (e) { TKUnit.assert(e instanceof Error, "Result from getJSON().fail() should be Error!"); });
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
+    http.getJSON("hgfttp://httpbin.org/get").fail(function (e) {
+        completed = true;
+        result = e;
+    });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(result instanceof Error, "Result from getJSON().fail() should be Error!");
 };
 
 export var test_getImage_isDefined = function () {
@@ -44,15 +72,31 @@ export var test_getImage_isDefined = function () {
 };
 
 export var test_getImage = function () {
-    http.getImage("http://www.google.com/images/errors/logo_sm_2.png").then(function (result) {
-        TKUnit.assert(result instanceof require("image").Image, "Result from getImage() should be valid Image object!");
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
+    http.getImage("http://www.google.com/images/errors/logo_sm_2.png").then(function (r) {
+        completed = true;
+        result = r;
     });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(result instanceof require("image").Image, "Result from getImage() should be valid Image object!");
 };
 
 export var test_getImage_fail = function () {
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
     http.getImage("htadvtp://www.google.com/images/errors/logo_sm_2.pngm").fail(function (e) {
-        TKUnit.assert(e instanceof Error, "Result from getImage().fail() should be Error!");
+        completed = true;
+        result = e;
     });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(result instanceof Error, "Result from getImage().fail() should be Error!");
 };
 
 export var test_request_isDefined = function () {
@@ -60,23 +104,45 @@ export var test_request_isDefined = function () {
 };
 
 export var test_request_shouldFailIfOptionsUrlIsNotDefined = function () {
-    http_request.request({ url: undefined, method: undefined }).fail(function (e) { TKUnit.assert(e instanceof Error, "Result from request().fail() should be Error!"); });
-};
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
 
-export var test_request_shouldFailIfOptionsMethodIsNotDefined = function () {
-    http_request.request({ url: "http://httpbin.org/get", method: undefined }).fail(function (e) { TKUnit.assert(e instanceof Error, "Result from request().fail() should be Error!"); });
+    http_request.request({ url: undefined, method: undefined }).fail(function (e) {
+        completed = true;
+        result = e;
+    });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(result instanceof Error, "Result from request().fail() should be Error!");
 };
 
 export var test_request_responseStatusCodeShouldBeDefined = function () {
+    var result : http_request.HttpResponse;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
     http_request.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
-        TKUnit.assert(typeof (response.statusCode) !== "undefined", "response.statusCode should be defined!");
+        completed = true;
+        result = response;
     });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(typeof (result.statusCode) !== "undefined", "response.statusCode should be defined!");
 };
 
 export var test_request_responseHeadersCodeShouldBeDefined = function () {
+    var result: http_request.HttpResponse;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
     http_request.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
-        TKUnit.assert(typeof (response.headers) !== "undefined", "response.headers should be defined!");
+        completed = true;
+        result = response;
     });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(typeof (result.headers) !== "undefined", "response.headers should be defined!");
 };
 
 export var test_request_responseContentShouldBeDefined = function () {
