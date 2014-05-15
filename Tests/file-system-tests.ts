@@ -2,7 +2,7 @@
 // <snippet name="file-system">
 // # File System
 // Using the file system requires the FileSystem module.
-// TODO: var fs = require("filesystem"); => this will break the intellisense of the tests
+// TODO: var fs = require("file-system"); => this will break the intellisense of the tests
 // ``` JavaScript
 import fs = require("file-system/file-system");
 // ```
