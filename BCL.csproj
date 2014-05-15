@@ -159,7 +159,9 @@
     <TypeScriptCompile Include="android17.d.ts" />
     <TypeScriptCompile Include="promises\promises.ts" />
     <TypeScriptCompile Include="promises\index.ts" />
-    <TypeScriptCompile Include="http\http.ts" />
+    <TypeScriptCompile Include="http\http.ts">
+      <DependentUpon>http.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ios7.d.ts" />
     <TypeScriptCompile Include="globals\index.ts" />
     <TypeScriptCompile Include="timer\index.ts" />
@@ -189,6 +191,8 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="application\application-common.ts" />
     <Content Include="image-source\Readme.md" />
+    <TypeScriptCompile Include="http\http.d.ts" />
+    <Content Include="image\Readme.md" />
     <TypeScriptCompile Include="local-settings\index.ts" />
     <TypeScriptCompile Include="local-settings\local-settings.d.ts" />
     <TypeScriptCompile Include="local-settings\local-settings.android.ts">

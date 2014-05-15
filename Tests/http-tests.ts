@@ -43,13 +43,13 @@ export var test_getString_fail = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    http.getString("hgfttp://httpbin.org/get").fail(function (e) {
+    http.getString({ url: "hgfttp://httpbin.org/get", method: "GET", timeout: 2000}).fail(function (e) {
         completed = true;
         result = e;
     });
 
     TKUnit.waitUntilReady(isReady, 3);
-    TKUnit.assert(result instanceof Error, "Result from getString().fail() should be Error!");
+    TKUnit.assert(result instanceof Error, "Result from getString().fail() should be Error! Current type is " + typeof result);
 };
 
 export var test_getJSON_isDefined = function () {
@@ -86,13 +86,13 @@ export var test_getJSON_fail = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    http.getJSON("hgfttp://httpbin.org/get").fail(function (e) {
+    http.getJSON({ url: "hgfttp://httpbin.org/get", method: "GET", timeout: 2000 }).fail(function (e) {
         completed = true;
         result = e;
     });
 
     TKUnit.waitUntilReady(isReady, 3);
-    TKUnit.assert(result instanceof Error, "Result from getJSON().fail() should be Error!");
+    TKUnit.assert(result instanceof Error, "Result from getJSON().fail() should be Error! Current type is " + typeof result);
 };
 
 export var test_getImage_isDefined = function () {
@@ -129,13 +129,13 @@ export var test_getImage_fail = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    http.getImage("htadvtp://www.google.com/images/errors/logo_sm_2.pngm").fail(function (e) {
+    http.getImage({ url: "hgfttp://httpbin.org/get", method: "GET", timeout: 2000 }).fail(function (e) {
         completed = true;
         result = e;
     });
 
     TKUnit.waitUntilReady(isReady, 3);
-    TKUnit.assert(result instanceof Error, "Result from getImage().fail() should be Error!");
+    TKUnit.assert(result instanceof Error, "Result from getImage().fail() should be Error! Current type is " + typeof result);
 };
 
 export var test_request_isDefined = function () {
@@ -153,7 +153,7 @@ export var test_request_shouldFailIfOptionsUrlIsNotDefined = function () {
     });
 
     TKUnit.waitUntilReady(isReady, 3);
-    TKUnit.assert(result instanceof Error, "Result from request().fail() should be Error!");
+    TKUnit.assert(result instanceof Error, "Result from request().fail() should be Error! Current type is " + typeof result);
 };
 
 export var test_request_responseStatusCodeShouldBeDefined = function () {

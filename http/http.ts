@@ -1,4 +1,4 @@
-import image_module = require("image-source/image-source");
+import image = require("image-source/image-source");
 import promises = require("promises/promises");
 import http = require("http/http-request");
 
@@ -11,10 +11,10 @@ export interface HttpContent extends http.HttpContent { };
 /**
   * Gets string from url.
   */
-export function getString(url: string): promises.Promise<string> {
+export function getString(arg: any): promises.Promise<string> {
     var d = promises.defer<string>();
 
-    http.request({ url: url, method: "GET" })
+    http.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
         .then(r => d.resolve(r.content.toString()))
         .fail(e => d.reject(e));
 
@@ -24,10 +24,10 @@ export function getString(url: string): promises.Promise<string> {
 /**
   * Gets JSON from url.
   */
-export function getJSON<T>(url: string): promises.Promise<T> {
+export function getJSON<T>(arg: any): promises.Promise<T> {
     var d = promises.defer<T>();
 
-    http.request({ url: url, method: "GET" })
+    http.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
         .then(r => d.resolve(r.content.toJSON()))
         .fail(e => d.reject(e));
 
@@ -37,10 +37,11 @@ export function getJSON<T>(url: string): promises.Promise<T> {
 /**
   * Gets image from url.
   */
-export function getImage(url: string): promises.Promise<image_module.ImageSource> {
-    var d = promises.defer<image_module.ImageSource>();
 
-    http.request({ url: url, method: "GET" })
+export function getImage(arg: any): promises.Promise<image.ImageSource> {
+    var d = promises.defer<image.ImageSource>();
+
+    http.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
         .then(r => d.resolve(r.content.toImage()))
         .fail(e => d.reject(e));
 
