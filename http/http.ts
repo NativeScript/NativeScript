@@ -1,6 +1,6 @@
 import image_module = require("image/image");
 import promises = require("promises/promises");
-import http = require("http/http_request");
+import http = require("http/http-request");
 
 // merge request
 declare var exports;

@@ -1,6 +1,6 @@
 ﻿import TKUnit = require("Tests/TKUnit");
 import http = require("http/http");
-import http_request = require("http/http_request");
+import http_request = require("http/http-request");
 
 export var test_getString_isDefined = function () {
     TKUnit.assert(typeof (http.getString) !== "undefined", "Method http.getString() should be defined!");

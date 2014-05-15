@@ -2,7 +2,7 @@
   * iOS specific http client implementation.
   */
 import promises = require("promises/promises");
-import http = require("http/http_request");
+import http = require("http/http-request");
 
 export function request(options: http.HttpRequestOptions): promises.Promise<http.HttpResponse> {
     var d = promises.defer<http.HttpResponse>();

@@ -1,6 +1,6 @@
 ﻿import image = require("image/image"); 
 import app = require("application/application"); 
-import fs = require("filesystem/file_system"); 
+import fs = require("file-system/file-system"); 
 import TKUnit = require("Tests/TKUnit"); 
 
 export var testFromResource = function () {

@@ -105,17 +105,8 @@
     <TypeScriptCompile Include="declarations.ios.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="filesystem\file_system.d.ts" />
-    <TypeScriptCompile Include="filesystem\file_system.ts">
-      <DependentUpon>file_system.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="filesystem\file_system_access.android.ts">
-      <DependentUpon>file_system_access.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="filesystem\file_system_access.d.ts" />
-    <TypeScriptCompile Include="filesystem\file_system_access.ios.ts">
-      <DependentUpon>file_system_access.d.ts</DependentUpon>
-    </TypeScriptCompile>
+    <TypeScriptCompile Include="file-system\file-system.d.ts" />
+    <TypeScriptCompile Include="file-system\file-system-access.d.ts" />
     <TypeScriptCompile Include="image\image.ts">
       <DependentUpon>image.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -138,11 +129,11 @@
     <TypeScriptCompile Include="location\location_types.ts">
       <DependentUpon>location.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Tests\file_system_tests.ts" />
-    <TypeScriptCompile Include="Tests\http_tests.ts" />
+    <TypeScriptCompile Include="Tests\file-system-tests.ts" />
+    <TypeScriptCompile Include="Tests\http-tests.ts" />
     <TypeScriptCompile Include="Tests\image-tests.ts" />
     <TypeScriptCompile Include="Tests\index.ts" />
-    <TypeScriptCompile Include="Tests\location_tests.ts" />
+    <TypeScriptCompile Include="Tests\location-tests.ts" />
     <TypeScriptCompile Include="Tests\testRunner.ts" />
     <TypeScriptCompile Include="Tests\TKUnit.ts" />
     <TypeScriptCompile Include="text\index.ts" />
@@ -156,18 +147,12 @@
     <TypeScriptCompile Include="utils\module_merge.ts" />
     <TypeScriptCompile Include="utils\utils_android.ts" />
     <TypeScriptCompile Include="utils\utils_ios.ts" />
-    <TypeScriptCompile Include="http\http_request.android.ts">
-      <DependentUpon>http_request.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="http\http_request.ios.ts">
-      <DependentUpon>http_request.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="http\http_request.d.ts" />
+    <TypeScriptCompile Include="http\http-request.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="http\index.ts" />
     <TypeScriptCompile Include="location\index.ts" />
-    <TypeScriptCompile Include="filesystem\index.ts" />
+    <TypeScriptCompile Include="file-system\index.ts" />
     <TypeScriptCompile Include="console\index.ts" />
     <TypeScriptCompile Include="camera\index.ts" />
     <TypeScriptCompile Include="application\index.ts" />
@@ -186,12 +171,27 @@
     <TypeScriptCompile Include="timer\timer.ios.ts">
       <DependentUpon>timer.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="Tests\local_settings_tests.ts" />
+    <TypeScriptCompile Include="Tests\local-settings-tests.ts" />
     <TypeScriptCompile Include="console\console-helper.android.ts">
       <DependentUpon>console-helper.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="console\console-helper.ios.ts">
       <DependentUpon>console-helper.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="file-system\file-system.ts">
+      <DependentUpon>file-system.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="file-system\file-system-access.android.ts">
+      <DependentUpon>file-system-access.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="file-system\file-system-access.ios.ts">
+      <DependentUpon>file-system-access.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="http\http-request.android.ts">
+      <DependentUpon>http-request.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="http\http-request.ios.ts">
+      <DependentUpon>http-request.d.ts</DependentUpon>
     </TypeScriptCompile>
     <Content Include="image\Readme.md" />
     <TypeScriptCompile Include="localsettings\index.ts" />

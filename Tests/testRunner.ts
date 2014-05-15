@@ -1,8 +1,8 @@
 ﻿var TKUnit = require("Tests/TKUnit");
-var fsTests = require("Tests/file_system_tests");
-var httpTests = require("Tests/http_tests");
-var locationTests = require("Tests/location_tests");
-var localSettingsTests = require("Tests/local_settings_tests");
+var fsTests = require("Tests/file-system-tests");
+var httpTests = require("Tests/http-tests");
+var locationTests = require("Tests/location-tests");
+var localSettingsTests = require("Tests/local-settings-tests");
 var imageTests = require("Tests/image-tests");
 
 export var runAll = function () {

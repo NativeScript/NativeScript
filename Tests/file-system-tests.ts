@@ -4,7 +4,7 @@
 // Using the file system requires the FileSystem module.
 // TODO: var fs = require("filesystem"); => this will break the intellisense of the tests
 // ``` JavaScript
-import fs = require("filesystem/file_system");
+import fs = require("file-system/file-system");
 // ```
 // The pre-required `fs` module is used throughout the following code snippets.
 // </snippet>
