@@ -2,6 +2,8 @@
 
 ##iOS
 ```js
+var app = require("application");
+app.init(null);
 var tests = require("Tests");
 tests.runAll();
 ```

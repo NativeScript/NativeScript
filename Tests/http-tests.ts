@@ -1,15 +1,24 @@
 ﻿import TKUnit = require("Tests/TKUnit");
 import http = require("http/http");
 import http_request = require("http/http-request");
+require("globals");
 
 export var test_getString_isDefined = function () {
     TKUnit.assert(typeof (http.getString) !== "undefined", "Method http.getString() should be defined!");
 };
 
 export var test_getString = function () {
-    http.getString("http://httpbin.org/get").then(function (result) {
-        TKUnit.assert(typeof (result) === "string", "Result from getString() should be string!");
-    });
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
+    http.getString("http://httpbin.org/get").then(function (r) {
+        completed = true;
+        result = r;
+    }).fail(function (e) { console.log(e); });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(typeof (result) === "string", "Result from getString() should be string!");
 };
 
 export var test_getString_fail = function () {
