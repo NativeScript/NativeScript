@@ -111,13 +111,7 @@
       <DependentUpon>image.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="image\image.d.ts" />
-    <TypeScriptCompile Include="image\image_impl.android.ts">
-      <DependentUpon>image_impl.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="image\image_impl.d.ts" />
-    <TypeScriptCompile Include="image\image_impl.ios.ts">
-      <DependentUpon>image_impl.d.ts</DependentUpon>
-    </TypeScriptCompile>
+    <TypeScriptCompile Include="image\image-impl.d.ts" />
     <TypeScriptCompile Include="image\index.ts" />
     <TypeScriptCompile Include="location\location.android.ts">
       <DependentUpon>location.d.ts</DependentUpon>
@@ -193,21 +187,25 @@
     <TypeScriptCompile Include="http\http-request.ios.ts">
       <DependentUpon>http-request.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="image\image-impl.android.ts">
+      <DependentUpon>image-impl.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="image\image-impl.ios.ts">
+      <DependentUpon>image-impl.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <Content Include="image\Readme.md" />
-    <TypeScriptCompile Include="localsettings\index.ts" />
-    <TypeScriptCompile Include="localsettings\local_settings.android.ts">
-      <DependentUpon>local_settings.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="localsettings\local_settings.d.ts" />
-    <TypeScriptCompile Include="localsettings\local_settings.ios.ts">
-      <DependentUpon>local_settings.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="localsettings\local_settings_common.ts">
-      <DependentUpon>local_settings.d.ts</DependentUpon>
-    </TypeScriptCompile>
+    <TypeScriptCompile Include="local-settings\index.ts" />
+    <TypeScriptCompile Include="local-settings\local-settings.d.ts" />
     <TypeScriptCompile Include="location\location_common.ts">
       <DependentUpon>location.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="local-settings\local-settings.android.ts">
+      <DependentUpon>local-settings.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="local-settings\local-settings.ios.ts">
+      <DependentUpon>local-settings.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="local-settings\local-settings-common.ts" />
     <Content Include="_references.ts" />
   </ItemGroup>
   <ItemGroup>
@@ -245,7 +243,7 @@
     <Content Include="Tests\Readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="localsettings\Readme.md" />
+    <Content Include="local-settings\Readme.md" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
     <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>

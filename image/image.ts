@@ -1,5 +1,5 @@
 ﻿import app = require("application/application");
-import impl = require("image/image_impl");
+import impl = require("image/image-impl");
 import promises = require("promises/promises");
 import http = require("http/http");
 

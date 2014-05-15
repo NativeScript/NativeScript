@@ -1,4 +1,4 @@
-﻿import Common = require("localsettings/local_settings_common");
+﻿import Common = require("local-settings/local-settings-common");
 
 var userDefaults = Foundation.NSUserDefaults.standardUserDefaults();
 

@@ -1,6 +1,6 @@
 ﻿
 var TKUnit = require("Tests/TKUnit");
-var LocalSettings = require("localsettings");
+var LocalSettings = require("local-settings");
 
 var stringKey:string = "stringKey";
 var boolKey: string = "boolKey";
