@@ -84,10 +84,16 @@
     <TypeScriptCompile Include="application\application.ios.ts">
       <DependentUpon>application.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="console\console-native.android.ts">
+      <DependentUpon>console-native.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="console\console-native.ios.ts">
+      <DependentUpon>console-native.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="console\console.ts">
       <DependentUpon>console.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="console\console-helper.d.ts" />
+    <TypeScriptCompile Include="console\console-native.d.ts" />
     <TypeScriptCompile Include="declarations.d.ts" />
     <TypeScriptCompile Include="declarations.android.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>
@@ -104,11 +110,17 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="file-system\file-system.d.ts" />
     <TypeScriptCompile Include="file-system\file-system-access.d.ts" />
+    <TypeScriptCompile Include="image\image-native.android.ts">
+      <DependentUpon>image-native.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="image\image-native.ios.ts">
+      <DependentUpon>image-native.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="image\image.ts">
       <DependentUpon>image.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="image\image.d.ts" />
-    <TypeScriptCompile Include="image\image-impl.d.ts" />
+    <TypeScriptCompile Include="image\image-native.d.ts" />
     <TypeScriptCompile Include="image\index.ts" />
     <TypeScriptCompile Include="location\location.android.ts">
       <DependentUpon>location.d.ts</DependentUpon>
@@ -160,12 +172,6 @@
       <DependentUpon>timer.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="Tests\local-settings-tests.ts" />
-    <TypeScriptCompile Include="console\console-helper.android.ts">
-      <DependentUpon>console-helper.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="console\console-helper.ios.ts">
-      <DependentUpon>console-helper.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="file-system\file-system.ts">
       <DependentUpon>file-system.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -180,12 +186,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="http\http-request.ios.ts">
       <DependentUpon>http-request.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="image\image-impl.android.ts">
-      <DependentUpon>image-impl.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="image\image-impl.ios.ts">
-      <DependentUpon>image-impl.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="application\application-common.ts" />
     <Content Include="image\Readme.md" />
