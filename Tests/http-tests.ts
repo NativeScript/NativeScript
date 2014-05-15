@@ -131,7 +131,7 @@ export var test_request_responseStatusCodeShouldBeDefined = function () {
     TKUnit.assert(typeof (result.statusCode) !== "undefined", "response.statusCode should be defined!");
 };
 
-export var test_request_responseHeadersCodeShouldBeDefined = function () {
+export var test_request_responseHeadersShouldBeDefined = function () {
     var result: http_request.HttpResponse;
     var completed: boolean;
     var isReady = function () { return completed; }
