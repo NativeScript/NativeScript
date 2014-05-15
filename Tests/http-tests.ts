@@ -22,15 +22,15 @@ export var test_getString = function () {
     // ### Get string from URL
     // ``` JavaScript
     http.getString("http://httpbin.org/get").then(function (r) {
-    //// Result (r) is string!
-    // <hide>
+        //// Argument (r) is string!
+        // <hide>
         completed = true;
         result = r;
-    // </hide>
+        // </hide>
     }).fail(function (e) {
-    //// Argument (e) is Error!
-        console.log(e);
-    });
+            //// Argument (e) is Error!
+            console.log(e);
+        });
     // ```
     // </snippet>
 
@@ -65,12 +65,15 @@ export var test_getJSON = function () {
     // ### Get JSON from URL
     // ``` JavaScript
     http.getJSON("http://httpbin.org/get").then(function (r) {
-    //// Result (r) is JSON!
-    // <hide>
+        //// Argument (r) is JSON!
+        // <hide>
         completed = true;
         result = r;
-    // </hide>
-    }).fail(function (e) { console.log(e); });
+        // </hide>
+    }).fail(function (e) {
+            //// Argument (e) is Error!
+            console.log(e);
+        });
     // ```
     // </snippet>
 
@@ -105,12 +108,15 @@ export var test_getImage = function () {
     // ### Get Image from URL
     // ``` JavaScript
     http.getImage("http://www.google.com/images/errors/logo_sm_2.png").then(function (r) {
-    //// Result (r) is Image!
-    // <hide>
+        //// Argument (r) is Image!
+        // <hide>
         completed = true;
         result = r;
-    // </hide>
-    });
+        // </hide>
+    }).fail(function (e) {
+            //// Argument (e) is Error!
+            console.log(e);
+        });
     // ```
     // </snippet>
 
@@ -159,13 +165,16 @@ export var test_request_responseStatusCodeShouldBeDefined = function () {
     // ### Get response status code
     // ``` JavaScript
     http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
-    //// Result (response) is require("http/http-request").HttpResponse!
-    //// You can get status code using response.statusCode (number)!
-    // <hide>
+        //// Argument (response) is require("http/http-request").HttpResponse!
+        var statusCode = response.statusCode;
+        // <hide>
         completed = true;
         result = response;
-    // </hide>
-    });
+        // </hide>
+    }).fail(function (e) {
+            //// Argument (e) is Error!
+            console.log(e);
+        });
     // ```
     // </snippet>
 
@@ -182,13 +191,18 @@ export var test_request_responseHeadersShouldBeDefined = function () {
     // ### Get response headers
     // ``` JavaScript
     http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
-    //// Result (response) is require("http/http-request").HttpResponse!
-    //// You can get response headers using response.headers (JSON)!
-    // <hide>
+        //// Argument (response) is require("http/http-request").HttpResponse!
+        for (var header in response.headers) {
+            console.log(header + ":" + response.headers[header]);
+        }
+        // <hide>
         completed = true;
         result = response;
-    // </hide>
-    });
+        // </hide>
+    }).fail(function (e) {
+            //// Argument (e) is Error!
+            console.log(e);
+        });
     // ```
     // </snippet>
 
@@ -205,13 +219,18 @@ export var test_request_responseContentShouldBeDefined = function () {
     // ### Get response content
     // ``` JavaScript
     http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
-    //// Result (response) is require("http/http-request").HttpContent!
-    //// You can get response content using response.content methods: toString(), toJSON and toImage()!
-    // <hide>
+        //// Argument (response) is require("http/http-request").HttpContent!
+        var str = response.content.toString();
+        var obj = response.content.toJSON();
+        var img = response.content.toImage();
+        // <hide>
         completed = true;
         result = response;
-    // </hide>
-    });
+        // </hide>
+    }).fail(function (e) {
+            //// Argument (e) is Error!
+            console.log(e);
+        });
     // ```
     // </snippet>
 
