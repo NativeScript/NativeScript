@@ -24,7 +24,7 @@ import appModule = require("application/application_common");
 
 // merge the exports of the application_common file with the exports of this file
 declare var exports;
-require("utils/module_merge").merge(appModule, exports);
+require("utils/module-merge").merge(appModule, exports);
 
 // TODO: Declarations
 export var init = function (nativeApp: any) {

@@ -4,7 +4,7 @@ import http = require("http/http-request");
 
 // merge request
 declare var exports;
-require("utils/module_merge").merge(http, exports);
+require("utils/module-merge").merge(http, exports);
 
 /**
   * Gets string from url.
