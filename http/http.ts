@@ -3,8 +3,10 @@ import promises = require("promises/promises");
 import http = require("http/http-request");
 
 // merge request
-declare var exports;
-require("utils/module-merge").merge(http, exports);
+export var request = http.request;
+export interface HttpResponse extends http.HttpResponse { };
+export interface HttpRequestOptions extends http.HttpRequestOptions { };
+export interface HttpContent extends http.HttpContent { };
 
 /**
   * Gets string from url.
