@@ -1,6 +1,6 @@
 ﻿import TKUnit = require("Tests/TKUnit");
 import locationModule = require("location/location");
-import types = require("location/location_types");
+import types = require("location/location-types");
 
 var LocationManager = locationModule.LocationManager;
 var Location = locationModule.Location;

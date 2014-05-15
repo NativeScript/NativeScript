@@ -1,5 +1,5 @@
 ﻿
-import types = require("location/location_types");
+import types = require("location/location-types");
 import promises = require("promises/promises");
 import locationModule = require("location/location");
 import timer = require("timer/timer");

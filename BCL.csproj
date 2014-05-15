@@ -120,9 +120,6 @@
     <TypeScriptCompile Include="location\location.ios.ts">
       <DependentUpon>location.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="location\location_types.ts">
-      <DependentUpon>location.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="Tests\file-system-tests.ts" />
     <TypeScriptCompile Include="Tests\http-tests.ts" />
     <TypeScriptCompile Include="Tests\image-tests.ts" />
@@ -196,9 +193,6 @@
     <Content Include="image\Readme.md" />
     <TypeScriptCompile Include="local-settings\index.ts" />
     <TypeScriptCompile Include="local-settings\local-settings.d.ts" />
-    <TypeScriptCompile Include="location\location_common.ts">
-      <DependentUpon>location.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="local-settings\local-settings.android.ts">
       <DependentUpon>local-settings.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -206,6 +200,8 @@
       <DependentUpon>local-settings.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="local-settings\local-settings-common.ts" />
+    <TypeScriptCompile Include="location\location-common.ts" />
+    <TypeScriptCompile Include="location\location-types.ts" />
     <Content Include="_references.ts" />
   </ItemGroup>
   <ItemGroup>

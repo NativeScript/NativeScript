@@ -1,6 +1,6 @@
-﻿import types = require("location/location_types");
+﻿import types = require("location/location-types");
 import appModule = require("application/application");
-import common = require("location/location_common");
+import common = require("location/location-common");
 import merger = require("utils/module_merge");
 
 // merge the exports of the types module with the exports of this file
