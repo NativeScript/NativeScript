@@ -90,13 +90,7 @@
     <TypeScriptCompile Include="console\console.ts">
       <DependentUpon>console.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="console\console_helper.android.ts">
-      <DependentUpon>console_helper.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="console\console_helper.d.ts" />
-    <TypeScriptCompile Include="console\console_helper.ios.ts">
-      <DependentUpon>console_helper.d.ts</DependentUpon>
-    </TypeScriptCompile>
+    <TypeScriptCompile Include="console\console-helper.d.ts" />
     <TypeScriptCompile Include="declarations.d.ts" />
     <TypeScriptCompile Include="declarations.android.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>
@@ -193,6 +187,12 @@
       <DependentUpon>timer.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="Tests\local_settings_tests.ts" />
+    <TypeScriptCompile Include="console\console-helper.android.ts">
+      <DependentUpon>console-helper.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="console\console-helper.ios.ts">
+      <DependentUpon>console-helper.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <Content Include="image\Readme.md" />
     <TypeScriptCompile Include="localsettings\index.ts" />
     <TypeScriptCompile Include="localsettings\local_settings.android.ts">
