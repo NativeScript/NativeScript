@@ -27,7 +27,10 @@ export var test_getString = function () {
         completed = true;
         result = r;
     // </hide>
-    }).fail(function (e) { console.log(e); });
+    }).fail(function (e) {
+    //// Argument (e) is Error!
+        console.log(e);
+    });
     // ```
     // </snippet>
 
@@ -40,18 +43,10 @@ export var test_getString_fail = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="http">
-    // ### Get string from invalid URL
-    // ``` JavaScript
     http.getString("hgfttp://httpbin.org/get").fail(function (e) {
-    //// Result (e) is Error!
-    // <hide>
         completed = true;
         result = e;
-    // </hide>
     });
-    // ```
-    // </snippet>
 
     TKUnit.waitUntilReady(isReady, 3);
     TKUnit.assert(result instanceof Error, "Result from getString().fail() should be Error!");
@@ -88,18 +83,10 @@ export var test_getJSON_fail = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="http">
-    // ### Get JSON from invalid URL
-    // ``` JavaScript
     http.getJSON("hgfttp://httpbin.org/get").fail(function (e) {
-    //// Result (e) is Error!
-    // <hide>
         completed = true;
         result = e;
-    // </hide>
     });
-    // ```
-    // </snippet>
 
     TKUnit.waitUntilReady(isReady, 3);
     TKUnit.assert(result instanceof Error, "Result from getJSON().fail() should be Error!");
@@ -136,18 +123,10 @@ export var test_getImage_fail = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="http">
-    // ### Get Image from URL
-    // ``` JavaScript
     http.getImage("htadvtp://www.google.com/images/errors/logo_sm_2.pngm").fail(function (e) {
-    //// Result (e) is Error!
-    // <hide>
         completed = true;
         result = e;
-    // </hide>
     });
-    // ```
-    // </snippet>
 
     TKUnit.waitUntilReady(isReady, 3);
     TKUnit.assert(result instanceof Error, "Result from getImage().fail() should be Error!");
