@@ -5,6 +5,7 @@ E.g. the file `application.android.js`, containing the actual platform-specific 
 There is also the .impl suffix for files where we have definition and implementation file with the same name, e.g.:
 
 file-system.d.ts
+
 file-system.impl.ts
 
 This is done to force the typescript compiler in Visual Studio to feed its definitions from the *.d.ts file rather than the implementation one.
@@ -57,7 +58,7 @@ There are six different configurations of the project:
 ```
    In order to use this path you will need to map a shared MAC's folder and access it from your PC.
 
-6. iOS_Tests <br/>
+6. iOS_Tests <br/> 
    Same as iOS_Deploy plus the Tests folder in the BCL is copied to the output directory.   
    
 ### UnitTestApp - Ready to run
