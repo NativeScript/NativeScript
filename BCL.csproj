@@ -293,7 +293,8 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'iOS_Tests'">
     <TargetOS>iOS</TargetOS>
     <JSConfig>Deploy\xCode\Configuration.xml</JSConfig>
-    <JSMainFile>bootstrap.js</JSMainFile>
+    <!--TODO: Do not call this JSMainFile - this file is actually NOT deleted during the Copy step.-->
+    <JSMainFile>Readme.md</JSMainFile>
     <CopyTests>true</CopyTests>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Documentation'">

@@ -375,8 +375,7 @@ export class FileSystemAccess {
             nsArray.addObject(paths[i]);
         }
 
-        // TODO: Static methods return NSString instance to enable its methods
-        var nsString: any = Foundation.NSString.pathWithComponents(nsArray);
+        var nsString = Foundation.NSString.stringWithString(Foundation.NSString.pathWithComponents(nsArray));
         return nsString.stringByStandardizingPath();
     }
 }
