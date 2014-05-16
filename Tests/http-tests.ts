@@ -129,7 +129,7 @@ export var test_getImage_fail = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    http.getImage({ url: "hgfttp://httpbin.org/get", method: "GET", timeout: 2000 }).fail(function (e) {
+    http.getImage({ url: "hgfttp://www.google.com/images/errors/logo_sm_2.png", method: "GET", timeout: 2000 }).fail(function (e) {
         completed = true;
         result = e;
     });
