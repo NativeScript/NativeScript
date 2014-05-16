@@ -10,3 +10,26 @@ export declare function getJSON<T>(options: request.HttpRequestOptions): promise
 
 export declare function getImage(url: string): promises.Promise<image.ImageSource>
 export declare function getImage(options: request.HttpRequestOptions): promises.Promise<image.ImageSource>
+
+export declare function request(options: HttpRequestOptions): promises.Promise<HttpResponse>;
+
+export interface HttpRequestOptions {
+    url: string;
+    method: string;
+    headers?: any;
+    content?: any;
+    timeout?: number;
+}
+
+export interface HttpResponse {
+    statusCode: number;
+    headers: any;
+    content?: HttpContent;
+}
+
+export interface HttpContent {
+    raw: any;
+    toString: () => string;
+    toJSON: () => any;
+    toImage: () => image.ImageSource;
+}

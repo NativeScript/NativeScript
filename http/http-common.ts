@@ -4,9 +4,6 @@ import http = require("http/http-request");
 
 // merge request
 export var request = http.request;
-export interface HttpResponse extends http.HttpResponse { }
-export interface HttpRequestOptions extends http.HttpRequestOptions { }
-export interface HttpContent extends http.HttpContent { }
 
 /**
   * Gets string from url.
