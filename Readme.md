@@ -4,7 +4,7 @@ The BCL solution relies on a custom build task used to filter and rename the com
 E.g. the file `application.android.js`, containing the actual platform-specific implementation will become `application.js`.
 There is also the .impl suffix for files where we have definition and implementation file with the same name, e.g.:
 
-file-system.d.ts
+file-system.d.ts <br/>
 file-system.impl.ts
 
 This is done to force the typescript compiler in Visual Studio to feed its definitions from the *.d.ts file rather than the implementation one.
