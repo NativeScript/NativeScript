@@ -1,23 +1,18 @@
 ﻿
-/**
-The current way of doing things have a limitation. Due to cyclic dependency 
-
-var LocationManager = require("location/location").LocationManager;
-
-does not work! We need to rework it using image-source and console method of having common code in one class + specific implementations 
-for different OSes
-*/
-
-import types = require("location/location-types");
 import promises = require("promises/promises");
-import locationModule = require("location/location");
 import timer = require("timer/timer");
+import types = require("location/location-types");
+import locationManagerModule = require("location/location-manager");
 
-export var getLocation = function (options?: types.Options) : promises.Promise<types.Location> {
+// merge the exports of the types module with the exports of this file
+declare var exports;
+require("utils/module-merge").merge(types, exports);
+
+export var getLocation = function (options?: types.Options): promises.Promise<types.Location> {
     var d = promises.defer<types.Location>();
 
     var timerId;
-    var locationManager = new locationModule.LocationManager();
+    var locationManager = new locationManagerModule.LocationManager();
 
     if (options && (0 === options.timeout)) {
         var location = locationManager.lastKnownLocation;
@@ -76,4 +71,35 @@ export var getLocation = function (options?: types.Options) : promises.Promise<t
     }
 
     return d.promise();
+}
+
+export class LocationManager {
+    private nativeManager: locationManagerModule.LocationManager;
+
+    public static isEnabled(): boolean {
+        return locationManagerModule.LocationManager.isEnabled();
+    }
+
+    public static distance(loc1: types.Location, loc2: types.Location): number {
+        return locationManagerModule.LocationManager.distance(loc1, loc2);
+    }
+
+    constructor() {
+        this.nativeManager = new locationManagerModule.LocationManager();
+    }
+
+    // monitoring
+    public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: Error) => any, options?: types.Options) {
+        this.nativeManager.startLocationMonitoring(onLocation, onError, options);
+    }
+
+    public stopLocationMonitoring() {
+        this.nativeManager.stopLocationMonitoring();
+    }
+
+    // other
+
+    get lastKnownLocation(): types.Location {
+        return this.nativeManager.lastKnownLocation;
+    }
 }

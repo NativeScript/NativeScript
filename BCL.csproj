@@ -125,13 +125,7 @@
       <DependentUpon>image-source.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="image-source\index.ts" />
-    <TypeScriptCompile Include="location\location.android.ts">
-      <DependentUpon>location.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="location\location.d.ts" />
-    <TypeScriptCompile Include="location\location.ios.ts">
-      <DependentUpon>location.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="Tests\file-system-tests.ts" />
     <TypeScriptCompile Include="Tests\http-tests.ts" />
     <TypeScriptCompile Include="Tests\image-tests.ts" />
@@ -198,9 +192,20 @@
       <DependentUpon>local-settings.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="local-settings\local-settings-common.ts" />
-    <TypeScriptCompile Include="location\location-common.ts" />
-    <TypeScriptCompile Include="location\location-types.ts" />
     <TypeScriptCompile Include="Tests\timer-tests.ts" />
+    <TypeScriptCompile Include="location\location-types.ts">
+      <DependentUpon>location.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="location\location-manager.android.ts">
+      <DependentUpon>location-manager.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="location\location-manager.d.ts" />
+    <TypeScriptCompile Include="location\location-manager.ios.ts">
+      <DependentUpon>location-manager.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="location\location.impl.ts">
+      <DependentUpon>location.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <Content Include="_references.ts" />
   </ItemGroup>
   <ItemGroup>

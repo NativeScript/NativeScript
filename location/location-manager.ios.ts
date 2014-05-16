@@ -1,11 +1,4 @@
 ﻿import types = require("location/location-types");
-import common = require("location/location-common");
-import merger = require("utils/module-merge");
-
-// merge the exports of the types module with the exports of this file
-declare var exports;
-merger.merge(types, exports);
-merger.merge(common, exports);
 
 export class LocationManager {
 
