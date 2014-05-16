@@ -1,6 +1,7 @@
 ﻿var TKUnit = require("Tests/TKUnit");
 
 var allTests = {};
+allTests["APPLICATION"] = require("Tests/application-tests");
 allTests["FILE SYSTEM"] = require("Tests/file-system-tests");
 allTests["HTTP"] = require("Tests/http-tests");
 allTests["LOCATION"] = require("Tests/location-tests");

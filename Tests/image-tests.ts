@@ -65,7 +65,8 @@ export var testNativeFields = function () {
 
 var getTestImageName = function (): string {
     if (app.ios) {
-        return "AppIcon";
+        // TODO: This expects 
+        return "logo";
     }
     if (app.android) {
         return "ic_launcher";

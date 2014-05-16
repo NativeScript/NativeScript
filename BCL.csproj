@@ -27,7 +27,7 @@
     <OutputPath>bin\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
-    <OutputPath>bin\</OutputPath>    
+    <OutputPath>bin\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Android'">
     <OutputPath>bin\</OutputPath>
@@ -129,6 +129,13 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="image-source\index.ts" />
     <TypeScriptCompile Include="location\location.d.ts" />
+    <TypeScriptCompile Include="Tests\application-tests-common.ts" />
+    <TypeScriptCompile Include="Tests\application-tests.ios.ts">
+      <DependentUpon>application-tests-common.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="Tests\application-tests.android.ts">
+      <DependentUpon>application-tests-common.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="Tests\file-system-tests.ts" />
     <TypeScriptCompile Include="Tests\http-tests.ts" />
     <TypeScriptCompile Include="Tests\image-tests.ts" />
@@ -182,7 +189,6 @@
     <TypeScriptCompile Include="http\http.ios.ts">
       <DependentUpon>http.d.ts</DependentUpon>
     </TypeScriptCompile>
-    
     <TypeScriptCompile Include="http\http.d.ts" />
     <TypeScriptCompile Include="local-settings\index.ts" />
     <TypeScriptCompile Include="local-settings\local-settings.d.ts" />
@@ -318,9 +324,7 @@
   </PropertyGroup>
   <UsingTask TaskName="BuildTasks.CopyForPlatformBuildTask" AssemblyFile="../../Build/lib/BuildTasks.dll" />
   <Target Name="AfterBuild">
-    <CopyForPlatformBuildTask TargetPlatform="$(TargetOS)" IncludeTests="$(CopyTests)" Platforms="iOS;Android" 
-                              InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" 
-                              JSConfigFile="$(JSConfig)" AppMainJSFile="$(JSMainFile)" ProjectDir="$(ProjectDir)"/>
+    <CopyForPlatformBuildTask TargetPlatform="$(TargetOS)" IncludeTests="$(CopyTests)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" JSConfigFile="$(JSConfig)" AppMainJSFile="$(JSMainFile)" ProjectDir="$(ProjectDir)" />
   </Target>
   <PropertyGroup>
     <PostBuildEvent>

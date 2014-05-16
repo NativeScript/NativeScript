@@ -60,7 +60,7 @@ export declare class AndroidApplication {
     /**
     * The main (start) Activity for the application.
     */
-    public mainActivity: android.app.Activity;
+    public startActivity: android.app.Activity;
 
     /**
     * The name of the application package.
@@ -117,6 +117,11 @@ export declare class iOSApplication {
     * The root view controller for the application.
     */
     public rootController: UIKit.UIViewController;
+
+    /**
+    * The android.app.Application object instance provided to the init of the module.
+    */
+    public nativeApp: UIKit.UIApplication;
 }
 
 /**
