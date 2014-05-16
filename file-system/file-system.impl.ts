@@ -49,9 +49,6 @@ var createFolder = function (info: { path: string; name: string; }) {
 };
 
 export class FileSystemEntity {
-    /**
-    * Gets the Folder object representing the parent of this entity. Will be null for a root folder like Documents or Temporary.
-    */
     get parent(): Folder {
         var onError = function (error) {
             throw error;

@@ -110,6 +110,9 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="file-system\file-system.d.ts" />
     <TypeScriptCompile Include="file-system\file-system-access.d.ts" />
+    <TypeScriptCompile Include="file-system\file-system.impl.ts">
+      <DependentUpon>file-system.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="image-source\image-source-native.android.ts">
       <DependentUpon>image-source-native.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -170,9 +173,6 @@
       <DependentUpon>timer.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="Tests\local-settings-tests.ts" />
-    <TypeScriptCompile Include="file-system\file-system.ts">
-      <DependentUpon>file-system.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="file-system\file-system-access.android.ts">
       <DependentUpon>file-system-access.d.ts</DependentUpon>
     </TypeScriptCompile>
