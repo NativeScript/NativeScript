@@ -1,2 +1,2 @@
 ﻿declare var module, require;
-module.exports = require("http/http-common");
+module.exports = require("http/http");

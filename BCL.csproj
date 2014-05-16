@@ -147,7 +147,6 @@
     <TypeScriptCompile Include="utils\module-merge.ts" />
     <TypeScriptCompile Include="utils\utils_android.ts" />
     <TypeScriptCompile Include="utils\utils_ios.ts" />
-    <TypeScriptCompile Include="http\http-request.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="http\index.ts" />
@@ -180,14 +179,14 @@
     <TypeScriptCompile Include="file-system\file-system-access.ios.ts">
       <DependentUpon>file-system-access.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="http\http-request.android.ts">
-      <DependentUpon>http-request.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="http\http-request.ios.ts">
-      <DependentUpon>http-request.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="application\application-common.ts" />
     <TypeScriptCompile Include="http\http-common.ts" />
+    <TypeScriptCompile Include="http\http.android.ts">
+      <DependentUpon>http.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="http\http.ios.ts">
+      <DependentUpon>http.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <Content Include="image-source\Readme.md" />
     <TypeScriptCompile Include="http\http.d.ts" />
     <TypeScriptCompile Include="local-settings\index.ts" />

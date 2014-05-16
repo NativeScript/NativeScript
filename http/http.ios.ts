@@ -1,8 +1,11 @@
 ﻿/**
-  * iOS specific http client implementation.
+  * iOS specific http request implementation.
   */
 import promises = require("promises/promises");
-import http = require("http/http-request");
+import http = require("http/http");
+
+declare var exports;
+require("utils/module-merge").merge(require("http/http-common"), exports);
 
 export function request(options: http.HttpRequestOptions): promises.Promise<http.HttpResponse> {
     var d = promises.defer<http.HttpResponse>();

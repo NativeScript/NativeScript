@@ -1,13 +1,11 @@
 import image = require("image-source/image-source");
 import promises = require("promises/promises");
-import http = require("http/http-request");
-
-// merge request
-export var request = http.request;
+import http = require("http/http");
 
 /**
   * Gets string from url.
   */
+
 export function getString(arg: any): promises.Promise<string> {
     var d = promises.defer<string>();
 
