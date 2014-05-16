@@ -200,6 +200,7 @@
     <TypeScriptCompile Include="local-settings\local-settings-common.ts" />
     <TypeScriptCompile Include="location\location-common.ts" />
     <TypeScriptCompile Include="location\location-types.ts" />
+    <TypeScriptCompile Include="Tests\timer-tests.ts" />
     <Content Include="_references.ts" />
   </ItemGroup>
   <ItemGroup>

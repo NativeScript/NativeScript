@@ -30,3 +30,5 @@ export function clearTimeout(id: number): void {
 export function setInterval(callback: Function, milliseconds = 0): number {
     return createTimerAndGetId(callback, milliseconds, true);
 }
+
+export var clearInterval = clearTimeout;

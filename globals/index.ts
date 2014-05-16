@@ -5,6 +5,6 @@ import consoleModule = require("console/console");
 setTimeout = timer.setTimeout;
 clearTimeout = timer.clearTimeout;
 setInterval = timer.setInterval;
-clearInterval = timer.clearTimeout;
+clearInterval = timer.clearInterval;
 
 console = new consoleModule.Console();

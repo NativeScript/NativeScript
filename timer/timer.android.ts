@@ -56,3 +56,5 @@ export function setInterval(callback: Function, milliseconds = 0): number {
 
     return id;
 }
+
+export var clearInterval = clearTimeout;
