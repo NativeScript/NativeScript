@@ -1,4 +1,13 @@
 ﻿
+/**
+The current way of doing things have a limitation. Due to cyclic dependency 
+
+var LocationManager = require("location/location").LocationManager;
+
+does not work! We need to rework it using image-source and console method of having common code in one class + specific implementations 
+for different OSes
+*/
+
 import types = require("location/location-types");
 import promises = require("promises/promises");
 import locationModule = require("location/location");

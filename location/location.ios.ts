@@ -80,6 +80,8 @@ export class LocationManager {
                 setupWithFunctions: function (onLocation, onError) {
                     this.onLocation = onLocation;
                     this.onError = onError;
+
+                    this.maximumAge = (options && ("number" === typeof options.maximumAge)) ? options.maximumAge : undefined;
                 }
 
             }, {}).implements({
@@ -90,7 +92,15 @@ export class LocationManager {
                     locationManagerDidUpdateLocations: function (manager, locations) {
                         //console.log('location received: ' + locations.count());
                         for (var i = 0; i < locations.count(); i++) {
-                            this.onLocation(LocationManager.locationFromCLLocation(locations.objectAtIndex(i)));
+                            var location = LocationManager.locationFromCLLocation(locations.objectAtIndex(i));
+                            if (this.maximumAge) {
+                                if (location.timestamp.valueOf() + this.maximumAge > new Date().valueOf()) {
+                                    this.onLocation(location);
+                                }
+                            }
+                            else {
+                                this.onLocation(location);
+                            }
                         }
                     },
 

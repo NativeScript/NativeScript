@@ -112,4 +112,9 @@ export declare class LocationManager {
     lastKnownLocation: Location;
 }
 
+/**
+* Fires a single shot location search. If you specify timeout in options, location search will fail on timeout. 
+* If you specify timeout = 0 it just requests the last known location. However if you specify maximumAge and the
+* location received is older it won't be received
+*/
 export declare var getLocation: (options?: Options) => promises.Promise<Location>;

@@ -95,9 +95,17 @@ export class LocationManager {
             var criteria = new android.location.Criteria();
             criteria.setAccuracy((this.desiredAccuracy === types.Accuracy.HIGH) ? 1 : 2);
             this.locationListener = <any>new android.location.LocationListener({
-                onLocationChanged: function (location: android.location.Location) {
+                onLocationChanged: function (location1: android.location.Location) {
                     if (this._onLocation) {
-                        this._onLocation(LocationManager.locationFromAndroidLocation(location));
+                        var location = LocationManager.locationFromAndroidLocation(location1);
+                        if (this.maximumAge) {
+                            if (location.timestamp.valueOf() + this.maximumAge > new Date().valueOf()) {
+                                this._onLocation(location);
+                            }
+                        }
+                        else {
+                            this._onLocation(location);
+                        }
                     }
                 },
 
@@ -122,6 +130,7 @@ export class LocationManager {
 
             this.locationListener._onLocation = onLocation;
             this.locationListener._onError = onError;
+            this.locationListener.maximumAge = (options && ("number" === typeof options.maximumAge)) ? options.maximumAge : undefined;
             try {
                 this.androidLocationManager.requestLocationUpdates(long(this.minimumUpdateTime), float(this.updateDistance), criteria, this.locationListener, null);
                 this.isStarted = true;
