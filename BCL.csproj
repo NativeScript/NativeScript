@@ -23,8 +23,11 @@
   <PropertyGroup>
     <RootNamespace>BCL</RootNamespace>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Full'">
     <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
+    <OutputPath>bin\</OutputPath>    
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Android'">
     <OutputPath>bin\</OutputPath>
@@ -144,8 +147,6 @@
     <TypeScriptCompile Include="utils\module-merge.ts" />
     <TypeScriptCompile Include="utils\utils_android.ts" />
     <TypeScriptCompile Include="utils\utils_ios.ts" />
-  </ItemGroup>
-  <ItemGroup>
     <TypeScriptCompile Include="http\index.ts" />
     <TypeScriptCompile Include="location\index.ts" />
     <TypeScriptCompile Include="file-system\index.ts" />
@@ -181,7 +182,7 @@
     <TypeScriptCompile Include="http\http.ios.ts">
       <DependentUpon>http.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <Content Include="image-source\Readme.md" />
+    
     <TypeScriptCompile Include="http\http.d.ts" />
     <TypeScriptCompile Include="local-settings\index.ts" />
     <TypeScriptCompile Include="local-settings\local-settings.d.ts" />
@@ -206,45 +207,35 @@
     <TypeScriptCompile Include="location\location.impl.ts">
       <DependentUpon>location.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <Content Include="_references.ts" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="libjs.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="_references.ts" />
+    <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="console\Readme.md" />
+    <Content Include="location\Readme.md" />
+    <Content Include="application\Readme.md" />
+    <Content Include="globals\Readme.md" />
+    <Content Include="timer\Readme.md" />
+    <Content Include="Deploy\Readme.md" />
+    <Content Include="Tests\Readme.md" />
+    <Content Include="local-settings\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Deploy\Eclipse\" />
+    <Folder Include="Deploy\Full\" />
     <Folder Include="Deploy\xCode\" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="location\Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="application\Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="globals\Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="timer\Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Deploy\Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Tests\Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="local-settings\Readme.md" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Full'">
+    <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
+    <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'iOS'">
     <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
     <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
@@ -288,6 +279,10 @@
   <!--
   Custom build tasks
   -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Full'">
+    <TargetOS>Full</TargetOS>
+    <JSConfig>Deploy\Full\Configuration.xml</JSConfig>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'iOS'">
     <TargetOS>iOS</TargetOS>
   </PropertyGroup>
@@ -323,7 +318,9 @@
   </PropertyGroup>
   <UsingTask TaskName="BuildTasks.CopyForPlatformBuildTask" AssemblyFile="../../Build/lib/BuildTasks.dll" />
   <Target Name="AfterBuild">
-    <CopyForPlatformBuildTask TargetPlatform="$(TargetOS)" IncludeTests="$(CopyTests)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" JSConfigFile="$(JSConfig)" AppMainJSFile="$(JSMainFile)" />
+    <CopyForPlatformBuildTask TargetPlatform="$(TargetOS)" IncludeTests="$(CopyTests)" Platforms="iOS;Android" 
+                              InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" 
+                              JSConfigFile="$(JSConfig)" AppMainJSFile="$(JSMainFile)" ProjectDir="$(ProjectDir)"/>
   </Target>
   <PropertyGroup>
     <PostBuildEvent>

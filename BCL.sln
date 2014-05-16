@@ -9,6 +9,7 @@ Global
 		Android_Tests|Any CPU = Android_Tests|Any CPU
 		Android|Any CPU = Android|Any CPU
 		Documentation|Any CPU = Documentation|Any CPU
+		Full|Any CPU = Full|Any CPU
 		iOS_Deploy|Any CPU = iOS_Deploy|Any CPU
 		iOS_Tests|Any CPU = iOS_Tests|Any CPU
 		iOS|Any CPU = iOS|Any CPU
@@ -22,6 +23,7 @@ Global
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android|Any CPU.Build.0 = Android|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Documentation|Any CPU.ActiveCfg = Documentation|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Documentation|Any CPU.Build.0 = Documentation|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Full|Any CPU.ActiveCfg = Release|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS_Deploy|Any CPU.ActiveCfg = iOS_Deploy|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS_Deploy|Any CPU.Build.0 = iOS_Deploy|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS_Tests|Any CPU.ActiveCfg = iOS_Tests|Any CPU
