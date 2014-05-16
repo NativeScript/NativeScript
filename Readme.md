@@ -2,6 +2,16 @@
 
 The BCL solution relies on a custom build task used to filter and rename the compiled javascript files by platform. 
 E.g. the file `application.android.js`, containing the actual platform-specific implementation will become `application.js`.
+There is also the .impl suffix for files where we have definition and implementation file with the same name, e.g.:
+
+file-system.d.ts
+file-system.impl.ts
+
+This is done to force the typescript compiler in Visual Studio to feed its definitions from the *.d.ts file rather than the implementation one.
+The build task removes this private suffix and the final output is
+
+files-system.js
+
 The BCL itself uses a pre-built copy of the task, residing in the `Build/lib` folder.
 
 ### BuildTasks solution 
@@ -14,7 +24,7 @@ The output of this project is located at (../bin/)
 
 ### Build the BCL project
 
-There are four different configurations of the project:
+There are six different configurations of the project:
 
 1. Android <br/>
    This configuration will create a `bin/Android` folder and output all the Android-related files there.
@@ -48,8 +58,8 @@ There are four different configurations of the project:
    In order to use this path you will need to map a shared MAC's folder and access it from your PC.
 
 6. iOS_Tests <br/>
-   Same as iOS_Deploy plus the Tests folder in the BCL is copied to the output directory.
-
+   Same as iOS_Deploy plus the Tests folder in the BCL is copied to the output directory.   
+   
 ### UnitTestApp - Ready to run
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
