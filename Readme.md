@@ -5,7 +5,6 @@ E.g. the file `application.android.js`, containing the actual platform-specific 
 There is also the .impl suffix for files where we have definition and implementation file with the same name, e.g.:
 
 file-system.d.ts
-
 file-system.impl.ts
 
 This is done to force the typescript compiler in Visual Studio to feed its definitions from the *.d.ts file rather than the implementation one.
@@ -27,9 +26,9 @@ The output of this project is located at (../bin/)
 
 There are six different configurations of the project:
 
-1. Android <br/>
+- Android <br/>
    This configuration will create a `bin/Android` folder and output all the Android-related files there.
-2. Android_Deploy <br/>
+- Android_Deploy <br/>
    Same as the Android configuration plus the generated javascript is copied to the tns_modules folder in the targeted Eclipse project.
    The path to the project is taken from the `BCL/Deploy/Eclipse/Configuration.xml` file. The expected XML structure is:
 
@@ -40,13 +39,13 @@ There are six different configurations of the project:
 </JSFolder>
 ```
 
-3. Android_Tests <br/>
+- Android_Tests <br/>
    Same as Android_Deploy plus the Tests folder in the BCL is copied to the output directory.
 
-4. iOS <br/>
+- iOS <br/>
    This configuration will create a `bin/iOS` folder and output all the iOS-related files there.
 
-5. iOS_Deploy <br/>
+- iOS_Deploy <br/>
    Same as the iOS configuration plus the generated javascript is copied to the JS folder in the testing xCode project. 
    The path to the project is taken from the `BCL/Deploy/xCode/Configuration.xml` file. The expected XML structure is:
 
@@ -58,7 +57,7 @@ There are six different configurations of the project:
 ```
    In order to use this path you will need to map a shared MAC's folder and access it from your PC.
 
-6. iOS_Tests <br/> 
+- iOS_Tests <br/> 
    Same as iOS_Deploy plus the Tests folder in the BCL is copied to the output directory.   
    
 ### UnitTestApp - Ready to run
