@@ -150,3 +150,35 @@ export var testLocationOnceMaximumAge = function () {
 export var testLocationOnceTimeout1000 = function () {
     doOnce({ timeout: 1000 });
 };
+
+export var testSnippet = function () {
+    var locationReceived;
+    // <snippet name="location">
+    // ### Get location once
+    // if there is `options.timeout` you will receive error on timeout. If `options.timeout` is 0 then the result is the same as the result from `LocationManager.lastKnownLocation`
+    // and there will be no wait. You can use `options.maximumAge` to specify you don't want to receive locations older than specified time in ms.
+    //
+    // ``` JavaScript
+    // var locationModule = require("location");
+    //// options can also look like { maximumAge: 2000, timeout: 20 }
+    locationModule.getLocation({ maximumAge: 30000, timeout: 0 }).then(function (location) {
+        //console.log('Location received: ' + location);
+        // <hide>
+        locationReceived = true;
+        // </hide>
+    }).fail(function (error) {
+        //console.log('Location error received: ' + error);
+        // <hide>
+        locationReceived = error;
+        // </hide>
+    });
+    // ```
+    // </snippet>
+
+    var isReady = function () {
+        return locationReceived;
+    }
+
+    TKUnit.waitUntilReady(isReady, 10);
+};
+
