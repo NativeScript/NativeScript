@@ -138,7 +138,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="Tests\file-system-tests.ts" />
     <TypeScriptCompile Include="Tests\http-tests.ts" />
-    <TypeScriptCompile Include="Tests\image-tests.ts" />
+    <TypeScriptCompile Include="Tests\image-source-tests.ts" />
     <TypeScriptCompile Include="Tests\index.ts" />
     <TypeScriptCompile Include="Tests\location-tests.ts" />
     <TypeScriptCompile Include="Tests\testRunner.ts" />

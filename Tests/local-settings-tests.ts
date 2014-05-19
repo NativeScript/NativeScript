@@ -47,7 +47,9 @@ export var testString = function () {
 
 export var testNumber = function () {
     // <snippet name="local-settings">
-    // ### Set and get numeric value. We use toFixed() here in order to avoid number based errors
+    // ### Set and get numeric value.
+    // We use `toFixed()` here in order to avoid floating point errors - ex: `54.321` becoming `54.320999999537`.
+    // Beware the result of `toFixed()` is a string not a number therefore you cannot use `===` or `!==` when comparing with a number.
     // ``` JavaScript
     LocalSettings.setNumber("numberKey", 54.321);
     var value = LocalSettings.getNumber("numberKey").toFixed(3);
