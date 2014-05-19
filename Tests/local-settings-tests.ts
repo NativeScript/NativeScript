@@ -15,7 +15,7 @@ var noNumberKey: string = "noNumberKey";
 
 // <snippet name="local-settings">
 // ## Working with string, number and boolean values
-// </snippet
+// </snippet>
 
 export var testBoolean = function () {
     LocalSettings.setBoolean(boolKey, false);
@@ -23,7 +23,7 @@ export var testBoolean = function () {
     TKUnit.assert(false == boolValue, "Cannot set boolean to false, currently it is: " + LocalSettings.getBoolean(boolKey));
 
     // <snippet name="local-settings">
-    // ### set and get boolean value and provide default value in case it is not set
+    // ### Set and get boolean value and provide default value in case it is not set
     // ``` JavaScript
     LocalSettings.setBoolean("boolKey", true);
     var boolValue = LocalSettings.getBoolean("boolKey", false);
@@ -36,7 +36,7 @@ export var testBoolean = function () {
 
 export var testString = function () {
     // <snippet name="local-settings">
-    // ### set and get string value
+    // ### Set and get string value
     // ``` JavaScript
     LocalSettings.setString("stringKey", "String value");
     var stringValue = LocalSettings.getString("stringKey");
@@ -82,7 +82,7 @@ export var testDefaults = function () {
 
 // <snippet name="local-settings">
 // ## Other functions
-// </snippet
+// </snippet>
 
 export var testHasKey = function () {
     // <snippet name="local-settings">
