@@ -5,7 +5,7 @@
 //var imageSource = require("image-source");
 // ```
 // The pre-required `imageSource` module is used throughout the following code snippets.
-// we also use fs module defined as follows:
+// We also use fs module defined as follows:
 // ``` JavaScript
 //var fs = require("file-system");
 // ```
@@ -22,7 +22,6 @@ export var testFromResource = function () {
     // <snippet name="image-source">
     // ### Load image using resource name
     // this similar to loading Bitmap from `R.drawable.logo` on Android or calling `[UIImage imageNamed@"logo"]` on iOS
-    // TODO: replace getTestImageName() with "logo"
     // ``` JavaScript
     var img = imageSource.fromResource("logo");
     // ```
