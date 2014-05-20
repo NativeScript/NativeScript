@@ -13,15 +13,14 @@
 // </snippet>
 
 import imageSource = require("image-source/image-source");
-import app = require("application/application"); 
 import fs = require("file-system/file-system"); 
+import app = require("application/application"); 
 import TKUnit = require("Tests/TKUnit"); 
-
 
 export var testFromResource = function () {
     // <snippet name="image-source">
     // ### Load image using resource name
-    // this similar to loading Bitmap from `R.drawable.logo` on Android or calling `[UIImage imageNamed@"logo"]` on iOS
+    // This is similar to loading Bitmap from `R.drawable.logo` on Android or calling `[UIImage imageNamed@"logo"]` on iOS
     // ``` JavaScript
     var img = imageSource.fromResource("logo");
     // ```

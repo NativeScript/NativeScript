@@ -218,6 +218,9 @@
     <TypeScriptCompile Include="libjs.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="camera\camera-types.ts">
+      <DependentUpon>camera.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
