@@ -128,7 +128,7 @@ var prepareModal = function () {
     var clsMsgQueue = java.lang.Class.forName("android.os.MessageQueue");
     var clsMsg = java.lang.Class.forName("android.os.Message");
 
-    var nextMethod;
+    nextMethod;
     var methods = clsMsgQueue.getDeclaredMethods();
     var i;
     for (i = 0; i < methods.length; i++) {
@@ -139,7 +139,7 @@ var prepareModal = function () {
         }
     }
 
-    var targetField;
+    targetField;
     var fields = clsMsg.getDeclaredFields();
     for (i = 0; i < fields.length; i++) {
         if (fields[i].getName() === "target") {
