@@ -8,8 +8,8 @@ require("utils/module-merge").merge(commonTests, exports);
 
 // <snippet name="application">
 // ### Using the Android-specific implementation
-// ``` JavaScript
 // Accessing the Android-specific object instance (will be undefined if running on iOS)
+// ``` JavaScript
 var androidApp = app.android;
 // ```
 // Using the Android Application context

@@ -116,6 +116,12 @@
     <TypeScriptCompile Include="file-system\file-system.impl.ts">
       <DependentUpon>file-system.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="http\http.android.ts">
+      <DependentUpon>http.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="http\http.ios.ts">
+      <DependentUpon>http.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="image-source\image-source-native.android.ts">
       <DependentUpon>image-source-native.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -183,12 +189,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="application\application-common.ts" />
     <TypeScriptCompile Include="http\http-common.ts" />
-    <TypeScriptCompile Include="http\http.android.ts">
-      <DependentUpon>http.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="http\http.ios.ts">
-      <DependentUpon>http.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="http\http.d.ts" />
     <TypeScriptCompile Include="local-settings\index.ts" />
     <TypeScriptCompile Include="local-settings\local-settings.d.ts" />
@@ -280,6 +280,9 @@
     <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
     <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
     <TypeScriptTarget>ES5</TypeScriptTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(VSToolsPath)\TypeScript\Microsoft.TypeScript.targets')" />
   <!--
