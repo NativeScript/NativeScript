@@ -6,11 +6,31 @@ import commonTests = require("Tests/application-tests-common");
 declare var exports;
 require("utils/module-merge").merge(commonTests, exports);
 
+// <snippet name="application">
+// ### Using the Android-specific implementation
+// ``` JavaScript
+// Accessing the Android-specific object instance (will be undefined if running on iOS)
+var androidApp = app.android;
+// ```
+// Using the Android Application context
+// ``` JavaScript
+var context = app.android.context;
+//// get the Files (Documents) folder (directory)
+var dir = context.getFilesDir();
+// ```
+// Tracking the current Activity
+// ``` JavaScript
+if (androidApp.currentActivity === androidApp.startActivity) {
+    //// We are currently in the main (start) activity of the application
+}
+// ```
+// </snippet>
+
 export var testAndroidApplicationInitialized = function () {
     TKUnit.assert(app.android, "Android application not initialized.");
     TKUnit.assert(app.android.context, "Android context not initialized.");
     TKUnit.assert(app.android.currentActivity, "Android currentActivity not initialized.");
-    TKUnit.assert(app.android.startActivity, "Android mainActivity not initialized.");
+    TKUnit.assert(app.android.startActivity, "Android startActivity not initialized.");
     TKUnit.assert(app.android.nativeApp, "Android nativeApp not initialized.");
     TKUnit.assert(app.android.packageName, "Android packageName not initialized.");
 }

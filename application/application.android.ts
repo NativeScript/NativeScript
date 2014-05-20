@@ -85,10 +85,17 @@ var initEvents = function () {
     return lifecycleCallbacks;
 }
 
+var initialized;
 export var init = function (nativeApp: android.app.Application) {
+    if (initialized) {
+        return;
+    }
+
     var app = new AndroidApplication(nativeApp);
     exports.android = app;
     app.init();
+
+    initialized = true;
 }
 
 class AndroidApplication {

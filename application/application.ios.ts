@@ -26,11 +26,17 @@ import appModule = require("application/application-common");
 declare var exports;
 require("utils/module-merge").merge(appModule, exports);
 
-// TODO: Declarations
+var initialized;
 export var init = function (nativeApp: any) {
+    if (initialized) {
+        return;
+    }
+
     var app = new iOSApplication(nativeApp);
     exports.ios = app;
     app.init();
+
+    initialized = true;
 }
 
 class iOSApplication {

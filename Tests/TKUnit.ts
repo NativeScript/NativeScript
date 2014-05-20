@@ -114,8 +114,14 @@ export var waitUntilReady = function (isReady: () => boolean, timeoutSec?: numbe
     }
 };
 
-var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number) {
-    if (!quitLoop) {
+// Setup for the Android modal loop implementation
+// TODO: If these platform-specific implementations continue to grow, think of per-platform separation (TKUnit.android)
+var nextMethod;
+var targetField;
+var prepared;
+
+var prepareModal = function () {
+    if (prepared) {
         return;
     }
 
@@ -142,6 +148,16 @@ var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number) {
             break;
         }
     }
+
+    prepared = true;
+}
+
+var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number) {
+    if (!quitLoop) {
+        return;
+    }
+
+    prepareModal();
 
     var queue = android.os.Looper.myQueue();
 
