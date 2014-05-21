@@ -1,12 +1,13 @@
-﻿
-import promises = require("promises/promises");
+﻿import promises = require("promises/promises");
 import timer = require("timer/timer");
 import types = require("location/location-types");
 import locationManagerModule = require("location/location-manager");
 
 // merge the exports of the types module with the exports of this file
+import merger = require("utils/module-merge");
 declare var exports;
-require("utils/module-merge").merge(types, exports);
+merger.merge(types, exports);
+merger.merge(locationManagerModule, exports);
 
 export var getLocation = function (options?: types.Options): promises.Promise<types.Location> {
     var d = promises.defer<types.Location>();
@@ -73,33 +74,33 @@ export var getLocation = function (options?: types.Options): promises.Promise<ty
     return d.promise();
 }
 
-export class LocationManager {
-    private nativeManager: locationManagerModule.LocationManager;
+//export class LocationManager {
+//    private nativeManager: locationManagerModule.LocationManager;
 
-    public static isEnabled(): boolean {
-        return locationManagerModule.LocationManager.isEnabled();
-    }
+//    public static isEnabled(): boolean {
+//        return locationManagerModule.LocationManager.isEnabled();
+//    }
 
-    public static distance(loc1: types.Location, loc2: types.Location): number {
-        return locationManagerModule.LocationManager.distance(loc1, loc2);
-    }
+//    public static distance(loc1: types.Location, loc2: types.Location): number {
+//        return locationManagerModule.LocationManager.distance(loc1, loc2);
+//    }
 
-    constructor() {
-        this.nativeManager = new locationManagerModule.LocationManager();
-    }
+//    constructor() {
+//        this.nativeManager = new locationManagerModule.LocationManager();
+//    }
 
-    // monitoring
-    public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: Error) => any, options?: types.Options) {
-        this.nativeManager.startLocationMonitoring(onLocation, onError, options);
-    }
+//    // monitoring
+//    public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: Error) => any, options?: types.Options) {
+//        this.nativeManager.startLocationMonitoring(onLocation, onError, options);
+//    }
 
-    public stopLocationMonitoring() {
-        this.nativeManager.stopLocationMonitoring();
-    }
+//    public stopLocationMonitoring() {
+//        this.nativeManager.stopLocationMonitoring();
+//    }
 
-    // other
+//    // other
 
-    get lastKnownLocation(): types.Location {
-        return this.nativeManager.lastKnownLocation;
-    }
-}
+//    get lastKnownLocation(): types.Location {
+//        return this.nativeManager.lastKnownLocation;
+//    }
+//}
