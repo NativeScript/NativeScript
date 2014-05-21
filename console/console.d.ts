@@ -61,4 +61,9 @@ export declare class Console {
     * @param obj The object instance to be dumped.
     */
     public dump(obj: any): void;
+
+    /**
+    * Prints the state of the specified object to the console.
+    */
+    public dir(obj: any): void;
 }

@@ -36,8 +36,7 @@ function topViewControllerWithRootViewController(rootViewController: any) {
 export var takePicture = function (options?: types.Options): promises.Promise<imageSource.ImageSource> {
     var d = promises.defer<imageSource.ImageSource>();
 
-    // FIXME: this is done to prevent listener from being freed by JS garbage collector
-    // we will try to fix this at JS Bridge level
+    // This is done to prevent listener from being freed by JS garbage collector
     var listener;
 
     var ImagePickerControllerListener = Foundation.NSObject.extends({
@@ -49,7 +48,6 @@ export var takePicture = function (options?: types.Options): promises.Promise<im
                 imagePickerControllerDidFinishPickingMediaWithInfo: function (picker, info) {
                     console.log('takeImage received');
                     picker.presentingViewController.dismissViewControllerAnimatedCompletion(true, null);
-                    // FIXME: do not work with listener here
                     listener = null;
                     var image = imageSource.fromNativeSource(info.valueForKey(UIKit.UIImagePickerControllerOriginalImage));
                     d.resolve(image);
@@ -58,7 +56,6 @@ export var takePicture = function (options?: types.Options): promises.Promise<im
                 imagePickerControllerDidCancel: function (picker) {
                     console.info('takeImage canceled');
                     picker.presentingViewController.dismissViewControllerAnimatedCompletion(true, null);
-                    // FIXME: do not work with listener here
                     listener = null;
                     d.reject(new Error('takePicture canceled by user'));
                 }

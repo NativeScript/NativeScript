@@ -20,6 +20,7 @@ declare module i {
         log(message: any, ...optionalParams: any[]): void;
         trace(): void;
         dump(obj: any): void;
+        dir(obj: any): void;
     }
 }
 

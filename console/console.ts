@@ -320,4 +320,6 @@ export class Console {
         result.push('=== dump(): finished ===');
         this.log(result.join('\n'));
     }
+
+    public dir = this.dump;
 }
