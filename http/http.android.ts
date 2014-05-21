@@ -62,7 +62,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                         onCompleted: function (error) {
                             d.resolve({
                                 content: {
-                                    raw: response,
+                                    raw: outputStream,
                                     toString: () => { return outputStream.toString(); },
                                     toJSON: () => { return JSON.parse(outputStream.toString()); },
                                     toImage: () => {
