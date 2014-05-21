@@ -1,4 +1,5 @@
-﻿export declare var helper_log: (message: string) => void;
+﻿//@private
+export declare var helper_log: (message: string) => void;
 export declare var info: (message: string) => void;
 export declare var error: (message: string) => void;
 export declare var warn: (message: string) => void;

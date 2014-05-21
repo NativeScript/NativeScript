@@ -1,6 +1,4 @@
-﻿// TODO: Implement "hidden" notation so that such declarations are not included in the d.ts file we will provide for the users.
-//@hidden
-
+﻿//@private
 export declare class FileSystemAccess {
     getLastModified(path: string): Date;
 

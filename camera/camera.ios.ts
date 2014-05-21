@@ -1,4 +1,4 @@
-﻿import promises = require("promises/promises");
+﻿import promises = require("promises");
 import imageSource = require("image-source");
 import types = require("camera/camera-types");
 

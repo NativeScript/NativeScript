@@ -1,4 +1,4 @@
-﻿import promises = require("promises/promises");
+﻿import promises = require("promises");
 import timer = require("timer/timer");
 import types = require("location/location-types");
 import locationManagerModule = require("location/location-manager");

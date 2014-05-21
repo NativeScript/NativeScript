@@ -1,7 +1,7 @@
 ﻿
 declare module "file-system" {
 
-    import promises = require("promises/promises");
+    import promises = require("promises");
 
     export class FileSystemEntity {
         /**

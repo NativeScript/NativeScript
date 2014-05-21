@@ -1,6 +1,6 @@
 ﻿
 declare module "image-source" {
-    import promises = require("promises/promises");
+    import promises = require("promises");
 
     /**
     * Defines the recognized image formats.

@@ -1,11 +1,10 @@
 ﻿/**
   * Android specific http request implementation.
   */
-import promises = require("promises/promises");
-import http = require("http");
+import promises = require("promises");
 
-declare var exports;
-require("utils/module-merge").merge(require("http/http-common"), exports);
+// this is imported for definition purposes only
+import http = require("http");
 
 export function request(options: http.HttpRequestOptions): promises.Promise<http.HttpResponse> {
     var d = promises.defer<http.HttpResponse>();

@@ -1,4 +1,4 @@
-
+//@private
 export declare class Location {
     latitude: number;
     longitude: number;

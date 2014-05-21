@@ -1,5 +1,4 @@
-﻿
-import promises = require("promises/promises");
+﻿import promises = require("promises");
 
 export declare enum Accuracy {
     // in meters

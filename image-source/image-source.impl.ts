@@ -1,6 +1,6 @@
 ﻿import app = require("application");
 import native = require("image-source/image-source-native");
-import promises = require("promises/promises");
+import promises = require("promises");
 import http = require("http");
 
 // This is used for definition purposes only, it does not generate JavaScript for it.
