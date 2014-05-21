@@ -66,9 +66,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                                     toString: () => { return outputStream.toString(); },
                                     toJSON: () => { return JSON.parse(outputStream.toString()); },
                                     toImage: () => {
-                                        var bytes = outputStream.toByteArray();
-                                        var bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                                        return require("image-source").fromNativeSource(bitmap);
+                                        return require("image-source").fromData(new java.io.ByteArrayInputStream(outputStream.toByteArray()));
                                     }
                                 },
                                 statusCode: rawHeaders.getResponseCode(),
