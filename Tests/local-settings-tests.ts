@@ -78,8 +78,9 @@ export var testDefaults = function () {
     // ```
     // </snippet>
     TKUnit.assert("undefined" === typeof defaultValue, "Default string value is not undefined");
-    TKUnit.assert("undefined" === LocalSettings.getBoolean(noBoolKey), "Default boolean value is not undefined");
-    TKUnit.assert("undefined" === LocalSettings.getNumber(noNumberKey), "Default number value is not undefined");
+
+    TKUnit.assert("undefined" === typeof LocalSettings.getBoolean(noBoolKey), "Default boolean value is not undefined");
+    TKUnit.assert("undefined" === typeof LocalSettings.getNumber(noNumberKey), "Default number value is not undefined");
 };
 
 // <snippet name="local-settings">

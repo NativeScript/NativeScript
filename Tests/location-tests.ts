@@ -121,7 +121,7 @@ export var testLocationOnceTimeout0 = function () {
 
 export var testLocationOnceMaximumAge = function () {
     TKUnit.waitUntilReady(function () { return false; }, 2);
-    doOnce({ maximumAge: 3000, timeout: 0 }); // this should pass
+    doOnce({ maximumAge: 20000, timeout: 0 }); // this should pass
     try {
         doOnce({ maximumAge: 1000, timeout: 0 });
         TKUnit.assert(false, "maximumAge check failed");
@@ -130,8 +130,8 @@ export var testLocationOnceMaximumAge = function () {
     }
 };
 
-export var testLocationOnceTimeout1000 = function () {
-    doOnce({ timeout: 1000 });
+export var testLocationOnceTimeout10000 = function () {
+    doOnce({ timeout: 10000 });
 };
 
 export var testSnippet = function () {

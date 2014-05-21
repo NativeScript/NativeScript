@@ -61,7 +61,7 @@ export class LocationManager {
 
     constructor() {
         this.isStarted = false;
-        this.desiredAccuracy = types.Accuracy.HIGH;
+        this.desiredAccuracy = types.Accuracy.ANY;
         this.updateDistance = -1; // kCLDistanceFilterNone
         this.iosLocationManager = new CoreLocation.CLLocationManager();
     }

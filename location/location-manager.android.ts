@@ -54,7 +54,7 @@ export class LocationManager {
 
     public static isEnabled(): boolean {
         var criteria = new android.location.Criteria();
-        criteria.setAccuracy(1); // low ? fine ? who knows what 1 means (bug in android docs?)
+        criteria.setAccuracy(android.location.Criteria.ACCURACY_COARSE);
         var lm = appModule.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
         return (lm.getBestProvider(criteria, true) != null) ? true : false;
     }
@@ -71,7 +71,7 @@ export class LocationManager {
 
     constructor() {
         // put some defaults
-        this.desiredAccuracy = types.Accuracy.HIGH;
+        this.desiredAccuracy = types.Accuracy.ANY;
         this.updateDistance = 0; 
         this.minimumUpdateTime = 200;
         this.isStarted = false;
@@ -86,7 +86,7 @@ export class LocationManager {
     public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: Error) => any, options?: types.Options) {
         if (!this.isStarted) {
             var criteria = new android.location.Criteria();
-            criteria.setAccuracy((this.desiredAccuracy === types.Accuracy.HIGH) ? 1 : 2);
+            criteria.setAccuracy((this.desiredAccuracy === types.Accuracy.HIGH) ? android.location.Criteria.ACCURACY_FINE : android.location.Criteria.ACCURACY_COARSE);
             this.locationListener = <any>new android.location.LocationListener({
                 onLocationChanged: function (location1: android.location.Location) {
                     if (this._onLocation) {
@@ -153,7 +153,7 @@ export class LocationManager {
 
     get lastKnownLocation(): types.Location {
         var criteria = new android.location.Criteria();
-        criteria.setAccuracy((this.desiredAccuracy === types.Accuracy.HIGH) ? 1 : 2);
+        criteria.setAccuracy((this.desiredAccuracy === types.Accuracy.HIGH) ? android.location.Criteria.ACCURACY_FINE : android.location.Criteria.ACCURACY_COARSE);
         try {
             var providers = this.androidLocationManager.getProviders(criteria, false);
             var it = providers.iterator();
