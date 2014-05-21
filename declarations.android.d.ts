@@ -352,6 +352,16 @@ declare module com {
         }
 
         export module async {
+
+            export module callback {
+                export class DataCallback {
+                    constructor(params: any);
+                }
+                export class CompletedCallback {
+                    constructor(params: any);
+                }
+            }
+
             export module future {
                 export class FutureCallback {
                     constructor(context: any);
