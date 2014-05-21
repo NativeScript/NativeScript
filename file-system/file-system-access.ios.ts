@@ -1,4 +1,4 @@
-﻿import app_module = require("application/application");
+﻿import app_module = require("application");
 import utilsModule = require("utils/utils_ios");
 import textModule = require("text/text");
 

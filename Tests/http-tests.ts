@@ -1,5 +1,5 @@
 ﻿import TKUnit = require("Tests/TKUnit");
-import http = require("http/http");
+import http = require("http");
 require("globals");
 
 // <snippet name="http">

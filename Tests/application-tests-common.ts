@@ -4,7 +4,7 @@
 // It is the main BCL module and is required for other BCL modules to work properly.
 // The default bootstrap.js implementation for each platform loads and initializes this module.
 // ``` JavaScript
-import app = require("application/application");
+import app = require("application");
 // ```
 // The pre-required `app` module is used throughout the following code snippets.
 // </snippet>

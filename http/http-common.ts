@@ -1,6 +1,6 @@
 import image = require("image-source/image-source");
 import promises = require("promises/promises");
-import http = require("http/http");
+import http = require("http");
 
 /**
   * Gets string from url.

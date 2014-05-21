@@ -13,8 +13,8 @@
 // </snippet>
 
 import imageSource = require("image-source/image-source");
-import fs = require("file-system/file-system"); 
-import app = require("application/application"); 
+import fs = require("file-system"); 
+import app = require("application"); 
 import TKUnit = require("Tests/TKUnit"); 
 
 export var testFromResource = function () {

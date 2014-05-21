@@ -9,7 +9,7 @@
  
 */
 
-import Application = require("application/application");
+import Application = require("application");
 import timer = require("timer/timer");
 
 var runTest = function (test, testName) {

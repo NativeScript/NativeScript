@@ -8,3 +8,4 @@ setInterval = timer.setInterval;
 clearInterval = timer.clearInterval;
 
 console = new consoleModule.Console();
+

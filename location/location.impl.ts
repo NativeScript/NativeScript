@@ -2,7 +2,7 @@
 import promises = require("promises/promises");
 import timer = require("timer/timer");
 import types = require("location/location-types");
-import locationManagerModule = require("location/location-manager");
+import locationManagerModule = require("location");
 
 // merge the exports of the types module with the exports of this file
 declare var exports;

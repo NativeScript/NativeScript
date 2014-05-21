@@ -1,4 +1,4 @@
-﻿import app = require("application/application");
+﻿import app = require("application");
 import TKUnit = require("Tests/TKUnit"); 
 import commonTests = require("Tests/application-tests-common");
 

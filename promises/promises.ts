@@ -9,7 +9,6 @@
 /**
     Returns a new "Deferred" value that may be resolved or rejected.
 */
-
 export function defer<Value>(): Deferred<Value> {
     return new DeferredI<Value>();
 }
@@ -17,7 +16,6 @@ export function defer<Value>(): Deferred<Value> {
 /**
     Converts a value to a resolved promise.
 */
-
 export function resolve<Value>(v: Value): Promise<Value> {
     return defer<Value>().resolve(v).promise();
 }
@@ -25,7 +23,6 @@ export function resolve<Value>(v: Value): Promise<Value> {
 /**
     Returns a rejected promise.
 */
-
 export function reject<Value>(err: Rejection): Promise<Value> {
     return defer<Value>().reject(err).promise();
 }
@@ -39,7 +36,6 @@ export function reject<Value>(err: Rejection): Promise<Value> {
     All the values of all promise results are collected into the resulting promise which is resolved as soon
     the last generated element value is resolved.
 */
-
 export function unfold<Seed, Element>(
     unspool: (current: Seed) => { promise: Promise<Element>; next?: Seed },
     seed: Seed)
@@ -94,7 +90,6 @@ function unfoldCore<Seed, Element>(
     Once a promise is either Rejected or Resolved, it can not change its 
     status anymore.
 */
-
 export enum Status {
     Unfulfilled,
     Rejected,
@@ -105,7 +100,6 @@ export enum Status {
     If a promise gets rejected, at least a message that indicates the error or
     reason for the rejection must be provided.
 */
-
 export interface Rejection {
     message: string;
 }
@@ -113,7 +107,6 @@ export interface Rejection {
 /**
     Both Promise<T> and Deferred<T> share these properties.
 */
-
 export interface PromiseState<Value> {
     /// The current status of the promise.
     status: Status;
@@ -132,7 +125,6 @@ export interface PromiseState<Value> {
     When multiple handlers are registered with done(), fail(), or always(), they are called in the 
     same order.
 */
-
 export interface Promise<Value> extends PromiseState<Value> {
     /**
         Returns a promise that represents a promise chain that consists of this
@@ -161,7 +153,6 @@ export interface Promise<Value> extends PromiseState<Value> {
     an asynchronous process. Callers of that function should only see the Promise<Value> that
     is returned by promise().
 */
-
 export interface Deferred<Value> extends PromiseState<Value> {
     /// Returns the encapsulated promise of this deferred instance.
     /// The returned promise supports composition but removes the ability to resolve or reject
@@ -183,7 +174,6 @@ export interface Deferred<Value> extends PromiseState<Value> {
     As soon one of the arguments gets rejected, the resulting promise gets rejected.
     If no promises were provided, the resulting promise is immediately resolved.
 */
-
 export function when(...promises: Promise<any>[]): Promise<any[]> {
     var allDone = defer<any[]>();
     if (!promises.length) {
@@ -216,7 +206,6 @@ export function when(...promises: Promise<any>[]): Promise<any[]> {
 
     The Promise<Value> instance is a proxy to the Deferred<Value> instance.
 */
-
 class PromiseI<Value> implements Promise<Value>
 {
     constructor(public deferred: DeferredI<Value>)
@@ -249,7 +238,6 @@ class PromiseI<Value> implements Promise<Value>
 /**
     Implementation of a deferred.
 */
-
 class DeferredI<Value> implements Deferred<Value>{
 
     private _resolved: (v: Value) => void = _ => { };
@@ -379,7 +367,6 @@ class DeferredI<Value> implements Deferred<Value>{
 /**
     Promise Generators and Iterators.
 */
-
 export interface Generator<E> {
     (): Iterator<E>;
 }
@@ -419,7 +406,6 @@ class IteratorI<E> implements Iterator<E>
 /**
     Iterator functions.
 */
-
 export function each<E>(gen: Generator<E>, f: (e: E) => void): Promise<{}> {
     var d = defer();
     eachCore(d, gen(), f);
@@ -443,7 +429,6 @@ function eachCore<E>(fin: Deferred<{}>, it: Iterator<E>, f: (e: E) => void): voi
 /**
     std
 */
-
 export function isUndefined(v) {
     return typeof v === 'undefined';
 }

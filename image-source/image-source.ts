@@ -1,7 +1,7 @@
-﻿import app = require("application/application");
+﻿import app = require("application");
 import native = require("image-source/image-source-native");
 import promises = require("promises/promises");
-import http = require("http/http");
+import http = require("http");
 
 export enum ImageFormat {
     PNG,

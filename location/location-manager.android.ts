@@ -1,5 +1,5 @@
 ﻿import types = require("location/location-types");
-import appModule = require("application/application");
+import appModule = require("application");
 
 export class LocationManager {
     // in meters

@@ -1,4 +1,4 @@
-﻿import appModule = require("application/application");
+﻿import appModule = require("application");
 import textModule = require("text/text");
 
 export class FileSystemAccess {

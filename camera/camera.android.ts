@@ -1,4 +1,4 @@
-﻿import appModule = require("application/application");
+﻿import appModule = require("application");
 
 var REQUEST_IMAGE_CAPTURE: number = 1;
 var REQUEST_SELECT_PICTURE: number = 2;
