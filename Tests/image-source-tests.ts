@@ -12,7 +12,7 @@
 // ## Loading and saving images
 // </snippet>
 
-import imageSource = require("image-source/image-source");
+import imageSource = require("image-source");
 import fs = require("file-system"); 
 import app = require("application"); 
 import TKUnit = require("Tests/TKUnit"); 

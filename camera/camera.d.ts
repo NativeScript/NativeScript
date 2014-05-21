@@ -2,7 +2,7 @@
 declare module "camera" {
 
     import promises = require("promises/promises");
-    import imageSource = require("image-source/image-source");
+    import imageSource = require("image-source");
 
     enum CameraPosition {
         FRONT = 0,

@@ -3,6 +3,9 @@ import native = require("image-source/image-source-native");
 import promises = require("promises/promises");
 import http = require("http");
 
+// This is used for definition purposes only, it does not generate JavaScript for it.
+import definition = require("image-source");
+
 export enum ImageFormat {
     PNG,
     JPEG,
@@ -105,6 +108,6 @@ export function fromNativeSource(source: any): ImageSource {
     return image.setNativeSource(source) ? image : null;
 }
 
-export function fromUrl(url: string): promises.Promise<ImageSource> {
+export function fromUrl(url: string): promises.Promise<definition.ImageSource> {
     return http.getImage(url);
 }

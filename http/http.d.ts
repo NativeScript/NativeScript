@@ -1,6 +1,6 @@
 ﻿
 declare module "http" {
-    import image = require("image-source/image-source");
+    import image = require("image-source");
     import promises = require("promises/promises");
 
     function getString(url: string): promises.Promise<string>

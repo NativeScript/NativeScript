@@ -130,7 +130,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="image-source\image-source.d.ts" />
     <TypeScriptCompile Include="image-source\image-source-native.d.ts" />
-    <TypeScriptCompile Include="image-source\image-source.ts">
+    <TypeScriptCompile Include="image-source\image-source.impl.ts">
       <DependentUpon>image-source.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="image-source\index.ts" />

@@ -1,6 +1,5 @@
-﻿
-import promises = require("promises/promises");
-import imageSource = require("image-source/image-source");
+﻿import promises = require("promises/promises");
+import imageSource = require("image-source");
 import types = require("camera/camera-types");
 
 var imagePickerController;

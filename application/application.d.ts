@@ -5,46 +5,52 @@ declare module "application" {
     * The main entry point event. This method is expected to return an instance of the root UI for the application.
     * This will be an Activity extends for Android and a RootViewController for iOS.
     */
-    function onLaunch(): any;
+    export function onLaunch(): any;
 
     /**
     * This method will be called when the Application is suspended.
     */
-    function onSuspend();
+    export function onSuspend();
 
     /**
     * This method will be called when the Application is resumed after it has been suspended.
     */
-    function onResume();
+    export function onResume();
 
     /**
     * This method will be called when the Application is about to exit.
     */
-    function onExit();
+    export function onExit();
 
     /**
     * This method will be called when there is low memory on the target device.
     */
-    function onLowMemory();
+    export function onLowMemory();
 
     /**
     * This is the Android-specific application object instance.
     * Encapsulates methods and properties specific to the Android platform.
     * Will be undefined when TargetOS is iOS.
     */
-    var android: AndroidApplication;
+    export var android: AndroidApplication;
 
     /**
     * This is the iOS-specific application object instance.
     * Encapsulates methods and properties specific to the iOS platform.
     * Will be undefined when TargetOS is Android.
     */
-    var ios: iOSApplication;
+    export var ios: iOSApplication;
+
+    /**
+    * Entry point for the module. Initializes the Application singleton and hooks application lifecycle events.
+    * @param nativeApp The instance of the platform Application object - e.g. android.app.Application
+    */
+    export function init(nativeApp: any);
 
     /**
     * The abstraction of an Android-specific application object.
     */
-    class AndroidApplication {
+    export class AndroidApplication {
         /**
         * The android.app.Application object instance provided to the init of the module.
         */
@@ -73,6 +79,7 @@ declare module "application" {
         /**
         * This method is called by the JavaScript Bridge when navigation to a new activity is triggered.
         * The return value of this method should be com.tns.NativeScriptActivity.extends implementation.
+        * @param intent The android.content.Intent object for which the activity is required.
         */
         public getActivity: (intent: android.content.Intent) => any;
 
@@ -115,7 +122,7 @@ declare module "application" {
     /**
     * The abstraction of an iOS-specific application object.
     */
-    class iOSApplication {
+    export class iOSApplication {
         /**
         * The root view controller for the application.
         */
@@ -126,9 +133,4 @@ declare module "application" {
         */
         public nativeApp: UIKit.UIApplication;
     }
-
-    /**
-    * Entry point for the module. Initializes the Application singleton and hooks application lifecycle events.
-    */
-    function init(nativeApp: any);
 }
