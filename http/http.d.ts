@@ -45,24 +45,68 @@
     function request(options: HttpRequestOptions): promises.Promise<HttpResponse>;
 
     interface HttpRequestOptions {
+        /**
+          * Gets or sets the request url.
+          */
         url: string;
+
+        /**
+          * Gets or sets the request method.
+          */
         method: string;
+
+        /**
+          * Gets or sets the request headers in JSON format.
+          */
         headers?: any;
+
+        /**
+          * Gets or sets the request body.
+          */
         content?: any;
+
+        /**
+          * Gets or sets the request timeout.
+          */
         timeout?: number;
     }
 
     interface HttpResponse {
+        /**
+          * Gets the response status code.
+          */
         statusCode: number;
+
+        /**
+          * Gets the response headers.
+          */
         headers: any;
+
+        /**
+          * Gets the response content.
+          */
         content?: HttpContent;
     }
 
     interface HttpContent {
+        /**
+          * Gets the response body as raw data.
+          */
         raw: any;
+
+        /**
+          * Gets the response body as string.
+          */
         toString: () => string;
-        // TODO: Isn't parseJSON better naming? toJSON sounds to me like we will return a string object
+
+        /**
+          * Gets the response body as JSON object.
+          */
         toJSON: () => any;
+
+        /**
+          * Gets the response body as ImageSource.
+          */
         toImage: () => image.ImageSource;
     }
 }
