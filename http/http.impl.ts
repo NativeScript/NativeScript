@@ -6,9 +6,6 @@ import request = require("http/http-request");
 declare var exports;
 require("utils/module-merge").merge(request, exports);
 
-/**
-* Gets string from url.
-*/
 export function getString(arg: any): promises.Promise<string> {
     var d = promises.defer<string>();
 
@@ -19,9 +16,6 @@ export function getString(arg: any): promises.Promise<string> {
     return d.promise();
 }
 
-/**
-  * Gets JSON from url.
-  */
 export function getJSON<T>(arg: any): promises.Promise<T> {
     var d = promises.defer<T>();
 
@@ -31,10 +25,6 @@ export function getJSON<T>(arg: any): promises.Promise<T> {
 
     return d.promise();
 }
-
-/**
-  * Gets image from url.
-  */
 
 export function getImage(arg: any): promises.Promise<image.ImageSource> {
     var d = promises.defer<image.ImageSource>();

@@ -1,72 +1,56 @@
 ﻿
 declare module "local-settings" {
     /**
-    * report does such key exist
+    * Checks whether such a key exists.
+    * @param key The key to check for.
     */
     var hasKey: (key: string) => boolean;
 
     /**
-    * gets value of the key as boolean, user can provide default value in case there is no value for the key
+    * Gets a value (if existing) for a key as a Boolean Object. A default value can be provided in case there is no existing value.
+    * @param key The key to check for.
+    * @param defaultValue An optional value to be returned in case there is no existing value.
     */
     var getBoolean: (key: string, defaultValue?: boolean) => boolean;
 
     /**
-    * gets value of the key as string, user can provide default value in case there is no value for the key
+    * Gets a value (if existing) for a key as a String Object. A default value can be provided in case there is no existing value.
+    * @param key The key to check for.
+    * @param defaultValue An optional value to be returned in case there is no existing value.
     */
     var getString: (key: string, defaultValue?: string) => string;
 
     /**
-    * gets value of the key as string array, user can provide default value in case there is no value for the key
-    */
-    var getStringArray: (key: string, defaultValue?: string[]) => string[];
-
-    /**
-    * gets value of the key as number (double), user can provide default value in case there is no value for the key
+    * Gets a value (if existing) for a key as a Number Object. A default value can be provided in case there is no existing value.
+    * @param key The key to check for.
+    * @param defaultValue An optional value to be returned in case there is no existing value.
     */
     var getNumber: (key: string, defaultValue?: number) => number;
 
     /**
-    * gets value of the key as integer, user can provide default value in case there is no value for the key
-    */
-    var getInt: (key: string, defaultValue?: number) => number;
-
-    /**
-    * gets value of the key as long integer (not fully supported by JS), user can provide default value in case there is no value for the key
-    */
-    var getLong: (key: string, defaultValue?: number) => number;
-
-    /**
-    * sets value for a key as boolean
+    * Sets a Boolean Object for a key.
+    * @param key The key.
+    * @param value The value.
     */
     var setBoolean: (key: string, value: boolean) => void;
 
     /**
-    * sets value for a key as string
+    * Sets a String Object for a key.
+    * @param key The key.
+    * @param value The value.
     */
     var setString: (key: string, value: string) => void;
 
     /**
-    * sets value for a key as string array
-    */
-    var setStringArray: (key: string, value: string[]) => void;
-
-    /**
-    * sets value for a key as JS number (double)
+    * Sets a Number Object for a key.
+    * @param key The key.
+    * @param value The value.
     */
     var setNumber: (key: string, value: number) => void;
 
     /**
-    * sets value for a key as integer
-    */
-    var setInt: (key: string, value: number) => void;
-
-    /**
-    * sets value for a key as long integer
-    */
-    var setLong: (key: string, value: number) => void;
-
-    /**
-    * removes a value for key
+    * Removes a value (if existing) for a key.
+    * @param key The key to check for.
     */
     var remove: (key: string) => void;
 }
