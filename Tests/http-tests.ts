@@ -43,7 +43,7 @@ export var test_getString_fail = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    http.getString({ url: "hgfttp://httpbin.org/get", method: "GET", timeout: 2000}).fail(function (e) {
+    http.getString({ url: "hgfttp://httpbin.org/get", method: "GET", timeout: 2000 }).fail(function (e) {
         completed = true;
         result = e;
     });
@@ -236,4 +236,71 @@ export var test_request_responseContentShouldBeDefined = function () {
 
     TKUnit.waitUntilReady(isReady, 3);
     TKUnit.assert(typeof (result.content) !== "undefined", "response.content should be defined!");
+};
+
+export var test_request_responseContentToStringShouldReturnString = function () {
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
+    http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
+        completed = true;
+        result = response.content.toString();
+    }).fail(function (e) {
+            console.log(e);
+    });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(typeof (result) === "string", "Result from toString() should be string!");
+}; 
+
+export var test_request_responseContentToJSONShouldReturnJSON = function () {
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
+    http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
+        completed = true;
+        result = response.content.toJSON();
+    }).fail(function (e) {
+            console.log(e);
+        });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(typeof (JSON.stringify(result)) === "string", "Result from toJSON() should be valid JSON object!");
+}; 
+
+export var test_request_responseContentToImageShouldReturnImage = function () {
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
+    http.request({ url: "http://www.google.com/images/errors/logo_sm_2.png", method: "GET" }).then(function (response) {
+        completed = true;
+        result = response.content.toImage();
+    }).fail(function (e) {
+            console.log(e);
+        });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(result instanceof require("image-source").ImageSource, "Result from toImage() should be valid ImageSource object!");
+}; 
+
+export var test_request_headersSentAndReceivedProperly = function () {
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
+    http.request({
+        url: "http://httpbin.org/get", method: "GET",
+        headers: { "Content-Type": "application/json" }
+    }).then(function (response) {
+        completed = true; 
+        result = response.headers;
+    }).fail(function (e) {
+            console.log(e);
+        });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(result["Content-Type"] === "application/json", "Headers not sent/received properly!");
 }; 
