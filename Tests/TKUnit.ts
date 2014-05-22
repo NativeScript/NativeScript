@@ -31,6 +31,8 @@ export var runTestModule = function (module, moduleName) {
 
     var totalTests = 0;
     var totalSuccess = 0;
+    var errors = new Array();
+
     for (var testName in module) {
         var testFunction = module[testName];
         if ((typeof (testFunction) === "function") && (testName.substring(0, 4) == "test")) {
@@ -46,6 +48,7 @@ export var runTestModule = function (module, moduleName) {
                 runTest(testFunction, testName);
                 totalSuccess++;
             } catch (e) {
+                errors.push(e);
                 console.error("--- [" + testName + "] FAILED: " + e.message);
             }
             try {
@@ -68,6 +71,7 @@ export var runTestModule = function (module, moduleName) {
 
     console.timeEnd(moduleName);
     console.info("--- " + moduleName + " TESTS COMPLETE --- (" + totalSuccess + " of " + totalTests + ") OK, " + (totalTests - totalSuccess) + " failed");
+    return { "total": totalTests, "success": totalSuccess, "failed": (totalTests - totalSuccess), "errors": errors };
 };
 
 export var assert = function (test: any, message?: string) {
