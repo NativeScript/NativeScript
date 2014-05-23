@@ -165,7 +165,7 @@ export var test_request_responseStatusCodeShouldBeDefined = function () {
     // ### Get response status code
     // ``` JavaScript
     http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
-        //// Argument (response) is require("http/http-request").HttpResponse!
+        //// Argument (response) is HttpResponse!
         var statusCode = response.statusCode;
         // <hide>
         completed = true;
@@ -191,7 +191,7 @@ export var test_request_responseHeadersShouldBeDefined = function () {
     // ### Get response headers
     // ``` JavaScript
     http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
-        //// Argument (response) is require("http/http-request").HttpResponse!
+        //// Argument (response) is HttpResponse!
         for (var header in response.headers) {
             console.log(header + ":" + response.headers[header]);
         }
@@ -219,7 +219,7 @@ export var test_request_responseContentShouldBeDefined = function () {
     // ### Get response content
     // ``` JavaScript
     http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
-        //// Argument (response) is require("http/http-request").HttpContent!
+        //// Argument (response) is HttpContent!
         var str = response.content.toString();
         var obj = response.content.toJSON();
         var img = response.content.toImage();
