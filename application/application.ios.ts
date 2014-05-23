@@ -44,10 +44,13 @@ class iOSApplication {
     public rootController: any;
 
     constructor(nativeApp: any) {
-        this.nativeApp = nativeApp;
+        // TODO: in iOS there is the singleton instance, while in Android such does not exist hence we pass it as argument
+        // this.nativeApp = nativeApp;
+        this.nativeApp = UIKit.UIApplication.sharedApplication();
     }
 
     public init() {
+        var that = this;
         UIKit.UIResponder.extends({/*TODO: Empty parameter here, needs API improvement*/}, {
             name: "TNSAppDelegate",
         }).implements({
@@ -61,7 +64,9 @@ class iOSApplication {
                         this.window.makeKeyAndVisible();
 
                         if (exports.onLaunch) {
-                            this.window.rootViewController = exports.onLaunch();
+                            that.rootController = exports.onLaunch();
+                            this.window.rootViewController = that.rootController;
+                            
                         } else {
                             log("Missing Application.onLaunch");
                         }

@@ -6,8 +6,12 @@ require("utils/module-merge").merge(appModule, exports);
 
 var callbacks = android.app.Application.ActivityLifecycleCallbacks;
 
+// We are using the exports object for the common events since we merge the appModule with this module's exports, which is what users will receive when require("application") is called;
+// TODO: This is kind of hacky and is "pure JS in TypeScript"
+
 var initEvents = function () {
-    var androidApp = exports.android;
+    var androidApp: AndroidApplication = exports.android;
+    // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     var lifecycleCallbacks = new callbacks({
         onActivityCreated: function (activity: any, bundle: any) {
             if (!androidApp.startActivity) {
@@ -24,34 +28,33 @@ var initEvents = function () {
                 androidApp.currentActivity = undefined;
             }
 
-            //if (activity === UI.Application.android.startActivity) {
-            //    UI.Application.android.currentActivity = undefined;
-            //    if (UI.Application.current.onExit) {
-            //        UI.Application.current.onExit();
-            //    }
-            //}
+            if (activity === androidApp.startActivity) {
+                if (exports.onExit) {
+                    exports.onExit();
+                }
+            }
 
             if (androidApp.onActivityDestroyed) {
                 androidApp.onActivityDestroyed(activity);
             }
         },
         onActivityPaused: function (activity: any) {
-            //if (UI.Application.android.currentActivity === activity) {
-            //    if (UI.Application.current.onSuspend) {
-            //        UI.Application.current.onSuspend();
-            //    }
-            //}
+            if (activity === androidApp.currentActivity) {
+                if (exports.onSuspend) {
+                    exports.onSuspend();
+                }
+            }
 
             if (androidApp.onActivityPaused) {
                 androidApp.onActivityPaused(activity);
             }
         },
         onActivityResumed: function (activity: any) {
-            //if (UI.Application.android.currentActivity === activity) {
-            //    if (UI.Application.current.onResume) {
-            //        UI.Application.current.onResume();
-            //    }
-            //}
+            if (activity === androidApp.currentActivity) {
+                if (exports.onResume) {
+                    exports.onResume();
+                }
+            }
 
             if (androidApp.onActivityResumed) {
                 androidApp.onActivityResumed(activity);
@@ -64,12 +67,6 @@ var initEvents = function () {
         },
         onActivityStarted: function (activity: any) {
             androidApp.currentActivity = activity;
-
-            //if (activity === UI.Application.android.startActivity) {
-            //    if (UI.Application.current.onStart) {
-            //        UI.Application.current.onStart();
-            //    }
-            //}
 
             if (androidApp.onActivityStarted) {
                 androidApp.onActivityStarted(activity);
@@ -105,13 +102,13 @@ class AndroidApplication {
     public startActivity: android.app.Activity;
     public packageName: string;
 
-    public onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => any;
-    public onActivityDestroyed: (activity: android.app.Activity) => any;
-    public onActivityStarted: (activity: android.app.Activity) => any;
-    public onActivityPaused: (activity: android.app.Activity) => any;
-    public onActivityResumed: (activity: android.app.Activity) => any;
-    public onActivityStopped: (activity: android.app.Activity) => any;
-    public onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => any;
+    public onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
+    public onActivityDestroyed: (activity: android.app.Activity) => void;
+    public onActivityStarted: (activity: android.app.Activity) => void;
+    public onActivityPaused: (activity: android.app.Activity) => void;
+    public onActivityResumed: (activity: android.app.Activity) => void;
+    public onActivityStopped: (activity: android.app.Activity) => void;
+    public onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
 
     private _eventsToken: any;
 
