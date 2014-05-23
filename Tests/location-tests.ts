@@ -7,8 +7,7 @@
 // </snippet>
 
 import TKUnit = require("Tests/TKUnit");
-import locationModule = require("location/location");
-import types = require("location/location-types");
+import locationModule = require("location");
 
 var LocationManager = locationModule.LocationManager;
 var Location = locationModule.Location;
