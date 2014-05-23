@@ -219,7 +219,8 @@ export var test_request_responseContentShouldBeDefined = function () {
     // ### Get response content
     // ``` JavaScript
     http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
-        //// Argument (response) is HttpContent!
+        //// Argument (response) is HttpResponse!
+        //// Content property of the response is HttpContent!
         var str = response.content.toString();
         var obj = response.content.toJSON();
         var img = response.content.toImage();

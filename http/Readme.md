@@ -23,62 +23,6 @@
         toJSON: () => any;
         toImage: () => image_module.Image;
     }
-
-    // GET request
-    http.request({
-       url: "http://ip.jsontest.com/",
-       method: "GET",
-       headers: { "Content-Type" : "application/json" }
-    }).then(function (r) {
-       var status = r.statusCode;
-
-       for (var header in r.headers) {
-           //
-       }
-     
-       var result = r.content.toJSON();
-    }).fail(function (e) { console.log(e) });
-
-    // POST request
-    http.request({
-        url: "http://posttestserver.com/post.php?dump&html&dir=test",
-        method: "POST",
-        headers: { "Content-Type" : "application/x-www-form-urlencoded" },
-        content: "MyVariableOne=ValueOne&MyVariableTwo=ValueTwo"
-    }).then(function (r) {
-       var status = r.statusCode;
-
-       for (var header in r.headers) {
-           //
-       }
-     
-       var result = r.content.toString();
-    }).fail(function (e) { console.log(e) });
-
-    // PUT request
-    var data = YOUR_IMAGE_DATA;
-    http.request({
-        url: "http://httpbin.org/put",
-        method: "PUT",
-        headers: {
-            "Content-Type": "image/jpg",
-            "Content-Length": data.length() + ""
-        },
-        content: data
-    }).then(function (r) {
-        console.log(r.content.toString())
-    }).fail(function (e) { console.log(e) });
-
-    http.getString("http://www.reddit.com/").then(function(result) {
-           // Result is string!
-    }).fail(function(e) { console.log(e); });
-                                                      
-    http.getJSON("http://www.reddit.com/r/aww.json?limit=10").then(function(result) {
-           // Result is JSON!  
-    }).fail(function(e) { console.log(e); });
-
-    http.getImage("http://www.google.com/images/errors/logo_sm_2.png").then(function(result) {
-           // Result is tk.ui.Image!
-    }).fail(function(e) { console.log(e); });
-
 ```
+
+More info: https://github.com/telerik/xPlatCore/blob/master/Documentation/Snippets/http.md
