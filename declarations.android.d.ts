@@ -370,6 +370,14 @@ declare module com {
 
             export module http {
 
+                export class AsyncHttpRequest {
+                    constructor(uri: java.net.URI, method: string);
+                    addHeader(name: string, v: string);
+                    setTimeout(timeout: number);
+                    setBody(body: any);
+                    static extends(source: any);
+                }
+
                 export module libcore {
                     export class RawHeaders {
                         constructor();
@@ -395,6 +403,13 @@ declare module com {
                 export module body {
                     export class StringBody {
                         constructor(source: string);
+                        static extends(source: any);
+                    }
+                    export class UrlEncodedFormBody {
+                        constructor(source: any);
+                    }
+                    export class StreamBody {
+                        constructor(source: java.io.InputStream, length: number);
                     }
                 }
             }

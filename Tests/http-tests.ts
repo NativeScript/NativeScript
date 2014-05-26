@@ -305,3 +305,23 @@ export var test_request_headersSentAndReceivedProperly = function () {
     TKUnit.waitUntilReady(isReady, 3);
     TKUnit.assert(result["Content-Type"] === "application/json", "Headers not sent/received properly!");
 }; 
+
+export var test_request_contentSentAndReceivedProperly = function () {
+    var result;
+    var completed: boolean;
+    var isReady = function () { return completed; }
+
+    http.request({
+        url: "http://httpbin.org/post", method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        content: "MyVariableOne=ValueOne&MyVariableTwo=ValueTwo"
+    }).then(function (response) {
+            completed = true;
+            result = response.content.toJSON();
+        }).fail(function (e) {
+            console.log(e);
+        });
+
+    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
+}; 

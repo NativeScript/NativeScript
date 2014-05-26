@@ -10,11 +10,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
     var d = promises.defer<http.HttpResponse>();
 
     try {
-
-        var context = require("application").android.context;
-
-        var request = com.koushikdutta.ion.Ion.getDefault(context).configure().getAsyncHttpRequestFactory()
-            .createAsyncHttpRequest(java.net.URI.create(options.url), options.method, null);
+        var request = new com.koushikdutta.async.http.AsyncHttpRequest(java.net.URI.create(options.url), options.method);
 
         if (options.headers) {
             for (var key in options.headers) {
@@ -27,7 +23,13 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
         }
 
         if (typeof options.content == "string") {
-            request.setBody(new com.koushikdutta.async.http.body.StringBody(options.content));
+            var stringBody = com.koushikdutta.async.http.body.StringBody.extends({
+                getContentType: function () {
+                    return null;
+                }
+            });
+
+            request.setBody(new stringBody(options.content));
         }
         else {
             // TODO: How to transfer everything else?
@@ -45,7 +47,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                         var key = rawHeaders.getFieldName(i);
                         headers[key] = rawHeaders.getValue(i);
                     }
-                    
+
                     var outputStream = new java.io.ByteArrayOutputStream();
 
                     var dataCallback = new com.koushikdutta.async.callback.DataCallback({
@@ -56,7 +58,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                     });
 
                     response.setDataCallback(dataCallback);
-                    
+
                     var endCallback = new com.koushikdutta.async.callback.CompletedCallback({
                         onCompleted: function (error) {
                             d.resolve({
