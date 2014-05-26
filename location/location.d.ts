@@ -16,23 +16,59 @@ declare module "location" {
     //    public raduis: number; // radius in meters
     //}
 
+    /**
+    * A data class that encapsulates common properties for a geolocation.
+    */
     class Location {
+        /**
+        * The latitude of the geolocation, in degrees.
+        */
         latitude: number;
+
+        /**
+        * The longitude of the geolocation, in degrees.
+        */
         longitude: number;
 
-        altitude: number; // in meters
+        /**
+        * The altitude (if available), in meters above sea level.
+        */
+        altitude: number;
 
-        horizontalAccuracy: number; // in meters
-        verticalAccuracy: number; // in meters
+        /**
+        * The horizontal accuracy, in meters.
+        */
+        horizontalAccuracy: number;
 
-        speed: number; // in m/s
+        /**
+        * The vertical accuracy, in meters.
+        */
+        verticalAccuracy: number;
 
-        direction: number; // in degrees
+        /**
+        * The speed, in meters/second over ground.
+        */
+        speed: number;
 
+        /**
+        * The direction (course), in degrees.
+        */
+        direction: number;
+
+        /**
+        * The time at which this location was determined.
+        */
         timestamp: Date;
 
-        public android: any;  // android Location
-        public ios: any;      // iOS CLLocation
+        /**
+        * The android-specific location object.
+        */
+        android: android.location.Location;
+
+        /**
+        * The ios-specific location object.
+        */
+        ios: CoreLocation.CLLocation;
     }
 
     export interface Options {
@@ -62,41 +98,49 @@ declare module "location" {
         timeout?: number;
     }
 
+    /**
+    * Provides methods for querying geolocation (in case available) on the target platform.
+    */
     class LocationManager {
         /**
-        * Report are location services switched ON for this device (on Android) or application (iOS)
+        * Checks whether the location services are switched ON for this device (on Android) or application (iOS).
         */
         static isEnabled(): boolean;
 
         /**
-        * Measure distance in meters between two locations
+        * Measures the distance in meters between two locations.
+        * @param loc1 The first location.
+        * @param loc2 The second location.
         */
         static distance(loc1: Location, loc2: Location): number;
 
         /**
-        * Specifies desired accuracy in meters. Defaults to DesiredAccuracy.HIGH
+        * The desired accuracy in meters. Defaults to DesiredAccuracy.HIGH
         */
         desiredAccuracy: number;
 
         /**
-        * Update distance filter in meters. Specifies how often to update. Default on iOS is no filter, on Android it is 0 meters
+        * The update distance filter in meters. Specifies how often to update. Default on iOS is no filter, on Android it is 0 meters.
         */
         updateDistance: number;
 
         /**
-        * Minimum time interval between location updates, in milliseconds (ignored on iOS)
+        * The minimum time interval between subsequent location updates, in milliseconds (ignored on iOS).
         */
         minimumUpdateTime: number;
 
         /**
-        * True if location listener is already started. In this case all other start requests will be ignored
+        * True if the location listener is already started. In this case all other start requests will be ignored.
         */
         isStarted: boolean;
 
         // monitoring
 
         /**
-        * Starts location monitoring. 
+        * Starts location monitoring.
+        * @param onLocation A function that will be called upon every location update received.
+        * @param onError An optional error callback.
+        * @param options An optional object specifying location update settings.
         */
         startLocationMonitoring(onLocation: (location: Location) => any, onError?: (error: Error) => any, options?: Options);
 
@@ -115,8 +159,9 @@ declare module "location" {
 
     /**
     * Fires a single shot location search. If you specify timeout in options, location search will fail on timeout. 
-    * If you specify timeout = 0 it just requests the last known location. However if you specify maximumAge and the
-    * location received is older it won't be received
+    * If you specify timeout = 0 it just requests the last known location.
+    * However if you specify maximumAge and the location received is older it won't be received.
+    * @param options An optional object specifying location update settings.
     */
     var getLocation: (options?: Options) => promises.Promise<Location>;
 }

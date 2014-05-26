@@ -3,6 +3,9 @@ declare module "file-system" {
 
     import promises = require("promises");
 
+    /**
+    * Represents a single entity on the file system.
+    */
     export class FileSystemEntity {
         /**
           * Gets the Date object specifying the last time this entity was modified.
@@ -38,6 +41,9 @@ declare module "file-system" {
         public rename(newName: string): promises.Promise<any>;
     }
 
+    /**
+    * Represents a File entity on the file system.
+    */
     export class File extends FileSystemEntity {
         /**
         * Checks whether a File with the specified path already exists.
@@ -75,6 +81,9 @@ declare module "file-system" {
         public writeText(content: string, encoding?: string): promises.Promise<any>;
     }
 
+    /**
+    * Represents a Folder (directory) entity on the file system.
+    */
     export class Folder extends FileSystemEntity {
         /**
         * Determines whether this instance is a KnownFolder (accessed through the KnownFolders object).
