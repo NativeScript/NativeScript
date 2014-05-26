@@ -336,6 +336,9 @@
   <Target Name="AfterBuild">
     <CopyForPlatformBuildTask TargetPlatform="$(TargetOS)" IncludeTests="$(CopyTests)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" JSConfigFile="$(JSConfig)" AppMainJSFile="$(JSMainFile)" ProjectDir="$(ProjectDir)" />
   </Target>
+  <Target Name="AfterBuild" Condition=" '$(Configuration)' == 'Documentation'">
+    <Exec Command="node ../../Documentation/Src/TypeScriptAPIExtractor/app.js @(TypeScriptCompile) $(IntermediateOutputPath)\api.xml" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="false" LogStandardErrorAsError="true" />
+  </Target>
   <PropertyGroup>
     <PostBuildEvent>
     </PostBuildEvent>
