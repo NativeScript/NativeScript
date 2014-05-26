@@ -73,3 +73,5 @@ There are six different configurations of the project:
 [VSCommands](http://vscommands.squaredinfinity.com/)
 
 Adds the option to "Group Items" (DependentUpon tag) within the Visual Studio Solution Explorer. Select several items, right-click -> Group Items.
+
+[A comparison of various features and APIs across mobile platforms](https://github.com/w3c-webmob/web-api-gap/blob/master/features/compass.md)
