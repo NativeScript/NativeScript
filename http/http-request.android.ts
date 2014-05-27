@@ -28,11 +28,15 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
                     return null;
                 }
             });
-
             request.setBody(new stringBody(options.content));
         }
-        else {
-            // TODO: How to transfer everything else?
+        else if (typeof options.content !== "undefined") {
+            var streamBody = com.koushikdutta.async.http.body.StreamBody.extends({
+                getContentType: function () {
+                    return null;
+                }
+            });
+            request.setBody(new com.koushikdutta.async.http.body.StreamBody(new java.io.ByteArrayInputStream(options.content), options.content.length));
         }
 
         var callback = new com.koushikdutta.async.http.callback.HttpConnectCallback({

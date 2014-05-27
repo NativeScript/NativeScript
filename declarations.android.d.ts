@@ -405,11 +405,9 @@ declare module com {
                         constructor(source: string);
                         static extends(source: any);
                     }
-                    export class UrlEncodedFormBody {
-                        constructor(source: any);
-                    }
                     export class StreamBody {
                         constructor(source: java.io.InputStream, length: number);
+                        static extends(source: any);
                     }
                 }
             }
