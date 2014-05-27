@@ -2,10 +2,19 @@
 declare module "location" {
     import promises = require("promises");
 
+    /**
+    * Specifies common accuracy values.
+    */
     enum Accuracy {
-        // in meters
-        ANY,
-        HIGH,
+        /**
+        * The default accuracy. About 300 meters.
+        */
+        ANY = 300,
+
+        /**
+        * High accuracy. About 3 meters.
+        */
+        HIGH = 3,
     }
 
     // For future usage
@@ -71,6 +80,9 @@ declare module "location" {
         ios: CoreLocation.CLLocation;
     }
 
+    /**
+    * Provides options for location monitoring.
+    */
     export interface Options {
         /**
         * Specifies desired accuracy in meters. Defaults to DesiredAccuracy.HIGH
@@ -134,8 +146,6 @@ declare module "location" {
         */
         isStarted: boolean;
 
-        // monitoring
-
         /**
         * Starts location monitoring.
         * @param onLocation A function that will be called upon every location update received.
@@ -145,14 +155,12 @@ declare module "location" {
         startLocationMonitoring(onLocation: (location: Location) => any, onError?: (error: Error) => any, options?: Options);
 
         /**
-        * Stops location monitoring
+        * Stops location monitoring.
         */
         stopLocationMonitoring();
 
-        // other
-
         /**
-        * Returns last known location from device's location services or null of no known last location
+        * Returns last known location from device's location services or null of no known last location.
         */
         lastKnownLocation: Location;
     }

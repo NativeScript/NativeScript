@@ -6,7 +6,14 @@ declare module "image-source" {
     * Defines the recognized image formats.
     */
     export enum ImageFormat {
+        /**
+        * The W3C Portable Network Graphics (PNG) image format.
+        */
         PNG,
+
+        /**
+        * The Joint Photographic Experts Group (JPEG) image format.
+        */
         JPEG,
     }
 

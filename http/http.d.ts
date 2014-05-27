@@ -44,6 +44,9 @@
     */
     function request(options: HttpRequestOptions): promises.Promise<HttpResponse>;
 
+    /**
+    * Provides options for the http requests.
+    */
     interface HttpRequestOptions {
         /**
           * Gets or sets the request url.
@@ -71,42 +74,48 @@
         timeout?: number;
     }
 
+    /**
+    * Encapsulates HTTP-response information from an HTTP-request.
+    */
     interface HttpResponse {
         /**
-          * Gets the response status code.
-          */
+        * Gets the response status code.
+        */
         statusCode: number;
 
         /**
-          * Gets the response headers.
-          */
+        * Gets the response headers.
+        */
         headers: any;
 
         /**
-          * Gets the response content.
-          */
+        * Gets the response content.
+        */
         content?: HttpContent;
     }
 
+    /**
+    * Encapsulates the content of an HttpResponse.
+    */
     interface HttpContent {
         /**
-          * Gets the response body as raw data.
-          */
+        * Gets the response body as raw data.
+        */
         raw: any;
 
         /**
-          * Gets the response body as string.
-          */
+        * Gets the response body as string.
+        */
         toString: () => string;
 
         /**
-          * Gets the response body as JSON object.
-          */
+        * Gets the response body as JSON object.
+        */
         toJSON: () => any;
 
         /**
-          * Gets the response body as ImageSource.
-          */
+        * Gets the response body as ImageSource.
+        */
         toImage: () => image.ImageSource;
     }
 }
