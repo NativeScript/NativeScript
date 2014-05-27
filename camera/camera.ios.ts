@@ -2,6 +2,11 @@
 import imageSource = require("image-source");
 import types = require("camera/camera-types");
 
+// merge the exports of the types module with the exports of this file
+import merger = require("utils/module-merge");
+declare var exports;
+merger.merge(types, exports);
+
 var imagePickerController;
 
 export class CameraManager {
@@ -68,6 +73,19 @@ export var takePicture = function (options?: types.Options): promises.Promise<im
     imagePickerController.mediaTypes = UIKit.UIImagePickerController.availableMediaTypesForSourceType(UIKit.UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera);
     imagePickerController.sourceType = UIKit.UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera;
     imagePickerController.modalPresentationStyle = UIKit.UIModalPresentationStyle.UIModalPresentationCurrentContext;
+
+    if (options && ("undefined" !== typeof options.cameraPosition) && (types.CameraPosition.FRONT === options.cameraPosition)) {
+        imagePickerController.cameraDevice = UIKit.UIImagePickerControllerCameraDevice.UIImagePickerControllerCameraDeviceFront;
+    }
+
+    if (options && ("undefined" !== typeof options.flashMode)) {
+        if (types.FlashMode.OFF === options.flashMode) {
+            imagePickerController.cameraFlashMode = UIKit.UIImagePickerControllerCameraFlashMode.UIImagePickerControllerCameraFlashModeOff;
+        }
+        else if (types.FlashMode.ON === options.flashMode) {
+            imagePickerController.cameraFlashMode = UIKit.UIImagePickerControllerCameraFlashMode.UIImagePickerControllerCameraFlashModeOn;
+        }
+    }
 
     topViewController().presentViewControllerAnimatedCompletion(imagePickerController, true, null);
 

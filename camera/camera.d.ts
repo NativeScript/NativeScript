@@ -24,6 +24,10 @@ declare module "camera" {
     */
     enum FlashMode {
         /**
+         * The camera flash is disabled.
+         */
+        OFF = -1,
+        /**
         * Flash will be fired automatically when required.
         */
         AUTO = 0,
@@ -31,14 +35,10 @@ declare module "camera" {
         * The camera flash is enabled.
         */
         ON = 1,
-        /**
-        * The camera flash is disabled.
-        */
-        OFF = 2
     }
 
     /**
-    * Camera options for capture an image.
+    * Camera options for capture an image. Currently not guaranteed to be used on Android
     */
     interface Options {
         /**
@@ -55,6 +55,7 @@ declare module "camera" {
     // TODO most of hardware related parts need to handle onPause and onResume of the calling activities
 
     /**
+    * TODO replace it with promise methods only and remove this class
     * This class provides access to the device camera and photo libraries.
     */
     class CameraManager {

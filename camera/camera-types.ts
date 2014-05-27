@@ -5,9 +5,9 @@ export enum CameraPosition {
 }
 
 export enum FlashMode {
+    OFF = -1,
     AUTO = 0,  // default
     ON = 1,
-    OFF = 2
 }
 
 export interface Options {
