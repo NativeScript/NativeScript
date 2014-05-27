@@ -9,13 +9,14 @@ declare module "camera" {
     */
     enum CameraPosition {
         /**
-        * The camera is located at the front of the device, facing the user.
-        */
-        FRONT = 0,
-        /**
         * The camera is located at the back of the device.
         */
-        BACK = 1,
+        BACK = 0,
+
+        /**
+        * The camera is located at the front of the device, facing the user.
+        */
+        FRONT = 1,
     }
 
     /**

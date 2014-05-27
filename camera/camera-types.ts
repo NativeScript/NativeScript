@@ -1,7 +1,7 @@
 ﻿
 export enum CameraPosition {
-    FRONT = 0,
-    BACK = 1,
+    BACK = 0,
+    FRONT = 1,
 }
 
 export enum FlashMode {

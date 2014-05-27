@@ -46,7 +46,7 @@ export var takePicture = function (options?: types.Options): promises.Promise<im
 
             implementation: {
                 imagePickerControllerDidFinishPickingMediaWithInfo: function (picker, info) {
-                    console.log('takeImage received');
+//                    console.log('takeImage received');
                     picker.presentingViewController.dismissViewControllerAnimatedCompletion(true, null);
                     listener = null;
                     var image = imageSource.fromNativeSource(info.valueForKey(UIKit.UIImagePickerControllerOriginalImage));
@@ -54,7 +54,7 @@ export var takePicture = function (options?: types.Options): promises.Promise<im
                 },
 
                 imagePickerControllerDidCancel: function (picker) {
-                    console.info('takeImage canceled');
+//                    console.info('takeImage canceled');
                     picker.presentingViewController.dismissViewControllerAnimatedCompletion(true, null);
                     listener = null;
                     d.reject(new Error('takePicture canceled by user'));
