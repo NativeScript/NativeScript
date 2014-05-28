@@ -31,7 +31,7 @@ export function request(options: http.HttpRequestOptions): promises.Promise<http
         if (typeof options.content == "string") {
             urlRequest.setHTTPBody(Foundation.NSString.initWithString(options.content).dataUsingEncoding(4));
         }
-        else {
+        else if (typeof options.content !== "undefined") {
             urlRequest.setHTTPBody(options.content);
         }
 
