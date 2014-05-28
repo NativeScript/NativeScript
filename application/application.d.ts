@@ -50,87 +50,86 @@ declare module "application" {
     /**
     * The abstraction of an Android-specific application object.
     */
-    export class AndroidApplication {
+    interface AndroidApplication {
         /**
         * The android.app.Application object instance provided to the init of the module.
         */
-        public nativeApp: android.app.Application;
+        nativeApp: android.app.Application;
 
         /**
         * The application android.content.Context object instance.
         */
-        public context: android.content.Context;
+        context: android.content.Context;
 
         /**
         * The currently active (loaded) android.app.Activity. This property is automatically updated upon Activity events.
         */
-        public currentActivity: android.app.Activity;
+        currentActivity: android.app.Activity;
 
         /**
         * The main (start) Activity for the application.
         */
-        public startActivity: android.app.Activity;
+        startActivity: android.app.Activity;
 
         /**
         * The name of the application package.
         */
-        public packageName: string;
+        packageName: string;
 
         /**
         * This method is called by the JavaScript Bridge when navigation to a new activity is triggered.
         * The return value of this method should be com.tns.NativeScriptActivity.extends implementation.
-        * @param intent The android.content.Intent object for which the activity is required.
         */
-        public getActivity: (intent: android.content.Intent) => any;
+        getActivity: (intent: android.content.Intent) => any;
 
         /**
         * Direct handler of the android.app.Application.ActivityLifecycleCallbacks.onActivityCreated method.
         */
-        public onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
+        onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
 
         /**
         * Direct handler of the android.app.Application.ActivityLifecycleCallbacks.onActivityDestroyed method.
         */
-        public onActivityDestroyed: (activity: android.app.Activity) => void;
+        onActivityDestroyed: (activity: android.app.Activity) => void;
 
         /**
         * Direct handler of the android.app.Application.ActivityLifecycleCallbacks.onActivityDestroyed method.
         */
-        public onActivityStarted: (activity: android.app.Activity) => void;
+        onActivityStarted: (activity: android.app.Activity) => void;
 
         /**
         * Direct handler of the android.app.Application.ActivityLifecycleCallbacks.onActivityPaused method.
         */
-        public onActivityPaused: (activity: android.app.Activity) => void;
+        onActivityPaused: (activity: android.app.Activity) => void;
 
         /**
         * Direct handler of the android.app.Application.ActivityLifecycleCallbacks.onActivityResumed method.
         */
-        public onActivityResumed: (activity: android.app.Activity) => void;
+        onActivityResumed: (activity: android.app.Activity) => void;
 
         /**
         * Direct handler of the android.app.Application.ActivityLifecycleCallbacks.onActivityStopped method.
         */
-        public onActivityStopped: (activity: android.app.Activity) => void;
+        onActivityStopped: (activity: android.app.Activity) => void;
 
         /**
         * Direct handler of the android.app.Application.ActivityLifecycleCallbacks.onSaveActivityState method.
         */
-        public onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
+        onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
     }
 
     /**
     * The abstraction of an iOS-specific application object.
     */
-    export class iOSApplication {
+    interface iOSApplication {
         /**
         * The root view controller for the application.
         */
-        public rootController: UIKit.UIViewController;
+        rootController: UIKit.UIViewController;
 
         /**
         * The android.app.Application object instance provided to the init of the module.
         */
-        public nativeApp: UIKit.UIApplication;
+        nativeApp: UIKit.UIApplication;
     }
 }

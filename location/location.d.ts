@@ -171,5 +171,5 @@ declare module "location" {
     * However if you specify maximumAge and the location received is older it won't be received.
     * @param options An optional object specifying location update settings.
     */
-    var getLocation: (options?: Options) => promises.Promise<Location>;
+    function getLocation(options?: Options): promises.Promise<Location>;
 }
