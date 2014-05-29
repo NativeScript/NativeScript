@@ -37,6 +37,9 @@ var initEvents = function () {
             if (androidApp.onActivityDestroyed) {
                 androidApp.onActivityDestroyed(activity);
             }
+
+            // TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
+            gc();
         },
         onActivityPaused: function (activity: any) {
             if (activity === androidApp.currentActivity) {

@@ -340,6 +340,7 @@ declare module android {
 
 declare var app;
 declare var telerik;
+declare var gc: () => any;
 
 declare module com {
     export module koushikdutta {

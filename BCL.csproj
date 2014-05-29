@@ -101,13 +101,6 @@
     <TypeScriptCompile Include="declarations.android.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="camera\camera.android.ts">
-      <DependentUpon>camera.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="camera\camera.d.ts" />
-    <TypeScriptCompile Include="camera\camera.ios.ts">
-      <DependentUpon>camera.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="declarations.ios.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -166,7 +159,6 @@
     <TypeScriptCompile Include="location\index.ts" />
     <TypeScriptCompile Include="file-system\index.ts" />
     <TypeScriptCompile Include="console\index.ts" />
-    <TypeScriptCompile Include="camera\index.ts" />
     <TypeScriptCompile Include="application\index.ts" />
     <TypeScriptCompile Include="android17.d.ts" />
     <TypeScriptCompile Include="promises\promises.ts" />
@@ -222,9 +214,6 @@
     <TypeScriptCompile Include="libjs.d.ts" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="camera\camera-types.ts">
-      <DependentUpon>camera.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
