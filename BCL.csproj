@@ -214,6 +214,8 @@
     <TypeScriptCompile Include="libjs.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="ui\core\view.ts" />
+    <TypeScriptCompile Include="ui\core\observable.ts" />
     <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
