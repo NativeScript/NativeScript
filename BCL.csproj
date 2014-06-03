@@ -337,7 +337,13 @@
   <UsingTask TaskName="BuildTasks.CopyForPlatformBuildTask" AssemblyFile="../../Build/lib/BuildTasks.dll" />
   <Target Name="AfterBuild">
     <CopyForPlatformBuildTask TargetPlatform="$(TargetOS)" IncludeTests="$(CopyTests)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" JSConfigFile="$(JSConfig)" AppMainJSFile="$(JSMainFile)" ProjectDir="$(ProjectDir)" />
-    <Exec Condition=" '$(Configuration)' == 'Documentation'" Command="node ../../Documentation/Src/TypeScriptAPIExtractor/app.js @(TypeScriptCompile) $(IntermediateOutputPath)\api.xml" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="false" LogStandardErrorAsError="true" />
+
+    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command='rd /q /s "../../Documentation/Docs/"' />
+    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command='md "../../Documentation/Docs/"' />
+    <!-- Add to Docs in the ../../Documentation/ folder -> node Src/SnippetsExtractor/app.js -source ..\JS\BCL\bin\Documentation\Tests -destination Snippets -->
+    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command="node ../../Documentation/Src/TypeScriptAPIExtractor/app.js @(TypeScriptCompile) $(IntermediateOutputPath)\api.xml" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="false" LogStandardErrorAsError="true" />
+    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command='"../../Documentation/Src/XMLAPIPrinting/bin/Release/XMLAPIPrinting.exe" $(IntermediateOutputPath)\api.xml "../../Documentation/Docs/"' />
+
   </Target>
   <PropertyGroup>
     <PostBuildEvent>
