@@ -1,6 +1,6 @@
 ﻿import app_module = require("application");
 import utilsModule = require("utils/utils_ios");
-import textModule = require("text/text");
+import textModule = require("text");
 
 // TODO: Implement all the APIs receiving callback using async blocks
 // TODO: Check whether we need try/catch blocks for the iOS implementation

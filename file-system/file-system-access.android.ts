@@ -1,5 +1,5 @@
 ﻿import appModule = require("application");
-import textModule = require("text/text");
+import textModule = require("text");
 
 export class FileSystemAccess {
     private _pathSeparator = java.io.File.separator.toString();
