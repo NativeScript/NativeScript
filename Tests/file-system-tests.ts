@@ -1,5 +1,5 @@
 ﻿
-// <snippet name="file-system">
+// <snippet name="file-system/HOW-TO">
 // # File System
 // Using the file system requires the FileSystem module.
 // ``` JavaScript
@@ -10,12 +10,12 @@ import fs = require("file-system");
 
 import TKUnit = require("Tests/TKUnit");
 
-// <snippet name="file-system">
+// <snippet name="file-system/HOW-TO">
 // ## Path
 // </snippet>
 
 export var testPathNormalize = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Normalize a Path
     // ``` JavaScript
     var documents = fs.knownFolders.documents();
@@ -31,7 +31,7 @@ export var testPathNormalize = function () {
 };
 
 export var testPathJoin = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Path Join
     // Concatinate a path to a file by providing multiple path arguments.
     // ``` JavaScript
@@ -47,7 +47,7 @@ export var testPathJoin = function () {
 };
 
 export var testPathSeparator = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Get the Path Separator
     // ``` JavaScript
     //// An OS dependant path separator, "\" or "/".
@@ -61,7 +61,7 @@ export var testPathSeparator = function () {
 };
 
 export var testFileFromPath = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Get or Create a File With Path
     // The following example writes some text to a file created for path.
     // It will create a new file or overwrite an existing file.
@@ -98,7 +98,7 @@ export var testFileFromPath = function () {
 }
 
 export var testFolderFromPath = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Get or Create a Folder With Path
     // ``` JavaScript
     var path = fs.path.join(fs.knownFolders.documents().path, "music");
@@ -112,12 +112,12 @@ export var testFolderFromPath = function () {
     // </snippet>
 }
 
-// <snippet name="file-system">
+// <snippet name="file-system/HOW-TO">
 // ## Create
 // </snippet>
 
 export var testFileWrite = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Writing a string to a File
     // The following example writes some text to a file.
     // It will create a new file or overwrite an existing file.
@@ -153,7 +153,7 @@ export var testFileWrite = function () {
 };
 
 export var testGetFile = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Get or Create a File
     // ``` JavaScript
     var documents = fs.knownFolders.documents();
@@ -168,7 +168,7 @@ export var testGetFile = function () {
 }
 
 export var testGetFolder = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Get or Create a Folder
     // ``` JavaScript
     var documents = fs.knownFolders.documents();
@@ -182,12 +182,12 @@ export var testGetFolder = function () {
     // </snippet>
 };
 
-// <snippet name="file-system">
+// <snippet name="file-system/HOW-TO">
 // ## Read
 // </snippet>
 
 export var testFileRead = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Reading from a File
     // The following example writes some text to a file and then reads it back.
     // ``` JavaScript
@@ -230,7 +230,7 @@ export var testFileRead = function () {
 };
 
 export var testGetKnownFolders = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Getting the Known Folders
     // Each app has several well known folders. This is how to access them:
     // ``` JavaScript
@@ -251,7 +251,7 @@ export var testGetKnownFolders = function () {
 };
 
 export var testGetEntities = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Getting Folder Contents
     // Getting all files and folders within a folder:
     // ``` JavaScript
@@ -300,7 +300,7 @@ export var testGetEntities = function () {
 };
 
 export var testEnumEntities = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Enumerating Folder Contents
     // Getting all folder entities in array may be slow with large number of files.
     // Enumerating the folder entities would itterate the files one by one without blocking the UI.
@@ -338,7 +338,7 @@ export var testEnumEntities = function () {
 };
 
 export var testGetParent = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Getting Parent Folder
     // ``` JavaScript
     var documents = fs.knownFolders.documents();
@@ -357,7 +357,7 @@ export var testGetParent = function () {
 };
 
 export var testFileNameExtension = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Getting File Name and Extension
     // ``` JavaScript
     var documents = fs.knownFolders.documents();
@@ -376,7 +376,7 @@ export var testFileNameExtension = function () {
 };
 
 export var testFileExists = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Checking if a File Exists
     // ``` JavaScript
     var documents = fs.knownFolders.documents();
@@ -393,7 +393,7 @@ export var testFileExists = function () {
 };
 
 export var testFolderExists = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Checking if a Folder Exists
     // ``` JavaScript
     var documents = fs.knownFolders.documents();
@@ -419,12 +419,12 @@ export var testContainsFile = function () {
     file.remove();
 };
 
-// <snippet name="file-system">
+// <snippet name="file-system/HOW-TO">
 // ## Update
 // </snippet>
 
 export var testFileRename = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Renaming a File
     // ``` JavaScript
     var documents = fs.knownFolders.documents();
@@ -450,7 +450,7 @@ export var testFileRename = function () {
 };
 
 export var testFolderRename = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Renaming a Folder
     // ``` JavaScript
     var folder = fs.knownFolders.documents();
@@ -475,12 +475,12 @@ export var testFolderRename = function () {
     // </snippet>
 };
 
-// <snippet name="file-system">
+// <snippet name="file-system/HOW-TO">
 // ## Delete
 // </snippet>
 
 export var testFileRemove = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Removing a File
     // To 'delete', 'remove' or 'unlink' a file use the file's remove method:
     // ``` JavaScript
@@ -504,7 +504,7 @@ export var testFileRemove = function () {
 };
 
 export var testFolderRemove = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Removing a Folder
     // ``` JavaScript
     var documents = fs.knownFolders.documents();
@@ -528,7 +528,7 @@ export var testFolderRemove = function () {
 }
 
 export var testFolderClear = function () {
-    // <snippet name="file-system">
+    // <snippet name="file-system/HOW-TO">
     // ### Clearing the Contents of a Folder
     // The clear method removes all files within a folder.
     // ``` JavaScript

@@ -6,7 +6,7 @@ import commonTests = require("Tests/application-tests-common");
 declare var exports;
 require("utils/module-merge").merge(commonTests, exports);
 
-// <snippet name="application">
+// <snippet name="application/HOW-TO">
 // ### Using the Android-specific implementation
 // Accessing the Android-specific object instance (will be undefined if running on iOS)
 // ``` JavaScript

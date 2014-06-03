@@ -2,7 +2,7 @@
 import http = require("http");
 require("globals");
 
-// <snippet name="http">
+// <snippet name="http/HOW-TO">
 // # Http module
 // ``` JavaScript
 // var http = require("http");
@@ -18,7 +18,7 @@ export var test_getString = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="http">
+    // <snippet name="http/HOW-TO">
     // ### Get string from URL
     // ``` JavaScript
     http.getString("http://httpbin.org/get").then(function (r) {
@@ -61,7 +61,7 @@ export var test_getJSON = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="http">
+    // <snippet name="http/HOW-TO">
     // ### Get JSON from URL
     // ``` JavaScript
     http.getJSON("http://httpbin.org/get").then(function (r) {
@@ -104,7 +104,7 @@ export var test_getImage = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="http">
+    // <snippet name="http/HOW-TO">
     // ### Get Image from URL
     // ``` JavaScript
     http.getImage("http://www.google.com/images/errors/logo_sm_2.png").then(function (r) {
@@ -161,7 +161,7 @@ export var test_request_responseStatusCodeShouldBeDefined = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="http">
+    // <snippet name="http/HOW-TO">
     // ### Get response status code
     // ``` JavaScript
     http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
@@ -187,7 +187,7 @@ export var test_request_responseHeadersShouldBeDefined = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="http">
+    // <snippet name="http/HOW-TO">
     // ### Get response headers
     // ``` JavaScript
     http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {
@@ -215,7 +215,7 @@ export var test_request_responseContentShouldBeDefined = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="http">
+    // <snippet name="http/HOW-TO">
     // ### Get response content
     // ``` JavaScript
     http.request({ url: "http://httpbin.org/get", method: "GET" }).then(function (response) {

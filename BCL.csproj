@@ -340,7 +340,8 @@
 
     <Exec Condition=" '$(Configuration)' == 'Documentation' " Command='rd /q /s "../../Documentation/Docs/"' />
     <Exec Condition=" '$(Configuration)' == 'Documentation' " Command='md "../../Documentation/Docs/"' />
-    <!-- Add to Docs in the ../../Documentation/ folder -> node Src/SnippetsExtractor/app.js -source ..\JS\BCL\bin\Documentation\Tests -destination Snippets -->
+    
+    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command='node ../../Documentation/Src/SnippetsExtractor/app.js -noclean -source bin\Documentation\Tests -destination ../../Documentation/Docs/' />
     <Exec Condition=" '$(Configuration)' == 'Documentation' " Command="node ../../Documentation/Src/TypeScriptAPIExtractor/app.js @(TypeScriptCompile) $(IntermediateOutputPath)\api.xml" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="false" LogStandardErrorAsError="true" />
     <Exec Condition=" '$(Configuration)' == 'Documentation' " Command='"../../Documentation/Src/XMLAPIPrinting/bin/Release/XMLAPIPrinting.exe" $(IntermediateOutputPath)\api.xml "../../Documentation/Docs/"' />
 

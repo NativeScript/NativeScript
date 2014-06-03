@@ -1,4 +1,4 @@
-﻿// <snippet name="local-settings">
+﻿// <snippet name="local-settings/HOW-TO">
 // # Local Settings
 // ``` JavaScript
 var LocalSettings = require("local-settings");
@@ -13,7 +13,7 @@ var noStringKey: string = "noStringKey";
 var noBoolKey: string = "noBoolKey";
 var noNumberKey: string = "noNumberKey";
 
-// <snippet name="local-settings">
+// <snippet name="local-settings/HOW-TO">
 // ## Working with string, number and boolean values
 // </snippet>
 
@@ -22,7 +22,7 @@ export var testBoolean = function () {
     var boolValue = LocalSettings.getBoolean(boolKey);
     TKUnit.assert(false == boolValue, "Cannot set boolean to false, currently it is: " + LocalSettings.getBoolean(boolKey));
 
-    // <snippet name="local-settings">
+    // <snippet name="local-settings/HOW-TO">
     // ### Set and get boolean value and provide default value in case it is not set
     // ``` JavaScript
     LocalSettings.setBoolean("boolKey", true);
@@ -35,7 +35,7 @@ export var testBoolean = function () {
 };
 
 export var testString = function () {
-    // <snippet name="local-settings">
+    // <snippet name="local-settings/HOW-TO">
     // ### Set and get string value
     // ``` JavaScript
     LocalSettings.setString("stringKey", "String value");
@@ -46,7 +46,7 @@ export var testString = function () {
 };
 
 export var testNumber = function () {
-    // <snippet name="local-settings">
+    // <snippet name="local-settings/HOW-TO">
     // ### Set and get numeric value.
     // We use `toFixed()` here in order to avoid floating point errors - ex: `54.321` becoming `54.320999999537`.
     // Beware the result of `toFixed()` is a string not a number therefore you cannot use `===` or `!==` when comparing with a number.
@@ -59,7 +59,7 @@ export var testNumber = function () {
 };
 
 export var testDefaults = function () {
-    // <snippet name="local-settings">
+    // <snippet name="local-settings/HOW-TO">
     // ### Reading values that are not set before while providing default value
     // ``` JavaScript
     var defaultValue = LocalSettings.getString("noStringKey", "No string value");
@@ -70,7 +70,7 @@ export var testDefaults = function () {
     TKUnit.assert(true === LocalSettings.getBoolean(noBoolKey, true), "Bad default boolean value");
     TKUnit.assert(123.45 === LocalSettings.getNumber(noNumberKey, 123.45), "Bad default number value");
 
-    // <snippet name="local-settings">
+    // <snippet name="local-settings/HOW-TO">
     // ### Reading values that are not set before not providing default value
     // ``` JavaScript
     var defaultValue = LocalSettings.getString("noStringKey");
@@ -83,12 +83,12 @@ export var testDefaults = function () {
     TKUnit.assert("undefined" === typeof LocalSettings.getNumber(noNumberKey), "Default number value is not undefined");
 };
 
-// <snippet name="local-settings">
+// <snippet name="local-settings/HOW-TO">
 // ## Other functions
 // </snippet>
 
 export var testHasKey = function () {
-    // <snippet name="local-settings">
+    // <snippet name="local-settings/HOW-TO">
     // ### Checking for existence of value for key
     // ``` JavaScript
     var hasKey = LocalSettings.hasKey("noBoolKey");
@@ -105,7 +105,7 @@ export var testHasKey = function () {
 };
 
 export var testRemove = function () {
-    // <snippet name="local-settings">
+    // <snippet name="local-settings/HOW-TO">
     // ### Removing value for key
     // ``` JavaScript
     LocalSettings.remove("boolKey");
