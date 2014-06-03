@@ -76,6 +76,35 @@ export function confirm(arg: any): promises.Promise<boolean> {
     return d.promise();
 }
 
-export function prompt(text: string, defaultText?: string): void {
+export function prompt(arg: any): promises.Promise<string> {
+    var d = promises.defer<string>();
+    try {
+        var options = typeof arg === "string" ? { message: arg, title: "Alert", okButtonName: "OK", cancelButtonName: "Cancel" } : arg
 
+        var alert = createUIAlertView(options);
+        alert.alertViewStyle = UIKit.UIAlertViewStyle.UIAlertViewStylePlainTextInput;
+        alert.addButtonWithTitle(options.okButtonName);
+        alert.addButtonWithTitle(options.cancelButtonName);
+
+        var textField = alert.textFieldAtIndex(0);
+        textField.text = options.defaultText ? options.defaultText : "";
+
+        // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
+        var delegate = createDelegate(function (view, index) {
+            if (index === 0) {
+                d.resolve(textField.text);
+            }
+            // Remove the local variable for the delegate.
+            delegate = undefined;
+        });
+
+        alert.delegate = delegate;
+
+        alert.show();
+
+    } catch (ex) {
+        d.reject(ex);
+    }
+
+    return d.promise();
 }

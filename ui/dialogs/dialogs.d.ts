@@ -27,14 +27,19 @@
     /**
     * The prompt() method displays a dialog box that prompts the visitor for input.
     * @param text The text to display in the dialog box.
-    * @param defaultText The default input value.
     */
     function prompt(text: string, defaultText?: string): void;
 
     /**
+    * The prompt() method displays a dialog box that prompts the visitor for input.
+    * @param options The options for the dialog box.
+    */
+    function prompt(options: PromptOptions): void;
+
+    /**
     * Provides options for the alert.
     */
-    interface AlertOptions {
+    interface DialogOptions {
         /**
           * Gets or sets the alert message.
           */
@@ -44,7 +49,12 @@
           * Gets or sets the alert title.
           */
         title?: string;
+    }
 
+    /**
+    * Provides options for the alert.
+    */
+    interface AlertOptions extends DialogOptions {
         /**
           * Gets or sets the button name.
           */
@@ -54,17 +64,7 @@
     /**
     * Provides options for the alert.
     */
-    interface ConfirmOptions {
-        /**
-          * Gets or sets the alert message.
-          */
-        message: string;
-
-        /**
-          * Gets or sets the alert title.
-          */
-        title?: string;
-
+    interface ConfirmOptions extends DialogOptions {
         /**
           * Gets or sets the OK button name.
           */
@@ -74,5 +74,15 @@
           * Gets or sets the Cancel button name.
           */
         cancelButtonName?: string;
+    }
+
+    /**
+    * Provides options for the alert.
+    */
+    interface PromptOptions extends ConfirmOptions {
+        /**
+          * Gets or sets the default text.
+          */
+        defaultText?: string;
     }
 }
