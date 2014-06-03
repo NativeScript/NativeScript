@@ -1,4 +1,4 @@
-﻿declare module "dialogs" {
+﻿declare module "ui/dialogs" {
     import promises = require("promises");
     /**
     * The alert() method displays an alert box with a specified message.

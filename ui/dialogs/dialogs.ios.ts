@@ -2,8 +2,15 @@
   * iOS specific dialogs functions implementation.
   */
 import promises = require("promises");
+import dialogs = require("ui/dialogs");
 
-function createUIAlertView(options) {
+var UIALERTVIEWDELEGATE = "UIAlertViewDelegate",
+    STRING = "string",
+    ALERT = "Alert",
+    OK = "OK",
+    CANCEL = "Cancel";
+
+function createUIAlertView(options: dialogs.DialogOptions): UIKit.UIAlertView {
     var alert = new UIKit.UIAlertView();
     alert.title = options.title;
     alert.message = options.message;
@@ -12,7 +19,7 @@ function createUIAlertView(options) {
 
 function createDelegate(callback) {
     var delegateType = Foundation.NSObject.extends({}, {}).implements({
-        protocol: "UIAlertViewDelegate",
+        protocol: UIALERTVIEWDELEGATE,
         implementation: {
             alertViewClickedButtonAtIndex: function (view, index) {
                 callback(view, index);
@@ -25,7 +32,7 @@ function createDelegate(callback) {
 export function alert(arg: any): promises.Promise<any> {
     var d = promises.defer<any>();
     try {
-        var options = typeof arg === "string" ? { message: arg, title: "Alert", buttonName: "OK" } : arg
+        var options = typeof arg === STRING ? { message: arg, title: ALERT, buttonName: OK } : arg
 
         var alert = createUIAlertView(options);
 
@@ -51,7 +58,7 @@ export function alert(arg: any): promises.Promise<any> {
 export function confirm(arg: any): promises.Promise<boolean> {
     var d = promises.defer<boolean>();
     try {
-        var options = typeof arg === "string" ? { message: arg, title: "Alert", okButtonName: "OK", cancelButtonName: "Cancel" } : arg
+        var options = typeof arg === STRING ? { message: arg, title: ALERT, okButtonName: OK, cancelButtonName: CANCEL } : arg
 
         var alert = createUIAlertView(options);
 
@@ -79,7 +86,7 @@ export function confirm(arg: any): promises.Promise<boolean> {
 export function prompt(arg: any): promises.Promise<string> {
     var d = promises.defer<string>();
     try {
-        var options = typeof arg === "string" ? { message: arg, title: "Alert", okButtonName: "OK", cancelButtonName: "Cancel" } : arg
+        var options = typeof arg === STRING ? { message: arg, title: ALERT, okButtonName: OK, cancelButtonName: CANCEL } : arg
 
         var alert = createUIAlertView(options);
         alert.alertViewStyle = UIKit.UIAlertViewStyle.UIAlertViewStylePlainTextInput;
