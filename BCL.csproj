@@ -216,6 +216,14 @@
   <ItemGroup>
     <TypeScriptCompile Include="ui\core\view.ts" />
     <TypeScriptCompile Include="ui\core\observable.ts" />
+    <TypeScriptCompile Include="ui\dialogs\dialogs.android.ts">
+      <DependentUpon>dialogs.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\dialogs\dialogs.d.ts" />
+    <TypeScriptCompile Include="ui\dialogs\dialogs.ios.ts">
+      <DependentUpon>dialogs.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\dialogs\index.ts" />
     <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
@@ -233,6 +241,9 @@
     <Folder Include="Deploy\Eclipse\" />
     <Folder Include="Deploy\Full\" />
     <Folder Include="Deploy\xCode\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ui\dialogs\Readme.md" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Full'">
     <TypeScriptModuleKind>commonjs</TypeScriptModuleKind>
