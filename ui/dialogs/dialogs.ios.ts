@@ -29,8 +29,8 @@ function createDelegate(callback) {
     return new delegateType;
 }
 
-export function alert(arg: any): promises.Promise<any> {
-    var d = promises.defer<any>();
+export function alert(arg: any): promises.Promise<void> {
+    var d = promises.defer<void>();
     try {
         var options = typeof arg === STRING ? { message: arg, title: ALERT, buttonName: OK } : arg
 

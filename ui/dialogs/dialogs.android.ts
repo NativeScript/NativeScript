@@ -12,8 +12,8 @@ function createAlertDialog(options: dialogs.DialogOptions): android.app.AlertDia
     return alert;
 }
 
-export function alert(arg: any): promises.Promise<any> {
-    var d = promises.defer<any>();
+export function alert(arg: any): promises.Promise<void> {
+    var d = promises.defer<void>();
     try {
         var options = typeof arg === "string" ? { message: arg, title: "Alert", buttonName: "OK" } : arg
 

@@ -4,13 +4,13 @@
     * The alert() method displays an alert box with a specified message.
     * @param message Specifies the text to display in the alert box.
     */
-    function alert(message: string): promises.Promise<any>;
+    function alert(message: string): promises.Promise<void>;
 
     /**
     * The alert() method displays an alert box with a specified options.
     * @param options Specifies the options for the alert box.
     */
-    function alert(options: AlertOptions): promises.Promise<any>;
+    function alert(options: AlertOptions): promises.Promise<void>;
 
     /**
     * The confirm() method displays a dialog box with a specified message.
