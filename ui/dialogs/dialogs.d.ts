@@ -26,9 +26,9 @@
 
     /**
     * The prompt() method displays a dialog box that prompts the visitor for input.
-    * @param text The text to display in the dialog box.
+    * @param message The text to display in the dialog box.
     */
-    function prompt(text: string): promises.Promise<string>;
+    function prompt(message: string): promises.Promise<string>;
 
     /**
     * The prompt() method displays a dialog box that prompts the visitor for input.
