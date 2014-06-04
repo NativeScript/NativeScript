@@ -37,7 +37,7 @@
     function prompt(options: PromptOptions): promises.Promise<string>;
 
     /**
-    * Provides options for the alert.
+    * Provides options for the dialog.
     */
     interface DialogOptions {
         /**
@@ -62,7 +62,7 @@
     }
 
     /**
-    * Provides options for the alert.
+    * Provides options for the confirm.
     */
     interface ConfirmOptions extends DialogOptions {
         /**
@@ -77,7 +77,7 @@
     }
 
     /**
-    * Provides options for the alert.
+    * Provides options for the prompt.
     */
     interface PromptOptions extends ConfirmOptions {
         /**
