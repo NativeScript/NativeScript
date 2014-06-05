@@ -11,7 +11,7 @@ var STRING = "string",
     CANCEL = "Cancel";
 
 function createAlertDialog(options: dialogs.DialogOptions): android.app.AlertDialog.Builder {
-    var alert = new android.app.AlertDialog.Builder(appmodule.android.currentActivity);
+    var alert = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
     alert.setTitle(options.title);
     alert.setMessage(options.message);
     return alert;
