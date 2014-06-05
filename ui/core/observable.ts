@@ -66,7 +66,7 @@ export class Observable {
     }
 
     /**
-    * This method is intended to be overriden by inheritors to specify additional 
+    * This method is intended to be overriden by inheritors to specify additional implementation
     */
     public setPropertyCore(data: PropertyChangeData) {
         this[data.propertyName] = data.value;
