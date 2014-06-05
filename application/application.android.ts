@@ -1,4 +1,5 @@
 ﻿import appModule = require("application/application-common");
+import dts = require("application");
 
 // merge the exports of the application_common file with the exports of this file
 declare var exports;
@@ -21,11 +22,17 @@ var initEvents = function () {
                     androidApp.onActivityCreated(activity, bundle);
                 }
             }
+
+            androidApp.currentContext = activity;
         },
         onActivityDestroyed: function (activity: any) {
             // Clear the current activity reference to prevent leak
-            if (activity === androidApp.currentActivity) {
-                androidApp.currentActivity = undefined;
+            if (activity === androidApp.foregroundActivity) {
+                androidApp.foregroundActivity = undefined;
+            }
+
+            if (activity === androidApp.currentContext) {
+                androidApp.currentContext = undefined;
             }
 
             if (activity === androidApp.startActivity) {
@@ -42,7 +49,7 @@ var initEvents = function () {
             gc();
         },
         onActivityPaused: function (activity: any) {
-            if (activity === androidApp.currentActivity) {
+            if (activity === androidApp.foregroundActivity) {
                 if (exports.onSuspend) {
                     exports.onSuspend();
                 }
@@ -53,7 +60,7 @@ var initEvents = function () {
             }
         },
         onActivityResumed: function (activity: any) {
-            if (activity === androidApp.currentActivity) {
+            if (activity === androidApp.foregroundActivity) {
                 if (exports.onResume) {
                     exports.onResume();
                 }
@@ -69,7 +76,7 @@ var initEvents = function () {
             }
         },
         onActivityStarted: function (activity: any) {
-            androidApp.currentActivity = activity;
+            androidApp.foregroundActivity = activity;
 
             if (androidApp.onActivityStarted) {
                 androidApp.onActivityStarted(activity);
@@ -98,12 +105,14 @@ export var init = function (nativeApp: android.app.Application) {
     initialized = true;
 }
 
-class AndroidApplication {
+class AndroidApplication implements dts.AndroidApplication {
     public nativeApp: android.app.Application;
     public context: android.content.Context;
-    public currentActivity: android.app.Activity;
+    public currentContext: android.content.Context;
+    public foregroundActivity: android.app.Activity;
     public startActivity: android.app.Activity;
     public packageName: string;
+    public getActivity: (intent: android.content.Intent) => any;
 
     public onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
     public onActivityDestroyed: (activity: android.app.Activity) => void;
@@ -119,6 +128,7 @@ class AndroidApplication {
         this.nativeApp = nativeApp;
         this.packageName = nativeApp.getPackageName();
         this.context = nativeApp.getApplicationContext();
+        this.getActivity = undefined;
     }
 
     public init() {

@@ -11,8 +11,7 @@ export interface ChangeData {
 
 export interface PropertyChangeData extends ChangeData {
     propertyName: string;
-    oldValue: any;
-    newValue: any;
+    value: any;
     cancel?: boolean;
 }
 
@@ -23,33 +22,33 @@ export class Observable {
     // true to track the Changing phase, false otherwise
     private _trackChanging = false;
 
-    public bind(eventName: string, callback: (data: ChangeData) => void) {
+    public addObserver(eventName: string, callback: (data: ChangeData) => void) {
         this.verifyCallback(callback);
         var list = this.getEventList(eventName, true);
         list.push(callback);
     }
 
-    public setProperty(name: string, value: any) {
-        // TODO: Parameter validation
-
-        if (!(name in this._observers)) {
-            // no observers to notify for the PropertyChange event
+    public removeObserver(eventName: string, callback: any) {
+        var list = this.getEventList(eventName, false);
+        if (!list) {
             return;
         }
 
-        // create data for the change
-        var data: PropertyChangeData = {
-            eventName: Observable.propertyChangeEvent,
-            propertyName: name,
-            sender: this,
-            oldValue: this[name],
-            newValue: value,
-            cancel: false
-        };
+        var index = list.indexOf(callback);
+        if (index >= 0) {
+            list.splice(index, 1);
+        }
+    }
 
-        if (this._trackChanging) {
+    public setProperty(name: string, value: any) {
+        // TODO: Parameter validation
+
+        // create data for the change
+        var data = this.createPropertyChangeData(name, value);
+
+        if (this.hasObservers(Observable.propertyChangeEvent) && this._trackChanging) {
             data.phase = ChangePhase.Changing;
-            this.notifyObservers(data);
+            this.notify(data);
             if (data.cancel) {
                 // change is canceled by an observer
                 // TODO: define some priority, e.g. if someone cancels the change should others be able to override this cancelation?
@@ -58,9 +57,8 @@ export class Observable {
         }
 
         data.phase = ChangePhase.Changed;
-        this.notifyObservers(data);
-
         this.setPropertyCore(data);
+        this.notify(data);
     }
 
     public getProperty(name: string): any {
@@ -71,8 +69,36 @@ export class Observable {
     * This method is intended to be overriden by inheritors to specify additional 
     */
     public setPropertyCore(data: PropertyChangeData) {
-        // get the new value from the data since some observer may have it modified - e.g. validation scenario
-        this[data.eventName] = data.newValue;
+        this[data.propertyName] = data.value;
+    }
+
+    // The method will return true if the change is accepted, false otherwise
+    public notify(data: ChangeData) {
+        var observers = this.getEventList(data.eventName);
+        if (!observers) {
+            return;
+        }
+
+        var i,
+            callback;
+        for (i = 0; i < observers.length; i++) {
+            callback = observers[i];
+            callback(data);
+        }
+    }
+
+    public hasObservers(eventName: string) {
+        return eventName in this._observers;
+    }
+
+    public createPropertyChangeData(name: string, value: any): PropertyChangeData {
+        return {
+            eventName: Observable.propertyChangeEvent,
+            propertyName: name,
+            sender: this,
+            value: value,
+            cancel: false
+        };
     }
 
     private getEventList(eventName: string, createIfNeeded?: boolean): Array<(data: ChangeData) => void> {
@@ -92,21 +118,6 @@ export class Observable {
     private verifyCallback(callback: any) {
         if (!callback || typeof callback !== "function") {
             throw new TypeError("Callback must be a valid function.");
-        }
-    }
-
-    // The method will return true if the change is accepted, false otherwise
-    private notifyObservers(data: ChangeData) {
-        var observers = this.getEventList(data.eventName);
-        if (!observers) {
-            return;
-        }
-
-        var i,
-            callback;
-        for (i = 0; i < observers.length; i++) {
-            callback = observers[i];
-            callback(data);
         }
     }
 }

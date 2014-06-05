@@ -1,12 +1,16 @@
 ﻿import observable = require("ui/core/observable"); 
+import bindable = require("ui/core/bindable");
 
-export class ProxyObject extends observable.Observable {
+export class ProxyObject extends bindable.Bindable {
     public setPropertyCore(data: observable.PropertyChangeData) {
-        super.setPropertyCore(data);
         this.setNativeProperty(data);
     }
 
     public setNativeProperty(data: observable.PropertyChangeData) {
-        // TODO:
+        // inheritors will override this method to provide specific implementation
+    }
+
+    public onNativePropertyChanged(data: observable.PropertyChangeData) {
+
     }
 }

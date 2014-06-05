@@ -64,7 +64,12 @@ declare module "application" {
         /**
         * The currently active (loaded) android.app.Activity. This property is automatically updated upon Activity events.
         */
-        currentActivity: android.app.Activity;
+        foregroundActivity: android.app.Activity;
+
+        /**
+        * The currently active (loaded) Context. This is typically the top-level Activity that is just created.
+        */
+        currentContext: android.content.Context;
 
         /**
         * The main (start) Activity for the application.

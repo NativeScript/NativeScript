@@ -20,7 +20,7 @@ var dir = context.getFilesDir();
 // ```
 // Tracking the current Activity
 // ``` JavaScript
-if (androidApp.currentActivity === androidApp.startActivity) {
+if (androidApp.foregroundActivity === androidApp.foregroundActivity) {
     //// We are currently in the main (start) activity of the application
 }
 // ```
@@ -29,7 +29,7 @@ if (androidApp.currentActivity === androidApp.startActivity) {
 export var testAndroidApplicationInitialized = function () {
     TKUnit.assert(app.android, "Android application not initialized.");
     TKUnit.assert(app.android.context, "Android context not initialized.");
-    TKUnit.assert(app.android.currentActivity, "Android currentActivity not initialized.");
+    TKUnit.assert(app.android.foregroundActivity, "Android currentActivity not initialized.");
     TKUnit.assert(app.android.startActivity, "Android startActivity not initialized.");
     TKUnit.assert(app.android.nativeApp, "Android nativeApp not initialized.");
     TKUnit.assert(app.android.packageName, "Android packageName not initialized.");
