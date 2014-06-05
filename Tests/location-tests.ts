@@ -1,4 +1,4 @@
-﻿// <snippet name="location">
+﻿// <snippet name="location/HOW-TO">
 // # Location
 // Using the location requires the Location module.
 // ``` JavaScript
@@ -12,12 +12,12 @@ import locationModule = require("location");
 var LocationManager = locationModule.LocationManager;
 var Location = locationModule.Location;
 
-// <snippet name="location">
+// <snippet name="location/HOW-TO">
 // ## Other functions
 // </snippet>
 
 export var testIsEnabled = function () {
-    // <snippet name="location">
+    // <snippet name="location/HOW-TO">
     // ### Test are location services available for this device
     // ``` JavaScript
     var isEnabled = LocationManager.isEnabled();
@@ -27,7 +27,7 @@ export var testIsEnabled = function () {
 };
 
 export var testDistance = function () {
-    // <snippet name="location">
+    // <snippet name="location/HOW-TO">
     // ### Get distance between two locations
     // ``` JavaScript
     //var Location = require("location").Location;
@@ -43,14 +43,14 @@ export var testDistance = function () {
     TKUnit.assert((distance > 10780000) && (distance < 10860000), "invalid distance " + distance);
 };
 
-// <snippet name="location">
+// <snippet name="location/HOW-TO">
 // ## Getting location
 // </snippet>
 
 export var testLocation = function () {
     var locationReceived;
 
-    // <snippet name="location">
+    // <snippet name="location/HOW-TO">
     // ### Receive continuous location updates
     // ``` JavaScript
     var locationManager = new LocationManager();
@@ -83,7 +83,7 @@ export var testLocation = function () {
 
 export var testLastKnownLocation = function () {
     TKUnit.waitUntilReady(function () { return false; }, 1); // give it some time after the last test
-    // <snippet name="location">
+    // <snippet name="location/HOW-TO">
     // ### Get last known location
     // ``` JavaScript
     var locationManager = new LocationManager();
@@ -135,7 +135,7 @@ export var testLocationOnceTimeout10000 = function () {
 
 export var testSnippet = function () {
     var locationReceived;
-    // <snippet name="location">
+    // <snippet name="location/HOW-TO">
     // ### Get location once
     // if there is `options.timeout` you will receive error on timeout. If `options.timeout` is 0 then the result is the same as the result from `LocationManager.lastKnownLocation`
     // and there will be no wait. You can use `options.maximumAge` to specify you don't want to receive locations older than specified time in ms.

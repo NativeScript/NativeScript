@@ -1,4 +1,4 @@
-﻿// <snippet name="image-source">
+﻿// <snippet name="image-source/HOW-TO">
 // # Image source
 // Using the image source requires the image-source module.
 // ``` JavaScript
@@ -18,7 +18,7 @@ import app = require("application");
 import TKUnit = require("Tests/TKUnit"); 
 
 export var testFromResource = function () {
-    // <snippet name="image-source">
+    // <snippet name="image-source/HOW-TO">
     // ### Load image using resource name
     // This is similar to loading Bitmap from `R.drawable.logo` on Android or calling `[UIImage imageNamed@"logo"]` on iOS
     // ``` JavaScript
@@ -32,7 +32,7 @@ export var testFromUrl = function () {
     var completed;
     var result: imageSource.ImageSource;
 
-    // <snippet name="image-source">
+    // <snippet name="image-source/HOW-TO">
     // ### Load image from URL
     // ``` JavaScript
     imageSource.fromUrl("http://www.google.com/images/errors/logo_sm_2.png")
@@ -62,7 +62,7 @@ export var testFromUrl = function () {
 }
 
 export var testSaveToFile = function () {
-    // <snippet name="image-source">
+    // <snippet name="image-source/HOW-TO">
     // ### Save image source to PNG or JPG file
     // ``` JavaScript
     var img = imageSource.fromResource("logo");
@@ -76,7 +76,7 @@ export var testSaveToFile = function () {
 }
 
 export var testFromFile = function () {
-    // <snippet name="image-source">
+    // <snippet name="image-source/HOW-TO">
     // ### Load image from a local file
     // ``` JavaScript
     var folder = fs.knownFolders.documents();

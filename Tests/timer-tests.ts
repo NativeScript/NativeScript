@@ -1,7 +1,7 @@
 ﻿import TKUnit = require("Tests/TKUnit");
 var timer = require("timer/timer");
 
-// <snippet name="timer">
+// <snippet name="timer/HOW-TO">
 // # Timer module
 // ``` JavaScript
 // require("globals");
@@ -30,7 +30,7 @@ export var test_setTimeout = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="timer">
+    // <snippet name="timer/HOW-TO">
     // ### Evaluates an expression after 0 milliseconds.
     // ``` JavaScript
     timer.setTimeout(function () {
@@ -49,7 +49,7 @@ export var test_setTimeout_callbackCalledAfterSpecifedTime = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="timer">
+    // <snippet name="timer/HOW-TO">
     // ### Evaluates an expression after a specified number of milliseconds.
     // ``` JavaScript
     timer.setTimeout(function () {
@@ -85,7 +85,7 @@ export var test_setTimeout_callbackShouldBeCleared = function () {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    // <snippet name="timer">
+    // <snippet name="timer/HOW-TO">
     // ### Cancels the evaluation with the clearTimeout method.
     // ``` JavaScript
     var id = timer.setTimeout(function () {
@@ -109,7 +109,7 @@ export var test_setInterval_callbackCalledDuringPeriod = function () {
     var expected = 4;
     var isReady = function () { return counter >= expected; }
 
-    // <snippet name="timer">
+    // <snippet name="timer/HOW-TO">
     // ### Evaluates an expression each time a specified number of milliseconds has elapsed.
     // ``` JavaScript
     timer.setInterval(function () {
@@ -129,7 +129,7 @@ export var test_setInterval_callbackShouldBeCleared = function () {
     var expected = 1;
     var isReady = function () { return counter == expected; }
 
-    // <snippet name="timer">
+    // <snippet name="timer/HOW-TO">
     // ### Cancel the interval previously started using the setInterval method.
     // ``` JavaScript
     var id = timer.setInterval(function () {

@@ -1,4 +1,4 @@
-﻿// <snippet name="application">
+﻿// <snippet name="application/HOW-TO">
 // # Application
 // The Application module provides abstraction over the platform-specific Application implementations.
 // It is the main BCL module and is required for other BCL modules to work properly.
@@ -9,7 +9,7 @@ import app = require("application");
 // The pre-required `app` module is used throughout the following code snippets.
 // </snippet>
 
-// <snippet name="application">
+// <snippet name="application/HOW-TO">
 // ### Initialization
 // ``` JavaScript
 //// The native app instance depends on the target platform
@@ -18,7 +18,7 @@ app.init(nativeAppInstance);
 // ```
 // </snippet>
 
-// <snippet name="application">
+// <snippet name="application/HOW-TO">
 // ### Checking the target platform
 // Use the following code in case you need to check somewhere in your code the platform you are running against:
 // ``` JavaScript
