@@ -51,6 +51,7 @@ class Binding {
     updating = false;
     source: observable.Observable;
     target: Bindable;
+    callback: (data: observable.PropertyChangeData) => void;
 
     constructor(target: Bindable, options: BindingOptions) {
         this.target = target;
@@ -62,11 +63,11 @@ class Binding {
         this.updateTarget(this.source.getProperty(this.options.sourceProperty));
 
         var that = this;
-        var callback = function (data: observable.PropertyChangeData) {
+        this.callback = function (data: observable.PropertyChangeData) {
             that.onSourcePropertyChanged(data);
         }
 
-        this.source.addObserver(observable.Observable.propertyChangeEvent, callback);
+        this.source.addObserver(observable.Observable.propertyChangeEvent, this.callback);
     }
 
     public unbind() {
@@ -74,7 +75,7 @@ class Binding {
             return;
         }
 
-        this.source.removeObserver(observable.Observable.propertyChangeEvent, this.onSourcePropertyChanged);
+        this.source.removeObserver(observable.Observable.propertyChangeEvent, this.callback);
         this.source = undefined;
         this.target = undefined;
     }
