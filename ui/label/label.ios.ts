@@ -12,16 +12,16 @@ export class Label extends view.View {
 
         this._ios = new UIKit.UILabel();
 
-        //var extendsBody = Foundation.NSObject.extends(
-        //    {
-        //        onTextChanged: function (path, sender, change, context) {
-        //        }
-        //    },
-        //    {
-        //        exposedMethods: { "tick:": "v@:@" }
-        //    });
+        var that = this;
+        var extendsBody = Foundation.NSObject.extends(
+            {
+                observeValueForKeyPathOfObjectChangeContext: function (path: string, sender: Foundation.NSObject, change: Foundation.NSDictionary, context) {
+                    that.updateTwoWayBinding(Label.textProperty, change.objectForKey("new"));
+                }
+            }, {});
 
-        //this.changedHandler = new extendsBody();
+        this.changedHandler = new extendsBody();
+        this._ios.addObserverForKeyPathOptionsContext(this.changedHandler, "text", Foundation.NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
     }
 
     get ios(): UIKit.UILabel {
@@ -39,12 +39,8 @@ export class Label extends view.View {
         // TODO: Will this be a gigantic if-else switch?
         if (data.propertyName === Label.textProperty) {
             this._ios.text = data.value;
+            this._ios.sizeToFit();
         } else if (true) {
         }
-    }
-
-    public addToParent(parent: UIKit.UIView) {
-        super.addToParent(parent);
-        this._ios.sizeToFit();
     }
 } 

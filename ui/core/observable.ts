@@ -22,6 +22,10 @@ export class Observable {
     // true to track the Changing phase, false otherwise
     private _trackChanging = false;
 
+    constructor(body?: any) {
+        // TODO: Not implemented
+    }
+
     public addObserver(eventName: string, callback: (data: ChangeData) => void) {
         this.verifyCallback(callback);
         var list = this.getEventList(eventName, true);
