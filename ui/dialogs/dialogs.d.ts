@@ -1,5 +1,7 @@
 ﻿declare module "ui/dialogs" {
     import promises = require("promises");
+    import view = require("ui/core/view");
+
     /**
     * The alert() method displays an alert box with a specified message.
     * @param message Specifies the text to display in the alert box.
@@ -105,6 +107,6 @@
         /**
         * Gets or sets dialog view.
         */
-        view: any;
+        view: view.View;
     }
 }

@@ -2,4 +2,6 @@
 
 export declare class View extends proxy.ProxyObject {
     addToParent: (parent: any) => void;
+    android: any;
+    ios: any;
 }

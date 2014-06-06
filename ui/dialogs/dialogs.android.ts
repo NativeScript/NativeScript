@@ -4,6 +4,7 @@
 import promises = require("promises");
 import dialogs = require("ui/dialogs");
 import appmodule = require("application");
+import view = require("ui/core/view");
 
 var STRING = "string",
     ALERT = "Alert",
@@ -104,6 +105,7 @@ export class Dialog {
     private _dialog: android.app.AlertDialog;
     private _android: android.app.AlertDialog.Builder;
     private _title: string;
+    private _view: view.View;
 
     constructor() {
         this._android = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
@@ -119,6 +121,14 @@ export class Dialog {
     set title(value: string) {
         this._title = value;
         this.android.setTitle(this._title);
+    }
+
+    get view(): view.View {
+        return this._view;
+    }
+    set view(value: view.View) {
+        this._view = value;
+        this.android.setView(this._view.android);
     }
 
     public show() {
