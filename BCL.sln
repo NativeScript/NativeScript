@@ -1,20 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30324.0
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BCL", "BCL.csproj", "{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TNS-UI-Diagram", "..\TNS-UI-Diagram\TNS-UI-Diagram.csproj", "{D482FB50-DF22-4809-AF14-02C0ED40E478}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Android_Deploy|Any CPU = Android_Deploy|Any CPU
 		Android_Tests|Any CPU = Android_Tests|Any CPU
 		Android|Any CPU = Android|Any CPU
+		Debug|Any CPU = Debug|Any CPU
 		Documentation|Any CPU = Documentation|Any CPU
 		Full|Any CPU = Full|Any CPU
 		iOS_Deploy|Any CPU = iOS_Deploy|Any CPU
 		iOS_Tests|Any CPU = iOS_Tests|Any CPU
 		iOS|Any CPU = iOS|Any CPU
+		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android_Deploy|Any CPU.ActiveCfg = Android_Deploy|Any CPU
@@ -23,6 +25,8 @@ Global
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android_Tests|Any CPU.Build.0 = Android_Tests|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android|Any CPU.ActiveCfg = Android|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Android|Any CPU.Build.0 = Android|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Debug|Any CPU.ActiveCfg = Documentation|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Debug|Any CPU.Build.0 = Documentation|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Documentation|Any CPU.ActiveCfg = Documentation|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Documentation|Any CPU.Build.0 = Documentation|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Full|Any CPU.ActiveCfg = Full|Any CPU
@@ -33,6 +37,28 @@ Global
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS_Tests|Any CPU.Build.0 = iOS_Tests|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS|Any CPU.ActiveCfg = iOS|Any CPU
 		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.iOS|Any CPU.Build.0 = iOS|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Android_Deploy|Any CPU.ActiveCfg = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Android_Deploy|Any CPU.Build.0 = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Android_Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Android_Tests|Any CPU.Build.0 = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Android|Any CPU.ActiveCfg = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Android|Any CPU.Build.0 = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Documentation|Any CPU.ActiveCfg = Debug|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Documentation|Any CPU.Build.0 = Debug|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Full|Any CPU.ActiveCfg = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Full|Any CPU.Build.0 = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.iOS_Deploy|Any CPU.ActiveCfg = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.iOS_Deploy|Any CPU.Build.0 = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.iOS_Tests|Any CPU.ActiveCfg = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.iOS_Tests|Any CPU.Build.0 = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.iOS|Any CPU.ActiveCfg = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.iOS|Any CPU.Build.0 = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D482FB50-DF22-4809-AF14-02C0ED40E478}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
