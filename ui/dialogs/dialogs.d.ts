@@ -76,6 +76,11 @@
           * Gets or sets the Cancel button name.
           */
         cancelButtonName?: string;
+
+        /**
+          * Gets or sets the Cancel button name.
+          */
+        otherButtonName?: string;
     }
 
     /**
@@ -86,6 +91,21 @@
           * Gets or sets the default text.
           */
         defaultText?: string;
+    }
+
+    /**
+    * Provides result data from the prompt dialog.
+    */
+    interface PromptResult {
+        /**
+          * Gets or sets the prompt dialog boolean result.
+          */
+        result: boolean;
+
+        /**
+          *  Gets or sets the text entered in the prompt dialog.
+          */
+        text: string;
     }
 
     export class Dialog {

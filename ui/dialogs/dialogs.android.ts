@@ -18,23 +18,39 @@ function createAlertDialog(options: dialogs.DialogOptions): android.app.AlertDia
     return alert;
 }
 
-function addOkCancelButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.ConfirmOptions,
-    okCallback: Function, cancelCallback?: Function): void {
-    alert.setPositiveButton(options.okButtonName, new android.content.DialogInterface.OnClickListener({
-        onClick: function (dialog: android.content.DialogInterface, id: number) {
-            dialog.cancel();
-            okCallback();
-        }
-    }));
+function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.ConfirmOptions,
+    okCallback: Function, cancelCallback?: Function, neutralCallback?: Function): void {
 
-    alert.setNegativeButton(options.cancelButtonName, new android.content.DialogInterface.OnClickListener({
-        onClick: function (dialog: android.content.DialogInterface, id: number) {
-            dialog.cancel();
-            if (cancelCallback) {
-                cancelCallback();
+    if (options.okButtonName) {
+        alert.setPositiveButton(options.okButtonName, new android.content.DialogInterface.OnClickListener({
+            onClick: function (dialog: android.content.DialogInterface, id: number) {
+                dialog.cancel();
+                okCallback();
             }
-        }
-    }));
+        }));
+    }
+
+    if (options.cancelButtonName) {
+        alert.setNegativeButton(options.cancelButtonName, new android.content.DialogInterface.OnClickListener({
+            onClick: function (dialog: android.content.DialogInterface, id: number) {
+                dialog.cancel();
+                if (cancelCallback) {
+                    cancelCallback();
+                }
+            }
+        }));
+    }
+
+    if (options.otherButtonName) {
+        alert.setNeutralButton(options.otherButtonName, new android.content.DialogInterface.OnClickListener({
+            onClick: function (dialog: android.content.DialogInterface, id: number) {
+                dialog.cancel();
+                if (neutralCallback) {
+                    neutralCallback();
+                }
+            }
+        }));
+    }
 }
 
 export function alert(arg: any): promises.Promise<void> {
@@ -67,7 +83,7 @@ export function confirm(arg: any): promises.Promise<boolean> {
 
         var alert = createAlertDialog(options);
 
-        addOkCancelButtonsToAlertDialog(alert, options, function () { d.resolve(true); }, function () { d.resolve(false); });
+        addButtonsToAlertDialog(alert, options, function () { d.resolve(true); }, function () { d.resolve(false); }, function () { d.resolve(); });
 
         alert.show();
 
@@ -78,8 +94,8 @@ export function confirm(arg: any): promises.Promise<boolean> {
     return d.promise();
 }
 
-export function prompt(arg: any): promises.Promise<string> {
-    var d = promises.defer<string>();
+export function prompt(arg: any): promises.Promise<dialogs.PromptResult> {
+    var d = promises.defer<dialogs.PromptResult>();
     try {
         var options = typeof arg === STRING ? { message: arg, title: ALERT, okButtonName: OK, cancelButtonName: CANCEL } : arg
 
@@ -90,7 +106,11 @@ export function prompt(arg: any): promises.Promise<string> {
 
         alert.setView(input);
 
-        addOkCancelButtonsToAlertDialog(alert, options, function () { d.resolve(input.getText().toString()); });
+        var getText = function () { return input.getText().toString(); };
+
+        addButtonsToAlertDialog(alert, options, function () { d.resolve({ result: true, text: getText() }); },
+            function () { d.resolve({ result: false, text: getText() }); },
+            function () { d.resolve({ result: undefined, text: getText() }); });
 
         alert.show();
 
@@ -105,7 +125,7 @@ export class Dialog {
     private _dialog: android.app.AlertDialog;
     private _android: android.app.AlertDialog.Builder;
     private _title: string;
-    private _view: view.View;
+    //private _view: view.View;
 
     constructor() {
         this._android = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
@@ -122,14 +142,14 @@ export class Dialog {
         this._title = value;
         this.android.setTitle(this._title);
     }
-
+    /*
     get view(): view.View {
         return this._view;
     }
     set view(value: view.View) {
         this._view = value;
         this.android.setView(this._view.android);
-    }
+    }*/
 
     public show() {
         this._dialog = this.android.show();

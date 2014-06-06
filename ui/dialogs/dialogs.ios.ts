@@ -3,6 +3,7 @@
   */
 import promises = require("promises");
 import dialogs = require("ui/dialogs");
+import view = require("ui/core/view");
 
 var UIALERTVIEWDELEGATE = "UIAlertViewDelegate",
     STRING = "string",
@@ -29,6 +30,20 @@ function createDelegate(callback) {
     return new delegateType;
 }
 
+function addButtonsToAlertDialog(alert: UIKit.UIAlertView, options: dialogs.ConfirmOptions): void {
+    if (options.okButtonName) {
+        alert.addButtonWithTitle(options.okButtonName);
+    }
+
+    if (options.cancelButtonName) {
+        alert.addButtonWithTitle(options.cancelButtonName);
+    }
+
+    if (options.otherButtonName) {
+        alert.addButtonWithTitle(options.otherButtonName);
+    }
+}
+
 export function alert(arg: any): promises.Promise<void> {
     var d = promises.defer<void>();
     try {
@@ -36,7 +51,9 @@ export function alert(arg: any): promises.Promise<void> {
 
         var alert = createUIAlertView(options);
 
-        alert.addButtonWithTitle(options.buttonName);
+        if (options.buttonName) {
+            alert.addButtonWithTitle(options.buttonName);
+        }
 
         // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
         var delegate = createDelegate(function (view, index) {
@@ -62,12 +79,11 @@ export function confirm(arg: any): promises.Promise<boolean> {
 
         var alert = createUIAlertView(options);
 
-        alert.addButtonWithTitle(options.okButtonName);
-        alert.addButtonWithTitle(options.cancelButtonName);
+        addButtonsToAlertDialog(alert, options);
 
         // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
         var delegate = createDelegate(function (view, index) {
-            d.resolve(index === 0);
+            d.resolve(index === 2 ? undefined : index === 0);
             // Remove the local variable for the delegate.
             delegate = undefined;
         });
@@ -83,24 +99,22 @@ export function confirm(arg: any): promises.Promise<boolean> {
     return d.promise();
 }
 
-export function prompt(arg: any): promises.Promise<string> {
-    var d = promises.defer<string>();
+export function prompt(arg: any): promises.Promise<dialogs.PromptResult> {
+    var d = promises.defer<dialogs.PromptResult>();
     try {
         var options = typeof arg === STRING ? { message: arg, title: ALERT, okButtonName: OK, cancelButtonName: CANCEL } : arg
 
         var alert = createUIAlertView(options);
         alert.alertViewStyle = UIKit.UIAlertViewStyle.UIAlertViewStylePlainTextInput;
-        alert.addButtonWithTitle(options.okButtonName);
-        alert.addButtonWithTitle(options.cancelButtonName);
+
+        addButtonsToAlertDialog(alert, options);
 
         var textField = alert.textFieldAtIndex(0);
         textField.text = options.defaultText ? options.defaultText : "";
 
         // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
         var delegate = createDelegate(function (view, index) {
-            if (index === 0) {
-                d.resolve(textField.text);
-            }
+            d.resolve({ result: index === 2 ? undefined : index === 0, text: textField.text });
             // Remove the local variable for the delegate.
             delegate = undefined;
         });
@@ -118,6 +132,8 @@ export function prompt(arg: any): promises.Promise<string> {
 
 export class Dialog {
     private _ios: UIKit.UIAlertView;
+    //private _view: view.View;
+    //private _nativeView: UIKit.UIView;
 
     constructor() {
         this._ios = new UIKit.UIAlertView();
@@ -133,6 +149,18 @@ export class Dialog {
     set title(value: string) {
         this.ios.title = value;
     }
+    /*
+    get view(): view.View {
+        return this._view;
+    }
+    set view(value: view.View) {
+        this._view = value;
+        this._nativeView = this._view.ios;
+        this._nativeView.removeFromSuperview();
+
+        // Not working on iOS7!
+        this.ios.addSubview(this._nativeView);
+    }*/
 
     public show() {
         this.ios.show();
