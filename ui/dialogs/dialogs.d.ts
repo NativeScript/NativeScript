@@ -85,4 +85,26 @@
           */
         defaultText?: string;
     }
+
+    export class Dialog {
+        /**
+        * Shows the dialog.
+        */
+        show: () => void;
+
+        /**
+        * Hides the dialog.
+        */
+        hide: () => void;
+
+        /**
+        * Gets or sets dialog title.
+        */
+        title: string;
+
+        /**
+        * Gets or sets dialog view.
+        */
+        view: any;
+    }
 }

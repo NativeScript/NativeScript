@@ -99,3 +99,35 @@ export function prompt(arg: any): promises.Promise<string> {
 
     return d.promise();
 }
+
+export class Dialog {
+    private _dialog: android.app.AlertDialog;
+    private _android: android.app.AlertDialog.Builder;
+    private _title: string;
+
+    constructor() {
+        this._android = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
+    }
+
+    get android(): android.app.AlertDialog.Builder {
+        return this._android;
+    }
+
+    get title(): string {
+        return this._title;
+    }
+    set title(value: string) {
+        this._title = value;
+        this.android.setTitle(this._title);
+    }
+
+    public show() {
+        this._dialog = this.android.show();
+    }
+
+    public hide() {
+        if (this._dialog) {
+            this._dialog.hide();
+        }
+    }
+}

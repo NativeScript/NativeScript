@@ -115,3 +115,30 @@ export function prompt(arg: any): promises.Promise<string> {
 
     return d.promise();
 }
+
+export class Dialog {
+    private _ios: UIKit.UIAlertView;
+
+    constructor() {
+        this._ios = new UIKit.UIAlertView();
+    }
+
+    get ios(): UIKit.UIAlertView {
+        return this._ios;
+    }
+
+    get title(): string {
+        return this.ios.title;
+    }
+    set title(value: string) {
+        this.ios.title = value;
+    }
+
+    public show() {
+        this.ios.show();
+    }
+
+    public hide() {
+        this.ios.dismissWithClickedButtonIndexAnimated(0, true);
+    }
+}

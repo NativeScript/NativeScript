@@ -13,3 +13,15 @@
 		cancelButtonName: "Ignore it!", defaultText : "Enter your password here!" })
 			.then(function(r){  dialogs.alert("Result:" + r); });
 ```
+Custom dialogs:
+```js
+	require("globals");
+	var dialogs = require("ui/dialogs");
+
+	/// Splash 
+	var d = new dialogs.Dialog();
+	d.title = "Loading..."
+	d.show();
+
+	setTimeout(function(){ d.hide(); }, 2000);
+```
