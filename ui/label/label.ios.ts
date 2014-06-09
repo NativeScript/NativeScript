@@ -16,7 +16,7 @@ export class Label extends view.View {
         var extendsBody = Foundation.NSObject.extends(
             {
                 observeValueForKeyPathOfObjectChangeContext: function (path: string, sender: Foundation.NSObject, change: Foundation.NSDictionary, context) {
-                    that.updateTwoWayBinding(Label.textProperty, change.objectForKey("new"));
+                    that.updateTwoWayBinding(Label.textProperty, change.objectForKey(Foundation.NSKeyValueChangeNewKey));
                 }
             }, {});
 

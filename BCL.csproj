@@ -161,6 +161,14 @@
     <TypeScriptCompile Include="ui\core\view.ios.ts">
       <DependentUpon>view.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\image\image.android.ts">
+      <DependentUpon>image.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\image\image.d.ts" />
+    <TypeScriptCompile Include="ui\image\image.ios.ts">
+      <DependentUpon>image.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\image\index.ts" />
     <TypeScriptCompile Include="ui\label\index.ts" />
     <TypeScriptCompile Include="ui\label\label.d.ts" />
     <TypeScriptCompile Include="ui\label\label.android.ts">
