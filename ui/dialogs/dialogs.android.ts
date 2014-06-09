@@ -20,7 +20,7 @@ function createAlertDialog(message: string, options: dialogs.DialogOptions): and
     return alert;
 }
 
-function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.DialogButtonOptions,
+function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.DialogButtonsOptions,
     okCallback: Function, cancelCallback?: Function, neutralCallback?: Function): void {
 
     if (options.okButtonText) {

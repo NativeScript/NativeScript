@@ -32,7 +32,7 @@ function createDelegate(callback) {
     return new delegateType;
 }
 
-function addButtonsToAlertDialog(alert: UIKit.UIAlertView, options: dialogs.DialogButtonOptions): void {
+function addButtonsToAlertDialog(alert: UIKit.UIAlertView, options: dialogs.DialogButtonsOptions): void {
     if (!options)
         return;
 
