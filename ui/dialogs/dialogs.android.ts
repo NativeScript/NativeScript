@@ -3,15 +3,13 @@
   */
 import promises = require("promises");
 import dialogs = require("ui/dialogs");
+import dialogs_common = require("ui/dialogs/dialogs-common");
 import appmodule = require("application");
 import view = require("ui/core/view");
 
-var STRING = "string",
-    PROMPT = "Prompt",
-    CONFIRM = "Confirm",
-    ALERT = "Alert",
-    OK = "OK",
-    CANCEL = "Cancel";
+// merge the exports of the request file with the exports of this file
+declare var exports;
+require("utils/module-merge").merge(dialogs_common, exports);
 
 function createAlertDialog(message: string, options: dialogs.DialogOptions): android.app.AlertDialog.Builder {
     var alert = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
@@ -55,12 +53,12 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
     }
 }
 
-export function alert(message: string, options = { title: ALERT, okButtonText: OK }): promises.Promise<void> {
+export function alert(message: string, options = { title: dialogs_common.ALERT, okButtonText: dialogs_common.OK }): promises.Promise<void> {
     var d = promises.defer<void>();
     try {
         var alert = createAlertDialog(message, options);
 
-    alert.setPositiveButton(options.okButtonText, new android.content.DialogInterface.OnClickListener({
+        alert.setPositiveButton(options.okButtonText, new android.content.DialogInterface.OnClickListener({
             onClick: function (dialog: android.content.DialogInterface, id: number) {
                 dialog.cancel();
                 d.resolve();
@@ -76,7 +74,7 @@ export function alert(message: string, options = { title: ALERT, okButtonText: O
     return d.promise();
 }
 
-export function confirm(message: string, options = { title: CONFIRM, okButtonText: OK, cancelButtonText: CANCEL }): promises.Promise<boolean> {
+export function confirm(message: string, options = { title: dialogs_common.CONFIRM, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL }): promises.Promise<boolean> {
     var d = promises.defer<boolean>();
     try {
         var alert = createAlertDialog(message, options);
@@ -92,12 +90,18 @@ export function confirm(message: string, options = { title: CONFIRM, okButtonTex
     return d.promise();
 }
 
-export function prompt(message: string, defaultText?: string, options = { title: PROMPT, okButtonText: OK, cancelButtonText: CANCEL }): promises.Promise<dialogs.PromptResult> {
+export function prompt(message: string, defaultText?: string,
+    options = { title: dialogs_common.PROMPT, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL, inputType: dialogs_common.InputType.PlainText }): promises.Promise<dialogs.PromptResult> {
     var d = promises.defer<dialogs.PromptResult>();
     try {
         var alert = createAlertDialog(message, options);
 
         var input = new android.widget.EditText(appmodule.android.context);
+
+        if (options.inputType == dialogs_common.InputType.Password) {
+            input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        }
+
         input.setText(defaultText ? defaultText : "");
 
         alert.setView(input);

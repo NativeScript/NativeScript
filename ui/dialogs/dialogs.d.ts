@@ -1,6 +1,9 @@
 ﻿declare module "ui/dialogs" {
     import promises = require("promises");
     import view = require("ui/core/view");
+    import dialogs_common = require("ui/dialogs/dialogs-common");
+
+    export var InputType: dialogs_common.InputType;
 
     /**
     * The alert() method displays an alert box with a specified message.
@@ -21,7 +24,7 @@
     * @param message The text to display in the dialog box.
     * @param options The options for the dialog box. Optional.
     */
-    function prompt(message: string, defaultText?: string, options?: DialogButtonsOptions): promises.Promise<string>;
+    function prompt(message: string, defaultText?: string, options?: PromptOptions): promises.Promise<string>;
 
     /**
     * Provides options for the dialog.
@@ -44,7 +47,7 @@
     }
 
     /**
-    * Provides options for the confirm.
+    * Provides options for the confirm dialog.
     */
     interface DialogButtonsOptions extends AlertOptions {
         /**
@@ -56,6 +59,16 @@
           * Gets or sets the neutral button text.
           */
         neutralButtonText?: string;
+    }
+
+    /**
+    * Provides options for the prompt dialog.
+    */
+    interface PromptOptions extends DialogButtonsOptions {
+        /**
+          * Gets or sets the prompt input type (plain text or password).
+          */
+        inputType?: dialogs_common.InputType;
     }
 
     /**

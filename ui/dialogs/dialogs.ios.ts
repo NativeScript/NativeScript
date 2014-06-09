@@ -3,15 +3,13 @@
   */
 import promises = require("promises");
 import dialogs = require("ui/dialogs");
+import dialogs_common = require("ui/dialogs/dialogs-common");
 import view = require("ui/core/view");
 
-var UIALERTVIEWDELEGATE = "UIAlertViewDelegate",
-    STRING = "string",
-    PROMPT = "Prompt",
-    CONFIRM = "Confirm",
-    ALERT = "Alert",
-    OK = "OK",
-    CANCEL = "Cancel";
+// merge the exports of the request file with the exports of this file
+declare var exports;
+require("utils/module-merge").merge(dialogs_common, exports);
+
 
 function createUIAlertView(message: string, options: dialogs.DialogOptions): UIKit.UIAlertView {
     var alert = new UIKit.UIAlertView();
@@ -49,7 +47,7 @@ function addButtonsToAlertDialog(alert: UIKit.UIAlertView, options: dialogs.Dial
     }
 }
 
-export function alert(message: string, options = { title: ALERT, okButtonText: OK }): promises.Promise<void> {
+export function alert(message: string, options = { title: dialogs_common.ALERT, okButtonText: dialogs_common.OK }): promises.Promise<void> {
     var d = promises.defer<void>();
     try {
         var alert = createUIAlertView(message, options);
@@ -75,7 +73,7 @@ export function alert(message: string, options = { title: ALERT, okButtonText: O
     return d.promise();
 }
 
-export function confirm(message: string, options  = { title: CONFIRM, okButtonText: OK, cancelButtonText: CANCEL }): promises.Promise<boolean> {
+export function confirm(message: string, options  = { title: dialogs_common.CONFIRM, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL }): promises.Promise<boolean> {
     var d = promises.defer<boolean>();
     try {
         var alert = createUIAlertView(message, options);
@@ -100,11 +98,17 @@ export function confirm(message: string, options  = { title: CONFIRM, okButtonTe
     return d.promise();
 }
 
-export function prompt(message: string, defaultText?: string, options = { title: PROMPT, okButtonText: OK, cancelButtonText: CANCEL, defaultText: "" }): promises.Promise<dialogs.PromptResult> {
+export function prompt(message: string, defaultText?: string,
+    options = { title: dialogs_common.PROMPT, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL, inputType: dialogs_common.InputType.PlainText }): promises.Promise<dialogs.PromptResult> {
     var d = promises.defer<dialogs.PromptResult>();
     try {
         var alert = createUIAlertView(message, options);
-        alert.alertViewStyle = UIKit.UIAlertViewStyle.UIAlertViewStylePlainTextInput;
+
+    if (options.inputType === dialogs_common.InputType.Password) {
+            alert.alertViewStyle = UIKit.UIAlertViewStyle.UIAlertViewStyleSecureTextInput;
+        } else {
+            alert.alertViewStyle = UIKit.UIAlertViewStyle.UIAlertViewStylePlainTextInput;
+        }
 
         addButtonsToAlertDialog(alert, options);
 

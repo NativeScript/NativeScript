@@ -249,6 +249,7 @@
       <DependentUpon>dialogs.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\dialogs\index.ts" />
+    <TypeScriptCompile Include="ui\dialogs\dialogs-common.ts" />
     <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
@@ -362,15 +363,11 @@
   <UsingTask TaskName="BuildTasks.CopyForPlatformBuildTask" AssemblyFile="../../Build/lib/BuildTasks.dll" />
   <Target Name="AfterBuild">
     <CopyForPlatformBuildTask TargetPlatform="$(TargetOS)" IncludeTests="$(CopyTests)" Platforms="iOS;Android" InputFiles="@(GeneratedJavascript)" DestinationFolder="$(OutputPath)\$(Configuration)\" JSConfigFile="$(JSConfig)" AppMainJSFile="$(JSMainFile)" ProjectDir="$(ProjectDir)" />
-
-    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command='rd /q /s "../../Documentation/Docs/"' />
-    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command='md "../../Documentation/Docs/"' />
-
-    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command='node ../../Documentation/Src/SnippetsExtractor/app.js -noclean -source bin\Documentation\Tests -destination ../../Documentation/Docs/' />
-
+    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command="rd /q /s &quot;../../Documentation/Docs/&quot;" />
+    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command="md &quot;../../Documentation/Docs/&quot;" />
+    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command="node ../../Documentation/Src/SnippetsExtractor/app.js -noclean -source bin\Documentation\Tests -destination ../../Documentation/Docs/" />
     <Exec Condition=" '$(Configuration)' == 'Documentation' " Command="node ../../Documentation/Src/TypeScriptAPIExtractor/app.js @(TypeScriptCompile) $(IntermediateOutputPath)\api.xml" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="false" LogStandardErrorAsError="true" />
-    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command='"../../Documentation/Src/XMLAPIPrinting/bin/Release/XMLAPIPrinting.exe" $(IntermediateOutputPath)\api.xml "../../Documentation/Docs/"' />
-
+    <Exec Condition=" '$(Configuration)' == 'Documentation' " Command="&quot;../../Documentation/Src/XMLAPIPrinting/bin/Release/XMLAPIPrinting.exe&quot; $(IntermediateOutputPath)\api.xml &quot;../../Documentation/Docs/&quot;" />
   </Target>
   <PropertyGroup>
     <PostBuildEvent>
