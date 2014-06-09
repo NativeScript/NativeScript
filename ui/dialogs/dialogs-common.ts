@@ -2,6 +2,7 @@
     PROMPT = "Prompt",
     CONFIRM = "Confirm",
     ALERT = "Alert",
+    LOGIN = "Login",
     OK = "OK",
     CANCEL = "Cancel";
 
@@ -17,5 +18,5 @@ export enum InputType {
     /**
     * Password input type.
     */
-    Password,
+    Password
 }

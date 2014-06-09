@@ -24,7 +24,14 @@
     * @param message The text to display in the dialog box.
     * @param options The options for the dialog box. Optional.
     */
-    function prompt(message: string, defaultText?: string, options?: PromptOptions): promises.Promise<string>;
+    function prompt(message: string, defaultText?: string, options?: PromptOptions): promises.Promise<PromptResult>;
+
+    /**
+    * The prompt() method displays a dialog box that prompts the visitor for input.
+    * @param message The text to display in the dialog box.
+    * @param options The options for the dialog box. Optional.
+    */
+    function login(message: string, userName?: string, password?: string, options?: DialogButtonsOptions): promises.Promise<LoginResult>;
 
     /**
     * Provides options for the dialog.
@@ -84,6 +91,26 @@
           *  Gets or sets the text entered in the prompt dialog.
           */
         text: string;
+    }
+
+    /**
+    * Provides result data from the login dialog.
+    */
+    interface LoginResult {
+        /**
+          * Gets or sets the login dialog boolean result.
+          */
+        result: boolean;
+
+        /**
+          *  Gets or sets the user entered in the login dialog.
+          */
+        userName: string;
+
+        /**
+          *  Gets or sets the password entered in the login dialog.
+          */
+        password: string;
     }
 
     export class Dialog {

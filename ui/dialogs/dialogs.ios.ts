@@ -104,7 +104,7 @@ export function prompt(message: string, defaultText?: string,
     try {
         var alert = createUIAlertView(message, options);
 
-    if (options.inputType === dialogs_common.InputType.Password) {
+        if (options.inputType === dialogs_common.InputType.Password) {
             alert.alertViewStyle = UIKit.UIAlertViewStyle.UIAlertViewStyleSecureTextInput;
         } else {
             alert.alertViewStyle = UIKit.UIAlertViewStyle.UIAlertViewStylePlainTextInput;
@@ -118,6 +118,40 @@ export function prompt(message: string, defaultText?: string,
         // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
         var delegate = createDelegate(function (view, index) {
             d.resolve({ result: index === 2 ? undefined : index === 0, text: textField.text });
+            // Remove the local variable for the delegate.
+            delegate = undefined;
+        });
+
+        alert.delegate = delegate;
+
+        alert.show();
+
+    } catch (ex) {
+        d.reject(ex);
+    }
+
+    return d.promise();
+}
+
+export function login(message: string, userName?: string, password?: string,
+    options = { title: dialogs_common.LOGIN, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL }): promises.Promise<dialogs.LoginResult> {
+    var d = promises.defer<dialogs.LoginResult>();
+    try {
+        var alert = createUIAlertView(message, options);
+
+        alert.alertViewStyle = UIKit.UIAlertViewStyle.UIAlertViewStyleLoginAndPasswordInput;
+
+        addButtonsToAlertDialog(alert, options);
+
+        var userNameTextField = alert.textFieldAtIndex(0);
+        userNameTextField.text = userName ? userName : "";
+
+        var pwdTextField = alert.textFieldAtIndex(1);
+        pwdTextField.text = password ? password : "";
+
+        // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
+        var delegate = createDelegate(function (view, index) {
+            d.resolve({ result: index === 2 ? undefined : index === 0, userName: userNameTextField.text, password: pwdTextField.text });
             // Remove the local variable for the delegate.
             delegate = undefined;
         });
