@@ -7,6 +7,8 @@ import appmodule = require("application");
 import view = require("ui/core/view");
 
 var STRING = "string",
+    PROMPT = "Prompt",
+    CONFIRM = "Confirm",
     ALERT = "Alert",
     OK = "OK",
     CANCEL = "Cancel";
@@ -18,7 +20,7 @@ function createAlertDialog(message: string, options: dialogs.DialogOptions): and
     return alert;
 }
 
-function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.ConfirmOptions,
+function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.DialogButtonOptions,
     okCallback: Function, cancelCallback?: Function, neutralCallback?: Function): void {
 
     if (options.okButtonText) {
@@ -41,8 +43,8 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
         }));
     }
 
-    if (options.otherButtonText) {
-        alert.setNeutralButton(options.otherButtonText, new android.content.DialogInterface.OnClickListener({
+    if (options.neutralButtonText) {
+        alert.setNeutralButton(options.neutralButtonText, new android.content.DialogInterface.OnClickListener({
             onClick: function (dialog: android.content.DialogInterface, id: number) {
                 dialog.cancel();
                 if (neutralCallback) {
@@ -53,12 +55,12 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
     }
 }
 
-export function alert(message: string, options = { title: ALERT, buttonText: OK }): promises.Promise<void> {
+export function alert(message: string, options = { title: ALERT, okButtonText: OK }): promises.Promise<void> {
     var d = promises.defer<void>();
     try {
         var alert = createAlertDialog(message, options);
 
-        alert.setPositiveButton(options.buttonText, new android.content.DialogInterface.OnClickListener({
+    alert.setPositiveButton(options.okButtonText, new android.content.DialogInterface.OnClickListener({
             onClick: function (dialog: android.content.DialogInterface, id: number) {
                 dialog.cancel();
                 d.resolve();
@@ -74,7 +76,7 @@ export function alert(message: string, options = { title: ALERT, buttonText: OK 
     return d.promise();
 }
 
-export function confirm(message: string, options = { title: ALERT, okButtonText: OK, cancelButtonText: CANCEL }): promises.Promise<boolean> {
+export function confirm(message: string, options = { title: CONFIRM, okButtonText: OK, cancelButtonText: CANCEL }): promises.Promise<boolean> {
     var d = promises.defer<boolean>();
     try {
         var alert = createAlertDialog(message, options);
@@ -90,13 +92,13 @@ export function confirm(message: string, options = { title: ALERT, okButtonText:
     return d.promise();
 }
 
-export function prompt(message: string, options = { title: ALERT, okButtonText: OK, cancelButtonText: CANCEL, defaultText: "" }): promises.Promise<dialogs.PromptResult> {
+export function prompt(message: string, defaultText?: string, options = { title: PROMPT, okButtonText: OK, cancelButtonText: CANCEL }): promises.Promise<dialogs.PromptResult> {
     var d = promises.defer<dialogs.PromptResult>();
     try {
         var alert = createAlertDialog(message, options);
 
         var input = new android.widget.EditText(appmodule.android.context);
-        input.setText(options.defaultText ? options.defaultText : "");
+        input.setText(defaultText ? defaultText : "");
 
         alert.setView(input);
 

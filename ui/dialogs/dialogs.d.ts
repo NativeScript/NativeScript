@@ -14,14 +14,14 @@
     * @param message Specifies the text to display in the confirm box.
     * @param options Specifies the options for the confirm box. Optional.
     */
-    function confirm(message: string, options?: ConfirmOptions): promises.Promise<boolean>;
+    function confirm(message: string, options?: DialogButtonOptions): promises.Promise<boolean>;
 
     /**
     * The prompt() method displays a dialog box that prompts the visitor for input.
     * @param message The text to display in the dialog box.
     * @param options The options for the dialog box. Optional.
     */
-    function prompt(message: string, options?: PromptOptions): promises.Promise<string>;
+    function prompt(message: string, defaultText?: string, options?: DialogButtonOptions): promises.Promise<string>;
 
     /**
     * Provides options for the dialog.
@@ -38,39 +38,24 @@
     */
     interface AlertOptions extends DialogOptions {
         /**
-          * Gets or sets the button name.
+          * Gets or sets the OK button text.
           */
-        buttonText?: string;
+        okButtonText?: string;
     }
 
     /**
     * Provides options for the confirm.
     */
-    interface ConfirmOptions extends DialogOptions {
+    interface DialogButtonOptions extends AlertOptions {
         /**
-          * Gets or sets the OK button name.
-          */
-        okButtonText?: string;
-
-        /**
-          * Gets or sets the Cancel button name.
+          * Gets or sets the Cancel button text.
           */
         cancelButtonText?: string;
 
         /**
-          * Gets or sets the Cancel button name.
+          * Gets or sets the neutral button text.
           */
-        otherButtonText?: string;
-    }
-
-    /**
-    * Provides options for the prompt.
-    */
-    interface PromptOptions extends ConfirmOptions {
-        /**
-          * Gets or sets the default text.
-          */
-        defaultText?: string;
+        neutralButtonText?: string;
     }
 
     /**

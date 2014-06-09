@@ -32,7 +32,7 @@ function createDelegate(callback) {
     return new delegateType;
 }
 
-function addButtonsToAlertDialog(alert: UIKit.UIAlertView, options: dialogs.ConfirmOptions): void {
+function addButtonsToAlertDialog(alert: UIKit.UIAlertView, options: dialogs.DialogButtonOptions): void {
     if (!options)
         return;
 
@@ -44,18 +44,18 @@ function addButtonsToAlertDialog(alert: UIKit.UIAlertView, options: dialogs.Conf
         alert.addButtonWithTitle(options.cancelButtonText);
     }
 
-    if (options.otherButtonText) {
-        alert.addButtonWithTitle(options.otherButtonText);
+    if (options.neutralButtonText) {
+        alert.addButtonWithTitle(options.neutralButtonText);
     }
 }
 
-export function alert(message: string, options = { title: ALERT, buttonText: OK }): promises.Promise<void> {
+export function alert(message: string, options = { title: ALERT, okButtonText: OK }): promises.Promise<void> {
     var d = promises.defer<void>();
     try {
         var alert = createUIAlertView(message, options);
 
-        if (options.buttonText) {
-            alert.addButtonWithTitle(options.buttonText);
+        if (options.okButtonText) {
+            alert.addButtonWithTitle(options.okButtonText);
         }
 
         // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
@@ -100,7 +100,7 @@ export function confirm(message: string, options  = { title: CONFIRM, okButtonTe
     return d.promise();
 }
 
-export function prompt(message: string, options = { title: PROMPT, okButtonText: OK, cancelButtonText: CANCEL, defaultText: "" }): promises.Promise<dialogs.PromptResult> {
+export function prompt(message: string, defaultText?: string, options = { title: PROMPT, okButtonText: OK, cancelButtonText: CANCEL, defaultText: "" }): promises.Promise<dialogs.PromptResult> {
     var d = promises.defer<dialogs.PromptResult>();
     try {
         var alert = createUIAlertView(message, options);
@@ -109,7 +109,7 @@ export function prompt(message: string, options = { title: PROMPT, okButtonText:
         addButtonsToAlertDialog(alert, options);
 
         var textField = alert.textFieldAtIndex(0);
-        textField.text = options.defaultText ? options.defaultText : "";
+        textField.text = defaultText ? defaultText : "";
 
         // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
         var delegate = createDelegate(function (view, index) {
