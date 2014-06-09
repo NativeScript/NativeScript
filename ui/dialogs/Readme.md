@@ -1,17 +1,23 @@
 ﻿Dialogs module. Examples:
 ```js
-    dialogs.alert("Test").then(function(){  dialogs.alert("Test2"); });
-    dialogs.alert({message:"Test", title: "MyAlert", buttonName: "Close" })
-		.then(function(){  dialogs.alert("Test2"); });
-    
-    dialogs.confirm("Test?").then(function(r){  dialogs.alert("Result:" + r); });
-    dialogs.confirm({message:"Confirm?", title: "MyConfirm", okButtonName: "Do it!", cancelButtonName: "Ignore it!" })
-		.then(function(r){  dialogs.alert("Result:" + r); });
+dialogs.alert("Test").then(function () { dialogs.alert("Test2"); });
+dialogs.alert("Test", { title: "MyAlert", buttonText: "Close" }).then(function () { dialogs.alert("Test2"); });
 
-    dialogs.prompt("Enter something!").then(function(r){  dialogs.alert("Result:" + r); });
-    dialogs.prompt({message:"Enter something?", title: "MyPrompt", okButtonName: "Do it!", 
-		cancelButtonName: "Ignore it!", defaultText : "Enter your password here!" })
-			.then(function(r){  dialogs.alert("Result:" + r); });
+dialogs.confirm("Test?").then(function (r) { dialogs.alert("Result:" + r); });
+dialogs.confirm("Confirm?", { title: "MyConfirm", okButtonText: "Do it!", cancelButtonText: "Ignore it!" })
+    .then(function (r) { dialogs.alert("Result:" + r); });
+dialogs.confirm("Confirm?", {
+    title: "MyConfirm", okButtonText: "Do it!",
+    cancelButtonText: "Ignore it!", otherButtonText: "Not sure!"
+}).then(function (r) { dialogs.alert("Result:" + r); });
+
+dialogs.prompt("Enter something!").then(function (r) { dialogs.alert("Result:" + r.result + ", text:" + r.text); })
+    .fail(function (e) { console.log(e) });
+
+dialogs.prompt("Enter something?", {
+    title: "MyPrompt", okButtonText: "Do it!",
+    cancelButtonText: "Ignore it!", otherButtonText: "Not sure!", defaultText: "Enter your password here!"
+}).then(function (r) { dialogs.alert("Result:" + r.result + " Text:" + r.text); });
 ```
 Custom dialogs:
 ```js
