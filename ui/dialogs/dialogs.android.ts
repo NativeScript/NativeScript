@@ -11,18 +11,18 @@ var STRING = "string",
     OK = "OK",
     CANCEL = "Cancel";
 
-function createAlertDialog(options: dialogs.DialogOptions): android.app.AlertDialog.Builder {
+function createAlertDialog(message: string, options: dialogs.DialogOptions): android.app.AlertDialog.Builder {
     var alert = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
-    alert.setTitle(options.title);
-    alert.setMessage(options.message);
+    alert.setTitle(options && options.title ? options.title : "");
+    alert.setMessage(message);
     return alert;
 }
 
 function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.ConfirmOptions,
     okCallback: Function, cancelCallback?: Function, neutralCallback?: Function): void {
 
-    if (options.okButtonName) {
-        alert.setPositiveButton(options.okButtonName, new android.content.DialogInterface.OnClickListener({
+    if (options.okButtonText) {
+        alert.setPositiveButton(options.okButtonText, new android.content.DialogInterface.OnClickListener({
             onClick: function (dialog: android.content.DialogInterface, id: number) {
                 dialog.cancel();
                 okCallback();
@@ -30,8 +30,8 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
         }));
     }
 
-    if (options.cancelButtonName) {
-        alert.setNegativeButton(options.cancelButtonName, new android.content.DialogInterface.OnClickListener({
+    if (options.cancelButtonText) {
+        alert.setNegativeButton(options.cancelButtonText, new android.content.DialogInterface.OnClickListener({
             onClick: function (dialog: android.content.DialogInterface, id: number) {
                 dialog.cancel();
                 if (cancelCallback) {
@@ -41,8 +41,8 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
         }));
     }
 
-    if (options.otherButtonName) {
-        alert.setNeutralButton(options.otherButtonName, new android.content.DialogInterface.OnClickListener({
+    if (options.otherButtonText) {
+        alert.setNeutralButton(options.otherButtonText, new android.content.DialogInterface.OnClickListener({
             onClick: function (dialog: android.content.DialogInterface, id: number) {
                 dialog.cancel();
                 if (neutralCallback) {
@@ -53,14 +53,12 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
     }
 }
 
-export function alert(arg: any): promises.Promise<void> {
+export function alert(message: string, options = { title: ALERT, buttonText: OK }): promises.Promise<void> {
     var d = promises.defer<void>();
     try {
-        var options = typeof arg === STRING ? { message: arg, title: ALERT, buttonName: OK } : arg
+        var alert = createAlertDialog(message, options);
 
-        var alert = createAlertDialog(options);
-
-        alert.setPositiveButton(options.buttonName, new android.content.DialogInterface.OnClickListener({
+        alert.setPositiveButton(options.buttonText, new android.content.DialogInterface.OnClickListener({
             onClick: function (dialog: android.content.DialogInterface, id: number) {
                 dialog.cancel();
                 d.resolve();
@@ -76,12 +74,10 @@ export function alert(arg: any): promises.Promise<void> {
     return d.promise();
 }
 
-export function confirm(arg: any): promises.Promise<boolean> {
+export function confirm(message: string, options = { title: ALERT, okButtonText: OK, cancelButtonText: CANCEL }): promises.Promise<boolean> {
     var d = promises.defer<boolean>();
     try {
-        var options = typeof arg === STRING ? { message: arg, title: ALERT, okButtonName: OK, cancelButtonName: CANCEL } : arg
-
-        var alert = createAlertDialog(options);
+        var alert = createAlertDialog(message, options);
 
         addButtonsToAlertDialog(alert, options, function () { d.resolve(true); }, function () { d.resolve(false); }, function () { d.resolve(); });
 
@@ -94,12 +90,10 @@ export function confirm(arg: any): promises.Promise<boolean> {
     return d.promise();
 }
 
-export function prompt(arg: any): promises.Promise<dialogs.PromptResult> {
+export function prompt(message: string, options = { title: ALERT, okButtonText: OK, cancelButtonText: CANCEL, defaultText: "" }): promises.Promise<dialogs.PromptResult> {
     var d = promises.defer<dialogs.PromptResult>();
     try {
-        var options = typeof arg === STRING ? { message: arg, title: ALERT, okButtonName: OK, cancelButtonName: CANCEL } : arg
-
-        var alert = createAlertDialog(options);
+        var alert = createAlertDialog(message, options);
 
         var input = new android.widget.EditText(appmodule.android.context);
         input.setText(options.defaultText ? options.defaultText : "");

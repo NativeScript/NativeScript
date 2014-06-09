@@ -7,20 +7,22 @@ import view = require("ui/core/view");
 
 var UIALERTVIEWDELEGATE = "UIAlertViewDelegate",
     STRING = "string",
+    PROMPT = "Prompt",
+    CONFIRM = "Confirm",
     ALERT = "Alert",
     OK = "OK",
     CANCEL = "Cancel";
 
-function createUIAlertView(options: dialogs.DialogOptions): UIKit.UIAlertView {
+function createUIAlertView(message: string, options: dialogs.DialogOptions): UIKit.UIAlertView {
     var alert = new UIKit.UIAlertView();
-    alert.title = options.title;
-    alert.message = options.message;
+    alert.title = options && options.title ? options.title : "";
+    alert.message = message;
     return alert;
 }
 
 function createDelegate(callback) {
     var delegateType = Foundation.NSObject.extends({}, {}).implements({
-        protocol: UIALERTVIEWDELEGATE,
+        protocol: "UIAlertViewDelegate",
         implementation: {
             alertViewClickedButtonAtIndex: function (view, index) {
                 callback(view, index);
@@ -31,28 +33,29 @@ function createDelegate(callback) {
 }
 
 function addButtonsToAlertDialog(alert: UIKit.UIAlertView, options: dialogs.ConfirmOptions): void {
-    if (options.okButtonName) {
-        alert.addButtonWithTitle(options.okButtonName);
+    if (!options)
+        return;
+
+    if (options.okButtonText) {
+        alert.addButtonWithTitle(options.okButtonText);
     }
 
-    if (options.cancelButtonName) {
-        alert.addButtonWithTitle(options.cancelButtonName);
+    if (options.cancelButtonText) {
+        alert.addButtonWithTitle(options.cancelButtonText);
     }
 
-    if (options.otherButtonName) {
-        alert.addButtonWithTitle(options.otherButtonName);
+    if (options.otherButtonText) {
+        alert.addButtonWithTitle(options.otherButtonText);
     }
 }
 
-export function alert(arg: any): promises.Promise<void> {
+export function alert(message: string, options = { title: ALERT, buttonText: OK }): promises.Promise<void> {
     var d = promises.defer<void>();
     try {
-        var options = typeof arg === STRING ? { message: arg, title: ALERT, buttonName: OK } : arg
+        var alert = createUIAlertView(message, options);
 
-        var alert = createUIAlertView(options);
-
-        if (options.buttonName) {
-            alert.addButtonWithTitle(options.buttonName);
+        if (options.buttonText) {
+            alert.addButtonWithTitle(options.buttonText);
         }
 
         // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
@@ -72,12 +75,10 @@ export function alert(arg: any): promises.Promise<void> {
     return d.promise();
 }
 
-export function confirm(arg: any): promises.Promise<boolean> {
+export function confirm(message: string, options  = { title: CONFIRM, okButtonText: OK, cancelButtonText: CANCEL }): promises.Promise<boolean> {
     var d = promises.defer<boolean>();
     try {
-        var options = typeof arg === STRING ? { message: arg, title: ALERT, okButtonName: OK, cancelButtonName: CANCEL } : arg
-
-        var alert = createUIAlertView(options);
+        var alert = createUIAlertView(message, options);
 
         addButtonsToAlertDialog(alert, options);
 
@@ -99,12 +100,10 @@ export function confirm(arg: any): promises.Promise<boolean> {
     return d.promise();
 }
 
-export function prompt(arg: any): promises.Promise<dialogs.PromptResult> {
+export function prompt(message: string, options = { title: PROMPT, okButtonText: OK, cancelButtonText: CANCEL, defaultText: "" }): promises.Promise<dialogs.PromptResult> {
     var d = promises.defer<dialogs.PromptResult>();
     try {
-        var options = typeof arg === STRING ? { message: arg, title: ALERT, okButtonName: OK, cancelButtonName: CANCEL } : arg
-
-        var alert = createUIAlertView(options);
+        var alert = createUIAlertView(message, options);
         alert.alertViewStyle = UIKit.UIAlertViewStyle.UIAlertViewStylePlainTextInput;
 
         addButtonsToAlertDialog(alert, options);
