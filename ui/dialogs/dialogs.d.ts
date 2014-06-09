@@ -22,13 +22,16 @@
     /**
     * The prompt() method displays a dialog box that prompts the visitor for input.
     * @param message The text to display in the dialog box.
+    * @param defaultText The default text to display in the input box.
     * @param options The options for the dialog box. Optional.
     */
     function prompt(message: string, defaultText?: string, options?: PromptOptions): promises.Promise<PromptResult>;
 
     /**
-    * The prompt() method displays a dialog box that prompts the visitor for input.
+    * The login() method displays a login dialog box that prompts the visitor for user name and password.
     * @param message The text to display in the dialog box.
+    * @param userName The default text to display in the user name input box.
+    * @param password The default text to display in the password input box.
     * @param options The options for the dialog box. Optional.
     */
     function login(message: string, userName?: string, password?: string, options?: DialogButtonsOptions): promises.Promise<LoginResult>;
