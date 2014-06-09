@@ -1,23 +1,24 @@
 ﻿Dialogs module. Examples:
 ```js
-dialogs.alert("Test").then(function () { dialogs.alert("Test2"); });
-dialogs.alert("Test", { title: "MyAlert", buttonText: "Close" }).then(function () { dialogs.alert("Test2"); });
+require("globals");
 
-dialogs.confirm("Test?").then(function (r) { dialogs.alert("Result:" + r); });
-dialogs.confirm("Confirm?", { title: "MyConfirm", okButtonText: "Do it!", cancelButtonText: "Ignore it!" })
-    .then(function (r) { dialogs.alert("Result:" + r); });
-dialogs.confirm("Confirm?", {
-    title: "MyConfirm", okButtonText: "Do it!",
-    cancelButtonText: "Ignore it!", otherButtonText: "Not sure!"
-}).then(function (r) { dialogs.alert("Result:" + r); });
+var dialogs = require("ui/dialogs");
+dialogs.alert("Some message").then(function () { dialogs.alert("Alert closed!"); });
+dialogs.alert("Some message", { title: "My custom title", okButtonText: "Close" }).then(function () { dialogs.alert("Alert closed!"); });
 
-dialogs.prompt("Enter something!").then(function (r) { dialogs.alert("Result:" + r.result + ", text:" + r.text); })
-    .fail(function (e) { console.log(e) });
+dialogs.confirm("Some question?").then(function (r) { dialogs.alert("Result: " + r); });
+dialogs.confirm("Some question?", { title: "My custom title", okButtonText: "Yes", cancelButtonText: "No" })
+    .then(function (r) { dialogs.alert("Result: " + r); });
+dialogs.confirm("Some question?", { title: "My custom title", okButtonText: "Yes", cancelButtonText: "No", neutralButtonText: "Not sure" })
+    .then(function (r) { dialogs.alert("Result: " + r); });
 
-dialogs.prompt("Enter something?", {
-    title: "MyPrompt", okButtonText: "Do it!",
-    cancelButtonText: "Ignore it!", otherButtonText: "Not sure!", defaultText: "Enter your password here!"
-}).then(function (r) { dialogs.alert("Result:" + r.result + " Text:" + r.text); });
+dialogs.prompt("Some message")
+    .then(function (r) { dialogs.alert("Boolean result: " + r.result + ", entered text: " + r.text); }).fail(function (e) { console.log(e) });
+
+dialogs.prompt("Some message", "Default text for the input", {
+    title: "My custom title", okButtonText: "Yes",
+    cancelButtonText: "No", neutralButtonText: "Not sure"
+}).then(function (r) { dialogs.alert("Boolean result: " + r.result + ", entered text: " + r.text); });
 ```
 Custom dialogs:
 ```js
