@@ -28,7 +28,7 @@
     */
     interface DialogOptions {
         /**
-          * Gets or sets the alert title.
+          * Gets or sets the dialog title.
           */
         title?: string;
     }
