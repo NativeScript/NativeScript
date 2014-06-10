@@ -145,9 +145,9 @@ export function login(message: string, userName?: string, password?: string,
         var getUserName = function () { return userNameInput.getText().toString(); };
         var getPassword = function () { return passwordInput.getText().toString(); };
 
-        addButtonsToAlertDialog(alert, options, function () { d.resolve({ result: true, userName: getUserName(), password: getPassword() }); },
-            function () { d.resolve({ result: false, userName: getUserName(), password: getPassword() }); },
-            function () { d.resolve({ result: undefined, userName: getUserName(), password: getPassword() }); });
+        addButtonsToAlertDialog(alert, options, function () { d.resolve(getLoginResult(true, getUserName, getPassword)); },
+            function () { d.resolve(getLoginResult(false, getUserName, getPassword)); },
+            function () { d.resolve(getLoginResult(undefined, getUserName, getPassword)); });
 
         alert.show();
 
@@ -156,6 +156,10 @@ export function login(message: string, userName?: string, password?: string,
     }
 
     return d.promise();
+}
+
+function getLoginResult(r: boolean, getUserName: Function, getPassword: Function): dialogs.LoginResult {
+    return { result: r, userName: getUserName(), password: getPassword() };
 }
 
 export class Dialog {
