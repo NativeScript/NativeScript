@@ -19,13 +19,13 @@ function createAlertDialog(message: string, options: dialogs.DialogOptions): and
 }
 
 function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.DialogButtonsOptions,
-    okCallback: Function, cancelCallback?: Function, neutralCallback?: Function): void {
+    callback: Function): void {
 
     if (options.okButtonText) {
         alert.setPositiveButton(options.okButtonText, new android.content.DialogInterface.OnClickListener({
             onClick: function (dialog: android.content.DialogInterface, id: number) {
                 dialog.cancel();
-                okCallback();
+                callback(true);
             }
         }));
     }
@@ -34,9 +34,7 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
         alert.setNegativeButton(options.cancelButtonText, new android.content.DialogInterface.OnClickListener({
             onClick: function (dialog: android.content.DialogInterface, id: number) {
                 dialog.cancel();
-                if (cancelCallback) {
-                    cancelCallback();
-                }
+                callback(false);
             }
         }));
     }
@@ -45,9 +43,7 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
         alert.setNeutralButton(options.neutralButtonText, new android.content.DialogInterface.OnClickListener({
             onClick: function (dialog: android.content.DialogInterface, id: number) {
                 dialog.cancel();
-                if (neutralCallback) {
-                    neutralCallback();
-                }
+                callback(undefined);
             }
         }));
     }
@@ -79,7 +75,7 @@ export function confirm(message: string, options = { title: dialogs_common.CONFI
     try {
         var alert = createAlertDialog(message, options);
 
-        addButtonsToAlertDialog(alert, options, function () { d.resolve(true); }, function () { d.resolve(false); }, function () { d.resolve(); });
+        addButtonsToAlertDialog(alert, options, function (result) { d.resolve(result); });
 
         alert.show();
 
@@ -108,9 +104,7 @@ export function prompt(message: string, defaultText?: string,
 
         var getText = function () { return input.getText().toString(); };
 
-        addButtonsToAlertDialog(alert, options, function () { d.resolve({ result: true, text: getText() }); },
-            function () { d.resolve({ result: false, text: getText() }); },
-            function () { d.resolve({ result: undefined, text: getText() }); });
+        addButtonsToAlertDialog(alert, options, function (r) { d.resolve({ result: r, text: getText() }); });
 
         alert.show();
 
@@ -142,12 +136,13 @@ export function login(message: string, userName?: string, password?: string,
 
         alert.setView(layout);
 
-        var getUserName = function () { return userNameInput.getText().toString(); };
-        var getPassword = function () { return passwordInput.getText().toString(); };
-
-        addButtonsToAlertDialog(alert, options, function () { d.resolve(getLoginResult(true, getUserName, getPassword)); },
-            function () { d.resolve(getLoginResult(false, getUserName, getPassword)); },
-            function () { d.resolve(getLoginResult(undefined, getUserName, getPassword)); });
+        addButtonsToAlertDialog(alert, options, function (r) {
+            d.resolve({
+                result: r,
+                userName: userNameInput.getText().toString(),
+                password: passwordInput.getText().toString()
+            });
+        });
 
         alert.show();
 
@@ -156,10 +151,6 @@ export function login(message: string, userName?: string, password?: string,
     }
 
     return d.promise();
-}
-
-function getLoginResult(r: boolean, getUserName: Function, getPassword: Function): dialogs.LoginResult {
-    return { result: r, userName: getUserName(), password: getPassword() };
 }
 
 export class Dialog {
