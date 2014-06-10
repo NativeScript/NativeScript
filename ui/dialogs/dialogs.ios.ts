@@ -186,6 +186,13 @@ export class Dialog {
     set title(value: string) {
         this.ios.title = value;
     }
+
+    get message(): string {
+        return this.ios.message;
+    }
+    set message(value: string) {
+        this.ios.message = value;
+    }
     /*
     get view(): view.View {
         return this._view;

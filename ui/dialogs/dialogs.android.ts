@@ -157,6 +157,7 @@ export class Dialog {
     private _dialog: android.app.AlertDialog;
     private _android: android.app.AlertDialog.Builder;
     private _title: string;
+    private _message: string;
     //private _view: view.View;
 
     constructor() {
@@ -173,6 +174,14 @@ export class Dialog {
     set title(value: string) {
         this._title = value;
         this.android.setTitle(this._title);
+    }
+
+    get message(): string {
+        return this._message;
+    }
+    set message(value: string) {
+        this._message = value;
+        this.android.setMessage(this._message);
     }
     /*
     get view(): view.View {

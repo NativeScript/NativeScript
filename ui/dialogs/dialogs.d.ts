@@ -133,8 +133,13 @@
         title: string;
 
         /**
+        * Gets or sets dialog message.
+        */
+        message: string;
+
+        /**
         * Gets or sets dialog view.
         */
-        view: view.View;
+        //view: view.View;
     }
 }
