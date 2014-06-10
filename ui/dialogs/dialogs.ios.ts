@@ -172,27 +172,15 @@ export class Dialog {
     //private _view: view.View;
     //private _nativeView: UIKit.UIView;
 
-    constructor() {
-        this._ios = new UIKit.UIAlertView();
+    constructor(message: string, options?: dialogs.DialogButtonsOptions) {
+        this._ios = createUIAlertView(message, options);
+        addButtonsToAlertDialog(this._ios, options);
     }
 
     get ios(): UIKit.UIAlertView {
         return this._ios;
     }
 
-    get title(): string {
-        return this.ios.title;
-    }
-    set title(value: string) {
-        this.ios.title = value;
-    }
-
-    get message(): string {
-        return this.ios.message;
-    }
-    set message(value: string) {
-        this.ios.message = value;
-    }
     /*
     get view(): view.View {
         return this._view;

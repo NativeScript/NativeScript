@@ -21,6 +21,9 @@ function createAlertDialog(message: string, options: dialogs.DialogOptions): and
 function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.DialogButtonsOptions,
     callback: Function): void {
 
+    if (!options)
+        return;
+
     if (options.okButtonText) {
         alert.setPositiveButton(options.okButtonText, new android.content.DialogInterface.OnClickListener({
             onClick: function (dialog: android.content.DialogInterface, id: number) {
@@ -156,33 +159,19 @@ export function login(message: string, userName?: string, password?: string,
 export class Dialog {
     private _dialog: android.app.AlertDialog;
     private _android: android.app.AlertDialog.Builder;
-    private _title: string;
-    private _message: string;
     //private _view: view.View;
 
-    constructor() {
-        this._android = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
+    constructor(message: string, options?: dialogs.DialogButtonsOptions) {
+        this._android = createAlertDialog(message, options);
+        addButtonsToAlertDialog(this.android, options, function (r) {
+
+        });
     }
 
     get android(): android.app.AlertDialog.Builder {
         return this._android;
     }
 
-    get title(): string {
-        return this._title;
-    }
-    set title(value: string) {
-        this._title = value;
-        this.android.setTitle(this._title);
-    }
-
-    get message(): string {
-        return this._message;
-    }
-    set message(value: string) {
-        this._message = value;
-        this.android.setMessage(this._message);
-    }
     /*
     get view(): view.View {
         return this._view;

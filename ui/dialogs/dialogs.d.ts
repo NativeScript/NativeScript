@@ -117,6 +117,7 @@
     }
 
     export class Dialog {
+        constructor(message: string, options?: DialogButtonsOptions);
         /**
         * Shows the dialog.
         */
@@ -126,16 +127,6 @@
         * Hides the dialog.
         */
         hide: () => void;
-
-        /**
-        * Gets or sets dialog title.
-        */
-        title: string;
-
-        /**
-        * Gets or sets dialog message.
-        */
-        message: string;
 
         /**
         * Gets or sets dialog view.
