@@ -121,6 +121,43 @@ export function prompt(message: string, defaultText?: string,
     return d.promise();
 }
 
+export function login(message: string, userName?: string, password?: string,
+    options = { title: dialogs_common.LOGIN, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL }): promises.Promise<dialogs.LoginResult> {
+    var d = promises.defer<dialogs.LoginResult>();
+    try {
+        var context = appmodule.android.context;
+        var alert = createAlertDialog(message, options);
+
+        var userNameInput = new android.widget.EditText(context);
+        userNameInput.setText(userName ? userName : "");
+
+        var passwordInput = new android.widget.EditText(appmodule.android.context);
+        passwordInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        passwordInput.setText(password ? password : "");
+
+        var layout = new android.widget.LinearLayout(context);
+        layout.setOrientation(1);
+        layout.addView(userNameInput);
+        layout.addView(passwordInput);
+
+        alert.setView(layout);
+
+        var getUserName = function () { return userNameInput.getText().toString(); };
+        var getPassword = function () { return passwordInput.getText().toString(); };
+
+        addButtonsToAlertDialog(alert, options, function () { d.resolve({ result: true, userName: getUserName(), password: getPassword() }); },
+            function () { d.resolve({ result: false, userName: getUserName(), password: getPassword() }); },
+            function () { d.resolve({ result: undefined, userName: getUserName(), password: getPassword() }); });
+
+        alert.show();
+
+    } catch (ex) {
+        d.reject(ex);
+    }
+
+    return d.promise();
+}
+
 export class Dialog {
     private _dialog: android.app.AlertDialog;
     private _android: android.app.AlertDialog.Builder;
