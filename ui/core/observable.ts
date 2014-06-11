@@ -24,15 +24,15 @@ export class Observable {
 
     public on: (eventNames: string, callback: (data: EventData) => void) => void;
     public off: (eventNames: string, callback?: any) => void;
-    public addListener: (eventNames: string, callback: (data: EventData) => void) => void;
-    public removeListener: (eventNames: string, callback?: any) => void;
+    public addEventListener: (eventNames: string, callback: (data: EventData) => void) => void;
+    public removeEventListener: (eventNames: string, callback?: any) => void;
 
     // true to track the Changing phase, false otherwise
     private _trackChanging = false;
 
     constructor(body?: any) {
-        this.on = this.addListener = this.addObserver;
-        this.off = this.removeListener = this.removeObserver;
+        this.on = this.addEventListener = this.addObserver;
+        this.off = this.removeEventListener = this.removeObserver;
     }
 
     public addObserver(eventNames: string, callback: (data: EventData) => void) {
