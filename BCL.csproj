@@ -258,6 +258,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\dialogs\index.ts" />
     <TypeScriptCompile Include="ui\dialogs\dialogs-common.ts" />
+    <TypeScriptCompile Include="ui\core\event-manager.ts" />
     <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
