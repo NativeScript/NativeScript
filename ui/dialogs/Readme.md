@@ -51,9 +51,13 @@ Custom dialogs:
 	var dialogs = require("ui/dialogs");
 
 	/// Splash 
-	var d = new dialogs.Dialog();
-	d.title = "Loading..."
+	var d = new dialogs.Dialog("Loading...");
 	d.show();
-
 	setTimeout(function(){ d.hide(); }, 2000);
+
+	//or cancelable
+	var d = new dialogs.Dialog("Loading...", 
+		function(r){ dialogs.alert("You just canceled loading!"); }, { cancelButtonText: "Cancel" });
+	d.show();
+	setTimeout(function(){ d.hide(); }, 10000);
 ```
