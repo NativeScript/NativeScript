@@ -117,7 +117,7 @@
     }
 
     export class Dialog {
-        constructor(message: string, options?: DialogButtonsOptions);
+        constructor(message: string, callback?: (result: boolean) => {}, options?: DialogButtonsOptions);
         /**
         * Shows the dialog.
         */

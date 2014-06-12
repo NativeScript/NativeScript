@@ -172,9 +172,21 @@ export class Dialog {
     //private _view: view.View;
     //private _nativeView: UIKit.UIView;
 
-    constructor(message: string, options?: dialogs.DialogButtonsOptions) {
+    constructor(message: string, callback?: (result: boolean) => {}, options?: dialogs.DialogButtonsOptions) {
         this._ios = createUIAlertView(message, options);
         addButtonsToAlertDialog(this._ios, options);
+
+        // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
+        var delegate = createDelegate(function (view, index) {
+            if (callback) {
+                callback(index === 2 ? undefined : index === 0);
+            }
+            // Remove the local variable for the delegate.
+            delegate = undefined;
+        });
+
+        this._ios.delegate = delegate;
+
     }
 
     get ios(): UIKit.UIAlertView {

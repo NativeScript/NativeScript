@@ -161,10 +161,12 @@ export class Dialog {
     private _android: android.app.AlertDialog.Builder;
     //private _view: view.View;
 
-    constructor(message: string, options?: dialogs.DialogButtonsOptions) {
+    constructor(message: string, callback?: (result: boolean) => {}, options?: dialogs.DialogButtonsOptions) {
         this._android = createAlertDialog(message, options);
         addButtonsToAlertDialog(this.android, options, function (r) {
-
+            if (callback) {
+                callback(r);
+            }
         });
     }
 
