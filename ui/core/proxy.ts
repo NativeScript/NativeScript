@@ -4,6 +4,7 @@ import bindable = require("ui/core/bindable");
 export class ProxyObject extends bindable.Bindable {
     public setPropertyCore(data: observable.PropertyChangeData) {
         this.setNativeProperty(data);
+        this.updateTwoWayBinding(data.propertyName, data.value);
     }
 
     public setNativeProperty(data: observable.PropertyChangeData) {

@@ -338,6 +338,7 @@ declare module android {
 }
 */
 
+
 declare var app;
 declare var telerik;
 declare var gc: () => any;

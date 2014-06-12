@@ -153,14 +153,18 @@
       <DependentUpon>text.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\core\bindable.ts" />
-    <TypeScriptCompile Include="ui\core\index.ts" />
     <TypeScriptCompile Include="ui\core\proxy.ts" />
-    <TypeScriptCompile Include="ui\core\view.android.ts">
-      <DependentUpon>view.d.ts</DependentUpon>
+    <TypeScriptCompile Include="ui\frame\frame-common.ts">
+      <DependentUpon>frame.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\core\view.ios.ts">
-      <DependentUpon>view.d.ts</DependentUpon>
+    <TypeScriptCompile Include="ui\frame\frame.android.ts">
+      <DependentUpon>frame.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\frame\frame.d.ts" />
+    <TypeScriptCompile Include="ui\frame\frame.ios.ts">
+      <DependentUpon>frame.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\frame\index.ts" />
     <TypeScriptCompile Include="ui\image\image.android.ts">
       <DependentUpon>image.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -177,14 +181,22 @@
     <TypeScriptCompile Include="ui\label\label.ios.ts">
       <DependentUpon>label.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\text-input\index.ts" />
-    <TypeScriptCompile Include="ui\text-input\text-input.android.ts">
-      <DependentUpon>text-input.d.ts</DependentUpon>
+    <TypeScriptCompile Include="ui\pages\index.ts" />
+    <TypeScriptCompile Include="ui\pages\page-common.ts">
+      <DependentUpon>page.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\text-input\text-input.ios.ts">
-      <DependentUpon>text-input.d.ts</DependentUpon>
+    <TypeScriptCompile Include="ui\pages\page.android.ts">
+      <DependentUpon>page.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\text-input\text-input.d.ts" />
+    <TypeScriptCompile Include="ui\pages\page.d.ts" />
+    <TypeScriptCompile Include="ui\text-field\index.ts" />
+    <TypeScriptCompile Include="ui\text-field\text-field.android.ts">
+      <DependentUpon>text-field.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\text-field\text-field.d.ts" />
+    <TypeScriptCompile Include="ui\text-field\text-field.ios.ts">
+      <DependentUpon>text-field.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="utils\module-merge.ts" />
     <TypeScriptCompile Include="utils\utils_android.ts" />
     <TypeScriptCompile Include="utils\utils_ios.ts" />
@@ -247,7 +259,7 @@
     <TypeScriptCompile Include="libjs.d.ts" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="ui\core\view.d.ts" />
+    <TypeScriptCompile Include="ui\core\view.ts" />
     <TypeScriptCompile Include="ui\core\observable.ts" />
     <TypeScriptCompile Include="ui\dialogs\dialogs.android.ts">
       <DependentUpon>dialogs.d.ts</DependentUpon>

@@ -1,11 +1,13 @@
 ﻿
 declare module "application" {
+    import frame = require("ui/frame");
+
+    export var rootFrame: frame.Frame;
 
     /**
-    * The main entry point event. This method is expected to return an instance of the root UI for the application.
-    * This will be an Activity extends for Android and a RootViewController for iOS.
+    * The main entry point event. This method is expected to use the root frame to navigate to the main application page.
     */
-    export function onLaunch(): any;
+    export function onLaunch(): void;
 
     /**
     * This method will be called when the Application is suspended.
@@ -85,7 +87,7 @@ declare module "application" {
         * This method is called by the JavaScript Bridge when navigation to a new activity is triggered.
         * The return value of this method should be com.tns.NativeScriptActivity.extends implementation.
         */
-        getActivity: (intent: android.content.Intent) => any;
+        getActivity(intent: android.content.Intent): any;
 
         /**
         * Direct handler of the android.app.Application.ActivityLifecycleCallbacks.onActivityCreated method.

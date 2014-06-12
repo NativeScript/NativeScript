@@ -20,11 +20,7 @@ export class TextInput extends view.View {
             onTextChanged: function (text: string, start: number, before: number, count: number) {
             },
             afterTextChanged: function (editable: android.text.IEditable) {
-                //if (that.hasObservers(observable.Observable.propertyChangeEvent)) {
-                //    var data = that.createPropertyChangeData(TextView.textProperty, that.text);
-                //    that.notify(data);
-                //}
-                that.updateTwoWayBinding("text", editable.toString());
+                that.updateTwoWayBinding(TextInput.textProperty, editable.toString());
             }
         });
         this._android.addTextChangedListener(textWatcher);

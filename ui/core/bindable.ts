@@ -37,6 +37,11 @@ export class Bindable extends observable.Observable {
         }
     }
 
+    public setPropertyCore(data: observable.PropertyChangeData) {
+        super.setPropertyCore(data);
+        this.updateTwoWayBinding(data.propertyName, data.value);
+    }
+
     public getBinding(propertyName: string) {
         return this._bindings[propertyName];
     }

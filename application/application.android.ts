@@ -1,5 +1,6 @@
 ﻿import appModule = require("application/application-common");
 import dts = require("application");
+import frame = require("ui/frame");
 
 // merge the exports of the application_common file with the exports of this file
 declare var exports;
@@ -112,7 +113,7 @@ class AndroidApplication implements dts.AndroidApplication {
     public foregroundActivity: android.app.Activity;
     public startActivity: android.app.Activity;
     public packageName: string;
-    public getActivity: (intent: android.content.Intent) => any;
+    // public getActivity: (intent: android.content.Intent) => any;
 
     public onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
     public onActivityDestroyed: (activity: android.app.Activity) => void;
@@ -128,7 +129,15 @@ class AndroidApplication implements dts.AndroidApplication {
         this.nativeApp = nativeApp;
         this.packageName = nativeApp.getPackageName();
         this.context = nativeApp.getApplicationContext();
-        this.getActivity = undefined;
+    }
+
+    public getActivity(intent: android.content.Intent): any {
+        var currentPage = rootFrame.currentPage;
+        if (!currentPage) {
+            throw new Error("Root frame not navigated to a page.");
+        }
+
+        return currentPage.android.getActivityExtends();
     }
 
     public init() {
@@ -137,3 +146,6 @@ class AndroidApplication implements dts.AndroidApplication {
         this.context = this.nativeApp.getApplicationContext();
     }
 }
+
+// The root frame of the application
+export var rootFrame = new frame.Frame();

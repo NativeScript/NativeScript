@@ -31,6 +31,13 @@ export class Observable {
     private _trackChanging = false;
 
     constructor(body?: any) {
+    	if (body) {
+            for (var key in body) {
+                // TODO: Is this correct
+                this[key] = body[key];
+            }
+        }
+        
         this.on = this.addEventListener = this.addObserver;
         this.off = this.removeEventListener = this.removeObserver;
     }
