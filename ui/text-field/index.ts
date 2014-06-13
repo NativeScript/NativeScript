@@ -1,2 +1,2 @@
 ﻿declare var module, require;
-module.exports = require("ui/text-input/text-input"); 
+module.exports = require("ui/text-field/text-field"); 

@@ -41,8 +41,8 @@ class AndroidPage implements definition.AndroidPage {
     }
 
     public getActivityExtends(): any {
-        if (!this._body) {
-            this.rebuildBody();
+        if (!this._activityExtends) {
+            this.rebuildExtends();
         }
 
         return this._activityExtends;
@@ -53,26 +53,29 @@ class AndroidPage implements definition.AndroidPage {
         this._activityExtends = null;
     }
 
-    private rebuildBody() {
-        var that = this;
-        this._body = {
-            onCreate: function () {
-                that._activity = this;
-                this.super.onCreate(null);
+    private rebuildExtends() {
+        // we may have a body set externally
+        if (!this._body) {
+            var that = this;
+            this._body = {
+                onCreate: function () {
+                    that._activity = this;
+                    this.super.onCreate(null);
 
-                var view = that._ownerPage.contentView;
-                if (view) {
-                    // TODO: Notify the entire visual tree for being initialized
-                    view.onInitialized(that._activity);
-                    that._activity.setContentView(view.android);
+                    var view = that._ownerPage.contentView;
+                    if (view) {
+                        // TODO: Notify the entire visual tree for being initialized
+                        view.onInitialized(that._activity);
+                        that._activity.setContentView(view.android);
+                    }
                 }
             }
-        }
 
-        if (this._ownerPage.onLoaded) {
-            this._body.onStart = function () {
-                this.super.onStart();
-                that._ownerPage.onLoaded();
+            if (this._ownerPage.onLoaded) {
+                this._body.onStart = function () {
+                    this.super.onStart();
+                    that._ownerPage.onLoaded();
+                }
             }
         }
 

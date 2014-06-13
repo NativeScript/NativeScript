@@ -4,7 +4,7 @@ import application = require("application");
 export class View extends proxy.ProxyObject {
     private _parent: Panel;
 
-    public onInitialized(content: android.content.Context) {
+    public onInitialized(context: android.content.Context) {
         // TODO: This is used by Android, rethink this routine
     }
     
@@ -12,6 +12,7 @@ export class View extends proxy.ProxyObject {
         // TODO: Temporary
         if (application.ios && this.ios) {
             native.addSubview(this.ios);
+            this.ios.sizeToFit();
         } else if (application.android && this.android) {
             native.addView(this.android);
         }
@@ -62,6 +63,16 @@ export class Panel extends View {
         this._children = new Array<View>();
     }
 
+    public onInitialized(context: android.content.Context) {
+        super.onInitialized(context);
+
+        // delegate the initialized event to the children
+        var i;
+        for (i = 0; i < this._children.length; i++) {
+            this._children[i].onInitialized(context);
+        }
+    }
+
     public addChild(child: View) {
         // Validate child is not parented
         if (child.parent) {
@@ -96,4 +107,8 @@ export class Panel extends View {
         this._children.splice(index, 1);
         child.onRemovedFromParent();
     }
+}
+
+export class StackPanel extends Panel {
+
 }

@@ -5,7 +5,7 @@ import application = require("application");
 
 export class Frame extends frameCommon.Frame {
     public navigateCore(context: any) {
-        if (this.backStack.length === 0) {
+        if (!this.currentPage) {
             // When navigating for the very first time we do not want to start an activity
             // TODO: Revisit/polish this behavior
             return;
