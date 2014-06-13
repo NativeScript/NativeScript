@@ -31,6 +31,7 @@ export class Button extends view.View {
     public setNativeProperty(data: observable.PropertyChangeData) {
         if (data.propertyName === Button.textProperty) {
             this.ios.setTitleForState(data.value, UIKit.UIControlState.UIControlStateNormal);
+            this.ios.sizeToFit();
         } else if (true) {
             //
         }
