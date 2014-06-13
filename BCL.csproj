@@ -279,6 +279,10 @@
     <TypeScriptCompile Include="ui\button\button.ios.ts">
       <DependentUpon>button.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\slider\index.ts" />
+    <TypeScriptCompile Include="ui\slider\slider.android.ts" />
+    <TypeScriptCompile Include="ui\slider\slider.d.ts" />
+    <TypeScriptCompile Include="ui\slider\slider.ios.ts" />
     <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
