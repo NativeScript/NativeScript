@@ -271,6 +271,14 @@
     <TypeScriptCompile Include="ui\dialogs\index.ts" />
     <TypeScriptCompile Include="ui\dialogs\dialogs-common.ts" />
     <TypeScriptCompile Include="ui\core\event-manager.ts" />
+    <TypeScriptCompile Include="ui\button\index.ts" />
+    <TypeScriptCompile Include="ui\button\button.d.ts" />
+    <TypeScriptCompile Include="ui\button\button.android.ts">
+      <DependentUpon>button.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\button\button.ios.ts">
+      <DependentUpon>button.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />

@@ -55,7 +55,7 @@ Custom dialogs:
 	d.show();
 	setTimeout(function(){ d.hide(); }, 2000);
 
-	//or cancelable
+	//or cancelable loading dialog
 	var d = new dialogs.Dialog("Loading...", 
 		function(r){ dialogs.alert("You just canceled loading!"); }, { cancelButtonText: "Cancel" });
 	d.show();
