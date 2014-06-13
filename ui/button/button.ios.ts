@@ -5,14 +5,16 @@ import application = require("application");
 export class Button extends view.View {
     private static textProperty = "text";
     private _ios: UIKit.UIButton;
+    private _clickHandler: Foundation.NSObject;
 
     constructor() {
         super();
-        this._ios = UIKit.UIButton.buttonWithType(UIKit.UIButtonType.UIButtonTypeRoundedRect);
+        this._ios = UIKit.UIButton.buttonWithType(UIKit.UIButtonType.UIButtonTypeSystem);
 
         var that = this;
-        var target = Foundation.NSObject.extends({ click: (args) => { that.emit("click"); } }, { exposedMethods: { "click:": "v@:@" } });
-        this._ios.addTargetActionForControlEvents(new target(), "click:", UIKit.UIControlEvents.UIControlEventTouchUpInside);
+        var target = Foundation.NSObject.extends({ click: (args) => { that.emit("click"); } }, { exposedMethods: { "click": "v@:@" } });
+        this._clickHandler = new target();
+        this._ios.addTargetActionForControlEvents(this._clickHandler, "click", UIKit.UIControlEvents.UIControlEventTouchUpInside);
     }
 
     get ios(): UIKit.UIButton {
