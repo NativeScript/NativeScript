@@ -9,6 +9,14 @@ export class Switch extends view.View {
     constructor() {
         super();
         this._android = new android.widget.Switch(application.android.currentContext);
+
+        var that = this;
+        this._android.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener({
+            onCheckedChanged: function (sender, isChecked) {
+                that.updateTwoWayBinding(Switch.checkedProperty, sender.isChecked());
+                that.setProperty(Switch.checkedProperty, sender.isChecked());
+            }
+        }));
     }
 
     get android(): android.widget.Switch {
