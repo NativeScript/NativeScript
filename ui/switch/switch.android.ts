@@ -13,8 +13,7 @@ export class Switch extends view.View {
         var that = this;
         this._android.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener({
             onCheckedChanged: function (sender, isChecked) {
-                that.updateTwoWayBinding(Switch.checkedProperty, sender.isChecked());
-                that.setProperty(Switch.checkedProperty, sender.isChecked());
+                that.setProperty(Switch.checkedProperty, isChecked);
             }
         }));
     }

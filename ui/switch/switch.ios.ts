@@ -14,7 +14,6 @@ export class Switch extends view.View {
         var that = this;
         var target = Foundation.NSObject.extends({
             valueChange: (sender: UIKit.UISwitch) => {
-                that.updateTwoWayBinding(Switch.checkedProperty, sender.on);
                 that.setProperty(Switch.checkedProperty, sender.on);
             }
         }, { exposedMethods: { "valueChange": "v@:@" } });
