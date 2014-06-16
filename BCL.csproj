@@ -283,6 +283,14 @@
     <TypeScriptCompile Include="ui\slider\slider.android.ts" />
     <TypeScriptCompile Include="ui\slider\slider.d.ts" />
     <TypeScriptCompile Include="ui\slider\slider.ios.ts" />
+    <TypeScriptCompile Include="ui\switch\switch.d.ts" />
+    <TypeScriptCompile Include="ui\switch\index.ts" />
+    <TypeScriptCompile Include="ui\switch\switch.android.ts">
+      <DependentUpon>switch.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\switch\switch.ios.ts">
+      <DependentUpon>switch.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
