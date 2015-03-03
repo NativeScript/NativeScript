@@ -37,6 +37,7 @@ var MODULES = {
     "TimePicker": "ui/time-picker",
     "DatePicker": "ui/date-picker",
     "ListPicker": "ui/list-picker",
+    "MenuItem": "ui/page",
 };
 
 var ROW = "row";

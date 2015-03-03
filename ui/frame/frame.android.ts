@@ -6,6 +6,7 @@ import observable = require("data/observable");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
 import application = require("application");
+import imageSource = require("image-source");
 
 declare var exports;
 require("utils/module-merge").merge(frameCommon, exports);
@@ -37,6 +38,7 @@ class PageFragmentBody extends android.app.Fragment {
     onCreate(savedInstanceState: android.os.Bundle) {
         super.onCreate(savedInstanceState);
         trace.write(this.getTag() + ".onCreate(); savedInstanceState: " + savedInstanceState, trace.categories.NativeLifecycle);
+        super.setHasOptionsMenu(true);
     }
 
     onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
@@ -131,6 +133,38 @@ class PageFragmentBody extends android.app.Fragment {
     onDetach() {
         super.onDetach();
         trace.write(this.getTag() + ".onDetach();", trace.categories.NativeLifecycle);
+    }
+
+    onCreateOptionsMenu(menu: android.view.IMenu, inflater: android.view.MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        var page: pages.Page = this.entry.resolvedPage;
+        var items = page.optionsMenu.getItems();
+
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            var menuItem = menu.add(android.view.Menu.NONE, i, item.priority, item.text);
+            if (item.icon) {
+                var img = imageSource.fromFile(item.icon);
+                var drawable = new android.graphics.drawable.BitmapDrawable(img.android);
+                menuItem.setIcon(drawable);
+            }
+
+            menuItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS);
+        }
+    }
+
+    onOptionsItemSelected(item: android.view.IMenuItem) {
+        var page: pages.Page = this.entry.resolvedPage;
+        var itemId = item.getItemId();
+
+        var menuItem = page.optionsMenu.getItemAt(itemId);
+        if (menuItem) {
+            menuItem._raiseTap();
+            return true;
+        }
+       
+        super.onOptionsItemSelected(item);
     }
 }
 
@@ -313,6 +347,12 @@ export class Frame extends frameCommon.Frame {
 
     public _clearAndroidReference() {
         // we should keep the reference to underlying native object, since frame can contain many pages.
+    }
+
+    public _invalidateOptionsMenu() {
+        if (this.android && this.android.activity) {
+            this.android.activity.invalidateOptionsMenu();
+        }
     }
 }
 

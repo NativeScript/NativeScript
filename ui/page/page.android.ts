@@ -2,7 +2,8 @@
 import definition = require("ui/page");
 import trace = require("trace");
 
-module.exports.knownEvents = pageCommon.knownEvents;
+declare var exports;
+require("utils/module-merge").merge(pageCommon, exports);
 
 export class Page extends pageCommon.Page {
     private _isBackNavigation = false;

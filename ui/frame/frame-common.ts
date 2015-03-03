@@ -370,6 +370,10 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
     public _removeViewFromNativeVisualTree(child: view.View): void {
         child._isAddedToNativeVisualTree = false;
     }
+
+    public _invalidateOptionsMenu() {
+        // 
+    }
 }
 
 var _topmost = function (): Frame {

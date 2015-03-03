@@ -1,0 +1,9 @@
+<Page loaded="pageLoaded">
+  <Page.optionsMenu>
+    <MenuItem text="test" tap="optionTap"/>
+    <MenuItem text="with icon" tap="optionTap" icon="~/app/test-icon.png"/>
+  </Page.optionsMenu>
+  <StackLayout>
+    <Button text="button" />
+  </StackLayout>
+</Page>

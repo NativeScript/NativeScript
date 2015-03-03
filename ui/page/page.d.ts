@@ -30,10 +30,14 @@ declare module "ui/page" {
         export var navigatedTo: string;
     }
 
+    export module knownCollections {
+        export var optionsMenu: string;
+    }
+
     /**
      * Represents a logical unit for navigation (inside Frame).
      */
-    export class Page extends contentView.ContentView {
+    export class Page extends contentView.ContentView implements view.AddArrayFromBuilder {
 
         constructor(options?: Options)
 
@@ -65,6 +69,11 @@ declare module "ui/page" {
         frame: frame.Frame;
 
         /**
+         * Gets the OptionsMenu for this page.
+         */
+        optionsMenu: OptionsMenu;
+
+        /**
          * A method called before navigating to the page.
          * @param context - The data passed to the page through the NavigationEntry.context property.
          */
@@ -88,7 +97,8 @@ declare module "ui/page" {
         onNavigatedFrom(isBackNavigation: boolean): void;
 
         //@private
-        _getStyleScope(): styleScope.StyleScope
+        _getStyleScope(): styleScope.StyleScope;
+        _addArrayFromBuilder(name: string, value: Array<any>): void;
         //@endprivate
 
         on(event: string, callback: (data: observable.EventData) => void);
@@ -118,4 +128,25 @@ declare module "ui/page" {
          */
         exports?: any;
     }
+
+    export class OptionsMenu {
+        addItem(item: MenuItem): void;
+        removeItem(item: MenuItem): void;
+        getItems(): Array<MenuItem>;
+        getItemAt(index: number): MenuItem;
+    }
+
+    export class MenuItem extends observable.Observable {
+        text: string;
+        icon: string;
+        priority: number;
+
+        on(event: string, callback: (data: observable.EventData) => void);
+        on(event: "tap", callback: (args: observable.EventData) => void);
+
+        //@private
+        _raiseTap();
+        //@endprivate
+    }
 } 
+
