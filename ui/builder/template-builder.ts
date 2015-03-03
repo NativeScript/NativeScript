@@ -1,0 +1,45 @@
+﻿import definition = require("ui/builder/template-builder");
+
+var KNOWNTEMPLATES = "knownTemplates";
+
+export class TemplateBuilder {
+    private _items: Array<string>;
+    private _templateProperty: definition.TemplateProperty;
+
+    constructor(templateProperty: definition.TemplateProperty) {
+        this._items = new Array<string>();
+        this._templateProperty = templateProperty;
+    }
+
+    public get elementName(): string {
+        return this._templateProperty.elementName;
+    }
+
+    public addStartElement(elementName: string, attributes: Object) {
+        this._items.push("<" + elementName + (attributes ? " " + getAttributesAsString(attributes) + ">" : ">"));
+    }
+
+    public addEndElement(elementName: string) {
+        this._items.push("</" + elementName + ">");
+    }
+
+    public build() {
+        if (this._templateProperty.name in this._templateProperty.parent.component) {
+            this._templateProperty.parent.component[this._templateProperty.name] = this._items.join("");
+        }
+    }
+}
+
+export function isKnownTemplate(name: string, exports: any): boolean {
+    return KNOWNTEMPLATES in exports && exports[KNOWNTEMPLATES] && name in exports[KNOWNTEMPLATES];
+}
+
+function getAttributesAsString(attributes: Object): string {
+    var result = [];
+
+    for (var item in attributes) {
+        result.push(item + '="' + attributes[item] + '"');
+    }
+
+    return result.join(" ");
+}

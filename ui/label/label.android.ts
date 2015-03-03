@@ -1,70 +1,44 @@
-﻿import observable = require("ui/core/observable");
-import view = require("ui/core/view");
-import application = require("application");
+﻿import common = require("ui/label/label-common");
+import dependencyObservable = require("ui/core/dependency-observable");
+import proxy = require("ui/core/proxy");
 
-var TEXT = "text";
+function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var label = <Label>data.object;
+    if (!label.android) {
+        return;
+    }
 
-// this is the name of the property to store text locally until attached to a valid Context
-var TEXTPRIVATE = "_text";
+    if (data.newValue) {
+        label.android.setSingleLine(false);
+        label.android.setEllipsize(null);
+    }
+    else {
+        label.android.setSingleLine(true);
+        label.android.setEllipsize(android.text.TextUtils.TruncateAt.END);
+    }
+}
 
-export class Label extends view.View {
+// register the setNativeValue callback
+(<proxy.PropertyMetadata>common.Label.textWrapProperty.metadata).onSetNativeValue = onTextWrapPropertyChanged;
+
+// merge the exports of the common file with the exports of this file
+declare var exports;
+require("utils/module-merge").merge(common, exports);
+
+export class Label extends common.Label {
     private _android: android.widget.TextView;
-
-    constructor() {
-        super();
-    }
-
-    public onInitialized(context: android.content.Context) {
-        if (!this._android) {
-            // TODO: We need to decide whether we will support context switching and if yes - to implement it.
-            this.createUI(context);
-        }
-    }
 
     get android(): android.widget.TextView {
         return this._android;
     }
 
-    get text(): string {
-        if (!this._android) {
-            return this[TEXTPRIVATE];
-        }
-        return this._android.getText().toString();
-    }
-    set text(value: string) {
-        this.setProperty(TEXT, value);
-    }
+    public _createUI() {
+        this._android = new android.widget.TextView(this._context);
 
-    public setNativeProperty(data: observable.PropertyChangeData) {
-        // TODO: Will this be a gigantic if-else switch?
-        if (data.propertyName === TEXT) {
-            if (this._android) {
-                this._android.setText(data.value);
-            } else {
-                this[TEXTPRIVATE] = data.value;
-            }
-        } else if (true) {
-        }
+        // By default, the Android TextView will word-wrap and grow vertically. 
+        // Make it conform to the default value of our textWrap property which is false.
+        // TODO: Think of a more uniform approach of configuring native controls when creating them.
+        this._android.setSingleLine(true);
+        this._android.setEllipsize(android.text.TextUtils.TruncateAt.END);
     }
-
-    private createUI(context: android.content.Context) {
-        this._android = new android.widget.TextView(context);
-        if (this[TEXTPRIVATE]) {
-            this._android.setText(this[TEXTPRIVATE]);
-            delete this[TEXTPRIVATE];
-        }
-
-        // TODO: Do we need to listen for text change here?
-        //var that = this;
-        //var textWatcher = new android.text.TextWatcher({
-        //    beforeTextChanged: function (text: string, start: number, count: number, after: number) {
-        //    },
-        //    onTextChanged: function (text: string, start: number, before: number, count: number) {
-        //    },
-        //    afterTextChanged: function (editable: android.text.IEditable) {
-        //        that.updateTwoWayBinding("text", editable.toString());
-        //    }
-        //});
-        //this._android.addTextChangedListener(textWatcher);
-    }
-} 
+}

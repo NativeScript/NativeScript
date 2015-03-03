@@ -1,0 +1,95 @@
+﻿
+import timer = require("timer");
+import locationManagerModule = require("location/location-manager");
+import defModule = require("location");
+
+// merge the exports of the types module with the exports of this file
+import merger = require("utils/module-merge");
+declare var exports;
+merger.merge(locationManagerModule, exports);
+
+export class Location {
+    public latitude: number;
+    public longitude: number;
+
+    public altitude: number;
+
+    public horizontalAccuracy: number;
+    public verticalAccuracy: number;
+
+    public speed: number; // in m/s ?
+
+    public direction: number; // in degrees
+
+    public timestamp: Date;
+
+    public android: any;  // android Location
+    public ios: any;      // iOS native location
+}
+
+export var getLocation = function (options?: defModule.Options): Promise<defModule.Location> {
+    var timerId;
+    var locationManager = new locationManagerModule.LocationManager();
+
+    if (options && (0 === options.timeout)) {
+        return new Promise<defModule.Location>((resolve, reject) => {
+            var location = locationManager.lastKnownLocation;
+            if (location) {
+                if (options && ("number" === typeof options.maximumAge)) {
+                    if (location.timestamp.valueOf() + options.maximumAge > new Date().valueOf()) {
+                        resolve(location);
+                    }
+                    else {
+                        reject(new Error("timeout is 0 and last known location is older than maximumAge"));
+                    }
+                }
+                else {
+                    resolve(location);
+                }
+            }
+            else {
+                reject(new Error("timeout is 0 and no known location found"));
+            }
+        });
+    }
+
+    return new Promise<defModule.Location>((resolve, reject) => {
+        if (!locationManagerModule.LocationManager.isEnabled()) {
+            return reject(new Error("Location service is disabled"));
+        }
+        locationManager.startLocationMonitoring(function (location: defModule.Location) {
+            if (options && ("number" === typeof options.maximumAge)) {
+                if (location.timestamp.valueOf() + options.maximumAge > new Date().valueOf()) {
+                    locationManager.stopLocationMonitoring();
+                    if ("undefined" !== typeof timerId) {
+                        timer.clearTimeout(timerId);
+                    }
+                    resolve(location);
+                }
+            }
+            else {
+                locationManager.stopLocationMonitoring();
+                if ("undefined" !== typeof timerId) {
+                    timer.clearTimeout(timerId);
+                }
+                resolve(location);
+            }
+        }, function (error: Error) {
+                console.error('Location error received: ' + error);
+                locationManager.stopLocationMonitoring();
+                if ("undefined" !== typeof timerId) {
+                    timer.clearTimeout(timerId);
+                }
+                reject(error);
+            },
+            options
+            );
+
+        if (options && ("number" === typeof options.timeout)) {
+            timerId = timer.setTimeout(function () {
+                locationManager.stopLocationMonitoring();
+                reject(new Error("timeout searching for location"));
+            }, options.timeout);
+        }
+    });
+}

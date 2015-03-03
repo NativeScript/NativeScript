@@ -1,15 +1,32 @@
-﻿import observable = require("ui/core/observable");
+﻿import observable = require("data/observable");
+import definition = require("ui/core/bindable");
+import dependencyObservable = require("ui/core/dependency-observable");
+import weakEventListener = require("ui/core/weak-event-listener");
+import types = require("utils/types");
+import trace = require("trace");
+import polymerExpressions = require("js-libs/polymer-expressions");
 
-export interface BindingOptions {
-    sourceProperty: string;
-    targetProperty: string;
-    twoWay?: boolean;
-}
+var bindingContextProperty = new dependencyObservable.Property(
+    "bindingContext",
+    "Bindable",
+    new dependencyObservable.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.Inheritable) // TODO: Metadata options?
+    );
 
-export class Bindable extends observable.Observable {
+export class Bindable extends dependencyObservable.DependencyObservable implements definition.Bindable {
+
+    public static bindingContextProperty = bindingContextProperty;
+
+    // TODO: Implement with WeakRef to prevent memory leaks.
     private _bindings = {};
 
-    public bind(source: observable.Observable, options: BindingOptions) {
+    get bindingContext(): Object {
+        return this._getValue(Bindable.bindingContextProperty);
+    }
+    set bindingContext(value: Object) {
+        this._setValue(Bindable.bindingContextProperty, value);
+    }
+
+    public bind(options: definition.BindingOptions, source?: Object) {
         var binding: Binding = this._bindings[options.targetProperty];
         if (binding) {
             binding.unbind();
@@ -18,18 +35,24 @@ export class Bindable extends observable.Observable {
         binding = new Binding(this, options);
         this._bindings[options.targetProperty] = binding;
 
-        binding.bind(source);
-    }
-
-    public unbind(options: BindingOptions) {
-        var binding: Binding = this._bindings[options.targetProperty];
-        if (binding) {
-            binding.unbind();
-            delete this._bindings[options.targetProperty];
+        var bindingSource = source;
+        if (!bindingSource) {
+            bindingSource = this.bindingContext;
+        }
+        if (bindingSource) {
+            binding.bind(bindingSource);
         }
     }
 
-    public updateTwoWayBinding(propertyName: string, value: any) {
+    public unbind(property: string) {
+        var binding: Binding = this._bindings[property];
+        if (binding) {
+            binding.unbind();
+            delete this._bindings[property];
+        }
+    }
+
+    public _updateTwoWayBinding(propertyName: string, value: any) {
         var binding: Binding = this._bindings[propertyName];
 
         if (binding) {
@@ -37,42 +60,117 @@ export class Bindable extends observable.Observable {
         }
     }
 
-    public setPropertyCore(data: observable.PropertyChangeData) {
-        super.setPropertyCore(data);
-        this.updateTwoWayBinding(data.propertyName, data.value);
+    public _setCore(data: observable.PropertyChangeData) {
+        super._setCore(data);
+        this._updateTwoWayBinding(data.propertyName, data.value);
     }
 
-    public getBinding(propertyName: string) {
-        return this._bindings[propertyName];
+    public _onPropertyChanged(property: dependencyObservable.Property, oldValue: any, newValue: any) {
+        trace.write("Bindable._onPropertyChanged(" + this + ") " + property.name, trace.categories.Binding);
+        super._onPropertyChanged(property, oldValue, newValue);
+
+        if (property === Bindable.bindingContextProperty) {
+            this._onBindingContextChanged(oldValue, newValue);
+        }
+
+        var binding = this._bindings[property.name];
+        if (binding) {
+            // we should remove (unbind and delete) binding if binding is oneWay and update is not triggered
+            // by binding itself. 
+            var shouldRemoveBinding = !binding.updating && !binding.options.twoWay;
+            if (shouldRemoveBinding) {
+                trace.write("_onPropertyChanged(" + this + ") removing binding for property: " + property.name, trace.categories.Binding);
+                this.unbind(property.name);
+            }
+            else {
+                trace.write("_updateTwoWayBinding(" + this + "): " + property.name, trace.categories.Binding);
+                this._updateTwoWayBinding(property.name, newValue);
+            }
+        }
     }
 
-    private clearBinding(binding: Binding) {
-        binding.unbind();
+    public _onBindingContextChanged(oldValue: any, newValue: any) {
+        var binding: Binding;
+        for (var p in this._bindings) {
+            binding = this._bindings[p];
+
+            if (binding.options.targetProperty === Bindable.bindingContextProperty.name && binding.updating) {
+                // Updating binding context trough binding should not rebind the binding context.
+                continue;
+            }
+
+            if (binding.source && binding.source.get() !== oldValue) {
+                // Binding has its source set directly, not through binding context, do not bind/unbind in this case
+                continue;
+            }
+
+            trace.write(
+                "Binding target: " + binding.target.get() +
+                " targetProperty: " + binding.options.targetProperty +
+                " to the changed context: " + newValue, trace.categories.Binding);
+            binding.unbind();
+            if (newValue) {
+                binding.bind(newValue);
+            }
+        }
     }
 }
 
-class Binding {
-    options: BindingOptions;
+export class Binding {
+    options: definition.BindingOptions;
     updating = false;
-    source: observable.Observable;
-    target: Bindable;
-    callback: (data: observable.PropertyChangeData) => void;
+    source: WeakRef<Object>;
+    target: WeakRef<Bindable>;
+    weakEventListenerOptions: weakEventListener.WeakEventListenerOptions;
 
-    constructor(target: Bindable, options: BindingOptions) {
-        this.target = target;
+    weakEL = weakEventListener.WeakEventListener;
+
+    private sourceOptions: { instance: WeakRef<any>; property: any };
+    private targetOptions: { instance: WeakRef<any>; property: any };
+
+    constructor(target: Bindable, options: definition.BindingOptions) {
+        this.target = new WeakRef(target);
         this.options = options;
     }
 
-    public bind(obj: observable.Observable) {
-        this.source = obj;
-        this.updateTarget(this.source.getProperty(this.options.sourceProperty));
-
-        var that = this;
-        this.callback = function (data: observable.PropertyChangeData) {
-            that.onSourcePropertyChanged(data);
+    public bind(obj: Object) {
+        if (!obj) {
+            throw new Error("Expected valid object reference as a source in the Binding.bind method.");
         }
 
-        this.source.addObserver(observable.Observable.propertyChangeEvent, this.callback);
+        /* tslint:disable */
+        if (typeof (obj) === "number") {
+            obj = new Number(obj);
+        }
+
+        if (typeof (obj) === "boolean") {
+            obj = new Boolean(obj);
+        }
+
+        if (typeof (obj) === "string") {
+            obj = new String(obj);
+        }
+        /* tslint:enable */
+
+        this.source = new WeakRef(obj);
+        this.updateTarget(this.getSourceProperty());
+
+        if (!this.sourceOptions) {
+            this.sourceOptions = this.resolveOptions(this.source, this.options.sourceProperty);
+        }
+
+        var sourceOptionsInstance = this.sourceOptions.instance.get();
+        if (sourceOptionsInstance instanceof observable.Observable) {
+            this.weakEventListenerOptions = {
+                targetWeakRef: this.target,
+                sourceWeakRef: this.sourceOptions.instance,
+                eventName: observable.knownEvents.propertyChange,
+                handler: this.onSourcePropertyChanged,
+                handlerContext: this,
+                key: this.options.targetProperty
+            }
+            this.weakEL.addWeakEventListener(this.weakEventListenerOptions);
+        }
     }
 
     public unbind() {
@@ -80,9 +178,12 @@ class Binding {
             return;
         }
 
-        this.source.removeObserver(observable.Observable.propertyChangeEvent, this.callback);
-        this.source = undefined;
-        this.target = undefined;
+        this.weakEL.removeWeakEventListener(this.weakEventListenerOptions);
+        this.weakEventListenerOptions = undefined;
+        this.source.clear();
+        this.sourceOptions.instance.clear();
+        this.sourceOptions = undefined;
+        this.targetOptions = undefined;
     }
 
     public updateTwoWay(value: any) {
@@ -91,31 +192,118 @@ class Binding {
         }
     }
 
-    public onSourcePropertyChanged(data: observable.PropertyChangeData) {
-        if (data.propertyName !== this.options.sourceProperty) {
-            return;
+    private _isExpression(expression: string): boolean {
+        return expression.indexOf(" ") !== -1;
+    }
+
+    private _getExpressionValue(expression: string): any {
+        var exp = polymerExpressions.PolymerExpressions.getExpression(expression);
+        if (exp) {
+            return exp.getValue(this.source && this.source.get && this.source.get() || global);
         }
 
-        this.updateTarget(data.value);
+        return undefined;
+    }
+
+    public onSourcePropertyChanged(data: observable.PropertyChangeData) {
+        if (this._isExpression(this.options.sourceProperty)) {
+            this.updateTarget(this._getExpressionValue(this.options.sourceProperty));
+        } else if (data.propertyName === this.options.sourceProperty) {
+            this.updateTarget(data.value);
+        }
+    }
+
+    private getSourceProperty() {
+        if (this._isExpression(this.options.sourceProperty)) {
+            return this._getExpressionValue(this.options.sourceProperty);
+        }
+
+        if (!this.sourceOptions) {
+            this.sourceOptions = this.resolveOptions(this.source, this.options.sourceProperty);
+        }
+
+        var value;
+
+        var sourceOptionsInstance = this.sourceOptions.instance.get();
+        if (sourceOptionsInstance instanceof observable.Observable) {
+            value = sourceOptionsInstance.get(this.sourceOptions.property);
+        } else if (sourceOptionsInstance && this.sourceOptions.property &&
+            this.sourceOptions.property in sourceOptionsInstance) {
+            value = sourceOptionsInstance[this.sourceOptions.property];
+        }
+
+        return value;
     }
 
     private updateTarget(value: any) {
-        if (this.updating) {
+        if (this.updating || (!this.target || !this.target.get())) {
             return;
         }
 
-        this.updating = true;
-        this.target.setProperty(this.options.targetProperty, value);
-        this.updating = false;
+        if (!this.targetOptions) {
+            this.targetOptions = this.resolveOptions(this.target, this.options.targetProperty);
+        }
+
+        this.updateOptions(this.targetOptions, value);
     }
 
     private updateSource(value: any) {
-        if (this.updating) {
+        if (this.updating || (!this.source || !this.source.get())) {
             return;
         }
 
+        if (!this.sourceOptions) {
+            this.sourceOptions = this.resolveOptions(this.source, this.options.sourceProperty);
+        }
+
+        this.updateOptions(this.sourceOptions, value);
+    }
+
+    private resolveOptions(obj: WeakRef<any>, property: string): { instance: any; property: any } {
+        var options;
+
+        if (!this._isExpression(property) && types.isString(property) && property.indexOf(".") !== -1) {
+            var properties = property.split(".");
+
+            var i: number;
+            var currentObject = obj.get();
+
+            for (i = 0; i < properties.length - 1; i++) {
+                currentObject = currentObject[properties[i]];
+            }
+
+            options = {
+                instance: new WeakRef(currentObject),
+                property: properties[properties.length - 1]
+            }
+
+        } else {
+            options = {
+                instance: obj,
+                property: property
+            }
+        }
+
+        return options;
+    }
+
+    private updateOptions(options: { instance: WeakRef<any>; property: any }, value: any) {
         this.updating = true;
-        this.source.setProperty(this.options.sourceProperty, value);
+        var optionsInstance = options.instance.get();
+
+        try {
+            if (optionsInstance instanceof observable.Observable) {
+                optionsInstance.set(options.property, value);
+            } else {
+                optionsInstance[options.property] = value;
+            }
+        }
+        catch (ex) {
+            trace.write("Binding error while setting property " + options.property + " of " + optionsInstance + ": " + ex,
+                trace.categories.Binding,
+                trace.messageType.error);
+        }
+
         this.updating = false;
     }
 }

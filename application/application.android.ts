@@ -1,12 +1,15 @@
 ﻿import appModule = require("application/application-common");
 import dts = require("application");
 import frame = require("ui/frame");
+import types = require("utils/types");
 
 // merge the exports of the application_common file with the exports of this file
 declare var exports;
 require("utils/module-merge").merge(appModule, exports);
 
 var callbacks = android.app.Application.ActivityLifecycleCallbacks;
+
+export var mainModule: string;
 
 // We are using the exports object for the common events since we merge the appModule with this module's exports, which is what users will receive when require("application") is called;
 // TODO: This is kind of hacky and is "pure JS in TypeScript"
@@ -93,18 +96,17 @@ var initEvents = function () {
     return lifecycleCallbacks;
 }
 
-var initialized;
-export var init = function (nativeApp: android.app.Application) {
-    if (initialized) {
-        return;
+app.init({
+    getActivity: function (intent: android.content.Intent) {
+        return exports.android.getActivity(intent);
+    },
+
+    onCreate: function () {
+        var androidApp = new AndroidApplication(this);
+        exports.android = androidApp;
+        androidApp.init();
     }
-
-    var app = new AndroidApplication(nativeApp);
-    exports.android = app;
-    app.init();
-
-    initialized = true;
-}
+});
 
 class AndroidApplication implements dts.AndroidApplication {
     public nativeApp: android.app.Application;
@@ -113,6 +115,7 @@ class AndroidApplication implements dts.AndroidApplication {
     public foregroundActivity: android.app.Activity;
     public startActivity: android.app.Activity;
     public packageName: string;
+    public hasActionBar: boolean;
     // public getActivity: (intent: android.content.Intent) => any;
 
     public onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
@@ -123,21 +126,81 @@ class AndroidApplication implements dts.AndroidApplication {
     public onActivityStopped: (activity: android.app.Activity) => void;
     public onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
 
+    public onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void;
+
     private _eventsToken: any;
 
+    //private _initialized: boolean;
+    
     constructor(nativeApp: any) {
         this.nativeApp = nativeApp;
         this.packageName = nativeApp.getPackageName();
         this.context = nativeApp.getApplicationContext();
     }
 
-    public getActivity(intent: android.content.Intent): any {
-        var currentPage = rootFrame.currentPage;
-        if (!currentPage) {
-            throw new Error("Root frame not navigated to a page.");
+    //private setupUI() {
+    //    // TODO: We probably don't need this flag if onCreate is going to be called once.
+    //    if (!this._initialized) {
+    //        this._initialized = true;
+    //        if (mainModule && mainModule !== "") {
+    //            var mainPage = require(mainModule).Page;
+
+    //            if (mainPage instanceof page.Page) {
+    //                this._rootView.addView(<android.view.View>mainPage.android);
+    //                // TODO: We need to show ActionBar if there are any toolBar items
+    //                // or if navigation page - showNavigationBar is true
+
+    //                var showActionBar = false;
+    //                if (mainPage instanceof page.TabbedPage) {
+    //                    showActionBar = true;
+    //                    this.startActivity.getActionBar().NavigationMode = android.app.ActionBar.NAVIGATION_MODE_TABS;
+    //                }
+    //                else if (mainPage instanceof page.NavigationPage) {
+    //                    showActionBar = (<page.NavigationPage>mainPage).showActionBar;
+    //                    this.startActivity.getActionBar().NavigationMode = android.app.ActionBar.NAVIGATION_MODE_STANDARD;
+    //                }
+
+    //                if (showActionBar) {
+    //                    this.startActivity.getActionBar().show();
+    //                }
+    //                else {
+    //                    this.startActivity.getActionBar().hide();
+    //                }
+    //            }
+    //            else {
+    //                // TODO: Throw exception when/if we remove Page/Frame support.
+    //            }
+    //        }
+    //    }
+    //}
+
+    public getActivity(intent: android.content.Intent): Object {
+        if (intent && intent.Action === android.content.Intent.ACTION_MAIN) {
+            // application's main activity
+            if (exports.onLaunch) {
+                exports.onLaunch(intent);
+            }
+
+            /* In the onLaunch event we expect the following setup, which ensures a root frame:
+            * var frame = require("ui/frame");
+            * var rootFrame = new frame.Frame();
+            * rootFrame.navigate({ pageModuleName: "mainPage" });
+            */
         }
 
-        return currentPage.android.getActivityExtends();
+        var topFrame = frame.topmost();
+        if (!topFrame) {
+            // try to navigate to the mainModule (if specified)
+            if (mainModule) {
+                topFrame = new frame.Frame();
+                topFrame.navigate(mainModule);
+            } else {
+                // TODO: Throw an exception?
+                throw new Error("A Frame must be used to navigate to a Page.");
+            }
+        }
+
+        return topFrame.android.onActivityRequested(intent);
     }
 
     public init() {
@@ -147,5 +210,20 @@ class AndroidApplication implements dts.AndroidApplication {
     }
 }
 
-// The root frame of the application
-export var rootFrame = new frame.Frame();
+global.__onUncaughtError = function (error: Error) {
+    if (!types.isFunction(exports.onUncaughtError)) {
+        return;
+    }
+
+    var nsError = {
+        message: error.message,
+        name: error.name,
+        nativeError: (<any>error).nativeException
+    }
+
+    exports.onUncaughtError(nsError);
+}
+
+exports.start = function () {
+    dts.loadCss();
+}

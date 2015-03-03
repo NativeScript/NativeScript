@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page>
+  <ScrollView>
+    <StackLayout>
+      <Label cssClass="title" text="Layouts" />
+      <StackLayout>
+        <Button tag="layouts/stack-layout" text="StackLayout" tap="itemTap" />
+        <Button tag="layouts/grid-layout" text="GridLayout" tap="itemTap" />
+        <Button tag="layouts/wrap-layout" text="WrapLayout" tap="itemTap" />
+        <Button tag="layouts/dock-layout" text="DockLayout" tap="itemTap" />
+        <Button tag="layouts/absolute-layout" text="AbsoluteLayout" tap="itemTap" />
+      </StackLayout>
+
+      <Label cssClass="title" text="Content" />
+      <StackLayout>
+        <Button tag="content/tab-view" text="TabView" tap="itemTap" />
+        <Button tag="content/web-view" text="WebView" tap="itemTap" />
+        <Button tag="content/scroll-view" text="ScrollView" tap="itemTap" />
+      </StackLayout>
+
+      <Label cssClass="title" text="Views" />
+      <StackLayout>
+        <Button tag="views/button" text="Button" tap="itemTap" />
+        <Button tag="views/label" text="Label" tap="itemTap" />
+        <Button tag="views/text-field" text="TextField" tap="itemTap" />
+        <Button tag="views/text-view" text="TextView" tap="itemTap" />
+        <Button tag="views/switch" text="Switch" tap="itemTap" />
+        <Button tag="views/slider" text="Slider" tap="itemTap" />
+        <Button tag="views/progress" text="Progress" tap="itemTap" />
+        <Button tag="views/activity-indicator" text="ActivityIndicator" tap="itemTap" />
+        <Button tag="views/image" text="Image" tap="itemTap" />
+        <Button tag="views/search-bar" text="SearchBar" tap="itemTap" />
+        <Button tag="views/list-view" text="ListView" tap="itemTap" />
+        <Button tag="views/dialogs" text="Dialogs" tap="itemTap" />
+      </StackLayout>
+    </StackLayout>
+  </ScrollView>
+</Page>

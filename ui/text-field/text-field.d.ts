@@ -1,7 +1,48 @@
-﻿declare module "ui/text-field" {
-    import view = require("ui/core/view");
+﻿/**
+ * Contains the TextField class, which represents an editable single-line box.
+ */
+declare module "ui/text-field" {
+    import editableTextBase = require("ui/editable-text-base");
 
-    export class TextField extends view.View {
-        public text: string;
+    /**
+     * Represents an editable text field.
+     */
+    export class TextField extends editableTextBase.EditableTextBase {
+        constructor(options?: editableTextBase.Options);
+        
+        /**
+         * Gets the native [android widget](http://developer.android.com/reference/android/widget/EditText.html) that represents the user interface for this component. Valid only when running on Android OS.
+         */
+        android: android.widget.EditText;
+
+        /**
+         * Gets the native iOS [UITextField](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextField_Class/) that represents the user interface for this component. Valid only when running on iOS.
+         */
+        ios: UITextField;
+
+        /**
+         * Gets or sets the text of a text field hint/placeholder.
+         */
+        hint: string;
+
+        /**
+         * Gets or sets if a text field is for password entry.
+         */
+        secure: boolean;
+    }
+
+    /**
+     * Defines interface for an optional parameter used to create a editable-text-base component.
+     */
+    export interface Options extends editableTextBase.Options {
+        /**
+         * Gets or sets the text of a text field hint/placeholder.
+         */
+        hint?: string;
+
+        /**
+         * Gets or sets if a text field is for password entry.
+         */
+        secure?: boolean;
     }
 } 

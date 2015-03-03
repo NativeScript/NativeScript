@@ -1,44 +1,58 @@
-﻿
-import observable = require("ui/core/observable");
-import view = require("ui/core/view");
-import application = require("application");
-import imageSource = require("image-source");
+﻿import imageCommon = require("ui/image/image-common");
+import dependencyObservable = require("ui/core/dependency-observable");
+import proxy = require("ui/core/proxy");
+import enums = require("ui/enums");
 
-export class Image extends view.View {
-    private static sourceProperty = "source";
-    private _source: imageSource.ImageSource;
-    private _android: android.widget.ImageView;
+// merge the exports of the common file with the exports of this file
+declare var exports;
+require("utils/module-merge").merge(imageCommon, exports);
 
-    constructor() {
-        super();
-
-        // TODO: Verify that this is always true
-        var context = application.android.currentContext;
-        if (!context) {
-            // TODO: Delayed loading?
-        }
-
-        this._android = new android.widget.ImageView(context);
-
+function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var image = <Image>data.object;
+    if (!image.android) {
+        return;
     }
+
+    switch (data.newValue) {
+        case enums.Stretch.aspectFit:
+            image.android.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+            break;
+        case enums.Stretch.aspectFill:
+            image.android.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+            break;
+        case enums.Stretch.fill:
+            image.android.setScaleType(android.widget.ImageView.ScaleType.FIT_XY);
+            break;
+        case enums.Stretch.none:
+        default:
+            image.android.setScaleType(android.widget.ImageView.ScaleType.MATRIX);
+            break;
+    }
+}
+
+function onSourcePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var image = <Image>data.object;
+    if (!image.android) {
+        return;
+    }
+
+    if (image.android) {
+        image.android.setImageBitmap(data.newValue ? data.newValue.android : null);
+    }
+}
+
+// register the setNativeValue callback
+(<proxy.PropertyMetadata>imageCommon.Image.sourceProperty.metadata).onSetNativeValue = onSourcePropertyChanged;
+(<proxy.PropertyMetadata>imageCommon.Image.stretchProperty.metadata).onSetNativeValue = onStretchPropertyChanged;
+
+export class Image extends imageCommon.Image {
+    private _android: android.widget.ImageView;
 
     get android(): android.widget.ImageView {
         return this._android;
     }
 
-    get source(): imageSource.ImageSource {
-        return this._source;
-    }
-
-    set source(value: imageSource.ImageSource) {
-        this.setProperty(Image.sourceProperty, value);
-    }
-
-    public setNativeProperty(data: observable.PropertyChangeData) {
-        if (data.propertyName === Image.sourceProperty) {
-            this._source = data.value;
-            this._android.setImageBitmap(data.value.android);
-        } else if (true) {
-        }
+    public _createUI() {
+        this._android = new android.widget.ImageView(this._context);
     }
 }

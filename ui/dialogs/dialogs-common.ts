@@ -7,16 +7,16 @@
     CANCEL = "Cancel";
 
 /**
-* Defines the input type for prompt dialog.
-*/
-export enum InputType {
+ * Defines the input type for prompt dialog.
+ */
+export module inputType {
     /**
-    * Plain text input type.
-    */
-    PlainText,
+     * Plain text input type.
+     */
+    export var text: string = "text";
 
     /**
-    * Password input type.
-    */
-    Password
+     * Password input type.
+     */
+    export var password: string = "password";
 }

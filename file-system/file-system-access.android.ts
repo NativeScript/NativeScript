@@ -1,5 +1,6 @@
 ﻿import appModule = require("application");
 import textModule = require("text");
+import types = require("utils/types");
 
 export class FileSystemAccess {
     private _pathSeparator = java.io.File.separator.toString();
@@ -83,8 +84,6 @@ export class FileSystemAccess {
         var file = new java.io.File(path);
         var exists = file.exists();
         var dir = file.isDirectory();
-        var isFile = file.isFile();
-        var hidden = file.isHidden();
 
         // return file.exists() && file.getCanonicalFile().isDirectory();
         return exists && dir;
@@ -218,7 +217,7 @@ export class FileSystemAccess {
         return dir.getAbsolutePath();
     }
 
-    public readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: string) {
+    public readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: any) {
         try {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileInputStream(javaFile);
@@ -236,7 +235,7 @@ export class FileSystemAccess {
             var result = "";
             while (true) {
                 line = bufferedReader.readLine();
-                if (!line) {
+                if (types.isUndefined(line)) {
                     break;
                 }
 
@@ -247,6 +246,11 @@ export class FileSystemAccess {
                 }
 
                 result += line;
+            }
+
+            if (actualEncoding === textModule.encoding.UTF_8) {
+                // Remove UTF8 BOM if present. http://www.rgagnon.com/javadetails/java-handle-utf8-file-with-bom.html
+                result = FileSystemAccess._removeUtf8Bom(result);
             }
 
             bufferedReader.close();
@@ -261,7 +265,16 @@ export class FileSystemAccess {
         }
     }
 
-    public writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: string) {
+    private static _removeUtf8Bom(s: string): string {
+        if (s.charCodeAt(0) === 0xFEFF) {
+            s = s.slice(1);
+            //console.log("Removed UTF8 BOM.");
+        }
+
+        return s;
+    }
+
+    public writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: any) {
         try {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileOutputStream(javaFile);
@@ -365,11 +378,10 @@ export class FileSystemAccess {
             }
 
             var filesList = javaFile.listFiles();
-            var length = filesList.length,
-                i,
-                filePath,
-                info,
-                retVal;
+            var length = filesList.length;
+            var i;
+            var info;
+            var retVal;
 
             for (i = 0; i < length; i++) {
                 javaFile = filesList[i];

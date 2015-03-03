@@ -1,0 +1,2 @@
+﻿{ "name" : "NavigationMemoryLeakTest",
+  "main" : "app.js" }

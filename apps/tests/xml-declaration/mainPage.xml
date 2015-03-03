@@ -1,0 +1,53 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="MyPageLoaded"
+      xmlns:customControls="app/xml-declaration/mymodule"
+      xmlns:customControls2="app/xml-declaration/mymodulewithxml">
+  <TabView>
+    <TabView.items>
+      <TabEntry title="Tab 1">
+        <TabEntry.view>
+          <StackLayout>
+            <ListPicker items="{{ someItems }}" selectedIndex="3"/>
+            <DatePicker year="1976" month="10" day="30" />
+            <TimePicker hour="10" minute="34" />
+            <Image id="cameraImage" />
+            <Button tap="setPicture" text="Get picture and set is to the image" />
+            <Border cornerRadius="10" borderWidth="1" borderColor="#FF0000">
+              <Button text="{{ text }}" tap="{{ myFunction }}" />
+            </Border>
+            <Label id="Label1" text="This is Label!" />
+            <StackLayout orientation="horizontal">
+              <Label text="From expression {{ id + 1 }}: " />
+              <Label text="{{ id + 1 }}" />
+              <customControls:MyControl>
+                <Label text="This is test!" />
+              </customControls:MyControl>
+            </StackLayout>
+            <StackLayout orientation="horizontal">
+              <Label text="From sub prop {{ subObj.subId + 1 }}: " />
+              <Label text="{{ subObj.subId + 1 }}" />
+            </StackLayout>
+            <Button text="This is Button!" tap="buttonTap" />
+            <customControls:MyControl />
+          </StackLayout>
+        </TabEntry.view>
+      </TabEntry>
+      <TabEntry title="Tab 2">
+        <TabEntry.view>
+          <StackLayout>
+            <customControls2:MyControl />
+            <Label text="This is Label in Tab 2" />
+          </StackLayout>
+        </TabEntry.view>
+      </TabEntry>
+      <TabEntry title="Tab 3">
+        <TabEntry.view>
+          <GridLayout columns="50, auto, *" rows="50, auto, *">
+            <Label text="This is Label in Tab 3"  row="0" />
+            <Label text="This is second Label in Tab 3" row="1" />
+            <customControls:MyControl />
+          </GridLayout>
+        </TabEntry.view>
+      </TabEntry>
+    </TabView.items>
+  </TabView>
+</Page>

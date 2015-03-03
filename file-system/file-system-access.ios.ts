@@ -1,21 +1,20 @@
-﻿import app_module = require("application");
-import utilsModule = require("utils/utils_ios");
+﻿import utilsModule = require("utils/utils");
 import textModule = require("text");
 
 // TODO: Implement all the APIs receiving callback using async blocks
 // TODO: Check whether we need try/catch blocks for the iOS implementation
 
 export class FileSystemAccess {
-    private keyFileType = "NSFileType";
+    //private keyFileType = "NSFileType";
+    //private keyReadonly = "NSFileImmutable";
+    //private NSUTF8StringEncoding = 4;
     private keyModificationTime = "NSFileModificationDate";
-    private keyReadonly = "NSFileImmutable";
     private documentDir = 9;
     private cachesDir = 13;
     private userDomain = 1;
-    private NSUTF8StringEncoding = 4;
 
     public getLastModified(path: string): Date {
-        var fileManager = Foundation.NSFileManager.defaultManager();
+        var fileManager = NSFileManager.defaultManager();
         var attributes = fileManager.attributesOfItemAtPathError(path, null);
 
         if (attributes) {
@@ -31,10 +30,10 @@ export class FileSystemAccess {
 
     public getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
         try {
-            var fileManager = Foundation.NSFileManager.defaultManager();
-            var nsString = Foundation.NSString.initWithString(path);
+            var fileManager = NSFileManager.defaultManager();
+            var nsString = NSString.alloc().initWithString(path);
 
-            var parentPath = nsString.stringByDeletingLastPathComponent();
+            var parentPath = nsString.stringByDeletingLastPathComponent;
             var name = fileManager.displayNameAtPath(parentPath);
 
             return {
@@ -53,7 +52,7 @@ export class FileSystemAccess {
 
     public getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string } {
         try {
-            var fileManager = Foundation.NSFileManager.defaultManager();
+            var fileManager = NSFileManager.defaultManager();
             var exists = fileManager.fileExistsAtPath(path);
 
             if (!exists) {
@@ -67,7 +66,7 @@ export class FileSystemAccess {
             }
 
             var fileName = fileManager.displayNameAtPath(path);
-            
+
             return {
                 path: path,
                 name: fileName,
@@ -85,7 +84,7 @@ export class FileSystemAccess {
 
     public getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
         try {
-            var fileManager = Foundation.NSFileManager.defaultManager();
+            var fileManager = NSFileManager.defaultManager();
             var exists = this.folderExists(path);
 
             if (!exists) {
@@ -100,7 +99,7 @@ export class FileSystemAccess {
             }
 
             var dirName = fileManager.displayNameAtPath(path);
-            
+
             return {
                 path: path,
                 name: dirName
@@ -143,7 +142,7 @@ export class FileSystemAccess {
             errorOccurred = true;
         }
 
-        this.enumEntities(path, onEntity, onError);
+        this.enumEntities(path, onEntity, localError);
 
         if (!errorOccurred) {
             onSuccess(fileInfos);
@@ -151,27 +150,23 @@ export class FileSystemAccess {
     }
 
     public fileExists(path: string): boolean {
-        var fileManager = Foundation.NSFileManager.defaultManager();
+        var fileManager = NSFileManager.defaultManager();
         return fileManager.fileExistsAtPath(path);
     }
 
     public folderExists(path: string): boolean {
-        var fileManager = Foundation.NSFileManager.defaultManager();
+        var fileManager = NSFileManager.defaultManager();
 
-        var buffer = NativePointer.create(PrimitiveType.BOOL, 1);
-        var exists = fileManager.fileExistsAtPathIsDirectory(path, buffer);
+        var outVal = new interop.Reference();
+        var exists = fileManager.fileExistsAtPathIsDirectory(path, outVal);
 
-        var isDir = buffer[0] && buffer[0] > 0;
-
-        buffer.delete();
-
-        return exists && isDir;
+        return exists && outVal.value > 0;
     }
 
     public concatPath(left: string, right: string): string {
         // TODO: This probably is not efficient, we may try concatenation with the "/" character
-        var nsArray = utilsModule.Collections.jsArrayToNSArray([left, right]);
-        var nsString = Foundation.NSString.pathWithComponents(nsArray);
+        var nsArray = utilsModule.ios.collections.jsArrayToNSArray([left, right]);
+        var nsString = NSString.pathWithComponents(nsArray);
 
         return nsString.toString();
     }
@@ -185,7 +180,7 @@ export class FileSystemAccess {
     }
 
     public emptyFolder(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
-        var fileManager = Foundation.NSFileManager.defaultManager();
+        var fileManager = NSFileManager.defaultManager();
 
         var filesEnum = function (files: Array<{ path: string; name: string; extension: string }>) {
             var i;
@@ -208,7 +203,7 @@ export class FileSystemAccess {
     }
 
     public rename(path: string, newPath: string, onSuccess?: () => any, onError?: (error: any) => any) {
-        var fileManager = Foundation.NSFileManager.defaultManager();
+        var fileManager = NSFileManager.defaultManager();
         if (!fileManager.moveItemAtPathToPathError(path, newPath, null)) {
             if (onError) {
                 onError(new Error("Failed to rename '" + path + "' to '" + newPath + "'"));
@@ -226,13 +221,13 @@ export class FileSystemAccess {
         return this.getKnownPath(this.cachesDir);
     }
 
-    public readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: string) {
+    public readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: any) {
         var actualEncoding = encoding;
         if (!actualEncoding) {
             actualEncoding = textModule.encoding.UTF_8;
         }
 
-        var nsString = Foundation.NSString.stringWithContentsOfFileEncodingError(path, actualEncoding, null);
+        var nsString = NSString.stringWithContentsOfFileEncodingError(path, actualEncoding, null);
         if (!nsString) {
             if (onError) {
                 onError(new Error("Failed to read file at path '" + path + "'"));
@@ -242,8 +237,8 @@ export class FileSystemAccess {
         }
     }
 
-    public writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: string) {
-        var nsString = Foundation.NSString.initWithString(content);
+    public writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: any) {
+        var nsString = NSString.alloc().initWithString(content);
 
         var actualEncoding = encoding;
         if (!actualEncoding) {
@@ -261,11 +256,11 @@ export class FileSystemAccess {
     }
 
     private getKnownPath(folderType: number): string {
-        var fileManager = Foundation.NSFileManager.defaultManager();
+        var fileManager = NSFileManager.defaultManager();
         var paths = fileManager.URLsForDirectoryInDomains(folderType, this.userDomain);
 
         var url = paths.objectAtIndex(0);
-        return url.path();
+        return url.path;
     }
 
     // TODO: This method is the same as in the iOS implementation. 
@@ -289,7 +284,7 @@ export class FileSystemAccess {
     }
 
     private deleteEntity(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
-        var fileManager = Foundation.NSFileManager.defaultManager();
+        var fileManager = NSFileManager.defaultManager();
         if (!fileManager.removeItemAtPathError(path, null)) {
             if (onError) {
                 onError(new Error("Failed to delete file at path '" + path + "'"));
@@ -303,7 +298,7 @@ export class FileSystemAccess {
 
     private enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {
         try {
-            var fileManager = Foundation.NSFileManager.defaultManager();
+            var fileManager = NSFileManager.defaultManager();
             var files = fileManager.contentsOfDirectoryAtPathError(path, null);
 
             if (!files) {
@@ -314,14 +309,12 @@ export class FileSystemAccess {
                 return;
             }
 
-            var fileInfos = new Array<{ path: string; name: string; extension: string }>();
-            var file,
-                i,
-                info,
-                retVal;
+            var file;
+            var i;
+            var info;
+            var retVal;
 
-
-            for (i = 0; i < files.count(); i++) {
+            for (i = 0; i < files.count; i++) {
                 file = files.objectAtIndex(i);
 
                 info = {
@@ -352,14 +345,14 @@ export class FileSystemAccess {
     }
 
     public normalizePath(path: string): string {
-        var nsString: Foundation.NSString = Foundation.NSString.stringWithString(path);
-        var normalized = nsString.stringByStandardizingPath();
+        var nsString: NSString = NSString.stringWithString(path);
+        var normalized = nsString.stringByStandardizingPath;
 
         return normalized;
     }
 
     public joinPath(left: string, right: string): string {
-        var nsString: Foundation.NSString = Foundation.NSString.stringWithString(left);
+        var nsString: NSString = NSString.stringWithString(left);
         return nsString.stringByAppendingPathComponent(right);
     }
 
@@ -368,14 +361,14 @@ export class FileSystemAccess {
             return "";
         }
 
-        var nsArray = new Foundation.NSMutableArray(paths.length);
+        var nsArray = NSMutableArray.alloc().initWithCapacity(paths.length);
 
         var i;
         for (i = 0; i < paths.length; i++) {
             nsArray.addObject(paths[i]);
         }
 
-        var nsString = Foundation.NSString.stringWithString(Foundation.NSString.pathWithComponents(nsArray));
-        return nsString.stringByStandardizingPath();
+        var nsString = NSString.stringWithString(NSString.pathWithComponents(nsArray));
+        return nsString.stringByStandardizingPath;
     }
 }

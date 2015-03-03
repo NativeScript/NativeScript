@@ -1,3 +1,20 @@
 # generated files
 *.map
+.baseDir.ts
+.sublime-grunt.cache
+tscommand*.tmp.txt
+.tscache
 *.js
+
+node_modules/
+dist/
+
+!gruntfile.js
+!js-libs/**/*.*
+CrossPlatformModules.sln.ide/
+*.suo
+CrossPlatformModules.suo
+CrossPlatformModules.v14.suo
+CrossPlatformModules.csproj.user
+bin/
+obj/

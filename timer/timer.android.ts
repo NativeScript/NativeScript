@@ -1,6 +1,6 @@
 ﻿/**
-  * Android specific timer functions implementation.
-  */
+ * Android specific timer functions implementation.
+ */
 var timeoutHandler;
 var timeoutCallbacks = {};
 
@@ -18,7 +18,10 @@ export function setTimeout(callback: Function, milliseconds = 0): number {
     var runnable = new java.lang.Runnable({
         run: () => {
             callback();
-            timeoutCallbacks[id] = null;
+
+            if (timeoutCallbacks && timeoutCallbacks[id]) {
+                timeoutCallbacks[id] = null;
+            }
         }
     });
 
@@ -40,11 +43,12 @@ export function clearTimeout(id: number): void {
 
 export function setInterval(callback: Function, milliseconds = 0): number {
     var id = createHadlerAndGetId();
+    var handler = timeoutHandler;
 
     var runnable = new java.lang.Runnable({
         run: () => {
             callback();
-            timeoutHandler.postDelayed(runnable, long(milliseconds));
+            handler.postDelayed(runnable, long(milliseconds));
         }
     });
 

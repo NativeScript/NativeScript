@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Element xmlns="http://a-default"
+         xmlns:a1="http://a1"
+         xmlns:a2="http://a2"
+         xmlns:duplicate="http://a-duplicate"
+         expected-namespace="http://a-default">
+  <Element expected-namespace="http://a-default"/>
+  <a1:Element expected-namespace="http://a1"/>
+  <a2:Element expected-namespace="http://a2"/>
+  <Element xmlns="http://b-default"
+           xmlns:b1="http://b1"
+           xmlns:b2="http://b2"
+           xmlns:duplicate="http://b-duplicate"
+           expected-namespace="http://b-default">
+    <Element expected-namespace="http://b-default"/>
+    <b1:Element expected-namespace="http://b1"/>
+    <b2:Element expected-namespace="http://b2"/>
+    <duplicate:Element expected-namespace="http://b-duplicate"/>
+  </Element>
+</Element>

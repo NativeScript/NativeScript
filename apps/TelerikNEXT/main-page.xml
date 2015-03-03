@@ -1,0 +1,84 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd"
+  loaded="pageLoaded" xmlns:tsb="app/TelerikUI/side-bar">
+  <tsb:SideBar title="TelerikNEXT">
+    <tsb:SideBar.slideContent>
+      <StackLayout style="background-color: white">
+        <Border style="background-color: gray">
+          <Label>
+            <Label.formattedText>
+              <FormattedString fontSize="26" foregroundColor="#FFFFFF">
+                <FormattedString.spans>
+                  <Span text="TelerikNEXT" />
+                </FormattedString.spans>
+              </FormattedString>
+            </Label.formattedText>
+          </Label>
+        </Border>
+
+        <Button text="My agenda" horizontalAlignment="left" />
+        <Button text="Explore all sessions" horizontalAlignment="left" />
+        <Button text="About" horizontalAlignment="left"/>
+
+      </StackLayout>
+    </tsb:SideBar.slideContent>
+
+    <tsb:SideBar.mainContent>
+      <GridLayout rows="auto, auto, *">
+
+        <SegmentedBar selectedIndex="{{ selectedIndex }}" >
+          <SegmentedBar.items>
+            <SegmentedBarEntry title="MAY 3" />
+            <SegmentedBarEntry title="MAY 4" />
+            <SegmentedBarEntry title="MAY 5" />
+          </SegmentedBar.items>
+        </SegmentedBar>
+        
+        <StackLayout style="background-color: #fac950;padding: 5;" row="1">
+          <SearchBar text="{{ search }}" />
+        </StackLayout>
+
+        <ListView items="{{ sessions }}" row="2">
+          <ListView.itemTemplate>
+            <GridLayout columns="*, auto" style.backgroundColor="{{ canBeFavorited ? '#ffffff' : '#fffbf0' }}">
+              <StackLayout>
+
+                <Label>
+                  <Label.formattedText>
+                    <FormattedString fontSize="18" foregroundColor="#a17201">
+                      <FormattedString.spans>
+                        <Span text="{{ 'Time: ' }}" />
+                        <Span text="{{ range }}" fontAttributes="Bold" />
+                      </FormattedString.spans>
+                    </FormattedString>
+                  </Label.formattedText>
+                </Label>
+
+                <Label text="{{ room ? 'Room: ' + room : '' }}">
+                  <Label.formattedText>
+                    <FormattedString  fontSize="12" foregroundColor="#a17201">
+                      <FormattedString.spans>
+                        <Span text="{{  room ? 'Room: ' : '' }}" />
+                        <Span text="{{ room }}" fontAttributes="Bold" />
+                      </FormattedString.spans>
+                    </FormattedString>
+                  </Label.formattedText>
+                </Label>
+
+                <Label text="{{ title }}" textWrap="true" cssClass="title" />
+
+              </StackLayout>
+
+              <Image url="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}" style.visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}"
+                         tap="toggleFavorite" width="32" height="32" col="1" vertical-align="center"/>
+
+            </GridLayout>
+          </ListView.itemTemplate>
+        </ListView>
+
+      </GridLayout>
+    </tsb:SideBar.mainContent>
+  </tsb:SideBar>
+
+
+
+</Page>

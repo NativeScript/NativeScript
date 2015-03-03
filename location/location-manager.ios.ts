@@ -1,7 +1,57 @@
-﻿import types = require("location/location-types");
+﻿import enums = require("ui/enums");
+import locationModule = require("location");
+
+class LocationListenerImpl extends NSObject implements CLLocationManagerDelegate {
+    public static ObjCProtocols = [CLLocationManagerDelegate];
+
+    static new(): LocationListenerImpl {
+        return <LocationListenerImpl>super.new();
+    }
+
+    private _onLocation: (location: locationModule.Location) => any;
+    private _onError: (error: Error) => any
+    private _options: locationModule.Options;
+    private _maximumAge: number;
+
+    public initWithLocationErrorOptions(location: (location: locationModule.Location) => any, error?: (error: Error) => any, options?: locationModule.Options): LocationListenerImpl {
+        this._onLocation = location;
+        
+        if (error) {
+            this._onError = error;
+        }
+
+        if (options) {
+            this._options = options;
+        }
+
+        this._maximumAge = (this._options && ("number" === typeof this._options.maximumAge)) ? this._options.maximumAge : undefined;
+
+        return this;
+    }
+
+    public locationManagerDidUpdateLocations(manager, locations): void {
+        for (var i = 0; i < locations.count; i++) {
+            var location = LocationManager._locationFromCLLocation(locations.objectAtIndex(i));
+            if (this._maximumAge) {
+                if (location.timestamp.valueOf() + this._maximumAge > new Date().valueOf()) {
+                    this._onLocation(location);
+                }
+            }
+            else {
+                this._onLocation(location);
+            }
+        }
+    }
+
+    public locationManagerDidFailWithError(manager, error): void {
+        // console.error('location error received ' + error.localizedDescription);
+        if (this._onError) {
+            this._onError(new Error(error.localizedDescription));
+        }
+    }
+}
 
 export class LocationManager {
-
     // in meters
     // we might need some predefined values here like 'any' and 'high'
     public desiredAccuracy: number;
@@ -9,13 +59,11 @@ export class LocationManager {
     // The minimum distance (measured in meters) a device must move horizontally before an update event is generated.
     public updateDistance: number;
 
-    public isStarted: boolean;
-
-    private iosLocationManager: CoreLocation.CLLocationManager;
+    private iosLocationManager: CLLocationManager;
     private listener: any;
 
-    private static locationFromCLLocation(clLocation: CoreLocation.CLLocation): types.Location {
-        var location = new types.Location();
+    public static _locationFromCLLocation(clLocation: CLLocation): locationModule.Location {
+        var location = new locationModule.Location();
         location.latitude = clLocation.coordinate.latitude;
         location.longitude = clLocation.coordinate.longitude;
         location.altitude = clLocation.altitude;
@@ -23,33 +71,35 @@ export class LocationManager {
         location.verticalAccuracy = clLocation.verticalAccuracy;
         location.speed = clLocation.speed;
         location.direction = clLocation.course;
-        location.timestamp = new Date(clLocation.timestamp.timeIntervalSince1970() * 1000);
+        location.timestamp = new Date(clLocation.timestamp.timeIntervalSince1970 * 1000);
         location.ios = clLocation;
         //console.dump(location);
         return location;
     }
 
-    private static iosLocationFromLocation(location: types.Location): CoreLocation.CLLocation {
+    private static iosLocationFromLocation(location: locationModule.Location): CLLocation {
         var hAccuracy = location.horizontalAccuracy ? location.horizontalAccuracy : -1;
         var vAccuracy = location.verticalAccuracy ? location.verticalAccuracy : -1;
         var speed = location.speed ? location.speed : -1;
         var course = location.direction ? location.direction : -1;
         var altitude = location.altitude ? location.altitude : -1;
-        var timestamp = location.timestamp ? Foundation.NSDate.dateWithTimeIntervalSince1970(location.timestamp.getTime()) : null;
-        var iosLocation = CoreLocation.CLLocation.initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(CoreLocation.CLLocationCoordinate2DMake(location.latitude, location.longitude), altitude, hAccuracy, vAccuracy, course, speed, timestamp);
+        var timestamp = location.timestamp ? NSDate.dateWithTimeIntervalSince1970(location.timestamp.getTime()) : null;
+        var iosLocation = CLLocation.alloc().initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(CLLocationCoordinate2DMake(location.latitude, location.longitude), altitude, hAccuracy, vAccuracy, course, speed, timestamp);
         return iosLocation;
     }
 
     public static isEnabled(): boolean {
-        if (CoreLocation.CLLocationManager.locationServicesEnabled()) {
-            //return CoreLocation.CLLocationManager.authorizationStatus() === CoreLocation.CLAuthorizationStatus.kCLAuthorizationStatusAuthorized;
-            // FIXME: issue reported https://github.com/telerik/Kimera/issues/122
-            return true;
+        if (CLLocationManager.locationServicesEnabled()) {
+            // CLAuthorizationStatus.kCLAuthorizationStatusAuthorizedWhenInUse and CLAuthorizationStatus.kCLAuthorizationStatusAuthorizedAlways are options that are available in iOS 8.0+
+            // while CLAuthorizationStatus.kCLAuthorizationStatusAuthorized is here to support iOS 8.0-.
+            return (CLLocationManager.authorizationStatus() === CLAuthorizationStatus.kCLAuthorizationStatusAuthorizedWhenInUse 
+                || CLLocationManager.authorizationStatus() === CLAuthorizationStatus.kCLAuthorizationStatusAuthorizedAlways
+                || CLLocationManager.authorizationStatus() === CLAuthorizationStatus.kCLAuthorizationStatusAuthorized);
         }
         return false;
     }
 
-    public static distance(loc1: types.Location, loc2: types.Location): number {
+    public static distance(loc1: locationModule.Location, loc2: locationModule.Location): number {
         if (!loc1.ios) {
             loc1.ios = LocationManager.iosLocationFromLocation(loc1);
         }
@@ -60,87 +110,40 @@ export class LocationManager {
     }
 
     constructor() {
-        this.isStarted = false;
-        this.desiredAccuracy = types.Accuracy.ANY;
-        this.updateDistance = -1; // kCLDistanceFilterNone
-        this.iosLocationManager = new CoreLocation.CLLocationManager();
+        this.desiredAccuracy = enums.Accuracy.any;
+        this.updateDistance = kCLDistanceFilterNone;
+        this.iosLocationManager = new CLLocationManager();
     }
 
-    // monitoring
-    public startLocationMonitoring(onLocation: (location: types.Location) => any, onError?: (error: Error) => any, options?: types.Options) {
-        if (!this.isStarted) {
-            var LocationListener = Foundation.NSObject.extends({
-                setupWithFunctions: function (onLocation, onError) {
-                    this.onLocation = onLocation;
-                    this.onError = onError;
-
-                    this.maximumAge = (options && ("number" === typeof options.maximumAge)) ? options.maximumAge : undefined;
-                }
-
-            }, {}).implements({
-
-                protocol: "CLLocationManagerDelegate",
-
-                implementation: {
-                    locationManagerDidUpdateLocations: function (manager, locations) {
-                        //console.log('location received: ' + locations.count());
-                        for (var i = 0; i < locations.count(); i++) {
-                            var location = LocationManager.locationFromCLLocation(locations.objectAtIndex(i));
-                            if (this.maximumAge) {
-                                if (location.timestamp.valueOf() + this.maximumAge > new Date().valueOf()) {
-                                    this.onLocation(location);
-                                }
-                            }
-                            else {
-                                this.onLocation(location);
-                            }
-                        }
-                    },
-
-                    locationManagerDidFailWithError: function (manager, error) {
-                        console.error('location error received ' + error.localizedDescription());
-                        if (this.onError) {
-                            this.onError(new Error(error.localizedDescription()));
-                        }
-                    }
-                }
-            });
-
+    public startLocationMonitoring(onLocation: (location: locationModule.Location) => any, onError?: (error: Error) => any, options?: locationModule.Options) {
+        if (!this.listener) {
             if (options) {
-                if (options.desiredAccuracy)
+                if (options.desiredAccuracy) {
                     this.desiredAccuracy = options.desiredAccuracy;
-                if (options.updateDistance)
+                }
+                if (options.updateDistance) {
                     this.updateDistance = options.updateDistance;
+                }
             }
 
-            this.listener = new LocationListener();
-            this.listener.setupWithFunctions(onLocation, onError);
+            this.listener = LocationListenerImpl.new().initWithLocationErrorOptions(onLocation, onError, options);
             this.iosLocationManager.delegate = this.listener;
             this.iosLocationManager.desiredAccuracy = this.desiredAccuracy;
             this.iosLocationManager.distanceFilter = this.updateDistance;
             this.iosLocationManager.startUpdatingLocation();
-            this.isStarted = true;
-        }
-        else if (onError) {
-            onError(new Error('location monitoring already started'));
         }
     }
 
     public stopLocationMonitoring() {
-        if (this.isStarted) {
-            this.iosLocationManager.stopUpdatingLocation();
-            this.iosLocationManager.delegate = null;
-            this.listener = null;
-            this.isStarted = false;
-        }
+        this.iosLocationManager.stopUpdatingLocation();
+        this.iosLocationManager.delegate = null;
+        this.listener = null;
     }
 
-    // other
-
-    get lastKnownLocation(): types.Location {
+    get lastKnownLocation(): locationModule.Location {
         var clLocation = this.iosLocationManager.location;
-        if (null != clLocation) {
-            return LocationManager.locationFromCLLocation(clLocation);
+        if (clLocation) {
+            return LocationManager._locationFromCLLocation(clLocation);
         }
         return null;
     }

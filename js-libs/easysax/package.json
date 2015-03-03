@@ -1,0 +1,38 @@
+{
+  "name": "easysax",
+  "description": "pure javascript xml parser",
+  "keywords": [
+    "xml",
+    "sax",
+    "parser",
+    "pure"
+  ],
+  "version": "0.1.14",
+  "main": "easysax.js",
+  "bugs": {
+    "url": "https://github.com/vflash/easysax/issues"
+  },
+  "author": {
+    "name": "Vopilovskiy Konstantin",
+    "email": "flash.vkv@gmail.com",
+    "url": "http://vflash.ru"
+  },
+  "files": [
+    "easysax.js",
+    "LICENSE",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vflash/easysax"
+  },
+  "readme": "EASYSAX - pure javascript sax-style parser for xml\r\n==================================================\r\nПростой и быстрый SAX парсер XML файлов.\r\nРеализован по принципу парсить только то что нужно и как можно быстрее.\r\nПарсер не потоковый, и не расчитан на гиганские файлы. Весь XML должен быть в памяти.\r\nВстроенный уникальный механизм работы с пространсвами имен.\r\n\r\n\r\nПарсер был написан для RSS ридера http://zzreader.com\r\nНа конец 2012 года остается самым быстрым SAX парсером под NODE.JS\r\n\r\n\r\n\r\nBENCHMARK\r\n---------------------------------------------------\r\n\r\n**benchmark/test.js, parse file #1**\r\n```\r\nsax-js: 12671ms\r\nlibxmljs: 11311ms\r\nexpat: 6118ms\r\nexpat buffer: 5278ms\r\neasysax : 1739ms  //  namespace--on, attr()--on , entity_decode--on\r\neasysax: 1035ms   //  namespace--off, attr()--on , entity_decode--on\r\neasysax: 740ms    //  namespace--off, attr()--off , entity_decode--off\r\n```\r\n\r\n\r\n**benchmark/test.js, parse file #2 (много атрибутов)**\r\n```\r\nsax-js: 84060ms\r\nlibxmljs: 48919ms\r\nexpat: 39444ms\r\nexpat buffer: 35375ms\r\neasysax: 14655ms  //  namespace--on, attr()--on , entity_decode--on\r\neasysax: 9874ms   //  namespace--off, attr()--on , entity_decode--on\r\neasysax: 3531ms   //  namespace--off, attr()--off , entity_decode--on\r\neasysax: 2954ms   //  namespace--off, attr()--off , entity_decode--off\r\n```\r\n\r\n\r\n**demo/example.js, parse file #2**\r\n```\r\n1,000 pages for: 13335ms -  attr()--all\r\n1,000 pages for: 7300ms  -  attr()--on_request\r\n```\n",
+  "readmeFilename": "README.md",
+  "homepage": "https://github.com/vflash/easysax",
+  "_id": "easysax@0.1.14",
+  "dist": {
+    "shasum": "ef7f6f92dfbbf68306ec3bfa1c707a9d8d959d1e"
+  },
+  "_from": "easysax@",
+  "_resolved": "https://registry.npmjs.org/easysax/-/easysax-0.1.14.tgz"
+}

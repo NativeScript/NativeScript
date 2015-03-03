@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page>
+  <StackLayout>
+    <Button text="alert" tap="alertTapped"/>
+    <Button text="confirm" tap="confirmTapped"/>
+    <Button text="prompt" tap="promptTapped"/>
+    <Button text="login" tap="loginTapped"/>
+  </StackLayout>
+</Page>

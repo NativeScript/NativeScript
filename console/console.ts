@@ -1,10 +1,13 @@
 import helperModule = require("console/console-native");
+import definition = require("console");
 
-export class Console {
+export class Console implements definition.Console {
     private _timers: any;
+    private _stripFirstTwoLinesRegEx: RegExp;
 
     constructor() {
         this._timers = {};
+        this._stripFirstTwoLinesRegEx = /^([^\n]*?\n){2}((.|\n)*)$/gmi;
     }
 
     private sprintf(message: any) {
@@ -124,7 +127,7 @@ export class Console {
                 minWidth = 0;
             } else if (minWidth === '*') {
                 minWidth = +a[i++];
-            } else if (minWidth.charAt(0) == '*') {
+            } else if (minWidth.charAt(0) === '*') {
                 minWidth = +a[minWidth.slice(1, -1)];
             } else {
                 minWidth = +minWidth;
@@ -144,7 +147,7 @@ export class Console {
                 precision = 'fFeE'.indexOf(type) > -1 ? 6 : (type === 'd') ? 0 : undefined;
             } else if (precision === '*') {
                 precision = +a[i++];
-            } else if (precision.charAt(0) == '*') {
+            } else if (precision.charAt(0) === '*') {
                 precision = +a[precision.slice(1, -1)];
             } else {
                 precision = +precision;
@@ -282,18 +285,11 @@ export class Console {
     }
 
     public trace(): void {
-        var callstack = [];
-        var currentFunction = arguments.callee.caller;
-        while (currentFunction) {
-            var fn = currentFunction.toString();
-            var fname = fn.substring(fn.indexOf('function') + 8, fn.indexOf('{')).trim() || 'anonymous';
-            if ('()' === fname) {
-                fname = 'anonymous';
-            }
-            callstack.push(fname);
-            currentFunction = currentFunction.caller;
-            this.log(callstack.join('\n'));
-        }
+        var stack: string;
+        stack = (<any>(new Error())).stack.toString();
+        stack = stack.replace(this._stripFirstTwoLinesRegEx, "$2");
+        stack = "Stack Trace:\n" + stack;
+        this.log(stack);
     }
 
     public dump(obj: any): void {
@@ -301,7 +297,7 @@ export class Console {
             this.log("=== dump(): object is 'null' ===");
             return;
         }
-        if ("undefined" == typeof obj) {
+        if ("undefined" === typeof obj) {
             this.log("=== dump(): object is 'undefined' ===");
             return;
         }
@@ -310,7 +306,7 @@ export class Console {
         result.push('=== dump(): dumping function names ===');
         for (var id in obj) {
             try {
-                if (typeof (obj[id]) == 'function') {
+                if (typeof (obj[id]) === 'function') {
                     result.push(id + '()');
                 }
             } catch (err) {

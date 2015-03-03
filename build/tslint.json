@@ -1,0 +1,81 @@
+{
+    "rules": {
+        "class-name": true,
+        "curly": true,
+        "forin": false,
+        "indent": true,
+        "jsdoc-format": true,
+        "max-line-length": [false, 120],
+        "no-arg": true,
+        "no-consecutive-blank-lines": true,
+        "no-construct": true,
+        "no-debugger": true,
+        "no-duplicate-key": true,
+        "triple-equals": [true, "allow-null-check"],
+        "variable-name": [false, "allow-leading-underscore"],
+        "no-empty": true,
+        "no-eval": true,
+		"no-unused-variable": [true],
+		"no-duplicate-variable": true,
+
+"CONSIDER THE FOLLOWING ONE": false,
+        "no-bitwise": false,
+        "no-string-literal": false,
+        "no-switch-case-fall": false,
+        "no-trailing-comma": false,
+        "no-trailing-whitespace": false,
+        "no-unreachable": false,
+        "no-unused-expression": false,
+        "no-use-before-declare": false,
+        "no-var-requires": false,
+        "one-line": [false,
+            "check-open-brace",
+            "check-catch",
+            "check-else",
+            "check-whitespace"
+        ],
+        "quotemark": [false, "double"],
+        "radix": false,
+        "semicolon": false,
+        "typedef": [false,
+            "callSignature",
+            "indexSignature",
+            "parameter",
+            "propertySignature",
+            "variableDeclarator",
+            "memberVariableDeclarator"
+        ],
+        "typedef-whitespace": [false,
+            "callSignature",
+            "catchClause",
+            "indexSignature"
+        ],
+        "use-strict": [false,
+            "check-module",
+            "check-function"
+        ],
+        "whitespace": [false,
+            "check-branch",
+            "check-decl",
+            "check-operator",
+            "check-separator",
+            "check-type"
+        ],
+        
+
+
+
+
+
+
+        "THESE WERE DEFINED IN JSHINT": false,
+
+        "bitwise":true,
+        "undef":true,
+        "unused":true,
+        "strict":true,
+        "indent":4,
+        "quotmark":"single",
+        "node":true
+    }
+}

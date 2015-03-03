@@ -1,39 +1,45 @@
-﻿import observable = require("ui/core/observable");
-import view = require("ui/core/view");
-import application = require("application");
+﻿import common = require("ui/switch/switch-common");
+import dependencyObservable = require("ui/core/dependency-observable");
+import proxy = require("ui/core/proxy");
 
-export class Switch extends view.View {
-    private static checkedProperty = "checked";
-    private _android: android.widget.Switch;
-
-    constructor() {
-        super();
-        this._android = new android.widget.Switch(application.android.currentContext);
-
-        var that = this;
-        this._android.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener({
-            onCheckedChanged: function (sender, isChecked) {
-                that.setProperty(Switch.checkedProperty, isChecked);
-            }
-        }));
+function onCheckedPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var swtch = <Switch>data.object;
+    if (!swtch.android) {
+        return;
     }
+
+    swtch.android.setChecked(data.newValue);
+}
+
+// register the setNativeValue callbacks
+(<proxy.PropertyMetadata>common.Switch.checkedProperty.metadata).onSetNativeValue = onCheckedPropertyChanged;
+
+// merge the exports of the common file with the exports of this file
+declare var exports;
+require("utils/module-merge").merge(common, exports);
+
+export class Switch extends common.Switch {
+    private _android: android.widget.Switch;
 
     get android(): android.widget.Switch {
         return this._android;
     }
 
-    get checked(): boolean {
-        return this.android.isChecked();
-    }
-    set checked(value: boolean) {
-        this.setProperty(Switch.checkedProperty, value);
-    }
+    public _createUI() {
+        this._android = new android.widget.Switch(this._context);
 
-    public setNativeProperty(data: observable.PropertyChangeData) {
-        if (data.propertyName === Switch.checkedProperty) {
-            this.android.setChecked(data.value);
-        } else if (true) {
-            //
-        }
+        var that = new WeakRef(this);
+
+        this._android.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener({
+            get owner() {
+                return that.get();
+            },
+
+            onCheckedChanged: function (sender, isChecked) {
+                if (this.owner) {
+                    this.owner._onPropertyChangedFromNative(common.Switch.checkedProperty, isChecked);
+                }
+            }
+        }));
     }
 } 

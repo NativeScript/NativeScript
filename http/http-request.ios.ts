@@ -1,74 +1,83 @@
 ﻿/**
-  * iOS specific http request implementation.
-  */
-import promises = require("promises");
+ * iOS specific http request implementation.
+ */
+
 import http = require("http");
+import imageSource = require("image-source");
+import types = require("utils/types");
 
-export function request(options: http.HttpRequestOptions): promises.Promise<http.HttpResponse> {
-    var d = promises.defer<http.HttpResponse>();
+var GET = "GET";
+var USER_AGENT_HEADER = "User-Agent";
+var USER_AGENT = "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25";
 
-    try {
-        var sessionConfig = Foundation.NSURLSessionConfiguration.defaultSessionConfiguration();
-        var queue = Foundation.NSOperationQueue.mainQueue();
-        var session = Foundation.NSURLSession.sessionWithConfigurationDelegateDelegateQueue(
-            sessionConfig, null, queue);
+export function request(options: http.HttpRequestOptions): Promise<http.HttpResponse> {
+    return new Promise<http.HttpResponse>((resolve, reject) => {
 
-        var urlRequest = Foundation.NSMutableURLRequest.requestWithURL(
-            Foundation.NSURL.URLWithString(options.url));
+        try {
+            var sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration();
+            var queue = NSOperationQueue.mainQueue();
+            var session = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(
+                sessionConfig, null, queue);
 
-        urlRequest.setHTTPMethod(typeof options.method !== "undefined" ? options.method : "GET");
+            var urlRequest = NSMutableURLRequest.requestWithURL(
+                NSURL.URLWithString(options.url));
 
-        if (options.headers) {
-            for (var header in options.headers) {
-                urlRequest.setValueForHTTPHeaderField(options.headers[header], header);
-            }
-        }
+            urlRequest.HTTPMethod = types.isDefined(options.method) ? options.method : GET;
 
-        if (typeof options.timeout == "number") {
-            urlRequest.setTimeoutInterval(options.timeout * 1000);
-        }
+            urlRequest.setValueForHTTPHeaderField(USER_AGENT, USER_AGENT_HEADER);
 
-        if (typeof options.content == "string") {
-            urlRequest.setHTTPBody(Foundation.NSString.initWithString(options.content).dataUsingEncoding(4));
-        }
-        else if (typeof options.content !== "undefined") {
-            urlRequest.setHTTPBody(options.content);
-        }
-
-        var dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest,
-            function (data, response, error) {
-                if (error) {
-                    d.reject(new Error(error.localizedDescription()));
-                } else {
-                    var headers = {};
-                    var headerFields = response.allHeaderFields();
-                    var keys = headerFields.allKeys();
-
-                    for (var i = 0, l = keys.count(); i < l; i++) {
-                        var key = keys.objectAtIndex(i);
-                        headers[key] = headerFields.valueForKey(key);
-                    }
-
-                    d.resolve({
-                        content: {
-                            raw: data,
-                            toString: () => { return NSDataToString(data); },
-                            toJSON: () => { return JSON.parse(NSDataToString(data)); },
-                            toImage: () => { return require("image-source").fromData(data); }
-                        },
-                        statusCode: response.statusCode(),
-                        headers: headers
-                    });
+            if (options.headers) {
+                for (var header in options.headers) {
+                    urlRequest.setValueForHTTPHeaderField(options.headers[header], header);
                 }
-            });
+            }
 
-        dataTask.resume();
-    } catch (ex) {
-        d.reject(ex);
-    }
-    return d.promise();
+            if (types.isNumber(options.timeout)) {
+                urlRequest.timeoutInterval = options.timeout * 1000;
+            }
+
+            if (types.isString(options.content)) {
+                urlRequest.HTTPBody = NSString.alloc().initWithString(options.content).dataUsingEncoding(4);
+            }
+
+            var dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest,
+                function (data: NSData, response: NSHTTPURLResponse, error: NSError) {
+                    if (error) {
+                        reject(new Error(error.localizedDescription));
+                    } else {
+                        var headers = {};
+                        var headerFields = response.allHeaderFields;
+                        var keys = headerFields.allKeys;
+
+                        for (var i = 0, l = keys.count; i < l; i++) {
+                            var key = keys.objectAtIndex(i);
+                            headers[key] = headerFields.valueForKey(key);
+                        }
+
+                        resolve({
+                            content: {
+                                raw: data,
+                                toString: () => { return NSDataToString(data); },
+                                toJSON: () => { return JSON.parse(NSDataToString(data)); },
+                                toImage: () => {
+                                    return new Promise<imageSource.ImageSource>((resolveImage, reject) => {
+                                        resolveImage(imageSource.fromData(data));
+                                    });
+                                }
+                            },
+                            statusCode: response.statusCode,
+                            headers: headers
+                        });
+                    }
+                });
+
+            dataTask.resume();
+        } catch (ex) {
+            reject(ex);
+        }
+    });
 }
 
 function NSDataToString(data: any): string {
-    return Foundation.NSString.initWithDataEncoding(data, 4).toString();
+    return NSString.alloc().initWithDataEncoding(data, 4).toString();
 }

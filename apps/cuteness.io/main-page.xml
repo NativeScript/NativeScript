@@ -1,0 +1,30 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded">
+  <TabView>
+    <TabView.items>
+      <TabEntry title="List">
+        <TabEntry.view>
+          <ListView items="{{ redditItems }}" isScrolling="{{ isScrolling }}" itemTap="listViewItemTap" loadMoreItems="listViewLoadMoreItems">
+            <ListView.itemTemplate>
+              <!-- Binding in template property of an component will use the bindingContext provided by the component. -->
+              <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image source="{{ thumbnailImageSource || defaultThumbnailImageSource }}" cssClass="thumbnail" rowSpan="2"/>
+                <Label text="{{ title || 'Downloading...' }}" textWrap="true" cssClass="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="{{ author ? 'by ' + author : '' }}" cssClass="author" col="1" row="1" />
+                <Label text="{{ num_comments ? num_comments + ' comments' : '' }}" cssClass="comments" col="2" row="1" />
+              </GridLayout>
+              <!-- End of tempplate. -->
+            </ListView.itemTemplate>
+          </ListView>
+        </TabEntry.view>
+      </TabEntry>
+      <TabEntry title="About">
+        <TabEntry.view>
+          <StackLayout>
+            <Image margin="10" url="~/app/res/telerik-logo.png" />
+            <Label margin="10" textWrap="true" text="{{ aboutText }}" />
+          </StackLayout>
+        </TabEntry.view>
+      </TabEntry>
+    </TabView.items>
+  </TabView>
+</Page>

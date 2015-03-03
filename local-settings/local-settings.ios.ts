@@ -1,10 +1,10 @@
 ﻿import Common = require("local-settings/local-settings-common");
 
-var userDefaults = Foundation.NSUserDefaults.standardUserDefaults();
+var userDefaults = NSUserDefaults.standardUserDefaults();
 
 export var hasKey = function (key: string): boolean {
     Common.checkKey(key);
-    return (null != userDefaults.objectForKey(key)) ? true : false;
+    return userDefaults.objectForKey(key) !== null;
 }
 
 // getters
@@ -59,54 +59,3 @@ export var remove = function (key: string): void {
     userDefaults.removeObjectForKey(key);
     userDefaults.synchronize();
 }
-
-/*
-these are commented out to be used only if requested by users or otherwise needed
-
-import utils_module = require("utils/utils_ios"); 
-
-export var getStringArray = function (key: string, defaultValue?: string[]): string[] {
-    Common.checkKey(key);
-    if (hasKey(key)) {
-        var nsArray = userDefaults.stringArrayForKey(key);
-        var jsArray = utils_module.Collections.nsArrayToJSArray(nsArray);
-        return jsArray;
-    }
-    return defaultValue;
-}
-
-export var getInt = function (key: string, defaultValue?: number): number {
-    Common.checkKey(key);
-    if (hasKey(key)) {
-        return userDefaults.integerForKey(key);
-    }
-    return defaultValue;
-}
-
-export var getLong = function (key: string, defaultValue?: number): number {
-    Common.checkKey(key);
-    if (hasKey(key)) {
-        return Math.ceil(userDefaults.doubleForKey(key));
-    }
-    return defaultValue;
-}
-
-export var setStringArray = function (key: string, values: string[]): void {
-    Common.checkKey(key);
-    var nsArray = utils_module.Collections.jsArrayToNSArray(values);
-    userDefaults.setObjectForKey(nsArray, key);
-    userDefaults.synchronize();
-}
-
-export var setInt = function (key: string, value: number): void {
-    Common.checkKey(key);
-    userDefaults.setIntegerForKey(value, key);
-    userDefaults.synchronize();
-}
-
-export var setLong = function (key: string, value: number): void {
-    Common.checkKey(key);
-    userDefaults.setDoubleForKey(Math.ceil(value), key);
-    userDefaults.synchronize();
-}
-*/

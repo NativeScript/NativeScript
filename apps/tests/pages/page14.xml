@@ -1,0 +1,8 @@
+<Page>
+  <StackLayout>
+    <Button horizontalAlignment="left" verticalAlignment="top" margin="10 0 10 20" text="top, left" />
+    <Button horizontalAlignment="center" verticalAlignment="center" text="center, center" />
+    <Button horizontalAlignment="right" verticalAlignment="bottom" margin="0 30" text="bottom, right" />
+    <Button horizontalAlignment="stretch" verticalAlignment="stretch" margin="20" text="stretch, stretch" />
+  </StackLayout>
+</Page>

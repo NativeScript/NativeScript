@@ -1,33 +1,55 @@
 ﻿export var fromResource = function (name: string) {
-    return UIKit.UIImage.imageNamed(name);
+    return UIImage.imageNamed(name);
 }
 
 export var fromFile = function (path: string) {
-    return UIKit.UIImage.imageWithContentsOfFile(path);
+    return UIImage.imageWithContentsOfFile(path);
 }
 
 export var fromData = function (data: any) {
-    return UIKit.UIImage.imageWithData(data);
+    return UIImage.imageWithData(data);
 }
 
-export var saveToFile = function (instance: UIKit.UIImage, path: string, format: number, quality?: number): boolean {
+export var saveToFile = function (instance: UIImage, path: string, format: number, quality?: number): boolean {
+    var res = false;
     if (!instance) {
-        return false;
+        return res;
     }
 
-    var res = false;
+    var data = getImageData(instance, format, quality);
+
+    if (data) {
+        res = data.writeToFileAtomically(path, true);
+    }
+
+    return res;
+}
+
+export function toBase64String(instance: UIImage, format: number, quality?: number): string {
+    var res = null;
+    if (!instance) {
+        return res;
+    }
+
+    var data = getImageData(instance, format, quality);
+
+    if (data) {
+        res = data.base64Encoding();
+    }
+
+    return res;
+}
+
+function getImageData(instance: UIImage, format: number, quality: number): NSData {
     var data = null;
     switch (format) {
         case 0: // PNG
-            data = UIKit.UIImagePNGRepresentation(instance);
+            data = UIImagePNGRepresentation(instance);
             break;
         case 1: // JPEG
-            data = UIKit.UIImageJPEGRepresentation(instance, ('undefined' == typeof quality) ? 1.0 : quality);
+            data = UIImageJPEGRepresentation(instance, ('undefined' === typeof quality) ? 1.0 : quality);
             break;
-        
+
     }
-    if (null != data) {
-        res = data.writeToFileAtomically(path, true);
-    }
-    return res;
+    return data;
 }

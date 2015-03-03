@@ -1,9 +1,6 @@
-﻿// TODO: we should use Foundation.NSLog() but it currently does not work
-// TODO: Is there a better way to implement the info/warn/error
-
-function nslog(prefix: string, message: string)
+﻿function nslog(prefix: string, message: string)
 {
-    (<any>Foundation).NSLog("%@: %@", [{ type: PrimitiveType.POINTER, value: prefix }, { type: PrimitiveType.POINTER, value: message}]);
+   //(<any>NSLog)(prefix + ": " + message);
 }
 
 export var helper_log = function (message: string) {
@@ -23,5 +20,5 @@ export var warn = function (message: string) {
 }
 
 export var timeMillis = function (): number {
-    return QuartzCore.CACurrentMediaTime() * 1000;
+    return CACurrentMediaTime() * 1000;
 }

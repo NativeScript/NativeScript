@@ -1,166 +1,104 @@
-﻿
-// iOS specific TypeScript declarations
-// TODO: This is temporary, until we have the TS definitions for the native APIs
+﻿/* tslint:disable:no-unused-variable */
 
+/**
+ * Provides API for working with native C types, pointers, pointer arithmetic and memory.
+ */
+declare module interop {
+    /**
+     * A type that wraps a pointer and allows read/write operations on its value.
+     */
+    interface Reference<T> {
+        value: T;
+    }
 
-//declare module UIKit {
+    /**
+     * A Reference constructor.
+     */
+    var Reference: {
 
-//    export class UIResponder {
-//        static extends(param1: any, param2: any): any;
-//    }
+        /**
+         * Creates a new reference around a value.
+         * The native representation of the type will be determined the first time the Reference is used
+         * in operation involving marshalling.
+         * @param value The JavaScript value used to initialize the reference.
+         */
+        new <T>(value?: T): Reference<T>;
 
-//    export class UIWindow {
-//        constructor(frame: any);
-//    }
+        /**
+         * Creates a reference from to the pointer with a given type.
+         * @param type The type to interpret the pointer
+         */
+        new <T>(type: Type<T>, data: Pointer): Reference<T>;
 
-//    export class UIScreen {
-//        static mainScreen(): any;
-//    }
+        /**
+         * Creates a new reference around a value.
+         * @param type The type to interpret the value
+         */
+        new <T>(type: Type<T>, value: any): Reference<T>;
 
-//    export class UIColor {
-//        static whiteColor: any;
-//    }
+        /**
+         * Gets the value using pointer arithmetic.
+         */
+        [index: number]: any;
 
-//    export class UINavigationController {
-//        constructor(rootController: any);
-//    }
+        /**
+         * Dereferences the pointer.
+         */
+        value: any;
+    };
 
-//    export class UIImageView {
-//        constructor();
-//        setImage(image: any);
-//    }
+    /**
+     * A type that is used to represent a void*.
+     */
+    interface Pointer {
+        /**
+         * Creates a new pointer with the given offset.
+         * @param offset The offset in bytes.
+         */
+        new (offset: number);
 
-//    export class UILabel {
-//        constructor();
-//        setText(text: string);
-//        sizeToFit();
-//    }
+        /**
+         * Creates a new pointer by adding an offset to the current pointer.
+         * @param offset The offset in bytes.
+         */
+        add(offset: number): Pointer;
 
-//    export class UIImage {
-//        static imageNamed(name: string): UIImage;
-//        static imageWithContentsOfFile(path: string): UIImage;
-//        static imageWithData(data: any): UIImage;
-//    }
+        /**
+         * Creates a new pointer by removing an offset from the current pointer.
+         * @param offset The offset in bytes.
+         */
+        subtract(offset: number): Pointer;
 
-//    function UIImagePNGRepresentation(image: UIImage);
-//    function UIImageJPEGRepresentation(image: UIImage, compressionQuality: number);
-//}
+        /**
+         * Converts the value of this instance to a number.
+         */
+        toNumber(): number;
+    }
 
-//declare module Foundation {
-//    export class NSError extends NSObject {
-//    }
+    interface Type<T> {
+        (ptr: Pointer): T;
+    }
 
-//    export class NSObject {
-//        static extends(...optionalParams: any[]): any;
-//    }
+    var types: {
+        "void": Type<void>;
+        bool: Type<boolean>;
+        int8: Type<number>;
+        uint8: Type<number>;
+        int16: Type<number>;
+        uint16: Type<number>;
+        int32: Type<number>;
+        uint32: Type<number>;
+        int64: Type<number>;
+        uint64: Type<number>;
+        float: Type<number>;
+        double: Type<number>;
+        //UTF8CString: Type<Reference<types.int8>>;
+        unichar: Type<string>;
+        id: Type<NSObject>;
+        protocol: Type<Object>;
+        "class": Type<NSObject>;
+        selector: Type<string>;
+    }
+}
 
-//    export class NSUserDefaults {
-//        static standardUserDefaults(): any;
-//    }
-
-//    export class NSMutableArray {
-//        addObject(obj: any);
-//    }
-
-//    export class NSFileManager {
-//        static defaultManager(): NSFileManager;
-//        URLsForDirectoryInDomains(directory: number, mask: number): any;
-//        attributesOfItemAtPathError(path: string, error: any): any;
-//        fileExistsAtPath(path: string): boolean;
-//        fileExistsAtPathIsDirectory(path: string, isDir: boolean): boolean;
-//        createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path: string, intermediateDirs: boolean, attributes: any, error: any): boolean;
-//        displayNameAtPath(path: string): string;
-//        createFileAtPathContentsAttributes(path: string, data: any, attributes: any): boolean;
-//        enumeratorAtPath(path: string): any;
-//        contentsOfDirectoryAtPathError(path: string, error: any);
-//        removeItemAtPathError(path: string, error: any): boolean;
-//        moveItemAtPathToPathError(sourcePath: string, destPath: string, error: any);
-//        contentsAtPath(path: string): NSData;
-//    }
-
-//    export class NSData extends NSObject {
-
-//    }
-
-//    export class NSString {
-//        static initWithString(s: string): NSString;
-//        static initWithDataEncoding(data: any, encoding: any): any;
-//        static pathWithComponents(paths: NSArray): NSString;
-//        static stringWithContentsOfFileEncodingError(path: string, encoding: number, error: any): NSString;
-//        stringByDeletingLastPathComponent(): string;
-//        stringByDeletingPathExtension(): string;
-//        dataUsingEncoding(encoding: number): any;
-//        writeToFileAtomicallyEncodingError(path: string, atomically: boolean, encoding: number, error: any): boolean;
-//    }
-
-//    export class NSArray extends NSObject {
-//        static arrayWithObjectsWithArguments(...params: any[]): NSArray;
-//    }
-
-//    export class NSURLSessionConfiguration {
-//        static defaultSessionConfiguration(): any;
-//    }
-
-//    export class NSOperationQueue {
-//        static mainQueue(): any;
-//    }
-
-//    export class NSURLSession {
-//        static sessionWithConfigurationDelegateDelegateQueue(config: any, param: any, queue : any): any;
-//    }
-
-//    export class NSURL {
-//        static URLWithString(url: string): NSURL;
-//        static fileURLWithPathIsDirectory(path: string, isDirectory: boolean): NSURL;
-//        path(): string;
-//        relativePath(): string;
-//        relativeString(): string;
-//        pathExtension(): string;
-//    }
-
-//    export class NSDate {
-//        static dateWithTimeIntervalSince1970(datetime: number);
-//        timeIntervalSince1970(): number;
-//    }
-
-//    export class NSMutableURLRequest {
-//        static requestWithURL(url: any): any;
-//    }
-//}
-
-//declare module QuartzCore {
-//    function CACurrentMediaTime(): number;
-//}
-
-//declare module CoreLocation {
-//    export class CLLocationManager {
-//        static locationServicesEnabled(): boolean;
-//        delegate: any;
-//        distanceFilter: number;
-//        desiredAccuracy: number;
-//        startUpdatingLocation(): void;
-//        stopUpdatingLocation(): void;
-//        location: CLLocation;
-//    }
-
-//    export class CLLocation {
-//        static initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(coordinate: any, altitude: number, horizontalAccuracy: number, verticalAccuracy: number, course: number, speed: number, timestamp: Foundation.NSDate);
-//        coordinate: any;
-//        altitude: number;
-//        horizontalAccuracy: number;
-//        verticalAccuracy: number;
-//        timestamp: Foundation.NSDate;
-//        speed: number;
-//        course: number;
-//    }
-
-//    function CLLocationCoordinate2DMake(latitude: number, longitude: number) : any;
-//}
-
-//declare var NativePointer: any;
-//declare var PrimitiveType: any;
-//declare var RefValue: any;
-
-declare var NativePointer: any;
-declare var PrimitiveType: any;
-declare var RefValue: any;
+declare function __collect(): void;

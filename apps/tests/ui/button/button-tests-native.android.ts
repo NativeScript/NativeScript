@@ -1,0 +1,43 @@
+﻿import buttonModule = require("ui/button");
+import colorModule = require("color");
+import utilsModule = require("utils/utils");
+import enums = require("ui/enums");
+
+export function getNativeText(button: buttonModule.Button): string {
+    return button.android.getText();
+}
+
+export function getNativeFontSize(button: buttonModule.Button): number {
+    var density = utilsModule.layout.getDisplayDensity();
+    return button.android.getTextSize() / density;
+}
+
+export function getNativeColor(button: buttonModule.Button): colorModule.Color {
+    return new colorModule.Color(button.android.getTextColors().getDefaultColor());
+}
+
+export function getNativeBackgroundColor(button: buttonModule.Button): colorModule.Color {
+    return new colorModule.Color((<android.graphics.drawable.ColorDrawable>button.android.getBackground()).getColor());
+}
+
+export function getNativeTextAlignment(button: buttonModule.Button): string {
+    var gravity = button.android.getGravity();
+
+    if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.LEFT) {
+        return enums.TextAlignment.left;
+    }
+
+    if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.CENTER_HORIZONTAL) {
+        return enums.TextAlignment.center;
+    }
+
+    if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.RIGHT) {
+        return enums.TextAlignment.right;
+    }
+
+    return "unexpected value";
+}
+
+export function performNativeClick(button: buttonModule.Button): void {
+    button.android.performClick();
+}

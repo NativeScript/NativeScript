@@ -1,28 +1,29 @@
 ﻿/**
-  * Android specific dialogs functions implementation.
-  */
-import promises = require("promises");
+ * Android specific dialogs functions implementation.
+ */
+
 import dialogs = require("ui/dialogs");
 import dialogs_common = require("ui/dialogs/dialogs-common");
 import appmodule = require("application");
-import view = require("ui/core/view");
+import types = require("utils/types");
 
 // merge the exports of the request file with the exports of this file
 declare var exports;
 require("utils/module-merge").merge(dialogs_common, exports);
 
-function createAlertDialog(message: string, options: dialogs.DialogOptions): android.app.AlertDialog.Builder {
+function createAlertDialog(options?: dialogs.DialogOptions): android.app.AlertDialog.Builder {
     var alert = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
-    alert.setTitle(options && options.title ? options.title : "");
-    alert.setMessage(message);
+    alert.setTitle(options && types.isString(options.title) ? options.title : "");
+    alert.setMessage(options && types.isString(options.message) ? options.message : "");
     return alert;
 }
 
-function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.DialogButtonsOptions,
+function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.ConfirmOptions,
     callback: Function): void {
 
-    if (!options)
+    if (!options) {
         return;
+    }
 
     if (options.okButtonText) {
         alert.setPositiveButton(options.okButtonText, new android.content.DialogInterface.OnClickListener({
@@ -52,144 +53,213 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
     }
 }
 
-export function alert(message: string, options = { title: dialogs_common.ALERT, okButtonText: dialogs_common.OK }): promises.Promise<void> {
-    var d = promises.defer<void>();
-    try {
-        var alert = createAlertDialog(message, options);
+export function alert(arg: any): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        try {
+            var options = types.isString(arg) ? { title: dialogs_common.ALERT, okButtonText: dialogs_common.OK, message: arg } : arg;
 
-        alert.setPositiveButton(options.okButtonText, new android.content.DialogInterface.OnClickListener({
-            onClick: function (dialog: android.content.DialogInterface, id: number) {
-                dialog.cancel();
-                d.resolve();
+            var alert = createAlertDialog(options);
+
+            alert.setPositiveButton(options.okButtonText, new android.content.DialogInterface.OnClickListener({
+                onClick: function (dialog: android.content.DialogInterface, id: number) {
+                    dialog.cancel();
+                    resolve();
+                }
+            }));
+
+            alert.show();
+
+        } catch (ex) {
+            reject(ex);
+        }
+    });
+}
+
+export function confirm(arg: any): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+        try {
+            var options = types.isString(arg) ? { title: dialogs_common.CONFIRM, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL, message: arg } : arg;
+            var alert = createAlertDialog(options);
+
+            addButtonsToAlertDialog(alert, options, function (result) { resolve(result); });
+
+            alert.show();
+
+        } catch (ex) {
+            reject(ex);
+        }
+    });
+}
+
+export function prompt(arg: any): Promise<dialogs.PromptResult> {
+    var options: dialogs.PromptOptions;
+
+    var defaultOptions = {
+        title: dialogs_common.PROMPT,
+        okButtonText: dialogs_common.OK,
+        cancelButtonText: dialogs_common.CANCEL,
+        inputType: dialogs.inputType.text,
+    };
+
+    if (arguments.length === 1) {
+        if (types.isString(arg)) {
+            options = defaultOptions;
+            options.message = arg;
+        } else {
+            options = arg;
+        }
+    } else if (arguments.length === 2) {
+        if (types.isString(arguments[0]) && types.isString(arguments[1])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.defaultText = arguments[1];
+        }
+    }
+
+    return new Promise<dialogs.PromptResult>((resolve, reject) => {
+        try {
+            var alert = createAlertDialog(options);
+
+            var input = new android.widget.EditText(appmodule.android.currentContext);
+
+            if (options && options.inputType === dialogs.inputType.password) {
+                input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
             }
-        }));
 
-        alert.show();
+            input.setText(options && options.defaultText || "");
 
-    } catch (ex) {
-        d.reject(ex);
-    }
+            alert.setView(input);
 
-    return d.promise();
-}
+            var getText = function () { return input.getText().toString(); };
 
-export function confirm(message: string, options = { title: dialogs_common.CONFIRM, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL }): promises.Promise<boolean> {
-    var d = promises.defer<boolean>();
-    try {
-        var alert = createAlertDialog(message, options);
+            addButtonsToAlertDialog(alert, options, function (r) { resolve({ result: r, text: getText() }); });
 
-        addButtonsToAlertDialog(alert, options, function (result) { d.resolve(result); });
+            alert.show();
 
-        alert.show();
-
-    } catch (ex) {
-        d.reject(ex);
-    }
-
-    return d.promise();
-}
-
-export function prompt(message: string, defaultText?: string,
-    options = { title: dialogs_common.PROMPT, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL, inputType: dialogs_common.InputType.PlainText }): promises.Promise<dialogs.PromptResult> {
-    var d = promises.defer<dialogs.PromptResult>();
-    try {
-        var alert = createAlertDialog(message, options);
-
-        var input = new android.widget.EditText(appmodule.android.context);
-
-        if (options.inputType == dialogs_common.InputType.Password) {
-            input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        } catch (ex) {
+            reject(ex);
         }
 
-        input.setText(defaultText ? defaultText : "");
-
-        alert.setView(input);
-
-        var getText = function () { return input.getText().toString(); };
-
-        addButtonsToAlertDialog(alert, options, function (r) { d.resolve({ result: r, text: getText() }); });
-
-        alert.show();
-
-    } catch (ex) {
-        d.reject(ex);
-    }
-
-    return d.promise();
+    });
 }
 
-export function login(message: string, userName?: string, password?: string,
-    options = { title: dialogs_common.LOGIN, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL }): promises.Promise<dialogs.LoginResult> {
-    var d = promises.defer<dialogs.LoginResult>();
-    try {
-        var context = appmodule.android.context;
-        var alert = createAlertDialog(message, options);
+export function login(arg: any): Promise<dialogs.LoginResult> {
+    var options: dialogs.LoginOptions;
 
-        var userNameInput = new android.widget.EditText(context);
-        userNameInput.setText(userName ? userName : "");
+    var defaultOptions = { title: dialogs_common.LOGIN, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL };
 
-        var passwordInput = new android.widget.EditText(appmodule.android.context);
-        passwordInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        passwordInput.setText(password ? password : "");
+    if (arguments.length === 1) {
+        if (types.isString(arguments[0])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+        } else {
+            options = arguments[0];
+        }
+    } else if (arguments.length === 2) {
+        if (types.isString(arguments[0]) && types.isString(arguments[1])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.userName = arguments[1];
+        }
+    } else if (arguments.length === 3) {
+        if (types.isString(arguments[0]) && types.isString(arguments[1]) && types.isString(arguments[2])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.userName = arguments[1];
+            options.password = arguments[2];
+        }
+    }
 
-        var layout = new android.widget.LinearLayout(context);
-        layout.setOrientation(1);
-        layout.addView(userNameInput);
-        layout.addView(passwordInput);
+    return new Promise<dialogs.LoginResult>((resolve, reject) => {
+        try {
+            var context = appmodule.android.currentContext;
 
-        alert.setView(layout);
+            var alert = createAlertDialog(options);
 
-        addButtonsToAlertDialog(alert, options, function (r) {
-            d.resolve({
-                result: r,
-                userName: userNameInput.getText().toString(),
-                password: passwordInput.getText().toString()
+            var userNameInput = new android.widget.EditText(context);
+            userNameInput.setText(options.userName ? options.userName : "");
+
+            var passwordInput = new android.widget.EditText(context);
+            passwordInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            passwordInput.setText(options.password ? options.password : "");
+
+            var layout = new android.widget.LinearLayout(context);
+            layout.setOrientation(1);
+            layout.addView(userNameInput);
+            layout.addView(passwordInput);
+
+            alert.setView(layout);
+
+            addButtonsToAlertDialog(alert, options, function (r) {
+                resolve({
+                    result: r,
+                    userName: userNameInput.getText().toString(),
+                    password: passwordInput.getText().toString()
+                });
             });
-        });
 
-        alert.show();
+            alert.show();
 
-    } catch (ex) {
-        d.reject(ex);
-    }
+        } catch (ex) {
+            reject(ex);
+        }
 
-    return d.promise();
+    });
 }
 
-export class Dialog {
-    private _dialog: android.app.AlertDialog;
-    private _android: android.app.AlertDialog.Builder;
-    //private _view: view.View;
+export function action(arg: any): Promise<string> {
 
-    constructor(message: string, callback?: (result: boolean) => {}, options?: dialogs.DialogButtonsOptions) {
-        this._android = createAlertDialog(message, options);
-        addButtonsToAlertDialog(this.android, options, function (r) {
-            if (callback) {
-                callback(r);
-            }
-        });
-    }
+    var options: dialogs.ActionOptions;
 
-    get android(): android.app.AlertDialog.Builder {
-        return this._android;
-    }
+    var defaultOptions = { cancelButtonText: dialogs_common.CANCEL };
 
-    /*
-    get view(): view.View {
-        return this._view;
-    }
-    set view(value: view.View) {
-        this._view = value;
-        this.android.setView(this._view.android);
-    }*/
-
-    public show() {
-        this._dialog = this.android.show();
-    }
-
-    public hide() {
-        if (this._dialog) {
-            this._dialog.hide();
+    if (arguments.length === 1) {
+        if (types.isString(arguments[0])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+        } else {
+            options = arguments[0];
+        }
+    } else if (arguments.length === 2) {
+        if (types.isString(arguments[0]) && types.isString(arguments[1])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.cancelButtonText = arguments[1];
+        }
+    } else if (arguments.length === 3) {
+        if (types.isString(arguments[0]) && types.isString(arguments[1]) && types.isDefined(arguments[2])) {
+            options = defaultOptions;
+            options.message = arguments[0];
+            options.cancelButtonText = arguments[1];
+            options.actions = arguments[2];
         }
     }
+
+    return new Promise<string>((resolve, reject) => {
+        try {
+            var alert = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
+            alert.setTitle(options && types.isString(options.message) ? options.message : "");
+
+            if (options.actions) {
+                alert.setItems(options.actions, new android.content.DialogInterface.OnClickListener({
+                    onClick: function (dialog: android.content.DialogInterface, which: number) {
+                        resolve(options.actions[which])
+                    }
+                }));
+            }
+
+            if (types.isString(options.cancelButtonText)) {
+                alert.setNegativeButton(options.cancelButtonText, new android.content.DialogInterface.OnClickListener({
+                    onClick: function (dialog: android.content.DialogInterface, id: number) {
+                        dialog.cancel();
+                        resolve(options.cancelButtonText)
+                    }
+                }));
+            }
+            alert.show();
+
+        } catch (ex) {
+            reject(ex);
+        }
+    });
 }

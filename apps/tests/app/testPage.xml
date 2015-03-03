@@ -1,0 +1,3 @@
+﻿<Page xmlns="http://www.nativescript.org/tns.xsd">
+  <Button text="Back" tap="buttonTap"/>
+</Page>

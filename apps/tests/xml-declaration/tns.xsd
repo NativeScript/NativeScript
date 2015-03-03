@@ -1,0 +1,492 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="tns" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://www.nativescript.org/tns.xsd"
+    xmlns="http://www.nativescript.org/tns.xsd"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified">
+
+  <xs:simpleType name="BindingToStringConverter">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\{\{.*?\}\}" />
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="StringToStringConverter">
+    <xs:union memberTypes="BindingToStringConverter">
+      <xs:simpleType>
+        <xs:restriction base="xs:string" />
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="StringToNumberConverter">
+    <xs:union memberTypes="BindingToStringConverter">
+      <xs:simpleType>
+        <xs:restriction base="xs:integer">
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="StringToGridLengthConverter">
+    <xs:union memberTypes="BindingToStringConverter">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:pattern value="^((\d+)?\*|\d+|auto)$" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="StringToVisibilityConverter">
+    <xs:union memberTypes="BindingToStringConverter">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="visible"/>
+          <xs:enumeration value="collapsed"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="StringToBooleanConverter">
+    <xs:union memberTypes="BindingToStringConverter">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="true"/>
+          <xs:enumeration value="false"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="StringToHorizontalAlignmentConverter">
+    <xs:union memberTypes="BindingToStringConverter">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="left"/>
+          <xs:enumeration value="center"/>
+          <xs:enumeration value="right"/>
+          <xs:enumeration value="stretch"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="StringToVerticalAlignmentConverter">
+    <xs:union memberTypes="BindingToStringConverter">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="top"/>
+          <xs:enumeration value="center"/>
+          <xs:enumeration value="bottom"/>
+          <xs:enumeration value="stretch"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="StringToStackLayoutOrientationConverter">
+    <xs:union memberTypes="BindingToStringConverter">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="horizontal"/>
+          <xs:enumeration value="vertical"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:simpleType name="ImageStretchToStringConverter">
+    <xs:union memberTypes="BindingToStringConverter">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="none"/>
+          <xs:enumeration value="fill"/>
+          <xs:enumeration value="aspectFill"/>
+          <xs:enumeration value="aspectFit"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
+
+  <xs:attributeGroup name="viewAttributes">
+    <xs:attribute name="id" type="StringToStringConverter"/>
+    <xs:attribute name="cssClass" type="StringToStringConverter"/>
+    <xs:attribute name="style" type="StringToStringConverter"/>
+    <xs:attribute name="loaded" type="StringToStringConverter"/>
+    <xs:attribute name="unloaded" type="StringToStringConverter"/>
+    <xs:attribute name="width" type="StringToNumberConverter"/>
+    <xs:attribute name="height" type="StringToNumberConverter"/>
+    <xs:attribute name="minWidth" type="StringToNumberConverter"/>
+    <xs:attribute name="minHeight" type="StringToNumberConverter"/>
+    <xs:attribute name="margin" type="StringToNumberConverter"/>
+    <xs:attribute name="visibility" type="StringToVisibilityConverter"/>
+    <xs:attribute name="isEnabled" type="StringToBooleanConverter"/>
+    <xs:attribute name="isUserInteractionEnabled" type="StringToBooleanConverter"/>
+    <xs:attribute name="horizontalAlignment" type="StringToHorizontalAlignmentConverter"/>
+    <xs:attribute name="verticalAlignment" type="StringToVerticalAlignmentConverter"/>
+    <xs:attribute name="row" type="StringToNumberConverter"/>
+    <xs:attribute name="col" type="StringToNumberConverter"/>
+    <xs:attribute name="rowSpan" type="StringToNumberConverter"/>
+    <xs:attribute name="colSpan" type="StringToNumberConverter"/>
+    <xs:attribute name="left" type="StringToNumberConverter"/>
+    <xs:attribute name="top" type="StringToNumberConverter"/>
+    <xs:attribute name="right" type="StringToNumberConverter"/>
+    <xs:attribute name="bottom" type="StringToNumberConverter"/>
+    <xs:attribute name="bindingContext" type="StringToStringConverter"/>
+  </xs:attributeGroup>
+
+  <xs:complexType name="View">
+    <xs:attributeGroup ref="viewAttributes"/>
+  </xs:complexType>
+
+  <xs:group name="ViewSubclasses">
+    <xs:choice>
+      <xs:element name="Label" type="Label" />
+      <xs:element name="Button" type="Button" />
+      <xs:element name="TabView" type="TabView" />
+      <xs:element name="Border" type="Border" />
+      <xs:element name="Image" type="Image" />
+      <xs:element name="ScrollView" type="ScrollView" />
+      <xs:element name="Progress" type="Progress" />
+      <xs:element name="StackLayout" type="StackLayout" />
+      <xs:element name="WrapLayout" type="WrapLayout" />
+      <xs:element name="GridLayout" type="GridLayout" />
+      <xs:element name="AbsoluteLayout" type="AbsoluteLayout" />
+      <xs:element name="ActivityIndicator" type="ActivityIndicator" />
+      <xs:element name="Slider" type="Slider" />
+      <xs:element name="Switch" type="Switch" />
+      <xs:element name="WebView" type="WebView" />
+      <xs:element name="TextView" type="TextView" />
+      <xs:element name="TextField" type="TextField" />
+      <xs:element name="ListView" type="ListView" />
+    </xs:choice>
+  </xs:group>
+
+  <xs:complexType name="ContentView">
+    <xs:complexContent>
+      <xs:extension base="View">
+        <xs:sequence>
+          <xs:group ref="ViewSubclasses" maxOccurs="1" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="Page">
+    <xs:complexContent>
+      <xs:extension base="ContentView">
+        <xs:attribute name="navigatedTo" type="StringToStringConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ListView">
+    <xs:complexContent>
+      <xs:extension base="View">
+        <xs:choice>
+          <xs:element name="ListView.itemTemplate">
+            <xs:complexType>
+              <xs:group ref="ViewSubclasses" maxOccurs="1" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+        <xs:attribute name="items" type="StringToStringConverter" />
+        <xs:attribute name="isScrolling" type="StringToStringConverter" />
+        <xs:attribute name="itemTap" type="StringToStringConverter" />
+        <xs:attribute name="loadMoreItems" type="StringToStringConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="Border">
+    <xs:complexContent>
+      <xs:extension base="ContentView">
+        <xs:attribute name="cornerRadius" type="StringToNumberConverter" />
+        <xs:attribute name="borderWidth" type="StringToNumberConverter" />
+        <xs:attribute name="borderColor" type="StringToStringConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ScrollView">
+    <xs:complexContent>
+      <xs:extension base="ContentView" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="Layout">
+    <xs:complexContent>
+      <xs:extension base="View">
+        <xs:sequence>
+          <xs:group ref="ViewSubclasses" maxOccurs="unbounded" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="StackLayout">
+    <xs:complexContent>
+      <xs:extension base="Layout">
+        <xs:attribute name="orientation" type="StringToStackLayoutOrientationConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="WrapLayout">
+    <xs:complexContent>
+      <xs:extension base="Layout" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="GridLayout">
+    <xs:complexContent>
+      <xs:extension base="View">
+        <xs:attribute name="columns" type="StringToStringConverter" />
+        <xs:attribute name="rows" type="StringToStringConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="DockLayout">
+    <xs:complexContent>
+      <xs:extension base="Layout" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="AbsoluteLayout">
+    <xs:complexContent>
+      <xs:extension base="Layout" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="TabView">
+    <xs:choice>
+      <xs:element name="TabView.items" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="TabEntry" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:complexContent>
+                  <xs:extension base="TabEntry">
+                    <xs:attribute name="title" type="StringToStringConverter" />
+                  </xs:extension>
+                </xs:complexContent>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="TabEntry">
+    <xs:choice>
+      <xs:element maxOccurs="1" name="TabEntry.view">
+        <xs:complexType>
+          <xs:group ref="ViewSubclasses" />
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:attributeGroup name="FormattedTextAttributes">
+    <xs:attribute name="fontSize" type="StringToNumberConverter" />
+    <xs:attribute name="fontFamily" type="StringToStringConverter" />
+    <xs:attribute name="fontAttributes" type="StringToNumberConverter" />
+    <xs:attribute name="foregroundColor" type="StringToStringConverter" />
+    <xs:attribute name="backgroundColor" type="StringToStringConverter" />
+    <xs:attribute name="underline" type="StringToNumberConverter" />
+    <xs:attribute name="strikethrough" type="StringToNumberConverter" />
+  </xs:attributeGroup>
+
+  <xs:complexType name="FormattedText">
+    <xs:sequence>
+      <xs:element name="FormattedString" maxOccurs="1" minOccurs="1">
+        <xs:complexType>
+
+          <xs:sequence>
+            <xs:element name="FormattedString.spans" maxOccurs="1" minOccurs="1">
+              <xs:complexType>
+                <xs:sequence>
+
+                  <xs:element name="Span" maxOccurs="unbounded">
+                    <xs:complexType>
+                      <xs:attribute name="text" type="StringToStringConverter" />
+                      <xs:attributeGroup ref="FormattedTextAttributes"/>
+                    </xs:complexType>
+                  </xs:element>
+
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+
+          <xs:attributeGroup ref="FormattedTextAttributes"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TextBase">
+    <xs:complexContent>
+      <xs:extension base="View">
+        <xs:attribute name="text" type="StringToStringConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="EditableTextBase">
+    <xs:complexContent>
+      <xs:extension base="TextBase">
+        <xs:attribute name="editable" type="StringToBooleanConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="Label">
+    <xs:complexContent>
+      <xs:extension base="TextBase">
+        <xs:sequence>
+          <xs:element name="Label.formattedText" minOccurs="0" maxOccurs="1">
+            <xs:complexType>
+              <xs:complexContent>
+                <xs:extension base="FormattedText" />
+              </xs:complexContent>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="textWrap" type="StringToBooleanConverter"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="Button">
+    <xs:complexContent>
+      <xs:extension base="TextBase">
+        <xs:sequence>
+          <xs:element name="Button.formattedText" minOccurs="0" maxOccurs="1">
+            <xs:complexType>
+              <xs:complexContent>
+                <xs:extension base="FormattedText" />
+              </xs:complexContent>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="tap" type="StringToStringConverter"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ActivityIndicator">
+    <xs:complexContent>
+      <xs:extension base="View">
+        <xs:attribute name="busy" type="StringToBooleanConverter"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="Image">
+    <xs:complexContent>
+      <xs:extension base="View">
+        <xs:attribute name="url" type="StringToStringConverter" />
+        <xs:attribute name="source" type="StringToStringConverter" />
+        <xs:attribute name="stretch" type="ImageStretchToStringConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="Progress">
+    <xs:complexContent>
+      <xs:extension base="View">
+        <xs:attribute name="value" type="StringToNumberConverter" />
+        <xs:attribute name="maxValue" type="StringToNumberConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="Slider">
+    <xs:complexContent>
+      <xs:extension base="View">
+        <xs:attribute name="value" type="StringToNumberConverter" />
+        <xs:attribute name="minValue" type="StringToNumberConverter" />
+        <xs:attribute name="maxValue" type="StringToNumberConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="TextField">
+    <xs:complexContent>
+      <xs:extension base="EditableTextBase">
+        <xs:sequence>
+          <xs:element name="TextField.formattedText" minOccurs="0" maxOccurs="1">
+            <xs:complexType>
+              <xs:complexContent>
+                <xs:extension base="FormattedText" />
+              </xs:complexContent>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="hint" type="StringToStringConverter" />
+        <xs:attribute name="secure" type="StringToBooleanConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="TextView">
+    <xs:complexContent>
+      <xs:extension base="EditableTextBase">
+        <xs:sequence>
+          <xs:element name="TextView.formattedText" minOccurs="0" maxOccurs="1">
+            <xs:complexType>
+              <xs:complexContent>
+                <xs:extension base="FormattedText" />
+              </xs:complexContent>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="WebView">
+    <xs:complexContent>
+      <xs:extension base="View">
+        <xs:attribute name="url" type="StringToStringConverter" />
+        <xs:attribute name="canGoBack" type="StringToBooleanConverter" />
+        <xs:attribute name="canGoForward" type="StringToBooleanConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="Switch">
+    <xs:complexContent>
+      <xs:extension base="View">
+        <xs:attribute name="checked" type="StringToBooleanConverter" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="Page" type="Page" />
+  <xs:element name="Switch" type="Switch" />
+  <xs:element name="WebView" type="WebView" />
+  <xs:element name="TextView" type="TextView" />
+  <xs:element name="TextField" type="TextField" />
+  <xs:element name="Slider" type="Slider" />
+  <xs:element name="Progress" type="Progress" />
+  <xs:element name="Image" type="Image" />
+  <xs:element name="ActivityIndicator" type="ActivityIndicator" />
+  <xs:element name="Button" type="Button" />
+  <xs:element name="Label" type="Label" />
+  <xs:element name="TabView" type="TabView" />
+  <xs:element name="AbsoluteLayout" type="AbsoluteLayout" />
+  <xs:element name="Border" type="Border" />
+  <xs:element name="GridLayout" type="GridLayout" />
+  <xs:element name="StackLayout" type="StackLayout" />
+  <xs:element name="WrapLayout" type="WrapLayout" />
+  <xs:element name="DockLayout" type="DockLayout" />
+  <xs:element name="ScrollView" type="ScrollView" />
+
+</xs:schema>

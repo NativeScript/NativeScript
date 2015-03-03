@@ -1,0 +1,27 @@
+﻿Page {
+    background-color: white;
+}
+
+ListView {
+    margin: 0 10 0 10;
+}
+
+.title {
+    margin: 10;
+    font-size: 32;
+    color: #3c3c3c;
+    horizontal-align: center;
+}
+
+.listItem {
+    margin: 10;
+    horizontal-align: center;
+    color: #808080;
+    font-size: 24;
+}
+
+.info {
+    margin: 10;
+    font-size: 24;
+    color: #808080;
+}

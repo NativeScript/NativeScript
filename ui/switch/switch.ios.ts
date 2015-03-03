@@ -1,42 +1,53 @@
-﻿import observable = require("ui/core/observable");
-import view = require("ui/core/view");
-import application = require("application");
+﻿import common = require("ui/switch/switch-common");
+import dependencyObservable = require("ui/core/dependency-observable");
+import proxy = require("ui/core/proxy");
 
-export class Switch extends view.View {
-    private static checkedProperty = "checked";
-    private _ios: UIKit.UISwitch;
-    private _handler: Foundation.NSObject;
+function onCheckedPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var swtch = <Switch>data.object;
+    swtch.ios.on = data.newValue;
+}
+
+// register the setNativeValue callbacks
+(<proxy.PropertyMetadata>common.Switch.checkedProperty.metadata).onSetNativeValue = onCheckedPropertyChanged;
+
+// merge the exports of the common file with the exports of this file
+declare var exports;
+require("utils/module-merge").merge(common, exports);
+
+class SwitchChangeHandlerImpl extends NSObject {
+    static new(): SwitchChangeHandlerImpl {
+        return <SwitchChangeHandlerImpl>super.new();
+    }
+
+    private _owner: Switch;
+
+    public initWithOwner(owner: Switch): SwitchChangeHandlerImpl {
+        this._owner = owner;
+        return this;
+    }
+
+    public valueChanged(sender: UISwitch) {
+        this._owner._onPropertyChangedFromNative(common.Switch.checkedProperty, sender.on);
+    }
+
+    public static ObjCExposedMethods = {
+        'valueChanged': { returns: interop.types.void, params: [UISwitch] }
+    };
+}
+
+export class Switch extends common.Switch {
+    private _ios: UISwitch;
+    private _handler: NSObject;
 
     constructor() {
         super();
-        this._ios = new UIKit.UISwitch();
+        this._ios = new UISwitch();
 
-        var that = this;
-        var target = Foundation.NSObject.extends({
-            valueChange: (sender: UIKit.UISwitch) => {
-                that.setProperty(Switch.checkedProperty, sender.on);
-            }
-        }, { exposedMethods: { "valueChange": "v@:@" } });
-        this._handler = new target();
-        this._ios.addTargetActionForControlEvents(this._handler, "valueChange", UIKit.UIControlEvents.UIControlEventValueChanged);
+        this._handler = SwitchChangeHandlerImpl.new().initWithOwner(this);
+        this._ios.addTargetActionForControlEvents(this._handler, "valueChanged", UIControlEvents.UIControlEventValueChanged);
     }
 
-    get ios(): UIKit.UISwitch {
+    get ios(): UISwitch {
         return this._ios;
-    }
-
-    get checked(): boolean {
-        return this.ios.on
-    }
-    set checked(value: boolean) {
-        this.setProperty(Switch.checkedProperty, value);
-    }
-
-    public setNativeProperty(data: observable.PropertyChangeData) {
-        if (data.propertyName === Switch.checkedProperty) {
-            this.ios.on = data.value;
-        } else if (true) {
-            //
-        }
     }
 } 

@@ -1,70 +1,65 @@
-﻿import observable = require("ui/core/observable");
-import view = require("ui/core/view");
-import application = require("application");
-import definition = require("ui/text-field");
+﻿import common = require("ui/text-field/text-field-common");
+import dependencyObservable = require("ui/core/dependency-observable");
+import proxy = require("ui/core/proxy");
 
-var TEXT = "text";
-// this is the name of the property to store text locally until attached to a valid Context
-var TEXTPRIVATE = "_text";
-
-export class TextField extends view.View implements definition.TextField {
-    private _android: android.widget.EditText;
-
-    constructor() {
-        super();
+function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var textField = <TextField>data.object;
+    if (!textField.android) {
+        return;
     }
 
-    public onInitialized(context: android.content.Context) {
-        if (!this._android) {
-            // TODO: We need to decide whether we will support context switching and if yes - to implement it.
-            this.createUI(context);
+    textField.android.setHint(data.newValue);
+}
+
+// register the setNativeValue callbacks
+(<proxy.PropertyMetadata>common.hintProperty.metadata).onSetNativeValue = onHintPropertyChanged;
+
+function onSecurePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var textField = <TextField>data.object;
+    if (!textField.android) {
+        return;
+    }
+
+    var currentInputType = textField.android.getInputType();
+    var currentClass = currentInputType & android.text.InputType.TYPE_MASK_CLASS;
+    var currentFlags = currentInputType & android.text.InputType.TYPE_MASK_FLAGS;
+    var newInputType = currentInputType;
+    
+    // Password variations are supported only for Text and Number classes.
+    if (data.newValue) {
+        if (currentClass === android.text.InputType.TYPE_CLASS_TEXT) {
+            newInputType = currentClass | currentFlags | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
+        }
+        else if (currentClass === android.text.InputType.TYPE_CLASS_NUMBER) {
+            newInputType = currentClass | currentFlags | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
         }
     }
-
-    get android(): android.widget.EditText {
-        return this._android;
-    }
-
-    get text(): string {
-        if (!this._android) {
-            return this[TEXTPRIVATE];
+    else {
+        if (currentClass === android.text.InputType.TYPE_CLASS_TEXT) {
+            newInputType = currentClass | currentFlags | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL;
         }
-        return this._android.getText().toString();
-    }
-    set text(value: string) {
-        this.setProperty(TEXT, value);
-    }
-
-    public setNativeProperty(data: observable.PropertyChangeData) {
-        // TODO: Will this be a gigantic if-else switch?
-        if (data.propertyName === TEXT) {
-            if (this._android) {
-                this._android.setText(data.value, android.widget.TextView.BufferType.EDITABLE);
-            } else {
-                this[TEXTPRIVATE] = data.value;
-            }
-        } else if (true) {
+        else if (currentClass === android.text.InputType.TYPE_CLASS_NUMBER) {
+            newInputType = currentClass | currentFlags | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL;
         }
     }
+    
+    textField.android.setInputType(newInputType);
+}
 
-    private createUI(context: android.content.Context) {
-        this._android = new android.widget.EditText(context);
-        if (this[TEXTPRIVATE]) {
-            this._android.setText(this[TEXTPRIVATE]);
-            delete this[TEXTPRIVATE];
-        }
+// register the setNativeValue callbacks
+(<proxy.PropertyMetadata>common.secureProperty.metadata).onSetNativeValue = onSecurePropertyChanged;
 
-        // TODO: This code is same for Label, extract base class or derive from Label
-        var that = this;
-        var textWatcher = new android.text.TextWatcher({
-            beforeTextChanged: function (text: string, start: number, count: number, after: number) {
-            },
-            onTextChanged: function (text: string, start: number, before: number, count: number) {
-            },
-            afterTextChanged: function (editable: android.text.IEditable) {
-                that.updateTwoWayBinding(TEXT, editable.toString());
-            }
-        });
-        this._android.addTextChangedListener(textWatcher);
+// merge the exports of the common file with the exports of this file
+declare var exports;
+require("utils/module-merge").merge(common, exports);
+
+export class TextField extends common.TextField {
+    public _createUI() {
+        super._createUI();
+        
+        this.android.setLines(1);
+        this.android.setMaxLines(1);
+        this.android.setHorizontallyScrolling(true);
+        this.android.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL);
     }
 }

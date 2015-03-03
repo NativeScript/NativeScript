@@ -1,13 +1,34 @@
 ﻿/**
-  * iOS specific timer functions implementation.
-  */
+ * iOS specific timer functions implementation.
+ */
 var timeoutCallbacks = {};
+
+class TimerTargetImpl extends NSObject {
+    static new(): TimerTargetImpl {
+        return <TimerTargetImpl>super.new();
+    }
+
+    private _callback: Function;
+
+    public initWithCallback(callback: Function): TimerTargetImpl {
+        this._callback = callback;
+        return this;
+    }
+
+    public tick(timer): void {
+        this._callback();
+    }
+
+    public static ObjCExposedMethods = {
+        "tick": { returns: interop.types.void, params: [NSTimer] }
+    };
+}
 
 function createTimerAndGetId(callback: Function, milliseconds: number, shouldRepeat: boolean): number {
     var id = new Date().getUTCMilliseconds();
 
-    var target = Foundation.NSObject.extends({ tick: (timer) => { callback(); } }, { exposedMethods: { "tick:": "v@:@" } });
-    var timer = Foundation.NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(milliseconds / 1000, new target(), "tick:", null, shouldRepeat);
+    var timerTarget = TimerTargetImpl.new().initWithCallback(callback);
+    var timer = NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(milliseconds / 1000, timerTarget, "tick", null, shouldRepeat);
 
     if (!timeoutCallbacks[id]) {
         timeoutCallbacks[id] = timer;
