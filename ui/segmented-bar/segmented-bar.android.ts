@@ -9,11 +9,12 @@ require("utils/module-merge").merge(common, exports);
 
 function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <SegmentedBar>data.object;
-    if (!view.android) {
+    if (!view.android || !view.items) {
         return;
     }
 
     var index = <number>data.newValue;
+
     if (types.isNumber(index) && index >= 0 && index <= view.items.length - 1) {
         view.android.setCurrentTab(index);
     }
@@ -28,41 +29,63 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
     view.android.clearAllTabs();
 
-    for (var i = 0; i < view.items.length; i++) {
-        var title = view.items[i].title;
-        var tab = view.android.newTabSpec(i + "");
+    var newItems = <Array<any>>data.newValue;
 
-        tab.setIndicator(title);
+    if (newItems && newItems.length) {
+        for (var i = 0; i < newItems.length; i++) {
+            var title = newItems[i].title;
+            var tab = view.android.newTabSpec(i + "");
 
-        tab.setContent(new android.widget.TabHost.TabContentFactory({
-            createTabContent: function (tag: string): android.view.View {
-                var tv = new android.widget.TextView(view._context);
-                tv.setVisibility(android.view.View.GONE);
-                return tv;
-            }
-        }));
+            tab.setIndicator(title);
 
-        view.android.addTab(tab);
+            tab.setContent(new android.widget.TabHost.TabContentFactory({
+                createTabContent: function (tag: string): android.view.View {
+                    var tv = new android.widget.TextView(view._context);
+                    tv.setVisibility(android.view.View.GONE);
+                    return tv;
+                }
+            }));
+
+            view.android.addTab(tab);
+        }
+
+        view._adjustSelectedIndex();
+
+        if (view.android.getCurrentTab() !== view.selectedIndex) {
+            view.android.setCurrentTab(view.selectedIndex);
+        }
+
+        view.android.setOnTabChangedListener(null);
+        view.android.setOnTabChangedListener(view._listener);
     }
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;
 
 export class SegmentedBar extends common.SegmentedBar {
     private _android: OurTabHost;
+    public _listener: android.widget.TabHost.OnTabChangeListener;
 
     public _createUI() {
         this._android = new OurTabHost(this._context, null);
+        if (this._android.getCurrentTab() !== this.selectedIndex) {
+            this._android.setCurrentTab(this.selectedIndex);
+        }
 
         var that = new WeakRef(this);
 
-        this._android.setOnTabChangedListener(new android.widget.TabHost.OnTabChangeListener({
+        this._listener = new android.widget.TabHost.OnTabChangeListener({
             onTabChanged: function (id: string) {
                 var bar = that.get();
                 if (bar) {
-                    bar.selectedIndex = parseInt(id);
+                    var oldIndex = bar.selectedIndex;
+                    var newIndex = parseInt(id);
+
+                    if (oldIndex !== newIndex) {
+                        bar._onPropertyChangedFromNative(SegmentedBar.selectedIndexProperty, newIndex);
+                    }
                 }
             }
-        }));
+        });
 
         var tabHostLayout = new android.widget.LinearLayout(this._context);
         tabHostLayout.setOrientation(android.widget.LinearLayout.VERTICAL);

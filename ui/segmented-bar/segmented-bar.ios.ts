@@ -9,7 +9,7 @@ require("utils/module-merge").merge(common, exports);
 
 function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <SegmentedBar>data.object;
-    if (!view.ios) {
+    if (!view.ios || !view.items) {
         return;
     }
 
@@ -30,6 +30,12 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
     for (var i = 0; i < view.items.length; i++) {
         view.ios.insertSegmentWithTitleAtIndexAnimated(view.items[i].title, i, false);
+    }
+
+    view._adjustSelectedIndex();
+
+    if (view.ios.selectedSegmentIndex !== view.selectedIndex) {
+        view.ios.selectedSegmentIndex = view.selectedIndex;
     }
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;

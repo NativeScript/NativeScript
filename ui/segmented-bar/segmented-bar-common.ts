@@ -10,7 +10,13 @@ export module knownCollections {
 export class SegmentedBar extends view.View implements definition.SegmentedBar {
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === "items") {
-            this.items = value;
+            this._setValue(SegmentedBar.itemsProperty, value);
+        }
+    }
+
+    public _adjustSelectedIndex() {
+        if (this.selectedIndex > this.items.length - 1) {
+            this._setValue(SegmentedBar.selectedIndexProperty, this.items.length - 1);
         }
     }
 
