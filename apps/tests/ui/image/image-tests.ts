@@ -92,6 +92,33 @@ export var test_SettingImageUrl = function (done) {
     setTimeout(() => { helper.buildUIAndRunTest(image, testFunc) }, 3000);
 }
 
+export var test_SettingImageUrlToFileWithinApp = function (done) {
+    // <snippet module="ui/image" title="Image">
+    // ### How to create an image and set its url to file within the application.
+    // ``` JavaScript
+    var image = new ImageModule.Image();
+    image.url = "~/app/small-image.png";
+    // ```
+    // </snippet>
+
+    var imageIsLoaded = false;
+
+    var testFunc = function (views: Array<ViewModule.View>) {
+        var testImage = <ImageModule.Image> views[0];
+        imageIsLoaded = !!testImage.source;
+        try {
+            TKUnit.assert(imageIsLoaded === true, "Expected: true, Actual: " + imageIsLoaded);
+            done(null);
+        }
+        catch (e) {
+            done(e);
+        }
+    }
+
+    // wait for a second in order to download the image.
+    setTimeout(() => { helper.buildUIAndRunTest(image, testFunc) }, 3000);
+}
+
 export var test_SettingStretch_AspectFit = function () {
     // <snippet module="ui/image" title="Image">
     // ### How to set image stretching.
