@@ -210,10 +210,40 @@ export class ActivityIndicatorStyler implements definition.stylers.Styler {
     }
 }
 
+export class SegmentedBarStyler implements definition.stylers.Styler {
+    //Text color methods
+    private static setColorProperty(view: view.View, newValue: any) {
+        var tabHost = <android.widget.TabHost>view.android;
+
+        for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            var tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+            var t = <android.widget.TextView>tab.getChildAt(1);
+            t.setTextColor(newValue);
+        }
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var tabHost = <android.widget.TabHost>view.android;
+
+        for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            var tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+            var t = <android.widget.TextView>tab.getChildAt(1);
+            t.setTextColor(constants.btn_default);
+        }
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SegmentedBarStyler.setColorProperty,
+            SegmentedBarStyler.resetColorProperty), "SegmentedBar");
+    }
+}
+
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();
     ButtonStyler.registerHandlers();
     TextViewStyler.registerHandlers();
     ActivityIndicatorStyler.registerHandlers();
+    SegmentedBarStyler.registerHandlers();
 }
