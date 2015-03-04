@@ -280,12 +280,7 @@ export var test_cssShouldBeAppliedToAllNestedElements = function () {
         StackLayout = new stackLayoutModule.StackLayout();
         StackLayout.addChild(label);
         testPage.content = StackLayout;
-        //<snippet module="ui/page" title="Page">
-        //### Adding a css that affects all nested UI components.
-        //``` JavaScript
         testPage.css = "stackLayout {background-color: #ffff0000;} label {background-color: #ff00ff00;}";
-        //```
-        //</snippet>
         return testPage;
     };
 

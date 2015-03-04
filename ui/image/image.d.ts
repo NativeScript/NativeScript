@@ -61,7 +61,7 @@ declare module "ui/image" {
         url: string;
 
         /**
-         * Gets or sets the image stretch mode.
+         * Gets or sets the image stretch mode. Possible values are contained in the [Stretch enumeration](../enums/Stretch/README.md).
          */
         stretch: string;
     }

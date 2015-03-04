@@ -14,12 +14,12 @@
         constructor(options?: Options);
 
         /**
-         * Gets or sets the soft keyboard type.
+         * Gets or sets the soft keyboard type. Possible values are contained in the [KeyboardType enumeration](../enums/KeyboardType/README.md).
          */
         keyboardType: string;
 
         /**
-         * Gets or sets the soft keyboard return key flavor.
+         * Gets or sets the soft keyboard return key flavor. Possible values are contained in the [ReturnKeyType enumeration](../enums/ReturnKeyType/README.md).
          */
         returnKeyType: string;
 
@@ -30,7 +30,7 @@
 
         /**
          * Gets or sets a value indicating when the text property will be updated. 
-         * Possible values are contained in the UpdateTextTrigger enumeration located in "ui/enums" module.
+         * Possible values are contained in the [UpdateTextTrigger enumeration](../enums/UpdateTextTrigger/README.md).
          */
         updateTextTrigger: string;
         
