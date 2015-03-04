@@ -47,19 +47,24 @@ export class Span extends bindable.Bindable implements definition.Span, view.App
         }
     }
 
+    private _getColorValue(value: any): colorModule.Color {
+        var result;
+        if (types.isString(value) && (<any>value).indexOf("#") === 0) {
+            result = new colorModule.Color(<any>value);
+        }
+        else {
+            result = value;
+        }
+        return result;
+    }
+
     get foregroundColor(): colorModule.Color {
         return this._foregroundColor;
     }
     set foregroundColor(value: colorModule.Color) {
-        var foreColor;
-        if (types.isString(value) && (<any>value).indexOf("#") === 0) {
-            foreColor = new colorModule.Color(<any>value);
-        }
-        else {
-            foreColor = value;
-        }
-        if (this._foregroundColor !== foreColor) {
-            this._foregroundColor = foreColor;
+        var convertedColor = this._getColorValue(value);
+        if (this._foregroundColor !== convertedColor) {
+            this._foregroundColor = convertedColor;
             this.updateAndNotify();
         }
     }
@@ -68,8 +73,9 @@ export class Span extends bindable.Bindable implements definition.Span, view.App
         return this._backgroundColor;
     }
     set backgroundColor(value: colorModule.Color) {
-        if (this._backgroundColor !== value) {
-            this._backgroundColor = value;
+        var convertedColor = this._getColorValue(value);
+        if (this._backgroundColor !== convertedColor) {
+            this._backgroundColor = convertedColor;
             this.updateAndNotify();
         }
     }

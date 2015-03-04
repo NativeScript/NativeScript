@@ -77,7 +77,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
                     // Get the event handler from instance.bindingContext.
                     var propertyChangeHandler = (args: observable.PropertyChangeData) => {
                         if (args.propertyName === "bindingContext") {
-                            var handler = instance.bindingContext && instance.bindingContext[getPropertyNameFromBinding(attrValue)];
+                            var handler = instance.bindingContext && instance.bindingContext[getBindingExpressionFromAttribute(attrValue)];
                             // Check if the handler is function and add it to the instance for specified event name.
                             if (types.isFunction(handler)) {
                                 instance.on(attr, handler, instance.bindingContext);
@@ -157,10 +157,10 @@ function isKnownEvent(name: string, exports: any): boolean {
 }
 
 function getBinding(instance: view.View, name: string, value: string): bindable.BindingOptions {
-    return { targetProperty: name, sourceProperty: getPropertyNameFromBinding(value), twoWay: true };
+    return bindable.Bindable._getBindingOptions(name, getBindingExpressionFromAttribute(value));
 }
 
-function getPropertyNameFromBinding(value: string): string {
+function getBindingExpressionFromAttribute(value: string): string {
     return value.replace("{{", "").replace("}}", "").trim();
 }
 

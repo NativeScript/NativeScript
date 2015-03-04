@@ -53,9 +53,16 @@ var Path = require("js-libs/polymer-expressions/path-parser").Path;
             if (!this.valueFn_) {
                 var name = this.name;
                 var path = this.path;
-                this.valueFn_ = function (model, observer) {
+                this.valueFn_ = function (model, observer, changedModel) {
                     if (observer)
                         observer.addPath(model, path);
+
+                    if (changedModel) {
+                        var result = path.getValueFrom(changedModel);
+                        if (result !== undefined) {
+                            return result;
+                        }
+                    }
 
                     return path.getValueFrom(model);
                 }
@@ -185,8 +192,8 @@ var Path = require("js-libs/polymer-expressions/path-parser").Path;
             // object.
             if (toModelDirection) {
                 fn = fn.toModel;
-            } else if (typeof fn.toDOM == 'function') {
-                fn = fn.toDOM;
+            } else if (typeof fn.toView == 'function') {
+                fn = fn.toView;
             }
 
             if (typeof fn != 'function') {
@@ -394,11 +401,10 @@ var Path = require("js-libs/polymer-expressions/path-parser").Path;
     }
 
     Expression.prototype = {
-        getValue: function (model, observer, filterRegistry) {
-            var value = getFn(this.expression)(model, observer, filterRegistry);
+        getValue: function (model, isBackConvert, changedModel, observer) {
+            var value = getFn(this.expression)(model, observer, changedModel);
             for (var i = 0; i < this.filters.length; i++) {
-                value = this.filters[i].transform(model, observer, filterRegistry,
-                    false, [value]);
+                value = this.filters[i].transform(model, observer, model, isBackConvert, [value]);
             }
 
             return value;

@@ -6,6 +6,8 @@ import types = require("utils/types");
 import trace = require("trace");
 import polymerExpressions = require("js-libs/polymer-expressions");
 
+var expressionSymbolsRegex = /[ \+\-\*%\?:<>=!\|&\(\)\[\]]/;
+
 var bindingContextProperty = new dependencyObservable.Property(
     "bindingContext",
     "Bindable",
@@ -105,7 +107,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
             }
 
             trace.write(
-                "Binding target: " + binding.target.get() +
+                "Binding target: " + binding.target.get() + 
                 " targetProperty: " + binding.options.targetProperty +
                 " to the changed context: " + newValue, trace.categories.Binding);
             binding.unbind();
@@ -113,6 +115,31 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
                 binding.bind(newValue);
             }
         }
+    }
+
+    private static extractPropertyNameFromExpression(expression: string): string {
+        var firstExpressionSymbolIndex = expression.search(expressionSymbolsRegex);
+        if (firstExpressionSymbolIndex > -1) {
+            return expression.substr(0, firstExpressionSymbolIndex);
+        }
+        else {
+            return expression;
+        }
+    }
+
+    public static _getBindingOptions(name: string, bindingExpression: string): definition.BindingOptions {
+        var result: definition.BindingOptions;
+        result = {
+            targetProperty: name,
+            sourceProperty: ""
+        };
+        if (types.isString(bindingExpression)) {
+            var params = bindingExpression.split(",");
+            result.sourceProperty = Bindable.extractPropertyNameFromExpression(params[0]);
+            result.expression = params[1];
+            result.twoWay = params[2] ? params[2].toLowerCase() === "true" : true;
+        }
+        return result;
     }
 }
 
@@ -142,16 +169,16 @@ export class Binding {
         if (typeof (obj) === "number") {
             obj = new Number(obj);
         }
-
+        
         if (typeof (obj) === "boolean") {
             obj = new Boolean(obj);
         }
-
+        
         if (typeof (obj) === "string") {
             obj = new String(obj);
         }
         /* tslint:enable */
-
+                
         this.source = new WeakRef(obj);
         this.updateTarget(this.getSourceProperty());
 
@@ -188,34 +215,52 @@ export class Binding {
 
     public updateTwoWay(value: any) {
         if (this.options.twoWay) {
-            this.updateSource(value);
+            if (this._isExpression(this.options.expression)) {
+                var changedModel = {};
+                changedModel[this.options.sourceProperty] = value;
+                this.updateSource(this._getExpressionValue(this.options.expression, true, changedModel));
+            }
+            else {
+                this.updateSource(value);
+            }
         }
     }
 
     private _isExpression(expression: string): boolean {
-        return expression.indexOf(" ") !== -1;
+        if (expression) {
+            var result = expression.indexOf(" ") !== -1;
+            return result;
+        }
+        else {
+            return false;
+        }
     }
 
-    private _getExpressionValue(expression: string): any {
-        var exp = polymerExpressions.PolymerExpressions.getExpression(expression);
-        if (exp) {
-            return exp.getValue(this.source && this.source.get && this.source.get() || global);
+    private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
+        try {
+            var exp = polymerExpressions.PolymerExpressions.getExpression(expression);
+            if (exp) {
+                var context = this.source && this.source.get && this.source.get() || global;
+                return exp.getValue(context, isBackConvert, changedModel);
+            }
+            return undefined;
         }
-
-        return undefined;
+        catch (e) {
+            return undefined;
+        }
     }
 
     public onSourcePropertyChanged(data: observable.PropertyChangeData) {
-        if (this._isExpression(this.options.sourceProperty)) {
-            this.updateTarget(this._getExpressionValue(this.options.sourceProperty));
+        if (this._isExpression(this.options.expression)) {
+            this.updateTarget(this._getExpressionValue(this.options.expression, false, undefined));
         } else if (data.propertyName === this.options.sourceProperty) {
             this.updateTarget(data.value);
         }
     }
 
     private getSourceProperty() {
-        if (this._isExpression(this.options.sourceProperty)) {
-            return this._getExpressionValue(this.options.sourceProperty);
+        if (this._isExpression(this.options.expression)) {
+            return this._getExpressionValue(this.options.expression, false, undefined);
         }
 
         if (!this.sourceOptions) {
