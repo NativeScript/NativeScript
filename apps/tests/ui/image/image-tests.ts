@@ -97,7 +97,7 @@ export var test_SettingImageUrlToFileWithinApp = function (done) {
     // ### How to create an image and set its url to file within the application.
     // ``` JavaScript
     var image = new ImageModule.Image();
-    image.url = "~/app/small-image.png";
+    image.url = "~/app/logo.png";
     // ```
     // </snippet>
 
