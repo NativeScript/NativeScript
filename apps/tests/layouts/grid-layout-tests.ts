@@ -498,18 +498,18 @@ export function test_GridLayout_padding() {
 export var test_codesnippets = function () {
     // <snippet module="ui/layouts/grid-layout" title="grid-layout">
     // ## GridLayout sample
-    // ### Create GridLayout with 3 columns - 80px, *, auto size and 2 rows - 100px and auto size
-
+    // ### Creating Grid Layout via code.
     // ``` JavaScript
+    //var layout = require("ui/layouts/grid-layout");
     var gridLayout = new layout.GridLayout();
+    //  ```
+
+    // ### Add views to grid layout
+    // ``` JavaScript
     var btn1 = new button.Button();
     var btn2 = new button.Button();
     var btn3 = new button.Button();
     var btn4 = new button.Button();
-    //  ```
-
-    // ### Add views to layout
-    // ``` JavaScript
     gridLayout.addChild(btn1);
     gridLayout.addChild(btn2);
     gridLayout.addChild(btn3);
@@ -533,12 +533,17 @@ export var test_codesnippets = function () {
     layout.GridLayout.setColumnSpan(btn4, 3);
     // ```
 
-    // ### Create ItemSpec for columns and rows
+    // ### Create ItemSpec for columns and rows 3 columns - 80px, *, auto size and 2 rows - 100px and auto size
     // ``` JavaScript
+    //// ItemSpec modes of the column refers to its width.
+    //// Absolute size of the column
     var firstColumn = new layout.ItemSpec(80, layout.GridUnitType.pixel);
+    //// Star width means that this column will expand to fill the gap left from other columns
     var secondColumn = new layout.ItemSpec(1, layout.GridUnitType.star);
+    //// Auto size means that column will expand or shrink in order to give enough place for all child UI elements.
     var thirdColumn = new layout.ItemSpec(1, layout.GridUnitType.auto);
 
+    //// Star and Auto modes for rows behave like corresponding setting for columns but refer to row height.
     var firstRow = new layout.ItemSpec(1, layout.GridUnitType.auto);
     var secondRow = new layout.ItemSpec(1, layout.GridUnitType.star);
     // ```
@@ -550,6 +555,17 @@ export var test_codesnippets = function () {
     gridLayout.addColumn(thirdColumn);
     gridLayout.addRow(firstRow);
     gridLayout.addRow(secondRow);
+    // ```
+
+    // ### Create same grid layout with an xml declaration
+    // ``` XML
+    // <GridLayout columns="80, *, auto" rows="auto, *" >
+    //  <Button col="0" />
+    //  <Button col="1" />
+    //  <Button col="2" />
+    //// by default column and row are set to 0
+    //  <Button row="1" colSpan="3" />
+    // </GridLayout>
     // ```
     // </snippet>
 };

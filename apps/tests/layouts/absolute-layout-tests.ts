@@ -23,7 +23,7 @@ export var testAll = function () {
     absoluteLayout.height = 230;
     absoluteLayout.style.backgroundColor = new colorModule.Color("LightGray");
     var label;
-    // Left Top
+    //// In absolute layout place of an UI element is determined by 4 parameters : left, top, width and height.
     label = new labelModule.Label();
     label.width = 100;
     label.height = 100;
