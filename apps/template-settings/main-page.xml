@@ -6,7 +6,7 @@
 
       <!-- Name -->
       <Label cssClass="field" text="Name"/>
-      <Button cssClass="field-dialog-button" text="{{ name }}" tap="promptName" col="1" colSpan="2"/>
+      <Button cssClass="field-dialog-button" text="{{ name }}" tap="{{ promptName }}" col="1" colSpan="2"/>
 
       <!-- Height -->
       <Label cssClass="field" text="Height" row="1"/>

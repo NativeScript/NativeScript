@@ -74,19 +74,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
             if (isBinding(attrValue) && instance.bind) {
                 if (isKnownEvent(attr, instanceModule)) {
-                    // Get the event handler from instance.bindingContext.
-                    var propertyChangeHandler = (args: observable.PropertyChangeData) => {
-                        if (args.propertyName === "bindingContext") {
-                            var handler = instance.bindingContext && instance.bindingContext[getBindingExpressionFromAttribute(attrValue)];
-                            // Check if the handler is function and add it to the instance for specified event name.
-                            if (types.isFunction(handler)) {
-                                instance.on(attr, handler, instance.bindingContext);
-                            }
-                            instance.off(observable.knownEvents.propertyChange, propertyChangeHandler);
-                        }
-                    };
-
-                    instance.on(observable.knownEvents.propertyChange, propertyChangeHandler);
+                    attachEventBinding(instance, attr, attrValue);
                 } else {
                     instance.bind(getBinding(instance, attr, attrValue));
                 }
@@ -145,6 +133,22 @@ export function getComponentModule(elementName: string, namespace: string, attri
     }
 
     return componentModule;
+}
+
+function attachEventBinding(instance: view.View, eventName: string, value:string) {
+    // Get the event handler from instance.bindingContext.
+    var propertyChangeHandler = (args: observable.PropertyChangeData) => {
+        if (args.propertyName === "bindingContext") {
+            var handler = instance.bindingContext && instance.bindingContext[getBindingExpressionFromAttribute(value)];
+            // Check if the handler is function and add it to the instance for specified event name.
+            if (types.isFunction(handler)) {
+                instance.on(eventName, handler, instance.bindingContext);
+            }
+            instance.off(observable.knownEvents.propertyChange, propertyChangeHandler);
+        }
+    };
+
+    instance.on(observable.knownEvents.propertyChange, propertyChangeHandler);
 }
 
 function isGesture(name: string, instance: any): boolean {
