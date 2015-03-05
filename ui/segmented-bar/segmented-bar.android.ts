@@ -57,9 +57,43 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
         view.android.setOnTabChangedListener(null);
         view.android.setOnTabChangedListener(view._listener);
+
+        if (view.selectedBackgroundColor) {
+            var tabHost = <android.widget.TabHost>view.android;
+
+            for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+                var vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+
+                var stateDrawable = new android.graphics.drawable.StateListDrawable();
+
+                var arr = java.lang.reflect.Array.newInstance(java.lang.Integer.class.getField("TYPE").get(null), 1);
+                arr[0] = (<any>android).R.attr.state_selected;
+
+                var colorDrawable = new SegmentedBarColorDrawable(view.selectedBackgroundColor.android)
+                stateDrawable.addState(arr, colorDrawable);
+                stateDrawable.setBounds(0, 15, vg.getRight(), vg.getBottom());
+
+                vg.setBackgroundDrawable(stateDrawable);
+            }
+        }
     }
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;
+
+class SegmentedBarColorDrawable extends android.graphics.drawable.ColorDrawable {
+    constructor(arg: any) {
+        super(arg);
+
+        return global.__native(this);
+    }
+
+    public draw(canvas: android.graphics.Canvas): void {
+        var p = new android.graphics.Paint();
+        p.setColor(this.Color);
+        p.setStyle(android.graphics.Paint.Style.FILL);
+        canvas.drawRect(0, this.Bounds.height() - 15, this.Bounds.width(), this.Bounds.height(), p);
+    }
+}
 
 export class SegmentedBar extends common.SegmentedBar {
     private _android: OurTabHost;

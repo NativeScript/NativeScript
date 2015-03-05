@@ -2,6 +2,7 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
+import color = require("color");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -39,6 +40,18 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     }
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;
+
+function onSelectedBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <SegmentedBar>data.object;
+    if (!view.ios) {
+        return;
+    }
+
+    if (data.newValue instanceof color.Color) {
+        view.ios.tintColor = (<color.Color>data.newValue).ios;
+    }
+}
+(<proxy.PropertyMetadata>common.SegmentedBar.selectedBackgroundColorProperty.metadata).onSetNativeValue = onSelectedBackgroundColorPropertyChanged;
 
 export class SegmentedBar extends common.SegmentedBar {
     private _ios: UISegmentedControl;
