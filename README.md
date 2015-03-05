@@ -30,8 +30,12 @@ I hope this gives you a good idea about what you can expect from NativeScript.
 To learn more about NativeScript, you can check the following resources:
 
 - [The NativeScript web page](www.nativescript.org)
-- [Getting Started](http://docs.nativescript.org/getting-started)
-- [Documentation](http://docs.nativescript.org)
+- [The NativeScript blog page](www.nativescript.org/blog)
+## Getting Started
+Please follow this [getting started with NativeScript article](http://docs.nativescript.org/getting-started)
+
+## Documentation
+[Documentation](http://docs.nativescript.org)
 
 ## Contribute
 Please follow our [contribute guide](https://www.nativescript.org/contribute) if you want to become part of the project.
