@@ -16,6 +16,7 @@ export class device implements definition.device {
     private static _osVersion: string;
     private static _sdkVersion: string;
     private static _deviceType: string;
+    private static _uuid: string;
 
     static get os(): string {
         return platformNames.android;
@@ -48,7 +49,7 @@ export class device implements definition.device {
     static get deviceType(): string {
         if (!device._deviceType) {
             var dips = Math.min(screen.mainScreen.widthPixels, screen.mainScreen.heightPixels) / screen.mainScreen.scale;
-            
+
             // If the device has more than 600 dips it is considered to be a tablet.
             if (dips >= device.MIN_TABLET_PIXELS) {
                 device._deviceType = enums.DeviceType.Tablet;
@@ -59,6 +60,17 @@ export class device implements definition.device {
         }
 
         return device._deviceType;
+    }
+
+    static get uuid(): string {
+        if (!device._uuid) {
+            device._uuid = android.provider.Settings.Secure.getString(
+              application.android.context.getContentResolver(),
+              android.provider.Settings.Secure.ANDROID_ID
+            );
+        }
+        
+        return device._uuid;
     }
 }
 

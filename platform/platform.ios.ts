@@ -55,6 +55,18 @@ export class device implements definition.device {
 
         return device._deviceType;
     }
+
+    static get uuid(): string {
+        if (!device._uuid) {
+          /*NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+          var UUID_KEY = @"CDVUUID";
+          CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
+          CFStringRef uuidString = CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
+          */
+        }
+
+        return device._uuid;
+    }
 }
 
 var mainScreenInfo: definition.ScreenMetrics = null;
