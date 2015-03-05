@@ -135,7 +135,6 @@ export function getComponentModule(elementName: string, namespace: string, attri
     return componentModule;
 }
 
-
 function attachEventBinding(instance: view.View, eventName: string, value:string) {
     // Get the event handler from instance.bindingContext.
     var propertyChangeHandler = (args: observable.PropertyChangeData) => {

@@ -63,7 +63,6 @@ export class SettingsViewModel extends observable.Observable {
 
 export var settingsViewModel = new SettingsViewModel();
 
-
 // Pure JavaScript  code: 
 //var observable = require("data/observable");
 //var localSettings = require("local-settings");
