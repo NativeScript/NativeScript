@@ -36,7 +36,7 @@ To learn more about NativeScript, you can check the following resources:
 Please follow this [getting started with NativeScript article](http://docs.nativescript.org/getting-started).
 
 ## Documentation
-Documentation is available here - [Documentation](http://docs.nativescript.org).
+A comprehensive documentation is available here - [Documentation](http://docs.nativescript.org).
 
 ## Helping NativeScript
 We love PRs! Please follow our [contribution guide](https://www.nativescript.org/contribute) if you want to become part of the project.
