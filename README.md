@@ -38,5 +38,5 @@ Please follow this [getting started with NativeScript article](http://docs.nativ
 ## Documentation
 Documentation is available here - [Documentation](http://docs.nativescript.org)
 
-## Contribute
+## Helping NativeScript
 Please follow our [contribute guide](https://www.nativescript.org/contribute) if you want to become part of the project.
