@@ -33,20 +33,16 @@ To learn more about NativeScript, you can check the following resources:
 - [The NativeScript blog page](http://www.nativescript.org/blog)
 
 ## Getting Started and How to Install NativeScript
-Please follow this [getting started with NativeScript article](http://docs.nativescript.org/getting-started)
+Please follow this [getting started with NativeScript article](http://docs.nativescript.org/getting-started).
 
 ## Documentation
-Documentation is available here - [Documentation](http://docs.nativescript.org)
+Documentation is available here - [Documentation](http://docs.nativescript.org).
 
 ## Helping NativeScript
 Please follow our [contribute guide](https://www.nativescript.org/contribute) if you want to become part of the project.
 
 ## Contact info
 Web site - [http://nativescript.org](http://nativescript.org)
-
 Twitter - [@NativeScript](http://twitter.com/NativeScript) 
-
 Blog - [http://nativescript.org/blog](http://nativescript.org/blog)
-
 Forum - [General discussion](http://www.telerik.com/forums/nativescript/general-discussions)
-
