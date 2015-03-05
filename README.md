@@ -9,3 +9,6 @@ To learn more about NativeScript, you can check the following resources:
 - [The NativeScript web page](www.nativescript.org)
 - [Getting Started](http://docs.nativescript.org/getting-started)
 - [Documentation](http://docs.nativescript.org)
+
+## Contribute
+Please follow our [contribute guide](https://www.nativescript.org/contribute) if you want to become part of the project.
