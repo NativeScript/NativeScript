@@ -40,3 +40,9 @@ Documentation is available here - [Documentation](http://docs.nativescript.org)
 
 ## Helping NativeScript
 Please follow our [contribute guide](https://www.nativescript.org/contribute) if you want to become part of the project.
+
+## Contact info
+Web site - [http://nativescript.org](http://nativescript.org)
+Twitter - [@NativeScript](http://twitter.com/NativeScript) 
+Blog - [http://nativescript.org/blog](http://nativescript.org/blog)
+Forum - [General discussion](http://www.telerik.com/forums/nativescript/general-discussions)
