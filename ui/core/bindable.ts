@@ -120,7 +120,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
     private static extractPropertyNameFromExpression(expression: string): string {
         var firstExpressionSymbolIndex = expression.search(expressionSymbolsRegex);
         if (firstExpressionSymbolIndex > -1) {
-            return expression.substr(0, firstExpressionSymbolIndex);
+            return expression.substr(0, firstExpressionSymbolIndex).trim();
         }
         else {
             return expression;
@@ -135,9 +135,16 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
         };
         if (types.isString(bindingExpression)) {
             var params = bindingExpression.split(",");
-            result.sourceProperty = Bindable.extractPropertyNameFromExpression(params[0]);
-            result.expression = params[1];
-            result.twoWay = params[2] ? params[2].toLowerCase() === "true" : true;
+            if (params.length === 1) {
+                result.sourceProperty = Bindable.extractPropertyNameFromExpression(params[0].trim());
+                result.expression = params[0].search(expressionSymbolsRegex) > -1 ? params[0].trim() : null;
+                result.twoWay = true;
+            }
+            else {
+                result.sourceProperty = Bindable.extractPropertyNameFromExpression(params[0].trim());
+                result.expression = params[1].trim();
+                result.twoWay = params[2] ? params[2].toLowerCase().trim() === "true" : true;
+            }
         }
         return result;
     }
@@ -276,7 +283,6 @@ export class Binding {
             this.sourceOptions.property in sourceOptionsInstance) {
             value = sourceOptionsInstance[this.sourceOptions.property];
         }
-
         return value;
     }
 
