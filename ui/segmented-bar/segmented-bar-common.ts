@@ -28,10 +28,10 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
         this._setValue(SegmentedBar.selectedIndexProperty, value);
     }
 
-    get items(): Array<definition.SegmentedBarEntry> {
+    get items(): Array<definition.SegmentedBarItem> {
         return this._getValue(SegmentedBar.itemsProperty);
     }
-    set items(value: Array<definition.SegmentedBarEntry>) {
+    set items(value: Array<definition.SegmentedBarItem>) {
         this._setValue(SegmentedBar.itemsProperty, value);
     }
 
