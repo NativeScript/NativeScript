@@ -43,6 +43,10 @@ Please follow our [contribute guide](https://www.nativescript.org/contribute) if
 
 ## Contact info
 Web site - [http://nativescript.org](http://nativescript.org)
+
 Twitter - [@NativeScript](http://twitter.com/NativeScript) 
+
 Blog - [http://nativescript.org/blog](http://nativescript.org/blog)
+
 Forum - [General discussion](http://www.telerik.com/forums/nativescript/general-discussions)
+
