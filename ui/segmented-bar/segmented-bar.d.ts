@@ -4,13 +4,14 @@
 declare module "ui/segmented-bar" {
     import view = require("ui/core/view");
     import dependencyObservable = require("ui/core/dependency-observable");
+    import color = require("color");
 
     /**
-     * Represents a SegmentedBar entry.
+     * Represents a SegmentedBar item.
      */
-    interface SegmentedBarEntry {
+    interface SegmentedBarItem {
         /**
-         * Gets or sets the title of the SegmentedBarEntry.
+         * Gets or sets the title of the SegmentedBarItem.
          */
         title: string;
     }
@@ -25,9 +26,14 @@ declare module "ui/segmented-bar" {
         selectedIndex: number;
 
         /**
+         * Gets or sets the selected background color of the SegmentedBar component.
+         */
+        selectedBackgroundColor: color.Color;
+
+        /**
          * Gets or sets the items of the SegmentedBar.
          */
-        items: Array<SegmentedBarEntry>;
+        items: Array<SegmentedBarItem>;
 
         /**
          * Gets or sets the selected index dependency property of the SegmentedBar.

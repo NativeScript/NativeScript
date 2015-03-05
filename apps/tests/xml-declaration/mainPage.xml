@@ -6,6 +6,15 @@
       <TabEntry title="Tab 1">
         <TabEntry.view>
           <StackLayout>
+            
+            <SegmentedBar selectedIndex="1" style="background-color: red; color: white" selectedBackgroundColor="green">
+              <SegmentedBar.items>
+                <SegmentedBarItem title="MAY 3" />
+                <SegmentedBarItem title="MAY 4" />
+                <SegmentedBarItem title="MAY 5" />
+              </SegmentedBar.items>
+            </SegmentedBar>
+            
             <ListPicker items="{{ someItems }}" selectedIndex="3"/>
             <DatePicker year="1976" month="10" day="30" />
             <TimePicker hour="10" minute="34" />

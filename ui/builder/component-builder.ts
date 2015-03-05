@@ -30,7 +30,7 @@ var MODULES = {
     "Span": "text/span",
     "WebView": "ui/web-view",
     "SegmentedBar": "ui/segmented-bar",
-    "SegmentedBarEntry": "ui/segmented-bar",
+    "SegmentedBarItem": "ui/segmented-bar",
     "TimePicker": "ui/time-picker",
     "DatePicker": "ui/date-picker",
     "ListPicker": "ui/list-picker",

@@ -466,6 +466,29 @@ export class TextViewStyler implements definition.stylers.Styler {
     }
 }
 
+export class SegmentedBarStyler implements definition.stylers.Styler {
+    //Text color methods
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <UISegmentedControl>view.ios;
+        var attrs = NSMutableDictionary.new();
+        attrs.setValueForKey(newValue, NSForegroundColorAttributeName);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UISegmentedControl>view.ios;
+        var attrs = NSMutableDictionary.new();
+        attrs.setValueForKey(nativeValue, NSForegroundColorAttributeName);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SegmentedBarStyler.setColorProperty,
+            SegmentedBarStyler.resetColorProperty), "SegmentedBar");
+    }
+}
+
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();
@@ -473,4 +496,5 @@ export function _registerDefaultStylers() {
     LabelStyler.registerHandlers();
     TextFieldStyler.registerHandlers();
     TextViewStyler.registerHandlers();
+    SegmentedBarStyler.registerHandlers();
 }

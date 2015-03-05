@@ -2,6 +2,7 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
+import color = require("color");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -9,7 +10,7 @@ require("utils/module-merge").merge(common, exports);
 
 function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <SegmentedBar>data.object;
-    if (!view.ios) {
+    if (!view.ios || !view.items) {
         return;
     }
 
@@ -31,8 +32,26 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     for (var i = 0; i < view.items.length; i++) {
         view.ios.insertSegmentWithTitleAtIndexAnimated(view.items[i].title, i, false);
     }
+
+    view._adjustSelectedIndex();
+
+    if (view.ios.selectedSegmentIndex !== view.selectedIndex) {
+        view.ios.selectedSegmentIndex = view.selectedIndex;
+    }
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;
+
+function onSelectedBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <SegmentedBar>data.object;
+    if (!view.ios) {
+        return;
+    }
+
+    if (data.newValue instanceof color.Color) {
+        view.ios.tintColor = (<color.Color>data.newValue).ios;
+    }
+}
+(<proxy.PropertyMetadata>common.SegmentedBar.selectedBackgroundColorProperty.metadata).onSetNativeValue = onSelectedBackgroundColorPropertyChanged;
 
 export class SegmentedBar extends common.SegmentedBar {
     private _ios: UISegmentedControl;

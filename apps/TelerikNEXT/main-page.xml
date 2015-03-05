@@ -27,9 +27,9 @@
 
         <SegmentedBar selectedIndex="{{ selectedIndex }}" >
           <SegmentedBar.items>
-            <SegmentedBarEntry title="MAY 3" />
-            <SegmentedBarEntry title="MAY 4" />
-            <SegmentedBarEntry title="MAY 5" />
+            <SegmentedBarItem title="MAY 3" />
+            <SegmentedBarItem title="MAY 4" />
+            <SegmentedBarItem title="MAY 5" />
           </SegmentedBar.items>
         </SegmentedBar>
         
