@@ -13,17 +13,17 @@ Because of the features listed above you get some important functionality right 
 The second major feature you get out of the box is 0-day support for new native platforms. Because NativeScript exposes the unmodified native APIs and UI, you can use the latest native APIs and new UI components when Apple, Google or Microsoft updated their mobile platforms.
   
  So let’s summarize what NativeScript enables you as of today: 
- - Build 100% native cross-platform apps, with a declarative UI, and the ability to implement platform-specific UIs
+ - Build 100% native cross-platform apps, with a declarative UI, and the ability to implement platform-specific UIs.
  - Share 100% of your code or use platform-specific APIs, depending on the app you’re building.
  - Code in standards-based ECMAScript 5 JavaScript. ES6 support is coming soon.
- - Use standards-based CSS syntax for styling
+ - Use standards-based CSS syntax for styling.
  - Use rich data binding and existing UI patterns to easily build complex user interfaces.
- - Reuse any native library available in Objective-C, Java or .NET (for example our native UI components - Telerik UI for iOS, Telerik UI for Android and Telerik UI for WindowsPhone)
- - Reuse any JavaScript library that is not browser-dependent
- - Reuse the QA tools for accessibility automation to write tests
- - Use the latest native platform features to create an amazing native user experience
- - Code in any IDE of your choice to implement your applications’ code using the NativeScript CLI
- - Use the Telerik Platform, AppBuilder and the full Visual Studio integration to get a rich development experience. Paid support is also available
+ - Reuse any native library available in Objective-C, Java or .NET.
+ - Reuse any JavaScript library that is not browser-dependent.
+ - Reuse the QA tools for accessibility automation to write tests.
+ - Use the latest native platform features to create an amazing native user experience.
+ - Code in any IDE of your choice to implement your applications’ code using the [NativeScript CLI](http://npmjs.org/nativescript).
+ - Use the [Telerik Platform](http://platform.telerik.com), AppBuilder and the full Visual Studio integration to get a rich development experience. Paid support is also available.
    
 We hope this gives you a good idea about what you can expect from NativeScript.
 
