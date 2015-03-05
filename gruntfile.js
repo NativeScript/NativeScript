@@ -32,6 +32,7 @@ module.exports = function(grunt) {
             contentAsObject.version = localCfg.packageVersion;
             contentAsObject.name = "tns-samples-" + currentAppName;
             contentAsObject.description = "Nativescript " + currentAppName + " sample application";
+            contentAsObject.license = "BSD";
         });
     };
 
@@ -40,6 +41,7 @@ module.exports = function(grunt) {
             contentAsObject.version = localCfg.packageVersion;
             contentAsObject.name = "tns-definitions";
             contentAsObject.description = "NativeScript Module definitions";
+            contentAsObject.license = "Apache-2.0";
         });
     }
 
@@ -119,6 +121,14 @@ module.exports = function(grunt) {
                 dest: "<%= localCfg.outModulesDir %>/",
                 cwd: localCfg.srcDir
             },
+            license: {
+                expand: true,
+                src: [
+                    "./LICENSE",
+                ],
+                dest: "<%= localCfg.outModulesDir %>/",
+                cwd: localCfg.srcDir
+            },
             definitionFiles: {
                 src: [
                     localCfg.srcDir + "/**/*.d.ts",
@@ -178,7 +188,7 @@ module.exports = function(grunt) {
             },
             readyAppFiles: {
                 expand: true,
-                src: ["./**/*.*"],
+                src: ["./**/*.*", "../LICENSE"],
                 dest: localCfg.outAppsDir + "/",
                 cwd: localCfg.outModulesDir + "/apps/",
                 options: {
@@ -187,7 +197,7 @@ module.exports = function(grunt) {
             },
             readyTsAppFiles: {
                 expand: true,
-                src: ["./**/*.*", "!./**/*.map"],
+                src: ["./**/*.*", "!./**/*.map", "../LICENSE"],
                 dest: localCfg.outTsAppsDir + "/",
                 cwd: localCfg.srcAppsDir
             },
@@ -331,7 +341,8 @@ module.exports = function(grunt) {
     grunt.registerTask("collect-definitions-raw-files", []);
 
     grunt.registerTask("collect-modules-raw-files", [
-        "copy:jsLibs"
+        "copy:jsLibs",
+        "copy:license"
     ]);
 
     grunt.registerTask("compile-ts", [
