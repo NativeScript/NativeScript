@@ -29,8 +29,8 @@ We hope this gives you a good idea about what you can expect from NativeScript.
 
 To learn more about NativeScript, you can check the following resources:
 
-- [The NativeScript web page](http://www.nativescript.org)
-- [The NativeScript blog page](http://www.nativescript.org/blog)
+- [The NativeScript web page](http://www.nativescript.org).
+- [The NativeScript blog page](http://www.nativescript.org/blog).
 
 ## Getting Started and How to Install NativeScript
 Please follow this [getting started with NativeScript article](http://docs.nativescript.org/getting-started).
