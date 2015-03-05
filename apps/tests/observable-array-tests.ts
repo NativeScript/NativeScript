@@ -80,34 +80,6 @@ export var test_ObservableArray_concatShouldReturnNewArrayWithNewItemsAtTheEnd =
     TKUnit.assert(result.length === 6 && result[4] === 5, "ObservableArray concat() should add items at the end!");
 };
 
-export var test_ObservableArray_concatShouldReturnNewArrayWithNewItemsAtTheEndAndRaiseChangeEventWithCorrectArgs = function () {
-    var result: observableArrayModule.ChangedData<number>;
-    // <snippet module="data/observable-array" title="observable-array">
-    // ### Use concat() method to append array to ObservableArray and handle "change" event.
-    // ``` JavaScript
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-
-    array.on(observableArrayModule.knownEvents.change, (args: observableArrayModule.ChangedData<number>) => {
-        //// Argument (args) is ChangedData<T>.
-        //// args.eventName is "change".
-        //// args.action is "add".
-        //// args.index is equal to the array length.
-        //// args.removed.length is 0.
-        //// args.addedCount is equal to number of added items.
-
-        // <hide>
-        result = args;
-        // </hide>
-    });
-
-    array.concat([4, 5, 6]);
-    // ```
-    // </snippet>
-
-    TKUnit.assert(result.eventName === "change" && result.action === observableArrayModule.ChangeType.Add &&
-        result.removed.length === 0 && result.index === 3 && result.addedCount === 3, "ObservableArray concat() should raise 'change' event with correct args!");
-};
-
 export var test_ObservableArray_joinShouldReturnStringWithAllItemsSeparatedWithComma = function () {
     // <snippet module="data/observable-array" title="observable-array">
     // ### Use join() method to convert ObservableArray to comma separated string.
