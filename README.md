@@ -2,11 +2,11 @@
 
 ## What is NativeScript
 
-With NativeScript you can use your JavaScript and CSS skills to write native mobile applications for iOS, Android and very soon WindowsPhone. There is no *WebView* involved in rendering the app, as the UI is rendered by the native platform's rendering engine. Because of that the, app's entire UX **is** native.
+With NativeScript you can use your JavaScript and CSS skills to write native mobile applications for [iOS](https://www.apple.com/ios/), [Android](https://www.android.com/) and (very soon) [WindowsPhone](http://www.windowsphone.com/en-us). There is no *WebView* involved in rendering the app, as the UI is rendered by the native platform's rendering engine. Because of that the, app's entire UX **is** native.
 
 NativeScript enables you to use a complete stack of cross-platform APIs to write the application code or, if you need, you can directly access all platform-specific native APIs using JavaScript only. That’s right - you can access all native APIs, not only the ones we thought would be useful!
 
-We did not want to create just yet another ecosystem around a native cross-platform framework. We wanted to integrate and play well with all existing JavaScript and native iOS/Android/Windows ecosystems. That is why we also support using existing JavaScript libraries, as well as existing native Objective-C, Java and .NET libraries. I want to stress out that you don't need to know Objective-C, Java or .NET in order to reuse these libraries - their entire APIs will be available in JavaScript with no changes.
+We did not want to create just yet another ecosystem around a native cross-platform framework. We wanted to integrate and play well with all existing JavaScript and native iOS/Android/Windows ecosystems. That is why we also support using existing JavaScript libraries, as well as existing native Objective-C, Java and .NET libraries. I want to stress out that you **don't need to know Objective-C, Java or .NET* in order to reuse these libraries - their entire APIs will be available in JavaScript with no changes.
   
 Because of the features listed above you get some important functionality right out of the box. The first is that NativeScript applications support the same accessibility models as native apps. This is important for anyone creating apps that need to meet certain accessibility standards before going live. This is also very useful when you start implementing functional or unit tests for your app. Several existing cross-platform tools like [Appium](www.appium.io) already work directly with NativeScript and provide accessibility automation.
   
@@ -29,8 +29,8 @@ I hope this gives you a good idea about what you can expect from NativeScript.
 
 To learn more about NativeScript, you can check the following resources:
 
-- [The NativeScript web page](www.nativescript.org)
-- [The NativeScript blog page](www.nativescript.org/blog)
+- [The NativeScript web page](http://www.nativescript.org)
+- [The NativeScript blog page](http://www.nativescript.org/blog)
 
 ## Getting Started
 Please follow this [getting started with NativeScript article](http://docs.nativescript.org/getting-started)
