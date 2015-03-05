@@ -88,13 +88,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
      */
     concat(): T[] {
         this._addArgs.index = this._array.length;
-
         var result = this._array.concat.apply(this._array, arguments);
-
-        this._addArgs.addedCount = result.length - this._array.length;
-
-        this.notify(this._addArgs);
-
         return result;
     }
 
@@ -117,6 +111,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
         this._deleteArgs.removed = [result];
 
         this.notify(this._deleteArgs);
+        this._notifyLengthChange();
 
         return result;
     }
@@ -143,8 +138,14 @@ export class ObservableArray<T> extends observable.Observable implements observa
         this._addArgs.addedCount = this._array.length - this._addArgs.index;
 
         this.notify(this._addArgs);
+        this._notifyLengthChange();
 
         return this._array.length;
+    }
+
+    _notifyLengthChange() {
+        var lengthChangedData = this._createPropertyChangeData("length", this._array.length);
+        this.notify(lengthChangedData);
     }
 
     /**
@@ -164,6 +165,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
         this._deleteArgs.removed = [result];
 
         this.notify(this._deleteArgs);
+        this._notifyLengthChange();
 
         return result;
     }
@@ -202,6 +204,9 @@ export class ObservableArray<T> extends observable.Observable implements observa
             removed: result,
             addedCount: this._array.length > length ? this._array.length - length : 0
         });
+        if (this._array.length !== length) {
+            this._notifyLengthChange();
+        }
 
         return result;
     }
@@ -218,6 +223,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
         this._addArgs.addedCount = result - length;
 
         this.notify(this._addArgs);
+        this._notifyLengthChange();
 
         return result;
     }

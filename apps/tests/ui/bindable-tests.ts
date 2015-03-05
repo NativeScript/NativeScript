@@ -380,3 +380,43 @@ export var test_Bindable_BindingContext_String_DoesNotThrow = function () {
 
     TKUnit.assert(obj.get("test") === 6, "Expected: 6; Actual: " + obj.get("test"));
 }
+
+export var test_getBindableOptionsFromStringFullFormat = function () {
+    var bindingExpression = "bindProperty, bindProperty * 2, false";
+    var bindOptions = bindable.Bindable._getBindingOptions("targetBindProperty", bindingExpression);
+
+    TKUnit.assert(bindOptions.sourceProperty === "bindProperty", "Expected: bindProperty, Actual: " + bindOptions.sourceProperty);
+    TKUnit.assert(bindOptions.targetProperty === "targetBindProperty", "Expected: targetBindProperty, Actual: " + bindOptions.targetProperty);
+    TKUnit.assert(bindOptions.expression === "bindProperty * 2", "Expected: bindProperty * 2, Actual:" + bindOptions.expression);
+    TKUnit.assert(bindOptions.twoWay === false, "Expected: false, Actual: " + bindOptions.twoWay);
+}
+
+export var test_getBindableOptionsFromStringShortFormatExpression = function () {
+    var bindingExpression = "bindProperty * 2";
+    var bindOptions = bindable.Bindable._getBindingOptions("targetBindProperty", bindingExpression);
+
+    TKUnit.assert(bindOptions.sourceProperty === "bindProperty", "Expected: bindProperty, Actual: " + bindOptions.sourceProperty);
+    TKUnit.assert(bindOptions.targetProperty === "targetBindProperty", "Expected: targetBindProperty, Actual: " + bindOptions.targetProperty);
+    TKUnit.assert(bindOptions.expression === "bindProperty * 2", "Expected: bindProperty * 2, Actual: " + bindOptions.expression);
+    TKUnit.assert(bindOptions.twoWay === true, "Expected: true, Actual: " + bindOptions.twoWay);
+}
+
+export var test_getBindableOptionsFromStringShortFormatProperty = function () {
+    var bindingExpression = "bindProperty";
+    var bindOptions = bindable.Bindable._getBindingOptions("targetBindProperty", bindingExpression);
+
+    TKUnit.assert(bindOptions.sourceProperty === "bindProperty", "Expected: bindProperty, Actual: " + bindOptions.sourceProperty);
+    TKUnit.assert(bindOptions.targetProperty === "targetBindProperty", "Expected: targetBindProperty, Actual: " + bindOptions.targetProperty);
+    TKUnit.assert(bindOptions.expression === null, "Expected: null, Actual: " + bindOptions.expression);
+    TKUnit.assert(bindOptions.twoWay === true, "Expected: true, Actual: " + bindOptions.twoWay);
+}
+
+export var test_getBindableOptionsFromStringTwoParamsFormat = function () {
+    var bindingExpression = "bindProperty, bindProperty * 2";
+    var bindOptions = bindable.Bindable._getBindingOptions("targetBindProperty", bindingExpression);
+
+    TKUnit.assert(bindOptions.sourceProperty === "bindProperty", "Expected: bindProperty, Actual: " + bindOptions.sourceProperty);
+    TKUnit.assert(bindOptions.targetProperty === "targetBindProperty", "Expected: targetBindProperty, Actual: " + bindOptions.targetProperty);
+    TKUnit.assert(bindOptions.expression === "bindProperty * 2", "Expected: bindProperty * 2, Actual:" + bindOptions.expression);
+    TKUnit.assert(bindOptions.twoWay === true, "Expected: true, Actual: " + bindOptions.twoWay);
+}

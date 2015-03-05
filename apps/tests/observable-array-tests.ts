@@ -1,4 +1,5 @@
 import TKUnit = require("./TKUnit");
+import bindableModule = require("ui/core/bindable");
 require("globals");
 
 // <snippet module="data/observable-array" title="observable-array">
@@ -80,34 +81,6 @@ export var test_ObservableArray_concatShouldReturnNewArrayWithNewItemsAtTheEnd =
     TKUnit.assert(result.length === 6 && result[4] === 5, "ObservableArray concat() should add items at the end!");
 };
 
-export var test_ObservableArray_concatShouldReturnNewArrayWithNewItemsAtTheEndAndRaiseChangeEventWithCorrectArgs = function () {
-    var result: observableArrayModule.ChangedData<number>;
-    // <snippet module="data/observable-array" title="observable-array">
-    // ### Use concat() method to append array to ObservableArray and handle "change" event.
-    // ``` JavaScript
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-
-    array.on(observableArrayModule.knownEvents.change, (args: observableArrayModule.ChangedData<number>) => {
-        //// Argument (args) is ChangedData<T>.
-        //// args.eventName is "change".
-        //// args.action is "add".
-        //// args.index is equal to the array length.
-        //// args.removed.length is 0.
-        //// args.addedCount is equal to number of added items.
-
-        // <hide>
-        result = args;
-        // </hide>
-    });
-
-    array.concat([4, 5, 6]);
-    // ```
-    // </snippet>
-
-    TKUnit.assert(result.eventName === "change" && result.action === observableArrayModule.ChangeType.Add &&
-        result.removed.length === 0 && result.index === 3 && result.addedCount === 3, "ObservableArray concat() should raise 'change' event with correct args!");
-};
-
 export var test_ObservableArray_joinShouldReturnStringWithAllItemsSeparatedWithComma = function () {
     // <snippet module="data/observable-array" title="observable-array">
     // ### Use join() method to convert ObservableArray to comma separated string.
@@ -135,10 +108,16 @@ export var test_ObservableArray_popShouldRemoveTheLastElement = function () {
     // ### Use pop() method to remove the last element.
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    // <hide>
+    var bindable = new bindableModule.Bindable();
+    bindable.set("testProperty", 0);
+    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    // </hide>
     var result = array.pop();
     // ```
     // </snippet>
     TKUnit.assert(result === 3 && array.length === 2, "ObservableArray pop() should remove last element!");
+    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
 };
 
 export var test_ObservableArray_popShouldRemoveTheLastElementAndRaiseChangeEventWithCorrectArgs = function () {
@@ -176,10 +155,16 @@ export var test_ObservableArray_pushShouldAppendNewElement = function () {
     // ### Use push() method to add single element to the array.
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    // <hide>
+    var bindable = new bindableModule.Bindable();
+    bindable.set("testProperty", 0);
+    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    // </hide>
     var result = array.push(4);
     // ```
     // </snippet>
     TKUnit.assert(result === 4 && array.getItem(3) === 4, "ObservableArray push() should append new element!");
+    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
 };
 
 export var test_ObservableArray_pushShouldAppendNewElementAndRaiseChangeEventWithCorrectArgs = function () {
@@ -215,10 +200,16 @@ export var test_ObservableArray_pushShouldAppendNewElements = function () {
     // ### Use push() method to add multiple elements to the array.
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    // <hide>
+    var bindable = new bindableModule.Bindable();
+    bindable.set("testProperty", 0);
+    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    // </hide>
     var result = array.push(4, 5, 6);
     // ```
     // </snippet>
     TKUnit.assert(result === 6 && array.getItem(5) === 6, "ObservableArray push() should append new elements!");
+    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
 };
 
 export var test_ObservableArray_pushShouldAppendNewElementsAndRaiseChangeEventWithCorrectArgs = function () {
@@ -254,10 +245,16 @@ export var test_ObservableArray_pushShouldAppendNewElementsFromSourceArray = fun
     // ### Use push() method to add multiple elements from source array to the ObservableArray.
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    // <hide>
+    var bindable = new bindableModule.Bindable();
+    bindable.set("testProperty", 0);
+    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    // </hide>
     var result = array.push([4, 5, 6]);
     // ```
     // </snippet>
     TKUnit.assert(result === 6 && array.getItem(5) === 6, "ObservableArray push() should append new elements from source array!");
+    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
 };
 
 export var test_ObservableArray_pushShouldAppendNewElementsFromSourceArrayAndRaiseChangeEventWithCorrectArgs = function () {
@@ -304,10 +301,16 @@ export var test_ObservableArray_shiftShouldRemoveTheFirstElement = function () {
     // ### Use shift() method to remove the first element of the array.
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    // <hide>
+    var bindable = new bindableModule.Bindable();
+    bindable.set("testProperty", 0);
+    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    // </hide>
     var result = array.shift();
     // ```
     // </snippet>
     TKUnit.assert(result === 1 && array.length === 2, "ObservableArray shift() should remove first element!");
+    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
 };
 
 export var test_ObservableArray_shiftShouldRemoveTheFirstElementAndRaiseChangeEventWithCorrectArgs = function () {
@@ -388,11 +391,17 @@ export var test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStart
     // ### Use splice(start, deleteCount) method to delete elements in the array. 
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
+    // <hide>
+    var bindable = new bindableModule.Bindable();
+    bindable.set("testProperty", 0);
+    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    // </hide>
     var result = array.splice(1, 2);
     // ```
     // </snippet>
     TKUnit.assert(result.length === 2 && result[0] === "two" && array.length === 1 && array.getItem(0) === "one",
         "ObservableArray splice() should remove specified number of elements starting from specified index!");
+    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
 };
 
 export var test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStartingFromSpecifiedIndexAndRaiseChangeEventWithCorrectArgs = function () {
@@ -470,11 +479,17 @@ export var test_ObservableArray_unshiftShouldInsertNewElementsFromTheStart = fun
     // ### Use unshift(item1, item2... itemN) method to insert elements from the start of the array.
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    // <hide>
+    var bindable = new bindableModule.Bindable();
+    bindable.set("testProperty", 0);
+    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    // </hide>
     var result = array.unshift(4, 5);
     // ```
     // </snippet>
 
     TKUnit.assert(array.getItem(0) === 4 && result === 5 && array.length === 5, "ObservableArray unshift() should insert new elements from the start!");
+    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
 };
 
 export var test_ObservableArray_unshiftShouldInsertNewElementsFromTheStartAndRaiseChangeEventWithCorrectArgs = function () {

@@ -114,7 +114,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
                 gridLayoutModule.GridLayout.setColumnSpan(instance, !isNaN(+attrValue) && +attrValue);
             } else if (attr === ROW_SPAN) {
                 gridLayoutModule.GridLayout.setRowSpan(instance, !isNaN(+attrValue) && +attrValue);
-            } if (attr === LEFT) {
+            } else if (attr === LEFT) {
                 absoluteLayoutDef.AbsoluteLayout.setLeft(instance, !isNaN(+attrValue) && +attrValue);
             } else if (attr === TOP) {
                 absoluteLayoutDef.AbsoluteLayout.setTop(instance, !isNaN(+attrValue) && +attrValue);
