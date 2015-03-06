@@ -6,7 +6,27 @@
       <TabViewItem title="Tab 1">
         <TabViewItem.view>
           <StackLayout>
-            
+
+            <ToolBar>
+              <ToolBar.items>
+                <ToolBarItem>
+                  <ToolBarItem.view>
+                    <Label text="Label" />
+                  </ToolBarItem.view>
+                </ToolBarItem>
+                <ToolBarItem>
+                  <ToolBarItem.view>
+                    <Button text="Button" />
+                  </ToolBarItem.view>
+                </ToolBarItem>
+                <ToolBarItem>
+                  <ToolBarItem.view>
+                    <Image url="http://icons.iconarchive.com/icons/oxygen-icons.org/oxygen/256/Places-favorites-icon.png" />
+                  </ToolBarItem.view>
+                </ToolBarItem>
+              </ToolBar.items>
+            </ToolBar>
+
             <SegmentedBar selectedIndex="1" style="background-color: red; color: white" selectedBackgroundColor="green">
               <SegmentedBar.items>
                 <SegmentedBarItem title="MAY 3" />
@@ -14,7 +34,7 @@
                 <SegmentedBarItem title="MAY 5" />
               </SegmentedBar.items>
             </SegmentedBar>
-            
+
             <ListPicker items="{{ someItems }}" selectedIndex="3"/>
             <DatePicker year="1976" month="10" day="30" />
             <TimePicker hour="10" minute="34" />

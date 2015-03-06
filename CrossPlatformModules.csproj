@@ -330,6 +330,16 @@
     <TypeScriptCompile Include="ui\list-picker\list-picker.ios.ts">
       <DependentUpon>list-picker.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\tool-bar\tool-bar-common.ts">
+      <DependentUpon>tool-bar.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\tool-bar\tool-bar.android.ts">
+      <DependentUpon>tool-bar.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\tool-bar\tool-bar.d.ts" />
+    <TypeScriptCompile Include="ui\tool-bar\tool-bar.ios.ts">
+      <DependentUpon>tool-bar.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\segmented-bar\segmented-bar-common.ts">
       <DependentUpon>segmented-bar.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -1451,6 +1461,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ui\list-picker\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ui\tool-bar\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
