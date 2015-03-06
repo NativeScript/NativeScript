@@ -58,11 +58,8 @@ export class device implements definition.device {
 
     static get uuid(): string {
         if (!device._uuid) {
-          /*NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
-          var UUID_KEY = @"CDVUUID";
-          CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
-          CFStringRef uuidString = CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
-          */
+            var uuidRef = CFUUIDCreate(kCFAllocatorDefault);
+            device._uuid = CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
         }
 
         return device._uuid;
