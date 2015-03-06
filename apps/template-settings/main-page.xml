@@ -2,7 +2,7 @@
   <StackLayout cssClass="content">
     <!-- Profile sttings -->
     <Label cssClass="header" text="Profile"/>
-    <GridLayout cssClass="field-group" columns="auto, 50, *" rows="36, 36, 36">
+    <GridLayout cssClass="field-group" columns="auto, 50, *" rows="auto, auto, auto">
 
       <!-- Name -->
       <Label cssClass="field" text="Name"/>
@@ -21,7 +21,7 @@
 
     <!-- Notifications settings -->
     <Label cssClass="header" text="Notifications"/>
-    <GridLayout cssClass="field-group" columns="*, auto" rows="36, 36, 36">
+    <GridLayout cssClass="field-group" columns="*, auto" rows="auto, auto, auto">
       <!-- Notifications -->
       <Label cssClass="field" text="Vibrate"/>
       <Switch cssClass="field-value" checked="{{ vibrateEnabled }}" col="1"/>
