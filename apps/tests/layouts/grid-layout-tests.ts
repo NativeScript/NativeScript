@@ -492,6 +492,7 @@ export function test_GridLayout_padding() {
 
     TKUnit.waitUntilReady(() => { return btn.isLayoutValid });
 
+    helper.assertMeasure(btn, 260, 240);
     helper.assertLayout(btn, 10, 20, 260, 240);
 }
 

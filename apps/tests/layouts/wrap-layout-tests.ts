@@ -230,6 +230,9 @@ export function testPaddingRight() {
             return wrapLayout.isLayoutValid;
         });
 
+        layoutHelper.assertMeasure(btn1, 100, 50);
+        layoutHelper.assertMeasure(btn2, 80, 50);
+
         // There should be no space left for the button on the first row,
         // because fo the padding (200 - 100 - 30) = 70 button wants 80  
         layoutHelper.assertLayout(btn1, 0, 0, 100, 50, "button1");
@@ -257,6 +260,9 @@ export function testPaddingBottom() {
         TKUnit.waitUntilReady(() => {
             return wrapLayout.isLayoutValid;
         });
+
+        layoutHelper.assertMeasure(btn1, 50, 100);
+        layoutHelper.assertMeasure(btn2, 50, 80);
 
         // There should be no space left for the button on the first row,
         // because fo the padding (200 - 100 - 30) = 70 button wants 80  

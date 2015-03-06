@@ -66,6 +66,15 @@ export class MyButton extends button.Button {
     }
 }
 
+export function assertMeasure(btn: MyButton, width: number, height: number, name?: string) {
+    var density = utils.layout.getDisplayDensity();
+
+    name = name ? "[" + name + "]" : "";
+
+    TKUnit.assertAreClose(btn.measureWidth / density, width, DELTA, name + "width");
+    TKUnit.assertAreClose(btn.measureHeight / density, height, DELTA, name + "height");
+}
+
 export function assertLayout(btn: MyButton, left: number, top: number, width: number, height: number, name?: string): void {
     var density = utils.layout.getDisplayDensity();
 

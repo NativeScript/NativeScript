@@ -73,6 +73,7 @@ export function test_padding() {
             return absoluteLayout.isLayoutValid;
         }, 1);
 
+        layoutHelper.assertMeasure(btn, 100, 100);
         layoutHelper.assertLayout(btn, 25, 35, 100, 100);
     }); 
 }

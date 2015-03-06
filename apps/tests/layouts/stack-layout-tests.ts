@@ -175,6 +175,9 @@ export function test_StackLayout_Padding_Vertical() {
         return btn2.arranged;
     }, ASYNC);
 
+    helper.assertMeasure(btn1, 260, 50);
+    helper.assertMeasure(btn1, 260, 50);
+
     helper.assertLayout(btn1, 10, 20, 260, 50, "btn1"); 
     helper.assertLayout(btn2, 10, 70, 260, 50, "btn2"); 
 }
@@ -195,6 +198,9 @@ export function test_StackLayout_Padding_Horizontal() {
     TKUnit.waitUntilReady(function () {
         return btn2.arranged;
     }, ASYNC);
+
+    helper.assertMeasure(btn1, 50, 240);
+    helper.assertMeasure(btn1, 50, 240);
 
     helper.assertLayout(btn1, 10, 20, 50, 240, "btn1");
     helper.assertLayout(btn2, 60, 20, 50, 240, "btn2");
