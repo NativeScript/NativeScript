@@ -12,7 +12,7 @@ function validateOrientation(value: any): boolean {
 
 export var orientationProperty = new dependencyObservable.Property(
     "orientation",
-    "LinearLayout",
+    "StackLayout",
     new proxy.PropertyMetadata(enums.Orientation.vertical,
         dependencyObservable.PropertyMetadataSettings.AffectsLayout,
         undefined,
@@ -32,6 +32,7 @@ export class StackLayout extends layouts.Layout implements definition.StackLayou
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        var density = utils.layout.getDisplayDensity();
 
         var measureWidth = 0;
         var measureHeight = 0;
@@ -43,6 +44,9 @@ export class StackLayout extends layouts.Layout implements definition.StackLayou
         var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
         var isVertical = this.orientation === enums.Orientation.vertical;
+        var verticalPadding = (this.paddingTop + this.paddingBottom) * density;
+        var horizontalPadding = (this.paddingLeft + this.paddingRight) * density;
+
         var count = this.getChildrenCount();
 
         var measureSpec: number;
@@ -56,7 +60,19 @@ export class StackLayout extends layouts.Layout implements definition.StackLayou
         }
         else {
             measureSpec = utils.layout.AT_MOST;
-            remainingLength = isVertical ? height : width;
+            remainingLength = isVertical ? height - verticalPadding : width - horizontalPadding;
+        }
+
+        var childMeasureSpec: number;
+        if (isVertical) {
+            var childWidth = (widthMode === utils.layout.UNSPECIFIED) ? 0 : width - horizontalPadding;
+            childWidth = Math.max(0, childWidth);
+            childMeasureSpec = utils.layout.makeMeasureSpec(childWidth, widthMode)
+        }
+        else {
+            var childHeight = (heightMode === utils.layout.UNSPECIFIED) ? 0 : height - verticalPadding;
+            childHeight = Math.max(0, childHeight);
+            childMeasureSpec = utils.layout.makeMeasureSpec(childHeight, heightMode)
         }
 
         var childSize: { measuredWidth: number; measuredHeight: number };
@@ -67,14 +83,14 @@ export class StackLayout extends layouts.Layout implements definition.StackLayou
             }
 
             if (isVertical) {
-                childSize = view.View.measureChild(this, child, widthMeasureSpec, utils.layout.makeMeasureSpec(remainingLength, measureSpec));
+                childSize = view.View.measureChild(this, child, childMeasureSpec, utils.layout.makeMeasureSpec(remainingLength, measureSpec));
                 measureWidth = Math.max(measureWidth, childSize.measuredWidth);
                 var viewHeight = childSize.measuredHeight;
                 measureHeight += viewHeight;
                 remainingLength = Math.max(0, remainingLength - viewHeight);
             }
             else {
-                childSize = view.View.measureChild(this, child, utils.layout.makeMeasureSpec(remainingLength, measureSpec), heightMeasureSpec);
+                childSize = view.View.measureChild(this, child, utils.layout.makeMeasureSpec(remainingLength, measureSpec), childMeasureSpec);
                 measureHeight = Math.max(measureHeight, childSize.measuredHeight);
                 var viewWidth = childSize.measuredWidth;
                 measureWidth += viewWidth;
@@ -82,9 +98,8 @@ export class StackLayout extends layouts.Layout implements definition.StackLayou
             }
         }
 
-        var density = utils.layout.getDisplayDensity();
-        measureWidth += (this.paddingLeft + this.paddingRight) * density;
-        measureHeight += (this.paddingTop + this.paddingBottom) * density;
+        measureWidth += horizontalPadding;
+        measureHeight += verticalPadding;
 
         measureWidth = Math.max(measureWidth, this.minWidth * density);
         measureHeight = Math.max(measureHeight, this.minHeight * density);

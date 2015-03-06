@@ -191,6 +191,7 @@ export function test_padding() {
 
     TKUnit.waitUntilReady(() => { return rootLayout.isLayoutValid; });
 
+    helper.assertMeasure(testBtn, 260, 240);
     helper.assertLayout(testBtn, 10, 20, 260, 240);
 }
 
