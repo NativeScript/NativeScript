@@ -17,16 +17,16 @@ import buttonModule = require("ui/button");
 // <Page>
 //  <TabView>
 //    <TabView.items>
-//      <TabEntry title="Tab 1">
-//        <TabEntry.view>
+//      <TabViewItem title="Tab 1">
+//        <TabViewItem.view>
 //           <Label text="Label in Tab1" />
-//        </TabEntry.view>
-//      </TabEntry>
-//      <TabEntry title="Tab 2">
-//        <TabEntry.view>
+//        </TabViewItem.view>
+//      </TabViewItem>
+//      <TabViewItem title="Tab 2">
+//        <TabViewItem.view>
 //           <Label text="Label in Tab2" />
-//        </TabEntry.view>
-//      </TabEntry>
+//        </TabViewItem.view>
+//      </TabViewItem>
 //    </TabView.items>
 //  </TabView>
 // </Page>
@@ -47,8 +47,8 @@ function _createTabView(): tabViewModule.TabView {
     return tabView;
 }
 
-function _createItems(count: number): Array<tabViewModule.TabEntry> {
-    var items = new Array<tabViewModule.TabEntry>();
+function _createItems(count: number): Array<tabViewModule.TabViewItem> {
+    var items = new Array<tabViewModule.TabViewItem>();
     for (var i = 0; i < count; i++) {
         var label = new labelModule.Label();
         label.text = "Tab " + i;
@@ -263,7 +263,7 @@ export var testBindingToTabEntryWithUndefinedViewShouldThrow = function () {
         var tabView = <tabViewModule.TabView>views[0];
         TKUnit.assertThrows(function () {
             tabView.items = [{ title: "Tab 0", view: undefined }];
-        }, "Binding TabView to a TabEntry with undefined view should throw.");
+        }, "Binding TabView to a TabViewItem with undefined view should throw.");
     });
 }
 
@@ -273,7 +273,7 @@ export var testBindingToTabEntryWithNullViewShouldThrow = function () {
         var tabView = <tabViewModule.TabView>views[0];
         TKUnit.assertThrows(function () {
             tabView.items = [{ title: "Tab 0", view: null }];
-        }, "Binding TabView to a TabEntry with null view should throw.");
+        }, "Binding TabView to a TabViewItem with null view should throw.");
     });
 }
 

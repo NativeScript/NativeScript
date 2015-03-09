@@ -23,7 +23,7 @@ var MODULES = {
     "SearchBar": "ui/search-bar",
     "SlideOut": "ui/slide-out",
     "TabView": "ui/tab-view",
-    "TabEntry": "ui/tab-view",
+    "TabViewItem": "ui/tab-view",
     "TextField": "ui/text-field",
     "TextView": "ui/text-view",
     "FormattedString": "text/formatted-string",

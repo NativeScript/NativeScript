@@ -326,7 +326,7 @@ export class TabView extends common.TabView {
         }
     }
 
-    public _addTabs(newItems: Array<definition.TabEntry>) {
+    public _addTabs(newItems: Array<definition.TabViewItem>) {
         trace.write("TabView._addTabs(" + newItems + ");", common.traceCategory);
         super._addTabs(newItems);
 
@@ -351,7 +351,7 @@ export class TabView extends common.TabView {
         // TODO: Where will be the support for more ActionBar settings like Title, Navigation buttons, etc.?
         var i: number = 0;
         var length = newItems.length;
-        var item: definition.TabEntry;
+        var item: definition.TabViewItem;
         var tab: android.app.ActionBar.Tab;
 
         for (i; i < length; i++) {
@@ -367,7 +367,7 @@ export class TabView extends common.TabView {
         }
     }
 
-    public _removeTabs(oldItems: Array<definition.TabEntry>) {
+    public _removeTabs(oldItems: Array<definition.TabViewItem>) {
         trace.write("TabView._removeTabs(" + oldItems + ");", common.traceCategory);
         super._removeTabs(oldItems);
 

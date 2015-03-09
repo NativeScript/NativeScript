@@ -49,10 +49,10 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
         }
     }
 
-    get items(): Array<definition.TabEntry> {
+    get items(): Array<definition.TabViewItem> {
         return this._getValue(TabView.itemsProperty);
     }
-    set items(value: Array<definition.TabEntry>) {
+    set items(value: Array<definition.TabViewItem>) {
         this._setValue(TabView.itemsProperty, value);
     }
 
@@ -84,24 +84,24 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
         }
     }
 
-    public _removeTabs(oldItems: Array<definition.TabEntry>) {
+    public _removeTabs(oldItems: Array<definition.TabViewItem>) {
         //
     }
 
-    public _addTabs(newItems: Array<definition.TabEntry>) {
+    public _addTabs(newItems: Array<definition.TabViewItem>) {
         // Validate that all items are ok before the native _addTabs code runs.
         var i: number;
         var length = newItems.length;
-        var newItem: definition.TabEntry;
+        var newItem: definition.TabViewItem;
         for (i = 0; i < length; i++) {
             newItem = newItems[i];
 
             if (!newItem) {
-                throw new Error("TabEntry at index " + i + " is undefined.");
+                throw new Error("TabViewItem at index " + i + " is undefined.");
             }
 
             if (!newItem.view) {
-                throw new Error("TabEntry at index " + i + " does not have a view.");
+                throw new Error("TabViewItem at index " + i + " does not have a view.");
             }
         }
     }
@@ -163,7 +163,7 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
 
         var i;
         var length = _items.length;
-        var item: definition.TabEntry;
+        var item: definition.TabViewItem;
         var retVal: boolean;
 
         for (i = 0; i < length; i++) {

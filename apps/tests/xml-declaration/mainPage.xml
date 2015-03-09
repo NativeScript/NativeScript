@@ -3,8 +3,8 @@
       xmlns:customControls2="app/xml-declaration/mymodulewithxml">
   <TabView>
     <TabView.items>
-      <TabEntry title="Tab 1">
-        <TabEntry.view>
+      <TabViewItem title="Tab 1">
+        <TabViewItem.view>
           <StackLayout>
             
             <SegmentedBar selectedIndex="1" style="background-color: red; color: white" selectedBackgroundColor="green">
@@ -38,25 +38,25 @@
             <Button text="This is Button!" tap="buttonTap" />
             <customControls:MyControl />
           </StackLayout>
-        </TabEntry.view>
-      </TabEntry>
-      <TabEntry title="Tab 2">
-        <TabEntry.view>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="Tab 2">
+        <TabViewItem.view>
           <StackLayout>
             <customControls2:MyControl />
             <Label text="This is Label in Tab 2" />
           </StackLayout>
-        </TabEntry.view>
-      </TabEntry>
-      <TabEntry title="Tab 3">
-        <TabEntry.view>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="Tab 3">
+        <TabViewItem.view>
           <GridLayout columns="50, auto, *" rows="50, auto, *">
             <Label text="This is Label in Tab 3"  row="0" />
             <Label text="This is second Label in Tab 3" row="1" />
             <customControls:MyControl />
           </GridLayout>
-        </TabEntry.view>
-      </TabEntry>
+        </TabViewItem.view>
+      </TabViewItem>
     </TabView.items>
   </TabView>
 </Page>
