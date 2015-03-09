@@ -10,6 +10,14 @@ import webViewModule = require("ui/web-view");
 // ```
 // </snippet>
 
+// ### Declaring a WebView.
+//```XML
+//  <Page>
+//      <WebView url="{{ someUrl }}" />
+//  </Page>
+//```
+// </snippet>
+
 var _createWebViewFunc = function (): webViewModule.WebView {
     // <snippet module="ui/web-view" title="WebView">
     // ### Creating a WebView

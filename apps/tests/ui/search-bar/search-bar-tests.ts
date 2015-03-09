@@ -7,6 +7,14 @@ import searchBarModule = require("ui/search-bar");
 // ```
 // </snippet>
 
+// ### Declaring a SearchBar.
+//```XML
+//  <Page>
+//      <SearchBar text="{{ search }}" />
+//  </Page>
+//```
+// </snippet>
+
 export function test_DummyTestForSnippetOnly() {
     // <snippet module="ui/search-bar" title="search-bar">
     // ### Searching
