@@ -515,7 +515,6 @@ export var test_codesnippets = function () {
     //  <Button row="1" colSpan="3" />
     // </GridLayout>
     // ```
-    // </snippet>
 
     // ### Add views to grid layout
     // ``` JavaScript
