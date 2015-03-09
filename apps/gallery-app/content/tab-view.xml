@@ -2,20 +2,20 @@
 <Page>
   <TabView>
     <TabView.items>
-      <TabEntry title="First">
-        <TabEntry.view>
+      <TabViewItem title="First">
+        <TabViewItem.view>
           <GridLayout>
             <Label text="First Tab" verticalAlignment="center" horizontalAlignment="center"/>
           </GridLayout>
-        </TabEntry.view>
-      </TabEntry>
-      <TabEntry title="Second">
-        <TabEntry.view>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="Second">
+        <TabViewItem.view>
           <GridLayout>
             <Label text="Second Tab" verticalAlignment="center" horizontalAlignment="center"/>
           </GridLayout>
-        </TabEntry.view>
-      </TabEntry>
+        </TabViewItem.view>
+      </TabViewItem>
     </TabView.items>
   </TabView>
 </Page>

@@ -1,22 +1,22 @@
 <Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded">
   <TabView>
     <TabView.items>
-      <TabEntry title="First">
-        <TabEntry.view>
+      <TabViewItem title="First">
+        <TabViewItem.view>
           <StackLayout cssClass="tab-content">
             <Label text="First View" cssClass="title"/>
             <Label text="This is the content of the first tab." textWrap="true"/>
           </StackLayout>
-        </TabEntry.view>
-      </TabEntry>
-      <TabEntry title="Second">
-        <TabEntry.view>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="Second">
+        <TabViewItem.view>
           <StackLayout cssClass="tab-content">
             <Label text="Second View" cssClass="title"/>
             <Label text="This is the content of the second tab." textWrap="true"/>
           </StackLayout>
-        </TabEntry.view>
-      </TabEntry>
+        </TabViewItem.view>
+      </TabViewItem>
     </TabView.items>
   </TabView>
 </Page>

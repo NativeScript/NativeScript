@@ -117,13 +117,13 @@ export class TabView extends common.TabView {
         }
     }
 
-    public _removeTabs(oldItems: Array<definition.TabEntry>) {
+    public _removeTabs(oldItems: Array<definition.TabViewItem>) {
         trace.write("TabView._removeTabs(" + oldItems + ");", trace.categories.Debug);
         super._removeTabs(oldItems);
 
         var i: number;
         var length = oldItems.length;
-        var oldItem: definition.TabEntry;
+        var oldItem: definition.TabViewItem;
         for (i = 0; i < length; i++) {
             oldItem = oldItems[i];
             this._removeView(oldItem.view);
@@ -132,13 +132,13 @@ export class TabView extends common.TabView {
         this._ios.viewControllers = null;
     }
 
-    public _addTabs(newItems: Array<definition.TabEntry>) {
+    public _addTabs(newItems: Array<definition.TabViewItem>) {
         trace.write("TabView._addTabs(" + newItems + ");", trace.categories.Debug);
         super._addTabs(newItems);
 
         var i: number;
         var length = newItems.length;
-        var newItem: definition.TabEntry;
+        var newItem: definition.TabViewItem;
         var newControllers: NSMutableArray = NSMutableArray.alloc().initWithCapacity(length);
         var newController: UIViewController;
 

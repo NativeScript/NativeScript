@@ -8,14 +8,14 @@ declare module "ui/tab-view" {
     /**
      * Represents a tab view entry.
      */
-    interface TabEntry {
+    interface TabViewItem {
         /**
-         * Gets or sets the title of the TabEntry.
+         * Gets or sets the title of the TabViewItem.
          */
         title: string;
-        
+
         /**
-         * Gets or sets the view of the TabEntry.
+         * Gets or sets the view of the TabViewItem.
          */
         view: view.View;
     }
@@ -24,13 +24,13 @@ declare module "ui/tab-view" {
      * Represents a tab view.
      */
     class TabView extends view.View {
-        public static itemsProperty : dependencyObservable.Property;
-        public static selectedIndexProperty : dependencyObservable.Property;
+        public static itemsProperty: dependencyObservable.Property;
+        public static selectedIndexProperty: dependencyObservable.Property;
 
         /**
          * Gets or sets the items of the TabView.
          */
-        items: Array<TabEntry>;
+        items: Array<TabViewItem>;
 
         /**
          * Gets or sets the selectedIndex of the TabView.
