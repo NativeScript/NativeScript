@@ -489,6 +489,41 @@ export class SegmentedBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class SearchBarStyler implements definition.stylers.Styler {
+
+    private static setBackgroundColorProperty(view: view.View, newValue: any) {
+        var bar = <UISearchBar>view.ios;
+        bar.barTintColor = newValue;
+    }
+
+    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UISearchBar>view.ios;
+        bar.barTintColor = nativeValue;
+    }
+
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <UISearchBar>view.ios;
+
+        (<UITextField>bar.valueForKey("_searchField")).textColor = newValue;
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UISearchBar>view.ios;
+
+        (<UITextField>bar.valueForKey("_searchField")).textColor = nativeValue;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SearchBarStyler.setBackgroundColorProperty,
+            SearchBarStyler.resetBackgroundColorProperty), "SearchBar");
+
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SearchBarStyler.setColorProperty,
+            SearchBarStyler.resetColorProperty), "SearchBar");
+    }
+}
+
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();
@@ -497,4 +532,5 @@ export function _registerDefaultStylers() {
     TextFieldStyler.registerHandlers();
     TextViewStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
+    SearchBarStyler.registerHandlers();
 }

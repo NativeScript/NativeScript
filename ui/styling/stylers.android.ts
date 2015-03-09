@@ -239,6 +239,53 @@ export class SegmentedBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class SearchBarStyler implements definition.stylers.Styler {
+
+    private static setBackgroundColorProperty(view: view.View, newValue: any) {
+        var bar = <android.widget.SearchView>view.android;
+        bar.setBackgroundColor(newValue);
+    }
+
+    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
+        var bar = <android.widget.SearchView>view.android;
+        bar.setBackgroundColor(nativeValue);
+    }
+
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <android.widget.SearchView>view.android;
+        SearchBarStyler._changeSearchViewTextColor(bar, newValue);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var bar = <android.widget.SearchView>view.android;
+        SearchBarStyler._changeSearchViewTextColor(bar, nativeValue);
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SearchBarStyler.setBackgroundColorProperty,
+            SearchBarStyler.resetBackgroundColorProperty), "SearchBar");
+
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SearchBarStyler.setColorProperty,
+            SearchBarStyler.resetColorProperty), "SearchBar");
+    }
+
+    private static _changeSearchViewTextColor(view: android.view.View, color: number) {
+        if (view != null) {
+            if (view instanceof android.widget.TextView) {
+                (<android.widget.TextView> view).setTextColor(color);
+                return;
+            } else if (view instanceof android.view.ViewGroup) {
+                var viewGroup = <android.view.ViewGroup> view;
+                for (var i = 0; i < viewGroup.getChildCount(); i++) {
+                    SearchBarStyler._changeSearchViewTextColor(viewGroup.getChildAt(i), color);
+                }
+            }
+        }
+    }
+}
+
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();
@@ -246,4 +293,5 @@ export function _registerDefaultStylers() {
     TextViewStyler.registerHandlers();
     ActivityIndicatorStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
+    SearchBarStyler.registerHandlers();
 }

@@ -5,6 +5,7 @@ declare module "ui/search-bar" {
     import view = require("ui/core/view");
     import observable = require("data/observable");
     import dependencyObservable = require("ui/core/dependency-observable");
+    import color = require("color");
 
     /**
      * Known event names.
@@ -31,6 +32,11 @@ declare module "ui/search-bar" {
         public static textProperty: dependencyObservable.Property;
 
         /**
+         * Gets or sets the TextField background color of the SearchBar component.
+         */
+        public static textFieldBackgroundColorProperty: dependencyObservable.Property;
+
+        /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/SearchView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
         android: android.widget.SearchView;
@@ -44,6 +50,11 @@ declare module "ui/search-bar" {
          * Gets or sets a search bar text.
          */
         text: string;
+
+        /**
+         * Gets or sets the TextField background color of the SearchBar component.
+         */
+        textFieldBackgroundColor: color.Color;
 
         on(event: string, callback: (data: observable.EventData) => void);
 
