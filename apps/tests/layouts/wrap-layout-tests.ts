@@ -26,6 +26,19 @@ var _createWrapLayoutFunc = function (childCount: number, childWidth?: number, c
     // ```
     // </snippet>
 
+    // ### Declaring a WrapLayout.
+    //```XML
+    // <Page>
+    //   <WrapLayout>
+    //     <Label text="This is Label 1" />
+    //     <Label text="This is Label 2" />
+    //     <Label text="This is Label 3" />
+    //     <Label text="This is Label 4" />
+    //   </WrapLayout>
+    // </Page>
+    //```
+    // </snippet>
+
     wrapLayout.width = 200;
     wrapLayout.height = 200;
 

@@ -14,6 +14,16 @@ import absoluteLayoutModule = require("ui/layouts/absolute-layout");
 // ```
 // </snippet> 
 
+// ### Declaring a AbsoluteLayout.
+//```XML
+// <Page>
+//   <AbsoluteLayout>
+//     <Label text="This is Label 1" left="30" top="70" />
+//   </AbsoluteLayout>
+// </Page>
+//```
+// </snippet>
+
 export var testAll = function () {
     // <snippet module="ui/layouts/absolute-layout" title="absolute-layout">
     // ## Creating and populating a AbsoluteLayout with children
@@ -50,7 +60,7 @@ export var testAll = function () {
         TKUnit.assertEqual(actualValue.top, 10 * density, "ActualTop");
         TKUnit.assertEqual(width, 100 * density, "ActualWidth");
         TKUnit.assertEqual(height, 100 * density, "Actualheight");
-    });    
+    });
 }
 
 export function test_padding() {
@@ -75,5 +85,5 @@ export function test_padding() {
 
         layoutHelper.assertMeasure(btn, 100, 100);
         layoutHelper.assertLayout(btn, 25, 35, 100, 100);
-    }); 
+    });
 }

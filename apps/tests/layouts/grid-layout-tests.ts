@@ -505,6 +505,18 @@ export var test_codesnippets = function () {
     var gridLayout = new layout.GridLayout();
     //  ```
 
+    // ### Create grid layout with an xml declaration
+    // ``` XML
+    // <GridLayout columns="80, *, auto" rows="auto, *" >
+    //  <Button col="0" />
+    //  <Button col="1" />
+    //  <Button col="2" />
+    //// by default column and row are set to 0
+    //  <Button row="1" colSpan="3" />
+    // </GridLayout>
+    // ```
+    // </snippet>
+
     // ### Add views to grid layout
     // ``` JavaScript
     var btn1 = new button.Button();
@@ -557,16 +569,4 @@ export var test_codesnippets = function () {
     gridLayout.addRow(firstRow);
     gridLayout.addRow(secondRow);
     // ```
-
-    // ### Create same grid layout with an xml declaration
-    // ``` XML
-    // <GridLayout columns="80, *, auto" rows="auto, *" >
-    //  <Button col="0" />
-    //  <Button col="1" />
-    //  <Button col="2" />
-    //// by default column and row are set to 0
-    //  <Button row="1" colSpan="3" />
-    // </GridLayout>
-    // ```
-    // </snippet>
 };

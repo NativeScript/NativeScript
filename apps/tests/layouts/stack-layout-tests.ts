@@ -46,7 +46,7 @@ export function setUpModule() {
         newPage.content = tmp;
         return newPage;
     };
-    
+
     navHelper.navigate(pageFactory);
 }
 
@@ -142,7 +142,7 @@ export function test_StackLayout_DesiredSize_Vertical() {
     }, ASYNC);
 
     TKUnit.assertEqual(rootLayout.getMeasuredWidth(), Math.max(btn1.getMeasuredWidth(), btn2.getMeasuredWidth()), "Layout getMeasuredWidth should be Max of children getMeasuredWidth");
-    TKUnit.assertEqual(rootLayout.getMeasuredHeight(),(btn1.getMeasuredHeight() + btn2.getMeasuredHeight()), "Layout getMeasuredHeight should be Sum of children getMeasuredHeight");
+    TKUnit.assertEqual(rootLayout.getMeasuredHeight(), (btn1.getMeasuredHeight() + btn2.getMeasuredHeight()), "Layout getMeasuredHeight should be Sum of children getMeasuredHeight");
 }
 
 export function test_StackLayout_DesiredSize_Horizontal() {
@@ -155,7 +155,7 @@ export function test_StackLayout_DesiredSize_Horizontal() {
         return btn2.arranged;
     }, ASYNC);
 
-    TKUnit.assertEqual(rootLayout.getMeasuredWidth(),(btn1.getMeasuredWidth() + btn2.getMeasuredWidth()), "Layout getMeasuredWidth should be Sum of children getMeasuredWidth");
+    TKUnit.assertEqual(rootLayout.getMeasuredWidth(), (btn1.getMeasuredWidth() + btn2.getMeasuredWidth()), "Layout getMeasuredWidth should be Sum of children getMeasuredWidth");
     TKUnit.assertEqual(rootLayout.getMeasuredHeight(), Math.max(btn1.getMeasuredHeight(), btn2.getMeasuredHeight()), "Layout getMeasuredHeight should be Max of children getMeasuredHeight");
 }
 
@@ -178,8 +178,8 @@ export function test_StackLayout_Padding_Vertical() {
     helper.assertMeasure(btn1, 260, 50);
     helper.assertMeasure(btn1, 260, 50);
 
-    helper.assertLayout(btn1, 10, 20, 260, 50, "btn1"); 
-    helper.assertLayout(btn2, 10, 70, 260, 50, "btn2"); 
+    helper.assertLayout(btn1, 10, 20, 260, 50, "btn1");
+    helper.assertLayout(btn2, 10, 70, 260, 50, "btn2");
 }
 
 export function test_StackLayout_Padding_Horizontal() {
@@ -212,6 +212,16 @@ export function test_codesnippets() {
     // ``` JavaScript
     var stackLayout = new layout.StackLayout();
     //  ```
+
+    // ### Declaring a StackLayout.
+    //```XML
+    // <Page>
+    //   <StackLayout orientation="horizontal">
+    //     <Label text="This is Label 1" />
+    //   </StackLayout>
+    // </Page>
+    //```
+    // </snippet>
 
     // ### Add child view to layout
     // ``` JavaScript
