@@ -568,4 +568,5 @@ export var test_codesnippets = function () {
     gridLayout.addRow(firstRow);
     gridLayout.addRow(secondRow);
     // ```
+    // </snippet>
 };
