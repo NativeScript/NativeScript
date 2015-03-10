@@ -496,31 +496,55 @@ export class SearchBarStyler implements definition.stylers.Styler {
         bar.barTintColor = newValue;
     }
 
+    private static getBackgroundColorProperty(view: view.View): any {
+        var bar = <UISearchBar>view.ios;
+        return bar.barTintColor;
+    }
+
     private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
         var bar = <UISearchBar>view.ios;
         bar.barTintColor = nativeValue;
     }
 
+    private static getColorProperty(view: view.View): any {
+        var bar = <UISearchBar>view.ios;
+
+        var sf = <UITextField>bar.valueForKey("_searchField");
+        if (sf) {
+            return sf.textColor;
+        }
+
+        return undefined;
+    }
+
     private static setColorProperty(view: view.View, newValue: any) {
         var bar = <UISearchBar>view.ios;
 
-        (<UITextField>bar.valueForKey("_searchField")).textColor = newValue;
+        var sf = <UITextField>bar.valueForKey("_searchField");
+        if (sf) {
+            sf.textColor = newValue;
+        }
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
         var bar = <UISearchBar>view.ios;
 
-        (<UITextField>bar.valueForKey("_searchField")).textColor = nativeValue;
+        var sf = <UITextField>bar.valueForKey("_searchField");
+        if (sf) {
+            sf.textColor = nativeValue;
+        }
     }
 
     public static registerHandlers() {
         style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             SearchBarStyler.setBackgroundColorProperty,
-            SearchBarStyler.resetBackgroundColorProperty), "SearchBar");
+            SearchBarStyler.resetBackgroundColorProperty,
+            SearchBarStyler.getBackgroundColorProperty), "SearchBar");
 
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             SearchBarStyler.setColorProperty,
-            SearchBarStyler.resetColorProperty), "SearchBar");
+            SearchBarStyler.resetColorProperty,
+            SearchBarStyler.getColorProperty), "SearchBar");
     }
 }
 

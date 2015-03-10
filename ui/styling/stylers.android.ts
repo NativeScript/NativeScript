@@ -241,6 +241,11 @@ export class SegmentedBarStyler implements definition.stylers.Styler {
 
 export class SearchBarStyler implements definition.stylers.Styler {
 
+    private static getBackgroundColorProperty(view: view.View): any {
+        var bar = <android.widget.SearchView>view.android;
+        return bar.getDrawingCacheBackgroundColor();
+    }
+
     private static setBackgroundColorProperty(view: view.View, newValue: any) {
         var bar = <android.widget.SearchView>view.android;
         bar.setBackgroundColor(newValue);
@@ -251,6 +256,17 @@ export class SearchBarStyler implements definition.stylers.Styler {
         var bar = <android.widget.SearchView>view.android;
         bar.setBackgroundColor(nativeValue);
         SearchBarStyler._changeSearchViewPlateBackgroundColor(bar, nativeValue);
+    }
+
+    private static getColorProperty(view: view.View): any {
+        var bar = <android.widget.SearchView>view.android;
+        var textView = SearchBarStyler._getSearchViewTextView(bar);
+
+        if (textView) {
+            return textView.getCurrentTextColor();
+        }
+
+        return undefined;
     }
 
     private static setColorProperty(view: view.View, newValue: any) {
@@ -266,23 +282,33 @@ export class SearchBarStyler implements definition.stylers.Styler {
     public static registerHandlers() {
         style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             SearchBarStyler.setBackgroundColorProperty,
-            SearchBarStyler.resetBackgroundColorProperty), "SearchBar");
+            SearchBarStyler.resetBackgroundColorProperty,
+            SearchBarStyler.getBackgroundColorProperty), "SearchBar");
 
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             SearchBarStyler.setColorProperty,
-            SearchBarStyler.resetColorProperty), "SearchBar");
+            SearchBarStyler.resetColorProperty,
+            SearchBarStyler.getColorProperty), "SearchBar");
+    }
+
+    private static _getSearchViewTextView(bar: android.widget.SearchView): android.widget.TextView {
+        var id = bar.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+        return <android.widget.TextView> bar.findViewById(id);
     }
 
     private static _changeSearchViewTextColor(bar: android.widget.SearchView, color: number) {
-        var id = bar.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
-        var textView = <android.widget.TextView> bar.findViewById(id);
-        textView.setTextColor(color);
+        var textView = SearchBarStyler._getSearchViewTextView(bar);
+        if (textView) {
+            textView.setTextColor(color);
+        }
     }
 
     private static _changeSearchViewPlateBackgroundColor(bar: android.widget.SearchView, color: number) {
         var id = bar.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
         var textView = <android.view.View> bar.findViewById(id);
-        textView.setBackgroundColor(color);
+        if (textView) {
+            textView.setBackgroundColor(color);
+        }
     }
 }
 
