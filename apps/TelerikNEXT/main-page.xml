@@ -67,11 +67,11 @@
 
                 <Label text="{{ title }}" textWrap="true" cssClass="title" />
 
-                <Label text="{{ room ? 'Room: ' + room : '' }}">
+                <Label style.visibility="{{ room ? 'visible' : 'collapsed' }}">
                   <Label.formattedText>
                     <FormattedString  fontSize="12" foregroundColor="#a17201">
                       <FormattedString.spans>
-                        <Span text="{{  room ? 'Room: ' : '' }}" />
+                        <Span text="Room: " />
                         <Span text="{{ room }}" fontAttributes="Bold" />
                       </FormattedString.spans>
                     </FormattedString>
