@@ -9,6 +9,6 @@ export class TextView extends common.TextView {
         super._createUI();
         
         this.android.setGravity(android.view.Gravity.TOP | android.view.Gravity.LEFT);
-        this.android.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        this.android.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
     }
 }

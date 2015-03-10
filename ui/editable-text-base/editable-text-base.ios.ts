@@ -9,7 +9,7 @@ export class EditableTextBase extends common.EditableTextBase {
     }
 
     public dismissSoftInput() {
-        this.ios.resignFirstResponder();
+        (<UIResponder>this.ios).resignFirstResponder();
     }
 
     public _onKeyboardTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -35,7 +35,7 @@ export class EditableTextBase extends common.EditableTextBase {
                 break;
         }
 
-        this.ios.keyboardType = newKeyboardType;
+        (<UITextInputTraits>this.ios).keyboardType = newKeyboardType;
     }
 
     public _onReturnKeyTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -61,6 +61,29 @@ export class EditableTextBase extends common.EditableTextBase {
                 break;
         }
 
-        this.ios.returnKeyType = newReturnKeyType;
+        (<UITextInputTraits>this.ios).returnKeyType = newReturnKeyType;
+    }
+
+    public _onAutocapitalizationTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        var newValue;
+        switch (data.newValue) {
+            case enums.AutocapitalizationType.none:
+                newValue = UITextAutocapitalizationType.UITextAutocapitalizationTypeNone;
+                break;
+            case enums.AutocapitalizationType.words:
+                newValue = UITextAutocapitalizationType.UITextAutocapitalizationTypeWords;
+                break;
+            case enums.AutocapitalizationType.sentences:
+                newValue = UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences;
+                break;
+            case enums.AutocapitalizationType.allCharacters:
+                newValue = UITextAutocapitalizationType.UITextAutocapitalizationTypeAllCharacters;
+                break;
+            default:
+                newValue = UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences;
+                break;
+        }
+
+        (<UITextInputTraits>this.ios).autocapitalizationType = newValue;
     }
 }   

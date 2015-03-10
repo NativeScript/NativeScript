@@ -2,7 +2,7 @@
   <StackLayout id="stack">
     <Button id="button" text="textChanged" height="100" margin="20" tap="onTap" backgroundColor="Red"/>
     <Label id="label" text="{{ text }}" height="100" margin="20"/>
-    <TextField id="textField" text="{{ text }}" margin="20" updateTextTrigger="textChanged"/>
-    <TextView id="textView" text="{{ text }}" height="100" margin="20" updateTextTrigger="textChanged"/>
+    <TextField id="textField" text="{{ text }}" margin="20" autocapitalizationType="none"/>
+    <TextView id="textView" text="{{ text }}" height="100" margin="20" autocapitalizationType="none"/>
   </StackLayout>
 </Page>

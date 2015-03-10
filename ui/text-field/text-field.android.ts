@@ -60,6 +60,6 @@ export class TextField extends common.TextField {
         this.android.setLines(1);
         this.android.setMaxLines(1);
         this.android.setHorizontallyScrolling(true);
-        this.android.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL);
+        this.android.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
     }
 }

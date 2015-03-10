@@ -78,3 +78,10 @@ export module Dock {
     export var right: string = "right";
     export var bottom: string = "bottom";
 }
+
+export module AutocapitalizationType {
+    export var none: string = "none";
+    export var words: string = "words";
+    export var sentences: string = "sentences";
+    export var allCharacters: string = "allCharacters";
+}
