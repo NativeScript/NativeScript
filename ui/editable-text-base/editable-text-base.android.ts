@@ -219,10 +219,7 @@ export class EditableTextBase extends common.EditableTextBase {
             return;
         }
 
-
         var inputType = editableTextBase.android.getInputType();
-        console.log("BEFORE: " + inputType);
-
         switch (data.newValue) {
             case true:
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE;
@@ -240,6 +237,5 @@ export class EditableTextBase extends common.EditableTextBase {
         }
 
         editableTextBase.android.setInputType(inputType);
-        console.log("AFTER: " + inputType);
     }
 }  

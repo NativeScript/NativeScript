@@ -88,8 +88,6 @@ export class EditableTextBase extends common.EditableTextBase {
     }
 
     public _onAutocorrectPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        console.log("BEFORE: " + (<UITextInputTraits>this.ios).autocorrectionType);
-
         var newValue: UITextAutocorrectionType;
         switch (data.newValue) {
             case true:
@@ -104,6 +102,5 @@ export class EditableTextBase extends common.EditableTextBase {
         }
 
         (<UITextInputTraits>this.ios).autocorrectionType = newValue;
-        console.log("AFTER: " + (<UITextInputTraits>this.ios).autocorrectionType);
     }
 }   
