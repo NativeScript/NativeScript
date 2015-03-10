@@ -47,19 +47,25 @@
 
         <ListView items="{{ sessions }}" row="3">
           <ListView.itemTemplate>
-            <GridLayout columns="*, auto">
-              <StackLayout>
+            <GridLayout columns="auto, *">
+
+              <Image url="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}" style.visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}"
+           tap="toggleFavorite" width="32" height="32" vertical-align="center" margin="20" />
+
+              <StackLayout col="1">
 
                 <Label>
                   <Label.formattedText>
                     <FormattedString fontSize="18" foregroundColor="#a17201">
                       <FormattedString.spans>
-                        <Span text="{{ 'Time: ' }}" />
+                        <Span text="Time:" />
                         <Span text="{{ range }}" fontAttributes="Bold" />
                       </FormattedString.spans>
                     </FormattedString>
                   </Label.formattedText>
                 </Label>
+
+                <Label text="{{ title }}" textWrap="true" cssClass="title" />
 
                 <Label text="{{ room ? 'Room: ' + room : '' }}">
                   <Label.formattedText>
@@ -72,12 +78,7 @@
                   </Label.formattedText>
                 </Label>
 
-                <Label text="{{ title }}" textWrap="true" cssClass="title" />
-
               </StackLayout>
-
-              <Image url="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}" style.visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}"
-                         tap="toggleFavorite" width="32" height="32" col="1" vertical-align="center"/>
 
             </GridLayout>
           </ListView.itemTemplate>
