@@ -23,23 +23,31 @@
     </tsb:SideBar.slideContent>
 
     <tsb:SideBar.mainContent>
-      <GridLayout rows="auto, auto, *">
+      <GridLayout rows="auto, auto, auto, *">
 
-        <SegmentedBar selectedIndex="{{ selectedIndex }}" >
+        <SegmentedBar selectedIndex="{{ selectedIndex }}"  style="background-color: transparent;color: white;" selectedBackgroundColor="#fac950">
           <SegmentedBar.items>
             <SegmentedBarItem title="MAY 3" />
             <SegmentedBarItem title="MAY 4" />
             <SegmentedBarItem title="MAY 5" />
           </SegmentedBar.items>
         </SegmentedBar>
-        
-        <StackLayout style="background-color: #fac950;padding: 5;" row="1">
-          <SearchBar text="{{ search }}" />
-        </StackLayout>
 
-        <ListView items="{{ sessions }}" row="2">
+        <Label row="1" style="horizontal-align: center;margin: 5;">
+          <Label.formattedText>
+            <FormattedString fontSize="18" foregroundColor="#fac950">
+              <FormattedString.spans>
+                <Span text="WORKSHOPS" fontAttributes="Bold" />
+              </FormattedString.spans>
+            </FormattedString>
+          </Label.formattedText>
+        </Label>
+
+        <SearchBar text="{{ search }}" style="background-color: #fac950; color: #fac950;" textFieldBackgroundColor="white" row="2" />
+
+        <ListView items="{{ sessions }}" row="3">
           <ListView.itemTemplate>
-            <GridLayout columns="*, auto" style.backgroundColor="{{ canBeFavorited ? '#ffffff' : '#fffbf0' }}">
+            <GridLayout columns="*, auto">
               <StackLayout>
 
                 <Label>

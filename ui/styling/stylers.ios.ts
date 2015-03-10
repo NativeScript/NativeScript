@@ -489,6 +489,65 @@ export class SegmentedBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class SearchBarStyler implements definition.stylers.Styler {
+
+    private static setBackgroundColorProperty(view: view.View, newValue: any) {
+        var bar = <UISearchBar>view.ios;
+        bar.barTintColor = newValue;
+    }
+
+    private static getBackgroundColorProperty(view: view.View): any {
+        var bar = <UISearchBar>view.ios;
+        return bar.barTintColor;
+    }
+
+    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UISearchBar>view.ios;
+        bar.barTintColor = nativeValue;
+    }
+
+    private static getColorProperty(view: view.View): any {
+        var bar = <UISearchBar>view.ios;
+
+        var sf = <UITextField>bar.valueForKey("_searchField");
+        if (sf) {
+            return sf.textColor;
+        }
+
+        return undefined;
+    }
+
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <UISearchBar>view.ios;
+
+        var sf = <UITextField>bar.valueForKey("_searchField");
+        if (sf) {
+            sf.textColor = newValue;
+        }
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UISearchBar>view.ios;
+
+        var sf = <UITextField>bar.valueForKey("_searchField");
+        if (sf) {
+            sf.textColor = nativeValue;
+        }
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SearchBarStyler.setBackgroundColorProperty,
+            SearchBarStyler.resetBackgroundColorProperty,
+            SearchBarStyler.getBackgroundColorProperty), "SearchBar");
+
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SearchBarStyler.setColorProperty,
+            SearchBarStyler.resetColorProperty,
+            SearchBarStyler.getColorProperty), "SearchBar");
+    }
+}
+
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();
@@ -497,4 +556,5 @@ export function _registerDefaultStylers() {
     TextFieldStyler.registerHandlers();
     TextViewStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
+    SearchBarStyler.registerHandlers();
 }

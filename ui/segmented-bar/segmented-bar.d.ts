@@ -41,6 +41,11 @@ declare module "ui/segmented-bar" {
         public static selectedIndexProperty: dependencyObservable.Property;
 
         /**
+         * Gets or sets the selected background color property of the SegmentedBar.
+         */
+        public static selectedBackgroundColorProperty: dependencyObservable.Property;
+
+        /**
          * Gets or sets the items dependency property of the SegmentedBar.
          */
         public static itemsProperty: dependencyObservable.Property;
