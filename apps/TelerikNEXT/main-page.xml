@@ -33,7 +33,7 @@
           </SegmentedBar.items>
         </SegmentedBar>
 
-        <Label row="1" style="horizontal-align: center;margin: 5;">
+        <Label row="1" style="horizontal-align: center;margin: 15;">
           <Label.formattedText>
             <FormattedString fontSize="18" foregroundColor="#fac950">
               <FormattedString.spans>
