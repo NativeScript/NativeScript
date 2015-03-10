@@ -13,34 +13,50 @@ var IMAGE = "Image";
 var ISLOADING = "isLoading";
 var STRETCH = "stretch";
 
+var RESOURCE_PREFIX = "res://";
+
+function isResource(value: string): boolean {
+    return value.indexOf(RESOURCE_PREFIX) === 0;
+}
+
+function isUrl(value: string): boolean {
+    return value.indexOf("http://") === 0 || value.indexOf("https://") === 0;
+}
+
+function isAppFile(value: string): boolean {
+    return value.indexOf("~/") === 0;
+}
+
 function isValidUrl(url: string): boolean {
     var value = url ? url.trim() : "";
-    return value !== "" && (value.indexOf("~/") === 0 || value.indexOf("http://") === 0 || value.indexOf("https://") === 0);
+    return value !== "" && (isResource(value) || isAppFile(value) || isUrl(value));
 }
 
 function onUrlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
-    var value = data.newValue;
+    var value: string = data.newValue;
 
     if (isValidUrl(value)) {
+        value = value.trim();
         image.source = null;
         image["_url"] = value;
 
-        if (value !== "") {
+        image._setValue(Image.isLoadingProperty, true);
 
-            image._setValue(Image.isLoadingProperty, true);
-
-            if (value.trim().indexOf("~/") === 0) {
-                image.source = imageSource.fromFile(value.trim());
-                image._setValue(Image.isLoadingProperty, false);
-            } else {
-                imageSource.fromUrl(value).then((r) => {
-                    if (image["_url"] === value) {
-                        image.source = r;
-                        image._setValue(Image.isLoadingProperty, false);
-                    }
-                });
-            }
+        if (isResource(value)) {
+            image.source = imageSource.fromResource(value.substr(RESOURCE_PREFIX.length));
+            image._setValue(Image.isLoadingProperty, false);
+        }
+        else if (isAppFile(value)) {
+            image.source = imageSource.fromFile(value);
+            image._setValue(Image.isLoadingProperty, false);
+        } else {
+            imageSource.fromUrl(value).then((r) => {
+                if (image["_url"] === value) {
+                    image.source = r;
+                    image._setValue(Image.isLoadingProperty, false);
+                }
+            });
         }
     }
 }
