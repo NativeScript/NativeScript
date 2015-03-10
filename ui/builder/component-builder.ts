@@ -62,7 +62,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
         // Create instance of the component.
         instance = new instanceType();
     } catch (ex) {
-        //throw new Error("Cannot create module " + moduleId + ". " + ex);
+        throw new Error("Cannot create module " + moduleId + ". " + ex);
     }
 
     if (instance && instanceModule) {
