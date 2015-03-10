@@ -244,11 +244,13 @@ export class SearchBarStyler implements definition.stylers.Styler {
     private static setBackgroundColorProperty(view: view.View, newValue: any) {
         var bar = <android.widget.SearchView>view.android;
         bar.setBackgroundColor(newValue);
+        SearchBarStyler._changeSearchViewPlateBackgroundColor(bar, newValue);
     }
 
     private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
         var bar = <android.widget.SearchView>view.android;
         bar.setBackgroundColor(nativeValue);
+        SearchBarStyler._changeSearchViewPlateBackgroundColor(bar, nativeValue);
     }
 
     private static setColorProperty(view: view.View, newValue: any) {
@@ -271,18 +273,16 @@ export class SearchBarStyler implements definition.stylers.Styler {
             SearchBarStyler.resetColorProperty), "SearchBar");
     }
 
-    private static _changeSearchViewTextColor(view: android.view.View, color: number) {
-        if (view != null) {
-            if (view instanceof android.widget.TextView) {
-                (<android.widget.TextView> view).setTextColor(color);
-                return;
-            } else if (view instanceof android.view.ViewGroup) {
-                var viewGroup = <android.view.ViewGroup> view;
-                for (var i = 0; i < viewGroup.getChildCount(); i++) {
-                    SearchBarStyler._changeSearchViewTextColor(viewGroup.getChildAt(i), color);
-                }
-            }
-        }
+    private static _changeSearchViewTextColor(bar: android.widget.SearchView, color: number) {
+        var id = bar.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+        var textView = <android.widget.TextView> bar.findViewById(id);
+        textView.setTextColor(color);
+    }
+
+    private static _changeSearchViewPlateBackgroundColor(bar: android.widget.SearchView, color: number) {
+        var id = bar.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
+        var textView = <android.view.View> bar.findViewById(id);
+        textView.setBackgroundColor(color);
     }
 }
 

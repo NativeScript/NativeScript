@@ -33,19 +33,10 @@ function onTextFieldBackgroundColorPropertyChanged(data: dependencyObservable.Pr
 // register the setNativeValue callbacks
 (<proxy.PropertyMetadata>common.SearchBar.textFieldBackgroundColorProperty.metadata).onSetNativeValue = onTextFieldBackgroundColorPropertyChanged;
 
-
-function _changeSearchViewBackgroundColor(view: android.view.View, color: number) {
-    if (view != null) {
-        if (view instanceof android.widget.TextView) {
-            (<android.widget.TextView> view).setBackgroundColor(color);
-            return;
-        } else if (view instanceof android.view.ViewGroup) {
-            var viewGroup = <android.view.ViewGroup> view;
-            for (var i = 0; i < viewGroup.getChildCount(); i++) {
-                _changeSearchViewBackgroundColor(viewGroup.getChildAt(i), color);
-            }
-        }
-    }
+function _changeSearchViewBackgroundColor(bar: android.widget.SearchView, color: number) {
+    var id = bar.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+    var textView = <android.widget.TextView> bar.findViewById(id);
+    textView.setBackgroundColor(color);
 }
 
 // merge the exports of the common file with the exports of this file
