@@ -49,6 +49,8 @@ export class SearchBar extends common.SearchBar {
     public _createUI() {
         this._android = new android.widget.SearchView(this._context);
 
+        this._android.setIconified(false);
+
         var that = new WeakRef(this);
         this._android.setOnQueryTextListener(new android.widget.SearchView.OnQueryTextListener({
             get owner() {
