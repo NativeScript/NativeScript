@@ -212,4 +212,30 @@ export class EditableTextBase extends common.EditableTextBase {
 
         editableTextBase.android.setInputType(inputType);
     }
+
+    public _onAutocorrectPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        var editableTextBase = <EditableTextBase>data.object;
+        if (!editableTextBase.android) {
+            return;
+        }
+
+        var inputType = editableTextBase.android.getInputType();
+        switch (data.newValue) {
+            case true:
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE;
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
+                inputType = inputType & ~android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+                break;
+            case false:
+                inputType = inputType & ~android.text.InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE;
+                inputType = inputType & ~android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+                break;
+            default:
+                // We can't do anything.
+                break;
+        }
+
+        editableTextBase.android.setInputType(inputType);
+    }
 }  

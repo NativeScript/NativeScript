@@ -13,7 +13,7 @@ export class EditableTextBase extends common.EditableTextBase {
     }
 
     public _onKeyboardTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var newKeyboardType;
+        var newKeyboardType: UIKeyboardType;
         switch (data.newValue) {
             case enums.KeyboardType.datetime:
                 newKeyboardType = UIKeyboardType.UIKeyboardTypeNumbersAndPunctuation;
@@ -39,33 +39,33 @@ export class EditableTextBase extends common.EditableTextBase {
     }
 
     public _onReturnKeyTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var newReturnKeyType;
+        var newValue;
         switch (data.newValue) {
             case enums.ReturnKeyType.done:
-                newReturnKeyType = UIReturnKeyType.UIReturnKeyDone;
+                newValue = UIReturnKeyType.UIReturnKeyDone;
                 break;
             case enums.ReturnKeyType.go:
-                newReturnKeyType = UIReturnKeyType.UIReturnKeyGo;
+                newValue = UIReturnKeyType.UIReturnKeyGo;
                 break;
             case enums.ReturnKeyType.next:
-                newReturnKeyType = UIReturnKeyType.UIReturnKeyNext;
+                newValue = UIReturnKeyType.UIReturnKeyNext;
                 break;
             case enums.ReturnKeyType.search:
-                newReturnKeyType = UIReturnKeyType.UIReturnKeySearch;
+                newValue = UIReturnKeyType.UIReturnKeySearch;
                 break;
             case enums.ReturnKeyType.send:
-                newReturnKeyType = UIReturnKeyType.UIReturnKeySend;
+                newValue = UIReturnKeyType.UIReturnKeySend;
                 break;
             default:
-                newReturnKeyType = UIReturnKeyType.UIReturnKeyDefault;
+                newValue = UIReturnKeyType.UIReturnKeyDefault;
                 break;
         }
 
-        (<UITextInputTraits>this.ios).returnKeyType = newReturnKeyType;
+        (<UITextInputTraits>this.ios).returnKeyType = newValue;
     }
 
     public _onAutocapitalizationTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var newValue;
+        var newValue: UITextAutocapitalizationType;
         switch (data.newValue) {
             case enums.AutocapitalizationType.none:
                 newValue = UITextAutocapitalizationType.UITextAutocapitalizationTypeNone;
@@ -85,5 +85,22 @@ export class EditableTextBase extends common.EditableTextBase {
         }
 
         (<UITextInputTraits>this.ios).autocapitalizationType = newValue;
+    }
+
+    public _onAutocorrectPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        var newValue: UITextAutocorrectionType;
+        switch (data.newValue) {
+            case true:
+                newValue = UITextAutocorrectionType.UITextAutocorrectionTypeYes;
+                break;
+            case false:
+                newValue = UITextAutocorrectionType.UITextAutocorrectionTypeNo;
+                break;
+            default:
+                newValue = UITextAutocorrectionType.UITextAutocorrectionTypeDefault;
+                break;
+        }
+
+        (<UITextInputTraits>this.ios).autocorrectionType = newValue;
     }
 }   

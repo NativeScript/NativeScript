@@ -34,6 +34,12 @@ var autocapitalizationTypeProperty = new dependencyObservable.Property(
     new proxy.PropertyMetadata(enums.AutocapitalizationType.sentences, dependencyObservable.PropertyMetadataSettings.None)
     );
 
+var autocorrectProperty = new dependencyObservable.Property(
+    "autocorrect",
+    "EditableTextBase",
+    new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None)
+    );
+
 function onKeyboardTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var editableTextBase = <EditableTextBase>data.object;
     editableTextBase._onKeyboardTypePropertyChanged(data);
@@ -62,6 +68,13 @@ function onAutocapitalizationTypePropertyChanged(data: dependencyObservable.Prop
 
 (<proxy.PropertyMetadata>autocapitalizationTypeProperty.metadata).onSetNativeValue = onAutocapitalizationTypePropertyChanged;
 
+function onAutocorrectPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var editableTextBase = <EditableTextBase>data.object;
+    editableTextBase._onAutocorrectPropertyChanged(data);
+}
+
+(<proxy.PropertyMetadata>autocorrectProperty.metadata).onSetNativeValue = onAutocorrectPropertyChanged;
+
 export class EditableTextBase extends textBase.TextBase implements definition.EditableTextBase {
 
     public static keyboardTypeProperty = keyboardTypeProperty;
@@ -73,6 +86,8 @@ export class EditableTextBase extends textBase.TextBase implements definition.Ed
     public static updateTextTriggerProperty = updateTextTriggerProperty;
 
     public static autocapitalizationTypeProperty = autocapitalizationTypeProperty;
+
+    public static autocorrectProperty = autocorrectProperty;
 
     constructor(options?: definition.Options) {
         super(options);
@@ -118,6 +133,14 @@ export class EditableTextBase extends textBase.TextBase implements definition.Ed
         this._setValue(EditableTextBase.autocapitalizationTypeProperty, value);
     }
 
+    get autocorrect(): boolean {
+        return this._getValue(EditableTextBase.autocorrectProperty);
+    }
+
+    set autocorrect(value: boolean) {
+        this._setValue(EditableTextBase.autocorrectProperty, value);
+    }
+
     public dismissSoftInput() {
         //
     }
@@ -136,6 +159,10 @@ export class EditableTextBase extends textBase.TextBase implements definition.Ed
     }
     
     public _onAutocapitalizationTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        //
+    }
+    
+    public _onAutocorrectPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         //
     }
 } 
