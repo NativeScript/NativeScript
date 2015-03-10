@@ -11,6 +11,7 @@
         public static editableProperty: dependencyObservable.Property;
         public static updateTextTriggerProperty: dependencyObservable.Property;
         public static autocapitalizationTypeProperty: dependencyObservable.Property;
+        public static autocorrectProperty: dependencyObservable.Property;
 
         constructor(options?: Options);
 
@@ -41,6 +42,11 @@
         autocapitalizationType: string;
         
         /**
+         * Enables or disables autocorrection.
+         */
+        autocorrect: boolean;
+
+        /**
          * Hides the soft input method, ususally a soft keyboard.
          */
         dismissSoftInput(): void;
@@ -67,7 +73,6 @@
 
         /**
          * Gets or sets a value indicating when the text property will be updated. 
-         * Possible values are contained in the UpdateTextTrigger enumeration located in "ui/enums" module.
          */
         updateTextTrigger?: string;
 
@@ -75,5 +80,10 @@
          * Gets or sets the autocapitalization type.
          */
         autocapitalizationType?: string;
+
+        /**
+         * Enables or disables autocorrection.
+         */
+        autocorrect?: boolean;
     }
 }
