@@ -23,7 +23,7 @@ export class EditableTextBase extends common.EditableTextBase {
         
         this._android = new android.widget.EditText(this._context);
         this.android.setTag(this.android.getKeyListener());
-        
+
         var that = new WeakRef(this);
         
         var textWatcher = new android.text.TextWatcher({
@@ -181,5 +181,35 @@ export class EditableTextBase extends common.EditableTextBase {
         else {
             this.android.setKeyListener(null);
         }
+    }
+
+    public _onAutocapitalizationTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        var editableTextBase = <EditableTextBase>data.object;
+        if (!editableTextBase.android) {
+            return;
+        }
+
+        var inputType = editableTextBase.android.getInputType();
+        inputType = inputType & ~28762; //28762 (0x00007000) 13,14,15bits
+
+        switch (data.newValue) {
+            case enums.AutocapitalizationType.none:
+                //Do nothing, we have lowered the three bits above.
+                break;
+            case enums.AutocapitalizationType.words:
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS; //8192 (0x00002000) 14th bit
+                break;
+            case enums.AutocapitalizationType.sentences:
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES; //16384(0x00004000) 15th bit
+                break;
+            case enums.AutocapitalizationType.allCharacters:
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS; //4096 (0x00001000) 13th bit
+                break;
+            default:
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
+                break;
+        }
+
+        editableTextBase.android.setInputType(inputType);
     }
 }  

@@ -285,4 +285,30 @@
          */
         export var bottom: string;
     }
+
+    /**
+     * Represents the auto-capitalization style for a text input.
+     */
+    module AutocapitalizationType {
+        /**
+         * Do not capitalize any text automatically.
+         */
+        export var none: string;
+
+        /**
+         * Capitalize the first letter of each word automatically. 
+         */
+        export var words: string;
+
+        /**
+         * Capitalize the first letter of each sentence automatically. 
+         */
+        export var sentences: string;
+        
+        /**
+         * Capitalize all characters automatically. 
+         */
+        export var allCharacters: string;
+    }
+
 } 

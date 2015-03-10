@@ -28,6 +28,12 @@ var updateTextTriggerProperty = new dependencyObservable.Property(
     new proxy.PropertyMetadata(enums.UpdateTextTrigger.textChanged, dependencyObservable.PropertyMetadataSettings.None)
     );
 
+var autocapitalizationTypeProperty = new dependencyObservable.Property(
+    "autocapitalizationType",
+    "EditableTextBase",
+    new proxy.PropertyMetadata(enums.AutocapitalizationType.sentences, dependencyObservable.PropertyMetadataSettings.None)
+    );
+
 function onKeyboardTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var editableTextBase = <EditableTextBase>data.object;
     editableTextBase._onKeyboardTypePropertyChanged(data);
@@ -49,6 +55,13 @@ function onEditablePropertyChanged(data: dependencyObservable.PropertyChangeData
 
 (<proxy.PropertyMetadata>editableProperty.metadata).onSetNativeValue = onEditablePropertyChanged;
 
+function onAutocapitalizationTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var editableTextBase = <EditableTextBase>data.object;
+    editableTextBase._onAutocapitalizationTypePropertyChanged(data);
+}
+
+(<proxy.PropertyMetadata>autocapitalizationTypeProperty.metadata).onSetNativeValue = onAutocapitalizationTypePropertyChanged;
+
 export class EditableTextBase extends textBase.TextBase implements definition.EditableTextBase {
 
     public static keyboardTypeProperty = keyboardTypeProperty;
@@ -58,6 +71,8 @@ export class EditableTextBase extends textBase.TextBase implements definition.Ed
     public static editableProperty = editableProperty;
 
     public static updateTextTriggerProperty = updateTextTriggerProperty;
+
+    public static autocapitalizationTypeProperty = autocapitalizationTypeProperty;
 
     constructor(options?: definition.Options) {
         super(options);
@@ -95,6 +110,14 @@ export class EditableTextBase extends textBase.TextBase implements definition.Ed
         this._setValue(EditableTextBase.updateTextTriggerProperty, value);
     }
 
+    get autocapitalizationType(): string {
+        return this._getValue(EditableTextBase.autocapitalizationTypeProperty);
+    }
+
+    set autocapitalizationType(value: string) {
+        this._setValue(EditableTextBase.autocapitalizationTypeProperty, value);
+    }
+
     public dismissSoftInput() {
         //
     }
@@ -109,6 +132,10 @@ export class EditableTextBase extends textBase.TextBase implements definition.Ed
     }
 
     public _onEditablePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        //
+    }
+    
+    public _onAutocapitalizationTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
         //
     }
 } 

@@ -10,6 +10,7 @@
         public static returnKeyTypeProperty: dependencyObservable.Property;
         public static editableProperty: dependencyObservable.Property;
         public static updateTextTriggerProperty: dependencyObservable.Property;
+        public static autocapitalizationTypeProperty: dependencyObservable.Property;
 
         constructor(options?: Options);
 
@@ -33,6 +34,11 @@
          * Possible values are contained in the [UpdateTextTrigger enumeration](../enums/UpdateTextTrigger/README.md).
          */
         updateTextTrigger: string;
+        
+        /**
+         * Gets or sets the autocapitalization type. Possible values are contained in the [AutocapitalizationType enumeration](../enums/AutocapitalizationType/README.md).
+         */
+        autocapitalizationType: string;
         
         /**
          * Hides the soft input method, ususally a soft keyboard.
@@ -64,5 +70,10 @@
          * Possible values are contained in the UpdateTextTrigger enumeration located in "ui/enums" module.
          */
         updateTextTrigger?: string;
+
+        /**
+         * Gets or sets the autocapitalization type.
+         */
+        autocapitalizationType?: string;
     }
 }
