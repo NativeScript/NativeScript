@@ -9,7 +9,16 @@ import ImageModule = require("ui/image");
 // Binding the image source property to a view-model property.
 //```XML
 // <Page>
-//   {%raw%}<Image src="{{ thumbnailImageUrl }}" />{%endraw%}
+//   <StackLayout>
+//      <!--Bind the image source property to view-model property -->
+//      {%raw%}<Image src="{{ thumbnailImageUrl }}" />{%endraw%}
+//      <!--Load form image from application -->
+//      <Image source="~/app/logo.png" stretch ="none" / > 
+//      <!--Load form image resource -->
+//      <Image source="res://app/logo.png" stretch ="none" / > 
+//      <!--Load form image URL-->
+//      <Image source="http://www.google.com/images/errors/logo_sm_2.png" stretch ="none" /> 
+//   </StackLayout>
 // </Page>
 //```
 
