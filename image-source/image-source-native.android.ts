@@ -6,7 +6,11 @@ export function fromResource(name: string) {
     if (res) {
         var identifier: number = res.getIdentifier(name, 'drawable', androidApp.packageName);
         if (0 < identifier) {
-            return android.graphics.BitmapFactory.decodeResource(res, identifier);
+            // Load BitmapDrawable with getDrawable to make use of Android internal caching
+            var bitmapDrawable = <android.graphics.drawable.BitmapDrawable>res.getDrawable(identifier);
+            if (bitmapDrawable && bitmapDrawable.getBitmap) {
+                return bitmapDrawable.getBitmap();
+            }
         }
     }
 
