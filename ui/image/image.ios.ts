@@ -28,7 +28,7 @@ function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData)
     }
 }
 
-function onSourcePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
     image.ios.image = data.newValue ? data.newValue.ios : null;
 
@@ -38,8 +38,8 @@ function onSourcePropertyChanged(data: dependencyObservable.PropertyChangeData) 
 }
 
 // register the setNativeValue callback
+(<proxy.PropertyMetadata>imageCommon.Image.imageSourceProperty.metadata).onSetNativeValue = onImageSourcePropertyChanged;
 (<proxy.PropertyMetadata>imageCommon.Image.stretchProperty.metadata).onSetNativeValue = onStretchPropertyChanged;
-(<proxy.PropertyMetadata>imageCommon.Image.sourceProperty.metadata).onSetNativeValue = onSourcePropertyChanged;
 
 export class Image extends imageCommon.Image {
     private _ios: UIImageView;

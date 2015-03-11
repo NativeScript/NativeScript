@@ -6,9 +6,11 @@ import definition = require("ui/image");
 import trace = require("trace");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
+import types = require("utils/types");
 
-var SOURCE = "source";
-var URL = "url";
+var SRC = "src";
+var IMAGE_SOURCE = "imageSource";
+
 var IMAGE = "Image";
 var ISLOADING = "isLoading";
 var STRETCH = "stretch";
@@ -27,54 +29,62 @@ function isAppFile(value: string): boolean {
     return value.indexOf("~/") === 0;
 }
 
-function isValidUrl(url: string): boolean {
+function isValidUrl(url: any): boolean {
+    if (!types.isString(url)) {
+        return false;
+    }
+
     var value = url ? url.trim() : "";
     return value !== "" && (isResource(value) || isAppFile(value) || isUrl(value));
 }
 
-function onUrlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
-    var value: string = data.newValue;
+    var value = data.newValue;
 
     if (isValidUrl(value)) {
         value = value.trim();
-        image.source = null;
+        image.imageSource = null;
         image["_url"] = value;
 
         image._setValue(Image.isLoadingProperty, true);
 
         if (isResource(value)) {
-            image.source = imageSource.fromResource(value.substr(RESOURCE_PREFIX.length));
+            image.imageSource = imageSource.fromResource(value.substr(RESOURCE_PREFIX.length));
             image._setValue(Image.isLoadingProperty, false);
         }
         else if (isAppFile(value)) {
-            image.source = imageSource.fromFile(value);
+            image.imageSource = imageSource.fromFile(value);
             image._setValue(Image.isLoadingProperty, false);
         } else {
             imageSource.fromUrl(value).then((r) => {
                 if (image["_url"] === value) {
-                    image.source = r;
+                    image.imageSource = r;
                     image._setValue(Image.isLoadingProperty, false);
                 }
             });
         }
     }
+    else if (value instanceof imageSource.ImageSource) {
+        // Support binding the iamgeSource trough the src propoerty
+        image.imageSource = value;
+    }
 }
 
 export class Image extends view.View implements definition.Image {
 
-    public static urlProperty = new dependencyObservable.Property(
-        URL,
+    public static srcProperty = new dependencyObservable.Property(
+        SRC,
         IMAGE,
         new proxy.PropertyMetadata(
             "",
             dependencyObservable.PropertyMetadataSettings.None,
-            onUrlPropertyChanged
+            onSrcPropertyChanged
             )
         );
 
-    public static sourceProperty = new dependencyObservable.Property(
-        SOURCE,
+    public static imageSourceProperty = new dependencyObservable.Property(
+        IMAGE_SOURCE,
         IMAGE,
         new proxy.PropertyMetadata(
             undefined,
@@ -104,18 +114,18 @@ export class Image extends view.View implements definition.Image {
         super(options);
     }
 
-    get source(): imageSource.ImageSource {
-        return this._getValue(Image.sourceProperty);
+    get imageSource(): imageSource.ImageSource {
+        return this._getValue(Image.imageSourceProperty);
     }
-    set source(value: imageSource.ImageSource) {
-        this._setValue(Image.sourceProperty, value);
+    set imageSource(value: imageSource.ImageSource) {
+        this._setValue(Image.imageSourceProperty, value);
     }
 
-    get url(): string {
-        return this._getValue(Image.urlProperty);
+    get src(): string {
+        return this._getValue(Image.srcProperty);
     }
-    set url(value: string) {
-        this._setValue(Image.urlProperty, value);
+    set src(value: string) {
+        this._setValue(Image.srcProperty, value);
     }
 
     get isLoading(): boolean {
@@ -139,8 +149,8 @@ export class Image extends view.View implements definition.Image {
         var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
         trace.write(this + " :onMeasure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
 
-        var nativeWidth = this.source ? this.source.width : 0;
-        var nativeHeight = this.source ? this.source.height : 0;
+        var nativeWidth = this.imageSource ? this.imageSource.width : 0;
+        var nativeHeight = this.imageSource ? this.imageSource.height : 0;
 
         var measureWidth = Math.max(nativeWidth, this.minWidth);
         var measureHeight = Math.max(nativeHeight, this.minHeight);

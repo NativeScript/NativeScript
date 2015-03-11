@@ -30,7 +30,7 @@ function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData)
     }
 }
 
-function onSourcePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
     if (!image.android) {
         return;
@@ -42,7 +42,7 @@ function onSourcePropertyChanged(data: dependencyObservable.PropertyChangeData) 
 }
 
 // register the setNativeValue callback
-(<proxy.PropertyMetadata>imageCommon.Image.sourceProperty.metadata).onSetNativeValue = onSourcePropertyChanged;
+(<proxy.PropertyMetadata>imageCommon.Image.imageSourceProperty.metadata).onSetNativeValue = onImageSourcePropertyChanged;
 (<proxy.PropertyMetadata>imageCommon.Image.stretchProperty.metadata).onSetNativeValue = onStretchPropertyChanged;
 
 export class Image extends imageCommon.Image {

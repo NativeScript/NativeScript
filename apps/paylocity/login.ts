@@ -14,7 +14,7 @@ export function imageLoaded(args: observable.EventData) {
     var image = <imageDef.Image>args.object;
 
     var logoPath = fs.path.join(__dirname, "tagLine.png");
-    image.source = imageSourceDef.fromFile(logoPath);
+    image.imageSource = imageSourceDef.fromFile(logoPath);
 }
 
 export function loginButtonTap(args: observable.EventData) {

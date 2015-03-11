@@ -2,7 +2,7 @@
   <GridLayout rows="*, auto">
     <ScrollView>
       <StackLayout>
-        <Image source="{{ imageSource }}" stretch="aspectFill"/>
+        <Image imageSource="{{ imageSource }}" stretch="aspectFill"/>
         <Label text="{{ title }}" cssClass="detailsTitle" textWrap="true" />
       </StackLayout>
     </ScrollView>

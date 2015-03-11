@@ -28,12 +28,12 @@ declare module "ui/image" {
         /**
          * Gets or sets the image source of the image.
          */
-        source: imageSource.ImageSource;
+        imageSource: imageSource.ImageSource;
 
         /**
          * Gets or sets the URL of the image.
          */
-        url: string;
+        src: string;
 
         /**
          * Gets a value indicating if the image is currently loading
