@@ -1,12 +1,12 @@
 <Page>
   <StackLayout>
     <Label text="resource:" />
-    <Image url="res://icon" stretch="none" horizontalAlignment="left"/>
+    <Image src="res://icon" stretch="none" horizontalAlignment="left"/>
     
     <Label text="url:" />
-    <Image url="http://www.google.com/images/errors/logo_sm_2.png" stretch="none" horizontalAlignment="left"/>
+    <Image src="http://www.google.com/images/errors/logo_sm_2.png" stretch="none" horizontalAlignment="left"/>
     
     <Label text="app file:" />
-    <Image  url="~/app/logo.png" stretch="none" horizontalAlignment="left" />
+    <Image  src="~/app/logo.png" stretch="none" horizontalAlignment="left" />
   </StackLayout>
 </Page>

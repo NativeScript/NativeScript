@@ -61,6 +61,6 @@ export function setPicture(args: observable.EventData) {
     var img = parent.getViewById<image.Image>("cameraImage");
 
     camera.takePicture().then(r=> {
-        img.source = r;
+        img.imageSource = r;
     }).catch(e => dialogs.alert("ERROR: " + e));
 }

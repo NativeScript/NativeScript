@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Page loaded="pageLoaded">
-  <Image margin="10" source="{{ imageSource }}" verticalAlignment="center" horizontalAlignment="center"/>
+  <Image margin="10" src="~/app/res/telerik-logo.png" verticalAlignment="center" horizontalAlignment="center"/>
 </Page>
