@@ -56,7 +56,6 @@ export class ListPicker extends common.ListPicker {
             },
 
             format: function (index: number) {
-                console.log("format(" + index + ")");
                 if (this.owner) {
                     return this.owner._getItemAsString(index);
                 }
@@ -71,7 +70,6 @@ export class ListPicker extends common.ListPicker {
             },
 
             onValueChange: function (picker: android.widget.NumberPicker, oldVal: number, newVal: number) {
-                console.log("onValueChange("+oldVal+", "+newVal+")");
                 if (this.owner) {
                     this.owner._onPropertyChangedFromNative(common.ListPicker.selectedIndexProperty, newVal);
                 }
