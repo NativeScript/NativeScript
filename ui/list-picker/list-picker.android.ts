@@ -56,6 +56,7 @@ export class ListPicker extends common.ListPicker {
             },
 
             format: function (index: number) {
+                console.log("format(" + index + ")");
                 if (this.owner) {
                     return this.owner._getItemAsString(index);
                 }
@@ -70,10 +71,21 @@ export class ListPicker extends common.ListPicker {
             },
 
             onValueChange: function (picker: android.widget.NumberPicker, oldVal: number, newVal: number) {
+                console.log("onValueChange("+oldVal+", "+newVal+")");
                 if (this.owner) {
                     this.owner._onPropertyChangedFromNative(common.ListPicker.selectedIndexProperty, newVal);
                 }
             }
         }));
+
+        this._fixDisappearingSelectedItem();        
+    }
+
+    private _fixDisappearingSelectedItem() {
+        //HACK: http://stackoverflow.com/questions/17708325/android-numberpicker-with-formatter-does-not-format-on-first-rendering/26797732
+        var mInputTextField = java.lang.Class.forName("android.widget.NumberPicker").getDeclaredField("mInputText");
+        mInputTextField.setAccessible(true);
+        var mInputText = <android.widget.EditText>mInputTextField.get(this._android);
+        mInputText.setFilters([]);
     }
 } 
