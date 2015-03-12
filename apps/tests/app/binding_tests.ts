@@ -32,13 +32,38 @@ export function pageLoaded(args: observableModule.EventData) {
     model.set("toUpper", toUpperConverter);
     model.set("testProperty", "Alabala");
 
+    var dateConverter = {
+        toView: function (value, format) {
+            var result = format;
+            var day = value.getDate();
+            result = result.replace("dd", month < 10 ? "0" + day : day);
+            var month = value.getMonth() + 1;
+            result = result.replace("mm", month < 10 ? "0" + month : month);
+            result = result.replace("yyyy", value.getFullYear());
+            return result;
+        },
+        toModel: function (value, format) {
+            var ddIndex = format.indexOf("dd");
+            var day = parseInt(value.substr(ddIndex, 2));
+            var mmIndex = format.indexOf("mm");
+            var month = parseInt(value.substr(mmIndex, 2));
+            var yyyyIndex = format.indexOf("yyyy");
+            var year = parseInt(value.substr(yyyyIndex, 4));
+            var result = new Date(year, month - 1, day);
+            return result;
+        }
+    }
+
+    model.set("dateConverter", dateConverter);
+    model.set("testDate", new Date());
+
     page.bindingContext = model;
 }
 
 export function onTap(args: observableModule.EventData) {
     var button: buttonModule.Button = <buttonModule.Button>args.object;
-    trace.write("tasks: " + button.bindingContext.get("tasks"), trace.categories.Test, trace.messageType.info);
-    button.bindingContext.get("tasks").push("alabala");
+    trace.write("tasks: " + button.bindingContext.get("testDate"), trace.categories.Test, trace.messageType.info);
+    //button.bindingContext.get("tasks").push("alabala");
 }
 
 //export function createPage() {

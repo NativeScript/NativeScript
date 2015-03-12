@@ -225,7 +225,13 @@ export class Binding {
             if (this._isExpression(this.options.expression)) {
                 var changedModel = {};
                 changedModel[this.options.sourceProperty] = value;
-                this.updateSource(this._getExpressionValue(this.options.expression, true, changedModel));
+                var expressionValue = this._getExpressionValue(this.options.expression, true, changedModel);
+                if (expressionValue instanceof Error) {
+                    trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
+                }
+                else {
+                    this.updateSource(expressionValue);
+                }
             }
             else {
                 this.updateSource(value);
@@ -250,16 +256,23 @@ export class Binding {
                 var context = this.source && this.source.get && this.source.get() || global;
                 return exp.getValue(context, isBackConvert, changedModel);
             }
-            return undefined;
+            return new Error(expression + " is not a valid expression.");
         }
         catch (e) {
-            return undefined;
+            var errorMessage = "Run-time error occured in file: " + e.sourceURL + " at line: " + e.line + " and column: " + e.column; 
+            return new Error(errorMessage);
         }
     }
 
     public onSourcePropertyChanged(data: observable.PropertyChangeData) {
         if (this._isExpression(this.options.expression)) {
-            this.updateTarget(this._getExpressionValue(this.options.expression, false, undefined));
+            var expressionValue = this._getExpressionValue(this.options.expression, false, undefined);
+            if (expressionValue instanceof Error) {
+                trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
+            }
+            else {
+                this.updateTarget(expressionValue);
+            }
         } else if (data.propertyName === this.options.sourceProperty) {
             this.updateTarget(data.value);
         }
@@ -267,7 +280,13 @@ export class Binding {
 
     private getSourceProperty() {
         if (this._isExpression(this.options.expression)) {
-            return this._getExpressionValue(this.options.expression, false, undefined);
+            var expressionValue = this._getExpressionValue(this.options.expression, false, undefined);
+            if (expressionValue instanceof Error) {
+                trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
+            }
+            else {
+                return expressionValue;
+            }
         }
 
         if (!this.sourceOptions) {
