@@ -13,16 +13,7 @@ export function getNativeHint(textField: textFieldModule.TextField): string {
 
 export function getNativeSecure(textField: textFieldModule.TextField): boolean {
     var inputType = textField.android.getInputType();
-
-    if (inputType === (android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
-        return true;
-    }
-    else if (inputType === (android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL)) {
-        return false;
-    }
-    else {
-        throw new Error("Unsupported input type: " + inputType);
-    }
+    return (((inputType & android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD) === android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD) || ((inputType & android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD) === android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD));
 }
 
 export function getNativeFontSize(textField: textFieldModule.TextField): number {

@@ -33,6 +33,9 @@ function onSecurePropertyChanged(data: dependencyObservable.PropertyChangeData) 
         else if (currentClass === android.text.InputType.TYPE_CLASS_NUMBER) {
             newInputType = currentClass | currentFlags | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
         }
+        
+        // Lower all autocapitalization bits, because password bits don't like them and we will receive "Unsupported input type: 16513" error for example.
+        newInputType = newInputType & ~28762; //28762 (0x00007000) 13,14,15bits
     }
     else {
         if (currentClass === android.text.InputType.TYPE_CLASS_TEXT) {
