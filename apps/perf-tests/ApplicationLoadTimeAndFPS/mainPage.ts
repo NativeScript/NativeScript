@@ -14,7 +14,7 @@ export function createPage() {
         StackLayout.orientation = enums.Orientation.horizontal;
 
         var image = new imageModule.Image();
-        image.source = logoImageSource;
+        image.imageSource = logoImageSource;
         image.width = 100;
         image.stretch = enums.Stretch.aspectFit;
         StackLayout.addChild(image);

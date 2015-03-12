@@ -9,7 +9,16 @@ import ImageModule = require("ui/image");
 // Binding the image source property to a view-model property.
 //```XML
 // <Page>
-//   {%raw%}<Image source="{{ thumbnailImageSource }}" />{%endraw%}
+//   <StackLayout>
+//      <!--Bind the image source property to view-model property -->
+//      {%raw%}<Image src="{{ thumbnailImageUrl }}" />{%endraw%}
+//      <!--Load form image from application -->
+//      <Image source="~/app/logo.png" stretch ="none" / > 
+//      <!--Load form image resource -->
+//      <Image source="res://app/logo.png" stretch ="none" / > 
+//      <!--Load form image URL-->
+//      <Image source="http://www.google.com/images/errors/logo_sm_2.png" stretch ="none" /> 
+//   </StackLayout>
 // </Page>
 //```
 
@@ -26,7 +35,8 @@ var imagePath = __dirname + "../../logo.png";
 
 export var test_Image_Members = function () {
     var image = new ImageModule.Image();
-    TKUnit.assert(types.isDefined(image.url), "Image.url is not defined");
+    TKUnit.assert(types.isDefined(image.src), "Image.src is not defined");
+    TKUnit.assert(types.isDefined(image.imageSource), "Image.imageSource is not defined");
     TKUnit.assert(types.isDefined(image.isLoading), "Image.isLoading is not defined");
 }
 
@@ -36,7 +46,7 @@ export var test_settingImageSource = function () {
     // ### How to create an image and set its source.
     // ``` JavaScript
     var image = new ImageModule.Image();
-    image.source = ImageSourceModule.fromResource("logo");
+    image.imageSource = ImageSourceModule.fromResource("logo");
     // ```
     // </snippet>
     
@@ -55,12 +65,12 @@ export var test_settingImageSource = function () {
 }
 */
 
-export var test_SettingImageUrl = function (done) {
+export var test_SettingImageSrc = function (done) {
     // <snippet module="ui/image" title="Image">
-    // ### How to create an image and set its url.
+    // ### How to create an image and set its src.
     // ``` JavaScript
     var image = new ImageModule.Image();
-    image.url = "https://www.google.bg/images/srpr/logo11w.png";
+    image.src = "https://www.google.bg/images/srpr/logo11w.png";
     // ```
     // </snippet>
 
@@ -77,7 +87,7 @@ export var test_SettingImageUrl = function (done) {
 
     var testFunc = function (views: Array<ViewModule.View>) {
         var testImage = <ImageModule.Image> views[0];
-        imageIsLoaded = !!testImage.source;
+        imageIsLoaded = !!testImage.imageSource;
         try {
             TKUnit.assert(testModel.get("imageIsLoading") === false, "Expected: false, Actual: " + testModel.get("imageIsLoading"));
             TKUnit.assert(imageIsLoaded === true, "Expected: true, Actual: " + imageIsLoaded);
@@ -92,12 +102,12 @@ export var test_SettingImageUrl = function (done) {
     setTimeout(() => { helper.buildUIAndRunTest(image, testFunc) }, 3000);
 }
 
-export var test_SettingImageUrlToFileWithinApp = function (done) {
+export var test_SettingImageSrcToFileWithinApp = function (done) {
     // <snippet module="ui/image" title="Image">
-    // ### How to create an image and set its url to file within the application.
+    // ### How to create an image and set its src to file within the application.
     // ``` JavaScript
     var image = new ImageModule.Image();
-    image.url = "~/app/logo.png";
+    image.src = "~/app/logo.png";
     // ```
     // </snippet>
 
@@ -105,7 +115,7 @@ export var test_SettingImageUrlToFileWithinApp = function (done) {
 
     var testFunc = function (views: Array<ViewModule.View>) {
         var testImage = <ImageModule.Image> views[0];
-        imageIsLoaded = !!testImage.source;
+        imageIsLoaded = !!testImage.imageSource;
         try {
             TKUnit.assert(imageIsLoaded === true, "Expected: true, Actual: " + imageIsLoaded);
             done(null);
@@ -124,7 +134,7 @@ export var test_SettingStretch_AspectFit = function () {
     // ### How to set image stretching.
     // ``` JavaScript
     var image = new ImageModule.Image();
-    image.source = ImageSourceModule.fromFile(imagePath);
+    image.imageSource = ImageSourceModule.fromFile(imagePath);
     //// There are 4 modes of stretching none, fill, aspectFill, aspectFit
     //// The default value is aspectFit.
     //// Image stretch can be set by using ImageModule.stretch enum.
@@ -152,7 +162,7 @@ export var test_SettingStretch_AspectFit = function () {
 
 export var test_SettingStretch_Default = function () {
     var image = new ImageModule.Image();
-    image.source = ImageSourceModule.fromFile(imagePath);
+    image.imageSource = ImageSourceModule.fromFile(imagePath);
 
     var testFunc = function (views: Array<ViewModule.View>) {
         var testImage = <ImageModule.Image> views[0];
@@ -174,7 +184,7 @@ export var test_SettingStretch_Default = function () {
 
 export var test_SettingStretch_AspectFill = function () {
     var image = new ImageModule.Image();
-    image.source = ImageSourceModule.fromFile(imagePath);
+    image.imageSource = ImageSourceModule.fromFile(imagePath);
     image.stretch = enumsModule.Stretch.aspectFill;
 
     var testFunc = function (views: Array<ViewModule.View>) {
@@ -197,7 +207,7 @@ export var test_SettingStretch_AspectFill = function () {
 
 export var test_SettingStretch_Fill = function () {
     var image = new ImageModule.Image();
-    image.source = ImageSourceModule.fromFile(imagePath);
+    image.imageSource = ImageSourceModule.fromFile(imagePath);
     image.stretch = enumsModule.Stretch.fill;
 
     var testFunc = function (views: Array<ViewModule.View>) {
@@ -220,7 +230,7 @@ export var test_SettingStretch_Fill = function () {
 
 export var test_SettingStretch_none = function () {
     var image = new ImageModule.Image();
-    image.source = ImageSourceModule.fromFile(imagePath);
+    image.imageSource = ImageSourceModule.fromFile(imagePath);
     image.stretch = enumsModule.Stretch.none;
 
     var testFunc = function (views: Array<ViewModule.View>) {

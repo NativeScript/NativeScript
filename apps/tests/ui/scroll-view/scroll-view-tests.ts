@@ -17,7 +17,7 @@ import scrollViewModule = require("ui/scroll-view");
 //```XML
 // <Page>
 //  <ScrollView>
-//    {%raw%}<Image source="{{ someBigImage }}" />{%endraw%}
+//    {%raw%}<Image src="{{ someBigImageUrl }}" />{%endraw%}
 //  </ScrollView>
 // </Page>
 //```

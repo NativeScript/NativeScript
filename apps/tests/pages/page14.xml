@@ -1,8 +1,12 @@
 <Page>
   <StackLayout>
-    <Button horizontalAlignment="left" verticalAlignment="top" margin="10 0 10 20" text="top, left" />
-    <Button horizontalAlignment="center" verticalAlignment="center" text="center, center" />
-    <Button horizontalAlignment="right" verticalAlignment="bottom" margin="0 30" text="bottom, right" />
-    <Button horizontalAlignment="stretch" verticalAlignment="stretch" margin="20" text="stretch, stretch" />
+    <Label text="resource:" />
+    <Image src="res://icon" stretch="none" horizontalAlignment="left"/>
+    
+    <Label text="url:" />
+    <Image src="http://www.google.com/images/errors/logo_sm_2.png" stretch="none" horizontalAlignment="left"/>
+    
+    <Label text="app file:" />
+    <Image  src="~/app/logo.png" stretch="none" horizontalAlignment="left" />
   </StackLayout>
 </Page>
