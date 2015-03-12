@@ -83,7 +83,6 @@ export class ListPicker extends common.ListPicker {
 
     private _fixDisappearingSelectedItem() {
         //HACK: http://stackoverflow.com/questions/17708325/android-numberpicker-with-formatter-does-not-format-on-first-rendering/26797732
-        //dgel's solution doesn't work for me: when I tap on the picker, formatting disappears again.This bug is caused by input filter set on EditText inside NumberPicker when setDisplayValues isn't used. So I came up with this workaround:
         var mInputTextField = java.lang.Class.forName("android.widget.NumberPicker").getDeclaredField("mInputText");
         mInputTextField.setAccessible(true);
         var mInputText = <android.widget.EditText>mInputTextField.get(this._android);

@@ -1,7 +1,6 @@
 ﻿import observableModule = require("data/observable");
 import pagesModule = require("ui/page");
 import model = require("./model");
-import enums = require("ui/enums");
 import labelModule = require("ui/label");
 import listPickerModule = require("ui/list-picker");
 import datePickerModule = require("ui/date-picker");
