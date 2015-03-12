@@ -54,12 +54,10 @@ declare var exports;
 require("utils/module-merge").merge(common, exports);
 
 export class TextField extends common.TextField {
-    public _createUI() {
-        super._createUI();
-        
+    public _configureEditText() {
+        this.android.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         this.android.setLines(1);
         this.android.setMaxLines(1);
         this.android.setHorizontallyScrolling(true);
-        this.android.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
     }
 }

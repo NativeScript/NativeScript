@@ -22,6 +22,7 @@ export class EditableTextBase extends common.EditableTextBase {
         this._imm = <android.view.inputmethod.InputMethodManager>this._context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
         
         this._android = new android.widget.EditText(this._context);
+        this._configureEditText();
         this.android.setTag(this.android.getKeyListener());
 
         var that = new WeakRef(this);
@@ -89,6 +90,10 @@ export class EditableTextBase extends common.EditableTextBase {
             }
         });
         this._android.setOnEditorActionListener(editorActionListener);
+    }
+
+    public _configureEditText() {
+        // abstract
     }
 
     public _onDetached(force?: boolean) {
