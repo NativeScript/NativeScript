@@ -6,6 +6,7 @@ import trace = require("trace");
 import builder = require("ui/builder");
 import fs = require("file-system");
 import utils = require("utils/utils");
+import platform = require("platform");
 
 var frameStack: Array<Frame> = [];
 
@@ -39,7 +40,7 @@ function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
         }
     }
     else if (entry.moduleName) {
-        // Current app full path. 
+        // Current app full path.
         var currentAppPath = fs.knownFolders.currentApp().path;
         //Full path of the module = current app full path + module name.
         var moduleNamePath = fs.path.join(currentAppPath, entry.moduleName);
@@ -67,12 +68,22 @@ function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
     return page;
 }
 
+function resolvePlatformPath(path, ext) {
+  var platformName = platform.device.os.toLowerCase();
+  var platformPath = [path, platformName, ext].join(".");
+  if (fs.File.exists(platformPath)) {
+    return platformPath;
+  }
+
+  return [path, ext].join(".");
+}
+
 function pageFromBuilder(moduleNamePath: string, moduleName: string, moduleExports: any): pages.Page {
     var page: pages.Page;
     var element: view.View;
 
     // Possible XML file path.
-    var fileName = moduleNamePath + ".xml";
+    var fileName = resolvePlatformPath(moduleNamePath, "xml");
 
     if (fs.File.exists(fileName)) {
         trace.write("Loading XML file: " + fileName, trace.categories.Navigation);
