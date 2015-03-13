@@ -85,3 +85,9 @@ export module AutocapitalizationType {
     export var sentences: string = "sentences";
     export var allCharacters: string = "allCharacters";
 }
+
+
+export module ImageFormat {
+    export var png: string = "png";
+    export var jpeg: string = "jpeg";
+}

@@ -14,6 +14,7 @@
 
 import imageSource = require("image-source");
 import fs = require("file-system");
+import enums = require("ui/enums");
 import app = require("application");
 import TKUnit = require("./TKUnit");
 import platform = require("platform");
@@ -73,7 +74,7 @@ export function testSaveToFile() {
     var img = imageSource.fromFile(imagePath);
     var folder = fs.knownFolders.documents();
     var path = fs.path.join(folder.path, "Test.png");
-    var saved = img.saveToFile(path, imageSource.ImageFormat.PNG);
+    var saved = img.saveToFile(path, enums.ImageFormat.png);
     // ```
     // </snippet>
     TKUnit.assert(saved, "Image not saved to file");
@@ -130,7 +131,7 @@ export function testBase64Encode_PNG() {
         }
     }
 
-    var result = img.toBase64String(imageSource.ImageFormat.PNG);
+    var result = img.toBase64String(enums.ImageFormat.png);
     TKUnit.assertEqual(
         result,
         expected,
@@ -152,7 +153,7 @@ export function testBase64Encode_JPEG() {
         }
     }
 
-    var result = img.toBase64String(imageSource.ImageFormat.JPEG);
+    var result = img.toBase64String(enums.ImageFormat.jpeg);
     TKUnit.assertEqual(
         result,
         expected,
