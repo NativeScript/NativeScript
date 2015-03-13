@@ -12,6 +12,7 @@ export class StyleScope {
     private _viewIdToKey = {};
 
     private _css: string;
+    private _cssFileName: string;
     private _cssSelectors: Array<cssSelector.CssSelector>;
 
     get css(): string {
@@ -19,33 +20,44 @@ export class StyleScope {
     }
     set css(value: string) {
         this._css = value;
+        this._cssFileName = undefined;
         this._cssSelectors = undefined;
         this._reset();
     }
 
-    public addCss(cssString: string): void {
+    public addCss(cssString: string, cssFileName: string): void {
         if (this._css === undefined) {
             this._css = cssString;
         }
         else {
             this._css += cssString;
         }
+        this._cssFileName = cssFileName;
         this._reset();
         if (this._cssSelectors) {
-            var addedCssTree = cssParser.parse(cssString, undefined);
-            var addedSelectors = StyleScope.createSelectorsFromSyntaxTree(addedCssTree);
+            var addedSelectors = StyleScope.createSelectorsFromCss(cssString, cssFileName);
             this._cssSelectors = this._joinCssSelectorsArrays([this._cssSelectors, addedSelectors]);
+        }
+    }
+
+    public static createSelectorsFromCss(css: string, cssFileName: string): cssSelector.CssSelector[] {
+        try {
+            var pageCssSyntaxTree = css ? cssParser.parse(css, { source: cssFileName }) : null;
+            var pageCssSelectors;
+            if (pageCssSyntaxTree) {
+                pageCssSelectors = StyleScope.createSelectorsFromSyntaxTree(pageCssSyntaxTree);
+            }
+            return pageCssSelectors;
+        }
+        catch (e) {
+            trace.write("Css styling failed: " + e, trace.categories.Error, trace.messageType.error);
         }
     }
 
     public ensureSelectors() {
         if (!this._cssSelectors && (this._css || application.cssSelectorsCache)) {
             var applicationCssSelectors = application.cssSelectorsCache ? application.cssSelectorsCache : null;
-            var pageCssSyntaxTree = this._css ? cssParser.parse(this._css, undefined) : null;
-            var pageCssSelectors;
-            if (pageCssSyntaxTree) {
-                pageCssSelectors = StyleScope.createSelectorsFromSyntaxTree(pageCssSyntaxTree);
-            }
+            var pageCssSelectors = StyleScope.createSelectorsFromCss(this._css, this._cssFileName);
             this._cssSelectors = this._joinCssSelectorsArrays([applicationCssSelectors, pageCssSelectors]);
         }
     }
@@ -131,7 +143,7 @@ export class StyleScope {
         }
     }
 
-    public static createSelectorsFromSyntaxTree(ast: cssParser.SyntaxTree): Array<cssSelector.CssSelector> {
+    private static createSelectorsFromSyntaxTree(ast: cssParser.SyntaxTree): Array<cssSelector.CssSelector> {
         var result: Array<cssSelector.CssSelector> = [];
 
         var rules = ast.stylesheet.rules;
@@ -168,6 +180,6 @@ export function applyInlineSyle(view: view.View, style: string) {
         var filteredDeclarations = syntaxTree.stylesheet.rules[0].declarations.filter((val, i, arr) => { return val.type === "declaration" });
         cssSelector.applyInlineSyle(view, filteredDeclarations);
     } catch (ex) {
-        trace.write("Applying local style failed: " + ex, trace.categories.Style);
+        trace.write("Applying local style failed: " + ex, trace.categories.Error, trace.messageType.error);
     }
 }
