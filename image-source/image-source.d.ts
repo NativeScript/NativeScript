@@ -4,8 +4,8 @@
 declare module "image-source" {
     
     /**
-    * Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
-    */
+     * Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
+     */
     export class ImageSource {
        /**
         * Gets the height of this instance. This is a read-only property.
@@ -104,4 +104,10 @@ declare module "image-source" {
      * @param path The location of the file on the file system.
      */
     export function fromFileOrResource(path: string): ImageSource;
+
+    /**
+     * Returns true if the specified path points to a resource or local file.
+     * @param path The path.
+     */
+    export function isFileOrResourcePath(path: string): boolean
 }

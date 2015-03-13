@@ -15,10 +15,6 @@ var IMAGE = "Image";
 var ISLOADING = "isLoading";
 var STRETCH = "stretch";
 
-function isUrl(value: string): boolean {
-    return value.indexOf("http://") === 0 || value.indexOf("https://") === 0;
-}
-
 function isValidSrc(src: any): boolean {
     return types.isString(src);
 }
@@ -34,16 +30,16 @@ function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
         image._setValue(Image.isLoadingProperty, true);
 
-        if (isUrl(value)) {
+        if (imageSource.isFileOrResourcePath(value)) {
+            image.imageSource = imageSource.fromFileOrResource(value);
+            image._setValue(Image.isLoadingProperty, false);
+        } else {
             imageSource.fromUrl(value).then((r) => {
                 if (image["_url"] === value) {
                     image.imageSource = r;
                     image._setValue(Image.isLoadingProperty, false);
                 }
             });
-        } else {
-            image.imageSource = imageSource.fromFileOrResource(value);
-            image._setValue(Image.isLoadingProperty, false);
         }
     }
     else if (value instanceof imageSource.ImageSource) {
