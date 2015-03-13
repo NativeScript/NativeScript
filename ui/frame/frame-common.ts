@@ -94,7 +94,7 @@ function pageFromBuilder(moduleNamePath: string, moduleName: string, moduleExpor
             page = <pages.Page>element;
 
             // Possible CSS file path.
-            var cssFileName = moduleName + ".css";
+            var cssFileName = resolvePlatformPath(moduleName, "css");
             page.addCssFile(cssFileName);
         }
     }
