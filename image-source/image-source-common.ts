@@ -1,4 +1,5 @@
 ﻿import http = require("http");
+import types = require("utils/types");
 
 // This is used for definition purposes only, it does not generate JavaScript for it.
 import definition = require("image-source");
@@ -30,8 +31,22 @@ export function fromUrl(url: string): Promise<definition.ImageSource> {
 }
 
 export function fromFileOrResource(path: string): definition.ImageSource {
+    if (!isFileOrResourcePath(path)) {
+        throw new Error("Path \"" + "\" is not a valid file or resource.");
+    }
+
     if (path.indexOf(RESOURCE_PREFIX) === 0) {
         return fromResource(path.substr(RESOURCE_PREFIX.length));
     }
     return fromFile(path);
+}
+
+export function isFileOrResourcePath(path: string): boolean {
+    if (!types.isString(path)) {
+        return false;
+    }
+
+    return path.indexOf("~/") === 0 ||  // relative to AppRoot
+        path.indexOf("/") === 0 ||      // absolute path
+        path.indexOf(RESOURCE_PREFIX) === 0;    // resource
 }

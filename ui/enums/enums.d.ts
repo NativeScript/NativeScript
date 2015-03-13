@@ -311,8 +311,6 @@
         export var allCharacters: string;
     }
 
-
-
     /**
      * Defines the recognized image formats.
      */
