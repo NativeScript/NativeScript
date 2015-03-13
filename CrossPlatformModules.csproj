@@ -135,6 +135,15 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i61.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i73.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\gestures.ts" />
+    <TypeScriptCompile Include="image-source\image-source-common.ts">
+      <DependentUpon>image-source.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="image-source\image-source.android.ts">
+      <DependentUpon>image-source.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="image-source\image-source.ios.ts">
+      <DependentUpon>image-source.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="platform\platform.ios.ts">
       <DependentUpon>platform.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -198,14 +207,7 @@
       <DependentUpon>http-request.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="http\http.d.ts" />
-    <TypeScriptCompile Include="image-source\image-source-native.android.ts">
-      <DependentUpon>image-source-native.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="image-source\image-source-native.ios.ts">
-      <DependentUpon>image-source-native.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="image-source\image-source.d.ts" />
-    <TypeScriptCompile Include="image-source\image-source-native.d.ts" />
     <TypeScriptCompile Include="js-libs\easysax\easysax.d.ts" />
     <TypeScriptCompile Include="location\location.d.ts" />
     <TypeScriptCompile Include="apps\tests\app\pageNavigation.ts" />
@@ -651,9 +653,6 @@
       <DependentUpon>file-system.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="file-system\file-system.d.ts" />
-    <TypeScriptCompile Include="image-source\image-source.ts">
-      <DependentUpon>image-source.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="location\location.ts">
       <DependentUpon>location.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -1467,7 +1466,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

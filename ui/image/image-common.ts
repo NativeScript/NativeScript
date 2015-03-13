@@ -15,46 +15,23 @@ var IMAGE = "Image";
 var ISLOADING = "isLoading";
 var STRETCH = "stretch";
 
-var RESOURCE_PREFIX = "res://";
-
-function isResource(value: string): boolean {
-    return value.indexOf(RESOURCE_PREFIX) === 0;
-}
-
-function isUrl(value: string): boolean {
-    return value.indexOf("http://") === 0 || value.indexOf("https://") === 0;
-}
-
-function isAppFile(value: string): boolean {
-    return value.indexOf("~/") === 0;
-}
-
-function isValidUrl(url: any): boolean {
-    if (!types.isString(url)) {
-        return false;
-    }
-
-    var value = url ? url.trim() : "";
-    return value !== "" && (isResource(value) || isAppFile(value) || isUrl(value));
+function isValidSrc(src: any): boolean {
+    return types.isString(src);
 }
 
 function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
     var value = data.newValue;
 
-    if (isValidUrl(value)) {
+    if (isValidSrc(value)) {
         value = value.trim();
         image.imageSource = null;
         image["_url"] = value;
 
         image._setValue(Image.isLoadingProperty, true);
 
-        if (isResource(value)) {
-            image.imageSource = imageSource.fromResource(value.substr(RESOURCE_PREFIX.length));
-            image._setValue(Image.isLoadingProperty, false);
-        }
-        else if (isAppFile(value)) {
-            image.imageSource = imageSource.fromFile(value);
+        if (imageSource.isFileOrResourcePath(value)) {
+            image.imageSource = imageSource.fromFileOrResource(value);
             image._setValue(Image.isLoadingProperty, false);
         } else {
             imageSource.fromUrl(value).then((r) => {

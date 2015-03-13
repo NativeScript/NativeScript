@@ -3,24 +3,9 @@
  */
 declare module "image-source" {
     
-   /**
-    * Defines the recognized image formats.
-    */
-    export enum ImageFormat {
-       /**
-        * The W3C Portable Network Graphics (PNG) image format.
-        */
-        PNG,
-
-       /**
-        * The Joint Photographic Experts Group (JPEG) image format.
-        */
-        JPEG,
-    }
-
-   /**
-    * Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
-    */
+    /**
+     * Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
+     */
     export class ImageSource {
        /**
         * Gets the height of this instance. This is a read-only property.
@@ -73,14 +58,14 @@ declare module "image-source" {
         * @param format The format (encoding) of the image.
         * @param quality Optional parameter, specifying the quality of the encoding. Defaults to the maximum available quality.
         */
-        saveToFile(path: string, format: ImageFormat, quality?: number): boolean;
+        saveToFile(path: string, format: string, quality?: number): boolean;
 
         /**
          * Converts the image to base64 encoded string, using the provided image format and quality.
          * @param format The format (encoding) of the image.
          * @param quality Optional parameter, specifying the quality of the encoding. Defaults to the maximum available quality.
          */
-        toBase64String(format: ImageFormat, quality?: number): string;
+        toBase64String(format: string, quality?: number): string;
     }
 
    /**
@@ -113,4 +98,16 @@ declare module "image-source" {
     * @param url The link to the remote image object. This operation will download and decode the image.
     */
     export function fromUrl(url: string): Promise<ImageSource>;
+
+    /**
+     * Creates a new ImageSource instance and loads it from the specified local file or resource(if spexified with "res://" prefix)
+     * @param path The location of the file on the file system.
+     */
+    export function fromFileOrResource(path: string): ImageSource;
+
+    /**
+     * Returns true if the specified path points to a resource or local file.
+     * @param path The path.
+     */
+    export function isFileOrResourcePath(path: string): boolean
 }
