@@ -5,6 +5,7 @@ import definition = require("ui/list-view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import builder = require("ui/builder");
 import label = require("ui/label");
+import color = require("color");
 
 var ITEMS = "items";
 var ITEMTEMPLATE = "itemTemplate";
@@ -12,6 +13,7 @@ var ISSCROLLING = "isScrolling";
 var LISTVIEW = "ListView";
 var ITEMSCHANGED = "_itemsChanged";
 var CHANGE = "change";
+var SEPARATORCOLOR = "separatorColor";
 
 export module knownEvents {
     export var itemLoading = "itemLoading";
@@ -44,6 +46,11 @@ function onItemTemplatePropertyChanged(data: dependencyObservable.PropertyChange
 }
 
 export class ListView extends view.View implements definition.ListView {
+
+    public static separatorColorProperty = new dependencyObservable.Property(
+        SEPARATORCOLOR,
+        LISTVIEW,
+        new proxy.PropertyMetadata(undefined));
 
     public static itemsProperty = new dependencyObservable.Property(
         ITEMS,
@@ -100,6 +107,14 @@ export class ListView extends view.View implements definition.ListView {
     }
     set isScrolling(value: boolean) {
         this._setValue(ListView.isScrollingProperty, value);
+    }
+
+    get separatorColor(): color.Color {
+        return this._getValue(ListView.separatorColorProperty);
+    }
+    set separatorColor(value: color.Color) {
+        this._setValue(ListView.separatorColorProperty,
+            value instanceof color.Color ? value : new color.Color(<any>value));
     }
 
     public refresh() {

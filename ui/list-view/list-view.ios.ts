@@ -3,6 +3,9 @@ import definition = require("ui/list-view");
 import common = require("ui/list-view/list-view-common");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
+import proxy = require("ui/core/proxy");
+import dependencyObservable = require("ui/core/dependency-observable");
+import color = require("color");
 
 var CELLIDENTIFIER = "cell";
 var ITEMLOADING = common.knownEvents.itemLoading;
@@ -115,6 +118,20 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         return DEFAULT_HEIGHT;
     }
 }
+
+function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var bar = <ListView>data.object;
+    if (!bar.ios) {
+        return;
+    }
+
+    if (data.newValue instanceof color.Color) {
+        bar.ios.separatorColor = (<color.Color>data.newValue).ios;
+    }
+}
+
+// register the setNativeValue callbacks
+(<proxy.PropertyMetadata>common.ListView.separatorColorProperty.metadata).onSetNativeValue = onSeparatorColorPropertyChanged;
 
 export class ListView extends common.ListView {
     private _ios: UITableView;

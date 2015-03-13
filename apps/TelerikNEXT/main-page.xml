@@ -45,7 +45,7 @@
 
         <SearchBar text="{{ search }}" style="background-color: #fac950; color: #fac950;" textFieldBackgroundColor="white" row="2" />
 
-        <ListView items="{{ sessions }}" row="3">
+        <ListView items="{{ sessions }}" row="3" separatorColor="#fac950">
           <ListView.itemTemplate>
             <GridLayout columns="auto, *">
 

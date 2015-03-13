@@ -3,6 +3,10 @@ import common = require("ui/list-view/list-view-common");
 import viewModule = require("ui/core/view");
 import layout = require("ui/layouts/layout");
 import stackLayout = require("ui/layouts/stack-layout");
+import proxy = require("ui/core/proxy");
+import dependencyObservable = require("ui/core/dependency-observable");
+import color = require("color");
+import utils = require("utils/utils");
 
 var ITEMLOADING = common.knownEvents.itemLoading;
 var LOADMOREITEMS = common.knownEvents.loadMoreItems;
@@ -12,6 +16,21 @@ var REALIZED_INDEX = "realizedIndex";
 // merge the exports of the common file with the exports of this file
 declare var exports;
 require("utils/module-merge").merge(common, exports);
+
+function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var bar = <ListView>data.object;
+    if (!bar.android) {
+        return;
+    }
+
+    if (data.newValue instanceof color.Color) {
+        bar.android.setDivider(new android.graphics.drawable.ColorDrawable((<color.Color>data.newValue).android));
+        bar.android.setDividerHeight(1);
+    }
+}
+
+// register the setNativeValue callbacks
+(<proxy.PropertyMetadata>common.ListView.separatorColorProperty.metadata).onSetNativeValue = onSeparatorColorPropertyChanged;
 
 export class ListView extends common.ListView {
     private _android: android.widget.ListView;
@@ -158,6 +177,10 @@ class ListViewAdapter extends android.widget.BaseAdapter {
     }
 
     public hasStableIds(): boolean {
+        return true;
+    }
+
+    public areAllItemsEnabled (): boolean {
         return true;
     }
 

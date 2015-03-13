@@ -5,6 +5,7 @@ declare module "ui/list-view" {
     import observable = require("data/observable");
     import dependencyObservable = require("ui/core/dependency-observable");
     import view = require("ui/core/view");
+    import color = require("color");
 
     /**
      * Known event names.
@@ -80,6 +81,11 @@ declare module "ui/list-view" {
          * Gets or set the item template of the ListView. 
          */
         itemTemplate: string;
+
+        /**
+         * Gets or set the items separator line color of the ListView. 
+         */
+        separatorColor: color.Color;
 
         /**
          * Forces the ListView to reload all its items.
