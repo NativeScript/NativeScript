@@ -179,10 +179,6 @@ class ListViewAdapter extends android.widget.BaseAdapter {
         return true;
     }
 
-    public areAllItemsEnabled (): boolean {
-        return true;
-    }
-
     public getView(index: number, convertView: android.view.View, parent: any): android.view.View {
         if (!this._listView) {
             return null;
