@@ -1,27 +1,6 @@
 ﻿import common = require("ui/list-picker/list-picker-common");
 import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
 import types = require("utils/types");
-
-function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <ListPicker>data.object;
-
-    if (picker.ios && types.isNumber(data.newValue)) {
-        picker.ios.selectRowInComponentAnimated(data.newValue, 0, false);
-    }
-}
-
-(<proxy.PropertyMetadata>common.ListPicker.selectedIndexProperty.metadata).onSetNativeValue = onSelectedIndexPropertyChanged;
-
-function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <ListPicker>data.object;
-
-    if (picker.ios) {
-        picker.ios.reloadAllComponents();
-    }
-}
-
-(<proxy.PropertyMetadata>common.ListPicker.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -48,6 +27,22 @@ export class ListPicker extends common.ListPicker {
 
     get ios(): UIPickerView {
         return this._ios;
+    }
+
+    public _onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        super._onSelectedIndexPropertyChanged(data);
+
+        if (this.ios && types.isNumber(data.newValue)) {
+            this.ios.selectRowInComponentAnimated(data.newValue, 0, false);
+        }
+    }
+
+    public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        if (this.ios) {
+            this.ios.reloadAllComponents();
+        }
+
+        this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
     }
 }
 

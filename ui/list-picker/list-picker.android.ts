@@ -1,32 +1,6 @@
 ﻿import common = require("ui/list-picker/list-picker-common");
 import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
 import types = require("utils/types");
-
-function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <ListPicker>data.object;
-
-    if (picker.android && types.isNumber(data.newValue)) {
-        if (types.isDefined(picker.items) && types.isNumber(picker.items.length)) {
-            picker.android.setMaxValue(picker.items.length - 1);
-        }
-
-        picker.android.setValue(data.newValue);
-    }
-}
-
-(<proxy.PropertyMetadata>common.ListPicker.selectedIndexProperty.metadata).onSetNativeValue = onSelectedIndexPropertyChanged;
-
-function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <ListPicker>data.object;
-
-    if (picker.android && types.isNumber(data.newValue.length)) {
-        picker.android.setMaxValue(data.newValue.length - 1);
-        picker.android.setWrapSelectorWheel(false);
-    }
-}
-
-(<proxy.PropertyMetadata>common.ListPicker.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -34,6 +8,8 @@ require("utils/module-merge").merge(common, exports);
 
 export class ListPicker extends common.ListPicker {
     private _android: android.widget.NumberPicker;
+    private _valueChangedListener: android.widget.NumberPicker.OnValueChangeListener;
+    private _formatter: android.widget.NumberPicker.Formatter;
 
     get android(): android.widget.NumberPicker {
         return this._android;
@@ -50,7 +26,7 @@ export class ListPicker extends common.ListPicker {
 
         var that = new WeakRef(this);
 
-        this._android.setFormatter(new android.widget.NumberPicker.Formatter({
+        this._formatter = new android.widget.NumberPicker.Formatter({
             get owner(): ListPicker {
                 return that.get();
             },
@@ -62,9 +38,10 @@ export class ListPicker extends common.ListPicker {
 
                 return index.toString();
             }
-        }));
+        });
+        this._android.setFormatter(this._formatter);
 
-        this._android.setOnValueChangedListener(new android.widget.NumberPicker.OnValueChangeListener({
+        this._valueChangedListener = new android.widget.NumberPicker.OnValueChangeListener({
             get owner() {
                 return that.get();
             },
@@ -74,9 +51,40 @@ export class ListPicker extends common.ListPicker {
                     this.owner._onPropertyChangedFromNative(common.ListPicker.selectedIndexProperty, newVal);
                 }
             }
-        }));
+        });
+        this._android.setOnValueChangedListener(this._valueChangedListener);
 
         this._fixDisappearingSelectedItem();        
+    }
+
+    public _onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        super._onSelectedIndexPropertyChanged(data);
+        
+        if (this.android && types.isNumber(data.newValue)) {
+            
+            if (types.isDefined(this.items) && types.isNumber(this.items.length)) {
+                this.android.setMaxValue(this.items.length - 1);
+            }
+
+            this.android.setValue(data.newValue);
+        }
+    }
+
+    public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        if (this.android) {
+            var maxValue;
+            if (!data.newValue || !data.newValue.length) {
+                maxValue = 0;
+            }
+            else {
+                maxValue = data.newValue.length;
+            }
+
+            this.android.setMaxValue(maxValue);
+            this.android.setWrapSelectorWheel(false);
+        }
+
+        this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
     }
 
     private _fixDisappearingSelectedItem() {
