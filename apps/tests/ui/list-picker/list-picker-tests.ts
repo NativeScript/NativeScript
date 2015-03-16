@@ -1,13 +1,8 @@
 ﻿import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
-import labelModule = require("ui/label");
-import stackLayoutModule = require("ui/layouts/stack-layout");
 import listPickerTestsNative = require("./list-picker-tests-native");
-import frameModule = require("ui/frame");
 import pageModule = require("ui/page");
-import listViewModule = require("ui/list-view");
-import buttonModule = require("ui/button");
 
 // <snippet module="ui/list-picker" title="ListPicker">
 // # ListPicker
