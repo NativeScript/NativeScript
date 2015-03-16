@@ -6,7 +6,6 @@ import stackLayout = require("ui/layouts/stack-layout");
 import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import color = require("color");
-import utils = require("utils/utils");
 
 var ITEMLOADING = common.knownEvents.itemLoading;
 var LOADMOREITEMS = common.knownEvents.loadMoreItems;
