@@ -75,6 +75,8 @@
     <TypeScriptCompile Include="apps\gallery-app\views\image.ts">
       <DependentUpon>image.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ng-native\app.ts" />
+    <TypeScriptCompile Include="apps\ng-native\main-page.ts" />
     <TypeScriptCompile Include="apps\TelerikNEXT\app-view-model.ts" />
     <TypeScriptCompile Include="apps\TelerikNEXT\app.ts" />
     <TypeScriptCompile Include="apps\TelerikNEXT\main-page.ts" />
@@ -498,10 +500,12 @@
     <TypeScriptCompile Include="libjs.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="apps\ng-native\ng-component.js" />
     <Content Include="apps\pickers-demo\main-page.xml">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\gallery-app\layouts\dock-layout.xml" />
+    <Content Include="apps\ng-native\main-page.xml" />
     <Content Include="apps\template-settings\app.css" />
     <Content Include="apps\tests\app\binding_tests.xml" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />
@@ -1236,6 +1240,42 @@
     <TypeScriptCompile Include="ui\editable-text-base\editable-text-base.ios.ts">
       <DependentUpon>editable-text-base.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <Content Include="zone\counting-zone.js" />
+    <Content Include="zone\example\basic.html" />
+    <Content Include="zone\example\counting.html" />
+    <Content Include="zone\example\except.html" />
+    <Content Include="zone\example\index.html" />
+    <Content Include="zone\example\profiling.html" />
+    <Content Include="zone\example\style.css" />
+    <Content Include="zone\example\throttle.html" />
+    <Content Include="zone\example\xml-http-request.html" />
+    <Content Include="zone\except-zone.js" />
+    <Content Include="zone\karma-sauce.conf.js" />
+    <Content Include="zone\karma.conf.js" />
+    <Content Include="zone\long-stack-trace-zone.js" />
+    <Content Include="zone\naive-parser.js" />
+    <Content Include="zone\parser.js" />
+    <Content Include="zone\presentation.png" />
+    <Content Include="zone\test\assets\import.html" />
+    <Content Include="zone\test\counting-zone.disabled.js" />
+    <Content Include="zone\test\integration\brick.spec.js" />
+    <Content Include="zone\test\lib\brick.js" />
+    <Content Include="zone\test\long-stack-trace-zone.spec.js" />
+    <Content Include="zone\test\patch\element.spec.js" />
+    <Content Include="zone\test\patch\HTMLImports.spec.js" />
+    <Content Include="zone\test\patch\indexedDB.spec.js" />
+    <Content Include="zone\test\patch\MutationObserver.spec.js" />
+    <Content Include="zone\test\patch\Promise.spec.js" />
+    <Content Include="zone\test\patch\registerElement.spec.js" />
+    <Content Include="zone\test\patch\requestAnimationFrame.spec.js" />
+    <Content Include="zone\test\patch\setInterval.spec.js" />
+    <Content Include="zone\test\patch\setTimeout.spec.js" />
+    <Content Include="zone\test\patch\WebSocket.spec.js" />
+    <Content Include="zone\test\patch\XMLHttpRequest.spec.js" />
+    <Content Include="zone\test\util.js" />
+    <Content Include="zone\test\ws-server.js" />
+    <Content Include="zone\test\zone.spec.js" />
+    <Content Include="zone\zone.js" />
     <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
@@ -1733,6 +1773,7 @@
     <Content Include="angular2\test\services\title_spec.map" />
     <Content Include="angular2\test\test_lib\test_lib_spec.map" />
     <Content Include="angular2\test_lib.map" />
+    <Content Include="apps\ng-native\package.json" />
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">
@@ -1754,6 +1795,12 @@
     <Content Include="rtts_assert\rtts_assert.map" />
     <Content Include="rtts_assert\src\rtts_assert.map" />
     <Content Include="rtts_assert\test\rtts_assert_spec.map" />
+    <Content Include="zone\.npmignore" />
+    <Content Include="zone\.travis.yml" />
+    <Content Include="zone\grab-blink-idl.sh" />
+    <Content Include="zone\LICENSE" />
+    <Content Include="zone\package.json" />
+    <Content Include="zone\README.md" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />
@@ -1816,7 +1863,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

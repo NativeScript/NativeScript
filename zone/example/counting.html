@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Counting Pending Tasks</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../zone.js"></script>
+  <script src="../counting-zone.js"></script>
+</head>
+<body>
+
+  <h1>Counting Pending Tasks</h1>
+
+  <p>We want to know about just the events from a single mouse click
+  while a bunch of other stuff is happening on the page</p>
+
+  <p>This is useful in E2E testing. Because you know when there are
+  no async tasks, you avoid adding timeouts that wait for tasks that
+  run for an indeterminable amount of time.</p>
+
+  <button id="b1">Start</button>
+
+  <p id="output"></p>
+
+  <script>
+    /*
+     * Zone that counts pending async tasks
+     */
+    var myCountingZone = zone.fork(Zone.countingZone).fork({
+      '+onZoneCreated': function () {
+        this.data.start || (this.data.start = Date.now());
+        this.print();
+      },
+      '-afterTask': function (delegate) {
+        this.print();
+      },
+      '+reset': function (delegate) {
+        this.data.start = 0;
+      },
+      print: function () {
+        counter = this.counter();
+        output.innerHTML = counter ?
+            'pending task count: ' + counter :
+            ' DONE! ' + (Date.now() - this.data.start)/1000 + 's';
+      }
+    });
+
+    /*
+     * We want to profile just the actions that are a result of this button, so with
+     * a single line of code, we can run `main` in the countingZone
+     */
+
+    b1.addEventListener('click', function () {
+      myCountingZone.run(main);
+    });
+
+
+    /*
+     * Spawns a bunch of setTimeouts which in turn spawn more setTimeouts!
+     * This is a boring way to simulate HTTP requests and other async actions.
+     */
+
+    function main () {
+      zone.reset();
+      for (var i = 0; i < 10; i++) {
+        recur(i, 800);
+      }
+    }
+
+    function recur (x, t) {
+      if (x > 0) {
+        setTimeout(function () {
+          for (var i = x; i < 8; i++) {
+            recur(x - 1, Math.random()*t);
+          }
+        }, t);
+      }
+    }
+
+
+    /*
+     * There may be other async actions going on in the background.
+     * Because this is not in the zone, our profiling ignores it.
+     * Nice.
+     */
+    function noop () {
+      setTimeout(noop, 10*Math.random());
+    }
+    noop();
+  </script>
+
+</body>
+</html>

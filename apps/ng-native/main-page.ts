@@ -1,0 +1,1 @@
+﻿var ngComponent = require("./ng-component");

@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>HTTP requests with Zones</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../zone.js"></script>
+</head>
+<body>
+
+  <script>
+
+  function checkZone () {
+    console.log(!!window.zone.parent);
+  }
+
+  var oReq = new XMLHttpRequest();
+  //oReq.onload = checkZone;
+  oReq.onreadystatechange = checkZone;
+  oReq.open('get', 'index.html', true);
+  oReq.send();
+
+  /*
+  var oReq = new XMLHttpRequest();
+
+  oReq.upload.addEventListener('progress', checkZone, false);
+  oReq.upload.addEventListener('load', checkZone, false);
+  oReq.upload.addEventListener('error', checkZone, false);
+  oReq.upload.addEventListener('abort', checkZone, false);
+
+  oReq.open();
+  */
+
+  </script>
+</body>
+</html>

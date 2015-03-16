@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Except Zone</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="../zone.js"></script>
+  <script src="../except-zone.js"></script>
+</head>
+<body>
+
+  <h1>Except Zone</h1>
+
+  <p>We want to know about just the events outside of a given function invocation</p>
+
+  <button id="b1">Start Profiling</button>
+
+  <p id="output"></p>
+
+  <script>
+
+
+
+    /*
+     * Let's say we want to know the CPU cost from some action
+     * that includes async tasks. We can do this with zones!
+     */
+
+    /*
+     * For this demo, we're going to sort an array using an async
+     * algorithm when a button is pressed.
+     */
+    function sortAndPrintArray (unsortedArray) {
+      //zone.reset();
+      asyncBogosort(unsortedArray, function (sortedArray) {
+        console.log(sortedArray);
+      });
+    }
+
+
+    /*
+     * This is a really efficient algorithm.
+     *
+     * First, check if the array is sorted.
+     * - If it is, call the callback
+     * - If it isn't, randomize the array and recur
+     *
+     * This implementation is async because JavaScript
+     */
+    function asyncBogosort (arr, cb) {
+      setTimeout(function () {
+        if (isSorted(arr)) {
+          cb(arr);
+        } else {
+          var newArr = arr.slice(0);
+          newArr.sort(function () {
+            return Math.random() - 0.5;
+          });
+          asyncBogosort(newArr, cb);
+        }
+      }, 0);
+    }
+
+    function isSorted (things) {
+      for (var i = 1; i < things.length; i += 1) {
+        if (things[i] < things[i - 1]) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+
+
+
+    /*
+     * This zone starts a timer at the start of each task,
+     * and stops it at the end. It accumulates the total run
+     * time internally, exposing it via `zone.time()`
+     *
+     * Note that this is the time the CPU is spending doing
+     * bogosort, as opposed to the time from the start
+     * of the algorithm until it's completion.
+     */
+    var profilingZone = (function () {
+      var time = 0,
+          // use the high-res timer if available
+          timer = performance ?
+                      performance.now.bind(performance) :
+                      Date.now.bind(Date);
+      return {
+        beforeTask: function () {
+          this.start = timer();
+        },
+        afterTask: function () {
+          time += timer() - this.start;
+          console.log('sorting took ' + zone.time() + ' of CPU time');
+        },
+        time: function () {
+          return Math.floor(time*100) / 100 + 'ms';
+        },
+        reset: function () {
+          time = 0;
+        }
+      };
+    }());
+
+    /*
+     * Zone that profiles async tasks
+     */
+    var myZone = zone.fork(Zone.exceptZone).fork(profilingZone);
+
+
+    /*
+     * Bind button
+     */
+    b1.addEventListener('click', function () {
+      myZone.run(function () {
+        var unsortedArray = [3,4,1,2,7];
+        sortAndPrintArray(unsortedArray);
+      });
+    });
+
+
+    /*
+     * There may be other async actions going on in the background.
+     * Because this is not in the zone, our profiling ignores it.
+     * Nice.
+     */
+    function noop () {
+      setTimeout(noop, 10*Math.random());
+    }
+    noop();
+  </script>
+
+</body>
+</html>

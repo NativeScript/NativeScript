@@ -119,6 +119,7 @@ module.exports = function(grunt) {
                     "./js-libs/**/*.js",
                     "./rtts_assert/**/*.*",
                     "./angular2/**/*.*",
+                    "./zone/**/*.*",
                 ],
                 dest: "<%= localCfg.outModulesDir %>/",
                 cwd: localCfg.srcDir
