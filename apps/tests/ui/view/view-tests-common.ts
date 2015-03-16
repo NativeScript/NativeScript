@@ -494,13 +494,13 @@ export var test_binding_cssClass = function () {
     property_binding_test("cssClass", "class1", "class2");
 }
 
-export var test_binding_style_color = function () {
-    property_binding_style_test("color", "#FF0000", "#00FF00");
-}
+//export var test_binding_style_color = function () {
+//    property_binding_style_test("color", "#FF0000", "#00FF00");
+//}
 
-export var test_binding_style_backgroundColor = function () {
-    property_binding_style_test("backgroundColor", "#FF0000", "#00FF00");
-}
+//export var test_binding_style_backgroundColor = function () {
+//    property_binding_style_test("backgroundColor", "#FF0000", "#00FF00");
+//}
 
 export var test_binding_style_fontSize = function () {
     property_binding_style_test("fontSize", 5, 10);

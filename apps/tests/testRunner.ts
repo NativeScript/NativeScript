@@ -47,6 +47,7 @@ allTests["TEXT-VIEW"] = require("./ui/text-view/text-view-tests");
 allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");
 allTests["FILE-SYSTEM-ACCESS"] = require("./file-system-access-tests/file-system-access-tests");
 allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
+allTests["LIST-PICKER"] = require("./ui/list-picker/list-picker-tests");
 
 var testsWithLongDelay = {
     testLocation: 10000,

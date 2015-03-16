@@ -123,6 +123,14 @@
     <TypeScriptCompile Include="apps\tests\ui\dialogs\dialog-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\image-cache\image-cache-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\border\border-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\list-picker\list-picker-tests-native.d.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\list-picker\list-picker-tests-native.android.ts">
+      <DependentUpon>list-picker-tests-native.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\list-picker\list-picker-tests-native.ios.ts">
+      <DependentUpon>list-picker-tests-native.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\list-picker\list-picker-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\scroll-view\scroll-view-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\search-bar\search-bar-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\style\style-properties-tests.ts" />
