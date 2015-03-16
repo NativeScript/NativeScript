@@ -68,6 +68,7 @@ declare module "trace" {
         export var Navigation: string;
         export var Test: string;
         export var Binding: string;
+        export var Error: string;
 
         export var All: string;
 

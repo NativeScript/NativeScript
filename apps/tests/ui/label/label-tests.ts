@@ -25,6 +25,25 @@ import page = require("ui/page");
 import textBase = require("ui/text-base");
 import enums = require("ui/enums");
 import labelTestsNative = require("./label-tests-native");
+import trace = require("trace");
+
+var errorMessage;
+var errorTraceWriter = {
+    write: function (message, category, messageType) {
+        if (category === trace.categories.Error) {
+            errorMessage = message;
+        }
+    }
+}
+
+export var setUp = function () {
+    trace.addWriter(errorTraceWriter);
+}
+
+export var tearDown = function () {
+    trace.removeWriter(errorTraceWriter);
+    errorMessage = undefined;
+}
 
 export var test_Label_Members = function () {
     var label = new LabelModule.Label();
@@ -485,5 +504,30 @@ export var testNativeTextAlignmentFromLocal = function () {
 
         var actualResult = labelTestsNative.getNativeTextAlignment(view);
         TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
+    });
+}
+
+export var testErrorMessageWhenWrongCssIsAddedWithFile = function () {
+    helper.buildUIAndRunTest(_createLabelFunc(), function (views: Array<view.View>) {
+        var view = <LabelModule.Label>views[0];
+        view.id = "testLabel";
+        var page = <page.Page>views[1];
+        errorMessage = undefined;   
+        page.addCssFile("/app/tests/ui/label/label-tests-wrong.css");
+
+        TKUnit.assertNotEqual(errorMessage, undefined);
+    });
+    
+}
+
+export var testErrorMessageWhenWrongCssIsAdded = function () {
+    helper.buildUIAndRunTest(_createLabelFunc(), function (views: Array<view.View>) {
+        var view = <LabelModule.Label>views[0];
+        view.id = "testLabel";
+        var page = <page.Page>views[1];
+        errorMessage = undefined;
+        page.addCss("label { < !--Test wrong comment-- > background-color: red; }");
+
+        TKUnit.assertNotEqual(errorMessage, undefined);
     });
 }

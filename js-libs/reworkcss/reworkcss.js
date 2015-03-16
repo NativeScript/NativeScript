@@ -57,17 +57,25 @@ module.exports.parse = function(css, options){
    */
 
   function error(msg) {
-    if (options.silent === true) {
-      return false;
-    }
+      if (options.silent === true) {
+          return false;
+      };
 
-    var err = new Error(options.source + ':' + lineno + ':' + column + ': ' + msg);
-    err.reason = msg;
-    err.filename = options.source;
-    err.line = lineno;
-    err.column = column;
-    err.source = css;
-    throw err;
+      var errorMessage;
+      if (options.source) {
+          errorMessage = options.source + ':' + lineno + ':' + column + ': ' + msg;
+      }
+      else {
+          errorMessage = "Parsing '" + css + "' issue an error: " + msg;
+      }
+
+      var err = new Error(errorMessage);
+      err.reason = msg;
+      err.filename = options.source;
+      err.line = lineno;
+      err.column = column;
+      err.source = css;
+      throw err;
   }
 
   /**

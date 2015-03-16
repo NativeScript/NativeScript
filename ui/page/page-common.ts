@@ -5,7 +5,6 @@ import frame = require("ui/frame");
 import styleScope = require("ui/styling/style-scope");
 import fs = require("file-system");
 import fileSystemAccess = require("file-system/file-system-access");
-import trace = require("trace");
 
 export module knownEvents {
     export var navigatedTo = "navigatedTo";
@@ -53,7 +52,11 @@ export class Page extends contentView.ContentView implements dts.Page {
     }
 
     public addCss(cssString: string): void {
-        this._styleScope.addCss(cssString);
+        this._addCssInternal(cssString, undefined);
+    }
+
+    private _addCssInternal(cssString: string, cssFileName: string): void {
+        this._styleScope.addCss(cssString, cssFileName);
         this._refreshCss();
     }
 
@@ -62,7 +65,7 @@ export class Page extends contentView.ContentView implements dts.Page {
         var realCssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName);
         if (fs.File.exists(realCssFileName)) {
             new fileSystemAccess.FileSystemAccess().readText(realCssFileName, r => { cssString = r; });
-            this.addCss(cssString);
+            this._addCssInternal(cssString, cssFileName);
         }
     }
 
@@ -101,22 +104,18 @@ export class Page extends contentView.ContentView implements dts.Page {
             return;
         }
 
-        try {
-            this._styleScope.ensureSelectors();
+        this._styleScope.ensureSelectors();
 
-            var scope = this._styleScope;
-            var checkSelectors = (view: view.View): boolean => {
-                scope.applySelectors(view);
-                return true;
-            }
-
-            checkSelectors(this);
-            view.eachDescendant(this, checkSelectors);
-
-            this._cssApplied = true;
-        } catch (e) {
-            trace.write("Css styling failed: " + e, trace.categories.Style);
+        var scope = this._styleScope;
+        var checkSelectors = (view: view.View): boolean => {
+            scope.applySelectors(view);
+            return true;
         }
+
+        checkSelectors(this);
+        view.eachDescendant(this, checkSelectors);
+
+        this._cssApplied = true;
     }
 
     private _resetCssValues() {
