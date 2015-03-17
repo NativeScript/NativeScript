@@ -28,6 +28,7 @@ require("utils/module-merge").merge(common, exports);
 
 export class TimePicker extends common.TimePicker {
     private _android: android.widget.TimePicker;
+    private _listener: android.widget.TimePicker.OnTimeChangedListener;
 
     get android(): android.widget.TimePicker {
         return this._android;
@@ -38,17 +39,24 @@ export class TimePicker extends common.TimePicker {
 
         var that = new WeakRef(this);
 
-        this._android.setOnTimeChangedListener(new android.widget.TimePicker.OnTimeChangedListener({
+        this._listener = new android.widget.TimePicker.OnTimeChangedListener({
             get owner() {
                 return that.get();
             },
 
-            onTimeChanged: function (picker: android.widget.TimePicker, hourOfDay: number, minute: number) {
+            onTimeChanged: function (picker: android.widget.TimePicker, hour: number, minute: number) {
                 if (this.owner) {
-                    this.owner._onPropertyChangedFromNative(common.TimePicker.hourProperty, hourOfDay);
-                    this.owner._onPropertyChangedFromNative(common.TimePicker.minuteProperty, minute);
+                    
+                    if (hour !== this.owner.hour) {
+                        this.owner._onPropertyChangedFromNative(common.TimePicker.hourProperty, hour);
+                    }
+                    
+                    if (minute !== this.owner.minute) {
+                        this.owner._onPropertyChangedFromNative(common.TimePicker.minuteProperty, minute);
+                    }
                 }
             }
-        }));
+        });
+        this._android.setOnTimeChangedListener(this._listener);
     }
 } 
