@@ -5,7 +5,6 @@ import datePickerTestsNative = require("./date-picker-tests-native");
 
 // <snippet module="ui/date-picker" title="DatePicker">
 // # DatePicker
-
 // Using a DatePicker requires the "ui/date-picker" module.
 // ``` JavaScript
 import datePickerModule = require("ui/date-picker");

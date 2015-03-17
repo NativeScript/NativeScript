@@ -3,17 +3,17 @@ import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import timePickerTestsNative = require("./time-picker-tests-native");
 
-// <snippet module="ui/time-picker" title="timePicker">
+// <snippet module="ui/time-picker" title="TimePicker">
 // # TimePicker
-// Using a timePicker requires the "ui/time-picker" module.
+// Using a TimePicker requires the "ui/time-picker" module.
 // ``` JavaScript
 import timePickerModule = require("ui/time-picker");
 // ```
 // </snippet>
 
 function _createTimePicker(): timePickerModule.TimePicker {
-    // <snippet module="ui/time-picker" title="timePicker">
-    // ## Creating a timePicker
+    // <snippet module="ui/time-picker" title="TimePicker">
+    // ## Creating a TimePicker
     // ``` JavaScript
     var timePicker = new timePickerModule.TimePicker();
     // ```
