@@ -4,13 +4,14 @@ import viewModule = require("ui/core/view");
 import timePickerTestsNative = require("./time-picker-tests-native");
 
 // <snippet module="ui/time-picker" title="timePicker">
-// # timePicker
-
+// # TimePicker
 // Using a timePicker requires the "ui/time-picker" module.
 // ``` JavaScript
 import timePickerModule = require("ui/time-picker");
+// ```
+// </snippet>
 
-function _createtimePicker(): timePickerModule.TimePicker {
+function _createTimePicker(): timePickerModule.TimePicker {
     // <snippet module="ui/time-picker" title="timePicker">
     // ## Creating a timePicker
     // ``` JavaScript
@@ -21,8 +22,21 @@ function _createtimePicker(): timePickerModule.TimePicker {
     return timePicker;
 }
 
+export var test_DummyForCodeSnippet = function () {
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
+        var timePicker = <timePickerModule.TimePicker>views[0];
+        // <snippet module="ui/time-picker" title="TimePicker">
+        // ## Configuring a TimePicker
+        // ``` JavaScript
+        timePicker.hour = 9;
+        timePicker.minute = 25;
+        // ```
+        // </snippet>
+    });
+}
+
 export var test_WhenCreated_HourIsUndefined = function () {
-    helper.buildUIAndRunTest(_createtimePicker(), function (views: Array<viewModule.View>) {
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var actualValue = timePicker.hour;
         var expectedValue = undefined;
@@ -31,7 +45,7 @@ export var test_WhenCreated_HourIsUndefined = function () {
 }
 
 export var test_WhenCreated_MinuteIsUndefined = function () {
-    helper.buildUIAndRunTest(_createtimePicker(), function (views: Array<viewModule.View>) {
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var actualValue = timePicker.minute;
         var expectedValue = undefined;
@@ -40,7 +54,7 @@ export var test_WhenCreated_MinuteIsUndefined = function () {
 }
 
 export var testHourFromLocalToNative = function () {
-    helper.buildUIAndRunTest(_createtimePicker(), function (views: Array<viewModule.View>) {
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var expectedValue = 13;
         timePicker.hour = expectedValue;
@@ -50,7 +64,7 @@ export var testHourFromLocalToNative = function () {
 }
 
 export var testMinuteFromLocalToNative = function () {
-    helper.buildUIAndRunTest(_createtimePicker(), function (views: Array<viewModule.View>) {
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var expectedValue = 59;
         timePicker.minute = expectedValue;
@@ -60,7 +74,7 @@ export var testMinuteFromLocalToNative = function () {
 }
 
 export var testHourFromNativeToLocal = function () {
-    helper.buildUIAndRunTest(_createtimePicker(), function (views: Array<viewModule.View>) {
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var expectedValue = 14;
         timePickerTestsNative.setNativeHour(timePicker, expectedValue);
@@ -70,7 +84,7 @@ export var testHourFromNativeToLocal = function () {
 }
 
 export var testMinuteFromNativeToLocal = function () {
-    helper.buildUIAndRunTest(_createtimePicker(), function (views: Array<viewModule.View>) {
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var expectedValue = 33;
         timePickerTestsNative.setNativeMinute(timePicker, expectedValue);

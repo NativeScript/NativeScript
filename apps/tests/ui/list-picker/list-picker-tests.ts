@@ -72,7 +72,7 @@ export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function 
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
         var listPicker = <listPickerModule.ListPicker>views[0];
         // <snippet module="ui/list-picker" title="listPicker">
-        // ### Binding listPicker.items
+        // ## Binding listPicker.items
         // ``` JavaScript
         listPicker.items = [1, 2, 3];
         // ```
@@ -88,7 +88,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = functio
         var listPicker = <listPickerModule.ListPicker>views[0];
         listPicker.items = _createItems(10);
         // <snippet module="ui/list-picker" title="listPicker">
-        // ### Selecting an item programmatically
+        // ## Selecting an item programmatically
         // ``` JavaScript
         listPicker.selectedIndex = 9;
         // ```

@@ -9,6 +9,8 @@ import datePickerTestsNative = require("./date-picker-tests-native");
 // Using a DatePicker requires the "ui/date-picker" module.
 // ``` JavaScript
 import datePickerModule = require("ui/date-picker");
+// ```
+// </snippet>
 
 function _createDatePicker(): datePickerModule.DatePicker {
     // <snippet module="ui/date-picker" title="DatePicker">
@@ -19,6 +21,20 @@ function _createDatePicker(): datePickerModule.DatePicker {
     // </snippet>
     datePicker.id = "DatePicker";
     return datePicker;
+}
+
+export var test_DummyForCodeSnippet = function () {
+    helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
+        var datePicker = <datePickerModule.DatePicker>views[0];
+        // <snippet module="ui/date-picker" title="DatePicker">
+        // ## Configuring a DatePicker
+        // ``` JavaScript
+        datePicker.year = 1980;
+        datePicker.month = 2;
+        datePicker.day = 9;
+        // ```
+        // </snippet>
+    });
 }
 
 export var test_WhenCreated_YearIsUndefined = function () {
