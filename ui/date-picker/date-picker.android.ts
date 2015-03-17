@@ -5,8 +5,8 @@ import proxy = require("ui/core/proxy");
 function onYearPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
-    if (picker.android) {
-        picker.android.init(data.newValue, picker.month, picker.day, picker._listener);
+    if (picker.android && picker.android.getYear() !== data.newValue) {
+        picker.android.updateDate(data.newValue, picker.android.getMonth(), picker.android.getDayOfMonth());
     }
 }
 
@@ -15,8 +15,8 @@ function onYearPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 function onMonthPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
-    if (picker.android) {
-        picker.android.init(picker.year, data.newValue, picker.day, picker._listener);
+    if (picker.android && picker.android.getMonth() !== (data.newValue - 1)) {
+        picker.android.updateDate(picker.android.getYear(), data.newValue - 1, picker.android.getDayOfMonth());
     }
 }
 
@@ -25,8 +25,8 @@ function onMonthPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 function onDayPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
-    if (picker.android) {
-        picker.android.init(picker.year, picker.month, data.newValue, picker._listener);
+    if (picker.android && picker.android.getDayOfMonth !== data.newValue) {
+        picker.android.updateDate(picker.android.getYear(), picker.android.getMonth(), data.newValue);
     }
 }
 
@@ -54,11 +54,20 @@ export class DatePicker extends common.DatePicker {
                 return that.get();
             },
 
-            onDateChanged: function (picker: android.widget.DatePicker, monthOfYear: number, dayOfMonth: number) {
+            onDateChanged: function (picker: android.widget.DatePicker, year: number, month: number, day: number) {
                 if (this.owner) {
-                    this.owner._onPropertyChangedFromNative(common.DatePicker.yearProperty, picker.getYear());
-                    this.owner._onPropertyChangedFromNative(common.DatePicker.monthProperty, monthOfYear);
-                    this.owner._onPropertyChangedFromNative(common.DatePicker.dayProperty, dayOfMonth);
+
+                    if (year !== this.owner.year) {
+                        this.owner._onPropertyChangedFromNative(common.DatePicker.yearProperty, year);
+                    }
+
+                    if ((month + 1) !== this.owner.month) {
+                        this.owner._onPropertyChangedFromNative(common.DatePicker.monthProperty, month + 1);
+                    }
+
+                    if (day !== this.owner.day) {
+                        this.owner._onPropertyChangedFromNative(common.DatePicker.dayProperty, day);
+                    }                    
                 }
             }
         });
@@ -67,5 +76,6 @@ export class DatePicker extends common.DatePicker {
     public _createUI() {
         this._android = new android.widget.DatePicker(this._context);
         this._android.setCalendarViewShown(false);
+        this._android.init(0, 0, 0, this._listener);
     }
 } 

@@ -4,9 +4,9 @@ import proxy = require("ui/core/proxy");
 import view = require("ui/core/view");
 
 export class DatePicker extends view.View implements definition.DatePicker {
-    public static yearProperty = new dependencyObservable.Property("year", "DatePicker", new proxy.PropertyMetadata(0));
-    public static monthProperty = new dependencyObservable.Property("month", "DatePicker", new proxy.PropertyMetadata(0));
-    public static dayProperty = new dependencyObservable.Property("day", "DatePicker", new proxy.PropertyMetadata(0));
+    public static yearProperty = new dependencyObservable.Property("year", "DatePicker", new proxy.PropertyMetadata(undefined));
+    public static monthProperty = new dependencyObservable.Property("month", "DatePicker", new proxy.PropertyMetadata(undefined));
+    public static dayProperty = new dependencyObservable.Property("day", "DatePicker", new proxy.PropertyMetadata(undefined));
 
     constructor() {
         super();

@@ -53,7 +53,7 @@ export class ListPicker extends view.View implements definition.ListPicker {
         if (types.isDefined(this.items)) {
             if (index < 0 || index >= this.items.length) {
                 this.selectedIndex = undefined;
-                throw new Error("SelectedIndex should be between [0, items.length)");
+                throw new Error("selectedIndex should be between [0, items.length - 1]");
             }
         }
     }
