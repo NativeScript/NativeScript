@@ -35,9 +35,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
     var newItems = <Array<definition.SegmentedBarItem>>data.newValue;
 
-    console.log("SET ITEMS BEFORE: " + view.selectedIndex);
     view._adjustSelectedIndex(newItems);
-    console.log("SET ITEMS AFTER: " + view.selectedIndex);
 
     view.ios.removeAllSegments();
 
@@ -72,7 +70,6 @@ export class SegmentedBar extends common.SegmentedBar {
     constructor() {
         super();
         this._ios = UISegmentedControl.new();
-        console.log("CREATE: " + this.selectedIndex);
 
         this._selectionHandler = SelectionHandlerImpl.new().initWithOwner(this);
         this._ios.addTargetActionForControlEvents(this._selectionHandler, "selected", UIControlEvents.UIControlEventValueChanged);
