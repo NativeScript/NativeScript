@@ -6,8 +6,6 @@ import types = require("utils/types");
 import trace = require("trace");
 import polymerExpressions = require("js-libs/polymer-expressions");
 
-var expressionSymbolsRegex = /[ \+\-\*%\?:<>=!\|&\(\)\[\]]/;
-
 var bindingContextProperty = new dependencyObservable.Property(
     "bindingContext",
     "Bindable",
@@ -115,38 +113,6 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
                 binding.bind(newValue);
             }
         }
-    }
-
-    private static extractPropertyNameFromExpression(expression: string): string {
-        var firstExpressionSymbolIndex = expression.search(expressionSymbolsRegex);
-        if (firstExpressionSymbolIndex > -1) {
-            return expression.substr(0, firstExpressionSymbolIndex).trim();
-        }
-        else {
-            return expression;
-        }
-    }
-
-    public static _getBindingOptions(name: string, bindingExpression: string): definition.BindingOptions {
-        var result: definition.BindingOptions;
-        result = {
-            targetProperty: name,
-            sourceProperty: ""
-        };
-        if (types.isString(bindingExpression)) {
-            var params = bindingExpression.split(",");
-            if (params.length === 1) {
-                result.sourceProperty = Bindable.extractPropertyNameFromExpression(params[0].trim());
-                result.expression = params[0].search(expressionSymbolsRegex) > -1 ? params[0].trim() : null;
-                result.twoWay = true;
-            }
-            else {
-                result.sourceProperty = Bindable.extractPropertyNameFromExpression(params[0].trim());
-                result.expression = params[1].trim();
-                result.twoWay = params[2] ? params[2].toLowerCase().trim() === "true" : true;
-            }
-        }
-        return result;
     }
 }
 
