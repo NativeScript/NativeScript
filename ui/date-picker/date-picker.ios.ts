@@ -6,7 +6,9 @@ function onYearPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
     if (picker.ios) {
-        setYearMonthDay(picker.ios, data.newValue, picker.month, picker.day);
+        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitYear | NSCalendarUnit.NSCalendarUnitMonth | NSCalendarUnit.NSCalendarUnitDay, picker.ios.date);
+        comps.year = data.newValue;
+        picker.ios.setDateAnimated(NSCalendar.currentCalendar().dateFromComponents(comps), false);
     }
 }
 
@@ -16,7 +18,9 @@ function onMonthPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
     if (picker.ios) {
-        setYearMonthDay(picker.ios, picker.year, data.newValue, picker.day);
+        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitYear | NSCalendarUnit.NSCalendarUnitMonth | NSCalendarUnit.NSCalendarUnitDay, picker.ios.date);
+        comps.month = data.newValue;
+        picker.ios.setDateAnimated(NSCalendar.currentCalendar().dateFromComponents(comps), false);
     }
 }
 
@@ -26,7 +30,9 @@ function onDayPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
     if (picker.ios) {
-        setYearMonthDay(picker.ios, picker.year, picker.month, data.newValue);
+        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitYear | NSCalendarUnit.NSCalendarUnitMonth | NSCalendarUnit.NSCalendarUnitDay, picker.ios.date);
+        comps.day = data.newValue;
+        picker.ios.setDateAnimated(NSCalendar.currentCalendar().dateFromComponents(comps), false);
     }
 }
 
@@ -68,26 +74,22 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
     }
 
     public valueChanged(sender: UIDatePicker) {
-        var calendar = NSCalendar.currentCalendar();
-        var comp = calendar.componentsFromDate(NSCalendarUnit.NSHourCalendarUnit | NSCalendarUnit.NSMinuteCalendarUnit, sender.date);
+        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitYear | NSCalendarUnit.NSCalendarUnitMonth | NSCalendarUnit.NSCalendarUnitDay, sender.date);
+        
+        if (comps.year !== this._owner.year) {
+            this._owner._onPropertyChangedFromNative(common.DatePicker.yearProperty, comps.year);
+        }
 
-        this._owner._onPropertyChangedFromNative(common.DatePicker.yearProperty, comp.year);
-        this._owner._onPropertyChangedFromNative(common.DatePicker.monthProperty, comp.month);
-        this._owner._onPropertyChangedFromNative(common.DatePicker.dayProperty, comp.day);
+        if (comps.month !== this._owner.month) {
+            this._owner._onPropertyChangedFromNative(common.DatePicker.monthProperty, comps.month);
+        }
+
+        if (comps.day !== this._owner.day) {
+            this._owner._onPropertyChangedFromNative(common.DatePicker.dayProperty, comps.day);
+        }
     }
 
     public static ObjCExposedMethods = {
         'valueChanged': { returns: interop.types.void, params: [UIDatePicker] }
     };
-}
-
-function setYearMonthDay(picker: UIDatePicker, year: number, month: number, day: number) {
-    var calendar = NSCalendar.currentCalendar();
-    var comps = new NSDateComponents();
-
-    comps.year = year;
-    comps.month = month;
-    comps.day = day;
-
-    picker.setDateAnimated(calendar.dateFromComponents(comps), false);
 }

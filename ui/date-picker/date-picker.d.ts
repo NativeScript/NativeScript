@@ -31,12 +31,12 @@ declare module "ui/date-picker" {
         year: number;
 
         /**
-         * Gets or sets the month.
+         * Gets or sets the month. The months start from 1.
          */
         month: number;
 
         /**
-         * Gets or sets the day.
+         * Gets or sets the day. The days start from 1.
          */
         day: number;
     }

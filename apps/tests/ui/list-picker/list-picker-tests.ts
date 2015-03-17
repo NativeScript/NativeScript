@@ -167,7 +167,7 @@ export var testSettingSelectedIndexLargerThanCountShouldThrow = function () {
         listPicker.items = _createItems(10);
         TKUnit.assertThrows(function () {
             listPicker.selectedIndex = 10;
-        }, "Setting selectedIndex to a negative number should throw.");
+        }, "Setting selectedIndex to a number larger than item count should throw.");
     });
 }
 
