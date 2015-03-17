@@ -54,4 +54,24 @@ export class WebViewModel extends observable.Observable {
         this._year = value;
         this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "year", value: value });
     }
+
+    private _hour: number;
+    get hour(): number {
+        return this._hour;
+    }
+    set hour(value: number) {
+        console.log("hour:" + value);
+        this._hour = value;
+        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "hour", value: value });
+    }
+
+    private _minute: number;
+    get minute(): number {
+        return this._minute;
+    }
+    set minute(value: number) {
+        console.log("minute:" + value);
+        this._minute = value;
+        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "minute", value: value });
+    }
 }

@@ -4,6 +4,6 @@
     <Label id="label" text="{{ selectedIndex }}" height="50" width="100" />
     <ListPicker id="listPicker" selectedIndex="{{ selectedIndex }}" items="{{ items }}"/>
     <DatePicker id="datePicker" day="{{ day }}" month="{{ month }}" year="{{ year }}"/>
-    <TimePicker id="timePicker"/>
+    <TimePicker id="timePicker" hour="{{ hour }}" minute="{{ minute }}"/>
   </StackLayout>
 </Page>

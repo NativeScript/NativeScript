@@ -26,9 +26,12 @@ export function onPageLoaded(args: observableModule.EventData) {
     viewModel.items = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     viewModel.selectedIndex = 5;
 
-    //viewModel.day = 9;
-    //viewModel.month = 2;
-    //viewModel.year = 1980;
+    viewModel.day = 9;
+    viewModel.month = 2;
+    viewModel.year = 1980;
+
+    viewModel.hour = 17;
+    viewModel.minute = 50;
 }
 
 export function onTap(args: observableModule.EventData) {
@@ -40,4 +43,7 @@ export function onTap(args: observableModule.EventData) {
     viewModel.day = viewModel.day + 1;
     viewModel.month = viewModel.month + 1;
     viewModel.year = viewModel.year + 1;
+
+    viewModel.hour = viewModel.hour + 1;
+    viewModel.minute = viewModel.minute + 1;
 }
