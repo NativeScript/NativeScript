@@ -6,10 +6,11 @@ import pageModule = require("ui/page");
 
 // <snippet module="ui/list-picker" title="ListPicker">
 // # ListPicker
-
 // Using a ListPicker requires the "ui/list-picker" module.
 // ``` JavaScript
 import listPickerModule = require("ui/list-picker");
+// ```
+// </snippet>
 
 function _createListPicker(): listPickerModule.ListPicker {
     // <snippet module="ui/list-picker" title="ListPicker">
