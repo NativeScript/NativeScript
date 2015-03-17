@@ -62,6 +62,16 @@ declare module "platform" {
         heightPixels: number;
 
         /**
+         * Gets the absolute width of the screen in density independent pixels.
+         */
+        widthDIPs: number;
+
+        /**
+         * Gets the absolute height of the screen in density independent pixels.
+         */
+        heightDIPs: number;
+
+        /**
          * The logical density of the display. This is a scaling factor for the Density Independent Pixel unit.
          */
         scale: number;

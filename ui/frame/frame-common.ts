@@ -7,6 +7,7 @@ import builder = require("ui/builder");
 import fs = require("file-system");
 import utils = require("utils/utils");
 import platform = require("platform");
+import fileResolverModule = require("file-system/file-name-resolver");
 
 var frameStack: Array<Frame> = [];
 
@@ -68,14 +69,17 @@ function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
     return page;
 }
 
-function resolvePlatformPath(path, ext) {
-  var platformName = platform.device.os.toLowerCase();
-  var platformPath = [path, platformName, ext].join(".");
-  if (fs.File.exists(platformPath)) {
-    return platformPath;
-  }
-
-  return [path, ext].join(".");
+var fileNameResolver: fileResolverModule.FileNameResolver;
+function resolveFilePath(path, ext) {
+    if (!fileNameResolver) {
+        fileNameResolver = new fileResolverModule.FileNameResolver({
+            width: platform.screen.mainScreen.widthDIPs,
+            height: platform.screen.mainScreen.heightDIPs,
+            os: platform.device.os,
+            deviceType: platform.device.deviceType
+        });
+    }
+    return fileNameResolver.resolveFileName(path, ext);
 }
 
 function pageFromBuilder(moduleNamePath: string, moduleName: string, moduleExports: any): pages.Page {
@@ -83,7 +87,7 @@ function pageFromBuilder(moduleNamePath: string, moduleName: string, moduleExpor
     var element: view.View;
 
     // Possible XML file path.
-    var fileName = resolvePlatformPath(moduleNamePath, "xml");
+    var fileName = resolveFilePath(moduleNamePath, "xml");
 
     if (fs.File.exists(fileName)) {
         trace.write("Loading XML file: " + fileName, trace.categories.Navigation);
@@ -94,7 +98,7 @@ function pageFromBuilder(moduleNamePath: string, moduleName: string, moduleExpor
             page = <pages.Page>element;
 
             // Possible CSS file path.
-            var cssFileName = resolvePlatformPath(moduleName, "css");
+            var cssFileName = resolveFilePath(moduleName, "css");
             page.addCssFile(cssFileName);
         }
     }
