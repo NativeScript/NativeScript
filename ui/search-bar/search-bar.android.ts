@@ -2,6 +2,7 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import color = require("color");
+import types = require("utils/types");
 
 var SEARCHTEXT = "searchText";
 var QUERY = "query";
@@ -33,10 +34,38 @@ function onTextFieldBackgroundColorPropertyChanged(data: dependencyObservable.Pr
 // register the setNativeValue callbacks
 (<proxy.PropertyMetadata>common.SearchBar.textFieldBackgroundColorProperty.metadata).onSetNativeValue = onTextFieldBackgroundColorPropertyChanged;
 
+function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var bar = <SearchBar>data.object;
+    if (!bar.android) {
+        return;
+    }
+
+    var newValue = data.newValue;
+
+    if (types.isString(newValue)) {
+        bar.android.setQueryHint(newValue);
+    }
+}
+
+(<proxy.PropertyMetadata>common.SearchBar.hintProperty.metadata).onSetNativeValue = onHintPropertyChanged;
+
+function getTextView(bar: android.widget.SearchView): android.widget.TextView {
+    if (bar) {
+        var id = bar.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+        if (id) {
+            return <android.widget.TextView> bar.findViewById(id);
+        }
+    }
+
+    return undefined;
+}
+
 function _changeSearchViewBackgroundColor(bar: android.widget.SearchView, color: number) {
-    var id = bar.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
-    var textView = <android.widget.TextView> bar.findViewById(id);
-    textView.setBackgroundColor(color);
+    var textView = getTextView(bar);
+
+    if (textView) {
+        textView.setBackgroundColor(color);
+    }
 }
 
 // merge the exports of the common file with the exports of this file

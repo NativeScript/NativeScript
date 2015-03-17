@@ -11,6 +11,7 @@ export module knownEvents {
 
 export class SearchBar extends view.View implements definition.SearchBar {
     public static textFieldBackgroundColorProperty = new dependencyObservable.Property("textFieldBackgroundColor", "SearchBar", new proxy.PropertyMetadata(undefined))
+    public static hintProperty = new dependencyObservable.Property("hint", "SearchBar", new proxy.PropertyMetadata(""))
 
     public static textProperty = new dependencyObservable.Property(
         "text",
@@ -23,6 +24,13 @@ export class SearchBar extends view.View implements definition.SearchBar {
     }
     set text(value: string) {
         this._setValue(SearchBar.textProperty, value);
+    }
+
+    get hint(): string {
+        return this._getValue(SearchBar.hintProperty);
+    }
+    set hint(value: string) {
+        this._setValue(SearchBar.hintProperty, value);
     }
 
     get textFieldBackgroundColor(): color.Color {
