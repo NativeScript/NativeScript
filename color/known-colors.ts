@@ -1,4 +1,5 @@
-﻿export var AliceBlue = "#F0F8FF";
+﻿export var Transparent = "#00000000";
+export var AliceBlue = "#F0F8FF";
 export var AntiqueWhite = "#FAEBD7";
 export var Aqua = "#00FFFF";
 export var Aquamarine = "#7FFFD4";

@@ -115,7 +115,7 @@ export class Color implements definition.Color {
     }
 
     private _parseComponents() {
-        if (!this._argb) {
+        if (types.isUndefined(this._argb)) {
             throw new Error("Missing the ARGB numeric value");
         }
 
