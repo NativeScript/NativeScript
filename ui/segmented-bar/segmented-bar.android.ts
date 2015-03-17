@@ -1,4 +1,5 @@
-﻿import common = require("ui/segmented-bar/segmented-bar-common");
+﻿import definition = require("ui/segmented-bar");
+import common = require("ui/segmented-bar/segmented-bar-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
@@ -15,8 +16,13 @@ function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChang
 
     var index = <number>data.newValue;
 
-    if (types.isNumber(index) && index >= 0 && index <= view.items.length - 1) {
-        view.android.setCurrentTab(index);
+    if (types.isNumber(index)) {
+        if (index >= 0 && index <= view.items.length - 1) {
+            view.android.setCurrentTab(index);
+        } else {
+            view.selectedIndex = undefined;
+            throw new Error("selectedIndex should be between [0, items.length - 1]");
+        }
     }
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.selectedIndexProperty.metadata).onSetNativeValue = onSelectedIndexPropertyChanged;
@@ -29,7 +35,9 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
     view.android.clearAllTabs();
 
-    var newItems = <Array<any>>data.newValue;
+    var newItems = <Array<definition.SegmentedBarItem>>data.newValue;
+
+    view._adjustSelectedIndex(newItems);
 
     if (newItems && newItems.length) {
         for (var i = 0; i < newItems.length; i++) {
@@ -48,8 +56,6 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
             view.android.addTab(tab);
         }
-
-        view._adjustSelectedIndex();
 
         if (view.android.getCurrentTab() !== view.selectedIndex) {
             view.android.setCurrentTab(view.selectedIndex);

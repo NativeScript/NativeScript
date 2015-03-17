@@ -1,4 +1,5 @@
-﻿import common = require("ui/segmented-bar/segmented-bar-common");
+﻿import definition = require("ui/segmented-bar");
+import common = require("ui/segmented-bar/segmented-bar-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
@@ -15,8 +16,13 @@ function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChang
     }
 
     var index = <number>data.newValue;
-    if (types.isNumber(index) && index >= 0 && index <= view.items.length - 1) {
-        view.ios.selectedSegmentIndex = index;
+    if (types.isNumber(index)) {
+        if (index >= 0 && index <= view.items.length - 1) {
+            view.ios.selectedSegmentIndex = index;
+        } else {
+            view.selectedIndex = undefined;
+            throw new Error("selectedIndex should be between [0, items.length - 1]");
+        }
     }
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.selectedIndexProperty.metadata).onSetNativeValue = onSelectedIndexPropertyChanged;
@@ -27,16 +33,22 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         return;
     }
 
+    var newItems = <Array<definition.SegmentedBarItem>>data.newValue;
+
+    console.log("SET ITEMS BEFORE: " + view.selectedIndex);
+    view._adjustSelectedIndex(newItems);
+    console.log("SET ITEMS AFTER: " + view.selectedIndex);
+
     view.ios.removeAllSegments();
 
-    for (var i = 0; i < view.items.length; i++) {
-        view.ios.insertSegmentWithTitleAtIndexAnimated(view.items[i].title, i, false);
-    }
+    if (newItems && newItems.length) {
+        for (var i = 0; i < newItems.length; i++) {
+            view.ios.insertSegmentWithTitleAtIndexAnimated(newItems[i].title, i, false);
+        }
 
-    view._adjustSelectedIndex();
-
-    if (view.ios.selectedSegmentIndex !== view.selectedIndex) {
-        view.ios.selectedSegmentIndex = view.selectedIndex;
+        if (view.ios.selectedSegmentIndex !== view.selectedIndex) {
+            view.ios.selectedSegmentIndex = view.selectedIndex;
+        }
     }
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;
@@ -60,6 +72,7 @@ export class SegmentedBar extends common.SegmentedBar {
     constructor() {
         super();
         this._ios = UISegmentedControl.new();
+        console.log("CREATE: " + this.selectedIndex);
 
         this._selectionHandler = SelectionHandlerImpl.new().initWithOwner(this);
         this._ios.addTargetActionForControlEvents(this._selectionHandler, "selected", UIControlEvents.UIControlEventValueChanged);
