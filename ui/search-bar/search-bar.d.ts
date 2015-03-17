@@ -52,6 +52,11 @@ declare module "ui/search-bar" {
         text: string;
 
         /**
+         * Gets or sets the text of the search bar text field hint/placeholder.
+         */
+        hint: string;
+
+        /**
          * Gets or sets the TextField background color of the SearchBar component.
          */
         textFieldBackgroundColor: color.Color;
