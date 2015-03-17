@@ -3,6 +3,7 @@ import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import color = require("color");
+import types = require("utils/types");
 
 export module knownCollections {
     export var items = "items";
@@ -15,9 +16,17 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
         }
     }
 
-    public _adjustSelectedIndex() {
-        if (this.selectedIndex > this.items.length - 1) {
-            this._setValue(SegmentedBar.selectedIndexProperty, this.items.length - 1);
+    public _adjustSelectedIndex(items: Array<definition.SegmentedBarItem>) {
+        if (this.items) {
+            if (this.items.length > 0) {
+                if (types.isUndefined(this.selectedIndex) || (this.selectedIndex > this.items.length - 1)) {
+                    this._setValue(SegmentedBar.selectedIndexProperty, 0);
+                }
+            } else {
+                this._setValue(SegmentedBar.selectedIndexProperty, undefined);
+            }
+        } else {
+            this._setValue(SegmentedBar.selectedIndexProperty, undefined);
         }
     }
 
@@ -39,11 +48,11 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
         return this._getValue(SegmentedBar.selectedBackgroundColorProperty);
     }
     set selectedBackgroundColor(value: color.Color) {
-        this._setValue(SegmentedBar.selectedBackgroundColorProperty, 
+        this._setValue(SegmentedBar.selectedBackgroundColorProperty,
             value instanceof color.Color ? value : new color.Color(<any>value));
     }
 
     public static selectedBackgroundColorProperty = new dependencyObservable.Property("selectedBackgroundColor", "SegmentedBar", new proxy.PropertyMetadata(undefined))
-    public static selectedIndexProperty = new dependencyObservable.Property("selectedIndex", "SegmentedBar", new proxy.PropertyMetadata(0))
+    public static selectedIndexProperty = new dependencyObservable.Property("selectedIndex", "SegmentedBar", new proxy.PropertyMetadata(undefined))
     public static itemsProperty = new dependencyObservable.Property("items", "SegmentedBar", new proxy.PropertyMetadata(undefined))
 }
