@@ -8,6 +8,7 @@ import types = require("utils/types");
 import definition = require("ui/builder/component-builder");
 import fs = require("file-system");
 import gestures = require("ui/gestures");
+import bindingBuilder = require("ui/builder/binding-builder");
 
 var KNOWNEVENTS = "knownEvents";
 var UI_PATH = "ui/";
@@ -76,7 +77,13 @@ export function getComponentModule(elementName: string, namespace: string, attri
                 if (isKnownEvent(attr, instanceModule)) {
                     attachEventBinding(instance, attr, attrValue);
                 } else {
-                    instance.bind(getBinding(instance, attr, attrValue));
+                    var bindOptions = bindingBuilder.getBindingOptions(attr, getBindingExpressionFromAttribute(attrValue));
+                    instance.bind({
+                        sourceProperty : bindOptions[bindingBuilder.bindingConstants.sourceProperty], 
+                        targetProperty: bindOptions[bindingBuilder.bindingConstants.targetProperty],
+                        expression: bindOptions[bindingBuilder.bindingConstants.expression],
+                        twoWay: bindOptions[bindingBuilder.bindingConstants.twoWay]
+                    }, bindOptions[bindingBuilder.bindingConstants.source]);
                 }
             } else if (isKnownEvent(attr, instanceModule)) {
                 // Get the event handler from page module exports.
@@ -158,10 +165,6 @@ function isGesture(name: string, instance: any): boolean {
 function isKnownEvent(name: string, exports: any): boolean {
     return (KNOWNEVENTS in exports && name in exports[KNOWNEVENTS]) ||
         (KNOWNEVENTS in view && name in view[KNOWNEVENTS]);
-}
-
-function getBinding(instance: view.View, name: string, value: string): bindable.BindingOptions {
-    return bindable.Bindable._getBindingOptions(name, getBindingExpressionFromAttribute(value));
 }
 
 function getBindingExpressionFromAttribute(value: string): string {

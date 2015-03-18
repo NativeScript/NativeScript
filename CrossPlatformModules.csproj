@@ -302,6 +302,7 @@
     <TypeScriptCompile Include="trace\trace.ts">
       <DependentUpon>trace.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\builder\binding-builder.ts" />
     <TypeScriptCompile Include="ui\list-picker\list-picker-common.ts">
       <DependentUpon>list-picker.d.ts</DependentUpon>
     </TypeScriptCompile>
