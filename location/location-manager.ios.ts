@@ -83,7 +83,7 @@ export class LocationManager {
         var speed = location.speed ? location.speed : -1;
         var course = location.direction ? location.direction : -1;
         var altitude = location.altitude ? location.altitude : -1;
-        var timestamp = location.timestamp ? NSDate.dateWithTimeIntervalSince1970(location.timestamp.getTime()) : null;
+        var timestamp = location.timestamp ? NSDate.dateWithTimeIntervalSince1970(location.timestamp.getTime() / 1000) : null;
         var iosLocation = CLLocation.alloc().initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(CLLocationCoordinate2DMake(location.latitude, location.longitude), altitude, hAccuracy, vAccuracy, course, speed, timestamp);
         return iosLocation;
     }
