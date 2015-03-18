@@ -1,6 +1,7 @@
 ﻿import definition = require("file-system/file-name-resolver");
 import fs = require("file-system");
 import types = require("utils/types");
+import trace = require("trace");
 
 var MIN_WH: string = "minWH";
 var MIN_W: string = "minW";
@@ -72,19 +73,6 @@ var minHeightQualifier: QualifierSpec = {
     }
 }
 
-var fromQualifier: QualifierSpec = {
-    isMatch: function (value: string): boolean {
-        return value === "tablet" || value === "phone";
-
-    },
-    getMatchValue(value: string, context: definition.PlatformContext): number{
-        if (value !== context.deviceType.toLocaleLowerCase()) {
-            return -1;
-        }
-        return 1;
-    }
-}
-
 var paltformQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
         return value === "android" ||
@@ -96,13 +84,26 @@ var paltformQualifier: QualifierSpec = {
     }
 }
 
+var orientationQualifier: QualifierSpec = {
+    isMatch: function (value: string): boolean {
+        return value === "land" ||
+            value === "port";
+
+    },
+    getMatchValue(value: string, context: definition.PlatformContext): number{
+        var isLandscape: number = (context.width > context.height) ? 1 : -1;
+        return (value === "land") ? isLandscape : -isLandscape;
+    }
+}
+
 // List of supported qualifiers ordered by priority
 var supportedQualifiers: Array<QualifierSpec> = [
     minWidthHeightQualifier,
     minWidthQualifier,
     minHeightQualifier,
-    paltformQualifier,
-    fromQualifier];
+    orientationQualifier,
+    paltformQualifier
+];
 
 export class FileNameResolver implements definition.FileNameResolver {
     private _context: definition.PlatformContext;
@@ -115,7 +116,7 @@ export class FileNameResolver implements definition.FileNameResolver {
     public resolveFileName(path: string, ext: string): string {
         var key = path + ext;
         var result: string = this._cache[key];
-        if(types.isUndefined(result)) {
+        if (types.isUndefined(result)) {
             result = this.resolveFileNameImpl(path, ext);
             this._cache[key] = result;
         }
@@ -124,83 +125,91 @@ export class FileNameResolver implements definition.FileNameResolver {
     }
 
     private resolveFileNameImpl(path: string, ext: string): string {
+        var result: string = null;
         path = fs.path.normalize(path);
         ext = "." + ext;
+
+        var candidates = this.getFileCandidatesFromFolder(path, ext);
+        result = findFileMatch(path, ext, candidates, this._context);
+
+        trace.write("Resolved file name for \"" + path + ext + "\" result: " + (result ? result : "no match found"), trace.categories.Navigation);
+        return result;
+    }
+
+    private getFileCandidatesFromFolder(path: string, ext: string): Array<string> {
+        var candidates = new Array<string>();
         var folderPath = path.substring(0, path.lastIndexOf(fs.path.separator) + 1);
-        console.log("search folderPath: " + folderPath);
 
         if (fs.Folder.exists(folderPath)) {
             var folder = fs.Folder.fromPath(folderPath);
-
-            var candidates = new Array<fs.File>();
             folder.eachEntity((e) => {
-
                 if (e instanceof fs.File) {
                     var file = <fs.File>e;
-                    console.log("File path: " + e.path);
                     if (file.path.indexOf(path) === 0 && file.extension === ext) {
-                        candidates.push(file);
-
+                        candidates.push(file.path);
                     }
                 }
 
                 return true;
             });
-
-            var bestValue = Number.MIN_VALUE;
-            var bestCandidate: fs.File = null;
-
-            console.log("Candidates:");
-            for (var i = 0; i < candidates.length; i++) {
-                console.log("---------- candiate[" + i + "]: " + candidates[i].name);
-                var filePath = candidates[i].path;
-                var qualifiersStr: string = filePath.substr(path.length, filePath.length - path.length - ext.length);
-
-                var qualifiers = qualifiersStr.split(".");
-
-                var value = this.checkQualifiers(qualifiers);
-                console.log("qualifiers: " + qualifiersStr + " result: " + value);
-
-                if (value >= 0 && value > bestValue) {
-                    bestValue = value;
-                    bestCandidate = candidates[i];
-                }
-            }
+        }
+        else {
+            trace.write("Could not find folder " + folderPath + " when loading " + path + ext, trace.categories.Navigation);
         }
 
-        return bestCandidate ? bestCandidate.path : null;
+        return candidates;
     }
+}
 
-    private checkQualifiers(qualifiers: Array<string>): number {
-        var result = 0;
-        for (var i = 0; i < qualifiers.length; i++) {
-            if (qualifiers[i]) {
-                var value = this.checkQualifier(qualifiers[i]);
+export function findFileMatch(path: string, ext: string, candidates: Array<string>, context: definition.PlatformContext): string {
+    var bestValue = -1
+    var result: string = null;
 
-                console.log("checking qualifier: " + qualifiers[i] + " result: " + value);
-                if (value < 0) {
-                    // Non of the supported qualifiers matched this or the match was not satisified
-                    return -1;
-                }
+    trace.write("Candidates for " + path + ext + ": " + candidates.join(", "), trace.categories.Navigation);
+    for (var i = 0; i < candidates.length; i++) {
+        var filePath = candidates[i];
+        var qualifiersStr: string = filePath.substr(path.length, filePath.length - path.length - ext.length);
 
-                result += value;
-            }
+        var qualifiers = qualifiersStr.split(".");
+
+        var value = checkQualifiers(qualifiers, context);
+
+        if (value >= 0 && value > bestValue) {
+            bestValue = value;
+            result = candidates[i];
         }
-
-        return result;
     }
 
-    private checkQualifier(value: string) {
-        for (var i = 0; i < supportedQualifiers.length; i++) {
-            if (supportedQualifiers[i].isMatch(value)) {
-                var result = supportedQualifiers[i].getMatchValue(value, this._context);
-                if (result > 0) {
-                    result += (supportedQualifiers.length - i) * PRIORITY_STEP;
-                }
-                return result;
+    return result;
+}
+
+function checkQualifiers(qualifiers: Array<string>, context: definition.PlatformContext): number {
+    var result = 0;
+    for (var i = 0; i < qualifiers.length; i++) {
+        if (qualifiers[i]) {
+            var value = checkQualifier(qualifiers[i], context);
+            if (value < 0) {
+                // Non of the supported qualifiers matched this or the match was not satisified
+                return -1;
             }
-        }
 
-        return -1;
+            result += value;
+        }
     }
+
+    return result;
+}
+
+function checkQualifier(value: string, context: definition.PlatformContext) {
+    for (var i = 0; i < supportedQualifiers.length; i++) {
+        if (supportedQualifiers[i].isMatch(value)) {
+            var result = supportedQualifiers[i].getMatchValue(value, context);
+            if (result > 0) {
+                result += (supportedQualifiers.length - i) * PRIORITY_STEP;
+            }
+            return result;
+        }
+    }
+
+    return -1;
 }

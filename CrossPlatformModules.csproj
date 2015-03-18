@@ -82,6 +82,7 @@
     <TypeScriptCompile Include="apps\template-blank\main-page.ts">
       <DependentUpon>main-page.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\template-master-detail\main-page.ts" />
     <TypeScriptCompile Include="apps\template-settings\app.ts" />
     <TypeScriptCompile Include="apps\template-settings\main-page.ts">
       <DependentUpon>main-page.xml</DependentUpon>
@@ -96,15 +97,13 @@
     <TypeScriptCompile Include="apps\template-master-detail\details-page.ts">
       <DependentUpon>details-page.xml</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\template-master-detail\main-page.ts">
-      <DependentUpon>main-page.xml</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\app\binding_tests.ts">
       <DependentUpon>binding_tests.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\app\location-example.ts" />
     <TypeScriptCompile Include="apps\tests\app\style_props.ts" />
     <TypeScriptCompile Include="apps\tests\console-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\file-name-resolver-tests\file-name-resolver-tests.ts" />
     <TypeScriptCompile Include="apps\tests\frame-tests.ts" />
     <TypeScriptCompile Include="apps\tests\gestures-tests.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\dock-layout-tests.ts" />
@@ -542,6 +541,8 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\gallery-app\layouts\dock-layout.xml" />
+    <Content Include="apps\template-master-detail\details-view.xml" />
+    <Content Include="apps\template-master-detail\main-page.minWH600.xml" />
     <Content Include="apps\template-settings\app.css" />
     <Content Include="apps\tests\app\binding_tests.xml" />
     <Content Include="apps\tests\ui\label\label-tests-wrong.css" />
@@ -551,6 +552,11 @@
     <Content Include="apps\tests\pages\files\test.minWH300.xml" />
     <Content Include="apps\tests\pages\files\test.minWH450.xml" />
     <Content Include="apps\tests\pages\files\test.xml" />
+    <Content Include="apps\tests\file-name-resolver-tests\files\other.xml" />
+    <Content Include="apps\tests\file-name-resolver-tests\files\test.android.xml" />
+    <Content Include="apps\tests\file-name-resolver-tests\files\test.ios.land.xml" />
+    <Content Include="apps\tests\file-name-resolver-tests\files\test.android.minWH600.xml" />
+    <Content Include="apps\tests\file-name-resolver-tests\files\test.xml" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />
     <Content Include="apps\template-blank\app.css" />
     <Content Include="apps\template-hello-world\app.css" />
@@ -1511,7 +1517,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

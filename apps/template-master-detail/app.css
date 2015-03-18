@@ -13,15 +13,22 @@ ListView {
     horizontal-align: center;
 }
 
+.detail-title {
+    margin: 10;
+    font-size: 26;
+    color: #3c3c3c;
+    horizontal-align: center;
+}
+
 .listItem {
     margin: 10;
     horizontal-align: center;
     color: #808080;
-    font-size: 24;
+    font-size: 20;
 }
 
 .info {
     margin: 10;
-    font-size: 24;
+    font-size: 20;
     color: #808080;
 }

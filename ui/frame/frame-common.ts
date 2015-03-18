@@ -88,8 +88,7 @@ function pageFromBuilder(moduleNamePath: string, moduleName: string, moduleExpor
 
     // Possible XML file path.
     var fileName = resolveFilePath(moduleNamePath, "xml");
-
-    if (fs.File.exists(fileName)) {
+    if (fileName) {
         trace.write("Loading XML file: " + fileName, trace.categories.Navigation);
 
         // Or check if the file exists in the app modules and load the page from XML.
@@ -99,7 +98,9 @@ function pageFromBuilder(moduleNamePath: string, moduleName: string, moduleExpor
 
             // Possible CSS file path.
             var cssFileName = resolveFilePath(moduleName, "css");
-            page.addCssFile(cssFileName);
+            if (cssFileName) {
+                page.addCssFile(cssFileName);
+            }
         }
     }
 

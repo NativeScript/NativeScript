@@ -1,6 +1,5 @@
-<Page xmlns="http://www.nativescript.org/tns.xsd" navigatedTo="pageNavigatedTo">
-  <StackLayout>
-    <Label text="{{ title }}" cssClass="title"/>
-    <Label text="{{ info }}" cssClass="info" textWrap="true"/>
-  </StackLayout>
+<Page xmlns="http://www.nativescript.org/tns.xsd"
+      xmlns:app="app"
+      navigatedTo="pageNavigatedTo">
+  <app:details-view />
 </Page>

@@ -1,8 +1,11 @@
 import observable = require("data/observable");
 import pages = require("ui/page");
 import frames = require("ui/frame");
+import platform = require("platform");
 import listView = require("ui/list-view");
 import vmModule = require("./main-view-model");
+
+var twoPaneLayout = Math.min(platform.screen.mainScreen.widthDIPs, platform.screen.mainScreen.heightDIPs) > 600;
 
 // Event handler for Page "loaded" event attached in main-page.xml
 export function pageLoaded(args: observable.EventData) {
@@ -12,8 +15,9 @@ export function pageLoaded(args: observable.EventData) {
 
 export function listViewItemTap(args: listView.ItemEventData) {
     // Navigate to the details page with context set to the current data item
-    frames.topmost().navigate({
-        moduleName: "app/details-page",
-        context: args.view.bindingContext
-    });
+    if (!twoPaneLayout) {
+        frames.topmost().navigate("app/details-page");
+    }
+
+    vmModule.mainViewModel.set("selectedItem", args.view.bindingContext);
 }

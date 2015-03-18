@@ -1,12 +1,17 @@
 <Page xmlns="http://www.nativescript.org/tns.xsd"
+      xmlns:app="app"
       loaded="pageLoaded">
-  <GridLayout rows="auto, *">
-    <Label text="Items Page" cssClass="title" />
+  <GridLayout rows="auto, *" columns="300, *">
+    <Label text="Master Details Page" cssClass="title" colSpan="2" />
 
     <ListView items="{{ items }}" itemTap="listViewItemTap" row="1">
       <ListView.itemTemplate>
         <Label text="{{ title }}" cssClass="listItem" />
       </ListView.itemTemplate>
     </ListView>
+
+    <GridLayout row="1" col="1" bindingContext="{{ selectedItem }}">
+      <app:details-view/>
+    </GridLayout>
   </GridLayout>
 </Page>
