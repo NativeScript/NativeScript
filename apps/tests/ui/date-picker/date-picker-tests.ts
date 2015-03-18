@@ -31,6 +31,8 @@ export var test_DummyForCodeSnippet = function () {
         datePicker.year = 1980;
         datePicker.month = 2;
         datePicker.day = 9;
+        datePicker.minDate = new Date(1975, 0, 29);
+        datePicker.maxDate = new Date(2045, 4, 12);
         // ```
         // </snippet>
     });
@@ -93,6 +95,26 @@ export var testDayFromLocalToNative = function () {
     });
 }
 
+export var testMaxDateFromLocalToNative = function () {
+    helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
+        var datePicker = <datePickerModule.DatePicker>views[0];
+        var expectedValue = new Date(1980, 1, 9);
+        datePicker.maxDate = expectedValue;
+        var actualValue = datePickerTestsNative.getNativeMaxDate(datePicker);
+        TKUnit.assert(actualValue.getTime() === expectedValue.getTime(), "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testMinDateFromLocalToNative = function () {
+    helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
+        var datePicker = <datePickerModule.DatePicker>views[0];
+        var expectedValue = new Date(1980, 1, 9);
+        datePicker.minDate = expectedValue;
+        var actualValue = datePickerTestsNative.getNativeMinDate(datePicker);
+        TKUnit.assert(actualValue.getTime() === expectedValue.getTime(), "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
 export var testYearFromNativeToLocal = function () {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
@@ -122,3 +144,20 @@ export var testDayFromNativeToLocal = function () {
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
 }
+
+//export var testWTF = function () {
+//    var picker = new UIDatePicker();
+//    picker.datePickerMode = UIDatePickerMode.UIDatePickerModeDate;
+//    var jsDate = new Date(1980, 1, 9);
+//    var nsDate = NSDate.dateWithTimeIntervalSince1970(jsDate.getTime() / 1000);
+//    console.log("nsDate: " + nsDate);
+//    console.log("nsDate.timeIntervalSince1970: " + nsDate.timeIntervalSince1970);
+//    console.log("------------------");
+//    picker.maximumDate = nsDate;
+//    console.log("------------------");
+//    console.log("(picker.ios.maximumDate === nsDate): " + (picker.maximumDate === nsDate));
+//    console.log("nsDate: " + nsDate);
+//    console.log("nsDate.timeIntervalSince1970: " + nsDate.timeIntervalSince1970);
+//    console.log("picker.ios.maximumDate: " + picker.maximumDate);
+//    console.log("picker.ios.maximumDate.timeIntervalSince1970: " + picker.maximumDate.timeIntervalSince1970);
+//}

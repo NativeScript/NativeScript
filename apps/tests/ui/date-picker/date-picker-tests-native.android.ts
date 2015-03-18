@@ -12,6 +12,14 @@ export function getNativeDay(datePicker: datePickerModule.DatePicker): number {
     return datePicker.android.getDayOfMonth();
 }
 
+export function getNativeMaxDate(datePicker: datePickerModule.DatePicker): Date {
+    return new Date(datePicker.android.getMaxDate());
+}
+
+export function getNativeMinDate(datePicker: datePickerModule.DatePicker): Date {
+    return new Date(datePicker.android.getMinDate());
+}
+
 export function setNativeYear(datePicker: datePickerModule.DatePicker, value: number): void {
     datePicker.android.updateDate(value, datePicker.android.getMonth(), datePicker.android.getDayOfMonth());
 }
