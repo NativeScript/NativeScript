@@ -32,6 +32,28 @@ function onDayPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
 (<proxy.PropertyMetadata>common.DatePicker.dayProperty.metadata).onSetNativeValue = onDayPropertyChanged;
 
+function onMaxDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var picker = <DatePicker>data.object;
+
+    var newValue = (<Date>data.newValue).getTime();
+    if (picker.android && picker.android.getMaxDate() !== newValue) {
+        picker.android.setMaxDate(newValue);
+    }
+}
+
+(<proxy.PropertyMetadata>common.DatePicker.maxDateProperty.metadata).onSetNativeValue = onMaxDatePropertyChanged;
+
+function onMinDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var picker = <DatePicker>data.object;
+
+    var newValue = (<Date>data.newValue).getTime();
+    if (picker.android && picker.android.getMinDate() !== newValue) {
+        picker.android.setMinDate(newValue);
+    }
+}
+
+(<proxy.PropertyMetadata>common.DatePicker.minDateProperty.metadata).onSetNativeValue = onMinDatePropertyChanged;
+
 // merge the exports of the common file with the exports of this file
 declare var exports;
 require("utils/module-merge").merge(common, exports);

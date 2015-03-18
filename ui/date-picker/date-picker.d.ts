@@ -39,5 +39,15 @@ declare module "ui/date-picker" {
          * Gets or sets the day. The days start from 1.
          */
         day: number;
+
+        /**
+         * Gets or sets the max date.
+         */
+        maxDate: Date;
+        
+        /**
+         * Gets or sets the min date.
+         */
+        minDate: Date;
     }
 } 

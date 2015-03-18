@@ -7,6 +7,8 @@ export class DatePicker extends view.View implements definition.DatePicker {
     public static yearProperty = new dependencyObservable.Property("year", "DatePicker", new proxy.PropertyMetadata(undefined));
     public static monthProperty = new dependencyObservable.Property("month", "DatePicker", new proxy.PropertyMetadata(undefined));
     public static dayProperty = new dependencyObservable.Property("day", "DatePicker", new proxy.PropertyMetadata(undefined));
+    public static maxDateProperty = new dependencyObservable.Property("maxDate", "DatePicker", new proxy.PropertyMetadata(undefined));
+    public static minDateProperty = new dependencyObservable.Property("minDate", "DatePicker", new proxy.PropertyMetadata(undefined));
 
     constructor() {
         super();
@@ -31,5 +33,19 @@ export class DatePicker extends view.View implements definition.DatePicker {
     }
     set day(value: number) {
         this._setValue(DatePicker.dayProperty, value);
+    }
+
+    get maxDate(): Date {
+        return this._getValue(DatePicker.maxDateProperty);
+    }
+    set maxDate(value: Date) {
+        this._setValue(DatePicker.maxDateProperty, value);
+    }
+
+    get minDate(): Date {
+        return this._getValue(DatePicker.minDateProperty);
+    }
+    set minDate(value: Date) {
+        this._setValue(DatePicker.minDateProperty, value);
     }
 } 
