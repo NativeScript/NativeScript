@@ -24,6 +24,7 @@ class WebViewClientClass extends android.webkit.WebViewClient {
 
         if (this._view) {
             trace.write("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", trace.categories.Debug);
+            this._view._onLoadStarted(url);
         }
     }
 
@@ -32,7 +33,7 @@ class WebViewClientClass extends android.webkit.WebViewClient {
 
         if (this._view) {
             trace.write("WebViewClientClass.onPageFinished(" + url + ")", trace.categories.Debug);
-            this._view._onFinished(url, undefined);
+            this._view._onLoadFinished(url, undefined);
         }
     }
 
@@ -41,7 +42,7 @@ class WebViewClientClass extends android.webkit.WebViewClient {
 
         if (this._view) {
             trace.write("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", trace.categories.Debug);
-            this._view._onFinished(failingUrl, description + "(" + errorCode + ")");
+            this._view._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
         }
     }
 };

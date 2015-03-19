@@ -4,7 +4,8 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 
 export module knownEvents {
-    export var finished: string = "finished";
+    export var loadFinished: string = "loadFinished";
+    export var loadStarted: string = "loadStarted";
 }
 var urlProperty = new dependencyObservable.Property(
     "url",
@@ -43,17 +44,28 @@ export class WebView extends view.View implements definition.WebView {
         this._setValue(WebView.urlProperty, value);
     }
 
-    public _onFinished(url: string, error?: string) {
+    public _onLoadFinished(url: string, error?: string) {
 
         this._suspendLoading = true;
         this.url = url;
         this._suspendLoading = false;
 
-        var args = <definition.FinishedEventData>{
-            eventName: knownEvents.finished,
+        var args = <definition.LoadEventData>{
+            eventName: knownEvents.loadFinished,
             object: this,
             url: url,
             error: error
+        };
+
+        this.notify(args);
+    }
+
+    public _onLoadStarted(url: string) {
+        var args = <definition.LoadEventData>{
+            eventName: knownEvents.loadStarted,
+            object: this,
+            url: url,
+            error: undefined
         };
 
         this.notify(args);

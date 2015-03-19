@@ -47,6 +47,8 @@ export function onPageLoaded(args: observableModule.EventData) {
     //viewModel.url = "alabala://www.nemadastane.com" // Error
     //viewModel.url = "sdfsdf://sdfwerfd";
     //viewModel.url = "http://www.sdfsdfsdfsdf.com/";
+
+    //viewModel.url = "https://api.instagram.com/oauth/authorize/?client_id=4e0171f9fcfc4015bb6300ed91fbf719&redirect_uri=http://localhost:2000/oauth&response_type=code";
     
     backButton.isEnabled = false;
     forwardButton.isEnabled = false;
@@ -67,7 +69,12 @@ export function onReloadButtonTap(args: observableModule.EventData) {
     webView.reload();
 }
 
-export function onWebViewFinished(args: webViewModule.FinishedEventData) {
+export function onWebViewStartedLoading(args: webViewModule.LoadEventData) {
+    console.log("startedLoading: " + args.url);
+}
+
+export function onWebViewFinishedLoading(args: webViewModule.LoadEventData) {
+    console.log("finishedLoading: " + args.url);
     backButton.isEnabled = webView.canGoBack;
     forwardButton.isEnabled = webView.canGoForward;
     reloadButton.isEnabled = true;

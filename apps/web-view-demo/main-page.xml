@@ -4,6 +4,6 @@
     <Button text="→" col="1" tap="onForwardButtonTap" id="forwardButton"/>
     <TextField col="2" id="urlTextField" text="{{ url }}" />
     <Button text="↻" col="3" tap="onReloadButtonTap" id="reloadButton"/>
-    <WebView colSpan="4" row="2" id="webView" finished="onWebViewFinished" url="{{ url }}"/>
+    <WebView colSpan="4" row="2" id="webView" finishedLoading="onWebViewFinishedLoading" startedLoading="onWebViewStartedLoading" url="{{ url }}"/>
   </GridLayout>
 </Page>

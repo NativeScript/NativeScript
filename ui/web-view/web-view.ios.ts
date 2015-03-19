@@ -18,13 +18,22 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
         return this;
     }
     
+    public webViewShouldStartLoadWithRequestNavigationType(webView: UIWebView, request: NSURLRequest, navigationType: number) {
+        if (request.URL) {
+            trace.write("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", trace.categories.Debug);
+            this._owner._onLoadStarted(request.URL.absoluteString);
+        }
+        
+        return true;
+    }
+    
     public webViewDidStartLoad(webView: UIWebView) {
-        trace.write("UIWebViewDelegateClass.webViewDidStartLoad()", trace.categories.Debug);
+        trace.write("UIWebViewDelegateClass.webViewDidStartLoad(" + webView.request.URL + ")", trace.categories.Debug);
     }
 
     public webViewDidFinishLoad(webView: UIWebView) {
         trace.write("UIWebViewDelegateClass.webViewDidFinishLoad(" + webView.request.URL + ")", trace.categories.Debug);
-        this._owner._onFinished(webView.request.URL.absoluteString);
+        this._owner._onLoadFinished(webView.request.URL.absoluteString);
     }
 
     public webViewDidFailLoadWithError(webView: UIWebView, error: NSError) {
@@ -34,7 +43,7 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
         }
 
         trace.write("UIWebViewDelegateClass.webViewDidFailLoadWithError(" + error.localizedDescription + ")", trace.categories.Debug);
-        this._owner._onFinished(url, error.localizedDescription);
+        this._owner._onLoadFinished(url, error.localizedDescription);
     }
 }
 
