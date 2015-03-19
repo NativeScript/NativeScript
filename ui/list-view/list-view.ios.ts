@@ -165,6 +165,7 @@ export class ListView extends common.ListView {
 
     public refresh() {
         this._ios.reloadData();
+		this.requestLayout();
     }
 
     public getHeight(index: number): number {
