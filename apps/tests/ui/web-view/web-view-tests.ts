@@ -34,7 +34,7 @@ export var testLoadExistingUrl = function (done) {
         // <snippet module="ui/web-view" title="WebView">
         // ### Using WebView,
         // ``` JavaScript
-        webView.on(webViewModule.knownEvents.finished, function (args: webViewModule.FinishedEventData) {
+        webView.on(webViewModule.knownEvents.loadFinished, function (args: webViewModule.LoadEventData) {
             var message;
             if (!args.error) {
                 message = "WebView finished loading " + args.url;
@@ -60,7 +60,7 @@ export var testLoadInvalidUrl = function (done) {
         var webView = <webViewModule.WebView>views[0];
         
         var errorReceived = false;
-        webView.on(webViewModule.knownEvents.finished, function (args: webViewModule.FinishedEventData) {
+        webView.on(webViewModule.knownEvents.loadFinished, function (args: webViewModule.LoadEventData) {
             if (errorReceived) {
                 return;
             }

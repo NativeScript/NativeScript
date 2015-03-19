@@ -11,9 +11,14 @@ declare module "ui/web-view" {
      */
     export module knownEvents {
         /**
-         * Raised when web-view is completely loaded.
+         * Raised when the web-view has completely loaded an url.
          */
-        export var finished: string;
+        export var loadFinished: string;
+        
+        /**
+         * Raised when the web-view starts loading an url.
+         */
+        export var loadStarted: string;
     }
 
     /**
@@ -67,13 +72,14 @@ declare module "ui/web-view" {
         reload();
 
         on(event: string, callback: (data: observable.EventData) => void);
-        on(event: "finished", callback: (args: FinishedEventData) => void);
+        on(event: "loadFinished", callback: (args: LoadEventData) => void);
+        on(event: "loadStarted", callback: (args: LoadEventData) => void);
     }
 
     /**
-     * Event data containing information for the finished event.
+     * Event data containing information for the loading events of a WebView.
      */
-    export interface FinishedEventData extends observable.EventData {
+    export interface LoadEventData extends observable.EventData {
         /**
          * Gets the url of the web-view.
          */
