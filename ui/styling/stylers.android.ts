@@ -35,6 +35,32 @@ export class DefaultStyler implements definition.stylers.Styler {
         return drawable;
     }
 
+    //Background image methods
+    private static setBackgroundImageSourceProperty(view: view.View, newValue: any) {
+        var nativeView = <android.view.View>view.android;
+        var bmp = <android.graphics.Bitmap>newValue;
+        var d = new android.graphics.drawable.BitmapDrawable(bmp);
+        d.setTileModeXY(android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
+        d.setDither(true); 
+        nativeView.setBackgroundDrawable(d);
+    }
+
+    private static resetBackgroundImageSourceProperty(view: view.View, nativeValue: any) {
+        if (types.isDefined(nativeValue)) {
+            (<android.view.View>view.android).setBackgroundDrawable(nativeValue)
+        }
+    }
+
+    private static getNativeBackgroundImageSourceValue(view: view.View): any {
+        var drawable = view.android.getBackground();
+
+        if (drawable instanceof android.graphics.drawable.BitmapDrawable) {
+            return drawable;
+        }
+
+        return undefined;
+    }
+
     //Visibility methods
     private static setVisibilityProperty(view: view.View, newValue: any) {
         var androidValue = (newValue === enums.Visibility.visible) ? android.view.View.VISIBLE : android.view.View.GONE;
@@ -77,6 +103,11 @@ export class DefaultStyler implements definition.stylers.Styler {
             DefaultStyler.setBackgroundProperty,
             DefaultStyler.resetBackgroundProperty,
             DefaultStyler.getNativeBackgroundValue));
+
+        style.registerHandler(style.backgroundImageSourceProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setBackgroundImageSourceProperty,
+            DefaultStyler.resetBackgroundImageSourceProperty,
+            DefaultStyler.getNativeBackgroundImageSourceValue));
 
         style.registerHandler(style.visibilityProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setVisibilityProperty,

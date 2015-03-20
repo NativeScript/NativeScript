@@ -9,6 +9,7 @@ import stylers = require("ui/styling/stylers");
 import styleProperty = require("ui/styling/style-property");
 import converters = require("ui/styling/converters");
 import enums = require("ui/enums");
+import imageSource = require("image-source");
 
 // key is the property id and value is Dictionary<string, StylePropertyChangedHandler>;
 var _registeredHandlers = {};
@@ -32,6 +33,13 @@ export class Style extends observable.DependencyObservable implements styling.St
     }
     set backgroundColor(value: color.Color) {
         this._setValue(backgroundColorProperty, value, observable.ValueSource.Local);
+    }
+
+    get backgroundImage(): string {
+        return this._getValue(backgroundImageProperty);
+    }
+    set backgroundImage(value: string) {
+        this._setValue(backgroundImageProperty, value, observable.ValueSource.Local);
     }
 
     get fontSize(): number {
@@ -279,9 +287,9 @@ export class Style extends observable.DependencyObservable implements styling.St
     }
 }
 
-export function registerHandler(property: dependencyObservable.Property, 
-                                handler: styling.stylers.StylePropertyChangedHandler, 
-                                className?: string) {
+export function registerHandler(property: dependencyObservable.Property,
+    handler: styling.stylers.StylePropertyChangedHandler,
+    className?: string) {
     var realClassName = className ? className : "default";
     if (_registeredHandlers.hasOwnProperty(property.id + "")) {
         _registeredHandlers[property.id][realClassName] = handler;
@@ -332,6 +340,26 @@ export var colorProperty = new styleProperty.Property("color", "color",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, undefined, undefined, color.Color.equals),
     converters.colorConverter);
 
+export var backgroundImageProperty = new styleProperty.Property("backgroundImage", "background-image",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundImagePropertyChanged));
+
+function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var pattern: RegExp = /url\(('|")(.*?)\1\)/;
+    var url = (<string>data.newValue).match(pattern)[2];
+
+    if (imageSource.isFileOrResourcePath(url)) {
+        style._setValue(backgroundImageSourceProperty, imageSource.fromFileOrResource(url), observable.ValueSource.Local);
+    } else if (types.isString(url)) {
+        imageSource.fromUrl(url).then(r=> {
+            style._setValue(backgroundImageSourceProperty, r, observable.ValueSource.Local);
+        });
+    }
+}
+
+export var backgroundImageSourceProperty = new styleProperty.Property("backgroundImageSource", "background-image-source",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, undefined));
+
 export var backgroundColorProperty = new styleProperty.Property("backgroundColor", "background-color",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, color.Color.equals),
     converters.colorConverter);
@@ -373,7 +401,7 @@ export var minHeightProperty = new styleProperty.Property("minHeight", "min-heig
     converters.numberConverter);
 
 function parseThickness(value: any): { top: number; right: number; bottom: number; left: number } {
-    var result = { top: 0, right: 0, bottom: 0, left: 0};
+    var result = { top: 0, right: 0, bottom: 0, left: 0 };
     if (types.isString(value)) {
         var arr = value.split(/[ ,]+/);
         var top = parseInt(arr[0]);
@@ -406,7 +434,7 @@ function onPaddingChanged(data: observable.PropertyChangeData) {
 
     style.paddingTop = thickness.top;
     style.paddingRight = thickness.right;
-    style.paddingBottom= thickness.bottom;    
+    style.paddingBottom = thickness.bottom;
     style.paddingLeft = thickness.left;
 }
 

@@ -32,6 +32,29 @@ export class DefaultStyler implements definition.stylers.Styler {
         return undefined;
     }
 
+    //Background image methods
+    private static setBackgroundImageSourceProperty(view: view.View, newValue: any) {
+        var nativeView: UIView = <UIView>view._nativeView;
+        if (nativeView) {
+            nativeView.backgroundColor = UIColor.alloc().initWithPatternImage(newValue);
+        }
+    }
+
+    private static resetBackgroundImageSourceProperty(view: view.View, nativeValue: any) {
+        var nativeView: UIView = <UIView>view._nativeView;
+        if (nativeView) {
+            nativeView.backgroundColor = nativeValue;
+        }
+    }
+
+    private static getNativeBackgroundImageSourceValue(view: view.View): any {
+        var nativeView: UIView = <UIView>view._nativeView;
+        if (nativeView) {
+            return nativeView.backgroundColor;
+        }
+        return undefined;
+    }
+
     //Visibility methods
     private static setVisibilityProperty(view: view.View, newValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
@@ -67,6 +90,11 @@ export class DefaultStyler implements definition.stylers.Styler {
             DefaultStyler.setBackgroundProperty,
             DefaultStyler.resetBackgroundProperty,
             DefaultStyler.getNativeBackgroundValue));
+
+        style.registerHandler(style.backgroundImageSourceProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setBackgroundImageSourceProperty,
+            DefaultStyler.resetBackgroundImageSourceProperty,
+            DefaultStyler.getNativeBackgroundImageSourceValue));
 
         style.registerHandler(style.visibilityProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setVisibilityProperty,
