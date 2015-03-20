@@ -23,29 +23,31 @@
     </tsb:SideBar.slideContent>
 
     <tsb:SideBar.mainContent>
-      <GridLayout rows="auto, auto, auto, *">
+      <GridLayout rows="auto, auto, *">
 
-        <SegmentedBar selectedIndex="{{ selectedIndex }}"  style="background-color: transparent;color: white;" selectedBackgroundColor="#fac950">
-          <SegmentedBar.items>
-            <SegmentedBarItem title="MAY 3" />
-            <SegmentedBarItem title="MAY 4" />
-            <SegmentedBarItem title="MAY 5" />
-          </SegmentedBar.items>
-        </SegmentedBar>
+        <StackLayout style="background-image: url('~/app/images/background.jpg')">
+          <SegmentedBar selectedIndex="{{ selectedIndex }}"  style="background-color: transparent;color: white;" selectedBackgroundColor="#fac950">
+            <SegmentedBar.items>
+              <SegmentedBarItem title="MAY 3" />
+              <SegmentedBarItem title="MAY 4" />
+              <SegmentedBarItem title="MAY 5" />
+            </SegmentedBar.items>
+          </SegmentedBar>
 
-        <Label row="1" style="horizontal-align: center;margin: 15;">
-          <Label.formattedText>
-            <FormattedString fontSize="18" foregroundColor="#fac950">
-              <FormattedString.spans>
-                <Span text="WORKSHOPS" fontAttributes="Bold" />
-              </FormattedString.spans>
-            </FormattedString>
-          </Label.formattedText>
-        </Label>
+          <Label style="horizontal-align: center;margin: 15;">
+            <Label.formattedText>
+              <FormattedString fontSize="18" foregroundColor="#fac950">
+                <FormattedString.spans>
+                  <Span text="WORKSHOPS" fontAttributes="Bold" />
+                </FormattedString.spans>
+              </FormattedString>
+            </Label.formattedText>
+          </Label>
+        </StackLayout>
 
-        <SearchBar text="{{ search }}" hint="Search" style="background-color: #fac950; color: #fac950;" textFieldBackgroundColor="white" row="2" />
+        <SearchBar text="{{ search }}" hint="Search" style="background-color: #fac950; color: #fac950;" textFieldBackgroundColor="white" row="1" />
 
-        <ListView items="{{ sessions }}" row="3" separatorColor="#fac950">
+        <ListView items="{{ sessions }}" row="2" separatorColor="#fac950">
           <ListView.itemTemplate>
             <GridLayout columns="auto, *">
 
