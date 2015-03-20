@@ -7,6 +7,7 @@ import definition = require("ui/styling");
 import stylersCommon = require("ui/styling/stylers-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
+import imageSource = require("image-source");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -33,6 +34,27 @@ export class DefaultStyler implements definition.stylers.Styler {
         }
 
         return drawable;
+    }
+
+    //Background image methods
+    private static setBackgroundImageSourceProperty(view: view.View, newValue: any) {
+        (<android.view.View>view.android).setBackgroundDrawable(new android.graphics.drawable.BitmapDrawable(newValue));
+    }
+
+    private static resetBackgroundImageSourceProperty(view: view.View, nativeValue: any) {
+        if (types.isDefined(nativeValue)) {
+            (<android.view.View>view.android).setBackgroundDrawable(nativeValue)
+        }
+    }
+
+    private static getNativeBackgroundImageSourceValue(view: view.View): any {
+        var drawable = view.android.getBackground();
+
+        if (drawable instanceof android.graphics.drawable.BitmapDrawable) {
+            return drawable;
+        }
+
+        return undefined;
     }
 
     //Visibility methods
@@ -77,6 +99,11 @@ export class DefaultStyler implements definition.stylers.Styler {
             DefaultStyler.setBackgroundProperty,
             DefaultStyler.resetBackgroundProperty,
             DefaultStyler.getNativeBackgroundValue));
+
+        style.registerHandler(style.backgroundImageSourceProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setBackgroundImageSourceProperty,
+            DefaultStyler.resetBackgroundImageSourceProperty,
+            DefaultStyler.getNativeBackgroundImageSourceValue));
 
         style.registerHandler(style.visibilityProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setVisibilityProperty,
