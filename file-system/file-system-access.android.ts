@@ -125,22 +125,27 @@ export class FileSystemAccess {
                 return;
             }
 
+            if (isKnown) {
+                if (onError) {
+                    onError({ message: "Cannot delete known folder." });
+                }
+
+                return;
+            }
+
             // TODO: Asynchronous
             this.deleteFolderContent(javaFile);
 
-            if (!isKnown) {
-                if (javaFile.delete()) {
-                    if (onSuccess) {
-                        onSuccess();
-                    }
-                } else {
-                    if (onError) {
-                        onError({ message: "Folder deletion failed." });
-                    }
+            if (javaFile.delete()) {
+                if (onSuccess) {
+                    onSuccess();
                 }
             } else {
-                // TODO: Notify error?
+                if (onError) {
+                    onError({ message: "Folder deletion failed." });
+                }
             }
+
         } catch (exception) {
             if (onError) {
                 onError(exception);
