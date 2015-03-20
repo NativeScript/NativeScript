@@ -7,7 +7,6 @@ import definition = require("ui/styling");
 import stylersCommon = require("ui/styling/stylers-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
-import imageSource = require("image-source");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -38,7 +37,12 @@ export class DefaultStyler implements definition.stylers.Styler {
 
     //Background image methods
     private static setBackgroundImageSourceProperty(view: view.View, newValue: any) {
-        (<android.view.View>view.android).setBackgroundDrawable(new android.graphics.drawable.BitmapDrawable(newValue));
+        var nativeView = <android.view.View>view.android;
+        var bmp = <android.graphics.Bitmap>newValue;
+        var d = new android.graphics.drawable.BitmapDrawable(bmp);
+        d.setTileModeXY(android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
+        d.setDither(true); 
+        nativeView.setBackgroundDrawable(d);
     }
 
     private static resetBackgroundImageSourceProperty(view: view.View, nativeValue: any) {
