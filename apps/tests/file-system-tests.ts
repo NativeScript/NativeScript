@@ -565,3 +565,17 @@ export var testKnownFolderRename = function () {
             });
     }
 };
+
+export function testKnownFolderRemove(done) {
+    var result;
+
+    var knownFolder = fs.knownFolders.temp();
+
+    knownFolder.remove().then(
+        function () {
+            done(new Error("Remove known folder should resolve as error."));
+        },
+        function (error) {
+            done(null);
+        });
+};

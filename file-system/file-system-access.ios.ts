@@ -176,6 +176,14 @@ export class FileSystemAccess {
     }
 
     public deleteFolder(path: string, isKnown?: boolean, onSuccess?: () => any, onError?: (error: any) => any) {
+        if (isKnown) {
+            if (onError) {
+                onError({ message: "Cannot delete known folder." });
+            }
+
+            return;
+        }
+
         this.deleteEntity(path, onSuccess, onError);
     }
 
