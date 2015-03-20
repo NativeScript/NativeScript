@@ -345,12 +345,13 @@ export var backgroundImageProperty = new styleProperty.Property("backgroundImage
 
 function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
     var style = <Style>data.object;
-    var newValue = <string>data.newValue;
+    var pattern: RegExp = /url\(('|")(.*?)\1\)/;
+    var url = (<string>data.newValue).match(pattern)[2];
 
-    if (imageSource.isFileOrResourcePath(newValue)) {
-        style._setValue(backgroundImageSourceProperty, imageSource.fromFileOrResource(newValue), observable.ValueSource.Local);
-    } else if (types.isString(newValue)) {
-        imageSource.fromUrl(newValue).then(r=> {
+    if (imageSource.isFileOrResourcePath(url)) {
+        style._setValue(backgroundImageSourceProperty, imageSource.fromFileOrResource(url), observable.ValueSource.Local);
+    } else if (types.isString(url)) {
+        imageSource.fromUrl(url).then(r=> {
             style._setValue(backgroundImageSourceProperty, r, observable.ValueSource.Local);
         });
     }
