@@ -58,7 +58,7 @@ function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
             page = moduleExports.createPage();
         }
         else {
-            page = pageFromBuilder(moduleNamePath, entry.moduleName, moduleExports);
+            page = pageFromBuilder(moduleNamePath, moduleExports);
         }
 
         if (!(page && page instanceof pages.Page)) {
@@ -82,7 +82,7 @@ function resolveFilePath(path, ext) {
     return fileNameResolver.resolveFileName(path, ext);
 }
 
-function pageFromBuilder(moduleNamePath: string, moduleName: string, moduleExports: any): pages.Page {
+function pageFromBuilder(moduleNamePath: string, moduleExports: any): pages.Page {
     var page: pages.Page;
     var element: view.View;
 
@@ -97,7 +97,7 @@ function pageFromBuilder(moduleNamePath: string, moduleName: string, moduleExpor
             page = <pages.Page>element;
 
             // Possible CSS file path.
-            var cssFileName = resolveFilePath(moduleName, "css");
+            var cssFileName = resolveFilePath(moduleNamePath, "css");
             if (cssFileName) {
                 page.addCssFile(cssFileName);
             }
