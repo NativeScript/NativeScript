@@ -73,7 +73,9 @@ export class screen implements definition.screen {
             mainScreenInfo = {
                 widthPixels: metrics.widthPixels,
                 heightPixels: metrics.heightPixels,
-                scale: metrics.density
+                scale: metrics.density,
+                widthDIPs: metrics.widthPixels / metrics.density,
+                heightDIPs: metrics.heightPixels / metrics.density
             }
         }
         return mainScreenInfo;

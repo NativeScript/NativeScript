@@ -46,6 +46,7 @@ allTests["TEXT-FIELD"] = require("./ui/text-field/text-field-tests");
 allTests["TEXT-VIEW"] = require("./ui/text-view/text-view-tests");
 allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");
 allTests["FILE-SYSTEM-ACCESS"] = require("./file-system-access-tests/file-system-access-tests");
+allTests["FILE-NAME-RESOLVER"] = require("./file-name-resolver-tests/file-name-resolver-tests");
 allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
 allTests["LIST-PICKER"] = require("./ui/list-picker/list-picker-tests");
 allTests["DATE-PICKER"] = require("./ui/date-picker/date-picker-tests");

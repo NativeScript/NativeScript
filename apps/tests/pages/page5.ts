@@ -1,6 +1,6 @@
-﻿import btns = require("ui/button");
-import gridModule = require("ui/layouts/grid-layout");
+﻿import gridModule = require("ui/layouts/grid-layout");
 import pages = require("ui/page");
+import buttons = require("ui/button");
 import app = require("application");
 import platform = require("platform");
 
@@ -12,7 +12,6 @@ function printDeviceInfoAndroid() {
     console.log("android.os.Build.VERSION.RELEASE = " + android.os.Build.VERSION.RELEASE);   //android.os.Build.VERSION.RELEASE = 4.4.4
     android.os.Build.MANUFACTURER
     var metrics: android.util.DisplayMetrics = app.android.context.getResources().getDisplayMetrics();
-
     console.log("metrics.density = " + metrics.density);             //metrics.density = 3
     console.log("metrics.scaledDensity = " + metrics.scaledDensity); //metrics.scaledDensity = 3
     console.log("metrics.densityDpi = " + metrics.densityDpi);       //metrics.densityDpi = 480
@@ -20,6 +19,12 @@ function printDeviceInfoAndroid() {
     console.log("metrics.yxdpi = " + metrics.ydpi);                  //metrics.yxdpi = 443.3450012207031
     console.log("metrics.widthPixels = " + metrics.widthPixels);     //metrics.widthPixels = 1080
     console.log("metrics.heightPixels = " + metrics.heightPixels);   //metrics.heightPixels = 1776
+
+    var config = app.android.context.getResources().getConfiguration();
+    console.log("config.screenWidthDp = " + config.screenWidthDp);   
+    console.log("config.screenHeightDp = " + config.screenHeightDp);   
+    console.log("config.smallestScreenWidthDp = " + config.smallestScreenWidthDp);   
+    console.log("config.orientation = " + (config.orientation === android.content.res.Configuration.ORIENTATION_PORTRAIT ? "portrait" : "ladscape"));   
 }
 
 function printDeviceInfoIOS() {
@@ -45,45 +50,35 @@ function printTNSInfo() {
     console.log("platform.device.sdkVersion = " + platform.device.sdkVersion);  
     console.log("platform.device.deviceType = " + platform.device.deviceType);  
 
+    console.log("platform.screen.mainScreen.widthDIPs = " + platform.screen.mainScreen.widthDIPs);
+    console.log("platform.screen.mainScreen.heightDIPs = " + platform.screen.mainScreen.heightDIPs);  
+    console.log("platform.screen.mainScreen.scale = " + platform.screen.mainScreen.scale);  
     console.log("platform.screen.mainScreen.widthPixels = " + platform.screen.mainScreen.widthPixels); 
     console.log("platform.screen.mainScreen.heightPixels = " + platform.screen.mainScreen.heightPixels);  
-    console.log("platform.screen.mainScreen.scale = " + platform.screen.mainScreen.scale);  
 }
 
-if (app.android) {
-    printDeviceInfoAndroid();
+function print() {
+    if (app.android) {
+        printDeviceInfoAndroid();
+    }
+    else {
+        printDeviceInfoIOS();
+    }
+    printTNSInfo();
 }
-else {
-    printDeviceInfoIOS();
-}
-printTNSInfo();
+print();
 
 export function createPage() {
     var page = new pages.Page();
     var grid = new gridModule.GridLayout();
 
-    var rows = 100;
-    var cols = 3;
-    var row;
-    var col;
+    var btn = new buttons.Button();
+    btn.text = "print";
+    btn.on("tap", (d) => {
+        print();
+    });
 
-    for (row = 0; row < rows; row++) {
-        grid.addRow(new gridModule.ItemSpec(1, gridModule.GridUnitType.auto));
-    }
-
-    for (col = 0; col < cols; col++) {
-        grid.addColumn(new gridModule.ItemSpec(1, gridModule.GridUnitType.auto));
-    }
-
-    for (col = 0; col < cols; col++) {
-        for (row = 0; row < rows; row++) {
-            var btn = new btns.Button();
-            btn.text = "Col: " + col + ", Row: " + row;
-            gridModule.GridLayout.setColumn(btn, col);
-            gridModule.GridLayout.setRow(btn, row);
-            grid.addChild(btn);
-        }
-    }
+    grid.addChild(btn);
 
     page.content = grid;
     return page;

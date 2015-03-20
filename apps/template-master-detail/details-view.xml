@@ -1,0 +1,4 @@
+<StackLayout  xmlns="http://www.nativescript.org/tns.xsd">
+  <Label text="{{ title }}" cssClass="detail-title"/>
+  <Label text="{{ info }}" cssClass="info" textWrap="true"/>
+</StackLayout>

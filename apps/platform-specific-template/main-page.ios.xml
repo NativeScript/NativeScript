@@ -1,0 +1,5 @@
+<Page loaded="onPageLoaded">
+  <StackLayout id="stack">
+    <Label id="label" text="Hello, iOS!" />
+  </StackLayout>
+</Page>

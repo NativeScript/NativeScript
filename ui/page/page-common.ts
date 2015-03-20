@@ -61,10 +61,13 @@ export class Page extends contentView.ContentView implements dts.Page {
     }
 
     public addCssFile(cssFileName: string) {
+        if (cssFileName.indexOf(fs.knownFolders.currentApp().path) !== 0) {
+            cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName);
+        }
+
         var cssString;
-        var realCssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName);
-        if (fs.File.exists(realCssFileName)) {
-            new fileSystemAccess.FileSystemAccess().readText(realCssFileName, r => { cssString = r; });
+        if (fs.File.exists(cssFileName)) {
+            new fileSystemAccess.FileSystemAccess().readText(cssFileName, r => { cssString = r; });
             this._addCssInternal(cssString, cssFileName);
         }
     }
@@ -104,18 +107,18 @@ export class Page extends contentView.ContentView implements dts.Page {
             return;
         }
 
-        this._styleScope.ensureSelectors();
+            this._styleScope.ensureSelectors();
 
-        var scope = this._styleScope;
-        var checkSelectors = (view: view.View): boolean => {
-            scope.applySelectors(view);
-            return true;
-        }
+            var scope = this._styleScope;
+            var checkSelectors = (view: view.View): boolean => {
+                scope.applySelectors(view);
+                return true;
+            }
 
-        checkSelectors(this);
-        view.eachDescendant(this, checkSelectors);
+            checkSelectors(this);
+            view.eachDescendant(this, checkSelectors);
 
-        this._cssApplied = true;
+            this._cssApplied = true;
     }
 
     private _resetCssValues() {

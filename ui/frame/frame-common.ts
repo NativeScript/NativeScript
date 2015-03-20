@@ -6,6 +6,8 @@ import trace = require("trace");
 import builder = require("ui/builder");
 import fs = require("file-system");
 import utils = require("utils/utils");
+import platform = require("platform");
+import fileResolverModule = require("file-system/file-name-resolver");
 
 var frameStack: Array<Frame> = [];
 
@@ -39,7 +41,7 @@ function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
         }
     }
     else if (entry.moduleName) {
-        // Current app full path. 
+        // Current app full path.
         var currentAppPath = fs.knownFolders.currentApp().path;
         //Full path of the module = current app full path + module name.
         var moduleNamePath = fs.path.join(currentAppPath, entry.moduleName);
@@ -67,14 +69,26 @@ function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
     return page;
 }
 
+var fileNameResolver: fileResolverModule.FileNameResolver;
+function resolveFilePath(path, ext) {
+    if (!fileNameResolver) {
+        fileNameResolver = new fileResolverModule.FileNameResolver({
+            width: platform.screen.mainScreen.widthDIPs,
+            height: platform.screen.mainScreen.heightDIPs,
+            os: platform.device.os,
+            deviceType: platform.device.deviceType
+        });
+    }
+    return fileNameResolver.resolveFileName(path, ext);
+}
+
 function pageFromBuilder(moduleNamePath: string, moduleName: string, moduleExports: any): pages.Page {
     var page: pages.Page;
     var element: view.View;
 
     // Possible XML file path.
-    var fileName = moduleNamePath + ".xml";
-
-    if (fs.File.exists(fileName)) {
+    var fileName = resolveFilePath(moduleNamePath, "xml");
+    if (fileName) {
         trace.write("Loading XML file: " + fileName, trace.categories.Navigation);
 
         // Or check if the file exists in the app modules and load the page from XML.
@@ -83,8 +97,10 @@ function pageFromBuilder(moduleNamePath: string, moduleName: string, moduleExpor
             page = <pages.Page>element;
 
             // Possible CSS file path.
-            var cssFileName = moduleName + ".css";
-            page.addCssFile(cssFileName);
+            var cssFileName = resolveFilePath(moduleName, "css");
+            if (cssFileName) {
+                page.addCssFile(cssFileName);
+            }
         }
     }
 
