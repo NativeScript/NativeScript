@@ -8,7 +8,7 @@ import appViewModel = require("./app-view-model");
 export function pageLoaded(args: observable.EventData) {
     var page = <pages.Page>args.object;
 
-    page.bindingContext = new appViewModel.AppViewModel();
+    page.bindingContext = appViewModel.appModel;
 }
 
 export function toggleFavorite(args: gestures.GestureEventData) {

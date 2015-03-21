@@ -542,6 +542,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\gallery-app\layouts\dock-layout.xml" />
+    <Content Include="apps\TelerikNEXT\lib\everlive.js" />
     <Content Include="apps\TelerikNEXT\session-page.xml" />
     <Content Include="apps\template-master-detail\details-view.xml" />
     <Content Include="apps\template-master-detail\main-page.minWH600.xml" />

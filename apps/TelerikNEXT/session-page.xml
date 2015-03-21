@@ -39,7 +39,7 @@
         <ListView items="{{ speakers }}" row="3" colSpan="2" height="{{ speakers.length * 76 }}" selectedBackgroundColor="#fac950" separatorColor="#FFFFFF">
           <ListView.itemTemplate>
             <GridLayout columns="65, *" cssClass="list-view-row">
-              <Image src="{{ picture }}" verticalAlignment="top"/>
+              <Image src="{{ '~/app/images/' + picture }}" verticalAlignment="top"/>
 
               <StackLayout col="1">
                 <Label cssClass="info">

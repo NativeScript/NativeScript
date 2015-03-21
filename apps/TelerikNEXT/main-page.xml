@@ -81,6 +81,8 @@
           </ListView.itemTemplate>
         </ListView>
 
+    <ActivityIndicator busy="{{ isLoading }}" row="2"/>
+
       </GridLayout>
 
         <Border style="background-color: #053140;" visibility="{{ selectedViewIndex === 2 ? 'visible' : 'collapsed' }}">
