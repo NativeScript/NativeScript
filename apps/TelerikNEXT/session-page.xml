@@ -29,7 +29,7 @@
       <GridLayout rows="auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto" columns="70, *" >
         <!-- Description -->
         <Label cssClass="info" textWrap="true" col="1" margin="10 5 5 5"
-               text="Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. " />
+               text="TODO: Put description here." />
 
         <!-- Line -->
         <StackLayout cssClass="horizontal-line"  row="1" col="1"/>

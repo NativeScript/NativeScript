@@ -1,4 +1,8 @@
-﻿Label, Button, Image {
+﻿Page{
+    background-color: white;
+}
+
+Label, Button, Image {
     margin: 0 5;
 }
 

@@ -81,7 +81,7 @@
           </ListView.itemTemplate>
         </ListView>
 
-    <ActivityIndicator busy="{{ isLoading }}" row="2"/>
+    <ActivityIndicator busy="{{ isLoading }}" row="2" horizontalAlignment="center" verticalAlignment="center" />
 
       </GridLayout>
 
