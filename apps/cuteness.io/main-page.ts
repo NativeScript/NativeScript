@@ -23,7 +23,7 @@ export function pageLoaded(args: observable.EventData) {
 export function listViewItemTap(args: listView.ItemEventData) {
     // Navigate to the details page with context set to the data item for specified index
     frames.topmost().navigate({
-        moduleName: "app/details-page",
+        moduleName: "./details-page",
         context: appViewModel.redditItems.getItem(args.index)
     });
 }
