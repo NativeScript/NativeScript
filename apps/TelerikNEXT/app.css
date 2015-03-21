@@ -1,13 +1,5 @@
-﻿Label, Button {
+﻿Label, Button, Image {
     margin: 0 5;
-}
-
-Image {
-    margin: 5;
-}
-
-.header-image {
-    margin: 0;
 }
 
 .page-title {
@@ -47,11 +39,11 @@ Image {
 
 .section-header {
     color: #A17201;
-    margin: 5 5 0 10;
+    margin: 5 5 0 5;
 }
 
-.horizontalLine {
+.horizontal-line {
     height: 1;
     background-color: #FAC950;
-    margin: 5 5 0 10;
+    margin: 5 5 0 5;
 }

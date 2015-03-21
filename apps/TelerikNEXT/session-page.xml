@@ -2,81 +2,82 @@
       xmlns:tsb="app/TelerikNEXT/TelerikUI/side-bar"
       navigatedTo="pageNavigatedTo">
 
-  <GridLayout rows="auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto" columns="70, *">
-
+  <GridLayout rows="auto, *">
     <!-- HEADER -->
-    <Image colSpan="2" src="~/app/images/background.jpg" stretch="aspectFill" cssClass="header-image"/>
+    <GridLayout columns="70, *" style="background-image: url('~/app/images/background.jpg')">
+      <StackLayout col="1" margin="15 5">
+        <Label text="{{ title }}" textWrap="true" cssClass="page-title"/>
+        <Label cssClass="info-orange">
+          <Label.formattedText>
+            <FormattedString>
+              <FormattedString.spans>
+                <Span text="{{ range}}" fontAttributes="Bold" />
+                <Span text=", " fontAttributes="Bold" />
+                <Span text="{{ room }}" fontAttributes="Bold" />
+              </FormattedString.spans>
+            </FormattedString>
+          </Label.formattedText>
+        </Label>
+      </StackLayout>
+      <Image tap="toggleFavorite" cssClass="favourite-image"
+        src="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}"
+        visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}" />
+    </GridLayout>
 
-    <StackLayout col="1" >
-      <Label text="{{ title }}" textWrap="true" cssClass="page-title" margin="15 5 0 5"/>
+    <!-- Scrollable content -->
+    <ScrollView row="1">
+      <GridLayout rows="auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto" columns="70, *" >
+        <!-- Description -->
+        <Label cssClass="info" textWrap="true" col="1" margin="10 5 5 5"
+               text="Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. " />
 
-      <Label cssClass="info-orange">
-        <Label.formattedText>
-          <FormattedString>
-            <FormattedString.spans>
-              <Span text="{{ range}}" fontAttributes="Bold" />
-              <Span text=", " fontAttributes="Bold" />
-              <Span text="{{ room }}" fontAttributes="Bold" />
-            </FormattedString.spans>
-          </FormattedString>
-        </Label.formattedText>
-      </Label>
-    </StackLayout>
+        <!-- Line -->
+        <StackLayout cssClass="horizontal-line"  row="1" col="1"/>
 
-    <Image tap="toggleFavorite" cssClass="favourite-image"
-      src="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}"
-      visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}" />
+        <!-- Speakers -->
+        <Label text="Speakers" cssClass="section-header" row="2" col="1" />
+        <ListView items="{{ speakers }}" row="3" colSpan="2" height="{{ speakers.length * 76 }}" selectedBackgroundColor="#fac950" separatorColor="#FFFFFF">
+          <ListView.itemTemplate>
+            <GridLayout columns="65, *" cssClass="list-view-row">
+              <Image src="{{ picture }}" verticalAlignment="top"/>
 
+              <StackLayout col="1">
+                <Label cssClass="info">
+                  <Label.formattedText>
+                    <FormattedString>
+                      <FormattedString.spans>
+                        <Span text="{{ name }}" fontAttributes="Bold" />
+                      </FormattedString.spans>
+                    </FormattedString>
+                  </Label.formattedText>
+                </Label>
+                <Label cssClass="info">
+                  <Label.formattedText>
+                    <FormattedString>
+                      <FormattedString.spans>
+                        <Span text="{{ title }}" fontAttributes="Italic" />
+                      </FormattedString.spans>
+                    </FormattedString>
+                  </Label.formattedText>
+                </Label>
+                <Label text="{{ company }}" cssClass="info"/>
+              </StackLayout>
 
-    <!-- Description -->
-    <Label cssClass="info" textWrap="true" row="1" col="1" margin="10 5 5 10"
-           text="Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. " />
+            </GridLayout>
+          </ListView.itemTemplate>
+        </ListView>
 
-    <!-- Line -->
-    <StackLayout cssClass="horizontalLine"  row="2" col="1"/>
+        <!-- Line -->
+        <StackLayout cssClass="horizontal-line" row="4" col="1"/>
 
-    <!-- Speakers -->
-    <Label text="Speakers" cssClass="section-header" row="3" col="1" />
-    <ListView items="{{ speakers }}" row="4" colSpan="2" height="{{ speakers.length * 76 }}" selectedBackgroundColor="#fac950" separatorColor="#FFFFFF">
-      <ListView.itemTemplate>
-        <GridLayout columns="70, *" cssClass="list-view-row">
-          <Image src="{{ picture }}" verticalAlignment="top"/>
+        <!-- More -->
+        <Label text="More" cssClass="section-header" row="5" col="1"/>
 
-          <StackLayout col="1">
-            <Label cssClass="info">
-              <Label.formattedText>
-                <FormattedString>
-                  <FormattedString.spans>
-                    <Span text="{{ name }}" fontAttributes="Bold" />
-                  </FormattedString.spans>
-                </FormattedString>
-              </Label.formattedText>
-            </Label>
-            <Label cssClass="info">
-              <Label.formattedText>
-                <FormattedString>
-                  <FormattedString.spans>
-                    <Span text="{{ title }}" fontAttributes="Italic" />
-                  </FormattedString.spans>
-                </FormattedString>
-              </Label.formattedText>
-            </Label>
-            <Label text="{{ company }}" cssClass="info"/>
-          </StackLayout>
+        <Label text="LEAVE FEEDBACK" row="6" col="1"/>
 
-        </GridLayout>
-      </ListView.itemTemplate>
-    </ListView>
+        <Label text="WATCH VIDEOS" row="7" col="1"/>
 
-    <!-- Line -->
-    <StackLayout cssClass="horizontalLine" row="5" col="1"/>
-
-    <!-- More -->
-    <Label text="More" cssClass="section-header" row="6" col="1"/>
-
-    <Label text="LEAVE FEEDBACK" row="7" col="1"/>
-
-    <Label text="WATCH VIDEOS" row="8" col="1"/>
-
+      </GridLayout>
+    </ScrollView>
   </GridLayout>
 </Page>
