@@ -1,6 +1,8 @@
 ﻿import observable = require("data/observable");
 import button = require("ui/button");
 
+var dayHeaders = ["WORKSHOPS", "CONFERENCE DAY 1", "CONFERENCE DAY 2"];
+
 export class AppViewModel extends observable.Observable {
     public selectedViewIndex: number;
 
@@ -41,6 +43,8 @@ export class AppViewModel extends observable.Observable {
         if (this._selectedIndex !== value) {
             this._selectedIndex = value;
             this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "selectedIndex", value: value });
+
+            this.set("dayHeader", dayHeaders[value]);
 
             if (this.search !== "") {
                 this.search = "";

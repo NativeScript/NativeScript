@@ -42,7 +42,7 @@
             <Label.formattedText>
               <FormattedString fontSize="18" foregroundColor="#fac950">
                 <FormattedString.spans>
-                  <Span text="WORKSHOPS" fontAttributes="Bold" />
+                  <Span text="{{ dayHeader }}" fontAttributes="Bold" />
                 </FormattedString.spans>
               </FormattedString>
             </Label.formattedText>
