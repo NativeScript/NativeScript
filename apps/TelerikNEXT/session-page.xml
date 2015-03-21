@@ -1,0 +1,79 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd"
+      xmlns:tsb="app/TelerikNEXT/TelerikUI/side-bar"
+      navigatedTo="pageNavigatedTo">
+
+  <GridLayout rows="auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto" columns="70, *">
+
+    <!-- HEADER -->
+    <Image colSpan="2" src="~/app/images/background.jpg" stretch="aspectFill" cssClass="header-image"/>
+
+    <StackLayout col="1" >
+      <Label text="{{ title }}" textWrap="true" cssClass="page-title" margin="15 5 0 5"/>
+
+      <Label cssClass="info-orange">
+        <Label.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="{{ range + ',' + room }}" fontAttributes="Bold" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Label.formattedText>
+      </Label>
+    </StackLayout>
+
+    <Image tap="toggleFavorite" cssClass="favourite-image"
+      src="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}"
+      visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}" />
+
+
+    <!-- Description -->
+    <Label cssClass="info" textWrap="true" row="1" col="1" text="Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. " />
+
+    <!-- Line -->
+    <StackLayout cssClass="horizontalLine"  row="2" col="1"/>
+
+    <!-- Speakers -->
+    <Label text="Speakers" cssClass="section-header" row="3" col="1" />
+    <ListView items="{{ speakers }}" row="4" colSpan="2" height="{{ speakers.length * 70 }}" selectedBackgroundColor="#fac950" separatorColor="#FFFFFF">
+      <ListView.itemTemplate>
+        <GridLayout columns="70, *" cssClass="list-view-row">
+          <Image src="{{ picture }}" verticalAlignment="top"/>
+
+          <StackLayout col="1">
+            <Label cssClass="info">
+              <Label.formattedText>
+                <FormattedString>
+                  <FormattedString.spans>
+                    <Span text="{{ name }}" fontAttributes="Bold" />
+                  </FormattedString.spans>
+                </FormattedString>
+              </Label.formattedText>
+            </Label>
+            <Label cssClass="info">
+              <Label.formattedText>
+                <FormattedString>
+                  <FormattedString.spans>
+                    <Span text="{{ title }}" fontAttributes="Italic" />
+                  </FormattedString.spans>
+                </FormattedString>
+              </Label.formattedText>
+            </Label>
+            <Label text="{{ company }}" cssClass="info"/>
+          </StackLayout>
+
+        </GridLayout>
+      </ListView.itemTemplate>
+    </ListView>
+
+    <!-- Line -->
+    <StackLayout cssClass="horizontalLine" row="5" col="1"/>
+
+    <!-- More -->
+    <Label text="More" cssClass="section-header" row="6" col="1"/>
+
+    <Label text="LEAVE FEEDBACK" row="7" col="1"/>
+
+    <Label text="WATCH VIDEOS" row="8" col="1"/>
+
+  </GridLayout>
+</Page>

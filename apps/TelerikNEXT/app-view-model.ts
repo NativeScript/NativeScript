@@ -1,7 +1,31 @@
 ﻿import observable = require("data/observable");
 import button = require("ui/button");
 
-var dayHeaders = ["WORKSHOPS", "CONFERENCE DAY 1", "CONFERENCE DAY 2"];
+interface ConferenceDay {
+    date: Date;
+    title: string;
+}
+
+interface Session {
+    title: string;
+    start: Date;
+    end: Date;
+    room: string;
+}
+
+interface Speaker {
+    name: string;
+    title: string;
+    company: string;
+    picture: string;
+}
+
+var conferenceDays: Array<ConferenceDay> = [
+    { title: "WORKSHOPS", date: new Date(2015, 5, 3) },
+    { title: "CONFERENCE DAY 1", date: new Date(2015, 5, 4) },
+    { title: "CONFERENCE DAY 2", date: new Date(2015, 5, 5) }
+];
+
 
 export class AppViewModel extends observable.Observable {
     public selectedViewIndex: number;
@@ -18,7 +42,7 @@ export class AppViewModel extends observable.Observable {
         return this._sessions;
     }
 
-    get speakers(): Array<Speakers> {
+    get speakers(): Array<Speaker> {
         return speakers;
     }
 
@@ -44,7 +68,7 @@ export class AppViewModel extends observable.Observable {
             this._selectedIndex = value;
             this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "selectedIndex", value: value });
 
-            this.set("dayHeader", dayHeaders[value]);
+            this.set("dayHeader", conferenceDays[value].title);
 
             if (this.search !== "") {
                 this.search = "";
@@ -56,7 +80,7 @@ export class AppViewModel extends observable.Observable {
 
     private filter() {
         this._sessions = sessions.filter(s=> {
-            return s.start.getDay() === dates[this.selectedIndex].getDay()
+            return s.start.getDay() === conferenceDays[this.selectedIndex].date.getDay()
                 && s.title.toLocaleLowerCase().indexOf(this.search.toLocaleLowerCase()) >= 0;
         });
 
@@ -138,6 +162,10 @@ export class SessionModel extends observable.Observable implements Session {
             this._favorite = value;
             this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "favorite", value: this._favorite });
         }
+    }
+
+    get speakers(): Array<Speaker> {
+        return speakers.slice(0, 3);
     }
 }
 
@@ -473,23 +501,7 @@ var sessions: Array<SessionModel> = [
         room: "General Session"
     })];
 
-var dates: Array<Date> = [new Date(2015, 5, 3), new Date(2015, 5, 4), new Date(2015, 5, 5)];
-
-interface Session {
-    title: string;
-    start: Date;
-    end: Date;
-    room: string;
-}
-
-interface Speakers {
-    name: string;
-    title: string;
-    company: string;
-    picture: string;
-}
-
-var speakers: Array<Speakers> = [
+var speakers: Array<Speaker> = [
     {
         name: "Todd Anglin",
         title: "Vice President of Product Strategy",

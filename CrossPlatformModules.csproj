@@ -77,6 +77,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\TelerikNEXT\app-view-model.ts" />
     <TypeScriptCompile Include="apps\TelerikNEXT\app.ts" />
+    <TypeScriptCompile Include="apps\TelerikNEXT\session-page.ts" />
     <TypeScriptCompile Include="apps\TelerikNEXT\main-page.ts" />
     <TypeScriptCompile Include="apps\template-blank\app.ts" />
     <TypeScriptCompile Include="apps\template-blank\main-page.ts">
@@ -541,6 +542,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\gallery-app\layouts\dock-layout.xml" />
+    <Content Include="apps\TelerikNEXT\session-page.xml" />
     <Content Include="apps\template-master-detail\details-view.xml" />
     <Content Include="apps\template-master-detail\main-page.minWH600.xml" />
     <Content Include="apps\TelerikNEXT\images\background.jpg" />
@@ -665,6 +667,13 @@
     <Content Include="apps\TelerikNEXT\images\addfav.png" />
     <Content Include="apps\TelerikNEXT\images\fav.png" />
     <Content Include="apps\TelerikNEXT\main-page.css" />
+    <Content Include="apps\TelerikNEXT\images\jen.png" />
+    <Content Include="apps\TelerikNEXT\images\michael.png" />
+    <Content Include="apps\TelerikNEXT\images\sam.png" />
+    <Content Include="apps\TelerikNEXT\images\svetla.png" />
+    <Content Include="apps\TelerikNEXT\images\tj.png" />
+    <Content Include="apps\TelerikNEXT\images\todd.png" />
+    <Content Include="apps\TelerikNEXT\app.css" />
     <Content Include="apps\TelerikNEXT\main-page.xml" />
     <Content Include="apps\template-blank\package.json" />
     <TypeScriptCompile Include="apps\tests\camera-tests.ts" />

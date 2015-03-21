@@ -38,9 +38,9 @@
             </SegmentedBar.items>
           </SegmentedBar>
 
-          <Label style="horizontal-align: center;margin: 15;">
+          <Label cssClass="page-title" horizontalAlignment="center" margin="15">
             <Label.formattedText>
-              <FormattedString fontSize="18" foregroundColor="#fac950">
+              <FormattedString>
                 <FormattedString.spans>
                   <Span text="{{ dayHeader }}" fontAttributes="Bold" />
                 </FormattedString.spans>
@@ -51,39 +51,29 @@
 
         <SearchBar text="{{ search }}" hint="Search" style="background-color: #fac950; color: #fac950;" textFieldBackgroundColor="white" row="1" />
 
-        <ListView items="{{ sessions }}" row="2" separatorColor="#fac950">
+        <ListView items="{{ sessions }}" row="2" separatorColor="#fac950" itemTap="selectSession">
           <ListView.itemTemplate>
-            <GridLayout columns="auto, *" cssClass="{{ canBeFavorited ? 'sessionRow' : 'breakRow' }}">
+            <GridLayout columns="auto, *" cssClass="{{ canBeFavorited ? 'list-view-row' : 'break-row' }}">
 
               <Image src="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}" 
                      visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}" 
-           tap="toggleFavorite" width="32" height="32" vertical-align="center" margin="20" />
+                     tap="toggleFavorite" cssClass="favourite-image" />
 
               <StackLayout col="1">
 
-                <Label>
+                <Label cssClass="info-orange">
                   <Label.formattedText>
-                    <FormattedString fontSize="18" foregroundColor="#a17201">
+                    <FormattedString>
                       <FormattedString.spans>
-                        <Span text="Time:" />
                         <Span text="{{ range }}" fontAttributes="Bold" />
                       </FormattedString.spans>
                     </FormattedString>
                   </Label.formattedText>
                 </Label>
 
-                <Label text="{{ title }}" textWrap="true" cssClass="title" />
+                <Label text="{{ title }}" textWrap="true" cssClass="info-bigger"/>
 
-                <Label visibility="{{ room ? 'visible' : 'collapsed' }}">
-                  <Label.formattedText>
-                    <FormattedString  fontSize="12" foregroundColor="#a17201">
-                      <FormattedString.spans>
-                        <Span text="Room: " />
-                        <Span text="{{ room }}" fontAttributes="Bold" />
-                      </FormattedString.spans>
-                    </FormattedString>
-                  </Label.formattedText>
-                </Label>
+                <Label visibility="{{ room ? 'visible' : 'collapsed' }}" text="{{ room }}" cssClass="info-orange" />
 
               </StackLayout>
 
