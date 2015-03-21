@@ -14,7 +14,9 @@
         <Label.formattedText>
           <FormattedString>
             <FormattedString.spans>
-              <Span text="{{ range + ',' + room }}" fontAttributes="Bold" />
+              <Span text="{{ range}}" fontAttributes="Bold" />
+              <Span text=", " fontAttributes="Bold" />
+              <Span text="{{ room }}" fontAttributes="Bold" />
             </FormattedString.spans>
           </FormattedString>
         </Label.formattedText>
@@ -27,14 +29,15 @@
 
 
     <!-- Description -->
-    <Label cssClass="info" textWrap="true" row="1" col="1" text="Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. " />
+    <Label cssClass="info" textWrap="true" row="1" col="1" margin="10 5 5 10"
+           text="Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. Here is the description. " />
 
     <!-- Line -->
     <StackLayout cssClass="horizontalLine"  row="2" col="1"/>
 
     <!-- Speakers -->
     <Label text="Speakers" cssClass="section-header" row="3" col="1" />
-    <ListView items="{{ speakers }}" row="4" colSpan="2" height="{{ speakers.length * 70 }}" selectedBackgroundColor="#fac950" separatorColor="#FFFFFF">
+    <ListView items="{{ speakers }}" row="4" colSpan="2" height="{{ speakers.length * 76 }}" selectedBackgroundColor="#fac950" separatorColor="#FFFFFF">
       <ListView.itemTemplate>
         <GridLayout columns="70, *" cssClass="list-view-row">
           <Image src="{{ picture }}" verticalAlignment="top"/>
