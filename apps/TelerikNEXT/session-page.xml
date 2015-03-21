@@ -36,7 +36,7 @@
 
         <!-- Speakers -->
         <Label text="Speakers" cssClass="section-header" row="2" col="1" />
-        <ListView items="{{ speakers }}" row="3" colSpan="2" height="{{ speakers.length * 76 }}" selectedBackgroundColor="#fac950" separatorColor="#FFFFFF">
+        <ListView items="{{ speakers }}" row="3" colSpan="2" height="{{ speakers.length * 72 }}" selectedBackgroundColor="#fac950" separatorColor="#FFFFFF">
           <ListView.itemTemplate>
             <GridLayout columns="65, *" cssClass="list-view-row">
               <Image src="{{ '~/app/images/' + picture }}" verticalAlignment="top"/>

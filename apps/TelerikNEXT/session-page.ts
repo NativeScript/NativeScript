@@ -11,6 +11,5 @@ export function pageNavigatedTo(args: observable.EventData) {
 
 export function toggleFavorite(args: gestures.GestureEventData) {
     var item = <appViewModel.SessionModel>args.view.bindingContext;
-
-    item.favorite = !item.favorite;
+    item.toggleFavorite();
 }
