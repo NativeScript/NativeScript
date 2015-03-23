@@ -28,6 +28,22 @@ function onSlideContentPropertyChanged(data: dependencyObservable.PropertyChange
 }
 (<proxy.PropertyMetadata>common.SideBar.slideContentProperty.metadata).onSetNativeValue = onSlideContentPropertyChanged;
 
+class SideBarContent extends contentView.ContentView {
+    public _bar: SideBar
+
+    constructor(bar: SideBar) {
+        super();
+
+        this._bar = bar;
+    }
+
+    public requestLayout() {
+        super.requestLayout();
+
+        this._bar.requestLayout();
+    }
+}
+
 export class SideBar extends common.SideBar {
     public _mainContentHost: contentView.ContentView
     public _slideContentHost: contentView.ContentView
@@ -35,7 +51,7 @@ export class SideBar extends common.SideBar {
     constructor() {
         super();
 
-        this._mainContentHost = new contentView.ContentView();
+        this._mainContentHost = new SideBarContent(this);
         this._slideContentHost = new contentView.ContentView();
 
         this._ios = TKSideDrawer.alloc().initWithHostview(this._mainContentHost.ios);
