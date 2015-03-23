@@ -49,9 +49,9 @@
 
         <ListView items="{{ sessions }}" row="2" separatorColor="#fac950">
           <ListView.itemTemplate>
-            <GridLayout columns="auto, *">
+            <GridLayout columns="auto, *" backgroundColor="{{ canBeFavorited ? 'white' : '#fffbf0' }}">
 
-              <Image src="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}" style.visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}"
+              <Image src="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}" visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}"
            tap="toggleFavorite" width="32" height="32" vertical-align="center" margin="20" />
 
               <StackLayout col="1">
@@ -69,7 +69,7 @@
 
                 <Label text="{{ title }}" textWrap="true" cssClass="title" />
 
-                <Label style.visibility="{{ room ? 'visible' : 'collapsed' }}">
+                <Label visibility="{{ room ? 'visible' : 'collapsed' }}">
                   <Label.formattedText>
                     <FormattedString  fontSize="12" foregroundColor="#a17201">
                       <FormattedString.spans>
