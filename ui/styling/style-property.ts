@@ -51,23 +51,17 @@ export function eachInheritableProperty(callback: (property: Property) => void) 
 
 export class Property extends observable.Property implements definition.Property {
     private _cssName;
-    private _valueConverter: (value: any) => any;
 
     constructor(name: string, cssName: string, metadata: observable.PropertyMetadata, valueConverter?: (value: any) => any) {
-        super(name, "Style", metadata);
+        super(name, "Style", metadata, valueConverter);
 
         this._cssName = cssName;
-        this._valueConverter = valueConverter;
 
         registerProperty(this);
     }
 
     public get cssName(): string {
         return this._cssName;
-    }
-
-    public get valueConverter(): (value: any) => any {
-        return this._valueConverter;
     }
 
     public _getEffectiveValue(entry: observable.PropertyEntry): any {

@@ -1,41 +1,40 @@
 ﻿import color = require("color");
 import enums = require("ui/enums");
-import types = require("utils/types");
 
-export function colorConverter(cssValue: any): color.Color {
-    return new color.Color(cssValue);
+export function colorConverter(value: string): color.Color {
+    return new color.Color(value);
 }
 
-export function fontSizeConverter(cssValue: any): number {
+export function fontSizeConverter(value: string): number {
     // TODO: parse different unit types
-    var result: number = parseFloat(cssValue);
+    var result: number = parseFloat(value);
     return result;
 }
 
-export function textAlignConverter(cssValue: any): string {
-    switch (cssValue) {
+export function textAlignConverter(value: string): string {
+    switch (value) {
         case enums.TextAlignment.left:
         case enums.TextAlignment.center:
         case enums.TextAlignment.right:
-            return cssValue;
+            return value;
             break;
         default:
-            throw new Error("CSS text-align \"" + cssValue + "\" is not supported.");
+            throw new Error("CSS text-align \"" + value + "\" is not supported.");
             break;
     }
 }
 
 export var numberConverter = parseFloat;
 
-export function visibilityConverter(cssValue: any): string {
-    if (types.isString(cssValue) && cssValue.toLowerCase() === enums.Visibility.collapsed) {
+export function visibilityConverter(value: string): string {
+    if (value.toLowerCase() === enums.Visibility.collapsed) {
         return enums.Visibility.collapsed;
     }
     return enums.Visibility.visible;
 }
 
-export function opacityConverter(cssValue: any): number {
-    var result = parseFloat(cssValue);
+export function opacityConverter(value: string): number {
+    var result = parseFloat(value);
     result = Math.max(0.0, result);
     result = Math.min(1.0, result);
 

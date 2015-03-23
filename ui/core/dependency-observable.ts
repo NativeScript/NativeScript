@@ -108,8 +108,9 @@ export class Property implements definition.Property {
     private _name: string;
     private _ownerType: string;
     private _id: number;
+    private _valueConverter: (value: any) => any;
 
-    constructor(name: string, ownerType: string, metadata: PropertyMetadata) {
+    constructor(name: string, ownerType: string, metadata: PropertyMetadata, valueConverter?: (value: string) => any) {
         // register key
         this._key = generatePropertyKey(name, ownerType, true);
 
@@ -132,6 +133,8 @@ export class Property implements definition.Property {
 
         // generate a unique numeric id for each property (faster lookup than a string key)
         this._id = propertyIdCounter++;
+
+        this._valueConverter = valueConverter;
     }
 
     public get name(): string {
@@ -153,6 +156,10 @@ export class Property implements definition.Property {
 
         // TODO: consider type check here (e.g. passing function where object is expected)
         return true;
+    }
+
+    public get valueConverter(): (value: string) => any {
+        return this._valueConverter;
     }
 
     public _getEffectiveValue(entry: PropertyEntry): any {
@@ -359,6 +366,12 @@ export class DependencyObservable extends observable.Observable {
     }
 
     private _setValueInternal(property: Property, value: any, source: number) {
+        
+        // Convert the value to the real property type in case it is coming as a string from CSS or XML.
+        if (types.isString(value) && property.valueConverter) {
+            value = property.valueConverter(value);
+        }
+
         var entry: PropertyEntry = this._propertyEntries[property.id];
         if (!entry) {
             entry = new PropertyEntry(property);

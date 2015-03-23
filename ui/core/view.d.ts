@@ -3,6 +3,7 @@ declare module "ui/core/view" {
     import dependencyObservable = require("ui/core/dependency-observable");
     import proxy = require("ui/core/proxy");
     import gestures = require("ui/gestures");
+    import color = require("color");
 
     /**
      * Gets a child view by id.
@@ -107,7 +108,7 @@ declare module "ui/core/view" {
      * This class is the base class for all UI components. 
      * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within. 
      */
-    export class View extends proxy.ProxyObject implements ApplyXmlAttributes {
+    export class View extends proxy.ProxyObject {
         /**
          * Represents the observable property backing the id property of each View.
          */
@@ -122,15 +123,27 @@ declare module "ui/core/view" {
 
         constructor(options?: Options);
 
-        /**
-         * Gets or sets the desired width of the view.
-         */
-        width: number;
+        //----------Style property shortcuts----------
 
         /**
-         * Gets or sets the desired height of the view.
+         * Gets or sets the color of the view.
          */
-        height: number;
+        color: color.Color;
+        
+        /**
+         * Gets or sets the background color of the view.
+         */
+        backgroundColor: color.Color;
+        
+        /**
+         * Gets or sets font-size style property.
+         */
+        fontSize: number;
+
+        /**
+         * Gets or sets text-alignment style property.
+         */
+        textAlignment: string;
 
         /**
          * Gets or sets the minimum width the view may grow to.
@@ -143,14 +156,19 @@ declare module "ui/core/view" {
         minHeight: number;
 
         /**
-         * Gets or sets the alignment of this view within its parent along the Horizontal axis.
+         * Gets or sets the desired width of the view.
          */
-        horizontalAlignment: string;
+        width: number;
 
         /**
-         * Gets or sets the alignment of this view within its parent along the Vertical axis.
+         * Gets or sets the desired height of the view.
          */
-        verticalAlignment: string;
+        height: number;
+
+        /**
+         * Gets or sets margin style property.
+         */
+        margin: string;
 
         /**
          * Specifies extra space on the left side of this view.
@@ -173,9 +191,51 @@ declare module "ui/core/view" {
         marginBottom: number;
 
         /**
+         * Gets or sets padding style property.
+         */
+        padding: string;
+
+        /**
+         * Specify the left padding of this view.
+         */
+        paddingLeft: number;
+
+        /**
+         * Specify the top padding of this view.
+         */
+        paddingTop: number;
+
+        /**
+         * Specify the right padding of this view.
+         */
+        paddingRight: number;
+
+        /**
+         * Specify the bottom padding of this view.
+         */
+        paddingBottom: number;
+
+        /**
+         * Gets or sets the alignment of this view within its parent along the Horizontal axis.
+         */
+        horizontalAlignment: string;
+
+        /**
+         * Gets or sets the alignment of this view within its parent along the Vertical axis.
+         */
+        verticalAlignment: string;
+
+        /**
          * Gets or sets the visibility of the view.
          */
         visibility: string;
+
+        /**
+         * Gets or sets the opacity style property.
+         */
+        opacity: number;
+        
+        //----------Style property shortcuts----------
 
         /**
          * Gets or sets a value indicating whether the the view is enabled. This affects the appearance of the view.
@@ -307,14 +367,6 @@ declare module "ui/core/view" {
         onLoaded(): void;
         onUnloaded(): void;
         isLoaded: boolean;
-
-        /**
-         * Called for every attribute in xml declaration. <... fontAttributes="bold" ../>
-         * @param attributeName - the name of the attribute (fontAttributes)
-         * @param attrValue - the value of the attribute (bold)
-         * Should return true if this attribute is handled and there is no need default handler to process it.
-         */
-        applyXmlAttribute(attributeName: string, attrValue: any): boolean;
 
         // TODO: Implement logic for stripping these lines out
         //@private

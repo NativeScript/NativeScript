@@ -13,20 +13,29 @@ declare module "ui/core/dependency-observable" {
          * @param name The name of the property.
          * @param ownerType The name of class that registers this property.
          * @param metadata The PropertyMetadata object associated with this property.
+         * @param valueConverter A function that can create an instance of the property type given a string. Used when parsing CSS and XML attribute values which are strings.
          */
-        constructor(name: string, ownerType: string, metadata: PropertyMetadata);
+        constructor(name: string, ownerType: string, metadata: PropertyMetadata, valueConverter?: (value: string) => any);
+        
         /**
          * Gets the name of the property. This is a read-only property.
          */
         name: string;
+        
         /**
          * Gets the id of the property. This is used for fast lookup. This is a read-only property.
          */
         id: number;
+        
         /**
          * Gets the PropertyMetadata object associated with the property. This is a read-only property.
          */
         metadata: PropertyMetadata;
+
+        /**
+         * Gets the valueConverter function associated with the property. This is a read-only property.
+         */
+        valueConverter: (value: string) => any
     }
 
     /**
