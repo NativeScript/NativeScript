@@ -112,14 +112,14 @@ declare module "ui/styling" {
         padding: string;
 
         /**
-         * Specify the bottom padding of this view.
-         */
-        paddingBottom: number;
-
-        /**
          * Specify the left padding of this view.
          */
         paddingLeft: number;
+
+        /**
+         * Specify the top padding of this view.
+         */
+        paddingTop: number;
 
         /**
          * Specify the right padding of this view.
@@ -127,9 +127,9 @@ declare module "ui/styling" {
         paddingRight: number;
 
         /**
-         * Specify the top padding of this view.
+         * Specify the bottom padding of this view.
          */
-        paddingTop: number;
+        paddingBottom: number;
 
         /**
          * Gets or sets horizontal-alignment style property.

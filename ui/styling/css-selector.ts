@@ -47,9 +47,8 @@ export class CssSelector {
             property = styleProperty.getPropertyByCssName(this._declarations[i].property);
             if (property) {
                 resolvedValue = this._declarations[i].value;
-                if (property.valueConverter) {
-                    resolvedValue = property.valueConverter(resolvedValue);
-                }
+                // The property.valueConverter is now used to convert the value later on in DependencyObservable._setValueInternal.
+                console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
                 callback(property, resolvedValue);
             }
         }

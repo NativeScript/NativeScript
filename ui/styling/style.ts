@@ -56,88 +56,18 @@ export class Style extends observable.DependencyObservable implements styling.St
         this._setValue(textAlignmentProperty, value, observable.ValueSource.Local);
     }
 
-    get verticalAlignment(): string {
-        return this._getValue(verticalAlignmentProperty);
+    get minWidth(): number {
+        return this._getValue(minWidthProperty);
     }
-    set verticalAlignment(value: string) {
-        this._setValue(verticalAlignmentProperty, value, observable.ValueSource.Local);
-    }
-
-    get horizontalAlignment(): string {
-        return this._getValue(horizontalAlignmentProperty);
-    }
-    set horizontalAlignment(value: string) {
-        this._setValue(horizontalAlignmentProperty, value, observable.ValueSource.Local);
+    set minWidth(value: number) {
+        this._setValue(minWidthProperty, value, observable.ValueSource.Local);
     }
 
-    get padding(): string {
-        return this._getValue(paddingProperty);
+    get minHeight(): number {
+        return this._getValue(minHeightProperty);
     }
-    set padding(value: string) {
-        this._setValue(paddingProperty, value, observable.ValueSource.Local);
-    }
-
-    get margin(): string {
-        return this._getValue(marginProperty);
-    }
-    set margin(value: string) {
-        this._setValue(marginProperty, value, observable.ValueSource.Local);
-    }
-
-    public get marginLeft(): number {
-        return this._getValue(marginLeftProperty);
-    }
-    public set marginLeft(value: number) {
-        this._setValue(marginLeftProperty, value, observable.ValueSource.Local);
-    }
-
-    public get marginTop(): number {
-        return this._getValue(marginTopProperty);
-    }
-    public set marginTop(value: number) {
-        this._setValue(marginTopProperty, value, observable.ValueSource.Local);
-    }
-
-    public get marginRight(): number {
-        return this._getValue(marginRightProperty);
-    }
-    public set marginRight(value: number) {
-        this._setValue(marginRightProperty, value, observable.ValueSource.Local);
-    }
-
-    public get marginBottom(): number {
-        return this._getValue(marginBottomProperty);
-    }
-    public set marginBottom(value: number) {
-        this._setValue(marginBottomProperty, value, observable.ValueSource.Local);
-    }
-
-    public get paddingLeft(): number {
-        return this._getValue(paddingLeftProperty);
-    }
-    public set paddingLeft(value: number) {
-        this._setValue(paddingLeftProperty, value, observable.ValueSource.Local);
-    }
-
-    public get paddingTop(): number {
-        return this._getValue(paddingTopProperty);
-    }
-    public set paddingTop(value: number) {
-        this._setValue(paddingTopProperty, value, observable.ValueSource.Local);
-    }
-
-    public get paddingRight(): number {
-        return this._getValue(paddingRightProperty);
-    }
-    public set paddingRight(value: number) {
-        this._setValue(paddingRightProperty, value, observable.ValueSource.Local);
-    }
-
-    public get paddingBottom(): number {
-        return this._getValue(paddingBottomProperty);
-    }
-    public set paddingBottom(value: number) {
-        this._setValue(paddingBottomProperty, value, observable.ValueSource.Local);
+    set minHeight(value: number) {
+        this._setValue(minHeightProperty, value, observable.ValueSource.Local);
     }
 
     get width(): number {
@@ -154,18 +84,88 @@ export class Style extends observable.DependencyObservable implements styling.St
         this._setValue(heightProperty, value, observable.ValueSource.Local);
     }
 
-    get minWidth(): number {
-        return this._getValue(minWidthProperty);
+    get margin(): string {
+        return this._getValue(marginProperty);
     }
-    set minWidth(value: number) {
-        this._setValue(minWidthProperty, value, observable.ValueSource.Local);
+    set margin(value: string) {
+        this._setValue(marginProperty, value, observable.ValueSource.Local);
     }
 
-    get minHeight(): number {
-        return this._getValue(minHeightProperty);
+    get marginLeft(): number {
+        return this._getValue(marginLeftProperty);
     }
-    set minHeight(value: number) {
-        this._setValue(minHeightProperty, value, observable.ValueSource.Local);
+    set marginLeft(value: number) {
+        this._setValue(marginLeftProperty, value, observable.ValueSource.Local);
+    }
+
+    get marginTop(): number {
+        return this._getValue(marginTopProperty);
+    }
+    set marginTop(value: number) {
+        this._setValue(marginTopProperty, value, observable.ValueSource.Local);
+    }
+
+    get marginRight(): number {
+        return this._getValue(marginRightProperty);
+    }
+    set marginRight(value: number) {
+        this._setValue(marginRightProperty, value, observable.ValueSource.Local);
+    }
+
+    get marginBottom(): number {
+        return this._getValue(marginBottomProperty);
+    }
+    set marginBottom(value: number) {
+        this._setValue(marginBottomProperty, value, observable.ValueSource.Local);
+    }
+
+    get padding(): string {
+        return this._getValue(paddingProperty);
+    }
+    set padding(value: string) {
+        this._setValue(paddingProperty, value, observable.ValueSource.Local);
+    }
+
+    get paddingLeft(): number {
+        return this._getValue(paddingLeftProperty);
+    }
+    set paddingLeft(value: number) {
+        this._setValue(paddingLeftProperty, value, observable.ValueSource.Local);
+    }
+
+    get paddingTop(): number {
+        return this._getValue(paddingTopProperty);
+    }
+    set paddingTop(value: number) {
+        this._setValue(paddingTopProperty, value, observable.ValueSource.Local);
+    }
+
+    get paddingRight(): number {
+        return this._getValue(paddingRightProperty);
+    }
+    set paddingRight(value: number) {
+        this._setValue(paddingRightProperty, value, observable.ValueSource.Local);
+    }
+
+    get paddingBottom(): number {
+        return this._getValue(paddingBottomProperty);
+    }
+    set paddingBottom(value: number) {
+        this._setValue(paddingBottomProperty, value, observable.ValueSource.Local);
+    }
+
+    get horizontalAlignment(): string {
+        return this._getValue(horizontalAlignmentProperty);
+    }
+    set horizontalAlignment(value: string) {
+        this._setValue(horizontalAlignmentProperty, value, observable.ValueSource.Local);
+    }
+
+    get verticalAlignment(): string {
+        return this._getValue(verticalAlignmentProperty);
+    }
+    set verticalAlignment(value: string) {
+        this._setValue(verticalAlignmentProperty, value, observable.ValueSource.Local);
     }
 
     get visibility(): string {

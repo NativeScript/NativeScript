@@ -11,6 +11,7 @@ import bindable = require("ui/core/bindable");
 import styleScope = require("ui/styling/style-scope");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
+import color = require("color");
 
 export function getViewById(view: View, id: string): View {
     if (!view) {
@@ -157,6 +158,50 @@ export class View extends proxy.ProxyObject implements definition.View, definiti
         return <T>getViewById(this, id);
     }
 
+    // START Style property shortcuts
+
+    get color(): color.Color {
+        return this.style.color;
+    }
+    set color(value: color.Color) {
+        this.style.color = value;
+    }
+
+    get backgroundColor(): color.Color {
+        return this.style.backgroundColor;
+    }
+    set backgroundColor(value: color.Color) {
+        this.style.backgroundColor = value;
+    }
+
+    get fontSize(): number {
+        return this.style.fontSize;
+    }
+    set fontSize(value: number) {
+        this.style.fontSize = value;
+    }
+
+    get textAlignment(): string {
+        return this.style.textAlignment;
+    }
+    set textAlignment(value: string) {
+        this.style.textAlignment;
+    }
+
+    get minWidth(): number {
+        return this.style.minWidth;
+    }
+    set minWidth(value: number) {
+        this.style.minWidth = value;
+    }
+
+    get minHeight(): number {
+        return this.style.minHeight;
+    }
+    set minHeight(value: number) {
+        this.style.minHeight = value;
+    }
+
     get width(): number {
         return this.style.width;
     }
@@ -171,20 +216,76 @@ export class View extends proxy.ProxyObject implements definition.View, definiti
         this.style.height = value;
     }
 
-    get minHeight(): number {
-        return this.style.minHeight;
+    get margin(): string {
+        return this.style.margin;
     }
-    set minHeight(value: number) {
-        this.style.minHeight = value;
-    }
-
-    get minWidth(): number {
-        return this.style.minWidth;
-    }
-    set minWidth(value: number) {
-        this.style.minWidth = value;
+    set margin(value: string) {
+        this.style.margin = value;
     }
 
+    get marginLeft(): number {
+        return this.style.marginLeft;
+    }
+    set marginLeft(value: number) {
+        this.style.marginLeft = value;
+    }
+
+    get marginTop(): number {
+        return this.style.marginTop;
+    }
+    set marginTop(value: number) {
+        this.style.marginTop = value;
+    }
+
+    get marginRight(): number {
+        return this.style.marginRight;
+    }
+    set marginRight(value: number) {
+        this.style.marginRight = value;
+    }
+
+    get marginBottom(): number {
+        return this.style.marginBottom;
+    }
+    set marginBottom(value: number) {
+        this.style.marginBottom = value;
+    }
+
+    get padding(): string {
+        return this.style.padding;
+    }
+    set padding(value: string) {
+        this.style.padding = value;
+    }
+
+    get paddingLeft(): number {
+        return this.style.paddingLeft;
+    }
+    set paddingLeft(value: number) {
+        this.style.paddingLeft = value;
+    }
+
+    get paddingTop(): number {
+        return this.style.paddingTop;
+    }
+    set paddingTop(value: number) {
+        this.style.paddingTop = value;
+    }
+
+    get paddingRight(): number {
+        return this.style.paddingRight;
+    }
+    set paddingRight(value: number) {
+        this.style.paddingRight = value;
+    }
+
+    get paddingBottom(): number {
+        return this.style.paddingBottom;
+    }
+    set paddingBottom(value: number) {
+        this.style.paddingBottom = value;
+    }
+    
     get horizontalAlignment(): string {
         return this.style.horizontalAlignment;
     }
@@ -199,40 +300,21 @@ export class View extends proxy.ProxyObject implements definition.View, definiti
         this.style.verticalAlignment = value;
     }
 
-    public get marginLeft(): number {
-        return this.style.marginLeft;
-    }
-    public set marginLeft(value: number) {
-        this.style.marginLeft = value;
-    }
-
-    public get marginTop(): number {
-        return this.style.marginTop;
-    }
-    public set marginTop(value: number) {
-        this.style.marginTop = value;
-    }
-
-    public get marginRight(): number {
-        return this.style.marginRight;
-    }
-    public set marginRight(value: number) {
-        this.style.marginRight = value;
-    }
-
-    public get marginBottom(): number {
-        return this.style.marginBottom;
-    }
-    public set marginBottom(value: number) {
-        this.style.marginBottom = value;
-    }
-
     get visibility(): string {
         return this.style.visibility;
     }
     set visibility(value: string) {
         this.style.visibility = value;
     }
+
+    get opacity(): number {
+        return this.style.opacity;
+    }
+    set opacity(value: number) {
+        this.style.opacity = value;
+    }
+            
+    //END Style property shortcuts
 
     get isEnabled(): boolean {
         return this._getValue(View.isEnabledProperty);
@@ -825,14 +907,14 @@ export class View extends proxy.ProxyObject implements definition.View, definiti
     }
 
     applyXmlAttribute(attributeName: string, attributeValue: any): boolean {
-        if (attributeName === "margin") {
-            this.style.margin = attributeValue;
-            return true;
-        }
-        else if (attributeName === "padding") {
-            this.style.padding = attributeValue;
-            return true;
-        }
+        //if (attributeName === "margin") {
+        //    this.style.margin = attributeValue;
+        //    return true;
+        //}
+        //else if (attributeName === "padding") {
+        //    this.style.padding = attributeValue;
+        //    return true;
+        //}
 
         return false;
     }
