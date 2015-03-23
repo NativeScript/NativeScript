@@ -15,9 +15,11 @@
           </Label>
         </Border>
 
-        <Button text="My agenda" horizontalAlignment="left" />
-        <Button text="Explore all sessions" horizontalAlignment="left" />
-        <Button text="About" horizontalAlignment="left"/>
+        <Image src="~/app/images/logo.png" margin="20" />
+
+        <Button tap="{{ selectView }}" text="My agenda" horizontalAlignment="left" color="{{ selectedViewIndex === 0 ? '#e4ba4e' : 'white' }}"/>
+        <Button tap="{{ selectView }}" text="All sessions" horizontalAlignment="left" color="{{ selectedViewIndex === 1 ? '#e4ba4e' : 'white' }}" />
+        <Button tap="{{ selectView }}" text="About" horizontalAlignment="left" color="{{ selectedViewIndex === 2 ? '#e4ba4e' : 'white' }}"/>
 
       </StackLayout>
     </tsb:SideBar.slideContent>
