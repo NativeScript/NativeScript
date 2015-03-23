@@ -1,19 +1,19 @@
 ﻿import observable = require("data/observable");
+import button = require("ui/button");
 
 export class AppViewModel extends observable.Observable {
+    public selectedViewIndex: number;
+
     constructor() {
         super();
 
         this.selectedIndex = 0;
+        this.selectedViewIndex = 1;
     }
 
     private _sessions: Array<SessionModel>;
     get sessions(): Array<SessionModel> {
         return this._sessions;
-    }
-
-    get favorites(): Array<SessionModel> {
-        return this.sessions.filter(i=> { return i.favorite });
     }
 
     get speakers(): Array<Speakers> {
@@ -56,7 +56,27 @@ export class AppViewModel extends observable.Observable {
                 && s.title.toLocaleLowerCase().indexOf(this.search.toLocaleLowerCase()) >= 0;
         });
 
+        if (this.selectedViewIndex === 0) {
+            this._sessions = this._sessions.filter(i=> { return i.favorite });
+        }
+
         this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "sessions", value: this._sessions });
+    }
+
+    public selectView(args: observable.EventData) {
+        var btn = <button.Button>args.object;
+
+        if (btn.text === "My agenda") {
+            this.selectedViewIndex = 0;
+            this.filter();
+        } else if (btn.text === "All sessions") {
+            this.selectedViewIndex = 1;
+            this.filter();
+        } else if (btn.text === "About") {
+            this.selectedViewIndex = 2;
+        }
+
+        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "selectedViewIndex", value: this.selectedViewIndex });
     }
 }
 

@@ -23,68 +23,76 @@
     </tsb:SideBar.slideContent>
 
     <tsb:SideBar.mainContent>
-      <GridLayout rows="auto, auto, *">
+      <GridLayout>
 
-        <StackLayout style="background-image: url('~/app/images/background.jpg')">
-          <SegmentedBar selectedIndex="{{ selectedIndex }}"  style="background-color: transparent;color: white;" selectedBackgroundColor="#fac950">
-            <SegmentedBar.items>
-              <SegmentedBarItem title="MAY 3" />
-              <SegmentedBarItem title="MAY 4" />
-              <SegmentedBarItem title="MAY 5" />
-            </SegmentedBar.items>
-          </SegmentedBar>
+        <GridLayout rows="auto, auto, *" visibility="{{ selectedViewIndex !== 2 ? 'visible' : 'collapsed' }}">
 
-          <Label style="horizontal-align: center;margin: 15;">
-            <Label.formattedText>
-              <FormattedString fontSize="18" foregroundColor="#fac950">
-                <FormattedString.spans>
-                  <Span text="WORKSHOPS" fontAttributes="Bold" />
-                </FormattedString.spans>
-              </FormattedString>
-            </Label.formattedText>
-          </Label>
-        </StackLayout>
+          <StackLayout style="background-image: url('~/app/images/background.jpg')">
+            <SegmentedBar selectedIndex="{{ selectedIndex }}"  style="background-color: transparent;color: white;" selectedBackgroundColor="#fac950">
+              <SegmentedBar.items>
+                <SegmentedBarItem title="MAY 3" />
+                <SegmentedBarItem title="MAY 4" />
+                <SegmentedBarItem title="MAY 5" />
+              </SegmentedBar.items>
+            </SegmentedBar>
 
-        <SearchBar text="{{ search }}" hint="Search" style="background-color: #fac950; color: #fac950;" textFieldBackgroundColor="white" row="1" />
+            <Label style="horizontal-align: center;margin: 15;">
+              <Label.formattedText>
+                <FormattedString fontSize="18" foregroundColor="#fac950">
+                  <FormattedString.spans>
+                    <Span text="WORKSHOPS" fontAttributes="Bold" />
+                  </FormattedString.spans>
+                </FormattedString>
+              </Label.formattedText>
+            </Label>
+          </StackLayout>
 
-        <ListView items="{{ sessions }}" row="2" separatorColor="#fac950">
-          <ListView.itemTemplate>
-            <GridLayout columns="auto, *" backgroundColor="{{ canBeFavorited ? 'white' : '#fffbf0' }}">
+          <SearchBar text="{{ search }}" hint="Search" style="background-color: #fac950; color: #fac950;" textFieldBackgroundColor="white" row="1" />
 
-              <Image src="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}" visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}"
-           tap="toggleFavorite" width="32" height="32" vertical-align="center" margin="20" />
+          <ListView items="{{ sessions }}" row="2" separatorColor="#fac950">
+            <ListView.itemTemplate>
+              <GridLayout columns="auto, *" backgroundColor="{{ canBeFavorited ? 'white' : '#fffbf0' }}">
 
-              <StackLayout col="1">
+                <Image src="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}" visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}"
+             tap="toggleFavorite" width="32" height="32" vertical-align="center" margin="20" />
 
-                <Label>
-                  <Label.formattedText>
-                    <FormattedString fontSize="18" foregroundColor="#a17201">
-                      <FormattedString.spans>
-                        <Span text="Time:" />
-                        <Span text="{{ range }}" fontAttributes="Bold" />
-                      </FormattedString.spans>
-                    </FormattedString>
-                  </Label.formattedText>
-                </Label>
+                <StackLayout col="1">
 
-                <Label text="{{ title }}" textWrap="true" cssClass="title" />
+                  <Label>
+                    <Label.formattedText>
+                      <FormattedString fontSize="18" foregroundColor="#a17201">
+                        <FormattedString.spans>
+                          <Span text="Time:" />
+                          <Span text="{{ range }}" fontAttributes="Bold" />
+                        </FormattedString.spans>
+                      </FormattedString>
+                    </Label.formattedText>
+                  </Label>
 
-                <Label visibility="{{ room ? 'visible' : 'collapsed' }}">
-                  <Label.formattedText>
-                    <FormattedString  fontSize="12" foregroundColor="#a17201">
-                      <FormattedString.spans>
-                        <Span text="Room: " />
-                        <Span text="{{ room }}" fontAttributes="Bold" />
-                      </FormattedString.spans>
-                    </FormattedString>
-                  </Label.formattedText>
-                </Label>
+                  <Label text="{{ title }}" textWrap="true" cssClass="title" />
 
-              </StackLayout>
+                  <Label visibility="{{ room ? 'visible' : 'collapsed' }}">
+                    <Label.formattedText>
+                      <FormattedString  fontSize="12" foregroundColor="#a17201">
+                        <FormattedString.spans>
+                          <Span text="Room: " />
+                          <Span text="{{ room }}" fontAttributes="Bold" />
+                        </FormattedString.spans>
+                      </FormattedString>
+                    </Label.formattedText>
+                  </Label>
 
-            </GridLayout>
-          </ListView.itemTemplate>
-        </ListView>
+                </StackLayout>
+
+              </GridLayout>
+            </ListView.itemTemplate>
+          </ListView>
+
+        </GridLayout>
+
+        <Border style="background-color: #053140;" visibility="{{ selectedViewIndex === 2 ? 'visible' : 'collapsed' }}">
+          <Image src="~/app/images/logo.png" margin="20" />
+        </Border>
 
       </GridLayout>
     </tsb:SideBar.mainContent>
