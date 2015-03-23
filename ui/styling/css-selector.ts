@@ -48,7 +48,6 @@ export class CssSelector {
             if (property) {
                 resolvedValue = this._declarations[i].value;
                 // The property.valueConverter is now used to convert the value later on in DependencyObservable._setValueInternal.
-                console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
                 callback(property, resolvedValue);
             }
         }

@@ -4,7 +4,6 @@ declare module "ui/core/view" {
     import proxy = require("ui/core/proxy");
     import gestures = require("ui/gestures");
     import color = require("color");
-    import styling = require("ui/styling");
 
     /**
      * Gets a child view by id.
@@ -109,7 +108,7 @@ declare module "ui/core/view" {
      * This class is the base class for all UI components. 
      * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within. 
      */
-    export class View extends proxy.ProxyObject/* implements ApplyXmlAttributes*/ {
+    export class View extends proxy.ProxyObject {
         /**
          * Represents the observable property backing the id property of each View.
          */
@@ -368,14 +367,6 @@ declare module "ui/core/view" {
         onLoaded(): void;
         onUnloaded(): void;
         isLoaded: boolean;
-
-        /**
-         * Called for every attribute in xml declaration. <... fontAttributes="bold" ../>
-         * @param attributeName - the name of the attribute (fontAttributes)
-         * @param attrValue - the value of the attribute (bold)
-         * Should return true if this attribute is handled and there is no need default handler to process it.
-         */
-        applyXmlAttribute(attributeName: string, attrValue: any): boolean;
 
         // TODO: Implement logic for stripping these lines out
         //@private

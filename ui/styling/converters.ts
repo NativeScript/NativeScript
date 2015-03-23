@@ -1,6 +1,5 @@
 ﻿import color = require("color");
 import enums = require("ui/enums");
-import types = require("utils/types");
 
 export function colorConverter(value: string): color.Color {
     return new color.Color(value);

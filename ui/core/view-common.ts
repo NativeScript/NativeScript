@@ -106,7 +106,7 @@ function onCssClassPropertyChanged(data: dependencyObservable.PropertyChangeData
     new proxy.PropertyMetadata(true)
     );
 
-export class View extends proxy.ProxyObject implements definition.View, definition.ApplyXmlAttributes {
+export class View extends proxy.ProxyObject implements definition.View {
 
     public static idProperty = idProperty;
     public static cssClassProperty = cssClassProperty;
@@ -904,19 +904,6 @@ export class View extends proxy.ProxyObject implements definition.View, definiti
 
     get _isVisible(): boolean {
         return this._isVisibleCache;
-    }
-
-    applyXmlAttribute(attributeName: string, attributeValue: any): boolean {
-        //if (attributeName === "margin") {
-        //    this.style.margin = attributeValue;
-        //    return true;
-        //}
-        //else if (attributeName === "padding") {
-        //    this.style.padding = attributeValue;
-        //    return true;
-        //}
-
-        return false;
     }
 
     public focus(): boolean {

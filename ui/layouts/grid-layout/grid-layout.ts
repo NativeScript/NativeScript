@@ -456,7 +456,7 @@ export class GridLayout extends layouts.Layout implements definition.GridLayout,
             return true;
         }
 
-        return super.applyXmlAttribute(attributeName, attributeValue);
+        return false;
     }
 
     private static parseItemSpecs(value: string): Array<ItemSpec> {
