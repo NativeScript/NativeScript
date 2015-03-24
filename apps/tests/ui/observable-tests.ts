@@ -18,6 +18,27 @@ class TestObservable extends observable.Observable {
     }
 }
 
+export var test_Observable_Constructor = function () {
+    // <snippet module="data/observable" title="data/observable">
+    // ### Creating an Observable
+    // ``` JavaScript
+    var json = {
+        Name: "John",
+        Age: 34,
+        Married: true
+    };
+    var person = new observable.Observable(json);
+    var name = person.get("Name");
+    var age = person.get("Age");
+    var married = person.get("Married");
+    //// console.log(name + " " + age + " " + married); // Prints out "John 34 true" if uncommented.
+    // ```
+    // </snippet>
+    TKUnit.assert(name === "John", "Expected name is John");
+    TKUnit.assert(age === 34, "Expected age is 34");
+    TKUnit.assert(married === true, "Expected married is true");
+}
+
 export var tests_DummyTestForCodeSnippet = function () {
     // <snippet module="data/observable" title="data/observable">
     // ### Responding to property changes
