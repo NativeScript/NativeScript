@@ -29,61 +29,61 @@
 
         <GridLayout rows="auto, auto, *" visibility="{{ selectedViewIndex !== 2 ? 'visible' : 'collapsed' }}">
 
-    <StackLayout style="background-image: url('~/app/images/background.jpg')">
-      <SegmentedBar selectedIndex="{{ selectedIndex }}"  style="background-color: transparent;color: white;" selectedBackgroundColor="#fac950">
-        <SegmentedBar.items>
-          <SegmentedBarItem title="MAY 3" />
-          <SegmentedBarItem title="MAY 4" />
-          <SegmentedBarItem title="MAY 5" />
-        </SegmentedBar.items>
-      </SegmentedBar>
+          <StackLayout style="background-image: url('~/app/images/background.jpg')">
+            <SegmentedBar selectedIndex="{{ selectedIndex }}"  style="background-color: transparent;color: white;" selectedBackgroundColor="#fac950">
+              <SegmentedBar.items>
+                <SegmentedBarItem title="MAY 3" />
+                <SegmentedBarItem title="MAY 4" />
+                <SegmentedBarItem title="MAY 5" />
+              </SegmentedBar.items>
+            </SegmentedBar>
 
-      <Label cssClass="page-title" horizontalAlignment="center" margin="15">
-        <Label.formattedText>
-          <FormattedString>
-            <FormattedString.spans>
-              <Span text="{{ dayHeader }}" fontAttributes="Bold" />
-            </FormattedString.spans>
-          </FormattedString>
-        </Label.formattedText>
-      </Label>
-    </StackLayout>
-
-    <SearchBar text="{{ search }}" hint="Search" style="background-color: #fac950; color: #fac950;" textFieldBackgroundColor="white" row="1" />
-
-    <ListView items="{{ sessions }}" row="2" separatorColor="#fac950" itemTap="selectSession">
-      <ListView.itemTemplate>
-        <GridLayout columns="auto, *" cssClass="{{ canBeFavorited ? 'list-view-row' : 'break-row' }}">
-
-          <Image src="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}"
-                 visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}"
-                 tap="toggleFavorite" cssClass="favourite-image" />
-
-          <StackLayout col="1">
-
-            <Label cssClass="info-orange">
+            <Label cssClass="page-title" horizontalAlignment="center" margin="15">
               <Label.formattedText>
                 <FormattedString>
                   <FormattedString.spans>
-                    <Span text="{{ range }}" fontAttributes="Bold" />
+                    <Span text="{{ dayHeader }}" fontAttributes="Bold" />
                   </FormattedString.spans>
                 </FormattedString>
               </Label.formattedText>
             </Label>
-
-            <Label text="{{ title }}" textWrap="true" cssClass="info-bigger"/>
-
-            <Label visibility="{{ room ? 'visible' : 'collapsed' }}" text="{{ room }}" cssClass="info-orange" />
-
           </StackLayout>
 
+          <SearchBar text="{{ search }}" hint="Search" style="background-color: #fac950; color: #fac950;" textFieldBackgroundColor="white" row="1" />
+
+          <ListView items="{{ sessions }}" row="2" separatorColor="#fac950" itemTap="selectSession">
+            <ListView.itemTemplate>
+              <GridLayout columns="auto, *" cssClass="{{ canBeFavorited ? 'list-view-row' : 'break-row' }}">
+
+                <Image src="{{ favorite ? '~/app/images/fav.png' : '~/app/images/addfav.png' }}"
+                       visibility="{{ canBeFavorited ? 'visible' : 'collapsed' }}"
+                       tap="toggleFavorite" cssClass="favourite-image" />
+
+                <StackLayout col="1">
+
+                  <Label cssClass="info-orange">
+                    <Label.formattedText>
+                      <FormattedString>
+                        <FormattedString.spans>
+                          <Span text="{{ range }}" fontAttributes="Bold" />
+                        </FormattedString.spans>
+                      </FormattedString>
+                    </Label.formattedText>
+                  </Label>
+
+                  <Label text="{{ title }}" textWrap="true" cssClass="info-bigger"/>
+
+                  <Label visibility="{{ room ? 'visible' : 'collapsed' }}" text="{{ room }}" cssClass="info-orange" />
+
+                </StackLayout>
+
+              </GridLayout>
+            </ListView.itemTemplate>
+          </ListView>
+
+          <ActivityIndicator busy="{{ isLoading }}" row="2" horizontalAlignment="center" verticalAlignment="center" />
+
         </GridLayout>
-      </ListView.itemTemplate>
-    </ListView>
-
-    <ActivityIndicator busy="{{ isLoading }}" row="2" horizontalAlignment="center" verticalAlignment="center" />
-
-  </GridLayout>
 
         <Border style="background-color: #053140;" visibility="{{ selectedViewIndex === 2 ? 'visible' : 'collapsed' }}">
           <Image src="~/app/images/logo.png" margin="20" />

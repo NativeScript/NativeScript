@@ -1,9 +1,6 @@
-﻿import observable = require("data/observable");
-import dialogs = require("ui/dialogs");
-var everlive = require("./lib/everlive");
-
+﻿var everlive = require("./lib/everlive");
 var el = new everlive("mzacGkKPFlZUfbMq");
-
+var i = 0;
 
 // UPLOAD Sessions
 var sessionsStatic = [
@@ -331,7 +328,7 @@ var sessionsStatic = [
     }];
 
 var dataSessions = el.data('NextSessions');
-for (var i = 0; i < sessionsStatic.length; i++) {
+for (i = 0; i < sessionsStatic.length; i++) {
     dataSessions.create(sessionsStatic[i],
         function (data) {
             console.log("session added: " + JSON.stringify(data));
@@ -340,7 +337,6 @@ for (var i = 0; i < sessionsStatic.length; i++) {
             console.log("error: " + error);
         });
 }
-
 
 // UPLOAD SPEAKERS
 var speakersStatic = [
@@ -406,7 +402,7 @@ var speakersStatic = [
     }];
 
 var data = el.data('NextSpeakers');
-for (var i = 0; i < speakersStatic.length; i++) {
+for (i = 0; i < speakersStatic.length; i++) {
     data.create(speakersStatic[i],
         function (data) {
             console.log("speaker added: " + JSON.stringify(data));

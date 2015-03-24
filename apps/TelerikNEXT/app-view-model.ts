@@ -64,7 +64,6 @@ function updateFavourites() {
     localSettings.setString(FAVOURITES, newValue);
 }
 
-
 var el = new everlive("mzacGkKPFlZUfbMq");
 var expandExp = {
     "speakers": true
@@ -87,18 +86,18 @@ el.data('NextSessions').expand(expandExp).get().then(
     }, function (error) {
         dialogs.alert("Could not load sessions. Error: " + error);
     }
-    );
-
+);
 
 export class AppViewModel extends observable.Observable {
     public selectedViewIndex: number;
+    private _selectedIndex;
 
     constructor() {
         super();
 
         this.selectedIndex = 0;
-        this.set("isLoading", true);
         this.selectedViewIndex = 1;
+        this.set("isLoading", true);
     }
 
     private _sessions: Array<SessionModel>;
@@ -108,10 +107,6 @@ export class AppViewModel extends observable.Observable {
 
     get favorites(): Array<SessionModel> {
         return this.sessions.filter(i=> { return i.favorite });
-    }
-
-    get speakers(): Array<Speaker> {
-        return speakers;
     }
 
     private _search = "";
@@ -127,7 +122,6 @@ export class AppViewModel extends observable.Observable {
         }
     }
 
-    private _selectedIndex;
     get selectedIndex(): number {
         return this._selectedIndex;
     }
@@ -162,6 +156,7 @@ export class AppViewModel extends observable.Observable {
     public onDataLoaded() {
         this.set("isLoading", false);
         this.filter();
+    }
 
     public selectView(args: observable.EventData) {
         var btn = <button.Button>args.object;
@@ -177,7 +172,6 @@ export class AppViewModel extends observable.Observable {
         }
 
         this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "selectedViewIndex", value: this.selectedViewIndex });
-    }
     }
 }
 
