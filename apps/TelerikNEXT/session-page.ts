@@ -1,21 +1,12 @@
 ﻿import observable = require("data/observable");
 import pages = require("ui/page");
 import gestures = require("ui/gestures");
-import listView = require("ui/list-view");
-import frame = require("ui/frame");
 import appViewModel = require("./app-view-model");
 
-export function pageLoaded(args: observable.EventData) {
+export function pageNavigatedTo(args: observable.EventData) {
     var page = <pages.Page>args.object;
 
-    page.bindingContext = appViewModel.appModel;
-}
-
-export function selectSession(args: listView.ItemEventData) { 
-    frame.topmost().navigate({
-        moduleName: "app/session-page",
-        context: args.view.bindingContext
-    });
+    page.bindingContext = page.navigationContext;
 }
 
 export function toggleFavorite(args: gestures.GestureEventData) {

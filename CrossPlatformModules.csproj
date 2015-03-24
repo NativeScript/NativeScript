@@ -77,6 +77,8 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\TelerikNEXT\app-view-model.ts" />
     <TypeScriptCompile Include="apps\TelerikNEXT\app.ts" />
+    <TypeScriptCompile Include="apps\TelerikNEXT\everlive-upload.ts" />
+    <TypeScriptCompile Include="apps\TelerikNEXT\session-page.ts" />
     <TypeScriptCompile Include="apps\TelerikNEXT\main-page.ts" />
     <TypeScriptCompile Include="apps\template-blank\app.ts" />
     <TypeScriptCompile Include="apps\template-blank\main-page.ts">
@@ -541,6 +543,8 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\gallery-app\layouts\dock-layout.xml" />
+    <Content Include="apps\TelerikNEXT\lib\everlive.js" />
+    <Content Include="apps\TelerikNEXT\session-page.xml" />
     <Content Include="apps\template-master-detail\details-view.xml" />
     <Content Include="apps\template-master-detail\main-page.minWH600.xml" />
     <Content Include="apps\TelerikNEXT\images\background.jpg" />
@@ -664,7 +668,7 @@
     </TypeScriptCompile>
     <Content Include="apps\TelerikNEXT\images\addfav.png" />
     <Content Include="apps\TelerikNEXT\images\fav.png" />
-    <Content Include="apps\TelerikNEXT\main-page.css" />
+    <Content Include="apps\TelerikNEXT\app.css" />
     <Content Include="apps\TelerikNEXT\main-page.xml" />
     <Content Include="apps\template-blank\package.json" />
     <TypeScriptCompile Include="apps\tests\camera-tests.ts" />
@@ -1508,7 +1512,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
