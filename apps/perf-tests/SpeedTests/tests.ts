@@ -1,5 +1,5 @@
 ﻿/* tslint:disable:no-unused-variable */
-import testsNative = require("app/SpeedTests/tests-native");
+import testsNative = require("SpeedTests/tests-native");
 import trace = require("trace");
 import imageSourceModule = require("image-source");
 

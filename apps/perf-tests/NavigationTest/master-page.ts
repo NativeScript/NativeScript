@@ -30,7 +30,7 @@ export function createPage() {
 
     listView.on(listViewModule.knownEvents.itemTap, (args: listViewModule.ItemEventData) => {
         var navigationEntry = {
-            moduleName: "app/NavigationTest/details-page",
+            moduleName: "NavigationTest/details-page",
             context: itemsSource[args.index]
         };
         page.frame.navigate(navigationEntry);

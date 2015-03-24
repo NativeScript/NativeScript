@@ -6,6 +6,6 @@ fps.addCallback(function (fps, minFps) {
 });
 fps.start();
 
-application.mainModule = "app/ApplicationLoadTimeAndFPS/mainPage";
+application.mainModule = "ApplicationLoadTimeAndFPS/mainPage";
 
 application.start();

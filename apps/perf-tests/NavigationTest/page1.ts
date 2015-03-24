@@ -22,7 +22,7 @@ export function createPage() {
     var navigateButton = new buttonModule.Button();
     navigateButton.text = "->";
     navigateButton.on(buttonModule.knownEvents.tap, () => {
-        page.frame.navigate("app/NavigationTest/page2");
+        page.frame.navigate("NavigationTest/page2");
     });
     stackLayout.addChild(navigateButton);
 
