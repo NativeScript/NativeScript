@@ -5,6 +5,7 @@ import utilsModule = require("utils/utils");
 import trace = require("trace");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
+import imageSource = require("image-source");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -85,6 +86,7 @@ export class TabView extends common.TabView {
     private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
     private _tabBarHeight: number = 0;
     private _navBarHeight: number = 0;
+    private _iconsCache = {};
 
     constructor() {
         super();
@@ -138,24 +140,28 @@ export class TabView extends common.TabView {
 
         var i: number;
         var length = newItems.length;
-        var newItem: definition.TabViewItem;
+        var item: definition.TabViewItem;
         var newControllers: NSMutableArray = NSMutableArray.alloc().initWithCapacity(length);
         var newController: UIViewController;
 
         for (i = 0; i < length; i++) {
-            newItem = newItems[i];
+            item = newItems[i];
 
-            this._addView(newItem.view);
+            this._addView(item.view);
 
-            if (newItem.view.ios instanceof UIViewController) {
-                newController = <UIViewController>newItem.view.ios;
+            if (item.view.ios instanceof UIViewController) {
+                newController = <UIViewController>item.view.ios;
             } else {
                 newController = new UIViewController();
-                newController.view.addSubview(newItem.view.ios);
+                newController.view.addSubview(item.view.ios);
             }
 
-            newController.tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(newItem.title, null, -1);
-            newController.tabBarItem.setTitlePositionAdjustment({ horizontal: 0, vertical: -20 });
+            var icon = this._getIcon(item.iconSource);
+            newController.tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title, icon, i);
+            if (!icon) {
+                newController.tabBarItem.setTitlePositionAdjustment({ horizontal: 0, vertical: -20 });
+            }
+
             newControllers.addObject(newController);
         }
 
@@ -164,6 +170,25 @@ export class TabView extends common.TabView {
 
         // When we set this._ios.viewControllers, someone is clearing the moreNavigationController.delegate, so we have to reassign it each time here.
         this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
+    }
+
+    private _getIcon(iconSource: string): UIImage {
+        if (!iconSource) {
+            return null;
+        }
+
+        var image: UIImage;
+        image = this._iconsCache[iconSource];
+        if (!image) {
+            var is = imageSource.fromFileOrResource(iconSource);
+            if (is && is.ios) {
+                is.ios.renderingMode = UIImageRenderingMode.UIImageRenderingModeAlwaysOriginal;
+                this._iconsCache[iconSource] = is.ios;
+                image = is.ios;
+            }
+        }
+
+        return image;
     }
 
     public _onSelectedIndexPropertyChangedSetNativeValue(data: dependencyObservable.PropertyChangeData) {
