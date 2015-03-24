@@ -3,6 +3,7 @@ import definition = require("ui/tab-view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
 import trace = require("trace");
+import imageSource = require("image-source");
 
 var VIEWS_STATES = "_viewStates";
 
@@ -141,6 +142,7 @@ export class TabView extends common.TabView {
     private _tabsAddedByMe = new Array<android.app.ActionBar.Tab>();
     private _tabsCache = {};
     private _androidViewId: number;
+    private _iconsCache = {};
 
     constructor() {
         super();
@@ -358,12 +360,33 @@ export class TabView extends common.TabView {
             item = newItems[i];
             tab = actionBar.newTab();
             tab.setText(item.title);
+            this._setIcon(item.iconSource, tab);
 
             tab.setTabListener(this._tabListener);
 
             actionBar.addTab(tab);
             this._tabsCache[tab.hashCode()] = i;
             this._tabsAddedByMe.push(tab);
+        }
+    }
+
+    private _setIcon(iconSource: string, tab: android.app.ActionBar.Tab): void {
+        if (!iconSource) {
+            return;
+        }
+        
+        var drawable: android.graphics.drawable.BitmapDrawable;
+        drawable = this._iconsCache[iconSource];
+        if (!drawable) {
+            var is = imageSource.fromFileOrResource(iconSource);
+            if (is) {
+                drawable = new android.graphics.drawable.BitmapDrawable(is.android);
+                this._iconsCache[iconSource] = drawable;
+            }
+        }
+        
+        if (drawable) {
+            tab.setIcon(drawable);
         }
     }
 

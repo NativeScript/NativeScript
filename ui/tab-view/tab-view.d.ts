@@ -18,6 +18,11 @@ declare module "ui/tab-view" {
          * Gets or sets the view of the TabViewItem.
          */
         view: view.View;
+        
+        /**
+         * Gets or sets the icon source of the TabViewItem. This could either be a a file name or resource id.
+         */
+        iconSource?: string;
     }
 
     /**
