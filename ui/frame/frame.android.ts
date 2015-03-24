@@ -7,6 +7,7 @@ import utils = require("utils/utils");
 import view = require("ui/core/view");
 import application = require("application");
 import imageSource = require("image-source");
+import enums = require("ui/enums");
 
 declare var exports;
 require("utils/module-merge").merge(frameCommon, exports);
@@ -143,14 +144,29 @@ class PageFragmentBody extends android.app.Fragment {
 
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
-            var menuItem = menu.add(android.view.Menu.NONE, i, item.priority, item.text);
+            var menuItem = menu.add(android.view.Menu.NONE, i, android.view.Menu.NONE, item.text);
             if (item.icon) {
-                var img = imageSource.fromFile(item.icon);
+                var img = imageSource.fromResource(item.icon);
                 var drawable = new android.graphics.drawable.BitmapDrawable(img.android);
                 menuItem.setIcon(drawable);
             }
 
-            menuItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS);
+            var showAsAction = PageFragmentBody.getShowAsAction(item);
+            menuItem.setShowAsAction(showAsAction);
+        }
+    }
+
+    private static getShowAsAction(menuItem: pages.MenuItem): number {
+        switch (menuItem.android.position) {
+            case enums.MenuItemPosition.actionBarIfRoom:
+                return android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM;
+
+            case enums.MenuItemPosition.popup:
+                return android.view.MenuItem.SHOW_AS_ACTION_NEVER;
+
+            case enums.MenuItemPosition.actionBar:
+            default:
+                return android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
         }
     }
 
@@ -462,7 +478,7 @@ class NativeActivity extends com.tns.NativeScriptActivity {
         trace.write("NativeScriptActivity.onDestroy();", trace.categories.NativeLifecycle);
     }
 
-    onOptionsItemSelected(menuItem) {
+    onOptionsItemSelected(menuItem: android.view.IMenuItem) {
         if (!this.androidFrame.hasListeners(frameCommon.knownEvents.android.optionSelected)) {
             return false;
         }
@@ -638,10 +654,11 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
         trace.write("Current page matches fragment: " + fragmentTag, trace.categories.NativeLifecycle);
     }
     else {
-        for (var i = 0; i < frame.backStack.length; i++) {
-            entry = frame.backStack[i];
-            if (frame.backStack[i].resolvedPage[TAG] === fragmentTag) {
-                entry = frame.backStack[i];
+        var backStack = frame.backStack;
+        for (var i = 0; i < backStack.length; i++) {
+            entry = backStack[i];
+            if (backStack[i].resolvedPage[TAG] === fragmentTag) {
+                entry = backStack[i];
                 break;
             }
         }

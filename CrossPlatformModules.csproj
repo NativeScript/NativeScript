@@ -513,10 +513,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\text-view\text-view.d.ts" />
     <TypeScriptCompile Include="utils\android_constants.ts" />
-    <TypeScriptCompile Include="utils\containers.d.ts" />
-    <TypeScriptCompile Include="utils\containers.ts">
-      <DependentUpon>containers.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="utils\module-merge.ts" />
     <TypeScriptCompile Include="utils\utils.android.ts">
       <DependentUpon>utils.d.ts</DependentUpon>

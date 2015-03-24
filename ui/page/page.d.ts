@@ -6,6 +6,9 @@ declare module "ui/page" {
     import view = require("ui/core/view");
     import contentView = require("ui/content-view");
     import frame = require("ui/frame");
+    import dependencyObservable = require("ui/core/dependency-observable");
+    import bindable = require("ui/core/bindable");
+
     //@private
     import styleScope = require("ui/styling/style-scope");
     //@endprivate
@@ -96,17 +99,20 @@ declare module "ui/page" {
          */
         onNavigatedFrom(isBackNavigation: boolean): void;
 
-        //@private
-        _getStyleScope(): styleScope.StyleScope;
-        _addArrayFromBuilder(name: string, value: Array<any>): void;
-        //@endprivate
-
+        /**
+         * Raised when navigation to the page is finished.
+         */
         on(event: string, callback: (data: observable.EventData) => void);
 
         /**
          * Raised when navigation to the page is finished.
          */
         on(event: "navigatedTo", callback: (args: NavigatedData) => void);
+
+        //@private
+        _getStyleScope(): styleScope.StyleScope;
+        _addArrayFromBuilder(name: string, value: Array<any>): void;
+        //@endprivate
     }
 
     /**
@@ -136,17 +142,36 @@ declare module "ui/page" {
         getItemAt(index: number): MenuItem;
     }
 
-    export class MenuItem extends observable.Observable {
+    export class MenuItem extends bindable.Bindable {
+
+        /**
+         * Represents the observable property backing the text property.
+         */
+        public static textProperty: dependencyObservable.Property;
+
+        /**
+         * Represents the observable property backing the icon property.
+         */
+        public static iconProperty: dependencyObservable.Property;
+
         text: string;
         icon: string;
-        priority: number;
-
+        android: AndroidMenuItemOptions;
         on(event: string, callback: (data: observable.EventData) => void);
         on(event: "tap", callback: (args: observable.EventData) => void);
 
         //@private
-        _raiseTap();
+        _raiseTap(): void;
         //@endprivate
     }
-} 
 
+    interface AndroidMenuItemOptions {
+
+        /**
+         * Specify if android menuItem should appear in the actionBar or in the popup.
+         * Use values from enums MenuItemPosition.
+         * Changes after menuItem is created are not supported.
+         */
+        position: string;
+    }
+}

@@ -86,6 +86,18 @@ export module AutocapitalizationType {
     export var allCharacters: string = "allCharacters";
 }
 
+export module NavigationBarVisibility {
+    export var auto: string = "auto";
+    export var never: string = "never";
+    export var always: string = "always";
+}
+
+export module MenuItemPosition {
+    export var actionBar: string = "actionBar";
+    export var actionBarIfRoom: string = "actionBarIfRoom";
+    export var popup: string = "popup";
+}
+
 export module ImageFormat {
     export var png: string = "png";
     export var jpeg: string = "jpeg";

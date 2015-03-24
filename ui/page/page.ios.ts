@@ -3,7 +3,8 @@ import definition = require("ui/page");
 import viewModule = require("ui/core/view");
 import trace = require("trace");
 
-module.exports.knownEvents = pageCommon.knownEvents;
+declare var exports;
+require("utils/module-merge").merge(pageCommon, exports);
 
 class UIViewControllerImpl extends UIViewController {
     static new(): UIViewControllerImpl {
@@ -29,7 +30,6 @@ class UIViewControllerImpl extends UIViewController {
     }
 }
 
-/* tslint:enable */
 export class Page extends pageCommon.Page {
     private _ios: UIViewController;
 
@@ -65,7 +65,7 @@ export class Page extends pageCommon.Page {
                 (<UIViewController>view.ios).removeFromParentViewController();
                 (<UIViewController>view.ios).view.removeFromSuperview();
             }
-    }
+        }
     }
 
     get ios(): UIViewController {

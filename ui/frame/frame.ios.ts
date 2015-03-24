@@ -1,6 +1,9 @@
 ﻿import frameCommon = require("ui/frame/frame-common");
 import definition = require("ui/frame");
 import trace = require("trace");
+import imageSource = require("image-source");
+import pages = require("ui/page");
+import enums = require("ui/enums");
 
 declare var exports;
 require("utils/module-merge").merge(frameCommon, exports);
@@ -12,6 +15,7 @@ var navDepth = 0;
 export class Frame extends frameCommon.Frame {
     private _ios: iOSFrame;
     private _paramToNavigate: any;
+    public shouldSkipNativePop: boolean = false;
 
     constructor() {
         super();
@@ -35,7 +39,7 @@ export class Frame extends frameCommon.Frame {
             this._paramToNavigate = param;
         }
     }
-
+    
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
         var viewController = backstackEntry.resolvedPage.ios;
         if (!viewController) {
@@ -47,9 +51,7 @@ export class Frame extends frameCommon.Frame {
             animated = this._getIsAnimatedNavigation(backstackEntry.entry);
         }
 
-        if (this.backStack.length > 0) {
-            this._ios.showNavigationBar = true;
-        }
+        this.updateNavigationBar();
 
         viewController[ENTRY] = backstackEntry;
 
@@ -61,17 +63,29 @@ export class Frame extends frameCommon.Frame {
     public _goBackCore(entry: definition.NavigationEntry) {
         navDepth--;
         trace.write("Frame<" + this._domId + ">.popViewControllerAnimated depth = " + navDepth, trace.categories.Navigation);
-
-        this._ios.controller.allowPop = true;
-        this._ios.controller.popViewControllerAnimated(this._getIsAnimatedNavigation(entry));
-        this._ios.controller.allowPop = false;
-
-        if (this.backStack.length === 0) {
-            this._ios.showNavigationBar = false;
+        if (!this.shouldSkipNativePop) {
+            this._ios.controller.popViewControllerAnimated(this._getIsAnimatedNavigation(entry));
         }
     }
 
-    public get ios(): any {
+    public updateNavigationBar(page?: pages.Page): void {
+        switch (this._ios.navBarVisibility) {
+            case enums.NavigationBarVisibility.always:
+                this._ios.showNavigationBar = true;
+                break;
+
+            case enums.NavigationBarVisibility.never:
+                this._ios.showNavigationBar = false;
+                break;
+
+            case enums.NavigationBarVisibility.auto:
+                var pageInstance: pages.Page = page || this.currentPage;
+                this._ios.showNavigationBar = this.backStack.length > 0 || (pageInstance && pageInstance.optionsMenu.getItems().length > 0);
+                break;
+        }
+    }
+
+    public get ios(): iOSFrame {
         return this._ios;
     }
 
@@ -122,9 +136,41 @@ export class Frame extends frameCommon.Frame {
         var navigationBar = this._ios.controller.navigationBar;
         return (navigationBar && !this._ios.controller.navigationBarHidden) ? navigationBar.frame.size.height : 0;
     }
+
+    public _invalidateOptionsMenu() {
+        this.populateMenuItems(this.currentPage);
+    }
+
+    populateMenuItems(page: pages.Page) {
+        var items = page.optionsMenu.getItems();
+
+        var navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
+        var array: NSMutableArray = items.length > 0 ? NSMutableArray.new() : null;
+
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            var tapHandler = TapBarItemHandlerImpl.new().initWithOwner(item);
+            // associate handler with menuItem or it will get collected by JSC.
+            (<any>item).handler = tapHandler;
+
+            var barButtonItem: UIBarButtonItem;
+            if (item.icon) {
+                var img = imageSource.fromResource(item.icon);
+                barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img.ios, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
+            }
+            else {
+                barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
+            }
+
+            array.addObject(barButtonItem);
+        }
+
+        if (array) {
+            navigationItem.setRightBarButtonItemsAnimated(array, true);
+        }
+    }
 }
 
-/* tslint:disable */
 class UINavigationControllerImpl extends UINavigationController implements UINavigationControllerDelegate {
     public static ObjCProtocols = [UINavigationControllerDelegate];
 
@@ -132,21 +178,13 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         return <UINavigationControllerImpl>super.new();
     }
 
-    private _owner: frameCommon.Frame;
-    
-    public initWithOwner(owner: frameCommon.Frame): UINavigationControllerImpl {
+    private _owner: Frame;
+
+    public initWithOwner(owner: Frame): UINavigationControllerImpl {
         this._owner = owner;
         return this;
     }
 
-    private _allowPop: boolean;
-    public get allowPop(): boolean {
-        return this._allowPop;
-    }
-    public set allowPop(value: boolean) {
-        this._allowPop = value;
-    }
-    
     public viewDidLoad(): void {
         this.view.autoresizesSubviews = false;
         this.view.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
@@ -158,39 +196,37 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         this._owner._updateLayout();
     }
 
-    public popViewControllerAnimated(animated: boolean): UIViewController {
-        if (this.allowPop) {
-            return super.popViewControllerAnimated(animated);
-        }
-        else {
-            var currentControler = this._owner.currentPage.ios;
-            this._owner.goBack();
-            return currentControler;
-        }
-    }
+    public navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
 
-    public navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        var frame = this._owner;
+        var frame: Frame = this._owner;
+        var backStack = frame.backStack;
+        var currentEntry = backStack.length > 0 ? backStack[backStack.length - 1] : null;
+        var newEntry: definition.BackstackEntry = viewController[ENTRY];
+
+        if (newEntry === currentEntry && currentEntry) {
+            try {
+                frame.shouldSkipNativePop = true;
+                frame.goBack();
+            }
+            finally {
+                frame.shouldSkipNativePop = false;
+            }
+        }
+
         var page = frame.currentPage;
         if (page) {
             frame._removeView(page);
         }
 
-        var newEntry: definition.BackstackEntry = viewController[ENTRY];
         var newPage = newEntry.resolvedPage;
 
         frame._currentEntry = newEntry;
         frame._addView(newPage);
-
+        frame.populateMenuItems(newPage);
+        frame.updateNavigationBar();
+        
         // notify the page
         newPage.onNavigatedTo(newEntry.entry.context);
-    }
-
-    public navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        var frame: frameCommon.Frame = this._owner;
-        var newEntry: definition.BackstackEntry = viewController[ENTRY];
-        var newPage = newEntry.resolvedPage;
-
         frame._processNavigationQueue(newPage);
     }
 
@@ -199,16 +235,19 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
     }
 }
 
+/* tslint:disable */
 class iOSFrame implements definition.iOSFrame {
-    /* tslint:enable */
+/* tslint:enable */
     private _controller: UINavigationControllerImpl;
     private _showNavigationBar: boolean;
+    private _navBarVisibility: string;
 
-    constructor(owner: frameCommon.Frame) {
+    constructor(owner: Frame) {
         this._controller = UINavigationControllerImpl.new().initWithOwner(owner);
         this._controller.delegate = this._controller;
         this._controller.automaticallyAdjustsScrollViewInsets = false;
         this.showNavigationBar = false;
+        this._navBarVisibility = enums.NavigationBarVisibility.auto;
     }
 
     public get controller() {
@@ -222,4 +261,32 @@ class iOSFrame implements definition.iOSFrame {
         this._showNavigationBar = value;
         this._controller.navigationBarHidden = !value;
     }
-} 
+
+    public get navBarVisibility(): string {
+        return this._navBarVisibility;
+    }
+    public set navBarVisibility(value: string) {
+        this._navBarVisibility = value;
+    }
+}
+
+class TapBarItemHandlerImpl extends NSObject {
+    static new(): TapBarItemHandlerImpl {
+        return <TapBarItemHandlerImpl>super.new();
+    }
+
+    private _owner: pages.MenuItem;
+
+    public initWithOwner(owner: pages.MenuItem): TapBarItemHandlerImpl {
+        this._owner = owner;
+        return this;
+    }
+
+    public tap(args) {
+        this._owner._raiseTap();
+    }
+
+    public static ObjCExposedMethods = {
+        "tap": { returns: interop.types.void, params: [interop.types.id] }
+    };
+}

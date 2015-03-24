@@ -20,7 +20,6 @@ class TapHandlerImpl extends NSObject {
     public static ObjCExposedMethods = {
         "tap": { returns: interop.types.void, params: [interop.types.id] }
     };
-
 }
 
 // merge the exports of the common file with the exports of this file

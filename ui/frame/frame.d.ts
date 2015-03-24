@@ -145,7 +145,7 @@ declare module "ui/frame" {
         /**
          * Gets the Android-specific menu item that has been selected.
          */
-        item: android.view.MenuItem;
+        item: android.view.IMenuItem;
 
         /**
          * True to mark the event as handled (that is to prevent the default processing).
@@ -207,6 +207,12 @@ declare module "ui/frame" {
          * Gets the native [UINavigationController](https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UINavigationController_Class/index.html) instance associated with this Frame.
          */
         controller: UINavigationController;
+
+        /**
+         * Gets or sets the visibility of navigationBar.
+         * Use NavBarVisibility enumeration - auto, never, always
+         */
+        navBarVisibility: string;
     }
 
     /**

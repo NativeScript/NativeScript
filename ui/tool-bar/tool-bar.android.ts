@@ -1,7 +1,6 @@
 ﻿import common = require("ui/tool-bar/tool-bar-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import types = require("utils/types");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;

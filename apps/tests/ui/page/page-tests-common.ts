@@ -34,6 +34,73 @@ export function addLabelToPage(page: PageModule.Page, text?: string) {
     page.content = label;
 }
 
+export function test_menuItem_inherit_bindingContext() {
+
+    var page: PageModule.Page;
+    var label: LabelModule.Label;
+    var context = { text: "item" };
+
+    var pageFactory = function (): PageModule.Page {
+        page = new PageModule.Page();
+        page.bindingContext = context;
+        var menuItem = new PageModule.MenuItem();
+
+        menuItem.bind({
+            sourceProperty: "text",
+            targetProperty: "text"
+        });
+
+        page.optionsMenu.addItem(menuItem);
+
+        label = new LabelModule.Label();
+        label.text = "Text";
+        page.content = label;
+        return page;
+    };
+
+    helper.navigate(pageFactory);
+
+    try {
+        TKUnit.assertEqual(page.optionsMenu.getItemAt(0).text, "item", "menuItem.text should equal to 'item'");
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_Setting_OptionsMenu_doesnt_thrown() {
+
+    var page: PageModule.Page;
+    var label: LabelModule.Label;
+    var gotException = false;
+
+    var pageFactory = function (): PageModule.Page {
+        page = new PageModule.Page();
+        var menuItem = new PageModule.MenuItem();
+        menuItem.text = "Item";
+        page.optionsMenu.addItem(menuItem);
+
+        label = new LabelModule.Label();
+        label.text = "Text";
+        page.content = label;
+        return page;
+    };
+
+    try {
+        helper.navigate(pageFactory);
+    }
+    catch (e) {
+        gotException = true;
+    }
+
+    try {
+        TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
 export function test_AfterPageLoaded_is_called_NativeInstance_is_created() {
 
     var page: PageModule.Page;

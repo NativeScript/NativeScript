@@ -270,7 +270,7 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
     }
 
     get backStack(): Array<definition.BackstackEntry> {
-        return this._backStack;
+        return this._backStack.slice();
     }
 
     get currentPage(): pages.Page {

@@ -6,7 +6,9 @@ import styleScope = require("ui/styling/style-scope");
 import fs = require("file-system");
 import fileSystemAccess = require("file-system/file-system-access");
 import trace = require("trace");
-import observable = require("data/observable");
+import bindable = require("ui/core/bindable");
+import dependencyObservable = require("ui/core/dependency-observable");
+import enums = require("ui/enums");
 
 var OPTIONS_MENU = "optionsMenu";
 
@@ -171,6 +173,12 @@ export class OptionsMenu implements dts.OptionsMenu {
         }
 
         this._items.push(item);
+        item.menu = this;
+        item.bind({
+            sourceProperty: "bindingContext",
+            targetProperty: "bindingContext"
+        }, this._page);
+
         this.invalidate();
     }
 
@@ -184,6 +192,8 @@ export class OptionsMenu implements dts.OptionsMenu {
             throw new Error("Cannot find item to remove");
         }
 
+        item.menu = undefined;
+        item.unbind("bindingContext");
         this._items.splice(itemIndex, 1);
         this.invalidate();
     }
@@ -201,19 +211,60 @@ export class OptionsMenu implements dts.OptionsMenu {
         this.invalidate();
     }
 
-    private invalidate() {
+    invalidate() {
         if (this._page.frame) {
             this._page.frame._invalidateOptionsMenu();
         }
     }
 }
 
-export class MenuItem extends observable.Observable implements dts.MenuItem {
-    public text: string = "";
-    public icon: string;
-    public priority: number = 0;
+export class MenuItem extends bindable.Bindable implements dts.MenuItem {
+
+    public static textProperty = new dependencyObservable.Property(
+        "text", "MenuItem", new dependencyObservable.PropertyMetadata("", null, MenuItem.onItemChanged));
+
+    public static iconProperty = new dependencyObservable.Property(
+        "icon", "MenuItem", new dependencyObservable.PropertyMetadata(null, null, MenuItem.onItemChanged));
+
+    private static onItemChanged(data: dependencyObservable.PropertyChangeData) {
+        var menuItem = <MenuItem>data.object;
+        if (menuItem.menu) {
+            menuItem.menu.invalidate();
+        }
+    }
+
+    private _android: dts.AndroidMenuItemOptions;
+
+    constructor() {
+        super();
+        if (global.android) {
+            this._android = {
+                position: enums.MenuItemPosition.actionBar
+            };
+        }
+    }
+    
+    get android(): dts.AndroidMenuItemOptions {
+        return this._android;
+    }
+
+    get text(): string {
+        return this._getValue(MenuItem.textProperty);
+    }
+    set text(value: string) {
+        this._setValue(MenuItem.textProperty, value);
+    }
+
+    get icon(): string {
+        return this._getValue(MenuItem.iconProperty);
+    }
+    set icon(value: string) {
+        this._setValue(MenuItem.iconProperty, value);
+    }
 
     public _raiseTap() {
         this._emit(knownEvents.tap);
     }
+
+    menu: OptionsMenu;
 }

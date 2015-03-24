@@ -1,7 +1,7 @@
 <Page loaded="pageLoaded">
   <Page.optionsMenu>
-    <MenuItem text="test" tap="optionTap"/>
-    <MenuItem text="with icon" tap="optionTap" icon="~/app/test-icon.png"/>
+    <MenuItem text="test" tap="optionTap" android.position="popup" />
+    <MenuItem text="with icon" tap="optionTap" icon="~/app/test-icon.png" android.position="actionBar" />
   </Page.optionsMenu>
   <StackLayout>
     <Button text="button" />
