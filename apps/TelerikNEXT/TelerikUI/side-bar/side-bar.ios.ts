@@ -85,6 +85,13 @@ export class SideBar extends common.SideBar {
 
         this.ios.viewController = frame.topmost().currentPage.ios;
     }
+
+    public onUnloaded() {
+        this.parent._removeView(this._mainContentHost);
+        this._removeView(this._slideContentHost);
+
+        super.onUnloaded();
+    }
     
     public _onBindingContextChanged(oldValue: any, newValue: any) {
         super._onBindingContextChanged(oldValue, newValue);
