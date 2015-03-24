@@ -18,5 +18,5 @@ export function imageLoaded(args: observable.EventData) {
 }
 
 export function loginButtonTap(args: observable.EventData) {
-    frames.topmost().navigate("app/news");
+    frames.topmost().navigate("news");
 }
