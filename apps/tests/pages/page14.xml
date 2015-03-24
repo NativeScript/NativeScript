@@ -7,6 +7,6 @@
     <Image src="http://www.google.com/images/errors/logo_sm_2.png" stretch="none" horizontalAlignment="left"/>
     
     <Label text="app file:" />
-    <Image  src="~/app/logo.png" stretch="none" horizontalAlignment="left" />
+    <Image  src="~/logo.png" stretch="none" horizontalAlignment="left" />
   </StackLayout>
 </Page>

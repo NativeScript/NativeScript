@@ -13,7 +13,7 @@ export var test_DummyTestForSnippetOnly0 = function () {
     // <snippet module="ui/frame" title="frame">
     // ### Navigating to a Module
     // ``` JavaScript
-    topmost.navigate("app/details-page");
+    topmost.navigate("details-page");
     // ```
     // </snippet>
 }
@@ -39,7 +39,7 @@ export var test_DummyTestForSnippetOnly2 = function () {
     // ### Navigating with NavigationEntry
     // ``` JavaScript
     var navigationEntry = {
-        moduleName: "app/details-page",
+        moduleName: "details-page",
         context: { info: "something you want to pass to your page" },
         animated: false
     };

@@ -11,7 +11,7 @@ export function createPage() {
     var btn = new button.Button();
     btn.text = "Page A ???";
     btn.on(button.knownEvents.tap, function () {
-        var newPage = "app/tests/pages/navigation/pageA";
+        var newPage = "tests/pages/navigation/pageA";
         frame.topmost().navigate(newPage);
     });
     stack.addChild(btn);
