@@ -11,6 +11,7 @@ dist/
 
 !gruntfile.js
 !js-libs/**/*.*
+!apps/TelerikNEXT/lib/**/*.*
 CrossPlatformModules.sln.ide/
 *.suo
 CrossPlatformModules.suo
