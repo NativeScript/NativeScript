@@ -13,6 +13,16 @@ export module knownEvents {
 export class Observable implements definition.Observable {
     private _observers = {};
 
+    constructor(json?: any) {
+        if (json) {
+            for (var prop in json) {
+                if (json.hasOwnProperty(prop)) {
+                    this.set(prop, json[prop]);
+                }
+            }
+        }
+    }
+
     get typeName(): string {
         return types.getClass(this);
     }

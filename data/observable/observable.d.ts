@@ -44,6 +44,12 @@ declare module "data/observable" {
      * Observable is used when you want to be notified when a change occurs. Use on/off methods to add/remove listener.
      */
     class Observable {
+
+        /**
+         * Creates an Observable instance and sets its properties accroding to the supplied JSON object.
+         */
+        constructor(json?: any);
+
         /**
          * Gets the name of the constructor function for this instance. E.g. for a Button class this will return "Button".
          */
