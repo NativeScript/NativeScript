@@ -20,7 +20,7 @@
       <TabViewItem title="About">
         <TabViewItem.view>
           <StackLayout>
-            <Image margin="10" src="~/app/res/telerik-logo.png" />
+            <Image margin="10" src="~/res/telerik-logo.png" />
             <Label margin="10" textWrap="true" text="{{ aboutText }}" />
           </StackLayout>
         </TabViewItem.view>
