@@ -5,7 +5,6 @@ import frame = require("ui/frame");
 import styleScope = require("ui/styling/style-scope");
 import fs = require("file-system");
 import fileSystemAccess = require("file-system/file-system-access");
-import trace = require("trace");
 import bindable = require("ui/core/bindable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
