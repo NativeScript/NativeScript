@@ -1,14 +1,15 @@
-﻿
-import timer = require("timer");
-import locationManagerModule = require("location/location-manager");
+﻿import timer = require("timer");
+//import locationManagerModule = require("location/location-manager");
 import defModule = require("location");
 
 // merge the exports of the types module with the exports of this file
-import merger = require("utils/module-merge");
-declare var exports;
-merger.merge(locationManagerModule, exports);
+//import merger = require("utils/module-merge");
+//declare var exports;
+//merger.merge(locationManagerModule, exports);
 
-export class Location {
+var defaultGetLocationTimeout = 20000;
+
+export class Location implements defModule.Location {
     public latitude: number;
     public longitude: number;
 
@@ -29,7 +30,7 @@ export class Location {
 
 export var getLocation = function (options?: defModule.Options): Promise<defModule.Location> {
     var timerId;
-    var locationManager = new locationManagerModule.LocationManager();
+    var locationManager = new defModule.LocationManager();
 
     if (options && (0 === options.timeout)) {
         return new Promise<defModule.Location>((resolve, reject) => {
@@ -54,7 +55,7 @@ export var getLocation = function (options?: defModule.Options): Promise<defModu
     }
 
     return new Promise<defModule.Location>((resolve, reject) => {
-        if (!locationManagerModule.LocationManager.isEnabled()) {
+        if (!defModule.LocationManager.isEnabled()) {
             return reject(new Error("Location service is disabled"));
         }
         locationManager.startLocationMonitoring(function (location: defModule.Location) {
@@ -89,7 +90,7 @@ export var getLocation = function (options?: defModule.Options): Promise<defModu
             timerId = timer.setTimeout(function () {
                 locationManager.stopLocationMonitoring();
                 reject(new Error("timeout searching for location"));
-            }, options.timeout);
+            }, options.timeout || defaultGetLocationTimeout);
         }
     });
 }

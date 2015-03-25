@@ -1,8 +1,0 @@
-﻿<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded">
-    <StackLayout padding="7">
-        <!--<TextField text="{{ tasks.length, tasks.length === 0 ? 'zero items' : tasks.length + ' items', false }}" />-->
-        <TextField text="{{ testDate, testDate | dateConverter('dd.mm.yyyy') }}" updateTextTrigger="textChanged"/>
-        <TextField text="{{ testDate }}" />
-        <Button text="Click" tap="onTap" />
-    </StackLayout>
-</Page>
