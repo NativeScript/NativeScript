@@ -46,7 +46,9 @@ We love PRs! Please follow our [contribution guide](https://www.nativescript.org
 - **Web site** - [http://nativescript.org](http://nativescript.org)
 - **Twitter** - [@NativeScript](http://twitter.com/NativeScript) 
 - **Blog** - [http://nativescript.org/blog](http://nativescript.org/blog)
-- **Forum** - [General discussion](http://www.telerik.com/forums/nativescript/general-discussions)
+- **Forum** - [General discussion](https://groups.google.com/forum/#!forum/nativescript)
+- **StackOverflow** - [http://stackoverflow.com/questions/tagged/nativescript](http://stackoverflow.com/questions/tagged/nativescript)
+- **IRC Chatroom** - [http://webchat.freenode.net/?channels=nativescript](http://webchat.freenode.net/?channels=nativescript)
 
 ## Most popular repositories:
 - **[Cross-Platform Modules](//github.com/NativeScript/cross-platform-modules/)** - Stores the code of the cross-platform modules, written in TypeScript
