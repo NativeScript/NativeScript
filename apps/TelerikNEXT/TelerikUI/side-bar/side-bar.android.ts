@@ -37,7 +37,7 @@ function onSlideContentWidthPropertyChanged(data: dependencyObservable.PropertyC
 
 export class SideBar extends common.SideBar {
     public _createUI() {
-        this._android = new com.telerik.android.primitives.widget.sidedrawer.SideDrawer(this._context);
+        this._android = new com.telerik.android.primitives.widget.sidedrawer.RadSideDrawer(this._context);
         this._android.setDrawerSize(utils.layout.getDisplayDensity() * 280);
 
         if (this.mainContent instanceof view.View) {
