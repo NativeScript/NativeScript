@@ -1,6 +1,6 @@
 <Page xmlns="http://www.nativescript.org/tns.xsd" loaded="MyPageLoaded"
-      xmlns:customControls="app/xml-declaration/mymodule"
-      xmlns:customControls2="app/xml-declaration/mymodulewithxml">
+      xmlns:customControls="xml-declaration/mymodule"
+      xmlns:customControls2="xml-declaration/mymodulewithxml">
   <TabView>
     <TabView.items>
       <TabViewItem title="Tab 1">

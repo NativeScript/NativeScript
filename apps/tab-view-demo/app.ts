@@ -1,6 +1,6 @@
 ﻿import application = require("application");
 
-application.mainModule = "app/mainPage";
+application.mainModule = "mainPage";
 
 import trace = require("trace");
 trace.enable();

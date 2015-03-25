@@ -477,7 +477,7 @@ export var testLocalTextAlignmentFromCssWhenAddingCssFileAllSelectorsAreApplied 
         view.id = "testLabel";
         var page = <page.Page>views[1];
         page.addCss("#testLabel { text-align: " + expectedTextAlignment + "; }");
-        page.addCssFile("/app/tests/ui/label/label-tests.css");
+        page.addCssFile("/tests/ui/label/label-tests.css");
 
         var actualResult = view.style.textAlignment;
         // actual result is taken from #testLabel tag, because it has a greater priority (id vs type).
@@ -513,7 +513,7 @@ export var testErrorMessageWhenWrongCssIsAddedWithFile = function () {
         view.id = "testLabel";
         var page = <page.Page>views[1];
         errorMessage = undefined;   
-        page.addCssFile("/app/tests/ui/label/label-tests-wrong.css");
+        page.addCssFile("/tests/ui/label/label-tests-wrong.css");
 
         TKUnit.assertNotEqual(errorMessage, undefined);
     });

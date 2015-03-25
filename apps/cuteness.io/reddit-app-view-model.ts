@@ -8,8 +8,8 @@ import redditModel = require("./reddit-model");
 import redditViewModel = require("./reddit-item-view-model");
 
 var aboutText = "Cuteness is a proof of concept app demonstrating the Telerik's NativeScript for writing native mobile applications using JavaScript.";
-export var defaultThumbnailImageSource = imageSource.fromFile("~/app/res/reddit-logo.png");
-export var defaultNoThumbnailImageSource = imageSource.fromFile("~/app/res/no-image.png");
+export var defaultThumbnailImageSource = imageSource.fromFile("~/res/reddit-logo.png");
+export var defaultNoThumbnailImageSource = imageSource.fromFile("~/res/no-image.png");
 
 var redditUrl = "http://www.reddit.com/r/aww.json?limit=";
 var after: string;

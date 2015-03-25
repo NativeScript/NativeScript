@@ -16,7 +16,7 @@ export function pageLoaded(args: observable.EventData) {
 export function listViewItemTap(args: listView.ItemEventData) {
     // Navigate to the details page with context set to the current data item
     if (!twoPaneLayout) {
-        frames.topmost().navigate("app/details-page");
+        frames.topmost().navigate("details-page");
     }
 
     vmModule.mainViewModel.set("selectedItem", args.view.bindingContext);

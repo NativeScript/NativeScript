@@ -10,7 +10,7 @@ trace.enable();
 trace.setCategories(trace.categories.Test);
 
 export function createPage() {
-    var basePath = "app/pages/";
+    var basePath = "pages/";
     var txtInput = new text.TextView();
 
     var btn = new button.Button();

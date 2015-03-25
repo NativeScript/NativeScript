@@ -1,3 +1,3 @@
 ﻿import application = require("application");
-application.mainModule = "app/main-page";
+application.mainModule = "main-page";
 application.start();

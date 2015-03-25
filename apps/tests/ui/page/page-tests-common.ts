@@ -237,7 +237,7 @@ export var test_FrameBackStack_WhenNavigatingForwardAndBack = function () {
 }
 
 export var test_LoadPageFromModule = function () {
-    helper.navigateToModule("app/ui/page/test-page-module");
+    helper.navigateToModule("ui/page/test-page-module");
     try {
         var topFrame = FrameModule.topmost();
         TKUnit.assert(topFrame.currentPage.content instanceof LabelModule.Label, "Content of the test page should be a Label created within test-page-module.");

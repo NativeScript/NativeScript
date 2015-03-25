@@ -10,5 +10,5 @@ trace.setCategories(trace.categories.concat(
 //, trace.categories.VisualTreeEvents
     ));
 
-application.mainModule = "app/styling/mainPage";
+application.mainModule = "styling/mainPage";
 application.start();

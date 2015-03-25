@@ -1,4 +1,4 @@
-﻿import definition = require("app/controls-page");
+﻿import definition = require("controls-page");
 import frameModule = require("ui/frame");
 import pagesModule = require("ui/page");
 import stackLayoutModule = require("ui/layouts/stack-layout");

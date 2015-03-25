@@ -12,7 +12,7 @@ export function createPage() {
     newActivity.text = "start activity";
     newActivity.on(button.knownEvents.tap, function () {
         var newFrame = new frame.Frame();
-        var newPage = "app/tests/pages/navigation/pageA-new-activity";
+        var newPage = "tests/pages/navigation/pageA-new-activity";
         newFrame.navigate(newPage);
     });
     stack.addChild(newActivity);
@@ -20,7 +20,7 @@ export function createPage() {
     var btn = new button.Button();
     btn.text = "Page A ???";
     btn.on(button.knownEvents.tap, function () {
-        var nextPage = "app/tests/pages/navigation/pageA";
+        var nextPage = "tests/pages/navigation/pageA";
         frame.topmost().navigate(nextPage);
     });
     stack.addChild(btn);

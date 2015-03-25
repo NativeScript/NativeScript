@@ -2,7 +2,7 @@ import pagesModule = require("ui/page");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import buttonModule = require("ui/button");
 import labelModule = require("ui/label");
-import nativeCallsWrapper = require("app/native-calls-wrapper");
+import nativeCallsWrapper = require("native-calls-wrapper");
 import enums = require("ui/enums");
 
 export function createPage() {

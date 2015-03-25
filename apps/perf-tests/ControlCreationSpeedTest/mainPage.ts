@@ -3,7 +3,7 @@ import stackLayoutModule = require("ui/layouts/stack-layout");
 import buttonModule = require("ui/button");
 import labelModule = require("ui/label");
 import frameModule = require("ui/frame");
-import controlsPageModule = require("app/controls-page");
+import controlsPageModule = require("controls-page");
 import enums = require("ui/enums");
 
 export function createPage() {

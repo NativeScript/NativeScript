@@ -1,2 +1,2 @@
 ﻿import application = require("application");
-application.mainModule = "app/LargeObjectArrayMemoryLeakTest/mainPage";
+application.mainModule = "LargeObjectArrayMemoryLeakTest/mainPage";

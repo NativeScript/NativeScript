@@ -17,7 +17,7 @@ export function createPage() {
     var btn = new button.Button();
     btn.text = "Page B";
     btn.on(button.knownEvents.tap, function () {
-        var nextPage = "app/tests/pages/navigation/pageB";
+        var nextPage = "tests/pages/navigation/pageB";
         frame.topmost().navigate(nextPage);
     });
     stack.addChild(btn);
@@ -25,7 +25,7 @@ export function createPage() {
     var btnActivity = new button.Button();
     btnActivity.text = "start activity";
     btnActivity.on(button.knownEvents.tap, function () {
-        var newPage = "app/tests/pages/navigation/pageA-new-activity";
+        var newPage = "tests/pages/navigation/pageA-new-activity";
 
         var newFrame = new frame.Frame();
         newFrame.navigate(newPage);

@@ -1,5 +1,5 @@
 ﻿import application = require("application");
-application.mainModule = "app/mainPage";
+application.mainModule = "mainPage";
 
 application.onUncaughtError = function (error: application.NativeScriptError) {
     console.warn(error.message);

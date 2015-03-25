@@ -7,7 +7,7 @@ export function createPage() {
     var page = new pages.Page();
     var lbl = new label.Label();
 
-    var moduleName = "app/tests/pages/files/test";
+    var moduleName = "tests/pages/files/test";
 
     var resolver = new fileResolverModule.FileNameResolver({
         width: 400,

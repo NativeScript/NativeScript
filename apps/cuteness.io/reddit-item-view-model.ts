@@ -4,8 +4,8 @@ import imageSource = require("image-source");
 import redditModel = require("./reddit-model");
 import redditAppViewModel = require("./reddit-app-view-model");
 
-var firstThumbnailImageSource = imageSource.fromFile("~/app/res/first-image.png");
-var defaultImageSource = imageSource.fromFile("~/app/res/reddit-logo-transparent.png");
+var firstThumbnailImageSource = imageSource.fromFile("~/res/first-image.png");
+var defaultImageSource = imageSource.fromFile("~/res/reddit-logo-transparent.png");
 
 var ISLOADING = "isLoading";
 var THUMBNAIL_IMAGE_SOURCE = "thumbnailImageSource";
