@@ -122,11 +122,6 @@ declare module "location" {
         updateDistance: number;
 
        /**
-        * The minimum time interval between subsequent location updates, in milliseconds (ignored on iOS).
-        */
-        minimumUpdateTime: number;
-
-       /**
         * True if the location listener is already started. In this case all other start requests will be ignored.
         */
         isStarted: boolean;
@@ -148,13 +143,49 @@ declare module "location" {
         * Returns last known location from device's location services or null of no known last location.
         */
         lastKnownLocation: Location;
+
+		/**
+		 * An android-specific data for location.
+		 */
+		android: AndroidLocationManager;
+
+		/**
+		 * An ios-specific data for location.
+		 */
+		ios: iOSLocationManager;
     }
 
-   /**
-    * Fires a single shot location search. If you specify timeout in options, location search will fail on timeout. 
-    * If you specify timeout = 0 it just requests the last known location.
-    * However if you specify maximumAge and the location received is older it won't be received.
-    * @param options An optional object specifying location update settings.
-    */
+	/**
+	 * Provides Android specific data related to location.
+	 */
+	export interface AndroidLocationManager {
+		/**
+		 * The android-specific location manager [LocationManager](http://developer.android.com/reference/android/location/LocationManager.html)
+		 */
+		manager: android.location.LocationManager;
+
+		/**
+		 * The minimum time interval between subsequent location updates, in milliseconds.
+		 */
+        minimumUpdateTime: number;
+	}
+
+	/**
+	 * Fires a single shot location search. If you specify timeout in options (milliseconds), location search will stop on timeout.
+	 * If you specify timeout = 0 it just requests the last known location.
+	 * However if you specify maximumAge and the location received is older it won't be received.
+	 * @param options - An optional object specifying location update settings.
+	 */
     export function getLocation(options?: Options): Promise<Location>;
+
+	/* tslint:disable */
+	/**
+	 * Provides iOS specific data related to location.
+	 */
+	export interface iOSLocationManager {
+		/**
+		 * The ios-specific location manager [CLLocationManager](https://developer.apple.com/library/ios/documentation/CoreLocation/Reference/CLLocationManager_Class/)
+		 */
+		manager: CLLocationManager;
+	}
 }

@@ -27,6 +27,7 @@ export function tearDown() {
 
 export var testIsEnabled = function () {
     if (!locationIsEnabled) {
+		console.log("Location service is not enabled!!!");
         return;
     }
     // <snippet module="location" title="location">
@@ -182,7 +183,7 @@ export var testSnippet = function (done) {
     //
     // ``` JavaScript
     // var locationModule = require("location");
-    //// options can also look like { maximumAge: 2000, timeout: 20 }
+    //// options can also look like { maximumAge: 2000, timeout: 20 * 1000 }
     locationModule.getLocation({ maximumAge: 30000, timeout: 0 }).then(function (location) {
         //console.log('Location received: ' + location);
         // <hide>

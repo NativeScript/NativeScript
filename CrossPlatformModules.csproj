@@ -99,10 +99,12 @@
     <TypeScriptCompile Include="apps\template-master-detail\details-page.ts">
       <DependentUpon>details-page.xml</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\tests\app\binding_tests.ts">
-      <DependentUpon>binding_tests.xml</DependentUpon>
+    <TypeScriptCompile Include="apps\template-master-detail\main-page.ts">
+      <DependentUpon>main-page.xml</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\tests\app\location-example.ts" />
+    <TypeScriptCompile Include="apps\tests\app\location-example.ts">
+      <DependentUpon>location-example.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\app\style_props.ts" />
     <TypeScriptCompile Include="apps\tests\console-tests.ts" />
     <TypeScriptCompile Include="apps\tests\file-name-resolver-tests\file-name-resolver-tests.ts" />
@@ -248,6 +250,15 @@
     <TypeScriptCompile Include="image-source\image-source.d.ts" />
     <TypeScriptCompile Include="js-libs\easysax\easysax.d.ts" />
     <TypeScriptCompile Include="location\location.d.ts" />
+	<TypeScriptCompile Include="location\location-common.ts" >
+	  <DependentUpon>location.d.ts</DependentUpon>
+	</TypeScriptCompile>
+	<TypeScriptCompile Include="location\location.android.ts" >
+	  <DependentUpon>location.d.ts</DependentUpon>
+	</TypeScriptCompile>
+	<TypeScriptCompile Include="location\location.ios.ts" >
+	  <DependentUpon>location.d.ts</DependentUpon>
+	</TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\app\pageNavigation.ts" />
     <TypeScriptCompile Include="apps\tests\pages\navigation\pageA-new-activity.ts" />
     <TypeScriptCompile Include="apps\tests\pages\navigation\pageA.ts" />
@@ -527,13 +538,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="local-settings\local-settings-common.ts" />
     <TypeScriptCompile Include="apps\tests\timer-tests.ts" />
-    <TypeScriptCompile Include="location\location-manager.android.ts">
-      <DependentUpon>location-manager.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="location\location-manager.d.ts" />
-    <TypeScriptCompile Include="location\location-manager.ios.ts">
-      <DependentUpon>location-manager.d.ts</DependentUpon>
-    </TypeScriptCompile>
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="libjs.d.ts" />
@@ -549,7 +553,7 @@
     <Content Include="apps\template-master-detail\main-page.minWH600.xml" />
     <Content Include="apps\TelerikNEXT\images\background.jpg" />
     <Content Include="apps\template-settings\app.css" />
-    <Content Include="apps\tests\app\binding_tests.xml" />
+    <Content Include="apps\tests\app\location-example.xml" />
     <Content Include="apps\tests\ui\label\label-tests-wrong.css" />
     <Content Include="apps\tests\pages\files\other.xml" />
     <Content Include="apps\tests\pages\files\test.android.phone.xml" />
@@ -699,9 +703,6 @@
       <DependentUpon>file-system.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="file-system\file-system.d.ts" />
-    <TypeScriptCompile Include="location\location.ts">
-      <DependentUpon>location.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="data\observable\observable.d.ts" />
     <TypeScriptCompile Include="apps\wrap-layout-demo\app.ts" />
     <TypeScriptCompile Include="apps\wrap-layout-demo\mainPage.ts" />

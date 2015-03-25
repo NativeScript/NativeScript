@@ -1,5 +1,10 @@
 ﻿import enums = require("ui/enums");
 import locationModule = require("location");
+import common = require("location/location-common");
+
+import merger = require("utils/module-merge");
+declare var exports;
+merger.merge(common, exports);
 
 class LocationListenerImpl extends NSObject implements CLLocationManagerDelegate {
     public static ObjCProtocols = [CLLocationManagerDelegate];
@@ -44,22 +49,30 @@ class LocationListenerImpl extends NSObject implements CLLocationManagerDelegate
     }
 
     public locationManagerDidFailWithError(manager, error): void {
-        // console.error('location error received ' + error.localizedDescription);
         if (this._onError) {
             this._onError(new Error(error.localizedDescription));
         }
     }
 }
 
-export class LocationManager {
+export class LocationManager implements locationModule.LocationManager {
+	get android(): locationModule.AndroidLocationManager {
+		return undefined;
+	}
+
+	get ios(): locationModule.iOSLocationManager {
+		return this.iosLocationManager;
+	}
+
+	public isStarted: boolean;
     // in meters
     // we might need some predefined values here like 'any' and 'high'
     public desiredAccuracy: number;
 
-    // The minimum distance (measured in meters) a device must move horizontally before an update event is generated.
+	// The minimum distance (measured in meters) a device must move horizontally before an update event is generated.
     public updateDistance: number;
 
-    private iosLocationManager: CLLocationManager;
+    private iosLocationManager: locationModule.iOSLocationManager;
     private listener: any;
 
     public static _locationFromCLLocation(clLocation: CLLocation): locationModule.Location {
@@ -71,9 +84,9 @@ export class LocationManager {
         location.verticalAccuracy = clLocation.verticalAccuracy;
         location.speed = clLocation.speed;
         location.direction = clLocation.course;
-        location.timestamp = new Date(clLocation.timestamp.timeIntervalSince1970 * 1000);
+		var timeIntervalSince1970 = NSDate.dateWithTimeIntervalSinceDate(0, clLocation.timestamp).timeIntervalSince1970;
+        location.timestamp = new Date(timeIntervalSince1970 * 1000);
         location.ios = clLocation;
-        //console.dump(location);
         return location;
     }
 
@@ -110,9 +123,11 @@ export class LocationManager {
     }
 
     constructor() {
+		//super();
         this.desiredAccuracy = enums.Accuracy.any;
         this.updateDistance = kCLDistanceFilterNone;
-        this.iosLocationManager = new CLLocationManager();
+		var iosLocManager = new CLLocationManager();
+        this.iosLocationManager = new iOSLocationManager(iosLocManager);
     }
 
     public startLocationMonitoring(onLocation: (location: locationModule.Location) => any, onError?: (error: Error) => any, options?: locationModule.Options) {
@@ -127,24 +142,39 @@ export class LocationManager {
             }
 
             this.listener = LocationListenerImpl.new().initWithLocationErrorOptions(onLocation, onError, options);
-            this.iosLocationManager.delegate = this.listener;
-            this.iosLocationManager.desiredAccuracy = this.desiredAccuracy;
-            this.iosLocationManager.distanceFilter = this.updateDistance;
-            this.iosLocationManager.startUpdatingLocation();
+            this.iosLocationManager.manager.delegate = this.listener;
+            this.iosLocationManager.manager.desiredAccuracy = this.desiredAccuracy;
+            this.iosLocationManager.manager.distanceFilter = this.updateDistance;
+            this.iosLocationManager.manager.startUpdatingLocation();
+			this.isStarted = true;
         }
     }
 
     public stopLocationMonitoring() {
-        this.iosLocationManager.stopUpdatingLocation();
-        this.iosLocationManager.delegate = null;
+        this.iosLocationManager.manager.stopUpdatingLocation();
+        this.iosLocationManager.manager.delegate = null;
         this.listener = null;
+		this.isStarted = false;
     }
 
     get lastKnownLocation(): locationModule.Location {
-        var clLocation = this.iosLocationManager.location;
+        var clLocation = this.iosLocationManager.manager.location;
         if (clLocation) {
             return LocationManager._locationFromCLLocation(clLocation);
         }
         return null;
     }
+}
+
+/* tslint:disable */
+export class iOSLocationManager implements locationModule.iOSLocationManager {
+	private _manager: CLLocationManager;
+
+	public get manager(): CLLocationManager {
+		return this._manager;
+	}
+
+	constructor(manager: CLLocationManager) {
+		this._manager = manager;
+	}
 }

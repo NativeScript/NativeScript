@@ -1,18 +1,29 @@
 ﻿import enums = require("ui/enums");
 import appModule = require("application");
 import locationModule = require("location");
+import common = require("location/location-common");
 
-export class LocationManager {
+import merger = require("utils/module-merge");
+declare var exports;
+merger.merge(common, exports);
+
+export class LocationManager implements locationModule.LocationManager {
+	get android(): locationModule.AndroidLocationManager {
+		return this.androidLocationManager;
+	}
+
+	get ios(): locationModule.iOSLocationManager {
+		return undefined;
+	}
+
+	public isStarted: boolean;
     // in meters
     public desiredAccuracy: number;
 
     // The minimum distance (measured in meters) a device must move horizontally before an update event is generated.
     public updateDistance: number;
 
-    // minimum time interval between location updates, in milliseconds (android only)
-    public minimumUpdateTime: number;
-
-    private androidLocationManager: any;
+    private androidLocationManager: locationModule.AndroidLocationManager;
 
     private _locationListener: any;
 
@@ -60,7 +71,6 @@ export class LocationManager {
         location.direction = androidLocation.getBearing();
         location.timestamp = new Date(androidLocation.getTime());
         location.android = androidLocation;
-        //console.dump(location);
         return location;
     }
 
@@ -108,17 +118,18 @@ export class LocationManager {
     }
 
     constructor() {
+		//super();
         this.desiredAccuracy = enums.Accuracy.any;
         this.updateDistance = 0; 
-        this.minimumUpdateTime = 200;
-
-        this.androidLocationManager = appModule.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
+        
+		//this.androidLocationManager = appModule.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
+		var alm = appModule.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
+		this.androidLocationManager = new AndroidLocationManager(alm);
+		this.androidLocationManager.minimumUpdateTime = 200;
     }
 
     public startLocationMonitoring(onLocation: (location: locationModule.Location) => any, onError?: (error: Error) => any, options?: locationModule.Options) {
         var criteria = new android.location.Criteria();
-        criteria.setAccuracy((this.desiredAccuracy === enums.Accuracy.high) ? android.location.Criteria.ACCURACY_FINE : android.location.Criteria.ACCURACY_COARSE);
-
         if (options) {
             if (options.desiredAccuracy) {
                 this.desiredAccuracy = options.desiredAccuracy;
@@ -127,15 +138,17 @@ export class LocationManager {
                 this.updateDistance = options.updateDistance;
             }
             if (options.minimumUpdateTime) {
-                this.minimumUpdateTime = options.minimumUpdateTime;
+                this.androidLocationManager.minimumUpdateTime = options.minimumUpdateTime;
             }
         }
+		criteria.setAccuracy((this.desiredAccuracy === enums.Accuracy.high) ? android.location.Criteria.ACCURACY_FINE : android.location.Criteria.ACCURACY_COARSE);
 
         this.locationListener._onLocation = onLocation;
         this.locationListener._onError = onError;
         this.locationListener.maximumAge = (options && ("number" === typeof options.maximumAge)) ? options.maximumAge : undefined;
         try {
-            this.androidLocationManager.requestLocationUpdates(long(this.minimumUpdateTime), float(this.updateDistance), criteria, this.locationListener, null);
+            this.androidLocationManager.manager.requestLocationUpdates(this.androidLocationManager.minimumUpdateTime, this.updateDistance, criteria, this.locationListener, null);
+			this.isStarted = true;
         }
         catch (e) {
             if (onError) {
@@ -145,21 +158,22 @@ export class LocationManager {
     }
 
     public stopLocationMonitoring() {
-        this.androidLocationManager.removeUpdates(this.locationListener);
+        this.androidLocationManager.manager.removeUpdates(this.locationListener);
+		this.isStarted = false;
     }
 
     get lastKnownLocation(): locationModule.Location {
         var criteria = new android.location.Criteria();
         criteria.setAccuracy((this.desiredAccuracy === enums.Accuracy.high) ? android.location.Criteria.ACCURACY_FINE : android.location.Criteria.ACCURACY_COARSE);
         try {
-            var providers = this.androidLocationManager.getProviders(criteria, false);
+            var providers = this.androidLocationManager.manager.getProviders(criteria, false);
             var it = providers.iterator();
             var location: android.location.Location;
             var tempLocation: android.location.Location;
             while (it.hasNext()) {
                 var element = it.next();
                 //console.log('found provider: ' + element);
-                tempLocation = this.androidLocationManager.getLastKnownLocation(element);
+                tempLocation = this.androidLocationManager.manager.getLastKnownLocation(element);
                 if (!location) {
                     location = tempLocation;
                 }
@@ -179,4 +193,25 @@ export class LocationManager {
 
         return null;
     }
+}
+
+export class AndroidLocationManager implements locationModule.AndroidLocationManager {
+	private _manager: android.location.LocationManager;
+	private _minimumUpdateTime: number;
+
+	public set minimumUpdateTime(value: number) {
+		this._minimumUpdateTime = value;
+	}
+
+	public get minimumUpdateTime(): number {
+		return this._minimumUpdateTime;
+	}
+
+	public get manager(): android.location.LocationManager {
+		return this._manager;
+	}
+
+	constructor(manager: android.location.LocationManager) {
+		this._manager = manager;
+	}
 }
