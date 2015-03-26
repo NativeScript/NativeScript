@@ -270,7 +270,7 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
     }
 
     get backStack(): Array<definition.BackstackEntry> {
-        return this._backStack;
+        return this._backStack.slice();
     }
 
     get currentPage(): pages.Page {
@@ -369,6 +369,10 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
     // We don't need to put Page as visual child. Don't call super.
     public _removeViewFromNativeVisualTree(child: view.View): void {
         child._isAddedToNativeVisualTree = false;
+    }
+
+    public _invalidateOptionsMenu() {
+        // 
     }
 }
 

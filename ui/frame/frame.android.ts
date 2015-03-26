@@ -6,6 +6,8 @@ import observable = require("data/observable");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
 import application = require("application");
+import imageSource = require("image-source");
+import enums = require("ui/enums");
 
 declare var exports;
 require("utils/module-merge").merge(frameCommon, exports);
@@ -37,6 +39,7 @@ class PageFragmentBody extends android.app.Fragment {
     onCreate(savedInstanceState: android.os.Bundle) {
         super.onCreate(savedInstanceState);
         trace.write(this.getTag() + ".onCreate(); savedInstanceState: " + savedInstanceState, trace.categories.NativeLifecycle);
+        super.setHasOptionsMenu(true);
     }
 
     onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
@@ -131,6 +134,53 @@ class PageFragmentBody extends android.app.Fragment {
     onDetach() {
         super.onDetach();
         trace.write(this.getTag() + ".onDetach();", trace.categories.NativeLifecycle);
+    }
+
+    onCreateOptionsMenu(menu: android.view.IMenu, inflater: android.view.MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        var page: pages.Page = this.entry.resolvedPage;
+        var items = page.optionsMenu.getItems();
+
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            var menuItem = menu.add(android.view.Menu.NONE, i, android.view.Menu.NONE, item.text);
+            if (item.icon) {
+                var img = imageSource.fromResource(item.icon);
+                var drawable = new android.graphics.drawable.BitmapDrawable(img.android);
+                menuItem.setIcon(drawable);
+            }
+
+            var showAsAction = PageFragmentBody.getShowAsAction(item);
+            menuItem.setShowAsAction(showAsAction);
+        }
+    }
+
+    private static getShowAsAction(menuItem: pages.MenuItem): number {
+        switch (menuItem.android.position) {
+            case enums.MenuItemPosition.actionBarIfRoom:
+                return android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM;
+
+            case enums.MenuItemPosition.popup:
+                return android.view.MenuItem.SHOW_AS_ACTION_NEVER;
+
+            case enums.MenuItemPosition.actionBar:
+            default:
+                return android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
+        }
+    }
+
+    onOptionsItemSelected(item: android.view.IMenuItem) {
+        var page: pages.Page = this.entry.resolvedPage;
+        var itemId = item.getItemId();
+
+        var menuItem = page.optionsMenu.getItemAt(itemId);
+        if (menuItem) {
+            menuItem._raiseTap();
+            return true;
+        }
+       
+        super.onOptionsItemSelected(item);
     }
 }
 
@@ -314,6 +364,12 @@ export class Frame extends frameCommon.Frame {
     public _clearAndroidReference() {
         // we should keep the reference to underlying native object, since frame can contain many pages.
     }
+
+    public _invalidateOptionsMenu() {
+        if (this.android && this.android.activity) {
+            this.android.activity.invalidateOptionsMenu();
+        }
+    }
 }
 
 declare module com {
@@ -422,7 +478,7 @@ class NativeActivity extends com.tns.NativeScriptActivity {
         trace.write("NativeScriptActivity.onDestroy();", trace.categories.NativeLifecycle);
     }
 
-    onOptionsItemSelected(menuItem) {
+    onOptionsItemSelected(menuItem: android.view.IMenuItem) {
         if (!this.androidFrame.hasListeners(frameCommon.knownEvents.android.optionSelected)) {
             return false;
         }
@@ -598,10 +654,11 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
         trace.write("Current page matches fragment: " + fragmentTag, trace.categories.NativeLifecycle);
     }
     else {
-        for (var i = 0; i < frame.backStack.length; i++) {
-            entry = frame.backStack[i];
-            if (frame.backStack[i].resolvedPage[TAG] === fragmentTag) {
-                entry = frame.backStack[i];
+        var backStack = frame.backStack;
+        for (var i = 0; i < backStack.length; i++) {
+            entry = backStack[i];
+            if (backStack[i].resolvedPage[TAG] === fragmentTag) {
+                entry = backStack[i];
                 break;
             }
         }

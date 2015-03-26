@@ -118,8 +118,12 @@
     <TypeScriptCompile Include="apps\tests\layouts\layout-helper.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\wrap-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page12.ts" />
+    <TypeScriptCompile Include="apps\tests\pages\page16.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page15.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page13.ts" />
+    <TypeScriptCompile Include="apps\tests\pages\page17.ts">
+      <DependentUpon>page17.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\pages\property-bindings.ts" />
     <TypeScriptCompile Include="apps\tests\platform-tests.ts" />
     <TypeScriptCompile Include="apps\tests\fps-meter-tests.ts" />
@@ -330,6 +334,16 @@
     <TypeScriptCompile Include="ui\list-picker\list-picker.ios.ts">
       <DependentUpon>list-picker.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\tool-bar\tool-bar-common.ts">
+      <DependentUpon>tool-bar.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\tool-bar\tool-bar.android.ts">
+      <DependentUpon>tool-bar.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\tool-bar\tool-bar.d.ts" />
+    <TypeScriptCompile Include="ui\tool-bar\tool-bar.ios.ts">
+      <DependentUpon>tool-bar.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\segmented-bar\segmented-bar-common.ts">
       <DependentUpon>segmented-bar.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -499,10 +513,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\text-view\text-view.d.ts" />
     <TypeScriptCompile Include="utils\android_constants.ts" />
-    <TypeScriptCompile Include="utils\containers.d.ts" />
-    <TypeScriptCompile Include="utils\containers.ts">
-      <DependentUpon>containers.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="utils\module-merge.ts" />
     <TypeScriptCompile Include="utils\utils.android.ts">
       <DependentUpon>utils.d.ts</DependentUpon>
@@ -568,6 +578,10 @@
     <Content Include="apps\tests\file-name-resolver-tests\files\test.ios.land.xml" />
     <Content Include="apps\tests\file-name-resolver-tests\files\test.android.minWH600.xml" />
     <Content Include="apps\tests\file-name-resolver-tests\files\test.xml" />
+    <Content Include="apps\tests\pages\page17.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\tests\test-icon.png" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />
     <Content Include="apps\template-blank\app.css" />
     <Content Include="apps\template-hello-world\app.css" />
@@ -1453,6 +1467,9 @@
     <Content Include="ui\list-picker\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="ui\tool-bar\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />
@@ -1507,7 +1524,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>0</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:7260/</IISUrl>
+          <IISUrl>http://localhost:3128/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

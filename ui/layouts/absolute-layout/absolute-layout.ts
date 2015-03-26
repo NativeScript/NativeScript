@@ -17,10 +17,10 @@ function onPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
 export class AbsoluteLayout extends layouts.Layout implements definition.AbsoluteLayout {
 
-    public static LeftProperty = new dependencyObservable.Property("Left", "AbsoluteLayout",
+    public static leftProperty = new dependencyObservable.Property("left", "AbsoluteLayout",
         new dependencyObservable.PropertyMetadata(0, undefined, onPropertyChanged, numberUtils.isFiniteNumber));
 
-    public static TopProperty = new dependencyObservable.Property("Top", "AbsoluteLayout",
+    public static topProperty = new dependencyObservable.Property("top", "AbsoluteLayout",
         new dependencyObservable.PropertyMetadata(0, undefined, onPropertyChanged, numberUtils.isFiniteNumber));
 
     public static getLeft(element: view.View): number {
@@ -28,14 +28,14 @@ export class AbsoluteLayout extends layouts.Layout implements definition.Absolut
             throw new Error("element cannot be null or undefinied.");
         }
 
-        return element._getValue(AbsoluteLayout.LeftProperty);
+        return element._getValue(AbsoluteLayout.leftProperty);
     }
 
     public static setLeft(element: view.View, value: number): void {
         if (!element) {
             throw new Error("element cannot be null or undefinied.");
         }
-        element._setValue(AbsoluteLayout.LeftProperty, value);
+        element._setValue(AbsoluteLayout.leftProperty, value);
     }
 
     public static getTop(element: view.View): number {
@@ -43,14 +43,14 @@ export class AbsoluteLayout extends layouts.Layout implements definition.Absolut
             throw new Error("element cannot be null or undefinied.");
         }
 
-        return element._getValue(AbsoluteLayout.TopProperty);
+        return element._getValue(AbsoluteLayout.topProperty);
     }
 
     public static setTop(element: view.View, value: number): void {
         if (!element) {
             throw new Error("element cannot be null or undefinied.");
         }
-        element._setValue(AbsoluteLayout.TopProperty, value);
+        element._setValue(AbsoluteLayout.topProperty, value);
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
