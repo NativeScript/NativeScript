@@ -57,7 +57,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
             view.android.addTab(tab);
         }
 
-        if (view.android.getCurrentTab() !== view.selectedIndex) {
+        if (types.isNumber(view.selectedIndex) && view.android.getCurrentTab() !== view.selectedIndex) {
             view.android.setCurrentTab(view.selectedIndex);
         }
 
@@ -107,7 +107,7 @@ export class SegmentedBar extends common.SegmentedBar {
 
     public _createUI() {
         this._android = new OurTabHost(this._context, null);
-        if (this._android.getCurrentTab() !== this.selectedIndex) {
+        if (types.isNumber(this.selectedIndex) && this._android.getCurrentTab() !== this.selectedIndex) {
             this._android.setCurrentTab(this.selectedIndex);
         }
 
