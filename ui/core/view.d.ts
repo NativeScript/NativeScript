@@ -368,6 +368,9 @@ declare module "ui/core/view" {
         onUnloaded(): void;
         isLoaded: boolean;
 
+        _addView(view: View);
+        _removeView(view: View);
+
         // TODO: Implement logic for stripping these lines out
         //@private
         _domId: number;
@@ -375,8 +378,6 @@ declare module "ui/core/view" {
 
         _isAddedToNativeVisualTree: boolean;
 
-        _addView(view: View);
-        _removeView(view: View);
         /**
          * Performs the core logic of adding a child view to the native visual tree. Returns true if the view's native representation has been successfully added, false otherwise.
          */

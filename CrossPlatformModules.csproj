@@ -250,15 +250,15 @@
     <TypeScriptCompile Include="image-source\image-source.d.ts" />
     <TypeScriptCompile Include="js-libs\easysax\easysax.d.ts" />
     <TypeScriptCompile Include="location\location.d.ts" />
-	<TypeScriptCompile Include="location\location-common.ts" >
-	  <DependentUpon>location.d.ts</DependentUpon>
-	</TypeScriptCompile>
-	<TypeScriptCompile Include="location\location.android.ts" >
-	  <DependentUpon>location.d.ts</DependentUpon>
-	</TypeScriptCompile>
-	<TypeScriptCompile Include="location\location.ios.ts" >
-	  <DependentUpon>location.d.ts</DependentUpon>
-	</TypeScriptCompile>
+    <TypeScriptCompile Include="location\location-common.ts">
+      <DependentUpon>location.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="location\location.android.ts">
+      <DependentUpon>location.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="location\location.ios.ts">
+      <DependentUpon>location.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\app\pageNavigation.ts" />
     <TypeScriptCompile Include="apps\tests\pages\navigation\pageA-new-activity.ts" />
     <TypeScriptCompile Include="apps\tests\pages\navigation\pageA.ts" />
@@ -394,7 +394,9 @@
     <TypeScriptCompile Include="apps\TelerikNEXT\TelerikUI\side-bar\side-bar.android.ts" />
     <TypeScriptCompile Include="apps\TelerikNEXT\TelerikUI\side-bar\side-bar.d.ts" />
     <TypeScriptCompile Include="apps\TelerikNEXT\TelerikUI\side-bar\side-bar.ios.ts" />
+    <TypeScriptCompile Include="ui\styling\css-selector.d.ts" />
     <TypeScriptCompile Include="ui\styling\css-selector.ts" />
+    <TypeScriptCompile Include="ui\styling\style-property.d.ts" />
     <TypeScriptCompile Include="ui\styling\style.ts" />
     <TypeScriptCompile Include="ui\styling\visual-state.ts" />
     <TypeScriptCompile Include="ui\core\view-common.ts">
@@ -1513,7 +1515,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

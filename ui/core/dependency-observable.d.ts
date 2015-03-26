@@ -181,7 +181,6 @@ declare module "ui/core/dependency-observable" {
      * This routine allows for various value modifiers per Property, which is used for inheritance, data-binding and styling purposes.
      */
     export class DependencyObservable extends observable.Observable {
-        //@private
         // TODO: Do we want to expose the get/setValue methods as public?
         /**
          * Gets a value for the property.
