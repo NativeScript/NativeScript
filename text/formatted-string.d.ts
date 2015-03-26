@@ -6,6 +6,7 @@ declare module "text/formatted-string" {
     import observable = require("data/observable");
     import observableArray = require("data/observable-array");
     import colorModule = require("color");
+    import view = require("ui/core/view");
 
     /**
      * A class used to create a formatted (rich text) string.
@@ -66,5 +67,10 @@ declare module "text/formatted-string" {
          * @param newBindingContext The value of the newly set binding context.
          */
         public updateSpansBindingContext(newBindingContext: any): void
+
+        /**
+         * Gets the parent view of the formatted string.
+         */
+        public parent: view.View;
     }
 }
