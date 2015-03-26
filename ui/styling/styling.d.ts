@@ -1,7 +1,4 @@
-﻿/**
- * 
- */
-declare module "ui/styling" {
+﻿declare module "ui/styling" {
     import observable = require("ui/core/dependency-observable");
     import color = require("color");
     import view = require("ui/core/view");
