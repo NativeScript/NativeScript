@@ -65,9 +65,10 @@
          */
         unbind(property: string);
 
+        _onBindingContextChanged(oldValue: any, newValue: any);
+
         //@private
         _updateTwoWayBinding(propertyName: string, value: any);
-        _onBindingContextChanged(oldValue: any, newValue: any);
         //@endprivate
     }
 }
