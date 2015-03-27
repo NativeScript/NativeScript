@@ -33,6 +33,17 @@ To learn more about NativeScript, you can check the following resources:
 - [The NativeScript web site](http://www.nativescript.org)
 - [The NativeScript blog](http://www.nativescript.org/blog)
 
+
+## Most popular repositories:
+- **[Cross-Platform Modules](//github.com/NativeScript/cross-platform-modules/)** - Stores the code of the cross-platform modules, written in TypeScript
+- **[iOS Runtime](//github.com/NativeScript/ios-runtime/)** - Holds the runtime, allowing the JavaScript code of your application to be executed on an iOS device
+- **[Android Runtime](//github.com/NativeScript/android-runtime)** - Holds the runtime, allowing the JavaScript code of your application to be executed on an Android device
+- **[NativeScript CLI](//github.com/NativeScript/nativescript-cli)** - Contains the Command-Line Interface for creating a NativeScript application
+- **[Docs](//github.com/NativeScript/docs)** - Contains the NativeScript documentation (available on http://docs.nativescript.org/) in MarkDown format
+- **[Tasks app](//github.com/NativeScript/sample-Tasks)** - Stores the code of a complete sample application using user authentication and cloud storage.
+- **[Hello-World Template](//github.com/NativeScript/template-hello-world)** - Contains the code of the application the CLI creates by default
+- **[Cuteness Sample](//github.com/NativeScript/sample-cuteness)** - Stores the code of the Cuteness proof of concept application (A Reddit Kitten browser)
+
 ## Getting Started and How to Install NativeScript
 Please follow this [getting started with NativeScript article](http://docs.nativescript.org/getting-started).
 
@@ -49,12 +60,3 @@ We love PRs! Please follow our [contribution guide](https://www.nativescript.org
 - **Forum** - [General discussion](https://groups.google.com/forum/#!forum/nativescript)
 - **StackOverflow** - [http://stackoverflow.com/questions/tagged/nativescript](http://stackoverflow.com/questions/tagged/nativescript)
 - **IRC Chatroom** - [http://webchat.freenode.net/?channels=nativescript](http://webchat.freenode.net/?channels=nativescript)
-
-## Most popular repositories:
-- **[Cross-Platform Modules](//github.com/NativeScript/cross-platform-modules/)** - Stores the code of the cross-platform modules, written in TypeScript
-- **[iOS Runtime](//github.com/NativeScript/ios-runtime/)** - Holds the runtime, allowing the JavaScript code of your application to be executed on an iOS device
-- **[Android Runtime](//github.com/NativeScript/android-runtime)** - Holds the runtime, allowing the JavaScript code of your application to be executed on an Android device
-- **[NativeScript CLI](//github.com/NativeScript/nativescript-cli)** - Contains the Command-Line Interface for creating a NativeScript application
-- **[Docs](//github.com/NativeScript/docs)** - Contains the NativeScript documentation (available on http://docs.nativescript.org/) in MarkDown format
-- **[Hello-World Template](//github.com/NativeScript/template-hello-world)** - Contains the code of the application the CLI creates by default
-- **[Cuteness Sample](//github.com/NativeScript/sample-cuteness)** - Stores the code of the Cuteness proof of concept application (A Reddit Kitten browser)
