@@ -98,7 +98,7 @@ export class ListView extends common.ListView {
             return;
         }
 
-        (<ListViewAdapter>this.android.Adapter).notifyDataSetChanged();
+        (<ListViewAdapter>this.android.getAdapter()).notifyDataSetChanged();
     }
 
     public _onDetached(force?: boolean) {

@@ -450,7 +450,7 @@ function getNativeViewCount(listView: listViewModule.ListView): number {
 
 function performNativeItemTap(listView: listViewModule.ListView, index: number): void {
     if (listView.android) {
-        listView.android.performItemClick(listView.android.getChildAt(index), index, listView.android.Adapter.getItemId(index));
+        listView.android.performItemClick(listView.android.getChildAt(index), index, listView.android.getAdapter().getItemId(index));
     }
     else if (listView.ios) {
         // Calling selectRowAtIndexPathAnimatedScrollPosition will not tiger [Will|Did]SelectRowAtIndexPath callbacks.

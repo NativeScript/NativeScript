@@ -374,7 +374,7 @@ export function test_set_value_min_max_have_correct_values_after_load() {
 
 function getNativeValue(slider: sliderModule.Slider): number {
     if (slider.android) {
-        return slider.android.Progress;
+        return slider.android.getProgress();
     }
     else if (slider.ios) {
         return slider.ios.value;
