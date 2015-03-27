@@ -119,7 +119,7 @@ export function test_property_changed_event_when_setting_maxValue_with_adjust() 
 
 function getNativeValue(progress: progressModule.Progress): number {
     if (progress.android) {
-        return progress.android.Progress;
+        return progress.android.getProgress();
     }
     else if (progress.ios) {
         return progress.ios.progress * progress.maxValue;
