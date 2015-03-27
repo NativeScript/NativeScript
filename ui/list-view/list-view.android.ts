@@ -94,7 +94,7 @@ export class ListView extends common.ListView {
     }
 
     public refresh() {
-        if (!this._android || !this._android.Adapter) {
+        if (!this._android || !this._android.getAdapter()) {
             return;
         }
 
