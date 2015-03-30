@@ -4,7 +4,7 @@ import fs = require("file-system");
 import fileSystemAccess = require("file-system/file-system-access");
 import styleScope = require("ui/styling/style-scope");
 
-export var cssFile: string = "app/app.css"
+export var cssFile: string = "app.css"
 
 export var onUncaughtError: (error: definition.NativeScriptError) => void = undefined;
 
