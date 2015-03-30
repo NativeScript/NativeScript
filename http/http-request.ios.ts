@@ -28,7 +28,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
 
             if (options.headers) {
                 for (var header in options.headers) {
-                    urlRequest.setValueForHTTPHeaderField(options.headers[header], header);
+                    urlRequest.setValueForHTTPHeaderField(options.headers[header] + "", header);
                 }
             }
 
