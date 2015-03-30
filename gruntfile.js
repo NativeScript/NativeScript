@@ -58,6 +58,22 @@ module.exports = function(grunt) {
         return content;
     };
 
+    var getSubDirs = function(dir) {
+        var allObjects = fs.readdirSync(dir);
+        var allDirs = [];
+        for (var i=0; i<allObjects.length; i++)
+        {
+            var currentObjName = allObjects[i];
+            var currentObjPath = pathModule.join(dir, currentObjName);
+            var stats = fs.statSync(currentObjPath);
+            if (stats.isDirectory())
+            {
+                allDirs.push({name: currentObjName, path: currentObjPath});
+            }
+        }
+        return allDirs;
+    }
+
     var localCfg = {
         srcDir: ".",
         srcAppsDir: "./apps",
@@ -129,9 +145,16 @@ module.exports = function(grunt) {
                 dest: "<%= localCfg.outModulesDir %>/",
                 cwd: localCfg.srcDir
             },
+            appLicense: {
+                expand: true,
+                src: ["./LICENSE"],
+                cwd: localCfg.srcAppsDir,
+                dest: "__dummy__"
+            },
             definitionFiles: {
                 src: [
                     localCfg.srcDir + "/**/*.d.ts",
+                    pathModule.join(localCfg.srcDir, "LICENSE"),
                     //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
                     "!" + localCfg.srcDir + "/apps/**"
                 ].concat(localCfg.defaultExcludes).concat(localCfg.excludedModules),
@@ -188,7 +211,7 @@ module.exports = function(grunt) {
             },
             readyAppFiles: {
                 expand: true,
-                src: ["./**/*.*", "../LICENSE"],
+                src: ["./**/*.*"],
                 dest: localCfg.outAppsDir + "/",
                 cwd: localCfg.outModulesDir + "/apps/",
                 options: {
@@ -197,7 +220,7 @@ module.exports = function(grunt) {
             },
             readyTsAppFiles: {
                 expand: true,
-                src: ["./**/*.*", "!./**/*.map", "../LICENSE"],
+                src: ["./**/*.*", "!./**/*.map"],
                 dest: localCfg.outTsAppsDir + "/",
                 cwd: localCfg.srcAppsDir
             },
@@ -246,6 +269,20 @@ module.exports = function(grunt) {
                 cmd: "npm pack",
                 cwd: "__dummy__"
             }
+        },
+        multidest: {
+            copyLicenseFiles: {
+                tasks: ["copy:appLicense"],
+                dest: function() {
+                    var apps = getSubDirs(localCfg.srcAppsDir);
+                    var targetDirs = [];
+                    apps.forEach(function(item){
+                        targetDirs.push(pathModule.join(localCfg.outAppsDir, item.name));
+                        targetDirs.push(pathModule.join(localCfg.outTsAppsDir, item.name));
+                    });
+                    return targetDirs;
+                }()
+            }
         }
     });
 
@@ -254,22 +291,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-tslint");
-
-    var getSubDirs = function(dir) {
-        var allObjects = fs.readdirSync(dir);
-        var allDirs = [];
-        for (var i=0; i<allObjects.length; i++)
-        {
-            var currentObjName = allObjects[i];
-            var currentObjPath = pathModule.join(dir, currentObjName);
-            var stats = fs.statSync(currentObjPath);
-            if (stats.isDirectory())
-            {
-                allDirs.push({name: currentObjName, path: currentObjPath});
-            }
-        }
-        return allDirs;
-    }
+    grunt.loadNpmTasks("grunt-multi-dest");
 
     var cloneTasks = function(originalTasks, taskNameSuffix)
     {
@@ -333,6 +355,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask("collect-apps-raw-files", [
         "copy:rawAppsFiles",
+        "multidest:copyLicenseFiles"
     ]);
 
     // Does nothing to avoid copying the same files twice. Instead,
