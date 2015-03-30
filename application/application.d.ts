@@ -23,6 +23,11 @@ declare module "application" {
     */
     export var mainModule: string;
 
+	/**
+	 * An application level static resources.
+	 */
+	export var resources: any;
+
     /**
      * The application level css file name (starting from the application root). Used to set css across all pages.
      * Css will be applied for every page and page css will be applied after.

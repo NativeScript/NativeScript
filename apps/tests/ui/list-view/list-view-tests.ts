@@ -429,11 +429,56 @@ export function test_loadMoreItems_not_raised_when_showing_many_items() {
     helper.buildUIAndRunTest(listView, testAction);
 }
 
+export function test_usingAppLevelConvertersInListViewItems() {
+	var listView = new listViewModule.ListView();
+
+	var dateConverter = function (value, format) {
+		var result = format;
+		var day = value.getDate();
+		result = result.replace("DD", month < 10 ? "0" + day : day);
+		var month = value.getMonth() + 1;
+		result = result.replace("MM", month < 10 ? "0" + month : month);
+		result = result.replace("YYYY", value.getFullYear());
+		return result;
+	};
+
+	app.resources["dateConverter"] = dateConverter;
+
+    var data = new observableArray.ObservableArray();
+
+	data.push({date: new Date()});
+
+    function testAction(views: Array<viewModule.View>) {
+		listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ date, date | dateConverter('DD.MM.YYYY') }}\" />";
+        listView.items = data;
+		
+        TKUnit.wait(ASYNC);
+        var nativeElementText = getTextFromNativeElementAt(listView, 0);
+
+        TKUnit.assertEqual(nativeElementText, dateConverter(new Date(), "DD.MM.YYYY"), "native element");
+    };
+
+    helper.buildUIAndRunTest(listView, testAction);
+}
+
 function loadViewWithItemNumber(args: listViewModule.ItemEventData) {
     if (!args.view) {
         args.view = new labelModule.Label();
     }
     (<labelModule.Label>args.view).text = "item " + args.index;
+}
+
+function getTextFromNativeElementAt(listView: listViewModule.ListView, index: number): any {
+	if (listView.android) {
+		var nativeElement = listView.android.getChildAt(index);
+		if (nativeElement instanceof android.view.ViewGroup) {
+			return (<android.widget.TextView>(<any>nativeElement.getChildAt(0))).getText();
+		}
+        return (<android.widget.TextView>nativeElement).getText();
+	}
+	else if (listView.ios) {
+		return listView.ios.visibleCells()[index].contentView.subviews[0].text;
+	}
 }
 
 function getNativeViewCount(listView: listViewModule.ListView): number {

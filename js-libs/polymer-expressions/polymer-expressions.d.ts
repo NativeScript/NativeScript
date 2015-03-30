@@ -14,4 +14,3 @@ declare module "js-libs/polymer-expressions" {
         getValue(model, isBackConvert, changedModel);
     }
 }
-

@@ -155,5 +155,5 @@ function getExports(instance: view.View): any {
         parent = parent.parent;
     }
 
-    return (<any>parent).exports;
+    return parent ? (<any>parent).exports : undefined;
 }

@@ -8,6 +8,7 @@ import frameModule = require("ui/frame");
 import pageModule = require("ui/page");
 import listViewModule = require("ui/list-view");
 import buttonModule = require("ui/button");
+import observable = require("data/observable");
 
 // <snippet module="ui/tab-view" title="TabView">
 // # TabView
@@ -37,6 +38,8 @@ import buttonModule = require("ui/button");
 import tabViewModule = require("ui/tab-view");
 // ```
 // </snippet>
+
+var ASYNC = 0.3;
 
 function _createTabView(): tabViewModule.TabView {
     // <snippet module="ui/tab-view" title="TabView">
@@ -365,6 +368,44 @@ export var testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListView
     var listView = mainPage.getViewById<listViewModule.ListView>("ListView");
 
     TKUnit.assert(listView !== undefined, "ListView should be created when navigating back to the main page.");
+}
+
+export function testBindingIsRefreshedWhenTabViewItemIsUnselectedAndThenSelectedAgain() {
+	helper.buildUIAndRunTest(_createTabView(), function (views: Array<viewModule.View>) {
+		var viewModel = new observable.Observable();
+		viewModel.set("counter", 0);
+		frameModule.topmost().currentPage.bindingContext = viewModel;
+
+        var tabView = <tabViewModule.TabView>views[0];
+
+		var items = _createItems(10);
+
+        var StackLayout0 = new stackLayoutModule.StackLayout();
+        var label0 = new labelModule.Label();
+        label0.text = "Tab 0";
+		label0.id = "testLabel";
+		label0.bind({ sourceProperty: "counter", targetProperty: "text", twoWay: true });
+        StackLayout0.addChild(label0);
+        var tabEntry0 = {
+            title: "Tab 0",
+            view: StackLayout0
+        };
+        items.push(tabEntry0);
+        tabView.items = items;
+
+		tabView.selectedIndex = 10;
+		TKUnit.wait(ASYNC);
+
+		tabView.selectedIndex = 0;
+		TKUnit.wait(ASYNC);
+
+		tabView.selectedIndex = 10;
+		TKUnit.wait(ASYNC);
+		var expectedValue = 5;
+		viewModel.set("counter", expectedValue);
+		var testLabel = <labelModule.Label>(tabView.items[10].view.getViewById("testLabel"))
+		TKUnit.assertEqual(testLabel.text, expectedValue, "binding is not working!");
+    });
 }
 
 function _clickTheFirstButtonInTheListViewNatively(tabView: tabViewModule.TabView) {
