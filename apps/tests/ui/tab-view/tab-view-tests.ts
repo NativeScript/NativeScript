@@ -35,6 +35,8 @@ import buttonModule = require("ui/button");
 // Using a TabView requires the "ui/tab-view" module.
 // ``` JavaScript
 import tabViewModule = require("ui/tab-view");
+// ```
+// </snippet>
 
 function _createTabView(): tabViewModule.TabView {
     // <snippet module="ui/tab-view" title="TabView">
