@@ -13,18 +13,27 @@ export class Span extends spanCommon.Span {
         if (realFontFamily) {
             this.spanModifiers.push(new android.text.style.TypefaceSpan(realFontFamily));
         }
-        var realFontSize = this.fontSize || (parent ? parent.fontSize : undefined);
+        var realFontSize = this.fontSize ||
+            (parent ? parent.fontSize : undefined) ||
+            (parent && parent.parent ? parent.parent.style.fontSize : undefined);
         if (realFontSize) {
             this.spanModifiers.push(new android.text.style.AbsoluteSizeSpan(realFontSize * utils.layout.getDisplayDensity()));
         }
-        var realForegroundColor = this.foregroundColor || (parent ? parent.foregroundColor : undefined);
+
+        var realForegroundColor = this.foregroundColor ||
+            (parent ? parent.foregroundColor : undefined) ||
+            (parent && parent.parent ? parent.parent.style.color : undefined);
         if (realForegroundColor) {
             this.spanModifiers.push(new android.text.style.ForegroundColorSpan(realForegroundColor.android));
         }
-        var realBackgroundColor = this.backgroundColor || (parent ? parent.backgroundColor : undefined);
+
+        var realBackgroundColor = this.backgroundColor ||
+            (parent ? parent.backgroundColor : undefined) ||
+            (parent && parent.parent ? parent.parent.style.backgroundColor : undefined);
         if (realBackgroundColor) {
             this.spanModifiers.push(new android.text.style.BackgroundColorSpan(realBackgroundColor.android));
         }
+
         var realFontAttributes = this.fontAttributes || (parent ? parent.fontAttributes : undefined);
         if (realFontAttributes) {
             if ((realFontAttributes & enums.FontAttributes.Bold) && (realFontAttributes & enums.FontAttributes.Italic)) {

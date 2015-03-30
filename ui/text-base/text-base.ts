@@ -104,6 +104,9 @@ export class TextBase extends view.View implements definition.TextBase {
     }
 
     public _onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        if (data.newValue) {
+            (<formattedString.FormattedString>data.newValue).parent = this;
+        }
         this.setFormattedTextPropertyToNative(data.newValue);
     }
 

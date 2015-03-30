@@ -21,6 +21,17 @@ export class FormattedString extends observable.Observable implements definition
     private _underline: number;
     private _strikethrough: number;
     private _fontAttributes: number;
+    private _parent: view.View;
+
+    get parent(): view.View {
+        return this._parent;
+    }
+
+    set parent(value: view.View) {
+        if (this._parent !== value) {
+            this._parent = value;
+        }
+    }
 
     get fontFamily(): string {
         return this._fontFamily;

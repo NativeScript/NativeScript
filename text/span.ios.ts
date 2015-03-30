@@ -9,7 +9,10 @@ export class Span extends spanCommon.Span {
     public updateSpanModifiers(parent: formattedString.FormattedString) {
         super.updateSpanModifiers(parent);
         var realFontFamily = this.fontFamily || (parent ? parent.fontFamily : undefined);
-        var realFontSize = this.fontSize || (parent ? parent.fontSize : undefined);
+        var realFontSize = this.fontSize || 
+            (parent ? parent.fontSize : undefined) || 
+            (parent && parent.parent ? parent.parent.style.fontSize : undefined);
+
         var realFontAttributes = this.fontAttributes || (parent ? parent.fontAttributes : undefined);
         if (realFontAttributes || realFontFamily || realFontSize) {
             var font;
@@ -37,20 +40,27 @@ export class Span extends spanCommon.Span {
                 });
             }
         }
-        var realForegroundColor = this.foregroundColor || (parent ? parent.foregroundColor : undefined);
+
+        var realForegroundColor = this.foregroundColor || 
+            (parent ? parent.foregroundColor : undefined) ||
+            (parent && parent.parent ? parent.parent.style.color : undefined);
         if (realForegroundColor) {
             this.spanModifiers.push({
                 key: NSForegroundColorAttributeName,
                 value: realForegroundColor.ios
             });
         }
-        var realBackgroundColor = this.backgroundColor || (parent ? parent.backgroundColor : undefined);
+
+        var realBackgroundColor = this.backgroundColor || 
+            (parent ? parent.backgroundColor : undefined) ||
+            (parent && parent.parent ? parent.parent.style.backgroundColor : undefined);
         if (realBackgroundColor) {
             this.spanModifiers.push({
                 key: NSBackgroundColorAttributeName,
                 value: realBackgroundColor.ios
             });
         }
+
         var realUnderline = this.underline || (parent ? parent.underline : undefined);
         if (realUnderline) {
             this.spanModifiers.push({
