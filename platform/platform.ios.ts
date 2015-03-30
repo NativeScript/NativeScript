@@ -57,12 +57,18 @@ export class device implements definition.device {
     }
 
     static get uuid(): string {
-        if (!device._uuid) {
+        var userDefaults = NSUserDefaults.standardUserDefaults();
+        var uuid_key = "TNSUUID";
+        var app_uuid = userDefaults.stringForKey(uuid_key);
+
+        if (!app_uuid) {
             var uuidRef = CFUUIDCreate(kCFAllocatorDefault);
-            device._uuid = CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
+            app_uuid = CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
+            userDefaults.setObjectForKey(app_uuid, uuid_key);
+            userDefaults.synchronize();
         }
 
-        return device._uuid;
+        return app_uuid;
     }
 }
 
