@@ -370,6 +370,7 @@ declare module "ui/core/view" {
 
         _addView(view: View);
         _removeView(view: View);
+        _context: android.content.Context;
 
         // TODO: Implement logic for stripping these lines out
         //@private
@@ -387,7 +388,6 @@ declare module "ui/core/view" {
         _eachChildView(callback: (child: View) => boolean);
         _childrenCount: number;
 
-        _context: android.content.Context;
         _onAttached(context: android.content.Context): void;
         _onContextChanged(): void;
         _onDetached(force?: boolean): void;

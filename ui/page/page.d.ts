@@ -109,9 +109,10 @@ declare module "ui/page" {
          */
         on(event: "navigatedTo", callback: (args: NavigatedData) => void);
 
+        _addArrayFromBuilder(name: string, value: Array<any>): void;
+
         //@private
         _getStyleScope(): styleScope.StyleScope;
-        _addArrayFromBuilder(name: string, value: Array<any>): void;
         //@endprivate
     }
 
