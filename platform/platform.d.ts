@@ -3,7 +3,7 @@
  * Contains all kinds of information about the device, its operating system and software.
  */
 declare module "platform" {
-    
+
     /*
      * Enum holding platform names.
      */
@@ -45,6 +45,11 @@ declare module "platform" {
          * Available values: "phone", "tablet".
          */
         static deviceType: string;
+
+        /**
+         * Gets the uuid
+         */
+         static uuid: string;
     }
 
     /**

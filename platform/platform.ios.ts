@@ -55,6 +55,21 @@ export class device implements definition.device {
 
         return device._deviceType;
     }
+
+    static get uuid(): string {
+        var userDefaults = NSUserDefaults.standardUserDefaults();
+        var uuid_key = "TNSUUID";
+        var app_uuid = userDefaults.stringForKey(uuid_key);
+
+        if (!app_uuid) {
+            var uuidRef = CFUUIDCreate(kCFAllocatorDefault);
+            app_uuid = CFUUIDCreateString(kCFAllocatorDefault, uuidRef);
+            userDefaults.setObjectForKey(app_uuid, uuid_key);
+            userDefaults.synchronize();
+        }
+
+        return app_uuid;
+    }
 }
 
 var mainScreenInfo: definition.ScreenMetrics = null;
