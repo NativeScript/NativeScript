@@ -154,6 +154,7 @@ module.exports = function(grunt) {
             definitionFiles: {
                 src: [
                     localCfg.srcDir + "/**/*.d.ts",
+                    pathModule.join(localCfg.srcDir, "LICENSE"),
                     //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
                     "!" + localCfg.srcDir + "/apps/**"
                 ].concat(localCfg.defaultExcludes).concat(localCfg.excludedModules),
