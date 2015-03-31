@@ -23,6 +23,9 @@ module.exports = function(grunt) {
     var updateModulesPackageDef = function(content, srcPath) {
         return updatePackageDef(content, function(contentAsObject) {
             contentAsObject.version = localCfg.packageVersion;
+            if (localCfg.commitSHA) {
+                contentAsObject.repository.url += "/commit/" + localCfg.commitSHA;
+            }
         });
     };
 
@@ -33,6 +36,15 @@ module.exports = function(grunt) {
             contentAsObject.name = "tns-samples-" + currentAppName;
             contentAsObject.description = "Nativescript " + currentAppName + " sample application";
             contentAsObject.license = "BSD";
+            if (!contentAsObject.repository) {
+                contentAsObject.repository = {};
+            }
+            if (!contentAsObject.repository.url) {
+                contentAsObject.repository.url = localCfg.mainPackageContent.repository.url;
+            }
+            if (localCfg.commitSHA) {
+                contentAsObject.repository.url += "/commit/" + localCfg.commitSHA;
+            }
         });
     };
 
@@ -42,14 +54,20 @@ module.exports = function(grunt) {
             contentAsObject.name = "tns-definitions";
             contentAsObject.description = "NativeScript Module definitions";
             contentAsObject.license = "Apache-2.0";
+            if (localCfg.commitSHA) {
+                contentAsObject.repository.url += "/commit/" + localCfg.commitSHA;
+            }
         });
-    }
+    };
 
-    var getPackageVersion = function(packageFilePath) {
-        packageContent = grunt.file.readJSON(packageFilePath);
+    var getCommitSha = function() {
+        return ""
+    };
+
+    var getPackageVersion = function() {
         var buildVersion = process.env.PACKAGE_VERSION;
         if (!buildVersion) {
-            return packageContent.version;
+            return localCfg.mainPackageContent.version;
         }
         return packageContent.version + "-" + buildVersion;
     };
@@ -88,7 +106,9 @@ module.exports = function(grunt) {
             "!./ui/slide-out/**/*.*"
         ]
     };
+    localCfg.mainPackageContent = grunt.file.readJSON(localCfg.packageJsonFilePath);
     localCfg.packageVersion = getPackageVersion(localCfg.packageJsonFilePath);
+    localCfg.commitSHA = getCommitSha();
     localCfg.defaultExcludes = [
             "!" + localCfg.outDir + "/**/*.*",
             "!./node_modules/**/*.*",
