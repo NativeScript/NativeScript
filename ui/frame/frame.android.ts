@@ -6,7 +6,6 @@ import observable = require("data/observable");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
 import application = require("application");
-import imageSource = require("image-source");
 import enums = require("ui/enums");
 
 declare var exports;
@@ -146,9 +145,12 @@ class PageFragmentBody extends android.app.Fragment {
             var item = items[i];
             var menuItem = menu.add(android.view.Menu.NONE, i, android.view.Menu.NONE, item.text);
             if (item.icon) {
-                var img = imageSource.fromResource(item.icon);
-                var drawable = new android.graphics.drawable.BitmapDrawable(img.android);
-                menuItem.setIcon(drawable);
+                var androidApp = application.android;
+                var res = androidApp.context.getResources();
+                var id = res.getIdentifier(item.icon, 'drawable', androidApp.packageName);
+                if (id) {
+                    menuItem.setIcon(id);
+                }
             }
 
             var showAsAction = PageFragmentBody.getShowAsAction(item);
@@ -179,7 +181,7 @@ class PageFragmentBody extends android.app.Fragment {
             menuItem._raiseTap();
             return true;
         }
-       
+
         super.onOptionsItemSelected(item);
     }
 }

@@ -206,7 +206,16 @@ export class OptionsMenu implements dts.OptionsMenu {
     }
 
     public setItems(items: Array<MenuItem>) {
-        this._items = items;
+        // Remove all existing items
+        while (this._items.length > 0) {
+            this.removeItem(this._items[this._items.length - 1]);
+        }
+
+        // Add new items
+        for (var i = 0; i < items.length; i++) {
+            this.addItem(items[i]);
+        }
+
         this.invalidate();
     }
 

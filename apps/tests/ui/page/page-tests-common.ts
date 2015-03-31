@@ -27,6 +27,7 @@ import LabelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import helper = require("../helper");
 import view = require("ui/core/view");
+import builder = require("ui/builder");
 
 export function addLabelToPage(page: PageModule.Page, text?: string) {
     var label = new LabelModule.Label();
@@ -67,6 +68,15 @@ export function test_menuItem_inherit_bindingContext() {
         helper.goBack();
     }
 }
+
+export function test_menuItem_inherit_bindingContext_inXML() {
+    var p = <PageModule.Page>builder.parse("<Page><Page.optionsMenu><MenuItem text=\"{{ myProp }} \" /></Page.optionsMenu></Page>");
+    p.bindingContext = { myProp: "success" };
+
+    var menuItem = p.optionsMenu.getItemAt(0);
+
+    TKUnit.assertEqual(menuItem.text, "success", "menuItem.text");
+};
 
 export function test_Setting_OptionsMenu_doesnt_thrown() {
 
