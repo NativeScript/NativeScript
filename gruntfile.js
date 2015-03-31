@@ -33,8 +33,15 @@ module.exports = function(grunt) {
         var currentAppName = grunt.task.current.data.appName;
         return updatePackageDef(content, function(contentAsObject) {
             contentAsObject.version = localCfg.packageVersion;
-            contentAsObject.name = "tns-samples-" + currentAppName;
-            contentAsObject.description = "Nativescript " + currentAppName + " sample application";
+            if (currentAppName.indexOf("template-") == 0) {
+                var templateName = currentAppName.substring(0, "template-".length);
+                contentAsObject.name = "tns-" + currentAppName;
+                contentAsObject.description = "Nativescript " + templateName + " template";
+            }
+            else {
+                contentAsObject.name = "tns-samples-" + currentAppName;
+                contentAsObject.description = "Nativescript " + currentAppName + " sample application";
+            }
             contentAsObject.license = "BSD";
             if (!contentAsObject.repository) {
                 contentAsObject.repository = {};
