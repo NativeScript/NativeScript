@@ -206,10 +206,6 @@ export class OptionsMenu implements dts.OptionsMenu {
     }
 
     public setItems(items: Array<MenuItem>) {
-        if (this._items === items) {
-            return;
-        }
-        
         // Remove all existing items
         while (this._items.length > 0) {
             this.removeItem(this._items[this._items.length - 1]);
