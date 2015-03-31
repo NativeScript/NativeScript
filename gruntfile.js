@@ -79,7 +79,7 @@ module.exports = function(grunt) {
         if (!buildVersion) {
             return localCfg.mainPackageContent.version;
         }
-        return packageContent.version + "-" + buildVersion;
+        return localCfg.mainPackageContent.version + "-" + buildVersion;
     };
 
     var processAppFile = function(content, srcPath) {
