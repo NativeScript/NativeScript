@@ -63,7 +63,15 @@ module.exports = function(grunt) {
     var getCommitSha = function() {
         if (process.env.GIT_COMMIT) {
             return process.env.GIT_COMMIT;
+        }
         return "";
+    };
+
+    var assignGitSHA = function(err, stdout, stderr, cb) {
+        if (!localCfg.commitSHA) {
+            localCfg.commitSHA = stdout.replace("\n", "");
+        }
+        cb();
     };
 
     var getPackageVersion = function() {
@@ -108,6 +116,7 @@ module.exports = function(grunt) {
             "!./ui/slide-out/**/*.*"
         ]
     };
+
     localCfg.mainPackageContent = grunt.file.readJSON(localCfg.packageJsonFilePath);
     localCfg.packageVersion = getPackageVersion(localCfg.packageJsonFilePath);
     localCfg.commitSHA = getCommitSha();
@@ -305,6 +314,14 @@ module.exports = function(grunt) {
                     return targetDirs;
                 }()
             }
+        },
+        shell: {
+            getGitSHA: {
+                command: "git rev-parse HEAD",
+                options: {
+                    callback: assignGitSHA
+                }
+            }
         }
     });
 
@@ -314,6 +331,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-tslint");
     grunt.loadNpmTasks("grunt-multi-dest");
+    grunt.loadNpmTasks("grunt-shell");
 
     var cloneTasks = function(originalTasks, taskNameSuffix)
     {
@@ -425,6 +443,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask("default", ((typeof(grunt.option('runtslint')) != "undefined" && !grunt.option('runtslint')) ? [] : ["tslint:build"]).concat([
         "clean:build",
+        "shell:getGitSHA",
 
         "collect-apps-raw-files",
         "collect-definitions-raw-files",
