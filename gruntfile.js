@@ -61,7 +61,9 @@ module.exports = function(grunt) {
     };
 
     var getCommitSha = function() {
-        return ""
+        if (process.env.GIT_COMMIT) {
+            return process.env.GIT_COMMIT;
+        return "";
     };
 
     var getPackageVersion = function() {
