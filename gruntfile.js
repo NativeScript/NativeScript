@@ -23,6 +23,9 @@ module.exports = function(grunt) {
     var updateModulesPackageDef = function(content, srcPath) {
         return updatePackageDef(content, function(contentAsObject) {
             contentAsObject.version = localCfg.packageVersion;
+            if (localCfg.commitSHA) {
+                contentAsObject.repository.url += "/commit/" + localCfg.commitSHA;
+            }
         });
     };
 
@@ -33,6 +36,15 @@ module.exports = function(grunt) {
             contentAsObject.name = "tns-samples-" + currentAppName;
             contentAsObject.description = "Nativescript " + currentAppName + " sample application";
             contentAsObject.license = "BSD";
+            if (!contentAsObject.repository) {
+                contentAsObject.repository = {};
+            }
+            if (!contentAsObject.repository.url) {
+                contentAsObject.repository.url = localCfg.mainPackageContent.repository.url;
+            }
+            if (localCfg.commitSHA) {
+                contentAsObject.repository.url += "/commit/" + localCfg.commitSHA;
+            }
         });
     };
 
@@ -42,16 +54,32 @@ module.exports = function(grunt) {
             contentAsObject.name = "tns-definitions";
             contentAsObject.description = "NativeScript Module definitions";
             contentAsObject.license = "Apache-2.0";
+            if (localCfg.commitSHA) {
+                contentAsObject.repository.url += "/commit/" + localCfg.commitSHA;
+            }
         });
-    }
+    };
 
-    var getPackageVersion = function(packageFilePath) {
-        packageContent = grunt.file.readJSON(packageFilePath);
+    var getCommitSha = function() {
+        if (process.env.GIT_COMMIT) {
+            return process.env.GIT_COMMIT;
+        }
+        return "";
+    };
+
+    var assignGitSHA = function(err, stdout, stderr, cb) {
+        if (!localCfg.commitSHA) {
+            localCfg.commitSHA = stdout.replace("\n", "");
+        }
+        cb();
+    };
+
+    var getPackageVersion = function() {
         var buildVersion = process.env.PACKAGE_VERSION;
         if (!buildVersion) {
-            return packageContent.version;
+            return localCfg.mainPackageContent.version;
         }
-        return packageContent.version + "-" + buildVersion;
+        return localCfg.mainPackageContent.version + "-" + buildVersion;
     };
 
     var processAppFile = function(content, srcPath) {
@@ -88,7 +116,10 @@ module.exports = function(grunt) {
             "!./ui/slide-out/**/*.*"
         ]
     };
+
+    localCfg.mainPackageContent = grunt.file.readJSON(localCfg.packageJsonFilePath);
     localCfg.packageVersion = getPackageVersion(localCfg.packageJsonFilePath);
+    localCfg.commitSHA = getCommitSha();
     localCfg.defaultExcludes = [
             "!" + localCfg.outDir + "/**/*.*",
             "!./node_modules/**/*.*",
@@ -283,6 +314,14 @@ module.exports = function(grunt) {
                     return targetDirs;
                 }()
             }
+        },
+        shell: {
+            getGitSHA: {
+                command: "git rev-parse HEAD",
+                options: {
+                    callback: assignGitSHA
+                }
+            }
         }
     });
 
@@ -292,6 +331,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-tslint");
     grunt.loadNpmTasks("grunt-multi-dest");
+    grunt.loadNpmTasks("grunt-shell");
 
     var cloneTasks = function(originalTasks, taskNameSuffix)
     {
@@ -403,6 +443,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask("default", ((typeof(grunt.option('runtslint')) != "undefined" && !grunt.option('runtslint')) ? [] : ["tslint:build"]).concat([
         "clean:build",
+        "shell:getGitSHA",
 
         "collect-apps-raw-files",
         "collect-definitions-raw-files",
