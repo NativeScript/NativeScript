@@ -1,5 +1,5 @@
 <Page xmlns="http://www.nativescript.org/tns.xsd"
-      xmlns:app="app"
+      xmlns:app="."
       loaded="pageLoaded">
   <GridLayout rows="auto, *" columns="300, *">
     <Label text="Master Details Page" cssClass="title" colSpan="2" />
