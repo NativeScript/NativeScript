@@ -6,6 +6,8 @@ import styleScope = require("ui/styling/style-scope");
 
 export var cssFile: string = "app.css"
 
+export var resources: any = {};
+
 export var onUncaughtError: (error: definition.NativeScriptError) => void = undefined;
 
 export var onLaunch: (context: any) => any = undefined;

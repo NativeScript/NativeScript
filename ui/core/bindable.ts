@@ -2,6 +2,7 @@
 import definition = require("ui/core/bindable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import weakEventListener = require("ui/core/weak-event-listener");
+import appModule = require("application");
 import types = require("utils/types");
 import trace = require("trace");
 import polymerExpressions = require("js-libs/polymer-expressions");
@@ -11,6 +12,9 @@ var bindingContextProperty = new dependencyObservable.Property(
     "Bindable",
     new dependencyObservable.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.Inheritable) // TODO: Metadata options?
     );
+
+var contextKey = "context";
+var resourcesKey = "resources";
 
 export class Bindable extends dependencyObservable.DependencyObservable implements definition.Bindable {
 
@@ -99,11 +103,6 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
                 continue;
             }
 
-            if (binding.source && binding.source.get() !== oldValue) {
-                // Binding has its source set directly, not through binding context, do not bind/unbind in this case
-                continue;
-            }
-
             trace.write(
                 "Binding target: " + binding.target.get() + 
                 " targetProperty: " + binding.options.targetProperty +
@@ -151,7 +150,6 @@ export class Binding {
             obj = new String(obj);
         }
         /* tslint:enable */
-                
         this.source = new WeakRef(obj);
         this.updateTarget(this.getSourceProperty());
 
@@ -159,17 +157,19 @@ export class Binding {
             this.sourceOptions = this.resolveOptions(this.source, this.options.sourceProperty);
         }
 
-        var sourceOptionsInstance = this.sourceOptions.instance.get();
-        if (sourceOptionsInstance instanceof observable.Observable) {
-            this.weakEventListenerOptions = {
-                targetWeakRef: this.target,
-                sourceWeakRef: this.sourceOptions.instance,
-                eventName: observable.knownEvents.propertyChange,
-                handler: this.onSourcePropertyChanged,
-                handlerContext: this,
-                key: this.options.targetProperty
+        if (this.sourceOptions) {
+            var sourceOptionsInstance = this.sourceOptions.instance.get();
+            if (sourceOptionsInstance instanceof observable.Observable) {
+                this.weakEventListenerOptions = {
+                    targetWeakRef: this.target,
+                    sourceWeakRef: this.sourceOptions.instance,
+                    eventName: observable.knownEvents.propertyChange,
+                    handler: this.onSourcePropertyChanged,
+                    handlerContext: this,
+                    key: this.options.targetProperty
+                }
+                this.weakEL.addWeakEventListener(this.weakEventListenerOptions);
             }
-            this.weakEL.addWeakEventListener(this.weakEventListenerOptions);
         }
     }
 
@@ -180,13 +180,22 @@ export class Binding {
 
         this.weakEL.removeWeakEventListener(this.weakEventListenerOptions);
         this.weakEventListenerOptions = undefined;
-        this.source.clear();
-        this.sourceOptions.instance.clear();
-        this.sourceOptions = undefined;
-        this.targetOptions = undefined;
+		if (this.source) {
+			this.source.clear();
+		}
+		if (this.sourceOptions) {
+			this.sourceOptions.instance.clear();
+			this.sourceOptions = undefined;
+		}
+		if (this.targetOptions) {
+			this.targetOptions = undefined;
+		}
     }
 
     public updateTwoWay(value: any) {
+		if (this.updating) {
+			return;
+		}
         if (this.options.twoWay) {
             if (this._isExpression(this.options.expression)) {
                 var changedModel = {};
@@ -220,7 +229,10 @@ export class Binding {
             var exp = polymerExpressions.PolymerExpressions.getExpression(expression);
             if (exp) {
                 var context = this.source && this.source.get && this.source.get() || global;
-                return exp.getValue(context, isBackConvert, changedModel);
+				var model = {};
+				model[contextKey] = context;
+				model[resourcesKey] = appModule.resources;
+				return exp.getValue(model, isBackConvert, changedModel);
             }
             return new Error(expression + " is not a valid expression.");
         }
@@ -261,12 +273,14 @@ export class Binding {
 
         var value;
 
-        var sourceOptionsInstance = this.sourceOptions.instance.get();
-        if (sourceOptionsInstance instanceof observable.Observable) {
-            value = sourceOptionsInstance.get(this.sourceOptions.property);
-        } else if (sourceOptionsInstance && this.sourceOptions.property &&
-            this.sourceOptions.property in sourceOptionsInstance) {
-            value = sourceOptionsInstance[this.sourceOptions.property];
+        if (this.sourceOptions) {
+            var sourceOptionsInstance = this.sourceOptions.instance.get();
+            if (sourceOptionsInstance instanceof observable.Observable) {
+                value = sourceOptionsInstance.get(this.sourceOptions.property);
+            } else if (sourceOptionsInstance && this.sourceOptions.property &&
+                this.sourceOptions.property in sourceOptionsInstance) {
+                value = sourceOptionsInstance[this.sourceOptions.property];
+            }
         }
         return value;
     }
@@ -308,11 +322,12 @@ export class Binding {
                 currentObject = currentObject[properties[i]];
             }
 
-            options = {
-                instance: new WeakRef(currentObject),
-                property: properties[properties.length - 1]
+            if (currentObject !== undefined && currentObject !== null) {
+                options = {
+                    instance: new WeakRef(currentObject),
+                    property: properties[properties.length - 1]
+                }
             }
-
         } else {
             options = {
                 instance: obj,
@@ -324,8 +339,15 @@ export class Binding {
     }
 
     private updateOptions(options: { instance: WeakRef<any>; property: any }, value: any) {
+        var optionsInstance;
+        if (options && options.instance) {
+            optionsInstance = options.instance.get();
+        }
+        if (!optionsInstance) {
+            return;
+        }
+
         this.updating = true;
-        var optionsInstance = options.instance.get();
 
         try {
             if (optionsInstance instanceof observable.Observable) {

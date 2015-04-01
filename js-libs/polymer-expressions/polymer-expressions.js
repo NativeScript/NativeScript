@@ -402,9 +402,9 @@ var Path = require("js-libs/polymer-expressions/path-parser").Path;
 
     Expression.prototype = {
         getValue: function (model, isBackConvert, changedModel, observer) {
-            var value = getFn(this.expression)(model, observer, changedModel);
+            var value = getFn(this.expression)(model.context, observer, changedModel);
             for (var i = 0; i < this.filters.length; i++) {
-                value = this.filters[i].transform(model, observer, model, isBackConvert, [value]);
+                value = this.filters[i].transform(model.context, observer, model.resources, isBackConvert, [value]);
             }
 
             return value;
