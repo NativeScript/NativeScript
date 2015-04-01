@@ -175,7 +175,7 @@ class AndroidApplication implements dts.AndroidApplication {
     //}
 
     public getActivity(intent: android.content.Intent): Object {
-        if (intent && intent.Action === android.content.Intent.ACTION_MAIN) {
+        if (intent && intent.getAction() === android.content.Intent.ACTION_MAIN) {
             // application's main activity
             if (exports.onLaunch) {
                 exports.onLaunch(intent);
