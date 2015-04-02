@@ -65,7 +65,7 @@ export class Image extends view.View implements definition.Image {
         IMAGE,
         new proxy.PropertyMetadata(
             undefined,
-            dependencyObservable.PropertyMetadataSettings.None
+            dependencyObservable.PropertyMetadataSettings.AffectsLayout
             )
         );
 

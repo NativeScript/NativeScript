@@ -87,6 +87,24 @@ export var test_Set_Text_Native = function () {
     helper.buildUIAndRunTest(label, test);
 }
 
+export var test_measuredWidth_is_not_clipped = function () {
+    var label = new LabelModule.Label();
+    label.horizontalAlignment = "left";
+    label.text = "i";
+    label.fontSize = 9;
+
+    var test = function (views: Array<view.View>) {
+
+        TKUnit.waitUntilReady(() => { return label.isLayoutValid; });
+
+        var expectedValue = 3;
+        var measuredWidth = label.getMeasuredWidth();
+        TKUnit.assertEqual(measuredWidth, expectedValue, "measuredWidth should not be rounded down.");
+    }
+
+    helper.buildUIAndRunTest(label, test);
+}
+
 export var test_Set_TextWrap_TNS = function () {
     // <snippet module="ui/label" title="Label">
     // ### How to turn on text wrapping for a label

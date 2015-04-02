@@ -476,7 +476,7 @@ export class View extends proxy.ProxyObject implements definition.View {
 
             case utils.layout.AT_MOST:
                 if (specSize < size) {
-                    result = Math.round(specSize) | utils.layout.MEASURED_STATE_TOO_SMALL;
+                    result = Math.round(specSize + 0.499) | utils.layout.MEASURED_STATE_TOO_SMALL;
                 }
                 break;
 
@@ -485,7 +485,7 @@ export class View extends proxy.ProxyObject implements definition.View {
                 break;
         }
 
-        return Math.round(result) | (childMeasuredState & utils.layout.MEASURED_STATE_MASK);
+        return Math.round(result + 0.499) | (childMeasuredState & utils.layout.MEASURED_STATE_MASK);
     }
 
     public static layoutChild(parent: View, child: View, left: number, top: number, right: number, bottom: number): void {
