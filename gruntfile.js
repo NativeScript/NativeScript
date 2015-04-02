@@ -33,18 +33,22 @@ module.exports = function(grunt) {
         var currentAppName = grunt.task.current.data.appName;
         return updatePackageDef(content, function(contentAsObject) {
             contentAsObject.version = localCfg.packageVersion;
+            contentAsObject.author = "Telerik <support@telerik.com>";
+            var specificKeywords = ["telerik", "mobile"];
             if (currentAppName.indexOf("template-") == 0) {
                 var templateName = currentAppName.substring("template-".length);
                 contentAsObject.name = "tns-" + currentAppName;
                 contentAsObject.description = "Nativescript " + templateName + " template";
-                contentAsObject.keywords = addKeywords(contentAsObject.keywords, "template");
+                specificKeywords.push("template");
             }
             else {
                 contentAsObject.name = "tns-samples-" + currentAppName;
                 contentAsObject.description = "Nativescript " + currentAppName + " sample application";
-                contentAsObject.keywords = addKeywords(contentAsObject.keywords, "sample");
+                specificKeywords.push("sample");
             }
             contentAsObject.license = "BSD";
+            addKeywords(contentAsObject, specificKeywords);
+
             if (!contentAsObject.repository) {
                 contentAsObject.repository = {};
             }
@@ -57,14 +61,16 @@ module.exports = function(grunt) {
         });
     };
 
-    var addKeywords = function(originalKeywords, newKeywords) {
-        var originalKeywordsArr = [];
-        if (typeof(originalKeywords) == "string") {
-            originalKeywordsArr = originalKeywords.split(" ");
+    var addKeywords = function(packageObject, newKeywords) {
+        if (!packageObject.keywords) {
+            packageObject.keywords = newKeywords;
+            return;
         }
-        var newKeywordsArr = newKeywords.split(" ");
-        var combinedKeywordsArr = originalKeywordsArr.concat(newKeywordsArr);
-        return combinedKeywordsArr.join(" ");
+
+        if (typeof(packageObject.keywords) == "string") {
+            packageObject.keywords = packageObject.keywords.split(" ");
+        }
+        packageObject.keywords = packageObject.keywords.concat(newKeywords);
     };
 
     var updateDefinitionsPackageDef = function(content, srcPath) {
