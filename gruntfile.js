@@ -34,13 +34,15 @@ module.exports = function(grunt) {
         return updatePackageDef(content, function(contentAsObject) {
             contentAsObject.version = localCfg.packageVersion;
             if (currentAppName.indexOf("template-") == 0) {
-                var templateName = currentAppName.substring(0, "template-".length);
+                var templateName = currentAppName.substring("template-".length);
                 contentAsObject.name = "tns-" + currentAppName;
                 contentAsObject.description = "Nativescript " + templateName + " template";
+                contentAsObject.keywords = addKeywords(contentAsObject.keywords, "template");
             }
             else {
                 contentAsObject.name = "tns-samples-" + currentAppName;
                 contentAsObject.description = "Nativescript " + currentAppName + " sample application";
+                contentAsObject.keywords = addKeywords(contentAsObject.keywords, "sample");
             }
             contentAsObject.license = "BSD";
             if (!contentAsObject.repository) {
@@ -53,6 +55,16 @@ module.exports = function(grunt) {
                 contentAsObject.repository.url += "/commit/" + localCfg.commitSHA;
             }
         });
+    };
+
+    var addKeywords = function(originalKeywords, newKeywords) {
+        var originalKeywordsArr = [];
+        if (typeof(originalKeywords) == "string") {
+            originalKeywordsArr = originalKeywords.split(" ");
+        }
+        var newKeywordsArr = newKeywords.split(" ");
+        var combinedKeywordsArr = originalKeywordsArr.concat(newKeywordsArr);
+        return combinedKeywordsArr.join(" ");
     };
 
     var updateDefinitionsPackageDef = function(content, srcPath) {
