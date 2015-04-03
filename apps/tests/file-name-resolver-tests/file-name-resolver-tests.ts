@@ -212,7 +212,7 @@ function testTemplate(candidates: Array<string>, context: resolver.PlatformConte
     TKUnit.assertEqual(result, expected, "File path");
 }
 
-var testFilePath = fs.path.join(fs.knownFolders.currentApp().path, "tests/file-name-resolver-tests/files/test");
+var testFilePath = "~/file-name-resolver-tests/files/test".replace("~", fs.knownFolders.currentApp().path);
 
 export function test_file_resolver_with_andorid_phone_portratit() {
     var fileResolver = new resolver.FileNameResolver(androidPhonePortraitContext);
