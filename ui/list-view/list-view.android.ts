@@ -39,6 +39,8 @@ export class ListView extends common.ListView {
     public _createUI() {
         this._android = new android.widget.ListView(this._context);
 
+        // Fixes issue with black random black items when scrolling
+        this._android.setCacheColorHint(android.graphics.Color.TRANSPARENT);
         if (!this._androidViewId) {
             this._androidViewId = android.view.View.generateViewId();
         }
