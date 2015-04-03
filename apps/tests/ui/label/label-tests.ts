@@ -26,6 +26,7 @@ import textBase = require("ui/text-base");
 import enums = require("ui/enums");
 import labelTestsNative = require("./label-tests-native");
 import trace = require("trace");
+import fs = require("file-system");
 
 var errorMessage;
 var errorTraceWriter = {
@@ -477,7 +478,7 @@ export var testLocalTextAlignmentFromCssWhenAddingCssFileAllSelectorsAreApplied 
         view.id = "testLabel";
         var page = <page.Page>views[1];
         page.addCss("#testLabel { text-align: " + expectedTextAlignment + "; }");
-        page.addCssFile("/tests/ui/label/label-tests.css");
+        page.addCssFile(fs.path.join(__dirname, "label-tests.css"));
 
         var actualResult = view.style.textAlignment;
         // actual result is taken from #testLabel tag, because it has a greater priority (id vs type).
@@ -512,8 +513,8 @@ export var testErrorMessageWhenWrongCssIsAddedWithFile = function () {
         var view = <LabelModule.Label>views[0];
         view.id = "testLabel";
         var page = <page.Page>views[1];
-        errorMessage = undefined;   
-        page.addCssFile("/tests/ui/label/label-tests-wrong.css");
+        errorMessage = undefined;
+        page.addCssFile(fs.path.join(__dirname, "label-tests-wrong.css"));
 
         TKUnit.assertNotEqual(errorMessage, undefined);
     });
