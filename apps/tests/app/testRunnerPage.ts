@@ -4,7 +4,7 @@ import bm = require("ui/button");
 import listViewDef = require("ui/list-view");
 import trace = require("trace");
 trace.enable();
-trace.setCategories(trace.categories.Test);
+trace.setCategories(trace.categories.Test + "," + trace.categories.Error);
 
 export function createPage() {
     var data: string[] = [""];
