@@ -72,8 +72,9 @@ var Path = require("js-libs/polymer-expressions/path-parser").Path;
         },
 
         setValue: function (model, newValue) {
-            if (this.path.length == 1);
-            model = findScope(model, this.path[0]);
+            if (this.path.length == 1) {
+                model = findScope(model, this.path[0]);
+            }
 
             return this.path.setValueFrom(model, newValue);
         }

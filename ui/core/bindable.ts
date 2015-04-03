@@ -6,6 +6,7 @@ import appModule = require("application");
 import types = require("utils/types");
 import trace = require("trace");
 import polymerExpressions = require("js-libs/polymer-expressions");
+import bindingBuilder = require("../builder/binding-builder");
 
 var bindingContextProperty = new dependencyObservable.Property(
     "bindingContext",
@@ -199,7 +200,12 @@ export class Binding {
         if (this.options.twoWay) {
             if (this._isExpression(this.options.expression)) {
                 var changedModel = {};
-                changedModel[this.options.sourceProperty] = value;
+                if (this.options.sourceProperty === bindingBuilder.bindingConstants.bindingValueKey) {
+                    changedModel[bindingBuilder.bindingConstants.bindingValueKey] = value;
+                }
+                else {
+                    changedModel[this.options.sourceProperty] = value;
+                }
                 var expressionValue = this._getExpressionValue(this.options.expression, true, changedModel);
                 if (expressionValue instanceof Error) {
                     trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
@@ -258,7 +264,11 @@ export class Binding {
 
     private getSourceProperty() {
         if (this._isExpression(this.options.expression)) {
-            var expressionValue = this._getExpressionValue(this.options.expression, false, undefined);
+            var changedModel = {};
+            if (this.options.sourceProperty === bindingBuilder.bindingConstants.bindingValueKey) {
+                changedModel[bindingBuilder.bindingConstants.bindingValueKey] = this.source.get();
+            }
+            var expressionValue = this._getExpressionValue(this.options.expression, false, changedModel);
             if (expressionValue instanceof Error) {
                 trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
             }
@@ -275,9 +285,13 @@ export class Binding {
 
         if (this.sourceOptions) {
             var sourceOptionsInstance = this.sourceOptions.instance.get();
-            if (sourceOptionsInstance instanceof observable.Observable) {
+            if (this.sourceOptions.property === bindingBuilder.bindingConstants.bindingValueKey) {
+                value = sourceOptionsInstance;
+            }
+            else if (sourceOptionsInstance instanceof observable.Observable) {
                 value = sourceOptionsInstance.get(this.sourceOptions.property);
-            } else if (sourceOptionsInstance && this.sourceOptions.property &&
+            } 
+            else if (sourceOptionsInstance && this.sourceOptions.property &&
                 this.sourceOptions.property in sourceOptionsInstance) {
                 value = sourceOptionsInstance[this.sourceOptions.property];
             }
@@ -311,6 +325,14 @@ export class Binding {
 
     private resolveOptions(obj: WeakRef<any>, property: string): { instance: any; property: any } {
         var options;
+
+        if (property === bindingBuilder.bindingConstants.bindingValueKey) {
+            options = {
+                instance: obj,
+                property: property
+            };
+            return options;
+        }
 
         if (!this._isExpression(property) && types.isString(property) && property.indexOf(".") !== -1) {
             var properties = property.split(".");

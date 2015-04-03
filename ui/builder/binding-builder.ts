@@ -6,6 +6,7 @@ export module bindingConstants {
     export var expression = "expression";
     export var twoWay = "twoWay";
     export var source = "source";
+    export var bindingValueKey = "$value";
 };
 
 var hasEqualSignRegex = /=+/;
@@ -78,7 +79,8 @@ function parseNamedProperties(parameterList, knownOptions, callback) {
 function extractPropertyNameFromExpression(expression: string): string {
     var firstExpressionSymbolIndex = expression.search(expressionSymbolsRegex);
     if (firstExpressionSymbolIndex > -1) {
-        return expression.substr(0, firstExpressionSymbolIndex).trim();
+        var sourceProp = expression.substr(0, firstExpressionSymbolIndex).trim();
+        return sourceProp;
     }
     else {
         return expression;
