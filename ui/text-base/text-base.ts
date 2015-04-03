@@ -57,6 +57,20 @@ export class TextBase extends view.View implements definition.TextBase {
         this._setValue(TextBase.textProperty, value);
     }
 
+    get fontSize(): number {
+        return this.style.fontSize;
+    }
+    set fontSize(value: number) {
+        this.style.fontSize = value;
+    }
+
+    get textAlignment(): string {
+        return this.style.textAlignment;
+    }
+    set textAlignment(value: string) {
+        this.style.textAlignment;
+    }
+
     get formattedText(): formattedString.FormattedString {
         return this._getValue(TextBase.formattedTextProperty);
     }

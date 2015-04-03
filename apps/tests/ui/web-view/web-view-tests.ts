@@ -63,7 +63,7 @@ export var testLoadExistingUrl = function () {
     });
     webView.url = "https://httpbin.org/html";
 
-    TKUnit.wait(2);
+    TKUnit.wait(4);
 
     helper.goBack();
 
@@ -89,14 +89,17 @@ export var testLoadInvalidUrl = function () {
 
     var testFinished = false;
     var actualError;
-
     webView.on(webViewModule.knownEvents.loadFinished, function (args: webViewModule.LoadEventData) {
-        testFinished = true;
+        if (actualError) {
+            // Android call this twice -- the second time args.error is undefined.
+            return;
+        }
         actualError = args.error;
+        testFinished = true;
     });
     webView.url = "kofti://mnogokofti";
 
-    TKUnit.wait(2);
+    TKUnit.wait(4);
 
     helper.goBack();
 
