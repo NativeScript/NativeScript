@@ -50,7 +50,16 @@ export class TextView extends common.TextView {
         }
 
         this._delegate = UITextViewDelegateImpl.new().initWithOwner(this);
+    }
+
+    public onLoaded() {
+        super.onLoaded();
         this._ios.delegate = this._delegate;
+    }
+
+    public onUnloaded() {
+        this._ios.delegate = null;
+        super.onUnloaded();
     }
 
     get ios(): UITextView {

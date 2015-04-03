@@ -82,7 +82,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 
 export class TabView extends common.TabView {
     private _ios: UITabBarControllerImpl;
-    private _tabBarControllerDelegate: UITabBarControllerDelegateImpl;
+    private _delegate: UITabBarControllerDelegateImpl;
     private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
     private _tabBarHeight: number = 0;
     private _navBarHeight: number = 0;
@@ -93,11 +93,21 @@ export class TabView extends common.TabView {
 
         this._ios = UITabBarControllerImpl.new().initWithOwner(this);
 
-        this._tabBarControllerDelegate = UITabBarControllerDelegateImpl.new().initWithOwner(this);
-        this._ios.delegate = this._tabBarControllerDelegate;
+        this._delegate = UITabBarControllerDelegateImpl.new().initWithOwner(this);
 
         this._moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.new().initWithOwner(this);
         //This delegate is set on the last line of _addTabs method.
+    }
+
+    public onLoaded() {
+        super.onLoaded();
+        this._ios.delegate = this._delegate;
+    }
+
+    public onUnloaded() {
+        this._ios.delegate = null;
+        this._ios.moreNavigationController.delegate = null;
+        super.onUnloaded();
     }
 
     get ios(): UIViewController {
@@ -249,4 +259,5 @@ export class TabView extends common.TabView {
             view.View.layoutChild(this, child, 0, this._navBarHeight, right, (bottom - this._navBarHeight - this._tabBarHeight));
         }
     }
+
 }

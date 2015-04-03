@@ -96,7 +96,16 @@ export class SearchBar extends common.SearchBar {
         this._ios = new UISearchBar();
 
         this._delegate = UISearchBarDelegateImpl.new().initWithOwner(this);
+    }
+
+    public onLoaded() {
+        super.onLoaded();
         this._ios.delegate = this._delegate;
+    }
+
+    public onUnloaded() {
+        this._ios.delegate = null;
+        super.onUnloaded();
     }
 
     get ios(): UISearchBar {

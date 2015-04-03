@@ -148,7 +148,7 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
 export class ListView extends common.ListView {
     private _ios: UITableView;
     private _dataSource;
-    private _uiTableViewDelegate;
+    private _delegate;
     private _heights: Array<number>;
     private _preparingCell: boolean = false;
 
@@ -165,10 +165,19 @@ export class ListView extends common.ListView {
         this._dataSource = dataSource;
         this._ios.dataSource = this._dataSource;
 
-        this._uiTableViewDelegate = UITableViewDelegateImpl.new().initWithOwner(this);
+        this._delegate = UITableViewDelegateImpl.new().initWithOwner(this);
 
-        this._ios.delegate = this._uiTableViewDelegate;
         this._heights = new Array<number>();
+    }
+
+    public onLoaded() {
+        super.onLoaded();
+        this._ios.delegate = this._delegate;
+    }
+
+    public onUnloaded() {
+        this._ios.delegate = null;
+        super.onUnloaded();
     }
 
     get ios(): UITableView {
