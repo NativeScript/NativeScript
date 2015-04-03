@@ -136,16 +136,6 @@ declare module "ui/core/view" {
         backgroundColor: color.Color;
         
         /**
-         * Gets or sets font-size style property.
-         */
-        fontSize: number;
-
-        /**
-         * Gets or sets text-alignment style property.
-         */
-        textAlignment: string;
-
-        /**
          * Gets or sets the minimum width the view may grow to.
          */
         minWidth: number;

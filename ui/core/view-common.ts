@@ -174,20 +174,6 @@ export class View extends proxy.ProxyObject implements definition.View {
         this.style.backgroundColor = value;
     }
 
-    get fontSize(): number {
-        return this.style.fontSize;
-    }
-    set fontSize(value: number) {
-        this.style.fontSize = value;
-    }
-
-    get textAlignment(): string {
-        return this.style.textAlignment;
-    }
-    set textAlignment(value: string) {
-        this.style.textAlignment;
-    }
-
     get minWidth(): number {
         return this.style.minWidth;
     }

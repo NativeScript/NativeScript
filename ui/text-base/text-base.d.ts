@@ -26,6 +26,16 @@
         text: string;
 
         /**
+         * Gets or sets text-alignment style property.
+         */
+        textAlignment: string;
+
+        /**
+         * Gets or sets font-size style property.
+         */
+        fontSize: number;
+
+        /**
          * Gets or sets a formatted string.
          */
         formattedText: formattedString.FormattedString;

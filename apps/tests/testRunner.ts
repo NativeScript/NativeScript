@@ -10,7 +10,6 @@ allTests["WRAPLAYOUT"] = require("./layouts/wrap-layout-tests");
 allTests["ABSOLUTELAYOUT"] = require("./layouts/absolute-layout-tests");
 allTests["GRIDLAYOUT"] = require("./layouts/grid-layout-tests");
 allTests["STACKLAYOUT"] = require("./layouts/stack-layout-tests");
-allTests["WEB-VIEW"] = require("./ui/web-view/web-view-tests");
 allTests["PLATFORM"] = require("./platform-tests");
 allTests["STYLE-PROPERTIES"] = require("./ui/style/style-properties-tests");
 allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
@@ -51,6 +50,7 @@ allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests")
 allTests["LIST-PICKER"] = require("./ui/list-picker/list-picker-tests");
 allTests["DATE-PICKER"] = require("./ui/date-picker/date-picker-tests");
 allTests["TIME-PICKER"] = require("./ui/time-picker/time-picker-tests");
+allTests["WEB-VIEW"] = require("./ui/web-view/web-view-tests");
 
 var testsWithLongDelay = {
     testLocation: 10000,
