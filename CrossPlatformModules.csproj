@@ -574,9 +574,8 @@
     <Content Include="apps\tests\pages\files\test.minWH450.xml" />
     <Content Include="apps\tests\pages\files\test.xml" />
     <Content Include="apps\tests\file-name-resolver-tests\files\other.xml" />
-    <Content Include="apps\tests\file-name-resolver-tests\files\test.android.xml" />
-    <Content Include="apps\tests\file-name-resolver-tests\files\test.ios.land.xml" />
-    <Content Include="apps\tests\file-name-resolver-tests\files\test.android.minWH600.xml" />
+    <Content Include="apps\tests\file-name-resolver-tests\files\test.land.xml" />
+    <Content Include="apps\tests\file-name-resolver-tests\files\test.minWH600.xml" />
     <Content Include="apps\tests\file-name-resolver-tests\files\test.xml" />
     <Content Include="apps\tests\pages\page17.xml">
       <SubType>Designer</SubType>
@@ -1532,7 +1531,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
