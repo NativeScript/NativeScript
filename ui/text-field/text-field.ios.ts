@@ -74,7 +74,16 @@ export class TextField extends common.TextField {
         this._ios = new UITextField();
 
         this._delegate = UITextFieldDelegateImpl.new().initWithOwner(this);
+    }
+
+    public onLoaded() {
+        super.onLoaded();
         this._ios.delegate = this._delegate;
+    }
+
+    public onUnloaded() {
+        this._ios.delegate = null;
+        super.onUnloaded();
     }
 
     get ios(): UITextField {

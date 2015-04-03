@@ -56,7 +56,16 @@ export class WebView extends common.WebView {
 
         this._ios = new UIWebView();
         this._delegate = UIWebViewDelegateImpl.new().initWithOwner(this);
+    }
+
+    public onLoaded() {
+        super.onLoaded();
         this._ios.delegate = this._delegate;
+    }
+
+    public onUnloaded() {
+        this._ios.delegate = null;
+        super.onUnloaded();
     }
 
     get ios(): UIWebView {
