@@ -461,6 +461,46 @@ export function test_usingAppLevelConvertersInListViewItems() {
     helper.buildUIAndRunTest(listView, testAction);
 }
 
+export function test_BindingListViewToASimpleArray() {
+    var listView = new listViewModule.ListView();
+
+    function testAction(views: Array<viewModule.View>) {
+        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ $value }}\" />";
+        listView.items = [1, 2, 3];
+
+        TKUnit.wait(ASYNC);
+        var firstNativeElementText = getTextFromNativeElementAt(listView, 0);
+        var secondNativeElementText = getTextFromNativeElementAt(listView, 1);
+        var thirdNativeElementText = getTextFromNativeElementAt(listView, 2);
+
+        TKUnit.assertEqual(firstNativeElementText, "1", "first element text");
+        TKUnit.assertEqual(secondNativeElementText, "2", "second element text");
+        TKUnit.assertEqual(thirdNativeElementText, "3", "third element text");
+    }
+
+    helper.buildUIAndRunTest(listView, testAction);
+}
+
+export function test_BindingListViewToASimpleArrayWithExpression() {
+    var listView = new listViewModule.ListView();
+
+    function testAction(views: Array<viewModule.View>) {
+        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ $value, $value + ' some static text' }}\" />";
+        listView.items = [1, 2, 3];
+
+        TKUnit.wait(ASYNC);
+        var firstNativeElementText = getTextFromNativeElementAt(listView, 0);
+        var secondNativeElementText = getTextFromNativeElementAt(listView, 1);
+        var thirdNativeElementText = getTextFromNativeElementAt(listView, 2);
+
+        TKUnit.assertEqual(firstNativeElementText, "1 some static text", "first element text");
+        TKUnit.assertEqual(secondNativeElementText, "2 some static text", "second element text");
+        TKUnit.assertEqual(thirdNativeElementText, "3 some static text", "third element text");
+    }
+
+    helper.buildUIAndRunTest(listView, testAction);
+}
+
 function loadViewWithItemNumber(args: listViewModule.ItemEventData) {
     if (!args.view) {
         args.view = new labelModule.Label();
