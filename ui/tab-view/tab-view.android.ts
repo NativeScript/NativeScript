@@ -271,6 +271,7 @@ export class TabView extends common.TabView {
         // If we are loading a TabView inside a hidden fragment this check will prevent it from polluting the action bar.
         if (this.android && this.android.isShown()) {
             this._addTabsIfNeeded();
+            this._setNativeSelectedIndex(this.selectedIndex);
         }
     }
 
@@ -444,6 +445,7 @@ export class TabView extends common.TabView {
         if (actionBar) {
             var actionBarSelectedIndex = actionBar.getSelectedNavigationIndex();
             if (actionBarSelectedIndex !== index) {
+                trace.write("TabView actionBar.setSelectedNavigationItem("+index+")", common.traceCategory);
                 actionBar.setSelectedNavigationItem(index);
             }
         }
@@ -451,6 +453,7 @@ export class TabView extends common.TabView {
         // Select the respective page in the ViewPager
         var viewPagerSelectedIndex = this._android.getCurrentItem();
         if (viewPagerSelectedIndex !== index) {
+            trace.write("TabView this._android.setCurrentItem("+index+", true);", common.traceCategory);
             this._android.setCurrentItem(index, true);
         }
     }
