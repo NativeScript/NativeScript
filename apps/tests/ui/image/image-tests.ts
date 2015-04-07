@@ -249,8 +249,3 @@ export var test_SettingStretch_none = function () {
 
     helper.buildUIAndRunTest(image, testFunc);
 }
-
-export var test_src_property_affects_layout = function () {
-    var sourceProperty = ImageModule.Image.imageSourceProperty;
-    TKUnit.assertEqual(sourceProperty.metadata.affectsLayout, true, "sourceProperty should invalidate layout");
-}
