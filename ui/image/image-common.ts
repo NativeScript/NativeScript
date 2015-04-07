@@ -65,7 +65,8 @@ export class Image extends view.View implements definition.Image {
         IMAGE,
         new proxy.PropertyMetadata(
             undefined,
-            dependencyObservable.PropertyMetadataSettings.AffectsLayout
+            // None on purpose. for iOS we trigger it manually if needed. Android layout handles it.
+            dependencyObservable.PropertyMetadataSettings.None
             )
         );
 
