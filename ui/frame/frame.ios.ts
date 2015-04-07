@@ -226,25 +226,17 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
     }
 
     public navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        // This method is needed otherwise it will be too late and transition will completed before page is layouted.
+        // In this method we need to layout the new page otherwise page will be shown empty and update after that which is bad UX.
         var frame = this._owner;
-        var backStack = frame.backStack;
-        var currentEntry = backStack.length > 0 ? backStack[backStack.length - 1] : null;
         var newEntry: definition.BackstackEntry = viewController[ENTRY];
-
-        var isBack = currentEntry && newEntry === currentEntry;
-        if (!isBack) {
-            var newPage = newEntry.resolvedPage;
-
-            if (!frame._currentEntry) {
-                frame._currentEntry = newEntry;
-            }
-            else {
-                frame._navigateToEntry = newEntry;
-            }
-
+        var newPage = newEntry.resolvedPage;
+        if (!newPage.parent) {
+            frame._navigateToEntry = newEntry;
             frame._addView(newPage);
             frame.populateMenuItems(newPage);
+        }
+        else if (newPage.parent !== frame) {
+            throw new Error("Page is already shown on another frame.");
         }
     }
 
@@ -255,6 +247,8 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         var currentEntry = backStack.length > 0 ? backStack[backStack.length - 1] : null;
         var newEntry: definition.BackstackEntry = viewController[ENTRY];
 
+        // This code check if navigation happened through UI (e.g. back button or swipe gesture).
+        // When calling goBack on frame isBack will be false.
         var isBack: boolean = currentEntry && newEntry === currentEntry;
         if (isBack) {
             try {
@@ -267,16 +261,16 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         }
 
         var page = frame.currentPage;
-        if (page && isBack) {
+        if (page && !navigationController.viewControllers.containsObject(page.ios)) {
             frame._removeView(page);
         }
-
-        var newPage = newEntry.resolvedPage;
 
         frame._navigateToEntry = null;
         frame._currentEntry = newEntry;
         frame.updateNavigationBar();
-        
+
+        var newPage = newEntry.resolvedPage;
+                
         // notify the page
         newPage.onNavigatedTo(newEntry.entry.context);
         frame._processNavigationQueue(newPage);
