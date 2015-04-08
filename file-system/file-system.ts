@@ -159,7 +159,8 @@ export class File extends FileSystemEntity {
     }
 
     get isLocked(): boolean {
-        return this[fileLockedProperty];
+        // !! is a boolean conversion/cast, handling undefined as well
+        return !!this[fileLockedProperty];
     }
 
     public readText(encoding?: string): Promise<string> {

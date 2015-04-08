@@ -18,11 +18,7 @@ export class FileSystemAccess {
         var attributes = fileManager.attributesOfItemAtPathError(path, null);
 
         if (attributes) {
-            var date = attributes.objectForKey(this.keyModificationTime);
-            var interval = date.timeIntervalSince1970();
-
-            // time interval is in seconds, Date constructor expects milliseconds, hence this multiply by 1000
-            return new Date(interval * 1000);
+            return attributes.objectForKey(this.keyModificationTime);
         } else {
             return new Date();
         }

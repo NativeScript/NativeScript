@@ -579,3 +579,16 @@ export function testKnownFolderRemove(done) {
             done(null);
         });
 };
+
+export function test_FSEntity_Properties() {
+    var documents = fs.knownFolders.documents();
+    var file = documents.getFile("Test_File.txt");
+
+    TKUnit.assert(file.extension === ".txt", "FileEntity.extension not working.");
+    TKUnit.assert(file.isLocked === false, "FileEntity.isLocked not working.");
+    TKUnit.assert(file.lastModified instanceof Date, "FileEntity.lastModified not working.");
+    TKUnit.assert(file.name === "Test_File.txt", "FileEntity.name not working.");
+    TKUnit.assert(file.parent === documents, "FileEntity.parent not working.");
+
+    file.remove();
+}
