@@ -231,7 +231,14 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         var newEntry: definition.BackstackEntry = viewController[ENTRY];
         var newPage = newEntry.resolvedPage;
         if (!newPage.parent) {
-            frame._navigateToEntry = newEntry;
+            if (!frame._currentEntry) {
+                // First navigation
+                frame._currentEntry = newEntry;
+            }
+            else {
+                frame._navigateToEntry = newEntry;
+            }
+
             frame._addView(newPage);
             frame.populateMenuItems(newPage);
         }
@@ -270,7 +277,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         frame.updateNavigationBar();
 
         var newPage = newEntry.resolvedPage;
-                
+
         // notify the page
         newPage.onNavigatedTo(newEntry.entry.context);
         frame._processNavigationQueue(newPage);
@@ -283,7 +290,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
 
 /* tslint:disable */
 class iOSFrame implements definition.iOSFrame {
-/* tslint:enable */
+    /* tslint:enable */
     private _controller: UINavigationControllerImpl;
     private _showNavigationBar: boolean;
     private _navBarVisibility: string;
