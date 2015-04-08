@@ -212,30 +212,30 @@ function testTemplate(candidates: Array<string>, context: resolver.PlatformConte
     TKUnit.assertEqual(result, expected, "File path");
 }
 
-var testFilePath = fs.path.join(fs.knownFolders.currentApp().path, "tests/file-name-resolver-tests/files/test");
+var testFilePath = "~/file-name-resolver-tests/files/test".replace("~", fs.knownFolders.currentApp().path);
 
 export function test_file_resolver_with_andorid_phone_portratit() {
     var fileResolver = new resolver.FileNameResolver(androidPhonePortraitContext);
     var result = fileResolver.resolveFileName(testFilePath, "xml");
-    TKUnit.assertEqual(result, testFilePath + ".android.xml", "File path");
+    TKUnit.assertEqual(result, testFilePath + ".xml", "File path");
 }
 
 export function test_file_resolver_with_andorid_phone_landscape() {
     var fileResolver = new resolver.FileNameResolver(androidPhoneLandsacpeContext);
     var result = fileResolver.resolveFileName(testFilePath, "xml");
-    TKUnit.assertEqual(result, testFilePath + ".android.xml", "File path");
+    TKUnit.assertEqual(result, testFilePath + ".land.xml", "File path");
 }
 
 export function test_file_resolver_with_andorid_tablet_portrait() {
     var fileResolver = new resolver.FileNameResolver(androidTabletPortraitContext);
     var result = fileResolver.resolveFileName(testFilePath, "xml");
-    TKUnit.assertEqual(result, testFilePath + ".android.minWH600.xml", "File path");
+    TKUnit.assertEqual(result, testFilePath + ".minWH600.xml", "File path");
 }
 
 export function test_file_resolver_with_ios_phone_landscape() {
     var fileResolver = new resolver.FileNameResolver(iPhoneLandscapeContext);
     var result = fileResolver.resolveFileName(testFilePath, "xml");
-    TKUnit.assertEqual(result, testFilePath + ".ios.land.xml", "File path");
+    TKUnit.assertEqual(result, testFilePath + ".land.xml", "File path");
 }
 
 export function test_file_resolver_with_ios_phone_portrait() {
