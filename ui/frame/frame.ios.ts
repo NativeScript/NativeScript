@@ -4,6 +4,8 @@ import trace = require("trace");
 import imageSource = require("image-source");
 import pages = require("ui/page");
 import enums = require("ui/enums");
+import utils = require("utils/utils");
+import view = require("ui/core/view");
 
 declare var exports;
 require("utils/module-merge").merge(frameCommon, exports);
@@ -15,7 +17,8 @@ var navDepth = 0;
 export class Frame extends frameCommon.Frame {
     private _ios: iOSFrame;
     private _paramToNavigate: any;
-    public shouldSkipNativePop: boolean = false;
+    public _shouldSkipNativePop: boolean = false;
+    public _navigateToEntry: definition.BackstackEntry;
 
     constructor() {
         super();
@@ -39,7 +42,7 @@ export class Frame extends frameCommon.Frame {
             this._paramToNavigate = param;
         }
     }
-    
+
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
         var viewController = backstackEntry.resolvedPage.ios;
         if (!viewController) {
@@ -63,7 +66,7 @@ export class Frame extends frameCommon.Frame {
     public _goBackCore(entry: definition.NavigationEntry) {
         navDepth--;
         trace.write("Frame<" + this._domId + ">.popViewControllerAnimated depth = " + navDepth, trace.categories.Navigation);
-        if (!this.shouldSkipNativePop) {
+        if (!this._shouldSkipNativePop) {
             this._ios.controller.popViewControllerAnimated(this._getIsAnimatedNavigation(entry));
         }
     }
@@ -106,6 +109,32 @@ export class Frame extends frameCommon.Frame {
         var window = this._nativeView.window;
         if (window) {
             window.setNeedsLayout();
+        }
+    }
+
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+
+        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+
+        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
+        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+
+        var result = view.View.measureChild(this, this.currentPage, widthMeasureSpec, utils.layout.makeMeasureSpec(height - this.navigationBarHeight, heightMode));
+        if (this._navigateToEntry) {
+            view.View.measureChild(this, this._navigateToEntry.resolvedPage, widthMeasureSpec, utils.layout.makeMeasureSpec(height - this.navigationBarHeight, heightMode));
+        }
+
+        var widthAndState = view.View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
+        var heightAndState = view.View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
+
+        this.setMeasuredDimension(widthAndState, heightAndState);
+    }
+
+    public onLayout(left: number, top: number, right: number, bottom: number): void {
+        view.View.layoutChild(this, this.currentPage, 0, this.navigationBarHeight, right - left, bottom - top);
+        if (this._navigateToEntry) {
+            view.View.layoutChild(this, this._navigateToEntry.resolvedPage, 0, this.navigationBarHeight, right - left, bottom - top);
         }
     }
 
@@ -196,6 +225,21 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         this._owner._updateLayout();
     }
 
+    public navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+        // In this method we need to layout the new page otherwise page will be shown empty and update after that which is bad UX.
+        var frame = this._owner;
+        var newEntry: definition.BackstackEntry = viewController[ENTRY];
+        var newPage = newEntry.resolvedPage;
+        if (!newPage.parent) {
+            frame._navigateToEntry = newEntry;
+            frame._addView(newPage);
+            frame.populateMenuItems(newPage);
+        }
+        else if (newPage.parent !== frame) {
+            throw new Error("Page is already shown on another frame.");
+        }
+    }
+
     public navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
 
         var frame: Frame = this._owner;
@@ -203,28 +247,30 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         var currentEntry = backStack.length > 0 ? backStack[backStack.length - 1] : null;
         var newEntry: definition.BackstackEntry = viewController[ENTRY];
 
-        if (newEntry === currentEntry && currentEntry) {
+        // This code check if navigation happened through UI (e.g. back button or swipe gesture).
+        // When calling goBack on frame isBack will be false.
+        var isBack: boolean = currentEntry && newEntry === currentEntry;
+        if (isBack) {
             try {
-                frame.shouldSkipNativePop = true;
+                frame._shouldSkipNativePop = true;
                 frame.goBack();
             }
             finally {
-                frame.shouldSkipNativePop = false;
+                frame._shouldSkipNativePop = false;
             }
         }
 
         var page = frame.currentPage;
-        if (page) {
+        if (page && !navigationController.viewControllers.containsObject(page.ios)) {
             frame._removeView(page);
         }
 
-        var newPage = newEntry.resolvedPage;
-
+        frame._navigateToEntry = null;
         frame._currentEntry = newEntry;
-        frame._addView(newPage);
-        frame.populateMenuItems(newPage);
         frame.updateNavigationBar();
-        
+
+        var newPage = newEntry.resolvedPage;
+                
         // notify the page
         newPage.onNavigatedTo(newEntry.entry.context);
         frame._processNavigationQueue(newPage);

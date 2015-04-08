@@ -186,7 +186,7 @@ export class ListView extends common.ListView {
 
     public refresh() {
         this._ios.reloadData();
-		this.requestLayout();
+        this.requestLayout();
     }
 
     public getHeight(index: number): number {
@@ -227,21 +227,22 @@ export class ListView extends common.ListView {
 
     public _prepareCell(tableCell: UITableViewCell, indexPath: NSIndexPath): number {
         var cell: any = tableCell;
-        if (!cell.view) {
-            cell.view = this._getItemTemplateContent(indexPath.row);
-        }
-
-        var args = notifyForItemAtIndex(this, cell, ITEMLOADING, indexPath);
-        var view = cell.view = args.view || this._getDefaultItemContent(indexPath.row);
-
-        if (view && !view.parent && view.ios) {
-            cell.contentView.addSubview(view.ios);
-            this._addView(view);
-        }
-
         var cellHeight: number;
+
         try {
             this._preparingCell = true;
+            if (!cell.view) {
+                cell.view = this._getItemTemplateContent(indexPath.row);
+            }
+
+            var args = notifyForItemAtIndex(this, cell, ITEMLOADING, indexPath);
+            var view = cell.view = args.view || this._getDefaultItemContent(indexPath.row);
+
+            if (view && !view.parent && view.ios) {
+                cell.contentView.addSubview(view.ios);
+                this._addView(view);
+            }
+            
             this._prepareItem(view, indexPath.row);
             cellHeight = this._layoutCell(view, indexPath);
         }

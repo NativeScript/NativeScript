@@ -10,8 +10,8 @@ declare module "ui/image" {
      * Represents a class that provides functionality for loading and streching image(s).
      */
     export class Image extends view.View {
-        public static urlProperty: dependencyObservable.Property;
-        public static sourceProperty: dependencyObservable.Property;
+        public static srcProperty: dependencyObservable.Property;
+        public static imageSourceProperty: dependencyObservable.Property;
         public static isLoadingProperty: dependencyObservable.Property;
         public static stretchProperty: dependencyObservable.Property;
 
@@ -53,12 +53,12 @@ declare module "ui/image" {
         /**
          * Gets or sets the image source of the image.
          */
-        source: imageSource.ImageSource;
+        imageSource: imageSource.ImageSource;
 
         /**
          * Gets or sets the URL of the image.
          */
-        url: string;
+        src: string;
 
         /**
          * Gets or sets the image stretch mode. Possible values are contained in the [Stretch enumeration](../enums/Stretch/README.md).

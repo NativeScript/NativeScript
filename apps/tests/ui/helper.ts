@@ -194,7 +194,6 @@ export function navigateToModule(moduleName: string) {
     frame.topmost().navigate({ moduleName: moduleName, animated: false });
     TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
     TKUnit.assert(frame.topmost().currentPage.isLoaded, "Current page should be loaded!");
-    TKUnit.assert(!currentPage.isLoaded, "Previous page should be unloaded!");
 }
 
 export function goBack(): void {

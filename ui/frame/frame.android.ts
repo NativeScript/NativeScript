@@ -182,7 +182,7 @@ class PageFragmentBody extends android.app.Fragment {
             return true;
         }
 
-        super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(item);
     }
 }
 
