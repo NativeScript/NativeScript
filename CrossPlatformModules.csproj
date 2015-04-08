@@ -75,6 +75,13 @@
     <TypeScriptCompile Include="apps\gallery-app\views\image.ts">
       <DependentUpon>image.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\placeholder-demo\app.ts" />
+    <TypeScriptCompile Include="apps\placeholder-demo\main-page.android.ts">
+      <DependentUpon>main-page.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\placeholder-demo\main-page.ios.ts">
+      <DependentUpon>main-page.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\TelerikNEXT\app-view-model.ts" />
     <TypeScriptCompile Include="apps\TelerikNEXT\app.ts" />
     <TypeScriptCompile Include="apps\TelerikNEXT\everlive-upload.ts" />
@@ -334,6 +341,16 @@
     <TypeScriptCompile Include="ui\list-picker\list-picker.ios.ts">
       <DependentUpon>list-picker.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\placeholder\placeholder.d.ts" />
+    <TypeScriptCompile Include="ui\placeholder\placeholder-common.ts">
+      <DependentUpon>placeholder.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\placeholder\placeholder.android.ts">
+      <DependentUpon>placeholder.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\placeholder\placeholder.ios.ts">
+      <DependentUpon>placeholder.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\tool-bar\tool-bar-common.ts">
       <DependentUpon>tool-bar.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -559,6 +576,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\gallery-app\layouts\dock-layout.xml" />
+    <Content Include="apps\placeholder-demo\main-page.xml" />
     <Content Include="apps\TelerikNEXT\lib\everlive.js" />
     <Content Include="apps\TelerikNEXT\session-page.xml" />
     <Content Include="apps\template-master-detail\details-view.xml" />
@@ -1451,6 +1469,9 @@
     <Content Include="DebugV8Heap.md" />
     <Content Include="apps\TelerikNEXT\package.json" />
     <Content Include="apps\pickers-demo\package.json" />
+    <Content Include="apps\placeholder-demo\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">
@@ -1467,6 +1488,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ui\tool-bar\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ui\placeholder\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
