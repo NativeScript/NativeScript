@@ -624,7 +624,7 @@ class AndroidFrame extends observable.Observable implements definition.AndroidFr
         }
 
         // can go back only if it is not the main one.
-        return this._activity.getIntent().Action !== android.content.Intent.ACTION_MAIN;
+        return this._activity.getIntent().getAction() !== android.content.Intent.ACTION_MAIN;
     }
 
     public reset() {
@@ -682,7 +682,7 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
 
 function startActivity(activity: android.app.Activity, entry: definition.NavigationEntry) {
     var intent = new android.content.Intent(activity, (<any>com).tns.NativeScriptActivity.class);
-    intent.Action = android.content.Intent.ACTION_DEFAULT;
+    intent.setAction(android.content.Intent.ACTION_DEFAULT);
     // TODO: Put the navigation context (if any) in the intent
     activity.startActivity(intent);
 }

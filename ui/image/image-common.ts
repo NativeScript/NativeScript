@@ -138,8 +138,8 @@ export class Image extends view.View implements definition.Image {
 
         if (nativeWidth !== 0 && nativeHeight !== 0 && (finiteWidth || finiteHeight)) {
             var scale = Image.computeScaleFactor(width, height, finiteWidth, finiteHeight, nativeWidth, nativeHeight, this.stretch);
-            var resultW = nativeWidth * scale.width;
-            var resultH = nativeHeight * scale.height;
+            var resultW = Math.floor(nativeWidth * scale.width);
+            var resultH = Math.floor(nativeHeight * scale.height);
 
             measureWidth = finiteWidth ? Math.min(resultW, width) : resultW;
             measureHeight = finiteHeight ? Math.min(resultH, height) : resultH;

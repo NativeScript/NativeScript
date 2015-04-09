@@ -93,16 +93,19 @@ export var test_measuredWidth_is_not_clipped = function () {
     label.text = "i";
     label.fontSize = 9;
 
-    var test = function (views: Array<view.View>) {
+    if (label.ios) {
 
-        TKUnit.waitUntilReady(() => { return label.isLayoutValid; });
+        var test = function (views: Array<view.View>) {
 
-        var expectedValue = 3;
-        var measuredWidth = label.getMeasuredWidth();
-        TKUnit.assertEqual(measuredWidth, expectedValue, "measuredWidth should not be rounded down.");
+            TKUnit.waitUntilReady(() => { return label.isLayoutValid; });
+
+            var expectedValue = 3;
+            var measuredWidth = label.getMeasuredWidth();
+            TKUnit.assertEqual(measuredWidth, expectedValue, "measuredWidth should not be rounded down.");
+        }
+
+        helper.buildUIAndRunTest(label, test);
     }
-
-    helper.buildUIAndRunTest(label, test);
 }
 
 export var test_Set_TextWrap_TNS = function () {

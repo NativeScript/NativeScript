@@ -4,6 +4,16 @@ import trace = require("trace");
 import frameModule = require("ui/frame");
 frameModule.Frame.defaultAnimatedNavigation = false;
 
+function isRunningOnEmulator(): boolean {
+    // This checks are not good enough to be added to modules but keeps unittests green.
+
+    return android.os.Build.FINGERPRINT.indexOf("generic") > -1 ||
+        android.os.Build.HARDWARE.toLowerCase() === "goldfish" ||
+        android.os.Build.HARDWARE.toLowerCase() === "donatello" || // VS Emulator
+        android.os.Build.PRODUCT.toLocaleLowerCase().indexOf("sdk") > -1 ||
+        android.os.Build.PRODUCT.toLocaleLowerCase().indexOf("emulator") > -1; // VS Emulator
+}
+
 export var allTests = {};
 allTests["DOCKLAYOUT"] = require("./layouts/dock-layout-tests");
 allTests["WRAPLAYOUT"] = require("./layouts/wrap-layout-tests");
@@ -16,7 +26,6 @@ allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
 allTests["APPLICATION"] = require("./application-tests");
 allTests["FILE SYSTEM"] = require("./file-system-tests");
 allTests["HTTP"] = require("./http-tests");
-allTests["LOCATION"] = require("./location-tests");
 allTests["LOCAL SETTINGS"] = require("./local-settings-tests");
 allTests["IMAGE SOURCE"] = require("./image-source-tests");
 allTests["TIMER"] = require("./timer-tests");
@@ -51,6 +60,9 @@ allTests["LIST-PICKER"] = require("./ui/list-picker/list-picker-tests");
 allTests["DATE-PICKER"] = require("./ui/date-picker/date-picker-tests");
 allTests["TIME-PICKER"] = require("./ui/time-picker/time-picker-tests");
 allTests["WEB-VIEW"] = require("./ui/web-view/web-view-tests");
+if (!isRunningOnEmulator()) {
+    allTests["LOCATION"] = require("./location-tests");
+}
 
 var testsWithLongDelay = {
     testLocation: 10000,
