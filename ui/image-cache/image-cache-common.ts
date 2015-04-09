@@ -2,11 +2,6 @@
 import observable = require("data/observable");
 import imageSource = require("image-source");
 
-// TODO: What is valid image?
-function isValidImage(url: string): boolean {
-    return url.indexOf(".png") !== -1 || url.indexOf(".jpg") !== -1;
-}
-
 export module knownEvents {
     export var downloaded = "downloaded";
 }
@@ -18,7 +13,6 @@ export interface DownloadRequest {
 }
 
 export class Cache extends observable.Observable implements definition.Cache {
-    public invalid: imageSource.ImageSource;
     public placeholder: imageSource.ImageSource;
     public maxRequests = 5;
     private _enabled = true;
@@ -163,11 +157,6 @@ export class Cache extends observable.Observable implements definition.Cache {
 
     private _shouldDownload(request: definition.DownloadRequest, onTop: boolean): boolean {
         if (request.key in this._cache || request.key in this._pendingDownloads) {
-            return false;
-        }
-
-        if (!isValidImage(request.url)) {
-            this._cache[request.key] = this.invalid;
             return false;
         }
 
