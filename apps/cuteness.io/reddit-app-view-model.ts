@@ -17,7 +17,6 @@ var ISSCROLLING = "isLoading";
 
 // initialize the image cache for the main list
 export var cache = new imageCache.Cache();
-cache.invalid = defaultNoThumbnailImageSource;
 cache.placeholder = defaultThumbnailImageSource;
 cache.maxRequests = 5;
 

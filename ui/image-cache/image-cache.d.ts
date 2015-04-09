@@ -28,10 +28,6 @@ declare module "ui/image-cache" {
      */
     export class Cache extends observable.Observable {
         /**
-         * The image to be used when the requested url is invalid or the result may not be decoded.
-         */
-        invalid: imageSource.ImageSource;
-        /**
          * The image to be used to notify for a pending download request - e.g. loading indicator.
          */
         placeholder: imageSource.ImageSource;
