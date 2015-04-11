@@ -12,6 +12,7 @@ export module platformNames {
 // It is not meant to be initialized - thus it is not capitalized
 export class device implements definition.device {
     private static MIN_TABLET_PIXELS = 600;
+    private static _manufacturer: string;
     private static _model: string;
     private static _osVersion: string;
     private static _sdkVersion: string;
@@ -20,6 +21,14 @@ export class device implements definition.device {
 
     static get os(): string {
         return platformNames.android;
+    }
+
+    static get manufacturer(): string {
+        if (!device._manufacturer) {
+            device._manufacturer = android.os.Build.MANUFACTURER;
+        }
+
+        return device._manufacturer;
     }
 
     static get osVersion(): string {

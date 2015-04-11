@@ -15,6 +15,10 @@ export class device implements definition.device {
     private static _sdkVersion: string;
     private static _deviceType: string;
 
+    static get manufacturer(): string {
+        return "Apple";
+    }
+
     static get os(): string {
         return platformNames.ios;
     }
