@@ -2,7 +2,7 @@
 
 ## What is NativeScript
 
-With NativeScript you can use your JavaScript and CSS skills to write native mobile applications for [iOS](https://www.apple.com/ios/), [Android](https://www.android.com/) and (very soon) [Windows Phone](http://www.windowsphone.com/en-us). There is no *WebView* involved in rendering the app, as the UI is rendered by the native platform's rendering engine. Because of that, the app's entire UX **is** native.
+With NativeScript you can use your JavaScript and CSS skills to write native mobile applications for [iOS](https://www.apple.com/ios/), [Android](https://www.android.com/) and (soon) [Windows Phone](http://www.windowsphone.com/en-us). There is no *WebView* involved in rendering the app, as the UI is rendered by the native platform's rendering engine. Because of that, the app's entire UX **is** native.
 
 NativeScript enables you to use a complete stack of cross-platform APIs to write your application code or, if you need to, you can directly access all platform-specific native APIs using JavaScript only. That’s right—you can access all native APIs, not only the ones we thought would be useful!
 
