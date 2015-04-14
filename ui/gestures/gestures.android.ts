@@ -4,14 +4,12 @@ import observable = require("data/observable");
 import view = require("ui/core/view");
 import trace = require("trace");
 
-
 // merge the exports of the request file with the exports of this file
 declare var exports;
 require("utils/module-merge").merge(common, exports);
 
 var SWIPE_THRESHOLD = 100;
 var SWIPE_VELOCITY_THRESHOLD = 100;
-var LOADED = "loaded";
 
 export class GesturesObserver implements definition.GesturesObserver {
     private _callback: (args: definition.GestureEventData) => void;
@@ -25,7 +23,6 @@ export class GesturesObserver implements definition.GesturesObserver {
 
     private _onTargetLoaded: (data: observable.EventData) => void;
     private _onTargetUnloaded: (data: observable.EventData) => void;
-
 
     constructor(callback: (args: definition.GestureEventData) => void) {
         this._callback = callback;
