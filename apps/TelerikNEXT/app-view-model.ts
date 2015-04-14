@@ -1,6 +1,6 @@
 ﻿import observable = require("data/observable");
 import dialogs = require("ui/dialogs");
-import localSettings = require("local-settings");
+import appSettings = require("application-settings");
 import button = require("ui/button");
 var everlive = require("./lib/everlive");
 
@@ -36,7 +36,7 @@ var sessions: Array<SessionModel> = new Array<SessionModel>();
 var FAVOURITES = "FAVOURITES";
 var favourites: Array<string>;
 try {
-    favourites = <Array<string>>JSON.parse(localSettings.getString(FAVOURITES, "[]"));
+    favourites = <Array<string>>JSON.parse(appSettings.getString(FAVOURITES, "[]"));
 }
 catch (error) {
     console.log("Error while retrieveing favourites: " + error);
@@ -61,7 +61,7 @@ function removeFromFavourites(session: SessionModel) {
 
 function updateFavourites() {
     var newValue = JSON.stringify(favourites);
-    localSettings.setString(FAVOURITES, newValue);
+    appSettings.setString(FAVOURITES, newValue);
 }
 
 var el = new everlive("mzacGkKPFlZUfbMq");

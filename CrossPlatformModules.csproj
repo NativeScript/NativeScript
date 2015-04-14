@@ -548,7 +548,7 @@
     <TypeScriptCompile Include="timer\timer.ios.ts">
       <DependentUpon>timer.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\tests\local-settings-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\application-settings-tests.ts" />
     <TypeScriptCompile Include="file-system\file-system-access.android.ts">
       <DependentUpon>file-system-access.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -558,14 +558,14 @@
     <TypeScriptCompile Include="application\application-common.ts">
       <DependentUpon>application.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="local-settings\local-settings.d.ts" />
-    <TypeScriptCompile Include="local-settings\local-settings.android.ts">
-      <DependentUpon>local-settings.d.ts</DependentUpon>
+    <TypeScriptCompile Include="application-settings\application-settings.d.ts" />
+    <TypeScriptCompile Include="application-settings\application-settings.android.ts">
+      <DependentUpon>application-settings.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="local-settings\local-settings.ios.ts">
-      <DependentUpon>local-settings.d.ts</DependentUpon>
+    <TypeScriptCompile Include="application-settings\application-settings.ios.ts">
+      <DependentUpon>application-settings.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="local-settings\local-settings-common.ts" />
+    <TypeScriptCompile Include="application-settings\application-settings-common.ts" />
     <TypeScriptCompile Include="apps\tests\timer-tests.ts" />
   </ItemGroup>
   <ItemGroup>
@@ -1153,7 +1153,7 @@
     <Content Include="globals\Readme.md" />
     <Content Include="timer\Readme.md" />
     <Content Include="apps\tests\Readme.md" />
-    <Content Include="local-settings\Readme.md" />
+    <Content Include="application-settings\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ui\dialogs\Readme.md" />
@@ -1192,7 +1192,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="local-settings\package.json">
+    <Content Include="application-settings\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
