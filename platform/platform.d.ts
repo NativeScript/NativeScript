@@ -18,7 +18,7 @@ declare module "platform" {
     export class device {
         /**
          * Gets the model of the device.
-         * For example: "Nexus 5" or "iPhone.
+         * For example: "Nexus 5" or "iPhone".
          */
         static model: string;
 

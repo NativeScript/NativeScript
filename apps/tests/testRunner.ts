@@ -2,16 +2,23 @@
 import TKUnit = require("./TKUnit");
 import trace = require("trace");
 import frameModule = require("ui/frame");
+import platform = require("platform");
+
 frameModule.Frame.defaultAnimatedNavigation = false;
 
 function isRunningOnEmulator(): boolean {
     // This checks are not good enough to be added to modules but keeps unittests green.
 
-    return android.os.Build.FINGERPRINT.indexOf("generic") > -1 ||
-        android.os.Build.HARDWARE.toLowerCase() === "goldfish" ||
-        android.os.Build.HARDWARE.toLowerCase() === "donatello" || // VS Emulator
-        android.os.Build.PRODUCT.toLocaleLowerCase().indexOf("sdk") > -1 ||
-        android.os.Build.PRODUCT.toLocaleLowerCase().indexOf("emulator") > -1; // VS Emulator
+    if (platform.device.os === platform.platformNames.android) {
+        return android.os.Build.FINGERPRINT.indexOf("generic") > -1 ||
+            android.os.Build.HARDWARE.toLowerCase() === "goldfish" ||
+            android.os.Build.HARDWARE.toLowerCase() === "donatello" || // VS Emulator
+            android.os.Build.PRODUCT.toLocaleLowerCase().indexOf("sdk") > -1 ||
+            android.os.Build.PRODUCT.toLocaleLowerCase().indexOf("emulator") > -1; // VS Emulator
+    }
+    else if (platform.device.os === platform.platformNames.ios) {
+        return platform.device.model === "iPhone Simulator";
+    }
 }
 
 export var allTests = {};
