@@ -1,8 +1,8 @@
-﻿// <snippet module="local-settings" title="local-settings">
+﻿// <snippet module="application-settings" title="application-settings">
 // # Local Settings
 // Using local settings methods requires to load "local settings" module.
 // ``` JavaScript
-var LocalSettings = require("local-settings");
+var appSettings = require("application-settings");
 // ```
 // </snippet>
 var TKUnit = require("./TKUnit");
@@ -14,118 +14,118 @@ var noStringKey: string = "noStringKey";
 var noBoolKey: string = "noBoolKey";
 var noNumberKey: string = "noNumberKey";
 
-// <snippet module="local-settings" title="local-settings">
+// <snippet module="application-settings" title="application-settings">
 // ## Working with string, number and boolean values
 // </snippet>
 
 export var testBoolean = function () {
-    LocalSettings.setBoolean(boolKey, false);
-    var boolValueBefore = LocalSettings.getBoolean(boolKey);
-    TKUnit.assert(false === boolValueBefore, "Cannot set boolean to false, currently it is: " + LocalSettings.getBoolean(boolKey));
+    appSettings.setBoolean(boolKey, false);
+    var boolValueBefore = appSettings.getBoolean(boolKey);
+    TKUnit.assert(false === boolValueBefore, "Cannot set boolean to false, currently it is: " + appSettings.getBoolean(boolKey));
 
-    // <snippet module="local-settings" title="local-settings">
+    // <snippet module="application-settings" title="application-settings">
     // ### Set and get boolean value and provide default value in case it is not set
     // ``` JavaScript
-    LocalSettings.setBoolean("boolKey", true);
-    var boolValue = LocalSettings.getBoolean("boolKey", false);
+    appSettings.setBoolean("boolKey", true);
+    var boolValue = appSettings.getBoolean("boolKey", false);
     // ```
     // </snippet>
     TKUnit.assert(true === boolValue, "Cannot set boolean to true");
 
-    TKUnit.assert(true === LocalSettings.getBoolean(boolKey), "Cannot set boolean to true (no default)");
+    TKUnit.assert(true === appSettings.getBoolean(boolKey), "Cannot set boolean to true (no default)");
 };
 
 export var testString = function () {
-    // <snippet module="local-settings" title="local-settings">
+    // <snippet module="application-settings" title="application-settings">
     // ### Set and get string value
     // ``` JavaScript
-    LocalSettings.setString("stringKey", "String value");
-    var stringValue = LocalSettings.getString("stringKey");
+    appSettings.setString("stringKey", "String value");
+    var stringValue = appSettings.getString("stringKey");
     // ```
     // </snippet>
     TKUnit.assert("String value" === stringValue, "Cannot set string value");
 };
 
 export var testNumber = function () {
-    // <snippet module="local-settings" title="local-settings">
+    // <snippet module="application-settings" title="application-settings">
     // ### Set and get numeric value.
     // We use `toFixed()` here in order to avoid floating point errors - ex: `54.321` becoming `54.320999999537`.
     // Beware the result of `toFixed()` is a string not a number therefore you cannot use `===` or `!==` when comparing with a number.
     // ``` JavaScript
-    LocalSettings.setNumber("numberKey", 54.321);
-    var value = parseFloat(LocalSettings.getNumber("numberKey").toFixed(3));
+    appSettings.setNumber("numberKey", 54.321);
+    var value = parseFloat(appSettings.getNumber("numberKey").toFixed(3));
     // ```
     // </snippet>
     TKUnit.assert(54.321 === value, "Cannot set number value 54.321 != " + value);
 };
 
 export var testDefaults = function () {
-    // <snippet module="local-settings" title="local-settings">
+    // <snippet module="application-settings" title="application-settings">
     // ### Reading values that are not set before while providing default value
     // ``` JavaScript
-    var defaultValue = LocalSettings.getString("noStringKey", "No string value");
+    var defaultValue = appSettings.getString("noStringKey", "No string value");
     //// will return "No string value" if there is no value for "noStringKey"
     // ```
     // </snippet>
     TKUnit.assert("No string value" === defaultValue, "Bad default string value");
-    TKUnit.assert(true === LocalSettings.getBoolean(noBoolKey, true), "Bad default boolean value");
-    TKUnit.assert(123.45 === LocalSettings.getNumber(noNumberKey, 123.45), "Bad default number value");
+    TKUnit.assert(true === appSettings.getBoolean(noBoolKey, true), "Bad default boolean value");
+    TKUnit.assert(123.45 === appSettings.getNumber(noNumberKey, 123.45), "Bad default number value");
 }
 
 export var testDefaultsWithNoDefaultValueProvided = function () {
-    // <snippet module="local-settings" title="local-settings">
+    // <snippet module="application-settings" title="application-settings">
     // ### Reading values that are not set before not providing default value
     // ``` JavaScript
-    var defaultValue = LocalSettings.getString("noStringKey");
+    var defaultValue = appSettings.getString("noStringKey");
     //// will return undefined if there is no value for "noStringKey"
     // ```
     // </snippet>
     TKUnit.assert("undefined" === typeof defaultValue, "Default string value is not undefined");
 
-    TKUnit.assert("undefined" === typeof LocalSettings.getBoolean(noBoolKey), "Default boolean value is not undefined");
-    TKUnit.assert("undefined" === typeof LocalSettings.getNumber(noNumberKey), "Default number value is not undefined");
+    TKUnit.assert("undefined" === typeof appSettings.getBoolean(noBoolKey), "Default boolean value is not undefined");
+    TKUnit.assert("undefined" === typeof appSettings.getNumber(noNumberKey), "Default number value is not undefined");
 };
 
-// <snippet module="local-settings" title="local-settings">
+// <snippet module="application-settings" title="application-settings">
 // ## Other functions
 // </snippet>
 
 export var testHasKey = function () {
-    // <snippet module="local-settings" title="local-settings">
+    // <snippet module="application-settings" title="application-settings">
     // ### Checking for existence of value for key
     // ``` JavaScript
-    var hasKey = LocalSettings.hasKey("noBoolKey");
+    var hasKey = appSettings.hasKey("noBoolKey");
     //// will return false if there is no value for "noBoolKey"
     // ```
     // </snippet>
     TKUnit.assert(!hasKey, "There is a key: " + noBoolKey);
-    TKUnit.assert(!LocalSettings.hasKey(noStringKey), "There is a key: " + noStringKey);
-    TKUnit.assert(!LocalSettings.hasKey(noNumberKey), "There is a key: " + noNumberKey);
+    TKUnit.assert(!appSettings.hasKey(noStringKey), "There is a key: " + noStringKey);
+    TKUnit.assert(!appSettings.hasKey(noNumberKey), "There is a key: " + noNumberKey);
 
-    TKUnit.assert(LocalSettings.hasKey(boolKey), "There is no key: " + boolKey);
-    TKUnit.assert(LocalSettings.hasKey(stringKey), "There is no key: " + stringKey);
-    TKUnit.assert(LocalSettings.hasKey(numberKey), "There is no key: " + numberKey);
+    TKUnit.assert(appSettings.hasKey(boolKey), "There is no key: " + boolKey);
+    TKUnit.assert(appSettings.hasKey(stringKey), "There is no key: " + stringKey);
+    TKUnit.assert(appSettings.hasKey(numberKey), "There is no key: " + numberKey);
 };
 
 export var testRemove = function () {
-    // <snippet module="local-settings" title="local-settings">
+    // <snippet module="application-settings" title="application-settings">
     // ### Removing value for key
     // ``` JavaScript
-    LocalSettings.remove("boolKey");
+    appSettings.remove("boolKey");
     // ```
     // </snippet>
-    TKUnit.assert(!LocalSettings.hasKey(boolKey), "Failed to remove key: " + boolKey);
+    TKUnit.assert(!appSettings.hasKey(boolKey), "Failed to remove key: " + boolKey);
 
-    LocalSettings.remove(stringKey);
-    TKUnit.assert(!LocalSettings.hasKey(stringKey), "Failed to remove key: " + stringKey);
+    appSettings.remove(stringKey);
+    TKUnit.assert(!appSettings.hasKey(stringKey), "Failed to remove key: " + stringKey);
 
-    LocalSettings.remove(numberKey);
-    TKUnit.assert(!LocalSettings.hasKey(numberKey), "Failed to remove key: " + numberKey);
+    appSettings.remove(numberKey);
+    TKUnit.assert(!appSettings.hasKey(numberKey), "Failed to remove key: " + numberKey);
 };
 
 export var testInvalidKey = function () {
     try {
-        LocalSettings.hasKey(undefined);
+        appSettings.hasKey(undefined);
         TKUnit.assert(false, "There is a key undefined");
     }
     catch (e) {
@@ -133,7 +133,7 @@ export var testInvalidKey = function () {
     }
 
     try {
-        LocalSettings.hasKey(null);
+        appSettings.hasKey(null);
         TKUnit.assert(false, "There is a key null");
     }
     catch (e) {
@@ -141,19 +141,19 @@ export var testInvalidKey = function () {
     }
 
     try {
-        LocalSettings.hasKey(123);
+        appSettings.hasKey(123);
         TKUnit.assert(false, "There is a key number");
     }
     catch (e) {
         // we should receive an exception here
     }
 
-    LocalSettings.hasKey("string");
+    appSettings.hasKey("string");
 };
 
 export var testInvalidValue = function () {
     try {
-        LocalSettings.setBoolean(boolKey, "str");
+        appSettings.setBoolean(boolKey, "str");
         TKUnit.assert(false, "There is a key undefined");
     }
     catch (e) {
@@ -161,7 +161,7 @@ export var testInvalidValue = function () {
     }
 
     try {
-        LocalSettings.setBoolean(boolKey, 123);
+        appSettings.setBoolean(boolKey, 123);
         TKUnit.assert(false, "There is a key undefined");
     }
     catch (e) {
@@ -169,7 +169,7 @@ export var testInvalidValue = function () {
     }
 
     try {
-        LocalSettings.setString(boolKey, true);
+        appSettings.setString(boolKey, true);
         TKUnit.assert(false, "There is a key undefined");
     }
     catch (e) {
@@ -177,7 +177,7 @@ export var testInvalidValue = function () {
     }
 
     try {
-        LocalSettings.setString(boolKey, 123);
+        appSettings.setString(boolKey, 123);
         TKUnit.assert(false, "There is a key undefined");
     }
     catch (e) {
@@ -185,7 +185,7 @@ export var testInvalidValue = function () {
     }
 
     try {
-        LocalSettings.setNumber(boolKey, true);
+        appSettings.setNumber(boolKey, true);
         TKUnit.assert(false, "There is a key undefined");
     }
     catch (e) {
@@ -193,7 +193,7 @@ export var testInvalidValue = function () {
     }
 
     try {
-        LocalSettings.setNumber(boolKey, "123");
+        appSettings.setNumber(boolKey, "123");
         TKUnit.assert(false, "There is a key undefined");
     }
     catch (e) {

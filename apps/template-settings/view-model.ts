@@ -1,5 +1,5 @@
 ﻿import observable = require("data/observable");
-import localSettings = require("local-settings");
+import appSettings = require("application-settings");
 import dialogs = require("ui/dialogs");
 
 var NAME = "settings-name";
@@ -11,45 +11,45 @@ var SOUND_VOLUME = "settings-sound-value";
 
 export class SettingsViewModel extends observable.Observable {
     get name(): string {
-        return localSettings.getString(NAME, "John Doe");
+        return appSettings.getString(NAME, "John Doe");
     }
     set name(value: string) {
-        localSettings.setString(NAME, value);
+        appSettings.setString(NAME, value);
     }
 
     get height(): string {
-        return localSettings.getString(HEIGHT, "180");
+        return appSettings.getString(HEIGHT, "180");
     }
     set height(value: string) {
-        localSettings.setString(HEIGHT, value);
+        appSettings.setString(HEIGHT, value);
     }
 
     get weight(): string {
-        return localSettings.getString(WEIGHT, "80");
+        return appSettings.getString(WEIGHT, "80");
     }
     set weight(value: string) {
-        localSettings.setString(WEIGHT, value);
+        appSettings.setString(WEIGHT, value);
     }
 
     get vibrateEnabled(): boolean {
-        return localSettings.getBoolean(VIBRATE, true);
+        return appSettings.getBoolean(VIBRATE, true);
     }
     set vibrateEnabled(value: boolean) {
-        localSettings.setBoolean(VIBRATE, value);
+        appSettings.setBoolean(VIBRATE, value);
     }
 
     get soundEnabled(): boolean {
-        return localSettings.getBoolean(SOUND, true);
+        return appSettings.getBoolean(SOUND, true);
     }
     set soundEnabled(value: boolean) {
-        localSettings.setBoolean(SOUND, value);
+        appSettings.setBoolean(SOUND, value);
     }
 
     get soundVolume(): number {
-        return localSettings.getNumber(SOUND_VOLUME, 100);
+        return appSettings.getNumber(SOUND_VOLUME, 100);
     }
     set soundVolume(value: number) {
-        localSettings.setNumber(SOUND_VOLUME, value);
+        appSettings.setNumber(SOUND_VOLUME, value);
     }
 
     public promptName(args: observable.EventData) {
@@ -65,7 +65,7 @@ export var settingsViewModel = new SettingsViewModel();
 
 // Pure JavaScript  code: 
 //var observable = require("data/observable");
-//var localSettings = require("local-settings");
+//var appSettings = require("application-settings");
 
 //var NAME = "settings-name";
 //var HEIGHT = "settings-height";
@@ -76,43 +76,43 @@ export var settingsViewModel = new SettingsViewModel();
 
 //var settings = new observable.Observable();
 //Object.defineProperty(settings, "name", {
-//    get: function () { return localSettings.getString(NAME, "John Doe"); },
-//    set: function (value) { localSettings.setString(NAME, value); },
+//    get: function () { return appSettings.getString(NAME, "John Doe"); },
+//    set: function (value) { appSettings.setString(NAME, value); },
 //    enumerable: true,
 //    configurable: true
 //});
 
 //Object.defineProperty(settings, "height", {
-//    get: function () { return localSettings.getString(HEIGHT, "180"); },
-//    set: function (value) { localSettings.setString(HEIGHT, value); },
+//    get: function () { return appSettings.getString(HEIGHT, "180"); },
+//    set: function (value) { appSettings.setString(HEIGHT, value); },
 //    enumerable: true,
 //    configurable: true
 //});
 
 //Object.defineProperty(settings, "weight", {
-//    get: function () { return localSettings.getString(WEIGHT, "80"); },
-//    set: function (value) { localSettings.setString(WEIGHT, value); },
+//    get: function () { return appSettings.getString(WEIGHT, "80"); },
+//    set: function (value) { appSettings.setString(WEIGHT, value); },
 //    enumerable: true,
 //    configurable: true
 //});
 
 //Object.defineProperty(settings, "vibrateEnabled", {
-//    get: function () { return localSettings.getBoolean(VIBRATE, true); },
-//    set: function (value) { localSettings.setBoolean(VIBRATE, value); },
+//    get: function () { return appSettings.getBoolean(VIBRATE, true); },
+//    set: function (value) { appSettings.setBoolean(VIBRATE, value); },
 //    enumerable: true,
 //    configurable: true
 //});
 
 //Object.defineProperty(settings, "soundEnabled", {
-//    get: function () { return localSettings.getBoolean(SOUND, true); },
-//    set: function (value) { localSettings.setBoolean(SOUND, value); },
+//    get: function () { return appSettings.getBoolean(SOUND, true); },
+//    set: function (value) { appSettings.setBoolean(SOUND, value); },
 //    enumerable: true,
 //    configurable: true
 //});
 
 //Object.defineProperty(settings, "soundVolume", {
-//    get: function () { return localSettings.getNumber(SOUND_VOLUME, 100); },
-//    set: function (value) { localSettings.setNumber(SOUND_VOLUME, value); },
+//    get: function () { return appSettings.getNumber(SOUND_VOLUME, 100); },
+//    set: function (value) { appSettings.setNumber(SOUND_VOLUME, value); },
 //    enumerable: true,
 //    configurable: true
 //});

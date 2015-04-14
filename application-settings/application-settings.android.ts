@@ -1,5 +1,5 @@
 ﻿import appModule = require("application");
-import Common = require("local-settings/local-settings-common");
+import Common = require("application-settings/application-settings-common");
 
 var sharedPreferences = appModule.android.context.getSharedPreferences("prefs.db", 0);
 
