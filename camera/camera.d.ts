@@ -7,6 +7,8 @@ declare module "camera" {
 
     /**
      * Take a photo using the camera.
+     * @param width - Optional parameter which defines the required width of the taken picture.
+     * @param height - Optional parameter which defines the required height of the taken picture.
      */
-    export function takePicture(): Promise<imageSource.ImageSource>;
+    export function takePicture(width?: number, heigth?: number): Promise<imageSource.ImageSource>;
 }
