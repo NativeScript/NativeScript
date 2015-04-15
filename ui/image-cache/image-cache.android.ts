@@ -1,20 +1,38 @@
 ﻿import common = require("ui/image-cache/image-cache-common");
-import imageSource = require("image-source");
 
 module.exports.knownEvents = common.knownEvents;
 
+class LruBitmapCache extends android.util.LruCache<string, android.graphics.Bitmap> {
+    constructor(cacheSize: number) {
+        super(cacheSize);
+        return global.__native(this);
+    }
+
+    protected sizeOf(key: string, bitmap: android.graphics.Bitmap): number {
+        // The cache size will be measured in kilobytes rather than
+        // number of items.
+        var result = Math.round(bitmap.getByteCount() / 1024);
+        return result;
+    }
+};
+
 export class Cache extends common.Cache {
     private _callback: any;
+    private _cache: LruBitmapCache;
 
     constructor() {
         super();
+
+        var maxMemory = java.lang.Runtime.getRuntime().maxMemory() / 1024;
+        var cacheSize = maxMemory / 8;
+        this._cache = new LruBitmapCache(cacheSize);
 
         var that = new WeakRef(this);
         this._callback = new (<any>com).tns.Async.CompleteCallback({
             onComplete: function (result: any, context: any) {
                 var instance = that.get();
                 if (instance) {
-                    instance._onBitmapDownloaded(result, context);
+                    instance._onDownloadCompleted(context, result)
                 }
             }
         });
@@ -24,11 +42,20 @@ export class Cache extends common.Cache {
         (<any>com).tns.Async.DownloadImage(request.url, this._callback, request.key);
     }
 
-    /* tslint:disable:no-unused-variable */
-    private _onBitmapDownloaded(result: android.graphics.Bitmap, context: any) {
-        // as a context we are receiving the key of the request
-        var source = imageSource.fromNativeSource(result);
-        this._onDownloadCompleted(context, source);
+    public get(key: string): any {
+        var result = this._cache.get(key);
+        return result;
     }
-    /* tslint:enable:no-unused-variable */
+
+    public set(key: string, image: any): void {
+        this._cache.put(key, image);
+    }
+
+    public remove(key: string): void {
+        this._cache.remove(key);
+    }
+
+    public clear() {
+        this._cache.evictAll();
+    }
 }

@@ -20,7 +20,7 @@ declare module "ui/image-cache" {
         /**
          * An optional function to be called when the download is complete.
          */
-        completed?: (result: imageSource.ImageSource, key: string) => void;
+        completed?: (image: any, key: string) => void;
     }
 
     /**
@@ -57,11 +57,11 @@ declare module "ui/image-cache" {
         /**
          * Gets the image for the specified key. May be undefined if the key is not present in the cache.
          */
-        get(key: string): imageSource.ImageSource;
+        get(key: string): any;
         /**
          * Sets the image for the specified key.
          */
-        set(key: string, source: imageSource.ImageSource): void;
+        set(key: string, image: any): void;
         /**
          * Removes the cache for the specified key.
          */
@@ -73,7 +73,7 @@ declare module "ui/image-cache" {
 
         //@private
         _downloadCore(request: DownloadRequest);
-        _onDownloadCompleted(key: string, result: imageSource.ImageSource);
+        _onDownloadCompleted(key: string, image: any);
         //@endprivate
     }
 

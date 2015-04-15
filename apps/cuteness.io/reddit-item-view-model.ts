@@ -50,7 +50,11 @@ export class RedditViewModel extends observable.Observable {
             } else if (redditAppViewModel.cache) {
                 var url = this._source.thumbnail;
 
-                var imgSource = redditAppViewModel.cache.get(url);
+                var imgSource: imageSource.ImageSource;
+                var image = redditAppViewModel.cache.get(url);
+                if (image) {
+                    imgSource = imageSource.fromNativeSource(image);
+                }
 
                 if (imgSource) {
                     this._thumbnailImageSource = imgSource;
@@ -61,11 +65,12 @@ export class RedditViewModel extends observable.Observable {
                     redditAppViewModel.cache.push({
                         key: url,
                         url: url,
-                        completed: (result: imageSource.ImageSource, key: string) => {
+                        completed: (image: any, key: string) => {
                             if (url === key) {
                                 this.isLoading = false;
-                                this._thumbnailImageSource = result;
-                                this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: THUMBNAIL_IMAGE_SOURCE, value: result });
+                                var imgSource = imageSource.fromNativeSource(image);
+                                this._thumbnailImageSource = imgSource;
+                                this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: THUMBNAIL_IMAGE_SOURCE, value: imgSource });
                             }
                         }
                     });
