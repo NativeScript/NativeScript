@@ -31,7 +31,6 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
             if (source) {
                 var image = null;
                 if (this._width || this._height) {
-                    console.log("Image resized!!!");
                     var newSize = CGSizeMake(this._width, this._height);
                     UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0);
                     source.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
