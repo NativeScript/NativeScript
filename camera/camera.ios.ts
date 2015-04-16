@@ -1,5 +1,6 @@
 ﻿import imageSource = require("image-source");
 import frame = require("ui/frame");
+import common = require("./camera-common");
 
 class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePickerControllerDelegate {
     public static ObjCProtocols = [UIImagePickerControllerDelegate];
@@ -12,16 +13,20 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
 
     private _width: number;
     private _height: number;
+    private _keepAspectRatio: boolean;
 
     public initWithCallback(callback: (result?: imageSource.ImageSource) => void): UIImagePickerControllerDelegateImpl {
         this._callback = callback;
         return this;
     }
 
-    public initWithCallbackWidthAndHeight(callback: (result?: imageSource.ImageSource) => void, width, height): UIImagePickerControllerDelegateImpl {
+    public initWithCallbackAndOptions(callback: (result?: imageSource.ImageSource) => void, options?): UIImagePickerControllerDelegateImpl {
         this._callback = callback;
-        this._width = width;
-        this._height = height;
+        if (options) {
+            this._width = options.width;
+            this._height = options.height;
+            this._keepAspectRatio = (options.keepAspectRatio === null || options.keepAspectRatio === undefined) ? true : options.keepAspectRatio;
+        }
         return this;
     }
 
@@ -31,7 +36,14 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
             if (source) {
                 var image = null;
                 if (this._width || this._height) {
-                    var newSize = CGSizeMake(this._width, this._height);
+                    var newSize = null;
+                    if (this._keepAspectRatio) {
+                        var aspectSafeSize = common.getAspectSafeDimensions(source.size.width, source.size.height, this._width, this._height);
+                        newSize = CGSizeMake(aspectSafeSize.width, aspectSafeSize.height);
+                    }
+                    else {
+                        newSize = CGSizeMake(this._width, this._height);
+                    }
                     UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0);
                     source.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
                     image = UIGraphicsGetImageFromCurrentImageContext();
@@ -53,14 +65,14 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
     }
 }
 
-export var takePicture = function (width?, height?): Promise<imageSource.ImageSource> {
+export var takePicture = function (width?, height?, keepAspectRatio?): Promise<imageSource.ImageSource> {
     return new Promise<imageSource.ImageSource>((resolve, reject) => {
         var imagePickerController = new UIImagePickerController();
         var listener = null;
         var reqWidth = width || 0;
         var reqHeight = height || reqWidth;
         if (reqWidth && reqHeight) {
-            listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackWidthAndHeight(resolve, reqWidth, reqHeight);
+            listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { width: reqWidth, height: reqHeight, keepAspectRatio: keepAspectRatio });
         }
         else {
             listener = UIImagePickerControllerDelegateImpl.new().initWithCallback(resolve);

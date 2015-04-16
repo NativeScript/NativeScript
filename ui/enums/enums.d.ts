@@ -164,12 +164,12 @@
         export var none: string;
 
         /**
-         * The image is resized to fit in the destination dimensions while it preserves its native aspect ratio.
+         * The image is resized to fill in the destination dimensions while it preserves its native aspect ratio.
          */
         export var aspectFill: string;
 
         /**
-         * The image is resized to fill the destination dimensions while it preserves
+         * The image is resized to fit the destination dimensions while it preserves
          * its native aspect ratio. If the aspect ratio of the destination rectangle differs from the image,
          * the image is clipped to fit in the destination
          */
