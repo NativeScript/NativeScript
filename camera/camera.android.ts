@@ -2,16 +2,20 @@
 import appModule = require("application");
 import fileSystem = require("file-system");
 import utils = require("utils/utils");
+import definition = require("camera");
 import common = require("./camera-common");
 
 var REQUEST_IMAGE_CAPTURE = 3453;
 
-export var takePicture = function (width?, height?, keepAspectRatio?): Promise<imageSource.ImageSource> {
+export var takePicture = function (options?: definition.CameraOptions): Promise<imageSource.ImageSource> {
     return new Promise<imageSource.ImageSource>((resolve, reject) => {
         try {
             var density = utils.layout.getDisplayDensity();
-            var reqWidth = width ? width * density : 0;
-            var reqHeight = height ? height * density : reqWidth;
+            if (options) {
+                var reqWidth = options.width ? options.width * density : 0;
+                var reqHeight = options.height ? options.height * density : reqWidth;
+                var shouldKeepAspectRatio = (options.keepAspectRatio === null || options.keepAspectRatio === undefined) ? true : options.keepAspectRatio;
+            }
             var takePictureIntent = new android.content.Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
             var dateStamp = createDateTimeStamp();
             var tempPicturePath = fileSystem.path.join(appModule.android.currentContext.getExternalFilesDir(null).getAbsolutePath(), "cameraPicture_" + dateStamp + ".jpg");
@@ -34,7 +38,6 @@ export var takePicture = function (width?, height?, keepAspectRatio?): Promise<i
                         var finalBitmapOptions = new android.graphics.BitmapFactory.Options();
                         finalBitmapOptions.inSampleSize = sampleSize;
                         var bitmap = android.graphics.BitmapFactory.decodeFile(tempPicturePath, finalBitmapOptions);
-                        var shouldKeepAspectRatio = (keepAspectRatio === null || keepAspectRatio === undefined) ? true : keepAspectRatio;
                         var scaledSizeImage = null;
                         if (reqHeight > 0 && reqWidth > 0) {
                             if (shouldKeepAspectRatio) {
