@@ -47,10 +47,13 @@ function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
         var moduleNamePath = fs.path.join(currentAppPath, entry.moduleName);
 
         var moduleExports;
-
-        if (fs.File.exists(moduleNamePath + ".js")) {
-            trace.write("Loading JS file: " + moduleNamePath + ".js", trace.categories.Navigation);
-            moduleExports = require(moduleNamePath);
+        var moduleExportsResolvedPath = resolveFilePath(moduleNamePath, "js");
+        if (moduleExportsResolvedPath) {
+            trace.write("Loading JS file: " + moduleExportsResolvedPath, trace.categories.Navigation);
+            
+            // Exclude extension when doing require.
+            moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3)
+            moduleExports = require(moduleExportsResolvedPath);
         }
 
         if (moduleExports && moduleExports.createPage) {
@@ -70,7 +73,7 @@ function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
 }
 
 var fileNameResolver: fileResolverModule.FileNameResolver;
-function resolveFilePath(path, ext) {
+function resolveFilePath(path, ext) : string {
     if (!fileNameResolver) {
         fileNameResolver = new fileResolverModule.FileNameResolver({
             width: platform.screen.mainScreen.widthDIPs,
