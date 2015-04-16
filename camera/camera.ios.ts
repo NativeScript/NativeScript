@@ -1,5 +1,6 @@
 ﻿import imageSource = require("image-source");
 import frame = require("ui/frame");
+import definition = require("camera");
 import common = require("./camera-common");
 
 class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePickerControllerDelegate {
@@ -65,12 +66,18 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
     }
 }
 
-export var takePicture = function (width?, height?, keepAspectRatio?): Promise<imageSource.ImageSource> {
+export var takePicture = function (options?: definition.CameraOptions): Promise<imageSource.ImageSource> {
     return new Promise<imageSource.ImageSource>((resolve, reject) => {
         var imagePickerController = new UIImagePickerController();
         var listener = null;
-        var reqWidth = width || 0;
-        var reqHeight = height || reqWidth;
+        var reqWidth = 0;
+        var reqHeight = 0;
+        var keepAspectRatio = true;
+        if (options) {
+            reqWidth = options.width || 0;
+            reqHeight = options.height || reqWidth;
+            keepAspectRatio = (options.keepAspectRatio === null || options.keepAspectRatio === undefined) ? true : options.keepAspectRatio;
+        }
         if (reqWidth && reqHeight) {
             listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { width: reqWidth, height: reqHeight, keepAspectRatio: keepAspectRatio });
         }
