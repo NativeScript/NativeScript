@@ -722,6 +722,9 @@
       <SubType>Designer</SubType>
     </Content>
     <TypeScriptCompile Include="camera\camera.d.ts" />
+	<TypeScriptCompile Include="camera\camera-common.ts" >
+	  <DependentUpon>camera.d.ts</DependentUpon>
+	</TypeScriptCompile>
     <TypeScriptCompile Include="camera\camera.android.ts">
       <DependentUpon>camera.d.ts</DependentUpon>
     </TypeScriptCompile>
