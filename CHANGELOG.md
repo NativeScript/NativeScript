@@ -9,3 +9,9 @@ Cross Platform Modules Changelog
 ### New
 
 ### Breaking Changes
+
+  * Image: `url` property renamed to `src`
+  * Image: `source` property renamed to `imageSource`
+  * TabView: `TabEntry` renamed to `TabViewItem `
+
+  
