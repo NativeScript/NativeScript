@@ -81,8 +81,8 @@ var calculateInSampleSize = function (imageWidth, imageHeight, reqWidth, reqHeig
 var createDateTimeStamp = function() {
     var result = "";
     var date = new Date();
-    result = date.getDate().toString() + 
-             (date.getMonth() + 1).toString() + 
+    result = (date.getDate() < 10 ? "0" + date.getDate().toString() : date.getDate().toString())+ 
+             ((date.getMonth() + 1) < 10 ? "0" + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString()) + 
              date.getFullYear().toString() + 
              date.getHours().toString() + 
              date.getMinutes().toString() + 
