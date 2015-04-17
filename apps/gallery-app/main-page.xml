@@ -33,6 +33,10 @@
         <Button tag="views/search-bar" text="SearchBar" tap="itemTap" />
         <Button tag="views/list-view" text="ListView" tap="itemTap" />
         <Button tag="views/dialogs" text="Dialogs" tap="itemTap" />
+        <Button tag="views/date-picker" text="DatePicker" tap="itemTap" />
+        <Button tag="views/time-picker" text="TimePicker" tap="itemTap" />
+        <Button tag="views/list-picker" text="ListPicker" tap="itemTap" />
+        <Button tag="views/segmented-bar" text="SegmentedBar" tap="itemTap" />
       </StackLayout>
     </StackLayout>
   </ScrollView>
