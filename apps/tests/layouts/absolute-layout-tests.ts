@@ -3,7 +3,6 @@ import viewModule = require("ui/core/view");
 import labelModule = require("ui/label");
 import helper = require("../ui/helper");
 import colorModule = require("color");
-import utils = require("utils/utils");
 import layoutHelper = require("./layout-helper");
 
 // <snippet module="ui/layouts/absolute-layout" title="absolute-layout">
@@ -50,8 +49,6 @@ export var testAll = function () {
         TKUnit.waitUntilReady(function isReady() {
             return absoluteLayout.isLayoutValid;
         }, 1);
-
-        var density = utils.layout.getDisplayDensity();
 
         var actualValue = viewModule.getViewById(absoluteLayout, "LT")._getCurrentLayoutBounds();
         var width = actualValue.right - actualValue.left;

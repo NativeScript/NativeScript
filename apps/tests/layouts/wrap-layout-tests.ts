@@ -2,7 +2,6 @@
 import viewModule = require("ui/core/view");
 import labelModule = require("ui/label");
 import helper = require("../ui/helper");
-import utils = require("utils/utils");
 import layoutHelper = require("./layout-helper");
 
 // <snippet module="ui/layouts/wrap-layout" title="WrapLayout">
