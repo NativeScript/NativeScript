@@ -81,4 +81,8 @@ export class Border extends contentView.ContentView implements definition.Border
         var borderSize = this.borderWidth * density;
         viewModule.View.layoutChild(this, this.content, borderSize, borderSize, right - left - borderSize, bottom - top - borderSize);
     }
+
+    public _updateAndroidBorder() {
+        // This is android specific method.
+    }
 }

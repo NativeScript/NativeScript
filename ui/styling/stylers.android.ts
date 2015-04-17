@@ -1,6 +1,7 @@
 ﻿import types = require("utils/types");
 import trace = require("trace");
 import view = require("ui/core/view");
+import border = require("ui/border");
 import constants = require("utils/android_constants");
 import style = require("ui/styling/style");
 import definition = require("ui/styling");
@@ -343,6 +344,25 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class BorderStyler implements definition.stylers.Styler {
+    //Background methods
+    private static setBackgroundProperty(view: view.View, newValue: any) {
+        var border = <border.Border>view;
+        border._updateAndroidBorder();
+    }
+
+    private static resetBackgroundProperty(view: view.View, nativeValue: any) {
+        var border = <border.Border>view;
+        border._updateAndroidBorder();
+    }
+
+   public static registerHandlers() {
+        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
+            BorderStyler.setBackgroundProperty,
+            BorderStyler.resetBackgroundProperty), "Border");
+    }
+}
+
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();
@@ -351,4 +371,5 @@ export function _registerDefaultStylers() {
     ActivityIndicatorStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
     SearchBarStyler.registerHandlers();
+    BorderStyler.registerHandlers();
 }
