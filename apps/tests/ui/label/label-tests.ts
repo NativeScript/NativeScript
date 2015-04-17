@@ -234,10 +234,8 @@ export var test_SetStyleProperties_via_css_class_Native = function () {
         
         if (testLabel.android) {
             actualTextSize = testLabel.android.getTextSize();
-            //expSize = helper.convertSizeToDeviceIndependentPixels(testLabel.android.getContext(), fontSize);
-            var density = utils.layout.getDisplayDensity();
-            expSize = fontSize * density;
-            TKUnit.assert(actualTextSize === expSize, "Expected: " + expSize + ", Actual: " + actualTextSize);
+            expSize = android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_DIP, fontSize, testLabel.android.getContext().getResources().getDisplayMetrics());
+            TKUnit.assertEqual(actualTextSize, expSize, "Wrong native FontSize");
 
             actualColors = testLabel.android.getTextColors();
             expColor = android.graphics.Color.parseColor(color);
@@ -251,7 +249,7 @@ export var test_SetStyleProperties_via_css_class_Native = function () {
         else {
             // iOS
             actualTextSize = testLabel.ios.font.pointSize;
-            TKUnit.assert(actualTextSize === fontSize, "Expected: " + fontSize + ", Actual: " + actualTextSize);
+            TKUnit.assertEqual(actualTextSize, fontSize, "Wrong native FontSize");
 
             normalColor = utils.ios.getColor(testLabel.ios.textColor);
             expColor = new colorModule.Color(color);

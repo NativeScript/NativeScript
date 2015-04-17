@@ -56,10 +56,10 @@ export var testAll = function () {
         var actualValue = viewModule.getViewById(absoluteLayout, "LT")._getCurrentLayoutBounds();
         var width = actualValue.right - actualValue.left;
         var height = actualValue.bottom - actualValue.top;
-        TKUnit.assertEqual(actualValue.left, 10 * density, "ActualLeft");
-        TKUnit.assertEqual(actualValue.top, 10 * density, "ActualTop");
-        TKUnit.assertEqual(width, 100 * density, "ActualWidth");
-        TKUnit.assertEqual(height, 100 * density, "Actualheight");
+        TKUnit.assertEqual(actualValue.left, layoutHelper.dip(10), "ActualLeft");
+        TKUnit.assertEqual(actualValue.top, layoutHelper.dip(10), "ActualTop");
+        TKUnit.assertEqual(width, layoutHelper.dip(100), "ActualWidth");
+        TKUnit.assertEqual(height, layoutHelper.dip(100), "Actualheight");
     });
 }
 

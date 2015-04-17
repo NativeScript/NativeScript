@@ -65,7 +65,7 @@ export var testSetText = function () {
         var expectedValue = "Hello, world!";
         var actualValue = textViewTestsNative.getNativeText(textView);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    });    
+    });
 }
 
 export var testBindTextDirectlyToModel = function () {
@@ -225,7 +225,7 @@ export var testNativeFontSizeFromCss = function () {
         page.css = "textview { font-size: " + expectedFontSize + "; }";
 
         var actualResult = textViewTestsNative.getNativeFontSize(textView);
-        TKUnit.assert(actualResult === expectedFontSize, "Actual: " + actualResult + "; Expected: " + expectedFontSize);
+        helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromCss");
     });
 }
 
@@ -235,7 +235,7 @@ export var testNativeFontSizeFromLocal = function () {
         textView.style.fontSize = expectedFontSize;
 
         var actualResult = textViewTestsNative.getNativeFontSize(textView);
-        TKUnit.assert(actualResult === expectedFontSize, "Actual: " + actualResult + "; Expected: " + expectedFontSize);
+        helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromLocal");
     });
 }
 
