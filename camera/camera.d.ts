@@ -7,15 +7,29 @@ declare module "camera" {
 
     /**
      * Take a photo using the camera.
-     * @param width - Optional parameter which defines the required width of the taken picture.
-     * @param height - Optional parameter which defines the required height of the taken picture.
-     * @param keepAspectRatio - Optional parameter which controls if the result picture will keep the aspect ratio of the picture taken by camera.
+     * @param options - Optional parameter for setting different camera options.
      */
     export function takePicture(options?: CameraOptions): Promise<imageSource.ImageSource>;
 
     export interface CameraOptions {
+        /**
+         * Defines the desired width (in device independent pixels) of the taken image. It should be used with height property.
+         * If `keepAspectRatio` actual image width could be different in order to keep the aspect ratio of the original camera image.
+         * The actual image width will be greater than requested if the display density of the device is higher (than 1) (full HD+ resolutions).
+         */
         width?: number;
+
+        /**
+         * Defines the desired height (in device independent pixels) of the taken image. It should be used with width property.
+         * If `keepAspectRatio` actual image width could be different in order to keep the aspect ratio of the original camera image.
+         * The actual image height will be greater than requested if the display density of the device is higher (than 1) (full HD+ resolutions).
+         */
         height?: number;
+
+        /**
+         * Defines if camera picture aspect ratio should be kept during picture resizing.
+         * This property could affect width or heigth return values.
+         */
         keepAspectRatio?: boolean;
     }
 }
