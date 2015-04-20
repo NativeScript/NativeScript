@@ -43,6 +43,7 @@ var initEvents = function () {
                 if (exports.onExit) {
                     exports.onExit();
                 }
+                androidApp.startActivity = undefined;
             }
 
             if (androidApp.onActivityDestroyed) {
