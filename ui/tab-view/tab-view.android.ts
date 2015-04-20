@@ -4,6 +4,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
 import trace = require("trace");
 import imageSource = require("image-source");
+import types = require("utils/types");
 
 var VIEWS_STATES = "_viewStates";
 
@@ -436,7 +437,7 @@ export class TabView extends common.TabView {
     }
 
     private _setNativeSelectedIndex(index: number) {
-        if (index === undefined || index === null) {
+        if (types.isNullOrUndefined(index)) {
             return;
         }
 

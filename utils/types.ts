@@ -21,6 +21,10 @@ export function isDefined(value: any): boolean {
     return typeof value !== "undefined";
 }
 
+export function isNullOrUndefined(value: any): boolean {
+    return (typeof value === "undefined") || (value === null);
+}
+
 export function verifyCallback(value: any) {
     if (value && !isFunction(value)) {
         throw new TypeError("Callback must be a valid function.");

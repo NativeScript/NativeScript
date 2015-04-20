@@ -44,7 +44,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
         if (!bindingSource) {
             bindingSource = this.bindingContext;
         }
-        if (bindingSource) {
+        if (!types.isNullOrUndefined(bindingSource)) {
             binding.bind(bindingSource);
         }
     }
@@ -109,7 +109,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
                 " targetProperty: " + binding.options.targetProperty +
                 " to the changed context: " + newValue, trace.categories.Binding);
             binding.unbind();
-            if (newValue) {
+            if (!types.isNullOrUndefined(newValue)) {
                 binding.bind(newValue);
             }
         }
@@ -134,7 +134,7 @@ export class Binding {
     }
 
     public bind(obj: Object) {
-        if (!obj) {
+        if (types.isNullOrUndefined(obj)) {
             throw new Error("Expected valid object reference as a source in the Binding.bind method.");
         }
 
@@ -344,7 +344,7 @@ export class Binding {
                 currentObject = currentObject[properties[i]];
             }
 
-            if (currentObject !== undefined && currentObject !== null) {
+            if (!types.isNullOrUndefined(currentObject)) {
                 options = {
                     instance: new WeakRef(currentObject),
                     property: properties[properties.length - 1]

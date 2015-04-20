@@ -2,6 +2,7 @@
 import appModule = require("application");
 import fileSystem = require("file-system");
 import utils = require("utils/utils");
+import types = require("utils/types");
 import definition = require("camera");
 import common = require("./camera-common");
 
@@ -14,7 +15,7 @@ export var takePicture = function (options?: definition.CameraOptions): Promise<
             if (options) {
                 var reqWidth = options.width ? options.width * density : 0;
                 var reqHeight = options.height ? options.height * density : reqWidth;
-                var shouldKeepAspectRatio = (options.keepAspectRatio === null || options.keepAspectRatio === undefined) ? true : options.keepAspectRatio;
+                var shouldKeepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
             }
             var takePictureIntent = new android.content.Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
             var dateStamp = createDateTimeStamp();
