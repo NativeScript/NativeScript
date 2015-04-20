@@ -7,7 +7,7 @@
         <TabViewItem.view>
           <StackLayout>
 
-            <ToolBar>
+            <!--<ToolBar>
               <ToolBar.items>
                 <ToolBarItem>
                   <ToolBarItem.view>
@@ -25,7 +25,7 @@
                   </ToolBarItem.view>
                 </ToolBarItem>
               </ToolBar.items>
-            </ToolBar>
+            </ToolBar>-->
 
             <SegmentedBar selectedIndex="1" style="background-color: red; color: white" selectedBackgroundColor="green">
               <SegmentedBar.items>
