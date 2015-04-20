@@ -14,7 +14,7 @@ export function createPage() {
     listView.height = 200;
     var itemsSource = [1, 2, 3];
 
-    listView.on("itemLoading", (args: listViewModule.ItemEventData) => {
+    listView.on(listViewModule.knownEvents.itemLoading, (args: listViewModule.ItemEventData) => {
         var label = <labelModule.Label>args.view;
         if (!label) {
             label = new labelModule.Label();

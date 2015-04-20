@@ -9,11 +9,11 @@ export class SlideOutControl extends common.SlideOutControl {
 
         this._ios = new UIView();
 
-        this.observe(gestures.GestureTypes.Swipe, (args) => {
+        this.observe(gestures.GestureTypes.swipe, (args) => {
             var swipeArgs = <gestures.SwipeGestureEventData>args;
-            if (swipeArgs.direction === gestures.SwipeDirection.Left) {
+            if (swipeArgs.direction === gestures.SwipeDirection.left) {
                 this._toggleSlideContentVisibility(false);
-            } else if (swipeArgs.direction === gestures.SwipeDirection.Right) {
+            } else if (swipeArgs.direction === gestures.SwipeDirection.right) {
                 this._toggleSlideContentVisibility(true);
             }
         });
@@ -59,14 +59,14 @@ export class SlideOutControl extends common.SlideOutControl {
             if (view === this.slideContent) {
                 view.ios.hidden = true;
 
-                view.observe(gestures.GestureTypes.Tap | gestures.GestureTypes.Swipe, (args) => {
-                    if (args.type & gestures.GestureTypes.Tap) {
+                view.observe(gestures.GestureTypes.tap | gestures.GestureTypes.swipe, (args) => {
+                    if (args.type & gestures.GestureTypes.tap) {
                         this._toggleSlideContentVisibility(false);
                     }
 
-                    if (args.type & gestures.GestureTypes.Swipe) {
+                    if (args.type & gestures.GestureTypes.swipe) {
                         var swipeArgs = <gestures.SwipeGestureEventData>args;
-                        if (swipeArgs.direction === gestures.SwipeDirection.Left) {
+                        if (swipeArgs.direction === gestures.SwipeDirection.left) {
                             this._toggleSlideContentVisibility(false);
                         }
                     }

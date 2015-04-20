@@ -83,19 +83,19 @@ export class GesturesObserver implements definition.GesturesObserver {
         trace.write(this._target + "._attach() android:" + this._target.android, "gestures");
         this._dettach();
 
-        if (type & definition.GestureTypes.Tap || type & definition.GestureTypes.DoubleTap || type & definition.GestureTypes.LongPress) {
+        if (type & definition.GestureTypes.tap || type & definition.GestureTypes.doubleTap || type & definition.GestureTypes.longPress) {
             this._simpleGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this._target));
         }
 
-        if (type & definition.GestureTypes.Pinch) {
+        if (type & definition.GestureTypes.pinch) {
             this._scaleGestureDetector = new android.view.ScaleGestureDetector(target._context, new PinchGestureListener(this, this._target));
         }
 
-        if (type & definition.GestureTypes.Swipe) {
+        if (type & definition.GestureTypes.swipe) {
             this._swipeGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new SwipeGestureListener(this, this._target));
         }
 
-        if (type & definition.GestureTypes.Pan) {
+        if (type & definition.GestureTypes.pan) {
             this._panGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new PanGestureListener(this, this._target));
         }
 
@@ -124,7 +124,7 @@ export class GesturesObserver implements definition.GesturesObserver {
                     owner._panGestureDetector.onTouchEvent(motionEvent);
                 }
 
-                if (type & definition.GestureTypes.Rotation && motionEvent.getPointerCount() === 2) {
+                if (type & definition.GestureTypes.rotation && motionEvent.getPointerCount() === 2) {
 
                     var deltaX = motionEvent.getX(0) - motionEvent.getX(1);
                     var deltaY = motionEvent.getY(0) - motionEvent.getY(1);
@@ -132,7 +132,7 @@ export class GesturesObserver implements definition.GesturesObserver {
                     var degrees = radians * (180 / Math.PI);
 
                     var args = <definition.RotationGestureEventData>{
-                        type: definition.GestureTypes.Rotation,
+                        type: definition.GestureTypes.rotation,
                         view: owner._target,
                         android: motionEvent,
                         rotation: degrees,
@@ -164,7 +164,7 @@ function _getArgs(type: definition.GestureTypes, view: view.View, e: android.vie
 function _getSwipeArgs(direction: definition.SwipeDirection, view: view.View,
     initialEvent: android.view.MotionEvent, currentEvent: android.view.MotionEvent): definition.SwipeGestureEventData {
     return <definition.SwipeGestureEventData>{
-        type: definition.GestureTypes.Swipe,
+        type: definition.GestureTypes.swipe,
         view: view,
         android: { initial: initialEvent, current: currentEvent },
         direction: direction
@@ -174,7 +174,7 @@ function _getSwipeArgs(direction: definition.SwipeDirection, view: view.View,
 function _getPanArgs(deltaX: number, deltaY: number, view: view.View,
     initialEvent: android.view.MotionEvent, currentEvent: android.view.MotionEvent): definition.PanGestureEventData {
     return <definition.PanGestureEventData>{
-        type: definition.GestureTypes.Pan,
+        type: definition.GestureTypes.pan,
         view: view,
         android: { initial: initialEvent, current: currentEvent },
         deltaX: deltaX,
@@ -201,13 +201,13 @@ class TapAndDoubleTapGestureListener extends android.view.GestureDetector.Simple
     }
 
     public onSingleTapConfirmed(motionEvent: android.view.MotionEvent): boolean {
-        var args = _getArgs(definition.GestureTypes.Tap, this._target, motionEvent);
+        var args = _getArgs(definition.GestureTypes.tap, this._target, motionEvent);
         _executeCallback(this._observer, args);
         return true;
     }
 
     public onDoubleTap(motionEvent: android.view.MotionEvent): boolean {
-        var args = _getArgs(definition.GestureTypes.DoubleTap, this._target, motionEvent);
+        var args = _getArgs(definition.GestureTypes.doubleTap, this._target, motionEvent);
         _executeCallback(this._observer, args);
         return true;
     }
@@ -217,7 +217,7 @@ class TapAndDoubleTapGestureListener extends android.view.GestureDetector.Simple
     }
 
     public onLongPress(motionEvent: android.view.MotionEvent): boolean {
-        var args = _getArgs(definition.GestureTypes.LongPress, this._target, motionEvent);
+        var args = _getArgs(definition.GestureTypes.longPress, this._target, motionEvent);
         _executeCallback(this._observer, args);
         return true;
     }
@@ -238,7 +238,7 @@ class PinchGestureListener extends android.view.ScaleGestureDetector.SimpleOnSca
 
     public onScale(detector: android.view.ScaleGestureDetector): boolean {
         var args = <definition.PinchGestureEventData>{
-            type: definition.GestureTypes.Pinch,
+            type: definition.GestureTypes.pinch,
             view: this._target,
             android: detector,
             scale: detector.getScaleFactor()
@@ -280,13 +280,13 @@ class SwipeGestureListener extends android.view.GestureDetector.SimpleOnGestureL
 
                     if (deltaX > 0) {
 
-                        args = _getSwipeArgs(definition.SwipeDirection.Right, this._target, initialEvent, currentEvent);
+                        args = _getSwipeArgs(definition.SwipeDirection.right, this._target, initialEvent, currentEvent);
                         _executeCallback(this._observer, args);
 
                         result = true;
                     } else {
 
-                        args = _getSwipeArgs(definition.SwipeDirection.Left, this._target, initialEvent, currentEvent);
+                        args = _getSwipeArgs(definition.SwipeDirection.left, this._target, initialEvent, currentEvent);
                         _executeCallback(this._observer, args);
 
                         result = true;
@@ -300,13 +300,13 @@ class SwipeGestureListener extends android.view.GestureDetector.SimpleOnGestureL
 
                     if (deltaY > 0) {
 
-                        args = _getSwipeArgs(definition.SwipeDirection.Down, this._target, initialEvent, currentEvent);
+                        args = _getSwipeArgs(definition.SwipeDirection.down, this._target, initialEvent, currentEvent);
                         _executeCallback(this._observer, args);
 
                         result = true;
                     } else {
 
-                        args = _getSwipeArgs(definition.SwipeDirection.Up, this._target, initialEvent, currentEvent);
+                        args = _getSwipeArgs(definition.SwipeDirection.up, this._target, initialEvent, currentEvent);
                         _executeCallback(this._observer, args);
 
                         result = true;

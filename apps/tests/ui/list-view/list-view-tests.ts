@@ -105,7 +105,7 @@ export function test_set_items_to_array_loads_all_items() {
         // ``` JavaScript
         var colors = ["red", "green", "blue"];
         listView.items = colors;
-        listView.on("itemLoading", function (args: listViewModule.ItemEventData) {
+        listView.on(listViewModule.knownEvents.itemLoading, function (args: listViewModule.ItemEventData) {
             if (!args.view) {
                 //// Create label if it is not already created.
                 args.view = new labelModule.Label();
@@ -130,7 +130,7 @@ export function test_set_items_to_array_loads_all_items() {
 
 export function test_set_items_to_array_creates_native_views() {
     var listView = new listViewModule.ListView();
-    listView.on("itemLoading", loadViewWithItemNumber);
+    listView.on(listViewModule.knownEvents.itemLoading, loadViewWithItemNumber);
 
     function testAction(views: Array<viewModule.View>) {
         listView.items = FEW_ITEMS;
@@ -145,7 +145,7 @@ export function test_set_items_to_array_creates_native_views() {
 export function test_refresh_after_adding_items_to_array_loads_new_items() {
 
     var listView = new listViewModule.ListView();
-    listView.on("itemLoading", loadViewWithItemNumber);
+    listView.on(listViewModule.knownEvents.itemLoading, loadViewWithItemNumber);
 
     function testAction(views: Array<viewModule.View>) {
         var colors = ["red", "green", "blue"];
@@ -176,7 +176,7 @@ export function test_refresh_reloads_all_items() {
         var indexes = {};
         var testStarted = false;
         listView.items = FEW_ITEMS;
-        listView.on("itemLoading", function (args: listViewModule.ItemEventData) {
+        listView.on(listViewModule.knownEvents.itemLoading, function (args: listViewModule.ItemEventData) {
             if (!args.view) {
                 args.view = new labelModule.Label();
             }
@@ -202,7 +202,7 @@ export function test_refresh_reloads_all_items() {
 
 export function test_set_itmes_to_null_clears_native_items() {
     var listView = new listViewModule.ListView();
-    listView.on("itemLoading", loadViewWithItemNumber);
+    listView.on(listViewModule.knownEvents.itemLoading, loadViewWithItemNumber);
 
     function testAction(views: Array<viewModule.View>) {
         listView.items = FEW_ITEMS;
@@ -219,7 +219,7 @@ export function test_set_itmes_to_null_clears_native_items() {
 
 export function test_set_itmes_to_undefiend_clears_native_items() {
     var listView = new listViewModule.ListView();
-    listView.on("itemLoading", loadViewWithItemNumber);
+    listView.on(listViewModule.knownEvents.itemLoading, loadViewWithItemNumber);
 
     function testAction(views: Array<viewModule.View>) {
         listView.items = FEW_ITEMS;
@@ -236,7 +236,7 @@ export function test_set_itmes_to_undefiend_clears_native_items() {
 
 export function test_set_itmes_to_different_source_loads_new_items() {
     var listView = new listViewModule.ListView();
-    listView.on("itemLoading", loadViewWithItemNumber);
+    listView.on(listViewModule.knownEvents.itemLoading, loadViewWithItemNumber);
 
     function testAction(views: Array<viewModule.View>) {
         listView.items = [1, 2, 3];
@@ -261,7 +261,7 @@ export function test_set_items_to_observable_array_loads_all_items() {
         // ``` JavaScript
         var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
         listView.items = colors;
-        listView.on("itemLoading", function (args: listViewModule.ItemEventData) {
+        listView.on(listViewModule.knownEvents.itemLoading, function (args: listViewModule.ItemEventData) {
             if (!args.view) {
                 //// Create label if it is not already created.
                 args.view = new labelModule.Label();
@@ -284,7 +284,7 @@ export function test_set_items_to_observable_array_loads_all_items() {
 
 export function test_add_to_observable_array_refreshes_the_listview() {
     var listView = new listViewModule.ListView();
-    listView.on("itemLoading", loadViewWithItemNumber);
+    listView.on(listViewModule.knownEvents.itemLoading, loadViewWithItemNumber);
 
     function testAction(views: Array<viewModule.View>) {
         var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
@@ -314,7 +314,7 @@ export function test_remove_from_observable_array_refreshes_the_listview() {
 
     function testAction(views: Array<viewModule.View>) {
         listView.items = data;
-        listView.on("itemLoading", loadViewWithItemNumber);
+        listView.on(listViewModule.knownEvents.itemLoading, loadViewWithItemNumber);
 
         TKUnit.wait(ASYNC);
         TKUnit.assertEqual(getNativeViewCount(listView), 3, "getNativeViewCount");
@@ -334,7 +334,7 @@ export function test_splice_observable_array_refreshes_the_listview() {
 
     function testAction(views: Array<viewModule.View>) {
         listView.items = data;
-        listView.on("itemLoading", loadViewWithItemNumber);
+        listView.on(listViewModule.knownEvents.itemLoading, loadViewWithItemNumber);
 
         TKUnit.wait(ASYNC);
         TKUnit.assertEqual(getNativeViewCount(listView), 3, "getNativeViewCount");
@@ -350,7 +350,7 @@ export function test_splice_observable_array_refreshes_the_listview() {
 }
 export function test_nativeTap_is_raised() {
     var listView = new listViewModule.ListView();
-    listView.on("itemLoading", loadViewWithItemNumber);
+    listView.on(listViewModule.knownEvents.itemLoading, loadViewWithItemNumber);
     listView.items = FEW_ITEMS;
 
     function testAction(views: Array<viewModule.View>) {
@@ -390,13 +390,13 @@ export function test_loadMoreItems_raised_when_showing_few_items() {
     function testAction(views: Array<viewModule.View>) {
         var loadMoreItemsCount = 0;
         listView.items = FEW_ITEMS;
-        listView.on("itemLoading", loadViewWithItemNumber);
+        listView.on(listViewModule.knownEvents.itemLoading, loadViewWithItemNumber);
         // <snippet module="ui/list-view" title="list-view">
         // ### LoadMoreItems event
         // The event will be raised when the ListView is scrolled so that the last item is visible.
         // This even is intended to be used to add additional data in the ListView.
         // ``` JavaScript
-        listView.on("loadMoreItems", function (data: observable.EventData) {
+        listView.on(listViewModule.knownEvents.loadMoreItems, function (data: observable.EventData) {
             //// Do something.
             //<hide>
             loadMoreItemsCount++;
@@ -413,12 +413,12 @@ export function test_loadMoreItems_raised_when_showing_few_items() {
 
 export function test_loadMoreItems_not_raised_when_showing_many_items() {
     var listView = new listViewModule.ListView();
-    listView.on("itemLoading", loadViewWithItemNumber);
+    listView.on(listViewModule.knownEvents.itemLoading, loadViewWithItemNumber);
 
     function testAction(views: Array<viewModule.View>) {
         var loadMoreItemsCount = 0;
         listView.items = MANY_ITEMS;
-        listView.on("loadMoreItems", function (data: observable.EventData) {
+        listView.on(listViewModule.knownEvents.loadMoreItems, function (data: observable.EventData) {
             loadMoreItemsCount++;
         });
 

@@ -14,7 +14,7 @@ export function createPage() {
 
     var listView = new listViewDef.ListView();
 
-    listView.on("itemLoading", (args: listViewDef.ItemEventData) => {
+    listView.on(listViewDef.knownEvents.itemLoading, (args: listViewDef.ItemEventData) => {
         var btn = <bm.Button> args.view;
         if (btn) {
             btn.off(bm.knownEvents.tap);

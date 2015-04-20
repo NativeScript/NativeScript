@@ -13,7 +13,7 @@ export var test_DummyTestForSnippetOnly0 = function () {
     // ### Double Tap
     // ``` JavaScript
     var label = new labelModule.Label();
-    var observer = label.observe(gestures.GestureTypes.DoubleTap, function (args: gestures.GestureEventData) { 
+    var observer = label.observe(gestures.GestureTypes.doubleTap, function (args: gestures.GestureEventData) { 
         console.log("Double Tap");
     });
     // ```
@@ -25,7 +25,7 @@ export var test_DummyTestForSnippetOnly1 = function () {
     // ### Long Press
     // ``` JavaScript
     var label = new labelModule.Label();
-    var observer = label.observe(gestures.GestureTypes.LongPress, function (args: gestures.GestureEventData) {
+    var observer = label.observe(gestures.GestureTypes.longPress, function (args: gestures.GestureEventData) {
         console.log("Long Press");
     });
     // ```
@@ -37,7 +37,7 @@ export var test_DummyTestForSnippetOnly2 = function () {
     // ### Pan
     // ``` JavaScript
     var label = new labelModule.Label();
-    var observer = label.observe(gestures.GestureTypes.Pan, function (args: gestures.PanGestureEventData) {
+    var observer = label.observe(gestures.GestureTypes.pan, function (args: gestures.PanGestureEventData) {
         console.log("Pan deltaX:" + args.deltaX + "; deltaY:" + args.deltaY + ";");
     });
     // ```
@@ -49,7 +49,7 @@ export var test_DummyTestForSnippetOnly3 = function () {
     // ### Pinch
     // ``` JavaScript
     var label = new labelModule.Label();
-    var observer = label.observe(gestures.GestureTypes.Pinch, function (args: gestures.PinchGestureEventData) {
+    var observer = label.observe(gestures.GestureTypes.pinch, function (args: gestures.PinchGestureEventData) {
         console.log("Pinch scale: " + args.scale);
     });
     // ```
@@ -61,7 +61,7 @@ export var test_DummyTestForSnippetOnly4 = function () {
     // ### Rotation
     // ``` JavaScript
     var label = new labelModule.Label();
-    var observer = label.observe(gestures.GestureTypes.Rotation, function (args: gestures.RotationGestureEventData) {
+    var observer = label.observe(gestures.GestureTypes.rotation, function (args: gestures.RotationGestureEventData) {
         console.log("Rotation: " + args.rotation);
     });
     // ```
@@ -73,7 +73,7 @@ export var test_DummyTestForSnippetOnly5 = function () {
     // ### Swipe
     // ``` JavaScript
     var label = new labelModule.Label();
-    var observer = label.observe(gestures.GestureTypes.Swipe, function (args: gestures.SwipeGestureEventData) {
+    var observer = label.observe(gestures.GestureTypes.swipe, function (args: gestures.SwipeGestureEventData) {
         console.log("Swipe direction: " + args.direction);
     });
     // ```
@@ -85,7 +85,7 @@ export var test_DummyTestForSnippetOnly6 = function () {
     // ### Tap
     // ``` JavaScript
     var label = new labelModule.Label();
-    var observer = label.observe(gestures.GestureTypes.Tap, function (args: gestures.GestureEventData) {
+    var observer = label.observe(gestures.GestureTypes.tap, function (args: gestures.GestureEventData) {
         console.log("Tap");
     });
     // ```
@@ -97,7 +97,7 @@ export var test_DummyTestForSnippetOnly7 = function () {
     // ### Stop observing
     // ``` JavaScript
     var label = new labelModule.Label();
-    var observer = label.observe(gestures.GestureTypes.Tap, function (args: gestures.GestureEventData) {
+    var observer = label.observe(gestures.GestureTypes.tap, function (args: gestures.GestureEventData) {
         console.log("Tap");
     });
     observer.disconnect();
