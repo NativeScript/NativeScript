@@ -16,6 +16,7 @@
         <Button tag="content/tab-view" text="TabView" tap="itemTap" />
         <Button tag="content/web-view" text="WebView" tap="itemTap" />
         <Button tag="content/scroll-view" text="ScrollView" tap="itemTap" />
+        <Button tag="content/border" text="Border" tap="itemTap" />
       </StackLayout>
 
       <Label cssClass="title" text="Views" />
@@ -32,6 +33,10 @@
         <Button tag="views/search-bar" text="SearchBar" tap="itemTap" />
         <Button tag="views/list-view" text="ListView" tap="itemTap" />
         <Button tag="views/dialogs" text="Dialogs" tap="itemTap" />
+        <Button tag="views/date-picker" text="DatePicker" tap="itemTap" />
+        <Button tag="views/time-picker" text="TimePicker" tap="itemTap" />
+        <Button tag="views/list-picker" text="ListPicker" tap="itemTap" />
+        <Button tag="views/segmented-bar" text="SegmentedBar" tap="itemTap" />
       </StackLayout>
     </StackLayout>
   </ScrollView>

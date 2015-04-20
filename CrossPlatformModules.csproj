@@ -60,6 +60,9 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <ItemGroup>
+    <TypeScriptCompile Include="apps\gallery-app\views\list-picker.ts">
+      <DependentUpon>list-picker.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\pickers-demo\app.ts" />
     <TypeScriptCompile Include="apps\pickers-demo\main-page.ts">
       <DependentUpon>main-page.xml</DependentUpon>
@@ -71,9 +74,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\gallery-app\views\list-view.ts">
       <DependentUpon>list-view.xml</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\gallery-app\views\image.ts">
-      <DependentUpon>image.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\placeholder-demo\app.ts" />
     <TypeScriptCompile Include="apps\placeholder-demo\main-page.android.ts">
@@ -572,6 +572,12 @@
     <TypeScriptCompile Include="libjs.d.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="apps\gallery-app\content\border.xml" />
+    <Content Include="apps\gallery-app\app.css" />
+    <Content Include="apps\gallery-app\views\list-picker.xml" />
+    <Content Include="apps\gallery-app\views\segmented-bar.xml" />
+    <Content Include="apps\gallery-app\views\time-picker.xml" />
+    <Content Include="apps\gallery-app\views\date-picker.xml" />
     <Content Include="apps\pickers-demo\main-page.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -722,9 +728,9 @@
       <SubType>Designer</SubType>
     </Content>
     <TypeScriptCompile Include="camera\camera.d.ts" />
-	<TypeScriptCompile Include="camera\camera-common.ts" >
-	  <DependentUpon>camera.d.ts</DependentUpon>
-	</TypeScriptCompile>
+    <TypeScriptCompile Include="camera\camera-common.ts">
+      <DependentUpon>camera.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="camera\camera.android.ts">
       <DependentUpon>camera.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -761,9 +767,6 @@
     <Content Include="apps\gallery-app\layouts\wrap-layout.xml" />
     <Content Include="apps\gallery-app\layouts\grid-layout.xml" />
     <Content Include="apps\gallery-app\layouts\stack-layout.xml" />
-    <Content Include="apps\gallery-app\main-page.css">
-      <DependentUpon>main-page.xml</DependentUpon>
-    </Content>
     <Content Include="apps\gallery-app\main-page.xml" />
     <Content Include="apps\gallery-app\content\tab-view.xml" />
     <TypeScriptCompile Include="apps\gallery-app\views\dialogs.ts">

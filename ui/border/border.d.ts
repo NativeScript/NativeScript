@@ -28,5 +28,9 @@ declare module "ui/border" {
          * Gets or sets the border color of the border component.
          */
         borderColor: color.Color;
+
+        //@private
+        _updateAndroidBorder();
+        //@endprivate
     }
 }

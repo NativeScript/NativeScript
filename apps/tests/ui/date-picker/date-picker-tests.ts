@@ -11,7 +11,7 @@ import datePickerModule = require("ui/date-picker");
 // ```
 // </snippet>
 
-function _createDatePicker(): datePickerModule.DatePicker {
+function _createDatePicker(year?: number, month?: number, day?: number): datePickerModule.DatePicker {
     // <snippet module="ui/date-picker" title="DatePicker">
     // ## Creating a DatePicker
     // ``` JavaScript
@@ -19,10 +19,23 @@ function _createDatePicker(): datePickerModule.DatePicker {
     // ```
     // </snippet>
     datePicker.id = "DatePicker";
+
+    if (year) {
+        datePicker.year = year;
+    }
+
+    if (month) {
+        datePicker.month = month;
+    }
+
+    if (day) {
+        datePicker.day = day;
+    }
+
     return datePicker;
 }
 
-export var test_DummyForCodeSnippet = function () {
+export function test_DummyForCodeSnippet() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         // <snippet module="ui/date-picker" title="DatePicker">
@@ -38,7 +51,7 @@ export var test_DummyForCodeSnippet = function () {
     });
 }
 
-export var test_WhenCreated_YearIsUndefined = function () {
+export function test_WhenCreated_YearIsUndefined() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         var actualValue = datePicker.year;
@@ -47,7 +60,7 @@ export var test_WhenCreated_YearIsUndefined = function () {
     });
 }
 
-export var test_WhenCreated_MonthIsUndefined = function () {
+export function test_WhenCreated_MonthIsUndefined() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         var actualValue = datePicker.month;
@@ -56,7 +69,7 @@ export var test_WhenCreated_MonthIsUndefined = function () {
     });
 }
 
-export var test_WhenCreated_DayIsUndefined = function () {
+export function test_WhenCreated_DayIsUndefined() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         var actualValue = datePicker.day;
@@ -65,7 +78,7 @@ export var test_WhenCreated_DayIsUndefined = function () {
     });
 }
 
-export var testYearFromLocalToNative = function () {
+export function testYearFromLocalToNative() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         var expectedValue = 1980;
@@ -75,7 +88,7 @@ export var testYearFromLocalToNative = function () {
     });
 }
 
-export var testMonthFromLocalToNative = function () {
+export function testMonthFromLocalToNative() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         var expectedValue = 5;
@@ -85,7 +98,7 @@ export var testMonthFromLocalToNative = function () {
     });
 }
 
-export var testDayFromLocalToNative = function () {
+export function testDayFromLocalToNative() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         var expectedValue = 19;
@@ -95,7 +108,7 @@ export var testDayFromLocalToNative = function () {
     });
 }
 
-export var testMaxDateFromLocalToNative = function () {
+export function testMaxDateFromLocalToNative() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         var expectedValue = new Date(1980, 1, 9);
@@ -105,7 +118,7 @@ export var testMaxDateFromLocalToNative = function () {
     });
 }
 
-export var testMinDateFromLocalToNative = function () {
+export function testMinDateFromLocalToNative() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         var expectedValue = new Date(1980, 1, 9);
@@ -115,7 +128,7 @@ export var testMinDateFromLocalToNative = function () {
     });
 }
 
-export var testYearFromNativeToLocal = function () {
+export function testYearFromNativeToLocal() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         var expectedValue = 1981;
@@ -125,7 +138,7 @@ export var testYearFromNativeToLocal = function () {
     });
 }
 
-export var testMonthFromNativeToLocal = function () {
+export function testMonthFromNativeToLocal() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         var expectedValue = 6;
@@ -135,7 +148,19 @@ export var testMonthFromNativeToLocal = function () {
     });
 }
 
-export var testDayFromNativeToLocal = function () {
+export function testYearMonthDayFromNativeToLocal() {
+    var testYear = 2000;
+    var testMonth = 3;
+    var testDay = 24;
+
+    helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
+        var datePicker = <datePickerModule.DatePicker>views[0];
+        datePickerTestsNative.setNativeDate(datePicker, testYear, testMonth, testDay);
+        assertDate(datePicker, testYear, testMonth, testDay);
+    });
+}
+
+export function testDayFromNativeToLocal() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
         var expectedValue = 20;
@@ -145,7 +170,50 @@ export var testDayFromNativeToLocal = function () {
     });
 }
 
-//export var testWTF = function () {
+export function testSetYearMonthDay_BeforeLoaded() {
+    var testYear = 2000;
+    var testMonth = 3;
+    var testDay = 24;
+
+    helper.buildUIAndRunTest(_createDatePicker(testYear, testMonth, testDay), function (views: Array<viewModule.View>) {
+        var datePicker = <datePickerModule.DatePicker>views[0];
+
+        TKUnit.assertEqual(datePicker.year, testYear, "datePicker.year");
+        TKUnit.assertEqual(datePicker.month, testMonth, "datePicker.month");
+        TKUnit.assertEqual(datePicker.day, testDay, "datePicker.day");
+
+        TKUnit.assertEqual(datePickerTestsNative.getNativeYear(datePicker), testYear, "Native datePicker.year");
+        TKUnit.assertEqual(datePickerTestsNative.getNativeMonth(datePicker), testMonth, "Native datePicker.month");
+        TKUnit.assertEqual(datePickerTestsNative.getNativeDay(datePicker), testDay, "Native datePicker.day");
+    });
+}
+
+export function testSetYearMonthDay_AfterLoaded() {
+    var testYear = 2000;
+    var testMonth = 3;
+    var testDay = 24;
+
+    helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
+        var datePicker = <datePickerModule.DatePicker>views[0];
+        datePicker.year = testYear;
+        datePicker.month = testMonth;
+        datePicker.day = testDay;        
+
+        assertDate(datePicker, testYear, testMonth, testDay);
+    });
+}
+
+function assertDate(datePicker: datePickerModule.DatePicker, expectedYear: number, expectedMonth: number, expectedDay: number) {
+    TKUnit.assertEqual(datePicker.year, expectedYear, "datePicker.year");
+    TKUnit.assertEqual(datePicker.month, expectedMonth, "datePicker.month");
+    TKUnit.assertEqual(datePicker.day, expectedDay, "datePicker.day");
+
+    TKUnit.assertEqual(datePickerTestsNative.getNativeYear(datePicker), expectedYear, "Native datePicker.year");
+    TKUnit.assertEqual(datePickerTestsNative.getNativeMonth(datePicker), expectedMonth, "Native datePicker.month");
+    TKUnit.assertEqual(datePickerTestsNative.getNativeDay(datePicker), expectedDay, "Native datePicker.day");
+}
+
+//export function testWTF() {
 //    var picker = new UIDatePicker();
 //    picker.datePickerMode = UIDatePickerMode.UIDatePickerModeDate;
 //    var jsDate = new Date(1980, 1, 9);

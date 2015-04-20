@@ -31,3 +31,7 @@ export function setNativeMonth(datePicker: datePickerModule.DatePicker, value: n
 export function setNativeDay(datePicker: datePickerModule.DatePicker, value: number): void {
     datePicker.android.updateDate(datePicker.android.getYear(), datePicker.android.getMonth(), value);
 }
+
+export function setNativeDate(datePicker: datePickerModule.DatePicker, year: number, month: number, day: number): void {
+    datePicker.android.updateDate(year, month - 1, day);
+}
