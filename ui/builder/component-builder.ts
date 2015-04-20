@@ -74,68 +74,25 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
         for (var attr in attributes) {
 
-            var attrValue = attributes[attr];
+            var attrValue = <string>attributes[attr];
 
-            if (isBinding(attrValue) && instance.bind) {
-                if (isKnownEvent(attr, instanceModule)) {
-                    attachEventBinding(instance, attr, attrValue);
-                } else {
-                    var bindOptions = bindingBuilder.getBindingOptions(attr, getBindingExpressionFromAttribute(attrValue));
-                    instance.bind({
-                        sourceProperty : bindOptions[bindingBuilder.bindingConstants.sourceProperty], 
-                        targetProperty: bindOptions[bindingBuilder.bindingConstants.targetProperty],
-                        expression: bindOptions[bindingBuilder.bindingConstants.expression],
-                        twoWay: bindOptions[bindingBuilder.bindingConstants.twoWay]
-                    }, bindOptions[bindingBuilder.bindingConstants.source]);
-                }
-            } else if (isKnownEvent(attr, instanceModule)) {
-                // Get the event handler from page module exports.
-                var handler = exports && exports[attrValue];
+            if (attr.indexOf(".") !== -1) {
+                var subObj = instance;
+                var properties = attr.split(".");
+                var subPropName = properties[properties.length - 1];
 
-                // Check if the handler is function and add it to the instance for specified event name.
-                if (types.isFunction(handler)) {
-                    instance.on(attr, handler);
-                }
-            } else if (isGesture(attr, instance)) {
-                // Get the event handler from page module exports.
-                var gestureHandler = exports && exports[attrValue];
-
-                // Check if the handler is function and add it to the instance for specified gesture.
-                if (types.isFunction(gestureHandler)) {
-                    instance.observe(gestures.fromString(attr.toLowerCase()), gestureHandler);
-                }
-            } else if (attr === ROW) {
-                gridLayoutModule.GridLayout.setRow(instance, !isNaN(+attrValue) && +attrValue);
-            } else if (attr === COL) {
-                gridLayoutModule.GridLayout.setColumn(instance, !isNaN(+attrValue) && +attrValue);
-            } else if (attr === COL_SPAN) {
-                gridLayoutModule.GridLayout.setColumnSpan(instance, !isNaN(+attrValue) && +attrValue);
-            } else if (attr === ROW_SPAN) {
-                gridLayoutModule.GridLayout.setRowSpan(instance, !isNaN(+attrValue) && +attrValue);
-            } else if (attr === LEFT) {
-                absoluteLayoutDef.AbsoluteLayout.setLeft(instance, !isNaN(+attrValue) && +attrValue);
-            } else if (attr === TOP) {
-                absoluteLayoutDef.AbsoluteLayout.setTop(instance, !isNaN(+attrValue) && +attrValue);
-            } else if (attr === DOCK) {
-                dockLayoutDef.DockLayout.setDock(instance, attrValue);
-            } else {
-                var attrHandled = false;
-
-                if ((<any>instance).applyXmlAttribute) {
-                    attrHandled = (<any>instance).applyXmlAttribute(attr, attrValue);
-                }
-
-                if (!attrHandled) {
-                    // Try to convert value to number.
-                    var valueAsNumber = +attrValue;
-                    if (!isNaN(valueAsNumber)) {
-                        instance[attr] = valueAsNumber;
-                    } else if (attrValue && (attrValue.toLowerCase() === "true" || attrValue.toLowerCase() === "false")) {
-                        instance[attr] = attrValue.toLowerCase() === "true" ? true : false;
-                    } else {
-                        instance[attr] = attrValue;
+                var i: number;
+                for (i = 0; i < properties.length - 1; i++) {
+                    if (types.isDefined(subObj)) {
+                        subObj = subObj[properties[i]];
                     }
                 }
+
+                if (types.isDefined(subObj)) {
+                    setPropertyValue(subObj, instanceModule, exports, subPropName, attrValue);
+                }
+            } else {
+                setPropertyValue(instance, instanceModule, exports, attr, attrValue);
             }
         }
 
@@ -145,7 +102,71 @@ export function getComponentModule(elementName: string, namespace: string, attri
     return componentModule;
 }
 
-function attachEventBinding(instance: view.View, eventName: string, value:string) {
+function setPropertyValue(instance: view.View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
+    if (isBinding(propertyValue) && instance.bind) {
+        if (isKnownEvent(propertyName, instanceModule)) {
+            attachEventBinding(instance, propertyName, propertyValue);
+        } else {
+            var bindOptions = bindingBuilder.getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
+            instance.bind({
+                sourceProperty: bindOptions[bindingBuilder.bindingConstants.sourceProperty],
+                targetProperty: bindOptions[bindingBuilder.bindingConstants.targetProperty],
+                expression: bindOptions[bindingBuilder.bindingConstants.expression],
+                twoWay: bindOptions[bindingBuilder.bindingConstants.twoWay]
+            }, bindOptions[bindingBuilder.bindingConstants.source]);
+        }
+    } else if (isKnownEvent(propertyName, instanceModule)) {
+        // Get the event handler from page module exports.
+        var handler = exports && exports[propertyValue];
+
+        // Check if the handler is function and add it to the instance for specified event name.
+        if (types.isFunction(handler)) {
+            instance.on(propertyName, handler);
+        }
+    } else if (isGesture(propertyName, instance)) {
+        // Get the event handler from page module exports.
+        var gestureHandler = exports && exports[propertyValue];
+
+        // Check if the handler is function and add it to the instance for specified gesture.
+        if (types.isFunction(gestureHandler)) {
+            instance.observe(gestures.fromString(propertyName.toLowerCase()), gestureHandler);
+        }
+    } else if (propertyName === ROW) {
+        gridLayoutModule.GridLayout.setRow(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === COL) {
+        gridLayoutModule.GridLayout.setColumn(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === COL_SPAN) {
+        gridLayoutModule.GridLayout.setColumnSpan(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === ROW_SPAN) {
+        gridLayoutModule.GridLayout.setRowSpan(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === LEFT) {
+        absoluteLayoutDef.AbsoluteLayout.setLeft(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === TOP) {
+        absoluteLayoutDef.AbsoluteLayout.setTop(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === DOCK) {
+        dockLayoutDef.DockLayout.setDock(instance, propertyValue);
+    } else {
+        var attrHandled = false;
+
+        if ((<any>instance).applyXmlAttribute) {
+            attrHandled = (<any>instance).applyXmlAttribute(propertyName, propertyValue);
+        }
+
+        if (!attrHandled) {
+            // Try to convert value to number.
+            var valueAsNumber = +propertyValue;
+            if (!isNaN(valueAsNumber)) {
+                instance[propertyName] = valueAsNumber;
+            } else if (propertyValue && (propertyValue.toLowerCase() === "true" || propertyValue.toLowerCase() === "false")) {
+                instance[propertyName] = propertyValue.toLowerCase() === "true" ? true : false;
+            } else {
+                instance[propertyName] = propertyValue;
+            }
+        }
+    }
+}
+
+function attachEventBinding(instance: view.View, eventName: string, value: string) {
     // Get the event handler from instance.bindingContext.
     var propertyChangeHandler = (args: observable.PropertyChangeData) => {
         if (args.propertyName === "bindingContext") {
