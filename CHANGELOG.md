@@ -31,5 +31,5 @@ Cross Platform Modules Changelog
 
 ### Breaking changes
 
-* image-cache now stores native images, i.e. android.graphics.Bitmap or UIImage.
-* Image: `src` property is now of type 'any' and can use either a string containing an image url or a native image instance directly.
+* `image-cache` now stores native images, i.e. `android.graphics.Bitmap` or `UIImage`.
+* `Image`: `src` property is now of type `any` and can use either a string containing an image url or a native image instance directly.
