@@ -28,11 +28,18 @@
     export function isUndefined(value: any): boolean;
 
     /**
-     * A function that checks if something is defined (not null and not undefined).
+     * A function that checks if something is defined (not undefined).
      * @param value The value which will be checked.
      * Returns true if value is defined.
      */
     export function isDefined(value: any): boolean;
+
+    /**
+     * A function that checks if something is not defined (null or undefined).
+     * @param value The value which will be checked.
+     * Returns true if value is null or undefined.
+     */
+    export function isNullOrUndefined(value: any): boolean;
 
     /**
      * A function that checks if something is a valid function.

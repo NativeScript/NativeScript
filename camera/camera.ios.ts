@@ -2,6 +2,7 @@
 import frame = require("ui/frame");
 import definition = require("camera");
 import common = require("./camera-common");
+import types = require("utils/types");
 
 class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePickerControllerDelegate {
     public static ObjCProtocols = [UIImagePickerControllerDelegate];
@@ -26,7 +27,7 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
         if (options) {
             this._width = options.width;
             this._height = options.height;
-            this._keepAspectRatio = (options.keepAspectRatio === null || options.keepAspectRatio === undefined) ? true : options.keepAspectRatio;
+            this._keepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
         }
         return this;
     }
@@ -76,7 +77,7 @@ export var takePicture = function (options?: definition.CameraOptions): Promise<
         if (options) {
             reqWidth = options.width || 0;
             reqHeight = options.height || reqWidth;
-            keepAspectRatio = (options.keepAspectRatio === null || options.keepAspectRatio === undefined) ? true : options.keepAspectRatio;
+            keepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
         }
         if (reqWidth && reqHeight) {
             listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { width: reqWidth, height: reqHeight, keepAspectRatio: keepAspectRatio });

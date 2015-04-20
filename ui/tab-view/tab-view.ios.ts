@@ -6,6 +6,7 @@ import trace = require("trace");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
 import imageSource = require("image-source");
+import types = require("utils/types");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -206,7 +207,7 @@ export class TabView extends common.TabView {
 
         var newIndex = data.newValue;
         trace.write("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + newIndex + ")", trace.categories.Debug);
-        if (newIndex === undefined || newIndex === null) {
+        if (types.isNullOrUndefined(newIndex)) {
             return;
         }
 
