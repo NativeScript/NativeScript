@@ -31,9 +31,9 @@ declare module "ui/image" {
         imageSource: imageSource.ImageSource;
 
         /**
-         * Gets or sets the URL of the image.
+         * Gets or sets the source of the Image. This can be either an URL string or a native image instance.
          */
-        src: string;
+        src: any;
 
         /**
          * Gets a value indicating if the image is currently loading

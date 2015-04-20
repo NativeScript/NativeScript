@@ -1,22 +1,77 @@
 ﻿import common = require("ui/image-cache/image-cache-common");
 import httpRequest = require("http/http-request");
+import utils = require("utils/utils");
+import trace = require("trace");
 
 module.exports.knownEvents = common.knownEvents;
 
+//class NSCacheDelegateImpl extends NSObject implements NSCacheDelegate {
+//    public static ObjCProtocols = [NSCacheDelegate];
+
+//    static new(): NSCacheDelegateImpl {
+//        return <NSCacheDelegateImpl>super.new();
+//    }
+
+//    public cacheWillEvictObject(cache: NSCache, obj: any): void {
+//        trace.write("NSCacheDelegateImpl.cacheWillEvictObject(" + obj + ");", trace.categories.Debug);
+//    }
+//}
+
+class MemmoryWarningHandler extends NSObject {
+    static new(): MemmoryWarningHandler {
+        return <MemmoryWarningHandler>super.new();
+    }
+
+    private _cache: NSCache;
+
+    public initWithCache(cache: NSCache): MemmoryWarningHandler {
+        this._cache = cache;
+        
+        NSNotificationCenter.defaultCenter().addObserverSelectorNameObject(this, "clearCache", "UIApplicationDidReceiveMemoryWarningNotification", null);
+        trace.write("[MemmoryWarningHandler] Added low memory observer.", trace.categories.Debug);
+        
+        return this;
+    }
+
+    public dealloc(): void {
+        NSNotificationCenter.defaultCenter().removeObserverNameObject(this, "UIApplicationDidReceiveMemoryWarningNotification", null);
+        trace.write("[MemmoryWarningHandler] Removed low memory observer.", trace.categories.Debug);
+        super.dealloc();
+    }
+
+    public clearCache(): void {
+        trace.write("[MemmoryWarningHandler] Clearing Image Cache.", trace.categories.Debug);
+        this._cache.removeAllObjects();
+        utils.GC();
+    }
+
+    public static ObjCExposedMethods = {
+        "clearCache": { returns: interop.types.void, params: [] }
+    };
+}
+
+
 export class Cache extends common.Cache {
     private _cache: NSCache;
+    //private _delegate: NSCacheDelegate;
+    private _memoryWarningHandler: MemmoryWarningHandler;
 
     constructor() {
         super();
 
         this._cache = new NSCache();
+        
+        //this._delegate = NSCacheDelegateImpl.new();
+        //this._cache.delegate = this._delegate;
+
+        this._memoryWarningHandler = MemmoryWarningHandler.new().initWithCache(this._cache);
     }
 
     public _downloadCore(request: common.DownloadRequest) {
         var that = this;
         httpRequest.request({ url: request.url, method: "GET" })
             .then(response => {
-                var image = UIImage.imageWithData(response.content.raw);
+                var image = UIImage.alloc().initWithData(response.content.raw);
                 that._onDownloadCompleted(request.key, image);
             });
     }
@@ -35,5 +90,6 @@ export class Cache extends common.Cache {
 
     public clear() {
         this._cache.removeAllObjects();
+        utils.GC();
     }
 }
