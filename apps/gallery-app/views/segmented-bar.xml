@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Page>
-  <SegmentedBar style="vertical-align: center; margin: 20; background-color: lightblue;">
+  <SegmentedBar style="vertical-align: center; margin: 20;">
     <SegmentedBar.items>
       <SegmentedBarItem title="Item 1" />
       <SegmentedBarItem title="Item 2" />
