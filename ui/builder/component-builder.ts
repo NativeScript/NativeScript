@@ -86,7 +86,9 @@ export function getComponentModule(elementName: string, namespace: string, attri
                     subObj = subObj[properties[i]];
                 }
 
-                setPropertyValue(subObj, instanceModule, exports, subPropName, attrValue);
+                if (types.isDefined(subObj)) {
+                    setPropertyValue(subObj, instanceModule, exports, subPropName, attrValue);
+                }
             } else {
                 setPropertyValue(instance, instanceModule, exports, attr, attrValue);
             }
