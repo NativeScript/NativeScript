@@ -1,8 +1,6 @@
 ﻿import borderCommon = require("ui/border/border-common");
 import proxy = require("ui/core/proxy");
-import view = require("ui/core/view");
 import dependencyObservable = require("ui/core/dependency-observable");
-import color = require("color");
 import utils = require("utils/utils");
 
 // merge the exports of the common file with the exports of this file
