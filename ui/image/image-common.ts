@@ -15,15 +15,11 @@ var IMAGE = "Image";
 var ISLOADING = "isLoading";
 var STRETCH = "stretch";
 
-function isValidSrc(src: any): boolean {
-    return types.isString(src);
-}
-
 function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
     var value = data.newValue;
 
-    if (isValidSrc(value)) {
+    if (types.isString(value)) {
         value = value.trim();
         image.imageSource = null;
         image["_url"] = value;
@@ -46,6 +42,9 @@ function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         // Support binding the iamgeSource trough the src propoerty
         image.imageSource = value;
     }
+    else {
+        image._setNativeImage(value);
+    }
 }
 
 export class Image extends view.View implements definition.Image {
@@ -54,7 +53,7 @@ export class Image extends view.View implements definition.Image {
         SRC,
         IMAGE,
         new proxy.PropertyMetadata(
-            "",
+            undefined,
             dependencyObservable.PropertyMetadataSettings.None,
             onSrcPropertyChanged
             )
@@ -99,10 +98,10 @@ export class Image extends view.View implements definition.Image {
         this._setValue(Image.imageSourceProperty, value);
     }
 
-    get src(): string {
+    get src(): any {
         return this._getValue(Image.srcProperty);
     }
-    set src(value: string) {
+    set src(value: any) {
         this._setValue(Image.srcProperty, value);
     }
 
@@ -115,6 +114,10 @@ export class Image extends view.View implements definition.Image {
     }
     set stretch(value: string) {
         this._setValue(Image.stretchProperty, value);
+    }
+
+    public _setNativeImage(nativeImage: any) {
+        //
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {

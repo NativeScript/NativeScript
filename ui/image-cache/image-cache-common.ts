@@ -9,7 +9,7 @@ export module knownEvents {
 export interface DownloadRequest {
     url: string;
     key: string;
-    completed?: (result: imageSource.ImageSource, key: string) => void;
+    completed?: (image: any, key: string) => void;
 }
 
 export class Cache extends observable.Observable implements definition.Cache {
@@ -17,7 +17,6 @@ export class Cache extends observable.Observable implements definition.Cache {
     public maxRequests = 5;
     private _enabled = true;
 
-    private _cache = {};
     private _pendingDownloads = {};
     private _queue: Array<DownloadRequest> = [];
     private _currentDownloads = 0;
@@ -98,47 +97,42 @@ export class Cache extends observable.Observable implements definition.Cache {
         }
     }
 
-    public get(key: string): imageSource.ImageSource {
-        var value = this._cache[key];
-        if (value) {
-            return value;
-        }
-
-        return undefined;
+    public get(key: string): any {
+        // This method is intended to be overridden by the android and ios implementations
+        throw new Error("Abstract");
     }
 
-    public set(key: string, source: imageSource.ImageSource): void {
-        this._cache[key] = source;
+    public set(key: string, image: any): void {
+        // This method is intended to be overridden by the android and ios implementations
+        throw new Error("Abstract");
     }
 
     public remove(key: string): void {
-        delete this._cache[key];
+        // This method is intended to be overridden by the android and ios implementations
+        throw new Error("Abstract");
     }
 
     public clear() {
-        var keys = Object.keys(this._cache);
-        var i;
-        var length = keys.length;
-
-        for (i = 0; i < length; i++) {
-            delete this._cache[keys[i]];
-        }
+        // This method is intended to be overridden by the android and ios implementations
+        throw new Error("Abstract");
     }
 
     /* tslint:disable:no-unused-variable */
     public _downloadCore(request: definition.DownloadRequest) {
         // This method is intended to be overridden by the android and ios implementations
+        throw new Error("Abstract");
     }
     /* tslint:enable:no-unused-variable */
 
-    public _onDownloadCompleted(key: string, result: imageSource.ImageSource) {
+    public _onDownloadCompleted(key: string, image: any) {
         var request = <DownloadRequest>this._pendingDownloads[key];
 
-        this._cache[request.key] = result;
+        this.set(request.key, image);
+
         this._currentDownloads--;
 
         if (request.completed) {
-            request.completed(result, request.key);
+            request.completed(image, request.key);
         }
 
         if (this.hasListeners(knownEvents.downloaded)) {
@@ -146,7 +140,7 @@ export class Cache extends observable.Observable implements definition.Cache {
                 eventName: knownEvents.downloaded,
                 object: this,
                 key: key,
-                image: result
+                image: image 
             });
         }
 
@@ -156,7 +150,7 @@ export class Cache extends observable.Observable implements definition.Cache {
     }
 
     private _shouldDownload(request: definition.DownloadRequest, onTop: boolean): boolean {
-        if (request.key in this._cache || request.key in this._pendingDownloads) {
+        if (this.get(request.key) || request.key in this._pendingDownloads) {
             return false;
         }
 

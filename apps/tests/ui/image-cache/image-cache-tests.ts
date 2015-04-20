@@ -19,22 +19,22 @@ export function test_DummyTestForSnippetOnly() {
     //// Enable download while not scrolling
     cache.enableDownload();
     
-    var src: imageSource.ImageSource;
+    var imgSouce: imageSource.ImageSource;
     var url = "https://github.com/NativeScript.png";
     //// Try to read the image from the cache
-    var result = cache.get(url);
-    if (result) {
+    var image = cache.get(url);
+    if (image) {
         //// If present -- use it.
-        src = result;
+        imgSouce = imageSource.fromNativeSource(image);
     }
     else {
         //// If not present -- request its download.
         cache.push({
             key: url,
             url: url,
-            completed: (result: imageSource.ImageSource, key: string) => {
+            completed: (image: any, key: string) => {
                 if (url === key) {
-                    src = result;
+                    imgSouce = imageSource.fromNativeSource(image);
                 }
             }
         });

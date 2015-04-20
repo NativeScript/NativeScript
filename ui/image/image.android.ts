@@ -36,9 +36,7 @@ function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeD
         return;
     }
 
-    if (image.android) {
-        image.android.setImageBitmap(data.newValue ? data.newValue.android : null);
-    }
+    image._setNativeImage(data.newValue ? data.newValue.android : null);
 }
 
 // register the setNativeValue callback
@@ -54,5 +52,9 @@ export class Image extends imageCommon.Image {
 
     public _createUI() {
         this._android = new android.widget.ImageView(this._context);
+    }
+
+    public _setNativeImage(nativeImage: any) {
+        this.android.setImageBitmap(nativeImage);
     }
 }

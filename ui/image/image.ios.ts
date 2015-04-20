@@ -30,11 +30,7 @@ function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData)
 
 function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
-    image.ios.image = data.newValue ? data.newValue.ios : null;
-
-    if (isNaN(image.width) || isNaN(image.height)) {
-        image.requestLayout();
-    }
+    image._setNativeImage(data.newValue ? data.newValue.ios : null);
 }
 
 // register the setNativeValue callback
@@ -43,7 +39,7 @@ function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeD
 
 export class Image extends imageCommon.Image {
     private _ios: UIImageView;
-    
+
     constructor(options?: definition.Options) {
         super(options);
 
@@ -56,5 +52,13 @@ export class Image extends imageCommon.Image {
 
     get ios(): UIImageView {
         return this._ios;
+    }
+
+    public _setNativeImage(nativeImage: any) {
+        this.ios.image = nativeImage;
+
+        if (isNaN(this.width) || isNaN(this.height)) {
+            this.requestLayout();
+        }
     }
 } 

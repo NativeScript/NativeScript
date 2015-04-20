@@ -8,7 +8,7 @@ var firstThumbnailImageSource = imageSource.fromFile("~/res/first-image.png");
 var defaultImageSource = imageSource.fromFile("~/res/reddit-logo-transparent.png");
 
 var ISLOADING = "isLoading";
-var THUMBNAIL_IMAGE_SOURCE = "thumbnailImageSource";
+var THUMBNAIL_IMAGE = "thumbnailImage";
 var IMAGE_SOURCE = "imageSource";
 
 export class RedditViewModel extends observable.Observable {
@@ -42,40 +42,39 @@ export class RedditViewModel extends observable.Observable {
         }
     }
 
-    private _thumbnailImageSource: imageSource.ImageSource;
-    get thumbnailImageSource(): imageSource.ImageSource {
-        if (this._source) {
-            if (this._source.title === "reddit 101") {
-                this._thumbnailImageSource = firstThumbnailImageSource;
-            } else if (redditAppViewModel.cache) {
-                var url = this._source.thumbnail;
-
-                var imgSource = redditAppViewModel.cache.get(url);
-
-                if (imgSource) {
-                    this._thumbnailImageSource = imgSource;
-                }
-                else if (_isValidImageUrl(url)) {
-                    this.isLoading = true;
-
-                    redditAppViewModel.cache.push({
-                        key: url,
-                        url: url,
-                        completed: (result: imageSource.ImageSource, key: string) => {
-                            if (url === key) {
-                                this.isLoading = false;
-                                this._thumbnailImageSource = result;
-                                this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: THUMBNAIL_IMAGE_SOURCE, value: result });
-                            }
-                        }
-                    });
-                } else {
-                    this._thumbnailImageSource = redditAppViewModel.defaultNoThumbnailImageSource;
-                }
-            }
+    get thumbnailImage(): imageSource.ImageSource {
+        if (!this._source) {
+            return redditAppViewModel.defaultThumbnailImageSource;
         }
 
-        return this._thumbnailImageSource || redditAppViewModel.defaultThumbnailImageSource;
+        if (this._source.title === "reddit 101") {
+            return firstThumbnailImageSource;
+        }
+
+        var url = this._source.thumbnail;
+        
+        if (!_isValidImageUrl(url)) { 
+            return redditAppViewModel.defaultNoThumbnailImageSource
+        }
+
+        var image = redditAppViewModel.cache.get(url);
+        if (image) {
+            return image;
+        }
+
+        this.isLoading = true;
+        redditAppViewModel.cache.push({
+            key: url,
+            url: url,
+            completed: (image: any, key: string) => {
+                if (url === key) {
+                    this.isLoading = false;
+                    this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: THUMBNAIL_IMAGE, value: image });
+                }
+            }
+        });
+
+        return redditAppViewModel.defaultThumbnailImageSource;
     }
 
     get imageSource(): imageSource.ImageSource {
