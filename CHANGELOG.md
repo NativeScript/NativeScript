@@ -30,3 +30,6 @@ Cross Platform Modules Changelog
 * New options for camera module. Added a resizing options along with keep-aspect-ratio options. More information about how to use it can be found at the dedicated camera help article.
 
 ### Breaking changes
+
+* image-cache now stores native images, i.e. android.graphics.Bitmap or UIImage.
+* Image: `src` property is now of type 'any' and can use either a string containing an image url or a native image instance directly.
