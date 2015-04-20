@@ -12,8 +12,13 @@ class LruBitmapCache extends android.util.LruCache<string, android.graphics.Bitm
         // The cache size will be measured in kilobytes rather than
         // number of items.
         var result = Math.round(bitmap.getByteCount() / 1024);
+        //console.log("sizeOf key: " + result);
         return result;
     }
+
+    //protected entryRemoved(evicted: boolean, key: string, oldValue: android.graphics.Bitmap, newValue: android.graphics.Bitmap): void {
+    //    console.log("entryRemoved("+evicted+", "+key+", "+oldValue+", "+newValue+")");
+    //}
 };
 
 export class Cache extends common.Cache {
@@ -25,6 +30,7 @@ export class Cache extends common.Cache {
 
         var maxMemory = java.lang.Runtime.getRuntime().maxMemory() / 1024;
         var cacheSize = maxMemory / 8;
+        //console.log("cacheSize: " + cacheSize);
         this._cache = new LruBitmapCache(cacheSize);
 
         var that = new WeakRef(this);

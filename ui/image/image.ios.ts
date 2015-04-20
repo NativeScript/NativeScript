@@ -37,8 +37,6 @@ function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeD
 (<proxy.PropertyMetadata>imageCommon.Image.imageSourceProperty.metadata).onSetNativeValue = onImageSourcePropertyChanged;
 (<proxy.PropertyMetadata>imageCommon.Image.stretchProperty.metadata).onSetNativeValue = onStretchPropertyChanged;
 
-
-
 export class Image extends imageCommon.Image {
     private _ios: UIImageView;
 

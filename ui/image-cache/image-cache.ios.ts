@@ -50,7 +50,6 @@ class MemmoryWarningHandler extends NSObject {
     };
 }
 
-
 export class Cache extends common.Cache {
     private _cache: NSCache;
     //private _delegate: NSCacheDelegate;
