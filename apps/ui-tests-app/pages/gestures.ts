@@ -62,31 +62,31 @@ export function createPage() {
         rotaionLabel.text = "Gestures detection disabled";
     });
 
-    var observer1 = tapLabel.observe(gestures.GestureTypes.Tap, function (args: gestures.GestureEventData) {
+    var observer1 = tapLabel.observe(gestures.GestureTypes.tap, function (args: gestures.GestureEventData) {
         tapLabel.text = "Tap gesture detected";
     });
 
-    var observer2 = doubletapLabel.observe(gestures.GestureTypes.DoubleTap, function (args: gestures.GestureEventData) {
+    var observer2 = doubletapLabel.observe(gestures.GestureTypes.doubleTap, function (args: gestures.GestureEventData) {
         doubletapLabel.text = "Double Tap gesture detected";
     });
 
-    var observer3 = longpressLabel.observe(gestures.GestureTypes.LongPress, function (args: gestures.GestureEventData) {
+    var observer3 = longpressLabel.observe(gestures.GestureTypes.longPress, function (args: gestures.GestureEventData) {
         longpressLabel.text = "Long Press gesture detected";
     });
 
-    var observer4 = swipeLabel.observe(gestures.GestureTypes.Swipe, function (args: gestures.SwipeGestureEventData) {
+    var observer4 = swipeLabel.observe(gestures.GestureTypes.swipe, function (args: gestures.SwipeGestureEventData) {
         swipeLabel.text = "Swipe Direction: " + args.direction;
     });
 
-    var observer5 = panLabel.observe(gestures.GestureTypes.Pan, function (args: gestures.PanGestureEventData) {
+    var observer5 = panLabel.observe(gestures.GestureTypes.pan, function (args: gestures.PanGestureEventData) {
         panLabel.text = "Pan deltaX:" + args.deltaX + "; deltaY:" + args.deltaY + ";";
     });
 
-    var observer6 = pinchLabel.observe(gestures.GestureTypes.Pinch, function (args: gestures.PinchGestureEventData) {
+    var observer6 = pinchLabel.observe(gestures.GestureTypes.pinch, function (args: gestures.PinchGestureEventData) {
         pinchLabel.text = "Pinch Scale: " + args.scale;
     });
 
-    var observer7 = rotaionLabel.observe(gestures.GestureTypes.Rotation, function (args: gestures.RotationGestureEventData) {
+    var observer7 = rotaionLabel.observe(gestures.GestureTypes.rotation, function (args: gestures.RotationGestureEventData) {
         rotaionLabel.text = "Rotation: " + args.rotation;
     });
 

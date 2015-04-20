@@ -2,30 +2,30 @@
 import view = require("ui/core/view");
 
 export enum GestureTypes {
-    Tap = 1 << 0,
-    DoubleTap = 1 << 1,
-    Pinch = 1 << 2,
-    Pan = 1 << 3,
-    Swipe = 1 << 4,
-    Rotation = 1 << 5,
-    LongPress = 1 << 6
+    tap = 1 << 0,
+    doubleTap = 1 << 1,
+    pinch = 1 << 2,
+    pan = 1 << 3,
+    swipe = 1 << 4,
+    rotation = 1 << 5,
+    longPress = 1 << 6
 }
 
 export enum GestureStateTypes {
-    Possible = 1 << 0,
-    Recognized = 1 << 1,
-    Failed = 1 << 2,
-    Cancelled = 1 << 3,
-    Began = 1 << 4,
-    Changed = 1 << 5,
-    Ended = 1 << 6
+    possible = 1 << 0,
+    recognized = 1 << 1,
+    failed = 1 << 2,
+    cancelled = 1 << 3,
+    began = 1 << 4,
+    changed = 1 << 5,
+    ended = 1 << 6
 }
 
 export enum SwipeDirection {
-    Right = 1 << 0,
-    Left = 1 << 1,
-    Up = 1 << 2,
-    Down = 1 << 3
+    right = 1 << 0,
+    left = 1 << 1,
+    up = 1 << 2,
+    down = 1 << 3
 }
 
 export function observe(target: view.View, type: number, callback: (args: definition.GestureEventData) => void): definition.GesturesObserver {
@@ -37,32 +37,32 @@ export function observe(target: view.View, type: number, callback: (args: defini
 export function toString(type: GestureTypes, separator?: string): string {
     var types = new Array<string>();
 
-    if (type & definition.GestureTypes.Tap) {
-        types.push("Tap");
+    if (type & definition.GestureTypes.tap) {
+        types.push("tap");
     }
 
-    if (type & definition.GestureTypes.DoubleTap) {
-        types.push("DoubleTap");
+    if (type & definition.GestureTypes.doubleTap) {
+        types.push("doubleTap");
     }
 
-    if (type & definition.GestureTypes.Pinch) {
-        types.push("Pinch");
+    if (type & definition.GestureTypes.pinch) {
+        types.push("pinch");
     }
 
-    if (type & definition.GestureTypes.Pan) {
-        types.push("Pan");
+    if (type & definition.GestureTypes.pan) {
+        types.push("pan");
     }
 
-    if (type & definition.GestureTypes.Swipe) {
-        types.push("Swipe");
+    if (type & definition.GestureTypes.swipe) {
+        types.push("swipe");
     }
 
-    if (type & definition.GestureTypes.Rotation) {
-        types.push("Rotation");
+    if (type & definition.GestureTypes.rotation) {
+        types.push("rotation");
     }
 
-    if (type & definition.GestureTypes.LongPress) {
-        types.push("LongPress");
+    if (type & definition.GestureTypes.longPress) {
+        types.push("longPress");
     }
 
     return types.join(separator);
@@ -72,19 +72,19 @@ export function fromString(type: string): definition.GestureTypes {
     var t = type.trim().toLowerCase();
 
     if (t === "tap") {
-        return definition.GestureTypes.Tap;
+        return definition.GestureTypes.tap;
     } else if (t === "doubletap") {
-        return definition.GestureTypes.DoubleTap;
+        return definition.GestureTypes.doubleTap;
     } else if (t === "pinch") {
-        return definition.GestureTypes.Pinch;
+        return definition.GestureTypes.pinch;
     } else if (t === "pan") {
-        return definition.GestureTypes.Pan;
+        return definition.GestureTypes.pan;
     } else if (t === "swipe") {
-        return definition.GestureTypes.Swipe;
+        return definition.GestureTypes.swipe;
     } else if (t === "rotation") {
-        return definition.GestureTypes.Rotation;
+        return definition.GestureTypes.rotation;
     } else if (t === "longpress") {
-        return definition.GestureTypes.LongPress;
+        return definition.GestureTypes.longPress;
     }
 
     return undefined;
