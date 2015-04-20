@@ -83,7 +83,9 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
                 var i: number;
                 for (i = 0; i < properties.length - 1; i++) {
-                    subObj = subObj[properties[i]];
+                    if (types.isDefined(subObj)) {
+                        subObj = subObj[properties[i]];
+                    }
                 }
 
                 if (types.isDefined(subObj)) {
