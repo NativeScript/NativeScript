@@ -144,3 +144,13 @@ export var test_parse_ShouldParseBindingsWithObservable = function () {
 
     TKUnit.assert(sw.checked === false, "Expected result: false; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
 };
+
+export var test_parse_ShouldParseSubProperties = function () {
+    var p = <page.Page>builder.parse("<Page><Switch style.visibility='collapsed' checked='{{ myProp }}' /></Page>");
+    var obj = new observable.Observable();
+    obj.set("myProp", true);
+    p.bindingContext = obj;
+    var sw = <switchModule.Switch>p.content;
+
+    TKUnit.assert(sw.visibility === "collapsed", "Expected result: collapsed; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
+};
