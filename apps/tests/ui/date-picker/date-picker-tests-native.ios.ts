@@ -41,4 +41,11 @@ export function setNativeDay(datePicker: datePickerModule.DatePicker, value: num
     (<any>datePicker)._changeHandler.valueChanged(datePicker.ios);
 }
 
-    
+export function setNativeDate(datePicker: datePickerModule.DatePicker, year: number, month: number, day: number): void {
+    var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitYear | NSCalendarUnit.NSCalendarUnitMonth | NSCalendarUnit.NSCalendarUnitDay, datePicker.ios.date);
+    comps.year = year;
+    comps.month = month;
+    comps.day = day;
+    datePicker.ios.setDateAnimated(NSCalendar.currentCalendar().dateFromComponents(comps), false);
+    (<any>datePicker)._changeHandler.valueChanged(datePicker.ios);
+}   

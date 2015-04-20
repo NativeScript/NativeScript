@@ -10,3 +10,5 @@ export declare function getNativeMinDate(datePicker: datePickerModule.DatePicker
 export declare function setNativeYear(datePicker: datePickerModule.DatePicker, value: number): void;
 export declare function setNativeMonth(datePicker: datePickerModule.DatePicker, value: number): void;
 export declare function setNativeDay(datePicker: datePickerModule.DatePicker, value: number): void;
+
+export declare function setNativeDate(datePicker: datePickerModule.DatePicker, year: number, month: number, day: number): void;

@@ -6,3 +6,5 @@ export declare function getNativeMinute(timePicker: timePickerModule.TimePicker)
 
 export declare function setNativeHour(timePicker: timePickerModule.TimePicker, value: number): void;
 export declare function setNativeMinute(timePicker: timePickerModule.TimePicker, value: number): void;
+
+export declare function setNativeTime(timePicker: timePickerModule.TimePicker, hour: number, minute: number): void;

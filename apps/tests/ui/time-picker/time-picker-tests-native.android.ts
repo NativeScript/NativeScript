@@ -15,3 +15,8 @@ export function setNativeHour(timePicker: timePickerModule.TimePicker, value: nu
 export function setNativeMinute(timePicker: timePickerModule.TimePicker, value: number): void {
     timePicker.android.setCurrentMinute(new java.lang.Integer(value));
 }
+
+export function setNativeTime(timePicker: timePickerModule.TimePicker, hour: number, minute: number): void {
+    timePicker.android.setCurrentHour(new java.lang.Integer(hour));
+    timePicker.android.setCurrentMinute(new java.lang.Integer(minute));
+}

@@ -21,4 +21,12 @@ export function setNativeMinute(timePicker: timePickerModule.TimePicker, value: 
     timePicker.ios.setDateAnimated(NSCalendar.currentCalendar().dateFromComponents(comps), false);
     (<any>timePicker)._changeHandler.valueChanged(timePicker.ios);
 }
+
+export function setNativeTime(timePicker: timePickerModule.TimePicker, hour: number, minute: number): void {
+    var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitHour | NSCalendarUnit.NSCalendarUnitMinute, timePicker.ios.date);
+    comps.hour = hour;
+    comps.minute = minute;
+    timePicker.ios.setDateAnimated(NSCalendar.currentCalendar().dateFromComponents(comps), false);
+    (<any>timePicker)._changeHandler.valueChanged(timePicker.ios);
+}
     

@@ -11,7 +11,7 @@ import timePickerModule = require("ui/time-picker");
 // ```
 // </snippet>
 
-function _createTimePicker(): timePickerModule.TimePicker {
+function _createTimePicker(hour?: number, minute?: number): timePickerModule.TimePicker {
     // <snippet module="ui/time-picker" title="TimePicker">
     // ## Creating a TimePicker
     // ``` JavaScript
@@ -19,10 +19,19 @@ function _createTimePicker(): timePickerModule.TimePicker {
     // ```
     // </snippet>
     timePicker.id = "timePicker";
+
+    if (hour) {
+        timePicker.hour = hour;
+    }
+
+    if (minute) {
+        timePicker.minute = minute;
+    }
+    
     return timePicker;
 }
 
-export var test_DummyForCodeSnippet = function () {
+export function test_DummyForCodeSnippet() {
     helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         // <snippet module="ui/time-picker" title="TimePicker">
@@ -35,7 +44,7 @@ export var test_DummyForCodeSnippet = function () {
     });
 }
 
-export var test_WhenCreated_HourIsUndefined = function () {
+export function test_WhenCreated_HourIsUndefined() {
     helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var actualValue = timePicker.hour;
@@ -44,7 +53,7 @@ export var test_WhenCreated_HourIsUndefined = function () {
     });
 }
 
-export var test_WhenCreated_MinuteIsUndefined = function () {
+export function test_WhenCreated_MinuteIsUndefined() {
     helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var actualValue = timePicker.minute;
@@ -53,7 +62,7 @@ export var test_WhenCreated_MinuteIsUndefined = function () {
     });
 }
 
-export var testHourFromLocalToNative = function () {
+export function testHourFromLocalToNative() {
     helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var expectedValue = 13;
@@ -63,7 +72,7 @@ export var testHourFromLocalToNative = function () {
     });
 }
 
-export var testMinuteFromLocalToNative = function () {
+export function testMinuteFromLocalToNative() {
     helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var expectedValue = 59;
@@ -73,7 +82,7 @@ export var testMinuteFromLocalToNative = function () {
     });
 }
 
-export var testHourFromNativeToLocal = function () {
+export function testHourFromNativeToLocal() {
     helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var expectedValue = 14;
@@ -83,7 +92,7 @@ export var testHourFromNativeToLocal = function () {
     });
 }
 
-export var testMinuteFromNativeToLocal = function () {
+export function testMinuteFromNativeToLocal() {
     helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var expectedValue = 33;
@@ -91,4 +100,46 @@ export var testMinuteFromNativeToLocal = function () {
         var actualValue = timePicker.minute;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
+}
+
+export function testHourAndMinuteFromNativeToLocal() {
+    var expectedHour = 12;
+    var expectedMinute = 34;
+
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
+        var timePicker = <timePickerModule.TimePicker>views[0];
+        timePickerTestsNative.setNativeTime(timePicker, expectedHour, expectedMinute);
+        assertTime(timePicker, expectedHour, expectedMinute);
+    });
+}
+
+export function testSetHourMinute_BeforeLoaded() {
+    var expectedHour = 12;
+    var expectedMinute = 34;
+
+    helper.buildUIAndRunTest(_createTimePicker(expectedHour, expectedMinute), function (views: Array<viewModule.View>) {
+        var timePicker = <timePickerModule.TimePicker>views[0];
+        assertTime(timePicker, expectedHour, expectedMinute);
+    });
+}
+
+export function testSetHourMinute_AfterLoaded() {
+    var expectedHour = 12;
+    var expectedMinute = 34;
+
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
+        var timePicker = <timePickerModule.TimePicker>views[0];
+        timePicker.hour = expectedHour;
+        timePicker.minute = expectedMinute;
+
+        assertTime(timePicker, expectedHour, expectedMinute);
+    });
+}
+
+function assertTime(timePicker: timePickerModule.TimePicker, expectedHour: number, expectedMinute) {
+    TKUnit.assertEqual(timePicker.hour, expectedHour, "timePicker.hour");
+    TKUnit.assertEqual(timePicker.minute, expectedMinute, "timePicker.minute");
+
+    TKUnit.assertEqual(timePickerTestsNative.getNativeHour(timePicker), expectedHour, "Native timePicker.hour");
+    TKUnit.assertEqual(timePickerTestsNative.getNativeMinute(timePicker), expectedMinute, "Native timePicker.minute");
 }
