@@ -8,7 +8,7 @@ Cross Platform Modules Changelog
 
 ### New
 
-* In addition to binding converters introduced in version 0.42 is added a static (global) place for most common converters. This place is named `application.resources`. More information how to use it can be found in the special help topic regarding `Data binding`.
+* In addition to binding converters introduced in version 0.42 static (global) place for most common converters is added. This place is named `application.resources`. More information how to use it can be found in the special help topic regarding `Data binding`.
 
 * Using plain objects (numbers, strings also an entire object) as binding context via `$value`. More information can be found at the dedicated `Data binding` help topic.
 
@@ -27,6 +27,6 @@ Cross Platform Modules Changelog
 
 ### New
 
-* New options for camera module. Added a resizing options along with keep aspect ratio options. More information about how to use it can be found at the dedicated camera help article.
+* New options for camera module. Added a resizing options along with keep-aspect-ratio options. More information about how to use it can be found at the dedicated camera help article.
 
 ### Breaking changes
