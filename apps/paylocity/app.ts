@@ -1,6 +1,6 @@
 ﻿import application = require("application");
 
 application.mainModule = "login";
-application.cssFile = "paylocity/style.css";
+application.cssFile = "./style.css";
 
 application.start();
