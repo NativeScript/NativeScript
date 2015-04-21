@@ -126,18 +126,18 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
             return;
         }
 
-            this._styleScope.ensureSelectors();
+        this._styleScope.ensureSelectors();
 
-            var scope = this._styleScope;
-            var checkSelectors = (view: view.View): boolean => {
-                scope.applySelectors(view);
-                return true;
-            }
+        var scope = this._styleScope;
+        var checkSelectors = (view: view.View): boolean => {
+            scope.applySelectors(view);
+            return true;
+        }
 
-            checkSelectors(this);
-            view.eachDescendant(this, checkSelectors);
+        checkSelectors(this);
+        view.eachDescendant(this, checkSelectors);
 
-            this._cssApplied = true;
+        this._cssApplied = true;
     }
 
     private _resetCssValues() {
@@ -251,7 +251,7 @@ export class MenuItem extends bindable.Bindable implements dts.MenuItem {
             };
         }
     }
-    
+
     get android(): dts.AndroidMenuItemOptions {
         return this._android;
     }

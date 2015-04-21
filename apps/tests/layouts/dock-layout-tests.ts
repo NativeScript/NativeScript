@@ -20,8 +20,8 @@ import dockModule = require("ui/layouts/dock-layout");
 //    <Button dock="right" text = "right" style ="background-color: lightgreen; margin: 5;"/ >
 //    <Button dock="bottom" text = "bottom" style ="background-color: lightpink; margin: 5;"/ >
 //    <Button text="fill" style ="background-color: wheat; margin: 5;"/ >
-//  < / DockLayout >
-//< / Page>
+//  </DockLayout >
+//</Page>
 //```
 // </snippet>
 
