@@ -66,9 +66,8 @@ export class GesturesObserver implements definition.GesturesObserver {
         this.disconnect();
 
         this._target = target;
-
-        if (this._target && this._target.ios && this._target.ios.addGestureRecognizer) {
-            var nativeView = <UIView>this._target.ios;
+        if (this._target && this._target._nativeView && this._target._nativeView.addGestureRecognizer) {
+            var nativeView = <UIView>this._target._nativeView;
 
             if (type & definition.GestureTypes.tap) {
                 nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.tap));
@@ -89,14 +88,26 @@ export class GesturesObserver implements definition.GesturesObserver {
 
             if (type & definition.GestureTypes.pan) {
                 nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.pan, args => {
-                    this._executeCallback(_getPanData(args, this._target.ios));
+                    this._executeCallback(_getPanData(args, this._target._nativeView));
                 }));
             }
 
             if (type & definition.GestureTypes.swipe) {
                 nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.swipe, args => {
                     this._executeCallback(_getSwipeData(args));
-                }));
+                }, UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionDown));
+
+                nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.swipe, args => {
+                    this._executeCallback(_getSwipeData(args));
+                }, UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionLeft));
+
+                nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.swipe, args => {
+                    this._executeCallback(_getSwipeData(args));
+                }, UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionRight));
+
+                nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.swipe, args => {
+                    this._executeCallback(_getSwipeData(args));
+                }, UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionUp));
             }
 
             if (type & definition.GestureTypes.rotation) {
@@ -112,12 +123,12 @@ export class GesturesObserver implements definition.GesturesObserver {
     }
 
     public disconnect() {
-        if (this._target && this._target.ios) {
+        if (this._target && this._target._nativeView) {
 
             for (var name in this._recognizers) {
                 if (this._recognizers.hasOwnProperty(name)) {
                     var item = <RecognizerCache>this._recognizers[name];
-                    this._target.ios.removeGestureRecognizer(item.recognizer);
+                    this._target._nativeView.removeGestureRecognizer(item.recognizer);
 
                     item.recognizer = null;
                     item.target = null;
@@ -136,14 +147,22 @@ export class GesturesObserver implements definition.GesturesObserver {
         }
     }
 
-    private _createRecognizer(type: definition.GestureTypes, callback?: (args: definition.GestureEventData) => void): UIGestureRecognizer {
+    private _createRecognizer(type: definition.GestureTypes, callback?: (args: definition.GestureEventData) => void, swipeDirection?: UISwipeGestureRecognizerDirection): UIGestureRecognizer {
         var recognizer: UIGestureRecognizer;
         var name = definition.toString(type);
         var target = _createUIGestureRecognizerTarget(this, type, callback);
         var recognizerType = _getUIGestureRecognizerType(type);
 
         if (recognizerType) {
-            recognizer = recognizerType.alloc().initWithTargetAction(target, "recognize");
+            if (type === definition.GestureTypes.swipe && swipeDirection) {
+                name = name + swipeDirection.toString();
+                recognizer = recognizerType.alloc().initWithTargetAction(target, "recognize");
+                (<UISwipeGestureRecognizer>recognizer).direction = swipeDirection;
+            }
+            else {
+                recognizer = recognizerType.alloc().initWithTargetAction(target, "recognize");
+            }
+            
             if (recognizer) {
                 this._recognizers[name] = <RecognizerCache>{ recognizer: recognizer, target: target };
             }
