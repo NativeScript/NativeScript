@@ -14,6 +14,8 @@ export class device implements definition.device {
     private static _osVersion: string;
     private static _sdkVersion: string;
     private static _deviceType: string;
+    private static _userAgent: string;
+    private static _language: string;
 
     static get manufacturer(): string {
         return "Apple";
@@ -73,6 +75,23 @@ export class device implements definition.device {
         }
 
         return app_uuid;
+    }
+
+    static get userAgent(): string {
+        if (!device._userAgent) {
+            device._userAgent = new UIWebView().stringByEvaluatingJavaScriptFromString('navigator.userAgent');
+        }
+        
+        return device._userAgent;
+    }
+
+    static get language(): string {
+        if (!device._language) {
+            var languages = NSLocale.preferredLanguages();
+            device._language = languages[0];
+        }
+        
+        return device._language;
     }
 }
 

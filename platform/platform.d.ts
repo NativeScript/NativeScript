@@ -56,6 +56,17 @@ declare module "platform" {
          * Gets the uuid
          */
          static uuid: string;
+
+        /**
+         * Gets the user agent string as it would be reported by the
+         * device built-in web browser control
+         */
+        static userAgent: string;
+
+        /**
+         * Gets the preferred language. For example "en" or "en_US"
+         */
+        static language: string;
     }
 
     /**
