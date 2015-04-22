@@ -34,7 +34,7 @@ module.exports = function(grunt) {
         return updatePackageDef(content, function(contentAsObject) {
             contentAsObject.version = localCfg.packageVersion;
             contentAsObject.author = "Telerik <support@telerik.com>";
-            var specificKeywords = ["telerik", "mobile"];
+            var specificKeywords = ["telerik", "mobile", "nativescript", "{N}", "tns", "appbuilder"];
             if (currentAppName.indexOf("template-") == 0) {
                 var templateName = currentAppName.substring("template-".length);
                 contentAsObject.name = "tns-" + currentAppName;
