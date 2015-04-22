@@ -12,7 +12,7 @@ Because of the features listed above you get some important functionality right 
   
 The second major feature you get out of the box is 0-day support for new native platforms. Because the NativeScript framework  exposes unmodified native APIs and UI components, you can use the latest native APIs and new UI components when Apple, Google or Microsoft updates their mobile platforms.
   
- So let’s summarize what NativeScript enables you as of today:
+ So let’s summarize what the NativeScript framework enables you as of today:
 
  - Build 100% native cross-platform apps, with a declarative UI, and the ability to implement platform-specific UIs.
  - Share 100% of your code or use platform-specific APIs, depending on the app you’re building.
@@ -24,7 +24,7 @@ The second major feature you get out of the box is 0-day support for new native 
  - Reuse the QA tools for accessibility automation to write tests.
  - Use the latest native platform features to create an amazing native user experience.
  - Code in any IDE of your choice to implement your applications’ code using the [NativeScript framework's CLI](http://npmjs.org/nativescript).
- - Use the [Telerik Platform](http://platform.telerik.com), AppBuilder and the full Visual Studio integration to get a rich development experience. Paid support is also available.
+ - Use  [Telerik Platform](http://platform.telerik.com) and AppBuilder products and the full Visual Studio integration to get a rich development experience. Paid support is also available.
    
 We hope this gives you a good idea about what you can expect from the NativeScript framework.
 
@@ -39,13 +39,13 @@ To learn more about the NativeScript framework, you can check the following reso
 - **[iOS Runtime](//github.com/NativeScript/ios-runtime/)** - Holds the runtime, allowing the JavaScript code of your application to be executed on an iOS device
 - **[Android Runtime](//github.com/NativeScript/android-runtime)** - Holds the runtime, allowing the JavaScript code of your application to be executed on an Android device
 - **[NativeScript CLI](//github.com/NativeScript/nativescript-cli)** - Contains the Command-Line Interface for creating an application using the NativeScript framework
-- **[Docs](//github.com/NativeScript/docs)** - Contains the NativeScript documentation (available on http://docs.nativescript.org/) in MarkDown format
+- **[Docs](//github.com/NativeScript/docs)** - Contains the NativeScript framework documentation (available on http://docs.nativescript.org/) in MarkDown format
 - **[Tasks app](//github.com/NativeScript/sample-Tasks)** - Stores the code of a complete sample application using user authentication and cloud storage.
 - **[Hello-World Template](//github.com/NativeScript/template-hello-world)** - Contains the code of the application the CLI creates by default
 - **[Cuteness Sample](//github.com/NativeScript/sample-cuteness)** - Stores the code of the Cuteness proof of concept application (A Reddit Kitten browser)
 
 ## Getting Started and How to Install the NativeScript framework
-Please follow this [getting started with NativeScript article](http://docs.nativescript.org/getting-started).
+Please follow this [article to get started with the NativeScript framework](http://docs.nativescript.org/getting-started).
 
 ## Documentation
 Comprehensive documentation is available at [docs.nativescript.org](http://docs.nativescript.org).
