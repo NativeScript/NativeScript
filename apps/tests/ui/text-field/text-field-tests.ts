@@ -296,7 +296,7 @@ export var testNativeFontSizeFromCss = function () {
         page.css = "textfield { font-size: " + expectedFontSize + "; }";
 
         var actualResult = textFieldTestsNative.getNativeFontSize(textField);
-        TKUnit.assert(actualResult === expectedFontSize, "Actual: " + actualResult + "; Expected: " + expectedFontSize);
+        helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromCss");
     });
 }
 
@@ -306,7 +306,7 @@ export var testNativeFontSizeFromLocal = function () {
         textField.style.fontSize = expectedFontSize;
 
         var actualResult = textFieldTestsNative.getNativeFontSize(textField);
-        TKUnit.assert(actualResult === expectedFontSize, "Actual: " + actualResult + "; Expected: " + expectedFontSize);
+        helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromLocal");
     });
 }
 

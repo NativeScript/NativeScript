@@ -600,7 +600,7 @@ export class View extends proxy.ProxyObject implements definition.View {
 
         var density = utils.layout.getDisplayDensity();
         var margins = horizontal ? view.marginLeft + view.marginRight : view.marginTop + view.marginBottom;
-        margins = Math.round(margins * density);
+        margins = Math.floor(margins * density);
 
         var resultSize = 0;
         var resultMode = 0;
@@ -608,7 +608,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         var measureLength = Math.max(0, parentLength - margins);
 
         // Convert to pixels.
-        var childLength = Math.round((horizontal ? view.width : view.height) * density);
+        var childLength = Math.floor((horizontal ? view.width : view.height) * density);
 
         // We want a specific size... let be it.
         if (!isNaN(childLength)) {

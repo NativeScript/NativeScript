@@ -8,6 +8,8 @@ import utils = require("utils/utils");
 import types = require("utils/types");
 import styling = require("ui/styling");
 
+var DELTA = 0.1;
+
 export var ASYNC = 0.2;
 
 export function do_PageTest(test: (views: Array<view.View>) => void, content: view.View, secondView: view.View, thirdView: view.View) {
@@ -202,4 +204,11 @@ export function goBack(): void {
     TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
     TKUnit.assert(frame.topmost().currentPage.isLoaded, "Current page should be loaded!");
     TKUnit.assert(!currentPage.isLoaded, "Previous page should be unloaded!");
+}
+
+export function assertAreClose(actual: number, expected: number, message: string): void {
+    var density = utils.layout.getDisplayDensity();
+    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
+
+    TKUnit.assertAreClose(actual, expected, delta, message);
 }

@@ -194,7 +194,7 @@ var _testNativeFontSizeFromCss = function (views: Array<viewModule.View>) {
     page.css = "button { font-size: " + expectedFontSize + "; }";
 
     var actualResult = buttonTestsNative.getNativeFontSize(button);
-    TKUnit.assert(actualResult === expectedFontSize, "Actual: " + actualResult + "; Expected: " + expectedFontSize);
+    helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromCss");
 }
 
 var _testNativeFontSizeFromLocal = function (views: Array<viewModule.View>) {
@@ -202,7 +202,7 @@ var _testNativeFontSizeFromLocal = function (views: Array<viewModule.View>) {
     button.style.fontSize = expectedFontSize;
 
     var actualResult = buttonTestsNative.getNativeFontSize(button);
-    TKUnit.assert(actualResult === expectedFontSize, "Actual: " + actualResult + "; Expected: " + expectedFontSize);
+    helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromLocal");
 }
 
 var expectedColorHex = "#ffff0000";

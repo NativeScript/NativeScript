@@ -9,6 +9,7 @@ import utils = require("utils/utils");
 import builder = require("ui/builder");
 
 var ASYNC = 2;
+var DELTA = 0.1;
 
 export class MyGridLayout extends layout.GridLayout {
     public measureCount: number = 0;
@@ -328,7 +329,7 @@ export function test_GridLayout_desiredSize_isCorrect() {
         for (var c = 0; c < 4; c++) {
             var btn = <helper.MyButton>rootLayout.getChildAt(i++);
             if (cols[c].isAbsolute) {
-                width += cols[c].actualLength * utils.layout.getDisplayDensity();
+                width += helper.dip(cols[c].actualLength);
             }
             else {
                 width += btn.getMeasuredWidth();
@@ -340,15 +341,18 @@ export function test_GridLayout_desiredSize_isCorrect() {
         maxWidth = Math.max(maxWidth, width);
 
         if (rows[r].isAbsolute) {
-            maxHeight += rows[r].actualLength * utils.layout.getDisplayDensity();
+            maxHeight += helper.dip(rows[r].actualLength);
         }
         else {
             maxHeight += height;
         }
     }
 
-    TKUnit.assertEqual(rootLayout.getMeasuredWidth(), Math.round(maxWidth), "GridLayout incorrect measured width");
-    TKUnit.assertEqual(rootLayout.getMeasuredHeight(), Math.round(maxHeight), "GridLayout incorrect measured height");
+    var density = utils.layout.getDisplayDensity();
+    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
+
+    TKUnit.assertAreClose(rootLayout.getMeasuredWidth(), Math.round(maxWidth), delta, "GridLayout incorrect measured width");
+    TKUnit.assertAreClose(rootLayout.getMeasuredHeight(), Math.round(maxHeight), delta, "GridLayout incorrect measured height");
 }
 
 export function test_GridLayout_columnsActualWidth_isCorrect() {
@@ -379,6 +383,7 @@ export function test_GridLayout_Measure_and_Layout_Children_withCorrect_size() {
     var cols = rootLayout.getColumns();
     var i = 0;
     var density = utils.layout.getDisplayDensity();
+    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
 
     for (var r = 0; r < 4; r++) {
 
@@ -394,27 +399,27 @@ export function test_GridLayout_Measure_and_Layout_Children_withCorrect_size() {
             w = Math.round(w * density);
 
             if (row.isAuto) {
-                TKUnit.assertEqual(btn.layoutHeight, btn.getMeasuredHeight(), "Auto rows should layout with measured height");
+                TKUnit.assertAreClose(btn.layoutHeight, btn.getMeasuredHeight(), delta, "Auto rows should layout with measured height");
             }
             else if (row.isAbsolute) {
-                TKUnit.assertEqual(btn.measureHeight, h, "Absolute rows should measure with specific height");
-                TKUnit.assertEqual(btn.layoutHeight, h, "Absolute rows should layout with specific height");
+                TKUnit.assertAreClose(btn.measureHeight, h, delta, "Absolute rows should measure with specific height");
+                TKUnit.assertAreClose(btn.layoutHeight, h, delta, "Absolute rows should layout with specific height");
             }
             else {
-                TKUnit.assertEqual(btn.measureHeight, h, "Auto rows should measure with specific height");
-                TKUnit.assertEqual(btn.layoutHeight, h, "Star rows should layout with exact length");
+                TKUnit.assertAreClose(btn.measureHeight, h, delta, "Auto rows should measure with specific height");
+                TKUnit.assertAreClose(btn.layoutHeight, h, delta, "Star rows should layout with exact length");
             }
 
             if (col.isAuto) {
-                TKUnit.assertEqual(btn.layoutWidth, btn.getMeasuredWidth(), "Auto columns should layout with measured width");
+                TKUnit.assertAreClose(btn.layoutWidth, btn.getMeasuredWidth(), delta, "Auto columns should layout with measured width");
             }
             else if (col.isAbsolute) {
-                TKUnit.assertEqual(btn.measureWidth, w, "Absolute columns should measure with specific width");
-                TKUnit.assertEqual(btn.layoutWidth, w, "Absolute columns should layout with specific width");
+                TKUnit.assertAreClose(btn.measureWidth, w, delta, "Absolute columns should measure with specific width");
+                TKUnit.assertAreClose(btn.layoutWidth, w, delta, "Absolute columns should layout with specific width");
             }
             else {
-                TKUnit.assertEqual(btn.measureWidth, w, "Auto columns should should measure with specific width");
-                TKUnit.assertEqual(btn.layoutWidth, w, "Star columns should layout with exact length");
+                TKUnit.assertAreClose(btn.measureWidth, w, delta, "Auto columns should should measure with specific width");
+                TKUnit.assertAreClose(btn.layoutWidth, w, delta, "Star columns should layout with exact length");
             }
         }
     }
@@ -434,10 +439,13 @@ export function test_GridLayout_ColumnWidth_when_4stars_and_width_110() {
 
     var cols = rootLayout.getColumns();
 
-    TKUnit.assertEqual(cols[0].actualLength, 28, "Column actual length should be 28");
-    TKUnit.assertEqual(cols[1].actualLength, 27, "Column actual length should be 27");
-    TKUnit.assertEqual(cols[2].actualLength, 28, "Column actual length should be 28");
-    TKUnit.assertEqual(cols[3].actualLength, 27, "Column actual length should be 27");
+    var density = utils.layout.getDisplayDensity();
+    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
+
+    TKUnit.assertAreClose(cols[0].actualLength, 28, delta, "Column[0] actual length should be 28");
+    TKUnit.assertAreClose(cols[1].actualLength, 27, delta, "Column[1] actual length should be 27");
+    TKUnit.assertAreClose(cols[2].actualLength, 28, delta, "Column[2] actual length should be 28");
+    TKUnit.assertAreClose(cols[3].actualLength, 27, delta, "Column[3] actual length should be 27");
 }
 
 export function test_GridLayout_set_columns_in_XML() {

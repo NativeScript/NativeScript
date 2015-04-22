@@ -236,6 +236,27 @@ export class View extends viewCommon.View {
 
         return false;
     }
+
+    public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
+        var result = size;
+        switch (specMode) {
+            case utils.layout.UNSPECIFIED:
+                result = size;
+                break;
+
+            case utils.layout.AT_MOST:
+                if (specSize < size) {
+                    result = specSize | utils.layout.MEASURED_STATE_TOO_SMALL;
+                }
+                break;
+
+            case utils.layout.EXACTLY:
+                result = specSize;
+                break;
+        }
+
+        return result | (childMeasuredState & utils.layout.MEASURED_STATE_MASK);
+    }
 }
 
 export class CustomLayoutView extends View implements viewDefinition.CustomLayoutView {

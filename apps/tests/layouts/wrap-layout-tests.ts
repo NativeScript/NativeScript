@@ -2,7 +2,6 @@
 import viewModule = require("ui/core/view");
 import labelModule = require("ui/label");
 import helper = require("../ui/helper");
-import utils = require("utils/utils");
 import layoutHelper = require("./layout-helper");
 
 // <snippet module="ui/layouts/wrap-layout" title="WrapLayout">
@@ -62,22 +61,20 @@ export function testHorizontalOrientation() {
     wrapLayout.orientation = enums.Orientation.horizontal;
     helper.buildUIAndRunTest(wrapLayout, function (views: Array<viewModule.View>) {
         TKUnit.waitUntilReady(function isReady() {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         }, 1);
-
-        var density = utils.layout.getDisplayDensity();
 
         var actualValue = viewModule.getViewById(wrapLayout, "0")._getCurrentLayoutBounds();
         TKUnit.assertEqual(actualValue.left, 0, "ActualLeft");
         TKUnit.assertEqual(actualValue.top, 0, "ActualTop");
-        TKUnit.assertEqual(actualValue.right, 100 * density, "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, 100 * density, "ActualBottom");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom");
 
         actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds();
-        TKUnit.assertEqual(actualValue.left, 100 * density, "ActualLeft");
+        TKUnit.assertEqual(actualValue.left, layoutHelper.dip(100), "ActualLeft");
         TKUnit.assertEqual(actualValue.top, 0, "ActualTop");
-        TKUnit.assertEqual(actualValue.right, 200 * density, "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, 100 * density, "ActualBottom");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(200), "ActualRight");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom");
     });
 }
 
@@ -91,22 +88,20 @@ export function testVerticalOrientation() {
     // </snippet>
     helper.buildUIAndRunTest(wrapLayout, function (views: Array<viewModule.View>) {
         TKUnit.waitUntilReady(function isReady() {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         }, 1);
-
-        var density = utils.layout.getDisplayDensity();
 
         var actualValue = viewModule.getViewById(wrapLayout, "0")._getCurrentLayoutBounds();
         TKUnit.assertEqual(actualValue.left, 0, "ActualLeft");
         TKUnit.assertEqual(actualValue.top, 0, "ActualTop");
-        TKUnit.assertEqual(actualValue.right, 100 * density, "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, 100 * density, "ActualBottom");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom");
 
         actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds();
         TKUnit.assertEqual(actualValue.left, 0, "ActualLeft");
-        TKUnit.assertEqual(actualValue.top, 100 * density, "ActualTop");
-        TKUnit.assertEqual(actualValue.right, 100 * density, "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, 200 * density, "ActualBottom");
+        TKUnit.assertEqual(actualValue.top, layoutHelper.dip(100), "ActualTop");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(200), "ActualBottom");
     });
 }
 
@@ -117,22 +112,20 @@ export function testChangeOrientation() {
         wrapLayout.orientation = enums.Orientation.vertical;
 
         TKUnit.waitUntilReady(() => {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         });
-
-        var density = utils.layout.getDisplayDensity();
 
         var actualValue = viewModule.getViewById(wrapLayout, "0")._getCurrentLayoutBounds();
         TKUnit.assertEqual(actualValue.left, 0, "ActualLeft");
         TKUnit.assertEqual(actualValue.top, 0, "ActualTop");
-        TKUnit.assertEqual(actualValue.right, 100 * density, "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, 100 * density, "ActualBottom");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom");
 
         actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds();
         TKUnit.assertEqual(actualValue.left, 0, "ActualLeft");
-        TKUnit.assertEqual(actualValue.top, 100 * density, "ActualTop");
-        TKUnit.assertEqual(actualValue.right, 100 * density, "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, 200 * density, "ActualBottom");
+        TKUnit.assertEqual(actualValue.top, layoutHelper.dip(100), "ActualTop");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(200), "ActualBottom");
     });
 }
 
@@ -141,12 +134,11 @@ export function testItemWidth() {
     wrapLayout.itemWidth = 50;
     helper.buildUIAndRunTest(wrapLayout, function (views: Array<viewModule.View>) {
         TKUnit.waitUntilReady(function isReady() {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         }, 1);
 
-        var density = utils.layout.getDisplayDensity();
         var actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds().left;
-        TKUnit.assertEqual(actualValue, 50 * density, "ActualLeft");
+        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualLeft");
     });
 }
 
@@ -154,18 +146,17 @@ export function testChangeItemWidth() {
     var wrapLayout = _createWrapLayoutFunc(2);
     helper.buildUIAndRunTest(wrapLayout, function (views: Array<viewModule.View>) {
         TKUnit.waitUntilReady(() => {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         });
 
         wrapLayout.itemWidth = 50;
 
         TKUnit.waitUntilReady(() => {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         });
 
-        var density = utils.layout.getDisplayDensity();
         var actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds().left;
-        TKUnit.assertEqual(actualValue, 50 * density, "ActualLeft");
+        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualLeft");
     });
 }
 
@@ -175,12 +166,11 @@ export function testItemHeight() {
     wrapLayout.orientation = enums.Orientation.vertical;
     helper.buildUIAndRunTest(wrapLayout, function (views: Array<viewModule.View>) {
         TKUnit.waitUntilReady(function isReady() {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         }, 1);
 
-        var density = utils.layout.getDisplayDensity();
         var actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds().top;
-        TKUnit.assertEqual(actualValue, 50 * density, "ActualTop");
+        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualTop");
     });
 }
 
@@ -189,18 +179,17 @@ export function testChangeItemHeight() {
     wrapLayout.orientation = enums.Orientation.vertical;
     helper.buildUIAndRunTest(wrapLayout, function (views: Array<viewModule.View>) {
         TKUnit.waitUntilReady(() => {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         });
 
         wrapLayout.itemHeight = 50;
 
         TKUnit.waitUntilReady(() => {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         });
 
-        var density = utils.layout.getDisplayDensity();
         var actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds().top;
-        TKUnit.assertEqual(actualValue, 50 * density, "ActualTop");
+        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualTop");
     });
 }
 
@@ -216,7 +205,7 @@ export function testPaddingLeftAndTop() {
 
     helper.buildUIAndRunTest(wrapLayout, function (views: Array<viewModule.View>) {
         TKUnit.waitUntilReady(() => {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         });
 
         layoutHelper.assertLayout(btn, 20, 30, 50, 50);
@@ -240,7 +229,7 @@ export function testPaddingRight() {
 
     helper.buildUIAndRunTest(wrapLayout, function (views: Array<viewModule.View>) {
         TKUnit.waitUntilReady(() => {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         });
 
         layoutHelper.assertMeasure(btn1, 100, 50);
@@ -271,14 +260,14 @@ export function testPaddingBottom() {
 
     helper.buildUIAndRunTest(wrapLayout, function (views: Array<viewModule.View>) {
         TKUnit.waitUntilReady(() => {
-            return wrapLayout.isLayoutValid;
+            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         });
 
         layoutHelper.assertMeasure(btn1, 50, 100);
         layoutHelper.assertMeasure(btn2, 50, 80);
 
         // There should be no space left for the button on the first row,
-        // because fo the padding (200 - 100 - 30) = 70 button wants 80  
+        // because of the padding (200 - 100 - 30) = 70 button wants 80  
         layoutHelper.assertLayout(btn1, 0, 0, 50, 100, "button1");
         layoutHelper.assertLayout(btn2, 50, 0, 50, 80, "button2");
     });

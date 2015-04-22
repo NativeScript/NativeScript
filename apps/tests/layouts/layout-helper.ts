@@ -69,19 +69,26 @@ export class MyButton extends button.Button {
 export function assertMeasure(btn: MyButton, width: number, height: number, name?: string) {
     var density = utils.layout.getDisplayDensity();
 
+    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
     name = name ? "[" + name + "]" : "";
 
-    TKUnit.assertAreClose(btn.measureWidth / density, width, DELTA, name + "width");
-    TKUnit.assertAreClose(btn.measureHeight / density, height, DELTA, name + "height");
+    TKUnit.assertAreClose(Math.floor(btn.measureWidth / density), width, delta, name + "width");
+    TKUnit.assertAreClose(Math.floor(btn.measureHeight / density), height, delta, name + "height");
 }
 
 export function assertLayout(btn: MyButton, left: number, top: number, width: number, height: number, name?: string): void {
     var density = utils.layout.getDisplayDensity();
 
+    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
     name = name ? "[" + name + "]" : "";
 
-    TKUnit.assertAreClose(btn.layoutLeft / density, left, DELTA, name + "left");
-    TKUnit.assertAreClose(btn.layoutTop / density, top, DELTA, name + "top");
-    TKUnit.assertAreClose(btn.layoutWidth / density, width, DELTA, name + "width");
-    TKUnit.assertAreClose(btn.layoutHeight / density, height, DELTA, name + "height");
+    TKUnit.assertAreClose(Math.floor(btn.layoutLeft / density), left, delta, name + "left");
+    TKUnit.assertAreClose(Math.floor(btn.layoutTop / density), top, delta, name + "top");
+    TKUnit.assertAreClose(Math.floor(btn.layoutWidth / density), width, delta, name + "width");
+    TKUnit.assertAreClose(Math.floor(btn.layoutHeight / density), height, delta, name + "height");
+}
+
+export function dip(value: number): number {
+    var density = utils.layout.getDisplayDensity();
+    return Math.floor(value * density);
 }
