@@ -3,6 +3,7 @@ import TKUnit = require("./TKUnit");
 import trace = require("trace");
 import frameModule = require("ui/frame");
 import platform = require("platform");
+import uiTestModule = require("./ui-test");
 
 frameModule.Frame.defaultAnimatedNavigation = false;
 
@@ -87,7 +88,28 @@ var testsWithLongDelay = {
 }
 
 var running = false;
-var testsQueue = [];
+var testsQueue = new Array<TestInfo>();
+
+function printRunTestStats() {
+    var j;
+    var testsCount = 0;
+    var failedTestCount = 0;
+    var failedTestInfo = [];
+    for (j = 0; j < testsQueue.length; j++) {
+        if (testsQueue[j].isTest) {
+            testsCount++;
+            if (!testsQueue[j].isPassed) {
+                failedTestCount++;
+                failedTestInfo.push(testsQueue[j].testName + " FAILED: " + testsQueue[j].errorMessage);
+            }
+        }
+    }
+    TKUnit.write("=== ALL TESTS COMPLETE === " + (testsCount - failedTestCount) + " OK, " + failedTestCount + " failed", trace.messageType.info);
+    for (j = 0; j < failedTestInfo.length; j++) {
+        TKUnit.write(failedTestInfo[j], trace.messageType.error);
+    }
+}
+
 export var runAll = function (moduleName?: string) {
     if (running) {
         // TODO: We may schedule pending run requests
@@ -109,25 +131,30 @@ export var runAll = function (moduleName?: string) {
         //    }
         //};
         //testsQueue.push(new TestInfo(moduleStart(name)));
-        if (testModule.setUpModule) {
-            testsQueue.push(new TestInfo(testModule.setUpModule));
+
+        var test = testModule.createTestCase ? testModule.createTestCase() : testModule;
+
+        if (test.setUpModule) {
+            testsQueue.push(new TestInfo(test.setUpModule, test));
         }
-        for (var testName in testModule) {
-            var testFunction = testModule[testName];
+
+        for (var testName in test) {
+            var testFunction = test[testName];
             if ((typeof (testFunction) === "function") && (testName.substring(0, 4) == "test")) {
-                if (testModule.setUp) {
-                    testsQueue.push(new TestInfo(testModule.setUp));
+                if (test.setUp) {
+                    testsQueue.push(new TestInfo(test.setUp, test));
                 }
                 var testTimeout = testsWithLongDelay[testName];
-                testsQueue.push(new TestInfo(testFunction, true, name + "." + testName, false, testTimeout));
-                if (testModule.tearDown) {
-                    testsQueue.push(new TestInfo(testModule.tearDown));
+                testsQueue.push(new TestInfo(testFunction, test, true, name + "." + testName, false, null, testTimeout));
+                if (test.tearDown) {
+                    testsQueue.push(new TestInfo(test.tearDown, test));
                 }
             }
         }
-        if (testModule.tearDownModule) {
-            testsQueue.push(new TestInfo(testModule.tearDownModule));
+        if (test.tearDownModule) {
+            testsQueue.push(new TestInfo(test.tearDownModule, test));
         }
+        
         //var moduleEnd = function (moduleName) {
         //    return function () {
         //        TKUnit.write("--- " + moduleName + " TESTS COMPLETE --- ", trace.messageType.info);
@@ -136,50 +163,26 @@ export var runAll = function (moduleName?: string) {
         //testsQueue.push(new TestInfo(moduleEnd(name)));
     }
 
-    var printRunTestStats = function () {
-        var j;
-        var testsCount = 0;
-        var failedTestCount = 0;
-        var failedTestInfo = [];
-        for (j = 0; j < testsQueue.length; j++) {
-            if (testsQueue[j].isTest) {
-                testsCount++;
-                if (!testsQueue[j].isPassed) {
-                    failedTestCount++;
-                    failedTestInfo.push(testsQueue[j].testName + " FAILED: " + testsQueue[j].errorMessage);
-                }
-            }
-        }
-        TKUnit.write("=== ALL TESTS COMPLETE === " + (testsCount - failedTestCount) + " OK, " + failedTestCount + " failed", trace.messageType.info);
-        for (j = 0; j < failedTestInfo.length; j++) {
-            TKUnit.write(failedTestInfo[j], trace.messageType.error);
-    }
-    };
-
     testsQueue.push(new TestInfo(printRunTestStats));
     testsQueue.push(new TestInfo(function () { testsQueue = []; running = false; }));
 
     TKUnit.runTests(testsQueue, 0);
 }
 
-interface TestInfoEntry {
-    testFunc: any;
-    isTest: boolean;
-    testName: string;
-    isPassed: boolean;
-    errorMessage: string;
-    }
 
-class TestInfo implements TestInfoEntry {
+
+class TestInfo implements TKUnit.TestInfoEntry {
     testFunc: () => void;
+    instance: any;
     isTest: boolean;
     testName: string;
     isPassed: boolean;
     errorMessage: string;
     testTimeout: number;
 
-    constructor(testFunc, isTest?, testName?, isPassed?, errorMessage?, testTimeout?) {
+    constructor(testFunc, testInstance?: any, isTest?, testName?, isPassed?, errorMessage?, testTimeout?) {
         this.testFunc = testFunc;
+        this.instance = testInstance || null;
         this.isTest = isTest || false;
         this.testName = testName || "";
         this.isPassed = isPassed || false;

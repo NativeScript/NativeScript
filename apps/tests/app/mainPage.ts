@@ -20,7 +20,7 @@ class MyTraceWriter implements trace.TraceWriter {
 
 trace.addWriter(new MyTraceWriter());
 trace.enable();
-trace.setCategories(trace.categories.Test + "," + trace.categories.Error);
+trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
 
 var textView = new textViewModule.TextView();
 textView.editable = false;

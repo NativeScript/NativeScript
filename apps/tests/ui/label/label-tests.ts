@@ -1,4 +1,6 @@
 ﻿import TKUnit = require("../../TKUnit");
+import testModule = require("../../ui-test");
+
 // <snippet module="ui/label" title="Label">
 // # Label
 // Using a label requires the Label module.
@@ -15,44 +17,30 @@ import LabelModule = require("ui/label");
 
 // </snippet>
 import types = require("utils/types");
-import view = require("ui/core/view");
 import colorModule = require("color");
-import helper = require("../helper");
 import utils = require("utils/utils");
 import observableModule = require("data/observable");
 import bindable = require("ui/core/bindable");
-import page = require("ui/page");
 import textBase = require("ui/text-base");
 import enums = require("ui/enums");
 import labelTestsNative = require("./label-tests-native");
-import trace = require("trace");
 import fs = require("file-system");
 
-var errorMessage;
-var errorTraceWriter = {
-    write: function (message, category, messageType) {
-        if (category === trace.categories.Error) {
-            errorMessage = message;
-        }
-    }
+export class LabelTest extends testModule.UITest<LabelModule.Label> {
+
+    public create(): LabelModule.Label {
+        var label = new LabelModule.Label();
+        label.text = "Label";
+        return label;
 }
 
-export var setUp = function () {
-    trace.addWriter(errorTraceWriter);
-}
-
-export var tearDown = function () {
-    trace.removeWriter(errorTraceWriter);
-    errorMessage = undefined;
-}
-
-export var test_Label_Members = function () {
+    public test_Label_Members() {
     var label = new LabelModule.Label();
     TKUnit.assert(types.isDefined(label.text), "Label.text is not defined");
     TKUnit.assert(types.isDefined(label.textWrap), "Label.textWrap is not defined");
 }
 
-export var test_Set_Text_TNS = function () {
+    public snippet_Set_Text_TNS() {
     // <snippet module="ui/label" title="Label">
     // ### How to set label text content
     // ``` JavaScript
@@ -61,75 +49,75 @@ export var test_Set_Text_TNS = function () {
     label.text = expectedValue;
     // ```
     // </snippet>
-
-    var actual = label._getValue(textBase.TextBase.textProperty);
-    TKUnit.assert(actual === expectedValue, "The current value: " + actual + " is not equal the espectedValue: " + expectedValue);
 }
 
-export var test_Set_Text_Native = function () {
+    public snippet_Set_TextWrap_TNS() {
+        // <snippet module="ui/label" title="Label">
+        // ### How to turn on text wrapping for a label
+        // ``` JavaScript
     var label = new LabelModule.Label();
+        label.textWrap = true;
+        // ```
+        // </snippet>
+    }
 
-    var test = function (views: Array<view.View>) {
-        var testLabel = <LabelModule.Label>views[0];
+    public test_Set_Text_TNS() {
+        var label = this.testView;
+        var expectedValue = "Expected Value";
+        label.text = expectedValue;
+
+        var actual = label._getValue(textBase.TextBase.textProperty);
+        TKUnit.assertEqual(actual, expectedValue, "Text not equal");
+    }
+
+    public test_Set_Text_Native() {
+        var testLabel = this.testView;
         var expectedValue = "Expected Value";
 
         testLabel.text = expectedValue;
         var actualNative;
-        if (testLabel.android) {
-            actualNative = testLabel.android.getText();
-        }
-        else {
+        if (testLabel.ios) {
             actualNative = testLabel.ios.text;
         }
-        TKUnit.assert(actualNative === expectedValue, "Expected: " + expectedValue + ", Actual: " + actualNative);
-    }
+        else {
+            this.waitUntilTestElementIsLoaded();
+            actualNative = testLabel.android.getText();
+        }
 
-    helper.buildUIAndRunTest(label, test);
+        TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");
 }
 
-export var test_measuredWidth_is_not_clipped = function () {
-    var label = new LabelModule.Label();
+    public test_measuredWidth_is_not_clipped() {
+        var label = this.testView;
     label.horizontalAlignment = "left";
     label.text = "i";
     label.fontSize = 9;
 
     if (label.ios) {
 
-        var test = function (views: Array<view.View>) {
-
-            TKUnit.waitUntilReady(() => { return label.isLayoutValid; });
+            this.waitUntilTestElementLayoutIsValid();
 
             var expectedValue = 3;
             var measuredWidth = label.getMeasuredWidth();
             TKUnit.assertEqual(measuredWidth, expectedValue, "measuredWidth should not be rounded down.");
         }
-
-        helper.buildUIAndRunTest(label, test);
     }
-}
 
-export var test_Set_TextWrap_TNS = function () {
-    // <snippet module="ui/label" title="Label">
-    // ### How to turn on text wrapping for a label
-    // ``` JavaScript
-    var label = new LabelModule.Label();
+    public test_Set_TextWrap_TNS() {
+        var label = this.testView;
     label.textWrap = true;
-    // ```
-    // </snippet>
 
     var actual = label._getValue(LabelModule.Label.textWrapProperty);
-    TKUnit.assert(actual === true, "Expected: " + true + ", Actual: " + actual);
+        TKUnit.assertEqual(actual, true);
 }
 
-export var test_Set_TextWrap_Native = function () {
-    var label = new LabelModule.Label();
-
-    var test = function (views: Array<view.View>) {
-        var testLabel = <LabelModule.Label>views[0];
-
+    public test_Set_TextWrap_Native() {
+        var testLabel = this.testView;
         testLabel.textWrap = true;
+        this.waitUntilTestElementLayoutIsValid();
+
         var expectedLineBreakMode;
-        var expectedLinesNumber;
+        var expectedLinesNumber = 1;
         var actualLineBreakMode;
         var actualLinesNumber;
         var actualEllipsize;
@@ -141,36 +129,31 @@ export var test_Set_TextWrap_Native = function () {
             actualLinesNumber = testLabel.android.getLineCount();
             actualHorizontalScrolling = testLabel.android.canScrollHorizontally(-1) || testLabel.android.canScrollHorizontally(1);
             actualTransformationMethod = testLabel.android.getTransformationMethod();
-            TKUnit.assert(actualEllipsize === null, "Expected: " + null + ", Actual: " + actualEllipsize);
-            TKUnit.assert(actualLinesNumber === 0, "Expected: " + 0 + ", Actual: " + actualLinesNumber);
-            TKUnit.assert(actualHorizontalScrolling === false, "Expected: " + false + ", Actual: " + actualHorizontalScrolling);
-            TKUnit.assert(actualTransformationMethod === null, "Expected: " + null + ", Actual: " + actualTransformationMethod);
+            TKUnit.assertNull(actualEllipsize);
+            TKUnit.assertEqual(actualLinesNumber, expectedLinesNumber, "actualLinesNumber");
+            TKUnit.assertEqual(actualHorizontalScrolling, false);
+            TKUnit.assertNull(actualTransformationMethod);
         }
         else {
             expectedLineBreakMode = NSLineBreakMode.NSLineBreakByWordWrapping;
-            expectedLinesNumber = 0;
             actualLineBreakMode = testLabel.ios.lineBreakMode;
             actualLinesNumber = testLabel.ios.numberOfLines;
 
-            TKUnit.assert(actualLineBreakMode === expectedLineBreakMode, "Expected: " + expectedLineBreakMode + ", Actual: " + actualLineBreakMode);
-            TKUnit.assert(actualLinesNumber === expectedLinesNumber, "Expected: " + expectedLinesNumber + ", Actual: " + actualLinesNumber);
+            TKUnit.assertEqual(actualLineBreakMode, expectedLineBreakMode);
+            TKUnit.assertEqual(actualLinesNumber, expectedLinesNumber);
         }
     }
 
-    helper.buildUIAndRunTest(label, test);
-}
-
-export var test_Set_TextWrapFirstTrueThenFalse_Native = function () {
-    var label = new LabelModule.Label();
-
-    var test = function (views: Array<view.View>) {
-        var testLabel = <LabelModule.Label>views[0];
-
+    public test_Set_TextWrapFirstTrueThenFalse_Native() {
+        var testLabel = this.testView;
         testLabel.textWrap = true;
-        label.textWrap = false;
+        this.waitUntilTestElementLayoutIsValid();
+
+        testLabel.textWrap = false;
+        this.waitUntilTestElementLayoutIsValid();
 
         var expectedLineBreakMode;
-        var expectedLinesNumber;
+        var expectedLinesNumber = 1;
         var actualLineBreakMode;
         var actualLinesNumber;
         var actualEllipsize;
@@ -182,27 +165,24 @@ export var test_Set_TextWrapFirstTrueThenFalse_Native = function () {
             actualLinesNumber = testLabel.android.getLineCount();
             actualHorizontalScrolling = testLabel.android.canScrollHorizontally(-1) || testLabel.android.canScrollHorizontally(1);
             actualTransformationMethod = testLabel.android.getTransformationMethod();
-            TKUnit.assert(actualEllipsize === android.text.TextUtils.TruncateAt.END, "Expected: " + android.text.TextUtils.TruncateAt.END + ", Actual: " + actualEllipsize);
-            TKUnit.assert(actualLinesNumber === 0, "Expected: " + 0 + ", Actual: " + actualLinesNumber);
-            TKUnit.assert(actualHorizontalScrolling === false, "Expected: " + false + ", Actual: " + actualHorizontalScrolling);
+
+            TKUnit.assertEqual(actualEllipsize, android.text.TextUtils.TruncateAt.END, "Ellipsize");
+            TKUnit.assertEqual(actualHorizontalScrolling, false, "HorizontalScrolling");
             TKUnit.assert(("" + actualTransformationMethod).indexOf("SingleLineTransformationMethod") > -1, "Expected: SingleLineTransformationMethod, Actual: " + actualTransformationMethod);
         }
         else {
             expectedLineBreakMode = NSLineBreakMode.NSLineBreakByTruncatingTail;
-            expectedLinesNumber = 1;
             actualLineBreakMode = testLabel.ios.lineBreakMode;
             actualLinesNumber = testLabel.ios.numberOfLines;
 
-            TKUnit.assert(actualLineBreakMode === expectedLineBreakMode, "Expected: " + expectedLineBreakMode + ", Actual: " + actualLineBreakMode);
-            TKUnit.assert(actualLinesNumber === expectedLinesNumber, "Expected: " + expectedLinesNumber + ", Actual: " + actualLinesNumber);
+            TKUnit.assertEqual(actualLineBreakMode, expectedLineBreakMode, "LineBreakMode");
         }
-    }
 
-    helper.buildUIAndRunTest(label, test);
+        TKUnit.assertEqual(actualLinesNumber, expectedLinesNumber, "LinesNumber");
 }
 
-export var test_SetStyleProperties_via_css_class_Native = function () {
-    var label = new LabelModule.Label();
+    public test_SetStyleProperties_via_css_class_Native() {
+        var label = this.testView;
 
     var fontSize = 14;
     var color = "#ffff0000";
@@ -229,12 +209,14 @@ export var test_SetStyleProperties_via_css_class_Native = function () {
     var actualBackgroundColor;
     var expBackgroundColor;
 
-    var testFunc = function (views: Array<view.View>) {
-        var testLabel = <LabelModule.Label>views[0];
+        this.testPage.css = testCss;
+        this.waitUntilTestElementIsLoaded();
+        var testLabel = label;
         
         if (testLabel.android) {
             actualTextSize = testLabel.android.getTextSize();
-            expSize = android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_DIP, fontSize, testLabel.android.getContext().getResources().getDisplayMetrics());
+            var density = utils.layout.getDisplayDensity();
+            expSize = fontSize * density;
             TKUnit.assertEqual(actualTextSize, expSize, "Wrong native FontSize");
 
             actualColors = testLabel.android.getTextColors();
@@ -244,7 +226,7 @@ export var test_SetStyleProperties_via_css_class_Native = function () {
 
             actualBackgroundColor = (<android.graphics.drawable.ColorDrawable>testLabel.android.getBackground()).getColor();
             expBackgroundColor = android.graphics.Color.parseColor(backgroundColor);
-            TKUnit.assert(actualBackgroundColor === expBackgroundColor, "Expected: " + expBackgroundColor + ", Actual: " + actualBackgroundColor);
+            TKUnit.assertEqual(actualBackgroundColor, expBackgroundColor);
         }
         else {
             // iOS
@@ -253,19 +235,16 @@ export var test_SetStyleProperties_via_css_class_Native = function () {
 
             normalColor = utils.ios.getColor(testLabel.ios.textColor);
             expColor = new colorModule.Color(color);
-            TKUnit.assert(normalColor.hex === expColor.hex, "Expected: " + expColor.hex + ", Actual: " + normalColor.hex);
+            TKUnit.assertEqual(normalColor.hex, expColor.hex);
 
             actualBackgroundColor = utils.ios.getColor(testLabel.ios.backgroundColor);
             expBackgroundColor = new colorModule.Color(backgroundColor);
-            TKUnit.assert(actualBackgroundColor.hex === expBackgroundColor.hex, "Expected: " + expBackgroundColor.hex + ", Actual: " + actualBackgroundColor.hex);
+            TKUnit.assertEqual(actualBackgroundColor.hex, expBackgroundColor.hex);
         }
     }
 
-    helper.buildUIAndRunTest(label, testFunc, testCss);
-}
-
-export var test_SetStyleProperties_via_css_type_TNS = function () {
-    var label = new LabelModule.Label();
+    public test_SetStyleProperties_via_css_type_TNS() {
+        var label = this.testView;
     var fontSize = 14;
     var color = "#10C2B0";
     var backgroundColor = "#C6C6C6";
@@ -273,41 +252,41 @@ export var test_SetStyleProperties_via_css_type_TNS = function () {
         "color: ", color, "; ",
         "font-size: ", fontSize, ";}"].join("");
 
-    var testFunc = function (views: Array<view.View>) {
-        var testLabel = <LabelModule.Label> views[0];
+        this.testPage.css = testCss;
+        this.waitUntilTestElementIsLoaded();
 
         // <snippet module="ui/label" title="Label">
         // ### How to style a label via css type
         // ``` JavaScript
-        testLabel.text = "The quick brown fox jumps over the lazy dog.";
+        label.text = "The quick brown fox jumps over the lazy dog.";
         //// in order to style label with a "type style scope" just put a similar css entry
         //// testLabel.parentPage.css = "label {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
         //// all labels within the parent page will be styled according to css values
         // ```
         // </snippet>
         var expectedBackgroundColor = new colorModule.Color(backgroundColor);
-        var actualBackgroundColor = testLabel.style.backgroundColor;
-        TKUnit.assert(expectedBackgroundColor.hex === actualBackgroundColor.hex, "Expected: " + expectedBackgroundColor.hex + ", Actual: " + actualBackgroundColor.hex);
+        var actualBackgroundColor = label.style.backgroundColor;
+        TKUnit.assertEqual(expectedBackgroundColor.hex, actualBackgroundColor.hex);
 
         var expectedColor = new colorModule.Color(color);
-        var actualColor = testLabel.style.color;
-        TKUnit.assert(expectedColor.hex === actualColor.hex, "Expected: " + expectedColor.hex + ", Actual: " + actualColor.hex);
+        var actualColor = label.style.color;
+        TKUnit.assertEqual(expectedColor.hex, actualColor.hex);
 
-        var actualFontSize = testLabel.style.fontSize;
-        TKUnit.assert(14 === actualFontSize, "Expected: " + fontSize + ", Actual: " + actualFontSize);
+        var actualFontSize = label.style.fontSize;
+        TKUnit.assertEqual(actualFontSize, 14);
     }
 
-    helper.buildUIAndRunTest(label, testFunc, testCss);
-}
-
-export var test_SetStyleProperties_via_css_id = function () {
-    var label = new LabelModule.Label();
+    public test_SetStyleProperties_via_css_id() {
+        var label = this.testView;
     var fontSize = 14;
     var color = "#10C2B0";
     var backgroundColor = "#C6C6C6";
     var testCss = ["#testLabel {background-color: ", backgroundColor, "; ",
         "color: ", color, "; ",
         "font-size: ", fontSize, ";}"].join("");
+
+        this.testPage.css = testCss;
+        this.waitUntilTestElementIsLoaded();
 
     // <snippet module="ui/label" title="Label">
     // ### How to style a label via css control identifier
@@ -319,25 +298,19 @@ export var test_SetStyleProperties_via_css_id = function () {
     // ```
     // </snippet>
 
-    var testFunc = function (views: Array<view.View>) {
-        var testLabel = <LabelModule.Label> views[0];
-
         var expectedBackgroundColor = new colorModule.Color(backgroundColor);
-        var actualBackgroundColor = testLabel.style.backgroundColor;
-        TKUnit.assert(expectedBackgroundColor.hex === actualBackgroundColor.hex, "Expected: " + expectedBackgroundColor.hex + ", Actual: " + actualBackgroundColor.hex);
+        var actualBackgroundColor = label.style.backgroundColor;
+        TKUnit.assertEqual(expectedBackgroundColor.hex, actualBackgroundColor.hex);
 
         var expectedColor = new colorModule.Color(color);
-        var actualColor = testLabel.style.color;
-        TKUnit.assert(expectedColor.hex === actualColor.hex, "Expected: " + expectedColor.hex + ", Actual: " + actualColor.hex);
+        var actualColor = label.style.color;
+        TKUnit.assertEqual(expectedColor.hex, actualColor.hex);
 
-        var actualFontSize = testLabel.style.fontSize;
-        TKUnit.assert(fontSize === actualFontSize, "Expected: " + fontSize + ", Actual: " + actualFontSize);
-    }
-
-    helper.buildUIAndRunTest(label, testFunc, testCss);
+        var actualFontSize = label.style.fontSize;
+        TKUnit.assertEqual(fontSize, actualFontSize);
 }
 
-export var test_BindingToText = function () {
+    public test_BindingToText() {
     // <snippet module="ui/label" title="Label">
     // ### How to bind text property of a label to an observable model
     // ``` JavaScript
@@ -354,14 +327,13 @@ export var test_BindingToText = function () {
     // ```
     // </snippet>
 
-    TKUnit.assert(label.text === expValue, "Expected: " + expValue + ", Actual: " + label.text);
+        TKUnit.assertEqual(label.text, expValue);
 }
 
-export var test_BindingToText_Native = function () {
-    var label = new LabelModule.Label();
+    public test_BindingToText_Native() {
+        var label = this.testView;
+        this.waitUntilTestElementIsLoaded();
 
-    var testFunc = function (views: Array<view.View>) {
-        var testLabel = <LabelModule.Label> views[0];
         var expValue = "Expected Value";
         var sourceModel = new observableModule.Observable();
         var bindingOptions: bindable.BindingOptions = {
@@ -369,185 +341,159 @@ export var test_BindingToText_Native = function () {
             targetProperty: "text"
         };
         sourceModel.set("sourceProperty", expValue);
-        testLabel.bind(bindingOptions, sourceModel);
+        label.bind(bindingOptions, sourceModel);
 
         var actualNative;
-        if (testLabel.android) {
-            actualNative = testLabel.android.getText();
+        if (label.android) {
+            actualNative = label.android.getText();
         }
-        else if (testLabel.ios) {
-            actualNative = testLabel.ios.text;
-        }
-        TKUnit.assert(actualNative === expValue, "Expected: " + expValue + ", Actual: " + actualNative);
+        else if (label.ios) {
+            actualNative = label.ios.text;
     }
 
-    helper.buildUIAndRunTest(label, testFunc);
+        TKUnit.assertEqual(actualNative, expValue);
 }
 
-export var test_BindingToText_WithBindingContext = function () {
-    var label = new LabelModule.Label();
-
-    var testFunc = function (views: Array<view.View>) {
-        var testLabel = <LabelModule.Label> views[0];
+    public test_BindingToText_WithBindingContext() {
+        var label = this.testView;
+        this.waitUntilTestElementIsLoaded();
 
         var firstExpValue = "Expected Value";
         var bindingOptions: bindable.BindingOptions = {
             sourceProperty: "sourceProperty",
             targetProperty: "text"
         };
-        testLabel.bind(bindingOptions);
-        var parentPage = <page.Page>views[1];
+        label.bind(bindingOptions);
         var firstSourceObject = new observableModule.Observable();
         firstSourceObject.set("sourceProperty", firstExpValue);
 
-        parentPage.bindingContext = firstSourceObject;
-        TKUnit.assert(testLabel.text === firstExpValue, "Expected: " + firstExpValue + ", Actual: " + testLabel.text);
+        this.testPage.bindingContext = firstSourceObject;
+        TKUnit.assertEqual(label.text, firstExpValue);
 
         var secondExpValue = "Second value";
         var secondSourceObject = new observableModule.Observable();
         secondSourceObject.set("sourceProperty", secondExpValue);
-        parentPage.bindingContext = secondSourceObject;
+        this.testPage.bindingContext = secondSourceObject;
 
-        TKUnit.assert(testLabel.text === secondExpValue, "Expected: " + secondExpValue + ", Actual: " + testLabel.text);
-    }
-
-    helper.buildUIAndRunTest(label, testFunc);
+        TKUnit.assertEqual(label.text, secondExpValue);
 }
 
-export var test_BindingToText_BindingContext_SetingLocalValue = function () {
-    var label = new LabelModule.Label();
-
-    var testFunc = function (views: Array<view.View>) {
-        var testLabel = <LabelModule.Label> views[0];
+    public test_BindingToText_BindingContext_SetingLocalValue() {
+        var label = this.testView;
+        this.waitUntilTestElementIsLoaded();
 
         var firstExpValue = "Expected Value";
         var bindingOptions: bindable.BindingOptions = {
             sourceProperty: "sourceProperty",
             targetProperty: "text"
         };
-        testLabel.bind(bindingOptions);
-        var parentPage = <page.Page>views[1];
+        label.bind(bindingOptions);
         var firstSourceObject = new observableModule.Observable();
         firstSourceObject.set("sourceProperty", firstExpValue);
 
-        parentPage.bindingContext = firstSourceObject;
-        TKUnit.assert(testLabel.text === firstExpValue, "Expected: " + firstExpValue + ", Actual: " + testLabel.text);
+        this.testPage.bindingContext = firstSourceObject;
+        TKUnit.assertEqual(label.text, firstExpValue);
 
         var secondExpValue = "Second value";
-        testLabel.text = secondExpValue;
-        TKUnit.assert(testLabel.text === secondExpValue, "Expected: " + secondExpValue + ", Actual: " + testLabel.text);
+        label.text = secondExpValue;
+        TKUnit.assertEqual(label.text, secondExpValue);
 
         firstSourceObject.set("sourceProperty", "some value");
         // after setting a value one way binding should be gone.
-        TKUnit.assert(testLabel.text === secondExpValue, "Expected: " + secondExpValue + ", Actual: " + testLabel.text);
-    }
-
-    helper.buildUIAndRunTest(label, testFunc);
+        TKUnit.assertEqual(label.text, secondExpValue);
 }
 
-var _createLabelFunc = function (): LabelModule.Label {
-    var label = new LabelModule.Label();
-    label.text = "Label";
-    return label;
+    private expectedTextAlignment = enums.TextAlignment.right;
+    public testLocalTextAlignmentFromCss() {
+        var label = this.testView;
+        this.testPage.css = "label { text-align: " + this.expectedTextAlignment + "; }";
+        this.waitUntilTestElementIsLoaded();
+        TKUnit.assertEqual(label.style.textAlignment, this.expectedTextAlignment);
 }
 
-var expectedTextAlignment = enums.TextAlignment.right;
-export var testLocalTextAlignmentFromCss = function () {
-    helper.buildUIAndRunTest(_createLabelFunc(), function (views: Array<view.View>) {
-        var view = <LabelModule.Label>views[0];
-        var page = <page.Page>views[1];
-        page.css = "label { text-align: " + expectedTextAlignment + "; }";
+    public testLocalTextAlignmentFromCssWhenAddingCss() {
+        var view = this.testView;
+        var page = this.testPage;
+        this.waitUntilTestElementIsLoaded();
+        page.addCss("label { text-align: " + this.expectedTextAlignment + "; }");
 
         var actualResult = view.style.textAlignment;
-        TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
-    });
-}
-
-export var testLocalTextAlignmentFromCssWhenAddingCss = function () {
-    helper.buildUIAndRunTest(_createLabelFunc(), function (views: Array<view.View>) {
-        var view = <LabelModule.Label>views[0];
-        var page = <page.Page>views[1];
-        page.addCss("label { text-align: " + expectedTextAlignment + "; }");
-
-        var actualResult = view.style.textAlignment;
-        TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
+        TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
 
         page.addCss("label { text-align: " + enums.TextAlignment.left + "; }");
-        TKUnit.assert(view.style.textAlignment === view.style.textAlignment, "Actual: " + view.style.textAlignment + "; Expected: " + view.style.textAlignment);
-    });
+        TKUnit.assertEqual(view.style.textAlignment, view.style.textAlignment);
 }
 
-export var testLocalTextAlignmentFromCssWhenAddingCssAllSelectorsAreApplied = function () {
-    helper.buildUIAndRunTest(_createLabelFunc(), function (views: Array<view.View>) {
-        var view = <LabelModule.Label>views[0];
+    public testLocalTextAlignmentFromCssWhenAddingCssAllSelectorsAreApplied() {
+        var view = this.testView;
+        var page = this.testPage;
+        this.waitUntilTestElementIsLoaded();
+
         view.id = "testLabel";
-        var page = <page.Page>views[1];
-        page.addCss("#testLabel { text-align: " + expectedTextAlignment + "; }");
+        page.addCss("#testLabel { text-align: " + this.expectedTextAlignment + "; }");
         page.addCss("label { text-align: " + enums.TextAlignment.left + "; }");
 
         var actualResult = view.style.textAlignment;
         // actual result is taken from #testLabel tag, because it has a greater priority (id vs type).
-        TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
-    });
+        TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
 }
 
-export var testLocalTextAlignmentFromCssWhenAddingCssFileAllSelectorsAreApplied = function () {
-    helper.buildUIAndRunTest(_createLabelFunc(), function (views: Array<view.View>) {
-        var view = <LabelModule.Label>views[0];
+    public testLocalTextAlignmentFromCssWhenAddingCssFileAllSelectorsAreApplied() {
+        var view = this.testView;
+        var page = this.testPage;
+        this.waitUntilTestElementIsLoaded();
+
         view.id = "testLabel";
-        var page = <page.Page>views[1];
-        page.addCss("#testLabel { text-align: " + expectedTextAlignment + "; }");
+        page.addCss("#testLabel { text-align: " + this.expectedTextAlignment + "; }");
         page.addCssFile(fs.path.join(__dirname, "label-tests.css"));
 
         var actualResult = view.style.textAlignment;
         // actual result is taken from #testLabel tag, because it has a greater priority (id vs type).
-        TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
-        TKUnit.assert(view.style.backgroundColor.hex === "#FF0000", "Actual: " + view.style.backgroundColor.hex + "; Expected: #FF0000");
-    });
+        TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
+        TKUnit.assertEqual(view.style.backgroundColor.hex, "#FF0000");
 }
 
-export var testNativeTextAlignmentFromCss = function () {
-    helper.buildUIAndRunTest(_createLabelFunc(), function (views: Array<view.View>) {
-        var view = <LabelModule.Label>views[0];
-        var page = <page.Page>views[1];
-        page.css = "label { text-align: " + expectedTextAlignment + "; }";
+    public testNativeTextAlignmentFromCss() {
+        var view = this.testView;
+        var page = this.testPage;
+        this.waitUntilTestElementIsLoaded();
+
+        page.css = "label { text-align: " + this.expectedTextAlignment + "; }";
+        var actualResult = labelTestsNative.getNativeTextAlignment(view);
+        TKUnit.assert(actualResult, this.expectedTextAlignment);
+}
+
+    public testNativeTextAlignmentFromLocal() {
+        var view = this.testView;
+        this.waitUntilTestElementIsLoaded();
+
+        view.style.textAlignment = this.expectedTextAlignment;
 
         var actualResult = labelTestsNative.getNativeTextAlignment(view);
-        TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
-    });
+        TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
 }
 
-export var testNativeTextAlignmentFromLocal = function () {
-    helper.buildUIAndRunTest(_createLabelFunc(), function (views: Array<view.View>) {
-        var view = <LabelModule.Label>views[0];
-        view.style.textAlignment = expectedTextAlignment;
+    public testErrorMessageWhenWrongCssIsAddedWithFile() {
+        var view = this.testView;
+        var page = this.testPage;
+        this.waitUntilTestElementIsLoaded();
 
-        var actualResult = labelTestsNative.getNativeTextAlignment(view);
-        TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
-    });
-}
-
-export var testErrorMessageWhenWrongCssIsAddedWithFile = function () {
-    helper.buildUIAndRunTest(_createLabelFunc(), function (views: Array<view.View>) {
-        var view = <LabelModule.Label>views[0];
         view.id = "testLabel";
-        var page = <page.Page>views[1];
-        errorMessage = undefined;
         page.addCssFile(fs.path.join(__dirname, "label-tests-wrong.css"));
-
-        TKUnit.assertNotEqual(errorMessage, undefined);
-    });
+        TKUnit.assertNotEqual(this.errorMessage, undefined);
+    }
     
+    public testErrorMessageWhenWrongCssIsAdded() {
+        var view = this.testView;
+        var page = this.testPage;
+        this.waitUntilTestElementIsLoaded();
+
+        view.id = "testLabel";
+        page.addCss("label { < !--Test wrong comment-- > background-color: red; }");
+        TKUnit.assertNotEqual(this.errorMessage, undefined);
+    }
 }
 
-export var testErrorMessageWhenWrongCssIsAdded = function () {
-    helper.buildUIAndRunTest(_createLabelFunc(), function (views: Array<view.View>) {
-        var view = <LabelModule.Label>views[0];
-        view.id = "testLabel";
-        var page = <page.Page>views[1];
-        errorMessage = undefined;
-        page.addCss("label { < !--Test wrong comment-- > background-color: red; }");
-
-        TKUnit.assertNotEqual(errorMessage, undefined);
-    });
+export function createTestCase(): LabelTest {
+    return new LabelTest();
 }

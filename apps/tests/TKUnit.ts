@@ -19,14 +19,30 @@ var sdkVersion = parseInt(platform.device.sdkVersion);
 
 trace.enable();
 
+export interface TestInfoEntry {
+    testFunc: () => void;
+    instance: Object;
+    isTest: boolean;
+    testName: string;
+    isPassed: boolean;
+    errorMessage: string;
+    testTimeout: number;
+}
+
 export var write = function write(message: string, type?: number) {
     //console.log(message);
     trace.write(message, trace.categories.Test, type);
 }
 
-var runTest = function (testInfo) {
+var runTest = function (testInfo: TestInfoEntry) {
     try {
-        testInfo.testFunc();
+        if (testInfo.instance) {
+            testInfo.testFunc.apply(testInfo.instance);
+        }
+        else {
+            testInfo.testFunc();
+        }
+
         if (testInfo.isTest) {
             write("--- [" + testInfo.testName + "] OK", trace.messageType.info);
             testInfo.isPassed = true;
@@ -54,11 +70,11 @@ export interface TestModuleRunResult {
     failed: Array<TestFailure>;
 }
 
-var testsQueue;
+var testsQueue: Array<TestInfoEntry>;
 var defaultTimeout = 5000;
 
 // testInfo : {testFunc: func, testName: string, isTest: boolean, isPassed: boolean, errorMessage: string}
-function runAsync(testInfo, recursiveIndex, testTimeout?) {
+function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?: number) {
     var error;
     var isDone = false;
     var handle;
@@ -104,22 +120,29 @@ function runAsync(testInfo, recursiveIndex, testTimeout?) {
         }
     }
 
-    testInfo.testFunc(doneCallback);
+    if (testInfo.instance) {
+        testInfo.testFunc.apply(testInfo.instance, [doneCallback]);
+    }
+    else {
+        var func: any = testInfo.testFunc;
+        func(doneCallback);
+    }
 
     setTimeout(checkFinished, 0);
 }
 
 // tests : Array<{testFunc: func, testName: string, isTest: boolean, isPassed: boolean, errorMessage: string}>
-export var runTests = function (tests, recursiveIndex) {
+export var runTests = function (tests: Array<TestInfoEntry>, recursiveIndex) {
     testsQueue = tests;
 
     var i;
     for (i = recursiveIndex; i < testsQueue.length; i++) {
-        if (testsQueue[i].testFunc.length > 0) {
-            return runAsync(testsQueue[i], i);
+        var testEntry = testsQueue[i];
+        if (testEntry.testFunc.length > 0) {
+            return runAsync(testEntry, i);
         }
         else {
-            runTest(testsQueue[i]);
+            runTest(testEntry);
         }
     }
 }
@@ -167,6 +190,12 @@ export function assertEqual(actual: any, expected: any, message?: string) {
     }
     else if (actual !== expected) {
         throw new Error(message + " Actual: " + actual + " Expected: " + expected);
+    }
+};
+
+export function assertNull(actual: any, message?: string) {
+    if (actual !== null && actual !== undefined) {
+        throw new Error(message + " Actual: " + actual + " is not null/undefined");
     }
 };
 

@@ -32,6 +32,11 @@ export function clearWriters() {
 }
 
 export function setCategories(categories: string) {
+    _categories = {};
+    addCategories(categories);
+}
+
+export function addCategories(categories: string) {
     var split = categories.split(",");
     _categories = {};
 

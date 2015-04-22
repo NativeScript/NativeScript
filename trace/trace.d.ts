@@ -36,6 +36,12 @@ declare module "trace" {
     export function setCategories(categories: string);
 
     /**
+     * Adds categories to existing categories the module will trace.
+     * @param categories The comma-separated list of categories. If not specified all messages from all categories will be traced.
+     */
+    export function addCategories(categories: string);
+
+    /**
      * Writes a message using the available writers.
      * @param message The message to be written.
      * @param category The category of the message.
