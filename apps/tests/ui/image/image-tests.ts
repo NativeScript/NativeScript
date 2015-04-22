@@ -35,7 +35,7 @@ var imagePath = __dirname + "../../logo.png";
 
 export var test_Image_Members = function () {
     var image = new ImageModule.Image();
-    TKUnit.assert(types.isDefined(image.src), "Image.src is not defined");
+    TKUnit.assert(types.isUndefined(image.src), "Image.src is defined");
     TKUnit.assert(types.isDefined(image.isLoading), "Image.isLoading is not defined");
 }
 
