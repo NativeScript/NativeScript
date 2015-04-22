@@ -18,7 +18,6 @@ export class device implements definition.device {
     private static _sdkVersion: string;
     private static _deviceType: string;
     private static _uuid: string;
-    private static _userAgent: string;
     private static _language: string;
 
     static get os(): string {
@@ -82,15 +81,6 @@ export class device implements definition.device {
         }
         
         return device._uuid;
-    }
-
-    static get userAgent(): string {
-        if (!device._userAgent) {
-            var context = application.android.context;
-            device._userAgent = new android.webkit.WebView(context).getSettings().getUserAgentString();
-        }
-        
-        return device._userAgent;
     }
 
     static get language(): string {
