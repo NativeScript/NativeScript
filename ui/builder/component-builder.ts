@@ -102,7 +102,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
     return componentModule;
 }
 
-function setPropertyValue(instance: view.View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
+export function setPropertyValue(instance: view.View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
     if (isBinding(propertyValue) && instance.bind) {
         if (isKnownEvent(propertyName, instanceModule)) {
             attachEventBinding(instance, propertyName, propertyValue);
