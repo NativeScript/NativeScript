@@ -1,11 +1,8 @@
 ﻿import common = require("ui/gestures/gestures-common");
 import definition = require("ui/gestures");
 import view = require("ui/core/view");
-
-//var OWNER = "_owner";
-//var CALLBACK = "_callback";
-//var TYPE = "_type";
-//var TARGET = "_target";
+import observable = require("data/observable");
+import trace = require("trace");
 
 // merge the exports of the request file with the exports of this file
 declare var exports;
@@ -57,17 +54,42 @@ export class GesturesObserver implements definition.GesturesObserver {
     public _target: view.View;
     private _recognizers: {};
 
+    private _onTargetLoaded: (data: observable.EventData) => void;
+    private _onTargetUnloaded: (data: observable.EventData) => void;
+
     constructor(callback: (args: definition.GestureEventData) => void) {
         this._callback = callback;
         this._recognizers = {};
     }
 
     public observe(target: view.View, type: definition.GestureTypes) {
-        this.disconnect();
+        if (target) {
+            this._target = target;
+            this._onTargetLoaded = args => {
+                trace.write(this._target + ".target loaded. _nativeView:" + this._target._nativeView, "gestures");
+                this._attach(target, type);
+            };
+            this._onTargetUnloaded = args => {
+                trace.write(this._target + ".target unloaded. _nativeView:" + this._target._nativeView, "gestures");
+                this._dettach();
+            };
 
-        this._target = target;
-        if (this._target && this._target._nativeView && this._target._nativeView.addGestureRecognizer) {
-            var nativeView = <UIView>this._target._nativeView;
+            target.on(view.knownEvents.loaded, this._onTargetLoaded);
+            target.on(view.knownEvents.unloaded, this._onTargetUnloaded);
+
+            if (target.isLoaded) {
+                this._attach(target, type);
+            }
+        }
+
+    }
+
+    private _attach(target: view.View, type: definition.GestureTypes) { 
+        trace.write(target + "._attach() _nativeView:" + target._nativeView, "gestures");
+        this._dettach();
+
+        if (target && target._nativeView && target._nativeView.addGestureRecognizer) {
+            var nativeView = <UIView>target._nativeView;
 
             if (type & definition.GestureTypes.tap) {
                 nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.tap));
@@ -88,7 +110,7 @@ export class GesturesObserver implements definition.GesturesObserver {
 
             if (type & definition.GestureTypes.pan) {
                 nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.pan, args => {
-                    this._executeCallback(_getPanData(args, this._target._nativeView));
+                    this._executeCallback(_getPanData(args, target._nativeView));
                 }));
             }
 
@@ -122,9 +144,9 @@ export class GesturesObserver implements definition.GesturesObserver {
         }
     }
 
-    public disconnect() {
+    private _dettach() {
+        trace.write(this._target + "._dettach() _nativeView:" + this._target._nativeView, "gestures");
         if (this._target && this._target._nativeView) {
-
             for (var name in this._recognizers) {
                 if (this._recognizers.hasOwnProperty(name)) {
                     var item = <RecognizerCache>this._recognizers[name];
@@ -134,11 +156,21 @@ export class GesturesObserver implements definition.GesturesObserver {
                     item.target = null;
                 }
             }
-
             this._recognizers = {};
         }
+    }
 
-        this._target = null;
+    public disconnect() {
+        this._dettach();
+
+        if (this._target) {
+            this._target.off(view.knownEvents.loaded, this._onTargetLoaded);
+            this._target.off(view.knownEvents.unloaded, this._onTargetUnloaded);
+
+            this._onTargetLoaded = null;
+            this._onTargetUnloaded = null;
+            this._target = null;
+        }
     }
 
     private _executeCallback(args: definition.GestureEventData) {
