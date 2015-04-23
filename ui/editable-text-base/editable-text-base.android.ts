@@ -109,6 +109,16 @@ export class EditableTextBase extends common.EditableTextBase {
         }
     }
 
+    public focus(): boolean {
+        var result = super.focus();
+        
+        if (result && this._nativeView) {
+            this._imm.showSoftInput(this._nativeView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        }
+        
+        return result;
+    }
+
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (this._android) {
             this.android.setText(data.newValue + "", android.widget.TextView.BufferType.EDITABLE);
