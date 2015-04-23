@@ -112,13 +112,12 @@ export class EditableTextBase extends common.EditableTextBase {
     public focus(): boolean {
         var result = super.focus();
         
-        if (result && this.android) {
-            this._imm.showSoftInput(this.android, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        if (result && this._nativeView) {
+            this._imm.showSoftInput(this._nativeView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
         }
         
         return result;
     }
-
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (this._android) {
