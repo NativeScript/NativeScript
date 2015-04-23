@@ -3,8 +3,6 @@ import httpRequest = require("http/http-request");
 import utils = require("utils/utils");
 import trace = require("trace");
 
-module.exports.knownEvents = common.knownEvents;
-
 //class NSCacheDelegateImpl extends NSObject implements NSCacheDelegate {
 //    public static ObjCProtocols = [NSCacheDelegate];
 

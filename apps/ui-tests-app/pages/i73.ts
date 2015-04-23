@@ -8,7 +8,7 @@ export function createPage() {
 
     var btn = new button.Button();
     btn.text = "Alert";
-    btn.on(button.knownEvents.tap, function () {
+    btn.on(button.Button.tapEvent, function () {
         alert("Alert is global");
     });
 

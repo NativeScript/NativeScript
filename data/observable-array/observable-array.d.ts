@@ -7,13 +7,6 @@ declare module "data/observable-array" {
     import observable = require("data/observable");
 
     /**
-     * Known event names.
-     */
-    module knownEvents {
-        export var change: string;
-    }
-
-    /**
      * Event args for "changed" event.
      */
     interface ChangedData<T> extends observable.EventData {
@@ -52,12 +45,23 @@ declare module "data/observable-array" {
      * Advanced array like class used when you want to be notified when a change occurs.
      */
     class ObservableArray<T> extends observable.Observable {
-        on(event: string, callback: (data: observable.EventData) => void);
+        /**
+         * String value used when hooking to change event.
+         */
+        public static changeEvent: string;
+
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
 
         /**
          * Raised when a change occurs.
          */
-        on(event: "change", callback: (args: ChangedData<T>) => void);
+        on(event: "change", callback: (args: ChangedData<T>) => void, thisArg?: any);
 
         /**
          * Create ObservableArray<T> with specified length.

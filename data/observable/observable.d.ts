@@ -31,19 +31,13 @@ declare module "data/observable" {
     }
 
     /**
-     * Known event names.
-     */
-    module knownEvents {
-        /**
-         * The name of the property changed event.
-         */
-        export var propertyChange: string;
-    }
-
-    /**
      * Observable is used when you want to be notified when a change occurs. Use on/off methods to add/remove listener.
      */
     class Observable {
+        /**
+         * String value used when hooking to propertyChange event.
+         */
+        public static propertyChangeEvent: string;
 
         /**
          * Creates an Observable instance and sets its properties accroding to the supplied JSON object.
@@ -56,14 +50,22 @@ declare module "data/observable" {
         typeName: string;
 
         /**
-         * Shortcut alias to the addEventListener method.
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
         on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
         /**
+         * Raised when a propertyChange occurs.
+         */
+        on(event: "propertyChange", callback: (data: EventData) => void, thisArg?: any);
+
+        /**
          * Shortcut alias to the removeEventListener method.
          */
-        off(eventNames: string, callback?: any);
+        off(eventNames: string, callback?: any, thisArg?: any);
 
         /**
          * Adds a listener for the specified event name.

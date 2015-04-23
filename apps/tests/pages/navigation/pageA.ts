@@ -16,7 +16,7 @@ export function createPage() {
 
     var btn = new button.Button();
     btn.text = "Page B";
-    btn.on(button.knownEvents.tap, function () {
+    btn.on(button.Button.tapEvent, function () {
         var nextPage = "tests/pages/navigation/pageB";
         frame.topmost().navigate(nextPage);
     });
@@ -24,7 +24,7 @@ export function createPage() {
 
     var btnActivity = new button.Button();
     btnActivity.text = "start activity";
-    btnActivity.on(button.knownEvents.tap, function () {
+    btnActivity.on(button.Button.tapEvent, function () {
         var newPage = "tests/pages/navigation/pageA-new-activity";
 
         var newFrame = new frame.Frame();
@@ -43,7 +43,7 @@ export function createPage() {
     }
     lv.height = 200;
     lv.items = data;
-    lv.on(list.knownEvents.itemLoading, (args: list.ItemEventData) => {
+    lv.on(list.ListView.itemLoadingEvent, (args: list.ItemEventData) => {
         var btn = <button.Button> args.view;
         if (!btn) {
             btn = new button.Button();

@@ -33,13 +33,13 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
     var navBarIsVisible = false;
 
     var handler = function (data) {
-        page.off(view.knownEvents.loaded, handler);
+        page.off(view.View.loadedEvent, handler);
         navBarIsVisible = (<any>page.frame.ios).showNavigationBar;
     }
 
     var pageFactory = function (): PageModule.Page {
         page = new PageModule.Page();
-        page.on(view.knownEvents.loaded, handler);
+        page.on(view.View.loadedEvent, handler);
 
         var mi = new PageModule.MenuItem();
         mi.text = "B";
@@ -56,7 +56,7 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
         TKUnit.assert(navBarIsVisible, "Expected: true, Actual: " + navBarIsVisible);
     }
     finally {
-        page.off(view.knownEvents.loaded, handler);
+        page.off(view.View.loadedEvent, handler);
         helper.goBack();
     }
 }

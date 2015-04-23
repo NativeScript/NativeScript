@@ -23,21 +23,21 @@ export function createPage() {
     var dataMarshallingButton0 = new buttonModule.Button();
     dataMarshallingButton0.text = "Compare JavaScript dates 10000 times";
     mainLayout.addChild(dataMarshallingButton0);
-    dataMarshallingButton0.on(buttonModule.knownEvents.tap, function () {
+    dataMarshallingButton0.on(buttonModule.Button.tapEvent, function () {
         resultsLabel.text = testsModule.compareJavaScriptDates(10000);
     });
 
     var dataMarshallingButton1 = new buttonModule.Button();
     dataMarshallingButton1.text = "Compare Native dates 10000 times";
     mainLayout.addChild(dataMarshallingButton1);
-    dataMarshallingButton1.on(buttonModule.knownEvents.tap, function () {
+    dataMarshallingButton1.on(buttonModule.Button.tapEvent, function () {
         resultsLabel.text = testsModule.compareNativeDates(10000);
     });
 
     var dataMarshallingButton2 = new buttonModule.Button();
     dataMarshallingButton2.text = "Bitmap -> byte[] -> Bitmap 200 times";
     mainLayout.addChild(dataMarshallingButton2);
-    dataMarshallingButton2.on(buttonModule.knownEvents.tap, function () {
+    dataMarshallingButton2.on(buttonModule.Button.tapEvent, function () {
         testsModule.decodeAndEncodeBitmap(200, function (message) {
             resultsLabel.text = message;
         });

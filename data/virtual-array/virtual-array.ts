@@ -4,11 +4,6 @@ import virtualArrayDef = require("data/virtual-array");
 
 var CHANGE = "change", UPDATE = "update", DELETE = "delete", ADD = "add";
 
-export module knownEvents {
-    export var itemsLoading = "itemsLoading";
-    export var change = "change";
-}
-
 export class ChangeType implements virtualArrayDef.ChangeType {
     static Add = "add";
     static Delete = "delete";
@@ -17,6 +12,9 @@ export class ChangeType implements virtualArrayDef.ChangeType {
 }
 
 export class VirtualArray<T> extends observable.Observable {
+    public static changeEvent = CHANGE;
+    public static itemsLoadingEvent = "itemsLoading";
+
     private _requestedIndexes: Array<number>;
     private _loadedIndexes: Array<number>;
     private _length: number;
@@ -139,7 +137,7 @@ export class VirtualArray<T> extends observable.Observable {
             } else {
                 if (count > 0) {
                     this.notify({
-                        eventName: knownEvents.itemsLoading, object: this,
+                        eventName: VirtualArray.itemsLoadingEvent, object: this,
                         index: start,
                         count: count
                     });
@@ -152,7 +150,7 @@ export class VirtualArray<T> extends observable.Observable {
 
         if (start >= 0 && count > 0) {
             this.notify({
-                eventName: knownEvents.itemsLoading, object: this,
+                eventName: VirtualArray.itemsLoadingEvent, object: this,
                 index: start,
                 count: count
             });

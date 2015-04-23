@@ -15,7 +15,7 @@ export function createPage() {
 
     var btn = new button.Button();
     btn.text = "Run";
-    btn.on(button.knownEvents.tap, function () {
+    btn.on(button.Button.tapEvent, function () {
         var pagePath = basePath + txtInput.text;
         var fileName = fs.path.join(__dirname, "pages", txtInput.text);
 

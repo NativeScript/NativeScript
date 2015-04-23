@@ -6,9 +6,6 @@ import formattedString = require("text/formatted-string");
 import observable = require("data/observable");
 import weakEventListener = require("ui/core/weak-event-listener");
 
-export module knownEvents {
-    export var tap = "tap";
-}
 var textProperty = new dependencyObservable.Property(
     "text",
     "Button",
@@ -37,6 +34,8 @@ function onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChang
 
 export class Button extends view.View implements definition.Button {
 
+    public static tapEvent = "tap";
+
     public static textProperty = textProperty;
     public static formattedTextProperty = formattedTextProperty;
 
@@ -63,7 +62,7 @@ export class Button extends view.View implements definition.Button {
         if (this.formattedText !== value) {
             var weakEventOptions: weakEventListener.WeakEventListenerOptions = {
                 targetWeakRef: new WeakRef(this),
-                eventName: observable.knownEvents.propertyChange,
+                eventName: observable.Observable.propertyChangeEvent,
                 sourceWeakRef: new WeakRef(value),
                 handler: this.onFormattedTextChanged,
                 handlerContext: this,

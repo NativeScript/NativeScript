@@ -8,13 +8,6 @@ declare module "ui/button" {
     import formattedString = require("text/formatted-string");
 
     /**
-     * Known event names.
-     */
-    export module knownEvents {
-        export var tap: string;
-    }
-
-    /**
      * Represents a standard Button widget.
      */
     export class Button extends view.View {
@@ -22,6 +15,11 @@ declare module "ui/button" {
          * Represents the observable property backing the text property of each Button instance.
          */
         public static textProperty: dependencyObservable.Property;
+
+        /**
+         * String value used when hooking to tap event.
+         */
+        public static tapEvent: string;
 
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/Button.html) that represents the user interface for this component. Valid only when running on Android OS.
@@ -43,7 +41,17 @@ declare module "ui/button" {
          */
         formattedText: formattedString.FormattedString;
 
-        on(event: string, callback: (data: observable.EventData) => void);
-        on(event: "tap", callback: (args: observable.EventData) => void);
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+
+        /**
+         * Raised when a tap event occurs.
+         */
+        on(event: "tap", callback: (args: observable.EventData) => void, thisArg?: any);
     }
 }

@@ -18,13 +18,13 @@ export function createPage() {
     var startButton = new buttonModule.Button();
     startButton.text = "Start timer";
     var intervalId;
-    startButton.addEventListener(buttonModule.knownEvents.tap, function () {
+    startButton.addEventListener(buttonModule.Button.tapEvent, function () {
         intervalId = timer.setInterval(intervalCallback, 100);
     });
 
     var stopButton = new buttonModule.Button();
     stopButton.text = "Stop timer";
-    stopButton.addEventListener(buttonModule.knownEvents.tap, function () {
+    stopButton.addEventListener(buttonModule.Button.tapEvent, function () {
         timer.clearInterval(intervalId);
     });
 

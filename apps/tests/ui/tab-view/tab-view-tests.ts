@@ -71,7 +71,7 @@ function _createListView(): listViewModule.ListView {
     listView.id = "ListView";
     var items = Array.apply(null, Array(10)).map(function (_, i) { return i; });
 
-    listView.on(listViewModule.knownEvents.itemLoading, function (args: listViewModule.ItemEventData) {
+    listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
         var button = <buttonModule.Button>args.view;
         if (!button) {
             button = new buttonModule.Button();
@@ -80,7 +80,7 @@ function _createListView(): listViewModule.ListView {
 
         button.text = "Button" + args.index;
         button.id = button.text;
-        button.on(buttonModule.knownEvents.tap, _clickHandlerFactory(args.index));
+        button.on(buttonModule.Button.tapEvent, _clickHandlerFactory(args.index));
     });
 
     listView.items = items;

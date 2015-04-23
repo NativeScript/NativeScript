@@ -18,7 +18,7 @@ export function createPage() {
     };
 
     var button = new bm.Button();
-    button.on(bm.knownEvents.tap, function () {
+    button.on(bm.Button.tapEvent, function () {
         fs.File.fromPath(__dirname + "/xml.xml").readText().then(input => {
             // I am a change made in master.
             console.log("EasySax JavaScript XmlParser (without namespace processing) running...");

@@ -6,11 +6,9 @@ interface ListenerEntry {
     thisArg: any;
 }
 
-export module knownEvents {
-    export var propertyChange = "propertyChange";
-}
-
 export class Observable implements definition.Observable {
+    public static propertyChangeEvent = "propertyChange";
+
     private _observers = {};
 
     constructor(json?: any) {
@@ -31,8 +29,8 @@ export class Observable implements definition.Observable {
         this.addEventListener(eventNames, callback, thisArg);
     }
 
-    public off(eventNames: string, callback?: any) {
-        this.removeEventListener(eventNames, callback);
+    public off(eventNames: string, callback?: any, thisArg?: any) {
+        this.removeEventListener(eventNames, callback, thisArg);
     }
 
     public addEventListener(eventNames: string, callback: (data: definition.EventData) => void, thisArg?: any) {
@@ -122,7 +120,7 @@ export class Observable implements definition.Observable {
 
     public _createPropertyChangeData(name: string, value: any): definition.PropertyChangeData {
         return {
-            eventName: knownEvents.propertyChange,
+            eventName: Observable.propertyChangeEvent,
             propertyName: name,
             object: this,
             value: value

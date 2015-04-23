@@ -8,26 +8,6 @@ declare module "ui/list-view" {
     import color = require("color");
 
     /**
-     * Known event names.
-     */
-    export module knownEvents {
-        /**
-         * The name of event raised when item is loading inside the ListView.
-         */
-        export var itemLoading: string;
-
-        /**
-         * The name of event raised when ListView item is tapped.
-         */
-        export var itemTap: string;
-
-        /**
-         * The name of event raised when the ListView is scrolled so that its last item is visible.
-         */
-        export var loadMoreItems: string;
-    }
-
-    /**
      * Known template names.
      */
     export module knownTemplates {
@@ -41,6 +21,19 @@ declare module "ui/list-view" {
      * Represents a view that shows items in a vertically scrolling list.
      */
     export class ListView extends view.View {
+        /**
+         * String value used when hooking to itemLoading event.
+         */
+        public static itemLoadingEvent: string;
+        /**
+         * String value used when hooking to itemTap event.
+         */
+        public static itemTapEvent: string;
+        /**
+         * String value used when hooking to loadMoreItems event.
+         */
+        public static loadMoreItemsEvent: string;
+
         /**
          * Represents the observable property backing the items property of each ListView instance.
          */
@@ -92,7 +85,13 @@ declare module "ui/list-view" {
          */
         refresh();
 
-        on(event: string, callback: (data: observable.EventData) => void);
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
 
         /**
          * Raised when a View for the data at the specified index should be created. 
@@ -100,17 +99,17 @@ declare module "ui/list-view" {
          * Note, that the view property of the event data can be pre-initialized with 
          * an old instance of a view, so that it can be reused. 
          */
-        on(event: "itemLoading", callback: (args: ItemEventData) => void);
+        on(event: "itemLoading", callback: (args: ItemEventData) => void, thisArg?: any);
 
         /**
          * Raised when an item inside the ListView is tapped.
          */
-        on(event: "itemTap", callback: (args: ItemEventData) => void);
+        on(event: "itemTap", callback: (args: ItemEventData) => void, thisArg?: any);
 
         /**
          * Raised when the ListView is scrolled so that its last item is visible.
          */
-        on(event: "loadMoreItems", callback: (args: observable.EventData) => void);
+        on(event: "loadMoreItems", callback: (args: observable.EventData) => void, thisArg?: any);
     }
 
     /**

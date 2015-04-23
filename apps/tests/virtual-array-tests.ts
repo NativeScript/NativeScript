@@ -38,7 +38,7 @@ export var test_VirtualArray_setItemShouldRaiseChangeEventWhenYouSetDifferentIte
     var result: virtualArrayModule.ChangedData<number>;
     var index = 0;
 
-    array.on(virtualArrayModule.knownEvents.change, (args: virtualArrayModule.ChangedData<number>) => {
+    array.on(virtualArrayModule.VirtualArray.changeEvent, (args: virtualArrayModule.ChangedData<number>) => {
         result = args;
     });
 
@@ -55,7 +55,7 @@ export var test_VirtualArray_setItemShouldRaiseChangeEventWhenYouSetDifferentIte
         result.removed.length === 1 && result.index === index && result.addedCount === 1, "VirtualArray<T> setItem() should raise 'change' event with correct args!");
     // </hide>
 
-    array.on(virtualArrayModule.knownEvents.itemsLoading, (args: virtualArrayModule.ItemsLoading) => {
+    array.on(virtualArrayModule.VirtualArray.itemsLoadingEvent, (args: virtualArrayModule.ItemsLoading) => {
         //// Argument (args) is ItemsLoading.
         //// args.index is start index of the page where the requested index is located.
         //// args.count number of requested items.
@@ -90,7 +90,7 @@ export var test_VirtualArray_loadShouldRaiseChangeEventWithCorrectArgs = functio
     var index = 0;
     // </hide>
 
-    array.on(virtualArrayModule.knownEvents.change, (args: virtualArrayModule.ChangedData<number>) => {
+    array.on(virtualArrayModule.VirtualArray.changeEvent, (args: virtualArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
         //// args.action is "update".
@@ -124,7 +124,7 @@ export var test_VirtualArray_lengthIncreaseShouldRaiseChangeEventWithCorrectArgs
     var index = array.length;
     // </hide>
 
-    array.on(virtualArrayModule.knownEvents.change, (args: virtualArrayModule.ChangedData<number>) => {
+    array.on(virtualArrayModule.VirtualArray.changeEvent, (args: virtualArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
         //// args.action is "add".
@@ -156,7 +156,7 @@ export var test_VirtualArray_lengthDecreaseShouldRaiseChangeEventWithCorrectArgs
     var index = array.length;
     // </hide>
 
-    array.on(virtualArrayModule.knownEvents.change, (args: virtualArrayModule.ChangedData<number>) => {
+    array.on(virtualArrayModule.VirtualArray.changeEvent, (args: virtualArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
         //// args.action is "remove".
@@ -180,13 +180,13 @@ export var test_VirtualArray_shouldRaiseItemsLoadingIfIndexIsNotLoadedAndGetItem
 
     var result: virtualArrayModule.ItemsLoading;
 
-    array.on(virtualArrayModule.knownEvents.itemsLoading, (args: virtualArrayModule.ItemsLoading) => {
+    array.on(virtualArrayModule.VirtualArray.itemsLoadingEvent, (args: virtualArrayModule.ItemsLoading) => {
         result = args;
     });
 
     array.getItem(0);
 
-    TKUnit.assert(result.eventName === virtualArrayModule.knownEvents.itemsLoading && result.index === 0 &&
+    TKUnit.assert(result.eventName === virtualArrayModule.VirtualArray.itemsLoadingEvent && result.index === 0 &&
         result.count === array.loadSize, "VirtualArray<T> getItem() should raise 'itemsLoading' event with correct args if item is not loaded!");
 };
 
@@ -197,7 +197,7 @@ export var test_VirtualArray_shouldNotRaiseItemsLoadingIfIndexIsLoadedAndGetItem
 
     var result: virtualArrayModule.ItemsLoading;
 
-    array.on(virtualArrayModule.knownEvents.itemsLoading, (args: virtualArrayModule.ItemsLoading) => {
+    array.on(virtualArrayModule.VirtualArray.itemsLoadingEvent, (args: virtualArrayModule.ItemsLoading) => {
         result = args;
     });
 
@@ -216,14 +216,14 @@ export var test_VirtualArray_shouldRaiseItemsLoadingIfIndexIsNotLoadedAndGetItem
 
     var result = new Array<virtualArrayModule.ItemsLoading>();
 
-    array.on(virtualArrayModule.knownEvents.itemsLoading, (args: virtualArrayModule.ItemsLoading) => {
+    array.on(virtualArrayModule.VirtualArray.itemsLoadingEvent, (args: virtualArrayModule.ItemsLoading) => {
         result.push(args);
     });
 
     array.getItem(1);
 
     TKUnit.assert(result.length === 2 &&
-        result[0].eventName === virtualArrayModule.knownEvents.itemsLoading && result[0].index === 1 && result[0].count === 4 &&
-        result[1].eventName === virtualArrayModule.knownEvents.itemsLoading && result[1].index === 6 && result[1].count === 9,
+        result[0].eventName === virtualArrayModule.VirtualArray.itemsLoadingEvent && result[0].index === 1 && result[0].count === 4 &&
+        result[1].eventName === virtualArrayModule.VirtualArray.itemsLoadingEvent && result[1].index === 6 && result[1].count === 9,
         "VirtualArray<T> getItem() should raise 'itemsLoading' event with correct args!");
 };

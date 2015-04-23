@@ -92,7 +92,7 @@ export class SearchBar extends common.SearchBar {
 
                     // This code is needed since sometimes OnCloseListener is not called!
                     if (newText === EMPTY && this[SEARCHTEXT] !== newText) {
-                        this.owner._emit(common.knownEvents.clear);
+                        this.owner._emit(common.SearchBar.clearEvent);
                     }
 
                     this[SEARCHTEXT] = newText;
@@ -104,7 +104,7 @@ export class SearchBar extends common.SearchBar {
                 if (this.owner) {
                     // This code is needed since onQueryTextSubmit is called twice with same query!
                     if (query !== EMPTY && this[QUERY] !== query) {
-                        this.owner._emit(common.knownEvents.submit);
+                        this.owner._emit(common.SearchBar.submitEvent);
                     }
                     this[QUERY] = query;
                 }
@@ -119,7 +119,7 @@ export class SearchBar extends common.SearchBar {
 
             onClose: function () {
                 if (this.owner) {
-                    this.owner._emit(common.knownEvents.clear);
+                    this.owner._emit(common.SearchBar.clearEvent);
                 }
                 return true;
             }

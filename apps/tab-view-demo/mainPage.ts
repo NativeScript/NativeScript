@@ -37,13 +37,13 @@ export function createPage() {
                 }
         }
         var clickHandler = clickHandlerFactory(nextIndex, length);
-            goToNextTabButton.on(buttonModule.knownEvents.tap, clickHandler);
+            goToNextTabButton.on(buttonModule.Button.tapEvent, clickHandler);
 
             // Second button
             var navigateToAnotherPageButton = new buttonModule.Button();
             navigateToAnotherPageButton.text = "Navigate to another page";
             stackLayout.addChild(navigateToAnotherPageButton);
-            navigateToAnotherPageButton.on(buttonModule.knownEvents.tap, function () {
+            navigateToAnotherPageButton.on(buttonModule.Button.tapEvent, function () {
                 var pageFactory = function () {
                     return new navPageModule.NavPage(0);
                 };

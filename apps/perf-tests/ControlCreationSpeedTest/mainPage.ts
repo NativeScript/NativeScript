@@ -27,7 +27,7 @@ export function createPage() {
         var button = new buttonModule.Button();
         button.text = text;
         button.width = 40;
-        button.on(buttonModule.knownEvents.tap, function (eventData) {
+        button.on(buttonModule.Button.tapEvent, function (eventData) {
             count = ((<any>eventData.object).text) * 1000;
             countLabel.text = "Create " + count + " objects of type:";
         });
@@ -79,7 +79,7 @@ export function createPage() {
     var addControlButtonFunc = function (text) {
         var button = new buttonModule.Button();
         button.text = text;
-        button.on(buttonModule.knownEvents.tap, onClickHandler);
+        button.on(buttonModule.Button.tapEvent, onClickHandler);
         mainLayout.addChild(button);
     };
 

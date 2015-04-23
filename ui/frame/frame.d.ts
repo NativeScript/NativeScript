@@ -13,6 +13,11 @@ declare module "ui/frame" {
      */
     export class Frame extends view.View {
         /**
+         * String value used when hooking to androidOptionSelected event (prefix `android` states that this event is available only in Android).
+         */
+        public static androidOptionSelectedEvent: string;
+
+        /**
          * Navigates to the previous entry (if any) in the back stack.
          */
         goBack();
@@ -86,6 +91,19 @@ declare module "ui/frame" {
         _processNavigationQueue(page: pages.Page);
         _invalidateOptionsMenu();
         //@endprivate
+
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (args: observable.EventData) => void, thisArg?: any);
+
+        /**
+         * Raised when native android [onOptionsItemSelected method](http://developer.android.com/reference/android/app/Activity.html#onOptionsItemSelected(android.view.MenuItem)) is called.
+         */
+        on(event: "optionSelected", callback: (args: observable.EventData) => void, thisArg?: any);
     }
 
     /**
@@ -213,20 +231,5 @@ declare module "ui/frame" {
          * Use NavBarVisibility enumeration - auto, never, always
          */
         navBarVisibility: string;
-    }
-
-    /**
-     * Encapsulates the events raised by the Frame object.
-     */
-    module knownEvents {
-        /**
-         * Encapsulates the events raised by the android part of the Frame.
-         */
-        module android {
-            /**
-             * Raised when the native [onOptionsItemSelected method](http://developer.android.com/reference/android/app/Activity.html#onOptionsItemSelected(android.view.MenuItem)) is called.
-             */
-            export var optionSelected: string;
-        }
     }
 }

@@ -16,7 +16,7 @@ export function createPage() {
     var forwardIntervalId;
     var backIntervalId;
 
-    startButton.on(buttonModule.knownEvents.tap, function () {
+    startButton.on(buttonModule.Button.tapEvent, function () {
 
         forwardIntervalId = setInterval(function () {
             console.log("Navigating to controls page...");

@@ -27,7 +27,7 @@ export class AppViewModel extends observable.Observable {
         if (!this._redditItems) {
             this._redditItems = new virtualArray.VirtualArray<redditViewModel.RedditViewModel>(1000);
             this._redditItems.loadSize = 50;
-            this._redditItems.on(virtualArray.knownEvents.itemsLoading, (args: virtualArray.ItemsLoading) => {
+            this._redditItems.on(virtualArray.VirtualArray.itemsLoadingEvent, (args: virtualArray.ItemsLoading) => {
 
                 http.getJSON<redditModel.Data>(redditUrl + args.count +
                     (after ? "&after=" + after : "")).then(result => {
@@ -69,7 +69,7 @@ export class AppViewModel extends observable.Observable {
                 cache.enableDownload();
             }
 
-            this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: ISSCROLLING, value: value });
+            this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: ISSCROLLING, value: value });
         }
     }
 

@@ -14,7 +14,7 @@ class TapHandlerImpl extends NSObject {
     }
 
     public tap(args) {
-        this._owner._emit(common.knownEvents.tap);
+        this._owner._emit(common.Button.tapEvent);
     }
 
     public static ObjCExposedMethods = {

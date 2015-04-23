@@ -131,7 +131,7 @@ export var test_ObservableArray_popShouldRemoveTheLastElementAndRaiseChangeEvent
     var index = array.length - 1;
     // </hide>
 
-    array.on(observableArrayModule.knownEvents.change, (args: observableArrayModule.ChangedData<number>) => {
+    array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
         //// args.action is "delete".
@@ -148,7 +148,7 @@ export var test_ObservableArray_popShouldRemoveTheLastElementAndRaiseChangeEvent
     // ```
     // </snippet>
 
-    TKUnit.assert(result.eventName === observableArrayModule.knownEvents.change && result.action === observableArrayModule.ChangeType.Delete &&
+    TKUnit.assert(result.eventName === observableArrayModule.ObservableArray.changeEvent && result.action === observableArrayModule.ChangeType.Delete &&
         result.removed.length === 1 && result.index === index && result.addedCount === 0, "ObservableArray pop() should raise 'change' event with correct args!");
 };
 
@@ -176,7 +176,7 @@ export var test_ObservableArray_pushShouldAppendNewElementAndRaiseChangeEventWit
     // ### Handle "change" event to know more info about the change after calling push() method with single element.
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-    array.on(observableArrayModule.knownEvents.change, (args: observableArrayModule.ChangedData<number>) => {
+    array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
         //// args.action is "add".
@@ -193,7 +193,7 @@ export var test_ObservableArray_pushShouldAppendNewElementAndRaiseChangeEventWit
     // ```
     // </snippet>
 
-    TKUnit.assert(result.eventName === observableArrayModule.knownEvents.change && result.action === observableArrayModule.ChangeType.Add &&
+    TKUnit.assert(result.eventName === observableArrayModule.ObservableArray.changeEvent && result.action === observableArrayModule.ChangeType.Add &&
         result.removed.length === 0 && result.index === 3 && result.addedCount === 1, "ObservableArray push() should raise 'change' event with correct args!");
 };
 
@@ -221,7 +221,7 @@ export var test_ObservableArray_pushShouldAppendNewElementsAndRaiseChangeEventWi
     // ### Handle "change" event to know more info about the change after calling push() method with multiple elements.
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-    array.on(observableArrayModule.knownEvents.change, (args: observableArrayModule.ChangedData<number>) => {
+    array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
         //// args.action is "add".
@@ -238,7 +238,7 @@ export var test_ObservableArray_pushShouldAppendNewElementsAndRaiseChangeEventWi
     // ```
     // </snippet>
 
-    TKUnit.assert(result.eventName === observableArrayModule.knownEvents.change && result.action === observableArrayModule.ChangeType.Add &&
+    TKUnit.assert(result.eventName === observableArrayModule.ObservableArray.changeEvent && result.action === observableArrayModule.ChangeType.Add &&
         result.removed.length === 0 && result.index === 3 && result.addedCount === 3, "ObservableArray push() should raise 'change' event with correct args!");
 };
 
@@ -266,7 +266,7 @@ export var test_ObservableArray_pushShouldAppendNewElementsFromSourceArrayAndRai
     // ### Handle "change" event to know more info about the change after calling push() method with multiple elements from source array.
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-    array.on(observableArrayModule.knownEvents.change, (args: observableArrayModule.ChangedData<number>) => {
+    array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
         //// args.action is "add".
@@ -283,7 +283,7 @@ export var test_ObservableArray_pushShouldAppendNewElementsFromSourceArrayAndRai
     // ```
     // </snippet>
 
-    TKUnit.assert(result.eventName === observableArrayModule.knownEvents.change && result.action === observableArrayModule.ChangeType.Add &&
+    TKUnit.assert(result.eventName === observableArrayModule.ObservableArray.changeEvent && result.action === observableArrayModule.ChangeType.Add &&
         result.removed.length === 0 && result.index === 3 && result.addedCount === 3, "ObservableArray push() should raise 'change' event with correct args!");
 };
 
@@ -323,7 +323,7 @@ export var test_ObservableArray_shiftShouldRemoveTheFirstElementAndRaiseChangeEv
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
 
-    array.on(observableArrayModule.knownEvents.change, (args: observableArrayModule.ChangedData<number>) => {
+    array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
         //// args.action is "delete".
@@ -340,7 +340,7 @@ export var test_ObservableArray_shiftShouldRemoveTheFirstElementAndRaiseChangeEv
     // ```
     // </snippet>
 
-    TKUnit.assert(result.eventName === observableArrayModule.knownEvents.change && result.action === observableArrayModule.ChangeType.Delete &&
+    TKUnit.assert(result.eventName === observableArrayModule.ObservableArray.changeEvent && result.action === observableArrayModule.ChangeType.Delete &&
         result.removed.length === 1 && result.index === 0 && result.addedCount === 0, "ObservableArray shift() should raise 'change' event with correct args!");
 };
 
@@ -414,7 +414,7 @@ export var test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStart
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
 
-    array.on(observableArrayModule.knownEvents.change, (args: observableArrayModule.ChangedData<number>) => {
+    array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
         //// args.action is "splice".
@@ -431,7 +431,7 @@ export var test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStart
     // ```
     // </snippet>
 
-    TKUnit.assert(result.eventName === observableArrayModule.knownEvents.change && result.action === observableArrayModule.ChangeType.Splice &&
+    TKUnit.assert(result.eventName === observableArrayModule.ObservableArray.changeEvent && result.action === observableArrayModule.ChangeType.Splice &&
         result.removed.length === 2 && result.index === 1 && result.addedCount === 0, "ObservableArray splice() should raise 'change' event with correct args!");
 };
 
@@ -455,7 +455,7 @@ export var test_ObservableArray_spliceShouldRemoveAndInertSpecifiedNumberOfEleme
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
 
-    array.on(observableArrayModule.knownEvents.change, (args: observableArrayModule.ChangedData<number>) => {
+    array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
         //// args.action is "splice".
@@ -472,7 +472,7 @@ export var test_ObservableArray_spliceShouldRemoveAndInertSpecifiedNumberOfEleme
     // ```
     // </snippet>
 
-    TKUnit.assert(result.eventName === observableArrayModule.knownEvents.change && result.action === observableArrayModule.ChangeType.Splice &&
+    TKUnit.assert(result.eventName === observableArrayModule.ObservableArray.changeEvent && result.action === observableArrayModule.ChangeType.Splice &&
         result.removed.length === 2 && result.index === 1 && result.addedCount === 1, "ObservableArray splice() should raise 'change' event with correct args!");
 };
 
@@ -501,7 +501,7 @@ export var test_ObservableArray_unshiftShouldInsertNewElementsFromTheStartAndRai
     // ### Handle "change" event to know more info about the change after calling unshift(item1, item2... itemN) method.
     // ``` JavaScript
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-    array.on(observableArrayModule.knownEvents.change, (args: observableArrayModule.ChangedData<number>) => {
+    array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
         //// args.action is "add".
@@ -518,7 +518,7 @@ export var test_ObservableArray_unshiftShouldInsertNewElementsFromTheStartAndRai
     // ```
     // </snippet>
 
-    TKUnit.assert(result.eventName === observableArrayModule.knownEvents.change && result.action === observableArrayModule.ChangeType.Add &&
+    TKUnit.assert(result.eventName === observableArrayModule.ObservableArray.changeEvent && result.action === observableArrayModule.ChangeType.Add &&
         result.removed.length === 0 && result.index === 0 && result.addedCount === 2, "ObservableArray unshift() should raise 'change' event with correct args!");
 };
 

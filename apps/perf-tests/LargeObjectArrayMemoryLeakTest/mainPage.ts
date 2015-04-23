@@ -25,7 +25,7 @@ export function createPage() {
     var startButtonClickHandler = function () {
         allocateMemory();
     };
-    startButton.on(buttonModule.knownEvents.tap, startButtonClickHandler);
+    startButton.on(buttonModule.Button.tapEvent, startButtonClickHandler);
 
     var stopButton = new buttonModule.Button();
     stopButton.height = 50;
@@ -34,7 +34,7 @@ export function createPage() {
     var stopButtonClickHandler = function () {
         nativeCallsWrapper.forceGarbageCollection();
     };
-    stopButton.on(buttonModule.knownEvents.tap, stopButtonClickHandler);
+    stopButton.on(buttonModule.Button.tapEvent, stopButtonClickHandler);
 
     mainStackLayout.addChild(startButton);
     mainStackLayout.addChild(stopButton);

@@ -38,7 +38,7 @@ export class RedditViewModel extends observable.Observable {
     set isLoading(value: boolean) {
         if (this._isLoading !== value) {
             this._isLoading = value;
-            this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: ISLOADING, value: value });
+            this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: ISLOADING, value: value });
         }
     }
 
@@ -69,7 +69,7 @@ export class RedditViewModel extends observable.Observable {
             completed: (image: any, key: string) => {
                 if (url === key) {
                     this.isLoading = false;
-                    this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: THUMBNAIL_IMAGE, value: image });
+                    this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: THUMBNAIL_IMAGE, value: image });
                 }
             }
         });
@@ -87,7 +87,7 @@ export class RedditViewModel extends observable.Observable {
 
                 imageSource.fromUrl(url).then(result => {
                     this.isLoading = false;
-                    this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: IMAGE_SOURCE, value: result });
+                    this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: IMAGE_SOURCE, value: result });
                 });
             }
         }

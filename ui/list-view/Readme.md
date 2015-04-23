@@ -10,7 +10,7 @@
 
     var lv = new lvm.ListView();
     lv.items = data;
-    lv.on(lvm.knownEvents.itemLoading, function(args){
+    lv.on(lvm.ListView.itemLoadingEvent, function(args){
         var label = args.view;
         if(!label) {
             label = new lm.Label();

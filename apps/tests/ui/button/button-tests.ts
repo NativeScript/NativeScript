@@ -120,7 +120,7 @@ var _testOnClick = function (views: Array<viewModule.View>) {
     // <snippet module="ui/button" title="button">
     // ### Responding to the tap event
     // ``` JavaScript
-    button.on(buttonModule.knownEvents.tap, function (args: observable.EventData) {
+    button.on(buttonModule.Button.tapEvent, function (args: observable.EventData) {
         //// Do something
         // <hide>
         actualValue = true;

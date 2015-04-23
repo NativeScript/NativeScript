@@ -10,7 +10,7 @@ export function createPage() {
 
         var button = new buttonModule.Button();
         button.text = "Test";
-        button.on(buttonModule.knownEvents.tap, function () {
+        button.on(buttonModule.Button.tapEvent, function () {
             var topFrame = frame.topmost();
             topFrame.goBack();
         });

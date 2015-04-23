@@ -3,10 +3,6 @@ import view = require("ui/core/view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 
-export module knownEvents {
-    export var loadFinished: string = "loadFinished";
-    export var loadStarted: string = "loadStarted";
-}
 var urlProperty = new dependencyObservable.Property(
     "url",
     "WebView",
@@ -27,6 +23,8 @@ function onUrlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 (<proxy.PropertyMetadata>urlProperty.metadata).onSetNativeValue = onUrlPropertyChanged;
 
 export class WebView extends view.View implements definition.WebView {
+    public static loadStartedEvent = "loadStarted";
+    public static loadFinishedEvent = "loadFinished";
 
     public static urlProperty = urlProperty;
 
@@ -51,7 +49,7 @@ export class WebView extends view.View implements definition.WebView {
         this._suspendLoading = false;
 
         var args = <definition.LoadEventData>{
-            eventName: knownEvents.loadFinished,
+            eventName: WebView.loadFinishedEvent,
             object: this,
             url: url,
             error: error
@@ -62,7 +60,7 @@ export class WebView extends view.View implements definition.WebView {
 
     public _onLoadStarted(url: string) {
         var args = <definition.LoadEventData>{
-            eventName: knownEvents.loadStarted,
+            eventName: WebView.loadStartedEvent,
             object: this,
             url: url,
             error: undefined

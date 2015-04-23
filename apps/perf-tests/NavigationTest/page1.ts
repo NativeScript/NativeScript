@@ -14,14 +14,14 @@ export function createPage() {
 
     var changeStateButton = new buttonModule.Button();
     changeStateButton.text = "CHANGE STATE";
-    changeStateButton.on(buttonModule.knownEvents.tap, () => {
+    changeStateButton.on(buttonModule.Button.tapEvent, () => {
         stateLabel.text = "CHANGED STATE";
     });
     stackLayout.addChild(changeStateButton);
 
     var navigateButton = new buttonModule.Button();
     navigateButton.text = "->";
-    navigateButton.on(buttonModule.knownEvents.tap, () => {
+    navigateButton.on(buttonModule.Button.tapEvent, () => {
         page.frame.navigate("NavigationTest/page2");
     });
     stackLayout.addChild(navigateButton);

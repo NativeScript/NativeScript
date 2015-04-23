@@ -12,7 +12,7 @@ export class WebViewModel extends observable.Observable {
     set selectedIndex(value: number) {
         console.log("selectedIndex:" + value);
         this._selectedIndex = value;
-        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "selectedIndex", value: value });
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "selectedIndex", value: value });
     }
     
     private _items: Array<string> 
@@ -22,7 +22,7 @@ export class WebViewModel extends observable.Observable {
     set items(value: Array<string>) {
         console.log("items:" + value);
         this._items = value;
-        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "items", value: value });
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "items", value: value });
     }
 
     private _day: number;
@@ -32,7 +32,7 @@ export class WebViewModel extends observable.Observable {
     set day(value: number) {
         console.log("day:" + value);
         this._day = value;
-        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "day", value: value });
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "day", value: value });
     }
 
     private _month: number;
@@ -42,7 +42,7 @@ export class WebViewModel extends observable.Observable {
     set month(value: number) {
         console.log("month:" + value);
         this._month = value;
-        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "month", value: value });
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "month", value: value });
     }
     
     private _year: number;
@@ -52,7 +52,7 @@ export class WebViewModel extends observable.Observable {
     set year(value: number) {
         console.log("year:" + value);
         this._year = value;
-        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "year", value: value });
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "year", value: value });
     }
 
     private _hour: number;
@@ -62,7 +62,7 @@ export class WebViewModel extends observable.Observable {
     set hour(value: number) {
         console.log("hour:" + value);
         this._hour = value;
-        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "hour", value: value });
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "hour", value: value });
     }
 
     private _minute: number;
@@ -72,6 +72,6 @@ export class WebViewModel extends observable.Observable {
     set minute(value: number) {
         console.log("minute:" + value);
         this._minute = value;
-        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "minute", value: value });
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "minute", value: value });
     }
 }

@@ -36,7 +36,7 @@ export function createPage() {
         mainStackLayout.addChild(childStackLayout);
         for (var j = 0; j < buttonsPerRow; j++) {
             button = new buttonModule.Button();
-            button.on(buttonModule.knownEvents.tap, function (data) {
+            button.on(buttonModule.Button.tapEvent, function (data) {
                 trace.write("eventName=" + data.eventName + " object=" + data.object, trace.categories.Test, trace.messageType.info);
             });
             button.text = "" + i + j;

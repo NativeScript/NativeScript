@@ -11,16 +11,13 @@ import enums = require("ui/enums");
 
 var OPTIONS_MENU = "optionsMenu";
 
-export module knownEvents {
-    export var navigatedTo = "navigatedTo";
-    export var tap = "tap";
-}
-
 export module knownCollections {
     export var optionsMenu = "optionsMenu";
 }
 
 export class Page extends contentView.ContentView implements dts.Page, view.AddArrayFromBuilder {
+    public static navigatedToEvent = "navigatedTo";
+
     private _navigationContext: any;
 
     private _cssApplied: boolean;
@@ -102,7 +99,7 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
     public onNavigatedTo(context: any) {
         this._navigationContext = context;
         this.notify({
-            eventName: knownEvents.navigatedTo,
+            eventName: Page.navigatedToEvent,
             object: this,
             context: context
         });
@@ -227,6 +224,7 @@ export class OptionsMenu implements dts.OptionsMenu {
 }
 
 export class MenuItem extends bindable.Bindable implements dts.MenuItem {
+    public static tapEvent = "tap";
 
     public static textProperty = new dependencyObservable.Property(
         "text", "MenuItem", new dependencyObservable.PropertyMetadata("", null, MenuItem.onItemChanged));
@@ -271,7 +269,7 @@ export class MenuItem extends bindable.Bindable implements dts.MenuItem {
     }
 
     public _raiseTap() {
-        this._emit(knownEvents.tap);
+        this._emit(MenuItem.tapEvent);
     }
 
     menu: OptionsMenu;
