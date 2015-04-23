@@ -10,6 +10,9 @@ import types = require("utils/types");
 import fs = require("file-system");
 import fileSystemAccess = require("file-system/file-system-access");
 import observable = require("data/observable");
+import stackLayoutModule = require("ui/layouts/stack-layout");
+import labelModule = require("ui/label");
+import myCustomControlWithoutXml = require("./mymodule/MyControl");
 
 export var test_load_IsDefined = function () {
     TKUnit.assert(types.isFunction(builder.load), "ui/builder should have load method!");
@@ -153,4 +156,26 @@ export var test_parse_ShouldParseSubProperties = function () {
     var sw = <switchModule.Switch>p.content;
 
     TKUnit.assert(sw.visibility === "collapsed", "Expected result: collapsed; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
+};
+
+export var test_parse_ShouldParseCustomComponentWithoutXml = function () {
+    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodule"><customControls:MyControl /></Page>');
+    var ctrl = p.content;
+
+    TKUnit.assert(ctrl instanceof myCustomControlWithoutXml.MyControl, "Expected result: custom control is defined!; Actual result: " + ctrl);
+};
+
+export var test_parse_ShouldParseCustomComponentWitXml = function () {
+    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl /></Page>');
+    var panel = <stackLayoutModule.StackLayout>p.content;
+    var lbl = <labelModule.Label>panel.getChildAt(0);
+
+    TKUnit.assert(lbl.text === "mymodulewithxml", "Expected result: 'mymodulewithxml'; Actual result: " + lbl);
+};
+
+export var test_parse_ShouldParseCustomComponentWitXmlWithAttributes = function () {
+    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl visibility="collapsed" /></Page>');
+    var panel = <stackLayoutModule.StackLayout>p.content;
+
+    TKUnit.assert(panel.visibility === "collapsed", "Expected result: 'collapsed'; Actual result: " + panel.visibility);
 };

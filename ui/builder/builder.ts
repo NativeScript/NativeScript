@@ -83,7 +83,16 @@ function parseInternal(value: string, exports: any): componentBuilder.ComponentM
                             // Custom components with XML and code
                             subExports = require(jsPath.replace(".js", ""))
                         }
+
                         componentModule = loadInternal(xmlPath, subExports);
+
+                        // Attributes will be transfered to the custom component
+                        if (types.isDefined(componentModule) && types.isDefined(componentModule.component)) {
+                            var attr: string;
+                            for (attr in args.attributes) {
+                                componentBuilder.setPropertyValue(componentModule.component, subExports, exports, attr, args.attributes[attr]);
+                            }
+                        }
 
                     } else {
                         // Custom components without XML
