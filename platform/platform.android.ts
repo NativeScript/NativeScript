@@ -86,8 +86,9 @@ export class device implements definition.device {
     static get language(): string {
         if (!device._language) {
             var context = application.android.context;
-            var locale = context.getResources().getConfiguration().locale;
-            device._language = locale.getDefault().toString();
+//            var locale = context.getResources().getConfiguration().getLocale();
+            
+            device._language = java.util.Locale.getDefault().toString();
         }
         
         return device._language;
