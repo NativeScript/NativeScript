@@ -14,7 +14,6 @@ import stackLayoutModule = require("ui/layouts/stack-layout");
 import labelModule = require("ui/label");
 import myCustomControlWithoutXml = require("./mymodule/MyControl");
 import listViewModule = require("ui/list-view");
-import frame = require("ui/frame");
 import helper = require("../ui/helper");
 import viewModule = require("ui/core/view");
 
