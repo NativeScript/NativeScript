@@ -33,3 +33,5 @@ Cross Platform Modules Changelog
 
 * `image-cache` now stores native image instances, i.e. `android.graphics.Bitmap` or `UIImage`. 
 * `Image.src` property is now of type `any` and can accept either a string containing an image url or a native image instance.
+* Gesture related enum values changed to start with a small letter in order to be consistent with all other enums within NativeScript. Now "gesturesModule.GestureType.Tap" should be used like "gesturesModule.GestureType.tap".
+* `knownEvents` modules within all UI controls are removed and replaced with a static string values. In that case all possible events will be visible through the inheritance tree. These static string have an `Event` suffix. At every place where `viewModule.knownEvents.loaded` is used should be changed to `viewModule.View.loadedEvent` or `pageModule.Page.loadedEvent`. This change is relevant to code-behind only (xml declaration will not be affected).
