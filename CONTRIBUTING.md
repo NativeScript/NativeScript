@@ -62,7 +62,7 @@ Before you submit a Pull Request, consider the following guidelines.
 Search GitHub for an open or closed Pull Request that relates to your submission.
 Clone the repository.
 ```bash
-    git clone git@github.com:NativeScript/cross-platform-modules.git
+    git clone git@github.com:NativeScript/NativeScript.git
 ```
 Initialize the submodules.
 ```bash
@@ -85,7 +85,7 @@ Push your branch to GitHub.
 ```bash
     git push origin my-fix-branch
 ```
-In GitHub, send a Pull Request to NativeScript:cross-platform-modules:master.
+In GitHub, send a Pull Request to NativeScript:NativeScript:master.
 If we suggest changes, you can modify your branch, rebase, and force a new push to your GitHub repository to update the Pull Request.
 ```bash
     git rebase master -i

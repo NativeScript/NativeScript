@@ -35,7 +35,7 @@ To learn more about the NativeScript framework, you can check the following reso
 
 
 ## Most popular repositories:
-- **[Cross-Platform Modules](//github.com/NativeScript/cross-platform-modules/)** - Stores the code of the cross-platform modules, written in TypeScript
+- **[The current repo](//github.com/NativeScript/NativeScript/)** - Stores the code of the cross-platform modules, written in TypeScript
 - **[iOS Runtime](//github.com/NativeScript/ios-runtime/)** - Holds the runtime, allowing the JavaScript code of your application to be executed on an iOS device
 - **[Android Runtime](//github.com/NativeScript/android-runtime)** - Holds the runtime, allowing the JavaScript code of your application to be executed on an Android device
 - **[NativeScript CLI](//github.com/NativeScript/nativescript-cli)** - Contains the Command-Line Interface for creating an application using the NativeScript framework

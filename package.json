@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/NativeScript/cross-platform-modules"
+    "url": "https://github.com/NativeScript/NativeScript"
   },
   "files": [
     "**/*.*",
