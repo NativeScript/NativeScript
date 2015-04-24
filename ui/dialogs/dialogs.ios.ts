@@ -62,10 +62,6 @@ function addButtonsToAlertDialog(alert: UIAlertView, options: dialogs.ConfirmOpt
         return;
     }
 
-    if (options.okButtonText) {
-        alert.addButtonWithTitle(options.okButtonText);
-    }
-
     if (options.cancelButtonText) {
         alert.addButtonWithTitle(options.cancelButtonText);
     }
@@ -73,20 +69,16 @@ function addButtonsToAlertDialog(alert: UIAlertView, options: dialogs.ConfirmOpt
     if (options.neutralButtonText) {
         alert.addButtonWithTitle(options.neutralButtonText);
     }
+
+    if (options.okButtonText) {
+        alert.addButtonWithTitle(options.okButtonText);
+    }
 }
 
 function addButtonsToAlertController(alertController: UIAlertController, options: dialogs.ConfirmOptions,
     okCallback?: Function, cancelCallback?: Function, neutralCallback?: Function): void {
     if (!options) {
         return;
-    }
-
-    if (types.isString(options.okButtonText)) {
-        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.UIAlertActionStyleDefault, (arg: UIAlertAction) => {
-            if (types.isFunction(okCallback)) {
-                okCallback();
-            }
-        }));
     }
 
     if (types.isString(options.cancelButtonText)) {
@@ -101,6 +93,14 @@ function addButtonsToAlertController(alertController: UIAlertController, options
         alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.neutralButtonText, UIAlertActionStyle.UIAlertActionStyleDefault, (arg: UIAlertAction) => {
             if (types.isFunction(cancelCallback)) {
                 neutralCallback();
+            }
+        }));
+    }
+
+    if (types.isString(options.okButtonText)) {
+        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.UIAlertActionStyleDefault, (arg: UIAlertAction) => {
+            if (types.isFunction(okCallback)) {
+                okCallback();
             }
         }));
     }
