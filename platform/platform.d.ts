@@ -56,6 +56,11 @@ declare module "platform" {
          * Gets the uuid
          */
          static uuid: string;
+
+        /**
+         * Gets the preferred language. For example "en" or "en_US"
+         */
+        static language: string;
     }
 
     /**
