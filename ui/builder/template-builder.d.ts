@@ -6,8 +6,8 @@ declare module "ui/builder/template-builder" {
         constructor(templateProperty: TemplateProperty);
 
         elementName: string;
-        addStartElement(elementName: string, attributes: Object);
-        addEndElement(elementName: string);
+        addStartElement(prefix: string, namespace: string, elementName: string, attributes: Object);
+        addEndElement(prefix: string, elementName: string);
         build();
     }
 

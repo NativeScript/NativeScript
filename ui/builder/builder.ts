@@ -32,10 +32,10 @@ function parseInternal(value: string, exports: any): componentBuilder.ComponentM
 
         if (templateBuilder) {
             if (args.eventType === xml.ParserEventType.StartElement) {
-                templateBuilder.addStartElement(args.elementName, args.attributes);
+                templateBuilder.addStartElement(args.prefix, args.namespace, args.elementName, args.attributes);
             } else if (args.eventType === xml.ParserEventType.EndElement) {
                 if (templateBuilder.elementName !== args.elementName) {
-                    templateBuilder.addEndElement(args.elementName);
+                    templateBuilder.addEndElement(args.prefix, args.elementName);
                 } else {
                     templateBuilder.build();
                     templateBuilder = undefined;
@@ -72,35 +72,40 @@ function parseInternal(value: string, exports: any): componentBuilder.ComponentM
 
                 var componentModule: componentBuilder.ComponentModule;
 
-                if (args.namespace) {
+                if (args.prefix) {
                     // Custom components
-                    var xmlPath = fs.path.join(fs.knownFolders.currentApp().path, args.namespace, args.elementName) + ".xml";
-                    if (fs.File.exists(xmlPath)) {
-                        // Custom components with XML
-                        var jsPath = xmlPath.replace(".xml", ".js");
-                        var subExports;
-                        if (fs.File.exists(jsPath)) {
-                            // Custom components with XML and code
-                            subExports = require(jsPath.replace(".js", ""))
-                        }
 
-                        componentModule = loadInternal(xmlPath, subExports);
+                    var ns = args.namespace;
 
-                        // Attributes will be transfered to the custom component
-                        if (types.isDefined(componentModule) && types.isDefined(componentModule.component)) {
-                            var attr: string;
-                            for (attr in args.attributes) {
-                                componentBuilder.setPropertyValue(componentModule.component, subExports, exports, attr, args.attributes[attr]);
+                    if (ns) {
+                        var xmlPath = fs.path.join(fs.knownFolders.currentApp().path, ns, args.elementName) + ".xml";
+
+                        if (fs.File.exists(xmlPath)) {
+                            // Custom components with XML
+                            var jsPath = xmlPath.replace(".xml", ".js");
+                            var subExports;
+                            if (fs.File.exists(jsPath)) {
+                                // Custom components with XML and code
+                                subExports = require(jsPath.replace(".js", ""))
                             }
-                        }
 
-                    } else {
-                        // Custom components without XML
-                        componentModule = componentBuilder.getComponentModule(args.elementName, args.namespace, args.attributes, exports);
+                            componentModule = loadInternal(xmlPath, subExports);
+
+                            // Attributes will be transfered to the custom component
+                            if (types.isDefined(componentModule) && types.isDefined(componentModule.component)) {
+                                var attr: string;
+                                for (attr in args.attributes) {
+                                    componentBuilder.setPropertyValue(componentModule.component, subExports, exports, attr, args.attributes[attr]);
+                                }
+                            }
+                        } else {
+                            // Custom components without XML
+                            componentModule = componentBuilder.getComponentModule(args.elementName, ns, args.attributes, exports);
+                        }
                     }
                 } else {
                     // Default components
-                    componentModule = componentBuilder.getComponentModule(args.elementName, args.namespace, args.attributes, exports);
+                    componentModule = componentBuilder.getComponentModule(args.elementName, ns, args.attributes, exports);
                 }
 
                 if (componentModule) {

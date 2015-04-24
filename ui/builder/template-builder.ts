@@ -15,12 +15,16 @@ export class TemplateBuilder {
         return this._templateProperty.elementName;
     }
 
-    public addStartElement(elementName: string, attributes: Object) {
-        this._items.push("<" + elementName + (attributes ? " " + getAttributesAsString(attributes) + ">" : ">"));
+    public addStartElement(prefix: string, namespace: string, elementName: string, attributes: Object) {
+        this._items.push("<" +
+                getElementNameWithPrefix(prefix, elementName) +
+                (namespace ? " " + getNamespace(prefix, namespace) : "") +
+                (attributes ? " " + getAttributesAsString(attributes) : "") +
+            ">");
     }
 
-    public addEndElement(elementName: string) {
-        this._items.push("</" + elementName + ">");
+    public addEndElement(prefix: string, elementName: string) {
+        this._items.push("</" + getElementNameWithPrefix(prefix, elementName) + ">");
     }
 
     public build() {
@@ -42,4 +46,12 @@ function getAttributesAsString(attributes: Object): string {
     }
 
     return result.join(" ");
+}
+
+function getElementNameWithPrefix(prefix: string, elementName: string): string {
+    return (prefix ? prefix + ":" : "") + elementName;
+}
+
+function getNamespace(prefix: string, namespace: string): string {
+    return 'xmlns:' + prefix + '="' + namespace + '"';
 }

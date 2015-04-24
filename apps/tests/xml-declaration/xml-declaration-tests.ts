@@ -13,6 +13,9 @@ import observable = require("data/observable");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import labelModule = require("ui/label");
 import myCustomControlWithoutXml = require("./mymodule/MyControl");
+import listViewModule = require("ui/list-view");
+import helper = require("../ui/helper");
+import viewModule = require("ui/core/view");
 
 export var test_load_IsDefined = function () {
     TKUnit.assert(types.isFunction(builder.load), "ui/builder should have load method!");
@@ -179,3 +182,31 @@ export var test_parse_ShouldParseCustomComponentWitXmlWithAttributes = function 
 
     TKUnit.assert(panel.visibility === "collapsed", "Expected result: 'collapsed'; Actual result: " + panel.visibility);
 };
+
+export function test_parse_ShouldParseCustomComponentWithoutXmlInListViewTemplate() {
+    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodule"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><customControls:MyControl /></ListView.itemTemplate></ListView></Page>');
+
+    function testAction(views: Array<viewModule.View>) {
+        var ctrl;
+
+        var obj = new observable.Observable();
+        obj.set("items", [1]);
+        obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
+            ctrl = args.view
+        });
+        p.bindingContext = obj;
+
+        TKUnit.wait(0.2);
+
+        TKUnit.assert(ctrl instanceof myCustomControlWithoutXml.MyControl, "Expected result: custom control is defined!; Actual result: " + ctrl);
+    };
+
+    helper.navigate(function () { return p; });
+
+    try {
+        testAction([p.content, p]);
+    }
+    finally {
+        helper.goBack();
+    }
+}
