@@ -9,7 +9,7 @@ export class Placeholder extends common.Placeholder {
     private _android: android.view.View;
 
     public _createUI() {
-        var args = <definition.CreateViewEventData>{ eventName: common.knownEvents.creatingView, object: this, view: undefined, context: this._context };
+        var args = <definition.CreateViewEventData>{ eventName: common.Placeholder.creatingViewEvent, object: this, view: undefined, context: this._context };
         this.notify(args);
         this._android = <android.view.View>args.view;
     }

@@ -164,7 +164,7 @@ export class Binding {
                 this.weakEventListenerOptions = {
                     targetWeakRef: this.target,
                     sourceWeakRef: this.sourceOptions.instance,
-                    eventName: observable.knownEvents.propertyChange,
+                    eventName: observable.Observable.propertyChangeEvent,
                     handler: this.onSourcePropertyChanged,
                     handlerContext: this,
                     key: this.options.targetProperty

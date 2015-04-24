@@ -481,13 +481,13 @@ class NativeActivity extends com.tns.NativeScriptActivity {
     }
 
     onOptionsItemSelected(menuItem: android.view.IMenuItem) {
-        if (!this.androidFrame.hasListeners(frameCommon.knownEvents.android.optionSelected)) {
+        if (!this.androidFrame.hasListeners(frameCommon.Frame.androidOptionSelectedEvent)) {
             return false;
         }
 
         var data: definition.AndroidOptionEventData = {
             handled: false,
-            eventName: frameCommon.knownEvents.android.optionSelected,
+            eventName: frameCommon.Frame.androidOptionSelectedEvent,
             item: menuItem,
             object: this.androidFrame
         }

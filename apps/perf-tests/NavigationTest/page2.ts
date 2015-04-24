@@ -11,7 +11,7 @@ export function createPage() {
 
     var backButton = new buttonModule.Button();
     backButton.text = "<-";
-    backButton.on(buttonModule.knownEvents.tap, () => { page.frame.goBack(); });
+    backButton.on(buttonModule.Button.tapEvent, () => { page.frame.goBack(); });
     stackLayout.addChild(backButton);
 
     page.content = stackLayout;

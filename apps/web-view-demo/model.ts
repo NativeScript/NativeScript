@@ -16,7 +16,7 @@ export class WebViewModel extends observable.Observable {
     }
     set url(value: string) {
         this._url = value;
-        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "url", value: value });
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "url", value: value });
     }
 
     //private _text: string;
@@ -25,7 +25,7 @@ export class WebViewModel extends observable.Observable {
     //}
     //set text(value: string) {
     //    this._text = value;
-    //    this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "text", value: value });
+    //    this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "text", value: value });
 
     //    if (application.ios) {
     //        this.url = this.text;

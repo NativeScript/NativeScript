@@ -138,7 +138,7 @@ export class FormattedString extends observable.Observable implements definition
     constructor() {
         super();
         this._spans = new observableArray.ObservableArray<spanModule.Span>();
-        this._spans.addEventListener(observableArray.knownEvents.change, this.onSpansCollectionChanged, this);
+        this._spans.addEventListener(observableArray.ObservableArray.changeEvent, this.onSpansCollectionChanged, this);
         this._isDirty = true;
     }
 
@@ -155,14 +155,14 @@ export class FormattedString extends observable.Observable implements definition
             for (i = 0; i < eventData.addedCount; i++) {
                 var addedSpan: spanModule.Span = (<observableArray.ObservableArray<spanModule.Span>>eventData.object).getItem(eventData.index + i);
                 addedSpan.parentFormattedString = this;
-                addedSpan.addEventListener(observable.knownEvents.propertyChange, this.onSpanChanged, this);
+                addedSpan.addEventListener(observable.Observable.propertyChangeEvent, this.onSpanChanged, this);
             }
         }
         if (eventData.removed && eventData.removed.length > 0) {
             var p;
             for (p = 0; p < eventData.removed.length; p++) {
                 var removedSpan = eventData.removed[p];
-                removedSpan.removeEventListener(observable.knownEvents.propertyChange, this.onSpanChanged, this);
+                removedSpan.removeEventListener(observable.Observable.propertyChangeEvent, this.onSpanChanged, this);
             }
         }
         this.updateFormattedText(true);

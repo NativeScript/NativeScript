@@ -1,7 +1,5 @@
 ﻿import common = require("ui/image-cache/image-cache-common");
 
-module.exports.knownEvents = common.knownEvents;
-
 class LruBitmapCache extends android.util.LruCache<string, android.graphics.Bitmap> {
     constructor(cacheSize: number) {
         super(cacheSize);

@@ -4,6 +4,7 @@ declare module "ui/core/view" {
     import proxy = require("ui/core/proxy");
     import gestures = require("ui/gestures");
     import color = require("color");
+    import observable = require("data/observable");
 
     /**
      * Gets a child view by id.
@@ -27,21 +28,6 @@ declare module "ui/core/view" {
      * Returns an instance of a view (if found), otherwise undefined.
      */
     export function getAncestor(view: View, typeName: string): View;
-
-    /**
-     * Defines an enum with events for view class.
-     */
-    module knownEvents {
-        /**
-         * Raised when the view is added to visual tree and loaded (shown).
-         */
-        export var loaded: string;
-
-        /**
-         * Raised when the view is unloaded.
-         */
-        export var unloaded: string;
-    }
 
     /**
      * Defines interface for an optional parameter used to create a view.
@@ -110,6 +96,16 @@ declare module "ui/core/view" {
      */
     export class View extends proxy.ProxyObject {
         /**
+         * String value used when hooking to loaded event.
+         */
+        public static loadedEvent: string;
+
+        /**
+         * String value used when hooking to unloaded event.
+         */
+        public static unloadedEvent: string;
+
+        /**
          * Represents the observable property backing the id property of each View.
          */
         public static idProperty: dependencyObservable.Property;
@@ -118,7 +114,15 @@ declare module "ui/core/view" {
          * Represents the observable property backing the cssClass property of each View.
          */
         public static cssClassProperty: dependencyObservable.Property;
+
+        /**
+         * Represents the observable property backing the isEnabled property of each View.
+         */
         public static isEnabledProperty: dependencyObservable.Property;
+
+        /**
+         * Represents the observable property backing the isUserInteractionEnabled property of each View.
+         */
         public static isUserInteractionEnabledProperty: dependencyObservable.Property;
 
         constructor(options?: Options);
@@ -352,6 +356,24 @@ declare module "ui/core/view" {
         public focus(): boolean;
 
         observe(type: number, callback: (args: gestures.GestureEventData) => void): gestures.GesturesObserver;
+
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+
+        /**
+         * Raised when a loaded event occurs.
+         */
+        on(event: "loaded", callback: (args: observable.EventData) => void, thisArg?: any);
+
+        /**
+         * Raised when an unloaded event occurs.
+         */
+        on(event: "unloaded", callback: (args: observable.EventData) => void, thisArg?: any);
 
         // Lifecycle events
         onLoaded(): void;

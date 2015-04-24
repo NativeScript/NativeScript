@@ -12,7 +12,7 @@ export function createPage() {
     var vAligns = ["stretch", "top", "center", "bottom"];
     //var hAligns = ["stretch", "left", "center", "right"];
     var count = 0;
-    btn.on(buttons.knownEvents.tap, function () {
+    btn.on(buttons.Button.tapEvent, function () {
         //page.css = "button { vertical-align:" + vAligns[(count++) % 4] + " }";
         btn.verticalAlignment = vAligns[(count++) % 4];
     })

@@ -20,10 +20,10 @@ export function test_DummyTestForSnippetOnly() {
     // ### Searching
     // ``` JavaScript
     var searchBar = new searchBarModule.SearchBar();
-    searchBar.on(searchBarModule.knownEvents.submit, function (args: observable.EventData) { 
+    searchBar.on(searchBarModule.SearchBar.submitEvent, function (args: observable.EventData) { 
         console.log("Search for " + (<searchBarModule.SearchBar>args.object).text);
     });
-    searchBar.on(searchBarModule.knownEvents.clear, function (args: observable.EventData) {
+    searchBar.on(searchBarModule.SearchBar.clearEvent, function (args: observable.EventData) {
         console.log("Clear");
     });
     // ```

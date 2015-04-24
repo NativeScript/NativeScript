@@ -23,16 +23,6 @@ declare module "ui/page" {
         context: any;
     }
 
-    /**
-     * Encapsulates the known event names for the page module.
-     */
-    export module knownEvents {
-        /**
-         * The event raised when the Page.onNavigatedTo method is called.
-         */
-        export var navigatedTo: string;
-    }
-
     export module knownCollections {
         export var optionsMenu: string;
     }
@@ -41,6 +31,10 @@ declare module "ui/page" {
      * Represents a logical unit for navigation (inside Frame).
      */
     export class Page extends contentView.ContentView implements view.AddArrayFromBuilder {
+        /**
+         * String value used when hooking to navigatedTo event.
+         */
+        public static navigatedToEvent: string;
 
         constructor(options?: Options)
 
@@ -100,14 +94,17 @@ declare module "ui/page" {
         onNavigatedFrom(isBackNavigation: boolean): void;
 
         /**
-         * Raised when navigation to the page is finished.
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(event: string, callback: (data: observable.EventData) => void);
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
 
         /**
          * Raised when navigation to the page is finished.
          */
-        on(event: "navigatedTo", callback: (args: NavigatedData) => void);
+        on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any);
 
         _addArrayFromBuilder(name: string, value: Array<any>): void;
 
@@ -144,6 +141,10 @@ declare module "ui/page" {
     }
 
     export class MenuItem extends bindable.Bindable {
+        /**
+         * String value used when hooking to tap event.
+         */
+        public static tapEvent: string;
 
         /**
          * Represents the observable property backing the text property.
@@ -158,7 +159,18 @@ declare module "ui/page" {
         text: string;
         icon: string;
         android: AndroidMenuItemOptions;
-        on(event: string, callback: (data: observable.EventData) => void);
+
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (data: observable.EventData) => void);
+
+        /**
+         * Raised when a tap event occurs.
+         */
         on(event: "tap", callback: (args: observable.EventData) => void);
 
         //@private

@@ -31,7 +31,7 @@ export class ControlsPage extends pagesModule.Page implements definition.Control
 
         var goBackButton = new buttonModule.Button();
         goBackButton.text = "Back";
-        goBackButton.on(buttonModule.knownEvents.tap, function () {
+        goBackButton.on(buttonModule.Button.tapEvent, function () {
             frameModule.topmost().goBack();
         });
         this._mainLayout.addChild(goBackButton);

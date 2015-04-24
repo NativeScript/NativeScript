@@ -4,12 +4,10 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import color = require("color");
 
-export module knownEvents {
-    export var submit = "submit";
-    export var clear = "clear";
-}
-
 export class SearchBar extends view.View implements definition.SearchBar {
+    public static submitEvent = "submit";
+    public static clearEvent = "clear";
+
     public static textFieldBackgroundColorProperty = new dependencyObservable.Property("textFieldBackgroundColor", "SearchBar", new proxy.PropertyMetadata(undefined))
     public static hintProperty = new dependencyObservable.Property("hint", "SearchBar", new proxy.PropertyMetadata(""))
 

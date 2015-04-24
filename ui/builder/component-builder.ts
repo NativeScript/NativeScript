@@ -10,7 +10,7 @@ import fs = require("file-system");
 import gestures = require("ui/gestures");
 import bindingBuilder = require("ui/builder/binding-builder");
 
-var KNOWNEVENTS = "knownEvents";
+var EVENT = "Event";
 var UI_PATH = "ui/";
 var MODULES = {
     "ActivityIndicator": "ui/activity-indicator",
@@ -104,7 +104,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
 export function setPropertyValue(instance: view.View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
     if (isBinding(propertyValue) && instance.bind) {
-        if (isKnownEvent(propertyName, instanceModule)) {
+        if (isKnownEvent(propertyName, instanceModule[instance.typeName])) {
             attachEventBinding(instance, propertyName, propertyValue);
         } else {
             var bindOptions = bindingBuilder.getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
@@ -115,7 +115,7 @@ export function setPropertyValue(instance: view.View, instanceModule: Object, ex
                 twoWay: bindOptions[bindingBuilder.bindingConstants.twoWay]
             }, bindOptions[bindingBuilder.bindingConstants.source]);
         }
-    } else if (isKnownEvent(propertyName, instanceModule)) {
+    } else if (isKnownEvent(propertyName, instanceModule[instance.typeName])) {
         // Get the event handler from page module exports.
         var handler = exports && exports[propertyValue];
 
@@ -175,11 +175,11 @@ function attachEventBinding(instance: view.View, eventName: string, value: strin
             if (types.isFunction(handler)) {
                 instance.on(eventName, handler, instance.bindingContext);
             }
-            instance.off(observable.knownEvents.propertyChange, propertyChangeHandler);
+            instance.off(observable.Observable.propertyChangeEvent, propertyChangeHandler);
         }
     };
 
-    instance.on(observable.knownEvents.propertyChange, propertyChangeHandler);
+    instance.on(observable.Observable.propertyChangeEvent, propertyChangeHandler);
 }
 
 function isGesture(name: string, instance: any): boolean {
@@ -187,8 +187,9 @@ function isGesture(name: string, instance: any): boolean {
 }
 
 function isKnownEvent(name: string, exports: any): boolean {
-    return (KNOWNEVENTS in exports && name in exports[KNOWNEVENTS]) ||
-        (KNOWNEVENTS in view && name in view[KNOWNEVENTS]);
+    var nameEvent = name + EVENT;
+    var result = !types.isNullOrUndefined(exports) ? nameEvent in exports : false;
+    return result;
 }
 
 function getBindingExpressionFromAttribute(value: string): string {

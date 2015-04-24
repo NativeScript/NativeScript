@@ -41,7 +41,7 @@ export function createPage() {
     var count = 0;
     var control = new btns.Button();
     control.text = "test control";
-    control.on(btns.knownEvents.tap, (data) => { control.text = "count: " + count++; });
+    control.on(btns.Button.tapEvent, (data) => { control.text = "count: " + count++; });
     grid.addChild(control);
 
     var scrollView = new scroll.ScrollView();

@@ -12,6 +12,6 @@ export class WebViewModel extends observable.Observable {
     set text(value: string) {
         console.log(value);
         this._text = value;
-        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "text", value: value });
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "text", value: value });
     }
 }

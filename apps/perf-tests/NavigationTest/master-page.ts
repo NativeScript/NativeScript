@@ -14,7 +14,7 @@ export function createPage() {
     listView.height = 200;
     var itemsSource = [1, 2, 3];
 
-    listView.on(listViewModule.knownEvents.itemLoading, (args: listViewModule.ItemEventData) => {
+    listView.on(listViewModule.ListView.itemLoadingEvent, (args: listViewModule.ItemEventData) => {
         var label = <labelModule.Label>args.view;
         if (!label) {
             label = new labelModule.Label();
@@ -28,7 +28,7 @@ export function createPage() {
         }
     });
 
-    listView.on(listViewModule.knownEvents.itemTap, (args: listViewModule.ItemEventData) => {
+    listView.on(listViewModule.ListView.itemTapEvent, (args: listViewModule.ItemEventData) => {
         var navigationEntry = {
             moduleName: "NavigationTest/details-page",
             context: itemsSource[args.index]
@@ -49,7 +49,7 @@ export function createPage() {
 
     var actionButton = new buttonModule.Button();
     actionButton.text = "Copy";
-    actionButton.on(buttonModule.knownEvents.tap, () => {
+    actionButton.on(buttonModule.Button.tapEvent, () => {
         label.text = textField.text;
     });
     stackLayout.addChild(actionButton);

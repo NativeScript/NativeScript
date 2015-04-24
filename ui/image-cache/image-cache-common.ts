@@ -2,10 +2,6 @@
 import observable = require("data/observable");
 import imageSource = require("image-source");
 
-export module knownEvents {
-    export var downloaded = "downloaded";
-}
-
 export interface DownloadRequest {
     url: string;
     key: string;
@@ -13,6 +9,8 @@ export interface DownloadRequest {
 }
 
 export class Cache extends observable.Observable implements definition.Cache {
+    public static downloadedEvent = "downloaded";
+
     public placeholder: imageSource.ImageSource;
     public maxRequests = 5;
     private _enabled = true;
@@ -135,9 +133,9 @@ export class Cache extends observable.Observable implements definition.Cache {
             request.completed(image, request.key);
         }
 
-        if (this.hasListeners(knownEvents.downloaded)) {
+        if (this.hasListeners(Cache.downloadedEvent)) {
             this.notify({
-                eventName: knownEvents.downloaded,
+                eventName: Cache.downloadedEvent,
                 object: this,
                 key: key,
                 image: image 

@@ -110,18 +110,14 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): pages.Page
     return page;
 }
 
-export module knownEvents {
-    export module android {
-        export var optionSelected = "optionSelected";
-    }
-}
-
 interface NavigationContext {
     entry: definition.BackstackEntry;
     isBackNavigation: boolean;
 }
 
 export class Frame extends view.CustomLayoutView implements definition.Frame {
+    public static androidOptionSelectedEvent = "optionSelected";
+
     private _navigationQueue: Array<NavigationContext>;
     private _backStack: Array<definition.BackstackEntry>;
     public _currentEntry: definition.BackstackEntry;

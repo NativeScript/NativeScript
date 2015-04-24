@@ -125,7 +125,7 @@ export function test_AfterPageLoaded_is_called_NativeInstance_is_created() {
 
     var pageFactory = function (): PageModule.Page {
         page = new PageModule.Page();
-        page.on(view.knownEvents.loaded, handler);
+        page.on(view.View.loadedEvent, handler);
 
         label = new LabelModule.Label();
         label.text = "Text";
@@ -139,7 +139,7 @@ export function test_AfterPageLoaded_is_called_NativeInstance_is_created() {
         TKUnit.assert(nativeInstanceCreated, "Expected: true, Actual: " + nativeInstanceCreated);
     }
     finally {
-        page.off(view.knownEvents.loaded, handler);
+        page.off(view.View.loadedEvent, handler);
         helper.goBack();
     }
 }
@@ -166,7 +166,7 @@ export function test_PageLoaded_is_called_once() {
     var pageFactory2 = function (): PageModule.Page {
         page2 = new PageModule.Page();
         addLabelToPage(page2, "Page 2");
-        page2.on(view.knownEvents.loaded, handler);
+        page2.on(view.View.loadedEvent, handler);
         return page2;
     };
 
@@ -176,7 +176,7 @@ export function test_PageLoaded_is_called_once() {
         TKUnit.assert(loaded === 1, "Expected: 1, Actual: " + loaded);
     }
     finally {
-        page2.off(view.knownEvents.loaded, handler);
+        page2.off(view.View.loadedEvent, handler);
         helper.goBack();
         helper.goBack();
     }

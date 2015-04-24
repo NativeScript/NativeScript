@@ -31,7 +31,7 @@ function validateDOChangeData(obj: TestDO, property: dependencyObservableModule.
     TKUnit.assert(currentChangeData.property === property, "metadata.onValueChanged method called with wrong property member");
     TKUnit.assert(currentChangeData.newValue === newValue, "metadata.onValueChanged method called with wrong newValue member");
     TKUnit.assert(currentChangeData.oldValue === oldValue, "metadata.onValueChanged method called with wrong oldValue member");
-    TKUnit.assert(currentChangeData.eventName === observableModule.knownEvents.propertyChange, "metadata.onValueChanged method called with wrong eventName member");
+    TKUnit.assert(currentChangeData.eventName === observableModule.Observable.propertyChangeEvent, "metadata.onValueChanged method called with wrong eventName member");
 }
 
 function validateChangeData(data: observableModule.PropertyChangeData, obj: observableModule.Observable, propertyName: string, newValue: any) {
@@ -39,7 +39,7 @@ function validateChangeData(data: observableModule.PropertyChangeData, obj: obse
     TKUnit.assert(data.object === obj, "DependencyObservable.on called with wrong object member.");
     TKUnit.assert(data.propertyName === propertyName, "DependencyObservable.on called with wrong propertyName member");
     TKUnit.assert(data.value === newValue, "DependencyObservable.on called with wrong value member");
-    TKUnit.assert(data.eventName === observableModule.knownEvents.propertyChange, "DependencyObservable.on method called with wrong eventName member");
+    TKUnit.assert(data.eventName === observableModule.Observable.propertyChangeEvent, "DependencyObservable.on method called with wrong eventName member");
 }
 
 // <snippet module="ui/core/dependency-observable" title="dependency-observable">
@@ -342,7 +342,7 @@ export function test_Observable_on_propertyChange_IsRaised() {
     var dO1 = new TestDO();
 
     var changeData: observableModule.PropertyChangeData;
-    dO1.on(observableModule.knownEvents.propertyChange, function (data: observableModule.PropertyChangeData) {
+    dO1.on(observableModule.Observable.propertyChangeEvent, function (data: observableModule.PropertyChangeData) {
         changeData = data;
     });
 

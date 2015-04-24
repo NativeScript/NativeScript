@@ -7,24 +7,18 @@ declare module "ui/web-view" {
     import observable = require("data/observable");
 
     /**
-     * Known event names.
-     */
-    export module knownEvents {
-        /**
-         * Raised when the web-view has completely loaded an url.
-         */
-        export var loadFinished: string;
-        
-        /**
-         * Raised when the web-view starts loading an url.
-         */
-        export var loadStarted: string;
-    }
-
-    /**
      * Represents a standard WebView widget.
      */
     export class WebView extends view.View {
+        /**
+         * String value used when hooking to loadStarted event.
+         */
+        public static loadStartedEvent: string;
+
+        /**
+         * String value used when hooking to loadFinished event.
+         */
+        public static loadFinishedEvent: string;
 
         /**
          * Represents the observable property backing the Url property of each WebView instance.
@@ -71,9 +65,23 @@ declare module "ui/web-view" {
          */
         reload();
 
-        on(event: string, callback: (data: observable.EventData) => void);
-        on(event: "loadFinished", callback: (args: LoadEventData) => void);
-        on(event: "loadStarted", callback: (args: LoadEventData) => void);
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+
+        /**
+         * Raised when a loadFinished event occurs.
+         */
+        on(event: "loadFinished", callback: (args: LoadEventData) => void, thisArg?: any);
+
+        /**
+         * Raised when a loadStarted event occurs.
+         */
+        on(event: "loadStarted", callback: (args: LoadEventData) => void, thisArg?: any);
     }
 
     /**

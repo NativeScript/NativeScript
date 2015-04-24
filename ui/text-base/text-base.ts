@@ -79,7 +79,7 @@ export class TextBase extends view.View implements definition.TextBase {
         if (this.formattedText !== value) {
             var weakEventOptions: weakEventListener.WeakEventListenerOptions = {
                 targetWeakRef: new WeakRef(this),
-                eventName: observable.knownEvents.propertyChange,
+                eventName: observable.Observable.propertyChangeEvent,
                 sourceWeakRef: new WeakRef(value),
                 handler: this.onFormattedTextChanged,
                 handlerContext: this,

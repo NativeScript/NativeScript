@@ -65,7 +65,7 @@ export function test_set_native_value_triggers_propertyChanged() {
     function testAction(views: Array<viewModule.View>) {
         var valueChanged = false;
         var allChanges = 0;
-        slider.on(observable.knownEvents.propertyChange, function (data: observable.EventData) {
+        slider.on(observable.Observable.propertyChangeEvent, function (data: observable.EventData) {
             allChanges++;
             var propertyData = <observable.PropertyChangeData>data;
             if (propertyData && propertyData.propertyName === "value" && propertyData.value === TEST_VALUE) {
@@ -75,7 +75,7 @@ export function test_set_native_value_triggers_propertyChanged() {
 
         setNativeValue(slider, TEST_VALUE);
 
-        slider.off(observable.knownEvents.propertyChange);
+        slider.off(observable.Observable.propertyChangeEvent);
 
         TKUnit.assert(valueChanged, "Property changed for value not called.");
         TKUnit.assertEqual(allChanges, 1, "Property changed callbacks.");
@@ -206,14 +206,14 @@ export function test_property_changed_event_when_setting_minValue_no_adjust() {
     function testAction(views: Array<viewModule.View>) {
         var changedProperties = {};
         var allChanges = 0;
-        slider.on(observable.knownEvents.propertyChange, function (data: observable.EventData) {
+        slider.on(observable.Observable.propertyChangeEvent, function (data: observable.EventData) {
             allChanges++;
             changedProperties[(<observable.PropertyChangeData>data).propertyName] = true;
         });
 
         // Act
         slider.minValue = 10;
-        slider.off(observable.knownEvents.propertyChange);
+        slider.off(observable.Observable.propertyChangeEvent);
 
         // Assert
         TKUnit.assert(changedProperties["minValue"], "Property changed for minValue not called.");
@@ -232,14 +232,14 @@ export function test_property_changed_event_when_setting_minValue_with_adjust() 
     function testAction(views: Array<viewModule.View>) {
         var changedProperties = {};
         var allChanges = 0;
-        slider.on(observable.knownEvents.propertyChange, function (data: observable.EventData) {
+        slider.on(observable.Observable.propertyChangeEvent, function (data: observable.EventData) {
             allChanges++;
             changedProperties[(<observable.PropertyChangeData>data).propertyName] = true;
         });
 
         // Act
         slider.minValue = 60;
-        slider.off(observable.knownEvents.propertyChange);
+        slider.off(observable.Observable.propertyChangeEvent);
 
         // Assert
         TKUnit.assert(changedProperties["value"], "Property changed for 'value' not called.");
@@ -259,14 +259,14 @@ export function test_property_changed_event_when_setting_maxValue_no_adjust() {
     function testAction(views: Array<viewModule.View>) {
         var changedProperties = {};
         var allChanges = 0;
-        slider.on(observable.knownEvents.propertyChange, function (data: observable.EventData) {
+        slider.on(observable.Observable.propertyChangeEvent, function (data: observable.EventData) {
             allChanges++;
             changedProperties[(<observable.PropertyChangeData>data).propertyName] = true;
         });
 
         // Act
         slider.maxValue = 200;
-        slider.off(observable.knownEvents.propertyChange);
+        slider.off(observable.Observable.propertyChangeEvent);
 
         // Assert
         TKUnit.assert(changedProperties["maxValue"], "Property changed for maxValue not called.");
@@ -285,14 +285,14 @@ export function test_property_changed_event_when_setting_maxValue_with_adjust() 
     function testAction(views: Array<viewModule.View>) {
         var changedProperties = {};
         var allChanges = 0;
-        slider.on(observable.knownEvents.propertyChange, function (data: observable.EventData) {
+        slider.on(observable.Observable.propertyChangeEvent, function (data: observable.EventData) {
             allChanges++;
             changedProperties[(<observable.PropertyChangeData>data).propertyName] = true;
         });
 
         // Act
         slider.maxValue = 40;
-        slider.off(observable.knownEvents.propertyChange);
+        slider.off(observable.Observable.propertyChangeEvent);
 
         // Assert
         TKUnit.assert(changedProperties["value"], "Property changed for 'value' not called.");

@@ -10,7 +10,7 @@ export function createPage() {
 
     var btn = new button.Button();
     btn.text = "Page B new activity";
-    btn.on(button.knownEvents.tap, function () {
+    btn.on(button.Button.tapEvent, function () {
         var nextPage = "tests/pages/navigation/pageB-new-activity";
         frame.topmost().navigate(nextPage);
     });

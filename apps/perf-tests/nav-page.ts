@@ -16,7 +16,7 @@ export class NavPage extends pagesModule.Page implements definition.ControlsPage
 
         var goBackButton = new buttonModule.Button();
         goBackButton.text = "<-";
-        goBackButton.on(buttonModule.knownEvents.tap, function () {
+        goBackButton.on(buttonModule.Button.tapEvent, function () {
             frameModule.topmost().goBack();
         });
         stackLayout.addChild(goBackButton);
@@ -32,7 +32,7 @@ export class NavPage extends pagesModule.Page implements definition.ControlsPage
         var changeStateButton = new buttonModule.Button();
         changeStateButton.text = "Click me!"
         var clickCount = 0;
-        changeStateButton.on(buttonModule.knownEvents.tap, () => {
+        changeStateButton.on(buttonModule.Button.tapEvent, () => {
             //stateLabel.text = "<<<CHANGED STATE>>>";
             //textField.text = "<<<CHANGED STATE>>>";
             changeStateButton.text = (clickCount++).toString();
@@ -41,7 +41,7 @@ export class NavPage extends pagesModule.Page implements definition.ControlsPage
 
         var forwardButton = new buttonModule.Button();
         forwardButton.text = "->";
-        forwardButton.on(buttonModule.knownEvents.tap, function () {
+        forwardButton.on(buttonModule.Button.tapEvent, function () {
             var pageFactory = function () {
                 return new NavPage(id + 1);
             };

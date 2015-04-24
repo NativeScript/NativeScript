@@ -29,7 +29,7 @@ export function createPage() {
     var listView = new listViewModule.ListView();
     listView.items = new Array(100);
 
-    listView.on(listViewModule.knownEvents.itemLoading, (args: listViewModule.ItemEventData) => {
+    listView.on(listViewModule.ListView.itemLoadingEvent, (args: listViewModule.ItemEventData) => {
         var StackLayout = <stackLayoutModule.StackLayout>args.view;
         if (!StackLayout) {
             StackLayout = createListViewItemFunc();

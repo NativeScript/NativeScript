@@ -13,13 +13,13 @@ export function createPage() {
 
     var backButton = new buttonModule.Button();
     backButton.text = "< back";
-    backButton.on(buttonModule.knownEvents.tap, () => { page.frame.goBack(); });
+    backButton.on(buttonModule.Button.tapEvent, () => { page.frame.goBack(); });
     stackLayout.addChild(backButton);
 
     var label = new labelModule.Label();
     stackLayout.addChild(label);
 
-    page.on(pagesModule.knownEvents.navigatedTo, () => {
+    page.on(pagesModule.Page.navigatedToEvent, () => {
         var item = page.navigationContext;
         label.text = "I am detail for " + item;
     });
@@ -30,7 +30,7 @@ export function createPage() {
 
     var actionButton = new buttonModule.Button();
     actionButton.text = "Copy";
-    actionButton.on(buttonModule.knownEvents.tap, () => {
+    actionButton.on(buttonModule.Button.tapEvent, () => {
         label.text = textField.text;
     });
     stackLayout.addChild(actionButton);

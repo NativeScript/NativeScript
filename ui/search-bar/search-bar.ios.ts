@@ -70,7 +70,7 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 
         // This code is needed since sometimes searchBarCancelButtonClicked is not called!
         if (searchText === "" && this._searchText !== searchText) {
-            this._owner._emit(common.knownEvents.clear);
+            this._owner._emit(common.SearchBar.clearEvent);
         }
 
         this._searchText = searchText;
@@ -78,12 +78,12 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 
     public searchBarCancelButtonClicked(searchBar: UISearchBar) {
         searchBar.resignFirstResponder();
-        this._owner._emit(common.knownEvents.clear);
+        this._owner._emit(common.SearchBar.clearEvent);
     }
 
     public searchBarSearchButtonClicked(searchBar: UISearchBar) {
         searchBar.resignFirstResponder();
-        this._owner._emit(common.knownEvents.submit);
+        this._owner._emit(common.SearchBar.submitEvent);
     }
 }
 

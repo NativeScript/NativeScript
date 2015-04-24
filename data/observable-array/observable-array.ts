@@ -10,13 +10,9 @@ export class ChangeType implements observableArrayDef.ChangeType {
 
 var CHANGE = "change";
 
-export module knownEvents {
-    export var change = CHANGE;
-}
-
 export class ObservableArray<T> extends observable.Observable implements observableArrayDef.ObservableArray<T> { // implements Array<T> {
 
-    //[n: number]: T;
+    public static changeEvent = CHANGE;
 
     private _array: Array<any>;
     private _addArgs: observableArrayDef.ChangedData<T>;

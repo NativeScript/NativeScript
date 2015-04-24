@@ -47,7 +47,7 @@ export var tests_DummyTestForCodeSnippet = function () {
     person.set("Name", "John");
     person.set("Age", 34);
     person.set("Married", true);
-    person.addEventListener(observable.knownEvents.propertyChange, function (pcd: observable.PropertyChangeData) {
+    person.addEventListener(observable.Observable.propertyChangeEvent, function (pcd: observable.PropertyChangeData) {
         //console.log(pcd.eventName.toString() + " " + pcd.propertyName.toString() + " " + pcd.value.toString());
     });
     person.set("Age", 35);
@@ -83,7 +83,7 @@ export var test_Observable_UpdateAnotherPropertyWithinChangedCallback = function
         }
     }
 
-    obj.addEventListener(observable.knownEvents.propertyChange, changedCallback);
+    obj.addEventListener(observable.Observable.propertyChangeEvent, changedCallback);
 
     obj.set("name", "Initial name");
     obj.set("test", "Initial test");
@@ -143,13 +143,13 @@ export var test_Observable_addEventListener_SingleEvent = function () {
     var receivedCount = 0;
     var callback = function (data: observable.PropertyChangeData) {
         receivedCount++;
-        TKUnit.assert(data.eventName === observable.knownEvents.propertyChange, "Expected event name " + observable.knownEvents.propertyChange);
+        TKUnit.assert(data.eventName === observable.Observable.propertyChangeEvent, "Expected event name " + observable.Observable.propertyChangeEvent);
         TKUnit.assert(data.object === obj, "PropertyChangeData.object value not valid.");
         TKUnit.assert(data.propertyName === "testName", "PropertyChangeData.propertyName value not valid.");
         TKUnit.assert(data.value === 1, "PropertyChangeData.value value not valid.");
     }
 
-    obj.addEventListener(observable.knownEvents.propertyChange, callback);
+    obj.addEventListener(observable.Observable.propertyChangeEvent, callback);
     obj.set("testName", 1);
     TKUnit.assert(receivedCount === 1, "PropertyChanged event not raised properly.");
 }
@@ -162,9 +162,9 @@ export var test_Observable_addEventListener_MultipleEvents = function () {
         receivedCount++;
         TKUnit.assert(data.object === obj, "EventData.object value not valid.");
 
-        if (data.eventName === observable.knownEvents.propertyChange) {
+        if (data.eventName === observable.Observable.propertyChangeEvent) {
             var propertyData = <observable.PropertyChangeData>data;
-            TKUnit.assert(propertyData.eventName === observable.knownEvents.propertyChange, "Expected event name " + observable.knownEvents.propertyChange);
+            TKUnit.assert(propertyData.eventName === observable.Observable.propertyChangeEvent, "Expected event name " + observable.Observable.propertyChangeEvent);
             TKUnit.assert(propertyData.propertyName === "testName", "PropertyChangeData.propertyName value not valid.");
             TKUnit.assert(propertyData.value === 1, "PropertyChangeData.value value not valid.");
         } else {
@@ -172,7 +172,7 @@ export var test_Observable_addEventListener_MultipleEvents = function () {
         }
     }
 
-    var events = observable.knownEvents.propertyChange + "," + TESTED_NAME;
+    var events = observable.Observable.propertyChangeEvent + "," + TESTED_NAME;
     obj.addEventListener(events, callback);
     obj.set("testName", 1);
     obj.test();
@@ -187,9 +187,9 @@ export var test_Observable_addEventListener_MultipleEvents_ShouldTrim = function
         receivedCount++;
     }
 
-    var events = observable.knownEvents.propertyChange + "  ,  " + TESTED_NAME;
+    var events = observable.Observable.propertyChangeEvent + "  ,  " + TESTED_NAME;
     obj.addEventListener(events, callback);
-    TKUnit.assert(obj.hasListeners(observable.knownEvents.propertyChange), "Observable.addEventListener for multiple events should trim each event name.");
+    TKUnit.assert(obj.hasListeners(observable.Observable.propertyChangeEvent), "Observable.addEventListener for multiple events should trim each event name.");
     TKUnit.assert(obj.hasListeners(TESTED_NAME), "Observable.addEventListener for multiple events should trim each event name.");
 
     obj.set("testName", 1);
@@ -210,8 +210,8 @@ export var test_Observable_addEventListener_MultipleCallbacks = function () {
         receivedCount++;
     }
 
-    obj.addEventListener(observable.knownEvents.propertyChange, callback1);
-    obj.addEventListener(observable.knownEvents.propertyChange, callback2);
+    obj.addEventListener(observable.Observable.propertyChangeEvent, callback1);
+    obj.addEventListener(observable.Observable.propertyChangeEvent, callback2);
 
     obj.set("testName", 1);
     TKUnit.assert(receivedCount === 2, "The propertyChanged notification should be raised twice.");
@@ -229,7 +229,7 @@ export var test_Observable_addEventListener_MultipleCallbacks_MultipleEvents = f
         receivedCount++;
     }
 
-    var events = observable.knownEvents.propertyChange + "  ,  " + TESTED_NAME;
+    var events = observable.Observable.propertyChangeEvent + "  ,  " + TESTED_NAME;
     obj.addEventListener(events, callback1);
     obj.addEventListener(events, callback2);
 
@@ -247,11 +247,11 @@ export var test_Observable_removeEventListener_SingleEvent_SingleCallback = func
         receivedCount++;
     }
 
-    obj.addEventListener(observable.knownEvents.propertyChange, callback);
+    obj.addEventListener(observable.Observable.propertyChangeEvent, callback);
     obj.set("testName", 1);
 
-    obj.removeEventListener(observable.knownEvents.propertyChange, callback);
-    TKUnit.assert(!obj.hasListeners(observable.knownEvents.propertyChange), "Observable.removeEventListener not working properly.");
+    obj.removeEventListener(observable.Observable.propertyChangeEvent, callback);
+    TKUnit.assert(!obj.hasListeners(observable.Observable.propertyChangeEvent), "Observable.removeEventListener not working properly.");
 
     obj.set("testName", 2);
     TKUnit.assert(receivedCount === 1, "Observable.removeEventListener not working properly.");
@@ -269,18 +269,18 @@ export var test_Observable_removeEventListener_SingleEvent_MultipleCallbacks = f
         receivedCount++;
     }
 
-    obj.addEventListener(observable.knownEvents.propertyChange, callback1);
-    obj.addEventListener(observable.knownEvents.propertyChange, callback2);
+    obj.addEventListener(observable.Observable.propertyChangeEvent, callback1);
+    obj.addEventListener(observable.Observable.propertyChangeEvent, callback2);
     obj.set("testName", 1);
 
-    obj.removeEventListener(observable.knownEvents.propertyChange, callback1);
-    TKUnit.assert(obj.hasListeners(observable.knownEvents.propertyChange), "Observable.removeEventListener not working properly with multiple listeners.");
+    obj.removeEventListener(observable.Observable.propertyChangeEvent, callback1);
+    TKUnit.assert(obj.hasListeners(observable.Observable.propertyChangeEvent), "Observable.removeEventListener not working properly with multiple listeners.");
 
     obj.set("testName", 2);    
     TKUnit.assert(receivedCount === 3, "Observable.removeEventListener not working properly with multiple listeners.");
 
-    obj.removeEventListener(observable.knownEvents.propertyChange, callback2);
-    TKUnit.assert(!obj.hasListeners(observable.knownEvents.propertyChange), "Observable.removeEventListener not working properly with multiple listeners.");
+    obj.removeEventListener(observable.Observable.propertyChangeEvent, callback2);
+    TKUnit.assert(!obj.hasListeners(observable.Observable.propertyChangeEvent), "Observable.removeEventListener not working properly with multiple listeners.");
 
     obj.set("testName", 3);
     TKUnit.assert(receivedCount === 3, "Observable.removeEventListener not working properly with multiple listeners.");
@@ -294,7 +294,7 @@ export var test_Observable_removeEventListener_MutlipleEvents_SingleCallback = f
         receivedCount++;
     }
 
-    var events = observable.knownEvents.propertyChange + "  ,  " + TESTED_NAME;
+    var events = observable.Observable.propertyChangeEvent + "  ,  " + TESTED_NAME;
     obj.addEventListener(events, callback);
 
     obj.set("testName", 1);
@@ -302,7 +302,7 @@ export var test_Observable_removeEventListener_MutlipleEvents_SingleCallback = f
 
     obj.removeEventListener(events, callback);
 
-    TKUnit.assert(!obj.hasListeners(observable.knownEvents.propertyChange), "Expected result for hasObservers is false");
+    TKUnit.assert(!obj.hasListeners(observable.Observable.propertyChangeEvent), "Expected result for hasObservers is false");
     TKUnit.assert(!obj.hasListeners(TESTED_NAME), "Expected result for hasObservers is false.");
 
     obj.set("testName", 2);
@@ -323,13 +323,13 @@ export var test_Observable_removeEventListener_SingleEvent_NoCallbackSpecified =
         receivedCount++;
     }
 
-    obj.addEventListener(observable.knownEvents.propertyChange, callback1);
-    obj.addEventListener(observable.knownEvents.propertyChange, callback2);
+    obj.addEventListener(observable.Observable.propertyChangeEvent, callback1);
+    obj.addEventListener(observable.Observable.propertyChangeEvent, callback2);
 
     obj.set("testName", 1);
-    obj.removeEventListener(observable.knownEvents.propertyChange);
+    obj.removeEventListener(observable.Observable.propertyChangeEvent);
 
-    TKUnit.assert(!obj.hasListeners(observable.knownEvents.propertyChange), "Expected result for hasObservers is false.");
+    TKUnit.assert(!obj.hasListeners(observable.Observable.propertyChangeEvent), "Expected result for hasObservers is false.");
 
     obj.set("testName", 2);
     TKUnit.assert(receivedCount === 2, "Expected receive count is 2");

@@ -10,7 +10,7 @@ export function createPage() {
 
     var btn = new button.Button();
     btn.text = "Page A ???";
-    btn.on(button.knownEvents.tap, function () {
+    btn.on(button.Button.tapEvent, function () {
         var newPage = "tests/pages/navigation/pageA";
         frame.topmost().navigate(newPage);
     });
@@ -18,7 +18,7 @@ export function createPage() {
 
     var backBtn = new button.Button();
     backBtn.text = "BACK";
-    backBtn.on(button.knownEvents.tap, function () {
+    backBtn.on(button.Button.tapEvent, function () {
         frame.topmost().goBack();
     });
     stack.addChild(backBtn);

@@ -29,7 +29,7 @@ textView.style.fontSize = 8;
 export function createPage() {
     var button = new bm.Button();
     button.text = "Run Tests";
-    button.on(bm.knownEvents.tap, function () {
+    button.on(bm.Button.tapEvent, function () {
         tests.runAll();
     });
 

@@ -7,9 +7,9 @@ import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import color = require("color");
 
-var ITEMLOADING = common.knownEvents.itemLoading;
-var LOADMOREITEMS = common.knownEvents.loadMoreItems;
-var ITEMTAP = common.knownEvents.itemTap;
+var ITEMLOADING = common.ListView.itemLoadingEvent;
+var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
+var ITEMTAP = common.ListView.itemTapEvent;
 var REALIZED_INDEX = "realizedIndex";
 
 // merge the exports of the common file with the exports of this file

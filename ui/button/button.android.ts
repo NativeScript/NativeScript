@@ -33,7 +33,7 @@ export class Button extends common.Button {
 
             onClick: function (v) {
                 if (this.owner) {
-                    this.owner._emit(common.knownEvents.tap);
+                    this.owner._emit(common.Button.tapEvent);
                 }
             }
         }));

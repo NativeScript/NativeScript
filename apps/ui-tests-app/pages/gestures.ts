@@ -45,7 +45,7 @@ export function createPage() {
     rotaionLabel.text = "Rotate here";
     stack.addChild(rotaionLabel);
 
-    stopButton.on(button.knownEvents.tap, function () {
+    stopButton.on(button.Button.tapEvent, function () {
         observer1.disconnect();
         observer2.disconnect();
         observer3.disconnect();

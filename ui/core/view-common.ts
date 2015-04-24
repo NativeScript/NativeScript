@@ -64,11 +64,6 @@ export function getAncestor(view: View, typeName: string): definition.View {
     return parent;
 }
 
-export module knownEvents {
-    export var loaded = "loaded";
-    export var unloaded = "unloaded";
-}
-
 var viewIdCounter = 0;
 
 function onCssClassPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -107,6 +102,8 @@ function onCssClassPropertyChanged(data: dependencyObservable.PropertyChangeData
     );
 
 export class View extends proxy.ProxyObject implements definition.View {
+    public static loadedEvent = "loaded";
+    public static unloadedEvent = "unloaded";
 
     public static idProperty = idProperty;
     public static cssClassProperty = cssClassProperty;

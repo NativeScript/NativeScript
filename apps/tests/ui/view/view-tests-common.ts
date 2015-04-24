@@ -123,18 +123,18 @@ export var test_event_LoadedUnloaded_IsRaised = function () {
         var layoutUnloaded = false,
             buttonUnloaded = false;
 
-        views[1].on(viewModule.knownEvents.unloaded, (data) => {
+        views[1].on(viewModule.View.unloadedEvent, (data) => {
             layoutUnloaded = true;
         });
 
-        views[2].on(viewModule.knownEvents.unloaded, (data) => {
+        views[2].on(viewModule.View.unloadedEvent, (data) => {
             buttonUnloaded = true;
         });
 
         var newButton = new button.Button(),
             buttonLoaded = false;
 
-        newButton.on(viewModule.knownEvents.loaded, (data) => {
+        newButton.on(viewModule.View.loadedEvent, (data) => {
             buttonLoaded = true;
         });
 

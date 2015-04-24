@@ -26,15 +26,15 @@ export var test_FormattedString_RemovesEventListeners_for_spans = function () {
     // ```
     // </snippet>
 
-    TKUnit.assert(formattedString.spans.getItem(0).hasListeners(observable.knownEvents.propertyChange) === true, "Listener for spans collection change event is not attached!");
+    TKUnit.assert(formattedString.spans.getItem(0).hasListeners(observable.Observable.propertyChangeEvent) === true, "Listener for spans collection change event is not attached!");
     var removedSpan = formattedString.spans.pop();
-    TKUnit.assert(removedSpan.hasListeners(observable.knownEvents.propertyChange) === false, "Listener for spans collection change event is not removed!");
+    TKUnit.assert(removedSpan.hasListeners(observable.Observable.propertyChangeEvent) === false, "Listener for spans collection change event is not removed!");
 }
 
 export var test_FormattedTextProperty_IsChanged_When_SpanIsAdded = function () {
     var formattedString = new formattedStringModule.FormattedString();
     var formattedTextChanged = false;
-    formattedString.addEventListener(observable.knownEvents.propertyChange, () => {
+    formattedString.addEventListener(observable.Observable.propertyChangeEvent, () => {
         formattedTextChanged = true;
     });
 
@@ -56,7 +56,7 @@ export var test_FormattedTextProperty_IsChanged_When_SpanIsChanged = function ()
     formattedString.spans.push(firstSpan);
 
     var formattedTextChanged = false;
-    formattedString.addEventListener(observable.knownEvents.propertyChange, () => {
+    formattedString.addEventListener(observable.Observable.propertyChangeEvent, () => {
         formattedTextChanged = true;
     });
 

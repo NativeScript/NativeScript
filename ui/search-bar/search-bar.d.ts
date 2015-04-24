@@ -8,24 +8,19 @@ declare module "ui/search-bar" {
     import color = require("color");
 
     /**
-     * Known event names.
-     */
-    module knownEvents {
-        /**
-         * Raised when search request has been submitted.
-         */
-        export var submit: string;
-
-        /**
-         * Raised when search critea has been cleared.
-         */
-        export var clear: string;
-    }
-
-    /**
      * Represents a search bar component.
      */
     export class SearchBar extends view.View {
+        /**
+         * String value used when hooking to submit event.
+         */
+        public static submitEvent: string;
+
+        /**
+         * String value used when hooking to clear event.
+         */
+        public static clearEvent: string;
+
         /**
          * Dependency property used to support binding operations related to search-bar text.
          */
@@ -61,16 +56,22 @@ declare module "ui/search-bar" {
          */
         textFieldBackgroundColor: color.Color;
 
-        on(event: string, callback: (data: observable.EventData) => void);
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
 
         /**
          * Raised when a search bar search is submitted.
          */
-        on(event: "submit", callback: (args: observable.EventData) => void);
+        on(event: "submit", callback: (args: observable.EventData) => void, thisArg?: any);
 
         /**
          * Raised when a search bar search is closed.
          */
-        on(event: "close", callback: (args: observable.EventData) => void);
+        on(event: "close", callback: (args: observable.EventData) => void, thisArg?: any);
     }
 }

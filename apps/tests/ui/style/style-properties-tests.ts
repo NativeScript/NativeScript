@@ -178,7 +178,7 @@ export function test_setting_same_color_does_not_trigger_property_change() {
     testView.style.color = new color.Color("#FF0000");
 
     var changed = false;
-    testView.style.on(observable.knownEvents.propertyChange, (data) => {
+    testView.style.on(observable.Observable.propertyChangeEvent, (data) => {
         changed = true;
     });
 
@@ -191,7 +191,7 @@ export function test_setting_different_color_triggers_property_change() {
     testView.style.color = new color.Color("#FF0000");
 
     var changed = false;
-    testView.style.on(observable.knownEvents.propertyChange, (data) => {
+    testView.style.on(observable.Observable.propertyChangeEvent, (data) => {
         changed = true;
     });
 
@@ -204,7 +204,7 @@ export function test_setting_same_backgroundColor_does_not_trigger_property_chan
     testView.style.backgroundColor = new color.Color("#FF0000");
 
     var changed = false;
-    testView.style.on(observable.knownEvents.propertyChange, (data) => {
+    testView.style.on(observable.Observable.propertyChangeEvent, (data) => {
         changed = true;
     });
 
@@ -217,7 +217,7 @@ export function test_setting_different_backgroundColor_triggers_property_change(
     testView.style.backgroundColor = new color.Color("#FF0000");
 
     var changed = false;
-    testView.style.on(observable.knownEvents.propertyChange, (data) => {
+    testView.style.on(observable.Observable.propertyChangeEvent, (data) => {
         changed = true;
     });
 

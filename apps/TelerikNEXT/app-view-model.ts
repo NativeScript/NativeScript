@@ -116,7 +116,7 @@ export class AppViewModel extends observable.Observable {
     set search(value: string) {
         if (this._search !== value) {
             this._search = value;
-            this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "search", value: value });
+            this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "search", value: value });
 
             this.filter();
         }
@@ -128,7 +128,7 @@ export class AppViewModel extends observable.Observable {
     set selectedIndex(value: number) {
         if (this._selectedIndex !== value) {
             this._selectedIndex = value;
-            this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "selectedIndex", value: value });
+            this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "selectedIndex", value: value });
 
             this.set("dayHeader", conferenceDays[value].title);
 
@@ -150,7 +150,7 @@ export class AppViewModel extends observable.Observable {
             this._sessions = this._sessions.filter(i=> { return i.favorite });
         }
 
-        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "sessions", value: this._sessions });
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "sessions", value: this._sessions });
     }
 
     public onDataLoaded() {
@@ -171,7 +171,7 @@ export class AppViewModel extends observable.Observable {
             this.selectedViewIndex = 2;
         }
 
-        this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "selectedViewIndex", value: this.selectedViewIndex });
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "selectedViewIndex", value: this.selectedViewIndex });
     }
 }
 
@@ -242,7 +242,7 @@ export class SessionModel extends observable.Observable implements Session {
     set favorite(value: boolean) {
         if (this._favorite !== value) {
             this._favorite = value;
-            this.notify({ object: this, eventName: observable.knownEvents.propertyChange, propertyName: "favorite", value: this._favorite });
+            this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "favorite", value: this._favorite });
         }
     }
 

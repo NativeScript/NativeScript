@@ -86,7 +86,7 @@ export class SlideOutControl extends common.SlideOutControl {
 
         var owningFrame: frame.Frame = <frame.Frame>view.getAncestor(this, "Frame");
         if (owningFrame) {
-            owningFrame.android.removeEventListener(frame.knownEvents.android.optionSelected, this._optionSelectedCallback);
+            owningFrame.android.removeEventListener(frame.Frame.androidOptionSelectedEvent, this._optionSelectedCallback);
             this._optionsCallbackAdded = false;
         }
     }
@@ -176,7 +176,7 @@ export class SlideOutControl extends common.SlideOutControl {
 
         var owningFrame: frame.Frame = <frame.Frame>view.getAncestor(this, "Frame");
         if (owningFrame) {
-            owningFrame.android.addEventListener(frame.knownEvents.android.optionSelected, this._optionSelectedCallback);
+            owningFrame.android.addEventListener(frame.Frame.androidOptionSelectedEvent, this._optionSelectedCallback);
             this._optionsCallbackAdded = true;
         }
     }

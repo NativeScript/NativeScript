@@ -15,12 +15,6 @@ var ITEMSCHANGED = "_itemsChanged";
 var CHANGE = "change";
 var SEPARATORCOLOR = "separatorColor";
 
-export module knownEvents {
-    export var itemLoading = "itemLoading";
-    export var itemTap = "itemTap";
-    export var loadMoreItems = "loadMoreItems";
-}
-
 export module knownTemplates {
     export var itemTemplate = "itemTemplate";
 }
@@ -46,6 +40,9 @@ function onItemTemplatePropertyChanged(data: dependencyObservable.PropertyChange
 }
 
 export class ListView extends view.View implements definition.ListView {
+    public static itemLoadingEvent = "itemLoading";
+    public static itemTapEvent = "itemTap";
+    public static loadMoreItemsEvent = "loadMoreItems";
 
     public static separatorColorProperty = new dependencyObservable.Property(
         SEPARATORCOLOR,

@@ -14,10 +14,10 @@ export function createPage() {
 
     var listView = new listViewDef.ListView();
 
-    listView.on(listViewDef.knownEvents.itemLoading, (args: listViewDef.ItemEventData) => {
+    listView.on(listViewDef.ListView.itemLoadingEvent, (args: listViewDef.ItemEventData) => {
         var btn = <bm.Button> args.view;
         if (btn) {
-            btn.off(bm.knownEvents.tap);
+            btn.off(bm.Button.tapEvent);
         }
         else {
             btn = new bm.Button();
@@ -26,13 +26,13 @@ export function createPage() {
 
         if (!data[args.index]) {
             btn.text = "Run all";
-            btn.on(bm.knownEvents.tap, function () {
+            btn.on(bm.Button.tapEvent, function () {
                 tests.runAll();
             });
         } else {
             var testModule = data[args.index];
             btn.text = testModule;
-            btn.on(bm.knownEvents.tap, function () {
+            btn.on(bm.Button.tapEvent, function () {
                 tests.runAll(testModule);
             });
         }

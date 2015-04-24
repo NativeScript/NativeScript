@@ -46,7 +46,7 @@ export var testLoadExistingUrl = function () {
     // <snippet module="ui/web-view" title="WebView">
     // ### Using WebView
     // ``` JavaScript
-    webView.on(webViewModule.knownEvents.loadFinished, function (args: webViewModule.LoadEventData) {
+    webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
         // <hide>
         actualUrl = args.url;
         actualError = args.error;
@@ -89,7 +89,7 @@ export var testLoadInvalidUrl = function () {
 
     var testFinished = false;
     var actualError;
-    webView.on(webViewModule.knownEvents.loadFinished, function (args: webViewModule.LoadEventData) {
+    webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
         if (actualError) {
             // Android call this twice -- the second time args.error is undefined.
             return;

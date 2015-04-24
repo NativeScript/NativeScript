@@ -190,7 +190,7 @@ export var test_WhenBindingIsSetToAnElement_AndElementIsRemoved_ShouldBeCollecte
         var sourcePropertyName = "testProperty";
         var targetPropertyName = "text";
 
-        page.on(viewModule.knownEvents.loaded, () => {
+        page.on(viewModule.View.loadedEvent, () => {
             var model = new observable.Observable();
             model.set(sourcePropertyName, expectedValue);
 
