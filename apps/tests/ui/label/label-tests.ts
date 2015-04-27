@@ -117,7 +117,6 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         this.waitUntilTestElementLayoutIsValid();
 
         var expectedLineBreakMode;
-        var expectedLinesNumber = 1;
         var actualLineBreakMode;
         var actualLinesNumber;
         var actualEllipsize;
@@ -130,17 +129,17 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             actualHorizontalScrolling = testLabel.android.canScrollHorizontally(-1) || testLabel.android.canScrollHorizontally(1);
             actualTransformationMethod = testLabel.android.getTransformationMethod();
             TKUnit.assertNull(actualEllipsize);
-            TKUnit.assertEqual(actualLinesNumber, expectedLinesNumber, "actualLinesNumber");
-            TKUnit.assertEqual(actualHorizontalScrolling, false);
-            TKUnit.assertNull(actualTransformationMethod);
+            TKUnit.assertEqual(actualLinesNumber, 1, "LinesNumber");
+            TKUnit.assertEqual(actualHorizontalScrolling, false, "HorizontalScrolling");
+            TKUnit.assertNull(actualTransformationMethod, "TransformationMethod");
         }
         else {
             expectedLineBreakMode = NSLineBreakMode.NSLineBreakByWordWrapping;
             actualLineBreakMode = testLabel.ios.lineBreakMode;
             actualLinesNumber = testLabel.ios.numberOfLines;
 
-            TKUnit.assertEqual(actualLineBreakMode, expectedLineBreakMode);
-            TKUnit.assertEqual(actualLinesNumber, expectedLinesNumber);
+            TKUnit.assertEqual(actualLineBreakMode, expectedLineBreakMode, "LineBreakMode");
+            TKUnit.assertEqual(actualLinesNumber, 0, "LinesNumber");
         }
     }
 
