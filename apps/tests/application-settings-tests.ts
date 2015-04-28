@@ -1,6 +1,6 @@
 ﻿// <snippet module="application-settings" title="application-settings">
-// # Local Settings
-// Using local settings methods requires to load "local settings" module.
+// # Application Settings
+// Using application settings methods requires to load "application settings" module.
 // ``` JavaScript
 var appSettings = require("application-settings");
 // ```
