@@ -364,6 +364,9 @@ export var test_request_NonStringHeadersSentAndReceivedProperly = function (done
 };
 
 export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
+    // <snippet module="http" title="http">
+    // ### Post JSON
+    // ``` JavaScript
     var result;
 
     http.request({
@@ -371,17 +374,27 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
         headers: { "Content-Type": "application/json" },
         content: JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })
     }).then(function (response) {
+            // result = response.content.toJSON();
+            // <hide>
             result = response.content.toJSON();
-            try {
+            try
+            {
                 TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
                 done(null);
             }
             catch (err) {
                 done(err);
             }
+        // </hide>
+        // console.log(result);
         }, function (e) {
+        // <hide>
             done(e);
+        // </hide>
+        // console.log("Error occurred " + e);
         });
+    // ```
+    // </snippet>
 };
 
 export var test_getString_FromVariousUrls_ShouldWorkProperly = function (done) {
