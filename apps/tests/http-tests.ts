@@ -374,9 +374,11 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
         headers: { "Content-Type": "application/json" },
         content: JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })
     }).then(function (response) {
+            // result = response.content.toJSON();
+            // <hide>
             result = response.content.toJSON();
-        // <hide>
-            try {
+            try
+            {
                 TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
                 done(null);
             }
