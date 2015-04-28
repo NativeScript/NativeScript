@@ -513,7 +513,7 @@ export class View extends proxy.ProxyObject implements definition.View {
                 break;
 
             case enums.VerticalAlignment.center:
-                childTop = top + ((bottom - top - childHeight) / 2) + (child.marginTop - child.marginBottom) * density;
+                childTop = top + (bottom - top - childHeight + (child.marginTop - child.marginBottom) * density) / 2;
                 break;
 
             case enums.VerticalAlignment.bottom:
@@ -541,7 +541,7 @@ export class View extends proxy.ProxyObject implements definition.View {
                 break;
 
             case enums.HorizontalAlignment.center:
-                childLeft = left + ((right - left - childWidth) / 2) + (child.marginLeft - child.marginRight) * density;
+                childLeft = left + (right - left - childWidth + (child.marginLeft - child.marginRight) * density) / 2;
                 break;
 
             case enums.HorizontalAlignment.right:

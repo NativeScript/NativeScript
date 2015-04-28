@@ -448,6 +448,29 @@ export function test_GridLayout_ColumnWidth_when_4stars_and_width_110() {
     TKUnit.assertAreClose(cols[3].actualLength, 27, delta, "Column[3] actual length should be 27");
 }
 
+export function test_GridLayout_margins_and_verticalAlignment_center() {
+
+    rootLayout.height = 200;
+    rootLayout.width = 200;
+    var btn = new helper.MyButton();
+    btn.text = "btn";
+    btn.height = 100;
+    btn.width = 100;
+    btn.marginBottom = 50;
+    btn.marginRight = 50;
+    rootLayout.addChild(btn);
+
+    TKUnit.waitUntilReady(function () {
+        return btn.isLayoutValid;
+    }, ASYNC);
+
+    var density = utils.layout.getDisplayDensity();
+    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
+
+    TKUnit.assertAreClose(btn.layoutTop, 25, delta * density, "vertical margins");
+    TKUnit.assertAreClose(btn.layoutLeft, 25, delta * density, "horizontal margins");
+}
+
 export function test_GridLayout_set_columns_in_XML() {
     var p = <page.Page>builder.parse("<Page><GridLayout columns=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
     var grid = <layout.GridLayout>p.content;
