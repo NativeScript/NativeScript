@@ -60,17 +60,21 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
             }
         }
         picker.presentingViewController.dismissViewControllerAnimatedCompletion(true, null);
+        listener = null;
     }
 
     imagePickerControllerDidCancel(picker): void {
         picker.presentingViewController.dismissViewControllerAnimatedCompletion(true, null);
+        listener = null;
     }
 }
 
+var listener;
+
 export var takePicture = function (options?: definition.CameraOptions): Promise<imageSource.ImageSource> {
     return new Promise<imageSource.ImageSource>((resolve, reject) => {
+        listener = null;
         var imagePickerController = new UIImagePickerController();
-        var listener = null;
         var reqWidth = 0;
         var reqHeight = 0;
         var keepAspectRatio = true;
@@ -99,8 +103,7 @@ export var takePicture = function (options?: definition.CameraOptions): Promise<
         if (topMostFrame) {
             var viewController: UIViewController = topMostFrame.currentPage && topMostFrame.currentPage.ios;
             if (viewController) {
-
-                viewController.presentModalViewControllerAnimated(imagePickerController, true);
+                viewController.presentViewControllerAnimatedCompletion(imagePickerController, true, null);
             }
         }
     });
