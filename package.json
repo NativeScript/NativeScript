@@ -18,7 +18,7 @@
     "grunt-exec": "0.4.5",
     "grunt-multi-dest": "1.0.0",
     "grunt-shell": "1.1.2",
-    "grunt-ts": "1.12.1",
+    "grunt-ts": "4.0.1",
     "grunt-tslint": "0.4.2",
     "typescript": "1.4.1"
   }

@@ -291,14 +291,15 @@ module.exports = function(grunt) {
         ts: {
             build: {
                 src: localCfg.typeScriptSrc,
-                outDir: [localCfg.outModulesDir],
+                outDir: localCfg.outModulesDir,
                 options: {
                     module: "commonjs",
                     target: "es5",
                     sourceMap: false,
                     declaration: false,
                     removeComments: "<%= !grunt.option('leavecomments') || '' %>",
-                    compiler: "node_modules/typescript/bin/tsc"
+                    compiler: "node_modules/typescript/bin/tsc",
+                    noEmitOnError: true
                 }
             }
         },
