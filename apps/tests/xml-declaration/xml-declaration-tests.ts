@@ -210,3 +210,31 @@ export function test_parse_ShouldParseCustomComponentWithoutXmlInListViewTemplat
         helper.goBack();
     }
 }
+
+export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
+    var p = <page.Page>builder.parse('<Page xmlns="http://www.nativescript.org/tns.xsd"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><ListView items="{{ subItems }}" /></ListView.itemTemplate></ListView></Page>');
+
+    function testAction(views: Array<viewModule.View>) {
+        var ctrl;
+
+        var obj = new observable.Observable();
+        obj.set("items", [{ subItems: [1] }]);
+        obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
+            ctrl = args.view
+        });
+        p.bindingContext = obj;
+
+        TKUnit.wait(0.2);
+
+        TKUnit.assert(ctrl instanceof listViewModule.ListView, "Expected result: ListView!; Actual result: " + ctrl);
+    };
+
+    helper.navigate(function () { return p; });
+
+    try {
+        testAction([p.content, p]);
+    }
+    finally {
+        helper.goBack();
+    }
+}
