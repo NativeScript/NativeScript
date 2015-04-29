@@ -154,7 +154,10 @@ function parseInternal(value: string, exports: any): componentBuilder.ComponentM
             throw new Error("XML parse error: " + e.message);
         }, true);
 
-    xmlParser.parse(value.replace('xmlns="http://www.nativescript.org/tns.xsd"', "").replace("xmlns='http://www.nativescript.org/tns.xsd'", ""));
+    if (types.isString(value)) {
+        value = value.replace(/xmlns=("|')http:\/\/www.nativescript.org\/tns.xsd\1/, "");
+        xmlParser.parse(value);
+    }
 
     return rootComponentModule;
 }
