@@ -38,7 +38,7 @@ module.exports = function(grunt) {
             if (currentAppName.indexOf("template-") == 0) {
                 var templateName = currentAppName.substring("template-".length);
                 contentAsObject.name = "tns-" + currentAppName;
-                contentAsObject.description = "Nativescript " + templateName + " template";
+                contentAsObject.description = "Nativescript " + templateName + " project template";
                 specificKeywords.push("template");
             }
             else {
