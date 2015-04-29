@@ -5,8 +5,10 @@ import view = require("ui/core/view");
 import trace = require("trace");
 import imageSource = require("image-source");
 import types = require("utils/types");
+import app = require("application");
 
 var VIEWS_STATES = "_viewStates";
+var RESOURCE_PREFIX = "res://";
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -357,12 +359,13 @@ export class TabView extends common.TabView {
         var length = newItems.length;
         var item: definition.TabViewItem;
         var tab: android.app.ActionBar.Tab;
-
+        var androidApp = app.android;
+        var resources = androidApp.context.getResources();
         for (i; i < length; i++) {
             item = newItems[i];
             tab = actionBar.newTab();
             tab.setText(item.title);
-            this._setIcon(item.iconSource, tab);
+            this._setIcon(item.iconSource, tab, resources, androidApp.packageName);
 
             tab.setTabListener(this._tabListener);
 
@@ -372,23 +375,31 @@ export class TabView extends common.TabView {
         }
     }
 
-    private _setIcon(iconSource: string, tab: android.app.ActionBar.Tab): void {
+    private _setIcon(iconSource: string, tab: android.app.ActionBar.Tab, resources: android.content.res.Resources, packageName: string): void {
         if (!iconSource) {
             return;
         }
-        
-        var drawable: android.graphics.drawable.BitmapDrawable;
-        drawable = this._iconsCache[iconSource];
-        if (!drawable) {
-            var is = imageSource.fromFileOrResource(iconSource);
-            if (is) {
-                drawable = new android.graphics.drawable.BitmapDrawable(is.android);
-                this._iconsCache[iconSource] = drawable;
+
+        if (iconSource.indexOf(RESOURCE_PREFIX) === 0 && resources) {
+            var resourceId: number = resources.getIdentifier(iconSource.substr(RESOURCE_PREFIX.length), 'drawable', packageName);
+            if (resourceId > 0) {
+                tab.setIcon(resourceId);
             }
         }
-        
-        if (drawable) {
-            tab.setIcon(drawable);
+        else {
+            var drawable: android.graphics.drawable.BitmapDrawable;
+            drawable = this._iconsCache[iconSource];
+            if (!drawable) {
+                var is = imageSource.fromFileOrResource(iconSource);
+                if (is) {
+                    drawable = new android.graphics.drawable.BitmapDrawable(is.android);
+                    this._iconsCache[iconSource] = drawable;
+                }
+            }
+
+            if (drawable) {
+                tab.setIcon(drawable);
+            }
         }
     }
 
