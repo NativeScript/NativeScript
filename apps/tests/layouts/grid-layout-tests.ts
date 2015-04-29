@@ -467,8 +467,8 @@ export function test_GridLayout_margins_and_verticalAlignment_center() {
     var density = utils.layout.getDisplayDensity();
     var delta = Math.floor(density) !== density ? 1.1 : DELTA;
 
-    TKUnit.assertAreClose(btn.layoutTop, 25, delta * density, "vertical margins");
-    TKUnit.assertAreClose(btn.layoutLeft, 25, delta * density, "horizontal margins");
+    TKUnit.assertAreClose(btn.layoutTop, 25 * density, delta, "vertical margins");
+    TKUnit.assertAreClose(btn.layoutLeft, 25 * density, delta, "horizontal margins");
 }
 
 export function test_GridLayout_set_columns_in_XML() {
