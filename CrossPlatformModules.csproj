@@ -137,6 +137,9 @@
     <TypeScriptCompile Include="apps\tests\fps-meter-tests.ts" />
     <TypeScriptCompile Include="apps\tests\trace-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui-test.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\bindingContext_testPage.ts">
+      <DependentUpon>bindingContext_testPage.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\ui\time-picker\time-picker-tests-native.android.ts">
       <DependentUpon>time-picker-tests-native.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -593,6 +596,7 @@
     <Content Include="apps\template-settings\app.css" />
     <Content Include="apps\tests\app\location-example.xml" />
     <Content Include="apps\tests\pages\page18.xml" />
+    <Content Include="apps\tests\ui\bindingContext_testPage.xml" />
     <Content Include="apps\tests\ui\label\label-tests-wrong.css" />
     <Content Include="apps\tests\pages\files\other.xml" />
     <Content Include="apps\tests\pages\files\test.android.phone.xml" />

@@ -10,6 +10,7 @@ import utils = require("utils/utils");
 import pageModule = require("ui/page");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import bindingBuilder = require("ui/builder/binding-builder");
+import labelModule = require("ui/label");
 
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic. 
@@ -459,4 +460,17 @@ export var test_getBindableOptionsFromStringTwoParamsNamedFormat = function () {
     TKUnit.assert(bindOptions.targetProperty === "targetBindProperty", "Expected: targetBindProperty, Actual: " + bindOptions.targetProperty);
     TKUnit.assert(bindOptions.expression === "bindProperty * 2", "Expected: bindProperty * 2, Actual:" + bindOptions.expression);
     TKUnit.assert(bindOptions.twoWay === true, "Expected: true, Actual: " + bindOptions.twoWay);
+}
+
+export var test_TwoElementsBindingToSameBindingContext = function () {
+    var testFunc = function (page: pageModule.Page) {
+        var upperStackLabel = <labelModule.Label>(page.getViewById("upperStackLabel"));
+        var label1 = <labelModule.Label>(page.getViewById("label1"));
+        var label2 = <labelModule.Label>(page.getViewById("label2"));
+
+        TKUnit.assertEqual(upperStackLabel.text, label1.text);
+        TKUnit.assertEqual(upperStackLabel.text, label2.text);
+    }
+
+    helper.navigateToModuleAndRunTest("./tests/ui/bindingContext_testPage", testFunc);
 }

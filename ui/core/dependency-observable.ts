@@ -23,9 +23,19 @@ function validateRegisterParameters(name: string, ownerType: string) {
     }
 }
 
-function getPropertyByNameAndType(name: string, ownerType: string): Property {
-    var key = generatePropertyKey(name, ownerType);
-    return propertyFromKey[key];
+function getPropertyByNameAndType(name: string, owner: any): Property {
+    var baseClasses = types.getBaseClasses(owner);
+    var i;
+    var result;
+    var key;
+    for (i = 0; i < baseClasses.length; i++) {
+        key = generatePropertyKey(name, baseClasses[i]);
+        result = propertyFromKey[key];
+        if (result) {
+            break;
+        }
+    }
+    return result;
 }
 
 export module PropertyMetadataSettings {
@@ -254,13 +264,10 @@ export class PropertyEntry implements definition.PropertyEntry {
 }
 
 export class DependencyObservable extends observable.Observable {
-    // TODO: measure the performance of the dictionary vs. JS Object with numeric keys
-    // private _values = new containers.Dictionary<string, any>(new containers.StringComparer());
     private _propertyEntries = {};
 
     public set(name: string, value: any) {
-        // TODO: Properties must be registered with the correct owner type for this routine to work
-        var property = getPropertyByNameAndType(name, this.typeName);
+        var property = getPropertyByNameAndType(name, this);
         if (property) {
             this._setValue(property, value, ValueSource.Local);
         } else {
@@ -269,7 +276,7 @@ export class DependencyObservable extends observable.Observable {
     }
 
     public get(name: string): any {
-        var property = getPropertyByNameAndType(name, this.typeName);
+        var property = getPropertyByNameAndType(name, this);
         if (property) {
             return this._getValue(property);
         } else {

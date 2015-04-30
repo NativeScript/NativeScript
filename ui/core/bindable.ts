@@ -7,12 +7,18 @@ import types = require("utils/types");
 import trace = require("trace");
 import polymerExpressions = require("js-libs/polymer-expressions");
 import bindingBuilder = require("../builder/binding-builder");
+import viewModule = require("ui/core/view");
 
 var bindingContextProperty = new dependencyObservable.Property(
     "bindingContext",
     "Bindable",
-    new dependencyObservable.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.Inheritable) // TODO: Metadata options?
+    new dependencyObservable.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.Inheritable, onBindingContextChanged)
     );
+
+function onBindingContextChanged(data: dependencyObservable.PropertyChangeData) {
+    var bindable = <Bindable>data.object;
+    bindable._onBindingContextChanged(data.oldValue, data.newValue);
+}
 
 var contextKey = "context";
 var resourcesKey = "resources";
@@ -73,23 +79,20 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
     public _onPropertyChanged(property: dependencyObservable.Property, oldValue: any, newValue: any) {
         trace.write("Bindable._onPropertyChanged(" + this + ") " + property.name, trace.categories.Binding);
         super._onPropertyChanged(property, oldValue, newValue);
-
-        if (property === Bindable.bindingContextProperty) {
-            this._onBindingContextChanged(oldValue, newValue);
-        }
-
-        var binding = this._bindings[property.name];
-        if (binding) {
-            // we should remove (unbind and delete) binding if binding is oneWay and update is not triggered
-            // by binding itself. 
-            var shouldRemoveBinding = !binding.updating && !binding.options.twoWay;
-            if (shouldRemoveBinding) {
-                trace.write("_onPropertyChanged(" + this + ") removing binding for property: " + property.name, trace.categories.Binding);
-                this.unbind(property.name);
+        if (this instanceof viewModule.View) {
+            if ((<viewModule.View>(<any>this))._isInheritedChange() === true) {
+                return
             }
-            else {
+        }
+        var binding = this._bindings[property.name];
+        if (binding && !binding.updating) {
+            if (binding.options.twoWay) {
                 trace.write("_updateTwoWayBinding(" + this + "): " + property.name, trace.categories.Binding);
                 this._updateTwoWayBinding(property.name, newValue);
+            }
+            else {
+                trace.write("_onPropertyChanged(" + this + ") removing binding for property: " + property.name, trace.categories.Binding);
+                this.unbind(property.name);
             }
         }
     }
@@ -99,8 +102,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
         for (var p in this._bindings) {
             binding = this._bindings[p];
 
-            if (binding.options.targetProperty === Bindable.bindingContextProperty.name && binding.updating) {
-                // Updating binding context trough binding should not rebind the binding context.
+            if (binding.updating) {
                 continue;
             }
 

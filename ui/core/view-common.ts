@@ -133,6 +133,7 @@ export class View extends proxy.ProxyObject implements definition.View {
     public _cssClasses: Array<string> = [];
 
     private _gesturesObserver: gestures.GesturesObserver;
+    private _updatingInheritedProperties: boolean;
 
     public _options: definition.Options;
 
@@ -397,22 +398,38 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     public _onPropertyChanged(property: dependencyObservable.Property, oldValue: any, newValue: any) {
         super._onPropertyChanged(property, oldValue, newValue);
-        // Implement Binding inheritance here.
 
         if (this._childrenCount > 0) {
             var shouldUpdateInheritableProps = ((property.metadata && property.metadata.inheritable) &&
-                property.name !== "bindingContext" &&
                 !(property instanceof styling.Property));
+            var that = this;
             if (shouldUpdateInheritableProps) {
                 var notifyEachChild = function (child: View) {
-                    child._setValue(property, newValue, dependencyObservable.ValueSource.Inherited);
+                    child._setValue(property, that._getValue(property), dependencyObservable.ValueSource.Inherited);
                     return true;
                 };
+                this._updatingInheritedProperties = true;
                 this._eachChildView(notifyEachChild);
+                this._updatingInheritedProperties = false;
             }
         }
 
         this._checkMetadataOnPropertyChanged(property.metadata);
+    }
+
+    public _isInheritedChange() {
+        if (this._updatingInheritedProperties) {
+            return true;
+        }
+        var parentView: View;
+        parentView = <View>(this.parent);
+        while (parentView) {
+            if (parentView._updatingInheritedProperties) {
+                return true;
+            }
+            parentView = <View>(parentView.parent);
+        }
+        return false;
     }
 
     public _checkMetadataOnPropertyChanged(metadata: dependencyObservable.PropertyMetadata) {
@@ -675,21 +692,6 @@ export class View extends proxy.ProxyObject implements definition.View {
         return changed;
     }
 
-    public _onBindingContextChanged(oldValue: any, newValue: any) {
-        super._onBindingContextChanged(oldValue, newValue);
-
-        if (this._childrenCount === 0) {
-            return;
-        }
-
-        var thatContext = this.bindingContext;
-        var eachChild = function (child: View): boolean {
-            child._setValue(bindable.Bindable.bindingContextProperty, thatContext, dependencyObservable.ValueSource.Inherited);
-            return true;
-        }
-        this._eachChildView(eachChild);
-    }
-
     private _applyStyleFromScope() {
         var rootPage = getAncestor(this, "Page");
         if (!rootPage || !rootPage.isLoaded) {
@@ -784,7 +786,7 @@ export class View extends proxy.ProxyObject implements definition.View {
     private _inheritProperties(parentView: View) {
         var that = this;
         var inheritablePropertySetCallback = function (property: dependencyObservable.Property) {
-            if (property instanceof styling.Property || property.name === "bindingContext") {
+            if (property instanceof styling.Property) {
                 return true;
             }
             if (property.metadata && property.metadata.inheritable) {
@@ -827,7 +829,7 @@ export class View extends proxy.ProxyObject implements definition.View {
 
         view._setValue(bindable.Bindable.bindingContextProperty, undefined, dependencyObservable.ValueSource.Inherited);
         var inheritablePropertiesSetCallback = function (property: dependencyObservable.Property) {
-            if (property instanceof styling.Property || property.name === "bindingContext") {
+            if (property instanceof styling.Property) {
                 return true;
             }
             if (property.metadata && property.metadata.inheritable) {

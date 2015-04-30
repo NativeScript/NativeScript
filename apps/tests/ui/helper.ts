@@ -143,6 +143,16 @@ export function buildUIAndRunTest(controlToTest, testFunction, pageCss?) {
     }
 }
 
+export function navigateToModuleAndRunTest(moduleName, testFunction) {
+    navigateToModule(moduleName);
+    try {
+        testFunction(frame.topmost().currentPage);
+    }
+    finally {
+        goBack();
+    }
+}
+
 export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: () => T, interactWithViewFunc?: (view: T) => void) {
     var newPage: page.Page;
     var testFinished = false;
