@@ -4018,7 +4018,7 @@ declare class NSCache extends NSObject {
 declare class NSPredicate extends NSObject implements NSSecureCoding, NSCopying {
 	predicateFormat: string;
 	constructor();
-	static predicateWithFormatArgumentArray(predicateFormat: string, arguments: NSArray): NSPredicate;
+	static predicateWithFormatArgumentArray(predicateFormat: string, args: NSArray): NSPredicate;
 	static predicateWithValue(value: boolean): NSPredicate;
 	static predicateWithBlock(block: (arg1: any, arg2: NSDictionary) => boolean): NSPredicate;
 	predicateWithSubstitutionVariables(variables: NSDictionary): NSPredicate;
@@ -4109,7 +4109,7 @@ declare class NSExpression extends NSObject implements NSSecureCoding, NSCopying
 	expressionBlock: (arg1: any, arg2: NSArray, arg3: NSMutableDictionary) => any;
 	constructor(type: number);
 	constructor();
-	static expressionWithFormatArgumentArray(expressionFormat: string, arguments: NSArray): NSExpression;
+	static expressionWithFormatArgumentArray(expressionFormat: string, args: NSArray): NSExpression;
 	static expressionForConstantValue(obj: any): NSExpression;
 	static expressionForEvaluatedObject(): NSExpression;
 	static expressionForVariable(string: string): NSExpression;
@@ -4122,7 +4122,7 @@ declare class NSExpression extends NSObject implements NSSecureCoding, NSCopying
 	static expressionForSubqueryUsingIteratorVariablePredicate(expression: NSExpression, variable: string, predicate: any): NSExpression;
 	static expressionForFunctionSelectorNameArguments(target: NSExpression, name: string, parameters: NSArray): NSExpression;
 	static expressionForAnyKey(): NSExpression;
-	static expressionForBlockArguments(block: (arg1: any, arg2: NSArray, arg3: NSMutableDictionary) => any, arguments: NSArray): NSExpression;
+	static expressionForBlockArguments(block: (arg1: any, arg2: NSArray, arg3: NSMutableDictionary) => any, args: NSArray): NSExpression;
 	initWithExpressionType(type: number): NSExpression;
 	expressionValueWithObjectContext(object: any, context: NSMutableDictionary): any;
 	allowEvaluation(): void;
@@ -15023,7 +15023,7 @@ declare class GKTurnBasedMatch extends NSObject {
 	exchangeDataMaximumSize: number;
 	exchangeMaxInitiatedExchangesPerPlayer: number;
 	constructor();
-	setLocalizableMessageWithKeyArguments(key: string, arguments: NSArray): void;
+	setLocalizableMessageWithKeyArguments(key: string, args: NSArray): void;
 	static findMatchForRequestWithCompletionHandler(request: GKMatchRequest, completionHandler: (arg1: GKTurnBasedMatch, arg2: NSError) => void): void;
 	static loadMatchesWithCompletionHandler(completionHandler: (arg1: NSArray, arg2: NSError) => void): void;
 	static loadMatchWithIDWithCompletionHandler(matchID: string, completionHandler: (arg1: GKTurnBasedMatch, arg2: NSError) => void): void;
@@ -15039,8 +15039,8 @@ declare class GKTurnBasedMatch extends NSObject {
 	endMatchInTurnWithMatchDataScoresAchievementsCompletionHandler(matchData: NSData, scores: NSArray, achievements: NSArray, completionHandler: (arg1: NSError) => void): void;
 	saveCurrentTurnWithMatchDataCompletionHandler(matchData: NSData, completionHandler: (arg1: NSError) => void): void;
 	saveMergedMatchDataWithResolvedExchangesCompletionHandler(matchData: NSData, exchanges: NSArray, completionHandler: (arg1: NSError) => void): void;
-	sendExchangeToParticipantsDataLocalizableMessageKeyArgumentsTimeoutCompletionHandler(participants: NSArray, data: NSData, key: string, arguments: NSArray, timeout: number, completionHandler: (arg1: GKTurnBasedExchange, arg2: NSError) => void): void;
-	sendReminderToParticipantsLocalizableMessageKeyArgumentsCompletionHandler(participants: NSArray, key: string, arguments: NSArray, completionHandler: (arg1: NSError) => void): void;
+	sendExchangeToParticipantsDataLocalizableMessageKeyArgumentsTimeoutCompletionHandler(participants: NSArray, data: NSData, key: string, args: NSArray, timeout: number, completionHandler: (arg1: GKTurnBasedExchange, arg2: NSError) => void): void;
+	sendReminderToParticipantsLocalizableMessageKeyArgumentsCompletionHandler(participants: NSArray, key: string, args: NSArray, completionHandler: (arg1: NSError) => void): void;
 	endTurnWithNextParticipantMatchDataCompletionHandler(nextParticipant: GKTurnBasedParticipant, matchData: NSData, completionHandler: (arg1: NSError) => void): void;
 	participantQuitInTurnWithOutcomeNextParticipantMatchDataCompletionHandler(matchOutcome: number, nextParticipant: GKTurnBasedParticipant, matchData: NSData, completionHandler: (arg1: NSError) => void): void;
 	init(): GKTurnBasedMatch;
@@ -15061,8 +15061,8 @@ declare class GKTurnBasedExchange extends NSObject {
 	completionDate: NSDate;
 	replies: NSArray;
 	constructor();
-	cancelWithLocalizableMessageKeyArgumentsCompletionHandler(key: string, arguments: NSArray, completionHandler: (arg1: NSError) => void): void;
-	replyWithLocalizableMessageKeyArgumentsDataCompletionHandler(key: string, arguments: NSArray, data: NSData, completionHandler: (arg1: NSError) => void): void;
+	cancelWithLocalizableMessageKeyArgumentsCompletionHandler(key: string, args: NSArray, completionHandler: (arg1: NSError) => void): void;
+	replyWithLocalizableMessageKeyArgumentsDataCompletionHandler(key: string, args: NSArray, data: NSData, completionHandler: (arg1: NSError) => void): void;
 	init(): GKTurnBasedExchange;
 	static new(): GKTurnBasedExchange;
 	static allocWithZone(zone: any): GKTurnBasedExchange;
@@ -16916,9 +16916,9 @@ declare class JSValue extends NSObject {
 	isEqualToObject(value: any): boolean;
 	isEqualWithTypeCoercionToObject(value: any): boolean;
 	isInstanceOf(value: any): boolean;
-	callWithArguments(arguments: NSArray): JSValue;
-	constructWithArguments(arguments: NSArray): JSValue;
-	invokeMethodWithArguments(method: string, arguments: NSArray): JSValue;
+	callWithArguments(args: NSArray): JSValue;
+	constructWithArguments(args: NSArray): JSValue;
+	invokeMethodWithArguments(method: string, args: NSArray): JSValue;
 	static valueWithPointInContext(point: CGPoint, context: JSContext): JSValue;
 	static valueWithRangeInContext(range: NSRange, context: JSContext): JSValue;
 	static valueWithRectInContext(rect: CGRect, context: JSContext): JSValue;

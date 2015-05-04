@@ -20,6 +20,6 @@
     "grunt-shell": "1.1.2",
     "grunt-ts": "4.0.1",
     "grunt-tslint": "0.4.2",
-    "typescript": "1.4.1"
+    "typescript": "1.5.0-beta"
   }
 }
