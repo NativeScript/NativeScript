@@ -66,7 +66,7 @@ function print() {
     }
     printTNSInfo();
 }
-print();
+//print();
 
 export function createPage() {
     var page = new pages.Page();

@@ -1,0 +1,21 @@
+<Page loaded="itemLoaded" unloaded="itemUnloaded" tag="page">
+  <TabView  loaded="itemLoaded" unloaded="itemUnloaded" tag="TabView">
+    <TabView.items>
+      <TabViewItem title="RED">
+        <TabViewItem.view>
+          <GridLayout backgroundColor="red" margin="50" tap="itemTap" tag="red"  loaded="itemLoaded" unloaded="itemUnloaded"/>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="GREEN">
+        <TabViewItem.view>
+          <GridLayout backgroundColor="green" margin="50" tap="itemTap" tag="green"  loaded="itemLoaded" unloaded="itemUnloaded"/>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="BLUE">
+        <TabViewItem.view>
+          <GridLayout backgroundColor="blue" margin="50" tap="itemTap" tag="blue"  loaded="itemLoaded" unloaded="itemUnloaded"/>
+        </TabViewItem.view>
+      </TabViewItem>
+    </TabView.items>
+  </TabView>
+</Page>
