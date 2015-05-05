@@ -1,5 +1,4 @@
-﻿import pages = require("ui/page");
-import frame = require("ui/frame");
+﻿import frame = require("ui/frame");
 import observable = require("data/observable");
 
 import trace = require("trace");
