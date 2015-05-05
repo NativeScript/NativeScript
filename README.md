@@ -40,7 +40,7 @@ To learn more about the NativeScript framework, you can check the following reso
 - **[Android Runtime](//github.com/NativeScript/android-runtime)** - Holds the runtime, allowing the JavaScript code of your application to be executed on an Android device
 - **[NativeScript CLI](//github.com/NativeScript/nativescript-cli)** - Contains the Command-Line Interface for creating an application using the NativeScript framework
 - **[Docs](//github.com/NativeScript/docs)** - Contains the NativeScript framework documentation (available on http://docs.nativescript.org/) in MarkDown format
-- **[Tasks app](//github.com/NativeScript/sample-Tasks)** - Stores the code of a complete sample application using user authentication and cloud storage.
+- **[TelerikNEXT conference app](//github.com/NativeScript/sample-TelerikNEXT)** - Stores the code of a complete sample application using user authentication and cloud storage.
 - **[Hello-World Template](//github.com/NativeScript/template-hello-world)** - Contains the code of the application the CLI creates by default
 - **[Cuteness Sample](//github.com/NativeScript/sample-cuteness)** - Stores the code of the Cuteness proof of concept application (A Reddit Kitten browser)
 
