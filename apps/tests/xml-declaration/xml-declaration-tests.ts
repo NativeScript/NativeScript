@@ -66,8 +66,7 @@ export var test_parse_ShouldFindEventHandlersInExports = function () {
             loaded = true;
         }
     });
-
-    page.onLoaded();
+    page._emit("loaded");
 
     TKUnit.assert(loaded, "Parse should find event handlers in exports.");
 };

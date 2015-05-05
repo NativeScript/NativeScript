@@ -28,10 +28,28 @@ class UIViewControllerImpl extends UIViewController {
         trace.write(this._owner + " viewDidLayoutSubviews, isLoaded = " + this._owner.isLoaded, trace.categories.ViewHierarchy);
         this._owner._updateLayout();
     }
+
+    public viewWillAppear() {
+        trace.write(this._owner + " viewWillAppear", trace.categories.Navigation);
+
+        this._owner._enableLoadedEvents = true;
+        this._owner.onLoaded();
+        this._owner._enableLoadedEvents = false;
+    }
+
+    public viewDidDisappear() {
+        trace.write(this._owner + " viewDidDisappear", trace.categories.Navigation);
+
+        this._owner._enableLoadedEvents = true;
+        this._owner.onUnloaded();
+        this._owner._enableLoadedEvents = false;
+    }
+
 }
 
 export class Page extends pageCommon.Page {
     private _ios: UIViewController;
+    public _enableLoadedEvents: boolean;
 
     constructor(options?: definition.Options) {
         super(options);
@@ -42,6 +60,20 @@ export class Page extends pageCommon.Page {
         super._onContentChanged(oldView, newView);
         this._removeNativeView(oldView);
         this._addNativeView(newView);
+    }
+
+    public onLoaded() {
+        // loaded/unloaded events are handeled in page viewWillAppear/viewDidDisappear
+        if (this._enableLoadedEvents) {
+            super.onLoaded();
+        }
+    }
+    
+    public onUnloaded() {
+        // loaded/unloaded events are handeled in page viewWillAppear/viewDidDisappear
+        if (this._enableLoadedEvents) {
+            super.onUnloaded();
+        }
     }
 
     private _addNativeView(view: viewModule.View) {

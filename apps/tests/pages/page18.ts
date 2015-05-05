@@ -1,24 +1,10 @@
-﻿import observable = require("data/observable");
-import pages = require("ui/page");
+﻿import pages = require("ui/page");
 import frame = require("ui/frame");
+import observable = require("data/observable");
+
 import trace = require("trace");
 trace.setCategories("gestures");
 trace.enable();
-
-
-
-// Event handler for Page "loaded" event attached in main-page.xml
-export function pageLoaded(args: observable.EventData) {
-    //// Get the event sender
-    //var page = <pages.Page>args.object;
-
-    //var textItem = new pages.MenuItem();
-    //textItem.text = "from loaded";
-    //textItem.on("tap", () => {
-    //    console.log("item added in page.loaded tapped!!!");
-    //});
-    //page.optionsMenu.addItem(textItem);
-}
 
 export function itemTap(args) {
     console.log("----- Item tapped: " + args.view.tag);
@@ -27,7 +13,6 @@ export function itemTap(args) {
         moduleName: "./pages/page5",
     });
 }
-
 
 export function itemLoaded(args: observable.EventData) {
     console.log("----- Item loaded: " + (<any>args.object).tag);

@@ -281,6 +281,7 @@ export class TabView extends common.TabView {
     public onUnloaded() {
         trace.write("TabView.onUnloaded();", common.traceCategory);
         this._removeTabsIfNeeded();
+        this._unsetAdapter();
         super.onUnloaded();
     }
 

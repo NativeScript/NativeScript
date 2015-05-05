@@ -409,7 +409,7 @@ export function testBindingIsRefreshedWhenTabViewItemIsUnselectedAndThenSelected
 }
 
 export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
-    var topFrame = frameModule.topmost();
+    var i: number;
     var itemCount = 3;
     var loadedItems = [0, 0, 0];
     var unloadedItems = [0, 0, 0];
@@ -420,25 +420,24 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
 
     function createLoadedFor(itemIndex: number) {
         return function () {
-            console.log("loaded item: " + itemIndex)
             loadedItems[itemIndex] = loadedItems[itemIndex] + 1;
         }
     }
 
     function createUnloadedFor(itemIndex: number) {
         return function () {
-            console.log("unloaded item: " + itemIndex)
             unloadedItems[itemIndex] = unloadedItems[itemIndex] + 1;
         }
     }
 
-    for (var i = 0; i < itemCount; i++) {
-        items[i].view.on("loaded", createLoadedFor(i));
-        items[i].view.on("unloaded", createUnloadedFor(i));
-    }
-
     helper.buildUIAndRunTest(tabView, function () {
         try {
+            // Attach to loaded/unloaded events
+            for (i = 0; i < itemCount; i++) {
+                items[i].view.on("loaded", createLoadedFor(i));
+                items[i].view.on("unloaded", createUnloadedFor(i));
+            }
+
             var detailsPageFactory = function (): pageModule.Page {
                 var detailsPage = new pageModule.Page();
                 detailsPage.content = new labelModule.Label();
@@ -451,16 +450,16 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
             // Go back to the test page.
             helper.goBack();
         }
-
-        console.log("loaded items: " + loadedItems.join(", "));
-        console.log("unloadedItems items: " + unloadedItems.join(", "));
-
+        
+        //console.log("loaded items: " + loadedItems.join(", "));
+        //console.log("unloadedItems items: " + unloadedItems.join(", "));
+        
         // Check that at least the first item is loaded and unloaded
         TKUnit.assertEqual(loadedItems[0], 1, "loaded count for 1st item");
         TKUnit.assertEqual(unloadedItems[0], 1, "unloaded count for 1st item");
 
         // Check that loaded/unloaded coutns are equal for all tabs
-        for (var i = 0; i < itemCount; i++) {
+        for (i = 0; i < itemCount; i++) {
             TKUnit.assert(loadedItems[i] === unloadedItems[i],
                 "Loaded and unloaded calls are not equal for item " + i + " loaded: " + loadedItems[i] + " unloaded: " + unloadedItems[i]);
         }
