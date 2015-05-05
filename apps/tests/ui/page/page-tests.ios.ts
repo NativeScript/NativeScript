@@ -33,13 +33,13 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
     var navBarIsVisible = false;
 
     var handler = function (data) {
-        page.off(view.View.loadedEvent, handler);
+        page.off(PageModule.Page.navigatedToEvent, handler);
         navBarIsVisible = (<any>page.frame.ios).showNavigationBar;
     }
 
     var pageFactory = function (): PageModule.Page {
         page = new PageModule.Page();
-        page.on(view.View.loadedEvent, handler);
+        page.on(PageModule.Page.navigatedToEvent, handler);
 
         var mi = new PageModule.MenuItem();
         mi.text = "B";

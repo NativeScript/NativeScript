@@ -24,12 +24,6 @@ class UITabBarControllerImpl extends UITabBarController {
         return this;
     }
 
-    public viewDidAppear(animated: boolean): void {
-        trace.write("TabView.UITabBarControllerClass.viewDidAppear();", trace.categories.Debug);
-        super.viewDidAppear(animated);
-        this._owner.onLoaded();
-    }
-
     public viewDidLayoutSubviews(): void {
         trace.write("TabView.UITabBarControllerClass.viewDidLayoutSubviews();", trace.categories.Debug);
         super.viewDidLayoutSubviews();
