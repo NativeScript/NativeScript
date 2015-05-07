@@ -103,8 +103,11 @@ export function getComponentModule(elementName: string, namespace: string, attri
 }
 
 export function setPropertyValue(instance: view.View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
+    // Note: instanceModule can be null if we are loading custom compnenet with no code-behind.
+    var isEvent: boolean = instanceModule && isKnownEvent(propertyName, instanceModule[instance.typeName]);
+
     if (isBinding(propertyValue) && instance.bind) {
-        if (isKnownEvent(propertyName, instanceModule[instance.typeName])) {
+        if (isEvent) {
             attachEventBinding(instance, propertyName, propertyValue);
         } else {
             var bindOptions = bindingBuilder.getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
@@ -115,7 +118,7 @@ export function setPropertyValue(instance: view.View, instanceModule: Object, ex
                 twoWay: bindOptions[bindingBuilder.bindingConstants.twoWay]
             }, bindOptions[bindingBuilder.bindingConstants.source]);
         }
-    } else if (isKnownEvent(propertyName, instanceModule[instance.typeName])) {
+    } else if (isEvent) {
         // Get the event handler from page module exports.
         var handler = exports && exports[propertyValue];
 
