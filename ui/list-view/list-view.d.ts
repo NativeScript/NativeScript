@@ -136,4 +136,14 @@ declare module "ui/list-view" {
          */
         android: android.view.ViewGroup;
     }
+
+    /**
+     * Event data containing information for "refresh" with done callback
+     */
+    export interface RefreshEventData extends observable.EventData {
+        /**
+         * Callback when refresh is done to hide the loading icon
+         */
+        done: () => void;
+    }
 }

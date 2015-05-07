@@ -10,6 +10,7 @@ import color = require("color");
 var CELLIDENTIFIER = "cell";
 var ITEMLOADING = common.ListView.itemLoadingEvent;
 var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
+var REFRESH = common.ListView.refreshEvent;
 var ITEMTAP = common.ListView.itemTapEvent;
 var DEFAULT_HEIGHT = 80;
 
@@ -119,6 +120,35 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
     }
 }
 
+class RefreshHandlerImpl extends NSObject {
+    static new(): RefreshHandlerImpl {
+        return <RefreshHandlerImpl>super.new();
+    }
+
+    private _owner: ListView;
+    private _UIRefreshControl: UIRefreshControl;
+
+    public initWithOwner(owner: ListView): RefreshHandlerImpl {
+        this._owner = owner;
+        this._UIRefreshControl = new UIRefreshControl();
+        owner.ios.addSubview(this._UIRefreshControl);
+        this._UIRefreshControl.addTargetActionForControlEvents(this, "refresh", UIControlEvents.UIControlEventValueChanged);
+        return this;
+    }
+
+    public refresh(sender: UIRefreshControl) {
+        this._owner.notify(<definition.RefreshEventData>{
+          eventName: REFRESH,
+          object: this._owner,
+          done: sender.endRefreshing.bind(sender)
+        });
+    }
+
+    public static ObjCExposedMethods = {
+        'refresh': { returns: interop.types.void, params: [UIRefreshControl] }
+    };
+}
+
 function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var bar = <ListView>data.object;
     if (!bar.ios) {
@@ -135,6 +165,7 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
 
 export class ListView extends common.ListView {
     private _ios: UITableView;
+    private _refreshHandler: RefreshHandlerImpl;
     private _dataSource;
     private _delegate;
     private _heights: Array<number>;
@@ -165,10 +196,14 @@ export class ListView extends common.ListView {
             this.refresh();
         }
         this._ios.delegate = this._delegate;
+        if (this.hasListeners(common.ListView.refreshEvent)) {
+            this._refreshHandler = RefreshHandlerImpl.new().initWithOwner(this);
+        }
     }
 
     public onUnloaded() {
         this._ios.delegate = null;
+        this._refreshHandler = null;
         super.onUnloaded();
     }
 

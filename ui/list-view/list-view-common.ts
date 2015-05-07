@@ -33,6 +33,7 @@ export class ListView extends view.View implements definition.ListView {
     public static itemLoadingEvent = "itemLoading";
     public static itemTapEvent = "itemTap";
     public static loadMoreItemsEvent = "loadMoreItems";
+    public static refreshEvent = "refresh";
 
     public static separatorColorProperty = new dependencyObservable.Property(
         SEPARATORCOLOR,
