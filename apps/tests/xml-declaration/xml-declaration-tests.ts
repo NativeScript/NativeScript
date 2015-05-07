@@ -194,7 +194,7 @@ export function test_parse_ShouldParseCustomComponentWitXmlNoJS() {
     var panel = <stackLayoutModule.StackLayout>p.content;
     var lbl = <labelModule.Label>panel.getChildAt(0);
 
-    TKUnit.assert(lbl.text, "I'm all about taht XML, no JS", "label.text");
+    TKUnit.assertEqual(lbl.text, "I'm all about taht XML, no JS", "label.text");
 };
 
 export function test_parse_ShouldParseCustomComponentWitXmlNoJS_WithAttributes() {
