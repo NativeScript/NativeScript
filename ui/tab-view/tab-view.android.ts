@@ -273,6 +273,11 @@ export class TabView extends common.TabView {
 
         // If we are loading a TabView inside a hidden fragment this check will prevent it from polluting the action bar.
         if (this.android && this.android.isShown()) {
+            // Cover the case when pageCacheOnNavigate is enabled - set adapter in loaded as the TabView is already 
+            // attached and _onItemsPropertyChangedSetNativeValue will not be called
+            if (!this._pagerAdapter && this.items) {
+                this._setAdapter(this.items);
+            }
             this._addTabsIfNeeded();
             this._setNativeSelectedIndex(this.selectedIndex);
         }

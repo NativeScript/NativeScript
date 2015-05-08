@@ -408,62 +408,89 @@ export function testBindingIsRefreshedWhenTabViewItemIsUnselectedAndThenSelected
     });
 }
 
-export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
+export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_NoPageCaching() {
+    testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBackg(false);
+}
+export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_WithPageCaching() {
+    testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBackg(true);
+}
+
+function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBackg(enablePageCache: boolean) {
     var i: number;
     var itemCount = 3;
     var loadedItems = [0, 0, 0];
     var unloadedItems = [0, 0, 0];
 
-    var tabView = _createTabView();
-    var items = _createItems(itemCount);
-    tabView.items = items;
+    var topFrame = frameModule.topmost();
+    var oldChache;
 
-    function createLoadedFor(itemIndex: number) {
-        return function () {
-            loadedItems[itemIndex] = loadedItems[itemIndex] + 1;
-        }
+    if (topFrame.android) {
+        oldChache = topFrame.android.cachePagesOnNavigate;
+        topFrame.android.cachePagesOnNavigate = enablePageCache;
     }
 
-    function createUnloadedFor(itemIndex: number) {
-        return function () {
-            unloadedItems[itemIndex] = unloadedItems[itemIndex] + 1;
-        }
-    }
+    try {
+        var tabView = _createTabView();
+        var items = _createItems(itemCount);
+        tabView.items = items;
 
-    helper.buildUIAndRunTest(tabView, function () {
-        try {
-            // Attach to loaded/unloaded events
-            for (i = 0; i < itemCount; i++) {
-                items[i].view.on("loaded", createLoadedFor(i));
-                items[i].view.on("unloaded", createUnloadedFor(i));
+        function createLoadedFor(itemIndex: number) {
+            return function () {
+                loadedItems[itemIndex] = loadedItems[itemIndex] + 1;
             }
-
-            var detailsPageFactory = function (): pageModule.Page {
-                var detailsPage = new pageModule.Page();
-                detailsPage.content = new labelModule.Label();
-                return detailsPage;
-            };
-
-            helper.navigate(detailsPageFactory);
         }
-        finally {
-            // Go back to the test page.
-            helper.goBack();
-        }
-        
-        //console.log("loaded items: " + loadedItems.join(", "));
-        //console.log("unloadedItems items: " + unloadedItems.join(", "));
-        
-        // Check that at least the first item is loaded and unloaded
-        TKUnit.assertEqual(loadedItems[0], 1, "loaded count for 1st item");
-        TKUnit.assertEqual(unloadedItems[0], 1, "unloaded count for 1st item");
 
-        // Check that loaded/unloaded coutns are equal for all tabs
-        for (i = 0; i < itemCount; i++) {
-            TKUnit.assert(loadedItems[i] === unloadedItems[i],
-                "Loaded and unloaded calls are not equal for item " + i + " loaded: " + loadedItems[i] + " unloaded: " + unloadedItems[i]);
+        function createUnloadedFor(itemIndex: number) {
+            return function () {
+                unloadedItems[itemIndex] = unloadedItems[itemIndex] + 1;
+            }
         }
-    });
+
+        helper.buildUIAndRunTest(tabView, function () {
+            try {
+                TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
+
+                // Attach to loaded/unloaded events
+                for (i = 0; i < itemCount; i++) {
+                    items[i].view.on("loaded", createLoadedFor(i));
+                    items[i].view.on("unloaded", createUnloadedFor(i));
+                }
+
+                var detailsPageFactory = function (): pageModule.Page {
+                    var detailsPage = new pageModule.Page();
+                    detailsPage.content = new labelModule.Label();
+                    return detailsPage;
+                };
+
+                helper.navigate(detailsPageFactory);
+            }
+            finally {
+                // Go back to the test page.
+                helper.goBack();
+            }
+            TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
+
+            //console.log("loaded items: " + loadedItems.join(", "));
+            //console.log("unloadedItems items: " + unloadedItems.join(", "));
+
+            // Check that at least the first item is loaded and unloaded
+            TKUnit.assert(items[0].view.isLoaded, "Thecontent of the first tab should be loaded.");
+            TKUnit.assertEqual(loadedItems[0], 1, "loaded count for 1st item");
+            TKUnit.assertEqual(unloadedItems[0], 1, "unloaded count for 1st item");
+
+            // Check that loaded/unloaded coutns are equal for all tabs
+            for (i = 0; i < itemCount; i++) {
+                TKUnit.assert(loadedItems[i] === unloadedItems[i],
+                    "Loaded and unloaded calls are not equal for item " + i + " loaded: " + loadedItems[i] + " unloaded: " + unloadedItems[i]);
+            }
+        });
+    }
+    finally {
+        // Return original page cache value
+        if (topFrame.android) {
+            topFrame.android.cachePagesOnNavigate = oldChache;
+        }
+    }
 }
 
 function _clickTheFirstButtonInTheListViewNatively(tabView: tabViewModule.TabView) {
