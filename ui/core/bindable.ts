@@ -80,7 +80,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
         trace.write("Bindable._onPropertyChanged(" + this + ") " + property.name, trace.categories.Binding);
         super._onPropertyChanged(property, oldValue, newValue);
         if (this instanceof viewModule.View) {
-            if ((<viewModule.View>(<any>this))._isInheritedChange() === true) {
+            if (property.metadata.inheritable && (<viewModule.View>(<any>this))._isInheritedChange() === true) {
                 return
             }
         }
