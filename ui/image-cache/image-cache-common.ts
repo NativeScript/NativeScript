@@ -125,7 +125,9 @@ export class Cache extends observable.Observable implements definition.Cache {
     public _onDownloadCompleted(key: string, image: any) {
         var request = <DownloadRequest>this._pendingDownloads[key];
 
-        this.set(request.key, image);
+        if (request.key && image) {
+            this.set(request.key, image);
+        }
 
         this._currentDownloads--;
 
