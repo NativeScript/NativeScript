@@ -81,7 +81,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
         super._onPropertyChanged(property, oldValue, newValue);
         if (this instanceof viewModule.View) {
             if (property.metadata.inheritable && (<viewModule.View>(<any>this))._isInheritedChange() === true) {
-                return
+                return;
             }
         }
         var binding = this._bindings[property.name];
