@@ -1,0 +1,15 @@
+﻿<Page xmlns="http://www.nativescript.org/tns.xsd"
+      xmlns:g="components/grid-view/grid-view"
+      loaded="pageLoaded">
+	<StackLayout id="upperStack">
+		<Label id="upperStackLabel" text="{{ item.Title }}" />
+		<StackLayout id="firstStack" bindingContext="{{ item }}" orientation="horizontal">
+			<Label id="labelText1" text="1" />
+			<Label id="label1" text="{{ Title }}" />
+		</StackLayout>
+		<StackLayout id="secondStack" bindingContext="{{ item }}" orientation="horizontal">
+			<Label id="labelText2" text="2" />
+			<Label id="label2" text="{{ Title }}" />
+		</StackLayout>
+	</StackLayout>
+</Page>
