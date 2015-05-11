@@ -39,7 +39,8 @@ function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         }
     }
     else if (value instanceof imageSource.ImageSource) {
-        // Support binding the iamgeSource trough the src propoerty
+        // Support binding the imageSource trough the src propoerty
+        image.imageSource = null;
         image.imageSource = value;
     }
     else {
