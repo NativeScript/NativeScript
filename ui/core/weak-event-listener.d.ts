@@ -33,7 +33,7 @@ declare module "ui/core/weak-event-listener" {
         /**
          * A string to use as key for key value pair instance.
          */
-        key?: string;
+        key: string;
     }
 
     /**

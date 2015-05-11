@@ -1,4 +1,5 @@
 ﻿import observable = require("data/observable");
+import observableArray = require("data/observable-array");
 import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
 import definition = require("ui/list-view");
@@ -6,32 +7,22 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import builder = require("ui/builder");
 import label = require("ui/label");
 import color = require("color");
+import weakEventListener = require("ui/core/weak-event-listener");
 
 var ITEMS = "items";
 var ITEMTEMPLATE = "itemTemplate";
 var ISSCROLLING = "isScrolling";
 var LISTVIEW = "ListView";
-var ITEMSCHANGED = "_itemsChanged";
-var CHANGE = "change";
 var SEPARATORCOLOR = "separatorColor";
+var WEAKEVENTKEY = "_observableArrayChanged";
 
 export module knownTemplates {
     export var itemTemplate = "itemTemplate";
 }
 
 function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var listView = <definition.ListView>data.object;
-    var itemsChanged = listView[ITEMSCHANGED];
-
-    if (data.oldValue instanceof observable.Observable) {
-        (<observable.Observable>data.oldValue).off(CHANGE, itemsChanged);
-    }
-
-    if (data.newValue instanceof observable.Observable) {
-        (<observable.Observable>data.newValue).on(CHANGE, itemsChanged);
-    }
-
-    listView.refresh();
+    var listView = <ListView>data.object;
+    listView._onItemsPropertyChanged(data);
 }
 
 function onItemTemplatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -79,6 +70,7 @@ export class ListView extends view.View implements definition.ListView {
         );
 
     private _itemsChanged: (args: observable.EventData) => void;
+    private _weakEventListenerOptions: weakEventListener.WeakEventListenerOptions;
 
     constructor() {
         super();
@@ -142,6 +134,28 @@ export class ListView extends view.View implements definition.ListView {
         var lbl = new label.Label();
         lbl.text = this._getDataItem(index) + "";
         return lbl;
+    }
+
+
+    public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        if (data.oldValue instanceof observable.Observable && this._weakEventListenerOptions) {
+            weakEventListener.WeakEventListener.removeWeakEventListener(this._weakEventListenerOptions);
+            this._weakEventListenerOptions = null;
+        }
+
+        if (data.newValue instanceof observable.Observable) {
+            this._weakEventListenerOptions = {
+                targetWeakRef: new WeakRef(this),
+                sourceWeakRef: new WeakRef(data.newValue),
+                eventName: observableArray.ObservableArray.changeEvent,
+                handler: this._itemsChanged,
+                handlerContext: this,
+                key: WEAKEVENTKEY
+            };
+            weakEventListener.WeakEventListener.addWeakEventListener(this._weakEventListenerOptions);
+        }
+
+        this.refresh();
     }
 }
 
