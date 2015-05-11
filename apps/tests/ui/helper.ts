@@ -143,8 +143,8 @@ export function buildUIAndRunTest(controlToTest, testFunction, pageCss?) {
     }
 }
 
-export function navigateToModuleAndRunTest(moduleName, testFunction) {
-    navigateToModule(moduleName);
+export function navigateToModuleAndRunTest(moduleName, context, testFunction) {
+    navigateToModule(moduleName, context);
     try {
         testFunction(frame.topmost().currentPage);
     }
@@ -201,9 +201,9 @@ export function navigate(pageFactory: () => page.Page) {
     TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
 }
 
-export function navigateToModule(moduleName: string) {
+export function navigateToModule(moduleName: string, context?: any) {
     var currentPage = frame.topmost().currentPage;
-    frame.topmost().navigate({ moduleName: moduleName, animated: false });
+    frame.topmost().navigate({ moduleName: moduleName, context: context, animated: false });
     TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
     TKUnit.assert(frame.topmost().currentPage.isLoaded, "Current page should be loaded!");
 }
