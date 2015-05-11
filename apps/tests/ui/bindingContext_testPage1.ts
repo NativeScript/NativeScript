@@ -1,5 +1,4 @@
-﻿import frame = require("ui/frame");
-import observable = require("data/observable");
+﻿import observable = require("data/observable");
 import pageModule = require("ui/page");
 
 function loadViewModel() {
