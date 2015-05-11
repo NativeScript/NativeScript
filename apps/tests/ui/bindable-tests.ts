@@ -11,6 +11,7 @@ import pageModule = require("ui/page");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import bindingBuilder = require("ui/builder/binding-builder");
 import labelModule = require("ui/label");
+import textFieldModule = require("ui/text-field");
 
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic. 
@@ -472,5 +473,21 @@ export var test_TwoElementsBindingToSameBindingContext = function () {
         TKUnit.assertEqual(upperStackLabel.text, label2.text);
     }
 
-    helper.navigateToModuleAndRunTest("./tests/ui/bindingContext_testPage", testFunc);
+    helper.navigateToModuleAndRunTest("./tests/ui/bindingContext_testPage", null, testFunc);
+}
+
+export var test_BindingContext_NavigatingForwardAndBack = function () {
+    var expectedValue = "Tralala";
+    var testFunc = function (page: pageModule.Page) {
+        var innerTestFunc = function (childPage: pageModule.Page) {
+            var testTextField: textFieldModule.TextField = <textFieldModule.TextField>(childPage.getViewById("testTextField"));
+            testTextField.text = expectedValue;
+        };
+
+        helper.navigateToModuleAndRunTest("./tests/ui/bindingContext_testPage2", page.bindingContext, innerTestFunc);
+        var testLabel: labelModule.Label = <labelModule.Label>(page.getViewById("testLabel"));
+        TKUnit.assertEqual(testLabel.text, expectedValue);
+    }
+
+    helper.navigateToModuleAndRunTest("./tests/ui/bindingContext_testPage1", null, testFunc);
 }

@@ -1,0 +1,7 @@
+﻿<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded">
+	<StackLayout>
+		<StackLayout>
+			<Label id="testLabel" text="{{ testProperty }}" />
+		</StackLayout>
+	</StackLayout>
+</Page>

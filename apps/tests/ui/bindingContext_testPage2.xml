@@ -1,0 +1,5 @@
+﻿<Page navigatedTo="pageNavigatedTo">
+	<StackLayout>
+		<TextField id="testTextField" text="{{ testProperty }}" />
+	</StackLayout>
+</Page>
