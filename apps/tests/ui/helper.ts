@@ -11,6 +11,7 @@ import styling = require("ui/styling");
 var DELTA = 0.1;
 
 export var ASYNC = 0.2;
+export var MEMORY_ASYNC = 2;
 
 export function do_PageTest(test: (views: Array<view.View>) => void, content: view.View, secondView: view.View, thirdView: view.View) {
     var newPage: page.Page;
@@ -33,7 +34,7 @@ export function do_PageTest(test: (views: Array<view.View>) => void, content: vi
 export function do_PageTest_WithButton(test: (views: Array<view.View>) => void) {
     var newPage: page.Page;
     var btn: button.Button;
-    var pageFactory = function(): page.Page {
+    var pageFactory = function (): page.Page {
         newPage = new page.Page();
         btn = new button.Button();
         newPage.content = btn;
@@ -76,7 +77,7 @@ export function do_PageTest_WithStackLayout_AndButton(test: (views: Array<view.V
 
 export function do_PageTest_WithStackLayout_AndButton_NavigatedBack(test: (views: Array<view.View>) => void,
     assert: (views: Array<view.View>) => void) {
-    
+
     var newPage: page.Page;
     var stackLayout;
     var btn;
@@ -188,7 +189,7 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
 
     try {
         navigate(pageFactory);
-        TKUnit.waitUntilReady(() => { return testFinished; });
+        TKUnit.waitUntilReady(() => { return testFinished; }, MEMORY_ASYNC);
     }
     finally {
         goBack();
