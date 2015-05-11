@@ -1,5 +1,6 @@
 ﻿import observable = require("data/observable");
 import observableArrayDef = require("data/observable-array");
+import types = require("utils/types");
 
 export class ChangeType implements observableArrayDef.ChangeType {
     static Add = "add";
@@ -65,6 +66,12 @@ export class ObservableArray<T> extends observable.Observable implements observa
      */
     get length(): number {
         return this._array.length;
+    }
+    set length(value: number) {
+        if (types.isNumber(value) && this._array && this._array.length !== value) {
+            this._array = this._array.slice(0, value);
+            this._notifyLengthChange();
+        }
     }
 
     /**

@@ -45,6 +45,21 @@ export var test_ObservableArray_shouldCreateArrayFromSpecifiedLength = function 
     TKUnit.assert(array.length === 100, "ObservableArray should create array from specified length!");
 };
 
+export var test_ObservableArray_shouldBeAbleToSetLength = function () {
+    // <snippet module="data/observable-array" title="observable-array">
+    // ### Set ObservableArray length to new value.
+    // ``` JavaScript
+    var array = new observableArrayModule.ObservableArray(100);
+    // <hide>
+    TKUnit.assert(array.length === 100, "ObservableArray should create array from specified length!");
+    // </hide>
+    array.length = 50;
+    // ```
+    // </snippet>
+
+    TKUnit.assert(array.length === 50, "ObservableArray should respect new length!");
+};
+
 export var test_ObservableArray_getItemShouldReturnCorrectItem = function () {
     // <snippet module="data/observable-array" title="observable-array">
     // ### Get item at specified index using getItem(index) method.
