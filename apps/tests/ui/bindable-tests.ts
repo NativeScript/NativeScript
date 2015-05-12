@@ -491,3 +491,25 @@ export var test_BindingContext_NavigatingForwardAndBack = function () {
 
     helper.navigateToModuleAndRunTest("./tests/ui/bindingContext_testPage1", null, testFunc);
 }
+
+export var test_BindingToSource_FailsAfterBindingContextChange = function () {
+    var createLabel = function () {
+        var label = new labelModule.Label();
+        return label;
+    }
+    var labelViewModel = new observable.Observable();
+    var expectedValue = "testValue";
+    labelViewModel.set("testProperty", expectedValue);
+
+    var testFunc = function (views: Array<viewModule.View>) {
+        var testLabel = <labelModule.Label>(views[0]);
+        testLabel.bind({ sourceProperty: "testProperty", targetProperty: "text" }, labelViewModel);
+
+        var page = <pageModule.Page>(views[1]);
+        page.bindingContext = new observable.Observable;
+
+        TKUnit.assertEqual(testLabel.text, expectedValue);
+    }
+
+    helper.buildUIAndRunTest(createLabel(), testFunc);
+}

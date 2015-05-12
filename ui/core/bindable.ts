@@ -102,7 +102,8 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
         for (var p in this._bindings) {
             binding = this._bindings[p];
 
-            if (binding.updating) {
+            var sourceIsNotBindingContext = (binding.source && (binding.source.get() !== oldValue));
+            if (binding.updating || sourceIsNotBindingContext) {
                 continue;
             }
 
