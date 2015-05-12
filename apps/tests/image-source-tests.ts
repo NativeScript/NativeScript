@@ -159,3 +159,35 @@ export function testBase64Encode_JPEG() {
         expected,
         "Base 64 encoded JPEG");
 }
+
+export function testLoadFromBase64Encode_JPEG() {
+    var img: imageSource.ImageSource;
+    if (app.android) {
+        img = imageSource.fromBase64(expectedAndoirdJpeg);
+    } else if (app.ios) {
+        if (platform.device.osVersion[0] === '7') {
+            img = imageSource.fromBase64(expectedIos7Jpeg);
+        }
+        else {
+            img = imageSource.fromBase64(expectedIos8Jpeg);
+        }
+    }
+
+    TKUnit.assert(img !== null, "Actual: " + img);
+}
+
+export function testLoadFromBase64Encode_PNG() {
+    var img: imageSource.ImageSource;
+    if (app.android) {
+        img = imageSource.fromBase64(expectedAndroidPng);
+    } else if (app.ios) {
+        if (platform.device.osVersion[0] === '7') {
+            img = imageSource.fromBase64(expectedIos7Png);
+        }
+        else {
+            img = imageSource.fromBase64(expectedIos8Png);
+        }
+    }
+
+    TKUnit.assert(img !== null, "Actual: " + img);
+}

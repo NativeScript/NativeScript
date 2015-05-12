@@ -21,6 +21,11 @@ export function fromData(data: any): definition.ImageSource {
     return image.loadFromData(data) ? image : null;
 }
 
+export function fromBase64(source: string): definition.ImageSource {
+    var image = new definition.ImageSource();
+    return image.loadFromBase64(source) ? image : null;
+}
+
 export function fromNativeSource(source: any): definition.ImageSource {
     var image = new definition.ImageSource();
     return image.setNativeSource(source) ? image : null;
