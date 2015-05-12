@@ -45,6 +45,12 @@ declare module "image-source" {
         */
         loadFromData(data: any): boolean;
 
+        /**
+         * Loads this instance from the specified native image data.
+         * @param source The Base64 string to load the image from.
+         */
+        loadFromBase64(source: string): boolean;
+
        /**
         * Sets the provided native source object (typically a Bitmap).
         * This will update either the android or ios properties, depending on the target os.
@@ -85,6 +91,12 @@ declare module "image-source" {
     * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
     */
     export function fromData(data: any): ImageSource;
+
+    /**
+     * Creates a new ImageSource instance and loads it from the specified resource name.
+     * @param source The Base64 string to load the image from.
+     */
+    export function fromBase64(source: string): ImageSource;
 
    /**
     * Creates a new ImageSource instance and sets the provided native source object (typically a Bitmap).

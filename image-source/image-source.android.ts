@@ -47,6 +47,14 @@ export class ImageSource implements definition.ImageSource {
         return this.android != null;
     }
 
+    public loadFromBase64(source: string): boolean {
+        if (types.isString(source)) {
+            var bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
+            this.android = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
+        }
+        return this.android != null;
+    }
+
     public setNativeSource(source: any): boolean {
         this.android = source;
         return source != null;

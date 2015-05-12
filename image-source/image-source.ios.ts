@@ -29,7 +29,15 @@ export class ImageSource implements definition.ImageSource {
     }
 
     public loadFromData(data: any): boolean {
-        this.ios =  UIImage.imageWithData(data);
+        this.ios = UIImage.imageWithData(data);
+        return this.ios != null;
+    }
+
+    public loadFromBase64(source: string): boolean {
+        if (types.isString(source)) {
+            var data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.NSDataBase64DecodingIgnoreUnknownCharacters);
+            this.ios = UIImage.imageWithData(data);
+        }
         return this.ios != null;
     }
 
