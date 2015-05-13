@@ -142,7 +142,7 @@ export class GesturesObserver implements definition.GesturesObserver {
 
                     var observer = that.get();
                     if (observer && observer.callback) {
-                        observer.callback.apply(observer._context, args);
+                        observer.callback.call(observer._context, args);
                     }
 
                 }
@@ -186,7 +186,7 @@ function _getPanArgs(deltaX: number, deltaY: number, view: view.View,
 
 function _executeCallback(observer: GesturesObserver, args: definition.GestureEventData) {
     if (observer && observer.callback) {
-        observer.callback.apply((<any>observer)._context, args);
+        observer.callback.call((<any>observer)._context, args);
     }
 }
 
