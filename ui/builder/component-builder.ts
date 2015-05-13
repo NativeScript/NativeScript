@@ -109,6 +109,8 @@ export function setPropertyValue(instance: view.View, instanceModule: Object, ex
     if (isBinding(propertyValue) && instance.bind) {
         if (isEvent) {
             attachEventBinding(instance, propertyName, propertyValue);
+        } else if (isGesture(propertyName, instance)) {
+            attachGestureBinding(instance, propertyName, propertyValue);
         } else {
             var bindOptions = bindingBuilder.getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
             instance.bind({
@@ -177,6 +179,22 @@ function attachEventBinding(instance: view.View, eventName: string, value: strin
             // Check if the handler is function and add it to the instance for specified event name.
             if (types.isFunction(handler)) {
                 instance.on(eventName, handler, instance.bindingContext);
+            }
+            instance.off(observable.Observable.propertyChangeEvent, propertyChangeHandler);
+        }
+    };
+
+    instance.on(observable.Observable.propertyChangeEvent, propertyChangeHandler);
+}
+
+function attachGestureBinding(instance: view.View, gestureName: string, value: string) {
+    // Get the event handler from instance.bindingContext.
+    var propertyChangeHandler = (args: observable.PropertyChangeData) => {
+        if (args.propertyName === "bindingContext") {
+            var handler = instance.bindingContext && instance.bindingContext[getBindingExpressionFromAttribute(value)];
+            // Check if the handler is function and add it to the instance for specified event name.
+            if (types.isFunction(handler)) {
+                instance.observe(gestures.fromString(gestureName.toLowerCase()), handler);
             }
             instance.off(observable.Observable.propertyChangeEvent, propertyChangeHandler);
         }

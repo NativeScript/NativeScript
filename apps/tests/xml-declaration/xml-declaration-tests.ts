@@ -2,6 +2,7 @@
 import view = require("ui/core/view");
 import builder = require("ui/builder");
 import page = require("ui/page");
+import buttonModule = require("ui/button");
 import switchModule = require("ui/switch");
 import textFieldModule = require("ui/text-field");
 import gridLayoutModule = require("ui/layouts/grid-layout");
@@ -148,6 +149,30 @@ export function test_parse_ShouldParseBindingsWithObservable() {
     obj.set("myProp", false);
 
     TKUnit.assert(sw.checked === false, "Expected result: false; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
+};
+
+export function test_parse_ShouldParseBindingsToEvents() {
+    var p = <page.Page>builder.parse("<Page><Button tap='{{ myTap }}' /></Page>");
+    p.bindingContext = {
+        myTap: function (args) {
+            //
+        }
+    };
+    var btn = <buttonModule.Button>p.content;
+
+    TKUnit.assert(btn.hasListeners("tap"), "Expected result: true.");
+};
+
+export function test_parse_ShouldParseBindingsToGestures() {
+    var p = <page.Page>builder.parse("<Page><Label tap='{{ myTap }}' /></Page>");
+    p.bindingContext = {
+        myTap: function (args) {
+            //
+        }
+    };
+    var lbl = <labelModule.Label>p.content;
+
+    TKUnit.assert((<any>lbl)._gesturesObserver !== undefined, "Expected result: true.");
 };
 
 export function test_parse_ShouldParseSubProperties() {
