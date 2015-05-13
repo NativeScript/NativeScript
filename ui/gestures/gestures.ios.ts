@@ -16,12 +16,18 @@ class UIGestureRecognizerImpl extends NSObject {
     private _owner: GesturesObserver;
     private _type: any;
     private _callback: Function;
+    private _context: any;
 
-    public initWithOwnerTypeCallback(owner: GesturesObserver, type: any, callback?: Function): UIGestureRecognizerImpl {
+    public initWithOwnerTypeCallback(owner: GesturesObserver, type: any, callback?: Function, thisArg?: any): UIGestureRecognizerImpl {
         this._owner = owner;
         this._type = type;
+
         if (callback) {
             this._callback = callback;
+        }
+
+        if (thisArg) {
+            this._context = thisArg;
         }
 
         return this;
@@ -44,7 +50,7 @@ class UIGestureRecognizerImpl extends NSObject {
         };
 
         if (callback) {
-            callback(args);
+            callback.call(this._context, args);
         }
     }
 }
@@ -53,6 +59,7 @@ export class GesturesObserver implements definition.GesturesObserver {
     public _callback: (args: definition.GestureEventData) => void;
     public _target: view.View;
     private _recognizers: {};
+    private _context: any;
 
     private _onTargetLoaded: (data: observable.EventData) => void;
     private _onTargetUnloaded: (data: observable.EventData) => void;
@@ -62,9 +69,10 @@ export class GesturesObserver implements definition.GesturesObserver {
         this._recognizers = {};
     }
 
-    public observe(target: view.View, type: definition.GestureTypes) {
+    public observe(target: view.View, type: definition.GestureTypes, thisArg?: any) {
         if (target) {
             this._target = target;
+            this._context = thisArg;
             this._onTargetLoaded = args => {
                 trace.write(this._target + ".target loaded. _nativeView:" + this._target._nativeView, "gestures");
                 this._attach(target, type);
@@ -84,7 +92,7 @@ export class GesturesObserver implements definition.GesturesObserver {
 
     }
 
-    private _attach(target: view.View, type: definition.GestureTypes) { 
+    private _attach(target: view.View, type: definition.GestureTypes) {
         trace.write(target + "._attach() _nativeView:" + target._nativeView, "gestures");
         this._dettach();
 
@@ -175,14 +183,14 @@ export class GesturesObserver implements definition.GesturesObserver {
 
     private _executeCallback(args: definition.GestureEventData) {
         if (this._callback) {
-            this._callback(args);
+            this._callback.call(this._context, args);
         }
     }
 
     private _createRecognizer(type: definition.GestureTypes, callback?: (args: definition.GestureEventData) => void, swipeDirection?: UISwipeGestureRecognizerDirection): UIGestureRecognizer {
         var recognizer: UIGestureRecognizer;
         var name = definition.toString(type);
-        var target = _createUIGestureRecognizerTarget(this, type, callback);
+        var target = _createUIGestureRecognizerTarget(this, type, callback, this._context);
         var recognizerType = _getUIGestureRecognizerType(type);
 
         if (recognizerType) {
@@ -194,7 +202,7 @@ export class GesturesObserver implements definition.GesturesObserver {
             else {
                 recognizer = recognizerType.alloc().initWithTargetAction(target, "recognize");
             }
-            
+
             if (recognizer) {
                 this._recognizers[name] = <RecognizerCache>{ recognizer: recognizer, target: target };
             }
@@ -204,8 +212,8 @@ export class GesturesObserver implements definition.GesturesObserver {
     }
 }
 
-function _createUIGestureRecognizerTarget(owner: GesturesObserver, type: definition.GestureTypes, callback?: (args: definition.GestureEventData) => void): any {
-    return UIGestureRecognizerImpl.new().initWithOwnerTypeCallback(owner, type, callback);
+function _createUIGestureRecognizerTarget(owner: GesturesObserver, type: definition.GestureTypes, callback?: (args: definition.GestureEventData) => void, thisArg?: any): any {
+    return UIGestureRecognizerImpl.new().initWithOwnerTypeCallback(owner, type, callback, thisArg);
 }
 
 interface RecognizerCache {

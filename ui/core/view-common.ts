@@ -147,8 +147,8 @@ export class View extends proxy.ProxyObject implements definition.View {
         this._visualState = visualStateConstants.Normal;
     }
 
-    observe(type: number, callback: (args: gestures.GestureEventData) => void): gestures.GesturesObserver {
-        this._gesturesObserver = gestures.observe(this, type, callback);
+    observe(type: number, callback: (args: gestures.GestureEventData) => void, thisArg?: any): gestures.GesturesObserver {
+        this._gesturesObserver = gestures.observe(this, type, callback, thisArg);
         return this._gesturesObserver;
     }
 

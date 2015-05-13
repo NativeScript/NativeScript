@@ -28,9 +28,9 @@ export enum SwipeDirection {
     down = 1 << 3
 }
 
-export function observe(target: view.View, type: number, callback: (args: definition.GestureEventData) => void): definition.GesturesObserver {
+export function observe(target: view.View, type: number, callback: (args: definition.GestureEventData) => void, thisArg?: any): definition.GesturesObserver {
     var observer = new definition.GesturesObserver(callback);
-    observer.observe(target, type);
+    observer.observe(target, type, thisArg);
     return observer;
 }
 

@@ -126,7 +126,7 @@ declare module "ui/gestures" {
          * @param target - View which will be watched for originating a specific gesture.
          * @param type - Type of the gesture.
          */
-        observe(target: view.View, type: GestureTypes);
+        observe(target: view.View, type: GestureTypes, thisArg?: any);
 
         /**
          * Disconnects the gesture observer.
@@ -140,7 +140,7 @@ declare module "ui/gestures" {
      * @param type - Type of the gesture.
      * @param callback - A function that will be executed when a gesture is received.
      */
-    export function observe(target: view.View, type: GestureTypes, callback: (args: GestureEventData) => void): GesturesObserver;
+    export function observe(target: view.View, type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): GesturesObserver;
 
     /**
      * Returns a string representation of a gesture type.
