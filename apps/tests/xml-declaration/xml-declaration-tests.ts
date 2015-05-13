@@ -153,7 +153,11 @@ export function test_parse_ShouldParseBindingsWithObservable() {
 
 export function test_parse_ShouldParseBindingsToEvents() {
     var p = <page.Page>builder.parse("<Page><Button tap='{{ myTap }}' /></Page>");
-    p.bindingContext = { myTap: function (args) { } };
+    p.bindingContext = {
+        myTap: function (args) {
+            //
+        }
+    };
     var btn = <buttonModule.Button>p.content;
 
     TKUnit.assert(btn.hasListeners("tap"), "Expected result: true.");
@@ -161,7 +165,11 @@ export function test_parse_ShouldParseBindingsToEvents() {
 
 export function test_parse_ShouldParseBindingsToGestures() {
     var p = <page.Page>builder.parse("<Page><Label tap='{{ myTap }}' /></Page>");
-    p.bindingContext = { myTap: function (args) { } };
+    p.bindingContext = {
+        myTap: function (args) {
+            //
+        }
+    };
     var lbl = <labelModule.Label>p.content;
 
     TKUnit.assert((<any>lbl)._gesturesObserver !== undefined, "Expected result: true.");
