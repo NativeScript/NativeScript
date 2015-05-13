@@ -1,7 +1,6 @@
 ﻿import frameCommon = require("ui/frame/frame-common");
 import definition = require("ui/frame");
 import trace = require("trace");
-import imageSource = require("image-source");
 import pages = require("ui/page");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
@@ -165,39 +164,6 @@ export class Frame extends frameCommon.Frame {
         var navigationBar = this._ios.controller.navigationBar;
         return (navigationBar && !this._ios.controller.navigationBarHidden) ? navigationBar.frame.size.height : 0;
     }
-
-    public _invalidateOptionsMenu() {
-        this.populateMenuItems(this.currentPage);
-    }
-
-    populateMenuItems(page: pages.Page) {
-        var items = page.optionsMenu.getItems();
-
-        var navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
-        var array: NSMutableArray = items.length > 0 ? NSMutableArray.new() : null;
-
-        for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            var tapHandler = TapBarItemHandlerImpl.new().initWithOwner(item);
-            // associate handler with menuItem or it will get collected by JSC.
-            (<any>item).handler = tapHandler;
-
-            var barButtonItem: UIBarButtonItem;
-            if (item.icon) {
-                var img = imageSource.fromResource(item.icon);
-                barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img.ios, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
-            }
-            else {
-                barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
-            }
-
-            array.addObject(barButtonItem);
-        }
-
-        if (array) {
-            navigationItem.setRightBarButtonItemsAnimated(array, true);
-        }
-    }
 }
 
 class UINavigationControllerImpl extends UINavigationController implements UINavigationControllerDelegate {
@@ -240,7 +206,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             }
 
             frame._addView(newPage);
-            frame.populateMenuItems(newPage);
+            newPage._invalidateOptionsMenu();
         }
         else if (newPage.parent !== frame) {
             throw new Error("Page is already shown on another frame.");
@@ -321,25 +287,4 @@ class iOSFrame implements definition.iOSFrame {
     public set navBarVisibility(value: string) {
         this._navBarVisibility = value;
     }
-}
-
-class TapBarItemHandlerImpl extends NSObject {
-    static new(): TapBarItemHandlerImpl {
-        return <TapBarItemHandlerImpl>super.new();
-    }
-
-    private _owner: pages.MenuItem;
-
-    public initWithOwner(owner: pages.MenuItem): TapBarItemHandlerImpl {
-        this._owner = owner;
-        return this;
-    }
-
-    public tap(args) {
-        this._owner._raiseTap();
-    }
-
-    public static ObjCExposedMethods = {
-        "tap": { returns: interop.types.void, params: [interop.types.id] }
-    };
 }

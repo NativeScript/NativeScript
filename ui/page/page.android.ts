@@ -28,4 +28,10 @@ export class Page extends pageCommon.Page {
         this._isBackNavigation = isBackNavigation;
         super.onNavigatedFrom(isBackNavigation);
     }
+
+    public _invalidateOptionsMenu() {
+        if (this.frame && this.frame.android && this.frame.android.activity) {
+            this.frame.android.activity.invalidateOptionsMenu();
+        }
+    }
 }

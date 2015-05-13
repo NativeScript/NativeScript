@@ -110,6 +110,7 @@ declare module "ui/page" {
 
         //@private
         _getStyleScope(): styleScope.StyleScope;
+        _invalidateOptionsMenu();
         //@endprivate
     }
 

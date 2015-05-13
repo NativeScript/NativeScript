@@ -89,7 +89,6 @@ declare module "ui/frame" {
 
         //@private
         _processNavigationQueue(page: pages.Page);
-        _invalidateOptionsMenu();
         //@endprivate
 
         /**
