@@ -366,12 +366,6 @@ export class Frame extends frameCommon.Frame {
     public _clearAndroidReference() {
         // we should keep the reference to underlying native object, since frame can contain many pages.
     }
-
-    public _invalidateOptionsMenu() {
-        if (this.android && this.android.activity) {
-            this.android.activity.invalidateOptionsMenu();
-        }
-    }
 }
 
 declare module com {

@@ -1,6 +1,7 @@
 ﻿import pageCommon = require("ui/page/page-common");
 import definition = require("ui/page");
 import viewModule = require("ui/core/view");
+import imageSource = require("image-source");
 import trace = require("trace");
 
 declare var exports;
@@ -107,4 +108,56 @@ export class Page extends pageCommon.Page {
     get _nativeView(): any {
         return this.ios.view;
     }
+
+    public _invalidateOptionsMenu() {
+        this.populateMenuItems();
+    }
+
+    populateMenuItems() {
+        var items = this.optionsMenu.getItems();
+
+        var navigationItem: UINavigationItem = (<UIViewController>this.ios).navigationItem;
+        var array: NSMutableArray = items.length > 0 ? NSMutableArray.new() : null;
+
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            var tapHandler = TapBarItemHandlerImpl.new().initWithOwner(item);
+            // associate handler with menuItem or it will get collected by JSC.
+            (<any>item).handler = tapHandler;
+
+            var barButtonItem: UIBarButtonItem;
+            if (item.icon) {
+                var img = imageSource.fromResource(item.icon);
+                barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img.ios, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
+            }
+            else {
+                barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
+            }
+
+            array.addObject(barButtonItem);
+        }
+
+        navigationItem.setRightBarButtonItemsAnimated(array, true);
+    }
+}
+
+class TapBarItemHandlerImpl extends NSObject {
+    static new(): TapBarItemHandlerImpl {
+        return <TapBarItemHandlerImpl>super.new();
+    }
+
+    private _owner: definition.MenuItem;
+
+    public initWithOwner(owner: definition.MenuItem): TapBarItemHandlerImpl {
+        this._owner = owner;
+        return this;
+    }
+
+    public tap(args) {
+        this._owner._raiseTap();
+    }
+
+    public static ObjCExposedMethods = {
+        "tap": { returns: interop.types.void, params: [interop.types.id] }
+    };
 }

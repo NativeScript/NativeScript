@@ -118,6 +118,10 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
         return this._styleScope;
     }
 
+    public _invalidateOptionsMenu() {
+        // 
+    }
+
     private _applyCss() {
         if (this._cssApplied) {
             return;
@@ -217,8 +221,8 @@ export class OptionsMenu implements dts.OptionsMenu {
     }
 
     invalidate() {
-        if (this._page.frame) {
-            this._page.frame._invalidateOptionsMenu();
+        if (this._page) {
+            this._page._invalidateOptionsMenu();
         }
     }
 }

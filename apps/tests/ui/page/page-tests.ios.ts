@@ -60,3 +60,42 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
         helper.goBack();
     }
 }
+
+export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript() {
+    var page: PageModule.Page;
+    var label: LabelModule.Label;
+
+    var handler = function (data) {
+        page.off(PageModule.Page.navigatedToEvent, handler);
+        var menuItems = page.optionsMenu.getItems();
+        var i;
+        for (i = menuItems.length - 1; i >= 0; i--) {
+            page.optionsMenu.removeItem(menuItems[i]);
+        }
+    }
+
+    var pageFactory = function (): PageModule.Page {
+        page = new PageModule.Page();
+        page.on(PageModule.Page.navigatedToEvent, handler);
+
+        var mi = new PageModule.MenuItem();
+        mi.text = "B";
+        page.optionsMenu.addItem(mi);
+        label = new LabelModule.Label();
+        label.text = "Text";
+        page.content = label;
+        return page;
+    };
+
+    helper.navigate(pageFactory);
+
+    try {
+        var navigationItem: UINavigationItem = ((<UIViewController>page.ios).navigationItem);
+        var rightBarButtonItemsCount = navigationItem.rightBarButtonItems ? navigationItem.rightBarButtonItems.count : 0;
+        TKUnit.assertEqual(rightBarButtonItemsCount, 0, "After remove all items native items should be 0.");
+    }
+    finally {
+        page.off(view.View.loadedEvent, handler);
+        helper.goBack();
+    }
+}
