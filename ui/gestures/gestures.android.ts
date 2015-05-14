@@ -14,6 +14,7 @@ var SWIPE_VELOCITY_THRESHOLD = 100;
 export class GesturesObserver implements definition.GesturesObserver {
     private _callback: (args: definition.GestureEventData) => void;
     private _target: view.View;
+    private _context: any;
 
     private _onTouchListener: android.view.View.OnTouchListener;
     public _simpleGestureDetector: android.view.GestureDetector;
@@ -32,17 +33,18 @@ export class GesturesObserver implements definition.GesturesObserver {
         return this._callback;
     }
 
-    public observe(target: view.View, type: definition.GestureTypes) {
+    public observe(target: view.View, type: definition.GestureTypes, thisArg?: any) {
         if (target) {
             this._target = target;
-            this._onTargetLoaded = args => { 
+            this._context = thisArg;
+            this._onTargetLoaded = args => {
                 trace.write(this._target + ".target loaded. android:" + this._target.android, "gestures");
-                this._attach(target, type); 
+                this._attach(target, type);
             };
-            this._onTargetUnloaded = args => { 
+            this._onTargetUnloaded = args => {
                 trace.write(this._target + ".target unloaded. android:" + this._target.android, "gestures");
                 this._dettach();
-             };
+            };
 
             target.on(view.View.loadedEvent, this._onTargetLoaded);
             target.on(view.View.unloadedEvent, this._onTargetUnloaded);
@@ -140,7 +142,7 @@ export class GesturesObserver implements definition.GesturesObserver {
 
                     var observer = that.get();
                     if (observer && observer.callback) {
-                        observer.callback(args);
+                        observer.callback.call(observer._context, args);
                     }
 
                 }
@@ -184,7 +186,7 @@ function _getPanArgs(deltaX: number, deltaY: number, view: view.View,
 
 function _executeCallback(observer: GesturesObserver, args: definition.GestureEventData) {
     if (observer && observer.callback) {
-        observer.callback(args);
+        observer.callback.call((<any>observer)._context, args);
     }
 }
 

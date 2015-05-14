@@ -194,7 +194,7 @@ function attachGestureBinding(instance: view.View, gestureName: string, value: s
             var handler = instance.bindingContext && instance.bindingContext[getBindingExpressionFromAttribute(value)];
             // Check if the handler is function and add it to the instance for specified event name.
             if (types.isFunction(handler)) {
-                instance.observe(gestures.fromString(gestureName.toLowerCase()), handler);
+                instance.observe(gestures.fromString(gestureName.toLowerCase()), handler, instance.bindingContext);
             }
             instance.off(observable.Observable.propertyChangeEvent, propertyChangeHandler);
         }
