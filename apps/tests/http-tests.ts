@@ -160,6 +160,20 @@ export var test_request_shouldFailIfOptionsUrlIsNotDefined = function (done) {
     });
 };
 
+export var test_request_requestShouldTimeout = function (done) {
+    var result;
+    http.request({ url: "http://10.255.255.1", method: "GET", timeout: 500 }).catch(function (e) {
+        result = e;
+        try {
+            TKUnit.assert(result instanceof Error, "Result from request().fail() should be Error! Current type is " + typeof result);
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    });
+};
+
 export var test_request_responseStatusCodeShouldBeDefined = function (done) {
     var result: http.HttpResponse;
 
