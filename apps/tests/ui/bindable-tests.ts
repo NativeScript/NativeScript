@@ -12,6 +12,7 @@ import stackLayoutModule = require("ui/layouts/stack-layout");
 import bindingBuilder = require("ui/builder/binding-builder");
 import labelModule = require("ui/label");
 import textFieldModule = require("ui/text-field");
+import fs = require("file-system");
 
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic. 
@@ -472,8 +473,8 @@ export var test_TwoElementsBindingToSameBindingContext = function () {
         TKUnit.assertEqual(upperStackLabel.text, label1.text);
         TKUnit.assertEqual(upperStackLabel.text, label2.text);
     }
-
-    helper.navigateToModuleAndRunTest("./tests/ui/bindingContext_testPage", null, testFunc);
+    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+    helper.navigateToModuleAndRunTest(("." + moduleName + "/bindingContext_testPage"), null, testFunc);
 }
 
 export var test_BindingContext_NavigatingForwardAndBack = function () {
@@ -483,13 +484,14 @@ export var test_BindingContext_NavigatingForwardAndBack = function () {
             var testTextField: textFieldModule.TextField = <textFieldModule.TextField>(childPage.getViewById("testTextField"));
             testTextField.text = expectedValue;
         };
-
-        helper.navigateToModuleAndRunTest("./tests/ui/bindingContext_testPage2", page.bindingContext, innerTestFunc);
+        var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+        helper.navigateToModuleAndRunTest(("." + moduleName + "/bindingContext_testPage2"), page.bindingContext, innerTestFunc);
         var testLabel: labelModule.Label = <labelModule.Label>(page.getViewById("testLabel"));
         TKUnit.assertEqual(testLabel.text, expectedValue);
     }
 
-    helper.navigateToModuleAndRunTest("./tests/ui/bindingContext_testPage1", null, testFunc);
+    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+    helper.navigateToModuleAndRunTest(("." + moduleName + "/bindingContext_testPage1"), null, testFunc);
 }
 
 export var test_BindingToSource_FailsAfterBindingContextChange = function () {
