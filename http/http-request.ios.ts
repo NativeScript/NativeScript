@@ -32,12 +32,12 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                 }
             }
 
-            if (types.isNumber(options.timeout)) {
-                urlRequest.timeoutInterval = options.timeout * 1000;
-            }
-
             if (types.isString(options.content)) {
                 urlRequest.HTTPBody = NSString.alloc().initWithString(options.content).dataUsingEncoding(4);
+            }
+            
+            if (types.isNumber(options.timeout)) {
+                urlRequest.timeoutInterval = options.timeout / 1000;
             }
 
             var dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest,

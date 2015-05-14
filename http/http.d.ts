@@ -72,7 +72,7 @@ declare module "http" {
         content?: string;
 
          /**
-          * Gets or sets the request timeout.
+          * Gets or sets the request timeout in milliseconds.
           */
         timeout?: number;
     }
