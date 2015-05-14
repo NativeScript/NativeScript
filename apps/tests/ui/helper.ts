@@ -7,6 +7,7 @@ import TKUnit = require("../TKUnit");
 import utils = require("utils/utils");
 import types = require("utils/types");
 import styling = require("ui/styling");
+import platform = require("platform"); 
 
 var DELTA = 0.1;
 
@@ -174,11 +175,7 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
             }
 
             sp.removeChild(weakRef.get());
-            if (newPage.ios) {
-                // Could cause GC on the next call.
-                new ArrayBuffer(4 * 1024 * 1024);
-            }
-            utils.GC();
+            forceGC();
 
             TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
             testFinished = true;
@@ -222,4 +219,12 @@ export function assertAreClose(actual: number, expected: number, message: string
     var delta = Math.floor(density) !== density ? 1.1 : DELTA;
 
     TKUnit.assertAreClose(actual, expected, delta, message);
+}
+
+export function forceGC() {
+    if (platform.device.os === platform.platformNames.ios) {
+        // Could cause GC on the next call.
+        new ArrayBuffer(4 * 1024 * 1024);
+    }
+    utils.GC();
 }

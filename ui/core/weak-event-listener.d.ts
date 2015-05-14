@@ -8,12 +8,12 @@ declare module "ui/core/weak-event-listener" {
         /**
          * Weak reference to the subscriber (target) of the event listener.
          */
-        targetWeakRef: WeakRef<any>;
+        target: any;
 
         /**
-         * Weak reference to an instance of observable.Observable class which emits the event.
+         * Weak reference to an instance of observable. Observable class which emits the event.
          */
-        sourceWeakRef: WeakRef<observable.Observable>;
+        source: observable.Observable;
 
         /**
          * Name of the event.
@@ -24,16 +24,6 @@ declare module "ui/core/weak-event-listener" {
          * The function which should be called when event occurs.
          */
         handler: (eventData: observable.EventData) => void;
-
-        /**
-         * The context (thisArg) in which handler should be executed.
-         */
-        handlerContext?: any;
-
-        /**
-         * A string to use as key for key value pair instance.
-         */
-        key: string;
     }
 
     /**
@@ -43,14 +33,26 @@ declare module "ui/core/weak-event-listener" {
         /**
          * Creates and initialize WeakEventListener (if all required options are set).
          * @param options An instance of WeakEventListenerOptions needed to create WeakEventListener instance.
-         * Returns true if a WeakEventListener instance is created successfully.
+         * Returns The id of the WeakEventListener object to be used in removeWeakEventListener method.
          */
-        static addWeakEventListener(options: WeakEventListenerOptions): boolean;
+        static addWeakEventListener(options: WeakEventListenerOptions): number;
 
         /**
          * Removes and clears all resources from WeakEventListener.
-         * @param options An instance of WeakEventListenerOptions used to create the WeakEventListener instance.
+         * @param The id of the WeakEventListener object.
          */
-        static removeWeakEventListener(options: WeakEventListenerOptions): void;
+        static removeWeakEventListener(listenerId: number): void;
+
+        /** 
+         * Specifies how often will internal clearing of dead references will occur. 
+         * Clearing will be triggered on addWeakEventListener on every N times where N is
+         * the value of this property. Set 0 to disable clearing.
+         */
+        static cleanDeadReferencesCountTrigger: number;
+
+        //@private
+        static _cleanDeadReferences();
+        static _weakEventListeners: Object;
+        //@endprivate
     }
 }

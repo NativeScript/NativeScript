@@ -33,11 +33,11 @@ function onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChang
 (<proxy.PropertyMetadata>formattedTextProperty.metadata).onSetNativeValue = onFormattedTextPropertyChanged;
 
 export class Button extends view.View implements definition.Button {
-
     public static tapEvent = "tap";
-
     public static textProperty = textProperty;
     public static formattedTextProperty = formattedTextProperty;
+
+    private _formattedTextWeakListenerId: number;
 
     public _onBindingContextChanged(oldValue: any, newValue: any) {
         super._onBindingContextChanged(oldValue, newValue);
@@ -60,20 +60,17 @@ export class Button extends view.View implements definition.Button {
 
     set formattedText(value: formattedString.FormattedString) {
         if (this.formattedText !== value) {
-            var weakEventOptions: weakEventListener.WeakEventListenerOptions = {
-                targetWeakRef: new WeakRef(this),
-                eventName: observable.Observable.propertyChangeEvent,
-                sourceWeakRef: new WeakRef(value),
-                handler: this.onFormattedTextChanged,
-                handlerContext: this,
-                key: "formattedText"
-            };
             if (this.formattedText) {
-                weakEventListener.WeakEventListener.removeWeakEventListener(weakEventOptions);
+                weakEventListener.WeakEventListener.removeWeakEventListener(this._formattedTextWeakListenerId);
             }
             this._setValue(Button.formattedTextProperty, value);
             if (value) {
-                weakEventListener.WeakEventListener.addWeakEventListener(weakEventOptions);
+                this._formattedTextWeakListenerId = weakEventListener.WeakEventListener.addWeakEventListener({
+                    target: this,
+                    source: value,
+                    eventName: observable.Observable.propertyChangeEvent,
+                    handler: this.onFormattedTextChanged
+                });
             }
         }
     }

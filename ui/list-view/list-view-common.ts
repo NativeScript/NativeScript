@@ -8,13 +8,13 @@ import builder = require("ui/builder");
 import label = require("ui/label");
 import color = require("color");
 import weakEventListener = require("ui/core/weak-event-listener");
+import types = require("utils/types");
 
 var ITEMS = "items";
 var ITEMTEMPLATE = "itemTemplate";
 var ISSCROLLING = "isScrolling";
 var LISTVIEW = "ListView";
 var SEPARATORCOLOR = "separatorColor";
-var WEAKEVENTKEY = "_observableArrayChanged";
 
 export module knownTemplates {
     export var itemTemplate = "itemTemplate";
@@ -69,13 +69,7 @@ export class ListView extends view.View implements definition.ListView {
             )
         );
 
-    private _itemsChanged: (args: observable.EventData) => void;
-    private _weakEventListenerOptions: weakEventListener.WeakEventListenerOptions;
-
-    constructor() {
-        super();
-        this._itemsChanged = (args: observable.EventData) => { this.refresh(); };
-    }
+    private _itemsChangedWeakListenerId: number;
 
     get items(): any {
         return this._getValue(ListView.itemsProperty);
@@ -136,25 +130,25 @@ export class ListView extends view.View implements definition.ListView {
         return lbl;
     }
 
-
     public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (data.oldValue instanceof observable.Observable && this._weakEventListenerOptions) {
-            weakEventListener.WeakEventListener.removeWeakEventListener(this._weakEventListenerOptions);
-            this._weakEventListenerOptions = null;
+        if (data.oldValue instanceof observable.Observable && types.isDefined(this._itemsChangedWeakListenerId)) {
+            weakEventListener.WeakEventListener.removeWeakEventListener(this._itemsChangedWeakListenerId);
+            delete this._itemsChangedWeakListenerId;
         }
 
         if (data.newValue instanceof observable.Observable) {
-            this._weakEventListenerOptions = {
-                targetWeakRef: new WeakRef(this),
-                sourceWeakRef: new WeakRef(data.newValue),
+            this._itemsChangedWeakListenerId = weakEventListener.WeakEventListener.addWeakEventListener({
+                target: this,
+                source: data.newValue,
                 eventName: observableArray.ObservableArray.changeEvent,
-                handler: this._itemsChanged,
-                handlerContext: this,
-                key: WEAKEVENTKEY
-            };
-            weakEventListener.WeakEventListener.addWeakEventListener(this._weakEventListenerOptions);
+                handler: this._onItemsChanged,
+            });
         }
 
+        this.refresh();
+    }
+
+    private _onItemsChanged(args: observable.EventData) {
         this.refresh();
     }
 }

@@ -38,6 +38,8 @@ export class TextBase extends view.View implements definition.TextBase {
     public static textProperty = textProperty;
     public static formattedTextProperty = formattedTextProperty;
 
+    private _formattedTextChangedListenerId: number;
+
     constructor(options?: definition.Options) {
         super(options);
     }
@@ -77,20 +79,18 @@ export class TextBase extends view.View implements definition.TextBase {
 
     set formattedText(value: formattedString.FormattedString) {
         if (this.formattedText !== value) {
-            var weakEventOptions: weakEventListener.WeakEventListenerOptions = {
-                targetWeakRef: new WeakRef(this),
-                eventName: observable.Observable.propertyChangeEvent,
-                sourceWeakRef: new WeakRef(value),
-                handler: this.onFormattedTextChanged,
-                handlerContext: this,
-                key: "formattedText"
-            };
             if (this.formattedText) {
-                weakEventListener.WeakEventListener.removeWeakEventListener(weakEventOptions);
+                weakEventListener.WeakEventListener.removeWeakEventListener(this._formattedTextChangedListenerId);
+                delete this._formattedTextChangedListenerId;
             }
             this._setValue(TextBase.formattedTextProperty, value);
             if (value) {
-                weakEventListener.WeakEventListener.addWeakEventListener(weakEventOptions);
+                this._formattedTextChangedListenerId = weakEventListener.WeakEventListener.addWeakEventListener({
+                    target: this,
+                    source: value,
+                    eventName: observable.Observable.propertyChangeEvent,
+                    handler: this.onFormattedTextChanged,
+                });
             }
         }
     }
