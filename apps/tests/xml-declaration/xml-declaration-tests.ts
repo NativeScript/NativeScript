@@ -165,14 +165,19 @@ export function test_parse_ShouldParseBindingsToEvents() {
 
 export function test_parse_ShouldParseBindingsToGestures() {
     var p = <page.Page>builder.parse("<Page><Label tap='{{ myTap }}' /></Page>");
-    p.bindingContext = {
+    var context = {
         myTap: function (args) {
             //
         }
     };
+
+    p.bindingContext = context;
     var lbl = <labelModule.Label>p.content;
 
-    TKUnit.assert((<any>lbl)._gesturesObserver !== undefined, "Expected result: true.");
+    var observer = (<any>lbl)._gesturesObserver;
+
+    TKUnit.assert(observer !== undefined, "Expected result: true.");
+    TKUnit.assert(observer._context === context, "Context should be equal to binding context. Actual result: " + observer._context);
 };
 
 export function test_parse_ShouldParseSubProperties() {
