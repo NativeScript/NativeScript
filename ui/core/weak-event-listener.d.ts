@@ -6,12 +6,12 @@ declare module "ui/core/weak-event-listener" {
      */
     export interface WeakEventListenerOptions {
         /**
-         * Weak reference to the subscriber (target) of the event listener.
+         * Subscriber (target) of the event listener. It will be used as a thisArg in the handler function.
          */
         target: any;
 
         /**
-         * Weak reference to an instance of observable. Observable class which emits the event.
+         * Observable class which emits the event.
          */
         source: observable.Observable;
 
@@ -38,7 +38,7 @@ declare module "ui/core/weak-event-listener" {
         static addWeakEventListener(options: WeakEventListenerOptions): number;
 
         /**
-         * Removes and clears all resources from WeakEventListener.
+         * Removes and clears all resources from WeakEventListener with given id.
          * @param The id of the WeakEventListener object.
          */
         static removeWeakEventListener(listenerId: number): void;
@@ -51,7 +51,6 @@ declare module "ui/core/weak-event-listener" {
         static cleanDeadReferencesCountTrigger: number;
 
         //@private
-        static _cleanDeadReferences();
         static _weakEventListeners: Object;
         //@endprivate
     }
