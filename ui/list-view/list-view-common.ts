@@ -7,7 +7,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import builder = require("ui/builder");
 import label = require("ui/label");
 import color = require("color");
-import weakEventListener = require("ui/core/weak-event-listener");
+import weakEvents = require("ui/core/weak-event-listener");
 import types = require("utils/types");
 
 var ITEMS = "items";
@@ -132,17 +132,12 @@ export class ListView extends view.View implements definition.ListView {
 
     public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (data.oldValue instanceof observable.Observable && types.isDefined(this._itemsChangedWeakListenerId)) {
-            weakEventListener.WeakEventListener.removeWeakEventListener(this._itemsChangedWeakListenerId);
+            weakEvents.removeWeakEventListener(data.oldValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
             delete this._itemsChangedWeakListenerId;
         }
 
         if (data.newValue instanceof observable.Observable) {
-            this._itemsChangedWeakListenerId = weakEventListener.WeakEventListener.addWeakEventListener({
-                target: this,
-                source: data.newValue,
-                eventName: observableArray.ObservableArray.changeEvent,
-                handler: this._onItemsChanged,
-            });
+            weakEvents.addWeakEventListener(data.newValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
         }
 
         this.refresh();

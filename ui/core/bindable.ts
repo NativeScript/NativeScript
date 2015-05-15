@@ -162,12 +162,11 @@ export class Binding {
         if (this.sourceOptions) {
             var sourceOptionsInstance = this.sourceOptions.instance.get();
             if (sourceOptionsInstance instanceof observable.Observable) {
-                this.weakEventId = weakEvents.WeakEventListener.addWeakEventListener({
-                    target: this,
-                    source: this.sourceOptions.instance.get(),
-                    eventName: observable.Observable.propertyChangeEvent,
-                    handler: this.onSourcePropertyChanged,
-                });
+                weakEvents.addWeakEventListener(
+                    sourceOptionsInstance,
+                    observable.Observable.propertyChangeEvent,
+                    this.onSourcePropertyChanged,
+                    this);
             }
         }
     }
@@ -177,8 +176,15 @@ export class Binding {
             return;
         }
 
-        weakEvents.WeakEventListener.removeWeakEventListener(this.weakEventId);
-        delete this.weakEventId;
+        if (this.sourceOptions) {
+            var sourceOptionsInstance = this.sourceOptions.instance.get();
+            if (sourceOptionsInstance) {
+                weakEvents.removeWeakEventListener(sourceOptionsInstance,
+                    observable.Observable.propertyChangeEvent,
+                    this.onSourcePropertyChanged,
+                    this);
+            }
+        }
 
         if (this.source) {
             this.source.clear();

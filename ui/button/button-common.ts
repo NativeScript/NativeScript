@@ -4,7 +4,7 @@ import definition = require("ui/button");
 import proxy = require("ui/core/proxy");
 import formattedString = require("text/formatted-string");
 import observable = require("data/observable");
-import weakEventListener = require("ui/core/weak-event-listener");
+import weakEvents = require("ui/core/weak-event-listener");
 
 var textProperty = new dependencyObservable.Property(
     "text",
@@ -37,8 +37,6 @@ export class Button extends view.View implements definition.Button {
     public static textProperty = textProperty;
     public static formattedTextProperty = formattedTextProperty;
 
-    private _formattedTextWeakListenerId: number;
-
     public _onBindingContextChanged(oldValue: any, newValue: any) {
         super._onBindingContextChanged(oldValue, newValue);
         if (this.formattedText) {
@@ -61,16 +59,11 @@ export class Button extends view.View implements definition.Button {
     set formattedText(value: formattedString.FormattedString) {
         if (this.formattedText !== value) {
             if (this.formattedText) {
-                weakEventListener.WeakEventListener.removeWeakEventListener(this._formattedTextWeakListenerId);
+                weakEvents.removeWeakEventListener(this.formattedText, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
             }
             this._setValue(Button.formattedTextProperty, value);
             if (value) {
-                this._formattedTextWeakListenerId = weakEventListener.WeakEventListener.addWeakEventListener({
-                    target: this,
-                    source: value,
-                    eventName: observable.Observable.propertyChangeEvent,
-                    handler: this.onFormattedTextChanged
-                });
+                weakEvents.addWeakEventListener(value, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
             }
         }
     }

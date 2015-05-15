@@ -4,7 +4,7 @@ import observable = require("data/observable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import formattedString = require("text/formatted-string");
-import weakEventListener = require("ui/core/weak-event-listener");
+import weakEvents = require("ui/core/weak-event-listener");
 import utils = require("utils/utils");
 import trace = require("trace");
 
@@ -37,8 +37,6 @@ function onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChang
 export class TextBase extends view.View implements definition.TextBase {
     public static textProperty = textProperty;
     public static formattedTextProperty = formattedTextProperty;
-
-    private _formattedTextChangedListenerId: number;
 
     constructor(options?: definition.Options) {
         super(options);
@@ -80,17 +78,11 @@ export class TextBase extends view.View implements definition.TextBase {
     set formattedText(value: formattedString.FormattedString) {
         if (this.formattedText !== value) {
             if (this.formattedText) {
-                weakEventListener.WeakEventListener.removeWeakEventListener(this._formattedTextChangedListenerId);
-                delete this._formattedTextChangedListenerId;
+                weakEvents.removeWeakEventListener(this.formattedText, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
             }
             this._setValue(TextBase.formattedTextProperty, value);
             if (value) {
-                this._formattedTextChangedListenerId = weakEventListener.WeakEventListener.addWeakEventListener({
-                    target: this,
-                    source: value,
-                    eventName: observable.Observable.propertyChangeEvent,
-                    handler: this.onFormattedTextChanged,
-                });
+                weakEvents.addWeakEventListener(value, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
             }
         }
     }

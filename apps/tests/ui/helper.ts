@@ -225,6 +225,7 @@ export function forceGC() {
     if (platform.device.os === platform.platformNames.ios) {
         // Could cause GC on the next call.
         new ArrayBuffer(4 * 1024 * 1024);
+        TKUnit.wait(ASYNC);
     }
     utils.GC();
 }

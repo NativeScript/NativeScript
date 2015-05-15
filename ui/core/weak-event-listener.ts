@@ -2,120 +2,142 @@
 import definition = require("ui/core/weak-event-listener");
 import types = require("utils/types");
 
-var CLEAN_TRIGGER_DEFAULT = 1000;
-export class WeakEventListener implements definition.WeakEventListener {
-    private id: number;
-    private targetRef: WeakRef<any>;
-    private senderRef: WeakRef<observable.Observable>;
-    private eventName: string;
-    private handler: (eventData: observable.EventData) => void;
+var handlersForEventName = new Map<string,(eventData: observable.EventData) => void>();
+var sourcesMap = new WeakMap<observable.Observable, Map<string, Array<TargetHandlerPair>>>();
 
-    static _idCounter: number = 0;
-    static _weakEventListeners = {};
-    static _cleanDeadReferencesCountTrigger = CLEAN_TRIGGER_DEFAULT;
-    static get cleanDeadReferencesCountTrigger(): number {
-        return WeakEventListener._cleanDeadReferencesCountTrigger;
+class TargetHandlerPair {
+    tagetRef: WeakRef<Object>;
+    handler: (eventData: observable.EventData) => void;
+
+    constructor(target: Object, handler: (eventData: observable.EventData) => void) {
+        this.tagetRef = new WeakRef(target);
+        this.handler = handler;
     }
-    static set cleanDeadReferencesCountTrigger(value: number) {
-        WeakEventListener._cleanDeadReferencesCountTrigger = value;
-    }
+}
 
-    private handlerCallback(eventData) {
-        var target = this.targetRef.get();
-        if (target) {
-            this.handler.call(target, eventData);
-        }
-        else {
-            // The target is dead - we can unsubscribe;
-            WeakEventListener.removeWeakEventListener(this.id);
-        }
-    }
-
-    private init(options: definition.WeakEventListenerOptions, listenerId: number) {
-        this.id = listenerId;
-        this.targetRef = new WeakRef(options.target);
-        this.senderRef = new WeakRef(options.source);
-        this.eventName = options.eventName;
-        this.handler = options.handler;
-
-        var sourceInstance = this.senderRef.get();
-        if (sourceInstance) {
-            sourceInstance.addEventListener(this.eventName, this.handlerCallback, this);
-        }
-    }
-
-    private clear() {
-        var sender = this.senderRef.get();
-        if (sender) {
-            sender.removeEventListener(this.eventName, this.handlerCallback, this);
-        }
-
-        this.targetRef.clear();
-        this.targetRef = undefined;
-        this.senderRef.clear();
-        this.senderRef = undefined;
-
-        this.eventName = undefined;
-        this.handler = undefined;
-    }
-
-    static addWeakEventListener(options: definition.WeakEventListenerOptions) {
-        if (types.isNullOrUndefined(options.target)) {
-            throw new Error("targetWeakRef is null or undefined");
-        }
-
-        if (types.isNullOrUndefined(options.source)) {
-            throw new Error("sourceWeakRef is null or undefined");
-        }
-
-        if (!types.isString(options.eventName)) {
-            throw new Error("eventName is not a string");
-        }
-
-        if (!types.isFunction(options.handler)) {
-            throw new Error("handler is not a function");
-        }
-
-        var listenerId = WeakEventListener._idCounter++;
-        var weakEventListener = new WeakEventListener();
-        weakEventListener.init(options, listenerId);
-
-        WeakEventListener._weakEventListeners[listenerId] = new WeakRef(weakEventListener);
-
-        if (WeakEventListener._cleanDeadReferencesCountTrigger &&
-            (listenerId % WeakEventListener._cleanDeadReferencesCountTrigger) === 0) {
-            WeakEventListener._cleanDeadReferences();
-        }
-
-        return listenerId;
-    }
-
-    static removeWeakEventListener(listenerId: number) {
-        var listenerRef = <WeakRef<WeakEventListener>>WeakEventListener._weakEventListeners[listenerId];
-
-        if (listenerRef) {
-            var listener = <WeakEventListener>listenerRef.get();
-            if (listener) {
-                listener.clear();
+function getHandlerForEventName(eventName: string): (eventData: observable.EventData) => void {
+    var handler = handlersForEventName.get(eventName);
+    if (!handler) {
+        var handler = function (eventData: observable.EventData) {
+            var source = eventData.object;
+            var sourceEventMap = sourcesMap.get(source);
+            if (!sourceEventMap) {
+                // There is no event map for this source - it is safe to detach the listener;
+                source.removeEventListener(eventName, handlersForEventName.get(eventName));
+                return;
             }
-        }
 
-        delete WeakEventListener._weakEventListeners[listenerId];
+            var targetHandlerPairList = sourceEventMap.get(eventName);
+            if (!targetHandlerPairList) {
+                return;
+            }
+
+            var deadPairsIndexes = [];
+            for (var i = 0; i < targetHandlerPairList.length; i++) {
+                var pair = targetHandlerPairList[i];
+
+                var target = pair.tagetRef.get();
+                if (target) {
+                    pair.handler.call(target, eventData);
+                }
+                else {
+                    deadPairsIndexes.push(i);
+                }
+            }
+
+            if (deadPairsIndexes.length === targetHandlerPairList.length) {
+                // There are no alive targets for this event - unsubscribe
+                source.removeEventListener(eventName, handlersForEventName.get(eventName));
+                sourceEventMap.delete(eventName);
+            }
+            else {
+                for (var j = deadPairsIndexes.length - 1; j >= 0; j--) {
+                    targetHandlerPairList.splice(deadPairsIndexes[j], 1);
+                }
+            }
+        };
+        handlersForEventName.set(eventName, handler);
     }
 
-    static _cleanDeadReferences() {
-        var deadListeners = new Array<number>();
-        for (var id in WeakEventListener._weakEventListeners) {
-            var listenerRef = <WeakRef<WeakEventListener>>WeakEventListener._weakEventListeners[id];
+    return handler;
+}
 
-            var listener = listenerRef.get();
-            if (!listener || !listener.targetRef.get() || !listener.senderRef.get()) {
-                deadListeners.push(id);
-            }
+function validateArgs(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {
+    if (types.isNullOrUndefined(source)) {
+        throw new Error("source is null or undefined");
+    }
+
+    if (types.isNullOrUndefined(target)) {
+        throw new Error("target is null or undefined");
+    }
+
+    if (!types.isString(eventName)) {
+        throw new Error("eventName is not a string");
+    }
+
+    if (!types.isFunction(handler)) {
+        throw new Error("handler is not a function");
+    }
+}
+
+export function addWeakEventListener(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {
+    validateArgs(source, eventName, handler, target);
+
+    var sourceEventMap = sourcesMap.get(source);
+    if (!sourceEventMap) {
+        sourceEventMap = new Map<string, Array<TargetHandlerPair>>();
+        sourcesMap.set(source, sourceEventMap);
+    }
+
+    var pairList = sourceEventMap.get(eventName);
+    if (!pairList) {
+        pairList = new Array<TargetHandlerPair>();
+        sourceEventMap.set(eventName, pairList);
+    }
+
+    pairList.push(new TargetHandlerPair(target, handler));
+
+    source.addEventListener(eventName, getHandlerForEventName(eventName));
+}
+
+export function removeWeakEventListener(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {
+    validateArgs(source, eventName, handler, target);
+
+    var handlerForEventWithName = handlersForEventName.get(eventName);
+    if (!handlerForEventWithName) {
+        // We have never created handler for event with this name;
+        return;
+    }
+
+    var sourceEventMap = sourcesMap.get(source);
+    if (!sourceEventMap) {
+        return;
+    }
+
+    var targetHandlerPairList = sourceEventMap.get(eventName);
+    if (!targetHandlerPairList) {
+        return;
+    }
+
+    // Remove all pairs that match given target and handler or have a dead target
+    var targetHandlerPairsToRemove = [];
+    for (var i = 0; i < targetHandlerPairList.length; i++) {
+        var pair = targetHandlerPairList[i];
+
+        var registeredTarget = pair.tagetRef.get();
+        if (!registeredTarget || (registeredTarget === target && handler === pair.handler)) {
+            targetHandlerPairsToRemove.push(i);
         }
+    }
 
-        for (var i = 0; i < deadListeners.length; i++) {
-            WeakEventListener.removeWeakEventListener(deadListeners[i]);
+    if (targetHandlerPairsToRemove.length === targetHandlerPairList.length) {
+        // There are no alive targets for this event - unsubscribe
+        source.removeEventListener(eventName, handlerForEventWithName);
+        sourceEventMap.delete(eventName);
+    }
+    else {
+        for (var j = targetHandlerPairsToRemove.length - 1; j >= 0; j--) {
+            targetHandlerPairList.splice(targetHandlerPairsToRemove[j], 1);
         }
     }
 }
