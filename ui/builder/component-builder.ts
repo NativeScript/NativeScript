@@ -77,12 +77,14 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
             var attrValue = <string>attributes[attr];
 
-            if (attr.indexOf(":") !== -1){
-                  var platformName = attr.split(":")[0].trim();
-                  if(platformName.toLowerCase() !== platform.device.os.toLowerCase()) {
-                      continue;
-                  }
-              }
+            if (attr.indexOf(":") !== -1) {
+                var platformName = attr.split(":")[0].trim();
+                if (platformName.toLowerCase() === platform.device.os.toLowerCase()) {
+                    attr = attr.split(":")[1].trim();
+                } else {
+                    continue;
+                }
+            }
 
             if (attr.indexOf(".") !== -1) {
                 var subObj = instance;

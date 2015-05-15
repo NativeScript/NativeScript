@@ -130,14 +130,14 @@ export function test_parse_ShouldParseBooleanPropertiesIgnoreCaseInverted() {
     TKUnit.assert(tf.editable === false, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
 };
 
-export function test_parse_ShouldParsePlatofmrSpecificProperties() {
+export function test_parse_ShouldParsePlatformSpecificProperties() {
     var p = <page.Page>builder.parse("<Page><TextField ios:editable='False' android:editable='True' /></Page>");
     var tf = <textFieldModule.TextField>p.content;
 
-    if(platform.device.os === platform.platformNames.ios) {
-      TKUnit.assert(tf.editable === true, "Expected result: true; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
+    if (platform.device.os === platform.platformNames.ios) {
+        TKUnit.assert(tf.editable === false, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
     } else {
-      TKUnit.assert(tf.editable === false, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
+        TKUnit.assert(tf.editable === true, "Expected result: true; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
     }
 };
 
