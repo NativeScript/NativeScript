@@ -135,7 +135,7 @@ export function test_parse_ShouldParsePlatofmrSpecificProperties() {
     var tf = <textFieldModule.TextField>p.content;
 
     if(platform.device.os === platform.platformNames.ios) {
-      TKUnit.assert(tf.editable === true, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
+      TKUnit.assert(tf.editable === true, "Expected result: true; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
     } else {
       TKUnit.assert(tf.editable === false, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
     }
