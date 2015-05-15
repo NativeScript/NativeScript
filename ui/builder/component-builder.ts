@@ -9,6 +9,7 @@ import definition = require("ui/builder/component-builder");
 import fs = require("file-system");
 import gestures = require("ui/gestures");
 import bindingBuilder = require("ui/builder/binding-builder");
+import platform = require("platform");
 
 var EVENT = "Event";
 var UI_PATH = "ui/";
@@ -75,6 +76,13 @@ export function getComponentModule(elementName: string, namespace: string, attri
         for (var attr in attributes) {
 
             var attrValue = <string>attributes[attr];
+
+            if (attr.indexOf(":") !== -1){
+                  var platformName = attr.split(":")[0].trim();
+                  if(platformName.toLowerCase() !== platform.device.os.toLowerCase()) {
+                      continue;
+                  }
+              }
 
             if (attr.indexOf(".") !== -1) {
                 var subObj = instance;
