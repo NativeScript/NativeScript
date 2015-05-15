@@ -175,7 +175,12 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
             }
 
             sp.removeChild(weakRef.get());
-            forceGC();
+            if (newPage.ios) {
+                // Could cause GC on the next call.
+                // NOTE: Don't replace this with forceGC();
+                new ArrayBuffer(4 * 1024 * 1024);
+            }
+            utils.GC();
 
             TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
             testFinished = true;

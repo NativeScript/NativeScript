@@ -1,5 +1,4 @@
 ﻿import observable = require("data/observable");
-import definition = require("ui/core/weak-event-listener");
 import types = require("utils/types");
 
 var handlersForEventName = new Map<string,(eventData: observable.EventData) => void>();
@@ -18,7 +17,7 @@ class TargetHandlerPair {
 function getHandlerForEventName(eventName: string): (eventData: observable.EventData) => void {
     var handler = handlersForEventName.get(eventName);
     if (!handler) {
-        var handler = function (eventData: observable.EventData) {
+        handler = function (eventData: observable.EventData) {
             var source = eventData.object;
             var sourceEventMap = sourcesMap.get(source);
             if (!sourceEventMap) {
@@ -83,21 +82,27 @@ function validateArgs(source: observable.Observable, eventName: string, handler:
 export function addWeakEventListener(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {
     validateArgs(source, eventName, handler, target);
 
+    var shouldAttach: boolean = false;
+
     var sourceEventMap = sourcesMap.get(source);
     if (!sourceEventMap) {
         sourceEventMap = new Map<string, Array<TargetHandlerPair>>();
         sourcesMap.set(source, sourceEventMap);
+        shouldAttach = true;
     }
 
     var pairList = sourceEventMap.get(eventName);
     if (!pairList) {
         pairList = new Array<TargetHandlerPair>();
         sourceEventMap.set(eventName, pairList);
+        shouldAttach = true;
     }
 
     pairList.push(new TargetHandlerPair(target, handler));
 
-    source.addEventListener(eventName, getHandlerForEventName(eventName));
+    if (shouldAttach) {
+        source.addEventListener(eventName, getHandlerForEventName(eventName));
+    }
 }
 
 export function removeWeakEventListener(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {

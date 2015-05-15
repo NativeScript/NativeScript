@@ -1,5 +1,4 @@
 ﻿import TKUnit = require("./TKUnit");
-import types = require("utils/types");
 import observable = require("data/observable");
 import weakEvents = require("ui/core/weak-event-listener");
 import helper = require("./ui/helper");
@@ -53,6 +52,22 @@ export function test_addWeakEventListener_listensForEvent() {
     TKUnit.assertEqual(target.counter, 1, "Handler not called.");
 }
 
+export function test_addWeakEventListener_listensForEven_multipleTargetst() {
+    var source = new observable.Observable();
+    var target1 = new Target();
+    var target2 = new Target();
+
+    weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target1.onEvent, target1);
+    weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target2.onEvent, target2);
+
+    helper.forceGC();
+
+    source.set("testProp", "some value");
+
+    TKUnit.assertEqual(target1.counter, 1, "Handler not called.");
+    TKUnit.assertEqual(target2.counter, 1, "Handler not called.");
+}
+
 export function test_removeWeakEventListener_StopsListeningForEvet() {
     var source = new observable.Observable();
     var target = new Target();
@@ -66,7 +81,7 @@ export function test_removeWeakEventListener_StopsListeningForEvet() {
 
 export function test_handlerIsCalled_WithTargetAsThis() {
     var source = new observable.Observable();
-    var target = new Object;
+    var target = new Object();
     var callbackCalled = false;
     var handler = function (args: observable.EventData) {
         TKUnit.assertEqual(this, target, "this should be the target");
@@ -82,7 +97,6 @@ export function test_handlerIsCalled_WithTargetAsThis() {
 export function test_listnerDoesNotRetainTarget() {
     var source = new observable.Observable();
     var target = new Target();
-    var callbackCalled = false;
 
     weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target.onEvent, target);
 
@@ -96,7 +110,6 @@ export function test_listnerDoesNotRetainTarget() {
 export function test_listnerDoesNotRetainSource() {
     var source = new observable.Observable();
     var target = new Target();
-    var callbackCalled = false;
 
     weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target.onEvent, target);
 
@@ -107,74 +120,43 @@ export function test_listnerDoesNotRetainSource() {
     TKUnit.assert(!sourceRef.get(), "Source should be released after GC");
 }
 
-//export function test_listnerIsCleared_WhenTargetIsDead() {
-//    var source = new observable.Observable();
+export function test_handlerIsDetached_WhenAllListenersAreRemoved() {
+    var source = new observable.Observable();
 
-//    var listenerID = addListenerWithSource(source);
-//    helper.forceGC();
+    var target1 = new Target();
+    var target2 = new Target();
 
-//    for (var i = 0; i < weakEvents.cleanDeadReferencesCountTrigger; i++) {
-//        addListenerWithSource(source);
-//    }
+    weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target1.onEvent, target1);
+    weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target2.onEvent, target2);
 
-//    TKUnit.assert(types.isUndefined(weakEvents._weakEventListeners[listenerID]), "The first listener should be dead by now");
-//}
+    weakEvents.removeWeakEventListener(source, observable.Observable.propertyChangeEvent, target1.onEvent, target1)
+    weakEvents.removeWeakEventListener(source, observable.Observable.propertyChangeEvent, target2.onEvent, target2)
 
-//export function test_listnerIsCleared_WhenSourceIsDead() {
-//    var target = {};
+    TKUnit.assert(!source.hasListeners(observable.Observable.propertyChangeEvent), "All events should be detached");
+}
 
-//    var listenerID = addListenerWithTarget(target);
-//    helper.forceGC();
+export function test_autoDetachingOfDeadReferences() {
+    var source = new observable.Observable();
 
-//    for (var i = 0; i < weakEvents.cleanDeadReferencesCountTrigger; i++) {
-//        addListenerWithTarget(target);
-//    }
+    for (var i = 0; i < 100; i++) {
+        addListenerWithSource(source);
+    }
 
-//    TKUnit.assert(types.isUndefined(weakEvents._weakEventListeners[listenerID]), "The first listener should be dead by now");
-//}
+    helper.forceGC();
 
-//function addListenerWithSource(source: observable.Observable): number {
-//    return weakEvents.addWeakEventListener({
-//        source: source,
-//        target: {},
-//        handler: emptyHandler,
-//        eventName: observable.Observable.propertyChangeEvent
-//    })
-//}
+    var target = new Target();
 
-//function addListenerWithTarget(target: any): number {
-//    return weakEvents.addWeakEventListener({
-//        source: new observable.Observable(),
-//        target: target,
-//        handler: emptyHandler,
-//        eventName: observable.Observable.propertyChangeEvent
-//    })
-//}
+    weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target.onEvent, target);
+    weakEvents.removeWeakEventListener(source, observable.Observable.propertyChangeEvent, target.onEvent, target)
+
+    TKUnit.assert(!source.hasListeners(observable.Observable.propertyChangeEvent), "All events should be detached");
+}
+
+function addListenerWithSource(source: observable.Observable) {
+    var target = new Target();
+    weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target.onEvent, target)
+}
 
 function emptyHandler(data: observable.EventData) {
     // Do nothing.
-}
-
-
-
-export function testWeakMap(): void {
-    var source = new observable.Observable();
-    var target = new Target();
-    var targetRef = new WeakRef(target);
-    var weakMap = new WeakMap<observable.Observable, Target>();
-
-    weakMap.set(source, target);
-    TKUnit.assertEqual(weakMap.get(source), target, "target");
-
-    target = undefined;
-    source = undefined;
-
-    helper.forceGC();
-    TKUnit.wait(1);
-
-    TKUnit.waitUntilReady(function () {
-        return false;
-    })
-
-    TKUnit.assert(!targetRef.get(), "Target should be dead");
 }
