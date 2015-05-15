@@ -49,6 +49,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
         var bindingSource = source;
         if (!bindingSource) {
             bindingSource = this.bindingContext;
+            binding.sourceIsBindingContext = true;
         }
         if (!types.isNullOrUndefined(bindingSource)) {
             binding.bind(bindingSource);
@@ -102,8 +103,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
         for (var p in this._bindings) {
             binding = this._bindings[p];
 
-            var sourceIsNotBindingContext = (binding.source && (binding.source.get() !== oldValue));
-            if (binding.updating || sourceIsNotBindingContext) {
+            if (binding.updating || !binding.sourceIsBindingContext) {
                 continue;
             }
 
@@ -122,6 +122,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
 export class Binding {
     options: definition.BindingOptions;
     updating = false;
+    sourceIsBindingContext: boolean;
     source: WeakRef<Object>;
     target: WeakRef<Bindable>;
 

@@ -123,7 +123,10 @@ export class ListView extends view.View implements definition.ListView {
 
     public _getDefaultItemContent(index: number): view.View {
         var lbl = new label.Label();
-        lbl.text = this._getDataItem(index) + "";
+        lbl.bind({
+            targetProperty: "text",
+            sourceProperty: "$value"
+        });
         return lbl;
     }
 
