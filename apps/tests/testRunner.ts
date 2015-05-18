@@ -23,6 +23,7 @@ function isRunningOnEmulator(): boolean {
 }
 
 export var allTests = {};
+allTests["APPLICATION"] = require("./application-tests");
 allTests["DOCKLAYOUT"] = require("./layouts/dock-layout-tests");
 allTests["WRAPLAYOUT"] = require("./layouts/wrap-layout-tests");
 allTests["ABSOLUTELAYOUT"] = require("./layouts/absolute-layout-tests");
@@ -31,7 +32,6 @@ allTests["STACKLAYOUT"] = require("./layouts/stack-layout-tests");
 allTests["PLATFORM"] = require("./platform-tests");
 allTests["STYLE-PROPERTIES"] = require("./ui/style/style-properties-tests");
 allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
-allTests["APPLICATION"] = require("./application-tests");
 allTests["FILE SYSTEM"] = require("./file-system-tests");
 allTests["HTTP"] = require("./http-tests");
 allTests["APPLICATION SETTINGS"] = require("./application-settings-tests");

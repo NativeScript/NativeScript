@@ -197,7 +197,7 @@ function onFragmentShown(fragment: PageFragmentBody) {
 
     // notify the page
     frame._addView(page);
-    page.onNavigatedTo(entry.entry.context);
+    page.onNavigatedTo();
     frame._processNavigationQueue(page);
 }
 

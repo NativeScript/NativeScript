@@ -198,9 +198,9 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
     }
 }
 
-export function navigate(pageFactory: () => page.Page) {
+export function navigate(pageFactory: () => page.Page,  navigationContext?: any) {
     var currentPage = frame.topmost().currentPage;
-    frame.topmost().navigate({ create: pageFactory, animated: false });
+    frame.topmost().navigate({ create: pageFactory, animated: false, context: navigationContext });
     TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
 }
 

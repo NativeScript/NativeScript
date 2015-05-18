@@ -39,7 +39,7 @@ export class ControlsPage extends pagesModule.Page implements definition.Control
         this.content = this._mainLayout;
     }
 
-    public onNavigatedTo(context: any) {
+    public onNavigatedTo() {
         trace.write("Creating " + this._count + " controls...", trace.categories.Test, trace.messageType.info);
         this._infoLabel.text = "Creating " + this._count + " controls...";
         var startTime = new Date().getMilliseconds();
