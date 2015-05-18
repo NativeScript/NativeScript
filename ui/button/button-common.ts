@@ -4,7 +4,7 @@ import definition = require("ui/button");
 import proxy = require("ui/core/proxy");
 import formattedString = require("text/formatted-string");
 import observable = require("data/observable");
-import weakEventListener = require("ui/core/weak-event-listener");
+import weakEvents = require("ui/core/weak-event-listener");
 
 var textProperty = new dependencyObservable.Property(
     "text",
@@ -33,9 +33,7 @@ function onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChang
 (<proxy.PropertyMetadata>formattedTextProperty.metadata).onSetNativeValue = onFormattedTextPropertyChanged;
 
 export class Button extends view.View implements definition.Button {
-
     public static tapEvent = "tap";
-
     public static textProperty = textProperty;
     public static formattedTextProperty = formattedTextProperty;
 
@@ -60,20 +58,12 @@ export class Button extends view.View implements definition.Button {
 
     set formattedText(value: formattedString.FormattedString) {
         if (this.formattedText !== value) {
-            var weakEventOptions: weakEventListener.WeakEventListenerOptions = {
-                targetWeakRef: new WeakRef(this),
-                eventName: observable.Observable.propertyChangeEvent,
-                sourceWeakRef: new WeakRef(value),
-                handler: this.onFormattedTextChanged,
-                handlerContext: this,
-                key: "formattedText"
-            };
             if (this.formattedText) {
-                weakEventListener.WeakEventListener.removeWeakEventListener(weakEventOptions);
+                weakEvents.removeWeakEventListener(this.formattedText, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
             }
             this._setValue(Button.formattedTextProperty, value);
             if (value) {
-                weakEventListener.WeakEventListener.addWeakEventListener(weakEventOptions);
+                weakEvents.addWeakEventListener(value, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
             }
         }
     }

@@ -1,103 +1,148 @@
 ﻿import observable = require("data/observable");
-import definition = require("ui/core/weak-event-listener");
+import types = require("utils/types");
 
-export class WeakEventListener implements definition.WeakEventListener {
-    private listener: WeakRef<any>;
-    private sender: WeakRef<observable.Observable>;
-    private eventName: string;
-    private handler: (eventData: observable.EventData) => void;
-    private handlerContext: any;
+var handlersForEventName = new Map<string,(eventData: observable.EventData) => void>();
+var sourcesMap = new WeakMap<observable.Observable, Map<string, Array<TargetHandlerPair>>>();
 
-    static rootWeakEventListenersMap = new WeakMap();
+class TargetHandlerPair {
+    tagetRef: WeakRef<Object>;
+    handler: (eventData: observable.EventData) => void;
 
-    private handlerCallback(eventData) {
-        if (this.handler) {
-            if (this.handlerContext) {
-                this.handler.call(this.handlerContext, eventData);
+    constructor(target: Object, handler: (eventData: observable.EventData) => void) {
+        this.tagetRef = new WeakRef(target);
+        this.handler = handler;
+    }
+}
+
+function getHandlerForEventName(eventName: string): (eventData: observable.EventData) => void {
+    var handler = handlersForEventName.get(eventName);
+    if (!handler) {
+        handler = function (eventData: observable.EventData) {
+            var source = eventData.object;
+            var sourceEventMap = sourcesMap.get(source);
+            if (!sourceEventMap) {
+                // There is no event map for this source - it is safe to detach the listener;
+                source.removeEventListener(eventName, handlersForEventName.get(eventName));
+                return;
             }
-            else {
-                this.handler(eventData);
+
+            var targetHandlerPairList = sourceEventMap.get(eventName);
+            if (!targetHandlerPairList) {
+                return;
             }
-        }
-    }
 
-    private init(options: definition.WeakEventListenerOptions) {
-        this.listener = options.targetWeakRef;
-        this.sender = options.sourceWeakRef;
-        this.eventName = options.eventName;
-        this.handler = options.handler;
-        if (options.handlerContext) {
-            this.handlerContext = options.handlerContext;
-        }
-        var sourceInstance = this.sender.get();
-        if (sourceInstance) {
-            sourceInstance.addEventListener(this.eventName, this.handlerCallback, this);
-        }
-    }
+            var deadPairsIndexes = [];
+            for (var i = 0; i < targetHandlerPairList.length; i++) {
+                var pair = targetHandlerPairList[i];
 
-    static addWeakEventListener(options: definition.WeakEventListenerOptions) {
-        if (options.targetWeakRef && options.sourceWeakRef && options.eventName && options.handler && options.key) {
-            var weakEventListener = new WeakEventListener();
-            weakEventListener.init(options);
-            var targetWeakEventListenersMap = WeakEventListener.getWeakMapValueByKeys([options.sourceWeakRef, options.targetWeakRef]);
-            targetWeakEventListenersMap[options.key] = weakEventListener;
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    private clear() {
-        var sourceInstance = this.sender.get();
-        if (sourceInstance) {
-            sourceInstance.removeEventListener(this.eventName, this.handlerCallback, this);
-            this.sender.clear();
-        }
-        this.listener = undefined;
-        this.eventName = undefined;
-        this.handler = undefined;
-        this.handlerContext = undefined;
-    }
-
-    static getWeakMapValueByKeys(keys) {
-        var result;
-        if (!WeakEventListener.rootWeakEventListenersMap) {
-            WeakEventListener.rootWeakEventListenersMap = new WeakMap();
-        }
-        var currentMap = WeakEventListener.rootWeakEventListenersMap;
-        var i;
-        for (i = 0; i < keys.length - 1; i++) {
-            if (currentMap.has(keys[i])) {
-                currentMap = <WeakMap<{}, {}>>currentMap.get(keys[i]);
-            }
-            else {
-                var innerMap = new WeakMap();
-                currentMap.set(keys[i], innerMap);
-                currentMap = innerMap;
-            }
-        }
-
-        if (currentMap.has(keys[keys.length - 1])) {
-            result = currentMap.get(keys[keys.length - 1]);
-        }
-
-        if (!result) {
-            result = {};
-            currentMap.set(keys[keys.length - 1], result);
-        }
-        return result;
-    }
-
-    static removeWeakEventListener(options: definition.WeakEventListenerOptions) {
-        if (options && options.sourceWeakRef && options.targetWeakRef && options.key) {
-            var weakMapValueForKey = WeakEventListener.getWeakMapValueByKeys([options.sourceWeakRef, options.targetWeakRef]);
-            if (weakMapValueForKey && weakMapValueForKey[options.key]) {
-                if (weakMapValueForKey[options.key] instanceof definition.WeakEventListener) {
-                    (<WeakEventListener>weakMapValueForKey[options.key]).clear();
+                var target = pair.tagetRef.get();
+                if (target) {
+                    pair.handler.call(target, eventData);
                 }
-                delete weakMapValueForKey[options.key];
+                else {
+                    deadPairsIndexes.push(i);
+                }
             }
+
+            if (deadPairsIndexes.length === targetHandlerPairList.length) {
+                // There are no alive targets for this event - unsubscribe
+                source.removeEventListener(eventName, handlersForEventName.get(eventName));
+                sourceEventMap.delete(eventName);
+            }
+            else {
+                for (var j = deadPairsIndexes.length - 1; j >= 0; j--) {
+                    targetHandlerPairList.splice(deadPairsIndexes[j], 1);
+                }
+            }
+        };
+        handlersForEventName.set(eventName, handler);
+    }
+
+    return handler;
+}
+
+function validateArgs(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {
+    if (types.isNullOrUndefined(source)) {
+        throw new Error("source is null or undefined");
+    }
+
+    if (types.isNullOrUndefined(target)) {
+        throw new Error("target is null or undefined");
+    }
+
+    if (!types.isString(eventName)) {
+        throw new Error("eventName is not a string");
+    }
+
+    if (!types.isFunction(handler)) {
+        throw new Error("handler is not a function");
+    }
+}
+
+export function addWeakEventListener(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {
+    validateArgs(source, eventName, handler, target);
+
+    var shouldAttach: boolean = false;
+
+    var sourceEventMap = sourcesMap.get(source);
+    if (!sourceEventMap) {
+        sourceEventMap = new Map<string, Array<TargetHandlerPair>>();
+        sourcesMap.set(source, sourceEventMap);
+        shouldAttach = true;
+    }
+
+    var pairList = sourceEventMap.get(eventName);
+    if (!pairList) {
+        pairList = new Array<TargetHandlerPair>();
+        sourceEventMap.set(eventName, pairList);
+        shouldAttach = true;
+    }
+
+    pairList.push(new TargetHandlerPair(target, handler));
+
+    if (shouldAttach) {
+        source.addEventListener(eventName, getHandlerForEventName(eventName));
+    }
+}
+
+export function removeWeakEventListener(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {
+    validateArgs(source, eventName, handler, target);
+
+    var handlerForEventWithName = handlersForEventName.get(eventName);
+    if (!handlerForEventWithName) {
+        // We have never created handler for event with this name;
+        return;
+    }
+
+    var sourceEventMap = sourcesMap.get(source);
+    if (!sourceEventMap) {
+        return;
+    }
+
+    var targetHandlerPairList = sourceEventMap.get(eventName);
+    if (!targetHandlerPairList) {
+        return;
+    }
+
+    // Remove all pairs that match given target and handler or have a dead target
+    var targetHandlerPairsToRemove = [];
+    for (var i = 0; i < targetHandlerPairList.length; i++) {
+        var pair = targetHandlerPairList[i];
+
+        var registeredTarget = pair.tagetRef.get();
+        if (!registeredTarget || (registeredTarget === target && handler === pair.handler)) {
+            targetHandlerPairsToRemove.push(i);
+        }
+    }
+
+    if (targetHandlerPairsToRemove.length === targetHandlerPairList.length) {
+        // There are no alive targets for this event - unsubscribe
+        source.removeEventListener(eventName, handlerForEventWithName);
+        sourceEventMap.delete(eventName);
+    }
+    else {
+        for (var j = targetHandlerPairsToRemove.length - 1; j >= 0; j--) {
+            targetHandlerPairList.splice(targetHandlerPairsToRemove[j], 1);
         }
     }
 }

@@ -151,6 +151,7 @@ export class ListView extends common.ListView {
     private _delegate;
     private _heights: Array<number>;
     private _preparingCell: boolean = false;
+    private _isDataDirty: boolean = false;
 
     constructor() {
         super();
@@ -172,6 +173,9 @@ export class ListView extends common.ListView {
 
     public onLoaded() {
         super.onLoaded();
+        if (this._isDataDirty) {
+            this.refresh();
+        }
         this._ios.delegate = this._delegate;
     }
 
@@ -185,8 +189,13 @@ export class ListView extends common.ListView {
     }
 
     public refresh() {
-        this._ios.reloadData();
-        this.requestLayout();
+        if (this.isLoaded) {
+            this._ios.reloadData();
+            this.requestLayout();
+            this._isDataDirty = false;
+        } else {
+            this._isDataDirty = true;
+        }
     }
 
     public getHeight(index: number): number {
@@ -242,7 +251,7 @@ export class ListView extends common.ListView {
                 cell.contentView.addSubview(view.ios);
                 this._addView(view);
             }
-            
+
             this._prepareItem(view, indexPath.row);
             cellHeight = this._layoutCell(view, indexPath);
         }

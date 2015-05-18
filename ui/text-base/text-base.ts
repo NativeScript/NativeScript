@@ -4,7 +4,7 @@ import observable = require("data/observable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import formattedString = require("text/formatted-string");
-import weakEventListener = require("ui/core/weak-event-listener");
+import weakEvents = require("ui/core/weak-event-listener");
 import utils = require("utils/utils");
 import trace = require("trace");
 
@@ -77,20 +77,12 @@ export class TextBase extends view.View implements definition.TextBase {
 
     set formattedText(value: formattedString.FormattedString) {
         if (this.formattedText !== value) {
-            var weakEventOptions: weakEventListener.WeakEventListenerOptions = {
-                targetWeakRef: new WeakRef(this),
-                eventName: observable.Observable.propertyChangeEvent,
-                sourceWeakRef: new WeakRef(value),
-                handler: this.onFormattedTextChanged,
-                handlerContext: this,
-                key: "formattedText"
-            };
             if (this.formattedText) {
-                weakEventListener.WeakEventListener.removeWeakEventListener(weakEventOptions);
+                weakEvents.removeWeakEventListener(this.formattedText, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
             }
             this._setValue(TextBase.formattedTextProperty, value);
             if (value) {
-                weakEventListener.WeakEventListener.addWeakEventListener(weakEventOptions);
+                weakEvents.addWeakEventListener(value, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
             }
         }
     }

@@ -7,10 +7,12 @@ import TKUnit = require("../TKUnit");
 import utils = require("utils/utils");
 import types = require("utils/types");
 import styling = require("ui/styling");
+import platform = require("platform"); 
 
 var DELTA = 0.1;
 
 export var ASYNC = 0.2;
+export var MEMORY_ASYNC = 2;
 
 export function do_PageTest(test: (views: Array<view.View>) => void, content: view.View, secondView: view.View, thirdView: view.View) {
     var newPage: page.Page;
@@ -33,7 +35,7 @@ export function do_PageTest(test: (views: Array<view.View>) => void, content: vi
 export function do_PageTest_WithButton(test: (views: Array<view.View>) => void) {
     var newPage: page.Page;
     var btn: button.Button;
-    var pageFactory = function(): page.Page {
+    var pageFactory = function (): page.Page {
         newPage = new page.Page();
         btn = new button.Button();
         newPage.content = btn;
@@ -76,7 +78,7 @@ export function do_PageTest_WithStackLayout_AndButton(test: (views: Array<view.V
 
 export function do_PageTest_WithStackLayout_AndButton_NavigatedBack(test: (views: Array<view.View>) => void,
     assert: (views: Array<view.View>) => void) {
-    
+
     var newPage: page.Page;
     var stackLayout;
     var btn;
@@ -175,6 +177,7 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
             sp.removeChild(weakRef.get());
             if (newPage.ios) {
                 // Could cause GC on the next call.
+                // NOTE: Don't replace this with forceGC();
                 new ArrayBuffer(4 * 1024 * 1024);
             }
             utils.GC();
@@ -188,7 +191,7 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
 
     try {
         navigate(pageFactory);
-        TKUnit.waitUntilReady(() => { return testFinished; });
+        TKUnit.waitUntilReady(() => { return testFinished; }, MEMORY_ASYNC);
     }
     finally {
         goBack();
@@ -221,4 +224,13 @@ export function assertAreClose(actual: number, expected: number, message: string
     var delta = Math.floor(density) !== density ? 1.1 : DELTA;
 
     TKUnit.assertAreClose(actual, expected, delta, message);
+}
+
+export function forceGC() {
+    if (platform.device.os === platform.platformNames.ios) {
+        // Could cause GC on the next call.
+        new ArrayBuffer(4 * 1024 * 1024);
+        TKUnit.wait(ASYNC);
+    }
+    utils.GC();
 }
