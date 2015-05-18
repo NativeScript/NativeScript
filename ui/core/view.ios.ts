@@ -171,9 +171,23 @@ export class View extends viewCommon.View {
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
         var frame = CGRectMake(left, top, right - left, bottom - top);
-        if (!CGRectEqualToRect(this._nativeView.frame, frame)) {
-            trace.write(this + ", Native setFrame: " + NSStringFromCGRect(frame), trace.categories.Layout);
-            this._nativeView.frame = frame;
+
+        // This is done because when rotated in iOS7 there is rotation applied on the first subview on the Window which is our frame.nativeView.view.
+        // If we set it it should be transformed so it is correct. 
+        // When in landscape in iOS 7 there is transformation on the first subview of the window so we set frame to its subview.
+        // in iOS 8 we set frame to subview again otherwise we get clipped.
+        var nativeView: UIView;
+        if (!this.parent && this._nativeView.subviews.count > 0) {
+            trace.write(this + " has no parent. Setting frame to first child instead.", trace.categories.Layout);
+            nativeView = (<UIView>this._nativeView.subviews[0]);
+        }
+        else {
+            nativeView = this._nativeView;
+        }
+
+        if (!CGRectEqualToRect(nativeView.frame, frame)) {
+            trace.write(this + ", Native setFrame: = " + NSStringFromCGRect(frame), trace.categories.Layout);
+            nativeView.frame = frame;
         }
     }
 

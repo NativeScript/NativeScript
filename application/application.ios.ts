@@ -31,48 +31,7 @@ class Window extends UIWindow {
     }
 
     public layoutSubviews(): void {
-        if (!this._content) {
-            // TODO: Invalid setup, throw an exception?
-            return;
-        }
-
-        var statusFrame = UIApplication.sharedApplication().statusBarFrame;
-        var statusBarHeight = 0;
-
-        try {
-            statusBarHeight = Math.min(statusFrame.size.width, statusFrame.size.height);
-        } catch (ex) {
-            console.log("exception: " + ex);
-        }
-
-        var isLandscape = utils.ios.isLandscape();
-
-        var iOSMajorVersion = utils.ios.MajorVersion;
-        // in iOS 8 when in landscape statusbar is hidden.
-        if (isLandscape && iOSMajorVersion > 7) {
-            statusBarHeight = 0;
-        }
-
-        var deviceFrame = UIScreen.mainScreen().bounds;
-        var size = deviceFrame.size;
-        var width = size.width;
-        var height = size.height;
-
-        // in iOS 7 when in landscape we switch width with height because on device they don't change even when rotated.
-        if (iOSMajorVersion < 8 && isLandscape) {
-            width = size.height;
-            height = size.width;
-        }
-
-        var origin = deviceFrame.origin;
-        var left = origin.x;
-        var top = origin.y + statusBarHeight;
-
-        var widthSpec = utils.layout.makeMeasureSpec(width, utils.layout.EXACTLY);
-        var heightSpec = utils.layout.makeMeasureSpec(height - statusBarHeight, utils.layout.EXACTLY);
-
-        this._content.measure(widthSpec, heightSpec);
-        this._content.layout(left, top, width, height);
+        utils.ios._layoutRootView(this._content);
     }
 }
 

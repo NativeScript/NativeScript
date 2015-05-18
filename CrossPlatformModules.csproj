@@ -92,6 +92,13 @@
     <TypeScriptCompile Include="apps\template-blank\main-page.ts">
       <DependentUpon>main-page.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\modal-views-demo\app.ts" />
+    <TypeScriptCompile Include="apps\modal-views-demo\main-page.ts">
+      <DependentUpon>main-page.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\modal-views-demo\login-page.ts">
+      <DependentUpon>login-page.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\template-master-detail\main-page.ts" />
     <TypeScriptCompile Include="apps\template-settings\app.ts" />
     <TypeScriptCompile Include="apps\template-settings\main-page.ts">
@@ -587,6 +594,7 @@
     <Content Include="apps\gallery-app\views\segmented-bar.xml" />
     <Content Include="apps\gallery-app\views\time-picker.xml" />
     <Content Include="apps\gallery-app\views\date-picker.xml" />
+    <Content Include="apps\modal-views-demo\login-page.xml" />
     <Content Include="apps\pickers-demo\main-page.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -594,6 +602,7 @@
     <Content Include="apps\placeholder-demo\main-page.xml" />
     <Content Include="apps\TelerikNEXT\lib\everlive.js" />
     <Content Include="apps\TelerikNEXT\session-page.xml" />
+    <Content Include="apps\modal-views-demo\main-page.xml" />
     <Content Include="apps\template-master-detail\details-view.xml" />
     <Content Include="apps\template-master-detail\main-page.minWH600.xml" />
     <Content Include="apps\TelerikNEXT\images\background.jpg" />
@@ -1492,6 +1501,9 @@
     <Content Include="apps\TelerikNEXT\package.json" />
     <Content Include="apps\pickers-demo\package.json" />
     <Content Include="apps\placeholder-demo\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="apps\modal-views-demo\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="js-libs\esprima\LICENSE.BSD" />

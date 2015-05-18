@@ -1,0 +1,6 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded" id="_mainPage">
+  <StackLayout>
+    <Button text="Login" tap="onTap" />
+    <Label id="label" text="Anonymous"/>
+  </StackLayout>
+</Page>

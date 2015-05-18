@@ -1,5 +1,6 @@
 ﻿declare module "utils/utils" {
     import colorModule = require("color");
+    import view = require("ui/core/view");
 
     /**
      * Utility module related to layout.
@@ -118,6 +119,8 @@
          * Gets the iOS device major version (for 8.1 will return 8).
          */
         export var MajorVersion: number;
+
+        export function _layoutRootView(rootView: view.View): void;
     }
     /**
      * An utility function that copies properties from source object to target object.

@@ -30,7 +30,7 @@ function buildEntryFromArgs(arg: any): definition.NavigationEntry {
     return entry;
 }
 
-function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
+export function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
     var page: pages.Page;
 
     if (entry.create) {

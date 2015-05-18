@@ -23,6 +23,21 @@ declare module "ui/page" {
         context: any;
     }
 
+    /**
+     * Defines the data for the Page.shownModally event.
+     */
+    export interface ShownModallyData extends observable.EventData {
+        /**
+         * The context (optional, may be undefined) passed to the page when shown modally.
+         */
+        context: any;
+        
+        /**
+         * A callback to call when you want to close the modally shown page. Pass in any kind of arguments and you will receive when the callback parameter of Page.showModal is executed.
+         */
+        closeCallback: Function;
+    }
+
     export module knownCollections {
         export var optionsMenu: string;
     }
@@ -105,6 +120,24 @@ declare module "ui/page" {
          * Raised when navigation to the page is finished.
          */
         on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any);
+
+        /**
+         * String value used when hooking to shownModally event.
+         */
+        public static shownModallyEvent: string;
+        
+        /**
+         * Raised when the page is shown as a modal dialog.
+         */
+        on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
+
+        /**
+         * Shows the page contained in moduleName as a modal view.
+         * @param moduleName - The name of the page module to load starting from the application root.
+         * @param context - Any context you want to pass to the modally shown page. This same context will be available in the arguments of the Page.shownModally event handler.
+         * @param closeCallback - A function that will be called when the page is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
+         */
+        showModal(moduleName: string, context: any, closeCallback: Function);
 
         _addArrayFromBuilder(name: string, value: Array<any>): void;
 

@@ -1,5 +1,6 @@
 ﻿import common = require("utils/utils-common");
 import colorModule = require("color");
+import view = require("ui/core/view");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -77,6 +78,50 @@ export module ios {
     }
 
     export var MajorVersion = NSString.stringWithString(UIDevice.currentDevice().systemVersion).intValue;
+
+    export function _layoutRootView(rootView: view.View) {
+        if (!rootView) {
+            return;
+        }
+
+        var statusFrame = UIApplication.sharedApplication().statusBarFrame;
+        var statusBarHeight = 0;
+
+        try {
+            statusBarHeight = Math.min(statusFrame.size.width, statusFrame.size.height);
+        } catch (ex) {
+            console.log("exception: " + ex);
+        }
+
+        var landscape = isLandscape();
+
+        var iOSMajorVersion = MajorVersion;
+        // in iOS 8 when in landscape statusbar is hidden.
+        if (landscape && iOSMajorVersion > 7) {
+            statusBarHeight = 0;
+        }
+
+        var deviceFrame = UIScreen.mainScreen().bounds;
+        var size = deviceFrame.size;
+        var width = size.width;
+        var height = size.height;
+
+        // in iOS 7 when in landscape we switch width with height because on device they don't change even when rotated.
+        if (iOSMajorVersion < 8 && landscape) {
+            width = size.height;
+            height = size.width;
+        }
+
+        var origin = deviceFrame.origin;
+        var left = origin.x;
+        var top = origin.y + statusBarHeight;
+
+        var widthSpec = layout.makeMeasureSpec(width, common.layout.EXACTLY);
+        var heightSpec = layout.makeMeasureSpec(height - statusBarHeight, common.layout.EXACTLY);
+
+        rootView.measure(widthSpec, heightSpec);
+        rootView.layout(left, top, width, height);
+    }
 } 
 
 export function GC() {
