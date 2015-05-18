@@ -69,8 +69,6 @@ export class ListView extends view.View implements definition.ListView {
             )
         );
 
-    private _itemsChangedWeakListenerId: number;
-
     get items(): any {
         return this._getValue(ListView.itemsProperty);
     }
@@ -131,9 +129,8 @@ export class ListView extends view.View implements definition.ListView {
     }
 
     public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (data.oldValue instanceof observable.Observable && types.isDefined(this._itemsChangedWeakListenerId)) {
+        if (data.oldValue instanceof observable.Observable)) {
             weakEvents.removeWeakEventListener(data.oldValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
-            delete this._itemsChangedWeakListenerId;
         }
 
         if (data.newValue instanceof observable.Observable) {

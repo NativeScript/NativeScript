@@ -2,7 +2,7 @@ declare module "ui/core/weak-event-listener" {
     import observable = require("data/observable");
 
     /**
-     * Creates and initialize WeakEventListener.
+     * Attaches a WeakEventListener.
      * @param source Observable class which emits the event.
      * @param eventName The event name.
      * @param handler The function which should be called when event occurs.
@@ -11,7 +11,7 @@ declare module "ui/core/weak-event-listener" {
     export function addWeakEventListener(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) : void;
 
     /**
-     * Removes and clears all resources from WeakEventListener.
+     * Removes a WeakEventListener.
      * @param source Observable class which emits the event.
      * @param eventName The event name.
      * @param handler The function which should be called when event occurs.

@@ -124,7 +124,6 @@ export class Binding {
     updating = false;
     source: WeakRef<Object>;
     target: WeakRef<Bindable>;
-    weakEventId: number;
 
     private sourceOptions: { instance: WeakRef<any>; property: any };
     private targetOptions: { instance: WeakRef<any>; property: any };
