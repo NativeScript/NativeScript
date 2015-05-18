@@ -1,5 +1,7 @@
 ﻿import types = require("utils/types");
 
+export var RESOURCE_PREFIX = "res://";
+
 export function copyFrom(source: any, target: any) {
     if (types.isDefined(source) && types.isDefined(target)) {
         var i: number;
@@ -50,4 +52,14 @@ export module layout {
     export function getMeasureSpecSize(spec: number): number {
         return (spec & ~MODE_MASK);
     }
+}
+
+export function isFileOrResourcePath(path: string): boolean {
+    if (!types.isString(path)) {
+        return false;
+    }
+
+    return path.indexOf("~/") === 0 ||  // relative to AppRoot
+        path.indexOf("/") === 0 ||      // absolute path
+        path.indexOf(RESOURCE_PREFIX) === 0;    // resource
 }
