@@ -58,7 +58,9 @@ export class Page extends pageCommon.Page {
         }
     }
 
+    /* tslint:disable */
     private _dialogFragment: DialogFragmentClass;
+    /* tslint:enable */
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function) {
         if (!this.backgroundColor) {
             this.backgroundColor = new color.Color("White");
