@@ -14,7 +14,7 @@ declare module "ui/page" {
     //@endprivate
 
     /**
-     * Defines the data for the page navivation events.
+     * Defines the data for the page navigation events.
      */
     export interface NavigatedData extends observable.EventData {
         /**
@@ -106,29 +106,6 @@ declare module "ui/page" {
         optionsMenu: OptionsMenu;
 
         /**
-         * A method called before navigating to the page.
-         * @param context - The data passed to the page through the NavigationEntry.context property.
-         */
-        onNavigatingTo(context: any): void;
-
-        /**
-         * A method called after navigated to the page.
-         * @param context - The data passed to the page through the NavigationEntry.context property.
-         */
-        onNavigatedTo(): void;
-
-        /**
-         * A method called before navigating from the page.
-         */
-        onNavigatingFrom(): void;
-
-        /**
-         * A method called after navigated from the page.
-         * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
-         */
-        onNavigatedFrom(isBackNavigation: boolean): void;
-
-        /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
          * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
          * @param callback - Callback function which will be executed when event is raised.
@@ -172,6 +149,29 @@ declare module "ui/page" {
         _addArrayFromBuilder(name: string, value: Array<any>): void;
 
         //@private
+
+        /**
+         * A method called before navigating to the page.
+         * @param context - The data passed to the page through the NavigationEntry.context property.
+         */
+        onNavigatingTo(context: any): void;
+
+        /**
+         * A method called after navigated to the page.
+         */
+        onNavigatedTo(): void;
+
+        /**
+         * A method called before navigating from the page.
+         */
+        onNavigatingFrom(): void;
+
+        /**
+         * A method called after navigated from the page.
+         * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
+         */
+        onNavigatedFrom(isBackNavigation: boolean): void;
+
         _getStyleScope(): styleScope.StyleScope;
         _invalidateOptionsMenu();
         //@endprivate
