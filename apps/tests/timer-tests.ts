@@ -1,4 +1,5 @@
 ﻿import TKUnit = require("./TKUnit");
+import platform = require("platform");
 var timer = require("timer/timer");
 
 // <snippet module="timer" title="timer">
@@ -85,6 +86,12 @@ export var test_setTimeout_shouldReturnNumber = function () {
 };
 
 export var test_setTimeout_callbackShouldBeCleared = function () {
+    // This test is very unstable in iOS, because the platform does not guarantee the 
+    // callback will be cleared on time. Better skip it for iOS.
+    if (platform.device.os === platform.platformNames.ios) {
+        return;
+    }
+
     var completed: boolean;
     var isReady = function () { return completed; }
 
