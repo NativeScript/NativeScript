@@ -8,7 +8,6 @@ import builder = require("ui/builder");
 import label = require("ui/label");
 import color = require("color");
 import weakEvents = require("ui/core/weak-event-listener");
-import types = require("utils/types");
 
 var ITEMS = "items";
 var ITEMTEMPLATE = "itemTemplate";
@@ -129,7 +128,7 @@ export class ListView extends view.View implements definition.ListView {
     }
 
     public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (data.oldValue instanceof observable.Observable)) {
+        if (data.oldValue instanceof observable.Observable) {
             weakEvents.removeWeakEventListener(data.oldValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
         }
 
