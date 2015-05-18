@@ -137,29 +137,6 @@ export class Frame extends frameCommon.Frame {
         }
     }
 
-    public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-        // We don't call super here because we set frame on our first subview.
-        // This is done because when rotated in iOS7 there is rotation applied on the first subview on the Window which is our frame.nativeView.view.
-        // If we set it it should be transformed so it is correct. 
-
-        var frame = CGRectMake(left, top, right - left, bottom - top);
-        var nativeView: UIView;
-
-        // When in landscape in iOS 7 there is transformation on the first subview of the window so we set frame to its subview.
-        // in iOS 8 we set frame to subview again otherwise we get clipped.
-        if (!this.parent && this._nativeView.subviews.count > 0) {
-            nativeView = (<UIView>this._nativeView.subviews[0]);
-        }
-        else {
-            nativeView = this._nativeView;
-        }
-
-        if (!CGRectEqualToRect(nativeView.frame, frame)) {
-            trace.write(this + ", Native setFrame: " + NSStringFromCGRect(frame), trace.categories.Layout);
-            nativeView.frame = frame;
-        }
-    }
-
     protected get navigationBarHeight(): number {
         var navigationBar = this._ios.controller.navigationBar;
         return (navigationBar && !this._ios.controller.navigationBarHidden) ? navigationBar.frame.size.height : 0;

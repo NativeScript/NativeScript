@@ -3,6 +3,7 @@ import definition = require("ui/page");
 import viewModule = require("ui/core/view");
 import imageSource = require("image-source");
 import trace = require("trace");
+import utils = require("utils/utils");
 
 declare var exports;
 require("utils/module-merge").merge(pageCommon, exports);
@@ -20,7 +21,15 @@ class UIViewControllerImpl extends UIViewController {
         return this;
     }
 
+    public didRotateFromInterfaceOrientation(fromInterfaceOrientation: number) {
+        trace.write(this._owner + " didRotateFromInterfaceOrientation(" + fromInterfaceOrientation+ ")", trace.categories.ViewHierarchy);
+        if (this._owner._isModal) {
+            utils.ios._layoutRootView(this._owner);
+        }
+    }
+
     public viewDidLoad() {
+        trace.write(this._owner + " viewDidLoad", trace.categories.ViewHierarchy);
         this.view.autoresizesSubviews = false;
         this.view.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
     }
@@ -32,7 +41,6 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewWillAppear() {
         trace.write(this._owner + " viewWillAppear", trace.categories.Navigation);
-
         this._owner._enableLoadedEvents = true;
         this._owner.onLoaded();
         this._owner._enableLoadedEvents = false;
@@ -40,17 +48,16 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewDidDisappear() {
         trace.write(this._owner + " viewDidDisappear", trace.categories.Navigation);
-
         this._owner._enableLoadedEvents = true;
         this._owner.onUnloaded();
         this._owner._enableLoadedEvents = false;
     }
-
 }
 
 export class Page extends pageCommon.Page {
     private _ios: UIViewController;
     public _enableLoadedEvents: boolean;
+    public _isModal = false;
 
     constructor(options?: definition.Options) {
         super(options);
@@ -113,7 +120,7 @@ export class Page extends pageCommon.Page {
         this.populateMenuItems();
     }
 
-    populateMenuItems() {
+    public populateMenuItems() {
         var items = this.optionsMenu.getItems();
 
         var navigationItem: UINavigationItem = (<UIViewController>this.ios).navigationItem;
@@ -138,6 +145,21 @@ export class Page extends pageCommon.Page {
         }
 
         navigationItem.setRightBarButtonItemsAnimated(array, true);
+    }
+
+    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function) {
+        this._isModal = true;
+        utils.ios._layoutRootView(this);
+
+        var that = this;
+        parent.ios.presentViewControllerAnimatedCompletion(this._ios, false, function completion() {
+            that._raiseShownModallyEvent(parent, context, closeCallback);
+        });
+    }
+
+    protected _hideNativeModalView(parent: Page) {
+        parent._ios.dismissModalViewControllerAnimated(false);
+        this._isModal = false;
     }
 }
 

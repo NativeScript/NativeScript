@@ -8,6 +8,7 @@ import fileSystemAccess = require("file-system/file-system-access");
 import bindable = require("ui/core/bindable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
+import frameCommon = require("ui/frame/frame-common");
 
 var OPTIONS_MENU = "optionsMenu";
 
@@ -17,6 +18,7 @@ export module knownCollections {
 
 export class Page extends contentView.ContentView implements dts.Page, view.AddArrayFromBuilder {
     public static navigatedToEvent = "navigatedTo";
+    public static shownModallyEvent = "shownModally";
 
     private _navigationContext: any;
 
@@ -112,6 +114,34 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
     public onNavigatedFrom(isBackNavigation: boolean) {
         // TODO: Should we clear navigation context here or somewhere else
         this._navigationContext = undefined;
+    }
+
+    public showModal(moduleName: string, context: any, closeCallback: Function) {
+        var page = frameCommon.resolvePageFromEntry({ moduleName: moduleName });
+        (<Page>page)._showNativeModalView(this, context, closeCallback);
+    }
+
+    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function) {
+        //
+    }
+
+    protected _hideNativeModalView(parent: Page) {
+        //
+    }
+
+    protected _raiseShownModallyEvent(parent: Page, context: any, closeCallback: Function) {
+        var that = this;
+        var closeProxy = function () {
+            that._hideNativeModalView(parent);
+            closeCallback.apply(undefined, arguments);
+        };
+
+        this.notify({
+            eventName: Page.shownModallyEvent,
+            object: this,
+            context: context,
+            closeCallback: closeProxy
+        });
     }
 
     public _getStyleScope(): styleScope.StyleScope {
