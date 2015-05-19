@@ -30,7 +30,9 @@ export var test_getString = function (done: (err: Error, res?: string) => void) 
         // </hide>
     }, function (e) {
             //// Argument (e) is Error!
-            done(e)
+            // <hide>
+            done(e);
+            // </hide>
         });
     // ```
     // </snippet>
@@ -75,7 +77,9 @@ export var test_getJSON = function (done) {
     }, function (e) {
             //// Argument (e) is Error!
             //console.log(e);
+            // <hide>
             done(e);
+            // </hide>
         });
     // ```
     // </snippet>
@@ -120,7 +124,9 @@ export var test_getImage = function (done) {
         // </hide>
     }, function (e) {
             //// Argument (e) is Error!
+            // <hide>
             done(e);
+            // </hide>
         });
     // ```
     // </snippet>
@@ -195,7 +201,9 @@ export var test_request_responseStatusCodeShouldBeDefined = function (done) {
         // </hide>
     }, function (e) {
             //// Argument (e) is Error!
+            // <hide>
             done(e);
+            // </hide>
         });
     // ```
     // </snippet>
@@ -224,7 +232,9 @@ export var test_request_responseHeadersShouldBeDefined = function (done) {
         // </hide>
     }, function (e) {
             //// Argument (e) is Error!
+            // <hide>
             done(e);
+            // </hide>
         });
     // ```
     // </snippet>
@@ -254,7 +264,9 @@ export var test_request_responseContentShouldBeDefined = function (done) {
         // </hide>
     }, function (e) {
             //// Argument (e) is Error!
+            // <hide>
             done(e);
+            // </hide>
         });
     // ```
     // </snippet>

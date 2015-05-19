@@ -39,7 +39,7 @@ try {
     favourites = <Array<string>>JSON.parse(appSettings.getString(FAVOURITES, "[]"));
 }
 catch (error) {
-    console.log("Error while retrieveing favourites: " + error);
+    console.log("Error while retrieving favorites: " + error);
     favourites = new Array<string>();
     updateFavourites()
 }
