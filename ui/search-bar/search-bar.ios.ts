@@ -23,6 +23,20 @@ function onTextFieldBackgroundColorPropertyChanged(data: dependencyObservable.Pr
 
 (<proxy.PropertyMetadata>common.SearchBar.textFieldBackgroundColorProperty.metadata).onSetNativeValue = onTextFieldBackgroundColorPropertyChanged;
 
+function onTextFieldHintColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+  // This should be in a Try Catch in case Apple eliminates which ever method in the future; 
+  try {
+		// TODO; convert this code into NativeScript Code		
+		/* if ([textField respondsToSelector:@selector(setAttributedPlaceholder:)]) {
+			textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:textField.placeholder attributes:@{NSForegroundColorAttributeName: [UIColor whiteColor]}];
+		} */
+  } catch (Err) {
+	// Do Nothing 
+  }
+}
+
+(<proxy.PropertyMetadata>common.SearchBar.textFieldHintColorProperty.metadata).onSetNativeValue = onTextFieldHintColorPropertyChanged;
+
 function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var bar = <SearchBar>data.object;
     if (!bar.ios) {
