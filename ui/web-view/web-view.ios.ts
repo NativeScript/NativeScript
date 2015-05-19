@@ -1,5 +1,7 @@
 ﻿import common = require("ui/web-view/web-view-common");
 import trace = require("trace");
+import utils = require("utils/utils");
+import fs = require("file-system");
 
 declare var exports;
 require("utils/module-merge").merge(common, exports);
@@ -17,16 +19,16 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
         this._owner = owner;
         return this;
     }
-    
+
     public webViewShouldStartLoadWithRequestNavigationType(webView: UIWebView, request: NSURLRequest, navigationType: number) {
         if (request.URL) {
             trace.write("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", trace.categories.Debug);
             this._owner._onLoadStarted(request.URL.absoluteString);
         }
-        
+
         return true;
     }
-    
+
     public webViewDidStartLoad(webView: UIWebView) {
         trace.write("UIWebViewDelegateClass.webViewDidStartLoad(" + webView.request.URL + ")", trace.categories.Debug);
     }
@@ -79,6 +81,32 @@ export class WebView extends common.WebView {
             this._ios.stopLoading();
         }
         this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(url)));
+    }
+
+    public _loadSrc(src: string) {
+        trace.write("WebView._loadSrc(" + src + ")", trace.categories.Debug);
+
+        if (this._ios.loading) {
+            this._ios.stopLoading();
+        }
+
+        if (utils.isFileOrResourcePath(src)) {
+
+            if (src.indexOf("~/") === 0) {
+                src = fs.path.join(fs.knownFolders.currentApp().path, src.replace("~/", ""));
+            }
+
+            var file = fs.File.fromPath(src);
+            if (file) {
+                file.readText().then((r) => {
+                    this._ios.loadHTMLStringBaseURL(r, null);
+                });
+            }
+        } else if (src.indexOf("http://") === 0 || src.indexOf("https://") === 0) {
+            this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
+        } else {
+            this._ios.loadHTMLStringBaseURL(src, null);
+        }
     }
 
     get canGoBack(): boolean {

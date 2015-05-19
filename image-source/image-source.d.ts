@@ -118,7 +118,7 @@ declare module "image-source" {
     export function fromFileOrResource(path: string): ImageSource;
 
     /**
-     * Returns true if the specified path points to a resource or local file.
+     * [Obsolete. Please use utils.isFileOrResourcePath instead!] Returns true if the specified path points to a resource or local file.
      * @param path The path.
      */
     export function isFileOrResourcePath(path: string): boolean

@@ -2,6 +2,8 @@
     import colorModule = require("color");
     import view = require("ui/core/view");
 
+    export var RESOURCE_PREFIX: string;
+
     /**
      * Utility module related to layout.
      */
@@ -132,4 +134,10 @@
      * An utility function that invokes garbage collection on the JavaScript side.
      */
     export function GC();
+
+    /**
+     * Returns true if the specified path points to a resource or local file.
+     * @param path The path.
+     */
+    export function isFileOrResourcePath(path: string): boolean
 }

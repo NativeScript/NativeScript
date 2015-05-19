@@ -1,10 +1,8 @@
 ﻿import http = require("http");
-import types = require("utils/types");
+import utils = require("utils/utils");
 
 // This is used for definition purposes only, it does not generate JavaScript for it.
 import definition = require("image-source");
-
-var RESOURCE_PREFIX = "res://";
 
 export function fromResource(name: string): definition.ImageSource {
     var image = new definition.ImageSource();
@@ -40,18 +38,12 @@ export function fromFileOrResource(path: string): definition.ImageSource {
         throw new Error("Path \"" + "\" is not a valid file or resource.");
     }
 
-    if (path.indexOf(RESOURCE_PREFIX) === 0) {
-        return fromResource(path.substr(RESOURCE_PREFIX.length));
+    if (path.indexOf(utils.RESOURCE_PREFIX) === 0) {
+        return fromResource(path.substr(utils.RESOURCE_PREFIX.length));
     }
     return fromFile(path);
 }
 
 export function isFileOrResourcePath(path: string): boolean {
-    if (!types.isString(path)) {
-        return false;
-    }
-
-    return path.indexOf("~/") === 0 ||  // relative to AppRoot
-        path.indexOf("/") === 0 ||      // absolute path
-        path.indexOf(RESOURCE_PREFIX) === 0;    // resource
+    return utils.isFileOrResourcePath(path);
 }

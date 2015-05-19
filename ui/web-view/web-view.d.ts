@@ -36,9 +36,14 @@ declare module "ui/web-view" {
         ios: UIWebView;
 
         /**
-         * Gets or sets the url displayed by this instance.
+         * [Obsolete. Please use src instead!] Gets or sets the url displayed by this instance.
          */
         url: string;
+
+        /**
+         * Gets or sets the url, local file path or HTML string.
+         */
+        src: string;
 
         /**
          * Gets a value indicating whether the WebView can navigate back.
