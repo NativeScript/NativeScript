@@ -17,7 +17,10 @@ export module knownCollections {
 }
 
 export class Page extends contentView.ContentView implements dts.Page, view.AddArrayFromBuilder {
+    public static navigatingToEvent = "navigatingTo";
     public static navigatedToEvent = "navigatedTo";
+    public static navigatingFromEvent = "navigatingFrom";
+    public static navigatedFromEvent = "navigatedFrom";
     public static shownModallyEvent = "shownModally";
 
     private _navigationContext: any;
@@ -96,23 +99,37 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
 
     public onNavigatingTo(context: any) {
         this._navigationContext = context;
+
+        this.notify({
+            eventName: Page.navigatingToEvent,
+            object: this,
+            context: this.navigationContext
+        });
     }
 
-    public onNavigatedTo(context: any) {
-        this._navigationContext = context;
+    public onNavigatedTo() {
         this.notify({
             eventName: Page.navigatedToEvent,
             object: this,
-            context: context
+            context: this.navigationContext
         });
     }
 
     public onNavigatingFrom() {
-        //
+        this.notify({
+            eventName: Page.navigatingFromEvent,
+            object: this,
+            context: this.navigationContext
+        });
     }
 
     public onNavigatedFrom(isBackNavigation: boolean) {
-        // TODO: Should we clear navigation context here or somewhere else
+        this.notify({
+            eventName: Page.navigatedFromEvent,
+            object: this,
+            context: this.navigationContext
+        });
+
         this._navigationContext = undefined;
     }
 

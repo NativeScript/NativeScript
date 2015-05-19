@@ -153,10 +153,10 @@ export function test_PageLoaded_is_called_once() {
     var handler = function (data) {
         loaded++;
     }
-    
+
     var pageFactory = function (): PageModule.Page {
         page1 = new PageModule.Page();
-        addLabelToPage(page1, "Page 1");    
+        addLabelToPage(page1, "Page 1");
         return page1;
     };
 
@@ -225,29 +225,36 @@ export var test_NavigateToNewPage = function () {
 
 export var test_PageNavigation_EventSequence = function () {
     var testPage: PageModule.Page;
+    var context = { property: "this is the context" };
     var eventSequence = [];
     var pageFactory = function () {
         testPage = new PageModule.Page();
         addLabelToPage(testPage);
-        testPage.onNavigatingFrom = function () {
-            eventSequence.push("onNavigatingFrom");
-        }
 
-        testPage.onNavigatedFrom = function () {
-            eventSequence.push("onNavigatedFrom");
-        }
-
-        testPage.onNavigatingTo = function () {
+        testPage.on(PageModule.Page.navigatingToEvent, function (data: PageModule.NavigatedData) {
             eventSequence.push("onNavigatingTo");
-        }
+            TKUnit.assertEqual(data.context, context, "onNavigatingTo: navigationContext");
+        });
 
-        testPage.onNavigatedTo = function () {
+        testPage.on(PageModule.Page.navigatedToEvent, function (data: PageModule.NavigatedData) {
             eventSequence.push("onNavigatedTo");
-        }
+            TKUnit.assertEqual(data.context, context, "onNavigatedTo : navigationContext");
+        });
+
+        testPage.on(PageModule.Page.navigatingFromEvent, function (data: PageModule.NavigatedData) {
+            eventSequence.push("onNavigatingFrom");
+            TKUnit.assertEqual(data.context, context, "onNavigatingFrom: navigationContext");
+        });
+
+        testPage.on(PageModule.Page.navigatedFromEvent, function (data: PageModule.NavigatedData) {
+            eventSequence.push("onNavigatedFrom");
+            TKUnit.assertEqual(data.context, context, "onNavigatedFrom: navigationContext");
+        });
+
         return testPage;
     };
 
-    helper.navigate(pageFactory);
+    helper.navigate(pageFactory, context);
     helper.goBack();
 
     var expectedEventSequence = ["onNavigatingTo", "onNavigatedTo", "onNavigatingFrom", "onNavigatedFrom"];
@@ -263,9 +270,9 @@ export var test_NavigateTo_WithContext = function () {
     var testPage: PageModule.Page;
     var pageFactory = function (): PageModule.Page {
         testPage = new PageModule.Page();
-        testPage.onNavigatedTo = function (context) {
+        testPage.on(PageModule.Page.navigatedToEvent, function () {
             ////console.log(JSON.stringify(context));
-        }
+        });
         return testPage;
     };
     var navEntry = {
@@ -362,7 +369,7 @@ export var test_cssShouldBeAppliedToAllNestedElements = function () {
     };
 
     helper.navigate(pageFactory);
-    
+
     var expectedText = "Some text";
     try {
         TKUnit.assert(label.style.backgroundColor.hex === "#ff00ff00", "Expected: #ff00ff00, Actual: " + label.style.backgroundColor.hex);

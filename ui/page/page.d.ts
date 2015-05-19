@@ -14,11 +14,11 @@ declare module "ui/page" {
     //@endprivate
 
     /**
-     * Defines the data for the Page.navigatedTo event.
+     * Defines the data for the page navigation events.
      */
     export interface NavigatedData extends observable.EventData {
         /**
-         * The navigation context (optional, may be undefined) passed to the Page.onNavigatedTo method.
+         * The navigation context (optional, may be undefined) passed to the page navigation evetns method.
          */
         context: any;
     }
@@ -47,9 +47,29 @@ declare module "ui/page" {
      */
     export class Page extends contentView.ContentView implements view.AddArrayFromBuilder {
         /**
+         * String value used when hooking to shownModally event.
+         */
+        public static shownModallyEvent: string;
+
+        /**
+         * String value used when hooking to navigatingTo event.
+         */
+        public static navigatingToEvent: string;
+
+        /**
          * String value used when hooking to navigatedTo event.
          */
         public static navigatedToEvent: string;
+
+        /**
+         * String value used when hooking to navigatingFrom event.
+         */
+        public static navigatingFromEvent: string;
+
+        /**
+         * String value used when hooking to navigatedFrom event.
+         */
+        public static navigatedFromEvent: string;
 
         constructor(options?: Options)
 
@@ -86,29 +106,6 @@ declare module "ui/page" {
         optionsMenu: OptionsMenu;
 
         /**
-         * A method called before navigating to the page.
-         * @param context - The data passed to the page through the NavigationEntry.context property.
-         */
-        onNavigatingTo(context: any): void;
-
-        /**
-         * A method called after navigated to the page.
-         * @param context - The data passed to the page through the NavigationEntry.context property.
-         */
-        onNavigatedTo(context: any): void;
-
-        /**
-         * A method called before navigating from the page.
-         */
-        onNavigatingFrom(): void;
-
-        /**
-         * A method called after navigated from the page.
-         * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
-         */
-        onNavigatedFrom(isBackNavigation: boolean): void;
-
-        /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
          * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
          * @param callback - Callback function which will be executed when event is raised.
@@ -117,14 +114,24 @@ declare module "ui/page" {
         on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
 
         /**
-         * Raised when navigation to the page is finished.
+         * Raised when navigation to the page has started.
+         */
+        on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any);
+
+        /**
+         * Raised when navigation to the page has finished.
          */
         on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any);
 
         /**
-         * String value used when hooking to shownModally event.
+         * Raised when navigation from the page has started.
          */
-        public static shownModallyEvent: string;
+        on(event: "navigatingFrom", callback: (args: NavigatedData) => void, thisArg?: any);
+
+        /**
+         * Raised when navigation from the page has finished.
+         */
+        on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any);
         
         /**
          * Raised when the page is shown as a modal dialog.
@@ -142,6 +149,29 @@ declare module "ui/page" {
         _addArrayFromBuilder(name: string, value: Array<any>): void;
 
         //@private
+
+        /**
+         * A method called before navigating to the page.
+         * @param context - The data passed to the page through the NavigationEntry.context property.
+         */
+        onNavigatingTo(context: any): void;
+
+        /**
+         * A method called after navigated to the page.
+         */
+        onNavigatedTo(): void;
+
+        /**
+         * A method called before navigating from the page.
+         */
+        onNavigatingFrom(): void;
+
+        /**
+         * A method called after navigated from the page.
+         * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
+         */
+        onNavigatedFrom(isBackNavigation: boolean): void;
+
         _getStyleScope(): styleScope.StyleScope;
         _invalidateOptionsMenu();
         //@endprivate

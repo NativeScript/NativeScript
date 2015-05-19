@@ -152,7 +152,7 @@ export function testChangeItemWidth() {
         wrapLayout.itemWidth = 50;
 
         TKUnit.waitUntilReady(() => {
-            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
+            return wrapLayout.isLayoutValid;
         });
 
         var actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds().left;
@@ -185,7 +185,7 @@ export function testChangeItemHeight() {
         wrapLayout.itemHeight = 50;
 
         TKUnit.waitUntilReady(() => {
-            return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
+            return wrapLayout.isLayoutValid;
         });
 
         var actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds().top;
@@ -236,7 +236,7 @@ export function testPaddingRight() {
         layoutHelper.assertMeasure(btn2, 80, 50);
 
         // There should be no space left for the button on the first row,
-        // because fo the padding (200 - 100 - 30) = 70 button wants 80  
+        // because for the padding (200 - 100 - 30) = 70 button wants 80  
         layoutHelper.assertLayout(btn1, 0, 0, 100, 50, "button1");
         layoutHelper.assertLayout(btn2, 0, 50, 80, 50, "button2");
     });

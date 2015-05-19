@@ -222,7 +222,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         var newPage = newEntry.resolvedPage;
 
         // notify the page
-        newPage.onNavigatedTo(newEntry.entry.context);
+        newPage.onNavigatedTo();
         frame._processNavigationQueue(newPage);
     }
 
