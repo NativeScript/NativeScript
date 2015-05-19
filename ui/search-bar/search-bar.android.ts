@@ -150,6 +150,9 @@ export class SearchBar extends common.SearchBar {
         if (this.textFieldBackgroundColor instanceof color.Color) {
             _changeSearchViewBackgroundColor(this._android, this.textFieldBackgroundColor.android);
         }
+        if (this.textFieldHintColor instanceof color.Color) {
+            _changeSearchViewHintColor(this._android, this.textFieldHintColor.android);
+        }
     }
 
     get android(): android.widget.SearchView {
