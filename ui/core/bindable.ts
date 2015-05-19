@@ -21,7 +21,6 @@ function onBindingContextChanged(data: dependencyObservable.PropertyChangeData) 
 }
 
 var contextKey = "context";
-var resourcesKey = "resources";
 
 export class Bindable extends dependencyObservable.DependencyObservable implements definition.Bindable {
 
@@ -203,13 +202,18 @@ export class Binding {
             return;
         }
         if (this.options.twoWay) {
-            if (this._isExpression(this.options.expression)) {
+            if (this.options.expression) {
                 var changedModel = {};
-                if (this.options.sourceProperty === bindingBuilder.bindingConstants.bindingValueKey) {
-                    changedModel[bindingBuilder.bindingConstants.bindingValueKey] = value;
+                changedModel[bindingBuilder.bindingConstants.bindingValueKey] = value;
+                var sourcePropertyName = "";
+                if (this.sourceOptions) {
+                    sourcePropertyName = this.sourceOptions.property;
                 }
-                else {
-                    changedModel[this.options.sourceProperty] = value;
+                else if (typeof this.options.sourceProperty === "string" && this.options.sourceProperty.indexOf(".") === -1) {
+                    sourcePropertyName = this.options.sourceProperty;
+                }
+                if (sourcePropertyName !== "") {
+                    changedModel[sourcePropertyName] = value;
                 }
                 var expressionValue = this._getExpressionValue(this.options.expression, true, changedModel);
                 if (expressionValue instanceof Error) {
@@ -225,25 +229,20 @@ export class Binding {
         }
     }
 
-    private _isExpression(expression: string): boolean {
-        if (expression) {
-            var result = expression.indexOf(" ") !== -1;
-            return result;
-        }
-        else {
-            return false;
-        }
-    }
-
     private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
         try {
             var exp = polymerExpressions.PolymerExpressions.getExpression(expression);
             if (exp) {
                 var context = this.source && this.source.get && this.source.get() || global;
                 var model = {};
-                model[contextKey] = context;
-                model[resourcesKey] = appModule.resources;
-                return exp.getValue(model, isBackConvert, changedModel);
+                for (var prop in appModule.resources) {
+                    if (appModule.resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
+                        context[prop] = appModule.resources[prop];
+                    }
+                }
+
+				model[contextKey] = context;
+				return exp.getValue(model, isBackConvert, changedModel);
             }
             return new Error(expression + " is not a valid expression.");
         }
@@ -254,7 +253,7 @@ export class Binding {
     }
 
     public onSourcePropertyChanged(data: observable.PropertyChangeData) {
-        if (this._isExpression(this.options.expression)) {
+        if (this.options.expression) {
             var expressionValue = this._getExpressionValue(this.options.expression, false, undefined);
             if (expressionValue instanceof Error) {
                 trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
@@ -268,11 +267,9 @@ export class Binding {
     }
 
     private getSourceProperty() {
-        if (this._isExpression(this.options.expression)) {
+        if (this.options.expression) {
             var changedModel = {};
-            if (this.options.sourceProperty === bindingBuilder.bindingConstants.bindingValueKey) {
-                changedModel[bindingBuilder.bindingConstants.bindingValueKey] = this.source.get();
-            }
+            changedModel[bindingBuilder.bindingConstants.bindingValueKey] = this.source.get();
             var expressionValue = this._getExpressionValue(this.options.expression, false, changedModel);
             if (expressionValue instanceof Error) {
                 trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
@@ -339,7 +336,7 @@ export class Binding {
             return options;
         }
 
-        if (!this._isExpression(property) && types.isString(property) && property.indexOf(".") !== -1) {
+        if (types.isString(property) && property.indexOf(".") !== -1) {
             var properties = property.split(".");
 
             var i: number;

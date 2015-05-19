@@ -13,6 +13,7 @@ import bindingBuilder = require("ui/builder/binding-builder");
 import labelModule = require("ui/label");
 import textFieldModule = require("ui/text-field");
 import fs = require("file-system");
+import appModule = require("application");
 
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic. 
@@ -509,6 +510,32 @@ export var test_BindingToSource_FailsAfterBindingContextChange = function () {
 
         var page = <pageModule.Page>(views[1]);
         page.bindingContext = new observable.Observable;
+
+        TKUnit.assertEqual(testLabel.text, expectedValue);
+    }
+
+    helper.buildUIAndRunTest(createLabel(), testFunc);
+}
+
+export function test_BindingToDictionaryAtAppLevel() {
+    var createLabel = function () {
+        var label = new labelModule.Label();
+        return label;
+    }
+    var pageViewModel = new observable.Observable();
+    var testPropertyName = "testValue";
+    var expectedValue = "expectedValue";
+    pageViewModel.set("testProperty", testPropertyName);
+    var dict = {};
+    dict[testPropertyName] = expectedValue;
+    appModule.resources["dict"] = dict;
+
+    var testFunc = function (views: Array<viewModule.View>) {
+        var testLabel = <labelModule.Label>(views[0]);
+        testLabel.bind({ sourceProperty: "testProperty", targetProperty: "text", expression: "dict[testProperty]" });
+
+        var page = <pageModule.Page>(views[1]);
+        page.bindingContext = pageViewModel;
 
         TKUnit.assertEqual(testLabel.text, expectedValue);
     }

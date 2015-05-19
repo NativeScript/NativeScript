@@ -1,4 +1,4 @@
-﻿var expressionSymbolsRegex = /[ \+\-\*%\?:<>=!\|&\(\)\[\]]/;
+﻿var expressionSymbolsRegex = /[ \+\-\*%\?:<>=!\|&\(\)\[\]^~]/;
 
 export module bindingConstants {
     export var sourceProperty = "sourceProperty";
