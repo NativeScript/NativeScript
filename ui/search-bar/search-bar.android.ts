@@ -34,6 +34,20 @@ function onTextFieldBackgroundColorPropertyChanged(data: dependencyObservable.Pr
 // register the setNativeValue callbacks
 (<proxy.PropertyMetadata>common.SearchBar.textFieldBackgroundColorProperty.metadata).onSetNativeValue = onTextFieldBackgroundColorPropertyChanged;
 
+function onTextFieldHintColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var bar = <SearchBar>data.object;
+    if (!bar.android) {
+        return;
+    }
+
+    if (data.newValue instanceof color.Color) {
+        _changeSearchViewHintColor(bar.android, (<color.Color>data.newValue).android);
+    }
+}
+
+// register the setNativeValue callbacks
+(<proxy.PropertyMetadata>common.SearchBar.textFieldHintColorProperty.metadata).onSetNativeValue = onTextFieldHintColorPropertyChanged;
+
 function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var bar = <SearchBar>data.object;
     if (!bar.android) {
@@ -65,6 +79,14 @@ function _changeSearchViewBackgroundColor(bar: android.widget.SearchView, color:
 
     if (textView) {
         textView.setBackgroundColor(color);
+    }
+}
+
+function _changeSearchViewHintColor(bar: android.widget.SearchView, color: number) {
+    var textView = getTextView(bar);
+
+    if (textView) {
+        textView.setHintTextColor(color);
     }
 }
 
@@ -127,6 +149,9 @@ export class SearchBar extends common.SearchBar {
 
         if (this.textFieldBackgroundColor instanceof color.Color) {
             _changeSearchViewBackgroundColor(this._android, this.textFieldBackgroundColor.android);
+        }
+        if (this.textFieldHintColor instanceof color.Color) {
+            _changeSearchViewHintColor(this._android, this.textFieldHintColor.android);
         }
     }
 
