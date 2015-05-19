@@ -80,6 +80,7 @@ export class WebView extends common.WebView {
         trace.write("WebView._loadSrc(" + src + ")", trace.categories.Debug);
 
         this._android.stopLoading();
+        this._android.loadUrl("about:blank");
 
         if (utils.isFileOrResourcePath(src)) {
 
