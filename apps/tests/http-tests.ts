@@ -30,7 +30,9 @@ export var test_getString = function (done: (err: Error, res?: string) => void) 
         // </hide>
     }, function (e) {
             //// Argument (e) is Error!
-            done(e)
+            // <hide>
+            done(e);
+            // </hide>
         });
     // ```
     // </snippet>
@@ -75,7 +77,9 @@ export var test_getJSON = function (done) {
     }, function (e) {
             //// Argument (e) is Error!
             //console.log(e);
+            // <hide>
             done(e);
+            // </hide>
         });
     // ```
     // </snippet>
@@ -120,7 +124,9 @@ export var test_getImage = function (done) {
         // </hide>
     }, function (e) {
             //// Argument (e) is Error!
+            // <hide>
             done(e);
+            // </hide>
         });
     // ```
     // </snippet>
@@ -195,7 +201,9 @@ export var test_request_responseStatusCodeShouldBeDefined = function (done) {
         // </hide>
     }, function (e) {
             //// Argument (e) is Error!
+            // <hide>
             done(e);
+            // </hide>
         });
     // ```
     // </snippet>
@@ -224,7 +232,9 @@ export var test_request_responseHeadersShouldBeDefined = function (done) {
         // </hide>
     }, function (e) {
             //// Argument (e) is Error!
+            // <hide>
             done(e);
+            // </hide>
         });
     // ```
     // </snippet>
@@ -254,7 +264,9 @@ export var test_request_responseContentShouldBeDefined = function (done) {
         // </hide>
     }, function (e) {
             //// Argument (e) is Error!
+            // <hide>
             done(e);
+            // </hide>
         });
     // ```
     // </snippet>
@@ -317,7 +329,8 @@ export var test_request_headersSentAndReceivedProperly = function (done) {
     var result;
 
     http.request({
-        url: "https://httpbin.org/get", method: "GET",
+        url: "https://httpbin.org/get",
+        method: "GET",
         headers: { "Content-Type": "application/json" }
     }).then(function (response) {
             result = response.headers;
@@ -337,7 +350,8 @@ export var test_request_contentSentAndReceivedProperly = function (done) {
     var result;
 
     http.request({
-        url: "https://httpbin.org/post", method: "POST",
+        url: "https://httpbin.org/post",
+        method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         content: "MyVariableOne=ValueOne&MyVariableTwo=ValueTwo"
     }).then(function (response) {
@@ -360,7 +374,8 @@ export var test_request_NonStringHeadersSentAndReceivedProperly = function (done
     var postData = "MyVariableOne=ValueOne&MyVariableTwo=ValueTwo";
 
     http.request({
-        url: "https://httpbin.org/post", method: "POST",
+        url: "https://httpbin.org/post",
+        method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": postData.length },
         content: postData
     }).then(function (response) {
@@ -384,7 +399,8 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
     var result;
 
     http.request({
-        url: "https://httpbin.org/post", method: "POST",
+        url: "https://httpbin.org/post",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         content: JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })
     }).then(function (response) {
