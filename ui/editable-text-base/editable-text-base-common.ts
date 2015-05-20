@@ -40,6 +40,13 @@ var autocorrectProperty = new dependencyObservable.Property(
     new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None)
     );
 
+export var hintProperty = new dependencyObservable.Property(
+    "hint",
+    "EditableTextBase",
+    new proxy.PropertyMetadata("")
+    );
+
+
 function onKeyboardTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var editableTextBase = <EditableTextBase>data.object;
     editableTextBase._onKeyboardTypePropertyChanged(data);
@@ -75,6 +82,13 @@ function onAutocorrectPropertyChanged(data: dependencyObservable.PropertyChangeD
 
 (<proxy.PropertyMetadata>autocorrectProperty.metadata).onSetNativeValue = onAutocorrectPropertyChanged;
 
+function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var editableTextBase = <EditableTextBase>data.object;
+    editableTextBase._onHintPropertyChanged(data);
+}
+
+(<proxy.PropertyMetadata>hintProperty.metadata).onSetNativeValue = onHintPropertyChanged;
+
 export class EditableTextBase extends textBase.TextBase implements definition.EditableTextBase {
 
     public static keyboardTypeProperty = keyboardTypeProperty;
@@ -88,6 +102,8 @@ export class EditableTextBase extends textBase.TextBase implements definition.Ed
     public static autocapitalizationTypeProperty = autocapitalizationTypeProperty;
 
     public static autocorrectProperty = autocorrectProperty;
+
+    public static hintProperty = hintProperty;
 
     constructor(options?: definition.Options) {
         super(options);
@@ -141,6 +157,13 @@ export class EditableTextBase extends textBase.TextBase implements definition.Ed
         this._setValue(EditableTextBase.autocorrectProperty, value);
     }
 
+    get hint(): string {
+        return this._getValue(EditableTextBase.hintProperty);
+    }
+    set hint(value: string) {
+        this._setValue(EditableTextBase.hintProperty, value);
+    }
+
     public dismissSoftInput() {
         //
     }
@@ -163,6 +186,10 @@ export class EditableTextBase extends textBase.TextBase implements definition.Ed
     }
     
     public _onAutocorrectPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        //
+    }
+
+    public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         //
     }
 } 

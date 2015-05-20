@@ -253,4 +253,13 @@ export class EditableTextBase extends common.EditableTextBase {
 
         editableTextBase.android.setInputType(inputType);
     }
+
+    public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        var editableTextBase = <EditableTextBase>data.object;
+        if (!editableTextBase.android) {
+            return;
+        }
+
+        editableTextBase.android.setHint(data.newValue);
+    }
 }  

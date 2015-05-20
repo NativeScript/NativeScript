@@ -7,6 +7,15 @@ export function getNativeText(textView: textViewModule.TextView): string {
     return textView.ios.text;
 }
 
+export function getNativeHint(textView: textViewModule.TextView): string {
+    // There is no native hint
+    if (textView.hint !== "") {
+        return textView.ios.text;
+    }
+
+    return "";
+}
+
 export function getNativeEditable(textView: textViewModule.TextView): boolean {
     return textView.ios.editable;
 }

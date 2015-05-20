@@ -16,6 +16,10 @@ export function getNativeEditable(textView: textViewModule.TextView): boolean {
     }
 }
 
+export function getNativeHint(textView: textViewModule.TextView): string {
+    return textView.android.getHint();
+}
+
 export function getNativeFontSize(textView: textViewModule.TextView): number {
     var density = utilsModule.layout.getDisplayDensity();
     return textView.android.getTextSize() / density;

@@ -39,6 +39,8 @@
          * Gets or sets a formatted string.
          */
         formattedText: formattedString.FormattedString;
+
+        _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData);
     }
 
     /**

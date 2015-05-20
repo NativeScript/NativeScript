@@ -21,11 +21,6 @@ declare module "ui/text-field" {
         ios: UITextField;
 
         /**
-         * Gets or sets the text of a text field hint/placeholder.
-         */
-        hint: string;
-
-        /**
          * Gets or sets if a text field is for password entry.
          */
         secure: boolean;
@@ -35,11 +30,6 @@ declare module "ui/text-field" {
      * Defines interface for an optional parameter used to create a editable-text-base component.
      */
     export interface Options extends editableTextBase.Options {
-        /**
-         * Gets or sets the text of a text field hint/placeholder.
-         */
-        hint?: string;
-
         /**
          * Gets or sets if a text field is for password entry.
          */
