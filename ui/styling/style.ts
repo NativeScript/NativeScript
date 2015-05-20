@@ -10,6 +10,7 @@ import styleProperty = require("ui/styling/style-property");
 import converters = require("ui/styling/converters");
 import enums = require("ui/enums");
 import imageSource = require("image-source");
+import utils = require("utils/utils");
 
 // key is the property id and value is Dictionary<string, StylePropertyChangedHandler>;
 var _registeredHandlers = {};
@@ -348,8 +349,13 @@ function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
     var pattern: RegExp = /url\(('|")(.*?)\1\)/;
     var url = (<string>data.newValue).match(pattern)[2];
 
-    if (imageSource.isFileOrResourcePath(url)) {
+    if (utils.isFileOrResourcePath(url)) {
         style._setValue(backgroundImageSourceProperty, imageSource.fromFileOrResource(url), observable.ValueSource.Local);
+    } else if (utils.isDataURI(url)) {
+        var base64Data = url.split(",")[1];
+        if (types.isDefined(base64Data)) {
+            style._setValue(backgroundImageSourceProperty, imageSource.fromBase64(base64Data), observable.ValueSource.Local);
+        }
     } else if (types.isString(url)) {
         imageSource.fromUrl(url).then(r=> {
             style._setValue(backgroundImageSourceProperty, r, observable.ValueSource.Local);
