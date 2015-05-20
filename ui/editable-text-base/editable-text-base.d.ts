@@ -47,6 +47,11 @@
         autocorrect: boolean;
 
         /**
+         * Gets or sets the placeholder text.
+         */
+        hint: string;
+
+        /**
          * Hides the soft input method, ususally a soft keyboard.
          */
         dismissSoftInput(): void;
@@ -80,6 +85,11 @@
          * Gets or sets the autocapitalization type.
          */
         autocapitalizationType?: string;
+
+        /**
+         * Gets or sets the placeholder text.
+         */
+        hint?: string;
 
         /**
          * Enables or disables autocorrection.

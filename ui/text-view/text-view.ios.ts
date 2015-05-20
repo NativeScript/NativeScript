@@ -21,12 +21,18 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         return this;
     }
 
+    public textViewShouldBeginEditing(textView: UITextView): boolean {
+        this._owner._hideHint();
+        return true;
+    }
+
     public textViewDidEndEditing(textView: UITextView) {
         if (this._owner.updateTextTrigger === enums.UpdateTextTrigger.focusLost) {
             this._owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
         }
 
         this._owner.dismissSoftInput();
+        this._owner._refreshHintState(this._owner.hint, textView.text);
     }
 
     public textViewDidChange(textView: UITextView) {
@@ -68,5 +74,35 @@ export class TextView extends common.TextView {
 
     public _onEditablePropertyChanged(data: dependencyObservable.PropertyChangeData) {
         this._ios.editable = data.newValue;
+    }
+
+    public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        this._refreshHintState(data.newValue, this.text);
+    }
+
+    public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        super._onTextPropertyChanged(data);
+        this._refreshHintState(this.hint, data.newValue);
+    }
+
+    public _refreshHintState(hint: string, text: string) {
+        if (hint && !text) {
+            this._showHint(hint);
+        }
+        else {
+            this._hideHint();
+        }
+    }
+
+    public _showHint(hint: string) {
+        this.ios.textColor = this.ios.textColor ? this.ios.textColor.colorWithAlphaComponent(0.22) : UIColor.blackColor().colorWithAlphaComponent(0.22);
+        this.ios.text = hint + "";
+        (<any>this.ios).isShowingHint = true;
+    }
+
+    public _hideHint() {
+        this.ios.textColor = this.color ? this.color.ios : null;
+        this.ios.text = this.text + "";
+        (<any>this.ios).isShowingHint = false;
     }
 } 

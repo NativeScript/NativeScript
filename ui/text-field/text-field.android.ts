@@ -2,18 +2,6 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 
-function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var textField = <TextField>data.object;
-    if (!textField.android) {
-        return;
-    }
-
-    textField.android.setHint(data.newValue);
-}
-
-// register the setNativeValue callbacks
-(<proxy.PropertyMetadata>common.hintProperty.metadata).onSetNativeValue = onHintPropertyChanged;
-
 function onSecurePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var textField = <TextField>data.object;
     if (!textField.android) {

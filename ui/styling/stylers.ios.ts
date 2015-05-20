@@ -409,21 +409,36 @@ export class TextViewStyler implements definition.stylers.Styler {
     private static setColorProperty(view: view.View, newValue: any) {
         var textView: UITextView = <UITextView>view._nativeView;
         if (textView) {
-            textView.textColor = newValue;
+            TextViewStyler._setTextViewColor(textView, newValue);
         }
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
         var textView: UITextView = <UITextView>view._nativeView;
         if (textView) {
-            textView.textColor = nativeValue;
+            TextViewStyler._setTextViewColor(textView, nativeValue);
+        }
+    }
+
+    private static _setTextViewColor(textView: UITextView, newValue: any) {
+        var color: UIColor = <UIColor>newValue;
+        if ((<any>textView).isShowingHint && color) {
+            textView.textColor = (<UIColor>color).colorWithAlphaComponent(0.22);
+        }
+        else {
+            textView.textColor = color;
         }
     }
 
     private static getNativeColorValue(view: view.View): any {
         var textView: UITextView = <UITextView>view._nativeView;
         if (textView) {
-            return textView.textColor;
+            if ((<any>textView).isShowingHint && textView.textColor) {
+                return textView.textColor.colorWithAlphaComponent(1);
+            }
+            else {
+                return textView.textColor;
+            }
         }
     }
 

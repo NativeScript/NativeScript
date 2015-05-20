@@ -4,13 +4,6 @@ import proxy = require("ui/core/proxy");
 import textBase = require("ui/text-base");
 import enums = require("ui/enums");
 
-function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var textField = <TextField>data.object;
-    textField.ios.placeholder = data.newValue;
-}
-
-(<proxy.PropertyMetadata>common.hintProperty.metadata).onSetNativeValue = onHintPropertyChanged;
-
 function onSecurePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var textField = <TextField>data.object;
     textField.ios.secureTextEntry = data.newValue;
@@ -88,5 +81,10 @@ export class TextField extends common.TextField {
 
     get ios(): UITextField {
         return this._ios;
+    }
+
+    public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        var textField = <TextField>data.object;
+        textField.ios.placeholder = data.newValue;
     }
 } 

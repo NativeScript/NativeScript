@@ -4,12 +4,6 @@ import proxy = require("ui/core/proxy");
 import textBase = require("ui/text-base");
 import editableTextBase = require("ui/editable-text-base");
 
-export var hintProperty = new dependencyObservable.Property(
-    "hint",
-    "TextField",
-    new proxy.PropertyMetadata("")
-    );
-
 export var secureProperty = new dependencyObservable.Property(
     "secure",
     "TextField",
@@ -23,13 +17,6 @@ require("utils/module-merge").merge(textBase, exports);
 export class TextField extends editableTextBase.EditableTextBase implements definition.TextField {
     constructor(options?: definition.Options) {
         super(options);
-    }
-
-    get hint(): string {
-        return this._getValue(hintProperty);
-    }
-    set hint(value: string) {
-        this._setValue(hintProperty, value);
     }
 
     get secure(): boolean {
