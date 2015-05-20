@@ -32,7 +32,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         }
 
         this._owner.dismissSoftInput();
-        this._owner._refreshHintState(this._owner.hint);
+        this._owner._refreshHintState(this._owner.hint, textView.text);
     }
 
     public textViewDidChange(textView: UITextView) {
@@ -77,16 +77,16 @@ export class TextView extends common.TextView {
     }
 
     public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        this._refreshHintState(data.newValue);
+        this._refreshHintState(data.newValue, this.text);
     }
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         super._onTextPropertyChanged(data);
-        this._refreshHintState(this.hint);
+        this._refreshHintState(this.hint, data.newValue);
     }
 
-    public _refreshHintState(hint: string) {
-        if (hint && !this.ios.text) {
+    public _refreshHintState(hint: string, text: string) {
+        if (hint && !text) {
             this._showHint(hint);
         }
         else {

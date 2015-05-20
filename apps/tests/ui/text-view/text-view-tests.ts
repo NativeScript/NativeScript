@@ -138,6 +138,7 @@ export var testTextIsUpdatedWhenUserTypes = function () {
 export var testSetHint = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
+        textView.text = "";
 
         // <snippet module="ui/text-view" title="TextView">
         // ### Setting the hint of a TextView
@@ -155,6 +156,7 @@ export var testSetHint = function () {
 export var testBindHintDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
+        textView.text = "";
 
         // <snippet module="ui/text-view" title="TextView">
         // ### Binding hint property directly to model
@@ -168,13 +170,13 @@ export var testBindHintDirectlyToModel = function () {
         textView.bind(options, model);
         //// TextView.hint is now "type your username here"
         // <hide>
-        TKUnit.assert(textView.hint === "type your username here", "Actual: " + textView.text + "; Expected: " + "type your username here");
+        TKUnit.assert(textView.hint === "type your username here", "Actual: " + textView.hint + "; Expected: " + "type your username here");
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your username here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your username here");
         // </hide>
         model.set("hint", "type your password here");
         //// TextView.hint is now "type your password here"
         // <hide>
-        TKUnit.assert(textView.hint === "type your password here", "Actual: " + textView.text + "; Expected: " + "type your password here");
+        TKUnit.assert(textView.hint === "type your password here", "Actual: " + textView.hint + "; Expected: " + "type your password here");
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your password here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your password here");
         // </hide>
         // ```
@@ -185,6 +187,7 @@ export var testBindHintDirectlyToModel = function () {
 export var testBindHintToBindingConext = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
+        textView.text = "";
         var page = <pagesModule.Page>views[1];
 
         var model = new observable.Observable();
@@ -201,8 +204,58 @@ export var testBindHintToBindingConext = function () {
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your username here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your username here");
 
         model.set("hint", "type your password here");
-        TKUnit.assert(textView.hint === "type your password here", "Actual: " + textView.text + "; Expected: " + "type your password here");
+        TKUnit.assert(textView.hint === "type your password here", "Actual: " + textView.hint + "; Expected: " + "type your password here");
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your password here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your password here");
+    });
+}
+
+export var testHintPlusTextiOS = function () {
+    helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
+        var textView = <textViewModule.TextView>views[0];
+        if (!textView.ios) {
+            return;
+        }
+
+        var expectedValue;
+        var actualValue;
+
+        textView.hint = "hint";
+        textView.text = "text";
+
+        expectedValue = "text";
+        actualValue = textViewTestsNative.getNativeText(textView);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+
+        textView.text = "";
+        expectedValue = "hint";
+        actualValue = textViewTestsNative.getNativeText(textView);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testHintColoriOS = function () {
+    helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
+        var textView = <textViewModule.TextView>views[0];
+        if (!textView.ios) {
+            return;
+        }
+
+        textView.text = "";
+        textView.color = new colorModule.Color("red");
+        textView.hint = "hint";
+
+        var expectedValue;
+        var actualValue;
+
+        expectedValue = "#38.1999948ff0000"; // 22% red
+        actualValue = textViewTestsNative.getNativeColor(textView).hex;
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+
+        textView.text = "text";
+
+        expectedValue = "#ffff0000"; // red
+        actualValue = textViewTestsNative.getNativeColor(textView).hex;
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
 }
 
