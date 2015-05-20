@@ -63,3 +63,13 @@ export function isFileOrResourcePath(path: string): boolean {
         path.indexOf("/") === 0 ||      // absolute path
         path.indexOf(RESOURCE_PREFIX) === 0;    // resource
 }
+
+export function isDataURI(uri: string): boolean {
+    if (!types.isString(uri)) {
+        return false;
+    }
+
+    var firstSegment = uri.trim().split(',')[0];
+
+    return firstSegment && firstSegment.indexOf("data:") === 0 && firstSegment.indexOf('base64') >= 0;
+}
