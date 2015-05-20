@@ -2,7 +2,6 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import textBase = require("ui/text-base");
 import enums = require("ui/enums");
-import color = require("color");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -78,7 +77,6 @@ export class TextView extends common.TextView {
     }
 
     public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var textView = <TextView>data.object;
         this._refreshHintState(data.newValue);
     }
 

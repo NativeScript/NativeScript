@@ -46,7 +46,6 @@ export var hintProperty = new dependencyObservable.Property(
     new proxy.PropertyMetadata("")
     );
 
-
 function onKeyboardTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var editableTextBase = <EditableTextBase>data.object;
     editableTextBase._onKeyboardTypePropertyChanged(data);
