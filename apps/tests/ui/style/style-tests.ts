@@ -8,11 +8,25 @@ import helper = require("../../ui/helper");
 import styling = require("ui/styling");
 import types = require("utils/types");
 import viewModule = require("ui/core/view");
+import styleModule = require("ui/styling/style");
 import dependencyObservableModule = require("ui/core/dependency-observable");
 
 // <snippet module="ui/styling" title="styling">
 // # Styling
 // </snippet>
+
+export function test_css_dataURI_is_applied_to_backgroundImageSource() {
+    var stack = new stackModule.StackLayout();
+
+    helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
+        var page = <pageModule.Page>views[1];
+        page.css = "StackLayout { background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD///l2Z/dAAAAM0lEQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4Ug9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC;') }";
+
+        var value = stack.style._getValue(styleModule.backgroundImageSourceProperty);
+
+        TKUnit.assert(value !== undefined, "Style background-image not loaded correctly from data URI.");
+    });
+}
 
 // Test for inheritance in different containers
 export function test_css_is_applied_inside_StackLayout() {

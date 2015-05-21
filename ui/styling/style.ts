@@ -346,20 +346,26 @@ export var backgroundImageProperty = new styleProperty.Property("backgroundImage
 
 function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
     var style = <Style>data.object;
-    var pattern: RegExp = /url\(('|")(.*?)\1\)/;
-    var url = (<string>data.newValue).match(pattern)[2];
 
-    if (utils.isFileOrResourcePath(url)) {
-        style._setValue(backgroundImageSourceProperty, imageSource.fromFileOrResource(url), observable.ValueSource.Local);
-    } else if (utils.isDataURI(url)) {
-        var base64Data = url.split(",")[1];
-        if (types.isDefined(base64Data)) {
-            style._setValue(backgroundImageSourceProperty, imageSource.fromBase64(base64Data), observable.ValueSource.Local);
+    if (types.isString(data.newValue)) {
+        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
+        var match = data.newValue && (<string>data.newValue).match(pattern);
+        var url = match && match[2];
+
+        if (types.isDefined(url)) {
+            if (utils.isDataURI(url)) {
+                var base64Data = url.split(",")[1];
+                if (types.isDefined(base64Data)) {
+                    style._setValue(backgroundImageSourceProperty, imageSource.fromBase64(base64Data), observable.ValueSource.Local);
+                }
+            } else if (utils.isFileOrResourcePath(url)) {
+                style._setValue(backgroundImageSourceProperty, imageSource.fromFileOrResource(url), observable.ValueSource.Local);
+            } else {
+                imageSource.fromUrl(url).then(r=> {
+                    style._setValue(backgroundImageSourceProperty, r, observable.ValueSource.Local);
+                });
+            }
         }
-    } else if (types.isString(url)) {
-        imageSource.fromUrl(url).then(r=> {
-            style._setValue(backgroundImageSourceProperty, r, observable.ValueSource.Local);
-        });
     }
 }
 
