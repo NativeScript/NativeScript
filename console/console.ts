@@ -202,7 +202,7 @@ export class Console implements definition.Console {
 
     private formatParams(message: any): string {
         if (arguments.length <= 1) {
-            return message ? message : '';
+            return "" + message;
         }
         var res = this.sprintf.apply(this, arguments);
         if (res === message) {
