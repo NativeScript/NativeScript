@@ -39,9 +39,9 @@ var selectedIndexProperty = new dependencyObservable.Property(
 }
 
 export class TabView extends view.View implements definition.TabView, view.AddArrayFromBuilder {
-
     public static itemsProperty = itemsProperty;
     public static selectedIndexProperty = selectedIndexProperty;
+    public static selectedIndexChangedEvent = "selectedIndexChanged";
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === ITEMS) {

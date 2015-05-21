@@ -451,6 +451,9 @@ export class TabView extends common.TabView {
         super._onSelectedIndexPropertyChangedSetNativeValue(data);
         
         this._setNativeSelectedIndex(data.newValue);
+
+        var args = { eventName: TabView.selectedIndexChangedEvent, object: this, oldIndex: data.oldValue, newIndex: data.newValue };
+        this.notify(args);
     }
 
     private _setNativeSelectedIndex(index: number) {

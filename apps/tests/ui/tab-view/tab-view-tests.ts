@@ -308,6 +308,83 @@ export var testWhenSelectingATabNativelySelectedIndexIsUpdatedProperly = functio
     }
 }
 
+export var testWhenSelectingATabNativelySelectedIndexChangedEventIsRaised = function () {
+    var tabView: tabViewModule.TabView;
+    var mainPage: pageModule.Page;
+    var pageFactory = function (): pageModule.Page {
+        tabView = _createTabView();
+        tabView.items = _createItems(10);
+        mainPage = new pageModule.Page();
+        mainPage.content = tabView;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+
+    var expectedOldIndex = 3;
+    var expectedNewIndex = 5;
+    var actualOldIndex;
+    var actualNewIndex;
+
+    tabViewTestsNative.selectNativeTab(tabView, expectedOldIndex);
+    TKUnit.wait(helper.ASYNC);
+
+    tabView.on(tabViewModule.TabView.selectedIndexChangedEvent,(args: tabViewModule.SelectedIndexChangedEventData) => {
+        actualOldIndex = args.oldIndex;
+        actualNewIndex = args.newIndex;
+    });
+
+    tabViewTestsNative.selectNativeTab(tabView, expectedNewIndex);
+    TKUnit.wait(helper.ASYNC);
+
+    try {
+        TKUnit.assert(actualOldIndex === expectedOldIndex, "Actual: " + actualOldIndex + "; Expected: " + expectedOldIndex);
+        TKUnit.assert(actualNewIndex === expectedNewIndex, "Actual: " + actualNewIndex + "; Expected: " + expectedNewIndex);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export var testWhenSettingSelectedIndexProgramaticallySelectedIndexChangedEventIsRaised = function () {
+    var tabView: tabViewModule.TabView;
+    var mainPage: pageModule.Page;
+    var pageFactory = function (): pageModule.Page {
+        tabView = _createTabView();
+        tabView.items = _createItems(10);
+        mainPage = new pageModule.Page();
+        mainPage.content = tabView;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+
+    var expectedOldIndex = 2;
+    var expectedNewIndex = 6;
+    var actualOldIndex;
+    var actualNewIndex;
+
+    tabView.selectedIndex = expectedOldIndex;
+    TKUnit.wait(helper.ASYNC);
+
+    tabView.on(tabViewModule.TabView.selectedIndexChangedEvent,(args: tabViewModule.SelectedIndexChangedEventData) => {
+        actualOldIndex = args.oldIndex;
+        actualNewIndex = args.newIndex;
+    });
+
+    tabView.selectedIndex = expectedNewIndex;
+    TKUnit.wait(helper.ASYNC);
+
+    try {
+        TKUnit.assert(actualOldIndex === expectedOldIndex, "Actual: " + actualOldIndex + "; Expected: " + expectedOldIndex);
+        TKUnit.assert(actualNewIndex === expectedNewIndex, "Actual: " + actualNewIndex + "; Expected: " + expectedNewIndex);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+
 export var testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere = function () {
     return;
 
@@ -409,13 +486,13 @@ export function testBindingIsRefreshedWhenTabViewItemIsUnselectedAndThenSelected
 }
 
 export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_NoPageCaching() {
-    testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBackg(false);
+    testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(false);
 }
 export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_WithPageCaching() {
-    testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBackg(true);
+    testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(true);
 }
 
-function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBackg(enablePageCache: boolean) {
+function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache: boolean) {
     var i: number;
     var itemCount = 3;
     var loadedItems = [0, 0, 0];

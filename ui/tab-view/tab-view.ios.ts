@@ -206,8 +206,12 @@ export class TabView extends common.TabView {
         }
 
         this._ios.selectedIndex = data.newValue;
+        
         // We will need to measure and arrange what became this._selectedView
         this.requestLayout();
+
+        var args = { eventName: TabView.selectedIndexChangedEvent, object: this, oldIndex: data.oldValue, newIndex: data.newValue };
+        this.notify(args);
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
