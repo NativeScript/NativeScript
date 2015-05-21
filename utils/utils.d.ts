@@ -140,4 +140,10 @@
      * @param path The path.
      */
     export function isFileOrResourcePath(path: string): boolean
+
+    /**
+     * Returns true if the specified URI is data URI (http://en.wikipedia.org/wiki/Data_URI_scheme).
+     * @param uri The URI.
+     */
+    export function isDataURI(uri: string): boolean
 }
