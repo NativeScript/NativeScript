@@ -77,6 +77,8 @@ declare module module {
     var filename: string;
     var exports: any;
 }
+// Same as module.exports
+declare var exports: any;
 
 // Type definitions for es6-promise
 // Project: https://github.com/jakearchibald/ES6-Promise
