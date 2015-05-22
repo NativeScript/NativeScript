@@ -347,6 +347,10 @@
     <TypeScriptCompile Include="trace\trace.ts">
       <DependentUpon>trace.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\repeater\repeater.ts">
+      <DependentUpon>repeater.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\repeater\repeater.d.ts" />
     <TypeScriptCompile Include="ui\builder\binding-builder.ts" />
     <TypeScriptCompile Include="ui\list-picker\list-picker-common.ts">
       <DependentUpon>list-picker.d.ts</DependentUpon>
@@ -1526,6 +1530,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ui\placeholder\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ui\repeater\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
