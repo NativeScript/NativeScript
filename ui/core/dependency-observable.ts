@@ -24,16 +24,16 @@ function validateRegisterParameters(name: string, ownerType: string) {
 }
 
 function getPropertyByNameAndType(name: string, owner: any): Property {
-    var baseClasses = types.getBaseClasses(owner);
-    var i;
     var result;
     var key;
-    for (i = 0; i < baseClasses.length; i++) {
-        key = generatePropertyKey(name, baseClasses[i]);
+    var classInfo = types.getClassInfo(owner);
+    while (classInfo) {
+        key = generatePropertyKey(name, classInfo.name);
         result = propertyFromKey[key];
         if (result) {
             break;
         }
+        classInfo = classInfo.baseClassInfo;
     }
     return result;
 }
