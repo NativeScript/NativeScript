@@ -79,15 +79,23 @@ export class ClassInfo {
 
     get baseClassInfo(): ClassInfo {
         if (isUndefined(this._baseClassInfo)) {
-            var constructorProto = this._typeCosntructor.prototype;
-            if (constructorProto.__proto__) {
-                this._baseClassInfo = getClassInfo(constructorProto.__proto__);
-            }
-            else {
-                this._baseClassInfo = null;
+            this._baseClassInfo = ClassInfo._getBase(this);
+
+            // While extending some classes for platform specific versions results in duplicate class types in hierarchy.
+            if (this._baseClassInfo && this._baseClassInfo.name === this.name) {
+                this._baseClassInfo = ClassInfo._getBase(this._baseClassInfo);
             }
         }
 
         return this._baseClassInfo;
+    }
+
+    private static _getBase(info: ClassInfo): ClassInfo {
+        var result = null;
+        var constructorProto = info._typeCosntructor.prototype;
+        if (constructorProto.__proto__) {
+            result = getClassInfo(constructorProto.__proto__);
+        }
+        return result;
     }
 }

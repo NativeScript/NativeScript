@@ -13,9 +13,11 @@ import imageSource = require("image-source");
 import utils = require("utils/utils");
 
 // key is the property id and value is Dictionary<string, StylePropertyChangedHandler>;
-var _registeredHandlers = {};
+var _registeredHandlers = Array<Object>();
+
 // key is a className + property id and value is StylePropertyChangedHandler;
 var _handlersCache = {};
+
 // classes like Frame that does not need to handle styling properties.
 var noStylingClasses = {};
 
@@ -292,14 +294,14 @@ export function registerHandler(property: dependencyObservable.Property,
     handler: styling.stylers.StylePropertyChangedHandler,
     className?: string) {
     var realClassName = className ? className : "default";
-    if (_registeredHandlers.hasOwnProperty(property.id + "")) {
-        _registeredHandlers[property.id][realClassName] = handler;
-    }
-    else {
-        var handlerRecord = {};
-        handlerRecord[realClassName] = handler;
+
+    var handlerRecord = _registeredHandlers[property.id];
+    if (!handlerRecord) {
+        handlerRecord = {};
         _registeredHandlers[property.id] = handlerRecord;
     }
+
+    handlerRecord[realClassName] = handler;
 }
 
 export function registerNoStylingClass(className) {
@@ -307,33 +309,38 @@ export function registerNoStylingClass(className) {
 }
 
 export function getHandler(property: dependencyObservable.Property, view: view.View): styling.stylers.StylePropertyChangedHandler {
-    var classNames = types.getBaseClasses(view);
-    // adding default as last class name if no other class is found default handler will be used
-    classNames.push("default");
-    if (_handlersCache.hasOwnProperty(classNames[0] + property.id)) {
-        return _handlersCache[classNames[0] + property.id];
+    return getHandlerInternal(property.id, types.getClassInfo(view));
+}
+
+function getHandlerInternal(propertyId: number, classInfo: types.ClassInfo): styling.stylers.StylePropertyChangedHandler {
+    var className = classInfo ? classInfo.name : "default";
+    var handlerKey = className + propertyId;
+
+    // try the cache first
+    var result = _handlersCache[handlerKey];
+    if (types.isDefined(result)) {
+        return result;
+    }
+
+    var propertyHandlers = _registeredHandlers[propertyId];
+    if (noStylingClasses.hasOwnProperty(className) || !propertyHandlers) {
+        // Reached 'no-styling' class or no property handlers are registered for this proeprtyID
+        result = null;
+    }
+    else if (propertyHandlers.hasOwnProperty(className)) {
+        // Found handler for this class
+        result = propertyHandlers[className];
+    }
+    else if (classInfo) {
+        // Check the base class
+        result = getHandlerInternal(propertyId, classInfo.baseClassInfo);
     }
     else {
-        var i;
-        var propertyHandlers;
-        var handler;
-        propertyHandlers = _registeredHandlers[property.id];
-        for (i = 0; i < classNames.length; i++) {
-            if (propertyHandlers) {
-                var loopClassName = classNames[i];
-                if (noStylingClasses.hasOwnProperty(loopClassName)) {
-                    _handlersCache[loopClassName + property.id] = null;
-                    return null;
-                }
-                if (propertyHandlers.hasOwnProperty(loopClassName)) {
-                    handler = propertyHandlers[loopClassName];
-                    _handlersCache[loopClassName + property.id] = handler;
-                    return handler;
-                }
-            }
-        }
+        result = null;
     }
-    return null;
+
+    _handlersCache[handlerKey] = result;
+    return result;
 }
 
 // Property registration
