@@ -10,6 +10,11 @@ var KNOWNCOLLECTIONS = "knownCollections";
 
 export function parse(value: string, exports: any): view.View {
     var viewToReturn: view.View;
+
+    if (exports instanceof view.View) {
+        exports = getExports(exports);
+    }
+
     var componentModule = parseInternal(value, exports);
 
     if (componentModule) {
@@ -150,7 +155,7 @@ function parseInternal(value: string, exports: any): componentBuilder.ComponentM
             }
         }
 
-    }, (e) => {
+    },(e) => {
             throw new Error("XML parse error: " + e.message);
         }, true);
 
@@ -184,7 +189,7 @@ function loadInternal(fileName: string, exports: any): componentBuilder.Componen
         // Read the XML file.
         fileAccess.readText(fileName, result => {
             componentModule = parseInternal(result, exports);
-        }, (e) => {
+        },(e) => {
                 throw new Error("Error loading file " + fileName + " :" + e.message);
             });
     }
@@ -233,4 +238,14 @@ interface ComplexProperty {
     parent: componentBuilder.ComponentModule;
     name: string;
     items?: Array<any>;
+}
+
+function getExports(instance: view.View): any {
+    var parent = instance.parent;
+
+    while (parent && (<any>parent).exports === undefined) {
+        parent = parent.parent;
+    }
+
+    return parent ? (<any>parent).exports : undefined;
 }
