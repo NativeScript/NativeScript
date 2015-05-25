@@ -14,6 +14,17 @@ declare module "ui/content-view" {
          */
         content: view.View;
 
+        /**
+         * Changes the only child to be the value.
+         * @param value
+         */
+        addChild(value: view.View);
+
+        /**
+         * Removes the only Child, in this case it sets content = null
+         */
+        removeChild();
+
         //@private
         /**
          * Called when the content property has changed.
