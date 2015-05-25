@@ -76,6 +76,9 @@
     <TypeScriptCompile Include="apps\gallery-app\views\list-view.ts">
       <DependentUpon>list-view.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\gallery-app\views\repeater.ts">
+      <DependentUpon>repeater.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\placeholder-demo\app.ts" />
     <TypeScriptCompile Include="apps\placeholder-demo\main-page.android.ts">
       <DependentUpon>main-page.xml</DependentUpon>
@@ -597,6 +600,7 @@
     <Content Include="apps\gallery-app\content\border.xml" />
     <Content Include="apps\gallery-app\app.css" />
     <Content Include="apps\gallery-app\views\list-picker.xml" />
+    <Content Include="apps\gallery-app\views\repeater.xml" />
     <Content Include="apps\gallery-app\views\segmented-bar.xml" />
     <Content Include="apps\gallery-app\views\time-picker.xml" />
     <Content Include="apps\gallery-app\views\date-picker.xml" />
