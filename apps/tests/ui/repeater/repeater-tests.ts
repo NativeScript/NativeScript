@@ -67,14 +67,14 @@ export function test_set_items_to_array_loads_all_items() {
     helper.buildUIAndRunTest(repeater, testAction);
 }
 
-export function test_set_items_to_array_creates_native_views() {
+export function test_set_items_to_array_creates_views() {
     var repeater = new repeaterModule.Repeater();
 
     function testAction(views: Array<viewModule.View>) {
         repeater.items = FEW_ITEMS;
 
         TKUnit.wait(ASYNC);
-        TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "Native views count.");
+        TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "views count.");
     };
 
     helper.buildUIAndRunTest(repeater, testAction);
@@ -89,7 +89,7 @@ export function test_refresh_after_adding_items_to_array_loads_new_items() {
         repeater.items = colors;
 
         TKUnit.wait(ASYNC);
-        TKUnit.assertEqual(getChildrenCount(repeater), colors.length, "Native views count.");
+        TKUnit.assertEqual(getChildrenCount(repeater), colors.length, "views count.");
         // <snippet module="ui/repeater" title="repeater">
         // > Note, that changing the array after the repeater is shown will not update the UI.
         // You can force-update the UI using the refresh() method.
@@ -100,7 +100,7 @@ export function test_refresh_after_adding_items_to_array_loads_new_items() {
         // ```
         // </snippet>
         TKUnit.wait(ASYNC);
-        TKUnit.assertEqual(getChildrenCount(repeater), colors.length, "Native views count.");
+        TKUnit.assertEqual(getChildrenCount(repeater), colors.length, "views count.");
     };
 
     helper.buildUIAndRunTest(repeater, testAction);
@@ -136,33 +136,33 @@ export function test_refresh_reloads_all_items() {
     helper.buildUIAndRunTest(repeater, testAction);
 }
 
-export function test_set_itmes_to_null_clears_native_items() {
+export function test_set_itmes_to_null_clears_items() {
     var repeater = new repeaterModule.Repeater();
 
     function testAction(views: Array<viewModule.View>) {
         repeater.items = FEW_ITEMS;
         TKUnit.wait(ASYNC);
-        TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "Native views count.");
+        TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "views count.");
 
         repeater.items = null;
         TKUnit.wait(ASYNC);
-        TKUnit.assertEqual(getChildrenCount(repeater), 0, "Native views count.");
+        TKUnit.assertEqual(getChildrenCount(repeater), 0, "views count.");
     };
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
 
-export function test_set_itmes_to_undefiend_clears_native_items() {
+export function test_set_itmes_to_undefiend_clears_items() {
     var repeater = new repeaterModule.Repeater();
 
     function testAction(views: Array<viewModule.View>) {
         repeater.items = FEW_ITEMS;
         TKUnit.wait(ASYNC);
-        TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "Native views count.");
+        TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "views count.");
 
         repeater.items = undefined;
         TKUnit.wait(ASYNC);
-        TKUnit.assertEqual(getChildrenCount(repeater), 0, "Native views count.");
+        TKUnit.assertEqual(getChildrenCount(repeater), 0, "views count.");
     };
 
     helper.buildUIAndRunTest(repeater, testAction);
@@ -174,11 +174,11 @@ export function test_set_itmes_to_different_source_loads_new_items() {
     function testAction(views: Array<viewModule.View>) {
         repeater.items = [1, 2, 3];
         TKUnit.wait(ASYNC);
-        TKUnit.assertEqual(getChildrenCount(repeater), 3, "Native views count.");
+        TKUnit.assertEqual(getChildrenCount(repeater), 3, "views count.");
 
         repeater.items = ["a", "b", "c", "d"];
         TKUnit.wait(ASYNC);
-        TKUnit.assertEqual(getChildrenCount(repeater), 4, "Native views count.");
+        TKUnit.assertEqual(getChildrenCount(repeater), 4, "views count.");
     };
 
     helper.buildUIAndRunTest(repeater, testAction);
@@ -294,7 +294,7 @@ export function test_usingAppLevelConvertersInListViewItems() {
 
         TKUnit.wait(ASYNC);
 
-        TKUnit.assertEqual(getChildAtText(repeater, 0), dateConverter(new Date(), "DD.MM.YYYY"), "native element");
+        TKUnit.assertEqual(getChildAtText(repeater, 0), dateConverter(new Date(), "DD.MM.YYYY"), "element");
     };
 
     helper.buildUIAndRunTest(repeater, testAction);
