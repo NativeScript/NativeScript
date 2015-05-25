@@ -205,7 +205,7 @@ export function test_set_items_to_observable_array_loads_all_items() {
     helper.buildUIAndRunTest(repeater, testAction);
 }
 
-export function test_add_to_observable_array_refreshes_the_listview() {
+export function test_add_to_observable_array_refreshes_the_Repeater() {
     var repeater = new repeaterModule.Repeater();
 
     function testAction(views: Array<viewModule.View>) {
@@ -230,7 +230,7 @@ export function test_add_to_observable_array_refreshes_the_listview() {
     helper.buildUIAndRunTest(repeater, testAction);
 }
 
-export function test_remove_from_observable_array_refreshes_the_listview() {
+export function test_remove_from_observable_array_refreshes_the_Repeater() {
     var repeater = new repeaterModule.Repeater();
     var data = new observableArray.ObservableArray([1, 2, 3]);
 
@@ -249,7 +249,7 @@ export function test_remove_from_observable_array_refreshes_the_listview() {
     helper.buildUIAndRunTest(repeater, testAction);
 }
 
-export function test_splice_observable_array_refreshes_the_listview() {
+export function test_splice_observable_array_refreshes_the_Repeater() {
     var repeater = new repeaterModule.Repeater();
     var data = new observableArray.ObservableArray(["a", "b", "c"]);
 
@@ -269,7 +269,7 @@ export function test_splice_observable_array_refreshes_the_listview() {
     helper.buildUIAndRunTest(repeater, testAction);
 }
 
-export function test_usingAppLevelConvertersInListViewItems() {
+export function test_usingAppLevelConvertersInRepeaterItems() {
     var repeater = new repeaterModule.Repeater();
 
     var dateConverter = function (value, format) {
@@ -300,7 +300,7 @@ export function test_usingAppLevelConvertersInListViewItems() {
     helper.buildUIAndRunTest(repeater, testAction);
 }
 
-export function test_BindingListViewToASimpleArray() {
+export function test_BindingRepeaterToASimpleArray() {
     var repeater = new repeaterModule.Repeater();
 
     function testAction(views: Array<viewModule.View>) {
@@ -317,7 +317,7 @@ export function test_BindingListViewToASimpleArray() {
     helper.buildUIAndRunTest(repeater, testAction);
 }
 
-export function test_BindingListViewToASimpleArrayWithExpression() {
+export function test_BindingRepeaterToASimpleArrayWithExpression() {
     var repeater = new repeaterModule.Repeater();
 
     function testAction(views: Array<viewModule.View>) {
