@@ -113,9 +113,6 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     public onUnloaded() {
-
-
-
         super.onUnloaded();
     }
 
