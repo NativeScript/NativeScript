@@ -2,8 +2,6 @@
 import app = require("application");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
-import observable = require("data/observable");
-import types = require("utils/types");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 
 // <snippet module="ui/repeater" title="repeater">
@@ -49,7 +47,6 @@ export function test_set_items_to_array_loads_all_items() {
     var repeater = new repeaterModule.Repeater();
 
     function testAction(views: Array<viewModule.View>) {
-        var indexes = {};
         // <snippet module="ui/repeater" title="repeater">
         // ### Using Repeater with Array
         // ``` JavaScript
@@ -111,7 +108,6 @@ export function test_refresh_reloads_all_items() {
     var repeater = new repeaterModule.Repeater();
 
     function testAction(views: Array<viewModule.View>) {
-        var indexes = {};
         var testStarted = false;
 
         var itemsToBind = <Array<any>>FEW_ITEMS;
@@ -211,7 +207,6 @@ export function test_set_items_to_observable_array_loads_all_items() {
     var repeater = new repeaterModule.Repeater();
 
     function testAction(views: Array<viewModule.View>) {
-        var indexes = {};
         // <snippet module="ui/repeater" title="repeater">
         // ### Using Repeater with ObservableArray
         // ``` JavaScript
