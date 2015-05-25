@@ -5,14 +5,16 @@ import viewModule = require("ui/core/view");
 import observable = require("data/observable");
 import observableArray = require("data/observable-array");
 import weakEvents = require("ui/core/weak-event-listener");
-import enums = require("ui/enums");
+import types = require("utils/types");
+import layoutModule = require("ui/layouts/layout");
+import stackLayoutModule = require("ui/layouts/stack-layout");
+import builder = require("ui/builder");
+import utils = require("utils/utils");
+import platform = require("platform");
 
 var ITEMS = "items";
-var WRAP = "wrap";
-var ORIENTATION = "orientation";
 var ITEMTEMPLATE = "itemTemplate";
-var ITEMWIDTH = "itemWidth";
-var ITEMHEIGHT = "itemHeight";
+var LAYOUT = "layout";
 var REPEATER = "Repeater";
 
 export module knownTemplates {
@@ -29,15 +31,22 @@ function onItemTemplatePropertyChanged(data: dependencyObservable.PropertyChange
     repeater.refresh();
 }
 
-function validateOrientation(value: any): boolean {
-    return value === enums.Orientation.vertical || value === enums.Orientation.horizontal;
+function onItemsLayoutPropertyPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var repeater = <definition.Repeater>data.object;
+    repeater.refresh();
 }
 
-function isWidthHeightValid(value: any): boolean {
-    return isNaN(value) || (value >= 0.0 && value !== Number.POSITIVE_INFINITY);
-}
+export class Repeater extends viewModule.CustomLayoutView implements definition.Repeater {
+    private isDirty: boolean = true;
+    private _ios: UIView;
 
-export class Repeater extends viewModule.View implements definition.Repeater {
+    constructor() {
+        super();
+
+        if (platform.device.os === platform.platformNames.ios) {
+            this._ios = UIView.new();
+        }
+    }
 
     public static itemsProperty = new dependencyObservable.Property(
         ITEMS,
@@ -59,37 +68,14 @@ export class Repeater extends viewModule.View implements definition.Repeater {
             )
         );
 
-    public static orientationProperty = new dependencyObservable.Property(
-        ORIENTATION,
+    public static itemsLayoutProperty = new dependencyObservable.Property(
+        LAYOUT,
         REPEATER,
-        new proxy.PropertyMetadata(enums.Orientation.vertical,
-            dependencyObservable.PropertyMetadataSettings.AffectsLayout,
+        new proxy.PropertyMetadata(
             undefined,
-            validateOrientation)
-        );
-
-    public static wrapProperty = new dependencyObservable.Property(
-        WRAP,
-        REPEATER,
-        new proxy.PropertyMetadata(false, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-        );
-
-    public static itemWidthProperty = new dependencyObservable.Property(
-        ITEMWIDTH,
-        REPEATER,
-        new proxy.PropertyMetadata(Number.NaN,
             dependencyObservable.PropertyMetadataSettings.AffectsLayout,
-            undefined,
-            isWidthHeightValid)
-        );
-
-    public static itemHeightProperty = new dependencyObservable.Property(
-        ITEMHEIGHT,
-        REPEATER,
-        new proxy.PropertyMetadata(Number.NaN,
-            dependencyObservable.PropertyMetadataSettings.AffectsLayout,
-            undefined,
-            isWidthHeightValid)
+            onItemsLayoutPropertyPropertyChanged
+            )
         );
 
     get items(): any {
@@ -106,8 +92,22 @@ export class Repeater extends viewModule.View implements definition.Repeater {
         this._setValue(Repeater.itemTemplateProperty, value);
     }
 
+    get itemsLayout(): layoutModule.Layout {
+        return this._getValue(Repeater.itemsLayoutProperty);
+    }
+    set itemsLayout(value: layoutModule.Layout) {
+        this._setValue(Repeater.itemsLayoutProperty, value);
+    }
+
     public refresh() {
-        //
+        this.isDirty = true;
+        this._createChildren();
+    }
+
+    public onLoaded() {
+        super.onLoaded();
+
+        this._createChildren();
     }
 
     public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -126,31 +126,83 @@ export class Repeater extends viewModule.View implements definition.Repeater {
         this.refresh();
     }
 
-    get wrap(): boolean {
-        return this._getValue(Repeater.wrapProperty);
-    }
-    set wrap(value: boolean) {
-        this._setValue(Repeater.wrapProperty, value);
+    private _createChildren() {
+        if (this.isDirty && this.isLoaded) {
+            if (types.isDefined(this.items) && types.isNumber(this.items.length)) {
+
+                if (types.isUndefined(this.itemsLayout)) {
+                    this.itemsLayout = new stackLayoutModule.StackLayout();
+                }
+
+                if (this.itemsLayout.parent !== this) {
+                    this._addView(this.itemsLayout);
+                }
+
+                clearItemsLayout(this.itemsLayout);
+
+                var i: number;
+                for (i = 0; i < this.items.length; i++) {
+                    var viewToAdd = builder.parse(this.itemTemplate, this);
+                    if (types.isDefined(viewToAdd)) {
+                        this.itemsLayout.addChild(viewToAdd);
+                        viewToAdd.bindingContext = this._getDataItem(i);
+                    }
+                }
+            }
+            this.isDirty = false;
+        }
     }
 
-    get orientation(): string {
-        return this._getValue(Repeater.orientationProperty);
-    }
-    set orientation(value: string) {
-        this._setValue(Repeater.orientationProperty, value);
+    private _getDataItem(index: number): any {
+        return this.items.getItem ? this.items.getItem(index) : this.items[index];
     }
 
-    get itemWidth(): number {
-        return this._getValue(Repeater.itemWidthProperty);
-    }
-    set itemWidth(value: number) {
-        this._setValue(Repeater.itemWidthProperty, value);
+    get ios(): UIView {
+        return this._ios;
     }
 
-    get itemHeight(): number {
-        return this._getValue(Repeater.itemHeightProperty);
+    get _childrenCount(): number {
+        var count = 0;
+
+        if (this.itemsLayout) {
+            count++;
+        }
+
+        return count;
     }
-    set itemHeight(value: number) {
-        this._setValue(Repeater.itemHeightProperty, value);
+
+    public _eachChildView(callback: (child: viewModule.View) => boolean) {
+        if (this.itemsLayout) {
+            callback(this.itemsLayout);
+        }
+    }
+
+    public onLayout(left: number, top: number, right: number, bottom: number): void {
+        viewModule.View.layoutChild(this, this.itemsLayout, 0, 0, right, bottom);
+    }
+
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        var result = viewModule.View.measureChild(this, this.itemsLayout, widthMeasureSpec, heightMeasureSpec);
+
+        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+
+        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
+        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+
+        var widthAndState = viewModule.View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
+        var heightAndState = viewModule.View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
+
+        this.setMeasuredDimension(widthAndState, heightAndState);
+    }
+}
+
+function clearItemsLayout(itemsLayout: layoutModule.Layout) {
+    var i: number = itemsLayout.getChildrenCount();
+    if (i > 0) {
+        while (i >= 0) {
+            itemsLayout.removeChild(itemsLayout.getChildAt(i));
+            i--;
+        }
     }
 }
