@@ -105,7 +105,7 @@ export class ListView extends view.View implements definition.ListView {
         var v;
 
         if (this.itemTemplate && this.items) {
-            v = builder.parse(this.itemTemplate, getExports(this));
+            v = builder.parse(this.itemTemplate, this);
         }
 
         return v;
@@ -145,14 +145,4 @@ export class ListView extends view.View implements definition.ListView {
     private _onItemsChanged(args: observable.EventData) {
         this.refresh();
     }
-}
-
-function getExports(instance: view.View): any {
-    var parent = instance.parent;
-
-    while (parent && (<any>parent).exports === undefined) {
-        parent = parent.parent;
-    }
-
-    return parent ? (<any>parent).exports : undefined;
 }

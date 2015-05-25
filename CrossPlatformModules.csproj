@@ -76,6 +76,9 @@
     <TypeScriptCompile Include="apps\gallery-app\views\list-view.ts">
       <DependentUpon>list-view.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\gallery-app\views\repeater.ts">
+      <DependentUpon>repeater.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\placeholder-demo\app.ts" />
     <TypeScriptCompile Include="apps\placeholder-demo\main-page.android.ts">
       <DependentUpon>main-page.xml</DependentUpon>
@@ -150,6 +153,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\ui\bindingContext_testPage1.ts" />
     <TypeScriptCompile Include="apps\tests\ui\bindingContext_testPage2.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\repeater\repeater-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\time-picker\time-picker-tests-native.android.ts">
       <DependentUpon>time-picker-tests-native.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -347,6 +351,10 @@
     <TypeScriptCompile Include="trace\trace.ts">
       <DependentUpon>trace.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\repeater\repeater.ts">
+      <DependentUpon>repeater.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\repeater\repeater.d.ts" />
     <TypeScriptCompile Include="ui\builder\binding-builder.ts" />
     <TypeScriptCompile Include="ui\list-picker\list-picker-common.ts">
       <DependentUpon>list-picker.d.ts</DependentUpon>
@@ -592,6 +600,7 @@
     <Content Include="apps\gallery-app\content\border.xml" />
     <Content Include="apps\gallery-app\app.css" />
     <Content Include="apps\gallery-app\views\list-picker.xml" />
+    <Content Include="apps\gallery-app\views\repeater.xml" />
     <Content Include="apps\gallery-app\views\segmented-bar.xml" />
     <Content Include="apps\gallery-app\views\time-picker.xml" />
     <Content Include="apps\gallery-app\views\date-picker.xml" />
@@ -1528,6 +1537,9 @@
     <Content Include="ui\placeholder\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="ui\repeater\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />
@@ -1590,7 +1602,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
