@@ -45,6 +45,22 @@ import labelModule = require("ui/label");
 // </Page>
 //```
 
+// ### Repeater with WrapLayout inside ScrollView.
+//```XML
+// <Page>
+// {%raw%}<ScrollView>
+//   <Repeater items="{{ myItems }}">
+//     <Repeater.itemsLayout>
+//        <WrapLayout />
+//     </Repeater.itemsLayout>
+//     <Repeater.itemTemplate>
+//        <Label text="{{ $value }}" margin="10" />
+//     </Repeater.itemTemplate>
+//   </Repeater>
+//  <ScrollView>{%endraw%}
+// </Page>
+//```
+
 // </snippet>
 
 var ASYNC = 0.2;
