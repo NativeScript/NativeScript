@@ -57,7 +57,7 @@ import labelModule = require("ui/label");
 //        <Label text="{{ $value }}" margin="10" />
 //     </Repeater.itemTemplate>
 //   </Repeater>
-//  <ScrollView>{%endraw%}
+//  </ScrollView>{%endraw%}
 // </Page>
 //```
 
