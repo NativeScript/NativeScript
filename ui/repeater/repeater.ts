@@ -11,6 +11,7 @@ import stackLayoutModule = require("ui/layouts/stack-layout");
 import builder = require("ui/builder");
 import utils = require("utils/utils");
 import platform = require("platform");
+import labelModule = require("ui/label");
 
 var ITEMS = "items";
 var ITEMTEMPLATE = "itemTemplate";
@@ -101,6 +102,7 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
 
     public refresh() {
         this.isDirty = true;
+
         this._createChildren();
     }
 
@@ -108,6 +110,13 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
         super.onLoaded();
 
         this._createChildren();
+    }
+
+    public onUnloaded() {
+
+
+
+        super.onUnloaded();
     }
 
     public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -119,6 +128,14 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
             weakEvents.addWeakEventListener(data.newValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
         }
 
+        if (types.isUndefined(this.itemsLayout)) {
+            this.itemsLayout = new stackLayoutModule.StackLayout();
+        }
+
+        if (this.itemsLayout.parent !== this) {
+            this._addView(this.itemsLayout);
+        }
+
         this.refresh();
     }
 
@@ -128,22 +145,13 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
 
     private _createChildren() {
         if (this.isDirty && this.isLoaded) {
-            if (types.isDefined(this.items) && types.isNumber(this.items.length)) {
+            clearItemsLayout(this.itemsLayout);
 
-                if (types.isUndefined(this.itemsLayout)) {
-                    this.itemsLayout = new stackLayoutModule.StackLayout();
-                }
-
-                if (this.itemsLayout.parent !== this) {
-                    this._addView(this.itemsLayout);
-                }
-
-                clearItemsLayout(this.itemsLayout);
-
+            if (!types.isNullOrUndefined(this.items) && types.isNumber(this.items.length)) {
                 var i: number;
                 for (i = 0; i < this.items.length; i++) {
-                    var viewToAdd = builder.parse(this.itemTemplate, this);
-                    if (types.isDefined(viewToAdd)) {
+                    var viewToAdd = !types.isNullOrUndefined(this.itemTemplate) ? builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
+                    if (!types.isNullOrUndefined(viewToAdd)) {
                         this.itemsLayout.addChild(viewToAdd);
                         viewToAdd.bindingContext = this._getDataItem(i);
                     }
@@ -151,6 +159,15 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
             }
             this.isDirty = false;
         }
+    }
+
+    public _getDefaultItemContent(index: number): viewModule.View {
+        var lbl = new labelModule.Label();
+        lbl.bind({
+            targetProperty: "text",
+            sourceProperty: "$value"
+        });
+        return lbl;
     }
 
     private _getDataItem(index: number): any {
@@ -198,11 +215,16 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
 }
 
 function clearItemsLayout(itemsLayout: layoutModule.Layout) {
-    var i: number = itemsLayout.getChildrenCount();
-    if (i > 0) {
-        while (i >= 0) {
-            itemsLayout.removeChild(itemsLayout.getChildAt(i));
-            i--;
+    if (!types.isNullOrUndefined(itemsLayout)) {
+        var i: number = itemsLayout.getChildrenCount();
+        if (i > 0) {
+            while (i >= 0) {
+                var child = itemsLayout.getChildAt(i);
+                if (!types.isNullOrUndefined(child)) {
+                    itemsLayout.removeChild(child);
+                }
+                i--;
+            }
         }
     }
 }
