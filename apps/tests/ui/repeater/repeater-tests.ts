@@ -4,6 +4,7 @@ import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import observable = require("data/observable");
 import types = require("utils/types");
+import stackLayoutModule = require("ui/layouts/stack-layout");
 
 // <snippet module="ui/repeater" title="repeater">
 // # Repeater
@@ -152,6 +153,28 @@ export function test_set_itmes_to_null_clears_items() {
     helper.buildUIAndRunTest(repeater, testAction);
 }
 
+export function test_set_itmeLayout_accepted() {
+    // <snippet module="ui/repeater" title="repeater">
+    // ### Using Repeater with different layout.
+    // ``` JavaScript
+    var repeater = new repeaterModule.Repeater();
+    var stackLayout = new stackLayoutModule.StackLayout();
+    stackLayout.orientation = "horizontal";
+    repeater.itemsLayout = stackLayout;
+    // ```
+    // </snippet>
+
+    function testAction(views: Array<viewModule.View>) {
+
+        repeater.items = FEW_ITEMS;
+        TKUnit.wait(ASYNC);
+        TKUnit.assert((<stackLayoutModule.StackLayout>repeater.itemsLayout).orientation === "horizontal", "views count.");
+        TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "views count.");
+    };
+
+    helper.buildUIAndRunTest(repeater, testAction);
+}
+
 export function test_set_itmes_to_undefiend_clears_items() {
     var repeater = new repeaterModule.Repeater();
 
@@ -198,8 +221,8 @@ export function test_set_items_to_observable_array_loads_all_items() {
         // </snippet>
 
         TKUnit.assert(getChildAtText(repeater, 0) === "red", "Item not created for index 0");
-        TKUnit.assert(getChildAtText(repeater, 1)  === "green", "Item not created for index 1");
-        TKUnit.assert(getChildAtText(repeater, 2)  === "blue", "Item not created for index 2");
+        TKUnit.assert(getChildAtText(repeater, 1) === "green", "Item not created for index 1");
+        TKUnit.assert(getChildAtText(repeater, 2) === "blue", "Item not created for index 2");
     };
 
     helper.buildUIAndRunTest(repeater, testAction);
