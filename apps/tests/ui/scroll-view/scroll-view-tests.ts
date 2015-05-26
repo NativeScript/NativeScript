@@ -313,5 +313,5 @@ export function test_scrollView_addChild_removeChild() {
     TKUnit.assertEqual(scrollView.content, btn, "scrollView.content addChild");
 
     scrollView.removeChild();
-    TKUnit.assertEqual(scrollView.content, null, "scrollView.content removeChild");
+    TKUnit.assertNull(scrollView.content, "scrollView.content removeChild");
 }
