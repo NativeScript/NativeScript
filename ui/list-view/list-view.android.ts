@@ -6,6 +6,7 @@ import stackLayout = require("ui/layouts/stack-layout");
 import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import color = require("color");
+import definition = require("ui/list-view");
 
 var ITEMLOADING = common.ListView.itemLoadingEvent;
 var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
@@ -181,13 +182,17 @@ class ListViewAdapter extends android.widget.BaseAdapter {
         return true;
     }
 
-    public getView(index: number, convertView: android.view.View, parent: any): android.view.View {
+    public getView(index: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
         if (!this._listView) {
             return null;
         }
 
         var view = this._listView._getRealizedView(convertView, index);
-        var args = { eventName: ITEMLOADING, object: this._listView, index: index, view: view };
+        var args = <definition.ItemEventData>{
+            eventName: ITEMLOADING, object: this._listView, index: index, view: view,
+            android: parent,
+            ios: undefined
+        };
         this._listView.notify(args);
 
         if (!args.view) {
