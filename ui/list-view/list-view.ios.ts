@@ -19,17 +19,8 @@ require("utils/module-merge").merge(common, exports);
 
 var infinity = utils.layout.makeMeasureSpec(0, utils.layout.UNSPECIFIED);
 
-class ListViewCell extends UITableViewCell {
-    static new(): ListViewCell {
-        return <ListViewCell>super.new();
-    }
-    static class(): any {
-        return ListViewCell;
-    }
-}
-
 function notifyForItemAtIndex(listView: definition.ListView, cell: any, eventName: string, indexPath: NSIndexPath) {
-    var args = <definition.ItemEventData>{ eventName: eventName, object: listView, index: indexPath.row, view: cell.view };
+    var args = <definition.ItemEventData>{ eventName: eventName, object: listView, index: indexPath.row, view: cell.view, ios: cell, android: undefined };
     listView.notify(args);
     return args;
 }
@@ -54,7 +45,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
 
     public tableViewCellForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): UITableViewCell {
         // We call this method because ...ForIndexPath calls tableViewHeightForRowAtIndexPath immediately (before we can prepare and measure it).
-        var cell = tableView.dequeueReusableCellWithIdentifier(CELLIDENTIFIER) || ListViewCell.new();
+        var cell = tableView.dequeueReusableCellWithIdentifier(CELLIDENTIFIER) || UITableViewCell.new();
         this._owner._prepareCell(cell, indexPath);
 
         var cellView: view.View = cell.view;
@@ -115,7 +106,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
             // in iOS 7.1 this method is called before tableViewCellForRowAtIndexPath so we need fake cell to measure its content.
             var cell = this._measureCell;
             if (!cell) {
-                this._measureCell = tableView.dequeueReusableCellWithIdentifier(CELLIDENTIFIER) || ListViewCell.new();
+                this._measureCell = tableView.dequeueReusableCellWithIdentifier(CELLIDENTIFIER) || UITableViewCell.new();
                 cell = this._measureCell;
             }
 
@@ -157,7 +148,7 @@ export class ListView extends common.ListView {
         super();
 
         this._ios = new UITableView();
-        this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), CELLIDENTIFIER);
+        this._ios.registerClassForCellReuseIdentifier(UITableViewCell.class(), CELLIDENTIFIER);
         this._ios.autoresizesSubviews = false;
         this._ios.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
 

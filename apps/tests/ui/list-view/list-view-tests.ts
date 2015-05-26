@@ -4,6 +4,7 @@ import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import observable = require("data/observable");
 import types = require("utils/types");
+import platform = require("platform");
 
 // <snippet module="ui/list-view" title="list-view">
 // # ListView
@@ -123,6 +124,34 @@ export function test_set_items_to_array_loads_all_items() {
         TKUnit.assert(indexes[0], "itemLoading not called for index 0");
         TKUnit.assert(indexes[1], "itemLoading not called for index 1");
         TKUnit.assert(indexes[2], "itemLoading not called for index 2");
+    };
+
+    helper.buildUIAndRunTest(listView, testAction);
+}
+
+export function test_set_native_item_exposed() {
+    var listView = new listViewModule.ListView();
+
+    function testAction(views: Array<viewModule.View>) {
+        var indexes = {};
+        var colors = ["red", "green", "blue"];
+        listView.items = colors;
+        listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+            if (platform.device.os === platform.platformNames.ios) {
+                indexes[args.index] = args.ios;
+            } else if (platform.device.os === platform.platformNames.android) {
+                indexes[args.index] = args.android;
+            }
+        });
+
+        TKUnit.wait(ASYNC);
+        for (var item in indexes) {
+            if (platform.device.os === platform.platformNames.ios) {
+                TKUnit.assert(indexes[item] instanceof UITableViewCell, "itemLoading not called for index " + item);
+            } else if (platform.device.os === platform.platformNames.android) {
+                TKUnit.assert(indexes[item] instanceof android.view.ViewGroup, "itemLoading not called for index " + item);
+            }
+        }
     };
 
     helper.buildUIAndRunTest(listView, testAction);
