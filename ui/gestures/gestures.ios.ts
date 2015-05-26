@@ -58,6 +58,7 @@ class UIGestureRecognizerImpl extends NSObject {
 export class GesturesObserver implements definition.GesturesObserver {
     public _callback: (args: definition.GestureEventData) => void;
     public _target: view.View;
+    public type: definition.GestureTypes;
     private _recognizers: {};
     private _context: any;
 
@@ -71,6 +72,7 @@ export class GesturesObserver implements definition.GesturesObserver {
 
     public observe(target: view.View, type: definition.GestureTypes, thisArg?: any) {
         if (target) {
+            this.type = type;
             this._target = target;
             this._context = thisArg;
             this._onTargetLoaded = args => {
@@ -89,7 +91,6 @@ export class GesturesObserver implements definition.GesturesObserver {
                 this._attach(target, type);
             }
         }
-
     }
 
     private _attach(target: view.View, type: definition.GestureTypes) {

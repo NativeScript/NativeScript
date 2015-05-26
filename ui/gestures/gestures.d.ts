@@ -132,6 +132,11 @@ declare module "ui/gestures" {
          * Disconnects the gesture observer.
          */
         disconnect();
+
+        /**
+         * Gesture type attached to the observer.
+         */
+        type: GestureTypes;
     }
 
     /**

@@ -18,6 +18,7 @@ import listViewModule = require("ui/list-view");
 import helper = require("../ui/helper");
 import viewModule = require("ui/core/view");
 import platform = require("platform");
+import gesturesModule = require("ui/gestures");
 
 export function test_load_IsDefined() {
     TKUnit.assert(types.isFunction(builder.load), "ui/builder should have load method!");
@@ -186,7 +187,7 @@ export function test_parse_ShouldParseBindingsToGestures() {
     p.bindingContext = context;
     var lbl = <labelModule.Label>p.content;
 
-    var observer = (<any>lbl)._gesturesObserver;
+    var observer = (<any>lbl)._gestureObservers[gesturesModule.GestureTypes.tap][0];
 
     TKUnit.assert(observer !== undefined, "Expected result: true.");
     TKUnit.assert(observer._context === context, "Context should be equal to binding context. Actual result: " + observer._context);

@@ -1,3 +1,6 @@
-﻿<Page xmlns="http://www.nativescript.org/tns.xsd">
-  <Button text="Back" tap="buttonTap"/>
+﻿<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded">
+	<StackLayout>
+		<TextView text="TEST FOR GESTURES" id="testTextView" style="font-size: 50" tap="buttonTap" doubleTap="doubleTap"/>
+		<Button text="CLICK" tap="checkRecognizers" />
+	</StackLayout>
 </Page>
