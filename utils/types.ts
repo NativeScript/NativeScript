@@ -31,27 +31,71 @@ export function verifyCallback(value: any) {
     }
 }
 
+var classInfosMap = new Map<Function, ClassInfo>();
 var funcNameRegex = /function (.{1,})\(/;
-export function getClass(object): string {
-    var results = (funcNameRegex).exec((object).constructor.toString());
-    return (results && results.length > 1) ? results[1] : "";
+export function getClass(object: Object): string {
+    return getClassInfo(object).name;
+}
+
+export function getClassInfo(object: Object): ClassInfo {
+    var constructor = object.constructor;
+
+    var result = classInfosMap.get(constructor);
+    if (!result) {
+        result = new ClassInfo(constructor);
+        classInfosMap.set(constructor, result);
+    }
+
+    return result;
 }
 
 export function getBaseClasses(object): Array<string> {
-    var baseProto = object.__proto__;
     var result = [];
-    result.push(getClass(object));
-    
-    while (baseProto !== Object.prototype) {
-        var baseProtoString = baseProto.toString();
-        // while extending some classes for platform specific versions results in duplicate class types in hierarchy
-        if (result.indexOf(baseProtoString) === -1) {
-            result.push(baseProtoString);
-        }
-        baseProto = baseProto.__proto__;
+    var info = getClassInfo(object);
+    while (info) {
+        result.push(info.name);
+        info = info.baseClassInfo;
+    }
+    return result;
+}
+
+export class ClassInfo {
+    private _typeCosntructor: Function;
+    private _name: string;
+    private _baseClassInfo: ClassInfo;
+
+    constructor(typeCosntructor: Function) {
+        this._typeCosntructor = typeCosntructor;
     }
 
-    result.push("Object");
+    get name(): string {
+        if (!this._name) {
+            var results = (funcNameRegex).exec(this._typeCosntructor.toString());
+            this._name = (results && results.length > 1) ? results[1] : "";
+        }
 
-    return result;
+        return this._name;
+    }
+
+    get baseClassInfo(): ClassInfo {
+        if (isUndefined(this._baseClassInfo)) {
+            this._baseClassInfo = ClassInfo._getBase(this);
+
+            // While extending some classes for platform specific versions results in duplicate class types in hierarchy.
+            if (this._baseClassInfo && this._baseClassInfo.name === this.name) {
+                this._baseClassInfo = ClassInfo._getBase(this._baseClassInfo);
+            }
+        }
+
+        return this._baseClassInfo;
+    }
+
+    private static _getBase(info: ClassInfo): ClassInfo {
+        var result = null;
+        var constructorProto = info._typeCosntructor.prototype;
+        if (constructorProto.__proto__) {
+            result = getClassInfo(constructorProto.__proto__);
+        }
+        return result;
+    }
 }

@@ -131,6 +131,9 @@
     <TypeScriptCompile Include="apps\tests\layouts\dock-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\pages\app.ts" />
     <TypeScriptCompile Include="apps\tests\pages\file-load-test.ts" />
+    <TypeScriptCompile Include="apps\tests\pages\page-load-performance\start.ts" />
+    <TypeScriptCompile Include="apps\tests\pages\page-load-performance\test-big.ts" />
+    <TypeScriptCompile Include="apps\tests\pages\page-load-performance\test-small.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page12.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\absolute-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\layout-helper.ts" />
@@ -618,6 +621,13 @@
     <Content Include="apps\TelerikNEXT\images\background.jpg" />
     <Content Include="apps\template-settings\app.css" />
     <Content Include="apps\tests\app\location-example.xml" />
+    <Content Include="apps\tests\pages\page-load-performance\start.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\tests\pages\page-load-performance\test-big.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\tests\pages\page-load-performance\test-small.xml" />
     <Content Include="apps\tests\pages\page18.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage1.xml" />
