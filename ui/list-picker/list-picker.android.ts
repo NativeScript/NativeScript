@@ -62,7 +62,7 @@ export class ListPicker extends common.ListPicker {
         this._editText.setFilters([]);
 
         // Since the Android NumberPicker has to always have at least one item, i.e. minValue=maxValue=value=0, we don't want this zero showing up when this.items is empty.
-        this._editText.setText(null);
+        this._editText.setText(" ");
     }
 
     public _onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
