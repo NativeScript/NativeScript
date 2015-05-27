@@ -246,7 +246,7 @@ export class Style extends observable.DependencyObservable implements styling.St
             var handler: styling.stylers.StylePropertyChangedHandler = getHandler(property, this._view);
 
             if (!handler) {
-                trace.write("No handler for property: " + property.name + " with id: " + property.id + ", view:" + view, trace.categories.Style);
+                trace.write("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, trace.categories.Style);
             }
             else {
                 trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
