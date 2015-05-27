@@ -7,7 +7,7 @@
      */
     class PropertyMetadata extends dependencyObservable.PropertyMetadata {
         /**
-         * Gets or sets a dependencyObservable.PropertyChangedCallback which is used to react after changing value on native side.
+         * Gets or sets a dependencyObservable.PropertyChangedCallback which is used to set the value on native side.
          */
         public onSetNativeValue: dependencyObservable.PropertyChangedCallback;
 
@@ -17,7 +17,7 @@
          * @param options (optional) A value that states how this property affects visual tree.
          * @param onChanged (optional) A callback function which will be executed when value of the dependency property is changed.
          * @param onValidateValue (optional) A callback function which will be executed to validate the value of the dependency property.
-         * @param onSetNativeValue (optional) A callback function which will be executed when value of the native side is changed.
+         * @param onSetNativeValue (optional) A callback function which will be executed to set the value on native side.
          */
         constructor(
             defaultValue: any,
