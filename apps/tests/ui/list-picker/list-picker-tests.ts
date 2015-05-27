@@ -3,6 +3,7 @@ import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import listPickerTestsNative = require("./list-picker-tests-native");
 import pageModule = require("ui/page");
+import application = require("application");
 
 // <snippet module="ui/list-picker" title="ListPicker">
 // # ListPicker
@@ -196,4 +197,60 @@ export var testWhenSelectingAnItemNativelySelectedIndexIsUpdatedProperly = funct
     finally {
         helper.goBack();
     }
+}
+
+export var test_Android_MaxValueIsOneLessThanItemsCount = function () {
+    if (!application.android) {
+        return;
+    }
+
+    helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+        var listPicker = <listPickerModule.ListPicker>views[0];
+        listPicker.items = ["One", "Two", "Three"];
+        var expectedValue = listPicker.items.length - 1;
+        var actualValue = (<any>listPicker).android.getMaxValue();
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function () {
+    if (!application.android) {
+        return;
+    }
+
+    helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+        var listPicker = <listPickerModule.ListPicker>views[0];
+        var expectedValue = "";
+        var actualValue = (<any>listPicker)._editText.getText().toString();
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly = function () {
+    if (!application.android) {
+        return;
+    }
+
+    helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+        var listPicker = <listPickerModule.ListPicker>views[0];
+        listPicker.items = ["One"];
+        var expectedValue = "One";
+        var actualValue = (<any>listPicker)._editText.getText().toString();
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = function () {
+    if (!application.android) {
+        return;
+    }
+
+    helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
+        var listPicker = <listPickerModule.ListPicker>views[0];
+        listPicker.items = ["One", "Two"];
+        listPicker.selectedIndex = 1;
+        var expectedValue = "Two";
+        var actualValue = (<any>listPicker)._editText.getText().toString();
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
 }
