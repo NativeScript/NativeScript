@@ -31,7 +31,7 @@ export class ListPicker extends view.View implements definition.ListPicker {
 
     public _getItemAsString(index: number): any {
         if (!this.items || !this.items.length) {
-            return "";
+            return " ";
         }
         
         if (types.isDefined(this.items)) {
