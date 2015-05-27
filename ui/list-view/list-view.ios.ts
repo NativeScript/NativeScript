@@ -89,18 +89,6 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         if (indexPath.row === this._owner.items.length - 1) {
             this._owner.notify(<observable.EventData>{ eventName: LOADMOREITEMS, object: this._owner });
         }
-
-        if (cell.separatorInset) {
-            cell.separatorInset = UIEdgeInsetsZero;
-        }
-
-        if (cell.preservesSuperviewLayoutMargins) {
-            cell.preservesSuperviewLayoutMargins = false;
-        }
-
-        if (cell.layoutMargins) {
-            cell.layoutMargins = UIEdgeInsetsZero;
-        }
     }
 
     public tableViewWillSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
