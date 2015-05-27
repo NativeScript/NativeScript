@@ -70,6 +70,7 @@ allTests["TIME-PICKER"] = require("./ui/time-picker/time-picker-tests");
 allTests["WEB-VIEW"] = require("./ui/web-view/web-view-tests");
 allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
 allTests["REPEATER"] = require("./ui/repeater/repeater-tests");
+allTests["SEARCH-BAR"] = require('./ui/search-bar/search-bar-tests');
 
 if (!isRunningOnEmulator()) {
     allTests["LOCATION"] = require("./location-tests");

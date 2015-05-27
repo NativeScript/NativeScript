@@ -9,6 +9,9 @@ export class SearchBar extends view.View implements definition.SearchBar {
     public static clearEvent = "clear";
 
     public static textFieldBackgroundColorProperty = new dependencyObservable.Property("textFieldBackgroundColor", "SearchBar", new proxy.PropertyMetadata(undefined))
+
+    public static textFieldHintColorProperty = new dependencyObservable.Property("textFieldHintColor", "SearchBar", new proxy.PropertyMetadata(undefined))
+	
     public static hintProperty = new dependencyObservable.Property("hint", "SearchBar", new proxy.PropertyMetadata(""))
 
     public static textProperty = new dependencyObservable.Property(
@@ -38,4 +41,13 @@ export class SearchBar extends view.View implements definition.SearchBar {
         this._setValue(SearchBar.textFieldBackgroundColorProperty,
             value instanceof color.Color ? value : new color.Color(<any>value));
     }
+	
+	get textFieldHintColor(): color.Color {
+        return this._getValue(SearchBar.textFieldHintColorProperty);
+    }
+    set textFieldHintColor(value: color.Color) {
+        this._setValue(SearchBar.textFieldHintColorProperty,
+            value instanceof color.Color ? value : new color.Color(<any>value));
+    }
+	
 } 
