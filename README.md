@@ -54,9 +54,9 @@ Comprehensive documentation is available at [docs.nativescript.org](http://docs.
 We love PRs! Please follow our [contribution guide](https://www.nativescript.org/contribute) if you want to become part of the project.
 
 ## Contact info
-- **Web site** - [http://nativescript.org](http://nativescript.org)
+- **Web site** - [http://nativescript.org](http://www.nativescript.org)
 - **Twitter** - [@NativeScript](http://twitter.com/NativeScript) 
-- **Blog** - [http://nativescript.org/blog](http://nativescript.org/blog)
+- **Blog** - [http://nativescript.org/blog](http://www.nativescript.org/blog)
 - **Forum** - [General discussion](https://groups.google.com/forum/#!forum/nativescript)
 - **StackOverflow** - [http://stackoverflow.com/questions/tagged/nativescript](http://stackoverflow.com/questions/tagged/nativescript)
 - **IRC Chatroom** - [http://webchat.freenode.net/?channels=nativescript](http://webchat.freenode.net/?channels=nativescript)
