@@ -24,6 +24,10 @@ export class ListPicker extends common.ListPicker {
         this._android = new android.widget.NumberPicker(this._context);
         this._android.setDescendantFocusability(android.widget.NumberPicker.FOCUS_BLOCK_DESCENDANTS);
 
+        this._android.setMinValue(0);
+        this._android.setMaxValue(0);
+        this._android.setValue(0);
+
         var that = new WeakRef(this);
 
         this._formatter = new android.widget.NumberPicker.Formatter({
@@ -36,7 +40,7 @@ export class ListPicker extends common.ListPicker {
                     return this.owner._getItemAsString(index);
                 }
 
-                return "";
+                return " ";
             }
         });
         this._android.setFormatter(this._formatter);
@@ -54,50 +58,54 @@ export class ListPicker extends common.ListPicker {
         });
         this._android.setOnValueChangedListener(this._valueChangedListener);
 
-        //Fix disappearing selected item.
+        //Fix the disappearing selected item.
         //HACK: http://stackoverflow.com/questions/17708325/android-numberpicker-with-formatter-does-not-format-on-first-rendering/26797732
         var mInputTextField = java.lang.Class.forName("android.widget.NumberPicker").getDeclaredField("mInputText");
         mInputTextField.setAccessible(true);
         this._editText = <android.widget.EditText>mInputTextField.get(this._android);
         this._editText.setFilters([]);
-
-        // Since the Android NumberPicker has to always have at least one item, i.e. minValue=maxValue=value=0, we don't want this zero showing up when this.items is empty.
-        this._editText.setText(" ");
+        
+        //Since the Android NumberPicker has to always have at least one item, i.e. minValue=maxValue=value=0, we don't want this zero showing up when this.items is empty.
+        this._editText.setText(" ", android.widget.TextView.BufferType.NORMAL);
     }
 
     public _onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         super._onSelectedIndexPropertyChanged(data);
         
         if (this.android && types.isNumber(data.newValue)) {
-            
-            if (types.isDefined(this.items) && types.isNumber(this.items.length)) {
-                this.android.setMaxValue(this.items.length - 1);
-            }
-
             this.android.setValue(data.newValue);
         }
     }
 
     public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (this.android) {
-            var maxValue;
             if (!data.newValue || !data.newValue.length) {
-                maxValue = 0;
+                this.android.setMaxValue(0);
             }
             else {
-                maxValue = data.newValue.length - 1;
+                this.android.setMaxValue(data.newValue.length - 1);
             }
 
-            this.android.setMaxValue(maxValue);
             this.android.setWrapSelectorWheel(false);
         }
 
         this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
+
+        this._fixNumberPickerRendering();
+    }
+
+    private _fixNumberPickerRendering() {
+        if (!this.android) {
+            return;
+        }
         
-        //Fix disappearing selected item.
-        //HACK: http://stackoverflow.com/questions/17708325/android-numberpicker-with-formatter-does-not-format-on-first-rendering/26797732
+        //HACK: Force the stubborn NumberPicker to render correctly when we have 0 or 1 items.
+        this.android.setFormatter(null);
+        this.android.setFormatter(this._formatter); //Force the NumberPicker to call our Formatter 
         if (this._editText) {
             this._editText.setFilters([]);
         }
+        this._editText.invalidate(); //Force the EditText to redraw
+        this.android.invalidate();
     }
 } 
