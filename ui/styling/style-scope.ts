@@ -5,6 +5,13 @@ import cssSelector = require("ui/styling/css-selector");
 import cssParser = require("js-libs/reworkcss");
 import VisualState = visualState.VisualState;
 import application = require("application");
+import utils = require("utils/utils");
+import types = require("utils/types");
+import fs = require("file-system");
+import file_access_module = require("file-system/file-system-access");
+
+var fileAccess = new file_access_module.FileSystemAccess();
+var pattern: RegExp = /url\(('|")(.*?)\1\)/;
 
 export class StyleScope {
     // caches all the visual states by the key of the visual state selectors
@@ -36,17 +43,21 @@ export class StyleScope {
         this._reset();
         if (this._cssSelectors) {
             var addedSelectors = StyleScope.createSelectorsFromCss(cssString, cssFileName);
-            this._cssSelectors = this._joinCssSelectorsArrays([this._cssSelectors, addedSelectors]);
+            this._cssSelectors = StyleScope._joinCssSelectorsArrays([this._cssSelectors, addedSelectors]);
         }
     }
 
     public static createSelectorsFromCss(css: string, cssFileName: string): cssSelector.CssSelector[] {
         try {
             var pageCssSyntaxTree = css ? cssParser.parse(css, { source: cssFileName }) : null;
-            var pageCssSelectors;
+
+            var pageCssSelectors = new Array<cssSelector.CssSelector>();
+
             if (pageCssSyntaxTree) {
-                pageCssSelectors = StyleScope.createSelectorsFromSyntaxTree(pageCssSyntaxTree);
+                pageCssSelectors = StyleScope._joinCssSelectorsArrays([pageCssSelectors, StyleScope.createSelectorsFromImports(pageCssSyntaxTree)]);
+                pageCssSelectors = StyleScope._joinCssSelectorsArrays([pageCssSelectors, StyleScope.createSelectorsFromSyntaxTree(pageCssSyntaxTree)]);
             }
+
             return pageCssSelectors;
         }
         catch (e) {
@@ -54,15 +65,47 @@ export class StyleScope {
         }
     }
 
+    public static createSelectorsFromImports(tree: cssParser.SyntaxTree): cssSelector.CssSelector[] {
+        var selectors = new Array<cssSelector.CssSelector>();
+
+        if (!types.isNullOrUndefined(tree)) {
+            var imports = tree["stylesheet"]["rules"].filter(r=> r.type === "import");
+
+            for (var i = 0; i < imports.length; i++) {
+                var importItem = imports[i]["import"];
+
+                var match = importItem && (<string>importItem).match(pattern);
+                var url = match && match[2];
+
+                if (!types.isNullOrUndefined(url)) {
+                    if (utils.isFileOrResourcePath(url)) {
+
+                        var fileName = types.isString(url) ? url.trim() : "";
+                        if (fileName.indexOf("~/") === 0) {
+                            fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
+                        }
+
+                        fileAccess.readText(fileName, result => {
+                            selectors = StyleScope._joinCssSelectorsArrays([selectors, StyleScope.createSelectorsFromCss(result, fileName)]);
+                        });
+                    }
+                }
+            }
+        }
+
+        return selectors;
+    }
+
     public ensureSelectors() {
         if (!this._cssSelectors && (this._css || application.cssSelectorsCache)) {
             var applicationCssSelectors = application.cssSelectorsCache ? application.cssSelectorsCache : null;
             var pageCssSelectors = StyleScope.createSelectorsFromCss(this._css, this._cssFileName);
-            this._cssSelectors = this._joinCssSelectorsArrays([applicationCssSelectors, pageCssSelectors]);
+
+            this._cssSelectors = StyleScope._joinCssSelectorsArrays([applicationCssSelectors, pageCssSelectors]);
         }
     }
 
-    private _joinCssSelectorsArrays(arrays: Array<Array<cssSelector.CssSelector>>): Array<cssSelector.CssSelector> {
+    private static _joinCssSelectorsArrays(arrays: Array<Array<cssSelector.CssSelector>>): Array<cssSelector.CssSelector> {
         var mergedResult = [];
         var i;
         for (i = 0; i < arrays.length; i++) {
