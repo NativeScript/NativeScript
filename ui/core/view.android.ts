@@ -4,6 +4,7 @@ import trace = require("trace");
 import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import gestures = require("ui/gestures");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -75,6 +76,81 @@ export class View extends viewCommon.View {
     set gesturesListener(value: android.view.View.OnTouchListener) {
         this._gesturesListener = value;
         this._updateOnTouchListener(this.isUserInteractionEnabled);
+    }
+
+    public onLoaded() {
+        super.onLoaded();
+        this.setOnTouchListener();
+    }
+
+    public onUnloaded() {
+        super.onUnloaded();
+        if (this._nativeView && this._nativeView.setOnTouchListener) {
+            this._nativeView.setOnTouchListener(null);
+        }
+    }
+
+    private setOnTouchListener() {
+        if (this._nativeView && this._nativeView.setOnTouchListener && Object.keys(this._gestureObservers).length > 0) {
+            var that = new WeakRef(this);
+            if (this._nativeView.setClickable) {
+                this._nativeView.setClickable(true);
+            }
+            this._nativeView.setOnTouchListener(new android.view.View.OnTouchListener({
+                onTouch: function (view: android.view.View, motionEvent: android.view.MotionEvent) {
+                    var owner = that.get();
+                    if (!owner) {
+                        return false;
+                    }
+                    var i;
+                    for (var prop in owner._gestureObservers) {
+                        if (owner._gestureObservers.hasOwnProperty(prop)) {
+                            for (i = 0; i < owner._gestureObservers[prop].length; i++) {
+                                var gestureObserver = owner._gestureObservers[prop][i];
+                                if (gestureObserver._simpleGestureDetector) {
+                                    gestureObserver._simpleGestureDetector.onTouchEvent(motionEvent);
+                                }
+
+                                if (gestureObserver._scaleGestureDetector) {
+                                    gestureObserver._scaleGestureDetector.onTouchEvent(motionEvent);
+                                }
+
+                                if (gestureObserver._swipeGestureDetector) {
+                                    gestureObserver._swipeGestureDetector.onTouchEvent(motionEvent);
+                                }
+
+                                if (gestureObserver._panGestureDetector) {
+                                    gestureObserver._panGestureDetector.onTouchEvent(motionEvent);
+                                }
+
+                                if (gestureObserver.type & gestures.GestureTypes.rotation && motionEvent.getPointerCount() === 2) {
+
+                                    var deltaX = motionEvent.getX(0) - motionEvent.getX(1);
+                                    var deltaY = motionEvent.getY(0) - motionEvent.getY(1);
+                                    var radians = Math.atan(deltaY / deltaX);
+                                    var degrees = radians * (180 / Math.PI);
+
+                                    var args = <gestures.RotationGestureEventData>{
+                                        type: gestures.GestureTypes.rotation,
+                                        view: owner,
+                                        android: motionEvent,
+                                        rotation: degrees,
+                                        ios: null
+                                    }
+
+                                    //var observer = that.get();
+                                    if (gestureObserver.callback) {
+                                        gestureObserver.callback.call(gestureObserver._context, args);
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                    return owner._nativeView.onTouchEvent(motionEvent);
+                }
+            }));
+        }
     }
 
     public _addViewCore(view: viewCommon.View) {

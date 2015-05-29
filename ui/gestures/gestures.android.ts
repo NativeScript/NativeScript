@@ -24,6 +24,7 @@ export class GesturesObserver implements definition.GesturesObserver {
 
     private _onTargetLoaded: (data: observable.EventData) => void;
     private _onTargetUnloaded: (data: observable.EventData) => void;
+    public type: definition.GestureTypes;
 
     constructor(callback: (args: definition.GestureEventData) => void) {
         this._callback = callback;
@@ -35,6 +36,7 @@ export class GesturesObserver implements definition.GesturesObserver {
 
     public observe(target: view.View, type: definition.GestureTypes, thisArg?: any) {
         if (target) {
+            this.type = type;
             this._target = target;
             this._context = thisArg;
             this._onTargetLoaded = args => {
@@ -70,9 +72,6 @@ export class GesturesObserver implements definition.GesturesObserver {
 
     private _dettach() {
         trace.write(this._target + "._detach() android:" + this._target.android, "gestures");
-        if (this._target && this._target.android) {
-            this._target.android.setOnTouchListener(null);
-        }
 
         this._onTouchListener = null;
         this._simpleGestureDetector = null;
@@ -86,7 +85,7 @@ export class GesturesObserver implements definition.GesturesObserver {
         this._dettach();
 
         if (type & definition.GestureTypes.tap || type & definition.GestureTypes.doubleTap || type & definition.GestureTypes.longPress) {
-            this._simpleGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this._target));
+            this._simpleGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this._target, type));
         }
 
         if (type & definition.GestureTypes.pinch) {
@@ -100,58 +99,6 @@ export class GesturesObserver implements definition.GesturesObserver {
         if (type & definition.GestureTypes.pan) {
             this._panGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new PanGestureListener(this, this._target));
         }
-
-        var that = new WeakRef(this);
-
-        this._onTouchListener = new android.view.View.OnTouchListener({
-            onTouch: function (view: android.view.View, motionEvent: android.view.MotionEvent) {
-                var owner = that.get();
-                if (!owner) {
-                    return false;
-                }
-
-                if (owner._simpleGestureDetector) {
-                    owner._simpleGestureDetector.onTouchEvent(motionEvent);
-                }
-
-                if (owner._scaleGestureDetector) {
-                    owner._scaleGestureDetector.onTouchEvent(motionEvent);
-                }
-
-                if (owner._swipeGestureDetector) {
-                    owner._swipeGestureDetector.onTouchEvent(motionEvent);
-                }
-
-                if (owner._panGestureDetector) {
-                    owner._panGestureDetector.onTouchEvent(motionEvent);
-                }
-
-                if (type & definition.GestureTypes.rotation && motionEvent.getPointerCount() === 2) {
-
-                    var deltaX = motionEvent.getX(0) - motionEvent.getX(1);
-                    var deltaY = motionEvent.getY(0) - motionEvent.getY(1);
-                    var radians = Math.atan(deltaY / deltaX);
-                    var degrees = radians * (180 / Math.PI);
-
-                    var args = <definition.RotationGestureEventData>{
-                        type: definition.GestureTypes.rotation,
-                        view: owner._target,
-                        android: motionEvent,
-                        rotation: degrees,
-                    }
-
-                    var observer = that.get();
-                    if (observer && observer.callback) {
-                        observer.callback.call(observer._context, args);
-                    }
-
-                }
-
-                return true;
-            }
-        });
-
-        target.android.setOnTouchListener(this._onTouchListener);
     }
 }
 
@@ -193,24 +140,30 @@ function _executeCallback(observer: GesturesObserver, args: definition.GestureEv
 class TapAndDoubleTapGestureListener extends android.view.GestureDetector.SimpleOnGestureListener {
     private _observer: GesturesObserver;
     private _target: view.View;
+    private _type: number;
 
-    constructor(observer: GesturesObserver, target: view.View) {
+    constructor(observer: GesturesObserver, target: view.View, type: number) {
         super();
 
         this._observer = observer;
         this._target = target;
+        this._type = type;
         return global.__native(this);
     }
 
     public onSingleTapConfirmed(motionEvent: android.view.MotionEvent): boolean {
-        var args = _getArgs(definition.GestureTypes.tap, this._target, motionEvent);
-        _executeCallback(this._observer, args);
+        if (this._type === definition.GestureTypes.tap) {
+            var args = _getArgs(definition.GestureTypes.tap, this._target, motionEvent);
+            _executeCallback(this._observer, args);
+        }
         return true;
     }
 
     public onDoubleTap(motionEvent: android.view.MotionEvent): boolean {
-        var args = _getArgs(definition.GestureTypes.doubleTap, this._target, motionEvent);
-        _executeCallback(this._observer, args);
+        if (this._type === definition.GestureTypes.doubleTap) {
+            var args = _getArgs(definition.GestureTypes.doubleTap, this._target, motionEvent);
+            _executeCallback(this._observer, args);
+        }
         return true;
     }
 
@@ -219,8 +172,10 @@ class TapAndDoubleTapGestureListener extends android.view.GestureDetector.Simple
     }
 
     public onLongPress(motionEvent: android.view.MotionEvent): boolean {
-        var args = _getArgs(definition.GestureTypes.longPress, this._target, motionEvent);
-        _executeCallback(this._observer, args);
+        if (this._type === definition.GestureTypes.longPress) {
+            var args = _getArgs(definition.GestureTypes.longPress, this._target, motionEvent);
+            _executeCallback(this._observer, args);
+        }
         return true;
     }
 }

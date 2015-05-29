@@ -132,7 +132,7 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     public _cssClasses: Array<string> = [];
 
-    private _gesturesObserver: gestures.GesturesObserver;
+    public _gestureObservers = {};
     private _updatingInheritedProperties: boolean;
 
     public _options: definition.Options;
@@ -147,9 +147,22 @@ export class View extends proxy.ProxyObject implements definition.View {
         this._visualState = visualStateConstants.Normal;
     }
 
-    observe(type: number, callback: (args: gestures.GestureEventData) => void, thisArg?: any): gestures.GesturesObserver {
-        this._gesturesObserver = gestures.observe(this, type, callback, thisArg);
-        return this._gesturesObserver;
+    observe(type: number, callback: (args: gestures.GestureEventData) => void, thisArg?: any): void {
+        var gesturesList = this._getGesturesList(type, true);
+        gesturesList.push(gestures.observe(this, type, callback, thisArg));
+    }
+
+    private _getGesturesList(gestureType: number, createIfNeeded): Array<gestures.GesturesObserver> {
+        if (!gestureType) {
+            throw new Error("GestureType must be a valid gesture!");
+        }
+
+        var list = this._gestureObservers[gestureType];
+        if (!list && createIfNeeded) {
+            list = [];
+            this._gestureObservers[gestureType] = list;
+        }
+        return list;
     }
 
     getViewById<T extends View>(id: string): T {
