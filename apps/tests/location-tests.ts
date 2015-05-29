@@ -33,6 +33,7 @@ export var testIsEnabled = function () {
     // <snippet module="location" title="location">
     // ### Test are location services available for this device
     // ``` JavaScript
+    //var LocationManager = require("location").LocationManager;
     var isEnabled = LocationManager.isEnabled();
     // ```
     // </snippet>
@@ -70,6 +71,7 @@ export var testLocation = function (done) {
     // <snippet module="location" title="location">
     // ### Receive continuous location updates
     // ``` JavaScript
+    //var LocationManager = require("location").LocationManager;
     var locationManager = new LocationManager();
 
     locationManager.startLocationMonitoring(function (location) {
@@ -117,6 +119,7 @@ export var testLastKnownLocation = function () {
     // <snippet module="location" title="location">
     // ### Get last known location
     // ``` JavaScript
+    //var LocationManager = require("location").LocationManager;
     var locationManager = new LocationManager();
     var lastKnownLocation = locationManager.lastKnownLocation;
     // ```
