@@ -15,6 +15,7 @@ var TAG = "_fragmentTag";
 var OWNER = "_owner";
 var HIDDEN = "_hidden";
 var INTENT_EXTRA = "com.tns.activity";
+var ANDROID_FRAME = "android_frame";
 
 var navDepth = 0;
 
@@ -368,28 +369,20 @@ export class Frame extends frameCommon.Frame {
     }
 }
 
-declare module com {
-    module tns {
-        class NativeScriptActivity extends android.app.Activity {
-            protected onCreate(savedInstanceState: android.os.Bundle);
-            protected onStart();
-            protected onStop();
-            protected onDestroy();
-            protected onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent)
-        }
-    }
-}
+var NativeActivity = {
 
-class NativeActivity extends com.tns.NativeScriptActivity {
-    private androidFrame: AndroidFrame;
-    private get frame(): Frame {
+    get frame(): Frame {
         if (this.androidFrame) {
             return this.androidFrame.owner;
         }
         return null;
-    }
+    },
 
-    onCreate(savedInstanceState: android.os.Bundle) {
+    get androidFrame(): AndroidFrame {
+        return this[ANDROID_FRAME];
+    },
+
+    onCreate: function(savedInstanceState: android.os.Bundle) {
         trace.write("NativeScriptActivity.onCreate(); savedInstanceState: " + savedInstanceState, trace.categories.NativeLifecycle);
 
         // Find the frame for this activity.
@@ -397,7 +390,7 @@ class NativeActivity extends com.tns.NativeScriptActivity {
         for (var i = 0; i < framesCache.length; i++) {
             var aliveFrame = framesCache[i].get();
             if (aliveFrame && aliveFrame.frameId === frameId) {
-                this.androidFrame = aliveFrame;
+                this[ANDROID_FRAME] = aliveFrame;
                 break;
             }
         }
@@ -408,7 +401,7 @@ class NativeActivity extends com.tns.NativeScriptActivity {
 
         // If there is savedInstanceState this call will recreate all fragments that were previously in the navigation.
         // We take care of associating them with a Page from our backstack in the onAttachFragment callback.
-        super.onCreate(savedInstanceState);
+        this.super.onCreate(savedInstanceState);
 
         this.androidFrame.setActivity(this);
 
@@ -423,42 +416,42 @@ class NativeActivity extends com.tns.NativeScriptActivity {
         // If there is no instance state - we call navigateCore from here since Activity is created AFTER the navigate call and navigateCore will fail.
         var isRestart = !!savedInstanceState;
         this.frame._onActivityCreated(isRestart);
-    }
+    },
 
-    onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent) {
-        super.onActivityResult(requestCode, resultCode, data);
+    onActivityResult: function(requestCode: number, resultCode: number, data: android.content.Intent) {
+        this.super.onActivityResult(requestCode, resultCode, data);
         trace.write("NativeScriptActivity.onActivityResult();", trace.categories.NativeLifecycle);
 
         var result = application.android.onActivityResult;
         if (result) {
             result(requestCode, resultCode, data);
         }
-    }
+    },
 
-    onAttachFragment(fragment: android.app.Fragment) {
+    onAttachFragment: function(fragment: android.app.Fragment) {
         trace.write("NativeScriptActivity.onAttachFragment() : " + fragment.getTag(), trace.categories.NativeLifecycle);
-        super.onAttachFragment(fragment);
+        this.super.onAttachFragment(fragment);
 
         if (!(<PageFragmentBody>fragment).entry) {
             // There is no entry set to the fragment, so this must be destroyed fragment that was recreated by Android.
             // We should find its corresponding page in our backstack and set it manually.
             findPageForFragment(fragment, this.frame);
         }
-    }
+    },
 
-    onStart() {
-        super.onStart();
+    onStart: function() {
+        this.super.onStart();
         trace.write("NativeScriptActivity.onStart();", trace.categories.NativeLifecycle);
         this.frame.onLoaded();
-    }
+    },
 
-    onStop() {
-        super.onStop();
+    onStop: function() {
+        this.super.onStop();
         trace.write("NativeScriptActivity.onStop();", trace.categories.NativeLifecycle);
         this.frame.onUnloaded();
-    }
+    },
 
-    onDestroy() {
+    onDestroy: function() {
         // TODO: Implement uninitialized(detached) routine
         var frame = this.frame;
         frame._onDetached(true);
@@ -470,11 +463,11 @@ class NativeActivity extends com.tns.NativeScriptActivity {
 
         this.androidFrame.reset();
 
-        super.onDestroy();
+        this.super.onDestroy();
         trace.write("NativeScriptActivity.onDestroy();", trace.categories.NativeLifecycle);
-    }
+    },
 
-    onOptionsItemSelected(menuItem: android.view.IMenuItem) {
+    onOptionsItemSelected: function(menuItem: android.view.IMenuItem) {
         if (!this.androidFrame.hasListeners(frameCommon.Frame.androidOptionSelectedEvent)) {
             return false;
         }
@@ -488,27 +481,27 @@ class NativeActivity extends com.tns.NativeScriptActivity {
 
         this.androidFrame.notify(data);
         return data.handled;
-    }
+    },
 
-    onBackPressed() {
+    onBackPressed: function() {
         trace.write("NativeScriptActivity.onBackPressed;", trace.categories.NativeLifecycle);
         if (!frameCommon.goBack()) {
-            super.onBackPressed();
+            this.super.onBackPressed();
         }
-    }
+    },
 
-    onLowMemory() {
+    onLowMemory: function() {
         gc();
         java.lang.System.gc();
-        super.onLowMemory();
-    }
+        this.super.onLowMemory();
+    },
 
-    onTrimMemory(level) {
+    onTrimMemory: function(level: number) {
         gc();
         java.lang.System.gc();
-        super.onTrimMemory(level);
+        this.super.onTrimMemory(level);
     }
-}
+};
 
 var framesCounter = 0;
 var framesCache: Array<WeakRef<AndroidFrame>> = new Array<WeakRef<AndroidFrame>>();

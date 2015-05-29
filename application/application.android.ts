@@ -98,7 +98,8 @@ var initEvents = function () {
 }
 
 app.init({
-    getActivity: function (intent: android.content.Intent) {
+    getActivity: function (activity: android.app.Activity) {
+        var intent = activity.getIntent()
         return exports.android.getActivity(intent);
     },
 
