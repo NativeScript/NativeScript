@@ -85,18 +85,18 @@ export class View extends viewCommon.View {
 
     public onUnloaded() {
         super.onUnloaded();
-        if (this.android && this.android.setOnTouchListener) {
-            this.android.setOnTouchListener(null);
+        if (this._nativeView && this._nativeView.setOnTouchListener) {
+            this._nativeView.setOnTouchListener(null);
         }
     }
 
     private setOnTouchListener() {
-        if (this.android && this.android.setOnTouchListener && Object.keys(this._gestureObservers).length > 0) {
+        if (this._nativeView && this._nativeView.setOnTouchListener && Object.keys(this._gestureObservers).length > 0) {
             var that = new WeakRef(this);
-            if (this.android.setClickable) {
-                this.android.setClickable(true);
+            if (this._nativeView.setClickable) {
+                this._nativeView.setClickable(true);
             }
-            this.android.setOnTouchListener(new android.view.View.OnTouchListener({
+            this._nativeView.setOnTouchListener(new android.view.View.OnTouchListener({
                 onTouch: function (view: android.view.View, motionEvent: android.view.MotionEvent) {
                     var owner = that.get();
                     if (!owner) {
@@ -147,7 +147,7 @@ export class View extends viewCommon.View {
                             }
                         }
                     }
-                    return owner.android.onTouchEvent(motionEvent);
+                    return owner._nativeView.onTouchEvent(motionEvent);
                 }
             }));
         }
