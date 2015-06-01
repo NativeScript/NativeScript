@@ -14,7 +14,7 @@ export var mainModule: string;
 class Window extends UIWindow {
 
     private _content: view.View;
-    
+
     initWithFrame(frame: CGRect): UIWindow {
         var window = super.initWithFrame(frame);
         if (window) {
@@ -50,6 +50,8 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
             exports.onLaunch();
         }
 
+        exports.notify({ eventName: "onLaunch", object: this, android: undefined, ios: launchOptions });
+
         var topFrame = frame.topmost();
         if (!topFrame) {
             if (mainModule) {
@@ -74,6 +76,8 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
         if (exports.onResume) {
             exports.onResume();
         }
+
+        exports.notify({ eventName: "onResume", object: this, android: undefined, ios: application });
     }
 
     applicationWillResignActive(application: UIApplication) {
@@ -84,6 +88,8 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
         if (exports.onSuspend) {
             exports.onSuspend();
         }
+
+        exports.notify({ eventName: "onSuspend", object: this, android: undefined, ios: application });
     }
 
     applicationWillEnterForeground(application: UIApplication) {
@@ -94,12 +100,16 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
         if (exports.onExit) {
             exports.onExit();
         }
+
+        exports.notify({ eventName: "onExit", object: this, android: undefined, ios: application });
     }
 
     applicationDidReceiveMemoryWarning(application: UIApplication) {
         if (exports.onLowMemory) {
             exports.onLowMemory();
         }
+
+        exports.notify({ eventName: "onLowMemory", object: this, android: undefined, ios: application });
     }
 
     applicationOpenURLSourceApplicationAnnotation(application: UIApplication, url: NSURL, sourceApplication: string, annotation: any): boolean {
@@ -147,5 +157,7 @@ exports.start = function () {
         }
 
         exports.onUncaughtError(error);
+
+        definition.notify({ eventName: "onUncaughtError", object: <any>definition.ios, android: undefined, ios: error });
     }
 }

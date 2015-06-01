@@ -3,6 +3,10 @@ import definition = require("application");
 import fs = require("file-system");
 import fileSystemAccess = require("file-system/file-system-access");
 import styleScope = require("ui/styling/style-scope");
+import observable = require("data/observable");
+
+var events = new observable.Observable();
+require("utils/module-merge").merge(events, exports);
 
 export var cssFile: string = "app.css"
 
