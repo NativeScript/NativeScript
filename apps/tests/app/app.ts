@@ -1,28 +1,30 @@
 ﻿import application = require("application");
 application.mainModule = "app/mainPage";
 
-application.on("onLaunch", function (args) {
-    console.log("onLaunch: " + args);
+application.on(application.launch, function (args: application.ApplicationEventData) {
+    console.log("launch, iOS: " + args.ios + ", Android: " + args.android);
 });
 
-application.on("onUncaughtError", function (args) {
-    console.log("onUncaughtError: " + args);
+application.on(application.uncaughtError, function (args: application.ApplicationEventData) {
+    console.log("uncaughtError, iOS: " + args.ios + ", Android: " + args.android);
 });
 
-application.on("onSuspend", function (args) {
-    console.log("onSuspend: " + args);
+application.on(application.suspend, function (args: application.ApplicationEventData) {
+    console.log("suspend, iOS: " + args.ios + ", Android: " + args.android);
+
 });
 
-application.on("onResume", function (args) {
-    console.log("onResume: " + args);
+application.on(application.resume, function (args: application.ApplicationEventData) {
+    console.log("resume, iOS: " + args.ios + ", Android: " + args.android);
 });
 
-application.on("onExit", function (args) {
-    console.log("onExit: " + args);
+application.on(application.exit, function (args: application.ApplicationEventData) {
+    console.log("exit, iOS: " + args.ios + ", Android: " + args.android);
 });
 
-application.on("onLowMemory", function (args) {
-    console.log("onLowMemory: " + args);
+application.on(application.lowMemory, function (args: application.ApplicationEventData) {
+    console.log("exit, iOS: " + args.ios + ", Android: " + args.android);
+
 });
 
 application.start();

@@ -16,18 +16,48 @@ declare module "application" {
     }
 
     /**
+     * String value used when hooking to launch event.
+     */
+    export var launch: string;
+
+    /**
+     * String value used when hooking to uncaughtError event.
+     */
+    export var uncaughtError: string;
+
+    /**
+     * String value used when hooking to suspend event.
+     */
+    export var suspend: string;
+
+    /**
+     * String value used when hooking to resume event.
+     */
+    export var resume: string;
+
+    /**
+     * String value used when hooking to exit event.
+     */
+    export var exit: string;
+
+    /**
+     * String value used when hooking to lowMemory event.
+     */
+    export var lowMemory: string;
+
+    /**
      * Event data containing information for the application events.
      */
     export interface ApplicationEventData extends observable.EventData {
         /**
          * Gets the native iOS event arguments. Valid only when running on iOS.
          */
-        ios: any;
+        ios?: any;
 
         /**
          * Gets the native Android event arguments. Valid only when running on Android.
          */
-        android: any;
+        android?: any;
     }
 
     /**
