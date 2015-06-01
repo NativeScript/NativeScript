@@ -220,7 +220,7 @@ export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function
 
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
         var listPicker = <listPickerModule.ListPicker>views[0];
-        var expectedValue = "";
+        var expectedValue = " ";
         var actualValue = (<any>listPicker)._editText.getText().toString();
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
