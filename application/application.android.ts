@@ -236,7 +236,7 @@ global.__onUncaughtError = function (error: Error) {
 
     exports.onUncaughtError(nsError);
 
-    exports.notify({ eventName: dts.uncaughtErrorEvent, object: appModule.android, android: error });
+    exports.notify({ eventName: dts.uncaughtErrorEvent, object: appModule.android, android: nsError });
 }
 
 exports.start = function () {

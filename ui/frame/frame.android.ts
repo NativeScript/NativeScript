@@ -495,7 +495,7 @@ var NativeActivity = {
         java.lang.System.gc();
         this.super.onLowMemory();
 
-        application.notify(<application.ApplicationEventData>{ eventName: application.lowMemoryEvent, object: this });
+        application.notify(<application.ApplicationEventData>{ eventName: application.lowMemoryEvent, object: this, android: this });
     },
 
     onTrimMemory: function (level: number) {
