@@ -18,32 +18,32 @@ declare module "application" {
     /**
      * String value used when hooking to launch event.
      */
-    export var launch: string;
+    export var launchEvent: string;
 
     /**
      * String value used when hooking to uncaughtError event.
      */
-    export var uncaughtError: string;
+    export var uncaughtErrorEvent: string;
 
     /**
      * String value used when hooking to suspend event.
      */
-    export var suspend: string;
+    export var suspendEvent: string;
 
     /**
      * String value used when hooking to resume event.
      */
-    export var resume: string;
+    export var resumeEvent: string;
 
     /**
-     * String value used when hooking to exit event.
+     * String value used when hooking to exitevent.
      */
-    export var exit: string;
+    export var exitEvent: string;
 
     /**
      * String value used when hooking to lowMemory event.
      */
-    export var lowMemory: string;
+    export var lowMemoryEvent: string;
 
     /**
      * Event data containing information for the application events.
@@ -119,7 +119,7 @@ declare module "application" {
     export function onResume();
 
     /**
-     * This method will be called when the Application is about to exit.
+     * This method will be called when the Application is about to exitEvent.
      */
     export function onExit();
 
@@ -149,7 +149,7 @@ declare module "application" {
     export function hasListeners(eventName: string): boolean;
 
     /**
-     * This event is raised on application launch.
+     * This event is raised on application launchEvent.
      */
     export function on(event: "onLaunch", callback: (args: any) => void, thisArg?: any);
 
@@ -169,7 +169,7 @@ declare module "application" {
     export function on(event: "onResume", callback: (args: any) => void, thisArg?: any);
 
     /**
-     * This event is raised when the Application is about to exit.
+     * This event is raised when the Application is about to exitEvent.
      */
     export function on(event: "onExit", callback: (args: any) => void, thisArg?: any);
 

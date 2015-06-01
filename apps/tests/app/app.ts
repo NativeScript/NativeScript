@@ -1,29 +1,29 @@
 ﻿import application = require("application");
 application.mainModule = "app/mainPage";
 
-application.on(application.launch, function (args: application.ApplicationEventData) {
-    console.log("launch, iOS: " + args.ios + ", Android: " + args.android);
+application.on(application.launchEvent, function (args: application.ApplicationEventData) {
+    console.log("launchEvent, iOS: " + args.ios + ", Android: " + args.android);
 });
 
-application.on(application.uncaughtError, function (args: application.ApplicationEventData) {
-    console.log("uncaughtError, iOS: " + args.ios + ", Android: " + args.android);
+application.on(application.uncaughtErrorEvent, function (args: application.ApplicationEventData) {
+    console.log("uncaughtErrorEvent, iOS: " + args.ios + ", Android: " + args.android);
 });
 
-application.on(application.suspend, function (args: application.ApplicationEventData) {
-    console.log("suspend, iOS: " + args.ios + ", Android: " + args.android);
+application.on(application.suspendEvent, function (args: application.ApplicationEventData) {
+    console.log("suspendEvent, iOS: " + args.ios + ", Android: " + args.android);
 
 });
 
-application.on(application.resume, function (args: application.ApplicationEventData) {
-    console.log("resume, iOS: " + args.ios + ", Android: " + args.android);
+application.on(application.resumeEvent, function (args: application.ApplicationEventData) {
+    console.log("resumeEvent, iOS: " + args.ios + ", Android: " + args.android);
 });
 
-application.on(application.exit, function (args: application.ApplicationEventData) {
-    console.log("exit, iOS: " + args.ios + ", Android: " + args.android);
+application.on(application.exitEvent, function (args: application.ApplicationEventData) {
+    console.log("exitEvent, iOS: " + args.ios + ", Android: " + args.android);
 });
 
-application.on(application.lowMemory, function (args: application.ApplicationEventData) {
-    console.log("exit, iOS: " + args.ios + ", Android: " + args.android);
+application.on(application.lowMemoryEvent, function (args: application.ApplicationEventData) {
+    console.log("exitEvent, iOS: " + args.ios + ", Android: " + args.android);
 
 });
 

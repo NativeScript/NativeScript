@@ -44,7 +44,7 @@ var initEvents = function () {
                     exports.onExit();
                 }
 
-                exports.notify({ eventName: dts.exit, object: androidApp, android: activity });
+                exports.notify({ eventName: dts.exitEvent, object: androidApp, android: activity });
 
                 androidApp.startActivity = undefined;
             }
@@ -62,7 +62,7 @@ var initEvents = function () {
                     exports.onSuspend();
                 }
 
-                exports.notify({ eventName: dts.suspend, object: androidApp, android: activity });
+                exports.notify({ eventName: dts.suspendEvent, object: androidApp, android: activity });
 
             }
 
@@ -76,7 +76,7 @@ var initEvents = function () {
                     exports.onResume();
                 }
 
-                exports.notify({ eventName: dts.resume, object: androidApp, android: activity });
+                exports.notify({ eventName: dts.resumeEvent, object: androidApp, android: activity });
 
             }
 
@@ -192,7 +192,7 @@ class AndroidApplication implements dts.AndroidApplication {
                 exports.onLaunch(intent);
             }
 
-            exports.notify({ eventName: dts.launch, object: this, android: intent });
+            exports.notify({ eventName: dts.launchEvent, object: this, android: intent });
 
             /* In the onLaunch event we expect the following setup, which ensures a root frame:
             * var frame = require("ui/frame");
@@ -236,7 +236,7 @@ global.__onUncaughtError = function (error: Error) {
 
     exports.onUncaughtError(nsError);
 
-    exports.notify({ eventName: dts.uncaughtError, object: appModule.android, android: error });
+    exports.notify({ eventName: dts.uncaughtErrorEvent, object: appModule.android, android: error });
 }
 
 exports.start = function () {

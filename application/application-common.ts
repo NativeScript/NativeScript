@@ -8,17 +8,17 @@ import observable = require("data/observable");
 var events = new observable.Observable();
 require("utils/module-merge").merge(events, exports);
 
-export var launch = "launch";
+export var launchEvent = "launchEvent";
 
-export var uncaughtError = "uncaughtError";
+export var uncaughtErrorEvent = "uncaughtErrorEvent";
 
-export var suspend = "suspend";
+export var suspendEvent = "suspendEvent";
 
-export var resume = "resume";
+export var resumeEvent = "resumeEvent";
 
-export var exit = "exit";
+export var exitEvent = "exitEvent";
 
-export var lowMemory = "lowMemory";
+export var lowMemoryEvent = "lowMemoryEvent";
 
 export var cssFile: string = "app.css"
 

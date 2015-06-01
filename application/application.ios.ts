@@ -50,7 +50,7 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
             exports.onLaunch();
         }
 
-        exports.notify({ eventName: definition.launch, object: this, ios: launchOptions });
+        exports.notify({ eventName: definition.launchEvent, object: this, ios: launchOptions });
 
         var topFrame = frame.topmost();
         if (!topFrame) {
@@ -77,7 +77,7 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
             exports.onResume();
         }
 
-        exports.notify({ eventName: definition.resume, object: this, ios: application });
+        exports.notify({ eventName: definition.resumeEvent, object: this, ios: application });
     }
 
     applicationWillResignActive(application: UIApplication) {
@@ -89,7 +89,7 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
             exports.onSuspend();
         }
 
-        exports.notify({ eventName: definition.suspend, object: this, ios: application });
+        exports.notify({ eventName: definition.suspendEvent, object: this, ios: application });
     }
 
     applicationWillEnterForeground(application: UIApplication) {
@@ -101,7 +101,7 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
             exports.onExit();
         }
 
-        exports.notify({ eventName: definition.exit, object: this, ios: application });
+        exports.notify({ eventName: definition.exitEvent, object: this, ios: application });
     }
 
     applicationDidReceiveMemoryWarning(application: UIApplication) {
@@ -109,7 +109,7 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
             exports.onLowMemory();
         }
 
-        exports.notify({ eventName: definition.lowMemory, object: this, android: undefined, ios: application });
+        exports.notify({ eventName: definition.lowMemoryEvent, object: this, android: undefined, ios: application });
     }
 
     applicationOpenURLSourceApplicationAnnotation(application: UIApplication, url: NSURL, sourceApplication: string, annotation: any): boolean {
@@ -158,6 +158,6 @@ exports.start = function () {
 
         exports.onUncaughtError(error);
 
-        definition.notify({ eventName: definition.uncaughtError, object: <any>definition.ios, ios: error });
+        definition.notify({ eventName: definition.uncaughtErrorEvent, object: <any>definition.ios, ios: error });
     }
 }
