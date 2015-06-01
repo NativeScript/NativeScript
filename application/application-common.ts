@@ -3,6 +3,22 @@ import definition = require("application");
 import fs = require("file-system");
 import fileSystemAccess = require("file-system/file-system-access");
 import styleScope = require("ui/styling/style-scope");
+import observable = require("data/observable");
+
+var events = new observable.Observable();
+require("utils/module-merge").merge(events, exports);
+
+export var launchEvent = "launchEvent";
+
+export var uncaughtErrorEvent = "uncaughtErrorEvent";
+
+export var suspendEvent = "suspendEvent";
+
+export var resumeEvent = "resumeEvent";
+
+export var exitEvent = "exitEvent";
+
+export var lowMemoryEvent = "lowMemoryEvent";
 
 export var cssFile: string = "app.css"
 
