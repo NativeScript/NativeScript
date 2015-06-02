@@ -1,5 +1,14 @@
 Cross Platform Modules Changelog
 ==============================
+1.1.0 (2015, June)
+
+### New
+
+### Fixed
+
+### Breaking changes
+* View and GesturesObserver classes have some breaking changes related to gesture operations. More info within issue [#242](https://github.com/NativeScript/NativeScript/issues/242).
+
 
 1.0.0 (2015, April 29)
 
