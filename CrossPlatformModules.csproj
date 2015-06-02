@@ -86,11 +86,6 @@
     <TypeScriptCompile Include="apps\placeholder-demo\main-page.ios.ts">
       <DependentUpon>main-page.xml</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\TelerikNEXT\app-view-model.ts" />
-    <TypeScriptCompile Include="apps\TelerikNEXT\app.ts" />
-    <TypeScriptCompile Include="apps\TelerikNEXT\everlive-upload.ts" />
-    <TypeScriptCompile Include="apps\TelerikNEXT\session-page.ts" />
-    <TypeScriptCompile Include="apps\TelerikNEXT\main-page.ts" />
     <TypeScriptCompile Include="apps\template-blank\app.ts" />
     <TypeScriptCompile Include="apps\template-blank\main-page.ts">
       <DependentUpon>main-page.xml</DependentUpon>
@@ -450,10 +445,6 @@
     <TypeScriptCompile Include="ui\layouts\wrap-layout\wrap-layout.ts">
       <DependentUpon>wrap-layout.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\TelerikNEXT\TelerikUI\side-bar\side-bar-common.ts" />
-    <TypeScriptCompile Include="apps\TelerikNEXT\TelerikUI\side-bar\side-bar.android.ts" />
-    <TypeScriptCompile Include="apps\TelerikNEXT\TelerikUI\side-bar\side-bar.d.ts" />
-    <TypeScriptCompile Include="apps\TelerikNEXT\TelerikUI\side-bar\side-bar.ios.ts" />
     <TypeScriptCompile Include="ui\styling\css-selector.d.ts" />
     <TypeScriptCompile Include="ui\styling\css-selector.ts" />
     <TypeScriptCompile Include="ui\styling\style-property.d.ts" />
@@ -614,12 +605,9 @@
     </Content>
     <Content Include="apps\gallery-app\layouts\dock-layout.xml" />
     <Content Include="apps\placeholder-demo\main-page.xml" />
-    <Content Include="apps\TelerikNEXT\lib\everlive.js" />
-    <Content Include="apps\TelerikNEXT\session-page.xml" />
     <Content Include="apps\modal-views-demo\main-page.xml" />
     <Content Include="apps\template-master-detail\details-view.xml" />
     <Content Include="apps\template-master-detail\main-page.minWH600.xml" />
-    <Content Include="apps\TelerikNEXT\images\background.jpg" />
     <Content Include="apps\template-settings\app.css" />
     <Content Include="apps\tests\app\location-example.xml" />
     <Content Include="apps\tests\pages\page-load-performance\start.xml">
@@ -757,10 +745,6 @@
     <TypeScriptCompile Include="ui\slider\slider.android.ts">
       <DependentUpon>slider.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <Content Include="apps\TelerikNEXT\images\addfav.png" />
-    <Content Include="apps\TelerikNEXT\images\fav.png" />
-    <Content Include="apps\TelerikNEXT\app.css" />
-    <Content Include="apps\TelerikNEXT\main-page.xml" />
     <Content Include="apps\template-blank\package.json" />
     <TypeScriptCompile Include="apps\tests\camera-tests.ts" />
     <Content Include="apps\tests\app\testPage.xml" />
@@ -1521,7 +1505,6 @@
     </Content>
     <Content Include="CreateNewModule.md" />
     <Content Include="DebugV8Heap.md" />
-    <Content Include="apps\TelerikNEXT\package.json" />
     <Content Include="apps\pickers-demo\package.json" />
     <Content Include="apps\placeholder-demo\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -1534,7 +1517,6 @@
     <Content Include="ui\segmented-bar\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="apps\TelerikNEXT\TelerikUI\side-bar\package.json" />
     <Content Include="ui\time-picker\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
