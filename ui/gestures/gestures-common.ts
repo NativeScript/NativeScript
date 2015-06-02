@@ -28,9 +28,9 @@ export enum SwipeDirection {
     down = 1 << 3
 }
 
-export function observe(target: view.View, type: number, callback: (args: definition.GestureEventData) => void, thisArg?: any): definition.GesturesObserver {
-    var observer = new definition.GesturesObserver(callback);
-    observer.observe(target, type, thisArg);
+export function observe(target: view.View, type: definition.GestureTypes, callback: (args: definition.GestureEventData) => void, thisArg?: any): definition.GesturesObserver {
+    var observer = new definition.GesturesObserver(target, callback, thisArg);
+    observer.observe(type);
     return observer;
 }
 
@@ -88,4 +88,60 @@ export function fromString(type: string): definition.GestureTypes {
     }
 
     return undefined;
+}
+
+export class GesturesObserver implements definition.GesturesObserver {
+    private _callback: (args: definition.GestureEventData) => void;
+    private _target: view.View;
+    private _context: any;
+
+    public type: definition.GestureTypes;
+
+    public get callback(): (args: definition.GestureEventData) => void {
+        return this._callback;
+    }
+
+    public get target(): view.View {
+        return this._target;
+    }
+
+    public get context() {
+        return this._context;
+    }
+
+    constructor(target: view.View, callback: (args: definition.GestureEventData) => void, context: any) {
+        this._target = target;
+        this._callback = callback;
+        this._context = context;
+    }
+
+    public androidOnTouchEvent(motionEvent: android.view.MotionEvent) {
+        //
+    }
+
+    public observe(type: definition.GestureTypes) {
+        //
+    }
+
+    public disconnect() {
+        // remove gesture observer from map
+        if (this.target) {
+            var gestureObserversArray = this.target._gestureObservers.get(this.type);
+            if (gestureObserversArray) {
+                var i;
+                for (i = 0; i < gestureObserversArray.length; i++) {
+                    if (gestureObserversArray[i].callback === this.callback) {
+                        break;
+                    }
+                }
+                gestureObserversArray.splice(i, 1);
+                if (gestureObserversArray.length === 0) {
+                    this.target._gestureObservers.delete(this.type);
+                }
+            }
+        }
+        this._target = null;
+        this._callback = null;
+        this._context = null;
+    }
 }

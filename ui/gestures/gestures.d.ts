@@ -119,14 +119,13 @@ declare module "ui/gestures" {
          * Creates an instance of GesturesObserver class.
          * @param callback - A function that will be executed when a gesture is received.
          */
-        constructor(callback: (args: GestureEventData) => void);
+        constructor(target: view.View, callback: (args: GestureEventData) => void, context: any);
 
         /**
          * Registers a gesture observer to a view and gesture.
-         * @param target - View which will be watched for originating a specific gesture.
          * @param type - Type of the gesture.
          */
-        observe(target: view.View, type: GestureTypes, thisArg?: any);
+        observe(type: GestureTypes);
 
         /**
          * Disconnects the gesture observer.
@@ -137,6 +136,21 @@ declare module "ui/gestures" {
          * Gesture type attached to the observer.
          */
         type: GestureTypes;
+
+        /**
+         * A function that will be executed when a gesture is received.
+         */
+        callback: (args: GestureEventData) => void;
+
+        /**
+         * A context which will be used as `this` in callback execution.
+         */
+        context: any;
+
+        /**
+         * An internal Android specific method used to pass the motion event to the correct gesture observer.
+         */
+        androidOnTouchEvent: (motionEvent: android.view.MotionEvent) => void;
     }
 
     /**

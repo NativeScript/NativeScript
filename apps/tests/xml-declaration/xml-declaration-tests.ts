@@ -187,10 +187,10 @@ export function test_parse_ShouldParseBindingsToGestures() {
     p.bindingContext = context;
     var lbl = <labelModule.Label>p.content;
 
-    var observer = (<any>lbl)._gestureObservers[gesturesModule.GestureTypes.tap][0];
+    var observer = (<view.View>lbl).getGestureObservers(gesturesModule.GestureTypes.tap)[0];
 
     TKUnit.assert(observer !== undefined, "Expected result: true.");
-    TKUnit.assert(observer._context === context, "Context should be equal to binding context. Actual result: " + observer._context);
+    TKUnit.assert(observer.context === context, "Context should be equal to binding context. Actual result: " + observer.context);
 };
 
 export function test_parse_ShouldParseSubProperties() {
