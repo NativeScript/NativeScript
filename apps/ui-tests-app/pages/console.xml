@@ -1,0 +1,10 @@
+﻿<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded">
+  <StackLayout orientation="vertical">
+    <Label text="console.log()" id="label" />
+    <Button text="true" tap="onTapTrue" />
+    <Button text="false" tap="onTapFalse" />
+    <Button text="text" tap="onTapText" />
+    <Button text="null" tap="onTapNull" />
+    <Button text="undefined" tap="onTapUndefined" />
+  </StackLayout>
+</Page>
