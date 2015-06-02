@@ -233,6 +233,7 @@ export class TabView extends common.TabView {
         trace.write("TabView._onVisibilityChanged:" + this.android + " isShown():" + this.android.isShown(), common.traceCategory);
 
         if (this.isLoaded && this.android && this.android.isShown()) {
+            this._setAdapterIfNeeded();
             this._addTabsIfNeeded();
             this._setNativeSelectedIndex(this.selectedIndex);
         }
@@ -275,9 +276,8 @@ export class TabView extends common.TabView {
         if (this.android && this.android.isShown()) {
             // Cover the case when pageCacheOnNavigate is enabled - set adapter in loaded as the TabView is already 
             // attached and _onItemsPropertyChangedSetNativeValue will not be called
-            if (!this._pagerAdapter && this.items) {
-                this._setAdapter(this.items);
-            }
+            this._setAdapterIfNeeded();
+
             this._addTabsIfNeeded();
             this._setNativeSelectedIndex(this.selectedIndex);
         }
@@ -324,6 +324,12 @@ export class TabView extends common.TabView {
         this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
 
         this._listenersSuspended = false;
+    }
+
+    private _setAdapterIfNeeded() {
+        if (!this._pagerAdapter && this.items && this.items.length > 0) {
+            this._setAdapter(this.items);
+        }
     }
 
     private _setAdapter(items) {
