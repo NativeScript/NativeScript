@@ -99,23 +99,22 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
     }
 
     public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
-        if (utils.ios.MajorVersion < 8) {
-            // in iOS 7.1 this method is called before tableViewCellForRowAtIndexPath so we need fake cell to measure its content.
+        var height = undefined;
+        if (utils.ios.MajorVersion >= 8) {
+            height = this._owner.getHeight(indexPath.row);
+        }
+        if (utils.ios.MajorVersion < 8 || height === undefined) {
+            // in iOS 7.1 (or iOS8+ after call to scrollToRowAtIndexPath:atScrollPosition:animated:) this method is called before tableViewCellForRowAtIndexPath so we need fake cell to measure its content.
             var cell = this._measureCell;
             if (!cell) {
                 this._measureCell = tableView.dequeueReusableCellWithIdentifier(CELLIDENTIFIER) || ListViewCell.new();
                 cell = this._measureCell;
             }
 
-            return this._owner._prepareCell(cell, indexPath);
+            height = this._owner._prepareCell(cell, indexPath);
         }
 
-        return this._owner.getHeight(indexPath.row);
-    }
-
-    public tableViewEstimatedHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
-        // TODO: Consider exposing such property on ListView.
-        return DEFAULT_HEIGHT;
+        return height;
     }
 }
 
@@ -148,6 +147,7 @@ export class ListView extends common.ListView {
         this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), CELLIDENTIFIER);
         this._ios.autoresizesSubviews = false;
         this._ios.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
+        this._ios.estimatedRowHeight = DEFAULT_HEIGHT;
 
         var dataSource = DataSource.new().initWithOwner(this);
 
