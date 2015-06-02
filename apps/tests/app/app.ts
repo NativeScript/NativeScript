@@ -2,29 +2,63 @@
 application.mainModule = "app/mainPage";
 
 application.on(application.launchEvent, function (args: application.ApplicationEventData) {
-    console.log("launchEvent, iOS: " + args.ios + ", Android: " + args.android);
-});
-
-application.on(application.uncaughtErrorEvent, function (args: application.ApplicationEventData) {
-    console.log("uncaughtErrorEvent, iOS: " + args.ios + ", Android: " + args.android);
+    if (args.android) {
+        // For Android applications, args.android is an android.content.Intent class.
+        console.log("Launched Android application with the following intent: " + args.android + ".");
+    } else if (args.ios !== undefined) {
+        // For iOS applications, args.ios is NSDictionary (launchOptions).
+        console.log("Launched iOS application with options: " + args.ios);
+    }
 });
 
 application.on(application.suspendEvent, function (args: application.ApplicationEventData) {
-    console.log("suspendEvent, iOS: " + args.ios + ", Android: " + args.android);
-
+    if (args.android) {
+        // For Android applications, args.android is an android activity class.
+        console.log("Activity: " + args.android);
+    } else if (args.ios) {
+        // For iOS applications, args.ios is UIApplication.
+        console.log("UIApplication: " + args.ios);
+    }
 });
 
 application.on(application.resumeEvent, function (args: application.ApplicationEventData) {
-    console.log("resumeEvent, iOS: " + args.ios + ", Android: " + args.android);
+    if (args.android) {
+        // For Android applications, args.android is an android activity class.
+        console.log("Activity: " + args.android);
+    } else if (args.ios) {
+        // For iOS applications, args.ios is UIApplication.
+        console.log("UIApplication: " + args.ios);
+    }
 });
 
 application.on(application.exitEvent, function (args: application.ApplicationEventData) {
-    console.log("exitEvent, iOS: " + args.ios + ", Android: " + args.android);
+    if (args.android) {
+        // For Android applications, args.android is an android activity class.
+        console.log("Activity: " + args.android);
+    } else if (args.ios) {
+        // For iOS applications, args.ios is UIApplication.
+        console.log("UIApplication: " + args.ios);
+    }
 });
 
 application.on(application.lowMemoryEvent, function (args: application.ApplicationEventData) {
-    console.log("exitEvent, iOS: " + args.ios + ", Android: " + args.android);
+    if (args.android) {
+        // For Android applications, args.android is an android activity class.
+        console.log("Activity: " + args.android);
+    } else if (args.ios) {
+        // For iOS applications, args.ios is UIApplication.
+        console.log("UIApplication: " + args.ios);
+    }
+});
 
+application.on(application.uncaughtErrorEvent, function (args: application.ApplicationEventData) {
+    if (args.android) {
+        // For Android applications, args.android is an NativeScriptError.
+        console.log("NativeScriptError: " + args.android);
+    } else if (args.ios) {
+        // For iOS applications, args.ios is NativeScriptError.
+        console.log("NativeScriptError: " + args.ios);
+    }
 });
 
 application.start();
