@@ -38,9 +38,9 @@ class UIGestureRecognizerImpl extends NSObject {
     };
 
     public recognize(recognizer: UIGestureRecognizer): void {
-        var callback = this._callback ? this._callback : this._owner._callback;
+        var callback = this._callback ? this._callback : this._owner.callback;
         var type = this._type;
-        var target = this._owner._target;
+        var target = this._owner.target;
 
         var args = {
             type: type,
@@ -55,40 +55,34 @@ class UIGestureRecognizerImpl extends NSObject {
     }
 }
 
-export class GesturesObserver implements definition.GesturesObserver {
-    public _callback: (args: definition.GestureEventData) => void;
-    public _target: view.View;
-    public type: definition.GestureTypes;
+export class GesturesObserver extends common.GesturesObserver {
     private _recognizers: {};
-    private _context: any;
 
     private _onTargetLoaded: (data: observable.EventData) => void;
     private _onTargetUnloaded: (data: observable.EventData) => void;
 
-    constructor(callback: (args: definition.GestureEventData) => void) {
-        this._callback = callback;
+    constructor(target: view.View, callback: (args: definition.GestureEventData) => void, context: any) {
+        super(target, callback, context);
         this._recognizers = {};
     }
 
-    public observe(target: view.View, type: definition.GestureTypes, thisArg?: any) {
-        if (target) {
+    public observe(type: definition.GestureTypes) {
+        if (this.target) {
             this.type = type;
-            this._target = target;
-            this._context = thisArg;
             this._onTargetLoaded = args => {
-                trace.write(this._target + ".target loaded. _nativeView:" + this._target._nativeView, "gestures");
-                this._attach(target, type);
+                trace.write(this.target + ".target loaded. _nativeView:" + this.target._nativeView, "gestures");
+                this._attach(this.target, type);
             };
             this._onTargetUnloaded = args => {
-                trace.write(this._target + ".target unloaded. _nativeView:" + this._target._nativeView, "gestures");
+                trace.write(this.target + ".target unloaded. _nativeView:" + this.target._nativeView, "gestures");
                 this._dettach();
             };
 
-            target.on(view.View.loadedEvent, this._onTargetLoaded);
-            target.on(view.View.unloadedEvent, this._onTargetUnloaded);
+            this.target.on(view.View.loadedEvent, this._onTargetLoaded);
+            this.target.on(view.View.unloadedEvent, this._onTargetUnloaded);
 
-            if (target.isLoaded) {
-                this._attach(target, type);
+            if (this.target.isLoaded) {
+                this._attach(this.target, type);
             }
         }
     }
@@ -154,12 +148,12 @@ export class GesturesObserver implements definition.GesturesObserver {
     }
 
     private _dettach() {
-        trace.write(this._target + "._dettach() _nativeView:" + this._target._nativeView, "gestures");
-        if (this._target && this._target._nativeView) {
+        trace.write(this.target + "._dettach() _nativeView:" + this.target._nativeView, "gestures");
+        if (this.target && this.target._nativeView) {
             for (var name in this._recognizers) {
                 if (this._recognizers.hasOwnProperty(name)) {
                     var item = <RecognizerCache>this._recognizers[name];
-                    this._target._nativeView.removeGestureRecognizer(item.recognizer);
+                    this.target._nativeView.removeGestureRecognizer(item.recognizer);
 
                     item.recognizer = null;
                     item.target = null;
@@ -172,26 +166,27 @@ export class GesturesObserver implements definition.GesturesObserver {
     public disconnect() {
         this._dettach();
 
-        if (this._target) {
-            this._target.off(view.View.loadedEvent, this._onTargetLoaded);
-            this._target.off(view.View.unloadedEvent, this._onTargetUnloaded);
+        if (this.target) {
+            this.target.off(view.View.loadedEvent, this._onTargetLoaded);
+            this.target.off(view.View.unloadedEvent, this._onTargetUnloaded);
 
             this._onTargetLoaded = null;
             this._onTargetUnloaded = null;
-            this._target = null;
         }
+        // clears target, context and callback references
+        super.disconnect();
     }
 
     private _executeCallback(args: definition.GestureEventData) {
-        if (this._callback) {
-            this._callback.call(this._context, args);
+        if (this.callback) {
+            this.callback.call(this.context, args);
         }
     }
 
     private _createRecognizer(type: definition.GestureTypes, callback?: (args: definition.GestureEventData) => void, swipeDirection?: UISwipeGestureRecognizerDirection): UIGestureRecognizer {
         var recognizer: UIGestureRecognizer;
         var name = definition.toString(type);
-        var target = _createUIGestureRecognizerTarget(this, type, callback, this._context);
+        var target = _createUIGestureRecognizerTarget(this, type, callback, this.context);
         var recognizerType = _getUIGestureRecognizerType(type);
 
         if (recognizerType) {

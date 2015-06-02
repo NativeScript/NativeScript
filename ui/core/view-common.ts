@@ -132,7 +132,16 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     public _cssClasses: Array<string> = [];
 
-    public _gestureObservers = {};
+    public _gestureObservers: Map<number, Array<gestures.GesturesObserver>>;
+
+    public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver> {
+        var result;
+        if (this._gestureObservers) {
+            result = this._gestureObservers.get(type) ? this._gestureObservers.get(type).slice(0) : undefined;
+        }
+        return result;
+    }
+
     private _updatingInheritedProperties: boolean;
 
     public _options: definition.Options;
@@ -147,7 +156,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         this._visualState = visualStateConstants.Normal;
     }
 
-    observe(type: number, callback: (args: gestures.GestureEventData) => void, thisArg?: any): void {
+    observe(type: gestures.GestureTypes, callback: (args: gestures.GestureEventData) => void, thisArg?: any): void {
         var gesturesList = this._getGesturesList(type, true);
         gesturesList.push(gestures.observe(this, type, callback, thisArg));
     }
@@ -157,10 +166,18 @@ export class View extends proxy.ProxyObject implements definition.View {
             throw new Error("GestureType must be a valid gesture!");
         }
 
-        var list = this._gestureObservers[gestureType];
-        if (!list && createIfNeeded) {
-            list = [];
-            this._gestureObservers[gestureType] = list;
+        var list: Array<gestures.GesturesObserver>;
+        if (this._gestureObservers && this._gestureObservers.has(gestureType)) {
+            list = this._gestureObservers.get(gestureType);
+        }
+        else {
+            if (createIfNeeded) {
+                list = [];
+                if (!this._gestureObservers) {
+                    this._gestureObservers = new Map<number, Array<gestures.GesturesObserver>>();
+                }
+                this._gestureObservers.set(gestureType, list);
+            }
         }
         return list;
     }

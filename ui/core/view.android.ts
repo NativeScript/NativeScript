@@ -78,6 +78,15 @@ export class View extends viewCommon.View {
         this._updateOnTouchListener(this.isUserInteractionEnabled);
     }
 
+    observe(type: gestures.GestureTypes, callback: (args: gestures.GestureEventData) => void, thisArg?: any): void {
+        super.observe(type, callback, thisArg);
+        if (this.isLoaded && !this.touchListenerIsSet) {
+            this.setOnTouchListener();
+        }
+    }
+
+    private touchListenerIsSet: boolean;
+
     public onLoaded() {
         super.onLoaded();
         this.setOnTouchListener();
@@ -87,11 +96,17 @@ export class View extends viewCommon.View {
         super.onUnloaded();
         if (this._nativeView && this._nativeView.setOnTouchListener) {
             this._nativeView.setOnTouchListener(null);
+            this.touchListenerIsSet = false;
         }
     }
 
+    private hasGestureObservers() {
+        return this._gestureObservers ? this._gestureObservers.size > 0 : false;
+    }
+
     private setOnTouchListener() {
-        if (this._nativeView && this._nativeView.setOnTouchListener && Object.keys(this._gestureObservers).length > 0) {
+        if (this._nativeView && this._nativeView.setOnTouchListener && this.hasGestureObservers()) {
+            this.touchListenerIsSet = true;
             var that = new WeakRef(this);
             if (this._nativeView.setClickable) {
                 this._nativeView.setClickable(true);
@@ -102,47 +117,15 @@ export class View extends viewCommon.View {
                     if (!owner) {
                         return false;
                     }
+
                     var i;
-                    for (var prop in owner._gestureObservers) {
-                        if (owner._gestureObservers.hasOwnProperty(prop)) {
-                            for (i = 0; i < owner._gestureObservers[prop].length; i++) {
-                                var gestureObserver = owner._gestureObservers[prop][i];
-                                if (gestureObserver._simpleGestureDetector) {
-                                    gestureObserver._simpleGestureDetector.onTouchEvent(motionEvent);
-                                }
-
-                                if (gestureObserver._scaleGestureDetector) {
-                                    gestureObserver._scaleGestureDetector.onTouchEvent(motionEvent);
-                                }
-
-                                if (gestureObserver._swipeGestureDetector) {
-                                    gestureObserver._swipeGestureDetector.onTouchEvent(motionEvent);
-                                }
-
-                                if (gestureObserver._panGestureDetector) {
-                                    gestureObserver._panGestureDetector.onTouchEvent(motionEvent);
-                                }
-
-                                if (gestureObserver.type & gestures.GestureTypes.rotation && motionEvent.getPointerCount() === 2) {
-
-                                    var deltaX = motionEvent.getX(0) - motionEvent.getX(1);
-                                    var deltaY = motionEvent.getY(0) - motionEvent.getY(1);
-                                    var radians = Math.atan(deltaY / deltaX);
-                                    var degrees = radians * (180 / Math.PI);
-
-                                    var args = <gestures.RotationGestureEventData>{
-                                        type: gestures.GestureTypes.rotation,
-                                        view: owner,
-                                        android: motionEvent,
-                                        rotation: degrees,
-                                        ios: null
-                                    }
-
-                                    //var observer = that.get();
-                                    if (gestureObserver.callback) {
-                                        gestureObserver.callback.call(gestureObserver._context, args);
-                                    }
-
+                    for (var gestType in gestures.GestureTypes) {
+                        if (gestures.GestureTypes.hasOwnProperty(gestType)) {
+                            var gestArray = owner.getGestureObservers(gestType);
+                            if (gestArray) {
+                                for (i = 0; i < gestArray.length; i++) {
+                                    var gestObserver = gestArray[i];
+                                    gestObserver.androidOnTouchEvent(motionEvent);
                                 }
                             }
                         }

@@ -355,7 +355,15 @@ declare module "ui/core/view" {
          */
         public focus(): boolean;
 
-        observe(type: number, callback: (args: gestures.GestureEventData) => void, thisArg?: any);
+        public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver>;
+
+        /**
+         * Adds a gesture observer.
+         * @param type - Type of the gesture.
+         * @param callback - A function that will be executed when gesture is received.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution. 
+         */
+        observe(type: gestures.GestureTypes, callback: (args: gestures.GestureEventData) => void, thisArg?: any);
 
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -386,6 +394,7 @@ declare module "ui/core/view" {
 
         // TODO: Implement logic for stripping these lines out
         //@private
+        _gestureObservers: Map<number, Array<gestures.GesturesObserver>>;
         _isInheritedChange(): boolean;
         _domId: number;
         _cssClasses: Array<string>;
