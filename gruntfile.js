@@ -293,6 +293,7 @@ module.exports = function(grunt) {
                 src: localCfg.typeScriptSrc,
                 outDir: localCfg.outModulesDir,
                 options: {
+                    fast: 'never',
                     module: "commonjs",
                     target: "es5",
                     sourceMap: false,
