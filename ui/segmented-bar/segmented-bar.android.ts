@@ -64,9 +64,9 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         view.android.setOnTabChangedListener(null);
         view.android.setOnTabChangedListener(view._listener);
 
-        if (view.selectedBackgroundColor) {
-            var tabHost = <android.widget.TabHost>view.android;
+        var tabHost = <android.widget.TabHost>view.android;
 
+        if (view.selectedBackgroundColor) {
             for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
                 var vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
 
@@ -81,6 +81,12 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
                 vg.setBackgroundDrawable(stateDrawable);
             }
+        }
+
+        for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            var tabChild = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+            var t = <android.widget.TextView>tabChild.getChildAt(1);
+            t.setTextColor(view.color.android);
         }
     }
 }
