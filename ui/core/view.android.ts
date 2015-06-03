@@ -120,8 +120,8 @@ export class View extends viewCommon.View {
 
                     var i;
                     for (var gestType in gestures.GestureTypes) {
-                        if (gestures.GestureTypes.hasOwnProperty(gestType)) {
-                            var gestArray = owner.getGestureObservers(gestType);
+                        if (gestures.GestureTypes.hasOwnProperty(gestType) && typeof gestures.GestureTypes[gestType] === "number") {
+                            var gestArray = owner.getGestureObservers(parseInt(gestures.GestureTypes[gestType]));
                             if (gestArray) {
                                 for (i = 0; i < gestArray.length; i++) {
                                     var gestObserver = gestArray[i];
