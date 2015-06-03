@@ -87,7 +87,10 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         for (tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
             var tabChild = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
             var t = <android.widget.TextView>tabChild.getChildAt(1);
-            t.setTextColor(view.color.android);
+
+            if (view.color) {
+                t.setTextColor(view.color.android);
+            }
         }
     }
 }
