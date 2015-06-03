@@ -20,5 +20,6 @@ bin/
 obj/
 .vs/
 
+.baseDir.ts
 .ctags-exclude
 tags
