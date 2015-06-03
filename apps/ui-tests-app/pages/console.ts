@@ -1,11 +1,11 @@
 ﻿export function pageLoaded() {
-    console.log("### TEST START ###.");
+    console.log("### TEST START ###");
     onTapTrue();
     onTapFalse();
     onTapText();
     onTapNull();
     onTapUndefined();
-    console.log("### TEST END ###.");
+    console.log("### TEST END ###");
 }
 
 export function onTapTrue() {
