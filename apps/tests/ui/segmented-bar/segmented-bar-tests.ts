@@ -2,6 +2,9 @@
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import segmentedBarTestsNative = require("./segmented-bar-tests-native");
+import bindable = require("ui/core/bindable");
+import observable = require("data/observable");
+import color = require("color");
 
 // <snippet module="ui/segmented-bar" title="SegmentedBar">
 // # SegmentedBar
@@ -54,6 +57,24 @@ export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeItemsIsCreate
         var expectedValue = segmentedBar.items.length;
         var actualValue = segmentedBarTestsNative.getNativeItemsCount(segmentedBar);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testWhenItemsAreBoundTheTextColorIsPreserved = function () {
+    helper.buildUIAndRunTest(_createSegmentedBar(), function (views: Array<viewModule.View>) {
+        var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+        segmentedBar.color = new color.Color("red");
+
+        var model = new observable.Observable();
+        model.set("items", [{ title: "One" }, { title: "Two" }, { title: "Three" }]);
+        var options: bindable.BindingOptions = {
+            sourceProperty: "items",
+            targetProperty: "items"
+        }
+
+        segmentedBar.bind(options, model);
+
+        TKUnit.assert(segmentedBarTestsNative.checkNativeItemsTextColor(segmentedBar), "Items text color not preserved" + "; Expected: " + segmentedBar.color);
     });
 }
 
