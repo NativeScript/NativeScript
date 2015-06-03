@@ -65,9 +65,10 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         view.android.setOnTabChangedListener(view._listener);
 
         var tabHost = <android.widget.TabHost>view.android;
+        var tabIndex: number;
 
         if (view.selectedBackgroundColor) {
-            for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            for (tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
                 var vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
 
                 var stateDrawable = new android.graphics.drawable.StateListDrawable();
@@ -83,7 +84,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
             }
         }
 
-        for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+        for (tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
             var tabChild = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
             var t = <android.widget.TextView>tabChild.getChildAt(1);
             t.setTextColor(view.color.android);
