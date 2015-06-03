@@ -4,7 +4,6 @@
 .sublime-grunt.cache
 tscommand*.tmp.txt
 .tscache
-*.js
 
 node_modules/
 dist/
@@ -20,3 +19,6 @@ CrossPlatformModules.csproj.user
 bin/
 obj/
 .vs/
+
+.ctags-exclude
+tags
