@@ -1,5 +1,4 @@
 ﻿import segmentedBarModule = require("ui/segmented-bar");
-import color = require("color");
 
 export function getNativeItemsCount(bar: segmentedBarModule.SegmentedBar): number {
     return (<android.widget.TabHost>bar.android).getTabWidget().getTabCount();
