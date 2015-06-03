@@ -142,6 +142,12 @@ module.exports = function(grunt) {
         ]
     };
 
+    var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
+    nodeTestEnv['NODE_PATH'] = localCfg.outModulesDir;
+
+    localCfg.nodeTestsDir = pathModule.join(localCfg.outModulesDir, 'node-tests');
+
+
     localCfg.mainPackageContent = grunt.file.readJSON(localCfg.packageJsonFilePath);
     localCfg.packageVersion = getPackageVersion(localCfg.packageJsonFilePath);
     localCfg.commitSHA = getCommitSha();
@@ -179,6 +185,9 @@ module.exports = function(grunt) {
                     "./**/*.map"
                 ],
                 cwd: localCfg.outModulesDir
+            },
+            nodeTests: {
+                src: localCfg.nodeTestsDir,
             },
             readyAppFiles: {
                 src: [localCfg.outModulesDir + "/apps/**"]
@@ -302,6 +311,24 @@ module.exports = function(grunt) {
                     compiler: "node_modules/typescript/bin/tsc",
                     noEmitOnError: true
                 }
+            },
+            buildNodeTests: {
+                src: [
+                    'js-libs/easysax/**/*.ts',
+                    'xml/**/*.ts',
+                    'node-tests/**/*.ts',
+                ],
+                outDir: localCfg.outModulesDir,
+                options: {
+                    fast: 'never',
+                    module: "commonjs",
+                    target: "es5",
+                    sourceMap: false,
+                    declaration: false,
+                    removeComments: "<%= !grunt.option('leavecomments') || '' %>",
+                    compiler: "node_modules/typescript/bin/tsc",
+                    noEmitOnError: true
+                }
             }
         },
         tslint: {
@@ -348,6 +375,11 @@ module.exports = function(grunt) {
                 options: {
                     callback: assignGitSHA
                 }
+            },
+        },
+        simplemocha: {
+            node: {
+                src: localCfg.nodeTestsDir + '/**/*.js'
             }
         }
     });
@@ -359,6 +391,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-tslint");
     grunt.loadNpmTasks("grunt-multi-dest");
     grunt.loadNpmTasks("grunt-shell");
+    grunt.loadNpmTasks("grunt-simple-mocha");
 
     var cloneTasks = function(originalTasks, taskNameSuffix)
     {
@@ -487,4 +520,10 @@ module.exports = function(grunt) {
         "pack-definitions",
         "get-ready-packages"
     ]));
+
+    grunt.registerTask("node-tests", [
+        "clean:nodeTests",
+        "ts:buildNodeTests",
+        "simplemocha:node",
+    ]);
 };

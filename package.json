@@ -8,7 +8,8 @@
   },
   "files": [
     "**/*.*",
-    "**/*"
+    "**/*",
+    "!node-tests/"
   ],
   "license": "Apache-2.0",
   "devDependencies": {
@@ -20,6 +21,9 @@
     "grunt-shell": "1.1.2",
     "grunt-ts": "4.0.1",
     "grunt-tslint": "0.4.2",
+    "mocha": "2.2.5",
+    "grunt-simple-mocha": "0.4.0",
+    "chai": "2.3.0",
     "typescript": "1.5.0-beta"
   }
 }
