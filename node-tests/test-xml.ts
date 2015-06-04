@@ -1,24 +1,31 @@
 import {assert} from "chai";
-import {XmlParser, ParserEvent, ParserEventType} from 'xml';
-//import xml = require('xml');
+import xml = require('xml');
 
 describe("xml parser", () => {
-    it("parses simple element", () => {
-        let attributes = null;
-        let element = null;
+    let last_element = null;
+    let last_attrs = null;
+    let parser = null;
 
-        var parser = new XmlParser(function (event: ParserEvent) {
+    beforeEach(() => {
+        parser = new xml.XmlParser(function (event: xml.ParserEvent) {
             switch (event.eventType) {
-                case ParserEventType.StartElement:
-                    element = event.elementName;
-                    attributes = event.attributes;
+                case xml.ParserEventType.StartElement:
+                    last_element = event.elementName;
+                    last_attrs = event.attributes;
                     break;
             }
         });
-
-        parser.parse("<TextField text='hello' />");
-
-        assert.equal('TextField', element);
-        assert.equal('hello', attributes['text']);
     });
+
+
+    it("handles whitespace around attribute =", () => {
+        let attributes = null;
+        let element = null;
+
+        parser.parse("<TextField text = \n 'hello' />");
+
+        assert.equal('TextField', last_element);
+        assert.equal('hello', last_attrs['text']);
+    });
+
 });

@@ -263,6 +263,10 @@ function EasySAXParser() {
 					continue;
 				};
 
+                if (w===32 || (w > 8 && w<14) ) {  // \f\n\r\t\v пробел
+                    continue;
+                };
+
 
 				if (w !== 61) { // "=" == 61
 					//console.log('error 2');
@@ -272,7 +276,7 @@ function EasySAXParser() {
 				break;
 			};
 
-			name = s.substring(i, j);
+			name = s.substring(i, j).trim();
 			ok = true;
 
 			if (name === 'xmlns:xmlns') {
@@ -281,6 +285,14 @@ function EasySAXParser() {
 			};
 
 			w = s.charCodeAt(j+1);
+
+            while (w = s.charCodeAt(j+1)) {
+                if (w===32 || (w > 8 && w<14) ) {  // \f\n\r\t\v пробел
+                    j++;
+                } else {
+                    break;
+                }
+            }
 
 			if (w === 34) {  // '"'
 				j = s.indexOf('"', i = j+2 );
