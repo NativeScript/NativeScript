@@ -353,6 +353,9 @@ module.exports = function(grunt) {
             packApp: {
                 cmd: "npm pack",
                 cwd: "__dummy__"
+            },
+            mochaNode: {
+                cmd: "grunt simplemocha:node"
             }
         },
         multidest: {
@@ -381,6 +384,11 @@ module.exports = function(grunt) {
             node: {
                 src: localCfg.nodeTestsDir + '/**/*.js'
             }
+        },
+        env: {
+            nodeTests: {
+                NODE_PATH: localCfg.outModulesDir,
+            }
         }
     });
 
@@ -391,6 +399,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-tslint");
     grunt.loadNpmTasks("grunt-multi-dest");
     grunt.loadNpmTasks("grunt-shell");
+    grunt.loadNpmTasks("grunt-env");
     grunt.loadNpmTasks("grunt-simple-mocha");
 
     var cloneTasks = function(originalTasks, taskNameSuffix)
@@ -521,9 +530,18 @@ module.exports = function(grunt) {
         "get-ready-packages"
     ]));
 
+    grunt.registerTask("testEnv", function() {
+        console.log('fafla', process.env.NODE_PATH);
+        //var x = require('xml')
+        //console.log(x);
+    });
+
     grunt.registerTask("node-tests", [
         "clean:nodeTests",
         "ts:buildNodeTests",
-        "simplemocha:node",
+        "copy:childPackageFiles",
+        "copy:jsLibs",
+        "env:nodeTests",
+        "exec:mochaNode", //spawn a new process to use the new NODE_PATH
     ]);
 };
