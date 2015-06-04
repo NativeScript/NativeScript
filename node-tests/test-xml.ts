@@ -27,5 +27,4 @@ describe("xml parser", () => {
         assert.equal('TextField', last_element);
         assert.equal('hello', last_attrs['text']);
     });
-
 });

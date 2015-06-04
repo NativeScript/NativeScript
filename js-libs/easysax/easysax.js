@@ -251,8 +251,8 @@ function EasySAXParser() {
 				continue
 			};
 
-			if (w < 65 || w >122 || (w>90 && w<97) ) { // ожидаем символ
-				//console.log('error attr 1')
+			if ((w < 65 && w !== 40 && w !== 41) || // allow parens () -- used for angular syntax
+                    w > 122 || (w === 92 || (w > 93 && w < 97)) ) { // ожидаем символ
 				return attr_res = false; // error. invalid char
 			};
 
@@ -263,9 +263,13 @@ function EasySAXParser() {
 					continue;
 				};
 
-                if (w===32 || (w > 8 && w<14) ) {  // \f\n\r\t\v пробел
+                if (w === 32 || (w > 8 && w < 14) ) {  // \f\n\r\t\v пробел
                     continue;
                 };
+
+                if (w === 91 || w === 93 || w === 40 || w === 41 || w === 94) { // Angular special attribute chars:[]()^
+                    continue;
+                }
 
 
 				if (w !== 61) { // "=" == 61
