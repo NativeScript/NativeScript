@@ -15,6 +15,7 @@ describe("angular xml parser", () => {
                     break;
             }
         });
+        parser.angularSyntax = true;
     });
 
     it("parses [property] binding", () => {
@@ -53,7 +54,6 @@ describe("angular xml parser", () => {
         assert.equal(last_attrs['text'], 'Name');
     });
 
-    return
     it("detects equals without value", () => {
         parser.parse("<TextField brokenTag= />");
 
@@ -68,6 +68,13 @@ describe("angular xml parser", () => {
 
     it("detects unclosed tag after no value attribute", () => {
         parser.parse("<TextField #myId");
+
+        assert.isFalse(last_attrs);
+    });
+
+    it("rejects angular properties if syntax disabled", () => {
+        parser.angularSyntax = false;
+        parser.parse("<TextField [text]='somevalue' />");
 
         assert.isFalse(last_attrs);
     });
