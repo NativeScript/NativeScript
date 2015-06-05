@@ -4,6 +4,7 @@ import xml = require('xml');
 describe("xml parser", () => {
     let last_element = null;
     let last_attrs = null;
+    let last_data = null;
     let parser = null;
 
     beforeEach(() => {
@@ -12,6 +13,9 @@ describe("xml parser", () => {
                 case xml.ParserEventType.StartElement:
                     last_element = event.elementName;
                     last_attrs = event.attributes;
+                    break;
+                case xml.ParserEventType.Text:
+                    last_data = event.data;
                     break;
             }
         });
@@ -25,5 +29,10 @@ describe("xml parser", () => {
 
         assert.equal('TextField', last_element);
         assert.equal('hello', last_attrs['text']);
+    });
+    
+    it("resolves entities", () => {
+        parser.parse("<element>&lt;&gt;&quot;&amp;&apos;</element>");
+        assert.equal("<>\"&'", last_data);
     });
 });

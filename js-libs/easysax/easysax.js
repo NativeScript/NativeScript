@@ -105,7 +105,7 @@ EasySAXParser.prototype.on = function(name, cb) {
         case 'error': this.onError = cb || nullFunc; break;
         case 'startNode': this.onStartNode = cb || nullFunc; break;
         case 'endNode': this.onEndNode = cb || nullFunc; break;
-        case 'textNode': onTextNode = cb || nullFunc; break;
+        case 'textNode': this.onTextNode = cb || nullFunc; break;
         case 'cdata': this.onCDATA = cb || nullFunc; break;
 
         case 'comment': this.onComment = cb; this.is_onComment = !!cb; break;
