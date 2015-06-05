@@ -2,6 +2,7 @@
 import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import utils = require("utils/utils");
+import color = require("color");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -17,35 +18,50 @@ function onBorderPropertyChanged(data: dependencyObservable.PropertyChangeData) 
 (<proxy.PropertyMetadata>borderCommon.Border.borderColorProperty.metadata).onSetNativeValue = onBorderPropertyChanged;
 
 export class Border extends borderCommon.Border {
-    public _updateAndroidBorder() {
+    public _updateAndroidBorder(bmp?: android.graphics.Bitmap) {
         if (!this._nativeView) {
             return;
         }
 
-        var nativeView = <android.view.ViewGroup>this._nativeView;
-
-        var backgroundDrawable = nativeView.getBackground();
-        if (!(backgroundDrawable instanceof android.graphics.drawable.GradientDrawable)) {
-            backgroundDrawable = new android.graphics.drawable.GradientDrawable();
-            nativeView.setBackgroundDrawable(backgroundDrawable);
-        }
-
-        var gd = <android.graphics.drawable.GradientDrawable>backgroundDrawable;
-        var density = utils.layout.getDisplayDensity();
-        gd.setCornerRadius(this.cornerRadius * density);
-
-        if (this.borderColor) {
-            gd.setStroke(this.borderWidth * density, this.borderColor.android);
-        }
-        else {
-            gd.setStroke(this.borderWidth * density, android.graphics.Color.TRANSPARENT);
-        }
-
-        if (this.backgroundColor) {
-            gd.setColor(this.backgroundColor.android);
-        }
-        else {
-            gd.setColor(android.graphics.Color.TRANSPARENT);
-        }
+        (<android.view.ViewGroup>this._nativeView).setBackgroundDrawable(new BorderGradientDrawable(this.borderWidth,
+            this.borderColor ? this.borderColor.android : android.graphics.Color.TRANSPARENT,
+            this.backgroundColor ? this.backgroundColor.android : android.graphics.Color.TRANSPARENT,
+            this.cornerRadius,
+            bmp));
     }
-} 
+}
+
+class BorderGradientDrawable extends android.graphics.drawable.GradientDrawable {
+    private paint: android.graphics.Paint;
+    private stroke: number;
+    private bitmap: android.graphics.Bitmap
+
+    constructor(borderWidth: number, borderColor: number, backgroundColor: number, cornerRadius: number, bitmap?: android.graphics.Bitmap) {
+        super();
+
+        this.bitmap = bitmap;
+
+        if (bitmap) {
+            this.paint = new android.graphics.Paint();
+        } else {
+            this.setColor(backgroundColor);
+        }
+
+        var density = utils.layout.getDisplayDensity();
+
+        this.stroke = borderWidth * density;
+        this.setStroke(this.stroke, borderColor);
+
+        var cornerRadius = borderWidth * density;
+        this.setCornerRadius(cornerRadius);
+
+        return global.__native(this);
+    }
+
+    public draw(canvas: android.graphics.Canvas): void {
+        if (this.paint) {
+            canvas.drawBitmap(this.bitmap, this.stroke, this.stroke, this.paint);
+        }
+        super.draw(canvas);
+    }
+}
