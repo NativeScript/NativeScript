@@ -2,7 +2,6 @@
 import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import utils = require("utils/utils");
-import color = require("color");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -52,8 +51,7 @@ class BorderGradientDrawable extends android.graphics.drawable.GradientDrawable 
         this.stroke = borderWidth * density;
         this.setStroke(this.stroke, borderColor);
 
-        var cornerRadius = borderWidth * density;
-        this.setCornerRadius(cornerRadius);
+        this.setCornerRadius(cornerRadius * density);
 
         return global.__native(this);
     }
