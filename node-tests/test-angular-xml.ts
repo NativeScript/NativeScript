@@ -31,10 +31,44 @@ describe("angular xml parser", () => {
         assert.equal(last_attrs['(tap)'], 'onTap(blah)');
     });
 
-    it("parsers (^event) binding", () => {
+    it("parses (^event) binding", () => {
         parser.parse("<TextField (^tap)='onTap(blah)' />");
 
         assert.equal('TextField', last_element);
         assert.equal(last_attrs['(^tap)'], 'onTap(blah)');
+    });
+
+    it("parses #id attribute", () => {
+        parser.parse("<TextField #firstName />");
+
+        assert.equal('TextField', last_element);
+        assert.equal(last_attrs['#firstName'], '');
+    });
+
+    it("parses #id attribute followed by another", () => {
+        parser.parse("<TextField #firstName text='Name' />");
+
+        assert.equal('TextField', last_element);
+        assert.equal(last_attrs['#firstName'], '');
+        assert.equal(last_attrs['text'], 'Name');
+    });
+
+    return
+    it("detects equals without value", () => {
+        parser.parse("<TextField brokenTag= />");
+
+        assert.isFalse(last_attrs);
+    });
+
+    it("detects no equals with quoted value", () => {
+        parser.parse("<TextField noEquals 'value' />");
+
+        assert.isFalse(last_attrs);
+    });
+
+    it("detects unclosed tag after no value attribute", () => {
+        parser.parse("<TextField #myId");
+
+        assert.isFalse(last_attrs);
     });
 });

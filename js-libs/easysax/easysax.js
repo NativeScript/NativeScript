@@ -237,11 +237,11 @@ function EasySAXParser() {
 		, attr_list = hasSurmiseNS ? [] : false
 		, name, value = ''
 		, ok = false
+        , noValueAttribute = false
 		, j, w, nn, n
 		, hasNewMatrix
 		, alias, newalias
 		; 
-
 
 		aa: 
 		for(; i < l; i++) {
@@ -251,7 +251,7 @@ function EasySAXParser() {
 				continue
 			};
 
-			if ((w < 65 && w !== 40 && w !== 41) || // allow parens () -- used for angular syntax
+			if ((w < 65 && w !== 40 && w !== 41 && w !== 35) || // allow parens () -- used for angular syntax
                     w > 122 || (w === 92 || (w > 93 && w < 97)) ) { // ожидаем символ
 				return attr_res = false; // error. invalid char
 			};
@@ -260,21 +260,28 @@ function EasySAXParser() {
 				w = s.charCodeAt(j);
 
 				if (w > 96 && w < 123 || w > 64 && w < 91 || w > 47 && w < 59 || w === 45 || w === 95 || w === 46 /* https://github.com/telerik/xPlatCore/issues/179 */) {
-					continue;
+                    if (noValueAttribute) {
+                        j--; //Started next attribute. Get back and break out of the loop.
+                        break;
+                    } else {
+                        continue;
+                    }
 				};
 
-                if (w === 32 || (w > 8 && w < 14) ) {  // \f\n\r\t\v пробел
-                    continue;
-                };
-
-                if (w === 91 || w === 93 || w === 40 || w === 41 || w === 94) { // Angular special attribute chars:[]()^
+                if (w === 91 || w === 93 || w === 40 || w === 41 || w === 94 || w === 35) { // Angular special attribute chars:[]()^
                     continue;
                 }
 
-
-				if (w !== 61) { // "=" == 61
+                if (w === 32 || (w > 8 && w < 14) ) {  // \f\n\r\t\v пробел
+                    noValueAttribute = true;
+                    continue;
+                } else if (w === 61) { // "=" == 61
+                    noValueAttribute = false;
+                    break;
+                } else {
 					//console.log('error 2');
-					return attr_res = false; // error. invalid char
+                    if (!noValueAttribute)
+                        return attr_res = false; // error. invalid char
 				};
 
 				break;
@@ -298,18 +305,19 @@ function EasySAXParser() {
                 }
             }
 
-			if (w === 34) {  // '"'
-				j = s.indexOf('"', i = j+2 );
+            if (!noValueAttribute) {
+                if (w === 34) {  // '"'
+                    j = s.indexOf('"', i = j+2 );
 
-			} else {
-				if (w === 39) {
-					j = s.indexOf('\'', i = j+2 );
+                } else {
+                    if (w === 39) {
+                        j = s.indexOf('\'', i = j+2 );
 
-				} else {  // "'"
-					//console.log('error 3')
-					return attr_res = false; // error. invalid char
-				};
-			};
+                    } else {  // "'"
+                        return attr_res = false; // error. invalid char
+                    };
+                };
+            }
 
 			if (j === -1) {
 				//console.log('error 4')
@@ -317,10 +325,10 @@ function EasySAXParser() {
 			};
 
 
-			if (j+1 < l) {
+			if (j+1 < l && !noValueAttribute) {
 				w = s.charCodeAt(j+1);
 
-				if (w > 32 || w < 9 || (w<32 && w>13)) {
+				if (w > 32 || w < 9 || (w < 32 && w > 13)) {
 					// error. invalid char
 					//console.log('error 5')
 					return attr_res = false;
@@ -328,8 +336,14 @@ function EasySAXParser() {
 			};
 
 
-			value = s.substring(i, j);
-			i = j + 1; // след. семвол уже проверен потому проверять нужно следуюший
+            if (noValueAttribute) {
+                value = '';
+            } else {
+                value = s.substring(i, j);
+            }
+
+            //i = j + 1; // след. семвол уже проверен потому проверять нужно следуюший
+            i = j; // след. семвол уже проверен потому проверять нужно следуюший
 
 			if (isNamespace) { // 
 				if (hasSurmiseNS) {
@@ -382,6 +396,7 @@ function EasySAXParser() {
 			};
 
 			res[name] = value;
+            noValueAttribute = false;
 		};
 
 
