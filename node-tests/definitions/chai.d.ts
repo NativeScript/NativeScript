@@ -1,3 +1,4 @@
+/* tslint:disable */
 
 // Type definitions for chai 1.7.2
 // Project: http://chaijs.com/

@@ -17,7 +17,6 @@ describe("xml parser", () => {
         });
     });
 
-
     it("handles whitespace around attribute =", () => {
         let attributes = null;
         let element = null;
