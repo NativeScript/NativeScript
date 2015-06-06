@@ -132,9 +132,19 @@
         public removeColumn(itemSpec: ItemSpec): void;
 
         /**
+         * Removes all columns specification from a GridLayout.
+         */
+        removeColumns(): void;
+
+        /**
          * Removes a row specification from a GridLayout.
          */
         public removeRow(itemSpec: ItemSpec): void;
+
+        /**
+         * Removes all rows specification from a GridLayout.
+         */
+        removeRows(): void;
 
         /**
          * Gets array of column specifications defined on this instance of GridLayout. 
