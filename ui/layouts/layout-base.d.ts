@@ -46,6 +46,11 @@
         removeChild(view: view.View);
 
         /**
+         * Removes all views in this layout.
+         */
+        removeChildren();
+
+        /**
          * Gets or sets padding style property.
          */
         padding: string;
