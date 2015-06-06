@@ -46,6 +46,12 @@ export class Layout extends view.CustomLayoutView implements definition.Layout, 
         this._subViews.splice(index, 1);
     }
 
+    public removeChildren() {
+        while (this.getChildrenCount() != 0) {
+            this.removeChild(this._subViews[this.getChildrenCount() - 1]);
+        }
+    }
+
     public _eachChildView(callback: (child: view.View) => boolean) {
         var i;
         var length = this._subViews.length;
