@@ -189,14 +189,14 @@ export class GridLayout extends layouts.Layout implements definition.GridLayout,
         this._singleColumn.index = 0;
     }
 
-    public addRow(itemSpec: ItemSpec) {
+    public addRow(itemSpec: ItemSpec): void {
         GridLayout.validateItemSpec(itemSpec);
         itemSpec.owner = this;
         this._rows.push(itemSpec);
         this.invalidate();
     }
 
-    public addColumn(itemSpec: ItemSpec) {
+    public addColumn(itemSpec: ItemSpec): void {
         GridLayout.validateItemSpec(itemSpec);
         itemSpec.owner = this;
         this._cols.push(itemSpec);
@@ -218,7 +218,7 @@ export class GridLayout extends layouts.Layout implements definition.GridLayout,
         this.invalidate();
     }
 
-    public removeColumns() {
+    public removeColumns(): void {
         for (var i = 0; i < this._cols.length; i++){
             this._cols[i].index = -1;
         }
@@ -241,7 +241,7 @@ export class GridLayout extends layouts.Layout implements definition.GridLayout,
         this.invalidate();
     }
 
-    public removeRows() {
+    public removeRows(): void {
         for (var i = 0; i < this._rows.length; i++) {
             this._rows[i].index = -1;
         }
