@@ -12,7 +12,7 @@ export class GridLayout extends common.GridLayout {
 
     protected onRowAdded(itemSpec: common.ItemSpec) {
         this.invalidate();
-        }
+    }
 
     protected onColumnAdded(itemSpec: common.ItemSpec) {
         this.invalidate();

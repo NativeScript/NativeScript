@@ -119,12 +119,12 @@
         /**
          * Adds a column specification to a GridLayout.
          */
-        public addColumn(itemSpec: ItemSpec);
+        public addColumn(itemSpec: ItemSpec): void;
 
         /**
          * Adds a row specification to a GridLayout.
          */
-        public addRow(itemSpec: ItemSpec);
+        public addRow(itemSpec: ItemSpec): void;
 
         /**
          * Removes a column specification from a GridLayout.
@@ -134,7 +134,7 @@
         /**
          * Removes all columns specification from a GridLayout.
          */
-        removeColumns(): void;
+        public removeColumns(): void;
 
         /**
          * Removes a row specification from a GridLayout.
@@ -144,7 +144,7 @@
         /**
          * Removes all rows specification from a GridLayout.
          */
-        removeRows(): void;
+        public removeRows(): void;
 
         /**
          * Gets array of column specifications defined on this instance of GridLayout. 
