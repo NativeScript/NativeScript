@@ -32,13 +32,13 @@ export class Layout extends view.CustomLayoutView implements definition.Layout, 
         return view.getViewById(this, id);
     }
 
-    public addChild(child: view.View) {
+    public addChild(child: view.View): void {
         // TODO: Do we need this method since we have the core logic in the View implementation?
         this._addView(child);
         this._subViews.push(child);
     }
 
-    public removeChild(child: view.View) {
+    public removeChild(child: view.View): void {
         this._removeView(child);
 
         // TODO: consider caching the index on the child.
@@ -46,7 +46,7 @@ export class Layout extends view.CustomLayoutView implements definition.Layout, 
         this._subViews.splice(index, 1);
     }
 
-    public removeChildren() {
+    public removeChildren(): void {
         while (this.getChildrenCount() != 0) {
             this.removeChild(this._subViews[this.getChildrenCount() - 1]);
         }
