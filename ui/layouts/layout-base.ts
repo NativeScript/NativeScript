@@ -57,7 +57,7 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
     }
 
     public removeChildren(): void {
-        while (this.getChildrenCount() != 0) {
+        while (this.getChildrenCount() !== 0) {
             this.removeChild(this._subViews[this.getChildrenCount() - 1]);
         }
     }
