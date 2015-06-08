@@ -261,7 +261,7 @@ export class Binding {
             else {
                 this.updateTarget(expressionValue);
             }
-        } else if (data.propertyName === this.options.sourceProperty) {
+        } else if (data.propertyName === this.sourceOptions.property) {
             this.updateTarget(data.value);
         }
     }
