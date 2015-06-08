@@ -542,3 +542,35 @@ export function test_BindingToDictionaryAtAppLevel() {
 
     helper.buildUIAndRunTest(createLabel(), testFunc);
 }
+
+export function test_UpdatingNestedPropertyViaBinding() {
+    var expectedValue1 = "Alabala";
+    var expectedValue2 = "Tralala";
+    var viewModel = new observable.Observable();
+    var parentViewModel = new observable.Observable();
+    viewModel.set("parentView", parentViewModel);
+    parentViewModel.set("name", expectedValue1);
+
+    var testElement: bindable.Bindable = new bindable.Bindable();
+
+    testElement.bind({
+        sourceProperty: "parentView.name",
+        targetProperty: "targetName",
+        twoWay: true
+    }, viewModel);
+
+    var testElement2: bindable.Bindable = new bindable.Bindable();
+
+    testElement2.bind({
+        sourceProperty: "parentView.name",
+        targetProperty: "targetProperty",
+        twoWay: true
+    }, viewModel);
+
+    TKUnit.assertEqual(testElement.get("targetName"), expectedValue1);
+
+    testElement.set("targetName", expectedValue2);
+
+    TKUnit.assertEqual(parentViewModel.get("name"), expectedValue2);
+    TKUnit.assertEqual(testElement2.get("targetProperty"), expectedValue2);
+}
