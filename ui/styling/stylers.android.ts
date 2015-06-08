@@ -356,40 +356,35 @@ export class BorderStyler implements definition.stylers.Styler {
         border._updateAndroidBorder();
     }
 
+    private static getNativeBackgroundValue(view: view.View): any {
+        return view.android.getBackground();
+    }
+
     //Background image methods
     private static setBackgroundImageSourceProperty(view: view.View, newValue: any) {
         var border = <border.Border>view;
-        border._updateAndroidBorder(newValue);
+        border._updateAndroidBorder();
     }
 
     private static resetBackgroundImageSourceProperty(view: view.View, nativeValue: any) {
         var border = <border.Border>view;
-        if (types.isDefined(nativeValue)) {
-            (<android.view.View>view.android).setBackgroundDrawable(nativeValue);
-            border._updateAndroidBorder();
-        }
+        border._updateAndroidBorder();
     }
 
     private static getNativeBackgroundImageSourceValue(view: view.View): any {
-        var drawable = view.android.getBackground();
-
-        if (drawable instanceof android.graphics.drawable.GradientDrawable) {
-            return drawable;
-        }
-
-        return undefined;
+        return view.android.getBackground();
     }
 
     public static registerHandlers() {
         style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             BorderStyler.setBackgroundProperty,
-            BorderStyler.resetBackgroundProperty), "Border");
+            BorderStyler.resetBackgroundProperty,
+            BorderStyler.getNativeBackgroundValue), "Border");
 
         style.registerHandler(style.backgroundImageSourceProperty, new stylersCommon.StylePropertyChangedHandler(
             BorderStyler.setBackgroundImageSourceProperty,
             BorderStyler.resetBackgroundImageSourceProperty,
             BorderStyler.getNativeBackgroundImageSourceValue), "Border");
-
     }
 }
 

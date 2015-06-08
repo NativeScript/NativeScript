@@ -1,34 +1,31 @@
 ﻿import borderModule = require("ui/border");
-import utils = require("utils/utils");
-
-var density = utils.layout.getDisplayDensity();
 
 export function getNativeBorderWidth(border: borderModule.Border): number {
-    var bkg = <any>(<android.view.ViewGroup>border.android).getBackground();
+    var bkg = <any>(<android.view.View>border.android).getBackground();
 
-    return bkg && bkg.getStroke ? bkg.getStroke() / density : -1;
+    return bkg ? bkg.borderWidth : -1;
 }
 
 export function getNativeCornerRadius(border: borderModule.Border): number {
-    var bkg = <any>(<android.view.ViewGroup>border.android).getBackground();
+    var bkg = <any>(<android.view.View>border.android).getBackground();
 
-    return bkg && bkg.getCornerRadius ? bkg.getCornerRadius() / density : -1;
+    return bkg ? bkg.cornerRadius : -1;
 }
 
 export function checkNativeBorderColor(border: borderModule.Border): boolean {
-    var bkg = <any>(<android.view.ViewGroup>border.android).getBackground();
+    var bkg = <any>(<android.view.View>border.android).getBackground();
 
-    return border.borderColor && bkg && bkg.getBorderColor && bkg.getBorderColor() === border.borderColor.android;
+    return border.borderColor && bkg && bkg.borderColor === border.borderColor.android;
 }
 
 export function checkNativeBackgroundColor(border: borderModule.Border): boolean {
-    var bkg = <any>(<android.view.ViewGroup>border.android).getBackground();
+    var bkg = <any>(<android.view.View>border.android).getBackground();
 
-    return border.backgroundColor && bkg && bkg.getBackgroundColor && bkg.getBackgroundColor() === border.backgroundColor.android;
+    return border.backgroundColor && bkg && bkg.backgroundColor === border.backgroundColor.android;
 }
 
 export function checkNativeBackgroundImage(border: borderModule.Border): boolean {
-    var bkg = <any>(<android.view.ViewGroup>border.android).getBackground();
+    var bkg = <any>(<android.view.View>border.android).getBackground();
 
-    return bkg && bkg.getBitmap && bkg.getBitmap() !== undefined;
+    return bkg && bkg.bitmap !== undefined;
 }
