@@ -80,7 +80,7 @@ export var testBackgroundImage = function () {
 
     helper.buildUIAndRunTest(border, function (views: Array<viewModule.View>) {
         var page = <pageModule.Page>views[1];
-        page.css = "Border { background-image: url('http://www.google.com/images/errors/logo_sm_2.png') }";
+        page.css = "Border { background-image: url('~/logo.png') }";
 
         TKUnit.assert(borderTestsNative.checkNativeBackgroundImage(border), "Style background-image not loaded correctly.");
     });

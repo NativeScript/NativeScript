@@ -16,7 +16,6 @@ function onBorderPropertyChanged(data: dependencyObservable.PropertyChangeData) 
 (<proxy.PropertyMetadata>borderCommon.Border.cornerRadiusProperty.metadata).onSetNativeValue = onBorderPropertyChanged;
 (<proxy.PropertyMetadata>borderCommon.Border.borderWidthProperty.metadata).onSetNativeValue = onBorderPropertyChanged;
 (<proxy.PropertyMetadata>borderCommon.Border.borderColorProperty.metadata).onSetNativeValue = onBorderPropertyChanged;
-//(<proxy.PropertyMetadata>styleModule.backgroundColorProperty.metadata).onSetNativeValue = onBorderPropertyChanged;
 
 export class Border extends borderCommon.Border {
     public _updateAndroidBorder() {
