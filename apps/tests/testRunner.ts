@@ -49,6 +49,7 @@ allTests["STYLE"] = require("./ui/style/style-tests");
 allTests["VISUAL-STATE"] = require("./ui/style/visual-state-tests");
 allTests["VALUE-SOURCE"] = require("./ui/style/value-source-tests");
 allTests["BUTTON"] = require("./ui/button/button-tests");
+allTests["BORDER"] = require("./ui/border/border-tests");
 allTests["LABEL"] = require("./ui/label/label-tests");
 allTests["TAB-VIEW"] = require("./ui/tab-view/tab-view-tests");
 allTests["IMAGE"] = require("./ui/image/image-tests");
