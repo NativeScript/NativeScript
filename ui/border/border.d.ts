@@ -30,7 +30,7 @@ declare module "ui/border" {
         borderColor: color.Color;
 
         //@private
-        _updateAndroidBorder(bmp?: android.graphics.Bitmap);
+        _updateAndroidBorder();
         //@endprivate
     }
 }
