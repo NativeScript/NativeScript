@@ -33,6 +33,9 @@ export class Border extends borderCommon.Border {
 class BorderGradientDrawable extends android.graphics.drawable.GradientDrawable {
     private paint: android.graphics.Paint;
     private stroke: number;
+    private cornerRadius: number;
+    private backgroundColor: number;
+    private borderColor: number;
     private bitmap: android.graphics.Bitmap
 
     constructor(borderWidth: number, borderColor: number, backgroundColor: number, cornerRadius: number, bitmap?: android.graphics.Bitmap) {
@@ -43,17 +46,40 @@ class BorderGradientDrawable extends android.graphics.drawable.GradientDrawable 
         if (bitmap) {
             this.paint = new android.graphics.Paint();
         } else {
+            this.backgroundColor = backgroundColor;
             this.setColor(backgroundColor);
         }
 
         var density = utils.layout.getDisplayDensity();
 
         this.stroke = borderWidth * density;
-        this.setStroke(this.stroke, borderColor);
+        this.borderColor = borderColor;
+        this.setStroke(this.stroke, this.borderColor);
 
-        this.setCornerRadius(cornerRadius * density);
+        this.cornerRadius = cornerRadius * density;
+        this.setCornerRadius(this.cornerRadius);
 
         return global.__native(this);
+    }
+
+    public getStroke(): number {
+        return this.stroke;
+    }
+
+    public getCornerRadius(): number {
+        return this.cornerRadius;
+    }
+
+    public getBackgroundColor(): number {
+        return this.backgroundColor;
+    }
+
+    public getBorderColor(): number {
+        return this.borderColor;
+    }
+
+    public getBitmap(): android.graphics.Bitmap {
+        return this.bitmap;
     }
 
     public draw(canvas: android.graphics.Canvas): void {
