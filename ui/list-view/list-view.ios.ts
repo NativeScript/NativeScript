@@ -23,9 +23,6 @@ class ListViewCell extends UITableViewCell {
     static new(): ListViewCell {
         return <ListViewCell>super.new();
     }
-    static class(): any {
-        return ListViewCell;
-    }
 }
 
 function notifyForItemAtIndex(listView: definition.ListView, cell: any, eventName: string, indexPath: NSIndexPath) {
