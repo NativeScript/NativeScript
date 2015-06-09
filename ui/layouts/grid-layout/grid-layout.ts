@@ -219,11 +219,13 @@ export class GridLayout extends layouts.Layout implements definition.GridLayout,
     }
 
     public removeColumns(): void {
-        for (var i = 0; i < this._cols.length; i++){
-            this._cols[i].index = -1;
+        if (this._cols.length !== 0) {
+            for (var i = 0; i < this._cols.length; i++) {
+                this._cols[i].index = -1;
+            }
+            this._cols.length = 0;
+            this.invalidate();
         }
-        this._cols.length = 0;
-        this.invalidate();
     }
 
     public removeRow(itemSpec: ItemSpec): void {
@@ -242,11 +244,13 @@ export class GridLayout extends layouts.Layout implements definition.GridLayout,
     }
 
     public removeRows(): void {
-        for (var i = 0; i < this._rows.length; i++) {
-            this._rows[i].index = -1;
+        if (this._rows.length !== 0) {
+            for (var i = 0; i < this._rows.length; i++) {
+                this._rows[i].index = -1;
+            }
+            this._rows.length = 0;
+            this.invalidate();
         }
-        this._rows.length = 0;
-        this.invalidate();
     }
 
     public getColumns(): Array<ItemSpec> {
