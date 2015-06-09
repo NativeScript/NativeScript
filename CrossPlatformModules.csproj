@@ -241,16 +241,9 @@
       <DependentUpon>color.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="color\known-colors.ts" />
-    <TypeScriptCompile Include="console\console-native.android.ts">
-      <DependentUpon>console-native.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="console\console-native.ios.ts">
-      <DependentUpon>console-native.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="console\console.ts">
       <DependentUpon>console.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="console\console-native.d.ts" />
     <TypeScriptCompile Include="declarations.d.ts" />
     <TypeScriptCompile Include="declarations.android.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>

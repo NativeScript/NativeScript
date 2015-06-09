@@ -1,7 +1,8 @@
-import helperModule = require("console/console-native");
 import definition = require("console");
+import trace = require("trace");
 
 export class Console implements definition.Console {
+    private TAG: string = "JS";
     private _timers: any;
     private _stripFirstTwoLinesRegEx: RegExp;
 
@@ -33,7 +34,7 @@ export class Console implements definition.Console {
         //   example 5: sprintf('%-03s', 'E');
         //   returns 5: 'E00'
 
-        var regex = /%%|%(\d+\$)?([-+\'#0 ]*)(\*\d+\$|\*|\d+)?(\.(\*\d+\$|\*|\d+))?([scboxXuideEfFgG])/g;
+        var regex = /%%|%(\d+\$)?([-+\'#0 ]*)(\*\d+\$|\*|\d+)?(\.(\*\d+\$|\*|\d+))?([scboxXuideEfFgGj])/g;
         var a = arguments;
         var i = 0;
         var format = a[i++];
@@ -81,7 +82,7 @@ export class Console implements definition.Console {
             }
             return justify(value, '', leftJustify, minWidth, zeroPad, customPadChar);
         };
-
+        var that = this;
         // doFormat()
         var doFormat = function (substring, valueIndex, flags, minWidth, _, precision, type) {
             var number, prefix, method, textTransform, value;
@@ -192,6 +193,8 @@ export class Console implements definition.Console {
                     textTransform = ['toString', 'toUpperCase']['eEfFgG'.indexOf(type) % 2];
                     value = prefix + Math.abs(number)[method](precision);
                     return justify(value, prefix, leftJustify, minWidth, zeroPad)[textTransform]();
+                case 'j':
+                    return that.createDump(value);
                 default:
                     return substring;
             }
@@ -213,10 +216,14 @@ export class Console implements definition.Console {
         return res;
     }
 
+    private timeMillis() {
+        return java.lang.System.nanoTime() / 1000000; // 1 ms = 1000000 ns
+    }
+
     public time(reportName: string): void {
         var name = reportName ? '__' + reportName : '__internal_console_time__';
         if (('undefined' === typeof (this._timers[name])) || (this._timers.hasOwnProperty(name))) {
-            this._timers[name] = helperModule.timeMillis();
+            this._timers[name] = this.timeMillis();
         }
         else {
             this.warn('invalid name for timer console.time(' + reportName + ')');
@@ -228,8 +235,8 @@ export class Console implements definition.Console {
         if (this._timers.hasOwnProperty(name)) {
             var val = this._timers[name];
             if (val) {
-                var time = helperModule.timeMillis();
-                this.info('console.time(' + reportName + '): %.6f ms', (time - val));
+                var time = this.timeMillis();
+                this.info('console.time(' + reportName + '): %.6f ms',(time - val));
                 this._timers[name] = undefined;
             }
             else {
@@ -241,7 +248,7 @@ export class Console implements definition.Console {
     public assert(test: boolean, message: string, ...formatParams: any[]): void {
         if (!test) {
             Array.prototype.shift.apply(arguments);
-            helperModule.error(this.formatParams.apply(this, arguments));
+            this.error(this.formatParams.apply(this, arguments));
 
             // duplicating trace code here because android version shows only 2 frames and if we call trace()
             // this would be assert() and trace() which leaves all important stack frames out of our view
@@ -269,19 +276,52 @@ export class Console implements definition.Console {
     }
 
     public info(message: any, ...formatParams: any[]): void {
-        helperModule.info(this.formatParams.apply(this, arguments));
+        this.logMessage(this.formatParams.apply(this, arguments), trace.messageType.info);
     }
 
     public warn(message: any, ...formatParams: any[]): void {
-        helperModule.warn(this.formatParams.apply(this, arguments));
+        this.logMessage(this.formatParams.apply(this, arguments), trace.messageType.warn);
     }
 
     public error(message: any, ...formatParams: any[]): void {
-        helperModule.error(this.formatParams.apply(this, arguments));
+        this.logMessage(this.formatParams.apply(this, arguments), trace.messageType.error);
     }
 
     public log(message: any, ...formatParams: any[]): void {
-        helperModule.helper_log(this.formatParams.apply(this, arguments));
+        this.logMessage(this.formatParams.apply(this, arguments), trace.messageType.log);
+    }
+
+    private logMessage(message: string, messageType: number): void {
+        var arrayToLog = [];
+        if (message.length > 4000) {
+            var i;
+            for (i = 0; i * 4000 < message.length; i++) {
+                arrayToLog.push(message.substr((i * 4000), 4000));
+            }
+        }
+        else {
+            arrayToLog.push(message);
+        }
+        for (i = 0; i < arrayToLog.length; i++) {
+            switch (messageType) {
+                case trace.messageType.log: {
+                    android.util.Log.v(this.TAG, arrayToLog[i]);
+                    break;
+                }
+                case trace.messageType.warn: {
+                    android.util.Log.w(this.TAG, arrayToLog[i]);
+                    break;
+                }
+                case trace.messageType.error: {
+                    android.util.Log.e(this.TAG, arrayToLog[i]);
+                    break;
+                }
+                case trace.messageType.info: {
+                    android.util.Log.i(this.TAG, arrayToLog[i]);
+                    break;
+                }
+            }
+        }
     }
 
     public trace(): void {
@@ -292,29 +332,55 @@ export class Console implements definition.Console {
         this.log(stack);
     }
 
-    public dump(obj: any): void {
+    private createDump(obj: any): string {
+        var result = [];
         if (null == obj) {
-            this.log("=== dump(): object is 'null' ===");
-            return;
+            result.push("=== dump(): object is 'null' ===");
+            return result.join('');
         }
         if ("undefined" === typeof obj) {
-            this.log("=== dump(): object is 'undefined' ===");
-            return;
+            result.push("=== dump(): object is 'undefined' ===");
+            return result.join('');
         }
-        var result = ['=== dump(): dumping members ==='];
-        result.push(JSON.stringify(obj, null, 4));
-        result.push('=== dump(): dumping function names ===');
+        result.push('=== dump(): dumping members ===\n');
+        var stringifyValueCache = [];
+        var stringifyKeyCache = [];
+        result.push(JSON.stringify(obj, function (k, v) {
+            stringifyKeyCache.push(k);
+            if (typeof v === 'object' && v !== null) {
+                if (stringifyValueCache.indexOf(v) !== -1) {
+                    return "#CR:" + (v.toString ? v.toString() : v);
+                }
+                stringifyValueCache.push(v);
+            }
+            if (typeof v === 'function') {
+                return k + "()" + v;
+            }
+            return v;
+        }, 4));
+        result.push('\n=== dump(): dumping function and properties names ===\n');
         for (var id in obj) {
             try {
                 if (typeof (obj[id]) === 'function') {
-                    result.push(id + '()');
+                    result.push(id + '()\n');
+                }
+                else {
+                    if (typeof (obj[id]) !== 'object' && stringifyKeyCache.indexOf(id) === -1) {
+                        result.push(id + ": " + (obj[id] + '\n'));
+                    }
                 }
             } catch (err) {
                 result.push(id + ': inaccessible');
             }
         }
+        stringifyValueCache = null;
+        stringifyKeyCache = null;
         result.push('=== dump(): finished ===');
-        this.log(result.join('\n'));
+        return result.join('');
+    }
+
+    public dump(obj: any): void {
+        this.log(this.createDump(obj));
     }
 
     public dir = this.dump;

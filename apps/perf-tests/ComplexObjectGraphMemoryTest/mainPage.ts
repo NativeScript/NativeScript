@@ -5,7 +5,6 @@ import labelModule = require("ui/label");
 import trace = require("trace");
 import enums = require("ui/enums");
 import fps = require("fps-meter");
-import cn = require("console/console-native");
 
 export function createPage() {
     fps.addCallback(function (fps, minFps) {
@@ -29,7 +28,7 @@ export function createPage() {
     var childStackLayout;
     var childStackLayoutCount = count / buttonsPerRow;
     trace.write("Creating " + count + " buttons.", trace.categories.Test, trace.messageType.info);
-    var startTime = cn.timeMillis()
+    console.time("creatingButtons");
     for (var i = 0; i < childStackLayoutCount; i++) {
         childStackLayout = new stackLayoutModule.StackLayout();
         childStackLayout.orientation = enums.Orientation.horizontal;
@@ -43,8 +42,8 @@ export function createPage() {
             childStackLayout.addChild(button);
         }
     }
-    var elapsedTime = Math.round(cn.timeMillis() - startTime);
-    var message = "Created " + count + " buttons in " + elapsedTime + " ms.";
+    console.timeEnd("creatingButtons");
+    var message = "Created " + count + " buttons";
     trace.write(message, trace.categories.Test, trace.messageType.info);
     label.text = message;
 
@@ -52,4 +51,3 @@ export function createPage() {
     page.content = mainStackLayout;
     return page;
 }
-//export var Page = page;
