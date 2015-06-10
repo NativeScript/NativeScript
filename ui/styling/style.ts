@@ -357,9 +357,9 @@ function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
     if (types.isString(data.newValue)) {
         var pattern: RegExp = /url\(('|")(.*?)\1\)/;
         var match = data.newValue && (<string>data.newValue).match(pattern);
-        var url = match && match[2];
+        var url = match && match[2] || data.newValue;
 
-        if (types.isDefined(url)) {
+        if (!types.isNullOrUndefined(url)) {
             if (utils.isDataURI(url)) {
                 var base64Data = url.split(",")[1];
                 if (types.isDefined(base64Data)) {
