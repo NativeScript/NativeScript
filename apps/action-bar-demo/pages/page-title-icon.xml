@@ -1,0 +1,8 @@
+<Page>
+  <Page.actionBar>
+    <ActionBar title="Page Title" icon="res://ic_test"/>
+  </Page.actionBar>
+  <StackLayout>
+    <Button text="button" tap="buttonTap"/>
+  </StackLayout>
+</Page>

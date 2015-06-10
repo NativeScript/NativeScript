@@ -1,0 +1,14 @@
+<Page>
+  <Page.actionBar>
+    <ActionBar title="Title">
+      <ActionBar.actionItems>
+        <ActionItem text="left"  tap="leftTap"  iosPosition="left"/>
+        <ActionItem text="right" tap="rightTap" iosPosition="right"/>
+        <ActionItem text="pop"   tap="popTap"   iosPosition="right"  androidPosition="popup"/>
+      </ActionBar.actionItems>
+    </ActionBar>
+  </Page.actionBar>
+  <StackLayout>
+    <Button text="button" />
+  </StackLayout>
+</Page>

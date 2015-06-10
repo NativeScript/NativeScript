@@ -84,7 +84,7 @@ export class Frame extends frameCommon.Frame {
 
             case enums.NavigationBarVisibility.auto:
                 var pageInstance: pages.Page = page || this.currentPage;
-                newValue = this.backStack.length > 0 || (pageInstance && pageInstance.optionsMenu.getItems().length > 0);
+                newValue = this.backStack.length > 0 || (pageInstance && pageInstance.actionBar.shouldShow());
                 newValue = !!newValue; // Make sure it is boolean
                 break;
         }
@@ -191,11 +191,12 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             }
 
             frame._addView(newPage);
-            newPage._invalidateOptionsMenu();
         }
         else if (newPage.parent !== frame) {
             throw new Error("Page is already shown on another frame.");
         }
+
+        newPage.actionBar.updateActionBar();
     }
 
     public navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
@@ -226,6 +227,8 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         frame._navigateToEntry = null;
         frame._currentEntry = newEntry;
         frame.updateNavigationBar();
+
+        frame.ios.controller.navigationBar.backIndicatorImage
 
         var newPage = newEntry.resolvedPage;
 

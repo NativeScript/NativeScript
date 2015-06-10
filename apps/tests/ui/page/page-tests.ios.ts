@@ -4,6 +4,7 @@ import TKUnit = require("../../TKUnit");
 import LabelModule = require("ui/label");
 import helper = require("../helper");
 import view = require("ui/core/view");
+import actionBar = require("ui/action-bar");
 
 declare var exports;
 require("utils/module-merge").merge(PageTestCommon, exports);
@@ -41,9 +42,9 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
         page = new PageModule.Page();
         page.on(PageModule.Page.navigatedToEvent, handler);
 
-        var mi = new PageModule.MenuItem();
+        var mi = new actionBar.ActionItem();
         mi.text = "B";
-        page.optionsMenu.addItem(mi);
+        page.actionBar.actionItems.addItem(mi);
         label = new LabelModule.Label();
         label.text = "Text";
         page.content = label;
@@ -67,10 +68,10 @@ export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript(
 
     var handler = function (data) {
         page.off(PageModule.Page.navigatedToEvent, handler);
-        var menuItems = page.optionsMenu.getItems();
+        var menuItems = page.actionBar.actionItems.getItems();
         var i;
         for (i = menuItems.length - 1; i >= 0; i--) {
-            page.optionsMenu.removeItem(menuItems[i]);
+            page.actionBar.actionItems.removeItem(menuItems[i]);
         }
     }
 
@@ -78,9 +79,9 @@ export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript(
         page = new PageModule.Page();
         page.on(PageModule.Page.navigatedToEvent, handler);
 
-        var mi = new PageModule.MenuItem();
+        var mi = new actionBar.ActionItem();
         mi.text = "B";
-        page.optionsMenu.addItem(mi);
+        page.actionBar.actionItems.addItem(mi);
         label = new LabelModule.Label();
         label.text = "Text";
         page.content = label;

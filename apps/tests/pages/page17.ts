@@ -1,20 +1,36 @@
 ﻿import observable = require("data/observable");
+import action = require("ui/action-bar");
+
 import pages = require("ui/page");
 
+var currentPage:pages.Page;
 // Event handler for Page "loaded" event attached in main-page.xml
 export function pageLoaded(args: observable.EventData) {
     // Get the event sender
     var page = <pages.Page>args.object;
-
-    var textItem = new pages.MenuItem();
+    currentPage = page;
+    var textItem = new action.ActionItem();
     textItem.text = "from loaded";
     textItem.on("tap", () => {
         console.log("item added in page.loaded tapped!!!");
     });
-    page.optionsMenu.addItem(textItem);
+    page.actionBar.actionItems.addItem(textItem);
 }
 
 export function optionTap(args) {
     console.log("item added form XML tapped!!!");
+}
+var i = 0;
+export function buttonTap(args: observable.EventData) {
+    currentPage.actionBar.title = "hi " + i++;
+    if (i % 3 === 0) {
+        currentPage.actionBar.icon = "res://ic_test";
+    }
+    else if (i % 3 === 1) {
+        currentPage.actionBar.icon = "~/test-icon.png";
+    }
+    else if (i % 3 === 2) {
+        currentPage.actionBar.icon = undefined;
+    }
 }
 

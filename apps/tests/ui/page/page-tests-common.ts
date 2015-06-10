@@ -28,6 +28,7 @@ import stackLayoutModule = require("ui/layouts/stack-layout");
 import helper = require("../helper");
 import view = require("ui/core/view");
 import builder = require("ui/builder");
+import actionBar = require("ui/action-bar");
 
 export function addLabelToPage(page: PageModule.Page, text?: string) {
     var label = new LabelModule.Label();
@@ -44,14 +45,14 @@ export function test_menuItem_inherit_bindingContext() {
     var pageFactory = function (): PageModule.Page {
         page = new PageModule.Page();
         page.bindingContext = context;
-        var menuItem = new PageModule.MenuItem();
+        var menuItem = new actionBar.ActionItem();
 
         menuItem.bind({
             sourceProperty: "text",
             targetProperty: "text"
         });
 
-        page.optionsMenu.addItem(menuItem);
+        page.actionBar.actionItems.addItem(menuItem);
 
         label = new LabelModule.Label();
         label.text = "Text";
@@ -62,7 +63,7 @@ export function test_menuItem_inherit_bindingContext() {
     helper.navigate(pageFactory);
 
     try {
-        TKUnit.assertEqual(page.optionsMenu.getItemAt(0).text, "item", "menuItem.text should equal to 'item'");
+        TKUnit.assertEqual(page.actionBar.actionItems.getItemAt(0).text, "item", "menuItem.text should equal to 'item'");
     }
     finally {
         helper.goBack();
@@ -70,15 +71,15 @@ export function test_menuItem_inherit_bindingContext() {
 }
 
 export function test_menuItem_inherit_bindingContext_inXML() {
-    var p = <PageModule.Page>builder.parse("<Page><Page.optionsMenu><MenuItem text=\"{{ myProp }} \" /></Page.optionsMenu></Page>");
+    var p = <PageModule.Page>builder.parse("<Page><Page.actionItems><ActionItem text=\"{{ myProp }} \" /></Page.actionItems></Page>");
     p.bindingContext = { myProp: "success" };
 
-    var menuItem = p.optionsMenu.getItemAt(0);
+    var menuItem = p.actionBar.actionItems.getItemAt(0);
 
     TKUnit.assertEqual(menuItem.text, "success", "menuItem.text");
 };
 
-export function test_Setting_OptionsMenu_doesnt_thrown() {
+export function test_Setting_ActionItems_doesnt_thrown() {
 
     var page: PageModule.Page;
     var label: LabelModule.Label;
@@ -86,9 +87,9 @@ export function test_Setting_OptionsMenu_doesnt_thrown() {
 
     var pageFactory = function (): PageModule.Page {
         page = new PageModule.Page();
-        var menuItem = new PageModule.MenuItem();
+        var menuItem = new actionBar.ActionItem();
         menuItem.text = "Item";
-        page.optionsMenu.addItem(menuItem);
+        page.actionBar.actionItems.addItem(menuItem);
 
         label = new LabelModule.Label();
         label.text = "Text";

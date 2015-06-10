@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page>
+  <ScrollView>
+    <StackLayout>
+      <Button tap="itemTap" text="page title and icon" tag="page-title-icon" />
+      <Button tap="itemTap" text="navigation button" tag="navigation-button" />
+      <Button tap="itemTap" text="action items icons" tag="action-items-icon" />
+      <Button tap="itemTap" text="action items text" tag="action-items-text" />
+    </StackLayout>
+  </ScrollView>
+</Page>
