@@ -138,7 +138,12 @@ declare module "ui/core/view" {
          * Gets or sets the background color of the view.
          */
         backgroundColor: color.Color;
-        
+
+        /**
+         * Gets or sets the background image of the view.
+         */
+        backgroundImage: string;
+                
         /**
          * Gets or sets the minimum width the view may grow to.
          */

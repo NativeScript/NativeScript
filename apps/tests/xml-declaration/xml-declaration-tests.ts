@@ -203,6 +203,17 @@ export function test_parse_ShouldParseSubProperties() {
     TKUnit.assert(sw.visibility === "collapsed", "Expected result: collapsed; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
 };
 
+export function test_parse_CanBindBackgroundImage() {
+    var p = <page.Page>builder.parse("<Page><StackLayout backgroundImage='{{ myProp }}' /></Page>");
+    var expected = "~/logo.png"
+    var obj = new observable.Observable();
+    obj.set("myProp", expected);
+    p.bindingContext = obj;
+    var sw = <stackLayoutModule.StackLayout>p.content;
+
+    TKUnit.assert(sw.backgroundImage === expected, "Expected result: " + expected + "; Actual result: " + sw.backgroundImage);
+};
+
 export function test_parse_ShouldParseCustomComponentWithoutXml() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodule"><customControls:MyControl /></Page>');
     var ctrl = p.content;

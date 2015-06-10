@@ -77,25 +77,25 @@ function onCssClassPropertyChanged(data: dependencyObservable.PropertyChangeData
     }
 }
 
-    var idProperty = new dependencyObservable.Property(
+var idProperty = new dependencyObservable.Property(
     "id",
     "View",
     new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle)
     );
 
-    var cssClassProperty = new dependencyObservable.Property(
+var cssClassProperty = new dependencyObservable.Property(
     "cssClass",
     "View",
     new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged)
     );
 
-    var isEnabledProperty = new dependencyObservable.Property(
+var isEnabledProperty = new dependencyObservable.Property(
     "isEnabled",
     "View",
     new proxy.PropertyMetadata(true)
     );
 
-    var isUserInteractionEnabledProperty = new dependencyObservable.Property(
+var isUserInteractionEnabledProperty = new dependencyObservable.Property(
     "isUserInteractionEnabled",
     "View",
     new proxy.PropertyMetadata(true)
@@ -202,6 +202,13 @@ export class View extends proxy.ProxyObject implements definition.View {
         this.style.backgroundColor = value;
     }
 
+    get backgroundImage(): string {
+        return this.style.backgroundImage;
+    }
+    set backgroundImage(value: string) {
+        this.style.backgroundImage = value;
+    }
+
     get minWidth(): number {
         return this.style.minWidth;
     }
@@ -299,7 +306,7 @@ export class View extends proxy.ProxyObject implements definition.View {
     set paddingBottom(value: number) {
         this.style.paddingBottom = value;
     }
-    
+
     get horizontalAlignment(): string {
         return this.style.horizontalAlignment;
     }
