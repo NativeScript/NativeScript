@@ -95,7 +95,7 @@ export class Frame extends frameCommon.Frame {
         }
     }
 
-    public get ios(): iOSFrame {
+    public get ios(): definition.iOSFrame {
         return this._ios;
     }
 
@@ -151,7 +151,7 @@ export class Frame extends frameCommon.Frame {
     }
 }
 
-export class UINavigationControllerImpl extends UINavigationController implements UINavigationControllerDelegate {
+class UINavigationControllerImpl extends UINavigationController implements UINavigationControllerDelegate {
     public static ObjCProtocols = [UINavigationControllerDelegate];
 
     static new(): UINavigationControllerImpl {
@@ -240,7 +240,7 @@ export class UINavigationControllerImpl extends UINavigationController implement
 }
 
 /* tslint:disable */
-export class iOSFrame implements definition.iOSFrame {
+class iOSFrame implements definition.iOSFrame {
     /* tslint:enable */
     private _controller: UINavigationControllerImpl;
     private _showNavigationBar: boolean;

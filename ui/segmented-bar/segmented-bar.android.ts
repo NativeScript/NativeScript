@@ -153,12 +153,12 @@ export class SegmentedBar extends common.SegmentedBar {
         this._android.setup();
     }
 
-    get android(): OurTabHost {
+    get android(): android.widget.TabHost {
         return this._android;
     }
 }
 
-export class OurTabHost extends android.widget.TabHost {
+class OurTabHost extends android.widget.TabHost {
     constructor(context: any, attrs: any) {
         super(context, attrs);
 
