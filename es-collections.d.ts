@@ -1,6 +1,9 @@
+/* tslint:disable */
 /////////////////////////////
 /// IE11 ECMAScript Extensions
 /////////////////////////////
+
+interface List<T> extends Array<T> {}
 
 interface Map<K, V> {
     clear(): void;
