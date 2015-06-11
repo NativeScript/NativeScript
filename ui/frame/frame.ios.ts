@@ -151,7 +151,7 @@ export class Frame extends frameCommon.Frame {
     }
 }
 
-class UINavigationControllerImpl extends UINavigationController implements UINavigationControllerDelegate {
+export class UINavigationControllerImpl extends UINavigationController implements UINavigationControllerDelegate {
     public static ObjCProtocols = [UINavigationControllerDelegate];
 
     static new(): UINavigationControllerImpl {
@@ -240,7 +240,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
 }
 
 /* tslint:disable */
-class iOSFrame implements definition.iOSFrame {
+export class iOSFrame implements definition.iOSFrame {
     /* tslint:enable */
     private _controller: UINavigationControllerImpl;
     private _showNavigationBar: boolean;
