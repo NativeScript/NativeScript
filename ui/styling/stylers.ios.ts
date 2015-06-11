@@ -101,14 +101,14 @@ export class DefaultStyler implements definition.stylers.Styler {
 
     //Border color methods
     private static setBorderColorProperty(view: view.View, newValue: any) {
-        if (view._nativeView instanceof UIView && newValue instanceof color.Color) {
-            (<UIView>view._nativeView).layer.borderColor = (<color.Color>newValue).ios.CGColor;
+        if (view._nativeView instanceof UIView && newValue instanceof UIColor) {
+            (<UIView>view._nativeView).layer.borderColor = (<UIColor>newValue).CGColor;
         }
     }
 
     private static resetBorderColorProperty(view: view.View, nativeValue: any) {
-        if (view._nativeView instanceof UIView && nativeValue instanceof color.Color) {
-            (<UIView>view._nativeView).layer.borderColor = (<color.Color>nativeValue).ios.CGColor;
+        if (view._nativeView instanceof UIView && nativeValue instanceof UIColor) {
+            (<UIView>view._nativeView).layer.borderColor = (<UIColor>nativeValue).CGColor;
         }
     }
 

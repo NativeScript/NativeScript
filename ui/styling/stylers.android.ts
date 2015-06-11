@@ -96,7 +96,7 @@ class BorderGradientDrawable extends android.graphics.drawable.GradientDrawable 
 }
 
 function onBorderPropertyChanged(v: view.View) {
-    if (!this._nativeView) {
+    if (!v._nativeView) {
         return;
     }
 
@@ -108,6 +108,10 @@ function onBorderPropertyChanged(v: view.View) {
         bkg = new BorderGradientDrawable();
         nativeView.setBackground(bkg);
     }
+
+    var padding = v.borderWidth * utils.layout.getDisplayDensity();
+
+    nativeView.setPadding(padding, padding, padding, padding);
 
     bkg.borderWidth = v.borderWidth;
     bkg.cornerRadius = v.borderRadius;
@@ -121,7 +125,7 @@ function onBorderPropertyChanged(v: view.View) {
 export class DefaultStyler implements definition.stylers.Styler {
     //Background methods
     private static setBackgroundProperty(view: view.View, newValue: any) {
-        (<android.view.View>view.android).setBackgroundColor(newValue);
+        onBorderPropertyChanged(view);
     }
 
     private static resetBackgroundProperty(view: view.View, nativeValue: any) {
@@ -143,12 +147,7 @@ export class DefaultStyler implements definition.stylers.Styler {
 
     //Background image methods
     private static setBackgroundImageSourceProperty(view: view.View, newValue: any) {
-        var nativeView = <android.view.View>view.android;
-        var bmp = <android.graphics.Bitmap>newValue;
-        var d = new android.graphics.drawable.BitmapDrawable(bmp);
-        d.setTileModeXY(android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
-        d.setDither(true);
-        nativeView.setBackgroundDrawable(d);
+        onBorderPropertyChanged(view);
     }
 
     private static resetBackgroundImageSourceProperty(view: view.View, nativeValue: any) {
@@ -158,13 +157,7 @@ export class DefaultStyler implements definition.stylers.Styler {
     }
 
     private static getNativeBackgroundImageSourceValue(view: view.View): any {
-        var drawable = view.android.getBackground();
-
-        if (drawable instanceof android.graphics.drawable.BitmapDrawable) {
-            return drawable;
-        }
-
-        return undefined;
+        return view.android.getBackground();
     }
 
     //Border width methods
