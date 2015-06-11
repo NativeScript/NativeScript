@@ -2,9 +2,9 @@
 import gridModule = require("ui/layouts/grid-layout");
 import tests = require("../testRunner");
 import bm = require("ui/button");
-import trace = require("trace");
+//import trace = require("trace");
 import textViewModule = require("ui/text-view");
-
+/*
 class MyTraceWriter implements trace.TraceWriter {
     public write(message: any, category: string) {
         if (textView) {
@@ -21,7 +21,7 @@ class MyTraceWriter implements trace.TraceWriter {
 trace.addWriter(new MyTraceWriter());
 trace.enable();
 trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
-
+*/
 var textView = new textViewModule.TextView();
 textView.editable = false;
 textView.style.fontSize = 8;
