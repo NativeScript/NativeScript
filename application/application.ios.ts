@@ -31,7 +31,7 @@ class Window extends UIWindow {
     }
 
     public layoutSubviews(): void {
-        utils.ios._layoutRootView(this._content);
+        utils.ios._layoutRootView(this._content, UIScreen.mainScreen().bounds);
     }
 }
 

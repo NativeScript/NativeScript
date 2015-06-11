@@ -23,8 +23,9 @@ class UIViewControllerImpl extends UIViewController {
 
     public didRotateFromInterfaceOrientation(fromInterfaceOrientation: number) {
         trace.write(this._owner + " didRotateFromInterfaceOrientation(" + fromInterfaceOrientation+ ")", trace.categories.ViewHierarchy);
-        if (this._owner._isModal) {
-            utils.ios._layoutRootView(this._owner);
+        if ((<any>this._owner)._isModal) {
+            var parentBounds = (<any>this._owner)._UIModalPresentationFormSheet ? (<UIView>this._owner._nativeView).superview.bounds : UIScreen.mainScreen().bounds;
+            utils.ios._layoutRootView(this._owner, parentBounds);
         }
     }
 
@@ -57,7 +58,6 @@ class UIViewControllerImpl extends UIViewController {
 export class Page extends pageCommon.Page {
     private _ios: UIViewController;
     public _enableLoadedEvents: boolean;
-    public _isModal = false;
 
     constructor(options?: definition.Options) {
         super(options);
@@ -147,19 +147,33 @@ export class Page extends pageCommon.Page {
         navigationItem.setRightBarButtonItemsAnimated(array, true);
     }
 
-    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function) {
-        this._isModal = true;
-        utils.ios._layoutRootView(this);
+    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
+        (<any>this)._isModal = true;
+
+        if (fullscreen) {
+            this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFullScreen;
+            utils.ios._layoutRootView(this, UIScreen.mainScreen().bounds);
+        }
+        else {
+            this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFormSheet;
+            (<any>this)._UIModalPresentationFormSheet = true;
+        }
 
         var that = this;
         parent.ios.presentViewControllerAnimatedCompletion(this._ios, false, function completion() {
+            if (!fullscreen) {
+                // We can measure and layout the modal page after we know its parent's dimensions.
+                utils.ios._layoutRootView(that, that._nativeView.superview.bounds);
+            }
+
             that._raiseShownModallyEvent(parent, context, closeCallback);
         });
     }
 
     protected _hideNativeModalView(parent: Page) {
         parent._ios.dismissModalViewControllerAnimated(false);
-        this._isModal = false;
+        (<any>this)._isModal = false;
+        (<any>this)._UIModalPresentationFormSheet = false;
     }
 }
 

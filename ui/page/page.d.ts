@@ -143,8 +143,9 @@ declare module "ui/page" {
          * @param moduleName - The name of the page module to load starting from the application root.
          * @param context - Any context you want to pass to the modally shown page. This same context will be available in the arguments of the Page.shownModally event handler.
          * @param closeCallback - A function that will be called when the page is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
+         * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
          */
-        showModal(moduleName: string, context: any, closeCallback: Function);
+        showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean);
 
         _addArrayFromBuilder(name: string, value: Array<any>): void;
 

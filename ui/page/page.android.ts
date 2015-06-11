@@ -8,11 +8,13 @@ require("utils/module-merge").merge(pageCommon, exports);
 
 class DialogFragmentClass extends android.app.DialogFragment {
     private _owner: Page;
+    private _fullscreen: boolean;
 
-    constructor(owner: Page) {
+    constructor(owner: Page, fullscreen?: boolean) {
         super();
 
         this._owner = owner;
+        this._fullscreen = fullscreen;
         return global.__native(this);
     }
 
@@ -22,7 +24,10 @@ class DialogFragmentClass extends android.app.DialogFragment {
         dialog.setContentView(this._owner._nativeView);
         var window = dialog.getWindow();
         window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
-        window.setLayout(android.view.ViewGroup.LayoutParams.FILL_PARENT, android.view.ViewGroup.LayoutParams.FILL_PARENT);
+
+        if (this._fullscreen) {
+            window.setLayout(android.view.ViewGroup.LayoutParams.FILL_PARENT, android.view.ViewGroup.LayoutParams.FILL_PARENT);
+        }
         
         return dialog;
     }
@@ -61,7 +66,7 @@ export class Page extends pageCommon.Page {
     /* tslint:disable */
     private _dialogFragment: DialogFragmentClass;
     /* tslint:enable */
-    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function) {
+    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         if (!this.backgroundColor) {
             this.backgroundColor = new color.Color("White");
         }
@@ -70,7 +75,7 @@ export class Page extends pageCommon.Page {
         this._isAddedToNativeVisualTree = true;
         this.onLoaded();
 
-        this._dialogFragment = new DialogFragmentClass(this);
+        this._dialogFragment = new DialogFragmentClass(this, fullscreen);
         this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), "dialog");        
         
         super._raiseShownModallyEvent(parent, context, closeCallback);
