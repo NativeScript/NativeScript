@@ -158,7 +158,7 @@ export class SegmentedBar extends common.SegmentedBar {
     }
 }
 
-class OurTabHost extends android.widget.TabHost {
+export class OurTabHost extends android.widget.TabHost {
     constructor(context: any, attrs: any) {
         super(context, attrs);
 
