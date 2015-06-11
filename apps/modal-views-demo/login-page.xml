@@ -1,7 +1,7 @@
-﻿<Page xmlns="http://www.nativescript.org/tns.xsd" shownModally="onShownModally" loaded="onLoaded" unloaded="onUnloaded">
-  <StackLayout>
-    <TextField hint="username" id="username"/>
-    <TextField hint="password" id="password" secure="true"/>
+﻿<Page xmlns="http://www.nativescript.org/tns.xsd" shownModally="onShownModally" loaded="onLoaded" unloaded="onUnloaded" backgroundColor="Red">
+  <StackLayout backgroundColor="PaleGreen">
+    <TextField hint="username" id="username" text="username"/>
+    <TextField hint="password" id="password" text="password" secure="true"/>
     <Button text="Login" tap="onLoginButtonTap"/>
   </StackLayout>
 </Page>

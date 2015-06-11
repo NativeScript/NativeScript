@@ -133,12 +133,12 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
         this._navigationContext = undefined;
     }
 
-    public showModal(moduleName: string, context: any, closeCallback: Function) {
+    public showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean) {
         var page = frameCommon.resolvePageFromEntry({ moduleName: moduleName });
-        (<Page>page)._showNativeModalView(this, context, closeCallback);
+        (<Page>page)._showNativeModalView(this, context, closeCallback, fullscreen);
     }
 
-    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function) {
+    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         //
     }
 

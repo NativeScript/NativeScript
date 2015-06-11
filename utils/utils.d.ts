@@ -122,7 +122,7 @@
          */
         export var MajorVersion: number;
 
-        export function _layoutRootView(rootView: view.View): void;
+        export function _layoutRootView(rootView: view.View, parentBounds: CGRect): void;
     }
     /**
      * An utility function that copies properties from source object to target object.
