@@ -498,6 +498,11 @@ declare var Number: {
       * JavaScript displays POSITIVE_INFINITY values as infinity. 
       */
     POSITIVE_INFINITY: number;
+
+    /**
+     * Checks if the passed value is an integer.
+     */
+    isInteger(value: any): boolean;
 }
 
 interface Math {
