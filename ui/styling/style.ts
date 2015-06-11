@@ -45,6 +45,27 @@ export class Style extends observable.DependencyObservable implements styling.St
         this._setValue(backgroundImageProperty, value, observable.ValueSource.Local);
     }
 
+    get borderColor(): color.Color {
+        return this._getValue(borderColorProperty);
+    }
+    set borderColor(value: color.Color) {
+        this._setValue(borderColorProperty, value, observable.ValueSource.Local);
+    }
+
+    get borderWidth(): number {
+        return this._getValue(borderWidthProperty);
+    }
+    set borderWidth(value: number) {
+        this._setValue(borderWidthProperty, value, observable.ValueSource.Local);
+    }
+
+    get borderRadius(): number {
+        return this._getValue(borderRadiusProperty);
+    }
+    set borderRadius(value: number) {
+        this._setValue(borderRadiusProperty, value, observable.ValueSource.Local);
+    }
+
     get fontSize(): number {
         return this._getValue(fontSizeProperty);
     }
@@ -384,6 +405,16 @@ function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
         }
     }
 }
+
+export var borderColorProperty = new styleProperty.Property("borderColor", "border-color",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, color.Color.equals),
+    converters.colorConverter);
+
+export var borderWidthProperty = new styleProperty.Property("borderWidth", "border-width",
+    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
+
+export var borderRadiusProperty = new styleProperty.Property("borderRadius", "border-radius",
+    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
 
 export var backgroundImageSourceProperty = new styleProperty.Property("backgroundImageSource", "background-image-source",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, undefined));
