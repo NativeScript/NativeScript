@@ -42,7 +42,7 @@ export class DefaultStyler implements definition.stylers.Styler {
         var bmp = <android.graphics.Bitmap>newValue;
         var d = new android.graphics.drawable.BitmapDrawable(bmp);
         d.setTileModeXY(android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
-        d.setDither(true); 
+        d.setDither(true);
         nativeView.setBackgroundDrawable(d);
     }
 
@@ -356,10 +356,35 @@ export class BorderStyler implements definition.stylers.Styler {
         border._updateAndroidBorder();
     }
 
-   public static registerHandlers() {
+    private static getNativeBackgroundValue(view: view.View): any {
+        return view.android.getBackground();
+    }
+
+    //Background image methods
+    private static setBackgroundImageSourceProperty(view: view.View, newValue: any) {
+        var border = <border.Border>view;
+        border._updateAndroidBorder();
+    }
+
+    private static resetBackgroundImageSourceProperty(view: view.View, nativeValue: any) {
+        var border = <border.Border>view;
+        border._updateAndroidBorder();
+    }
+
+    private static getNativeBackgroundImageSourceValue(view: view.View): any {
+        return view.android.getBackground();
+    }
+
+    public static registerHandlers() {
         style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             BorderStyler.setBackgroundProperty,
-            BorderStyler.resetBackgroundProperty), "Border");
+            BorderStyler.resetBackgroundProperty,
+            BorderStyler.getNativeBackgroundValue), "Border");
+
+        style.registerHandler(style.backgroundImageSourceProperty, new stylersCommon.StylePropertyChangedHandler(
+            BorderStyler.setBackgroundImageSourceProperty,
+            BorderStyler.resetBackgroundImageSourceProperty,
+            BorderStyler.getNativeBackgroundImageSourceValue), "Border");
     }
 }
 
