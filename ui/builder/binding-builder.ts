@@ -7,6 +7,9 @@ export module bindingConstants {
     export var twoWay = "twoWay";
     export var source = "source";
     export var bindingValueKey = "$value";
+    export var parentValueKey = "$parent";
+    export var parentsValueKey = "$parents";
+    export var newPropertyValueKey = "$newPropertyValue";
 };
 
 var hasEqualSignRegex = /=+/;
@@ -87,9 +90,30 @@ function extractPropertyNameFromExpression(expression: string): string {
     }
 }
 
+function getParamsArray(value: string) {
+    var result = [];
+    var i;
+    var skipComma = 0;
+    var indexReached = 0;
+    for (i = 0; i < value.length; i++) {
+        if (value[i] === '(' || value[i] === '[') {
+            skipComma++;
+        }
+        if (value[i] === ')' || value[i] === ']') {
+            skipComma--;
+        }
+        if (value[i] === ',' && skipComma === 0) {
+            result.push(value.substr(indexReached, i - indexReached));
+            indexReached = i + 1;
+        }
+    }
+    result.push(value.substr(indexReached));
+    return result;
+}
+
 export function getBindingOptions(name: string, value: string): any {
     var namedParams = [];
-    var params = value.split(",");
+    var params = getParamsArray(value);
     if (!areNamedParams(params)) {
         if (params.length === 1) {
             namedParams.push(bindingConstants.sourceProperty + " = " + extractPropertyNameFromExpression(params[0].trim()));
@@ -100,7 +124,7 @@ export function getBindingOptions(name: string, value: string): any {
             namedParams.push(bindingConstants.twoWay + " = true");
         }
         else {
-            namedParams.push(bindingConstants.sourceProperty + " = " + extractPropertyNameFromExpression(params[0].trim()));
+            namedParams.push(bindingConstants.sourceProperty + " = " + params[0].trim());
             namedParams.push(bindingConstants.expression + " = " + params[1].trim());
             var twoWay = params[2] ? params[2].toLowerCase().trim() === "true" : true;
             namedParams.push(bindingConstants.twoWay + " = " + twoWay);

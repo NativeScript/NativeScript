@@ -530,6 +530,56 @@ export function test_BindingListViewToASimpleArrayWithExpression() {
     helper.buildUIAndRunTest(listView, testAction);
 }
 
+export function test_bindingToParentObject() {
+    var listView = new listViewModule.ListView();
+    var expectedValue = "parentTestValue";
+
+    function testAction(views: Array<viewModule.View>) {
+        var listViewModel = new observable.Observable();
+        listViewModel.set("items", [1, 2, 3]);
+        listViewModel.set("parentTestProp", expectedValue);
+        listView.bindingContext = listViewModel;
+        listView.bind({ sourceProperty: "items", targetProperty: "items" });
+        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ sourceProperty = $parents[ListView].parentTestProp }}\" />";
+
+        TKUnit.wait(ASYNC);
+        var firstNativeElementText = getTextFromNativeElementAt(listView, 0);
+        var secondNativeElementText = getTextFromNativeElementAt(listView, 1);
+        var thirdNativeElementText = getTextFromNativeElementAt(listView, 2);
+
+        TKUnit.assertEqual(firstNativeElementText, expectedValue, "first element text");
+        TKUnit.assertEqual(secondNativeElementText, expectedValue, "second element text");
+        TKUnit.assertEqual(thirdNativeElementText, expectedValue, "third element text");
+    }
+
+    helper.buildUIAndRunTest(listView, testAction);
+}
+
+export function test_bindingToParentObjectWithSpacesInIndexer() {
+    var listView = new listViewModule.ListView();
+    var expectedValue = "parentTestValue";
+
+    function testAction(views: Array<viewModule.View>) {
+        var listViewModel = new observable.Observable();
+        listViewModel.set("items", [1, 2, 3]);
+        listViewModel.set("parentTestProp", expectedValue);
+        listView.bindingContext = listViewModel;
+        listView.bind({ sourceProperty: "items", targetProperty: "items" });
+        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ sourceProperty = $parents[ ListView ].parentTestProp }}\" />";
+
+        TKUnit.wait(ASYNC);
+        var firstNativeElementText = getTextFromNativeElementAt(listView, 0);
+        var secondNativeElementText = getTextFromNativeElementAt(listView, 1);
+        var thirdNativeElementText = getTextFromNativeElementAt(listView, 2);
+
+        TKUnit.assertEqual(firstNativeElementText, expectedValue, "first element text");
+        TKUnit.assertEqual(secondNativeElementText, expectedValue, "second element text");
+        TKUnit.assertEqual(thirdNativeElementText, expectedValue, "third element text");
+    }
+
+    helper.buildUIAndRunTest(listView, testAction);
+}
+
 export function test_no_memory_leak_when_items_is_regular_array() {
     var createFunc = function (): listViewModule.ListView {
         var listView = new listViewModule.ListView();
