@@ -339,23 +339,6 @@ export class TextViewStyler implements definition.stylers.Styler {
     }
 }
 
-export class ButtonStyler implements definition.stylers.Styler {
-    //Background methods
-    private static setButtonBackgroundProperty(view: view.View, newValue: any) {
-        (<android.view.View>view.android).setBackgroundColor(newValue);
-    }
-
-    private static resetButtonBackgroundProperty(view: view.View, nativeValue: any) {
-        (<android.view.View>view.android).setBackgroundResource(constants.btn_default);
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
-            ButtonStyler.setButtonBackgroundProperty,
-            ButtonStyler.resetButtonBackgroundProperty), "Button");
-    }
-}
-
 export class ActivityIndicatorStyler implements definition.stylers.Styler {
     //Visibility methods
     public static setActivityIndicatorVisibilityProperty(view: view.View, newValue: any) {
@@ -506,7 +489,6 @@ export class BorderStyler implements definition.stylers.Styler {
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();
-    ButtonStyler.registerHandlers();
     TextViewStyler.registerHandlers();
     ActivityIndicatorStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
