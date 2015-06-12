@@ -100,6 +100,12 @@ function onBorderPropertyChanged(v: view.View) {
         return;
     }
 
+    var value = <imageSource.ImageSource>v.style._getValue(styleModule.backgroundImageSourceProperty);
+
+    if ((v.borderWidth === 0 && v.borderRadius === 0) || types.isNullOrUndefined(v.backgroundColor) || types.isNullOrUndefined(value)) {
+        return;
+    }
+
     var nativeView = <android.view.View>v._nativeView;
 
     var bkg = <BorderGradientDrawable>nativeView.getBackground();
@@ -118,7 +124,6 @@ function onBorderPropertyChanged(v: view.View) {
     bkg.borderColor = v.borderColor ? v.borderColor.android : android.graphics.Color.TRANSPARENT;
     bkg.backgroundColor = v.backgroundColor ? v.backgroundColor.android : android.graphics.Color.TRANSPARENT;
 
-    var value = <imageSource.ImageSource>v.style._getValue(styleModule.backgroundImageSourceProperty);
     bkg.bitmap = value ? value.android : undefined;
 }
 
