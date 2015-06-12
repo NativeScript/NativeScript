@@ -102,7 +102,7 @@ function onBorderPropertyChanged(v: view.View) {
 
     var value = <imageSource.ImageSource>v.style._getValue(styleModule.backgroundImageSourceProperty);
 
-    if ((v.borderWidth === 0 && v.borderRadius === 0) || types.isNullOrUndefined(v.backgroundColor) || types.isNullOrUndefined(value)) {
+    if (v.borderWidth === 0 || v.borderRadius === 0 || types.isNullOrUndefined(v.backgroundColor) || types.isNullOrUndefined(value)) {
         return;
     }
 
