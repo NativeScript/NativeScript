@@ -3,6 +3,7 @@ import viewModule = require("ui/core/view");
 import frame = require("ui/frame");
 import page = require("ui/page");
 import button = require("ui/button");
+import label = require("ui/label");
 import types = require("utils/types");
 import helper = require("../../ui/helper");
 import color = require("color");
@@ -11,6 +12,7 @@ import proxy = require("ui/core/proxy");
 import layoutModule = require("ui/layouts/layout");
 import observable = require("data/observable");
 import bindable = require("ui/core/bindable");
+import definition = require("./view-tests");
 
 export var test_eachDescendant = function () {
     var test = function (views: Array<viewModule.View>) {
@@ -580,4 +582,57 @@ export var test_binding_style_visibility = function () {
 
 export var test_binding_style_opacity = function () {
     property_binding_style_test("opacity", 0.5, 0.6);
+}
+
+function _createLabelWithBorder(): viewModule.View {
+    var lbl = new label.Label();
+    lbl.borderRadius = 10;
+    lbl.borderWidth = 2;
+    lbl.borderColor = new color.Color("#FF0000");
+    lbl.backgroundColor = new color.Color("#FFFF00");
+
+    return lbl;
+}
+
+export var testBorderWidth = function () {
+    helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
+        var lbl = <label.Label>views[0];
+        var expectedValue = lbl.borderWidth;
+        var actualValue = definition.getNativeBorderWidth(lbl);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testCornerRadius = function () {
+    helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
+        var lbl = <label.Label>views[0];
+        var expectedValue = lbl.borderRadius;
+        var actualValue = definition.getNativeCornerRadius(lbl);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testBorderColor = function () {
+    helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
+        var lbl = <label.Label>views[0];
+        TKUnit.assert(definition.checkNativeBorderColor(lbl), "BorderColor not applied correctly!");
+    });
+}
+
+export var testBackgroundColor = function () {
+    helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
+        var lbl = <label.Label>views[0];
+        TKUnit.assert(definition.checkNativeBackgroundColor(lbl), "BackgroundColor not applied correctly!");
+    });
+}
+
+export var testBackgroundImage = function () {
+    var lbl = _createLabelWithBorder();
+
+    helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
+        var page = <page.Page>views[1];
+        page.css = "View { background-image: url('~/logo.png') }";
+
+        TKUnit.assert(definition.checkNativeBackgroundImage(lbl), "Style background-image not loaded correctly.");
+    });
 }
