@@ -30,7 +30,7 @@ export function getNativeColor(textView: textViewModule.TextView): colorModule.C
 }
 
 export function getNativeBackgroundColor(textView: textViewModule.TextView): colorModule.Color {
-    return new colorModule.Color((<android.graphics.drawable.ColorDrawable>textView.android.getBackground()).getColor());
+    return new colorModule.Color((<any>textView.android.getBackground()).backgroundColor);
 }
 
 export function getNativeTextAlignment(textView: textViewModule.TextView): string {
