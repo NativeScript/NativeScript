@@ -3,7 +3,6 @@ import colorModule = require("color");
 import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
-import borderTestsNative = require("./border-tests-native");
 import pageModule = require("ui/page");
 
 // <snippet module="ui/border" title="Border">
