@@ -34,7 +34,7 @@ import labelModule = require("ui/label");
 // </Page>
 //```
 
-// ### Define the Repeater itemsLayout property. Default is <StackLayout orientation="vertical" />.
+// ### Define the Repeater itemsLayout property. Default is StackLayout with orientation="vertical".
 //```XML
 // <Page>
 //  {%raw%}<Repeater items="{{ myItems }}">
