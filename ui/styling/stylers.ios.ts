@@ -3,7 +3,6 @@ import style = require("ui/styling/style");
 import definition = require("ui/styling");
 import stylersCommon = require("ui/styling/stylers-common");
 import enums = require("ui/enums");
-import color = require("color");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
