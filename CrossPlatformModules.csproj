@@ -151,9 +151,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\ui\bindingContext_testPage1.ts" />
     <TypeScriptCompile Include="apps\tests\ui\bindingContext_testPage2.ts" />
-    <TypeScriptCompile Include="apps\tests\ui\border\border-tests-native.android.ts" />
-    <TypeScriptCompile Include="apps\tests\ui\border\border-tests-native.d.ts" />
-    <TypeScriptCompile Include="apps\tests\ui\border\border-tests-native.ios.ts" />
     <TypeScriptCompile Include="apps\tests\ui\repeater\repeater-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\time-picker\time-picker-tests-native.android.ts">
       <DependentUpon>time-picker-tests-native.d.ts</DependentUpon>
