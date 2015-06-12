@@ -102,29 +102,27 @@ function onBorderPropertyChanged(v: view.View) {
 
     var value = <imageSource.ImageSource>v.style._getValue(styleModule.backgroundImageSourceProperty);
 
-    if (v.borderWidth === 0 || v.borderRadius === 0 || types.isNullOrUndefined(v.backgroundColor) || types.isNullOrUndefined(value)) {
-        return;
+    if (v.borderWidth !== 0 || v.borderRadius !== 0 || !types.isNullOrUndefined(v.backgroundColor) || !types.isNullOrUndefined(value)) {
+        var nativeView = <android.view.View>v._nativeView;
+
+        var bkg = <BorderGradientDrawable>nativeView.getBackground();
+
+        if (!(bkg instanceof BorderGradientDrawable)) {
+            bkg = new BorderGradientDrawable();
+            nativeView.setBackground(bkg);
+        }
+
+        var padding = v.borderWidth * utils.layout.getDisplayDensity();
+
+        nativeView.setPadding(padding, padding, padding, padding);
+
+        bkg.borderWidth = v.borderWidth;
+        bkg.cornerRadius = v.borderRadius;
+        bkg.borderColor = v.borderColor ? v.borderColor.android : android.graphics.Color.TRANSPARENT;
+        bkg.backgroundColor = v.backgroundColor ? v.backgroundColor.android : android.graphics.Color.TRANSPARENT;
+
+        bkg.bitmap = value ? value.android : undefined;
     }
-
-    var nativeView = <android.view.View>v._nativeView;
-
-    var bkg = <BorderGradientDrawable>nativeView.getBackground();
-
-    if (!(bkg instanceof BorderGradientDrawable)) {
-        bkg = new BorderGradientDrawable();
-        nativeView.setBackground(bkg);
-    }
-
-    var padding = v.borderWidth * utils.layout.getDisplayDensity();
-
-    nativeView.setPadding(padding, padding, padding, padding);
-
-    bkg.borderWidth = v.borderWidth;
-    bkg.cornerRadius = v.borderRadius;
-    bkg.borderColor = v.borderColor ? v.borderColor.android : android.graphics.Color.TRANSPARENT;
-    bkg.backgroundColor = v.backgroundColor ? v.backgroundColor.android : android.graphics.Color.TRANSPARENT;
-
-    bkg.bitmap = value ? value.android : undefined;
 }
 
 export class DefaultStyler implements definition.stylers.Styler {
