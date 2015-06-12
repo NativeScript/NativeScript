@@ -202,6 +202,8 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i73.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\gestures.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\listview_binding.ts" />
+    <TypeScriptCompile Include="es-collections.d.ts" />
+    <TypeScriptCompile Include="es6-promise.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.ts">
       <DependentUpon>file-name-resolver.d.ts</DependentUpon>
