@@ -15,7 +15,7 @@ import borderModule = require("ui/border");
 // ### Declaring a Border.
 //```XML
 //  <Page>
-//      <Border cornerRadius="10" borderWidth="1" borderColor="#FF0000">
+//      <Border borderRadius="10" borderWidth="1" borderColor="#FF0000">
 //          <Button text="OK"/>
 //      </Border>
 //  </Page>
