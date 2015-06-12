@@ -6,13 +6,13 @@ Cross Platform Modules Changelog
 ### New
 - [(#280)](https://github.com/NativeScript/NativeScript/issues/280) Change NativeActivity Pbase class in order to be compatible with Android runtime
 
-- [(#244)](https://github.com/NativeScript/NativeScript/issues/244) Expose application level events as real events
+- [(#244)](https://github.com/NativeScript/NativeScript/issues/244) Expose application level events as real events. [See an example...](https://github.com/NativeScript/NativeScript/blob/master/apps/tests/app/app.ts)
 
-- [(#233)](https://github.com/NativeScript/NativeScript/issues/233) Application module event handlers are lacking in parameters
+- [(#233)](https://github.com/NativeScript/NativeScript/issues/233) Application module event handlers are lacking in parameters. [See an example...](https://github.com/NativeScript/NativeScript/blob/master/apps/tests/app/app.ts)
 
 - [(#221)](https://github.com/NativeScript/NativeScript/pull/221) view parent exposed in itemLoading event
 
-- [(#214)](https://github.com/NativeScript/NativeScript/pull/214) Repeater component added
+- [(#214)](https://github.com/NativeScript/NativeScript/pull/214) Repeater component added. [Read more...](https://github.com/NativeScript/docs/blob/master/layouts.md#repeating-layout-children)
 
 - [(#207)](https://github.com/NativeScript/NativeScript/pull/207) Optimizations
 
