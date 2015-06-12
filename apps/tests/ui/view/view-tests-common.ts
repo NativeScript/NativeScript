@@ -628,10 +628,10 @@ export var testBackgroundColor = function () {
 
 export var testBackgroundImage = function () {
     var lbl = _createLabelWithBorder();
-
+    lbl.cssClass = "myClass";
     helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
         var page = <page.Page>views[1];
-        page.css = "View { background-image: url('~/logo.png') }";
+        page.css = ".myClass { background-image: url('~/logo.png') }";
 
         TKUnit.assert(definition.checkNativeBackgroundImage(lbl), "Style background-image not loaded correctly.");
     });
