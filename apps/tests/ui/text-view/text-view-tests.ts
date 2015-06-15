@@ -5,6 +5,7 @@ import pagesModule = require("ui/page");
 import textViewTestsNative = require("./text-view-tests-native");
 import colorModule = require("color");
 import enums = require("ui/enums");
+import utils = require("utils/utils");
 
 // <snippet module="ui/text-view" title="TextView">
 // # TextView
@@ -248,6 +249,9 @@ export var testHintColoriOS = function () {
         var actualValue;
 
         expectedValue = "#38.1999948ff0000"; // 22% red
+        if (utils.ios.MajorVersion > 7) {
+            expectedValue = "#38.19999999999aff0000"; // 22% red
+        }
         actualValue = textViewTestsNative.getNativeColor(textView).hex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
 
