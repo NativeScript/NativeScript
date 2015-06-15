@@ -334,3 +334,47 @@ export var test_Observable_removeEventListener_SingleEvent_NoCallbackSpecified =
     obj.set("testName", 2);
     TKUnit.assert(receivedCount === 2, "Expected receive count is 2");
 }
+
+export var test_Observable_WhenCreatedWithJSON_PropertyChangedWithDotNotation_RaisesPropertyChangedEvent = function () {
+    var json = {
+        count: 5
+    };
+    var obj = new observable.Observable(json);
+
+    var receivedCount = 0;
+    var callback = function (data: observable.PropertyChangeData) {
+        receivedCount++;
+        TKUnit.assert(data.eventName === observable.Observable.propertyChangeEvent, "Expected event name " + observable.Observable.propertyChangeEvent);
+        TKUnit.assert(data.object === obj, "PropertyChangeData.object value not valid.");
+        TKUnit.assert(data.propertyName === "count", "PropertyChangeData.propertyName value not valid.");
+        TKUnit.assert(data.value === 6, "PropertyChangeData.value value not valid.");
+    }
+
+    obj.addEventListener(observable.Observable.propertyChangeEvent, callback);
+
+    (<any>obj).count++;
+
+    TKUnit.assert(receivedCount === 1, "PropertyChanged event not raised properly.");
+}
+
+export var test_Observable_WhenCreatedWithJSON_PropertyChangedWithBracketsNotation_RaisesPropertyChangedEvent = function () {
+    var json = {
+        count: 5
+    };
+    var obj = new observable.Observable(json);
+
+    var receivedCount = 0;
+    var callback = function (data: observable.PropertyChangeData) {
+        receivedCount++;
+        TKUnit.assert(data.eventName === observable.Observable.propertyChangeEvent, "Expected event name " + observable.Observable.propertyChangeEvent);
+        TKUnit.assert(data.object === obj, "PropertyChangeData.object value not valid.");
+        TKUnit.assert(data.propertyName === "count", "PropertyChangeData.propertyName value not valid.");
+        TKUnit.assert(data.value === 6, "PropertyChangeData.value value not valid.");
+    }
+
+    obj.addEventListener(observable.Observable.propertyChangeEvent, callback);
+
+    obj["count"]++;
+
+    TKUnit.assert(receivedCount === 1, "PropertyChanged event not raised properly.");
+}
