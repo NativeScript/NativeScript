@@ -20,7 +20,7 @@ export function createPage() {
             frame.topmost().navigate("pages/" + txtInput.text);
         }
         else {
-            var fileName = fs.path.join(__dirname, txtInput.text, txtInput.text);
+            fileName = fs.path.join(__dirname, txtInput.text, txtInput.text);
             if ((fs.File.exists(fileName + ".xml") || (fs.File.exists(fileName + ".js")))) {
                 frame.topmost().navigate(txtInput.text + "/" + txtInput.text);
             }
