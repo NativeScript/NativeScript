@@ -38,6 +38,9 @@ declare class XMLHttpRequest {
     readyState: number;
     responseText: string;
     status: number;
+
+    onload: () => void;
+    onerror: () => void;
 }
 
 /**

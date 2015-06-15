@@ -39,6 +39,9 @@ export class XMLHttpRequest {
     public LOADING = 3;
     public DONE = 4;
 
+    public onload: () => void;
+    public onerror: () => void;
+
     private _options: definition.HttpRequestOptions;
     private _readyState: number;
     private _status: number;
@@ -112,8 +115,9 @@ export class XMLHttpRequest {
                 }
 
             }).catch(e => {
-                    this._errorFlag = true;
-                });
+                this._errorFlag = true;
+                this._setReadyState(this.DONE);
+            });
         }
     }
 
@@ -165,6 +169,15 @@ export class XMLHttpRequest {
 
             if (types.isFunction(this.onreadystatechange)) {
                 this.onreadystatechange();
+            }
+        }
+
+        if (this._readyState === this.DONE) {
+            if (this._errorFlag && types.isFunction(this.onerror)) {
+                this.onerror();
+            }
+            if (!this._errorFlag && types.isFunction(this.onload)) {
+                this.onload();
             }
         }
     }
