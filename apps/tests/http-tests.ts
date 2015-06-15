@@ -616,3 +616,16 @@ export function test_raises_onerror_Event(done) {
     xhr.open("GET", "https://no-such-domain-httpbin.org");
     xhr.send();
 }
+
+export function test_responseType(done) {
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = "";
+    xhr.responseType = "text";
+
+    TKUnit.assertThrows(
+        () => xhr.responseType = "json",
+        "Didn't raise on unsupported type.",
+        "Response type of 'json' not supported."
+    );
+    done(null);
+}

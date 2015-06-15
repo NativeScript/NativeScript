@@ -49,6 +49,7 @@ export class XMLHttpRequest {
     private _responseText: string = "";
     private _headers: any;
     private _errorFlag: boolean;
+    private _responseType: string;
 
     public onreadystatechange: Function;
 
@@ -161,6 +162,18 @@ export class XMLHttpRequest {
 
     get readyState(): number {
         return this._readyState;
+    }
+
+    public get responseType(): string {
+        return this._responseType;
+    }
+
+    public set responseType(value: string) {
+        if (value === "" || value === "text") {
+            this._responseType = value;
+        } else {
+            throw new Error(`Response type of '${value}' not supported.`);
+        }
     }
 
     private _setReadyState(value: number) {
