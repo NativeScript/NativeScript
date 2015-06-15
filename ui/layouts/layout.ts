@@ -1,11 +1,31 @@
 ﻿import definition = require("ui/layouts/layout");
 import view = require("ui/core/view");
 import dependencyObservable = require("ui/core/dependency-observable");
+import proxy = require("ui/core/proxy");
+
+function onClipToBoundsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var nativeView = (<Layout>data.object)._nativeView;
+    if (!nativeView) {
+        return;
+    }
+    var value = <boolean>data.newValue;
+
+    if (nativeView instanceof UIView) {
+        (<UIView>nativeView).clipsToBounds = value;
+    }
+    else if (nativeView instanceof android.view.ViewGroup) {
+        (<android.view.ViewGroup>nativeView).setClipChildren(value);
+    }
+}
+
+var clipToBoundsProperty = new dependencyObservable.Property(
+    "clipToBounds",
+    "Layout",
+    new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, onClipToBoundsPropertyChanged)
+    );
 
 export class Layout extends view.CustomLayoutView implements definition.Layout, view.AddChildFromBuilder {
-
-    public static clipToBoundsProperty = new dependencyObservable.Property("clipToBounds", "Layout", 
-        new dependencyObservable.PropertyMetadata(true, dependencyObservable.PropertyMetadataSettings.None, Layout.onClipToBoundsPropertyChanged));
+    public static clipToBoundsProperty = clipToBoundsProperty;
 
     private _subViews: Array<view.View> = new Array<view.View>();
 
@@ -96,15 +116,10 @@ export class Layout extends view.CustomLayoutView implements definition.Layout, 
         this.style.paddingLeft = value;
     }
 
-    private static onClipToBoundsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var layout = <Layout>data.object;
-        var nativeView: Object = layout._nativeView;
-        var value = <boolean>data.newValue;
-        if (nativeView instanceof android.view.ViewGroup) {
-            (<android.view.ViewGroup>nativeView).setClipChildren(value);
-        }
-        else if (nativeView instanceof UIView) {
-            (<UIView>nativeView).clipsToBounds = value;
-        }
+    get clipToBounds(): boolean {
+        return this._getValue(Layout.clipToBoundsProperty);
+    }
+    set clipToBounds(value: boolean) {
+        this._setValue(Layout.clipToBoundsProperty, value);
     }
 } 

@@ -93,6 +93,7 @@ interface Console {
     log(message: any, ...formatParams: any[]): void;
     trace(): void;
     dump(obj: any): void;
+    createDump(obj: any): string;
     dir(obj: any): void;
 }
 

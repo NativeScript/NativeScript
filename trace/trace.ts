@@ -113,7 +113,8 @@ export module categories {
     export var Test = "Test";
     export var Binding = "Binding";
     export var Error = "Error";
-    export var All = VisualTreeEvents + "," + Layout + "," + Style + "," + ViewHierarchy + "," + NativeLifecycle + "," + Debug + "," + Navigation + "," + Test + "," + Binding + "," + Error;
+    export var Animation = "Animation";
+    export var All = VisualTreeEvents + "," + Layout + "," + Style + "," + ViewHierarchy + "," + NativeLifecycle + "," + Debug + "," + Navigation + "," + Test + "," + Binding + "," + Error + "," + Animation;
 
     export var separator = ",";
 

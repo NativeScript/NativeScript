@@ -1,0 +1,29 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded" id="mainPage">
+  <StackLayout orientation="vertical">
+    <StackLayout orientation="vertical" backgroundColor="LightGray" paddingTop="5" paddingBottom="5">
+      
+      <Label text="{{ duration, 'Duration: ' + duration + ' ms' }}" width="180" marginTop="5" marginBottom="5"/>
+      <Slider minValue="0" maxValue="10000" value="{{ duration }}" marginTop="5" marginBottom="5" marginLeft="10" marginRight="10"/>
+
+      <Label text="{{ repeatCount, 'Repeat Count: ' + repeatCount + ' times' }}" width="180" marginTop="5" marginBottom="5"/>
+      <Slider minValue="0" maxValue="10" value="{{ repeatCount }}" marginTop="5" marginBottom="5" marginLeft="10" marginRight="10"/>
+
+      <StackLayout orientation="horizontal" marginTop="5" marginBottom="5" horizontalAlignment="center">
+        <Label text="Play Sequentially?"/>
+        <Switch marginLeft="10" checked="{{ playSequentially }}"/>
+      </StackLayout>
+
+      <StackLayout orientation="horizontal" marginTop="5" marginBottom="5" horizontalAlignment="center" paddingLeft="5" paddingRight="5">
+        <Button text="Slide Out" tap="onSlideOut" width="100" marginLeft="5" marginRight="5" />
+        <Button text="Slide In" tap="onSlideIn" width="100" marginLeft="5" marginRight="5" />
+        <Button text="Cancel" tap="onStop" width="100" marginLeft="5" marginRight="5" />
+      </StackLayout>
+
+    </StackLayout>
+    <AbsoluteLayout id="panel1" backgroundColor="Yellow" width="300" height="190" clipToBounds="true" marginTop="10">
+      <Button id="button1" text="Button 1" backgroundColor="White" width="180" height="50" left="60" top="10" tap="onTap"/>
+      <Button id="button2" text="Button 2" backgroundColor="White" width="180" height="50" left="60" top="70" tap="onTap"/>
+      <Button id="button3" text="Button 3" backgroundColor="White" width="180" height="50" left="60" top="130" tap="onTap"/>
+    </AbsoluteLayout>
+  </StackLayout>
+</Page>

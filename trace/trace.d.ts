@@ -75,6 +75,7 @@ declare module "trace" {
         export var Test: string;
         export var Binding: string;
         export var Error: string;
+        export var Animation: string;
 
         export var All: string;
 
