@@ -202,6 +202,8 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i73.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\gestures.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\listview_binding.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\modal-view\login-page.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\modal-view\modal-view.ts" />
     <TypeScriptCompile Include="es-collections.d.ts" />
     <TypeScriptCompile Include="es6-promise.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.d.ts" />
@@ -631,6 +633,8 @@
     <Content Include="apps\template-hello-world\app.css" />
     <Content Include="apps\template-master-detail\app.css" />
     <Content Include="apps\template-tab-navigation\app.css" />
+    <Content Include="apps\ui-tests-app\modal-view\login-page.xml" />
+    <Content Include="apps\ui-tests-app\modal-view\modal-view.xml" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
