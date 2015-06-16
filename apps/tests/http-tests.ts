@@ -598,3 +598,34 @@ export var test_XMLHttpRequest_requestShouldBePossibleAfterAbort = function (don
 
     xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
 };
+
+export function test_raises_onload_Event(done) {
+    let xhr = new XMLHttpRequest();
+    xhr.onload = () => {
+        done(null);
+    }
+    xhr.open("GET", "https://httpbin.org/get");
+    xhr.send();
+}
+
+export function test_raises_onerror_Event(done) {
+    let xhr = new XMLHttpRequest();
+    xhr.onerror = () => {
+        done(null);
+    }
+    xhr.open("GET", "https://no-such-domain-httpbin.org");
+    xhr.send();
+}
+
+export function test_responseType(done) {
+    let xhr = new XMLHttpRequest();
+    xhr.responseType = "";
+    xhr.responseType = "text";
+
+    TKUnit.assertThrows(
+        () => xhr.responseType = "json",
+        "Didn't raise on unsupported type.",
+        "Response type of 'json' not supported."
+    );
+    done(null);
+}

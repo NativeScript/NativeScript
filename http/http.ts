@@ -39,6 +39,9 @@ export class XMLHttpRequest {
     public LOADING = 3;
     public DONE = 4;
 
+    public onload: () => void;
+    public onerror: () => void;
+
     private _options: definition.HttpRequestOptions;
     private _readyState: number;
     private _status: number;
@@ -46,6 +49,7 @@ export class XMLHttpRequest {
     private _responseText: string = "";
     private _headers: any;
     private _errorFlag: boolean;
+    private _responseType: string;
 
     public onreadystatechange: Function;
 
@@ -112,8 +116,9 @@ export class XMLHttpRequest {
                 }
 
             }).catch(e => {
-                    this._errorFlag = true;
-                });
+                this._errorFlag = true;
+                this._setReadyState(this.DONE);
+            });
         }
     }
 
@@ -159,12 +164,33 @@ export class XMLHttpRequest {
         return this._readyState;
     }
 
+    public get responseType(): string {
+        return this._responseType;
+    }
+
+    public set responseType(value: string) {
+        if (value === "" || value === "text") {
+            this._responseType = value;
+        } else {
+            throw new Error(`Response type of '${value}' not supported.`);
+        }
+    }
+
     private _setReadyState(value: number) {
         if (this._readyState !== value) {
             this._readyState = value;
 
             if (types.isFunction(this.onreadystatechange)) {
                 this.onreadystatechange();
+            }
+        }
+
+        if (this._readyState === this.DONE) {
+            if (this._errorFlag && types.isFunction(this.onerror)) {
+                this.onerror();
+            }
+            if (!this._errorFlag && types.isFunction(this.onload)) {
+                this.onload();
             }
         }
     }

@@ -37,7 +37,11 @@ declare class XMLHttpRequest {
     overrideMimeType(mime: string): void;
     readyState: number;
     responseText: string;
+    responseType: string;
     status: number;
+
+    onload: () => void;
+    onerror: () => void;
 }
 
 /**
