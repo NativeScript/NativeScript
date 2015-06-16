@@ -48,6 +48,7 @@ export module Stretch {
 
 export module Visibility {
     export var visible: string = "visible";
+    export var collapse: string = "collapse";
     export var collapsed: string = "collapsed";
 }
 

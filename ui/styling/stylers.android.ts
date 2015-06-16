@@ -227,7 +227,7 @@ export class ActivityIndicatorStyler implements definition.stylers.Styler {
     }
 
     public static setIndicatorVisibility(isBusy: boolean, visibility: string, nativeView: android.view.View) {
-        if (visibility === enums.Visibility.collapsed) {
+        if (visibility === enums.Visibility.collapsed || visibility === enums.Visibility.collapse) {
             nativeView.setVisibility(android.view.View.GONE);
         }
         else {

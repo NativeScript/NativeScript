@@ -191,9 +191,14 @@
         export var visible: string;
 
         /**
-         * The view is not visible and won't take place in the layout.
+         * Obsolete. Please use 'collapse' instead!
          */
         export var collapsed: string;
+
+        /**
+         * The view is not visible and won't take place in the layout.
+         */
+        export var collapse: string;
     }
 
     /**

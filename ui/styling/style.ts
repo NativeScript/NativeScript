@@ -504,11 +504,11 @@ export var paddingBottomProperty = new styleProperty.Property("paddingBottom", "
     new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
 
 function isVisibilityValid(value: string): boolean {
-    return value === enums.Visibility.visible || value === enums.Visibility.collapsed;
+    return value === enums.Visibility.visible || value === enums.Visibility.collapse || value === enums.Visibility.collapsed;
 }
 
 function setLayoutInfoVisibility(data: observable.PropertyChangeData) {
-    (<any>data.object)._view._isVisibleCache = data.newValue !== enums.Visibility.collapsed;
+    (<any>data.object)._view._isVisibleCache = (data.newValue !== enums.Visibility.collapse || data.newValue !== enums.Visibility.collapsed);
 }
 
 export var visibilityProperty = new styleProperty.Property("visibility", "visibility",
