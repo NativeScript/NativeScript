@@ -80,6 +80,7 @@ export class WebView extends common.WebView {
         if (this._ios.loading) {
             this._ios.stopLoading();
         }
+        url = this._getRealUrl(url);
         this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(url)));
     }
 
@@ -128,4 +129,4 @@ export class WebView extends common.WebView {
     public reload() {
         this._ios.reload();
     }
-} 
+}
