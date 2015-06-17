@@ -5,8 +5,18 @@ import file_access_module = require("file-system/file-system-access");
 import types = require("utils/types");
 import componentBuilder = require("ui/builder/component-builder");
 import templateBuilderDef = require("ui/builder/template-builder");
+import platform = require("platform");
 
 var KNOWNCOLLECTIONS = "knownCollections";
+
+function isPlatform(value: string): boolean {
+    return value && (value.toLowerCase() === platform.platformNames.android.toLowerCase()
+        || value.toLowerCase() === platform.platformNames.ios.toLowerCase());
+}
+
+function isCurentPlatform(value: string): boolean {
+    return value && value.toLowerCase() === platform.device.os.toLowerCase();
+}
 
 export function parse(value: string, exports: any): view.View {
     var viewToReturn: view.View;
@@ -32,8 +42,28 @@ function parseInternal(value: string, exports: any): componentBuilder.ComponentM
 
     var templateBuilder: templateBuilderDef.TemplateBuilder;
 
+    var currentPlatformContext: string;
+
     // Parse the XML.
     var xmlParser = new xml.XmlParser((args: xml.ParserEvent) => {
+
+        if (args.eventType === xml.ParserEventType.StartElement) {
+            if (isPlatform(args.elementName)) {
+                currentPlatformContext = args.elementName;
+                return;
+            }
+        }
+
+        if (currentPlatformContext && !isCurentPlatform(currentPlatformContext)) {
+            return;
+        }
+
+        if (args.eventType === xml.ParserEventType.EndElement) {
+            if (isPlatform(args.elementName)) {
+                currentPlatformContext = undefined;
+                return;
+            }
+        }
 
         if (templateBuilder) {
             if (args.eventType === xml.ParserEventType.StartElement) {

@@ -142,6 +142,16 @@ export function test_parse_ShouldParsePlatformSpecificProperties() {
     }
 };
 
+export function test_parse_ShouldParsePlatformSpecificComponents() {
+    var p = <page.Page>builder.parse("<Page><ios><TextField /></ios><android><Label /></android></Page>");
+    if (platform.device.os === platform.platformNames.ios) {
+        TKUnit.assert(p.content instanceof textFieldModule.TextField, "Expected result: TextField; Actual result: " + p.content);
+    }
+    else {
+        TKUnit.assert(p.content instanceof labelModule.Label, "Expected result: Label; Actual result: " + p.content);
+    }
+};
+
 export function test_parse_ShouldParseBindings() {
     var p = <page.Page>builder.parse("<Page><Switch checked='{{ myProp }}' /></Page>");
     p.bindingContext = { myProp: true };
