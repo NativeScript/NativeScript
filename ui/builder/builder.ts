@@ -49,13 +49,14 @@ function parseInternal(value: string, exports: any): componentBuilder.ComponentM
 
         if (args.eventType === xml.ParserEventType.StartElement) {
             if (isPlatform(args.elementName)) {
+
+                if (currentPlatformContext) {
+                    throw new Error("Already in '" + currentPlatformContext + "' platform context and cannot switch to '" + args.elementName + "' platform! Platform tags cannot be nested.");
+                }
+
                 currentPlatformContext = args.elementName;
                 return;
             }
-        }
-
-        if (currentPlatformContext && !isCurentPlatform(currentPlatformContext)) {
-            return;
         }
 
         if (args.eventType === xml.ParserEventType.EndElement) {
@@ -63,6 +64,10 @@ function parseInternal(value: string, exports: any): componentBuilder.ComponentM
                 currentPlatformContext = undefined;
                 return;
             }
+        }
+
+        if (currentPlatformContext && !isCurentPlatform(currentPlatformContext)) {
+            return;
         }
 
         if (templateBuilder) {

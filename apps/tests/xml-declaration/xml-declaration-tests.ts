@@ -152,6 +152,17 @@ export function test_parse_ShouldParsePlatformSpecificComponents() {
     }
 };
 
+export function test_parse_ThrowErrorWhenNestingPlatforms() {
+    var e: Error;
+    try {
+        builder.parse("<Page><ios><TextField /><android><Label /></android></ios></Page>");
+    } catch (ex) {
+        e = ex;
+    }
+    
+    TKUnit.assert(e, "Expected result: Error; Actual result: " + e);
+};
+
 export function test_parse_ShouldParseBindings() {
     var p = <page.Page>builder.parse("<Page><Switch checked='{{ myProp }}' /></Page>");
     p.bindingContext = { myProp: true };
