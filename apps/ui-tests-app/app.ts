@@ -1,6 +1,9 @@
 ﻿import application = require("application");
 application.mainModule = "mainPage";
 
+var countResume = 0;
+var countSuspend = 0;
+
 application.onUncaughtError = function (error: application.NativeScriptError) {
     console.warn(error.message);
     if (error.nativeError) {
@@ -21,20 +24,20 @@ application.on(application.launchEvent, function (args: application.ApplicationE
 application.on(application.suspendEvent, function (args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
-        console.log("### SuspendEvent Activity: " + args.android);
+        console.log("#" + ++countSuspend + "# SuspendEvent Activity: " + args.android);
     } else if (args.ios) {
         // For iOS applications, args.ios is UIApplication.
-        console.log("### SuspendEvent UIApplication: " + args.ios);
+        console.log("#" + ++countSuspend + "# SuspendEvent UIApplication: " + args.ios);
     }
 });
 
 application.on(application.resumeEvent, function (args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
-        console.log("### ResumeEvent Activity: " + args.android);
+        console.log("#" + ++countResume + "# ResumeEvent Activity: " + args.android);
     } else if (args.ios) {
         // For iOS applications, args.ios is UIApplication.
-        console.log("### ResumeEvent UIApplication: " + args.ios);
+        console.log("#" + ++countResume + "# ResumeEvent UIApplication: " + args.ios);
     }
 });
 
