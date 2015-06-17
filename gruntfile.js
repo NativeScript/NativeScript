@@ -142,6 +142,12 @@ module.exports = function(grunt) {
         ]
     };
 
+    var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
+    nodeTestEnv['NODE_PATH'] = localCfg.outModulesDir;
+
+    localCfg.nodeTestsDir = pathModule.join(localCfg.outModulesDir, 'node-tests');
+
+
     localCfg.mainPackageContent = grunt.file.readJSON(localCfg.packageJsonFilePath);
     localCfg.packageVersion = getPackageVersion(localCfg.packageJsonFilePath);
     localCfg.commitSHA = getCommitSha();
@@ -179,6 +185,9 @@ module.exports = function(grunt) {
                     "./**/*.map"
                 ],
                 cwd: localCfg.outModulesDir
+            },
+            nodeTests: {
+                src: localCfg.nodeTestsDir,
             },
             readyAppFiles: {
                 src: [localCfg.outModulesDir + "/apps/**"]
@@ -293,6 +302,25 @@ module.exports = function(grunt) {
                 src: localCfg.typeScriptSrc,
                 outDir: localCfg.outModulesDir,
                 options: {
+                    fast: 'never',
+                    module: "commonjs",
+                    target: "es5",
+                    sourceMap: false,
+                    declaration: false,
+                    removeComments: "<%= !grunt.option('leavecomments') || '' %>",
+                    compiler: "node_modules/typescript/bin/tsc",
+                    noEmitOnError: true
+                }
+            },
+            buildNodeTests: {
+                src: [
+                    'js-libs/easysax/**/*.ts',
+                    'xml/**/*.ts',
+                    'node-tests/**/*.ts',
+                ],
+                outDir: localCfg.outModulesDir,
+                options: {
+                    fast: 'never',
                     module: "commonjs",
                     target: "es5",
                     sourceMap: false,
@@ -325,6 +353,9 @@ module.exports = function(grunt) {
             packApp: {
                 cmd: "npm pack",
                 cwd: "__dummy__"
+            },
+            mochaNode: {
+                cmd: "grunt simplemocha:node"
             }
         },
         multidest: {
@@ -347,6 +378,16 @@ module.exports = function(grunt) {
                 options: {
                     callback: assignGitSHA
                 }
+            },
+        },
+        simplemocha: {
+            node: {
+                src: localCfg.nodeTestsDir + '/**/*.js'
+            }
+        },
+        env: {
+            nodeTests: {
+                NODE_PATH: localCfg.outModulesDir,
             }
         }
     });
@@ -358,6 +399,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-tslint");
     grunt.loadNpmTasks("grunt-multi-dest");
     grunt.loadNpmTasks("grunt-shell");
+    grunt.loadNpmTasks("grunt-env");
+    grunt.loadNpmTasks("grunt-simple-mocha");
 
     var cloneTasks = function(originalTasks, taskNameSuffix)
     {
@@ -486,4 +529,19 @@ module.exports = function(grunt) {
         "pack-definitions",
         "get-ready-packages"
     ]));
+
+    grunt.registerTask("testEnv", function() {
+        console.log('fafla', process.env.NODE_PATH);
+        //var x = require('xml')
+        //console.log(x);
+    });
+
+    grunt.registerTask("node-tests", [
+        "clean:nodeTests",
+        "ts:buildNodeTests",
+        "copy:childPackageFiles",
+        "copy:jsLibs",
+        "env:nodeTests",
+        "exec:mochaNode", //spawn a new process to use the new NODE_PATH
+    ]);
 };

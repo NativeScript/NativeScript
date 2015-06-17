@@ -86,7 +86,7 @@ declare module "xml" {
         * @param onError The callback to execute when a parser error occurs. The 'error' parameter contains the error.
         * @param processNamespaces Specifies whether namespaces should be processed.
         */
-        constructor(onEvent: (event: ParserEvent) => void, onError?: (error: Error) => void, processNamespaces?: boolean);
+        constructor(onEvent: (event: ParserEvent) => void, onError?: (error: Error) => void, processNamespaces?: boolean, angularSyntax?: boolean);
         
        /**
         * Parses the supplied xml string.
