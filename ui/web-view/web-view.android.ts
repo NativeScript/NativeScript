@@ -73,6 +73,7 @@ export class WebView extends common.WebView {
     public _loadUrl(url: string) {
         trace.write("WebView._loadUrl(" + url + ")", trace.categories.Debug);
         this._android.stopLoading();
+        url = this._getRealUrl(url);
         this._android.loadUrl(url);
     }
 
