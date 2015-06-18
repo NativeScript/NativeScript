@@ -1,4 +1,5 @@
-﻿import pageModule = require("ui/page");
+﻿import app = require("application");
+import pageModule = require("ui/page");
 import labelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import textViewModule = require("ui/text-view");
@@ -59,19 +60,21 @@ export function pageLoaded() {
     console.assert(0 === 1, "%d not equals %d", 0, 1);
     console.assert(1 === 1, "1 equals 1");
 
-    console.dump(true);
-    console.dump(false);
-    console.dump(null);
-    console.dump(undef);
+    if (app.android) {
+        console.dump(true);
+        console.dump(false);
+        console.dump(null);
+        console.dump(undef);
 
-    console.dump(num);
-    console.dump(str);
+        console.dump(num);
+        console.dump(str);
 
-    console.dir(obj);
-    console.dump(foo);
+        console.dir(obj);
+        console.dump(foo);
+        console.log("%j", button);
+    }
+
     console.trace();
-
-    console.log("%j", button);
 
     console.timeEnd("Time");
     console.log("### TEST END ###");
