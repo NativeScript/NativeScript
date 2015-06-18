@@ -7,7 +7,7 @@ import textViewModule = require("ui/text-view");
 
 class MyTraceWriter implements trace.TraceWriter {
     public write(message: any, category: string) {
-        if (textView) {
+        if (textView && message && message.toLowerCase().indexOf("failed") !== -1) {
             if (textView.android) {
                 textView.text = message + "\r\n" + textView.text;
             }

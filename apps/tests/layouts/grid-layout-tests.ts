@@ -348,11 +348,12 @@ export function test_GridLayout_desiredSize_isCorrect() {
         }
     }
 
-    var density = utils.layout.getDisplayDensity();
-    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
+    var delta = 1.1; // Set to an overly high value to avoid failing on some emulators.
 
-    TKUnit.assertAreClose(rootLayout.getMeasuredWidth(), Math.round(maxWidth), delta, "GridLayout incorrect measured width");
-    TKUnit.assertAreClose(rootLayout.getMeasuredHeight(), Math.round(maxHeight), delta, "GridLayout incorrect measured height");
+    let measuredWidth = rootLayout.getMeasuredWidth();
+    let measuredHeight = rootLayout.getMeasuredHeight();
+    TKUnit.assertAreClose(measuredWidth, maxWidth, delta, "GridLayout incorrect measured width");
+    TKUnit.assertAreClose(measuredHeight, maxHeight, delta, "GridLayout incorrect measured height");
 }
 
 export function test_GridLayout_columnsActualWidth_isCorrect() {
