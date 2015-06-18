@@ -12,6 +12,7 @@ var ITEMLOADING = common.ListView.itemLoadingEvent;
 var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
 var ITEMTAP = common.ListView.itemTapEvent;
 var REALIZED_INDEX = "realizedIndex";
+var REFRESH = common.ListView.refreshEvent;
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -24,8 +25,8 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
     }
 
     if (data.newValue instanceof color.Color) {
-        bar.android.setDivider(new android.graphics.drawable.ColorDrawable((<color.Color>data.newValue).android));
-        bar.android.setDividerHeight(1);
+        bar.android.ListView.setDivider(new android.graphics.drawable.ColorDrawable((<color.Color>data.newValue).android));
+        bar.android.ListView.setDividerHeight(1);
     }
 }
 
@@ -33,26 +34,29 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
 (<proxy.PropertyMetadata>common.ListView.separatorColorProperty.metadata).onSetNativeValue = onSeparatorColorPropertyChanged;
 
 export class ListView extends common.ListView {
-    private _android: android.widget.ListView;
+    private _listview: android.widget.ListView;
+    private _refreshlayout: android.support.v4.widget.SwipeRefreshLayout;
+    private _android: definition.AndroidListView;
     public _realizedItems = {};
-    private _androidViewId: number;
+    private _androidListViewId: number;
+    private _androidRefreshLayoutId: number;
 
     public _createUI() {
-        this._android = new android.widget.ListView(this._context);
+        var listview = new android.widget.ListView(this._context);
 
         // Fixes issue with black random black items when scrolling
-        this._android.setCacheColorHint(android.graphics.Color.TRANSPARENT);
-        if (!this._androidViewId) {
-            this._androidViewId = android.view.View.generateViewId();
+        listview.setCacheColorHint(android.graphics.Color.TRANSPARENT);
+        if (!this._androidListViewId) {
+            this._androidListViewId = android.view.View.generateViewId();
         }
-        this._android.setId(this._androidViewId);
+        listview.setId(this._androidListViewId);
 
-        this.android.setAdapter(new ListViewAdapter(this));
+        listview.setAdapter(new ListViewAdapter(this));
 
         var that = new WeakRef(this);
 
         // TODO: This causes many marshalling calls, rewrite in Java and generate bindings
-        this.android.setOnScrollListener(new android.widget.AbsListView.OnScrollListener({
+        listview.setOnScrollListener(new android.widget.AbsListView.OnScrollListener({
             onScrollStateChanged: function (view: android.widget.AbsListView, scrollState: number) {
                 var owner: ListView = this.owner;
                 if (!owner) {
@@ -82,7 +86,7 @@ export class ListView extends common.ListView {
             }
         }));
 
-        this.android.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener({
+        listview.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener({
             onItemClick: function (parent: any, convertView: android.view.View, index: number, id: number) {
                 var owner = that.get();
                 if (owner) {
@@ -90,18 +94,53 @@ export class ListView extends common.ListView {
                 }
             }
         }));
+        this._listview = listview;
+
+        //Init SwipeRefreshLayout if there is refresh event
+        if (this.hasListeners(common.ListView.refreshEvent)) {
+           var refreshLayout = new android.support.v4.widget.SwipeRefreshLayout(this._context);
+           refreshLayout.addView(this._listview);
+           refreshLayout.setOnRefreshListener(new android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener({
+               onRefresh: function() {
+                   var owner = that.get();
+                   if (owner) {
+                       owner.notify(<definition.RefreshEventData>{
+                           eventName: REFRESH,
+                           object: owner,
+                           done: function() { refreshLayout.setRefreshing(false) }
+                       });
+                   }
+               }
+           }));
+           if (!this._androidRefreshLayoutId) {
+               this._androidRefreshLayoutId = android.view.View.generateViewId();
+           }
+           refreshLayout.setId(this._androidRefreshLayoutId);
+           this._refreshlayout = refreshLayout;
+        }
+        this._android = <definition.AndroidListView> {
+           RefreshLayout: this._refreshlayout,
+           ListView: this._listview,
+       }
     }
 
-    get android(): android.widget.ListView {
+    get android(): definition.AndroidListView {
         return this._android;
     }
 
+    get _nativeView(): android.view.View {
+        if (this._refreshlayout) {
+            return this._refreshlayout
+        }
+        return this._listview;
+    }
+
     public refresh() {
-        if (!this._android || !this._android.getAdapter()) {
+        if (!this._listview || !this._listview.getAdapter()) {
             return;
         }
 
-        (<ListViewAdapter>this.android.getAdapter()).notifyDataSetChanged();
+        (<ListViewAdapter>this._listview.getAdapter()).notifyDataSetChanged();
     }
 
     public _onDetached(force?: boolean) {

@@ -50,9 +50,9 @@ declare module "ui/list-view" {
         public static isScrollingProperty: dependencyObservable.Property;
 
         /**
-         * Gets the native [android widget](http://developer.android.com/reference/android/widget/ListView.html) that represents the user interface for this component. Valid only when running on Android OS.
+         * Get the wrapped object of native Android ListView and SwipeRefreshLayout
          */
-        android: android.widget.ListView;
+        android: AndroidListView;
 
         /**
          * Gets the native [iOS view](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/) that represents the user interface for this component. Valid only when running on iOS.
@@ -135,5 +135,27 @@ declare module "ui/list-view" {
          * Gets the native [android widget](http://developer.android.com/reference/android/view/ViewGroup.html) that represents the user interface where the view is hosted. Valid only when running on Android OS.
          */
         android: android.view.ViewGroup;
+    }
+
+    /**
+     * Represents a wrapped object of native Android ListView and SwipeRefreshLayout
+     */
+    export interface AndroidListView {
+        RefreshLayout: android.support.v4.widget.SwipeRefreshLayout;
+
+        /**
+         * Native [android widget](http://developer.android.com/reference/android/widget/ListView.html) that represents the user interface for this component. Valid only when running on Android OS.
+         */
+        ListView: android.widget.ListView;
+    }
+
+    /**
+     * Event data containing information for "refresh" with done callback
+     */
+    export interface RefreshEventData extends observable.EventData {
+        /**
+         * Callback when refresh is done to hide the loading icon
+         */
+        done: () => void;
     }
 }
