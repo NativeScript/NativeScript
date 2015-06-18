@@ -44,7 +44,7 @@ class BorderGradientDrawable extends android.graphics.drawable.GradientDrawable 
         if (this._cornerRadius !== value) {
             this._cornerRadius = value;
 
-            this.setCornerRadius(this._cornerRadius);
+            this.setCornerRadius(this._cornerRadius * this._density);
         }
     }
 
