@@ -26,7 +26,7 @@ export function getNativeColor(textField: textFieldModule.TextField): colorModul
 }
 
 export function getNativeBackgroundColor(textField: textFieldModule.TextField): colorModule.Color {
-    return new colorModule.Color((<android.graphics.drawable.ColorDrawable>textField.android.getBackground()).getColor());
+    return new colorModule.Color((<any>textField.android.getBackground()).backgroundColor);
 }
 
 export function getNativeTextAlignment(textField: textFieldModule.TextField): string {

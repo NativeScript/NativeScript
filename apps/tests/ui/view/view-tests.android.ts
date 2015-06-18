@@ -254,3 +254,33 @@ export var test_StylePropertiesDefaultValuesCache = function () {
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
 }
+
+export function getNativeBorderWidth(v: view.View): number {
+    var bkg = <any>(<android.view.View>v.android).getBackground();
+
+    return bkg ? bkg.borderWidth : -1;
+}
+
+export function getNativeCornerRadius(v: view.View): number {
+    var bkg = <any>(<android.view.View>v.android).getBackground();
+
+    return bkg ? bkg.cornerRadius : -1;
+}
+
+export function checkNativeBorderColor(v: view.View): boolean {
+    var bkg = <any>(<android.view.View>v.android).getBackground();
+
+    return v.borderColor && bkg && bkg.borderColor === v.borderColor.android;
+}
+
+export function checkNativeBackgroundColor(v: view.View): boolean {
+    var bkg = <any>(<android.view.View>v.android).getBackground();
+
+    return v.backgroundColor && bkg && bkg.backgroundColor === v.backgroundColor.android;
+}
+
+export function checkNativeBackgroundImage(v: view.View): boolean {
+    var bkg = <any>(<android.view.View>v.android).getBackground();
+
+    return bkg && bkg.bitmap !== undefined;
+}

@@ -17,7 +17,7 @@ export function getNativeColor(button: buttonModule.Button): colorModule.Color {
 }
 
 export function getNativeBackgroundColor(button: buttonModule.Button): colorModule.Color {
-    return new colorModule.Color((<android.graphics.drawable.ColorDrawable>button.android.getBackground()).getColor());
+    return new colorModule.Color((<any>button.android.getBackground()).backgroundColor);
 }
 
 export function getNativeTextAlignment(button: buttonModule.Button): string {

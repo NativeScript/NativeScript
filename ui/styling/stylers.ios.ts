@@ -85,6 +85,45 @@ export class DefaultStyler implements definition.stylers.Styler {
         }
     }
 
+    //Border width methods
+    private static setBorderWidthProperty(view: view.View, newValue: any) {
+        if (view._nativeView instanceof UIView) {
+            (<UIView>view._nativeView).layer.borderWidth = newValue;
+        }
+    }
+
+    private static resetBorderWidthProperty(view: view.View, nativeValue: any) {
+        if (view._nativeView instanceof UIView) {
+            (<UIView>view._nativeView).layer.borderWidth = nativeValue;
+        }
+    }
+
+    //Border color methods
+    private static setBorderColorProperty(view: view.View, newValue: any) {
+        if (view._nativeView instanceof UIView && newValue instanceof UIColor) {
+            (<UIView>view._nativeView).layer.borderColor = (<UIColor>newValue).CGColor;
+        }
+    }
+
+    private static resetBorderColorProperty(view: view.View, nativeValue: any) {
+        if (view._nativeView instanceof UIView && nativeValue instanceof UIColor) {
+            (<UIView>view._nativeView).layer.borderColor = (<UIColor>nativeValue).CGColor;
+        }
+    }
+
+    //Border radius methods
+    private static setBorderRadiusProperty(view: view.View, newValue: any) {
+        if (view._nativeView instanceof UIView) {
+            (<UIView>view._nativeView).layer.cornerRadius = newValue;
+        }
+    }
+
+    private static resetBorderRadiusProperty(view: view.View, nativeValue: any) {
+        if (view._nativeView instanceof UIView) {
+            (<UIView>view._nativeView).layer.cornerRadius = nativeValue;
+        }
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setBackgroundProperty,
@@ -103,6 +142,18 @@ export class DefaultStyler implements definition.stylers.Styler {
         style.registerHandler(style.opacityProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setOpacityProperty,
             DefaultStyler.resetOpacityProperty));
+
+        style.registerHandler(style.borderWidthProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setBorderWidthProperty,
+            DefaultStyler.resetBorderWidthProperty));
+
+        style.registerHandler(style.borderColorProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setBorderColorProperty,
+            DefaultStyler.resetBorderColorProperty));
+
+        style.registerHandler(style.borderRadiusProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setBorderRadiusProperty,
+            DefaultStyler.resetBorderRadiusProperty));
     }
 }
 

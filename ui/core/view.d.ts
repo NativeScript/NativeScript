@@ -96,6 +96,21 @@ declare module "ui/core/view" {
      */
     export class View extends proxy.ProxyObject {
         /**
+         * Gets or sets the corner radius of the view.
+         */
+        borderRadius: number;
+
+        /**
+         * Gets or sets the border width of the view.
+         */
+        borderWidth: number;
+
+        /**
+         * Gets or sets the border color of the view.
+         */
+        borderColor: color.Color;
+
+        /**
          * String value used when hooking to loaded event.
          */
         public static loadedEvent: string;

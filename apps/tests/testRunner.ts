@@ -23,6 +23,7 @@ function isRunningOnEmulator(): boolean {
 }
 
 export var allTests = {};
+allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
 allTests["APPLICATION"] = require("./application-tests");
 allTests["DOCKLAYOUT"] = require("./layouts/dock-layout-tests");
 allTests["WRAPLAYOUT"] = require("./layouts/wrap-layout-tests");
@@ -49,6 +50,7 @@ allTests["STYLE"] = require("./ui/style/style-tests");
 allTests["VISUAL-STATE"] = require("./ui/style/visual-state-tests");
 allTests["VALUE-SOURCE"] = require("./ui/style/value-source-tests");
 allTests["BUTTON"] = require("./ui/button/button-tests");
+allTests["BORDER"] = require("./ui/border/border-tests");
 allTests["LABEL"] = require("./ui/label/label-tests");
 allTests["TAB-VIEW"] = require("./ui/tab-view/tab-view-tests");
 allTests["IMAGE"] = require("./ui/image/image-tests");
@@ -63,7 +65,6 @@ allTests["TEXT-VIEW"] = require("./ui/text-view/text-view-tests");
 allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");
 allTests["FILE-SYSTEM-ACCESS"] = require("./file-system-access-tests/file-system-access-tests");
 allTests["FILE-NAME-RESOLVER"] = require("./file-name-resolver-tests/file-name-resolver-tests");
-allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
 allTests["LIST-PICKER"] = require("./ui/list-picker/list-picker-tests");
 allTests["DATE-PICKER"] = require("./ui/date-picker/date-picker-tests");
 allTests["TIME-PICKER"] = require("./ui/time-picker/time-picker-tests");

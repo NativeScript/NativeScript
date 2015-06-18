@@ -45,6 +45,27 @@ export class Style extends observable.DependencyObservable implements styling.St
         this._setValue(backgroundImageProperty, value, observable.ValueSource.Local);
     }
 
+    get borderColor(): color.Color {
+        return this._getValue(borderColorProperty);
+    }
+    set borderColor(value: color.Color) {
+        this._setValue(borderColorProperty, value, observable.ValueSource.Local);
+    }
+
+    get borderWidth(): number {
+        return this._getValue(borderWidthProperty);
+    }
+    set borderWidth(value: number) {
+        this._setValue(borderWidthProperty, value, observable.ValueSource.Local);
+    }
+
+    get borderRadius(): number {
+        return this._getValue(borderRadiusProperty);
+    }
+    set borderRadius(value: number) {
+        this._setValue(borderRadiusProperty, value, observable.ValueSource.Local);
+    }
+
     get fontSize(): number {
         return this._getValue(fontSizeProperty);
     }
@@ -352,29 +373,48 @@ export var backgroundImageProperty = new styleProperty.Property("backgroundImage
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundImagePropertyChanged));
 
 function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
+    var view: view.View = (<any>data.object)._view;
     var style = <Style>data.object;
+    var url: string = data.newValue;
+
+    style._setValue(backgroundImageSourceProperty, undefined, observable.ValueSource.Local);
 
     if (types.isString(data.newValue)) {
         var pattern: RegExp = /url\(('|")(.*?)\1\)/;
-        var match = data.newValue && (<string>data.newValue).match(pattern);
-        var url = match && match[2];
+        var match = url.match(pattern);
+        if (match && match[2]) {
+            url = match[2];
+        }
 
-        if (types.isDefined(url)) {
-            if (utils.isDataURI(url)) {
-                var base64Data = url.split(",")[1];
-                if (types.isDefined(base64Data)) {
-                    style._setValue(backgroundImageSourceProperty, imageSource.fromBase64(base64Data), observable.ValueSource.Local);
-                }
-            } else if (utils.isFileOrResourcePath(url)) {
-                style._setValue(backgroundImageSourceProperty, imageSource.fromFileOrResource(url), observable.ValueSource.Local);
-            } else {
-                imageSource.fromUrl(url).then(r=> {
-                    style._setValue(backgroundImageSourceProperty, r, observable.ValueSource.Local);
-                });
+        if (utils.isDataURI(url)) {
+            var base64Data = url.split(",")[1];
+            if (types.isDefined(base64Data)) {
+                style._setValue(backgroundImageSourceProperty, imageSource.fromBase64(base64Data), observable.ValueSource.Local);
             }
+        } else if (utils.isFileOrResourcePath(url)) {
+            style._setValue(backgroundImageSourceProperty, imageSource.fromFileOrResource(url), observable.ValueSource.Local);
+        } else if (url.indexOf("http") !== -1) {
+            if (view) {
+                view["_url"] = url;
+            }
+            imageSource.fromUrl(url).then(r=> {
+                if (view && view["_url"] === url) {
+                    style._setValue(backgroundImageSourceProperty, r, observable.ValueSource.Local);
+                }
+            });
         }
     }
 }
+
+export var borderColorProperty = new styleProperty.Property("borderColor", "border-color",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, color.Color.equals),
+    converters.colorConverter);
+
+export var borderWidthProperty = new styleProperty.Property("borderWidth", "border-width",
+    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
+
+export var borderRadiusProperty = new styleProperty.Property("borderRadius", "border-radius",
+    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
 
 export var backgroundImageSourceProperty = new styleProperty.Property("backgroundImageSource", "background-image-source",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, undefined));

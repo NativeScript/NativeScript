@@ -187,6 +187,26 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
 
     // START Style property shortcuts
+    get borderRadius(): number {
+        return this.style.borderRadius;
+    }
+    set borderRadius(value: number) {
+        this.style.borderRadius = value;
+    }
+
+    get borderWidth(): number {
+        return this.style.borderWidth;
+    }
+    set borderWidth(value: number) {
+        this.style.borderWidth = value;
+    }
+
+    get borderColor(): color.Color {
+        return this.style.borderColor;
+    }
+    set borderColor(value: color.Color) {
+        this.style.borderColor = value;
+    }
 
     get color(): color.Color {
         return this.style.color;
