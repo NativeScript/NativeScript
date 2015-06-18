@@ -85,13 +85,20 @@ class BorderGradientDrawable extends android.graphics.drawable.GradientDrawable 
     }
 
     public draw(canvas: android.graphics.Canvas): void {
-        if (this.bitmap) {
-            this.setColor(android.graphics.Color.TRANSPARENT);
+        super.draw(canvas);
 
+        if (this.bitmap) {
+            var radius = this._cornerRadius * this._density;
             var stroke = this._borderWidth * this._density;
+
+            var bounds = this.getBounds();
+
+            var path = new android.graphics.Path();
+            path.addRoundRect(new android.graphics.RectF(stroke, stroke, bounds.right - stroke, bounds.bottom - stroke), radius, radius, android.graphics.Path.Direction.CW)
+            canvas.clipPath(path);
+
             canvas.drawBitmap(this.bitmap, stroke, stroke, undefined);
         }
-        super.draw(canvas);
     }
 }
 
