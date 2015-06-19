@@ -8,6 +8,7 @@ tscommand*.tmp.txt
 node_modules/
 dist/
 
+*.js
 !gruntfile.js
 !js-libs/**/*.*
 !apps/TelerikNEXT/lib/**/*.*
