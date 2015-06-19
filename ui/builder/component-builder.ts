@@ -16,6 +16,7 @@ var UI_PATH = "ui/";
 var MODULES = {
     "ActivityIndicator": "ui/activity-indicator",
     "ListView": "ui/list-view",
+    "RefreshableListView": "ui/refreshable-list-view",
     "GridLayout": "ui/layouts/grid-layout",
     "DockLayout": "ui/layouts/dock-layout",
     "WrapLayout": "ui/layouts/wrap-layout",
