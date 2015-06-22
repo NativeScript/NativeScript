@@ -302,6 +302,20 @@ export class TextViewStyler implements definition.stylers.Styler {
         return (<android.widget.TextView>view.android).getTextSize();
     }
 
+    // font
+    private static setFontProperty(view: view.View, newValue: any) {
+        var typeface = <android.graphics.Typeface>newValue;
+        (<android.widget.TextView>view.android).setTypeface(typeface);
+    }
+
+    private static resetFontProperty(view: view.View, nativeValue: any) {
+        (<android.widget.TextView>view.android).setTypeface(nativeValue);
+    }
+
+    private static getNativeFontValue(view: view.View): any {
+        return (<android.widget.TextView>view.android).getTypeface();
+    }
+
     // text-align
     private static setTextAlignmentProperty(view: view.View, newValue: any) {
         var verticalGravity = view.android.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
@@ -338,6 +352,11 @@ export class TextViewStyler implements definition.stylers.Styler {
             TextViewStyler.setFontSizeProperty,
             TextViewStyler.resetFontSizeProperty,
             TextViewStyler.getNativeFontSizeValue));
+
+        style.registerHandler(style.fontProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setFontProperty,
+            TextViewStyler.resetFontProperty,
+            TextViewStyler.getNativeFontValue));
 
         style.registerHandler(style.textAlignmentProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setTextAlignmentProperty,

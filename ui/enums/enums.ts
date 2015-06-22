@@ -103,3 +103,13 @@ export module ImageFormat {
     export var png: string = "png";
     export var jpeg: string = "jpeg";
 }
+
+export module FontStyle {
+    export var normal: string = "normal";
+    export var italic: string = "italic";
+}
+
+export module FontWeight {
+    export var normal: string = "normal";
+    export var bold: string = "bold";
+}

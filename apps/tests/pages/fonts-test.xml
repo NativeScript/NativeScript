@@ -1,0 +1,41 @@
+<Page>
+  <ScrollView>
+    <StackLayout id="stack">
+      <Button text="RESET" tap="buttonTap"/>
+
+      <Label text="Label: normal" />
+      <Label text="Label: size"        style="font-size: 32" />
+      <Label text="Label: italic"      style="font-style: italic" />
+      <Label text="Label: bold"        style="font-weight: bold"/>
+      <Label text="Label: bold-italic" style="font-weight: bold; font-style: italic"/>
+      <Label text="Label: times new"   style="font-family: Times New Roman"/>
+      <Label text="Label: all in one"  style="font-family: Times New Roman; font-weight: bold; font-style: italic; font-size: 32" />
+
+      <Button text="Button: normal" />
+      <Button text="Button: size"        style="font-size: 32" />
+      <Button text="Button: italic"      style="font-style: italic" />
+      <Button text="Button: bold"        style="font-weight: bold"/>
+      <Button text="Button: bold-italic" style="font-weight: bold; font-style: italic"/>
+      <Button text="Button: times new"   style="font-family: Times New Roman"/>
+      <Button text="Button: all in one"  style="font-family: Times New Roman; font-weight: bold; font-style: italic; font-size: 32" />
+
+      <TextView text="TextView: normal" />
+      <TextView text="TextView: size"        style="font-size: 32" />
+      <TextView text="TextView: italic"      style="font-style: italic" />
+      <TextView text="TextView: bold"        style="font-weight: bold"/>
+      <TextView text="TextView: bold-italic" style="font-weight: bold; font-style: italic"/>
+      <TextView text="TextView: times new"   style="font-family: Times New Roman"/>
+      <TextView text="TextView: all in one"  style="font-family: Times New Roman; font-weight: bold; font-style: italic; font-size: 32" />
+
+      <TextField text="TextField: normal" />
+      <TextField text="TextField: size"        style="font-size: 32" />
+      <TextField text="TextField: italic"      style="font-style: italic" />
+      <TextField text="TextField: bold"        style="font-weight: bold"/>
+      <TextField text="TextField: bold-italic" style="font-weight: bold; font-style: italic"/>
+      <TextField text="TextField: times new"   style="font-family: Times New Roman"/>
+      <TextField text="TextField: all in one"  style="font-family: Times New Roman; font-weight: bold; font-style: italic; font-size: 32" />
+
+
+    </StackLayout>
+  </ScrollView>
+</Page>

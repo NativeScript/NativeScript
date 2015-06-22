@@ -370,4 +370,36 @@
          */
         export var popup: string;
     }
+    
+    /**
+     * Specifies different font styles.
+     */
+    export module FontStyle {
+        /**
+         * Normal font style.
+         */
+        export var normal: string;
+        
+        /**
+         * Italic font style.
+         */
+        export var italic: string;
+    }
+    
+    
+    /**
+     * Specifies different font weights.
+     */
+    export module FontWeight {
+        /**
+         * Normal font weight.
+         */
+        export var normal: string;
+        
+        /**
+         * Bold font weight.
+         */
+        export var bold: string;
+    }
+    
 }

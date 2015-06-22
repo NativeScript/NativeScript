@@ -11,6 +11,7 @@ import converters = require("ui/styling/converters");
 import enums = require("ui/enums");
 import imageSource = require("image-source");
 import utils = require("utils/utils");
+import font = require("ui/styling/font");
 
 // key is the property id and value is Dictionary<string, StylePropertyChangedHandler>;
 var _registeredHandlers = Array<Object>();
@@ -73,6 +74,27 @@ export class Style extends observable.DependencyObservable implements styling.St
     }
     set fontSize(value: number) {
         this._setValue(fontSizeProperty, value, observable.ValueSource.Local);
+    }
+
+    get fontFamily(): string {
+        return this._getValue(fontFamilyProperty);
+    }
+    set fontFamily(value: string) {
+        this._setValue(fontFamilyProperty, value, observable.ValueSource.Local);
+    }
+
+    get fontStyle(): string {
+        return this._getValue(fontStyleProperty);
+    }
+    set fontStyle(value: string) {
+        this._setValue(fontStyleProperty, value, observable.ValueSource.Local);
+    }
+
+    get fontWeight(): string {
+        return this._getValue(fontWeightProperty);
+    }
+    set fontWeight(value: string) {
+        this._setValue(fontWeightProperty, value, observable.ValueSource.Local);
     }
 
     get textAlignment(): string {
@@ -443,6 +465,39 @@ export var backgroundColorProperty = new styleProperty.Property("backgroundColor
 export var fontSizeProperty = new styleProperty.Property("fontSize", "font-size",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.AffectsLayout | observable.PropertyMetadataSettings.Inheritable),
     converters.fontSizeConverter);
+
+export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontFamilyChanged));
+
+export var fontStyleProperty = new styleProperty.Property("fontStyle", "font-style",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontStyleChanged));
+
+export var fontWeightProperty = new styleProperty.Property("fontWeight", "font-weight",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontWeightChanged));
+
+function onFontFamilyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontProperty);
+    style._setValue(fontProperty, currentFont.withFontFamily(data.newValue));
+}
+
+function onFontStyleChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontProperty);
+    style._setValue(fontProperty, currentFont.withFontStyle(data.newValue));
+}
+
+function onFontWeightChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontProperty);
+    style._setValue(fontProperty, currentFont.withFontWeight(data.newValue));
+}
+
+export var fontProperty = new styleProperty.Property("font", "font",
+    new observable.PropertyMetadata(font.Font.default, observable.PropertyMetadataSettings.AffectsLayout));
 
 export var textAlignmentProperty = new styleProperty.Property("textAlignment", "text-align",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.AffectsLayout | observable.PropertyMetadataSettings.Inheritable),
