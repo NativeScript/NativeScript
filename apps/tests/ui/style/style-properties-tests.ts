@@ -81,6 +81,18 @@ export function test_setting_opacity_property_from_CSS_is_applied_to_Style() {
     test_property_from_CSS_is_applied_to_style("opacity", "opacity", 0.5);
 }
 
+export function test_setting_fontFamily_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("fontFamily", "font-family", "Helvetica");
+}
+
+export function test_setting_fontWeight_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("fontWeight", "font-weight", "bold");
+}
+
+export function test_setting_fontStyle_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("fontStyle", "font-style", "italic");
+}
+
 function test_property_from_CSS_is_applied_to_style(propName: string, cssName: string, value: any, cssValue?: string) {
     if (!cssValue) {
         cssValue = value + "";
