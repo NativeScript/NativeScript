@@ -1,8 +1,9 @@
 ﻿import enums = require("ui/enums");
 import common = require("ui/styling/font-common");
 
-//declare var exports;
-//require("utils/module-merge").merge(common, exports);
+var DEFAULT_SERIF = "Times New Roman";
+var DEFAULT_SANS_SERIF = "Helvetica";
+var DEFAULT_MONOSPACE = "Courier New";
 
 export class Font extends common.Font {
     public static default = new Font(undefined, enums.FontStyle.normal, enums.FontWeight.normal);
@@ -10,7 +11,8 @@ export class Font extends common.Font {
     private _ios: UIFontDescriptor;
     get ios(): UIFontDescriptor {
         if (!this._ios) {
-            this._ios = UIFontDescriptor.fontDescriptorWithNameSize(this.fontFamily, 0);
+            var fontFamily = this.getFontFamilyRespectingGenericFonts(this.fontFamily);
+            this._ios = UIFontDescriptor.fontDescriptorWithNameSize(fontFamily, 0);
             if (this.isBold) {
                 if (this.isItalic) {
                     this._ios = this._ios.fontDescriptorWithSymbolicTraits(
@@ -44,6 +46,26 @@ export class Font extends common.Font {
 
     public withFontWeight(weight: string): Font {
         return new Font(this.fontFamily, this.fontStyle, weight);
+    }
+
+    private getFontFamilyRespectingGenericFonts(fontFamily: string): string {
+        if (!fontFamily) {
+            return fontFamily;
+        }
+
+        switch (fontFamily.toLowerCase()) {
+            case common.genericFontFamilies.serif:
+                return DEFAULT_SERIF;
+
+            case common.genericFontFamilies.sansSerif:
+                return DEFAULT_SANS_SERIF;
+
+            case common.genericFontFamilies.monospace:
+                return DEFAULT_MONOSPACE;
+
+            default:
+                return fontFamily;
+        }
     }
 }
 

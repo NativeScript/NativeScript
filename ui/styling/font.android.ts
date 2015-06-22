@@ -1,8 +1,11 @@
 ﻿import enums = require("ui/enums");
 import common = require("ui/styling/font-common");
+import application = require("application");
+import trace = require("trace");
+import types = require("utils/types");
 
-//declare var exports;
-//require("utils/module-merge").merge(common, exports);
+var typefaceCache = new Map<string, android.graphics.Typeface>();
+var appAssets: android.content.res.AssetManager;
 
 export class Font extends common.Font {
     public static default = new Font(undefined, enums.FontStyle.normal, enums.FontWeight.normal);
@@ -26,7 +29,8 @@ export class Font extends common.Font {
                 style = android.graphics.Typeface.NORMAL;
             }
 
-            this._android = android.graphics.Typeface.create(this.fontFamily, style);
+            var typeFace = this.getTypeFace(this.fontFamily);
+            this._android = android.graphics.Typeface.create(typeFace, style);
         }
         return this._android;
     }
@@ -46,5 +50,46 @@ export class Font extends common.Font {
     public withFontWeight(weight: string): Font {
         return new Font(this.fontFamily, this.fontStyle, weight);
     }
-}
 
+    private getTypeFace(fontFamily: string): android.graphics.Typeface {
+        if (!fontFamily) {
+            return null;
+        }
+
+        switch (fontFamily.toLowerCase()) {
+            case common.genericFontFamilies.serif:
+                return android.graphics.Typeface.SERIF;
+
+            case common.genericFontFamilies.sansSerif:
+                return android.graphics.Typeface.SANS_SERIF;
+
+            case common.genericFontFamilies.monospace:
+                return android.graphics.Typeface.MONOSPACE;
+
+            default:
+                return this.loadFontFromAsset(fontFamily);
+        }
+    }
+
+    private loadFontFromAsset(fontFamily: string): android.graphics.Typeface {
+        appAssets = appAssets || application.android.context.getAssets();
+        if (!appAssets) {
+            return null;
+        }
+
+        var result = typefaceCache.get(fontFamily);
+        // Check for undefined explicitly as null mean we tried to load the font, but failed.
+        if (types.isUndefined(result)) {
+            result = null;
+            var fontAsset = "app/fonts/" + fontFamily + ".ttf";
+            try {
+                result = android.graphics.Typeface.createFromAsset(appAssets, fontAsset);
+            } catch (e) {
+                trace.write("Cannot find font asset: " + fontAsset, trace.categories.Error, trace.messageType.error);
+            }
+            typefaceCache.set(fontFamily, result);
+        }
+
+        return result;
+    }
+}

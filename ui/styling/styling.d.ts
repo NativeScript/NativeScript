@@ -68,7 +68,6 @@
          */
         fontWeight: string;
 
-
         /**
          * Gets or sets text-alignment style property.
          */

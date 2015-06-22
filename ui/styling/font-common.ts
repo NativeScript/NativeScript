@@ -69,3 +69,9 @@ export class Font implements definitios.Font {
         throw new Error("This should be called on the derived class");
     }
 }
+
+export module genericFontFamilies {
+    export var serif = "serif";
+    export var sansSerif = "sans-serif";
+    export var monospace = "monospace";
+}
