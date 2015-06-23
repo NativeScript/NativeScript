@@ -211,6 +211,10 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\listview_binding.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\modal-view\login-page.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\modal-view\modal-view.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-field.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-view.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\label.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\button.ts" />
     <TypeScriptCompile Include="es-collections.d.ts" />
     <TypeScriptCompile Include="es6-promise.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.d.ts" />
@@ -660,6 +664,10 @@
     <Content Include="apps\template-tab-navigation\app.css" />
     <Content Include="apps\ui-tests-app\modal-view\login-page.xml" />
     <Content Include="apps\ui-tests-app\modal-view\modal-view.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\text-field.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\label.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\button.xml" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1608,7 +1616,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
