@@ -1,5 +1,6 @@
 ﻿import enums = require("ui/enums");
 import common = require("ui/styling/font-common");
+import utils = require("utils/utils");
 
 var DEFAULT_SERIF = "Times New Roman";
 var DEFAULT_SANS_SERIF = "Helvetica";
@@ -12,21 +13,24 @@ export class Font extends common.Font {
     get ios(): UIFontDescriptor {
         if (!this._ios) {
             var fontFamily = this.getFontFamilyRespectingGenericFonts(this.fontFamily);
-            this._ios = UIFontDescriptor.fontDescriptorWithNameSize(fontFamily, 0);
+
+            var symbolicTraits: number = 0;
             if (this.isBold) {
-                if (this.isItalic) {
-                    this._ios = this._ios.fontDescriptorWithSymbolicTraits(
-                        UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic |
-                        UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold);
-                }
-                else {
-                    this._ios = this._ios.fontDescriptorWithSymbolicTraits(
-                        UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold);
+                symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold;
+            }
+            if (this.isItalic) {
+                symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic;
+            }
+
+            if (fontFamily) {
+                this._ios = UIFontDescriptor.fontDescriptorWithNameSize(fontFamily, 0);
+                if (symbolicTraits) {
+                    this._ios = this._ios.fontDescriptorWithSymbolicTraits(symbolicTraits);
                 }
             }
-            else if (this.isItalic) {
-                this._ios = this._ios.fontDescriptorWithSymbolicTraits(
-                    UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic);
+
+            if(!this._ios) {
+                this._ios = UIFontDescriptor.new().fontDescriptorWithSymbolicTraits(symbolicTraits);
             }
         }
         return this._ios;

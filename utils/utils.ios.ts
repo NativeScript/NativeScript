@@ -39,7 +39,7 @@ export module ios {
         export function nsArrayToJSArray(a: any): string[] {
             var arr = [];
             if ("undefined" !== typeof a) {
-                for (var i = 0; i < a.count(); i++) {
+                for (var i = 0; i < a.count; i++) {
                     arr.push(a.objectAtIndex(i));
                 }
             }

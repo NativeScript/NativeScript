@@ -13,20 +13,14 @@ export class Font extends common.Font {
     private _android: android.graphics.Typeface;
     get android(): android.graphics.Typeface {
         if (!this._android) {
-            var style: number;
+            var style: number = 0;
+
             if (this.isBold) {
-                if (this.isItalic) {
-                    style = android.graphics.Typeface.BOLD_ITALIC;
-                }
-                else {
-                    style = android.graphics.Typeface.BOLD;
-                }
+                style |= android.graphics.Typeface.BOLD;
             }
-            else if (this.isItalic) {
-                style = android.graphics.Typeface.ITALIC;
-            }
-            else {
-                style = android.graphics.Typeface.NORMAL;
+
+            if (this.isItalic) {
+                style |= android.graphics.Typeface.ITALIC;
             }
 
             var typeFace = this.getTypeFace(this.fontFamily);
