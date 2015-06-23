@@ -3,6 +3,34 @@
     <StackLayout id="stack">
       <Button text="RESET" tap="buttonTap"/>
 
+
+      <Label text="GREEN"    style="color: green" />
+      <Button text="GREEN"    style="color: green"/>
+      <TextView text="GREEN"    style="color: green"/>
+      <TextField text="GREEN"    style="color: green"/>
+
+
+      <Label text="no align"    />
+      <Label text="left"    style="text-align: left" />
+      <Label text="center"  style="text-align: center" />
+      <Label text="right"   style="text-align: right" />
+
+      <Button text="no align"    />
+      <Button text="left"    style="text-align: left" />
+      <Button text="center"  style="text-align: center" />
+      <Button text="right"   style="text-align: right" />
+
+      <TextView text="no align"    />
+      <TextView text="left"    style="text-align: left" />
+      <TextView text="center"  style="text-align: center" />
+      <TextView text="right"   style="text-align: right" />
+
+      <TextField text="no align"    />
+      <TextField text="left"    style="text-align: left" />
+      <TextField text="center"  style="text-align: center" />
+      <TextField text="right"   style="text-align: right" />
+
+
       <Label text="Label: normal" />
       <Label text="Label: size"        style="font-size: 32" />
       <Label text="Label: italic"      style="font-style: italic" />

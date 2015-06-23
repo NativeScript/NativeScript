@@ -11,5 +11,8 @@ export function buttonTap(args) {
         v.style._resetValue(style.fontStyleProperty);
         v.style._resetValue(style.fontWeightProperty);
         v.style._resetValue(style.fontProperty);
+
+        v.style._resetValue(style.colorProperty);
+        v.style._resetValue(style.textAlignmentProperty);
     }
 }

@@ -8,6 +8,12 @@ import enums = require("ui/enums");
 declare var exports;
 require("utils/module-merge").merge(stylersCommon, exports);
 
+interface TextUIView {
+    font: UIFont;
+    textAlignment: number;
+    textColor: UIColor;
+}
+
 export class DefaultStyler implements definition.stylers.Styler {
     //Background methods
     private static setBackgroundProperty(view: view.View, newValue: any) {
@@ -124,32 +130,6 @@ export class DefaultStyler implements definition.stylers.Styler {
         }
     }
 
-    // Font size
-    private static setFontSizeProperty(view: view.View, newValue: any) {
-        setFontSize(view._nativeView, newValue);
-    }
-
-    private static resetFontSizeProperty(view: view.View, nativeValue: any) {
-        setFontSize(view._nativeView, nativeValue);
-    }
-
-    private static getNativeFontSizeValue(view: view.View): any {
-        return getNativeFontSize(view._nativeView);
-    }
-
-    // Font
-    private static setFontProperty(view: view.View, newValue: any) {
-        setFont(view._nativeView, newValue);
-    }
-
-    private static resetFontProperty(view: view.View, nativeValue: any) {
-        resetFont(view._nativeView, nativeValue);
-    }
-
-    private static getNativeFontValue(view: view.View): any {
-        return getNativeFont(view._nativeView);
-    }
-
     public static registerHandlers() {
         style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setBackgroundProperty,
@@ -180,112 +160,90 @@ export class DefaultStyler implements definition.stylers.Styler {
         style.registerHandler(style.borderRadiusProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setBorderRadiusProperty,
             DefaultStyler.resetBorderRadiusProperty));
-
-        style.registerHandler(style.fontSizeProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setFontSizeProperty,
-            DefaultStyler.resetFontSizeProperty,
-            DefaultStyler.getNativeFontSizeValue));
-
-        style.registerHandler(style.fontProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setFontProperty,
-            DefaultStyler.resetFontProperty,
-            DefaultStyler.getNativeFontValue));
     }
 }
 
 export class ButtonStyler implements definition.stylers.Styler {
-    // Color methods
+    // color
     private static setColorProperty(view: view.View, newValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
-        if (btn) {
-            btn.setTitleColorForState(newValue, UIControlState.UIControlStateNormal);
-        }
+        btn.setTitleColorForState(newValue, UIControlState.UIControlStateNormal);
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
-        if (btn) {
-            btn.setTitleColorForState(nativeValue, UIControlState.UIControlStateNormal);
-        }
+        btn.setTitleColorForState(nativeValue, UIControlState.UIControlStateNormal);
     }
 
     private static getNativeColorValue(view: view.View): any {
         var btn: UIButton = <UIButton>view._nativeView;
-        if (btn) {
-            return btn.titleColorForState(UIControlState.UIControlStateNormal);
-        }
+        return btn.titleColorForState(UIControlState.UIControlStateNormal);
     }
 
-    // Font size
+    // font size
     private static setFontSizeProperty(view: view.View, newValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
-        setFontSize(btn.titleLabel, newValue);
+        btn.titleLabel.font = btn.titleLabel.font.fontWithSize(newValue);
     }
 
     private static resetFontSizeProperty(view: view.View, nativeValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
-        setFontSize(btn.titleLabel, nativeValue);
+        btn.titleLabel.font = btn.titleLabel.font.fontWithSize(nativeValue);
     }
 
     private static getNativeFontSizeValue(view: view.View): any {
         var btn: UIButton = <UIButton>view._nativeView;
-        return getNativeFontSize(btn.titleLabel);
+        return btn.titleLabel.font.pointSize;
     }
 
-    // Font
+    // font
     private static setFontProperty(view: view.View, newValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
-        setFont(btn.titleLabel, newValue);
+        btn.titleLabel.font = UIFont.fontWithDescriptorSize(newValue, btn.titleLabel.font.pointSize);
     }
 
     private static resetFontProperty(view: view.View, nativeValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
-        resetFont(btn.titleLabel, nativeValue);
+        btn.titleLabel.font = nativeValue;
     }
 
     private static getNativeFontValue(view: view.View): any {
         var btn: UIButton = <UIButton>view._nativeView;
-        return getNativeFont(btn.titleLabel);
+        return btn.titleLabel.font;
     }
 
     // text-align
     private static setTextAlignmentProperty(view: view.View, newValue: any) {
-        var ios: UIButton = <UIButton>view._nativeView;
-        if (ios) {
-            switch (newValue) {
-                case enums.TextAlignment.left:
-                    ios.titleLabel.textAlignment = NSTextAlignment.NSTextAlignmentLeft;
-                    ios.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentLeft;
-                    break;
-                case enums.TextAlignment.center:
-                    ios.titleLabel.textAlignment = NSTextAlignment.NSTextAlignmentCenter;
-                    ios.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentCenter;
-                    break;
-                case enums.TextAlignment.right:
-                    ios.titleLabel.textAlignment = NSTextAlignment.NSTextAlignmentRight;
-                    ios.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentRight;
-                    break;
-                default:
-                    break;
-            }
+        var btn: UIButton = <UIButton>view._nativeView;
+        setTextAlignment(btn.titleLabel, newValue);
+
+        // Also set the contentHorizontalAlignment
+        switch (newValue) {
+            case enums.TextAlignment.left:
+                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentLeft;
+                break;
+            case enums.TextAlignment.center:
+                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentCenter;
+                break;
+            case enums.TextAlignment.right:
+                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentRight;
+                break;
+            default:
+                break;
         }
     }
 
     private static resetTextAlignmentProperty(view: view.View, nativeValue: any) {
-        var ios: UIButton = <UIButton>view._nativeView;
-        if (ios) {
-            ios.titleLabel.textAlignment = nativeValue.textAlign;
-            ios.contentHorizontalAlignment = nativeValue.contentAlign;
-        }
+        var btn: UIButton = <UIButton>view._nativeView;
+        btn.titleLabel.textAlignment = nativeValue.textAlign;
+        btn.contentHorizontalAlignment = nativeValue.contentAlign;
     }
 
     private static getNativeTextAlignmentValue(view: view.View): any {
-        var ios: UIButton = <UIButton>view._nativeView;
-        if (ios) {
-            return {
-                textAlign: ios.titleLabel.textAlignment,
-                contentAlign: ios.contentHorizontalAlignment
-            }
+        var btn: UIButton = <UIButton>view._nativeView;
+        return {
+            textAlign: btn.titleLabel.textAlignment,
+            contentAlign: btn.contentHorizontalAlignment
         }
     }
 
@@ -312,143 +270,90 @@ export class ButtonStyler implements definition.stylers.Styler {
     }
 }
 
-export class LabelStyler implements definition.stylers.Styler {
-    // Color methods
-    private static setColorProperty(view: view.View, newValue: any) {
-        var label: UILabel = <UILabel>view._nativeView;
-        if (label) {
-            label.textColor = newValue;
-        }
+export class TextBaseStyler implements definition.stylers.Styler {
+    // font-size
+    private static setFontSizeProperty(view: view.View, newValue: any) {
+        var ios: TextUIView = <TextUIView>view._nativeView;
+        ios.font = ios.font.fontWithSize(newValue);
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: any) {
-        var label: UILabel = <UILabel>view._nativeView;
-        if (label) {
-            label.textColor = nativeValue;
-        }
+    private static resetFontSizeProperty(view: view.View, nativeValue: any) {
+        var ios: TextUIView = <TextUIView>view._nativeView;
+        ios.font = ios.font.fontWithSize(nativeValue);
     }
 
-    private static getNativeColorValue(view: view.View): any {
-        var label: UILabel = <UILabel>view._nativeView;
-        if (label) {
-            return label.textColor;
-        }
+    private static getNativeFontSizeValue(view: view.View): any {
+        var ios: TextUIView = <TextUIView>view._nativeView;
+        ios.font.pointSize;
     }
 
-    // text-align
-    private static setTextAlignmentProperty(view: view.View, newValue: any) {
-        var ios: UILabel = <UILabel>view._nativeView;
-        if (ios) {
-            switch (newValue) {
-                case enums.TextAlignment.left:
-                    ios.textAlignment = NSTextAlignment.NSTextAlignmentLeft;
-                    break;
-                case enums.TextAlignment.center:
-                    ios.textAlignment = NSTextAlignment.NSTextAlignmentCenter;
-                    break;
-                case enums.TextAlignment.right:
-                    ios.textAlignment = NSTextAlignment.NSTextAlignmentRight;
-                    break;
-                default:
-                    break;
-            }
-        }
+    // font
+    private static setFontProperty(view: view.View, newValue: any) {
+        var ios: TextUIView = <TextUIView>view._nativeView;
+        ios.font = UIFont.fontWithDescriptorSize(newValue, ios.font.pointSize);
     }
 
-    private static resetTextAlignmentProperty(view: view.View, nativeValue: any) {
-        var ios: UILabel = <UILabel>view._nativeView;
-        if (ios) {
-            ios.textAlignment = nativeValue;
-        }
+    private static resetFontProperty(view: view.View, nativeValue: any) {
+        var ios: TextUIView = <TextUIView>view._nativeView;
+        ios.font = nativeValue;
     }
 
-    private static getNativeTextAlignmentValue(view: view.View): any {
-        var ios: UILabel = <UILabel>view._nativeView;
-        if (ios) {
-            return ios.textAlignment;
-        }
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
-            LabelStyler.setColorProperty,
-            LabelStyler.resetColorProperty,
-            LabelStyler.getNativeColorValue), "Label");
-
-        style.registerHandler(style.textAlignmentProperty, new stylersCommon.StylePropertyChangedHandler(
-            LabelStyler.setTextAlignmentProperty,
-            LabelStyler.resetTextAlignmentProperty,
-            LabelStyler.getNativeTextAlignmentValue), "Label");
-    }
-}
-
-export class TextFieldStyler implements definition.stylers.Styler {
-    // Color methods
-    private static setColorProperty(view: view.View, newValue: any) {
-        var textField: UITextField = <UITextField>view._nativeView;
-        if (textField) {
-            textField.textColor = newValue;
-        }
-    }
-
-    private static resetColorProperty(view: view.View, nativeValue: any) {
-        var textField: UITextField = <UITextField>view._nativeView;
-        if (textField) {
-            textField.textColor = nativeValue;
-        }
-    }
-
-    private static getNativeColorValue(view: view.View): any {
-        var textField: UITextField = <UITextField>view._nativeView;
-        if (textField) {
-            return textField.textColor;
-        }
+    private static getNativeFontValue(view: view.View): any {
+        var ios: TextUIView = <TextUIView>view._nativeView;
+        return ios.font;
     }
 
     // text-align
     private static setTextAlignmentProperty(view: view.View, newValue: any) {
-        var ios: UITextField = <UITextField>view._nativeView;
-        if (ios) {
-            switch (newValue) {
-                case enums.TextAlignment.left:
-                    ios.textAlignment = NSTextAlignment.NSTextAlignmentLeft;
-                    break;
-                case enums.TextAlignment.center:
-                    ios.textAlignment = NSTextAlignment.NSTextAlignmentCenter;
-                    break;
-                case enums.TextAlignment.right:
-                    ios.textAlignment = NSTextAlignment.NSTextAlignmentRight;
-                    break;
-                default:
-                    break;
-            }
-        }
+        setTextAlignment(view._nativeView, newValue);
     }
 
     private static resetTextAlignmentProperty(view: view.View, nativeValue: any) {
-        var ios: UITextField = <UITextField>view._nativeView;
-        if (ios) {
-            ios.textAlignment = nativeValue;
-        }
+        var ios: TextUIView = <TextUIView>view._nativeView;
+        ios.textAlignment = nativeValue;
     }
 
     private static getNativeTextAlignmentValue(view: view.View): any {
-        var ios: UITextField = <UITextField>view._nativeView;
-        if (ios) {
-            return ios.textAlignment;
-        }
+        var ios: TextUIView = <TextUIView>view._nativeView;
+        return ios.textAlignment;
+    }
+
+    // color
+    private static setColorProperty(view: view.View, newValue: any) {
+        var ios: TextUIView = <TextUIView>view._nativeView;
+        ios.textColor = newValue;
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var ios: TextUIView = <TextUIView>view._nativeView;
+        ios.textColor = nativeValue;
+    }
+
+    private static getNativeColorValue(view: view.View): any {
+        var ios: TextUIView = <TextUIView>view._nativeView;
+        return ios.textColor;
     }
 
     public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
-            TextFieldStyler.setColorProperty,
-            TextFieldStyler.resetColorProperty,
-            TextFieldStyler.getNativeColorValue), "TextField");
+        style.registerHandler(style.fontSizeProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextBaseStyler.setFontSizeProperty,
+            TextBaseStyler.resetFontSizeProperty,
+            TextBaseStyler.getNativeFontSizeValue), "TextBase");
+
+        style.registerHandler(style.fontProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextBaseStyler.setFontProperty,
+            TextBaseStyler.resetFontProperty,
+            TextBaseStyler.getNativeFontValue), "TextBase");
 
         style.registerHandler(style.textAlignmentProperty, new stylersCommon.StylePropertyChangedHandler(
-            TextFieldStyler.setTextAlignmentProperty,
-            TextFieldStyler.resetTextAlignmentProperty,
-            TextFieldStyler.getNativeTextAlignmentValue), "TextField");
+            TextBaseStyler.setTextAlignmentProperty,
+            TextBaseStyler.resetTextAlignmentProperty,
+            TextBaseStyler.getNativeTextAlignmentValue), "TextBase");
+
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextBaseStyler.setColorProperty,
+            TextBaseStyler.resetColorProperty,
+            TextBaseStyler.getNativeColorValue), "TextBase");
     }
 }
 
@@ -456,16 +361,12 @@ export class TextViewStyler implements definition.stylers.Styler {
     // Color methods
     private static setColorProperty(view: view.View, newValue: any) {
         var textView: UITextView = <UITextView>view._nativeView;
-        if (textView) {
-            TextViewStyler._setTextViewColor(textView, newValue);
-        }
+        TextViewStyler._setTextViewColor(textView, newValue);
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
         var textView: UITextView = <UITextView>view._nativeView;
-        if (textView) {
-            TextViewStyler._setTextViewColor(textView, nativeValue);
-        }
+        TextViewStyler._setTextViewColor(textView, nativeValue);
     }
 
     private static _setTextViewColor(textView: UITextView, newValue: any) {
@@ -480,47 +381,11 @@ export class TextViewStyler implements definition.stylers.Styler {
 
     private static getNativeColorValue(view: view.View): any {
         var textView: UITextView = <UITextView>view._nativeView;
-        if (textView) {
-            if ((<any>textView).isShowingHint && textView.textColor) {
-                return textView.textColor.colorWithAlphaComponent(1);
-            }
-            else {
-                return textView.textColor;
-            }
+        if ((<any>textView).isShowingHint && textView.textColor) {
+            return textView.textColor.colorWithAlphaComponent(1);
         }
-    }
-
-    // text-align
-    private static setTextAlignmentProperty(view: view.View, newValue: any) {
-        var ios: UITextView = <UITextView>view._nativeView;
-        if (ios) {
-            switch (newValue) {
-                case enums.TextAlignment.left:
-                    ios.textAlignment = NSTextAlignment.NSTextAlignmentLeft;
-                    break;
-                case enums.TextAlignment.center:
-                    ios.textAlignment = NSTextAlignment.NSTextAlignmentCenter;
-                    break;
-                case enums.TextAlignment.right:
-                    ios.textAlignment = NSTextAlignment.NSTextAlignmentRight;
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    private static resetTextAlignmentProperty(view: view.View, nativeValue: any) {
-        var ios: UITextView = <UITextView>view._nativeView;
-        if (ios) {
-            ios.textAlignment = nativeValue;
-        }
-    }
-
-    private static getNativeTextAlignmentValue(view: view.View): any {
-        var ios: UITextView = <UITextView>view._nativeView;
-        if (ios) {
-            return ios.textAlignment;
+        else {
+            return textView.textColor;
         }
     }
 
@@ -529,11 +394,6 @@ export class TextViewStyler implements definition.stylers.Styler {
             TextViewStyler.setColorProperty,
             TextViewStyler.resetColorProperty,
             TextViewStyler.getNativeColorValue), "TextView");
-
-        style.registerHandler(style.textAlignmentProperty, new stylersCommon.StylePropertyChangedHandler(
-            TextViewStyler.setTextAlignmentProperty,
-            TextViewStyler.resetTextAlignmentProperty,
-            TextViewStyler.getNativeTextAlignmentValue), "TextView");
     }
 }
 
@@ -619,59 +479,28 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 }
 
-interface ViewWithFont {
-    font: UIFont;
-}
-
-interface ViewWithTextAlignment {
-    font: UIFont;
-}
-
-// FontSize
-function setFontSize(view: ViewWithFont, newValue: any) {
-    var font = view.font;
-    if (font && font instanceof UIFont) {
-        view.font = view.font.fontWithSize(newValue);
+function setTextAlignment(view: TextUIView, value: string) {
+    switch (value) {
+        case enums.TextAlignment.left:
+            view.textAlignment = NSTextAlignment.NSTextAlignmentLeft;
+            break;
+        case enums.TextAlignment.center:
+            view.textAlignment = NSTextAlignment.NSTextAlignmentCenter;
+            break;
+        case enums.TextAlignment.right:
+            view.textAlignment = NSTextAlignment.NSTextAlignmentRight;
+            break;
+        default:
+            break;
     }
-}
-
-function getNativeFontSize(view: ViewWithFont): number {
-    var font = view.font;
-    if (font && font instanceof UIFont) {
-        return view.font.pointSize;
-    }
-    else {
-        return 0;
-    }
-}
-
-// Font
-function setFont(view: ViewWithFont, newValue: UIFontDescriptor) {
-    var fontView = <ViewWithFont>(<any>view);
-    var font = fontView.font;
-    if (font && font instanceof UIFont) {
-        fontView.font = UIFont.fontWithDescriptorSize(newValue, fontView.font.pointSize);
-    }
-}
-
-function resetFont(view: ViewWithFont, newValue: UIFont) {
-    var font = view.font;
-    if (font && font instanceof UIFont) {
-        view.font = newValue;
-    }
-}
-
-function getNativeFont(view: ViewWithFont): UIFont {
-    return view.font;
 }
 
 // Register all styler at the end.
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();
+    TextBaseStyler.registerHandlers();
     ButtonStyler.registerHandlers();
-    LabelStyler.registerHandlers();
-    TextFieldStyler.registerHandlers();
     TextViewStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
     SearchBarStyler.registerHandlers();
