@@ -512,6 +512,7 @@ export class BorderStyler implements definition.stylers.Styler {
     }
 }
 
+// Register all styler at the end.
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();

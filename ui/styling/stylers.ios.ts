@@ -619,17 +619,6 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 }
 
-export function _registerDefaultStylers() {
-    style.registerNoStylingClass("Frame");
-    DefaultStyler.registerHandlers();
-    ButtonStyler.registerHandlers();
-    LabelStyler.registerHandlers();
-    TextFieldStyler.registerHandlers();
-    TextViewStyler.registerHandlers();
-    SegmentedBarStyler.registerHandlers();
-    SearchBarStyler.registerHandlers();
-}
-
 interface ViewWithFont {
     font: UIFont;
 }
@@ -674,4 +663,16 @@ function resetFont(view: ViewWithFont, newValue: UIFont) {
 
 function getNativeFont(view: ViewWithFont): UIFont {
     return view.font;
+}
+
+// Register all styler at the end.
+export function _registerDefaultStylers() {
+    style.registerNoStylingClass("Frame");
+    DefaultStyler.registerHandlers();
+    ButtonStyler.registerHandlers();
+    LabelStyler.registerHandlers();
+    TextFieldStyler.registerHandlers();
+    TextViewStyler.registerHandlers();
+    SegmentedBarStyler.registerHandlers();
+    SearchBarStyler.registerHandlers();
 }

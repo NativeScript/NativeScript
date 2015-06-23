@@ -470,10 +470,18 @@ export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-f
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontFamilyChanged));
 
 export var fontStyleProperty = new styleProperty.Property("fontStyle", "font-style",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontStyleChanged));
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontStyleChanged, isFontStyleValid));
 
 export var fontWeightProperty = new styleProperty.Property("fontWeight", "font-weight",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontWeightChanged));
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontWeightChanged, isFontWeightValid));
+
+function isFontWeightValid(value: string): boolean {
+    return value === enums.FontWeight.normal || value === enums.FontWeight.bold;
+}
+
+function isFontStyleValid(value: string): boolean {
+    return value === enums.FontStyle.normal || value === enums.FontStyle.italic;
+}
 
 function onFontFamilyChanged(data: observable.PropertyChangeData) {
     var style = <Style>data.object;
