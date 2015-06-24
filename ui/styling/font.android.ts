@@ -3,6 +3,7 @@ import common = require("ui/styling/font-common");
 import application = require("application");
 import trace = require("trace");
 import types = require("utils/types");
+import fs = require("file-system");
 
 var typefaceCache = new Map<string, android.graphics.Typeface>();
 var appAssets: android.content.res.AssetManager;
@@ -46,23 +47,37 @@ export class Font extends common.Font {
     }
 
     private getTypeFace(fontFamily: string): android.graphics.Typeface {
-        if (!fontFamily) {
+        var fonts = common.parseFontFamily(fontFamily);
+        var result = null;
+        if (fonts.length === 0) {
             return null;
         }
 
-        switch (fontFamily.toLowerCase()) {
-            case common.genericFontFamilies.serif:
-                return android.graphics.Typeface.SERIF;
+        for (var i = 0; i < fonts.length; i++) {
+            switch (fonts[i].toLowerCase()) {
+                case common.genericFontFamilies.serif:
+                    result = android.graphics.Typeface.SERIF;
+                    break;
 
-            case common.genericFontFamilies.sansSerif:
-                return android.graphics.Typeface.SANS_SERIF;
+                case common.genericFontFamilies.sansSerif:
+                    result = android.graphics.Typeface.SANS_SERIF;
+                    break;
 
-            case common.genericFontFamilies.monospace:
-                return android.graphics.Typeface.MONOSPACE;
+                case common.genericFontFamilies.monospace:
+                    result = android.graphics.Typeface.MONOSPACE;
+                    break;
 
-            default:
-                return this.loadFontFromAsset(fontFamily);
+                default:
+                    result = this.loadFontFromAsset(fonts[i]);
+                    break;
+            }
+
+            if (result) {
+                return result;
+            }
         }
+
+        return null;
     }
 
     private loadFontFromAsset(fontFamily: string): android.graphics.Typeface {
@@ -75,11 +90,24 @@ export class Font extends common.Font {
         // Check for undefined explicitly as null mean we tried to load the font, but failed.
         if (types.isUndefined(result)) {
             result = null;
-            var fontAsset = "app/fonts/" + fontFamily + ".ttf";
-            try {
-                result = android.graphics.Typeface.createFromAsset(appAssets, fontAsset);
-            } catch (e) {
-                trace.write("Cannot find font asset: " + fontAsset, trace.categories.Error, trace.messageType.error);
+            var fontAssetPath: string;
+            var basePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFamily);
+            if (fs.File.exists(basePath + ".ttf")) {
+                fontAssetPath = "app/fonts/" + fontFamily + ".ttf";
+            }
+            else if (fs.File.exists(basePath + ".otf")) {
+                fontAssetPath = "app/fonts/" + fontFamily + ".otf";
+            }
+            else {
+                trace.write("Could not find font file for " + fontFamily, trace.categories.Error, trace.messageType.error);
+            }
+            
+            if (fontAssetPath){
+                try {
+                    result = android.graphics.Typeface.createFromAsset(appAssets, fontAssetPath);
+                } catch (e) {
+                    trace.write("Error loading font asset: " + fontAssetPath, trace.categories.Error, trace.messageType.error);
+                }
             }
             typefaceCache.set(fontFamily, result);
         }

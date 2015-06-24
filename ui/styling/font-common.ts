@@ -70,6 +70,22 @@ export class Font implements definitios.Font {
     }
 }
 
+export function parseFontFamily(value: string): Array<string> {
+    var result = new Array<string>();
+    if (!value) {
+        return result;
+    }
+
+    var split = value.split(",");
+    for (var i = 0; i < split.length; i++) {
+        var str = split[i].trim().replace(/['"]+/g, '');
+        if (str) {
+            result.push(str);
+        }
+    }
+    return result;
+}
+
 export module genericFontFamilies {
     export var serif = "serif";
     export var sansSerif = "sans-serif";
