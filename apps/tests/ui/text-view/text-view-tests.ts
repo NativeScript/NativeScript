@@ -5,7 +5,6 @@ import pagesModule = require("ui/page");
 import textViewTestsNative = require("./text-view-tests-native");
 import colorModule = require("color");
 import enums = require("ui/enums");
-import utils = require("utils/utils");
 
 // <snippet module="ui/text-view" title="TextView">
 // # TextView
