@@ -123,6 +123,7 @@ export class StyleScope {
             return;
         }
 
+        view.style._beginUpdate();
         var i,
             selector: cssSelector.CssSelector,
             matchedStateSelectors = new Array<cssSelector.CssVisualStateSelector>()
@@ -153,6 +154,8 @@ export class StyleScope {
                 this._createVisualsStatesForSelectors(key, matchedStateSelectors);
             }
         }
+
+        view.style._endUpdate();
     }
 
     public getVisualStates(view: view.View): Object {
