@@ -149,6 +149,8 @@
         opacity: number;
 
         //@private
+        public _beginUpdate();
+        public _endUpdate();
         public _resetCssValues(): void;
         public _syncNativeProperties(): void;
         public _inheritStyleProperty(property: dependencyObservable.Property): void;
