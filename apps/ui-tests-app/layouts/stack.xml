@@ -1,0 +1,15 @@
+﻿<Page loaded="onLoaded">
+  <StackLayout>
+    <!-- View Properties -->
+    <Button text="wh" tap="{{ onWidthHeight }}" id="widthHeight" style="background-color: lightblue;" />
+    <Button text="n" tap="{{ onMinWidthMinHeight }}" id="minWidthMinHeight" style="background-color: lightblue;" />
+    <Button text="m" tap="{{ onMargins }}" id="margins" style="background-color: lightblue;" />
+    <Button text="a" tap="{{ onAlignments }}" id="alignments" style="background-color: lightblue;" />
+    <Button text="c" tap="{{ onCollapse }}" id="collapse" style="background-color: lightblue;" />
+    <Button text="v" tap="{{ onVisibile }}" id="visible" style="background-color: lightblue;" />
+    <!-- Layout Properties -->
+    <Button text="p" tap="{{ onPaddings }}" id="paddings" style="background-color: lightgray;" />
+    <Button text="all" tap="{{ onAllProperties }}" id="allProperties" style="background-color: aquamarine;" />
+    <Button text="o" tap="onOrientation" id="orientation" style="background-color: lightgreen;" />
+  </StackLayout>
+</Page>

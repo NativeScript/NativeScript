@@ -198,6 +198,12 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\editable-text-demo\model.ts" />
     <TypeScriptCompile Include="apps\tests\weak-event-listener-tests.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\absolute.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\dock.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\grid.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\myview.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\stack.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\wrap.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\console.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i61.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i73.ts" />
@@ -628,6 +634,11 @@
     <Content Include="apps\tests\xml-declaration\mymodulewithxml\my-control-no-js.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\ui-tests-app\layouts\absolute.xml" />
+    <Content Include="apps\ui-tests-app\layouts\dock.xml" />
+    <Content Include="apps\ui-tests-app\layouts\grid.xml" />
+    <Content Include="apps\ui-tests-app\layouts\stack.xml" />
+    <Content Include="apps\ui-tests-app\layouts\wrap.xml" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />
     <Content Include="apps\template-blank\app.css" />
     <Content Include="apps\template-hello-world\app.css" />
