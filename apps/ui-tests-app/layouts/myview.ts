@@ -19,8 +19,8 @@ export class ViewModel extends observable.Observable {
 
     public onMinWidthMinHeight(args: { eventName: string, object: any }): void {
         var view: view.View = <view.View>args.object;
-        if (view.minWidth !== 66) {
-            view.minWidth = 66;
+        if (view.minWidth !== 95) {
+            view.minWidth = 95;
             view.minHeight = 55;
         } else {
             view.minWidth = 0;
@@ -105,8 +105,8 @@ export class ViewModel extends observable.Observable {
 
         // MinWidthMinHeight
         child = layout.getViewById("minWidthMinHeight");
-        if (child.minWidth !== 66) {
-            child.minWidth = 66;
+        if (child.minWidth !== 95) {
+            child.minWidth = 95;
             child.minHeight = 55;
         } else {
             child.minWidth = 0;
