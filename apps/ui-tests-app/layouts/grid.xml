@@ -1,5 +1,5 @@
 ﻿<Page loaded="onLoaded">
-  <GridLayout rows="auto, 100, *, 50" columns="auto, 100, *, 50">
+  <GridLayout rows="auto, 100, *, 50" columns="auto, 60, *, 40">
     <!-- View Properties -->
     <Button text="wh" tap="{{ onWidthHeight }}" id="widthHeight" style="background-color: lightblue;" />
     <Button text="n" tap="{{ onMinWidthMinHeight }}" col="1" id="minWidthMinHeight" style="background-color: lightblue;" />
