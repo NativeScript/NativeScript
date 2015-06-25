@@ -3,6 +3,7 @@ import style = require("ui/styling/style");
 import definition = require("ui/styling");
 import stylersCommon = require("ui/styling/stylers-common");
 import enums = require("ui/enums");
+import font = require("ui/styling/font");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -180,34 +181,18 @@ export class ButtonStyler implements definition.stylers.Styler {
         return btn.titleColorForState(UIControlState.UIControlStateNormal);
     }
 
-    // font size
-    private static setFontSizeProperty(view: view.View, newValue: any) {
-        var btn: UIButton = <UIButton>view._nativeView;
-        btn.titleLabel.font = btn.titleLabel.font.fontWithSize(newValue);
-    }
-
-    private static resetFontSizeProperty(view: view.View, nativeValue: any) {
-        var btn: UIButton = <UIButton>view._nativeView;
-        btn.titleLabel.font = btn.titleLabel.font.fontWithSize(nativeValue);
-    }
-
-    private static getNativeFontSizeValue(view: view.View): any {
-        var btn: UIButton = <UIButton>view._nativeView;
-        return btn.titleLabel.font.pointSize;
-    }
-
     // font
-    private static setFontProperty(view: view.View, newValue: any) {
+    private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
-        btn.titleLabel.font = UIFont.fontWithDescriptorSize(newValue, btn.titleLabel.font.pointSize);
+        btn.titleLabel.font = (<font.Font>newValue).getUIFont(nativeValue);
     }
 
-    private static resetFontProperty(view: view.View, nativeValue: any) {
+    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
         btn.titleLabel.font = nativeValue;
     }
 
-    private static getNativeFontValue(view: view.View): any {
+    private static getNativeFontInternalValue(view: view.View): any {
         var btn: UIButton = <UIButton>view._nativeView;
         return btn.titleLabel.font;
     }
@@ -253,15 +238,10 @@ export class ButtonStyler implements definition.stylers.Styler {
             ButtonStyler.resetColorProperty,
             ButtonStyler.getNativeColorValue), "Button");
 
-        style.registerHandler(style.fontSizeProperty, new stylersCommon.StylePropertyChangedHandler(
-            ButtonStyler.setFontSizeProperty,
-            ButtonStyler.resetFontSizeProperty,
-            ButtonStyler.getNativeFontSizeValue), "Button");
-
-        style.registerHandler(style.fontProperty, new stylersCommon.StylePropertyChangedHandler(
-            ButtonStyler.setFontProperty,
-            ButtonStyler.resetFontProperty,
-            ButtonStyler.getNativeFontValue), "Button");
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            ButtonStyler.setFontInternalProperty,
+            ButtonStyler.resetFontInternalProperty,
+            ButtonStyler.getNativeFontInternalValue), "Button");
 
         style.registerHandler(style.textAlignmentProperty, new stylersCommon.StylePropertyChangedHandler(
             ButtonStyler.setTextAlignmentProperty,
@@ -271,34 +251,18 @@ export class ButtonStyler implements definition.stylers.Styler {
 }
 
 export class TextBaseStyler implements definition.stylers.Styler {
-    // font-size
-    private static setFontSizeProperty(view: view.View, newValue: any) {
-        var ios: TextUIView = <TextUIView>view._nativeView;
-        ios.font = ios.font.fontWithSize(newValue);
-    }
-
-    private static resetFontSizeProperty(view: view.View, nativeValue: any) {
-        var ios: TextUIView = <TextUIView>view._nativeView;
-        ios.font = ios.font.fontWithSize(nativeValue);
-    }
-
-    private static getNativeFontSizeValue(view: view.View): any {
-        var ios: TextUIView = <TextUIView>view._nativeView;
-        ios.font.pointSize;
-    }
-
     // font
-    private static setFontProperty(view: view.View, newValue: any) {
+    private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
         var ios: TextUIView = <TextUIView>view._nativeView;
-        ios.font = UIFont.fontWithDescriptorSize(newValue, ios.font.pointSize);
+        ios.font = (<font.Font>newValue).getUIFont(nativeValue);
     }
 
-    private static resetFontProperty(view: view.View, nativeValue: any) {
+    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
         var ios: TextUIView = <TextUIView>view._nativeView;
         ios.font = nativeValue;
     }
 
-    private static getNativeFontValue(view: view.View): any {
+    private static getNativeFontInternalValue(view: view.View): any {
         var ios: TextUIView = <TextUIView>view._nativeView;
         return ios.font;
     }
@@ -335,15 +299,10 @@ export class TextBaseStyler implements definition.stylers.Styler {
     }
 
     public static registerHandlers() {
-        style.registerHandler(style.fontSizeProperty, new stylersCommon.StylePropertyChangedHandler(
-            TextBaseStyler.setFontSizeProperty,
-            TextBaseStyler.resetFontSizeProperty,
-            TextBaseStyler.getNativeFontSizeValue), "TextBase");
-
-        style.registerHandler(style.fontProperty, new stylersCommon.StylePropertyChangedHandler(
-            TextBaseStyler.setFontProperty,
-            TextBaseStyler.resetFontProperty,
-            TextBaseStyler.getNativeFontValue), "TextBase");
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextBaseStyler.setFontInternalProperty,
+            TextBaseStyler.resetFontInternalProperty,
+            TextBaseStyler.getNativeFontInternalValue), "TextBase");
 
         style.registerHandler(style.textAlignmentProperty, new stylersCommon.StylePropertyChangedHandler(
             TextBaseStyler.setTextAlignmentProperty,

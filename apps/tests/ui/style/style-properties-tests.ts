@@ -243,7 +243,7 @@ export function test_setting_margin_shorthand_property_sets_all_margins() {
     test_margin_shorthand_property("10 20 30 40", 10, 20, 30, 40);
 }
 
-function test_margin_shorthand_property(short: string, top:number, right:number, bottom:number, left:number) {
+function test_margin_shorthand_property(short: string, top: number, right: number, bottom: number, left: number) {
     var testView = new buttonModule.Button();
     testView.style.margin = short;
 
@@ -269,3 +269,23 @@ function test_padding_shorthand_property(short: string, top: number, right: numb
     TKUnit.assertEqual(testView.style.paddingLeft, left, "left");
 }
 
+export function test_setting_font_shorthand_property() {
+    test_font_shorthand_property("15px Arial", "Arial", 15, "normal", "normal");
+    test_font_shorthand_property("bold 15px Arial", "Arial", 15, "normal", "bold");
+    test_font_shorthand_property("italic 15px Arial", "Arial", 15, "italic", "normal");
+    test_font_shorthand_property("bold italic 15px Arial", "Arial", 15, "italic", "bold");
+    test_font_shorthand_property("italic normal bold 15px Arial, serif", "Arial, serif", 15, "italic", "bold");
+    test_font_shorthand_property("small-caps normal bold 15px Arial", "Arial", 15, "normal", "bold");
+    test_font_shorthand_property("normal normal normal 15px Arial", "Arial", 15, "normal", "normal");
+    test_font_shorthand_property("normal normal normal 15px/30px Arial", "Arial", 15, "normal", "normal");
+}
+
+function test_font_shorthand_property(short: string, family: string, size: number, style: string, weight:string) {
+    var testView = new buttonModule.Button();
+    (<any>testView).style = "font: " + short;
+
+    TKUnit.assertEqual(testView.style.fontFamily, family, "style.fontFamily");
+    TKUnit.assertEqual(testView.style.fontStyle, style, "style.fontStyle");
+    TKUnit.assertEqual(testView.style.fontWeight, weight, "style.fontWeight");
+    TKUnit.assertEqual(testView.style.fontSize, size, "style.fontSize");
+}

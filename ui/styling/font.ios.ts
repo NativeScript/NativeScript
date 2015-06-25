@@ -24,11 +24,16 @@ function initSystemFotns() {
 initSystemFotns();
 
 export class Font extends common.Font {
-    public static default = new Font(undefined, enums.FontStyle.normal, enums.FontWeight.normal);
+    public static default = new Font(undefined, undefined, enums.FontStyle.normal, enums.FontWeight.normal);
 
-    private _ios: UIFontDescriptor;
-    get ios(): UIFontDescriptor {
-        if (!this._ios) {
+    private _uiFont: UIFont;
+
+    constructor(family: string, size: number, style: string, weight: string) {
+        super(family, size, style, weight);
+    }
+
+    public getUIFont(defaultFont: UIFont): UIFont {
+        if (!this._uiFont) {
             var symbolicTraits: number = 0;
             if (this.isBold) {
                 symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold;
@@ -37,29 +42,32 @@ export class Font extends common.Font {
                 symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic;
             }
 
-            this._ios = resolveFontDescriptor(this.fontFamily, symbolicTraits);
-
-            if (!this._ios) {
-                this._ios = UIFontDescriptor.new().fontDescriptorWithSymbolicTraits(symbolicTraits);
+            var descriptor = resolveFontDescriptor(this.fontFamily, symbolicTraits);
+            if (!descriptor) {
+                descriptor = UIFontDescriptor.new().fontDescriptorWithSymbolicTraits(symbolicTraits);
             }
-        }
-        return this._ios;
-    }
 
-    constructor(family: string, style: string, weight: string) {
-        super(family, style, weight);
+            var size = this.fontSize || defaultFont.pointSize;
+
+            this._uiFont = UIFont.fontWithDescriptorSize(descriptor, size);
+        }
+        return this._uiFont;
     }
 
     public withFontFamily(family: string): Font {
-        return new Font(family, this.fontStyle, this.fontWeight);
+        return new Font(family, this.fontSize, this.fontStyle, this.fontWeight);
     }
 
     public withFontStyle(style: string): Font {
-        return new Font(this.fontFamily, style, this.fontWeight);
+        return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
     }
 
     public withFontWeight(weight: string): Font {
-        return new Font(this.fontFamily, this.fontStyle, weight);
+        return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
+    }
+
+    public withFontSize(size: number): Font {
+        return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight);
     }
 }
 

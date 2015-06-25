@@ -5,17 +5,22 @@
         public fontFamily: string;
         public fontStyle: string;
         public fontWeight: string;
+        public fontSize: number;
 
         public isBold: boolean;
         public isItalic: boolean;
 
-        public ios: UIFontDescriptor;
-        public android: android.graphics.Typeface;
+        constructor(family: string, size: number, style: string, weight: string);
 
-        constructor(family: string, style: string, weight: string);
+        public getAndroidTypeface(): android.graphics.Typeface;
+        public getUIFont(defaultFont: UIFont): UIFont;
 
         public withFontFamily(family: string): Font;
         public withFontStyle(style: string): Font;
         public withFontWeight(weight: string): Font;
+        public withFontSize(size: number): Font;
+
+        public static equals(value1: Font, value2: Font): boolean;
+        public static parse(cssValue: string): Font;
     }
 }

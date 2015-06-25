@@ -9,11 +9,32 @@ var typefaceCache = new Map<string, android.graphics.Typeface>();
 var appAssets: android.content.res.AssetManager;
 
 export class Font extends common.Font {
-    public static default = new Font(undefined, enums.FontStyle.normal, enums.FontWeight.normal);
+    public static default = new Font(undefined, undefined, enums.FontStyle.normal, enums.FontWeight.normal);
 
-    private _android: android.graphics.Typeface;
-    get android(): android.graphics.Typeface {
-        if (!this._android) {
+    private _typeface: android.graphics.Typeface;
+
+    constructor(family: string, size: number, style: string, weight: string) {
+        super(family, size, style, weight);
+    }
+
+    public withFontFamily(family: string): Font {
+        return new Font(family, this.fontSize, this.fontStyle, this.fontWeight);
+    }
+
+    public withFontStyle(style: string): Font {
+        return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
+    }
+
+    public withFontWeight(weight: string): Font {
+        return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
+    }
+
+    public withFontSize(size: number): Font {
+        return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight);
+    }
+
+    public getAndroidTypeface(): android.graphics.Typeface {
+        if (!this._typeface) {
             var style: number = 0;
 
             if (this.isBold) {
@@ -25,25 +46,10 @@ export class Font extends common.Font {
             }
 
             var typeFace = this.getTypeFace(this.fontFamily);
-            this._android = android.graphics.Typeface.create(typeFace, style);
+            this._typeface = android.graphics.Typeface.create(typeFace, style);
         }
-        return this._android;
-    }
 
-    constructor(family: string, style: string, weight: string) {
-        super(family, style, weight);
-    }
-
-    public withFontFamily(family: string): Font {
-        return new Font(family, this.fontStyle, this.fontWeight);
-    }
-
-    public withFontStyle(style: string): Font {
-        return new Font(this.fontFamily, style, this.fontWeight);
-    }
-
-    public withFontWeight(weight: string): Font {
-        return new Font(this.fontFamily, this.fontStyle, weight);
+        return this._typeface;
     }
 
     private getTypeFace(fontFamily: string): android.graphics.Typeface {
@@ -101,8 +107,8 @@ export class Font extends common.Font {
             else {
                 trace.write("Could not find font file for " + fontFamily, trace.categories.Error, trace.messageType.error);
             }
-            
-            if (fontAssetPath){
+
+            if (fontAssetPath) {
                 try {
                     result = android.graphics.Typeface.createFromAsset(appAssets, fontAssetPath);
                 } catch (e) {
