@@ -23,6 +23,8 @@ var noStylingClasses = {};
 
 export class Style extends observable.DependencyObservable implements styling.Style {
     private _view: view.View;
+    private _inUpdate = false;
+    private _nativeSetters = new Map<dependencyObservable.Property, any>();
 
     get color(): color.Color {
         return this._getValue(colorProperty);
@@ -210,6 +212,16 @@ export class Style extends observable.DependencyObservable implements styling.St
         super();
         this._view = parentView;
     }
+    
+    public _beginUpdate() {
+        this._inUpdate = true;
+    }
+
+    public _endUpdate() {
+        this._inUpdate = false;
+        this._nativeSetters.forEach((newValue, property, map) => { this._applyStyleProperty(property, newValue); });
+        this._nativeSetters.clear();
+    }
 
     public _resetCssValues() {
         var that = this;
@@ -263,6 +275,11 @@ export class Style extends observable.DependencyObservable implements styling.St
     }
 
     private _applyStyleProperty(property: dependencyObservable.Property, newValue: any) {
+        if (this._inUpdate) {
+            this._nativeSetters.set(property, newValue);
+            return;
+        }
+
         try {
             var handler: styling.stylers.StylePropertyChangedHandler = getHandler(property, this._view);
 
@@ -506,6 +523,9 @@ function onMarginChanged(data: observable.PropertyChangeData) {
     style.marginBottom = thickness.bottom;
     style.marginLeft = thickness.left;
 }
+
+export var paddingNativeProperty = new styleProperty.Property("paddingNative", "paddingNative",
+    new observable.PropertyMetadata({ top: 0, right: 0, bottom: 0, left: 0 }, null, null, null, thicknessComparer));
 
 export var verticalAlignmentProperty = new styleProperty.Property("verticalAlignment", "vertical-align",
     new observable.PropertyMetadata(enums.VerticalAlignment.stretch, observable.PropertyMetadataSettings.AffectsLayout));
