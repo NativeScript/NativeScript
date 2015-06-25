@@ -524,9 +524,6 @@ function onMarginChanged(data: observable.PropertyChangeData) {
     style.marginLeft = thickness.left;
 }
 
-export var paddingNativeProperty = new styleProperty.Property("paddingNative", "paddingNative",
-    new observable.PropertyMetadata({ top: 0, right: 0, bottom: 0, left: 0 }, null, null, null, thicknessComparer));
-
 export var verticalAlignmentProperty = new styleProperty.Property("verticalAlignment", "vertical-align",
     new observable.PropertyMetadata(enums.VerticalAlignment.stretch, observable.PropertyMetadataSettings.AffectsLayout));
 
