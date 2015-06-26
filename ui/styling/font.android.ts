@@ -7,6 +7,7 @@ import fs = require("file-system");
 
 var typefaceCache = new Map<string, android.graphics.Typeface>();
 var appAssets: android.content.res.AssetManager;
+var FONTS_BASE_PATH = "app/fonts/";
 
 export class Font extends common.Font {
     public static default = new Font(undefined, undefined, enums.FontStyle.normal, enums.FontWeight.normal);
@@ -99,10 +100,10 @@ export class Font extends common.Font {
             var fontAssetPath: string;
             var basePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFamily);
             if (fs.File.exists(basePath + ".ttf")) {
-                fontAssetPath = "app/fonts/" + fontFamily + ".ttf";
+                fontAssetPath = FONTS_BASE_PATH + fontFamily + ".ttf";
             }
             else if (fs.File.exists(basePath + ".otf")) {
-                fontAssetPath = "app/fonts/" + fontFamily + ".otf";
+                fontAssetPath = FONTS_BASE_PATH + fontFamily + ".otf";
             }
             else {
                 trace.write("Could not find font file for " + fontFamily, trace.categories.Error, trace.messageType.error);

@@ -23,4 +23,8 @@
         public static equals(value1: Font, value2: Font): boolean;
         public static parse(cssValue: string): Font;
     }
+
+    export module ios {
+        export function registerFont(fontFile: string);
+    }
 }

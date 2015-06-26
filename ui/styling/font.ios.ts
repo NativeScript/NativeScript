@@ -1,27 +1,31 @@
 ﻿import enums = require("ui/enums");
 import common = require("ui/styling/font-common");
+import fs = require("file-system"); 
 
 var DEFAULT_SERIF = "Times New Roman";
 var DEFAULT_SANS_SERIF = "Helvetica";
 var DEFAULT_MONOSPACE = "Courier New";
 
+var areSystemFontSetsValid: boolean = false; 
 var systemFontFamilies = new Set();
 var systemFonts = new Set();
 
-function initSystemFotns() {
-    var nsFontFamilies = UIFont.familyNames();
-    for (var i = 0; i < nsFontFamilies.count; i++) {
-        var family = nsFontFamilies.objectAtIndex(i);
-        systemFontFamilies.add(family);
+function assureSystemFotnSets() {
+    if (!areSystemFontSetsValid) {
+        var nsFontFamilies = UIFont.familyNames();
+        for (var i = 0; i < nsFontFamilies.count; i++) {
+            var family = nsFontFamilies.objectAtIndex(i);
+            systemFontFamilies.add(family);
 
-        var nsFonts = UIFont.fontNamesForFamilyName(family);
-        for (var j = 0; j < nsFonts.count; j++) {
-            var font = nsFonts.objectAtIndex(j);
-            systemFonts.add(font);
+            var nsFonts = UIFont.fontNamesForFamilyName(family);
+            for (var j = 0; j < nsFonts.count; j++) {
+                var font = nsFonts.objectAtIndex(j);
+                systemFonts.add(font);
+            }
         }
+        areSystemFontSetsValid = true;
     }
 }
-initSystemFotns();
 
 export class Font extends common.Font {
     public static default = new Font(undefined, undefined, enums.FontStyle.normal, enums.FontWeight.normal);
@@ -78,6 +82,8 @@ function resolveFontDescriptor(fontFamilyValue: string, symbolicTraits: number):
         return null;
     }
 
+    assureSystemFotnSets();
+
     for (var i = 0; i < fonts.length; i++) {
         var fontFamily = getFontFamilyRespectingGenericFonts(fonts[i]);
         if (systemFontFamilies.has(fontFamily)) {
@@ -120,5 +126,28 @@ function getFontFamilyRespectingGenericFonts(fontFamily: string): string {
 
         default:
             return fontFamily;
+    }
+}
+
+export module ios {
+    export function registerFont(fontFile: string) {
+        var filePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFile);
+        var fontData = NSFileManager.defaultManager().contentsAtPath(filePath);
+        if (!fontData) {
+            throw new Error("Could not load font from: " + fontFile);
+        }
+        var provider = CGDataProviderCreateWithCFData(fontData);
+        var font = CGFontCreateWithDataProvider(provider);
+
+        if (!font) {
+            throw new Error("Could not load font from: " + fontFile);
+        }
+
+        var error = NSError.alloc().init();
+        if (!CTFontManagerRegisterGraphicsFont(font, error)) {
+            throw new Error(error.localizedDescription);
+        }
+
+        areSystemFontSetsValid = false;
     }
 }
