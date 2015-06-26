@@ -1,31 +1,10 @@
 ﻿import enums = require("ui/enums");
 import common = require("ui/styling/font-common");
-import fs = require("file-system"); 
+import fs = require("file-system");
 
 var DEFAULT_SERIF = "Times New Roman";
 var DEFAULT_SANS_SERIF = "Helvetica";
 var DEFAULT_MONOSPACE = "Courier New";
-
-var areSystemFontSetsValid: boolean = false; 
-var systemFontFamilies = new Set();
-var systemFonts = new Set();
-
-function assureSystemFotnSets() {
-    if (!areSystemFontSetsValid) {
-        var nsFontFamilies = UIFont.familyNames();
-        for (var i = 0; i < nsFontFamilies.count; i++) {
-            var family = nsFontFamilies.objectAtIndex(i);
-            systemFontFamilies.add(family);
-
-            var nsFonts = UIFont.fontNamesForFamilyName(family);
-            for (var j = 0; j < nsFonts.count; j++) {
-                var font = nsFonts.objectAtIndex(j);
-                systemFonts.add(font);
-            }
-        }
-        areSystemFontSetsValid = true;
-    }
-}
 
 export class Font extends common.Font {
     public static default = new Font(undefined, undefined, enums.FontStyle.normal, enums.FontWeight.normal);
@@ -48,9 +27,8 @@ export class Font extends common.Font {
 
             var descriptor = resolveFontDescriptor(this.fontFamily, symbolicTraits);
             if (!descriptor) {
-                descriptor = UIFontDescriptor.new().fontDescriptorWithSymbolicTraits(symbolicTraits);
+                descriptor = defaultFont.fontDescriptor().fontDescriptorWithSymbolicTraits(symbolicTraits);
             }
-
             var size = this.fontSize || defaultFont.pointSize;
 
             this._uiFont = UIFont.fontWithDescriptorSize(descriptor, size);
@@ -75,6 +53,27 @@ export class Font extends common.Font {
     }
 }
 
+var areSystemFontSetsValid: boolean = false;
+var systemFontFamilies = new Set();
+var systemFonts = new Set();
+
+function assureSystemFontSets() {
+    if (!areSystemFontSetsValid) {
+        var nsFontFamilies = UIFont.familyNames();
+        for (var i = 0; i < nsFontFamilies.count; i++) {
+            var family = nsFontFamilies.objectAtIndex(i);
+            systemFontFamilies.add(family);
+
+            var nsFonts = UIFont.fontNamesForFamilyName(family);
+            for (var j = 0; j < nsFonts.count; j++) {
+                var font = nsFonts.objectAtIndex(j);
+                systemFonts.add(font);
+            }
+        }
+        areSystemFontSetsValid = true;
+    }
+}
+
 function resolveFontDescriptor(fontFamilyValue: string, symbolicTraits: number): UIFontDescriptor {
     var fonts = common.parseFontFamily(fontFamilyValue);
     var result: UIFontDescriptor = null;
@@ -82,7 +81,7 @@ function resolveFontDescriptor(fontFamilyValue: string, symbolicTraits: number):
         return null;
     }
 
-    assureSystemFotnSets();
+    assureSystemFontSets();
 
     for (var i = 0; i < fonts.length; i++) {
         var fontFamily = getFontFamilyRespectingGenericFonts(fonts[i]);

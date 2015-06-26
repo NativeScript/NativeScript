@@ -318,7 +318,15 @@ export class Style extends observable.DependencyObservable implements styling.St
             else {
                 trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
                 
-                if (types.isUndefined(newValue) || newValue === property.metadata.defaultValue) {
+                var shouldReset = false;
+                if (property.metadata.equalityComparer) {
+                    shouldReset = property.metadata.equalityComparer(newValue, property.metadata.defaultValue);
+                }
+                else {
+                    shouldReset = (newValue === property.metadata.defaultValue);
+                }
+
+                if (shouldReset) {
                     (<any>handler).resetProperty(property, this._view);
                 } else {
                     (<any>handler).applyProperty(property, this._view, newValue);
