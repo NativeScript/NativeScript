@@ -12,6 +12,8 @@ trace.setCategories(trace.categories.Test);
 
 var list: string[] = ["pages", "layouts", "modal-view"];
 
+// basePath is auto-changed when building multiple apps
+var basePath = "";
 export function createPage() {
     var txtInput = new text.TextView();
     var btn = new button.Button();
@@ -21,7 +23,7 @@ export function createPage() {
         while (i < list.length) {
             filePath = fs.path.join(__dirname, list[i], txtInput.text);
             if ((fs.File.exists(filePath + ".xml") || (fs.File.exists(filePath + ".js")))) {
-                fileName = list[i] + "/" + txtInput.text;
+                fileName = basePath + list[i] + "/" + txtInput.text;
                 break;
             }
             i++;

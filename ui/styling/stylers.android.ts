@@ -10,6 +10,7 @@ import enums = require("ui/enums");
 import utils = require("utils/utils");
 import styleModule = require("ui/styling/style");
 import imageSource = require("image-source");
+import font = require("ui/styling/font");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -289,17 +290,39 @@ export class TextViewStyler implements definition.stylers.Styler {
         return (<android.widget.TextView>view.android).getTextColors().getDefaultColor();
     }
 
-    // font-size
-    private static setFontSizeProperty(view: view.View, newValue: any) {
-        (<android.widget.TextView>view.android).setTextSize(newValue);
+    // font
+    private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
+        var tv = <android.widget.TextView>view.android;
+        var fontValue = <font.Font>newValue;
+
+        var typeface = fontValue.getAndroidTypeface();
+        if (typeface) {
+            tv.setTypeface(typeface);
+        }
+        else {
+            tv.setTypeface(nativeValue.typeface);
+        }
+
+        if (fontValue.fontSize) {
+            tv.setTextSize(fontValue.fontSize);
+        }
+        else {
+            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+        }
     }
 
-    private static resetFontSizeProperty(view: view.View, nativeValue: any) {
-        (<android.widget.TextView>view.android).setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue);
+    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
+        var tv: android.widget.TextView = <android.widget.TextView>view.android;
+        tv.setTypeface(nativeValue.typeface);
+        tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
     }
 
-    private static getNativeFontSizeValue(view: view.View): any {
-        return (<android.widget.TextView>view.android).getTextSize();
+    private static getNativeFontInternalValue(view: view.View): any {
+        var tv: android.widget.TextView = <android.widget.TextView>view.android;
+        return {
+            typeface: tv.getTypeface(),
+            size: tv.getTextSize()
+        };
     }
 
     // text-align
@@ -332,17 +355,35 @@ export class TextViewStyler implements definition.stylers.Styler {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setColorProperty,
             TextViewStyler.resetColorProperty,
-            TextViewStyler.getNativeColorValue));
+            TextViewStyler.getNativeColorValue), "TextBase");
 
-        style.registerHandler(style.fontSizeProperty, new stylersCommon.StylePropertyChangedHandler(
-            TextViewStyler.setFontSizeProperty,
-            TextViewStyler.resetFontSizeProperty,
-            TextViewStyler.getNativeFontSizeValue));
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setFontInternalProperty,
+            TextViewStyler.resetFontInternalProperty,
+            TextViewStyler.getNativeFontInternalValue), "TextBase");
 
         style.registerHandler(style.textAlignmentProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setTextAlignmentProperty,
             TextViewStyler.resetTextAlignmentProperty,
-            TextViewStyler.getNativeTextAlignmentValue));
+            TextViewStyler.getNativeTextAlignmentValue), "TextBase");
+
+        // Register the same stylers for Button.
+        // It also derives from TextView but is not under TextBase in our View hierarchy.
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setColorProperty,
+            TextViewStyler.resetColorProperty,
+            TextViewStyler.getNativeColorValue), "Button");
+
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setFontInternalProperty,
+            TextViewStyler.resetFontInternalProperty,
+            TextViewStyler.getNativeFontInternalValue), "Button");
+
+        style.registerHandler(style.textAlignmentProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setTextAlignmentProperty,
+            TextViewStyler.resetTextAlignmentProperty,
+            TextViewStyler.getNativeTextAlignmentValue), "Button");
+
     }
 }
 
@@ -493,6 +534,7 @@ export class BorderStyler implements definition.stylers.Styler {
     }
 }
 
+// Register all styler at the end.
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();

@@ -211,6 +211,10 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\listview_binding.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\modal-view\login-page.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\modal-view\modal-view.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-field.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-view.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\label.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\button.ts" />
     <TypeScriptCompile Include="es-collections.d.ts" />
     <TypeScriptCompile Include="es6-promise.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.d.ts" />
@@ -440,7 +444,19 @@
       <DependentUpon>wrap-layout.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\styling\css-selector.d.ts" />
-    <TypeScriptCompile Include="ui\styling\css-selector.ts" />
+    <TypeScriptCompile Include="ui\styling\css-selector.ts">
+      <DependentUpon>css-selector.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\font.android.ts">
+      <DependentUpon>font.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\font.ios.ts">
+      <DependentUpon>font.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\font.d.ts" />
+    <TypeScriptCompile Include="ui\styling\font-common.ts">
+      <DependentUpon>font.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\styling\style-property.d.ts" />
     <TypeScriptCompile Include="ui\styling\style.ts" />
     <TypeScriptCompile Include="ui\styling\visual-state.ts" />
@@ -604,6 +620,7 @@
     <Content Include="apps\template-master-detail\main-page.minWH600.xml" />
     <Content Include="apps\template-settings\app.css" />
     <Content Include="apps\tests\app\location-example.xml" />
+    <TypeScriptCompile Include="apps\tests\pages\fonts-test.ts" />
     <Content Include="apps\tests\pages\page-load-performance\start.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -611,6 +628,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\tests\pages\page-load-performance\test-small.xml" />
+    <Content Include="apps\tests\pages\fonts-test.xml" />
     <Content Include="apps\tests\pages\page18.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage1.xml" />
@@ -646,6 +664,10 @@
     <Content Include="apps\template-tab-navigation\app.css" />
     <Content Include="apps\ui-tests-app\modal-view\login-page.xml" />
     <Content Include="apps\ui-tests-app\modal-view\modal-view.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\text-field.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\label.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\button.xml" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

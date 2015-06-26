@@ -1,0 +1,84 @@
+<Page>
+  <ScrollView>
+    <StackLayout id="stack">
+      <Button text="RESET" tap="buttonTap"/>
+
+      <Label text="Fallback: times or serif" style="font-family: invalid, 'one more invalid font', , Times New Roman, serif"/>
+      <Label text="Fallback: monospace"        style="font-family: invalid, Courier New, monospace"/>
+      <Label text="Fallback: monospace bold italic"   style="font-family: invalid, CourierNewPS-BoldItalicMT, monospace; font-weight: bold; font-style: italic;"/>
+
+      <Label text="GREEN"    style="color: green" />
+      <Button text="GREEN"    style="color: green"/>c
+      <TextView text="GREEN"    style="color: green"/>
+      <TextField text="GREEN"    style="color: green"/>
+
+
+      <Label text="no align"    />
+      <Label text="left"    style="text-align: left" />
+      <Label text="center"  style="text-align: center" />
+      <Label text="right"   style="text-align: right" />
+
+      <Button text="no align"    />
+      <Button text="left"    style="text-align: left" />
+      <Button text="center"  style="text-align: center" />
+      <Button text="right"   style="text-align: right" />
+
+      <TextView text="no align"    />
+      <TextView text="left"    style="text-align: left" />
+      <TextView text="center"  style="text-align: center" />
+      <TextView text="right"   style="text-align: right" />
+
+      <TextField text="no align"    />
+      <TextField text="left"    style="text-align: left" />
+      <TextField text="center"  style="text-align: center" />
+      <TextField text="right"   style="text-align: right" />
+
+
+      <Label text="Label: normal" />
+      <Label text="Label: size"        style="font-size: 32" />
+      <Label text="Label: italic"      style="font-style: italic" />
+      <Label text="Label: bold"        style="font-weight: bold"/>
+      <Label text="Label: bold-italic" style="font-weight: bold; font-style: italic"/>
+      <Label text="Label: times new"   style="font-family: Times New Roman"/>
+      <Label text="Label: serif"       style="font-family: serif"/>
+      <Label text="Label: sans-serif"  style="font-family: sans-serif"/>
+      <Label text="Label: monospace"   style="font-family: monospace"/>
+      <Label text="Label: all in one"  style="font-family: Times New Roman; font-weight: bold; font-style: italic; font-size: 32" />
+
+      <Button text="Button: normal" />
+      <Button text="Button: size"        style="font-size: 32" />
+      <Button text="Button: italic"      style="font-style: italic" />
+      <Button text="Button: bold"        style="font-weight: bold"/>
+      <Button text="Button: bold-italic" style="font-weight: bold; font-style: italic"/>
+      <Button text="Button: times new"   style="font-family: Times New Roman"/>
+      <Button text="Button: serif"       style="font-family: serif"/>
+      <Button text="Button: sans-serif"  style="font-family: sans-serif"/>
+      <Button text="Button: monospace"   style="font-family: monospace"/>
+      <Button text="Button: all in one"  style="font-family: Times New Roman; font-weight: bold; font-style: italic; font-size: 32" />
+
+      <TextView text="TextView: normal" />
+      <TextView text="TextView: size"        style="font-size: 32" />
+      <TextView text="TextView: italic"      style="font-style: italic" />
+      <TextView text="TextView: bold"        style="font-weight: bold"/>
+      <TextView text="TextView: bold-italic" style="font-weight: bold; font-style: italic"/>
+      <TextView text="TextView: times new"   style="font-family: Times New Roman"/>
+      <TextView text="TextView: serif"       style="font-family: serif"/>
+      <TextView text="TextView: sans-serif"  style="font-family: sans-serif"/>
+      <TextView text="TextView: monospace"   style="font-family: monospace"/>
+      <TextView text="TextView: all in one"  style="font-family: Times New Roman; font-weight: bold; font-style: italic; font-size: 32" />
+
+      <TextField text="TextField: normal" />
+      <TextField text="TextField: size"        style="font-size: 32" />
+      <TextField text="TextField: italic"      style="font-style: italic" />
+      <TextField text="TextField: bold"        style="font-weight: bold"/>
+      <TextField text="TextField: bold-italic" style="font-weight: bold; font-style: italic"/>
+      <TextField text="TextField: times new"   style="font-family: Times New Roman"/>
+      <TextField text="TextField: serif"       style="font-family: serif"/>
+      <TextField text="TextField: sans-serif"  style="font-family: sans-serif"/>
+      <TextField text="TextField: monospace"   style="font-family: monospace"/>
+      <TextField text="TextField: all in one"  style="font-family: Times New Roman; font-weight: bold; font-style: italic; font-size: 32" />
+
+
+    </StackLayout>
+  </ScrollView>
+</Page>

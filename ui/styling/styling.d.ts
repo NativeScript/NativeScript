@@ -54,6 +54,21 @@
         fontSize: number;
 
         /**
+         * Gets or sets font-family style property.
+         */
+        fontFamily: string;
+
+        /**
+         * Gets or sets font-style style property.
+         */
+        fontStyle: string;
+
+        /**
+         * Gets or sets font-weight style property.
+         */
+        fontWeight: string;
+
+        /**
          * Gets or sets text-alignment style property.
          */
         textAlignment: string;

@@ -6,12 +6,12 @@ import types = require("utils/types");
 var _defaultNativeValuesCache = {};
 
 export class StylePropertyChangedHandler {
-    private _applyProperty: (view: view.View, newValue: any) => void;
+    private _applyProperty: (view: view.View, newValue: any, defaultValue?: any) => void;
     private _resetProperty: (view: view.View, nativeValue: any) => void;
     private _getNativeValue: (view: view.View) => any;
 
     constructor(
-        applyCallback: (view: view.View, newValue: any) => void,
+        applyCallback: (view: view.View, newValue: any, defaultValue?: any) => void,
         resetCallback: (view: view.View, nativeValue: any) => void,
         getNativeValue?: (view: view.View) => any) {
 
@@ -33,7 +33,7 @@ export class StylePropertyChangedHandler {
             newValue = newValue.ios ? newValue.ios : newValue;
         }
 
-        this._applyProperty(view, newValue);
+        this._applyProperty(view, newValue, _defaultNativeValuesCache[className + property.id]);
     }
 
     public resetProperty(property: dependencyObservable.Property, view: view.View) {

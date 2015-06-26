@@ -74,6 +74,10 @@ declare module "ui/core/dependency-observable" {
          */
         onValidateValue: PropertyValidationCallback;
         /**
+         * Gets function that used to compare if two property values are equal.
+         */
+        equalityComparer: PropertyEqualityComparer;
+        /**
          * Checks whether the PropertyMetadataSettings.affectsLayout bit is present in the options value.
          */
         affectsLayout: boolean;

@@ -9,8 +9,8 @@ export class Span extends spanCommon.Span {
     public updateSpanModifiers(parent: formattedString.FormattedString) {
         super.updateSpanModifiers(parent);
         var realFontFamily = this.fontFamily || (parent ? parent.fontFamily : undefined);
-        var realFontSize = this.fontSize || 
-            (parent ? parent.fontSize : undefined) || 
+        var realFontSize = this.fontSize ||
+            (parent ? parent.fontSize : undefined) ||
             (parent && parent.parent ? parent.parent.style.fontSize : undefined);
 
         var realFontAttributes = this.fontAttributes || (parent ? parent.fontAttributes : undefined);
@@ -25,10 +25,10 @@ export class Span extends spanCommon.Span {
             else {
                 var fontDescriptor = UIFontDescriptor.new();
                 var symbolicTraits;
-            if (realFontAttributes & enums.FontAttributes.Bold) {
+                if (realFontAttributes & enums.FontAttributes.Bold) {
                     symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold;
                 }
-            if (realFontAttributes & enums.FontAttributes.Italic) {
+                if (realFontAttributes & enums.FontAttributes.Italic) {
                     symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic;
                 }
                 font = UIFont.fontWithDescriptorSize(fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits), realFontSize);
@@ -41,7 +41,7 @@ export class Span extends spanCommon.Span {
             }
         }
 
-        var realForegroundColor = this.foregroundColor || 
+        var realForegroundColor = this.foregroundColor ||
             (parent ? parent.foregroundColor : undefined) ||
             (parent && parent.parent ? parent.parent.style.color : undefined);
         if (realForegroundColor) {
@@ -51,7 +51,7 @@ export class Span extends spanCommon.Span {
             });
         }
 
-        var realBackgroundColor = this.backgroundColor || 
+        var realBackgroundColor = this.backgroundColor ||
             (parent ? parent.backgroundColor : undefined) ||
             (parent && parent.parent ? parent.parent.style.backgroundColor : undefined);
         if (realBackgroundColor) {
