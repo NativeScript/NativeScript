@@ -7,7 +7,7 @@ declare module "ui/refreshable-list-view" {
     /**
      * Represents a view that shows items in a vertically refreshable scrolling list.
      */
-    export class RefreshableListView extends parent.ListView {
+    export class RefreshableListView extends parent.AbstractListView {
         /**
          * String value used when hooking to refresh event.
          */

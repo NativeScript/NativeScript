@@ -20,7 +20,7 @@ declare module "ui/list-view" {
     /**
      * Represents a view that shows items in a vertically scrolling list.
      */
-    export class ListView extends view.View {
+    export class AbstractListView extends view.View {
         /**
          * String value used when hooking to itemLoading event.
          */
@@ -50,9 +50,9 @@ declare module "ui/list-view" {
         public static isScrollingProperty: dependencyObservable.Property;
 
         /**
-         * Gets the native [android widget](http://developer.android.com/reference/android/widget/ListView.html) that represents the user interface for this component. Valid only when running on Android OS.
+         * Abstract attribute, will be overide by ListView or RefreshableListView
          */
-        android: android.widget.ListView;
+        android: any;
 
         /**
          * Gets the native [iOS view](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/) that represents the user interface for this component. Valid only when running on iOS.
@@ -110,6 +110,13 @@ declare module "ui/list-view" {
          * Raised when the ListView is scrolled so that its last item is visible.
          */
         on(event: "loadMoreItems", callback: (args: observable.EventData) => void, thisArg?: any);
+    }
+
+    export class ListView extends AbstractListView {
+        /**
+         * Gets the native [android widget](http://developer.android.com/reference/android/widget/ListView.html) that represents the user interface for this component. Valid only when running on Android OS.
+         */
+        android: android.widget.ListView;
     }
 
     /**

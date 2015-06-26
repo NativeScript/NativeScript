@@ -1,4 +1,9 @@
-﻿import parent = require("ui/list-view/list-view");
+﻿/* *
+// error: `tns_modules/ui/refreshable-list-view/refreshable-list-view.android.ts(1,25): error TS2306: File 'tns_modules/ui/list-view/list-view.d.ts' is not an external module.
+import parent = require("ui/list-view/list-view");
+/* */
+import parent = require("ui/list-view/list-view.android");
+import definition = require("ui/refreshable-list-view");
 import common = require("ui/refreshable-list-view/refreshable-list-view-common");
 
 var REFRESH = common.RefreshableListViewMixin.refreshEvent;
@@ -6,24 +11,21 @@ var REFRESH = common.RefreshableListViewMixin.refreshEvent;
 declare var exports;
 require("utils/module-merge").merge(parent, exports);
 
-export class RefreshableListView extends parent.ListView implements common.RefreshableListViewMixin {
+export class RefreshableListView extends parent.AbstractListView implements common.RefreshableListViewMixin {
     public static refreshEvent = REFRESH;
-    private _android: android.widget.ListView;
+    public _android: android.widget.ListView;
     private _refreshableView: definition.AndroidListView;
-    private _androidViewId: number;
 
     public _createUI() {
-        if (!this._androidViewId) {
-            this._androidViewId = android.view.View.generateViewId();
-        }
+        var androidViewId = this._createViewId();
         var listview = this._createListView();
-        var refreshLayout;
+        let refreshLayout;
         //Init SwipeRefreshLayout if there is refresh event
         if (this.hasListeners(common.RefreshableListViewMixin.refreshEvent)) {
             refreshLayout = this._createRefreshLayout(listview);
-            refreshLayout.setId(this._androidViewId);
+            refreshLayout.setId(androidViewId);
         } else {
-            listview.setId(this._androidViewId);
+            listview.setId(androidViewId);
         }
         
         this._android = listview;
@@ -36,7 +38,7 @@ export class RefreshableListView extends parent.ListView implements common.Refre
     // this._listview
     public _createRefreshLayout(listview: android.widget.ListView): android.support.v4.widget.SwipeRefreshLayout {
         var that = new WeakRef(this);
-        var refreshLayout = new android.support.v4.widget.SwipeRefreshLayout(this._context);
+        let refreshLayout = new android.support.v4.widget.SwipeRefreshLayout(this._context);
         refreshLayout.addView(listview);
         refreshLayout.setOnRefreshListener(new android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener({
             onRefresh: function() {

@@ -1,5 +1,9 @@
-﻿import definition = require("ui/refreshable-list-view");
+﻿/* *
+// error: `tns_modules/ui/refreshable-list-view/refreshable-list-view.ios.ts(1,25): error TS2306: File 'tns_modules/ui/list-view/list-view.d.ts' is not an external module.
 import parent = require("ui/list-view/list-view");
+/* */
+import parent = require("ui/list-view/list-view.ios");
+import definition = require("ui/refreshable-list-view");
 import common = require("ui/refreshable-list-view/refreshable-list-view-common");
 
 var REFRESH = common.RefreshableListViewMixin.refreshEvent;
@@ -9,10 +13,10 @@ class RefreshHandlerImpl extends NSObject {
         return <RefreshHandlerImpl>super.new();
     }
 
-    private _owner: ListView;
+    private _owner: RefreshableListView;
     private _UIRefreshControl: UIRefreshControl;
 
-    public initWithOwner(owner: ListView): RefreshHandlerImpl {
+    public initWithOwner(owner: RefreshableListView): RefreshHandlerImpl {
         this._owner = owner;
         this._UIRefreshControl = new UIRefreshControl();
         owner.ios.addSubview(this._UIRefreshControl);
@@ -42,11 +46,7 @@ export class RefreshableListView extends parent.ListView implements common.Refre
     private _refreshHandler: RefreshHandlerImpl;
 
     public onLoaded() {
-        /*
-        // cannot use
         super.onLoaded();
-        */
-        super.prototype.onLoaded.call(this);
         if (this.hasListeners(REFRESH)) {
             this._refreshHandler = RefreshHandlerImpl.new().initWithOwner(this);
         }
@@ -54,11 +54,7 @@ export class RefreshableListView extends parent.ListView implements common.Refre
 
     public onUnloaded() {
         this._refreshHandler = null;
-        /*
-        // cannot use
         super.onUnloaded();
-        */
-        super.prototype.onUnloaded.call(this);
     }
 
 }

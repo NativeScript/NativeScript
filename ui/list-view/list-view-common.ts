@@ -29,7 +29,7 @@ function onItemTemplatePropertyChanged(data: dependencyObservable.PropertyChange
     listView.refresh();
 }
 
-export class ListView extends view.View implements definition.ListView {
+export class AbstractListView extends view.View implements definition.AbstractListView {
     public static itemLoadingEvent = "itemLoading";
     public static itemTapEvent = "itemTap";
     public static loadMoreItemsEvent = "loadMoreItems";
@@ -145,4 +145,8 @@ export class ListView extends view.View implements definition.ListView {
     private _onItemsChanged(args: observable.EventData) {
         this.refresh();
     }
+}
+
+export class ListView extends AbstractListView implements definition.ListView {
+    
 }
