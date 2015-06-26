@@ -84,6 +84,16 @@ export class Font implements definitios.Font {
     }
 
     public static equals(value1: Font, value2: Font): boolean {
+        // both values are falsy
+        if (!value1 && !value2) {
+            return true;
+        }
+
+        // only one is falsy
+        if (!value1 || !value2) {
+            return false;
+        }
+
         return value1.fontFamily === value2.fontFamily &&
             value1.fontSize === value2.fontSize &&
             value1.fontStyle === value2.fontStyle &&

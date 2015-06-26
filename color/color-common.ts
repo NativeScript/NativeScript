@@ -94,6 +94,12 @@ export class Color implements definition.Color {
     }
 
     public static equals(value1: definition.Color, value2: definition.Color): boolean {
+        // both values are falsy
+        if (!value1 && !value2) {
+            return true;
+        }
+
+        // only one is falsy
         if (!value1 || !value2) {
             return false;
         }
