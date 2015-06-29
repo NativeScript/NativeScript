@@ -13,6 +13,7 @@ import layoutModule = require("ui/layouts/layout");
 import observable = require("data/observable");
 import bindable = require("ui/core/bindable");
 import definition = require("./view-tests");
+import enums = require("ui/enums");
 
 export var test_eachDescendant = function () {
     var test = function (views: Array<viewModule.View>) {
@@ -125,18 +126,18 @@ export var test_event_LoadedUnloaded_IsRaised = function () {
         var layoutUnloaded = false,
             buttonUnloaded = false;
 
-        views[1].on(viewModule.View.unloadedEvent, (data) => {
+        views[1].on(viewModule.View.unloadedEvent,(data) => {
             layoutUnloaded = true;
         });
 
-        views[2].on(viewModule.View.unloadedEvent, (data) => {
+        views[2].on(viewModule.View.unloadedEvent,(data) => {
             buttonUnloaded = true;
         });
 
         var newButton = new button.Button(),
             buttonLoaded = false;
 
-        newButton.on(viewModule.View.loadedEvent, (data) => {
+        newButton.on(viewModule.View.loadedEvent,(data) => {
             buttonLoaded = true;
         });
 
@@ -260,13 +261,13 @@ var inheritanceTestProperty = new dependensyObservable.Property(
     "inheritanceTest",
     "TestView",
     new proxy.PropertyMetadata(inheritanceTestDefaultValue, dependensyObservable.PropertyMetadataSettings.Inheritable)
-);
+    );
 
 var dummyProperty = new dependensyObservable.Property(
     "dummy",
     "TestView",
     new proxy.PropertyMetadata(0)
-);
+    );
 
 class TestView extends layoutModule.Layout {
 
@@ -282,7 +283,7 @@ class TestView extends layoutModule.Layout {
     }
     set tralala(value: string) {
         this._tralala = value;
-    } 
+    }
 
     get inheritanceTest(): number {
         return this._getValue(inheritanceTestProperty);
@@ -322,7 +323,7 @@ export var test_InheritableProperties_getValuesFromParent = function () {
 
     firstView.addChild(secondView);
     secondView.addChild(thirdView);
-    
+
     helper.do_PageTest(test, firstView, secondView, thirdView);
 }
 
@@ -388,11 +389,11 @@ export var test_InheritableProperties_ChangeNotification = function () {
     helper.do_PageTest(test, firstView, secondView, thirdView);
 }
 
-function property_binding_test (propName: string, firstValue: any, secondValue: any, view?: viewModule.View) {
+function property_binding_test(propName: string, firstValue: any, secondValue: any, view?: viewModule.View) {
     var actualResult;
     var model = new observable.Observable();
     model.set(propName, firstValue);
-    
+
     var options: bindable.BindingOptions = {
         sourceProperty: propName,
         targetProperty: propName
@@ -401,7 +402,7 @@ function property_binding_test (propName: string, firstValue: any, secondValue: 
     if (!view) {
         view = new TestView("view");
     }
-    
+
     view.bind(options, model);
 
     actualResult = view.get(propName);
@@ -592,6 +593,23 @@ function _createLabelWithBorder(): viewModule.View {
     lbl.backgroundColor = new color.Color("#FFFF00");
 
     return lbl;
+}
+
+export var testIsVisible = function () {
+    var lbl = new label.Label();
+    
+    helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
+        TKUnit.assert(lbl.visibility === enums.Visibility.visible, "Actual: " + lbl.visibility + "; Expected: " + enums.Visibility.visible);
+        TKUnit.assert(lbl._isVisible, "Actual: " + lbl._isVisible + "; Expected: true;");
+
+        lbl.visibility = enums.Visibility.collapse;
+        TKUnit.assert(lbl.visibility === enums.Visibility.collapse, "Actual: " + lbl.visibility + "; Expected: " + enums.Visibility.collapse);
+        TKUnit.assert(!lbl._isVisible, "Actual: " + lbl._isVisible + "; Expected: false;");
+
+        lbl.visibility = enums.Visibility.collapsed;
+        TKUnit.assert(lbl.visibility === enums.Visibility.collapsed, "Actual: " + lbl.visibility + "; Expected: " + enums.Visibility.collapsed);
+        TKUnit.assert(!lbl._isVisible, "Actual: " + lbl._isVisible + "; Expected: false;");
+    });
 }
 
 export var testBorderWidth = function () {
