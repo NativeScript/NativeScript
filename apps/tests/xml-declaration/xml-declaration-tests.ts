@@ -242,7 +242,21 @@ export function test_parse_ShouldParseCustomComponentWithoutXml() {
     TKUnit.assert(ctrl instanceof myCustomControlWithoutXml.MyControl, "Expected result: custom control is defined!; Actual result: " + ctrl);
 };
 
-export function test_parse_ShouldParseCustomComponentWitXml() {
+export function test_parse_ShouldParseCustomComponentWithoutXmlFromTNSModules() {
+    var p = <page.Page>builder.parse('<Page xmlns' + ':customControls="tns_modules/ui/label"><customControls:Label /></Page>');
+    var ctrl = p.content;
+
+    TKUnit.assert(ctrl instanceof labelModule.Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
+};
+
+export function test_parse_ShouldParseCustomComponentWithoutXmlFromTNSModulesWhenNotSpecified() {
+    var p = <page.Page>builder.parse('<Page xmlns' + ':customControls="ui/label"><customControls:Label /></Page>');
+    var ctrl = p.content;
+
+    TKUnit.assert(ctrl instanceof labelModule.Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
+};
+
+export function test_parse_ShouldParseCustomComponentWithXml() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
     var lbl = <labelModule.Label>panel.getChildAt(0);
@@ -250,21 +264,21 @@ export function test_parse_ShouldParseCustomComponentWitXml() {
     TKUnit.assert(lbl.text === "mymodulewithxml", "Expected result: 'mymodulewithxml'; Actual result: " + lbl);
 };
 
-export function test_parse_ShouldParseCustomComponentWitXml_WithAttributes() {
+export function test_parse_ShouldParseCustomComponentWithXml_WithAttributes() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl visibility="collapsed" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assertEqual(panel.visibility, "collapsed", "panel.visibility");
 };
 
-export function test_parse_ShouldParseCustomComponentWitXml_WithCustomAttributes() {
+export function test_parse_ShouldParseCustomComponentWithXml_WithCustomAttributes() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl myProperty="myValue" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assertEqual(panel["myProperty"], "myValue", "customControl.myProperty");
 };
 
-export function test_parse_ShouldParseCustomComponentWitXmlNoJS() {
+export function test_parse_ShouldParseCustomComponentWithXmlNoJS() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
     var lbl = <labelModule.Label>panel.getChildAt(0);
@@ -272,14 +286,14 @@ export function test_parse_ShouldParseCustomComponentWitXmlNoJS() {
     TKUnit.assertEqual(lbl.text, "I'm all about taht XML, no JS", "label.text");
 };
 
-export function test_parse_ShouldParseCustomComponentWitXmlNoJS_WithAttributes() {
+export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithAttributes() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js visibility="collapsed" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assertEqual(panel.visibility, "collapsed", "panel.visibility");
 };
 
-export function test_parse_ShouldParseCustomComponentWitXmlNoJS_WithCustomAttributes() {
+export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithCustomAttributes() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js myProperty="myValue" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
