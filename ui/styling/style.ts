@@ -671,7 +671,7 @@ function isVisibilityValid(value: string): boolean {
 }
 
 function setLayoutInfoVisibility(data: observable.PropertyChangeData) {
-    (<any>data.object)._view._isVisibleCache = (data.newValue !== enums.Visibility.collapse || data.newValue !== enums.Visibility.collapsed);
+    (<any>data.object)._view._isVisibleCache = (data.newValue === enums.Visibility.visible);
 }
 
 export var visibilityProperty = new styleProperty.Property("visibility", "visibility",
