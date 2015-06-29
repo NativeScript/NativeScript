@@ -2,7 +2,7 @@ import stack = require("ui/layouts/stack-layout");
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 export function resetStyles(args) {
-    var stackLayout = <stack.StackLayout>args.object.parent;
+    var stackLayout = <stack.StackLayout>args.object.parent.parent;
     view.eachDescendant(stackLayout, function (v: view.View) {
         v.style._resetValue(style.fontFamilyProperty);
         v.style._resetValue(style.fontSizeProperty);

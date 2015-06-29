@@ -1,13 +1,12 @@
 <Page>
   <StackLayout>
-    <Button text="RESET" tap="resetStyles"/>
-
     <Button text="no align"    />
     <Button text="left"    style="text-align: left" />
     <Button text="center"  style="text-align: center" />
     <Button text="right"   style="text-align: right" />
 
     <WrapLayout>
+      <Button text="RESET" tap="resetStyles"/>
       <Button text="normal" />
       <Button text="color"       style="color: green"/>
       <Button text="size"        style="font-size: 32" />
