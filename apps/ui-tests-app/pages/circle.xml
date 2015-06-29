@@ -1,0 +1,5 @@
+﻿<Page>
+  <Stacklayout>
+    <Button text="Button" id="btnCircle" style="width:200;height:200;color:white;border-width:2;border-color:red;border-radius:100;background-color:blue" />
+  </Stacklayout>
+</Page>

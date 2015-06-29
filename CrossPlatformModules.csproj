@@ -657,6 +657,7 @@
     <Content Include="apps\ui-tests-app\layouts\grid.xml" />
     <Content Include="apps\ui-tests-app\layouts\stack.xml" />
     <Content Include="apps\ui-tests-app\layouts\wrap.xml" />
+    <Content Include="apps\ui-tests-app\pages\circle.xml" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />
     <Content Include="apps\template-blank\app.css" />
     <Content Include="apps\template-hello-world\app.css" />
