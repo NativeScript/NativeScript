@@ -137,10 +137,10 @@ export class DefaultStyler implements definition.stylers.Styler {
             DefaultStyler.resetBackgroundProperty,
             DefaultStyler.getNativeBackgroundValue));
 
-        style.registerHandler(style.backgroundImageSourceProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBackgroundImageSourceProperty,
-            DefaultStyler.resetBackgroundImageSourceProperty,
-            DefaultStyler.getNativeBackgroundImageSourceValue));
+        //style.registerHandler(style.backgroundImageSourceProperty, new stylersCommon.StylePropertyChangedHandler(
+        //    DefaultStyler.setBackgroundImageSourceProperty,
+        //    DefaultStyler.resetBackgroundImageSourceProperty,
+        //    DefaultStyler.getNativeBackgroundImageSourceValue));
 
         style.registerHandler(style.visibilityProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setVisibilityProperty,

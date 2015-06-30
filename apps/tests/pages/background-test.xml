@@ -1,0 +1,5 @@
+<Page>
+  <GridLayout style="background-image: url('~/pages/test.png')">
+    <Button text="just a button" />
+  </GridLayout>
+</Page>

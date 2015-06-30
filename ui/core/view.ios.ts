@@ -3,6 +3,7 @@ import trace = require("trace");
 import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import style = require("ui/styling/style");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -124,6 +125,7 @@ export class View extends viewCommon.View {
         if (changed || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
             this.onLayout(left, top, right, bottom);
             this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
+            this._onBoundsChanged();
         }
         this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
     }
@@ -203,6 +205,59 @@ export class View extends viewCommon.View {
 
         return false;
     }
+
+    private _onBoundsChanged() {
+        var nativeView: UIView = <UIView>this._nativeView;
+        var imageSource = this.style._getValue(style.backgroundImageSourceProperty);
+        if (imageSource && imageSource.ios) {
+            var img = <UIImage>imageSource.ios;
+            var frame = nativeView.frame;
+            console.log("Frame: " + NSStringFromCGRect(frame));
+            console.log("ImageSize: " + NSStringFromCGSize(img.size));
+            if (frame.size.width > 0 && frame.size.height) {
+                var repeatX = false;
+                var repeatY = false;
+                var posX = 15;
+                var posY = 35;
+                var sizeX = 15;
+                var sizeY = 40;
+
+                if (sizeX > 0 && sizeY > 0) {
+                    var resizeRect = CGRectMake(0, 0, sizeX, sizeY);
+                    UIGraphicsBeginImageContext(resizeRect.size);
+                    img.drawInRect(resizeRect);
+                    img = UIGraphicsGetImageFromCurrentImageContext();
+                    UIGraphicsEndImageContext();
+                }
+
+                UIGraphicsBeginImageContextWithOptions(frame.size, false, 1.0);
+                if (!repeatX && !repeatY) {
+                    img.drawAtPoint(CGPointMake(posX, posY));
+                }
+                else {
+                    var w = repeatX ? frame.size.width : img.size.width;
+                    var h = repeatY ? frame.size.height : img.size.height;
+
+                    var context = UIGraphicsGetCurrentContext();
+                    CGContextSetPatternPhase(context, CGSizeMake(posX, posY));
+                    console.log("context" + context);
+
+                    posX = repeatX ? 0 : posX;
+                    posY = repeatY ? 0 : posY;
+                    
+                    var patternRect = CGRectMake(posX, posY, w, h);
+                    console.log("patternRect: " + NSStringFromCGRect(patternRect));
+
+                    img.drawAsPatternInRect(patternRect);
+                }
+                var bkgImage = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+                console.log("bkgImage.size: " + NSStringFromCGSize(bkgImage.size));
+                nativeView.backgroundColor = UIColor.alloc().initWithPatternImage(bkgImage);
+            }
+        }
+    }
+
 }
 
 export class CustomLayoutView extends View {

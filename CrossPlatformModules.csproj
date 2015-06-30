@@ -655,6 +655,7 @@
     </Content>
     <Content Include="apps\tests\pages\page-load-performance\test-small.xml" />
     <Content Include="apps\tests\pages\fonts-test.xml" />
+    <Content Include="apps\tests\pages\background-test.xml" />
     <Content Include="apps\tests\pages\page18.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage1.xml" />
