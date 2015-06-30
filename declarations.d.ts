@@ -36,6 +36,7 @@ declare class XMLHttpRequest {
     getResponseHeader(header: string): string;
     overrideMimeType(mime: string): void;
     readyState: number;
+    response: any;
     responseText: string;
     responseType: string;
     status: number;
