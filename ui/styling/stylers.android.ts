@@ -87,18 +87,56 @@ class BorderGradientDrawable extends android.graphics.drawable.GradientDrawable 
 
     public draw(canvas: android.graphics.Canvas): void {
         super.draw(canvas);
+        console.log("BorderGradientDrawable.draw()"); 
 
         if (this.bitmap) {
             var radius = this._cornerRadius * this._density;
             var stroke = this._borderWidth * this._density;
-
             var bounds = this.getBounds();
-
             var path = new android.graphics.Path();
-            path.addRoundRect(new android.graphics.RectF(stroke, stroke, bounds.right - stroke, bounds.bottom - stroke), radius, radius, android.graphics.Path.Direction.CW)
+
+            path.addRoundRect(new android.graphics.RectF(stroke, stroke, bounds.right - stroke, bounds.bottom - stroke), radius, radius, android.graphics.Path.Direction.CW);
             canvas.clipPath(path);
 
-            canvas.drawBitmap(this.bitmap, stroke, stroke, undefined);
+            if (this.bitmap) {
+                var repeatX = true;
+                var repeatY = true;
+                var posX = 15;
+                var posY = 35;
+                var sizeX = 100;
+                var sizeY = 150;
+
+                var matrix = new android.graphics.Matrix();
+                if (sizeX > 0 && sizeY > 0) {
+                    var scaleX = sizeX / this.bitmap.getWidth();
+                    var scaleY = sizeY / this.bitmap.getHeight();
+                    matrix.setScale(scaleX, scaleY, 0, 0);
+                }
+                else {
+                    sizeX = this.bitmap.getWidth();
+                    sizeY = this.bitmap.getHeight();
+                }
+                matrix.postTranslate(posX, posY);
+
+
+                if (!repeatX && !repeatY) {
+                    canvas.drawBitmap(this.bitmap, matrix, undefined);
+                }
+                else {
+                    var shader = new android.graphics.BitmapShader(this.bitmap, android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
+                    shader.setLocalMatrix(matrix);
+                    var paint = new android.graphics.Paint();
+                    paint.setShader(shader);
+
+                    var w = repeatX ? bounds.width() : sizeX;
+                    var h = repeatY ? bounds.height() : sizeY;
+
+                    posX = repeatX ? 0 : posX;
+                    posY = repeatY ? 0 : posY;
+
+                    canvas.drawRect(posX, posY, posX + w, posY + h, paint);
+                }
+            }
         }
     }
 }
@@ -128,7 +166,7 @@ function onBorderPropertyChanged(v: view.View) {
         bkg.cornerRadius = v.borderRadius;
         bkg.borderColor = v.borderColor ? v.borderColor.android : android.graphics.Color.TRANSPARENT;
         bkg.backgroundColor = v.backgroundColor ? v.backgroundColor.android : android.graphics.Color.TRANSPARENT;
-
+       
         bkg.bitmap = value ? value.android : undefined;
     }
 }
