@@ -665,7 +665,7 @@
     <Content Include="apps\template-tab-navigation\app.css" />
     <Content Include="apps\ui-tests-app\modal-view\login-page.xml" />
     <Content Include="apps\ui-tests-app\modal-view\modal-view.xml" />
-    <Resource Include="apps\ui-tests-app\pages\image.png" />
+    <Resource Include="apps\ui-tests-app\pages\red.png" />
     <Content Include="apps\ui-tests-app\pages\text\text-field.xml" />
     <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
     <Content Include="apps\ui-tests-app\pages\text\label.xml" />

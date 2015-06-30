@@ -17,7 +17,7 @@
       <Button text="sans-serif"  style="font-family: sans-serif"/>
       <Button text="monospace"   style="font-family: monospace"/>
       <Button text="Times New Roman"   style="font-family: Times New Roman"/>
-      <Button text="invalid font"   style="font-family: InvalidFont"/>
+      <Button text="invalid"   style="font-family: InvalidFont"/>
       <Button text="all in one"  style="font-family: serif; font-weight: bold; font-style: italic; font-size: 32; color: green" />
     </WrapLayout>
   </StackLayout>
