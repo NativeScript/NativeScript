@@ -59,17 +59,15 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
     }
 
     get navigationBarHidden(): boolean {
-        console.log("page-common get navigationBarHidden: " + this._getValue(Page.navigationBarHiddenProperty));
         return this._getValue(Page.navigationBarHiddenProperty);
     }
 
     set navigationBarHidden(value: boolean) {
-        console.log("page-common set navigationBarHidden: " + value);
         this._setValue(Page.navigationBarHiddenProperty, value);
     }
 
     public _updateNavigationBar(hidden: boolean) {
-        console.log("page-common._updateNavigationBar("+hidden+")");
+        //
     }
 
     get navigationContext(): any {
