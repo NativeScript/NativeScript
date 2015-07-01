@@ -175,6 +175,13 @@ export class Page extends pageCommon.Page {
         (<any>this)._isModal = false;
         (<any>this)._UIModalPresentationFormSheet = false;
     }
+
+    public _updateNavigationBar(hidden: boolean) {
+        if (this.ios.navigationController.navigationBarHidden !== hidden) {
+            this.ios.navigationController.navigationBarHidden = hidden;
+            this.requestLayout();
+        }
+    }
 }
 
 class TapBarItemHandlerImpl extends NSObject {

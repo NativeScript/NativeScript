@@ -9,14 +9,32 @@ import bindable = require("ui/core/bindable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
 import frameCommon = require("ui/frame/frame-common");
+import proxy = require("ui/core/proxy");
 
 var OPTIONS_MENU = "optionsMenu";
+
+var navigationBarHiddenProperty = new dependencyObservable.Property(
+    "navigationBarHidden",
+    "Page",
+    new proxy.PropertyMetadata(false, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
+    );
+
+function onNavigationBarHiddenPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    console.log("onNavigationBarHiddenPropertyChanged("+data.newValue+")");
+    var page = <Page>data.object;
+    if (page.isLoaded) {
+        page._updateNavigationBar(data.newValue);
+    }
+}
+
+(<proxy.PropertyMetadata>navigationBarHiddenProperty.metadata).onSetNativeValue = onNavigationBarHiddenPropertyChanged;
 
 export module knownCollections {
     export var optionsMenu = "optionsMenu";
 }
 
 export class Page extends contentView.ContentView implements dts.Page, view.AddArrayFromBuilder {
+    public static navigationBarHiddenProperty = navigationBarHiddenProperty;
     public static navigatingToEvent = "navigatingTo";
     public static navigatedToEvent = "navigatedTo";
     public static navigatingFromEvent = "navigatingFrom";
@@ -36,7 +54,20 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
 
     public onLoaded() {
         this._applyCss();
+        this._updateNavigationBar(this.navigationBarHidden);
         super.onLoaded();
+    }
+
+    get navigationBarHidden(): boolean {
+        return this._getValue(Page.navigationBarHiddenProperty);
+    }
+
+    set navigationBarHidden(value: boolean) {
+        this._setValue(Page.navigationBarHiddenProperty, value);
+    }
+
+    public _updateNavigationBar(hidden: boolean) {
+        //
     }
 
     get navigationContext(): any {
@@ -204,6 +235,7 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
             this.optionsMenu.setItems(value);
         }
     }
+
 }
 
 export class OptionsMenu implements dts.OptionsMenu {
