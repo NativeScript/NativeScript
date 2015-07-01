@@ -1,6 +1,7 @@
 ﻿import application = require("application");
 application.mainModule = "app/mainPage";
 
+// Common events for both Android and iOS.
 application.on(application.launchEvent, function (args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android.content.Intent class.
@@ -61,6 +62,7 @@ application.on(application.uncaughtErrorEvent, function (args: application.Appli
     }
 });
 
+// Android activity events
 application.on(application.androidActivityCreatedEvent, function (args: application.AndroidActivityBundleEventData) {
     console.log("Event: " + args.eventName + ", Activity: " + args.activity + ", Bundle: " + args.bundle);
 });
