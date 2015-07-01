@@ -89,4 +89,27 @@ export class Page extends pageCommon.Page {
         this._isAddedToNativeVisualTree = false;
         this._onDetached(true);
     }
+
+    public _updateNavigationBar(hidden: boolean) {
+        if (!this.frame || !this.frame.android) {
+            return;
+        }
+
+        var actionBar = this.frame.android.actionBar;
+
+        if (!actionBar) {
+            return;
+        }
+
+        if (hidden) {
+            if (actionBar.isShowing()) {
+                actionBar.hide();
+            }
+        }
+        else {
+            if (!actionBar.isShowing()) {
+                actionBar.show();
+            }
+        }
+    }
 }

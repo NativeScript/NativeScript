@@ -47,6 +47,11 @@ declare module "ui/page" {
      */
     export class Page extends contentView.ContentView implements view.AddArrayFromBuilder {
         /**
+         * Dependency property used to hide the Navigation Bar in iOS and the Action Bar in Android.
+         */
+        public static navigationBarHiddenProperty: dependencyObservable.Property;
+
+        /**
          * String value used when hooking to shownModally event.
          */
         public static shownModallyEvent: string;
@@ -72,6 +77,11 @@ declare module "ui/page" {
         public static navigatedFromEvent: string;
 
         constructor(options?: Options)
+
+        /**
+         * Used to hide the Navigation Bar in iOS and the Action Bar in Android.
+         */
+        navigationBarHidden: boolean;
 
         /**
          * A valid css string which will be applied for all nested UI components (based on css rules).
