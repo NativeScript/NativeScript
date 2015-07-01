@@ -21,7 +21,12 @@ function onBindingContextChanged(data: dependencyObservable.PropertyChangeData) 
 }
 
 var contextKey = "context";
+// this regex is used to get parameters inside [] for example:
+// from $parents['ListView'] will return 'ListView'
+// from $parents[1] will return 1
 var paramsRegex = /\[\s*(['"])*(\w*)\1\s*\]/;
+
+// this regex is used to search for all instaces of '$parents[]' within an expression
 var parentsRegex = /\$parents\s*\[\s*(['"]*)\w*\1\s*\]/g;
 var bc = bindingBuilder.bindingConstants;
 
@@ -201,6 +206,12 @@ export class Binding {
     }
 
     private prepareExpressionForUpdate(): string {
+        // this regex is used to create a valid RegExp object from a string that has some special regex symbols like [,(,$ and so on.
+        // Basically this method replaces all matches of 'source property' in expression with '$newPropertyValue'.
+        // For example: with an expression similar to:
+        // text="{{ sourceProperty = $parents['ListView'].test, expression = $parents['ListView'].test + 2}}"
+        // update expression will be '$newPropertyValue + 2'
+        // then on expression execution the new value will be taken and target property will be updated with the value of the expression.
         var escapeRegex = /[-\/\\^$*+?.()|[\]{}]/g;
         var escapedSourceProperty = this.options.sourceProperty.replace(escapeRegex, '\\$&');
         var expRegex = new RegExp(escapedSourceProperty, 'g');
