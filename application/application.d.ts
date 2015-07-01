@@ -3,7 +3,6 @@
  */
 declare module "application" {
     import cssSelector = require("ui/styling/css-selector");
-    import observable = require("data/observable");
 
     /**
      * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.

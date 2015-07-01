@@ -96,5 +96,4 @@ application.on(application.androidSaveActivityStateEvent, function (args: applic
     console.log("Event: " + args.eventName + ", Activity: " + args.activity + ", Bundle: " + args.bundle);
 });
 
-
 application.start();
