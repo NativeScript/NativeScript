@@ -21,6 +21,14 @@ function onBindingContextChanged(data: dependencyObservable.PropertyChangeData) 
 }
 
 var contextKey = "context";
+// this regex is used to get parameters inside [] for example:
+// from $parents['ListView'] will return 'ListView'
+// from $parents[1] will return 1
+var paramsRegex = /\[\s*(['"])*(\w*)\1\s*\]/;
+
+// this regex is used to search for all instaces of '$parents[]' within an expression
+var parentsRegex = /\$parents\s*\[\s*(['"]*)\w*\1\s*\]/g;
+var bc = bindingBuilder.bindingConstants;
 
 export class Bindable extends dependencyObservable.DependencyObservable implements definition.Bindable {
 
@@ -197,6 +205,20 @@ export class Binding {
         }
     }
 
+    private prepareExpressionForUpdate(): string {
+        // this regex is used to create a valid RegExp object from a string that has some special regex symbols like [,(,$ and so on.
+        // Basically this method replaces all matches of 'source property' in expression with '$newPropertyValue'.
+        // For example: with an expression similar to:
+        // text="{{ sourceProperty = $parents['ListView'].test, expression = $parents['ListView'].test + 2}}"
+        // update expression will be '$newPropertyValue + 2'
+        // then on expression execution the new value will be taken and target property will be updated with the value of the expression.
+        var escapeRegex = /[-\/\\^$*+?.()|[\]{}]/g;
+        var escapedSourceProperty = this.options.sourceProperty.replace(escapeRegex, '\\$&');
+        var expRegex = new RegExp(escapedSourceProperty, 'g');
+        var resultExp = this.options.expression.replace(expRegex, bc.newPropertyValueKey);
+        return resultExp;
+    }
+
     public updateTwoWay(value: any) {
         if (this.updating) {
             return;
@@ -204,7 +226,8 @@ export class Binding {
         if (this.options.twoWay) {
             if (this.options.expression) {
                 var changedModel = {};
-                changedModel[bindingBuilder.bindingConstants.bindingValueKey] = value;
+                changedModel[bc.bindingValueKey] = value;
+                changedModel[bc.newPropertyValueKey] = value;
                 var sourcePropertyName = "";
                 if (this.sourceOptions) {
                     sourcePropertyName = this.sourceOptions.property;
@@ -215,7 +238,9 @@ export class Binding {
                 if (sourcePropertyName !== "") {
                     changedModel[sourcePropertyName] = value;
                 }
-                var expressionValue = this._getExpressionValue(this.options.expression, true, changedModel);
+                var updateExpression = this.prepareExpressionForUpdate();
+                this.prepareContextForExpression(changedModel, updateExpression);
+                var expressionValue = this._getExpressionValue(updateExpression, true, changedModel);
                 if (expressionValue instanceof Error) {
                     trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
                 }
@@ -241,6 +266,8 @@ export class Binding {
                     }
                 }
 
+                this.prepareContextForExpression(context, expression);
+
 				model[contextKey] = context;
 				return exp.getValue(model, isBackConvert, changedModel);
             }
@@ -254,6 +281,7 @@ export class Binding {
 
     public onSourcePropertyChanged(data: observable.PropertyChangeData) {
         if (this.options.expression) {
+            //this.prepareContextForExpression(this.source.get(), this.options.expression);
             var expressionValue = this._getExpressionValue(this.options.expression, false, undefined);
             if (expressionValue instanceof Error) {
                 trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
@@ -266,10 +294,34 @@ export class Binding {
         }
     }
 
+    private prepareContextForExpression(model, expression) {
+        var parentViewAndIndex;
+        var parentView;
+        if (expression.indexOf(bc.parentValueKey) > -1) {
+            parentView = this.getParentView(this.target.get(), bc.parentValueKey).view;
+            if (parentView) {
+                model[bc.parentValueKey] = parentView.bindingContext;
+            }
+        }
+
+        var parentsArray = expression.match(parentsRegex);
+        if (parentsArray) {
+            var i;
+            for (i = 0; i < parentsArray.length; i++) {
+                parentViewAndIndex = this.getParentView(this.target.get(), parentsArray[i]);
+                if (parentViewAndIndex.view) {
+                    model[bc.parentsValueKey] = model[bc.parentsValueKey] || {};
+                    model[bc.parentsValueKey][parentViewAndIndex.index] = parentViewAndIndex.view.bindingContext;
+                }
+            }
+        }
+    }
+
     private getSourceProperty() {
         if (this.options.expression) {
             var changedModel = {};
-            changedModel[bindingBuilder.bindingConstants.bindingValueKey] = this.source.get();
+            changedModel[bc.bindingValueKey] = this.source.get();
+            //this.prepareContextForExpression(this.source.get(), this.options.expression);
             var expressionValue = this._getExpressionValue(this.options.expression, false, changedModel);
             if (expressionValue instanceof Error) {
                 trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
@@ -287,7 +339,7 @@ export class Binding {
 
         if (this.sourceOptions) {
             var sourceOptionsInstance = this.sourceOptions.instance.get();
-            if (this.sourceOptions.property === bindingBuilder.bindingConstants.bindingValueKey) {
+            if (this.sourceOptions.property === bc.bindingValueKey) {
                 value = sourceOptionsInstance;
             }
             else if (sourceOptionsInstance instanceof observable.Observable) {
@@ -325,10 +377,45 @@ export class Binding {
         this.updateOptions(this.sourceOptions, value);
     }
 
+    private getParentView(target, property) {
+        if (!target || !(target instanceof viewModule.View)) {
+            return {view: null, index: null};
+        }
+        
+        var result;        
+        if (property === bc.parentValueKey) {
+            result = target.parent;
+        }
+
+        if (property.indexOf(bc.parentsValueKey) === 0) {
+            result = target.parent;
+            var indexParams = paramsRegex.exec(property);
+            var index;
+            if (indexParams && indexParams.length > 1) {
+                index = indexParams[2];
+            }
+            
+            if (!isNaN(index)) {
+                var indexAsInt = parseInt(index);
+                while (indexAsInt > 0) {
+                    result = result.parent;
+                    indexAsInt--;
+                }
+            }
+            else {
+                while (result && result.typeName !== index) {
+                    result = result.parent;
+                }
+            }
+        }
+
+        return { view: result, index: index };
+    }
+
     private resolveOptions(obj: WeakRef<any>, property: string): { instance: any; property: any } {
         var options;
 
-        if (property === bindingBuilder.bindingConstants.bindingValueKey) {
+        if (property === bc.bindingValueKey) {
             options = {
                 instance: obj,
                 property: property
@@ -343,6 +430,16 @@ export class Binding {
             var currentObject = obj.get();
 
             for (i = 0; i < properties.length - 1; i++) {
+                if (properties[i] === bc.bindingValueKey) {
+                    continue;
+                }
+                if (properties[i] === bc.parentValueKey || properties[i].indexOf(bc.parentsValueKey) === 0) {
+                    var parentView = this.getParentView(this.target.get(), properties[i]).view;
+                    if (parentView) {
+                        currentObject = parentView.bindingContext;
+                    }
+                    continue;
+                }
                 currentObject = currentObject[properties[i]];
             }
 
