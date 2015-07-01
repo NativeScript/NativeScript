@@ -1,6 +1,7 @@
 ﻿import application = require("application");
 application.mainModule = "app/mainPage";
 
+// Common events for both Android and iOS.
 application.on(application.launchEvent, function (args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android.content.Intent class.
@@ -59,6 +60,40 @@ application.on(application.uncaughtErrorEvent, function (args: application.Appli
         // For iOS applications, args.ios is NativeScriptError.
         console.log("NativeScriptError: " + args.ios);
     }
+});
+
+// Android activity events
+application.on(application.androidActivityCreatedEvent, function (args: application.AndroidActivityBundleEventData) {
+    console.log("Event: " + args.eventName + ", Activity: " + args.activity + ", Bundle: " + args.bundle);
+});
+
+application.on(application.androidActivityDestroyedEvent, function (args: application.AndroidActivityEventData) {
+    console.log("Event: " + args.eventName + ", Activity: " + args.activity);
+});
+
+application.on(application.androidActivityPausedEvent, function (args: application.AndroidActivityEventData) {
+    console.log("Event: " + args.eventName + ", Activity: " + args.activity);
+});
+
+application.on(application.androidActivityResultEvent, function (args: application.AndroidActivityResultEventData) {
+    console.log("Event: " + args.eventName + ", Activity: " + args.activity +
+        ", requestCode: " + args.requestCode + ", resultCode: " + args.resultCode + ", Intent: " + args.intent);
+});
+
+application.on(application.androidActivityResumedEvent, function (args: application.AndroidActivityEventData) {
+    console.log("Event: " + args.eventName + ", Activity: " + args.activity);
+});
+
+application.on(application.androidActivityStartedEvent, function (args: application.AndroidActivityEventData) {
+    console.log("Event: " + args.eventName + ", Activity: " + args.activity);
+});
+
+application.on(application.androidActivityStoppedEvent, function (args: application.AndroidActivityEventData) {
+    console.log("Event: " + args.eventName + ", Activity: " + args.activity);
+});
+
+application.on(application.androidSaveActivityStateEvent, function (args: application.AndroidActivityBundleEventData) {
+    console.log("Event: " + args.eventName + ", Activity: " + args.activity + ", Bundle: " + args.bundle);
 });
 
 application.start();

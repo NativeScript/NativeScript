@@ -3,7 +3,6 @@
  */
 declare module "application" {
     import cssSelector = require("ui/styling/css-selector");
-    import observable = require("data/observable");
 
     /**
      * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
@@ -48,7 +47,7 @@ declare module "application" {
     /**
      * Event data containing information for the application events.
      */
-    export interface ApplicationEventData extends observable.EventData {
+    export interface ApplicationEventData {
         /**
          * Gets the native iOS event arguments. Valid only when running on iOS.
          */
@@ -58,6 +57,15 @@ declare module "application" {
          * Gets the native Android event arguments. Valid only when running on Android.
          */
         android?: any;
+
+        /**
+         * The name of the event.
+         */
+        eventName: string;
+        /**
+         * The instance that has raised the event.
+         */
+        object: any;
     }
 
     /**
@@ -140,7 +148,7 @@ declare module "application" {
      * Notifies all the registered listeners for the event provided in the data.eventName.
      * @param data The data associated with the event.
      */
-    export function notify(data: ApplicationEventData): void;
+    export function notify(data: any): void;
 
     /**
      * Checks whether a listener is registered for the specified event name.
@@ -151,32 +159,32 @@ declare module "application" {
     /**
      * This event is raised on application launchEvent.
      */
-    export function on(event: "onLaunch", callback: (args: any) => void, thisArg?: any);
+    export function on(event: "onLaunch", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
     /**
      * This event is raised when an uncaught error occurs while the application is running.
      */
-    export function on(event: "onUncaughtError", callback: (args: any) => void, thisArg?: any);
+    export function on(event: "onUncaughtError", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
     /**
      * This event is raised when the Application is suspended.
      */
-    export function on(event: "onSuspend", callback: (args: any) => void, thisArg?: any);
+    export function on(event: "onSuspend", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
     /**
      * This event is raised when the Application is resumed after it has been suspended.
      */
-    export function on(event: "onResume", callback: (args: any) => void, thisArg?: any);
+    export function on(event: "onResume", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
     /**
      * This event is raised when the Application is about to exitEvent.
      */
-    export function on(event: "onExit", callback: (args: any) => void, thisArg?: any);
+    export function on(event: "onExit", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
     /**
      * This event is raised when there is low memory on the target device.
      */
-    export function on(event: "onLowMemory", callback: (args: any) => void, thisArg?: any);
+    export function on(event: "onLowMemory", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
     /**
      * This is the Android-specific application object instance.
@@ -193,9 +201,139 @@ declare module "application" {
     export var ios: iOSApplication;
 
     /**
+     * Data for the Android activity events.
+     */
+    export interface AndroidActivityEventData {
+        /**
+         * The activity.
+         */
+        activity: android.app.Activity;
+
+        /**
+         * The name of the event.
+         */
+        eventName: string;
+
+        /**
+         * The instance that has raised the event.
+         */
+        object: any;
+    }
+
+    /**
+     * Data for the Android activity events with bundle.
+     */
+    export interface AndroidActivityBundleEventData extends AndroidActivityEventData {
+        /**
+         * The bundle.
+         */
+        bundle: android.os.Bundle;
+    }
+
+    /**
+     * Data for the Android activity result event.
+     */
+    export interface AndroidActivityResultEventData extends AndroidActivityEventData {
+        /**
+         * The request code.
+         */
+        requestCode: number;
+
+        /**
+         * The result code.
+         */
+        resultCode: number;
+
+        /**
+         * The intent.
+         */
+        intent: android.content.Intent;
+    }
+
+    /**
+     * This event is raised on android application ActivityCreated.
+     */
+    export function on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised on android application ActivityDestroyed.
+     */
+    export function on(event: "activityDestroyed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised on android application ActivityStarted.
+     */
+    export function on(event: "activityStarted", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised on android application ActivityPaused.
+     */
+    export function on(event: "activityPaused", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised on android application ActivityResumed.
+     */
+    export function on(event: "activityResumed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised on android application ActivityStopped.
+     */
+    export function on(event: "activityStopped", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised on android application SaveActivityState.
+     */
+    export function on(event: "saveActivityState", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised on android application ActivityResult.
+     */
+    export function on(event: "activityResult", callback: (args: AndroidActivityResultEventData) => void, thisArg?: any);
+
+    /**
+     * String value used when hooking to ActivityCreated event.
+     */
+    export var androidActivityCreatedEvent: string;
+
+    /**
+     * String value used when hooking to ActivityDestroyed event.
+     */
+    export var androidActivityDestroyedEvent: string;
+
+    /**
+     * String value used when hooking to ActivityStarted event.
+     */
+    export var androidActivityStartedEvent: string;
+
+    /**
+     * String value used when hooking to ActivityPaused event.
+     */
+    export var androidActivityPausedEvent: string;
+
+    /**
+     * String value used when hooking to ActivityResumed event.
+     */
+    export var androidActivityResumedEvent: string;
+
+    /**
+     * String value used when hooking to ActivityStopped event.
+     */
+    export var androidActivityStoppedEvent: string;
+
+    /**
+     * String value used when hooking to SaveActivityState event.
+     */
+    export var androidSaveActivityStateEvent: string;
+
+    /**
+     * String value used when hooking to ActivityResult event.
+     */
+    export var androidActivityResultEvent: string;
+
+    /**
      * The abstraction of an Android-specific application object.
      */
-    export interface AndroidApplication {
+    export class AndroidApplication {
         /**
          * The [android Application](http://developer.android.com/reference/android/app/Application.html) object instance provided to the init of the module.
          */

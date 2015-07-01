@@ -11,16 +11,27 @@ var callbacks = android.app.Application.ActivityLifecycleCallbacks;
 
 export var mainModule: string;
 
+export var androidActivityCreatedEvent = "androidActivityCreated";
+export var androidActivityDestroyedEvent = "androidActivityDestroyed";
+export var androidActivityStartedEvent = "androidActivityStarted";
+export var androidActivityPausedEvent = "androidActivityPaused";
+export var androidActivityResumedEvent = "androidActivityResumed";
+export var androidActivityStoppedEvent = "androidActivityStopped";
+export var androidSaveActivityStateEvent = "androidSaveActivityState";
+export var androidActivityResultEvent = "androidActivityResult";
+
 // We are using the exports object for the common events since we merge the appModule with this module's exports, which is what users will receive when require("application") is called;
 // TODO: This is kind of hacky and is "pure JS in TypeScript"
 
 var initEvents = function () {
-    var androidApp: AndroidApplication = exports.android;
+    var androidApp: dts.AndroidApplication = exports.android;
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     var lifecycleCallbacks = new callbacks({
         onActivityCreated: function (activity: any, bundle: any) {
             if (!androidApp.startActivity) {
                 androidApp.startActivity = activity;
+
+                exports.notify(<dts.AndroidActivityBundleEventData>{ eventName: androidActivityCreatedEvent, object: androidApp, activity: activity, bundle: bundle });
 
                 if (androidApp.onActivityCreated) {
                     androidApp.onActivityCreated(activity, bundle);
@@ -29,6 +40,7 @@ var initEvents = function () {
 
             androidApp.currentContext = activity;
         },
+
         onActivityDestroyed: function (activity: any) {
             // Clear the current activity reference to prevent leak
             if (activity === androidApp.foregroundActivity) {
@@ -44,10 +56,12 @@ var initEvents = function () {
                     exports.onExit();
                 }
 
-                exports.notify({ eventName: dts.exitEvent, object: androidApp, android: activity });
+                exports.notify(<dts.ApplicationEventData>{ eventName: dts.exitEvent, object: androidApp, android: activity });
 
                 androidApp.startActivity = undefined;
             }
+
+            exports.notify(<dts.AndroidActivityEventData>{ eventName: androidActivityDestroyedEvent, object: androidApp, activity: activity });
 
             if (androidApp.onActivityDestroyed) {
                 androidApp.onActivityDestroyed(activity);
@@ -56,47 +70,60 @@ var initEvents = function () {
             // TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
             gc();
         },
+
         onActivityPaused: function (activity: any) {
             if (activity === androidApp.foregroundActivity) {
                 if (exports.onSuspend) {
                     exports.onSuspend();
                 }
 
-                exports.notify({ eventName: dts.suspendEvent, object: androidApp, android: activity });
-
+                exports.notify(<dts.ApplicationEventData>{ eventName: dts.suspendEvent, object: androidApp, android: activity });
             }
+
+            exports.notify(<dts.AndroidActivityEventData>{ eventName: androidActivityPausedEvent, object: androidApp, activity: activity });
 
             if (androidApp.onActivityPaused) {
                 androidApp.onActivityPaused(activity);
             }
         },
+
         onActivityResumed: function (activity: any) {
             if (activity === androidApp.foregroundActivity) {
                 if (exports.onResume) {
                     exports.onResume();
                 }
 
-                exports.notify({ eventName: dts.resumeEvent, object: androidApp, android: activity });
-
+                exports.notify(<dts.ApplicationEventData>{ eventName: dts.resumeEvent, object: androidApp, android: activity });
             }
+
+            exports.notify(<dts.AndroidActivityEventData>{ eventName: androidActivityResumedEvent, object: androidApp, activity: activity });
 
             if (androidApp.onActivityResumed) {
                 androidApp.onActivityResumed(activity);
             }
         },
+
         onActivitySaveInstanceState: function (activity: any, bundle: any) {
+            exports.notify(<dts.AndroidActivityBundleEventData>{ eventName: androidSaveActivityStateEvent, object: androidApp, activity: activity, bundle: bundle });
+
             if (androidApp.onSaveActivityState) {
                 androidApp.onSaveActivityState(activity, bundle);
             }
         },
+
         onActivityStarted: function (activity: any) {
             androidApp.foregroundActivity = activity;
+
+            exports.notify(<dts.AndroidActivityEventData>{ eventName: androidActivityStartedEvent, object: androidApp, activity: activity });
 
             if (androidApp.onActivityStarted) {
                 androidApp.onActivityStarted(activity);
             }
         },
+
         onActivityStopped: function (activity: any) {
+            exports.notify(<dts.AndroidActivityEventData>{ eventName: androidActivityStoppedEvent, object: androidApp, activity: activity });
+
             if (androidApp.onActivityStopped) {
                 androidApp.onActivityStopped(activity);
             }
