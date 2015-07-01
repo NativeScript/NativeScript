@@ -426,6 +426,15 @@ var NativeActivity = {
         if (result) {
             result(requestCode, resultCode, data);
         }
+
+        application.notify(<application.AndroidActivityResultEventData>{
+            eventName: application.androidActivityResultEvent,
+            object: application.android,
+            activity: this,
+            requestCode: requestCode,
+            resultCode: resultCode,
+            intent: data
+        });
     },
 
     onAttachFragment: function (fragment: android.app.Fragment) {
@@ -670,7 +679,7 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
 }
 
 function startActivity(activity: android.app.Activity, entry: definition.NavigationEntry) {
-    var intent = new android.content.Intent(activity,(<any>com).tns.NativeScriptActivity.class);
+    var intent = new android.content.Intent(activity, (<any>com).tns.NativeScriptActivity.class);
     intent.setAction(android.content.Intent.ACTION_DEFAULT);
     // TODO: Put the navigation context (if any) in the intent
     activity.startActivity(intent);
