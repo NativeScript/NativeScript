@@ -22,7 +22,7 @@ export function test_css_dataURI_is_applied_to_backgroundImageSource() {
         var page = <pageModule.Page>views[1];
         page.css = "StackLayout { background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD///l2Z/dAAAAM0lEQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4Ug9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC;') }";
 
-        var value = stack.style._getValue(styleModule.backgroundImageSourceProperty);
+        var value = undefined; //stack.style._getValue(styleModule.backgroundImageSourceProperty);
 
         TKUnit.assert(value !== undefined, "Style background-image not loaded correctly from data URI.");
     });

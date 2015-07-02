@@ -241,6 +241,7 @@
     <TypeScriptCompile Include="image-source\image-source.ios.ts">
       <DependentUpon>image-source.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="js-libs\reworkcss-value\reworkcss-value.d.ts" />
     <TypeScriptCompile Include="platform\platform.ios.ts">
       <DependentUpon>platform.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -453,6 +454,16 @@
     <TypeScriptCompile Include="ui\layouts\stack-layout\stack-layout.d.ts" />
     <TypeScriptCompile Include="ui\layouts\wrap-layout\wrap-layout.ts">
       <DependentUpon>wrap-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\background-common.ts">
+      <DependentUpon>background.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\background.ios.ts">
+      <DependentUpon>background.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\background.d.ts" />
+    <TypeScriptCompile Include="ui\styling\background.android.ts">
+      <DependentUpon>background.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\styling\css-selector.d.ts" />
     <TypeScriptCompile Include="ui\styling\css-selector.ts">
@@ -699,6 +710,7 @@
     <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
     <Content Include="apps\ui-tests-app\pages\text\label.xml" />
     <Content Include="apps\ui-tests-app\pages\text\button.xml" />
+    <Content Include="js-libs\reworkcss-value\reworkcss-value.js" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1588,6 +1600,9 @@
     <Content Include="ui\repeater\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="js-libs\reworkcss-value\LICENSE" />
+    <Content Include="js-libs\reworkcss-value\package.json" />
+    <Content Include="js-libs\reworkcss-value\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />

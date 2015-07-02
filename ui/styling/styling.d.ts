@@ -47,6 +47,26 @@
          * Gets or sets the background-color style property.
          */
         backgroundColor: color.Color;
+        
+        /**
+         * Gets or sets the background-image style property.
+         */
+        backgroundImage: string;
+        
+        /**
+         * Gets or sets the background-size style property.
+         */
+        backgroundSize: string;
+        
+        /**
+         * Gets or sets the background-position style property.
+         */
+        backgroundPosition: string;
+        
+        /**
+         * Gets or sets the background-repeat style property.
+         */
+        backgroundRepeat: string;
 
         /**
          * Gets or sets font-size style property.

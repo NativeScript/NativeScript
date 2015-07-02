@@ -12,6 +12,7 @@ import enums = require("ui/enums");
 import imageSource = require("image-source");
 import utils = require("utils/utils");
 import font = require("ui/styling/font");
+import background = require("ui/styling/background");
 
 // key is the property id and value is Dictionary<string, StylePropertyChangedHandler>;
 var _registeredHandlers = Array<Object>();
@@ -46,6 +47,27 @@ export class Style extends observable.DependencyObservable implements styling.St
     }
     set backgroundImage(value: string) {
         this._setValue(backgroundImageProperty, value, observable.ValueSource.Local);
+    }
+
+    get backgroundRepeat(): string {
+        return this._getValue(backgroundRepeatProperty);
+    }
+    set backgroundRepeat(value: string) {
+        this._setValue(backgroundRepeatProperty, value, observable.ValueSource.Local);
+    }
+
+    get backgroundSize(): string {
+        return this._getValue(backgroundSizeProperty);
+    }
+    set backgroundSize(value: string) {
+        this._setValue(backgroundSizeProperty, value, observable.ValueSource.Local);
+    }
+
+    get backgroundPosition(): string {
+        return this._getValue(backgroundPositionProperty);
+    }
+    set backgroundPosition(value: string) {
+        this._setValue(backgroundPositionProperty, value, observable.ValueSource.Local);
     }
 
     get borderColor(): color.Color {
@@ -241,7 +263,7 @@ export class Style extends observable.DependencyObservable implements styling.St
         super();
         this._view = parentView;
     }
-    
+
     public _beginUpdate() {
         this._inUpdate = true;
     }
@@ -317,7 +339,7 @@ export class Style extends observable.DependencyObservable implements styling.St
             }
             else {
                 trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
-                
+
                 var shouldReset = false;
                 if (property.metadata.equalityComparer) {
                     shouldReset = property.metadata.equalityComparer(newValue, property.metadata.defaultValue);
@@ -426,39 +448,18 @@ export var colorProperty = new styleProperty.Property("color", "color",
 export var backgroundImageProperty = new styleProperty.Property("backgroundImage", "background-image",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundImagePropertyChanged));
 
-function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
-    var view: view.View = (<any>data.object)._view;
-    var style = <Style>data.object;
-    var url: string = data.newValue;
+export var backgroundColorProperty = new styleProperty.Property("backgroundColor", "background-color",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundColorPropertyChanged, undefined, color.Color.equals),
+    converters.colorConverter);
 
-    style._setValue(backgroundImageSourceProperty, undefined, observable.ValueSource.Local);
+export var backgroundRepeatProperty = new styleProperty.Property("backgroundRepeat", "background-repeat",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundRepeatPropertyChanged));
 
-    if (types.isString(data.newValue)) {
-        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
-        var match = url.match(pattern);
-        if (match && match[2]) {
-            url = match[2];
-        }
+export var backgroundSizeProperty = new styleProperty.Property("backgroundSize", "background-size",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundSizePropertyChanged));
 
-        if (utils.isDataURI(url)) {
-            var base64Data = url.split(",")[1];
-            if (types.isDefined(base64Data)) {
-                style._setValue(backgroundImageSourceProperty, imageSource.fromBase64(base64Data), observable.ValueSource.Local);
-            }
-        } else if (utils.isFileOrResourcePath(url)) {
-            style._setValue(backgroundImageSourceProperty, imageSource.fromFileOrResource(url), observable.ValueSource.Local);
-        } else if (url.indexOf("http") !== -1) {
-            if (view) {
-                view["_url"] = url;
-            }
-            imageSource.fromUrl(url).then(r=> {
-                if (view && view["_url"] === url) {
-                    style._setValue(backgroundImageSourceProperty, r, observable.ValueSource.Local);
-                }
-            });
-        }
-    }
-}
+export var backgroundPositionProperty = new styleProperty.Property("backgroundPosition", "background-position",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundPositionPropertyChanged));
 
 export var borderColorProperty = new styleProperty.Property("borderColor", "border-color",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, color.Color.equals),
@@ -470,18 +471,77 @@ export var borderWidthProperty = new styleProperty.Property("borderWidth", "bord
 export var borderRadiusProperty = new styleProperty.Property("borderRadius", "border-radius",
     new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
 
-export var backgroundImageSourceProperty = new styleProperty.Property("backgroundImageSource", "background-image-source",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, undefined));
+export var backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
+    new observable.PropertyMetadata(background.Background.default, observable.PropertyMetadataSettings.None, undefined, undefined, background.Background.equals));
 
-export var backgroundColorProperty = new styleProperty.Property("backgroundColor", "background-color",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, color.Color.equals),
-    converters.colorConverter);
+function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var url: string = data.newValue;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+
+    if (types.isString(data.newValue)) {
+        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
+        var match = url.match(pattern);
+        if (match && match[2]) {
+            url = match[2];
+        }
+
+        if (utils.isDataURI(url)) {
+            var base64Data = url.split(",")[1];
+            if (types.isDefined(base64Data)) {
+                style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromBase64(base64Data)));
+            }
+        } else if (utils.isFileOrResourcePath(url)) {
+            style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromFileOrResource(url)));
+        } else if (url.indexOf("http") !== -1) {
+            style["_url"] = url;
+            style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
+            imageSource.fromUrl(url).then((r) => {
+                if (style && style["_url"] === url) {
+                    style._setValue(backgroundInternalProperty, currentBackground.withImage(r));
+                }
+            });
+        }
+    }
+}
+
+function onBackgroundColorPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (!color.Color.equals(currentBackground.color, data.newValue)) {
+        style._setValue(backgroundInternalProperty, currentBackground.withColor(data.newValue));
+    }
+}
+
+function onBackgroundSizePropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.size) {
+        style._setValue(backgroundInternalProperty, currentBackground.withSize(data.newValue));
+    }
+}
+
+function onBackgroundRepeatPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.repeat) {
+        style._setValue(backgroundInternalProperty, currentBackground.withRepeat(data.newValue));
+    }
+}
+
+function onBackgroundPositionPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.position) {
+        style._setValue(backgroundInternalProperty, currentBackground.withPosition(data.newValue));
+    }
+}
 
 export var fontProperty = new styleProperty.Property("font", "font",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onFontChanged));
 
 export var fontSizeProperty = new styleProperty.Property("fontSize", "font-size",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontSizeChanged),converters.fontSizeConverter);
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontSizeChanged), converters.fontSizeConverter);
 
 export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontFamilyChanged));
@@ -543,7 +603,7 @@ function onFontChanged(data: observable.PropertyChangeData) {
     var style = <Style>data.object;
 
     var newFont = font.Font.parse(data.newValue);
-    var valueSource = style._getValueSource(fontProperty); 
+    var valueSource = style._getValueSource(fontProperty);
     style._setValue(fontFamilyProperty, newFont.fontFamily, valueSource);
     style._setValue(fontStyleProperty, newFont.fontStyle, valueSource);
     style._setValue(fontWeightProperty, newFont.fontWeight, valueSource);

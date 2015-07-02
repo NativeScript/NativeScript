@@ -4,6 +4,7 @@ import definition = require("ui/styling");
 import stylersCommon = require("ui/styling/stylers-common");
 import enums = require("ui/enums");
 import font = require("ui/styling/font");
+import background = require("ui/styling/background");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -17,44 +18,21 @@ interface TextUIView {
 
 export class DefaultStyler implements definition.stylers.Styler {
     //Background methods
-    private static setBackgroundProperty(view: view.View, newValue: any) {
+    private static setBackgroundInternalProperty(view: view.View, newValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
-            nativeView.backgroundColor = newValue;
+            nativeView.backgroundColor = background.ios.createBackgroundUIColor(view);
         }
     }
 
-    private static resetBackgroundProperty(view: view.View, nativeValue: any) {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            nativeView.backgroundColor = nativeValue;
-        }
-    }
-
-    private static getNativeBackgroundValue(view: view.View): any {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            return nativeView.backgroundColor;
-        }
-        return undefined;
-    }
-
-    //Background image methods
-    private static setBackgroundImageSourceProperty(view: view.View, newValue: any) {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            nativeView.backgroundColor = UIColor.alloc().initWithPatternImage(newValue);
-        }
-    }
-
-    private static resetBackgroundImageSourceProperty(view: view.View, nativeValue: any) {
+    private static resetBackgroundInternalProperty(view: view.View, nativeValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
             nativeView.backgroundColor = nativeValue;
         }
     }
 
-    private static getNativeBackgroundImageSourceValue(view: view.View): any {
+    private static getNativeBackgroundInternalValue(view: view.View): any {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
             return nativeView.backgroundColor;
@@ -132,15 +110,10 @@ export class DefaultStyler implements definition.stylers.Styler {
     }
 
     public static registerHandlers() {
-        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBackgroundProperty,
-            DefaultStyler.resetBackgroundProperty,
-            DefaultStyler.getNativeBackgroundValue));
-
-        //style.registerHandler(style.backgroundImageSourceProperty, new stylersCommon.StylePropertyChangedHandler(
-        //    DefaultStyler.setBackgroundImageSourceProperty,
-        //    DefaultStyler.resetBackgroundImageSourceProperty,
-        //    DefaultStyler.getNativeBackgroundImageSourceValue));
+        style.registerHandler(style.backgroundInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setBackgroundInternalProperty,
+            DefaultStyler.resetBackgroundInternalProperty,
+            DefaultStyler.getNativeBackgroundInternalValue));
 
         style.registerHandler(style.visibilityProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setVisibilityProperty,

@@ -402,4 +402,14 @@
         export var bold: string;
     }
     
+    
+    /**
+     * Specifies nackground repeat.
+     */
+    export module BackgroundRepeat {
+        export var repeat: string;
+        export var repeatX: string;
+        export var repeatY: string;
+        export var noRepeat: string;
+    }
 }
