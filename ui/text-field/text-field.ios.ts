@@ -23,13 +23,15 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     }
 
     private _owner: TextField;
-
+    private firstEdit: boolean;
+    
     public initWithOwner(owner: TextField): UITextFieldDelegateImpl {
         this._owner = owner;
         return this;
     }
     
     public textFieldShouldBeginEditing(textField: UITextField): boolean {
+        this.firstEdit = true;
         return this._owner.editable;
     }
 
@@ -41,6 +43,12 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
         this._owner.dismissSoftInput();
     }
 
+    public textFieldShouldClear(textField: UITextField) {
+        this.firstEdit = false;
+        this._owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, "");
+        return true;
+    }
+
     public textFieldShouldReturn(textField: UITextField): boolean {
         // Called when the user presses the return button.
         this._owner.dismissSoftInput();
@@ -49,9 +57,15 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 
     public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
         if (this._owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {
-            var newText = NSString.alloc().initWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
-            this._owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, newText);
+            if (textField.secureTextEntry && this.firstEdit) {
+                this._owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, replacementString);
+            }
+            else {
+                var newText = NSString.alloc().initWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
+                this._owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, newText);
+            }
         }
+        this.firstEdit = false;
 
         return true;
     }
