@@ -30,7 +30,7 @@ export function Deprecated(target: Object, key?: string | symbol, descriptor?: a
         return descriptor;
     } else {
 
-        console.log(`${(target && (<any>target).name || target)}} is deprecated`);
+        console.log(`${(target && (<any>target).name || target)} is deprecated`);
         return target;
     }
 }
