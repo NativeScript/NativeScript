@@ -96,9 +96,6 @@ function resolveFontDescriptor(fontFamilyValue: string, symbolicTraits: number):
             // This is an actual font - don't apply symbolic traits
             result = UIFontDescriptor.fontDescriptorWithNameSize(fontFamily, 0);
         }
-        else {
-            // TODO: Handle custom fonts when they are supported.
-        }
 
         if (result) {
             return result;

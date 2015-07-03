@@ -1,6 +1,31 @@
 <Page loaded="pageLoaded">
-  <GridLayout style="background-image: url('~/pages/test2.png'); background-repeat:repeat-y; background-position: center bottom; background-color: green; background-size: 25% 50%; border-radius: 20; border-width: 4;" rows="*, auto">
-    <TextView text="{{ style }}" backgorundColor="transparent"/>
-    <Button text="apply" horizontalAlignment="center" verticalAlignment="center" tap="applyTap" row="1"/>
+  <GridLayout rows="auto,*">
+    <WrapLayout>
+      <Button width="50" height="50" text="r" tap="resetTap"/>
+      <Button width="50" height="50" text="1" tap="applyTap" tag="background-color: green;"/>
+      <Button width="50" height="50" text="2" tap="applyTap" tag="background-color: green; border-color: red; border-radius: 20; border-width: 4;"/>
+      
+      <Button width="50" height="50" text="3" tap="applyTap" tag="background-image: url('~/pages/test2.png');"/>
+      <Button width="50" height="50" text="4" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:repeat-y;"/>
+      <Button width="50" height="50" text="5" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:repeat-x;"/>
+
+
+      <Button width="50" height="50" text="6" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:no-repeat;"/>
+      <Button width="50" height="50" text="7" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: left top;"/>
+      <Button width="50" height="50" text="8" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: center center;"/>
+      <Button width="50" height="50" text="9" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: right bottom;"/>
+      <Button width="50" height="50" text="10" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: 20% 80%;"/>
+
+      <Button width="50" height="50" text="11" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: center center; background-size: 100 100;"/>
+      <Button width="50" height="50" text="12" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: center center; background-size: 100% 100%;"/>
+      <Button width="50" height="50" text="13" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: center center; background-size: cover;"/>
+      <Button width="50" height="50" text="14" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: center center; background-size: contain;"/>
+      <Button width="50" height="50" text="15" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: center center; background-size: 100 100; background-color: green;"/>
+
+      <Button width="50" height="50" text="16" tap="applyTap" tag="background-image: url('~/pages/test2.png'); background-repeat:repeat-x; background-position: 20% 80%; background-color: green; background-size: 25% 50%; border-radius: 20; border-width: 4; border-color: red;"/>
+    </WrapLayout>
+
+    <GridLayout id="test-element" row="1">
+    </GridLayout>
   </GridLayout>
 </Page>

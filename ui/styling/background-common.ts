@@ -1,11 +1,7 @@
 import imageSource = require("image-source");
 import colorModule = require("color");
-import viewModule = require("ui/core/view");
-import style = require("ui/styling/style");
 import types = require("utils/types");
-import view = require("ui/core/view");
 import enums = require("ui/enums");
-import utils = require("utils/utils");
 import dts = require("ui/styling/background");
 import cssValue = require("js-libs/reworkcss-value");
 
@@ -64,7 +60,6 @@ export class Background implements dts.Background {
             posY: 0,
         }
 
-
         // repeat
         if (this.repeat) {
             switch (this.repeat.toLowerCase()) {
@@ -89,7 +84,7 @@ export class Background implements dts.Background {
         // size
         if (this.size) {
             let values = cssValue.parse(this.size);
-            console.log("this.size values: " + JSON.stringify(values));
+
             if (values.length === 2) {
                 let vx = values[0];
                 let vy = values[1];
@@ -132,8 +127,6 @@ export class Background implements dts.Background {
         // position
         if (this.position) {
             let values = cssValue.parse(this.position);
-            console.log("this.position values: " + JSON.stringify(values));
-
             let spaceX = width - imageWidth;
             let spaceY = height - imageHeight;
 

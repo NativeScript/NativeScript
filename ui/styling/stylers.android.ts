@@ -15,7 +15,8 @@ import background = require("ui/styling/background");
 declare var exports;
 require("utils/module-merge").merge(stylersCommon, exports);
 
-function onBorderPropertyChanged(v: view.View) {
+var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
+function onBackgroundOrBorderPropertyChanged(v: view.View) {
     if (!v._nativeView) {
         return;
     }
@@ -28,6 +29,11 @@ function onBorderPropertyChanged(v: view.View) {
         var bkg = <background.ad.BorderGradientDrawable>nativeView.getBackground();
         if (!(bkg instanceof background.ad.BorderGradientDrawable)) {
             bkg = new background.ad.BorderGradientDrawable();
+            let viewClass = types.getClass(view);
+            if (!_defaultBackgrounds.has(viewClass)) {
+                _defaultBackgrounds.set(viewClass, nativeView.getBackground());
+            }
+
             nativeView.setBackground(bkg);
         }
 
@@ -40,49 +46,23 @@ function onBorderPropertyChanged(v: view.View) {
         bkg.borderColor = v.borderColor ? v.borderColor.android : android.graphics.Color.TRANSPARENT;
         bkg.background = backgroundValue;
     }
+    else {
+        // reset the value with the default native value
+        let viewClass = types.getClass(view);
+        if (_defaultBackgrounds.has(viewClass)) {
+            v.android.setBackgroundDrawable(_defaultBackgrounds.get(viewClass));
+        }
+    }
 }
 
 export class DefaultStyler implements definition.stylers.Styler {
-    //Background image methods
-    private static setBackgroundInternalProperty(view: view.View, newValue: any) {
-        onBorderPropertyChanged(view);
+    //Background and borders methods
+    private static setBackgroundBorderProperty(view: view.View, newValue: any, defaultValue: any) {
+        onBackgroundOrBorderPropertyChanged(view);
     }
 
-    private static resetBackgroundInternalProperty(view: view.View, nativeValue: any) {
-        if (types.isDefined(nativeValue)) {
-            (<android.view.View>view.android).setBackgroundDrawable(nativeValue)
-        }
-    }
-
-    private static getNativeBackgroundInternalProperty(view: view.View): any {
-        return view.android.getBackground();
-    }
-
-    //Border width methods
-    private static setBorderWidthProperty(view: view.View, newValue: any) {
-        onBorderPropertyChanged(view);
-    }
-
-    private static resetBorderWidthProperty(view: view.View, nativeValue: any) {
-        //TODO
-    }
-
-    //Border color methods
-    private static setBorderColorProperty(view: view.View, newValue: any) {
-        onBorderPropertyChanged(view);
-    }
-
-    private static resetBorderColorProperty(view: view.View, nativeValue: any) {
-        //TODO
-    }
-
-    //Corner radius methods
-    private static setBorderRadiusProperty(view: view.View, newValue: any) {
-        onBorderPropertyChanged(view);
-    }
-
-    private static resetBorderRadiusProperty(view: view.View, nativeValue: any) {
-        //TODO
+    private static resetBackgroundBorderProperty(view: view.View, nativeValue: any) {
+        onBackgroundOrBorderPropertyChanged(view);
     }
 
     //Visibility methods
@@ -123,11 +103,6 @@ export class DefaultStyler implements definition.stylers.Styler {
     }
 
     public static registerHandlers() {
-        style.registerHandler(style.backgroundInternalProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBackgroundInternalProperty,
-            DefaultStyler.resetBackgroundInternalProperty,
-            DefaultStyler.getNativeBackgroundInternalProperty));
-
         style.registerHandler(style.visibilityProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setVisibilityProperty,
             DefaultStyler.resetVisibilityProperty));
@@ -144,17 +119,16 @@ export class DefaultStyler implements definition.stylers.Styler {
             DefaultStyler.setMinHeightProperty,
             DefaultStyler.resetMinHeightProperty))
 
-        style.registerHandler(style.borderWidthProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBorderWidthProperty,
-            DefaultStyler.resetBorderWidthProperty));
+        // Use the same handler for all background/border properties
+        // Note: There is no default value getter - the default value is handled in onBackgroundOrBorderPropertyChanged
+        var borderHandler = new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setBackgroundBorderProperty,
+            DefaultStyler.resetBackgroundBorderProperty);
 
-        style.registerHandler(style.borderColorProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBorderColorProperty,
-            DefaultStyler.resetBorderColorProperty));
-
-        style.registerHandler(style.borderRadiusProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBorderRadiusProperty,
-            DefaultStyler.resetBorderRadiusProperty));
+        style.registerHandler(style.backgroundInternalProperty, borderHandler);
+        style.registerHandler(style.borderWidthProperty, borderHandler);
+        style.registerHandler(style.borderColorProperty, borderHandler);
+        style.registerHandler(style.borderRadiusProperty, borderHandler);
     }
 }
 

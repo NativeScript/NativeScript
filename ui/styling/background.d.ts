@@ -2,11 +2,6 @@ declare module "ui/styling/background" {
     import imageSource = require("image-source");
     import colorModule = require("color");
     import viewModule = require("ui/core/view");
-    import style = require("ui/styling/style");
-    import types = require("utils/types");
-    import view = require("ui/core/view");
-    import enums = require("ui/enums");
-    import utils = require("utils/utils");
 
     export interface BackgroundDrawParams {
         repeatX: boolean;
