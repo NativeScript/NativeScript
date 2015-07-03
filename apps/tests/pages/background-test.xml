@@ -1,6 +1,6 @@
 <Page loaded="pageLoaded">
-  <GridLayout style="background-image: url('~/pages/test2.png'); border-color: green; border-radius: 20; border-width: 4;" rows="*, auto">
-    <TextView text="{{ style }}" />
+  <GridLayout style="background-image: url('~/pages/test2.png'); background-repeat:repeat-y; background-position: center bottom; background-color: green; background-size: 25% 50%; border-radius: 20; border-width: 4;" rows="*, auto">
+    <TextView text="{{ style }}" backgorundColor="transparent"/>
     <Button text="apply" horizontalAlignment="center" verticalAlignment="center" tap="applyTap" row="1"/>
   </GridLayout>
 </Page>

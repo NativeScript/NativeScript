@@ -282,6 +282,14 @@ export class Style extends observable.DependencyObservable implements styling.St
         });
     }
 
+    public _resetLocalValues() {
+        var that = this;
+        this._eachSetProperty(function (property: observable.Property) {
+            that._resetValue(property, observable.ValueSource.Local);
+            return true;
+        });
+    }
+
     public _onPropertyChanged(property: dependencyObservable.Property, oldValue: any, newValue: any) {
         trace.write(
             "Style._onPropertyChanged view:" + this._view +

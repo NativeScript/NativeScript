@@ -79,8 +79,6 @@ export module ad {
             var boundsHeight = bounds.height();
 
             if (this.background && !this.background.isEmpty() && boundsWidth > 0 && boundsHeight > 0) {
-                var bitmap = this.background.image.android;
-
                 var radius = this._cornerRadius * this._density;
                 var stroke = this._borderWidth * this._density;
                 var bounds = this.getBounds();
@@ -96,7 +94,8 @@ export module ad {
                 }
 
                 if (this.background.image) {
-                    var params = this.background.getDrawParams(boundsWidth, boundsHeight);
+                    let bitmap = this.background.image.android;
+                    let params = this.background.getDrawParams(boundsWidth, boundsHeight);
 
                     var matrix = new android.graphics.Matrix();
                     if (params.sizeX > 0 && params.sizeY > 0) {

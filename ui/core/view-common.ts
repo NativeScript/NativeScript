@@ -761,7 +761,13 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     private _applyInlineStyle(inlineStyle) {
         if (types.isString(inlineStyle)) {
-            styleScope.applyInlineSyle(this, <string>inlineStyle);
+            try {
+                this.style._beginUpdate();
+                this.style._resetLocalValues();
+                styleScope.applyInlineSyle(this, <string>inlineStyle);
+            } finally {
+                this.style._endUpdate();
+            }
         }
     }
 
