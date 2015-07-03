@@ -16,7 +16,7 @@ var OPTIONS_MENU = "optionsMenu";
 var navigationBarHiddenProperty = new dependencyObservable.Property(
     "navigationBarHidden",
     "Page",
-    new proxy.PropertyMetadata(false, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
+    new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
     );
 
 function onNavigationBarHiddenPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -54,7 +54,11 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
 
     public onLoaded() {
         this._applyCss();
-        this._updateNavigationBar(this.navigationBarHidden);
+
+        if (this.navigationBarHidden !== undefined) {
+            this._updateNavigationBar(this.navigationBarHidden);
+        }
+
         super.onLoaded();
     }
 
