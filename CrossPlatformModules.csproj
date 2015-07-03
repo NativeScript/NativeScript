@@ -221,6 +221,7 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\listview_binding.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\modal-view\login-page.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\modal-view\modal-view.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\textfield.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-field.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-view.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\label.ts" />
@@ -691,6 +692,7 @@
     <Content Include="apps\ui-tests-app\modal-view\login-page.xml" />
     <Content Include="apps\ui-tests-app\modal-view\modal-view.xml" />
     <Resource Include="apps\ui-tests-app\pages\red.png" />
+    <Content Include="apps\ui-tests-app\pages\textfield.xml" />
     <Content Include="apps\ui-tests-app\pages\text\text-field.xml" />
     <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
     <Content Include="apps\ui-tests-app\pages\text\label.xml" />
