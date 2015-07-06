@@ -15,8 +15,12 @@ export function createPage() {
     var buttonOneWay = new buttonModule.Button();
     var buttonTwoWay = new buttonModule.Button();
     
-    // OneWay Binding
+    targetOneWay.id = "textFieldOneWay";
+    targetTwoWay.id = "textFieldTwoWay";
+    buttonOneWay.id = "buttonOneWay";
+    buttonTwoWay.id = "buttonTwoWay";
 
+    // OneWay Binding
     var bindingOptionOneWay = {
         sourceProperty: "textSource",
         targetProperty: "text",
@@ -37,7 +41,6 @@ export function createPage() {
     stack.addChild(buttonOneWay);
     
     // TwoWay Binding
-    
     var bindingOptionTwoWay = {
         sourceProperty: "textSource",
         targetProperty: "text",
