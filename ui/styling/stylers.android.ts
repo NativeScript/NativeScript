@@ -26,9 +26,9 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
     if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
         var nativeView = <android.view.View>v._nativeView;
 
-        var bkg = <background.ad.BorderGradientDrawable>nativeView.getBackground();
-        if (!(bkg instanceof background.ad.BorderGradientDrawable)) {
-            bkg = new background.ad.BorderGradientDrawable();
+        var bkg = <background.ad.BorderDrawable>nativeView.getBackground();
+        if (!(bkg instanceof background.ad.BorderDrawable)) {
+            bkg = new background.ad.BorderDrawable();
             let viewClass = types.getClass(view);
             if (!_defaultBackgrounds.has(viewClass)) {
                 _defaultBackgrounds.set(viewClass, nativeView.getBackground());

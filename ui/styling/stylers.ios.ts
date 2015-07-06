@@ -83,6 +83,13 @@ export class DefaultStyler implements definition.stylers.Styler {
         }
     }
 
+    private static getBorderWidthProperty(view: view.View): any {
+        if (view._nativeView instanceof UIView){
+            return (<UIView>view._nativeView).layer.borderWidth;
+        }
+        return 0;
+    }
+
     //Border color methods
     private static setBorderColorProperty(view: view.View, newValue: any) {
         if (view._nativeView instanceof UIView && newValue instanceof UIColor) {
@@ -92,8 +99,15 @@ export class DefaultStyler implements definition.stylers.Styler {
 
     private static resetBorderColorProperty(view: view.View, nativeValue: any) {
         if (view._nativeView instanceof UIView && nativeValue instanceof UIColor) {
-            (<UIView>view._nativeView).layer.borderColor = (<UIColor>nativeValue).CGColor;
+            (<UIView>view._nativeView).layer.borderColor = nativeValue;
         }
+    }
+
+    private static getBorderColorProperty(view: view.View): any {
+        if (view._nativeView instanceof UIView) {
+            return (<UIView>view._nativeView).layer.borderColor;
+        }
+        return undefined;
     }
 
     //Border radius methods
@@ -107,6 +121,13 @@ export class DefaultStyler implements definition.stylers.Styler {
         if (view._nativeView instanceof UIView) {
             (<UIView>view._nativeView).layer.cornerRadius = nativeValue;
         }
+    }
+
+    private static getBorderRadiusProperty(view: view.View): any {
+        if (view._nativeView instanceof UIView) {
+            return (<UIView>view._nativeView).layer.cornerRadius;
+        }
+        return 0;
     }
 
     public static registerHandlers() {
@@ -125,15 +146,18 @@ export class DefaultStyler implements definition.stylers.Styler {
 
         style.registerHandler(style.borderWidthProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setBorderWidthProperty,
-            DefaultStyler.resetBorderWidthProperty));
+            DefaultStyler.resetBorderWidthProperty,
+            DefaultStyler.getBorderWidthProperty));
 
         style.registerHandler(style.borderColorProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setBorderColorProperty,
-            DefaultStyler.resetBorderColorProperty));
+            DefaultStyler.resetBorderColorProperty,
+            DefaultStyler.getBorderColorProperty));
 
         style.registerHandler(style.borderRadiusProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setBorderRadiusProperty,
-            DefaultStyler.resetBorderRadiusProperty));
+            DefaultStyler.resetBorderRadiusProperty,
+            DefaultStyler.getBorderRadiusProperty));
     }
 }
 

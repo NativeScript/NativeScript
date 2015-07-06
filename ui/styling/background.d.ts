@@ -49,7 +49,7 @@ declare module "ui/styling/background" {
 
     // We are using "ad" here to avoid namespace collision with the global android object
     export module ad {
-        export class BorderGradientDrawable extends android.graphics.drawable.GradientDrawable {
+        export class BorderDrawable extends android.graphics.drawable.ColorDrawable {
             borderWidth: number;
             cornerRadius: number;
             borderColor: number;

@@ -39,8 +39,32 @@ export function test_setting_backgroundColor_property_from_CSS_is_applied_to_Sty
     test_property_from_CSS_is_applied_to_style("backgroundColor", "background-color", new color.Color("#FF0000"), "#FF0000");
 }
 
-export function test_setting_fontSize_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("fontSize", "font-size", 32);
+export function test_setting_backgroundRepeat_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("backgroundRepeat", "background-repeat", "repeat-x");
+}
+
+export function test_setting_backgroundSize_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("backgroundSize", "background-size", "10% 20%");
+}
+
+export function test_setting_backgroundPosition_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("backgroundPosition", "background-position", "left center");
+}
+
+export function test_setting_backgroundImage_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("backgroundImage", "background-image", "url('~/pages/test2.png')");
+}
+
+export function test_setting_borderWidth_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("borderWidth", "border-width", 5);
+}
+
+export function test_setting_borderColor_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("borderColor", "border-color", new color.Color("#FF0000"), "#FF0000");
+}
+
+export function test_setting_borderRadius_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("borderRadius", "border-radius", 20);
 }
 
 export function test_setting_textAlignment_property_from_CSS_is_applied_to_Style() {
@@ -79,6 +103,10 @@ export function test_setting_visibility_property_from_CSS_is_applied_to_Style() 
 
 export function test_setting_opacity_property_from_CSS_is_applied_to_Style() {
     test_property_from_CSS_is_applied_to_style("opacity", "opacity", 0.5);
+}
+
+export function test_setting_fontSize_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("fontSize", "font-size", 32);
 }
 
 export function test_setting_fontFamily_property_from_CSS_is_applied_to_Style() {

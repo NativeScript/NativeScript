@@ -1,5 +1,3 @@
-import observable = require("data/observable");
-import pages = require("ui/page");
 import view = require("ui/core/view");
 export function applyTap(args) {
     var el = view.getViewById(view.getAncestor(args.object, "Page"), "test-element");
