@@ -427,8 +427,8 @@ var NativeActivity = {
             result(requestCode, resultCode, data);
         }
 
-        application.notify(<application.AndroidActivityResultEventData>{
-            eventName: application.androidActivityResultEvent,
+        application.android.notify(<application.AndroidActivityResultEventData>{
+            eventName: "activityResult",
             object: application.android,
             activity: this,
             requestCode: requestCode,
@@ -496,12 +496,12 @@ var NativeActivity = {
         trace.write("NativeScriptActivity.onBackPressed;", trace.categories.NativeLifecycle);
 
         var args = <application.AndroidActivityBackPressedEventData>{
-            eventName: application.androidActivityBackPressedEvent,
+            eventName: "activityBackPressed",
             object: application.android,
             activity: this,
             cancel: false,
         };
-        application.notify(args);
+        application.android.notify(args);
 
         if (args.cancel) {
             return;

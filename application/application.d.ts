@@ -3,6 +3,7 @@
  */
 declare module "application" {
     import cssSelector = require("ui/styling/css-selector");
+    import observable = require("data/observable");
 
     /**
      * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
@@ -62,6 +63,7 @@ declare module "application" {
          * The name of the event.
          */
         eventName: string;
+        
         /**
          * The instance that has raised the event.
          */
@@ -261,99 +263,9 @@ declare module "application" {
     }
 
     /**
-     * This event is raised on android application ActivityCreated.
-     */
-    export function on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised on android application ActivityDestroyed.
-     */
-    export function on(event: "activityDestroyed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised on android application ActivityStarted.
-     */
-    export function on(event: "activityStarted", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised on android application ActivityPaused.
-     */
-    export function on(event: "activityPaused", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised on android application ActivityResumed.
-     */
-    export function on(event: "activityResumed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised on android application ActivityStopped.
-     */
-    export function on(event: "activityStopped", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised on android application SaveActivityState.
-     */
-    export function on(event: "saveActivityState", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised on android application ActivityResult.
-     */
-    export function on(event: "activityResult", callback: (args: AndroidActivityResultEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised on the back button is pressed in an android application.
-     */
-    export function on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
-
-    /**
-     * String value used when hooking to ActivityCreated event.
-     */
-    export var androidActivityCreatedEvent: string;
-
-    /**
-     * String value used when hooking to ActivityDestroyed event.
-     */
-    export var androidActivityDestroyedEvent: string;
-
-    /**
-     * String value used when hooking to ActivityStarted event.
-     */
-    export var androidActivityStartedEvent: string;
-
-    /**
-     * String value used when hooking to ActivityPaused event.
-     */
-    export var androidActivityPausedEvent: string;
-
-    /**
-     * String value used when hooking to ActivityResumed event.
-     */
-    export var androidActivityResumedEvent: string;
-
-    /**
-     * String value used when hooking to ActivityStopped event.
-     */
-    export var androidActivityStoppedEvent: string;
-
-    /**
-     * String value used when hooking to SaveActivityState event.
-     */
-    export var androidSaveActivityStateEvent: string;
-
-    /**
-     * String value used when hooking to ActivityResult event.
-     */
-    export var androidActivityResultEvent: string;
-
-    /**
-     * String value used when hooking to ActivityBackPressed event.
-     */
-    export var androidActivityBackPressedEvent: string;
-
-    /**
      * The abstraction of an Android-specific application object.
      */
-    export class AndroidApplication {
+    export class AndroidApplication extends observable.Observable {
         /**
          * The [android Application](http://developer.android.com/reference/android/app/Application.html) object instance provided to the init of the module.
          */
@@ -429,7 +341,60 @@ declare module "application" {
         /**
          * Direct handler of the onActivityResult method.
          */
-        onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void
+        onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void;
+            
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
+
+        /**
+         * This event is raised on android application ActivityCreated.
+         */
+        on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+
+        /**
+         * This event is raised on android application ActivityDestroyed.
+         */
+        on(event: "activityDestroyed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+        /**
+         * This event is raised on android application ActivityStarted.
+         */
+        on(event: "activityStarted", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+        /**
+         * This event is raised on android application ActivityPaused.
+         */
+        on(event: "activityPaused", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+        /**
+         * This event is raised on android application ActivityResumed.
+         */
+        on(event: "activityResumed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+        /**
+         * This event is raised on android application ActivityStopped.
+         */
+        on(event: "activityStopped", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+        /**
+         * This event is raised on android application SaveActivityState.
+         */
+        on(event: "saveActivityState", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+
+        /**
+         * This event is raised on android application ActivityResult.
+         */
+        on(event: "activityResult", callback: (args: AndroidActivityResultEventData) => void, thisArg?: any);
+
+        /**
+         * This event is raised on the back button is pressed in an android application.
+         */
+        on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
     }
 
     /* tslint:disable */
