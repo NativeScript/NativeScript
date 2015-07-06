@@ -98,6 +98,10 @@ if (platform.device.os === platform.platformNames.android) {
     application.on(application.androidSaveActivityStateEvent, function (args: application.AndroidActivityBundleEventData) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity + ", Bundle: " + args.bundle);
     });
+
+    application.on(application.androidActivityBackPressedEvent, function (args: application.AndroidActivityBackPressedEventData) {
+        console.log("Event: " + args.eventName + ", Activity: " + args.activity);
+    });
 }
 
 application.start();
