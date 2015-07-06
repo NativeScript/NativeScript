@@ -29,7 +29,7 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
         var bkg = <background.ad.BorderDrawable>nativeView.getBackground();
         if (!(bkg instanceof background.ad.BorderDrawable)) {
             bkg = new background.ad.BorderDrawable();
-            let viewClass = types.getClass(view);
+            let viewClass = types.getClass(v);
             if (!_defaultBackgrounds.has(viewClass)) {
                 _defaultBackgrounds.set(viewClass, nativeView.getBackground());
             }
@@ -48,7 +48,7 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
     }
     else {
         // reset the value with the default native value
-        let viewClass = types.getClass(view);
+        let viewClass = types.getClass(v);
         if (_defaultBackgrounds.has(viewClass)) {
             v.android.setBackgroundDrawable(_defaultBackgrounds.get(viewClass));
         }
