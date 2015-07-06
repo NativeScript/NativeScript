@@ -6,6 +6,7 @@ import button = require("ui/button");
 import types = require("utils/types");
 import stack = require("ui/layouts/stack-layout");
 import labelModule = require("ui/label");
+import background = require("ui/styling/background");
 
 import trace = require("trace");
 // enable the trace, it is disabled by default
@@ -268,19 +269,19 @@ export function getNativeCornerRadius(v: view.View): number {
 }
 
 export function checkNativeBorderColor(v: view.View): boolean {
-    var bkg = <any>(<android.view.View>v.android).getBackground();
+    var bkg = <background.ad.BorderDrawable>(<android.view.View>v.android).getBackground();
 
     return v.borderColor && bkg && bkg.borderColor === v.borderColor.android;
 }
 
 export function checkNativeBackgroundColor(v: view.View): boolean {
-    var bkg = <any>(<android.view.View>v.android).getBackground();
+    var bkg = <background.ad.BorderDrawable>(<android.view.View>v.android).getBackground();
 
-    return v.backgroundColor && bkg && bkg.backgroundColor === v.backgroundColor.android;
+    return v.backgroundColor && bkg && bkg.background && bkg.background.color.equals(v.backgroundColor);
 }
 
 export function checkNativeBackgroundImage(v: view.View): boolean {
-    var bkg = <any>(<android.view.View>v.android).getBackground();
+    var bkg = <background.ad.BorderDrawable>(<android.view.View>v.android).getBackground();
 
-    return bkg && bkg.bitmap !== undefined;
+    return bkg && bkg.background && !types.isNullOrUndefined(bkg.background.image);
 }

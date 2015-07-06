@@ -3,6 +3,7 @@ import trace = require("trace");
 import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import background = require("ui/styling/background");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -124,6 +125,7 @@ export class View extends viewCommon.View {
         if (changed || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
             this.onLayout(left, top, right, bottom);
             this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
+            this._onBoundsChanged();
         }
         this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
     }
@@ -202,6 +204,13 @@ export class View extends viewCommon.View {
         }
 
         return false;
+    }
+
+    private _onBoundsChanged() {
+        var bgColor = background.ios.createBackgroundUIColor(this);
+        if (bgColor) {
+            this._nativeView.backgroundColor = bgColor;
+        }
     }
 }
 

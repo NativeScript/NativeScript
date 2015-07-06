@@ -113,3 +113,10 @@ export module FontWeight {
     export var normal: string = "normal";
     export var bold: string = "bold";
 }
+
+export module BackgroundRepeat {
+    export var repeat: string = "repeat";
+    export var repeatX: string = "repeat-x";
+    export var repeatY: string = "repeat-y";
+    export var noRepeat: string = "no-repeat";
+}

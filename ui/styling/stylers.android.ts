@@ -1,5 +1,4 @@
 ﻿import types = require("utils/types");
-import trace = require("trace");
 import view = require("ui/core/view");
 import border = require("ui/border");
 import constants = require("utils/android_constants");
@@ -9,114 +8,32 @@ import stylersCommon = require("ui/styling/stylers-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 import styleModule = require("ui/styling/style");
-import imageSource = require("image-source");
 import font = require("ui/styling/font");
+import background = require("ui/styling/background");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
 require("utils/module-merge").merge(stylersCommon, exports);
 
-class BorderGradientDrawable extends android.graphics.drawable.GradientDrawable {
-    private _density = utils.layout.getDisplayDensity();
-
-    constructor() {
-        super();
-
-        return global.__native(this);
-    }
-
-    private _borderWidth: number;
-    get borderWidth(): number {
-        return this._borderWidth;
-    }
-    set borderWidth(value: number) {
-        if (this._borderWidth !== value) {
-            this._borderWidth = value;
-
-            this.setStroke(this._borderWidth * this._density, this._borderColor);
-        }
-    }
-
-    private _cornerRadius: number;
-    get cornerRadius(): number {
-        return this._cornerRadius;
-    }
-    set cornerRadius(value: number) {
-        if (this._cornerRadius !== value) {
-            this._cornerRadius = value;
-
-            this.setCornerRadius(this._cornerRadius * this._density);
-        }
-    }
-
-    private _borderColor: number;
-    get borderColor(): number {
-        return this._borderColor;
-    }
-    set borderColor(value: number) {
-        if (this._borderColor !== value) {
-            this._borderColor = value;
-
-            this.setStroke(this._borderWidth * this._density, this._borderColor);
-        }
-    }
-
-    private _backgroundColor: number;
-    get backgroundColor(): number {
-        return this._backgroundColor;
-    }
-    set backgroundColor(value: number) {
-        if (this._backgroundColor !== value) {
-            this._backgroundColor = value;
-
-            this.setColor(this._backgroundColor);
-        }
-    }
-
-    private _bitmap: android.graphics.Bitmap
-    get bitmap(): android.graphics.Bitmap {
-        return this._bitmap;
-    }
-    set bitmap(value: android.graphics.Bitmap) {
-        if (this._bitmap !== value) {
-            this._bitmap = value;
-
-            this.invalidateSelf();
-        }
-    }
-
-    public draw(canvas: android.graphics.Canvas): void {
-        super.draw(canvas);
-
-        if (this.bitmap) {
-            var radius = this._cornerRadius * this._density;
-            var stroke = this._borderWidth * this._density;
-
-            var bounds = this.getBounds();
-
-            var path = new android.graphics.Path();
-            path.addRoundRect(new android.graphics.RectF(stroke, stroke, bounds.right - stroke, bounds.bottom - stroke), radius, radius, android.graphics.Path.Direction.CW)
-            canvas.clipPath(path);
-
-            canvas.drawBitmap(this.bitmap, stroke, stroke, undefined);
-        }
-    }
-}
-
-function onBorderPropertyChanged(v: view.View) {
+var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
+function onBackgroundOrBorderPropertyChanged(v: view.View) {
     if (!v._nativeView) {
         return;
     }
 
-    var value = <imageSource.ImageSource>v.style._getValue(styleModule.backgroundImageSourceProperty);
+    var backgroundValue = <background.Background>v.style._getValue(styleModule.backgroundInternalProperty);
 
-    if (v.borderWidth !== 0 || v.borderRadius !== 0 || !types.isNullOrUndefined(v.backgroundColor) || !types.isNullOrUndefined(value)) {
+    if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
         var nativeView = <android.view.View>v._nativeView;
 
-        var bkg = <BorderGradientDrawable>nativeView.getBackground();
+        var bkg = <background.ad.BorderDrawable>nativeView.getBackground();
+        if (!(bkg instanceof background.ad.BorderDrawable)) {
+            bkg = new background.ad.BorderDrawable();
+            let viewClass = types.getClass(v);
+            if (!_defaultBackgrounds.has(viewClass)) {
+                _defaultBackgrounds.set(viewClass, nativeView.getBackground());
+            }
 
-        if (!(bkg instanceof BorderGradientDrawable)) {
-            bkg = new BorderGradientDrawable();
             nativeView.setBackground(bkg);
         }
 
@@ -127,75 +44,25 @@ function onBorderPropertyChanged(v: view.View) {
         bkg.borderWidth = v.borderWidth;
         bkg.cornerRadius = v.borderRadius;
         bkg.borderColor = v.borderColor ? v.borderColor.android : android.graphics.Color.TRANSPARENT;
-        bkg.backgroundColor = v.backgroundColor ? v.backgroundColor.android : android.graphics.Color.TRANSPARENT;
-
-        bkg.bitmap = value ? value.android : undefined;
+        bkg.background = backgroundValue;
+    }
+    else {
+        // reset the value with the default native value
+        let viewClass = types.getClass(v);
+        if (_defaultBackgrounds.has(viewClass)) {
+            v.android.setBackgroundDrawable(_defaultBackgrounds.get(viewClass));
+        }
     }
 }
 
 export class DefaultStyler implements definition.stylers.Styler {
-    //Background methods
-    private static setBackgroundProperty(view: view.View, newValue: any) {
-        onBorderPropertyChanged(view);
+    //Background and borders methods
+    private static setBackgroundBorderProperty(view: view.View, newValue: any, defaultValue: any) {
+        onBackgroundOrBorderPropertyChanged(view);
     }
 
-    private static resetBackgroundProperty(view: view.View, nativeValue: any) {
-        if (types.isDefined(nativeValue)) {
-            (<android.view.View>view.android).setBackground(nativeValue)
-        }
-    }
-
-    private static getNativeBackgroundValue(view: view.View): any {
-        var drawable = view.android.getBackground();
-        if (drawable instanceof android.graphics.drawable.StateListDrawable) {
-            // StateListDrawables should not be cached as they should be created per instance of view as they contain the current state within.
-            trace.write("Native value of view: " + view + " is StateListDrawable. It will not be cached.", trace.categories.Style);
-            return undefined;
-        }
-
-        return drawable;
-    }
-
-    //Background image methods
-    private static setBackgroundImageSourceProperty(view: view.View, newValue: any) {
-        onBorderPropertyChanged(view);
-    }
-
-    private static resetBackgroundImageSourceProperty(view: view.View, nativeValue: any) {
-        if (types.isDefined(nativeValue)) {
-            (<android.view.View>view.android).setBackgroundDrawable(nativeValue)
-        }
-    }
-
-    private static getNativeBackgroundImageSourceValue(view: view.View): any {
-        return view.android.getBackground();
-    }
-
-    //Border width methods
-    private static setBorderWidthProperty(view: view.View, newValue: any) {
-        onBorderPropertyChanged(view);
-    }
-
-    private static resetBorderWidthProperty(view: view.View, nativeValue: any) {
-        view.borderWidth = 0;
-    }
-
-    //Border color methods
-    private static setBorderColorProperty(view: view.View, newValue: any) {
-        onBorderPropertyChanged(view);
-    }
-
-    private static resetBorderColorProperty(view: view.View, nativeValue: any) {
-        view.borderColor = undefined;
-    }
-
-    //Corner radius methods
-    private static setBorderRadiusProperty(view: view.View, newValue: any) {
-        onBorderPropertyChanged(view);
-    }
-
-    private static resetBorderRadiusProperty(view: view.View, nativeValue: any) {
-        view.borderRadius = 0;
+    private static resetBackgroundBorderProperty(view: view.View, nativeValue: any) {
+        onBackgroundOrBorderPropertyChanged(view);
     }
 
     //Visibility methods
@@ -236,16 +103,6 @@ export class DefaultStyler implements definition.stylers.Styler {
     }
 
     public static registerHandlers() {
-        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBackgroundProperty,
-            DefaultStyler.resetBackgroundProperty,
-            DefaultStyler.getNativeBackgroundValue));
-
-        style.registerHandler(style.backgroundImageSourceProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBackgroundImageSourceProperty,
-            DefaultStyler.resetBackgroundImageSourceProperty,
-            DefaultStyler.getNativeBackgroundImageSourceValue));
-
         style.registerHandler(style.visibilityProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setVisibilityProperty,
             DefaultStyler.resetVisibilityProperty));
@@ -262,17 +119,16 @@ export class DefaultStyler implements definition.stylers.Styler {
             DefaultStyler.setMinHeightProperty,
             DefaultStyler.resetMinHeightProperty))
 
-        style.registerHandler(style.borderWidthProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBorderWidthProperty,
-            DefaultStyler.resetBorderWidthProperty));
+        // Use the same handler for all background/border properties
+        // Note: There is no default value getter - the default value is handled in onBackgroundOrBorderPropertyChanged
+        var borderHandler = new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setBackgroundBorderProperty,
+            DefaultStyler.resetBackgroundBorderProperty);
 
-        style.registerHandler(style.borderColorProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBorderColorProperty,
-            DefaultStyler.resetBorderColorProperty));
-
-        style.registerHandler(style.borderRadiusProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBorderRadiusProperty,
-            DefaultStyler.resetBorderRadiusProperty));
+        style.registerHandler(style.backgroundInternalProperty, borderHandler);
+        style.registerHandler(style.borderWidthProperty, borderHandler);
+        style.registerHandler(style.borderColorProperty, borderHandler);
+        style.registerHandler(style.borderRadiusProperty, borderHandler);
     }
 }
 

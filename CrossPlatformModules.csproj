@@ -214,6 +214,9 @@
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\myview.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\stack.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\wrap.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\background.ts">
+      <DependentUpon>background.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\pages\console.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i61.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i73.ts" />
@@ -241,6 +244,7 @@
     <TypeScriptCompile Include="image-source\image-source.ios.ts">
       <DependentUpon>image-source.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="js-libs\reworkcss-value\reworkcss-value.d.ts" />
     <TypeScriptCompile Include="platform\platform.ios.ts">
       <DependentUpon>platform.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -454,6 +458,16 @@
     <TypeScriptCompile Include="ui\layouts\wrap-layout\wrap-layout.ts">
       <DependentUpon>wrap-layout.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\background-common.ts">
+      <DependentUpon>background.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\background.ios.ts">
+      <DependentUpon>background.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\background.d.ts" />
+    <TypeScriptCompile Include="ui\styling\background.android.ts">
+      <DependentUpon>background.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\styling\css-selector.d.ts" />
     <TypeScriptCompile Include="ui\styling\css-selector.ts">
       <DependentUpon>css-selector.d.ts</DependentUpon>
@@ -646,7 +660,12 @@
     <Content Include="apps\template-master-detail\main-page.minWH600.xml" />
     <Content Include="apps\template-settings\app.css" />
     <Content Include="apps\tests\app\location-example.xml" />
-    <TypeScriptCompile Include="apps\tests\pages\fonts-test.ts" />
+    <TypeScriptCompile Include="apps\tests\pages\fonts-test.ts">
+      <DependentUpon>fonts-test.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\pages\background-test.ts">
+      <DependentUpon>background-test.xml</DependentUpon>
+    </TypeScriptCompile>
     <Content Include="apps\tests\pages\page-load-performance\start.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -655,7 +674,9 @@
     </Content>
     <Content Include="apps\tests\pages\page-load-performance\test-small.xml" />
     <Content Include="apps\tests\pages\fonts-test.xml" />
+    <Content Include="apps\tests\pages\background-test.xml" />
     <Content Include="apps\tests\pages\page18.xml" />
+    <Content Include="apps\tests\pages\test2.png" />
     <Content Include="apps\tests\ui\bindingContext_testPage.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage1.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage2.xml" />
@@ -683,6 +704,7 @@
     <Content Include="apps\ui-tests-app\layouts\grid.xml" />
     <Content Include="apps\ui-tests-app\layouts\stack.xml" />
     <Content Include="apps\ui-tests-app\layouts\wrap.xml" />
+    <Content Include="apps\ui-tests-app\pages\background.xml" />
     <Content Include="apps\ui-tests-app\pages\circle.xml" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />
     <Content Include="apps\template-blank\app.css" />
@@ -692,11 +714,13 @@
     <Content Include="apps\ui-tests-app\modal-view\login-page.xml" />
     <Content Include="apps\ui-tests-app\modal-view\modal-view.xml" />
     <Resource Include="apps\ui-tests-app\pages\red.png" />
+    <Content Include="apps\ui-tests-app\pages\test2.png" />
     <Content Include="apps\ui-tests-app\pages\textfield.xml" />
     <Content Include="apps\ui-tests-app\pages\text\text-field.xml" />
     <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
     <Content Include="apps\ui-tests-app\pages\text\label.xml" />
     <Content Include="apps\ui-tests-app\pages\text\button.xml" />
+    <Content Include="js-libs\reworkcss-value\reworkcss-value.js" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1586,6 +1610,9 @@
     <Content Include="ui\repeater\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="js-libs\reworkcss-value\LICENSE" />
+    <Content Include="js-libs\reworkcss-value\package.json" />
+    <Content Include="js-libs\reworkcss-value\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />
@@ -1648,7 +1675,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

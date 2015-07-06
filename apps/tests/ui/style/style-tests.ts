@@ -22,9 +22,10 @@ export function test_css_dataURI_is_applied_to_backgroundImageSource() {
         var page = <pageModule.Page>views[1];
         page.css = "StackLayout { background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD///l2Z/dAAAAM0lEQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4Ug9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC;') }";
 
-        var value = stack.style._getValue(styleModule.backgroundImageSourceProperty);
+        var value = stack.style._getValue(styleModule.backgroundInternalProperty);
 
-        TKUnit.assert(value !== undefined, "Style background-image not loaded correctly from data URI.");
+        TKUnit.assert(types.isDefined(value), "Style background-image not loaded correctly from data URI.");
+        TKUnit.assert(types.isDefined(value.image), "Style background-image not loaded correctly from data URI.");
     });
 }
 
@@ -744,6 +745,21 @@ export function test_setInlineStyle_setsLocalValues() {
     helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
         (<any>testButton)._applyInlineStyle("color: red;");
         helper.assertViewColor(testButton, "#FF0000", dependencyObservableModule.ValueSource.Local);
+    });
+}
+
+export function test_setInlineStyle_resetsLocalValues() {
+    var testButton = new buttonModule.Button();
+    testButton.text = "Test";
+    testButton.style.fontSize = 10;
+    var stack = new stackModule.StackLayout();
+    stack.addChild(testButton);
+
+    helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
+        (<any>testButton)._applyInlineStyle("color: red;");
+        helper.assertViewColor(testButton, "#FF0000", dependencyObservableModule.ValueSource.Local);
+        TKUnit.assert(types.isUndefined(testButton.style.fontSize), "Setting inline style should reset font size");
+        TKUnit.assertEqual(testButton.style._getValueSource(styling.properties.fontSizeProperty), dependencyObservableModule.ValueSource.Default, "valueSource");
     });
 }
 
