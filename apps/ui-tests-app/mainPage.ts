@@ -10,7 +10,7 @@ import trace = require("trace");
 trace.enable();
 trace.setCategories(trace.categories.Test);
 
-var list: string[] = ["pages", "layouts", "modal-view"];
+var list: string[] = ["pages", "layouts", "modal-view", "bindings"];
 
 // basePath is auto-changed when building multiple apps
 var basePath = "";

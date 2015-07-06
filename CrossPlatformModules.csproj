@@ -208,6 +208,8 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\editable-text-demo\model.ts" />
     <TypeScriptCompile Include="apps\tests\weak-event-listener-tests.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\bindings\dbxmlbasics.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\bindings\dbbasics.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\absolute.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\dock.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\grid.ts" />
@@ -699,6 +701,7 @@
     <Content Include="apps\tests\xml-declaration\mymodulewithxml\my-control-no-js.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\ui-tests-app\bindings\dbxmlbasics.xml" />
     <Content Include="apps\ui-tests-app\layouts\absolute.xml" />
     <Content Include="apps\ui-tests-app\layouts\dock.xml" />
     <Content Include="apps\ui-tests-app\layouts\grid.xml" />
