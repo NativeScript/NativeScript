@@ -494,6 +494,19 @@ var NativeActivity = {
 
     onBackPressed: function () {
         trace.write("NativeScriptActivity.onBackPressed;", trace.categories.NativeLifecycle);
+
+        var args = <application.AndroidActivityBackPressedEventData>{
+            eventName: application.androidActivityBackPressedEvent,
+            object: application.android,
+            activity: this,
+            cancel: false,
+        };
+        application.notify(args);
+
+        if (args.cancel) {
+            return;
+        }
+
         if (!frameCommon.goBack()) {
             this.super.onBackPressed();
         }

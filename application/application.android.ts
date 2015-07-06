@@ -11,14 +11,15 @@ var callbacks = android.app.Application.ActivityLifecycleCallbacks;
 
 export var mainModule: string;
 
-export var androidActivityCreatedEvent = "androidActivityCreated";
-export var androidActivityDestroyedEvent = "androidActivityDestroyed";
-export var androidActivityStartedEvent = "androidActivityStarted";
-export var androidActivityPausedEvent = "androidActivityPaused";
-export var androidActivityResumedEvent = "androidActivityResumed";
-export var androidActivityStoppedEvent = "androidActivityStopped";
-export var androidSaveActivityStateEvent = "androidSaveActivityState";
-export var androidActivityResultEvent = "androidActivityResult";
+export var androidActivityCreatedEvent = "activityCreated";
+export var androidActivityDestroyedEvent = "activityDestroyed";
+export var androidActivityStartedEvent = "activityStarted";
+export var androidActivityPausedEvent = "activityPaused";
+export var androidActivityResumedEvent = "activityResumed";
+export var androidActivityStoppedEvent = "activityStopped";
+export var androidSaveActivityStateEvent = "saveActivityState";
+export var androidActivityResultEvent = "activityResult";
+export var androidActivityBackPressedEvent = "activityBackPressed";
 
 // We are using the exports object for the common events since we merge the appModule with this module's exports, which is what users will receive when require("application") is called;
 // TODO: This is kind of hacky and is "pure JS in TypeScript"
@@ -163,7 +164,6 @@ class AndroidApplication implements dts.AndroidApplication {
     public onActivityResumed: (activity: android.app.Activity) => void;
     public onActivityStopped: (activity: android.app.Activity) => void;
     public onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
-
     public onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void;
 
     private _eventsToken: any;

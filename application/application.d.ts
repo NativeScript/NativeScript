@@ -251,6 +251,16 @@ declare module "application" {
     }
 
     /**
+     * Data for the Android activity back pressed event.
+     */
+    export interface AndroidActivityBackPressedEventData extends AndroidActivityEventData {
+        /**
+         * In the event handler, set this value to true if you want to cancel the back navigation and do something else instead.
+         */
+        cancel: boolean;
+    }
+
+    /**
      * This event is raised on android application ActivityCreated.
      */
     export function on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
@@ -291,6 +301,11 @@ declare module "application" {
     export function on(event: "activityResult", callback: (args: AndroidActivityResultEventData) => void, thisArg?: any);
 
     /**
+     * This event is raised on the back button is pressed in an android application.
+     */
+    export function on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
+
+    /**
      * String value used when hooking to ActivityCreated event.
      */
     export var androidActivityCreatedEvent: string;
@@ -329,6 +344,11 @@ declare module "application" {
      * String value used when hooking to ActivityResult event.
      */
     export var androidActivityResultEvent: string;
+
+    /**
+     * String value used when hooking to ActivityBackPressed event.
+     */
+    export var androidActivityBackPressedEvent: string;
 
     /**
      * The abstraction of an Android-specific application object.
