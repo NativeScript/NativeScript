@@ -61,8 +61,6 @@ export module ad {
         }
 
         public draw(canvas: android.graphics.Canvas): void {
-            //super.draw(canvas);
-            console.log("BorderDrawable.draw()");
             var bounds = this.getBounds();
             var boundsF = new android.graphics.RectF(bounds);
             var boundsWidth = bounds.width();

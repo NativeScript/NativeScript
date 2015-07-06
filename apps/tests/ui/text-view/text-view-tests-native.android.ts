@@ -2,6 +2,7 @@
 import colorModule = require("color");
 import utilsModule = require("utils/utils");
 import enums = require("ui/enums");
+import background = require("ui/styling/background");
 
 export function getNativeText(textView: textViewModule.TextView): string {
     return textView.android.getText().toString();
@@ -30,7 +31,14 @@ export function getNativeColor(textView: textViewModule.TextView): colorModule.C
 }
 
 export function getNativeBackgroundColor(textView: textViewModule.TextView): colorModule.Color {
-    return new colorModule.Color((<any>textView.android.getBackground()).backgroundColor);
+    var bkg = <any>textView.android.getBackground();
+    var color;
+    if (bkg instanceof background.ad.BorderDrawable) {
+        return (<background.ad.BorderDrawable>bkg).background.color;
+    }
+    else {
+        return new colorModule.Color(bkg.backgroundColor)
+    }
 }
 
 export function getNativeTextAlignment(textView: textViewModule.TextView): string {

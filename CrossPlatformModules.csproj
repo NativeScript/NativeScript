@@ -214,6 +214,9 @@
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\myview.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\stack.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\wrap.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\background.ts">
+      <DependentUpon>background.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\pages\console.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i61.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i73.ts" />
@@ -673,6 +676,7 @@
     <Content Include="apps\tests\pages\fonts-test.xml" />
     <Content Include="apps\tests\pages\background-test.xml" />
     <Content Include="apps\tests\pages\page18.xml" />
+    <Content Include="apps\tests\pages\test2.png" />
     <Content Include="apps\tests\ui\bindingContext_testPage.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage1.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage2.xml" />
@@ -700,6 +704,7 @@
     <Content Include="apps\ui-tests-app\layouts\grid.xml" />
     <Content Include="apps\ui-tests-app\layouts\stack.xml" />
     <Content Include="apps\ui-tests-app\layouts\wrap.xml" />
+    <Content Include="apps\ui-tests-app\pages\background.xml" />
     <Content Include="apps\ui-tests-app\pages\circle.xml" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />
     <Content Include="apps\template-blank\app.css" />
@@ -709,6 +714,7 @@
     <Content Include="apps\ui-tests-app\modal-view\login-page.xml" />
     <Content Include="apps\ui-tests-app\modal-view\modal-view.xml" />
     <Resource Include="apps\ui-tests-app\pages\red.png" />
+    <Content Include="apps\ui-tests-app\pages\test2.png" />
     <Content Include="apps\ui-tests-app\pages\textfield.xml" />
     <Content Include="apps\ui-tests-app\pages\text\text-field.xml" />
     <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
@@ -1669,7 +1675,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
