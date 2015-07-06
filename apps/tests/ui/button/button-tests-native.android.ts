@@ -19,7 +19,6 @@ export function getNativeColor(button: buttonModule.Button): colorModule.Color {
 
 export function getNativeBackgroundColor(button: buttonModule.Button): colorModule.Color {
     var bkg = <any>button.android.getBackground();
-    var color;
     if (bkg instanceof background.ad.BorderDrawable) {
         return (<background.ad.BorderDrawable>bkg).background.color;
     }

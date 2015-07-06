@@ -55,7 +55,6 @@ export module ad {
         set background(value: common.Background) {
             if (this._background !== value) {
                 this._background = value;
-
                 this.invalidateSelf();
             }
         }
@@ -123,7 +122,8 @@ export module ad {
                 let borderPaint = new android.graphics.Paint();
                 borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
                 borderPaint.setColor(this._borderColor);
-                // Notes double the stroke as the outer part will be clipped
+
+                // Note: Double the stroke as the outer part will be clipped.
                 borderPaint.setStrokeWidth(stroke * 2);
                 canvas.drawRoundRect(boundsF, radius, radius, borderPaint)
             }

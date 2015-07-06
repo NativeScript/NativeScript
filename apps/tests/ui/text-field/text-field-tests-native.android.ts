@@ -28,7 +28,6 @@ export function getNativeColor(textField: textFieldModule.TextField): colorModul
 
 export function getNativeBackgroundColor(textField: textFieldModule.TextField): colorModule.Color {
     var bkg = <any>textField.android.getBackground();
-    var color;
     if (bkg instanceof background.ad.BorderDrawable) {
         return (<background.ad.BorderDrawable>bkg).background.color;
     }
