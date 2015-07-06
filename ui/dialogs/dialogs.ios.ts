@@ -25,7 +25,7 @@ class UIAlertViewDelegateImpl extends NSObject implements UIAlertViewDelegate {
         this._callback = callback;
         return this;
     }
-    
+
     public alertViewClickedButtonAtIndex(view, index) {
         this._callback(view, index);
     }
@@ -343,6 +343,12 @@ function showUIAlertController(alertController: UIAlertController) {
     if (topMostFrame) {
         var viewController: UIViewController = topMostFrame.currentPage && topMostFrame.currentPage.ios;
         if (viewController) {
+            if (alertController.popoverPresentationController) {
+                alertController.popoverPresentationController.sourceView = viewController.view;
+                alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
+                alertController.popoverPresentationController.permittedArrowDirections = 0;
+            }
+
             viewController.presentModalViewControllerAnimated(alertController, true);
         }
     }
