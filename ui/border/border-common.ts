@@ -25,6 +25,7 @@ var borderColorProperty = new dependencyObservable.Property(
     new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle)
     );
 
+@Deprecated
 export class Border extends contentView.ContentView implements definition.Border {
 
     public static cornerRadiusProperty = cornerRadiusProperty;

@@ -16,3 +16,23 @@ if (types.isUndefined(global.NSObject)) {
 
 global.XMLHttpRequest = (<any>http).XMLHttpRequest;
 global.alert = dialogs.alert;
+
+export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
+    if (descriptor) {
+        var originalMethod = descriptor.value;
+
+        descriptor.value = function (...args: any[]) {
+            console.log(`${key} is deprecated`);
+
+            return originalMethod.apply(this, args);
+        }
+
+        return descriptor;
+    } else {
+
+        console.log(`${(target && (<any>target).name || target)} is deprecated`);
+        return target;
+    }
+}
+
+global.Deprecated = Deprecated;
