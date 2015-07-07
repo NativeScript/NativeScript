@@ -136,7 +136,17 @@ app.init({
     }
 });
 
-class AndroidApplication extends observable.Observable implements dts.AndroidApplication {
+export class AndroidApplication extends observable.Observable implements dts.AndroidApplication {
+    public static activityCreatedEvent = "activityCreated";
+    public static activityDestroyedEvent = "activityDestroyed";
+    public static activityStartedEvent = "activityStarted";
+    public static activityPausedEvent = "activityPaused";
+    public static activityResumedEvent = "activityResumed";
+    public static activityStoppedEvent = "activityStopped";
+    public static saveActivityStateEvent = "saveActivityState";
+    public static activityResultEvent = "activityResult";
+    public static activityBackPressedEvent = "activityBackPressed";
+
     public nativeApp: android.app.Application;
     public context: android.content.Context;
     public currentContext: android.content.Context;
