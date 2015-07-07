@@ -40,6 +40,25 @@ export function test_load_ShouldNotCrashWithoutExports() {
     TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 };
 
+export function test_loadWithOptionsNoXML() {
+    var v = builder.load({
+        fileName: "~/xml-declaration/mymodule",
+        componentName: "MyControl",
+        exports: exports
+    });
+
+    TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+};
+
+export function test_loadWithOptionsWithXML() {
+    var v = builder.load({
+        fileName: "~/xml-declaration/mymodulewithxml",
+        componentName: "MyControl",
+        exports: exports
+    });
+    TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+};
+
 export function test_parse_ShouldNotCrashWithoutExports() {
     var fileAccess = new fileSystemAccess.FileSystemAccess();
 
