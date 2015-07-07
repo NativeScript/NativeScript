@@ -446,7 +446,7 @@ export class GridLayout extends layouts.Layout implements definition.GridLayout,
         }
     }
 
-    applyXmlAttribute(attributeName: string, attributeValue: any): boolean {
+    _applyXmlAttribute(attributeName: string, attributeValue: any): boolean {
         if (attributeName === "columns") {
             this.setColumns(attributeValue);
             return true;
@@ -456,7 +456,7 @@ export class GridLayout extends layouts.Layout implements definition.GridLayout,
             return true;
         }
 
-        return false;
+        return super._applyXmlAttribute(attributeName, attributeValue);
     }
 
     private static parseItemSpecs(value: string): Array<ItemSpec> {

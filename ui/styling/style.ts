@@ -25,7 +25,7 @@ var noStylingClasses = {};
 
 export class Style extends observable.DependencyObservable implements styling.Style {
     private _view: view.View;
-    private _inUpdate = false;
+    private _updateCounter = 0;
     private _nativeSetters = new Map<dependencyObservable.Property, any>();
 
     get color(): color.Color {
@@ -265,13 +265,18 @@ export class Style extends observable.DependencyObservable implements styling.St
     }
 
     public _beginUpdate() {
-        this._inUpdate = true;
+        this._updateCounter++;
     }
 
     public _endUpdate() {
-        this._inUpdate = false;
-        this._nativeSetters.forEach((newValue, property, map) => { this._applyStyleProperty(property, newValue); });
-        this._nativeSetters.clear();
+        this._updateCounter--;
+        if (this._updateCounter < 0) {
+            throw new Error("style._endUpdate() called, but no update is in progress.");
+        }
+        if (this._updateCounter === 0) {
+            this._nativeSetters.forEach((newValue, property, map) => { this._applyStyleProperty(property, newValue); });
+            this._nativeSetters.clear();
+        }
     }
 
     public _resetCssValues() {
@@ -334,7 +339,7 @@ export class Style extends observable.DependencyObservable implements styling.St
     }
 
     private _applyStyleProperty(property: dependencyObservable.Property, newValue: any) {
-        if (this._inUpdate) {
+        if (this._updateCounter > 0) {
             this._nativeSetters.set(property, newValue);
             return;
         }
@@ -486,6 +491,7 @@ function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
     var style = <Style>data.object;
     var url: string = data.newValue;
     var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    var isValid = false;
 
     if (types.isString(data.newValue)) {
         var pattern: RegExp = /url\(('|")(.*?)\1\)/;
@@ -498,9 +504,11 @@ function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
             var base64Data = url.split(",")[1];
             if (types.isDefined(base64Data)) {
                 style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromBase64(base64Data)));
+                isValid = true;
             }
         } else if (utils.isFileOrResourcePath(url)) {
             style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromFileOrResource(url)));
+            isValid = true;
         } else if (url.indexOf("http") !== -1) {
             style["_url"] = url;
             style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
@@ -509,7 +517,12 @@ function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
                     style._setValue(backgroundInternalProperty, currentBackground.withImage(r));
                 }
             });
+            isValid = true;
         }
+    }
+
+    if (!isValid) {
+        style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
     }
 }
 

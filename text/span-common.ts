@@ -18,7 +18,7 @@ export class Span extends bindable.Bindable implements definition.Span, view.App
     private _spanModifiers: Array<any>;
     private _parentFormattedString: formattedString.FormattedString;
     private _isInEditMode: boolean;
-    
+
     get fontFamily(): string {
         return this._fontFamily;
     }
@@ -157,7 +157,7 @@ export class Span extends bindable.Bindable implements definition.Span, view.App
     }
 
     public updateSpanModifiers(parent: formattedString.FormattedString) {
-        // a virtual method overriden in platform specific implementations.
+        // a virtual method overridden in platform specific implementations.
         if (this._isInEditMode) {
             throw new Error("Cannot update span modifiers during update!");
         }
@@ -180,7 +180,7 @@ export class Span extends bindable.Bindable implements definition.Span, view.App
         this.updateAndNotify();
     }
 
-    public applyXmlAttribute(attribute, value): boolean {
+    public _applyXmlAttribute(attribute, value): boolean {
         if (attribute === "fontAttributes") {
             if (value.indexOf(",")) {
                 var fontAttr = value.split(",");

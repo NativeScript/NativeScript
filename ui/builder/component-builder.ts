@@ -174,8 +174,8 @@ export function setPropertyValue(instance: view.View, instanceModule: Object, ex
     } else {
         var attrHandled = false;
 
-        if ((<any>instance).applyXmlAttribute) {
-            attrHandled = (<any>instance).applyXmlAttribute(propertyName, propertyValue);
+        if ((<any>instance)._applyXmlAttribute) {
+            attrHandled = (<any>instance)._applyXmlAttribute(propertyName, propertyValue);
         }
 
         if (!attrHandled) {

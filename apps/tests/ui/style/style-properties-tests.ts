@@ -310,7 +310,7 @@ export function test_setting_font_shorthand_property() {
 
 function test_font_shorthand_property(short: string, family: string, size: number, style: string, weight:string) {
     var testView = new buttonModule.Button();
-    (<any>testView).style = "font: " + short;
+    (<any>testView.style)["font"] = short;
 
     TKUnit.assertEqual(testView.style.fontFamily, family, "style.fontFamily");
     TKUnit.assertEqual(testView.style.fontStyle, style, "style.fontStyle");
