@@ -180,24 +180,16 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
     componentPath = componentPath.replace("~/", "");
 
     var fileName = componentPath;
-    console.log("BEFORE: " + componentPath)
 
     if (!fs.File.exists(fileName)) {
         fileName = fs.path.join(fs.knownFolders.currentApp().path, componentPath, componentName) + ".xml";
     }
 
-    console.log("AFTER: " + fileName)
-
     if (fs.File.exists(fileName)) {
-
-        console.log("XML: " + fileName)
-
         // Custom components with XML
         var jsPath = fileName.replace(".xml", ".js");
         var subExports;
         if (fs.File.exists(jsPath)) {
-            console.log("JS: " + fileName)
-
             // Custom components with XML and code
             subExports = require(jsPath.replace(".js", ""))
         }
@@ -213,7 +205,6 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         }
     } else {
         // Custom components without XML
-        console.log("NO XML: " + componentPath)
         result = componentBuilder.getComponentModule(componentName, componentPath, attributes, context);
     }
 
