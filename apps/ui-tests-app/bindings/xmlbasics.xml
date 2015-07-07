@@ -1,8 +1,8 @@
 ﻿<Page>
   <StackLayout>
     <StackLayout loaded="stack0Loaded" orientation="horizontal">
-      <TextField id="tf" text="{{ textSource }}" />
-      <Button id="btn" />
+      <TextField id="tf" text="{{ textSource }}" width="150" />
+      <Button id="btn" width="150" />
     </StackLayout>
     <StackLayout loaded="stack1Loaded">
       <Label id="label" text="{{ text }}" />

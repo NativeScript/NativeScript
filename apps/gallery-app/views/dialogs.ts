@@ -6,7 +6,7 @@ export function alertTapped(args) {
 
 export function alertWithOptionsTapped(args) {
     dialogs.alert({
-        title: "Alert",
+        title: "Alert Title",
         message: "Hi there!",
         okButtonText: "Close"
     });
@@ -18,7 +18,7 @@ export function confirmTapped(args) {
 
 export function confirmWithOptionsTapped(args) {
     dialogs.confirm({
-        title: "Confirm",
+        title: "Confirm Title",
         message: "Are you sure?",
         okButtonText: "OK",
         cancelButtonText: "Cancel",
@@ -27,13 +27,13 @@ export function confirmWithOptionsTapped(args) {
 }
 
 export function promptTapped(args) {
-    dialogs.prompt("Enter name", "John Doe");
+    dialogs.prompt("Enter name:", "John Doe");
 }
 
 export function promptWithOptionsTapped(args) {
     dialogs.prompt({
-        title: "Prompt",
-        message: "Enter name",
+        title: "Prompt Title",
+        message: "Enter name:",
         okButtonText: "OK",
         cancelButtonText: "Cancel",
         neutralButtonText: "Ignore",
@@ -44,8 +44,8 @@ export function promptWithOptionsTapped(args) {
 
 export function promptWithOptionsPasswordTapped(args) {
     dialogs.prompt({
-        title: "Prompt",
-        message: "Enter name",
+        title: "Prompt Title",
+        message: "Enter name:",
         okButtonText: "OK",
         cancelButtonText: "Cancel",
         neutralButtonText: "Ignore",
@@ -55,19 +55,18 @@ export function promptWithOptionsPasswordTapped(args) {
 }
 
 export function loginTapped(args) {
-    dialogs.login("Login:", "username", "pwd").then(r=> console.log(`Login result: ${r.result}, user: ${r.userName}, pwd: ${r.password}`));
+    dialogs.login("Enter user/pass:", "username", "password").then(r=> console.log(`Login result: ${r.result}, user: ${r.userName}, pwd: ${r.password}`));
 }
 
 export function loginWithOptionsTapped(args) {
     dialogs.login({
-        title: "Login",
-        message: "Enter user/pwd",
+        title: "Login Title",
+        message: "Enter user/pass:",
         okButtonText: "OK",
         cancelButtonText: "Cancel",
         neutralButtonText: "Ignore",
-        defaultText: "John Doe",
-        userName: "USER",
-        password: "PWD"
+        userName: "username",
+        password: "password"
     }).then(r=> console.log(`Login result: ${r.result}, user: ${r.userName}, pwd: ${r.password}`));
 }
 

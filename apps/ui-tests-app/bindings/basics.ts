@@ -14,11 +14,20 @@ export function createPage() {
     var targetTwoWay = new textFieldModule.TextField();
     var buttonOneWay = new buttonModule.Button();
     var buttonTwoWay = new buttonModule.Button();
-    
+    var buttonSetText = new buttonModule.Button();
+
     targetOneWay.id = "textFieldOneWay";
     targetTwoWay.id = "textFieldTwoWay";
     buttonOneWay.id = "buttonOneWay";
     buttonTwoWay.id = "buttonTwoWay";
+
+    buttonSetText.id = "buttonSetText";
+    buttonSetText.text = "SetText";
+    buttonSetText.on(buttonModule.Button.tapEvent, function () {
+        targetOneWay.text = "Test";
+        targetTwoWay.text = "Test";
+    });
+    stack.addChild(buttonSetText);
 
     // OneWay Binding
     var bindingOptionOneWay = {
