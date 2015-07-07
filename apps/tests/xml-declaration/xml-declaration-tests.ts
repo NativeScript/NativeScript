@@ -59,6 +59,24 @@ export function test_loadWithOptionsWithXML() {
     TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 };
 
+export function test_loadWithOptionsFromTNS() {
+    var v = builder.load({
+        fileName: "ui/label",
+        componentName: "Label"
+    });
+
+    TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");
+};
+
+export function test_loadWithOptionsFromTNSPath() {
+    var v = builder.load({
+        fileName: "tns_modules/ui/label",
+        componentName: "Label"
+    });
+
+    TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");
+};
+
 export function test_parse_ShouldNotCrashWithoutExports() {
     var fileAccess = new fileSystemAccess.FileSystemAccess();
 
@@ -178,7 +196,7 @@ export function test_parse_ThrowErrorWhenNestingPlatforms() {
     } catch (ex) {
         e = ex;
     }
-    
+
     TKUnit.assert(e, "Expected result: Error; Actual result: " + e);
 };
 

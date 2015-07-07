@@ -9,6 +9,6 @@ declare module "ui/builder" {
     export interface LoadOptions {
         fileName: string;
         componentName: string;
-        exports: any;
+        exports?: any;
     }
 }
