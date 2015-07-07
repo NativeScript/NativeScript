@@ -404,7 +404,7 @@
     
     
     /**
-     * Specifies nackground repeat.
+     * Specifies background repeat.
      */
     export module BackgroundRepeat {
         export var repeat: string;
