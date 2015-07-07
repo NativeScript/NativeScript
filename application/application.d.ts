@@ -161,32 +161,32 @@ declare module "application" {
     /**
      * This event is raised on application launchEvent.
      */
-    export function on(event: "onLaunch", callback: (args: ApplicationEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised when an uncaught error occurs while the application is running.
-     */
-    export function on(event: "onUncaughtError", callback: (args: ApplicationEventData) => void, thisArg?: any);
+    export function on(event: "launch", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
     /**
      * This event is raised when the Application is suspended.
      */
-    export function on(event: "onSuspend", callback: (args: ApplicationEventData) => void, thisArg?: any);
+    export function on(event: "suspend", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
     /**
      * This event is raised when the Application is resumed after it has been suspended.
      */
-    export function on(event: "onResume", callback: (args: ApplicationEventData) => void, thisArg?: any);
+    export function on(event: "resume", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
     /**
      * This event is raised when the Application is about to exitEvent.
      */
-    export function on(event: "onExit", callback: (args: ApplicationEventData) => void, thisArg?: any);
+    export function on(event: "exit", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
     /**
      * This event is raised when there is low memory on the target device.
      */
-    export function on(event: "onLowMemory", callback: (args: ApplicationEventData) => void, thisArg?: any);
+    export function on(event: "lowMemory", callback: (args: ApplicationEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised when an uncaught error occurs while the application is running.
+     */
+    export function on(event: "uncaughtError", callback: (args: ApplicationEventData) => void, thisArg?: any);
 
     /**
      * This is the Android-specific application object instance.
@@ -395,6 +395,51 @@ declare module "application" {
          * This event is raised on the back button is pressed in an android application.
          */
         on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
+
+        /**
+         * String value used when hooking to activityCreated event.
+         */
+        public static activityCreatedEvent: string;
+
+        /**
+         * String value used when hooking to activityDestroyed event.
+         */
+        public static activityDestroyedEvent: string;
+
+        /**
+         * String value used when hooking to activityStarted event.
+         */
+        public static activityStartedEvent: string;
+
+        /**
+         * String value used when hooking to activityPaused event.
+         */
+        public static activityPausedEvent: string;
+
+        /**
+         * String value used when hooking to activityResumed event.
+         */
+        public static activityResumedEvent: string;
+
+        /**
+         * String value used when hooking to activityStopped event.
+         */
+        public static activityStoppedEvent: string;
+
+        /**
+         * String value used when hooking to saveActivityState event.
+         */
+        public static saveActivityStateEvent: string;
+
+        /**
+         * String value used when hooking to activityResult event.
+         */
+        public static activityResultEvent: string;
+
+        /**
+         * String value used when hooking to activityBackPressed event.
+         */
+        public static activityBackPressedEvent: string;
     }
 
     /* tslint:disable */

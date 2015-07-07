@@ -34,7 +34,7 @@ declare module "ui/styling/background" {
 
         public withPosition(value: string): Background;
 
-        public withSize(value: string): Background;;
+        public withSize(value: string): Background;
 
         public getDrawParams(width: number, height: number): BackgroundDrawParams;
 
