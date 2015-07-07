@@ -42,8 +42,8 @@ export function test_load_ShouldNotCrashWithoutExports() {
 
 export function test_loadWithOptionsNoXML() {
     var v = builder.load({
-        fileName: "~/xml-declaration/mymodule",
-        componentName: "MyControl",
+        path: "~/xml-declaration/mymodule",
+        name: "MyControl",
         exports: exports
     });
 
@@ -52,8 +52,8 @@ export function test_loadWithOptionsNoXML() {
 
 export function test_loadWithOptionsWithXML() {
     var v = builder.load({
-        fileName: "~/xml-declaration/mymodulewithxml",
-        componentName: "MyControl",
+        path: "~/xml-declaration/mymodulewithxml",
+        name: "MyControl",
         exports: exports
     });
     TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
@@ -61,8 +61,8 @@ export function test_loadWithOptionsWithXML() {
 
 export function test_loadWithOptionsFromTNS() {
     var v = builder.load({
-        fileName: "ui/label",
-        componentName: "Label"
+        path: "ui/label",
+        name: "Label"
     });
 
     TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");
@@ -70,8 +70,8 @@ export function test_loadWithOptionsFromTNS() {
 
 export function test_loadWithOptionsFromTNSPath() {
     var v = builder.load({
-        fileName: "tns_modules/ui/label",
-        componentName: "Label"
+        path: "tns_modules/ui/label",
+        name: "Label"
     });
 
     TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");

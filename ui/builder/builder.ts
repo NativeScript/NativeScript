@@ -227,7 +227,7 @@ export function load(arg: any): view.View {
     if (arguments.length === 1) {
         if (!types.isString(arguments[0])) {
             var options = <definition.LoadOptions>arguments[0];
-            componentModule = loadCustomComponent(options.fileName, options.componentName, undefined, options.exports);
+            componentModule = loadCustomComponent(options.path, options.name, undefined, options.exports);
         } else {
             componentModule = loadInternal(<string>arguments[0]);
         }

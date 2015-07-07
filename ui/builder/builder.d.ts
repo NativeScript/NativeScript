@@ -7,8 +7,8 @@ declare module "ui/builder" {
     export function parse(value: string, exports?: any): view.View;
 
     export interface LoadOptions {
-        fileName: string;
-        componentName: string;
+        path: string;
+        name: string;
         exports?: any;
     }
 }
