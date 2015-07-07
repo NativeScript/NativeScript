@@ -371,25 +371,6 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 }
 
-export class BorderStyler implements definition.stylers.Styler {
-    //Background methods
-    private static setBackgroundProperty(view: view.View, newValue: any) {
-        var border = <border.Border>view;
-        border._updateAndroidBorder();
-    }
-
-    private static resetBackgroundProperty(view: view.View, nativeValue: any) {
-        var border = <border.Border>view;
-        border._updateAndroidBorder();
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
-            BorderStyler.setBackgroundProperty,
-            BorderStyler.resetBackgroundProperty), "Border");
-    }
-}
-
 // Register all styler at the end.
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
@@ -398,5 +379,4 @@ export function _registerDefaultStylers() {
     ActivityIndicatorStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
     SearchBarStyler.registerHandlers();
-    BorderStyler.registerHandlers();
 }

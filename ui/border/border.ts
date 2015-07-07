@@ -7,54 +7,13 @@ import types = require("utils/types");
 import viewModule = require("ui/core/view");
 import utils = require("utils/utils");
 
-var cornerRadiusProperty = new dependencyObservable.Property(
-    "cornerRadius",
-    "Border",
-    new proxy.PropertyMetadata(0, dependencyObservable.PropertyMetadataSettings.AffectsStyle)
-    );
-
-var borderWidthProperty = new dependencyObservable.Property(
-    "borderWidth",
-    "Border",
-    new proxy.PropertyMetadata(0, dependencyObservable.PropertyMetadataSettings.AffectsStyle)
-    );
-
-var borderColorProperty = new dependencyObservable.Property(
-    "borderColor",
-    "Border",
-    new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle)
-    );
-
 @Deprecated
 export class Border extends contentView.ContentView implements definition.Border {
-
-    public static cornerRadiusProperty = cornerRadiusProperty;
-    public static borderWidthProperty = borderWidthProperty;
-    public static borderColorProperty = borderColorProperty;
-
     get cornerRadius(): number {
-        return this._getValue(Border.cornerRadiusProperty);
+        return this.borderRadius;
     }
     set cornerRadius(value: number) {
-        this._setValue(Border.cornerRadiusProperty, value);
-    }
-
-    get borderWidth(): number {
-        return this._getValue(Border.borderWidthProperty);
-    }
-    set borderWidth(value: number) {
-        this._setValue(Border.borderWidthProperty, value);
-    }
-
-    get borderColor(): color.Color {
-        return this._getValue(Border.borderColorProperty);
-    }
-    set borderColor(value: color.Color) {
-        if (types.isString(value) || types.isNumber(value)) {
-            this._setValue(Border.borderColorProperty, new color.Color(<any>value));
-        } else {
-            this._setValue(Border.borderColorProperty, value);
-        }
+        this.borderRadius = value;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -81,9 +40,5 @@ export class Border extends contentView.ContentView implements definition.Border
         var density = utils.layout.getDisplayDensity();
         var borderSize = this.borderWidth * density;
         viewModule.View.layoutChild(this, this.content, borderSize, borderSize, right - left - borderSize, bottom - top - borderSize);
-    }
-
-    public _updateAndroidBorder() {
-        // This is android specific method.
     }
 }

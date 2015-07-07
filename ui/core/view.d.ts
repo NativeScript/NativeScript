@@ -94,7 +94,7 @@ declare module "ui/core/view" {
      * This class is the base class for all UI components. 
      * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within. 
      */
-    export class View extends proxy.ProxyObject {
+    export class View extends proxy.ProxyObject implements ApplyXmlAttributes {
         /**
          * Gets or sets the corner radius of the view.
          */
@@ -441,6 +441,8 @@ declare module "ui/core/view" {
 
         _updateLayout(): void;
 
+        _applyXmlAttribute(attribute, value): boolean;
+
         /**
          * Called my measure method to cache measureSpecs.
          */
@@ -515,6 +517,6 @@ declare module "ui/core/view" {
          * @param attrValue - the value of the attribute (bold)
          * Should return true if this attribute is handled and there is no need default handler to process it.
          */
-        applyXmlAttribute(attributeName: string, attrValue: any): boolean;
+        _applyXmlAttribute(attributeName: string, attrValue: any): boolean;
     }
 }

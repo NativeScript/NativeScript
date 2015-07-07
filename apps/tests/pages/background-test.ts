@@ -1,10 +1,13 @@
 import view = require("ui/core/view");
+import pages = require("ui/page");
+
 export function applyTap(args) {
-    var el = view.getViewById(view.getAncestor(args.object, "Page"), "test-element");
-    (<any>el).style = args.object.tag;
+    var page = <pages.Page>view.getAncestor(args.object, "Page");
+    var css = "#test-element { " + args.object.tag + " }";
+    page.css = css;
 }
 
 export function resetTap(args) {
-    var el = view.getViewById(view.getAncestor(args.object, "Page"), "test-element");
-    (<any>el).style = "";
+    var page = <pages.Page>view.getAncestor(args.object, "Page");
+    page.css = "";
 }

@@ -389,7 +389,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         return this._style;
     }
     set style(value) {
-        this._applyInlineStyle(value);
+        throw new Error("View.style property is read-only.");
     }
 
     get isLayoutValid(): boolean {
@@ -763,7 +763,6 @@ export class View extends proxy.ProxyObject implements definition.View {
         if (types.isString(inlineStyle)) {
             try {
                 this.style._beginUpdate();
-                this.style._resetLocalValues();
                 styleScope.applyInlineSyle(this, <string>inlineStyle);
             } finally {
                 this.style._endUpdate();
@@ -940,6 +939,15 @@ export class View extends proxy.ProxyObject implements definition.View {
 
         // TODO: What state should we set here - the requested or the actual one?
         this._requestedVisualState = state;
+    }
+
+    public _applyXmlAttribute(attribute, value): boolean {
+        if (attribute === "style") {
+            this._applyInlineStyle(value);
+            return true;
+        }
+
+        return false;
     }
 
     public _updateLayout() {
