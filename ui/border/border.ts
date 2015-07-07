@@ -1,9 +1,5 @@
 ﻿import definition = require("ui/border");
-import color = require("color");
-import proxy = require("ui/core/proxy");
 import contentView = require("ui/content-view");
-import dependencyObservable = require("ui/core/dependency-observable");
-import types = require("utils/types");
 import viewModule = require("ui/core/view");
 import utils = require("utils/utils");
 

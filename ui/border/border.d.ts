@@ -4,7 +4,6 @@
 declare module "ui/border" {
     import contentView = require("ui/content-view");
     import color = require("color");
-    import dependencyObservable = require("ui/core/dependency-observable");
 
     /**
      * Represents a UI border component.

@@ -1,6 +1,5 @@
 ﻿import types = require("utils/types");
 import view = require("ui/core/view");
-import border = require("ui/border");
 import constants = require("utils/android_constants");
 import style = require("ui/styling/style");
 import definition = require("ui/styling");
