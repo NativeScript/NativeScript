@@ -40,6 +40,43 @@ export function test_load_ShouldNotCrashWithoutExports() {
     TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 };
 
+export function test_loadWithOptionsNoXML() {
+    var v = builder.load({
+        path: "~/xml-declaration/mymodule",
+        name: "MyControl",
+        exports: exports
+    });
+
+    TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+};
+
+export function test_loadWithOptionsWithXML() {
+    var v = builder.load({
+        path: "~/xml-declaration/mymodulewithxml",
+        name: "MyControl",
+        exports: exports
+    });
+    TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+};
+
+export function test_loadWithOptionsFromTNS() {
+    var v = builder.load({
+        path: "ui/label",
+        name: "Label"
+    });
+
+    TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");
+};
+
+export function test_loadWithOptionsFromTNSPath() {
+    var v = builder.load({
+        path: "tns_modules/ui/label",
+        name: "Label"
+    });
+
+    TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");
+};
+
 export function test_parse_ShouldNotCrashWithoutExports() {
     var fileAccess = new fileSystemAccess.FileSystemAccess();
 
@@ -159,7 +196,7 @@ export function test_parse_ThrowErrorWhenNestingPlatforms() {
     } catch (ex) {
         e = ex;
     }
-    
+
     TKUnit.assert(e, "Expected result: Error; Actual result: " + e);
 };
 

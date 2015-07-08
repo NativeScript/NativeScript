@@ -6,6 +6,7 @@ import types = require("utils/types");
 import componentBuilder = require("ui/builder/component-builder");
 import templateBuilderDef = require("ui/builder/template-builder");
 import platform = require("platform");
+import definition = require("ui/builder");
 
 var KNOWNCOLLECTIONS = "knownCollections";
 
@@ -18,14 +19,14 @@ function isCurentPlatform(value: string): boolean {
     return value && value.toLowerCase() === platform.device.os.toLowerCase();
 }
 
-export function parse(value: string, exports: any): view.View {
+export function parse(value: string, context: any): view.View {
     var viewToReturn: view.View;
 
-    if (exports instanceof view.View) {
-        exports = getExports(exports);
+    if (context instanceof view.View) {
+        context = getExports(context);
     }
 
-    var componentModule = parseInternal(value, exports);
+    var componentModule = parseInternal(value, context);
 
     if (componentModule) {
         viewToReturn = componentModule.component;
@@ -34,7 +35,7 @@ export function parse(value: string, exports: any): view.View {
     return viewToReturn;
 }
 
-function parseInternal(value: string, exports: any): componentBuilder.ComponentModule {
+function parseInternal(value: string, context: any): componentBuilder.ComponentModule {
     var rootComponentModule: componentBuilder.ComponentModule;
     // Temporary collection used for parent scope.
     var parents = new Array<componentBuilder.ComponentModule>();
@@ -112,40 +113,12 @@ function parseInternal(value: string, exports: any): componentBuilder.ComponentM
 
                 var componentModule: componentBuilder.ComponentModule;
 
-                if (args.prefix) {
+                if (args.prefix && args.namespace) {
                     // Custom components
-
-                    var ns = args.namespace;
-
-                    if (ns) {
-                        var xmlPath = fs.path.join(fs.knownFolders.currentApp().path, ns, args.elementName) + ".xml";
-
-                        if (fs.File.exists(xmlPath)) {
-                            // Custom components with XML
-                            var jsPath = xmlPath.replace(".xml", ".js");
-                            var subExports;
-                            if (fs.File.exists(jsPath)) {
-                                // Custom components with XML and code
-                                subExports = require(jsPath.replace(".js", ""))
-                            }
-
-                            componentModule = loadInternal(xmlPath, subExports);
-
-                            // Attributes will be transfered to the custom component
-                            if (types.isDefined(componentModule) && types.isDefined(componentModule.component)) {
-                                var attr: string;
-                                for (attr in args.attributes) {
-                                    componentBuilder.setPropertyValue(componentModule.component, subExports, exports, attr, args.attributes[attr]);
-                                }
-                            }
-                        } else {
-                            // Custom components without XML
-                            componentModule = componentBuilder.getComponentModule(args.elementName, ns, args.attributes, exports);
-                        }
-                    }
+                    componentModule = loadCustomComponent(args.namespace, args.elementName, args.attributes, context);
                 } else {
                     // Default components
-                    componentModule = componentBuilder.getComponentModule(args.elementName, ns, args.attributes, exports);
+                    componentModule = componentBuilder.getComponentModule(args.elementName, args.namespace, args.attributes, context);
                 }
 
                 if (componentModule) {
@@ -190,7 +163,7 @@ function parseInternal(value: string, exports: any): componentBuilder.ComponentM
             }
         }
 
-    },(e) => {
+    }, (e) => {
             throw new Error("XML parse error: " + e.message);
         }, true);
 
@@ -202,9 +175,56 @@ function parseInternal(value: string, exports: any): componentBuilder.ComponentM
     return rootComponentModule;
 }
 
-export function load(fileName: string, exports: any): view.View {
+function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object): componentBuilder.ComponentModule {
+    var result: componentBuilder.ComponentModule;
+    componentPath = componentPath.replace("~/", "");
+
+    var fileName = componentPath;
+
+    if (!fs.File.exists(fileName)) {
+        fileName = fs.path.join(fs.knownFolders.currentApp().path, componentPath, componentName) + ".xml";
+    }
+
+    if (fs.File.exists(fileName)) {
+        // Custom components with XML
+        var jsPath = fileName.replace(".xml", ".js");
+        var subExports;
+        if (fs.File.exists(jsPath)) {
+            // Custom components with XML and code
+            subExports = require(jsPath.replace(".js", ""))
+        }
+
+        result = loadInternal(fileName, subExports);
+
+        // Attributes will be transfered to the custom component
+        if (types.isDefined(result) && types.isDefined(result.component) && types.isDefined(attributes)) {
+            var attr: string;
+            for (attr in attributes) {
+                componentBuilder.setPropertyValue(result.component, subExports, context, attr, attributes[attr]);
+            }
+        }
+    } else {
+        // Custom components without XML
+        result = componentBuilder.getComponentModule(componentName, componentPath, attributes, context);
+    }
+
+    return result;
+}
+
+export function load(arg: any): view.View {
     var viewToReturn: view.View;
-    var componentModule = loadInternal(fileName, exports);
+    var componentModule: componentBuilder.ComponentModule;
+
+    if (arguments.length === 1) {
+        if (!types.isString(arguments[0])) {
+            var options = <definition.LoadOptions>arguments[0];
+            componentModule = loadCustomComponent(options.path, options.name, undefined, options.exports);
+        } else {
+            componentModule = loadInternal(<string>arguments[0]);
+        }
+    } else {
+        componentModule = loadInternal(<string>arguments[0], arguments[1]);
+    }
 
     if (componentModule) {
         viewToReturn = componentModule.component;
@@ -213,25 +233,25 @@ export function load(fileName: string, exports: any): view.View {
     return viewToReturn;
 }
 
-function loadInternal(fileName: string, exports: any): componentBuilder.ComponentModule {
+function loadInternal(fileName: string, context?: any): componentBuilder.ComponentModule {
     var componentModule: componentBuilder.ComponentModule;
 
     // Check if the XML file exists.
-    if (fileName && fs.File.exists(fileName)) {
+    if (fs.File.exists(fileName)) {
 
         var fileAccess = new file_access_module.FileSystemAccess();
 
         // Read the XML file.
         fileAccess.readText(fileName, result => {
-            componentModule = parseInternal(result, exports);
-        },(e) => {
+            componentModule = parseInternal(result, context);
+        }, (e) => {
                 throw new Error("Error loading file " + fileName + " :" + e.message);
             });
     }
 
     if (componentModule && componentModule.component) {
         // Save exports to root component (will be used for templates).
-        (<any>componentModule.component).exports = exports;
+        (<any>componentModule.component).exports = context;
     }
 
     return componentModule;
@@ -252,8 +272,8 @@ function getComplexProperty(fullName: string): string {
     return name;
 }
 
-function isKnownCollection(name: string, exports: any): boolean {
-    return KNOWNCOLLECTIONS in exports && exports[KNOWNCOLLECTIONS] && name in exports[KNOWNCOLLECTIONS];
+function isKnownCollection(name: string, context: any): boolean {
+    return KNOWNCOLLECTIONS in context && context[KNOWNCOLLECTIONS] && name in context[KNOWNCOLLECTIONS];
 }
 
 function addToComplexProperty(parent: componentBuilder.ComponentModule, complexProperty, elementModule: componentBuilder.ComponentModule) {
