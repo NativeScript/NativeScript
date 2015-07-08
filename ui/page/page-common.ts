@@ -20,7 +20,6 @@ var navigationBarHiddenProperty = new dependencyObservable.Property(
     );
 
 function onNavigationBarHiddenPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    console.log("onNavigationBarHiddenPropertyChanged(" + data.newValue + ")");
     var page = <Page>data.object;
     if (page.isLoaded) {
         page._updateNavigationBar(data.newValue);
