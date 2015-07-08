@@ -1,6 +1,7 @@
 ﻿//@private
 declare module "ui/builder" {
     import view = require("ui/core/view");
+    import page = require("ui/page");
 
     export function load(fileName: string, exports?: any): view.View;
     export function load(options: LoadOptions): view.View;
@@ -10,5 +11,6 @@ declare module "ui/builder" {
         path: string;
         name: string;
         exports?: any;
+        page?: page.Page;
     }
 }

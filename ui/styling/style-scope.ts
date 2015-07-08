@@ -33,18 +33,17 @@ export class StyleScope {
     }
 
     public addCss(cssString: string, cssFileName: string): void {
-        if (this._css === undefined) {
-            this._css = cssString;
-        }
-        else {
-            this._css += cssString;
-        }
-        this._cssFileName = cssFileName;
+        this._css = this._css ? this._css + cssString : cssString;
+        this._cssFileName = cssFileName
+
         this._reset();
-        if (this._cssSelectors) {
-            var addedSelectors = StyleScope.createSelectorsFromCss(cssString, cssFileName);
-            this._cssSelectors = StyleScope._joinCssSelectorsArrays([this._cssSelectors, addedSelectors]);
+
+        if (!this._cssSelectors) {
+            this._cssSelectors = new Array<cssSelector.CssSelector>();
         }
+
+        var selectorsFromFile = StyleScope.createSelectorsFromCss(cssString, cssFileName);
+        this._cssSelectors = StyleScope._joinCssSelectorsArrays([this._cssSelectors, selectorsFromFile]);
     }
 
     public static createSelectorsFromCss(css: string, cssFileName: string): cssSelector.CssSelector[] {

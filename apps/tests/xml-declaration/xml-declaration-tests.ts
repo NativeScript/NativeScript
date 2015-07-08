@@ -50,6 +50,31 @@ export function test_loadWithOptionsNoXML() {
     TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 };
 
+export function test_loadWithOptionsNoXML_CSSIsApplied() {
+    var newPage: page.Page;
+    var pageFactory = function (): page.Page {
+        newPage = new page.Page();
+
+        newPage.content = builder.load({
+            path: "~/xml-declaration/mymodule",
+            name: "MyControl",
+            exports: exports,
+            page: newPage
+        });
+
+        return newPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
+    try {
+        helper.assertViewBackgroundColor(newPage.content, "#FF0000");
+    }
+    finally {
+        helper.goBack();
+    }
+};
+
 export function test_loadWithOptionsWithXML() {
     var v = builder.load({
         path: "~/xml-declaration/mymodulewithxml",
@@ -57,6 +82,31 @@ export function test_loadWithOptionsWithXML() {
         exports: exports
     });
     TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+};
+
+export function test_loadWithOptionsWithXML_CSSIsApplied() {
+    var newPage: page.Page;
+    var pageFactory = function (): page.Page {
+        newPage = new page.Page();
+
+        newPage.content = builder.load({
+            path: "~/xml-declaration/mymodulewithxml",
+            name: "MyControl",
+            exports: exports,
+            page: newPage
+        });
+
+        return newPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
+    try {
+        helper.assertViewBackgroundColor(newPage.content, "#008000");
+    }
+    finally {
+        helper.goBack();
+    }
 };
 
 export function test_loadWithOptionsFromTNS() {

@@ -117,8 +117,8 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
 
     private _cssFiles = {};
     public addCssFile(cssFileName: string) {
-        if (cssFileName.indexOf(fs.knownFolders.currentApp().path) !== 0) {
-            cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName);
+        if (cssFileName.indexOf("~/") === 0) {
+            cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName.replace("~/", ""));
         }
         if (!this._cssFiles[cssFileName]) {
             if (fs.File.exists(cssFileName)) {

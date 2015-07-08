@@ -7,7 +7,6 @@ import componentBuilder = require("ui/builder/component-builder");
 import templateBuilderDef = require("ui/builder/template-builder");
 import platform = require("platform");
 import definition = require("ui/builder");
-import frame = require("ui/frame");
 import page = require("ui/page");
 
 var KNOWNCOLLECTIONS = "knownCollections";
@@ -217,19 +216,8 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
 
     // Add component CSS file if exists.
     var cssFileName = fileName.replace(".xml", ".css");
-    if (fs.File.exists(cssFileName)) {
-        var currentPage = parentPage;
-
-        if (!currentPage) {
-            var topMostFrame = frame.topmost();
-            if (topMostFrame && topMostFrame.currentPage) {
-                currentPage = topMostFrame.currentPage;
-            }
-        }
-
-        if (currentPage) {
-            currentPage.addCssFile(cssFileName);
-        }
+    if (fs.File.exists(cssFileName) && parentPage) {
+        parentPage.addCssFile(cssFileName);
     }
 
     return result;
@@ -242,7 +230,7 @@ export function load(arg: any): view.View {
     if (arguments.length === 1) {
         if (!types.isString(arguments[0])) {
             var options = <definition.LoadOptions>arguments[0];
-            componentModule = loadCustomComponent(options.path, options.name, undefined, options.exports);
+            componentModule = loadCustomComponent(options.path, options.name, undefined, options.exports, options.page);
         } else {
             componentModule = loadInternal(<string>arguments[0]);
         }

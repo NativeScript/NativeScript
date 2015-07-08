@@ -778,6 +778,17 @@ export var test_CSS_isAppliedOnPage_From_Import = function () {
     });
 }
 
+export var test_CSS_isAppliedOnPage_From_addCssFile = function () {
+    var testButton = new buttonModule.Button();
+    testButton.text = "Test";
+
+    helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
+        var page: pageModule.Page = <pageModule.Page> views[1];
+        page.addCssFile("~/ui/style/test.css");
+        helper.assertViewBackgroundColor(page, "#FF0000");
+    });
+}
+
 // <snippet module="ui/styling" title="styling">
 // For information and example how to use style properties please refer to special [**Styling**](../../../styling.md) topic. 
 // </snippet>
