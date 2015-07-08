@@ -7,6 +7,8 @@ import componentBuilder = require("ui/builder/component-builder");
 import templateBuilderDef = require("ui/builder/template-builder");
 import platform = require("platform");
 import definition = require("ui/builder");
+import frame = require("ui/frame");
+import page = require("ui/page");
 
 var KNOWNCOLLECTIONS = "knownCollections";
 
@@ -36,6 +38,7 @@ export function parse(value: string, context: any): view.View {
 }
 
 function parseInternal(value: string, context: any): componentBuilder.ComponentModule {
+    var currentPage: page.Page;
     var rootComponentModule: componentBuilder.ComponentModule;
     // Temporary collection used for parent scope.
     var parents = new Array<componentBuilder.ComponentModule>();
@@ -115,7 +118,7 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
 
                 if (args.prefix && args.namespace) {
                     // Custom components
-                    componentModule = loadCustomComponent(args.namespace, args.elementName, args.attributes, context);
+                    componentModule = loadCustomComponent(args.namespace, args.elementName, args.attributes, context, currentPage);
                 } else {
                     // Default components
                     componentModule = componentBuilder.getComponentModule(args.elementName, args.namespace, args.attributes, context);
@@ -138,6 +141,10 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
                     } else if (parents.length === 0) {
                         // Set root component.
                         rootComponentModule = componentModule;
+
+                        if (rootComponentModule && rootComponentModule.component instanceof page.Page) {
+                            currentPage = <page.Page>rootComponentModule.component;
+                        }
                     }
 
                     // Add the component instance to the parents scope collection.
@@ -175,7 +182,7 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
     return rootComponentModule;
 }
 
-function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object): componentBuilder.ComponentModule {
+function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: page.Page): componentBuilder.ComponentModule {
     var result: componentBuilder.ComponentModule;
     componentPath = componentPath.replace("~/", "");
 
@@ -206,6 +213,23 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
     } else {
         // Custom components without XML
         result = componentBuilder.getComponentModule(componentName, componentPath, attributes, context);
+    }
+
+    // Add component CSS file if exists.
+    var cssFileName = fileName.replace(".xml", ".css");
+    if (fs.File.exists(cssFileName)) {
+        var currentPage = parentPage;
+
+        if (!currentPage) {
+            var topMostFrame = frame.topmost();
+            if (topMostFrame && topMostFrame.currentPage) {
+                currentPage = topMostFrame.currentPage;
+            }
+        }
+
+        if (currentPage) {
+            currentPage.addCssFile(cssFileName);
+        }
     }
 
     return result;
