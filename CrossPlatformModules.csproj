@@ -212,6 +212,10 @@
       <DependentUpon>xmlbasics.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\bindings\basics.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\custom-components\mymodulewithxml\MyControl.ts">
+      <DependentUpon>MyControl.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\custom-components\mymodule\MyControl.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\absolute.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\dock.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\grid.ts" />
@@ -709,6 +713,12 @@
     <Content Include="apps\tests\xml-declaration\mymodulewithxml\MyControl.css" />
     <Content Include="apps\tests\xml-declaration\mymodule\MyControl.css" />
     <Content Include="apps\ui-tests-app\bindings\xmlbasics.xml" />
+    <Content Include="apps\ui-tests-app\custom-components\mymodulewithxml\MyControl.css" />
+    <Content Include="apps\ui-tests-app\custom-components\mymodulewithxml\MyControl.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\custom-components\mymodule\MyControl.css" />
+    <Content Include="apps\ui-tests-app\custom-components\page.xml" />
     <Content Include="apps\ui-tests-app\layouts\absolute.xml" />
     <Content Include="apps\ui-tests-app\layouts\dock.xml" />
     <Content Include="apps\ui-tests-app\layouts\grid.xml" />
@@ -1589,6 +1599,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="apps\cuteness.unoptimized\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="apps\ui-tests-app\custom-components\mymodule\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="apps\ui-tests-app\custom-components\mymodulewithxml\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="js-libs\esprima\LICENSE.BSD" />

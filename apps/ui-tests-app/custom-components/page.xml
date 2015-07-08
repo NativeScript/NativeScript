@@ -1,0 +1,7 @@
+﻿<Page xmlns:customControls="custom-components/mymodule"
+      xmlns:customControls2="custom-components/mymodulewithxml">
+  <StackLayout>
+    <customControls:MyControl />
+    <customControls2:MyControl />
+  </StackLayout>
+</Page>
