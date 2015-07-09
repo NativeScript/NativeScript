@@ -4,5 +4,6 @@
   </Page.actionBar>
   <StackLayout>
     <Button text="button" tap="buttonTap"/>
+    <Button text="change main icon visibility" tap="visibilityTap"/>
   </StackLayout>
 </Page>
