@@ -217,7 +217,11 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
     // Add component CSS file if exists.
     var cssFileName = fileName.replace(".xml", ".css");
     if (fs.File.exists(cssFileName) && parentPage) {
-        parentPage.addCssFile(cssFileName);
+        if (parentPage) {
+            parentPage.addCssFile(cssFileName);
+        } else {
+            throw new Error("CSS file found but no page specified. Please specify page in the options!");
+        }
     }
 
     return result;
