@@ -57,56 +57,46 @@ function createUIAlertView(options: dialogs.DialogOptions): UIAlertView {
     return alert;
 }
 
+enum allertButtons {
+    cancel = 1 << 0,
+    neutral = 1 << 1,
+    ok = 1 << 2,
+}
+
 function addButtonsToAlertDialog(alert: UIAlertView, options: dialogs.ConfirmOptions): void {
     if (!options) {
         return;
     }
 
     if (options.cancelButtonText) {
-        alert.tag = 1;
+        alert.tag = allertButtons.cancel;
         alert.addButtonWithTitle(options.cancelButtonText);
     }
 
     if (options.neutralButtonText) {
-        alert.tag = alert.tag === 1 ? 12 : 2;
+        alert.tag = alert.tag | allertButtons.neutral;
         alert.addButtonWithTitle(options.neutralButtonText);
     }
 
     if (options.okButtonText) {
-        if (alert.tag === 1) {
-            alert.tag = 13;
-        } else if (alert.tag === 2) {
-            alert.tag = 23;
-        } else if (alert.tag === 12) {
-            alert.tag = 123;
-        } else {
-            alert.tag = 3;
-        }
+        alert.tag = alert.tag | allertButtons.ok;
         alert.addButtonWithTitle(options.okButtonText);
     }
 }
 
-function getDialogResult(alert: UIAlertView, index: number) {
-    if (alert.tag === 1) {
-        return false;
-    } else if (alert.tag === 2) {
-        return undefined;
-    } else if (alert.tag === 3) {
-        return true;
-    } else if (alert.tag === 12) {
-        return index === 0 ? false : undefined;
-    } else if (alert.tag === 13) {
-        return index === 0 ? false : true;
-    } else if (alert.tag === 23) {
+function getDialogResult(buttons: allertButtons, index: number) {
+    if (buttons & allertButtons.cancel && buttons & allertButtons.neutral && buttons & allertButtons.ok) {
+        return index === 0 ? false : index === 2 ? true : undefined;
+    } else if (buttons & allertButtons.neutral && buttons & allertButtons.ok) {
         return index === 0 ? undefined : true;
-    } else if (alert.tag === 123) {
-        if (index === 0) {
-            return false;
-        } else if (index === 1) {
-            return undefined;
-        } else if (index === 2) {
-            return true;
-        }
+    } else if (buttons & allertButtons.cancel && buttons & allertButtons.ok) {
+        return index !== 0;
+    } else if (buttons & allertButtons.cancel && buttons & allertButtons.neutral) {
+        return index === 0 ? false : undefined;
+    } else if (buttons & allertButtons.cancel) {
+        return false;
+    } else if (buttons & allertButtons.ok) {
+        return true;
     }
 
     return undefined;
@@ -190,7 +180,7 @@ export function confirm(arg: any): Promise<boolean> {
 
                 // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
                 var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
-                    resolve(getDialogResult(alert, index));
+                    resolve(getDialogResult(alert.tag, index));
 
                     // Remove the local variable for the delegate.
                     delegate = undefined;
@@ -258,7 +248,7 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
 
                 // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
                 var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
-                    resolve({ result: getDialogResult(alert, index), text: textField.text });
+                    resolve({ result: getDialogResult(alert.tag, index), text: textField.text });
                     // Remove the local variable for the delegate.
                     delegate = undefined;
                 });
@@ -337,7 +327,7 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
 
                 // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
                 var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
-                    resolve({ result: getDialogResult(alert, index), userName: userNameTextField.text, password: userNameTextField.text });
+                    resolve({ result: getDialogResult(alert.tag, index), userName: userNameTextField.text, password: userNameTextField.text });
                     // Remove the local variable for the delegate.
                     delegate = undefined;
                 });
