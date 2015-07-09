@@ -8,6 +8,8 @@ import templateBuilderDef = require("ui/builder/template-builder");
 import platform = require("platform");
 import definition = require("ui/builder");
 import page = require("ui/page");
+import fileResolverModule = require("file-system/file-name-resolver");
+import trace = require("trace");
 
 var KNOWNCOLLECTIONS = "knownCollections";
 
@@ -185,22 +187,25 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
     var result: componentBuilder.ComponentModule;
     componentPath = componentPath.replace("~/", "");
 
-    var fileName = componentPath;
+    var fullComponentPathFilePathWithoutExt = componentPath;
 
-    if (!fs.File.exists(fileName)) {
-        fileName = fs.path.join(fs.knownFolders.currentApp().path, componentPath, componentName) + ".xml";
+    if (!fs.File.exists(componentPath)) {
+        fullComponentPathFilePathWithoutExt = fs.path.join(fs.knownFolders.currentApp().path, componentPath, componentName);
     }
 
-    if (fs.File.exists(fileName)) {
+    var xmlFilePath = resolveFilePath(fullComponentPathFilePathWithoutExt, "xml");
+
+    if (xmlFilePath) {
         // Custom components with XML
-        var jsPath = fileName.replace(".xml", ".js");
+        var jsFilePath = resolveFilePath(fullComponentPathFilePathWithoutExt, "js");
+
         var subExports;
-        if (fs.File.exists(jsPath)) {
+        if (jsFilePath) {
             // Custom components with XML and code
-            subExports = require(jsPath.replace(".js", ""))
+            subExports = require(jsFilePath)
         }
 
-        result = loadInternal(fileName, subExports);
+        result = loadInternal(xmlFilePath, subExports);
 
         // Attributes will be transfered to the custom component
         if (types.isDefined(result) && types.isDefined(result.component) && types.isDefined(attributes)) {
@@ -215,16 +220,29 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
     }
 
     // Add component CSS file if exists.
-    var cssFileName = fileName.replace(".xml", ".css");
-    if (fs.File.exists(cssFileName) && parentPage) {
+    var cssFilePath = resolveFilePath(fullComponentPathFilePathWithoutExt, "css");
+    if (cssFilePath) {
         if (parentPage) {
-            parentPage.addCssFile(cssFileName);
+            parentPage.addCssFile(cssFilePath);
         } else {
-            throw new Error("CSS file found but no page specified. Please specify page in the options!");
+            trace.write("CSS file found but no page specified. Please specify page in the options!", trace.categories.Error, trace.messageType.error);
         }
     }
 
     return result;
+}
+
+var fileNameResolver: fileResolverModule.FileNameResolver;
+function resolveFilePath(path, ext): string {
+    if (!fileNameResolver) {
+        fileNameResolver = new fileResolverModule.FileNameResolver({
+            width: platform.screen.mainScreen.widthDIPs,
+            height: platform.screen.mainScreen.heightDIPs,
+            os: platform.device.os,
+            deviceType: platform.device.deviceType
+        });
+    }
+    return fileNameResolver.resolveFileName(path, ext);
 }
 
 export function load(pathOrOptions: string | definition.LoadOptions, context?: any): view.View {
@@ -233,14 +251,14 @@ export function load(pathOrOptions: string | definition.LoadOptions, context?: a
 
     if (!context) {
         if (!types.isString(pathOrOptions)) {
-            var options = <definition.LoadOptions>pathOrOptions;
+            let options = <definition.LoadOptions>pathOrOptions;
             componentModule = loadCustomComponent(options.path, options.name, undefined, options.exports, options.page);
         } else {
-            var path = <string>pathOrOptions;
+            let path = <string>pathOrOptions;
             componentModule = loadInternal(path);
         }
     } else {
-        var path = <string>pathOrOptions;
+        let path = <string>pathOrOptions;
         componentModule = loadInternal(path, context);
     }
 
