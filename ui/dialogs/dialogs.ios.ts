@@ -63,16 +63,53 @@ function addButtonsToAlertDialog(alert: UIAlertView, options: dialogs.ConfirmOpt
     }
 
     if (options.cancelButtonText) {
+        alert.tag = 1;
         alert.addButtonWithTitle(options.cancelButtonText);
     }
 
     if (options.neutralButtonText) {
+        alert.tag = alert.tag === 1 ? 12 : 2;
         alert.addButtonWithTitle(options.neutralButtonText);
     }
 
     if (options.okButtonText) {
+        if (alert.tag === 1) {
+            alert.tag = 13;
+        } else if (alert.tag === 2) {
+            alert.tag = 23;
+        } else if (alert.tag === 12) {
+            alert.tag = 123;
+        } else {
+            alert.tag = 3;
+        }
         alert.addButtonWithTitle(options.okButtonText);
     }
+}
+
+function getDialogResult(alert: UIAlertView, index: number) {
+    if (alert.tag === 1) {
+        return false;
+    } else if (alert.tag === 2) {
+        return undefined;
+    } else if (alert.tag === 3) {
+        return true;
+    } else if (alert.tag === 12) {
+        return index === 0 ? false : undefined;
+    } else if (alert.tag === 13) {
+        return index === 0 ? false : true;
+    } else if (alert.tag === 23) {
+        return index === 0 ? undefined : true;
+    } else if (alert.tag === 123) {
+        if (index === 0) {
+            return false;
+        } else if (index === 1) {
+            return undefined;
+        } else if (index === 2) {
+            return true;
+        }
+    }
+
+    return undefined;
 }
 
 function addButtonsToAlertController(alertController: UIAlertController, options: dialogs.ConfirmOptions,
@@ -153,7 +190,8 @@ export function confirm(arg: any): Promise<boolean> {
 
                 // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
                 var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
-                    resolve(index === 2 ? undefined : index === 0);
+                    resolve(getDialogResult(alert, index));
+
                     // Remove the local variable for the delegate.
                     delegate = undefined;
                 });
@@ -220,7 +258,7 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
 
                 // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
                 var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
-                    resolve({ result: index === 2 ? undefined : index === 0, text: textField.text });
+                    resolve({ result: getDialogResult(alert, index), text: textField.text });
                     // Remove the local variable for the delegate.
                     delegate = undefined;
                 });
@@ -299,7 +337,7 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
 
                 // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
                 var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
-                    resolve({ result: index === 2 ? undefined : index === 0, userName: userNameTextField.text, password: userNameTextField.text });
+                    resolve({ result: getDialogResult(alert, index), userName: userNameTextField.text, password: userNameTextField.text });
                     // Remove the local variable for the delegate.
                     delegate = undefined;
                 });
