@@ -223,19 +223,21 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
     return result;
 }
 
-export function load(arg: any): view.View {
+export function load(pathOrOptions: string | definition.LoadOptions, context?: any): view.View {
     var viewToReturn: view.View;
     var componentModule: componentBuilder.ComponentModule;
 
-    if (arguments.length === 1) {
-        if (!types.isString(arguments[0])) {
-            var options = <definition.LoadOptions>arguments[0];
+    if (!context) {
+        if (!types.isString(pathOrOptions)) {
+            var options = <definition.LoadOptions>pathOrOptions;
             componentModule = loadCustomComponent(options.path, options.name, undefined, options.exports, options.page);
         } else {
-            componentModule = loadInternal(<string>arguments[0]);
+            var path = <string>pathOrOptions;
+            componentModule = loadInternal(path);
         }
     } else {
-        componentModule = loadInternal(<string>arguments[0], arguments[1]);
+        var path = <string>pathOrOptions;
+        componentModule = loadInternal(path, context);
     }
 
     if (componentModule) {
