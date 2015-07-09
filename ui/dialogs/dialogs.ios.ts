@@ -85,17 +85,21 @@ function addButtonsToAlertDialog(alert: UIAlertView, options: dialogs.ConfirmOpt
 }
 
 function getDialogResult(buttons: allertButtons, index: number) {
-    if (buttons & allertButtons.cancel && buttons & allertButtons.neutral && buttons & allertButtons.ok) {
+    var hasCancel = buttons & allertButtons.cancel;
+    var hasNeutral = buttons & allertButtons.neutral;
+    var hasOk = buttons & allertButtons.ok;
+
+    if (hasCancel && hasNeutral && hasOk) {
         return index === 0 ? false : index === 2 ? true : undefined;
-    } else if (buttons & allertButtons.neutral && buttons & allertButtons.ok) {
+    } else if (buttons & hasNeutral && hasOk) {
         return index === 0 ? undefined : true;
-    } else if (buttons & allertButtons.cancel && buttons & allertButtons.ok) {
+    } else if (hasCancel && hasOk) {
         return index !== 0;
-    } else if (buttons & allertButtons.cancel && buttons & allertButtons.neutral) {
+    } else if (hasCancel && hasNeutral) {
         return index === 0 ? false : undefined;
-    } else if (buttons & allertButtons.cancel) {
+    } else if (hasCancel) {
         return false;
-    } else if (buttons & allertButtons.ok) {
+    } else if (hasOk) {
         return true;
     }
 
