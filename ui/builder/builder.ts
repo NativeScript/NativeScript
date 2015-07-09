@@ -7,6 +7,9 @@ import componentBuilder = require("ui/builder/component-builder");
 import templateBuilderDef = require("ui/builder/template-builder");
 import platform = require("platform");
 import definition = require("ui/builder");
+import page = require("ui/page");
+import fileResolverModule = require("file-system/file-name-resolver");
+import trace = require("trace");
 
 var KNOWNCOLLECTIONS = "knownCollections";
 
@@ -36,6 +39,7 @@ export function parse(value: string, context: any): view.View {
 }
 
 function parseInternal(value: string, context: any): componentBuilder.ComponentModule {
+    var currentPage: page.Page;
     var rootComponentModule: componentBuilder.ComponentModule;
     // Temporary collection used for parent scope.
     var parents = new Array<componentBuilder.ComponentModule>();
@@ -115,7 +119,7 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
 
                 if (args.prefix && args.namespace) {
                     // Custom components
-                    componentModule = loadCustomComponent(args.namespace, args.elementName, args.attributes, context);
+                    componentModule = loadCustomComponent(args.namespace, args.elementName, args.attributes, context, currentPage);
                 } else {
                     // Default components
                     componentModule = componentBuilder.getComponentModule(args.elementName, args.namespace, args.attributes, context);
@@ -138,6 +142,10 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
                     } else if (parents.length === 0) {
                         // Set root component.
                         rootComponentModule = componentModule;
+
+                        if (rootComponentModule && rootComponentModule.component instanceof page.Page) {
+                            currentPage = <page.Page>rootComponentModule.component;
+                        }
                     }
 
                     // Add the component instance to the parents scope collection.
@@ -175,26 +183,29 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
     return rootComponentModule;
 }
 
-function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object): componentBuilder.ComponentModule {
+function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: page.Page): componentBuilder.ComponentModule {
     var result: componentBuilder.ComponentModule;
     componentPath = componentPath.replace("~/", "");
 
-    var fileName = componentPath;
+    var fullComponentPathFilePathWithoutExt = componentPath;
 
-    if (!fs.File.exists(fileName)) {
-        fileName = fs.path.join(fs.knownFolders.currentApp().path, componentPath, componentName) + ".xml";
+    if (!fs.File.exists(componentPath)) {
+        fullComponentPathFilePathWithoutExt = fs.path.join(fs.knownFolders.currentApp().path, componentPath, componentName);
     }
 
-    if (fs.File.exists(fileName)) {
+    var xmlFilePath = resolveFilePath(fullComponentPathFilePathWithoutExt, "xml");
+
+    if (xmlFilePath) {
         // Custom components with XML
-        var jsPath = fileName.replace(".xml", ".js");
+        var jsFilePath = resolveFilePath(fullComponentPathFilePathWithoutExt, "js");
+
         var subExports;
-        if (fs.File.exists(jsPath)) {
+        if (jsFilePath) {
             // Custom components with XML and code
-            subExports = require(jsPath.replace(".js", ""))
+            subExports = require(jsFilePath)
         }
 
-        result = loadInternal(fileName, subExports);
+        result = loadInternal(xmlFilePath, subExports);
 
         // Attributes will be transfered to the custom component
         if (types.isDefined(result) && types.isDefined(result.component) && types.isDefined(attributes)) {
@@ -208,22 +219,47 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         result = componentBuilder.getComponentModule(componentName, componentPath, attributes, context);
     }
 
+    // Add component CSS file if exists.
+    var cssFilePath = resolveFilePath(fullComponentPathFilePathWithoutExt, "css");
+    if (cssFilePath) {
+        if (parentPage) {
+            parentPage.addCssFile(cssFilePath);
+        } else {
+            trace.write("CSS file found but no page specified. Please specify page in the options!", trace.categories.Error, trace.messageType.error);
+        }
+    }
+
     return result;
 }
 
-export function load(arg: any): view.View {
+var fileNameResolver: fileResolverModule.FileNameResolver;
+function resolveFilePath(path, ext): string {
+    if (!fileNameResolver) {
+        fileNameResolver = new fileResolverModule.FileNameResolver({
+            width: platform.screen.mainScreen.widthDIPs,
+            height: platform.screen.mainScreen.heightDIPs,
+            os: platform.device.os,
+            deviceType: platform.device.deviceType
+        });
+    }
+    return fileNameResolver.resolveFileName(path, ext);
+}
+
+export function load(pathOrOptions: string | definition.LoadOptions, context?: any): view.View {
     var viewToReturn: view.View;
     var componentModule: componentBuilder.ComponentModule;
 
-    if (arguments.length === 1) {
-        if (!types.isString(arguments[0])) {
-            var options = <definition.LoadOptions>arguments[0];
-            componentModule = loadCustomComponent(options.path, options.name, undefined, options.exports);
+    if (!context) {
+        if (!types.isString(pathOrOptions)) {
+            let options = <definition.LoadOptions>pathOrOptions;
+            componentModule = loadCustomComponent(options.path, options.name, undefined, options.exports, options.page);
         } else {
-            componentModule = loadInternal(<string>arguments[0]);
+            let path = <string>pathOrOptions;
+            componentModule = loadInternal(path);
         }
     } else {
-        componentModule = loadInternal(<string>arguments[0], arguments[1]);
+        let path = <string>pathOrOptions;
+        componentModule = loadInternal(path, context);
     }
 
     if (componentModule) {

@@ -20,7 +20,6 @@ var navigationBarHiddenProperty = new dependencyObservable.Property(
     );
 
 function onNavigationBarHiddenPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    console.log("onNavigationBarHiddenPropertyChanged("+data.newValue+")");
     var page = <Page>data.object;
     if (page.isLoaded) {
         page._updateNavigationBar(data.newValue);
@@ -116,15 +115,18 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
         this._refreshCss();
     }
 
+    private _cssFiles = {};
     public addCssFile(cssFileName: string) {
-        if (cssFileName.indexOf(fs.knownFolders.currentApp().path) !== 0) {
-            cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName);
+        if (cssFileName.indexOf("~/") === 0) {
+            cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName.replace("~/", ""));
         }
-
-        var cssString;
-        if (fs.File.exists(cssFileName)) {
-            new fileSystemAccess.FileSystemAccess().readText(cssFileName, r => { cssString = r; });
-            this._addCssInternal(cssString, cssFileName);
+        if (!this._cssFiles[cssFileName]) {
+            if (fs.File.exists(cssFileName)) {
+                new fileSystemAccess.FileSystemAccess().readText(cssFileName, r => {
+                    this._addCssInternal(r, cssFileName);
+                    this._cssFiles[cssFileName] = true;
+                });
+            }
         }
     }
 
