@@ -28,6 +28,34 @@ declare var console: Console;
 declare var global;
 declare var require;
 
+//XMLHttpRequest-related
+interface FormData {
+    append(name: any, value: any, blobName?: string): void;
+}
+
+declare var FormData: {
+    prototype: FormData;
+    new (): FormData;
+}
+
+interface Blob {
+    size: number;
+    type: string;
+    msClose(): void;
+    msDetachStream(): any;
+    slice(start?: number, end?: number, contentType?: string): Blob;
+}
+
+declare var Blob: {
+    prototype: Blob;
+    new (blobParts?: any[], options?: BlobPropertyBag): Blob;
+}
+
+interface BlobPropertyBag {
+    type?: string;
+    endings?: string;
+}
+
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
 

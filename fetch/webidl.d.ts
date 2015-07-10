@@ -9,6 +9,3 @@ declare type DOMString = string;
 
 // see: https://fetch.spec.whatwg.org/#headersinit
 declare type OpenEndedDictionary = Object;
-
-declare class FormData { }
-declare class Blob { }
