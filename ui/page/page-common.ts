@@ -10,8 +10,6 @@ import actionBar = require("ui/action-bar");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 
-var OPTIONS_MENU = "optionsMenu";
-
 var navigationBarHiddenProperty = new dependencyObservable.Property(
     "navigationBarHidden",
     "Page",

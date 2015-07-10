@@ -6,6 +6,7 @@
       <Button tap="itemTap" text="navigation button" tag="navigation-button" />
       <Button tap="itemTap" text="action items icons" tag="action-items-icon" />
       <Button tap="itemTap" text="action items text" tag="action-items-text" />
+      <Button tap="itemTap" text="data binding" tag="data-binding" />
     </StackLayout>
   </ScrollView>
 </Page>

@@ -35,4 +35,3 @@ export function visibilityTap(args: observable.EventData) {
     j++;
     console.log("Visibility changed to: " + page.actionBar.androidIconVisibility);
 }
-

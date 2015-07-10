@@ -57,13 +57,13 @@ export class ActionBar extends bindable.Bindable implements dts.ActionBar {
     set navigationButton(value: NavigationButton) {
         if (this._navigationButton !== value) {
             if (this._navigationButton) {
-                detachActionItem(this._navigationButton);
+                this._navigationButton.actionBar = undefined;
             }
 
             this._navigationButton = value;
 
             if (this._navigationButton) {
-                attachActionItem(this._navigationButton, this);
+                this._navigationButton.actionBar = this;
             }
 
             this.updateActionBar();
@@ -130,6 +130,15 @@ export class ActionBar extends bindable.Bindable implements dts.ActionBar {
         }
     }
 
+    public _onBindingContextChanged(oldValue: any, newValue: any) {
+        super._onBindingContextChanged(oldValue, newValue);
+        if (this._navigationButton) {
+            this._navigationButton.bindingContext = newValue;
+        }
+
+        this._actionItems.getItems().forEach((item, i, arr) => { item.bindingContext = newValue; });
+    }
+
     public shouldShow(): boolean {
         if (this.title ||
             this.icon ||
@@ -157,9 +166,7 @@ export class ActionItems implements dts.ActionItems {
         }
 
         this._items.push(item);
-
-        attachActionItem(item, this._actionBar);
-
+        item.actionBar = this._actionBar;
         this.invalidate();
     }
 
@@ -173,9 +180,8 @@ export class ActionItems implements dts.ActionItems {
             throw new Error("Cannot find item to remove");
         }
 
-        detachActionItem(item);
-
         this._items.splice(itemIndex, 1);
+        item.actionBar = undefined;
         this.invalidate();
     }
 
@@ -270,17 +276,4 @@ export class ActionItem extends ActionItemBase {
 
 export class NavigationButton extends ActionItemBase {
 
-}
-
-function attachActionItem(item: ActionItemBase, bar: ActionBar) {
-    item.actionBar = this._actionBar;
-    item.bind({
-        sourceProperty: "bindingContext",
-        targetProperty: "bindingContext"
-    }, this._actionBar);
-}
-
-function detachActionItem(item: ActionItemBase) {
-    item.actionBar = undefined;
-    item.unbind("bindingContext");
 }
