@@ -1,6 +1,5 @@
 ﻿import dialogs = require("ui/dialogs");
 import observable = require("data/observable");
-import appSettings = require("application-settings");
 
 var name = "Harold Finch";
 
