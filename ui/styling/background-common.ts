@@ -165,7 +165,7 @@ export class Background implements dts.Background {
     }
 
     public isEmpty(): boolean {
-        return types.isUndefined(this.image) && types.isUndefined(this.color);
+        return types.isNullOrUndefined(this.image) && types.isNullOrUndefined(this.color);
     }
 
     public static equals(value1: Background, value2: Background): boolean {
