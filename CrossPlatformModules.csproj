@@ -288,10 +288,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="es-collections.d.ts" />
     <TypeScriptCompile Include="es6-promise.d.ts" />
-    <TypeScriptCompile Include="fetch\body.ts" />
-    <TypeScriptCompile Include="fetch\fetch.ts" />
-    <TypeScriptCompile Include="fetch\headers.ts" />
-    <TypeScriptCompile Include="fetch\webidl.d.ts" />
+    <TypeScriptCompile Include="fetch\fetch.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.ts">
       <DependentUpon>file-name-resolver.d.ts</DependentUpon>
@@ -813,6 +810,7 @@
     <Content Include="apps\ui-tests-app\pages\text\label.xml" />
     <Content Include="apps\ui-tests-app\pages\text\button.xml" />
     <Content Include="apps\ui-tests-app\web-view\webview.xml" />
+    <Content Include="fetch\fetch.js" />
     <Content Include="js-libs\reworkcss-value\reworkcss-value.js" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
