@@ -22,6 +22,7 @@
       <Button width="50" height="50" text="4.4" tap="applyTap" tag="margin: 20; background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: left bottom;"/>
       <Button width="50" height="50" text="4.5" tap="applyTap" tag="margin: 20; background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: 20% 80%;"/>
       <Button width="50" height="50" text="4.6" tap="applyTap" tag="margin: 20; background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: 20 80;"/>
+
       <!-- Size -->
       <Button width="50" height="50" text="5.1" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: center center; background-size: 100px 100px;"/>
       <Button width="50" height="50" text="5.2" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: center center; background-size: 100% 100%;"/>

@@ -212,6 +212,10 @@
       <DependentUpon>xmlbasics.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\bindings\basics.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\dialogs\dialogs.ts">
+	      <DependentUpon>dialogs.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\dialogs\view-model.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\absolute.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\dock.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\grid.ts" />
@@ -709,6 +713,7 @@
     <Content Include="apps\tests\xml-declaration\mymodulewithxml\MyControl.css" />
     <Content Include="apps\tests\xml-declaration\mymodule\MyControl.css" />
     <Content Include="apps\ui-tests-app\bindings\xmlbasics.xml" />
+    <Content Include="apps\ui-tests-app\dialogs\dialogs.xml" />
     <Content Include="apps\ui-tests-app\layouts\absolute.xml" />
     <Content Include="apps\ui-tests-app\layouts\dock.xml" />
     <Content Include="apps\ui-tests-app\layouts\grid.xml" />
