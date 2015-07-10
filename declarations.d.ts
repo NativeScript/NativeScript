@@ -12,23 +12,21 @@ interface Console {
     dir(obj: any): void;
 }
 
+interface WeakMap<K, V> {
+    clear(): void;
+    delete(key: K): boolean;
+    get(key: K): V;
+    has(key: K): boolean;
+    set(key: K, value: V): WeakMap<K, V>;
+}
+
+declare var WeakMap: {
+    new <K, V>(): WeakMap<K, V>;
+}
+
 declare var console: Console;
 declare var global;
 declare var require;
-
-interface TypedPropertyDescriptor<T> {
-    enumerable?: boolean;
-    configurable?: boolean;
-    writable?: boolean;
-    value?: T;
-    get?: () => T;
-    set?: (value: T) => void;
-}
-
-declare type ClassDecorator = <TFunction extends Function>(target: TFunction) => TFunction | void;
-declare type PropertyDecorator = (target: Object, propertyKey: string | symbol) => void;
-declare type MethodDecorator = <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T> | void;
-declare type ParameterDecorator = (target: Object, propertyKey: string | symbol, parameterIndex: number) => void;
 
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
@@ -41,25 +39,6 @@ declare function fail(data: any): void;
 
 declare var __dirname: string;
 declare var __filename: string;
-
-declare class XMLHttpRequest {
-    onreadystatechange: Function;
-    open(method: string, url: string, async?: boolean, user?: string, password?: string): void;
-    abort(): void;
-    send(data?: string): void;
-    setRequestHeader(header: string, value: string): void;
-    getAllResponseHeaders(): string;
-    getResponseHeader(header: string): string;
-    overrideMimeType(mime: string): void;
-    readyState: number;
-    response: any;
-    responseText: string;
-    responseType: string;
-    status: number;
-
-    onload: () => void;
-    onerror: () => void;
-}
 
 /**
  * Calls a function after a specified delay.

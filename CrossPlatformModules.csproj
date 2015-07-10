@@ -213,7 +213,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\bindings\basics.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\dialogs\dialogs.ts">
-	      <DependentUpon>dialogs.xml</DependentUpon>
+      <DependentUpon>dialogs.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\dialogs\view-model.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\absolute.ts" />
@@ -633,9 +633,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="application-settings\application-settings-common.ts" />
     <TypeScriptCompile Include="apps\tests\timer-tests.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <TypeScriptCompile Include="libjs.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="apps\cuteness.unoptimized\details-page.css">
@@ -1262,7 +1259,6 @@
     <TypeScriptCompile Include="ui\editable-text-base\editable-text-base.ios.ts">
       <DependentUpon>editable-text-base.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
     <Content Include="Readme.md" />
@@ -1681,7 +1677,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
