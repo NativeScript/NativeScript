@@ -189,7 +189,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
 
     var fullComponentPathFilePathWithoutExt = componentPath;
 
-    if (!fs.File.exists(componentPath)) {
+    if (!fs.File.exists(componentPath) || componentPath === "." || componentPath === "./") {
         fullComponentPathFilePathWithoutExt = fs.path.join(fs.knownFolders.currentApp().path, componentPath, componentName);
     }
 
