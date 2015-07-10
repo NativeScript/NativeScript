@@ -51,14 +51,13 @@ export class ActionBar extends common.ActionBar {
         this._addActionItems(menu);
 
         // Set title
-        this._updateTitle(actionBar);
+        this._updateTitleAndCenterView(actionBar);
 
         // Set home icon
         this._updateIcon(actionBar);
 
         // Set navigation button
         this._updateNavigationButton(actionBar);
-
     }
 
     public _updateNavigationButton(actionBar: android.app.ActionBar) {
@@ -102,13 +101,25 @@ export class ActionBar extends common.ActionBar {
         actionBar.setDisplayShowHomeEnabled(visibility);
     }
 
-    public _updateTitle(actionBar: android.app.ActionBar) {
-        var title = this.title;
-        if (types.isDefined(title)) {
-            actionBar.setTitle(title);
-        } else {
-            var defaultLabel = application.android.nativeApp.getApplicationInfo().labelRes;
-            actionBar.setTitle(defaultLabel);
+    public _updateTitleAndCenterView(actionBar: android.app.ActionBar) {
+        if (this.centerView) {
+            actionBar.setCustomView(this.centerView.android);
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
+        }
+        else {
+            actionBar.setCustomView(null);
+            actionBar.setDisplayShowCustomEnabled(false);
+            actionBar.setDisplayShowTitleEnabled(true);
+
+            // No center view - show the title
+            var title = this.title;
+            if (types.isDefined(title)) {
+                actionBar.setTitle(title);
+            } else {
+                var defaultLabel = application.android.nativeApp.getApplicationInfo().labelRes;
+                actionBar.setTitle(defaultLabel);
+            }
         }
     }
 
@@ -119,7 +130,6 @@ export class ActionBar extends common.ActionBar {
             var item = items[i];
             var menuItem = menu.add(android.view.Menu.NONE, i + ACTION_ITEM_ID_OFFSET, android.view.Menu.NONE, item.text);
             if (item.icon) {
-
                 var drawableOrId = getDrawableOrResourceId(item.icon, this._appResources);
                 if (drawableOrId) {
                     menuItem.setIcon(drawableOrId);
@@ -133,7 +143,7 @@ export class ActionBar extends common.ActionBar {
 
     public _onTitlePropertyChanged() {
         if (frame.topmost().currentPage === this.page) {
-            this._updateTitle(frame.topmost().android.actionBar);
+            this._updateTitleAndCenterView(frame.topmost().android.actionBar);
         }
     }
 

@@ -124,7 +124,7 @@ export class Page extends contentView.ContentView implements dts.Page {
             cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName.replace("~/", ""));
         }
         if (!this._cssFiles[cssFileName]) {
-            if (fs.File.exists(cssFileName)) {
+        if (fs.File.exists(cssFileName)) {
                 new fileSystemAccess.FileSystemAccess().readText(cssFileName, r => {
                     this._addCssInternal(r, cssFileName);
                     this._cssFiles[cssFileName] = true;
@@ -212,6 +212,12 @@ export class Page extends contentView.ContentView implements dts.Page {
 
     public _getStyleScope(): styleScope.StyleScope {
         return this._styleScope;
+    }
+
+    public _eachChildView(callback: (child: view.View) => boolean) {
+        super._eachChildView(callback);
+
+        callback(this.actionBar);
     }
 
     private _applyCss() {

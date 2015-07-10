@@ -4,6 +4,9 @@ import bindable = require("ui/core/bindable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
+import view = require("ui/core/view");
+import style = require("ui/styling/style");
+import observable = require("ui/core/dependency-observable");
 
 var ACTION_ITEMS = "actionItems";
 
@@ -21,7 +24,7 @@ function onIconPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     actionBar._onIconPropertyChanged();
 }
 
-export class ActionBar extends bindable.Bindable implements dts.ActionBar {
+export class ActionBar extends view.View implements dts.ActionBar {
     public static titleProperty = new dependencyObservable.Property("title", "ActionBar", new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, onTitlePropertyChanged));
     public static iconProperty = new dependencyObservable.Property("icon", "ActionBar", new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, onIconPropertyChanged));
     public static androidIconVisibilityProperty = new dependencyObservable.Property("androidIconVisibility", "ActionBar", new proxy.PropertyMetadata("auto", dependencyObservable.PropertyMetadataSettings.None, onIconPropertyChanged));
@@ -29,6 +32,7 @@ export class ActionBar extends bindable.Bindable implements dts.ActionBar {
     private _actionItems: ActionItems;
     private _navigationButton: NavigationButton;
     private _page: pages.Page;
+    private _centerView: view.View;
 
     get title(): string {
         return this._getValue(ActionBar.titleProperty);
@@ -77,6 +81,29 @@ export class ActionBar extends bindable.Bindable implements dts.ActionBar {
         throw new Error("actionItems property is read-only");
     }
 
+    get centerView(): view.View {
+        return this._centerView;
+    }
+    set centerView(value: view.View) {
+        if (this._centerView !== value) {
+            if (this._centerView) {
+                this._removeView(this._centerView);
+                this._centerView.style._resetValue(style.horizontalAlignmentProperty, observable.ValueSource.Inherited);
+                this._centerView.style._resetValue(style.verticalAlignmentProperty, observable.ValueSource.Inherited);
+            }
+
+            this._centerView = value;
+            
+            if (this._centerView) {
+                this._centerView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, observable.ValueSource.Inherited);
+                this._centerView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, observable.ValueSource.Inherited);
+                this._addView(this._centerView);
+            }
+            
+            this.updateActionBar();
+        }
+    }
+
     get page(): pages.Page {
         return this._page;
     }
@@ -88,6 +115,10 @@ export class ActionBar extends bindable.Bindable implements dts.ActionBar {
             sourceProperty: "bindingContext",
             targetProperty: "bindingContext"
         }, this._page);
+    }
+
+    get _childrenCount(): number {
+        return this.centerView ? 1 : 0;
     }
 
     constructor() {
@@ -124,9 +155,12 @@ export class ActionBar extends bindable.Bindable implements dts.ActionBar {
     }
 
     public _addChildFromBuilder(name: string, value: any) {
-
         if (value instanceof NavigationButton) {
             this.navigationButton = value;
+        }
+
+        if (value instanceof view.View) {
+            this.centerView = value;
         }
     }
 
@@ -137,6 +171,12 @@ export class ActionBar extends bindable.Bindable implements dts.ActionBar {
         }
 
         this._actionItems.getItems().forEach((item, i, arr) => { item.bindingContext = newValue; });
+    }
+
+    public _eachChildView(callback: (child: view.View) => boolean) {
+        if (this.centerView) {
+            callback(this.centerView);
+        }
     }
 
     public shouldShow(): boolean {

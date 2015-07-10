@@ -172,6 +172,10 @@ export class View extends viewCommon.View {
     }
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
+        if (!this._nativeView) {
+            return;
+        }
+
         var frame = CGRectMake(left, top, right - left, bottom - top);
 
         // This is done because when rotated in iOS7 there is rotation applied on the first subview on the Window which is our frame.nativeView.view.

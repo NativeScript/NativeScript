@@ -3,6 +3,8 @@ import definition = require("ui/action-bar");
 import imageSource = require("image-source");
 import frameModule = require("ui/frame");
 import enums = require("ui/enums");
+import view = require("ui/core/view");
+import utils = require("utils/utils");
 
 declare var exports;
 require("utils/module-merge").merge(common, exports);
@@ -22,6 +24,11 @@ export class ActionBar extends common.ActionBar {
 
         // Set Title
         navigationItem.title = this.title;
+
+        if (this.centerView && this.centerView.ios) {
+            console.log("setting center view: " + this.centerView.ios);
+            navigationItem.titleView = this.centerView.ios;
+        }
 
         // Find previous ViewController in the navigation stack
         var indexOfViewController = navController.viewControllers.indexOfObject(viewController);
@@ -115,6 +122,33 @@ export class ActionBar extends common.ActionBar {
 
         var navigationItem: UINavigationItem = (<UIViewController>this.page.ios).navigationItem;
         navigationItem.title = this.title;
+    }
+
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
+        if (this.centerView) {
+            var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+
+            view.View.measureChild(this, this.centerView,
+                utils.layout.makeMeasureSpec(width, utils.layout.AT_MOST),
+                utils.layout.makeMeasureSpec(this.navigationBarHeight, utils.layout.AT_MOST));
+        }
+
+        this.setMeasuredDimension(0, 0);
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    public onLayout(left: number, top: number, right: number, bottom: number) {
+        view.View.layoutChild(this, this.centerView, 0, 0, right - left, this.navigationBarHeight);
+        super.onLayout(left, top, right, bottom);
+    }
+
+    protected get navigationBarHeight(): number {
+        var navController = frameModule.topmost().ios.controller;
+        if(!navController){
+            return 0;
+        }
+        var navigationBar = navController.navigationBar;
+        return (navigationBar && !navController.navigationBarHidden) ? navigationBar.frame.size.height : 0;
     }
 }
 

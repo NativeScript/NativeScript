@@ -1,0 +1,12 @@
+<Page loaded="pageLoaded">
+  <Page.actionBar>
+    <ActionBar title="Title">
+      <ActionBar.centerView>
+        <Button text="{{ centerText }}" tap="{{ centerTap }}" />
+      </ActionBar.centerView>
+    </ActionBar>
+  </Page.actionBar>
+  <StackLayout>
+    <Button text="do nothing" />
+  </StackLayout>
+</Page>

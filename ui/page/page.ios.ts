@@ -155,4 +155,14 @@ export class Page extends pageCommon.Page {
             this.requestLayout();
         }
     }
+
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
+        viewModule.View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    public onLayout(left: number, top: number, right: number, bottom: number) {
+        viewModule.View.layoutChild(this, this.actionBar, 0, 0, right - left, bottom - top);
+        super.onLayout(left, top, right, bottom);
+    }
 }

@@ -4,14 +4,16 @@
     import dependencyObservable = require("ui/core/dependency-observable");
     import bindable = require("ui/core/bindable");
     import pages = require("ui/page");
+    import contentView = require("ui/content-view");
     
-    export class ActionBar extends bindable.Bindable implements view.AddArrayFromBuilder, view.AddChildFromBuilder {
+    export class ActionBar extends view.View implements view.AddArrayFromBuilder, view.AddChildFromBuilder {
         title: string;
         icon: string;
         androidIconVisibility: string;
 
         navigationButton: NavigationButton;
         actionItems: ActionItems;
+        centerView: view.View;
 
         page: pages.Page;
 

@@ -18,7 +18,6 @@ export function buttonTap(args: observable.EventData) {
     }
 }
 
-
 var j = 0;
 export function visibilityTap(args: observable.EventData) {
     var page = <pages.Page>view.getAncestor(<view.View>args.object, "Page")

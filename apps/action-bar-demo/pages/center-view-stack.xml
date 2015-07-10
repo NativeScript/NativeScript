@@ -1,0 +1,16 @@
+<Page loaded="pageLoaded">
+  <Page.actionBar>
+    <ActionBar title="Title">
+      <ActionBar.centerView>
+        <StackLayout orientation="horizontal" verticalAlignment="center" horizontalAlignment="center">
+          <Button text="1st" />
+          <Button text="2nd" />
+          <Button text="3rd" />
+        </StackLayout>
+      </ActionBar.centerView>
+    </ActionBar>
+  </Page.actionBar>
+  <StackLayout>
+    <Button text="do nothong" />
+  </StackLayout>
+</Page>
