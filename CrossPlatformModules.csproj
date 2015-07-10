@@ -635,9 +635,6 @@
     <TypeScriptCompile Include="apps\tests\timer-tests.ts" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="libjs.d.ts" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="apps\cuteness.unoptimized\details-page.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

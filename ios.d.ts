@@ -4731,21 +4731,6 @@ declare class ACAccountStore extends NSObject {
 	static alloc(): ACAccountStore;
 	static extend(methods: any, exposedMethods?: {name?: string; protocols?: any[]; exposedMethods?: {[name: string]: string}}): any;
 }
-declare class UIEvent extends NSObject {
-	type: number;
-	subtype: number;
-	timestamp: number;
-	constructor();
-	allTouches(): NSSet;
-	touchesForWindow(window: UIWindow): NSSet;
-	touchesForView(view: UIView): NSSet;
-	touchesForGestureRecognizer(gesture: UIGestureRecognizer): NSSet;
-	init(): UIEvent;
-	static new(): UIEvent;
-	static allocWithZone(zone: any): UIEvent;
-	static alloc(): UIEvent;
-	static extend(methods: any, exposedMethods?: {name?: string; protocols?: any[]; exposedMethods?: {[name: string]: string}}): any;
-}
 declare class UIResponder extends NSObject {
 	undoManager: NSUndoManager;
 	keyCommands: NSArray;
@@ -4763,14 +4748,14 @@ declare class UIResponder extends NSObject {
 	canResignFirstResponder(): boolean;
 	resignFirstResponder(): boolean;
 	isFirstResponder(): boolean;
-	touchesBeganWithEvent(touches: NSSet, event: UIEvent): void;
-	touchesMovedWithEvent(touches: NSSet, event: UIEvent): void;
-	touchesEndedWithEvent(touches: NSSet, event: UIEvent): void;
-	touchesCancelledWithEvent(touches: NSSet, event: UIEvent): void;
-	motionBeganWithEvent(motion: number, event: UIEvent): void;
-	motionEndedWithEvent(motion: number, event: UIEvent): void;
-	motionCancelledWithEvent(motion: number, event: UIEvent): void;
-	remoteControlReceivedWithEvent(event: UIEvent): void;
+	touchesBeganWithEvent(touches: NSSet, event: any): void;
+	touchesMovedWithEvent(touches: NSSet, event: any): void;
+	touchesEndedWithEvent(touches: NSSet, event: any): void;
+	touchesCancelledWithEvent(touches: NSSet, event: any): void;
+	motionBeganWithEvent(motion: number, event: any): void;
+	motionEndedWithEvent(motion: number, event: any): void;
+	motionCancelledWithEvent(motion: number, event: any): void;
+	remoteControlReceivedWithEvent(event: any): void;
 	canPerformActionWithSender(action: any, sender: any): boolean;
 	targetForActionWithSender(action: any, sender: any): any;
 	static clearTextInputContextIdentifier(identifier: string): void;
@@ -5046,8 +5031,8 @@ declare class UIView extends UIResponder implements NSCoding, UIAppearance, UIAp
 	constructor();
 	static layerClass(): any;
 	initWithFrame(frame: CGRect): UIView;
-	hitTestWithEvent(point: CGPoint, event: UIEvent): UIView;
-	pointInsideWithEvent(point: CGPoint, event: UIEvent): boolean;
+	hitTestWithEvent(point: CGPoint, event: any): UIView;
+	pointInsideWithEvent(point: CGPoint, event: any): boolean;
 	convertPointToView(point: CGPoint, view: UIView): CGPoint;
 	convertPointFromView(point: CGPoint, view: UIView): CGPoint;
 	convertRectToView(rect: CGRect, view: UIView): CGRect;
@@ -5187,16 +5172,16 @@ declare class UIControl extends UIView {
 	touchInside: boolean;
 	constructor(frame: CGRect);
 	constructor();
-	beginTrackingWithTouchWithEvent(touch: UITouch, event: UIEvent): boolean;
-	continueTrackingWithTouchWithEvent(touch: UITouch, event: UIEvent): boolean;
-	endTrackingWithTouchWithEvent(touch: UITouch, event: UIEvent): void;
-	cancelTrackingWithEvent(event: UIEvent): void;
+	beginTrackingWithTouchWithEvent(touch: UITouch, event: any): boolean;
+	continueTrackingWithTouchWithEvent(touch: UITouch, event: any): boolean;
+	endTrackingWithTouchWithEvent(touch: UITouch, event: any): void;
+	cancelTrackingWithEvent(event: any): void;
 	addTargetActionForControlEvents(target: any, action: any, controlEvents: number): void;
 	removeTargetActionForControlEvents(target: any, action: any, controlEvents: number): void;
 	allTargets(): NSSet;
 	allControlEvents(): number;
 	actionsForTargetForControlEvent(target: any, controlEvent: number): NSArray;
-	sendActionToForEvent(action: any, target: any, event: UIEvent): void;
+	sendActionToForEvent(action: any, target: any, event: any): void;
 	sendActionsForControlEvents(controlEvents: number): void;
 	initWithFrame(frame: CGRect): UIControl;
 	init(): UIControl;
@@ -5555,8 +5540,8 @@ declare class UIApplication extends UIResponder implements UIActionSheetDelegate
 	isIgnoringInteractionEvents(): boolean;
 	openURL(url: NSURL): boolean;
 	canOpenURL(url: NSURL): boolean;
-	sendEvent(event: UIEvent): void;
-	sendActionToFromForEvent(action: any, target: any, sender: any, event: UIEvent): boolean;
+	sendEvent(event: any): void;
+	sendActionToFromForEvent(action: any, target: any, sender: any, event: any): boolean;
 	setStatusBarStyleAnimated(statusBarStyle: number, animated: boolean): void;
 	setStatusBarHiddenWithAnimation(hidden: boolean, animation: number): void;
 	setStatusBarOrientationAnimated(interfaceOrientation: number, animated: boolean): void;
@@ -5788,16 +5773,16 @@ declare class UIGestureRecognizer extends NSObject {
 	locationInView(view: UIView): CGPoint;
 	numberOfTouches(): number;
 	locationOfTouchInView(touchIndex: number, view: UIView): CGPoint;
-	ignoreTouchForEvent(touch: UITouch, event: UIEvent): void;
+	ignoreTouchForEvent(touch: UITouch, event: any): void;
 	reset(): void;
 	canPreventGestureRecognizer(preventedGestureRecognizer: UIGestureRecognizer): boolean;
 	canBePreventedByGestureRecognizer(preventingGestureRecognizer: UIGestureRecognizer): boolean;
 	shouldRequireFailureOfGestureRecognizer(otherGestureRecognizer: UIGestureRecognizer): boolean;
 	shouldBeRequiredToFailByGestureRecognizer(otherGestureRecognizer: UIGestureRecognizer): boolean;
-	touchesBeganWithEvent(touches: NSSet, event: UIEvent): void;
-	touchesMovedWithEvent(touches: NSSet, event: UIEvent): void;
-	touchesEndedWithEvent(touches: NSSet, event: UIEvent): void;
-	touchesCancelledWithEvent(touches: NSSet, event: UIEvent): void;
+	touchesBeganWithEvent(touches: NSSet, event: any): void;
+	touchesMovedWithEvent(touches: NSSet, event: any): void;
+	touchesEndedWithEvent(touches: NSSet, event: any): void;
+	touchesCancelledWithEvent(touches: NSSet, event: any): void;
 	init(): UIGestureRecognizer;
 	static new(): UIGestureRecognizer;
 	static allocWithZone(zone: any): UIGestureRecognizer;
@@ -5972,7 +5957,7 @@ declare class UIScrollView extends UIView implements NSCoding {
 	setContentOffsetAnimated(contentOffset: CGPoint, animated: boolean): void;
 	scrollRectToVisibleAnimated(rect: CGRect, animated: boolean): void;
 	flashScrollIndicators(): void;
-	touchesShouldBeginWithEventInContentView(touches: NSSet, event: UIEvent, view: UIView): boolean;
+	touchesShouldBeginWithEventInContentView(touches: NSSet, event: any, view: UIView): boolean;
 	touchesShouldCancelInContentView(view: UIView): boolean;
 	setZoomScaleAnimated(scale: number, animated: boolean): void;
 	zoomToRectAnimated(rect: CGRect, animated: boolean): void;
@@ -8838,7 +8823,7 @@ declare class UIWindow extends UIView {
 	resignKeyWindow(): void;
 	makeKeyWindow(): void;
 	makeKeyAndVisible(): void;
-	sendEvent(event: UIEvent): void;
+	sendEvent(event: any): void;
 	convertPointToWindow(point: CGPoint, window: UIWindow): CGPoint;
 	convertPointFromWindow(point: CGPoint, window: UIWindow): CGPoint;
 	convertRectToWindow(rect: CGRect, window: UIWindow): CGRect;
