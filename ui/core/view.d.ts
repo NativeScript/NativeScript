@@ -412,6 +412,8 @@ declare module "ui/core/view" {
         _removeView(view: View);
         _context: android.content.Context;
 
+        public _applyXmlAttribute(attribute: string, value: any): boolean;
+
         // TODO: Implement logic for stripping these lines out
         //@private
         _gestureObservers: Map<number, Array<gestures.GesturesObserver>>;
@@ -441,7 +443,6 @@ declare module "ui/core/view" {
 
         _updateLayout(): void;
 
-        _applyXmlAttribute(attribute, value): boolean;
 
         /**
          * Called my measure method to cache measureSpecs.
