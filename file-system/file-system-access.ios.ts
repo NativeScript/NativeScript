@@ -15,7 +15,7 @@ export class FileSystemAccess {
 
     public getLastModified(path: string): Date {
         var fileManager = NSFileManager.defaultManager();
-        var attributes = fileManager.attributesOfItemAtPathError(path, null);
+        var attributes = fileManager.attributesOfItemAtPathError(path);
 
         if (attributes) {
             return attributes.objectForKey(this.keyModificationTime);
@@ -84,10 +84,12 @@ export class FileSystemAccess {
             var exists = this.folderExists(path);
 
             if (!exists) {
-                if (!fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path, true, null, null)) {
-                    // error
+                try {
+                    fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path, true, null)
+                }
+                catch (ex) {
                     if (onError) {
-                        onError(new Error("Failed to create folder at path '" + path + "'"));
+                        onError(new Error("Failed to create folder at path '" + path + "': " + ex));
                     }
 
                     return undefined;
@@ -189,9 +191,12 @@ export class FileSystemAccess {
         var filesEnum = function (files: Array<{ path: string; name: string; extension: string }>) {
             var i;
             for (i = 0; i < files.length; i++) {
-                if (!fileManager.removeItemAtPathError(files[i].path, null)) {
+                try {
+                    fileManager.removeItemAtPathError(files[i].path);
+                }
+                catch (ex) {
                     if (onError) {
-                        onError(new Error("Failed to empty folder '" + path + "'"));
+                        onError(new Error("Failed to empty folder '" + path + "': " + ex));
                     }
 
                     return;
@@ -208,11 +213,19 @@ export class FileSystemAccess {
 
     public rename(path: string, newPath: string, onSuccess?: () => any, onError?: (error: any) => any) {
         var fileManager = NSFileManager.defaultManager();
-        if (!fileManager.moveItemAtPathToPathError(path, newPath, null)) {
+
+        try {
+            fileManager.moveItemAtPathToPathError(path, newPath);
+        }
+        catch (ex) {
             if (onError) {
-                onError(new Error("Failed to rename '" + path + "' to '" + newPath + "'"));
+                onError(new Error("Failed to rename '" + path + "' to '" + newPath + "': " + ex));
             }
-        } else if (onSuccess) {
+
+            return;
+        }
+
+        if (onSuccess) {
             onSuccess();
         }
     }
@@ -231,12 +244,18 @@ export class FileSystemAccess {
             actualEncoding = textModule.encoding.UTF_8;
         }
 
-        var nsString = NSString.stringWithContentsOfFileEncodingError(path, actualEncoding, null);
-        if (!nsString) {
+        try {
+            var nsString = NSString.stringWithContentsOfFileEncodingError(path, actualEncoding);
+        }
+        catch (ex) {
             if (onError) {
-                onError(new Error("Failed to read file at path '" + path + "'"));
+                onError(new Error("Failed to read file at path '" + path + "': " + ex));
             }
-        } else if (onSuccess) {
+
+            return;
+        }
+
+        if (onSuccess) {
             onSuccess(nsString.toString());
         }
     }
@@ -250,11 +269,18 @@ export class FileSystemAccess {
         }
 
         // TODO: verify the useAuxiliaryFile parameter should be false
-        if (!nsString.writeToFileAtomicallyEncodingError(path, false, actualEncoding, null)) {
+        try {
+            nsString.writeToFileAtomicallyEncodingError(path, false, actualEncoding);
+        }
+        catch (ex) {
             if (onError) {
-                onError(new Error("Failed to write to file '" + path + "'"));
+                onError(new Error("Failed to write to file '" + path + "': " + ex));
             }
-        } else if (onSuccess) {
+
+            return;
+        }
+
+        if (onSuccess) {
             onSuccess();
         }
     }
@@ -267,7 +293,7 @@ export class FileSystemAccess {
         return url.path;
     }
 
-    // TODO: This method is the same as in the iOS implementation. 
+    // TODO: This method is the same as in the iOS implementation.
     // Make it in a separate file / module so it can be reused from both implementations.
     private getFileExtension(path: string): string {
         // TODO [For Panata]: The definitions currently specify "any" as a return value of this method
@@ -289,25 +315,29 @@ export class FileSystemAccess {
 
     private deleteEntity(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
         var fileManager = NSFileManager.defaultManager();
-        if (!fileManager.removeItemAtPathError(path, null)) {
+        try {
+            fileManager.removeItemAtPathError(path);
+        }
+        catch (ex) {
             if (onError) {
-                onError(new Error("Failed to delete file at path '" + path + "'"));
+                onError(new Error("Failed to delete file at path '" + path + "': " + ex));
             }
-        } else {
-            if (onSuccess) {
-                onSuccess();
-            }
+        }
+
+        if (onSuccess) {
+            onSuccess();
         }
     }
 
     private enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {
         try {
             var fileManager = NSFileManager.defaultManager();
-            var files = fileManager.contentsOfDirectoryAtPathError(path, null);
-
-            if (!files) {
+            try {
+                var files = fileManager.contentsOfDirectoryAtPathError(path);
+            }
+            catch (ex) {
                 if (onError) {
-                    onError(new Error("Failed to enum files for forlder '" + path + "'"));
+                    onError(new Error("Failed to enum files for folder '" + path + "': " + ex));
                 }
 
                 return;
