@@ -171,6 +171,7 @@
     <TypeScriptCompile Include="apps\tests\file-name-resolver-tests\file-name-resolver-tests.ts" />
     <TypeScriptCompile Include="apps\tests\frame-tests.ts" />
     <TypeScriptCompile Include="apps\tests\gestures-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\fetch-tests.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\dock-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\pages\app.ts" />
     <TypeScriptCompile Include="apps\tests\pages\file-load-test.ts" />
