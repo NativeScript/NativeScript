@@ -12,7 +12,7 @@
 
         navigationButton: NavigationButton;
         actionItems: ActionItems;
-        centerView: view.View;
+        titleView: view.View;
 
         page: pages.Page;
 

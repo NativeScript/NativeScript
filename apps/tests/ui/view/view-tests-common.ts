@@ -127,18 +127,18 @@ export var test_event_LoadedUnloaded_IsRaised = function () {
         var layoutUnloaded = false,
             buttonUnloaded = false;
 
-        views[1].on(viewModule.View.unloadedEvent,(data) => {
+        views[1].on(viewModule.View.unloadedEvent, (data) => {
             layoutUnloaded = true;
         });
 
-        views[2].on(viewModule.View.unloadedEvent,(data) => {
+        views[2].on(viewModule.View.unloadedEvent, (data) => {
             buttonUnloaded = true;
         });
 
         var newButton = new button.Button(),
             buttonLoaded = false;
 
-        newButton.on(viewModule.View.loadedEvent,(data) => {
+        newButton.on(viewModule.View.loadedEvent, (data) => {
             buttonLoaded = true;
         });
 
@@ -598,7 +598,7 @@ function _createLabelWithBorder(): viewModule.View {
 
 export var testIsVisible = function () {
     var lbl = new label.Label();
-    
+
     helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
         TKUnit.assert(lbl.visibility === enums.Visibility.visible, "Actual: " + lbl.visibility + "; Expected: " + enums.Visibility.visible);
         TKUnit.assert(lbl._isVisible, "Actual: " + lbl._isVisible + "; Expected: true;");

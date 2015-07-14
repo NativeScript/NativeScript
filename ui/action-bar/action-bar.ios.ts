@@ -25,9 +25,9 @@ export class ActionBar extends common.ActionBar {
         // Set Title
         navigationItem.title = this.title;
 
-        if (this.centerView && this.centerView.ios) {
-            console.log("setting center view: " + this.centerView.ios);
-            navigationItem.titleView = this.centerView.ios;
+        if (this.titleView && this.titleView.ios) {
+            console.log("setting center view: " + this.titleView.ios);
+            navigationItem.titleView = this.titleView.ios;
         }
 
         // Find previous ViewController in the navigation stack
@@ -125,10 +125,10 @@ export class ActionBar extends common.ActionBar {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-        if (this.centerView) {
+        if (this.titleView) {
             var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
 
-            view.View.measureChild(this, this.centerView,
+            view.View.measureChild(this, this.titleView,
                 utils.layout.makeMeasureSpec(width, utils.layout.AT_MOST),
                 utils.layout.makeMeasureSpec(this.navigationBarHeight, utils.layout.AT_MOST));
         }
@@ -138,7 +138,7 @@ export class ActionBar extends common.ActionBar {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
-        view.View.layoutChild(this, this.centerView, 0, 0, right - left, this.navigationBarHeight);
+        view.View.layoutChild(this, this.titleView, 0, 0, right - left, this.navigationBarHeight);
         super.onLayout(left, top, right, bottom);
     }
 

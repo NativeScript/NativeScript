@@ -32,7 +32,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
     private _actionItems: ActionItems;
     private _navigationButton: NavigationButton;
     private _page: pages.Page;
-    private _centerView: view.View;
+    private _titleView: view.View;
 
     get title(): string {
         return this._getValue(ActionBar.titleProperty);
@@ -81,23 +81,23 @@ export class ActionBar extends view.View implements dts.ActionBar {
         throw new Error("actionItems property is read-only");
     }
 
-    get centerView(): view.View {
-        return this._centerView;
+    get titleView(): view.View {
+        return this._titleView;
     }
-    set centerView(value: view.View) {
-        if (this._centerView !== value) {
-            if (this._centerView) {
-                this._removeView(this._centerView);
-                this._centerView.style._resetValue(style.horizontalAlignmentProperty, observable.ValueSource.Inherited);
-                this._centerView.style._resetValue(style.verticalAlignmentProperty, observable.ValueSource.Inherited);
+    set titleView(value: view.View) {
+        if (this._titleView !== value) {
+            if (this._titleView) {
+                this._removeView(this._titleView);
+                this._titleView.style._resetValue(style.horizontalAlignmentProperty, observable.ValueSource.Inherited);
+                this._titleView.style._resetValue(style.verticalAlignmentProperty, observable.ValueSource.Inherited);
             }
 
-            this._centerView = value;
+            this._titleView = value;
 
-            if (this._centerView) {
-                this._centerView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, observable.ValueSource.Inherited);
-                this._centerView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, observable.ValueSource.Inherited);
-                this._addView(this._centerView);
+            if (this._titleView) {
+                this._titleView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, observable.ValueSource.Inherited);
+                this._titleView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, observable.ValueSource.Inherited);
+                this._addView(this._titleView);
             }
 
             this.updateActionBar();
@@ -118,7 +118,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
     }
 
     get _childrenCount(): number {
-        return this.centerView ? 1 : 0;
+        return this.titleView ? 1 : 0;
     }
 
     constructor() {
@@ -160,7 +160,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
         }
 
         if (value instanceof view.View) {
-            this.centerView = value;
+            this.titleView = value;
         }
     }
 
@@ -174,8 +174,8 @@ export class ActionBar extends view.View implements dts.ActionBar {
     }
 
     public _eachChildView(callback: (child: view.View) => boolean) {
-        if (this.centerView) {
-            callback(this.centerView);
+        if (this.titleView) {
+            callback(this.titleView);
         }
     }
 

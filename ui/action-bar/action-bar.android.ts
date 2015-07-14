@@ -51,7 +51,7 @@ export class ActionBar extends common.ActionBar {
         this._addActionItems(menu);
 
         // Set title
-        this._updateTitleAndCenterView(actionBar);
+        this._updateTitleAndTitleView(actionBar);
 
         // Set home icon
         this._updateIcon(actionBar);
@@ -101,9 +101,9 @@ export class ActionBar extends common.ActionBar {
         actionBar.setDisplayShowHomeEnabled(visibility);
     }
 
-    public _updateTitleAndCenterView(actionBar: android.app.ActionBar) {
-        if (this.centerView) {
-            actionBar.setCustomView(this.centerView.android);
+    public _updateTitleAndTitleView(actionBar: android.app.ActionBar) {
+        if (this.titleView) {
+            actionBar.setCustomView(this.titleView.android);
             actionBar.setDisplayShowCustomEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
@@ -112,7 +112,7 @@ export class ActionBar extends common.ActionBar {
             actionBar.setDisplayShowCustomEnabled(false);
             actionBar.setDisplayShowTitleEnabled(true);
 
-            // No center view - show the title
+            // No title view - show the title
             var title = this.title;
             if (types.isDefined(title)) {
                 actionBar.setTitle(title);
@@ -143,7 +143,7 @@ export class ActionBar extends common.ActionBar {
 
     public _onTitlePropertyChanged() {
         if (frame.topmost().currentPage === this.page) {
-            this._updateTitleAndCenterView(frame.topmost().android.actionBar);
+            this._updateTitleAndTitleView(frame.topmost().android.actionBar);
         }
     }
 

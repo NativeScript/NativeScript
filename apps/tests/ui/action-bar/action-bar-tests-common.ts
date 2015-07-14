@@ -50,7 +50,7 @@ export function test_actionBar_inherit_bindingContext_inXML() {
 export function test_actionItem_inherit_bindingContext_inXML() {
     var p = <PageModule.Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionBar.actionItems>" +
-        "<ActionItem text=\"{{ myProp }} \" />" + 
+        "<ActionItem text=\"{{ myProp }} \" />" +
         "</ActionBar.actionItems> </ActionBar> </Page.actionBar> </Page>");
     p.bindingContext = { myProp: "success" };
 
@@ -70,35 +70,35 @@ export function test_navigationButton_inherit_bindingContext_inXML() {
     TKUnit.assertEqual(navButton.text, "success", "actionItem.text");
 };
 
-export function test_centerView_inherit_bindingContext_inXML() {
+export function test_titleView_inherit_bindingContext_inXML() {
     var p = <PageModule.Page>builder.parse(
-        "<Page> <Page.actionBar> <ActionBar> <ActionBar.centerView>" +
+        "<Page> <Page.actionBar> <ActionBar> <ActionBar.titleView>" +
         "<Button text=\"{{ myProp }} \" />" +
-        "</ActionBar.centerView> </ActionBar> </Page.actionBar> </Page>");
+        "</ActionBar.titleView> </ActionBar> </Page.actionBar> </Page>");
     p.bindingContext = { myProp: "success" };
 
-    var centerBtn = <button.Button>p.actionBar.centerView;
+    var centerBtn = <button.Button>p.actionBar.titleView;
     TKUnit.assert(centerBtn instanceof button.Button, "cneterView not loaded correctly");
     TKUnit.assertEqual(centerBtn.text, "success", "actionItem.text");
 };
 
-export function test_centerView_inXML() {
+export function test_titleView_inXML() {
     var p = <PageModule.Page>builder.parse(
-        "<Page> <Page.actionBar> <ActionBar> <ActionBar.centerView>" +
+        "<Page> <Page.actionBar> <ActionBar> <ActionBar.titleView>" +
         "<Button/>" +
-        "</ActionBar.centerView> </ActionBar> </Page.actionBar> </Page>");
+        "</ActionBar.titleView> </ActionBar> </Page.actionBar> </Page>");
 
-    var centerBtn = <button.Button>p.actionBar.centerView;
+    var centerBtn = <button.Button>p.actionBar.titleView;
     TKUnit.assert(centerBtn instanceof button.Button, "cneterView not loaded correctly");
 };
 
-export function test_centerView_inXML_short_definition() {
+export function test_titleView_inXML_short_definition() {
     var p = <PageModule.Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar>" +
         "<Button/>" +
         "</ActionBar> </Page.actionBar> </Page>");
 
-    var centerBtn = <button.Button>p.actionBar.centerView;
+    var centerBtn = <button.Button>p.actionBar.titleView;
     TKUnit.assert(centerBtn instanceof button.Button, "cneterView not loaded correctly");
 };
 

@@ -1,7 +1,7 @@
 <Page loaded="pageLoaded">
   <Page.actionBar>
     <ActionBar title="Title">
-      <ActionBar.centerView>
+      <ActionBar.titleView>
         <SegmentedBar selectedIndex="{{ index }}">
           <SegmentedBar.items>
             <SegmentedBarItem title="Item 1" />
@@ -9,7 +9,7 @@
             <SegmentedBarItem title="Item 3" />
           </SegmentedBar.items>
         </SegmentedBar>
-      </ActionBar.centerView>
+      </ActionBar.titleView>
     </ActionBar>
   </Page.actionBar>
   <StackLayout>
