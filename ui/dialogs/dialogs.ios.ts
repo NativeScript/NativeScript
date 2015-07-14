@@ -326,12 +326,12 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
                 userNameTextField = alert.textFieldAtIndex(0);
                 userNameTextField.text = types.isString(options.userName) ? options.userName : "";
 
-                userNameTextField = alert.textFieldAtIndex(1);
-                userNameTextField.text = types.isString(options.password) ? options.password : "";
+                passwordTextField = alert.textFieldAtIndex(1);
+                passwordTextField.text = types.isString(options.password) ? options.password : "";
 
                 // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
                 var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
-                    resolve({ result: getDialogResult(alert.tag, index), userName: userNameTextField.text, password: userNameTextField.text });
+                    resolve({ result: getDialogResult(alert.tag, index), userName: userNameTextField.text, password: passwordTextField.text });
                     // Remove the local variable for the delegate.
                     delegate = undefined;
                 });
