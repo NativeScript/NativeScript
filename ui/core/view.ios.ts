@@ -179,7 +179,7 @@ export class View extends viewCommon.View {
         // When in landscape in iOS 7 there is transformation on the first subview of the window so we set frame to its subview.
         // in iOS 8 we set frame to subview again otherwise we get clipped.
         var nativeView: UIView;
-        if (!this.parent && this._nativeView.subviews.count > 0) {
+        if (!this.parent && this._nativeView.subviews.count > 0 && !(<any>this)._isModal) {
             trace.write(this + " has no parent. Setting frame to first child instead.", trace.categories.Layout);
             nativeView = (<UIView>this._nativeView.subviews[0]);
         }
