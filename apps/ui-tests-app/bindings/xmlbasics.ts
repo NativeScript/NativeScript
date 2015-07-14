@@ -10,8 +10,8 @@ export function stack0Loaded(args: observable.EventData) {
     var button = stack0.getViewById<textFieldModule.TextField>("btn");
     var bindingOptions = {
         sourceProperty: "textSource",
-        targetProperty: "text",
-        twoWay: true
+        targetProperty: "text"// ,
+        // twoWay: true
     };
     target.bind(bindingOptions, source);
     source.set("textSource", "Text");

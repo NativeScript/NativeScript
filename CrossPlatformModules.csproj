@@ -241,6 +241,9 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-view.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\label.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\button.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\web-view\webview.ts">
+	  <DependentUpon>webview.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="es-collections.d.ts" />
     <TypeScriptCompile Include="es6-promise.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.d.ts" />
@@ -736,6 +739,7 @@
     <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
     <Content Include="apps\ui-tests-app\pages\text\label.xml" />
     <Content Include="apps\ui-tests-app\pages\text\button.xml" />
+	<Content Include="apps\ui-tests-app\web-view\webview.xml" />
     <Content Include="js-libs\reworkcss-value\reworkcss-value.js" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
