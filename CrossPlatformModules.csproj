@@ -61,10 +61,21 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <ItemGroup>
-    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view-stack.ts" />
-    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view-segmented.ts" />
-    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view.ts" />
-    <TypeScriptCompile Include="apps\action-bar-demo\pages\data-binding.ts" />
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\action-items-text.ts">
+      <DependentUpon>action-items-text.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view-stack.ts">
+      <DependentUpon>center-view-stack.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view-segmented.ts">
+      <DependentUpon>center-view-segmented.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view.ts">
+      <DependentUpon>center-view.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\data-binding.ts">
+      <DependentUpon>data-binding.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\cuteness.unoptimized\app.ts" />
     <TypeScriptCompile Include="apps\cuteness.unoptimized\details-page.ts">
       <DependentUpon>details-page.xml</DependentUpon>
@@ -83,10 +94,15 @@
     <TypeScriptCompile Include="apps\action-bar-demo\main-page.ts">
       <DependentUpon>main-page.xml</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\action-bar-demo\pages\action-items-text.ts" />
-    <TypeScriptCompile Include="apps\action-bar-demo\pages\navigation-button.ts" />
-    <TypeScriptCompile Include="apps\action-bar-demo\pages\action-items-icon.ts" />
-    <TypeScriptCompile Include="apps\action-bar-demo\pages\page-title-icon.ts" />
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\navigation-button.ts">
+      <DependentUpon>navigation-button.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\action-items-icon.ts">
+      <DependentUpon>action-items-icon.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\page-title-icon.ts">
+      <DependentUpon>page-title-icon.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\gallery-app\views\list-picker.ts">
       <DependentUpon>list-picker.xml</DependentUpon>
     </TypeScriptCompile>
@@ -172,6 +188,9 @@
     <TypeScriptCompile Include="apps\tests\fps-meter-tests.ts" />
     <TypeScriptCompile Include="apps\tests\trace-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui-test.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\action-bar\action-bar-tests-common.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\action-bar\action-bar-tests.android.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\action-bar\action-bar-tests.ios.ts" />
     <TypeScriptCompile Include="apps\tests\ui\bindingContext_testPage.ts">
       <DependentUpon>bindingContext_testPage.xml</DependentUpon>
     </TypeScriptCompile>
@@ -1728,7 +1747,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

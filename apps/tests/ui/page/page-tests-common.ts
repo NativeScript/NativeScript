@@ -27,89 +27,11 @@ import LabelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import helper = require("../helper");
 import view = require("ui/core/view");
-import builder = require("ui/builder");
-import actionBar = require("ui/action-bar");
 
 export function addLabelToPage(page: PageModule.Page, text?: string) {
     var label = new LabelModule.Label();
     label.text = text || "The quick brown fox jumps over the lazy dog.";
     page.content = label;
-}
-
-export function test_menuItem_inherit_bindingContext() {
-
-    var page: PageModule.Page;
-    var label: LabelModule.Label;
-    var context = { text: "item" };
-
-    var pageFactory = function (): PageModule.Page {
-        page = new PageModule.Page();
-        page.bindingContext = context;
-        var menuItem = new actionBar.ActionItem();
-
-        menuItem.bind({
-            sourceProperty: "text",
-            targetProperty: "text"
-        });
-
-        page.actionBar.actionItems.addItem(menuItem);
-
-        label = new LabelModule.Label();
-        label.text = "Text";
-        page.content = label;
-        return page;
-    };
-
-    helper.navigate(pageFactory);
-
-    try {
-        TKUnit.assertEqual(page.actionBar.actionItems.getItemAt(0).text, "item", "menuItem.text should equal to 'item'");
-    }
-    finally {
-        helper.goBack();
-    }
-}
-
-export function test_menuItem_inherit_bindingContext_inXML() {
-    var p = <PageModule.Page>builder.parse("<Page><Page.actionItems><ActionItem text=\"{{ myProp }} \" /></Page.actionItems></Page>");
-    p.bindingContext = { myProp: "success" };
-
-    var menuItem = p.actionBar.actionItems.getItemAt(0);
-
-    TKUnit.assertEqual(menuItem.text, "success", "menuItem.text");
-};
-
-export function test_Setting_ActionItems_doesnt_thrown() {
-
-    var page: PageModule.Page;
-    var label: LabelModule.Label;
-    var gotException = false;
-
-    var pageFactory = function (): PageModule.Page {
-        page = new PageModule.Page();
-        var menuItem = new actionBar.ActionItem();
-        menuItem.text = "Item";
-        page.actionBar.actionItems.addItem(menuItem);
-
-        label = new LabelModule.Label();
-        label.text = "Text";
-        page.content = label;
-        return page;
-    };
-
-    try {
-        helper.navigate(pageFactory);
-    }
-    catch (e) {
-        gotException = true;
-    }
-
-    try {
-        TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
-    }
-    finally {
-        helper.goBack();
-    }
 }
 
 export function test_AfterPageLoaded_is_called_NativeInstance_is_created() {

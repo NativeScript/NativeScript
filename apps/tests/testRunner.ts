@@ -23,6 +23,7 @@ function isRunningOnEmulator(): boolean {
 }
 
 export var allTests = {};
+allTests["ACTION-BAR"] = require("./ui/action-bar/action-bar-tests");
 allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
 allTests["APPLICATION"] = require("./application-tests");
 allTests["DOCKLAYOUT"] = require("./layouts/dock-layout-tests");

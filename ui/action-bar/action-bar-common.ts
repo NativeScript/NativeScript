@@ -93,13 +93,13 @@ export class ActionBar extends view.View implements dts.ActionBar {
             }
 
             this._centerView = value;
-            
+
             if (this._centerView) {
                 this._centerView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, observable.ValueSource.Inherited);
                 this._centerView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, observable.ValueSource.Inherited);
                 this._addView(this._centerView);
             }
-            
+
             this.updateActionBar();
         }
     }
@@ -288,11 +288,23 @@ export class ActionItemBase extends bindable.Bindable implements dts.ActionItemB
         this._setValue(ActionItemBase.iconProperty, value);
     }
 
+    private _actionBar: ActionBar;
+    get actionBar(): ActionBar {
+        return this._actionBar;
+    }
+    set actionBar(value: ActionBar) {
+        if (value !== this._actionBar) {
+            this._actionBar = value;
+            if (this._actionBar) {
+                this.bindingContext = this._actionBar.bindingContext;
+            }
+        }
+    }
+
     public _raiseTap() {
         this._emit(ActionItem.tapEvent);
     }
 
-    actionBar: ActionBar;
 }
 
 export class ActionItem extends ActionItemBase {

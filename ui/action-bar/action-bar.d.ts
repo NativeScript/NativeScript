@@ -4,8 +4,7 @@
     import dependencyObservable = require("ui/core/dependency-observable");
     import bindable = require("ui/core/bindable");
     import pages = require("ui/page");
-    import contentView = require("ui/content-view");
-    
+
     export class ActionBar extends view.View implements view.AddArrayFromBuilder, view.AddChildFromBuilder {
         title: string;
         icon: string;
@@ -21,7 +20,7 @@
 
         updateActionBar();
 
-         //@private
+        //@private
         _updateAndroidActionBar(menu: android.view.IMenu);
         _onAndroidItemSelected(itemId: number): boolean
 

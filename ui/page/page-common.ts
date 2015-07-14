@@ -92,9 +92,11 @@ export class Page extends contentView.ContentView implements dts.Page {
         if (this._actionBar !== value) {
             if (this._actionBar) {
                 this._actionBar.page = undefined;
+                this._removeView(this._actionBar);
             }
             this._actionBar = value;
             this._actionBar.page = this;
+            this._addView(this._actionBar);
         }
     }
 
@@ -124,7 +126,7 @@ export class Page extends contentView.ContentView implements dts.Page {
             cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName.replace("~/", ""));
         }
         if (!this._cssFiles[cssFileName]) {
-        if (fs.File.exists(cssFileName)) {
+            if (fs.File.exists(cssFileName)) {
                 new fileSystemAccess.FileSystemAccess().readText(cssFileName, r => {
                     this._addCssInternal(r, cssFileName);
                     this._cssFiles[cssFileName] = true;
@@ -247,5 +249,14 @@ export class Page extends contentView.ContentView implements dts.Page {
 
         resetCssValuesFunc(this);
         view.eachDescendant(this, resetCssValuesFunc);
+    }
+
+    public _addViewToNativeVisualTree(view: view.View): boolean {
+        // ActionBar is added to the native visual tree by default
+        if (view === this.actionBar) {
+            return true;
+        }
+
+        return super._addViewToNativeVisualTree(view);
     }
 }

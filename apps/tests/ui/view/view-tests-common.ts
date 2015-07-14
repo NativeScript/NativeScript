@@ -27,7 +27,8 @@ export var test_eachDescendant = function () {
         }
 
         viewModule.eachDescendant(frame.topmost(), callback);
-        TKUnit.assert(counter === 2);
+        // Descendants: page, actionBar, button
+        TKUnit.assertEqual(counter, 3, "descendants");
     }
 
     helper.do_PageTest_WithButton(test);
