@@ -277,7 +277,7 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\label.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\button.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\web-view\webview.ts">
-	  <DependentUpon>webview.xml</DependentUpon>
+      <DependentUpon>webview.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="es-collections.d.ts" />
     <TypeScriptCompile Include="es6-promise.d.ts" />
@@ -436,6 +436,10 @@
     <TypeScriptCompile Include="ui\action-bar\action-bar.ios.ts">
       <DependentUpon>action-bar.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\html-view\html-view-common.ts" />
+    <TypeScriptCompile Include="ui\html-view\html-view.android.ts" />
+    <TypeScriptCompile Include="ui\html-view\html-view.d.ts" />
+    <TypeScriptCompile Include="ui\html-view\html-view.ios.ts" />
     <TypeScriptCompile Include="ui\repeater\repeater.ts">
       <DependentUpon>repeater.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -797,7 +801,7 @@
     <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
     <Content Include="apps\ui-tests-app\pages\text\label.xml" />
     <Content Include="apps\ui-tests-app\pages\text\button.xml" />
-	<Content Include="apps\ui-tests-app\web-view\webview.xml" />
+    <Content Include="apps\ui-tests-app\web-view\webview.xml" />
     <Content Include="js-libs\reworkcss-value\reworkcss-value.js" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -1683,6 +1687,7 @@
     <Content Include="js-libs\reworkcss-value\package.json" />
     <Content Include="js-libs\reworkcss-value\Readme.md" />
     <Content Include="ui\action-bar\package.json">
+    <Content Include="ui\html-view\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -1747,7 +1752,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
