@@ -443,7 +443,6 @@ declare module "ui/core/view" {
 
         _updateLayout(): void;
 
-
         /**
          * Called my measure method to cache measureSpecs.
          */
