@@ -2,6 +2,7 @@
  * iOS specific timer functions implementation.
  */
 var timeoutCallbacks = {};
+var timerId = 0;
 
 class TimerTargetImpl extends NSObject {
     static new(): TimerTargetImpl {
@@ -25,7 +26,8 @@ class TimerTargetImpl extends NSObject {
 }
 
 function createTimerAndGetId(callback: Function, milliseconds: number, shouldRepeat: boolean): number {
-    var id = new Date().getUTCMilliseconds();
+    timerId++;
+    var id = timerId;
 
     var timerTarget = TimerTargetImpl.new().initWithCallback(callback);
     var timer = NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(milliseconds / 1000, timerTarget, "tick", null, shouldRepeat);
@@ -44,7 +46,7 @@ export function setTimeout(callback: Function, milliseconds = 0): number {
 export function clearTimeout(id: number): void {
     if (timeoutCallbacks[id]) {
         timeoutCallbacks[id].invalidate();
-        timeoutCallbacks[id] = null;
+        delete timeoutCallbacks[id];
     }
 }
 

@@ -3,24 +3,26 @@
  */
 var timeoutHandler;
 var timeoutCallbacks = {};
+var timerId = 0;
 
-function createHadlerAndGetId(): number {
+function createHandlerAndGetId(): number {
     if (!timeoutHandler) {
         timeoutHandler = new android.os.Handler(android.os.Looper.getMainLooper());
     }
 
-    return new Date().getUTCMilliseconds();
+    timerId++;
+    return timerId;
 }
 
 export function setTimeout(callback: Function, milliseconds = 0): number {
-    var id = createHadlerAndGetId();
+    var id = createHandlerAndGetId();
 
     var runnable = new java.lang.Runnable({
         run: () => {
             callback();
 
-            if (timeoutCallbacks && timeoutCallbacks[id]) {
-                timeoutCallbacks[id] = null;
+            if (timeoutCallbacks[id]) {
+                delete timeoutCallbacks[id];
             }
         }
     });
@@ -37,12 +39,12 @@ export function setTimeout(callback: Function, milliseconds = 0): number {
 export function clearTimeout(id: number): void {
     if (timeoutCallbacks[id]) {
         timeoutHandler.removeCallbacks(timeoutCallbacks[id]);
-        timeoutCallbacks[id] = null;
+        delete timeoutCallbacks[id];
     }
 }
 
 export function setInterval(callback: Function, milliseconds = 0): number {
-    var id = createHadlerAndGetId();
+    var id = createHandlerAndGetId();
     var handler = timeoutHandler;
 
     var runnable = new java.lang.Runnable({
