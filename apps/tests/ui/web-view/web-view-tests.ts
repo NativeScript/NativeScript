@@ -37,7 +37,7 @@ export var testLoadExistingUrl = function () {
         newPage.content = webView;
         return newPage;
     };
-    
+
     helper.navigate(pageFactory);
 
     var testFinished = false;
@@ -62,14 +62,14 @@ export var testLoadExistingUrl = function () {
         }
         //console.log(message);
     });
-    webView.url = "https://httpbin.org/html";
+    webView.url = "http://nsbuild01.telerik.com/docs/";
 
     TKUnit.wait(4);
 
     helper.goBack();
 
     if (testFinished) {
-        TKUnit.assert(actualUrl === "https://httpbin.org/html", "args.url should equal https://httpbin.org/html");
+        TKUnit.assert(actualUrl === "http://nsbuild01.telerik.com/docs/", "args.url should equal http://nsbuild01.telerik.com/docs/");
         TKUnit.assert(actualError === undefined, actualError);
     }
     else {
