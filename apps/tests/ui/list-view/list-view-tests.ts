@@ -580,6 +580,33 @@ export function test_bindingToParentObjectWithSpacesInIndexer() {
     helper.buildUIAndRunTest(listView, testAction);
 }
 
+export function test_ConverterIsCalledJustOnce_onAddingItemsToListView() {
+    var listView = new listViewModule.ListView();
+    var converterCalledCounter = 0;
+
+    var testConverter = function (value) {
+        converterCalledCounter++;
+        return value;
+    }
+
+    app.resources["testConverter"] = testConverter;
+
+    function testAction(views: Array<viewModule.View>) {
+        var listViewModel = new observable.Observable();
+        listViewModel.set("items", [1, 2, 3]);
+        listView.bindingContext = listViewModel;
+
+        listView.bind({ sourceProperty: "items", targetProperty: "items" });
+        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ $value, $value | testConverter }}\" />";
+
+        TKUnit.wait(ASYNC);
+
+        TKUnit.assertEqual(converterCalledCounter, listViewModel.get("items").length, "Converter should be called once for every item.");
+    }
+
+    helper.buildUIAndRunTest(listView, testAction);
+}
+
 export function test_no_memory_leak_when_items_is_regular_array() {
     var createFunc = function (): listViewModule.ListView {
         var listView = new listViewModule.ListView();
