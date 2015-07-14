@@ -140,7 +140,7 @@ class PageFragmentBody extends android.app.Fragment {
 
         var page: pages.Page = this.entry.resolvedPage;
 
-        page.actionBar._updateAndroidActionBar(menu);
+        page.actionBar._updateAndroid(menu);
     }
 
     onOptionsItemSelected(item: android.view.IMenuItem) {

@@ -23,7 +23,7 @@ export class ActionItem extends common.ActionItemBase implements dts.ActionItem 
 }
 
 export class ActionBar extends common.ActionBar {
-    public updateActionBar() {
+    public update() {
         // Page should be attached to frame to update the action bar.
         if (!(this.page && this.page.parent)) {
             return;

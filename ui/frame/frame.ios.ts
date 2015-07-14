@@ -196,7 +196,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             throw new Error("Page is already shown on another frame.");
         }
 
-        newPage.actionBar.updateActionBar();
+        newPage.actionBar.update();
     }
 
     public navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {

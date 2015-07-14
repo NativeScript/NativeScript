@@ -49,7 +49,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
                 this._navigationButton.actionBar = this;
             }
 
-            this.updateActionBar();
+            this.update();
         }
     }
 
@@ -79,7 +79,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
                 this._addView(this._titleView);
             }
 
-            this.updateActionBar();
+            this.update();
         }
     }
 
@@ -111,7 +111,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
 
     public static onTitleChanged
 
-    public updateActionBar() {
+    public update() {
         // 
     }
 
@@ -119,7 +119,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
         //
     }
 
-    public _updateAndroidActionBar(menu: android.view.IMenu) {
+    public _updateAndroid(menu: android.view.IMenu) {
         //
     }
 
@@ -232,7 +232,7 @@ export class ActionItems implements dts.ActionItems {
 
     private invalidate() {
         if (this._actionBar) {
-            this._actionBar.updateActionBar();
+            this._actionBar.update();
         }
     }
 }
@@ -249,7 +249,7 @@ export class ActionItemBase extends bindable.Bindable implements dts.ActionItemB
     private static onItemChanged(data: dependencyObservable.PropertyChangeData) {
         var menuItem = <ActionItemBase>data.object;
         if (menuItem.actionBar) {
-            menuItem.actionBar.updateActionBar();
+            menuItem.actionBar.update();
         }
     }
 

@@ -18,10 +18,10 @@
 
         shouldShow(): boolean
 
-        updateActionBar();
+        update();
 
         //@private
-        _updateAndroidActionBar(menu: android.view.IMenu);
+        _updateAndroid(menu: android.view.IMenu);
         _onAndroidItemSelected(itemId: number): boolean
 
         _addArrayFromBuilder(name: string, value: Array<any>): void;

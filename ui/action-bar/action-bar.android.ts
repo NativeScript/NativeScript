@@ -81,7 +81,7 @@ export class ActionBar extends common.ActionBar {
         this._android = new AndroidActionBarSettings(this);
     }
 
-    public updateActionBar() {
+    public update() {
         if (this.page && this.page.frame && this.page.frame.android && this.page.frame.android.activity) {
             this.page.frame.android.activity.invalidateOptionsMenu();
         }
@@ -102,7 +102,7 @@ export class ActionBar extends common.ActionBar {
         return false;
     }
 
-    public _updateAndroidActionBar(menu: android.view.IMenu) {
+    public _updateAndroid(menu: android.view.IMenu) {
         var actionBar: android.app.ActionBar = frame.topmost().android.actionBar;
 
         this._addActionItems(menu);
