@@ -2,9 +2,9 @@
   <Page.actionBar>
     <ActionBar title="Title">
       <ActionBar.actionItems>
-        <ActionItem text="left"  tap="leftTap"  iosPosition="left"/>
-        <ActionItem text="right" tap="rightTap" iosPosition="right"/>
-        <ActionItem text="pop"   tap="popTap"   iosPosition="right"  androidPosition="popup"/>
+        <ActionItem text="left"  tap="leftTap"  ios.position="left"/>
+        <ActionItem text="right" tap="rightTap" ios.position="right"/>
+        <ActionItem text="pop"   tap="popTap"   ios.position="right"  android.position="popup"/>
       </ActionBar.actionItems>
     </ActionBar>
   </Page.actionBar>

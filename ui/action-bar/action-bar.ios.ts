@@ -1,5 +1,5 @@
 ﻿import common = require("ui/action-bar/action-bar-common");
-import definition = require("ui/action-bar");
+import dts = require("ui/action-bar");
 import imageSource = require("image-source");
 import frameModule = require("ui/frame");
 import enums = require("ui/enums");
@@ -8,6 +8,19 @@ import utils = require("utils/utils");
 
 declare var exports;
 require("utils/module-merge").merge(common, exports);
+
+export class ActionItem extends common.ActionItemBase implements dts.ActionItem {
+    private _ios: dts.IOSActionItemSettings = { position: enums.IOSActionItemPosition.left };
+    public get ios(): dts.IOSActionItemSettings {
+        return this._ios;
+    }
+    public set ios(value: dts.IOSActionItemSettings) {
+        throw new Error("ActionItem.android is read-only");
+    }
+
+    // Not used in IOS
+    public android: dts.AndroidActionItemSettings;
+}
 
 export class ActionBar extends common.ActionBar {
     public updateActionBar() {
@@ -75,7 +88,7 @@ export class ActionBar extends common.ActionBar {
 
         for (var i = 0; i < items.length; i++) {
             var barButtonItem = this.createBarButtonItem(items[i]);
-            if (items[i].iosPosition === enums.IOSActionItemPosition.left) {
+            if (items[i].ios.position === enums.IOSActionItemPosition.left) {
                 leftBarItems.push(barButtonItem);
             }
             else {
@@ -96,7 +109,7 @@ export class ActionBar extends common.ActionBar {
         navigationItem.setRightBarButtonItemsAnimated(rightArray, true);
     }
 
-    private createBarButtonItem(item: common.ActionItemBase): UIBarButtonItem {
+    private createBarButtonItem(item: dts.ActionItem): UIBarButtonItem {
         var tapHandler = TapBarItemHandlerImpl.new().initWithOwner(item);
         // associate handler with menuItem or it will get collected by JSC.
         (<any>item).handler = tapHandler;
@@ -144,7 +157,7 @@ export class ActionBar extends common.ActionBar {
 
     protected get navigationBarHeight(): number {
         var navController = frameModule.topmost().ios.controller;
-        if(!navController){
+        if (!navController) {
             return 0;
         }
         var navigationBar = navController.navigationBar;
@@ -157,9 +170,9 @@ class TapBarItemHandlerImpl extends NSObject {
         return <TapBarItemHandlerImpl>super.new();
     }
 
-    private _owner: definition.ActionItemBase;
+    private _owner: dts.ActionItemBase;
 
-    public initWithOwner(owner: definition.ActionItemBase): TapBarItemHandlerImpl {
+    public initWithOwner(owner: dts.ActionItemBase): TapBarItemHandlerImpl {
         this._owner = owner;
         return this;
     }

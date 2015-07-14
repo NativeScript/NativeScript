@@ -3,8 +3,8 @@
     <ActionBar title="{{ title }}" icon="{{ mainIcon }}">
       <NavigationButton text="{{ navText }}" icon="{{ navIcon }}" tap="{{ navTap }}"/>
       <ActionBar.actionItems>
-        <ActionItem text="{{ firstItemText }}" tap="{{ firstItemTap }}"  iosPosition="left"/>
-        <ActionItem icon="{{ secondItemIcon }}" tap="{{ secondItemTap }}" iosPosition="right"/>
+        <ActionItem text="{{ firstItemText }}" tap="{{ firstItemTap }}"  ios.position="left"/>
+        <ActionItem icon="{{ secondItemIcon }}" tap="{{ secondItemTap }}" ios.position="right"/>
       </ActionBar.actionItems>
     </ActionBar>
   </Page.actionBar>

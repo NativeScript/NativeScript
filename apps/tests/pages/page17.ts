@@ -23,14 +23,17 @@ export function optionTap(args) {
 var i = 0;
 export function buttonTap(args: observable.EventData) {
     currentPage.actionBar.title = "hi " + i++;
-    if (i % 3 === 0) {
-        currentPage.actionBar.icon = "res://ic_test";
-    }
-    else if (i % 3 === 1) {
-        currentPage.actionBar.icon = "~/test-icon.png";
-    }
-    else if (i % 3 === 2) {
-        currentPage.actionBar.icon = undefined;
+
+    if (currentPage.actionBar.android) {
+        if (i % 3 === 0) {
+            currentPage.actionBar.android.icon = "res://ic_test";
+        }
+        else if (i % 3 === 1) {
+            currentPage.actionBar.android.icon = "~/test-icon.png";
+        }
+        else if (i % 3 === 2) {
+            currentPage.actionBar.android.icon = undefined;
+        }
     }
 }
 

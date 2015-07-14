@@ -19,16 +19,9 @@ function onTitlePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     actionBar._onTitlePropertyChanged();
 }
 
-function onIconPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var actionBar = <ActionBar>data.object;
-    actionBar._onIconPropertyChanged();
-}
-
 export class ActionBar extends view.View implements dts.ActionBar {
     public static titleProperty = new dependencyObservable.Property("title", "ActionBar", new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, onTitlePropertyChanged));
-    public static iconProperty = new dependencyObservable.Property("icon", "ActionBar", new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, onIconPropertyChanged));
-    public static androidIconVisibilityProperty = new dependencyObservable.Property("androidIconVisibility", "ActionBar", new proxy.PropertyMetadata("auto", dependencyObservable.PropertyMetadataSettings.None, onIconPropertyChanged));
-
+    
     private _actionItems: ActionItems;
     private _navigationButton: NavigationButton;
     private _page: pages.Page;
@@ -39,20 +32,6 @@ export class ActionBar extends view.View implements dts.ActionBar {
     }
     set title(value: string) {
         this._setValue(ActionBar.titleProperty, value);
-    }
-
-    get icon(): string {
-        return this._getValue(ActionBar.iconProperty);
-    }
-    set icon(value: string) {
-        this._setValue(ActionBar.iconProperty, value);
-    }
-
-    get androidIconVisibility(): string {
-        return this._getValue(ActionBar.androidIconVisibilityProperty);
-    }
-    set androidIconVisibility(value: string) {
-        this._setValue(ActionBar.androidIconVisibilityProperty, value);
     }
 
     get navigationButton(): NavigationButton {
@@ -117,6 +96,10 @@ export class ActionBar extends view.View implements dts.ActionBar {
         }, this._page);
     }
 
+    get android(): dts.AndroidActionBarSettings {
+        return undefined;
+    }
+
     get _childrenCount(): number {
         return this.titleView ? 1 : 0;
     }
@@ -133,10 +116,6 @@ export class ActionBar extends view.View implements dts.ActionBar {
     }
 
     public _onTitlePropertyChanged() {
-        //
-    }
-
-    public _onIconPropertyChanged() {
         //
     }
 
@@ -181,7 +160,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
 
     public shouldShow(): boolean {
         if (this.title ||
-            this.icon ||
+            (this.android && this.android.icon) ||
             this.navigationButton ||
             this.actionItems.getItems().length > 0) {
 
@@ -193,14 +172,14 @@ export class ActionBar extends view.View implements dts.ActionBar {
 }
 
 export class ActionItems implements dts.ActionItems {
-    private _items: Array<ActionItem> = new Array<ActionItem>();
+    private _items: Array<dts.ActionItem> = new Array<dts.ActionItem>();
     private _actionBar: ActionBar;
 
     constructor(actionBar: ActionBar) {
         this._actionBar = actionBar;
     }
 
-    public addItem(item: ActionItem): void {
+    public addItem(item: dts.ActionItem): void {
         if (!item) {
             throw new Error("Cannot add empty item");
         }
@@ -210,7 +189,7 @@ export class ActionItems implements dts.ActionItems {
         this.invalidate();
     }
 
-    public removeItem(item: ActionItem): void {
+    public removeItem(item: dts.ActionItem): void {
         if (!item) {
             throw new Error("Cannot remove empty item");
         }
@@ -225,11 +204,11 @@ export class ActionItems implements dts.ActionItems {
         this.invalidate();
     }
 
-    public getItems(): Array<ActionItem> {
+    public getItems(): Array<dts.ActionItem> {
         return this._items.slice();
     }
 
-    public getItemAt(index: number): ActionItem {
+    public getItemAt(index: number): dts.ActionItem {
         if (index < 0 || index >= this._items.length) {
             return undefined;
         }
@@ -237,7 +216,7 @@ export class ActionItems implements dts.ActionItems {
         return this._items[index];
     }
 
-    public setItems(items: Array<ActionItem>) {
+    public setItems(items: Array<dts.ActionItem>) {
         // Remove all existing items
         while (this._items.length > 0) {
             this.removeItem(this._items[this._items.length - 1]);
@@ -268,7 +247,7 @@ export class ActionItemBase extends bindable.Bindable implements dts.ActionItemB
         "icon", "ActionItemBase", new dependencyObservable.PropertyMetadata(null, null, ActionItemBase.onItemChanged));
 
     private static onItemChanged(data: dependencyObservable.PropertyChangeData) {
-        var menuItem = <ActionItem>data.object;
+        var menuItem = <ActionItemBase>data.object;
         if (menuItem.actionBar) {
             menuItem.actionBar.updateActionBar();
         }
@@ -302,27 +281,7 @@ export class ActionItemBase extends bindable.Bindable implements dts.ActionItemB
     }
 
     public _raiseTap() {
-        this._emit(ActionItem.tapEvent);
-    }
-
-}
-
-export class ActionItem extends ActionItemBase {
-    private _androidPosition: string = enums.AndroidActionItemPosition.actionBar;
-    private _iosPosition: string = enums.IOSActionItemPosition.right;
-
-    get androidPosition(): string {
-        return this._androidPosition;
-    }
-    set androidPosition(value: string) {
-        this._androidPosition = value;
-    }
-
-    get iosPosition(): string {
-        return this._iosPosition;
-    }
-    set iosPosition(value: string) {
-        this._iosPosition = value;
+        this._emit(ActionItemBase.tapEvent);
     }
 }
 

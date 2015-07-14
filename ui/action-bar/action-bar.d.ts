@@ -7,12 +7,12 @@
 
     export class ActionBar extends view.View implements view.AddArrayFromBuilder, view.AddChildFromBuilder {
         title: string;
-        icon: string;
-        androidIconVisibility: string;
 
         navigationButton: NavigationButton;
         actionItems: ActionItems;
         titleView: view.View;
+
+        android: AndroidActionBarSettings;
 
         page: pages.Page;
 
@@ -55,6 +55,7 @@
 
         text: string;
         icon: string;
+        actionBar: ActionBar;
 
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -75,10 +76,23 @@
     }
 
     export class ActionItem extends ActionItemBase {
-        androidPosition: string;
-        iosPosition: string;
+        ios: IOSActionItemSettings;
+        android: AndroidActionItemSettings;
+    }
+    
+    export interface AndroidActionItemSettings {
+        position: string;
+    }
+    
+    export interface IOSActionItemSettings {
+        position: string;
     }
 
+    export interface AndroidActionBarSettings {
+        icon: string;
+        iconVisibility: string;
+    }
+    
     export class NavigationButton extends ActionItemBase {
 
     }

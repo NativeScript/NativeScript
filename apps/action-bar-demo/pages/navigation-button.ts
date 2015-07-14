@@ -28,17 +28,19 @@ var j = 0;
 export function visibilityTap(args: observable.EventData) {
     var page = <pages.Page>view.getAncestor(<view.View>args.object, "Page")
 
-    if (j % 3 === 0) {
-        page.actionBar.androidIconVisibility = "always";
+    if (page.actionBar.android) {
+        if (j % 3 === 0) {
+            page.actionBar.android.iconVisibility = "always";
+        }
+        else if (j % 3 === 1) {
+            page.actionBar.android.iconVisibility = "never";
+        }
+        else if (j % 3 === 2) {
+            page.actionBar.android.iconVisibility = "auto";
+        }
+        j++;
+        console.log("Visibility changed to: " + page.actionBar.android.iconVisibility);
     }
-    else if (j % 3 === 1) {
-        page.actionBar.androidIconVisibility = "never";
-    }
-    else if (j % 3 === 2) {
-        page.actionBar.androidIconVisibility = "auto";
-    }
-    j++;
-    console.log("Visibility changed to: " + page.actionBar.androidIconVisibility);
 }
 
 export function navTap(args: observable.EventData) {

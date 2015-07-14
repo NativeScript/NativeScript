@@ -6,6 +6,7 @@ import utils = require("utils/utils");
 import imageSource = require("image-source");
 import enums = require("ui/enums");
 import application = require("application");
+import dts = require("ui/action-bar");
 
 var ACTION_ITEM_ID_OFFSET = 1000;
 var API_LVL = android.os.Build.VERSION.SDK_INT;
@@ -13,14 +14,71 @@ var API_LVL = android.os.Build.VERSION.SDK_INT;
 declare var exports;
 require("utils/module-merge").merge(common, exports);
 
+export class ActionItem extends common.ActionItemBase implements dts.ActionItem {
+    private _androidPosition: dts.AndroidActionItemSettings = { position: enums.AndroidActionItemPosition.actionBar };
+
+    public get android(): dts.AndroidActionItemSettings {
+        return this._androidPosition;
+    }
+    public set android(value: dts.AndroidActionItemSettings) {
+        throw new Error("ActionItem.android is read-only");
+    }
+
+    // Not used in Android
+    public ios: dts.IOSActionItemSettings;
+}
+
+export class AndroidActionBarSettings implements dts.AndroidActionBarSettings {
+    private _actionBar: ActionBar;
+    private _icon: string;
+    private _iconVisibility: string = enums.AndroidActionBarIconVisibility.auto;
+
+    public get icon(): string {
+        return this._icon;
+    }
+    public set icon(value: string) {
+        if (value !== this._icon) {
+            this._icon = value;
+            this._actionBar._onIconPropertyChanged();
+        }
+    }
+
+    public get iconVisibility(): string {
+        return this._iconVisibility;
+    }
+    public set iconVisibility(value: string) {
+        if (value !== this._iconVisibility) {
+            this._iconVisibility = value;
+            this._actionBar._onIconPropertyChanged();
+        }
+    }
+
+    constructor(actionBar: ActionBar) {
+        this._actionBar = actionBar;
+    }
+}
+
 export class ActionBar extends common.ActionBar {
     private _appResources: android.content.res.Resources;
+    private _android: AndroidActionBarSettings;
+
+    get android(): AndroidActionBarSettings {
+        return this._android;
+    }
+
+    set android(value: AndroidActionBarSettings) {
+        throw new Error("ActionBar.android is read-only");
+    }
+
+    get _nativeView() {
+        return undefined;
+    }
 
     constructor() {
         super();
 
         this._appResources = application.android.context.getResources();
-        this.actionItems
+        this._android = new AndroidActionBarSettings(this);
     }
 
     public updateActionBar() {
@@ -39,7 +97,6 @@ export class ActionBar extends common.ActionBar {
         if (this.navigationButton && itemId === (<any>android).R.id.home) {
             this.navigationButton._raiseTap();
             return true;
-
         }
 
         return false;
@@ -80,7 +137,7 @@ export class ActionBar extends common.ActionBar {
     }
 
     public _updateIcon(actionBar: android.app.ActionBar) {
-        var icon = this.icon;
+        var icon = this.android.icon;
         if (types.isDefined(icon)) {
             var drawableOrId = getDrawableOrResourceId(icon, this._appResources);
             if (drawableOrId) {
@@ -92,12 +149,7 @@ export class ActionBar extends common.ActionBar {
             actionBar.setIcon(defaultIcon);
         }
 
-        var iconVisibility: boolean;
-        if (this.androidIconVisibility === enums.AndroidActionBarIconVisibility.always) {
-            iconVisibility = true;
-        }
-
-        var visibility = getIconVisibility(this.androidIconVisibility);
+        var visibility = getIconVisibility(this.android.iconVisibility);
         actionBar.setDisplayShowHomeEnabled(visibility);
     }
 
@@ -211,8 +263,8 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
     return undefined;
 }
 
-function getShowAsAction(menuItem: common.ActionItem): number {
-    switch (menuItem.androidPosition) {
+function getShowAsAction(menuItem: dts.ActionItem): number {
+    switch (menuItem.android.position) {
         case enums.AndroidActionItemPosition.actionBarIfRoom:
             return android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM;
 
