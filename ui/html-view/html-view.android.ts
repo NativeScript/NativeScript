@@ -11,6 +11,8 @@ function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
     if (types.isString(data.newValue)) {
         view.android.setText(<any>android.text.Html.fromHtml(data.newValue));
+    } else {
+        view.android.setText("");
     }
 }
 

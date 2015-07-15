@@ -7,6 +7,8 @@
         <TabViewItem.view>
           <StackLayout>
 
+            <HtmlView html="&lt;span&gt;&lt;font color='#ff0000'&gt;Test&lt;/font&gt;&lt;/span&gt;" />
+
             <WebView src="&lt;html&gt;&lt;body&gt;&lt;span style='color:red'&gt;Test&lt;/span&gt;&lt;/body&gt;&lt;/html&gt;" />
 
             <!--<ToolBar>

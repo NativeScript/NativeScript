@@ -8,16 +8,16 @@ import viewModule = require("ui/core/view");
 
 function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <HtmlView>data.object;
-    if (!view.android) {
+    if (!view.ios) {
         return;
     }
 
     if (types.isString(data.newValue)) {
         var htmlString = NSString.stringWithString(data.newValue);
         var nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
-        var options = NSDictionary.new();
-        options.setValueForKey(NSDocumentTypeDocumentAttribute, NSHTMLTextDocumentType);
-        view.ios.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, options, null);
+        view.ios.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
+    } else {
+        view.ios.attributedText = NSAttributedString.new();
     }
 }
 
@@ -66,9 +66,8 @@ export class HtmlView extends common.HtmlView {
 
             var nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
             var labelWidth = nativeSize.width;
-            //if (!this.textWrap) {
-                labelWidth = Math.min(labelWidth, width);
-            //}
+
+            labelWidth = Math.min(labelWidth, width);
 
             var measureWidth = Math.max(labelWidth, this.minWidth);
             var measureHeight = Math.max(nativeSize.height, this.minHeight);

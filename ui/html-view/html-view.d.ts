@@ -6,7 +6,9 @@ declare module "ui/html-view" {
     import dependencyObservable = require("ui/core/dependency-observable");
 
     /**
-     * Represents a view with html content.
+     * Represents a view with html content. Use this component instead WebView when want to show just static HTML content.
+     * [iOS support](https://developer.apple.com/library/ios/documentation/UIKit/Reference/NSAttributedString_UIKit_Additions/#//apple_ref/occ/instm/NSAttributedString/initWithData:options:documentAttributes:error:)
+     * [android support](http://developer.android.com/reference/android/text/Html.html)
      */
     export class HtmlView extends view.View {
 
