@@ -8,8 +8,6 @@ import observable = require("data/observable");
 declare var exports;
 require("utils/module-merge").merge(appModule, exports);
 
-var callbacks = android.app.Application.ActivityLifecycleCallbacks;
-
 export var mainModule: string;
 
 // We are using the exports object for the common events since we merge the appModule with this module's exports, which is what users will receive when require("application") is called;
@@ -18,7 +16,7 @@ export var mainModule: string;
 var initEvents = function () {
     var androidApp: dts.AndroidApplication = exports.android;
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
-    var lifecycleCallbacks = new callbacks({
+    var lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: function (activity: any, bundle: any) {
             if (!androidApp.startActivity) {
                 androidApp.startActivity = activity;
