@@ -158,7 +158,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
         }
     }
 
-    public shouldShow(): boolean {
+    public _shouldShow(): boolean {
         if (this.title ||
             (this.android && this.android.icon) ||
             this.navigationButton ||
