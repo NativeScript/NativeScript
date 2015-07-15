@@ -220,8 +220,33 @@
     <TypeScriptCompile Include="apps\tests\ui\bindingContext_testPage.ts">
       <DependentUpon>bindingContext_testPage.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\test-pages\bindingExpressions_logicalComparisonOperators_testPage.ts">
+      <DependentUpon>bindingExpressions_logicalComparisonOperators_testPage.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\test-pages\bindingExpressions_comparisonOperators_testPage.ts">
+      <DependentUpon>bindingExpressions_comparisonOperators_testPage.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\test-pages\bindingExpressions_binaryOperators_testPage.ts">
+      <DependentUpon>bindingExpressions_binaryOperators_testPage.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\test-pages\bindingExpressions_ternaryOperator_testPage.ts">
+      <DependentUpon>bindingExpressions_ternaryOperator_testPage.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\test-pages\bindingExpressions_groupingParenthesis_testPage.ts">
+      <DependentUpon>bindingExpressions_groupingParenthesis_testPage.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\test-pages\bindingExpressions_unaryOperators_testPage.ts">
+      <DependentUpon>bindingExpressions_unaryOperators_testPage.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\test-pages\bindingExpressions_logicalOperators_testPage.ts">
+      <DependentUpon>bindingExpressions_logicalOperators_testPage.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\test-pages\bindingExpressions_arrayAccess_testPage.ts">
+      <DependentUpon>bindingExpressions_arrayAccess_testPage.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\ui\bindingContext_testPage1.ts" />
     <TypeScriptCompile Include="apps\tests\ui\bindingContext_testPage2.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\binding-expressions-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\repeater\repeater-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\time-picker\time-picker-tests-native.android.ts">
       <DependentUpon>time-picker-tests-native.d.ts</DependentUpon>
@@ -792,6 +817,14 @@
     <Content Include="apps\tests\pages\page18.xml" />
     <Content Include="apps\tests\pages\test2.png" />
     <Content Include="apps\tests\ui\bindingContext_testPage.xml" />
+    <Content Include="apps\tests\ui\test-pages\bindingExpressions_logicalComparisonOperators_testPage.xml" />
+    <Content Include="apps\tests\ui\test-pages\bindingExpressions_comparisonOperators_testPage.xml" />
+    <Content Include="apps\tests\ui\test-pages\bindingExpressions_binaryOperators_testPage.xml" />
+    <Content Include="apps\tests\ui\test-pages\bindingExpressions_ternaryOperator_testPage.xml" />
+    <Content Include="apps\tests\ui\test-pages\bindingExpressions_groupingParenthesis_testPage.xml" />
+    <Content Include="apps\tests\ui\test-pages\bindingExpressions_unaryOperators_testPage.xml" />
+    <Content Include="apps\tests\ui\test-pages\bindingExpressions_logicalOperators_testPage.xml" />
+    <Content Include="apps\tests\ui\test-pages\bindingExpressions_arrayAccess_testPage.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage1.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage2.xml" />
     <Content Include="apps\tests\ui\label\label-tests-wrong.css" />
