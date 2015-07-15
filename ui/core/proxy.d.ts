@@ -53,7 +53,7 @@
         public _onPropertyChangedFromNative(property: dependencyObservable.Property, newValue: any): void;
 
         /**
-         * Syncronizes all properties with native values.
+         * Synchronizes all properties with native values.
          */
         public _syncNativeProperties(): void;
     }

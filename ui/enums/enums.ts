@@ -93,10 +93,21 @@ export module NavigationBarVisibility {
     export var always: string = "always";
 }
 
-export module MenuItemPosition {
+export module AndroidActionBarIconVisibility {
+    export var auto: string = "auto";
+    export var never: string = "never";
+    export var always: string = "always";
+}
+
+export module AndroidActionItemPosition {
     export var actionBar: string = "actionBar";
     export var actionBarIfRoom: string = "actionBarIfRoom";
     export var popup: string = "popup";
+}
+
+export module IOSActionItemPosition {
+    export var left: string = "left";
+    export var right: string = "right";
 }
 
 export module ImageFormat {

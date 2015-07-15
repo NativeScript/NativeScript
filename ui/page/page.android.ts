@@ -26,13 +26,12 @@ class DialogFragmentClass extends android.app.DialogFragment {
         window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
 
         if (this._fullscreen) {
-            window.setLayout(android.view.ViewGroup.LayoutParams.FILL_PARENT, android.view.ViewGroup.LayoutParams.FILL_PARENT);
+        window.setLayout(android.view.ViewGroup.LayoutParams.FILL_PARENT, android.view.ViewGroup.LayoutParams.FILL_PARENT);
         }
         
         return dialog;
     }
 };
-
 export class Page extends pageCommon.Page {
     private _isBackNavigation = false;
 
@@ -55,12 +54,6 @@ export class Page extends pageCommon.Page {
     public onNavigatedFrom(isBackNavigation: boolean) {
         this._isBackNavigation = isBackNavigation;
         super.onNavigatedFrom(isBackNavigation);
-    }
-
-    public _invalidateOptionsMenu() {
-        if (this.frame && this.frame.android && this.frame.android.activity) {
-            this.frame.android.activity.invalidateOptionsMenu();
-        }
     }
 
     /* tslint:disable */

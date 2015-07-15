@@ -1,0 +1,14 @@
+<Page>
+  <Page.actionBar>
+    <ActionBar title="Title">
+      <ActionBar.actionItems>
+        <ActionItem tap="leftTap"  icon="~/test-icon.png" iosPosition="left"/>
+        <ActionItem tap="rightTap" icon="~/test-icon.png" iosPosition="right"/>
+        <ActionItem tap="popTap"   icon="res://ic_test"   iosPosition="right"  androidPosition="popup" text="pop"/>
+      </ActionBar.actionItems>
+    </ActionBar>
+  </Page.actionBar>
+  <StackLayout>
+    <Button text="button" />
+  </StackLayout>
+</Page>

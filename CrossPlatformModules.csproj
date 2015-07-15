@@ -3,7 +3,7 @@
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <TypeScriptToolsVersion>1.4</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>1.5</TypeScriptToolsVersion>
     <ProjectGuid>{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
@@ -61,6 +61,21 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <ItemGroup>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\action-items-text.ts">
+      <DependentUpon>action-items-text.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view-stack.ts">
+      <DependentUpon>center-view-stack.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view-segmented.ts">
+      <DependentUpon>center-view-segmented.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view.ts">
+      <DependentUpon>center-view.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\data-binding.ts">
+      <DependentUpon>data-binding.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\cuteness.unoptimized\app.ts" />
     <TypeScriptCompile Include="apps\cuteness.unoptimized\details-page.ts">
       <DependentUpon>details-page.xml</DependentUpon>
@@ -69,8 +84,25 @@
       <DependentUpon>main-page.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\cuteness.unoptimized\reddit-app-view-model.ts" />
+    <Content Include="apps\action-bar-demo\pages\center-view-stack.xml" />
+    <Content Include="apps\action-bar-demo\pages\center-view-segmented.xml" />
+    <Content Include="apps\action-bar-demo\pages\center-view.xml" />
+    <Content Include="apps\action-bar-demo\pages\data-binding.xml" />
     <Content Include="apps\cuteness.unoptimized\reddit-item-view-model.ts" />
     <TypeScriptCompile Include="apps\cuteness.unoptimized\reddit-model.d.ts" />
+    <TypeScriptCompile Include="apps\action-bar-demo\app.ts" />
+    <TypeScriptCompile Include="apps\action-bar-demo\main-page.ts">
+      <DependentUpon>main-page.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\navigation-button.ts">
+      <DependentUpon>navigation-button.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\action-items-icon.ts">
+      <DependentUpon>action-items-icon.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\page-title-icon.ts">
+      <DependentUpon>page-title-icon.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\gallery-app\views\list-picker.ts">
       <DependentUpon>list-picker.xml</DependentUpon>
     </TypeScriptCompile>
@@ -156,6 +188,9 @@
     <TypeScriptCompile Include="apps\tests\fps-meter-tests.ts" />
     <TypeScriptCompile Include="apps\tests\trace-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui-test.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\action-bar\action-bar-tests-common.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\action-bar\action-bar-tests.android.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\action-bar\action-bar-tests.ios.ts" />
     <TypeScriptCompile Include="apps\tests\ui\bindingContext_testPage.ts">
       <DependentUpon>bindingContext_testPage.xml</DependentUpon>
     </TypeScriptCompile>
@@ -390,6 +425,16 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\border\border.ts">
       <DependentUpon>border.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\action-bar\action-bar-common.ts">
+      <DependentUpon>action-bar.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\action-bar\action-bar.android.ts">
+      <DependentUpon>action-bar.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\action-bar\action-bar.d.ts" />
+    <TypeScriptCompile Include="ui\action-bar\action-bar.ios.ts">
+      <DependentUpon>action-bar.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\repeater\repeater.ts">
       <DependentUpon>repeater.d.ts</DependentUpon>
@@ -657,6 +702,19 @@
     <Content Include="apps\cuteness.unoptimized\res\reddit-logo-transparent.png" />
     <Content Include="apps\cuteness.unoptimized\res\reddit-logo.png" />
     <Content Include="apps\cuteness.unoptimized\res\telerik-logo.png" />
+    <Content Include="apps\action-bar-demo\app.css" />
+    <Content Include="apps\action-bar-demo\main-page.xml" />
+    <Content Include="apps\action-bar-demo\pages\action-items-text.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\action-bar-demo\pages\action-items-icon.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\action-bar-demo\pages\page-title-icon.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\action-bar-demo\pages\navigation-button.xml" />
+    <Content Include="apps\action-bar-demo\test-icon.png" />
     <Content Include="apps\gallery-app\content\border.xml" />
     <Content Include="apps\gallery-app\app.css" />
     <Content Include="apps\gallery-app\views\list-picker.xml" />
@@ -1600,6 +1658,7 @@
     <Content Include="apps\cuteness.unoptimized\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="apps\action-bar-demo\package.json" />
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">
@@ -1623,6 +1682,9 @@
     <Content Include="js-libs\reworkcss-value\LICENSE" />
     <Content Include="js-libs\reworkcss-value\package.json" />
     <Content Include="js-libs\reworkcss-value\Readme.md" />
+    <Content Include="ui\action-bar\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />

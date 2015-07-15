@@ -1,7 +1,6 @@
 ﻿import pageCommon = require("ui/page/page-common");
 import definition = require("ui/page");
 import viewModule = require("ui/core/view");
-import imageSource = require("image-source");
 import trace = require("trace");
 import utils = require("utils/utils");
 
@@ -22,7 +21,7 @@ class UIViewControllerImpl extends UIViewController {
     }
 
     public didRotateFromInterfaceOrientation(fromInterfaceOrientation: number) {
-        trace.write(this._owner + " didRotateFromInterfaceOrientation(" + fromInterfaceOrientation+ ")", trace.categories.ViewHierarchy);
+        trace.write(this._owner + " didRotateFromInterfaceOrientation(" + fromInterfaceOrientation + ")", trace.categories.ViewHierarchy);
         if ((<any>this._owner)._isModal) {
             var parentBounds = (<any>this._owner)._UIModalPresentationFormSheet ? (<UIView>this._owner._nativeView).superview.bounds : UIScreen.mainScreen().bounds;
             utils.ios._layoutRootView(this._owner, parentBounds);
@@ -71,14 +70,14 @@ export class Page extends pageCommon.Page {
     }
 
     public onLoaded() {
-        // loaded/unloaded events are handeled in page viewWillAppear/viewDidDisappear
+        // loaded/unloaded events are handled in page viewWillAppear/viewDidDisappear
         if (this._enableLoadedEvents) {
             super.onLoaded();
         }
     }
-    
+
     public onUnloaded() {
-        // loaded/unloaded events are handeled in page viewWillAppear/viewDidDisappear
+        // loaded/unloaded events are handled in page viewWillAppear/viewDidDisappear
         if (this._enableLoadedEvents) {
             super.onUnloaded();
         }
@@ -116,36 +115,6 @@ export class Page extends pageCommon.Page {
         return this.ios.view;
     }
 
-    public _invalidateOptionsMenu() {
-        this.populateMenuItems();
-    }
-
-    public populateMenuItems() {
-        var items = this.optionsMenu.getItems();
-
-        var navigationItem: UINavigationItem = (<UIViewController>this.ios).navigationItem;
-        var array: NSMutableArray = items.length > 0 ? NSMutableArray.new() : null;
-
-        for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            var tapHandler = TapBarItemHandlerImpl.new().initWithOwner(item);
-            // associate handler with menuItem or it will get collected by JSC.
-            (<any>item).handler = tapHandler;
-
-            var barButtonItem: UIBarButtonItem;
-            if (item.icon) {
-                var img = imageSource.fromResource(item.icon);
-                barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img.ios, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
-            }
-            else {
-                barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
-            }
-
-            array.addObject(barButtonItem);
-        }
-
-        navigationItem.setRightBarButtonItemsAnimated(array, true);
-    }
 
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         (<any>this)._isModal = true;
@@ -186,25 +155,14 @@ export class Page extends pageCommon.Page {
             this.requestLayout();
         }
     }
-}
 
-class TapBarItemHandlerImpl extends NSObject {
-    static new(): TapBarItemHandlerImpl {
-        return <TapBarItemHandlerImpl>super.new();
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
+        viewModule.View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    private _owner: definition.MenuItem;
-
-    public initWithOwner(owner: definition.MenuItem): TapBarItemHandlerImpl {
-        this._owner = owner;
-        return this;
+    public onLayout(left: number, top: number, right: number, bottom: number) {
+        viewModule.View.layoutChild(this, this.actionBar, 0, 0, right - left, bottom - top);
+        super.onLayout(left, top, right, bottom);
     }
-
-    public tap(args) {
-        this._owner._raiseTap();
-    }
-
-    public static ObjCExposedMethods = {
-        "tap": { returns: interop.types.void, params: [interop.types.id] }
-    };
 }

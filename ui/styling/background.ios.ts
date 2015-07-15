@@ -7,6 +7,10 @@ require("utils/module-merge").merge(common, exports);
 
 export module ios {
     export function createBackgroundUIColor(view: viewModule.View): UIColor {
+        if(!view._nativeView){
+            return null;
+        }
+        
         var background = <common.Background> view.style._getValue(style.backgroundInternalProperty);
         var frame = (<UIView>view._nativeView).frame;
         var boundsWidth = frame.size.width;

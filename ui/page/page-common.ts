@@ -5,13 +5,10 @@ import frame = require("ui/frame");
 import styleScope = require("ui/styling/style-scope");
 import fs = require("file-system");
 import fileSystemAccess = require("file-system/file-system-access");
-import bindable = require("ui/core/bindable");
-import dependencyObservable = require("ui/core/dependency-observable");
-import enums = require("ui/enums");
 import frameCommon = require("ui/frame/frame-common");
+import actionBar = require("ui/action-bar");
+import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-
-var OPTIONS_MENU = "optionsMenu";
 
 var navigationBarHiddenProperty = new dependencyObservable.Property(
     "navigationBarHidden",
@@ -28,11 +25,7 @@ function onNavigationBarHiddenPropertyChanged(data: dependencyObservable.Propert
 
 (<proxy.PropertyMetadata>navigationBarHiddenProperty.metadata).onSetNativeValue = onNavigationBarHiddenPropertyChanged;
 
-export module knownCollections {
-    export var optionsMenu = "optionsMenu";
-}
-
-export class Page extends contentView.ContentView implements dts.Page, view.AddArrayFromBuilder {
+export class Page extends contentView.ContentView implements dts.Page {
     public static navigationBarHiddenProperty = navigationBarHiddenProperty;
     public static navigatingToEvent = "navigatingTo";
     public static navigatedToEvent = "navigatedTo";
@@ -44,11 +37,11 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
 
     private _cssApplied: boolean;
     private _styleScope: styleScope.StyleScope = new styleScope.StyleScope();
-    private _optionsMenu: OptionsMenu;
+    private _actionBar: actionBar.ActionBar;
 
     constructor(options?: dts.Options) {
         super(options);
-        this._optionsMenu = new OptionsMenu(this);
+        this.actionBar = new actionBar.ActionBar();
     }
 
     public onLoaded() {
@@ -88,11 +81,23 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
         this._refreshCss();
     }
 
-    get optionsMenu(): OptionsMenu {
-        return this._optionsMenu;
+    get actionBar(): actionBar.ActionBar {
+        return this._actionBar;
     }
-    set optionsMenu(value: OptionsMenu) {
-        throw new Error("optionsMenu property is read-only");
+    set actionBar(value: actionBar.ActionBar) {
+        if (!value) {
+            throw new Error("ActionBar cannot be null or undefined.");
+        }
+
+        if (this._actionBar !== value) {
+            if (this._actionBar) {
+                this._actionBar.page = undefined;
+                this._removeView(this._actionBar);
+            }
+            this._actionBar = value;
+            this._actionBar.page = this;
+            this._addView(this._actionBar);
+        }
     }
 
     private _refreshCss(): void {
@@ -175,6 +180,15 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
         (<Page>page)._showNativeModalView(this, context, closeCallback, fullscreen);
     }
 
+    public _addChildFromBuilder(name: string, value: any) {
+        if (value instanceof actionBar.ActionBar) {
+            this.actionBar = value;
+        }
+        else {
+            super._addChildFromBuilder(name, value);
+        }
+    }
+
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         //
     }
@@ -202,8 +216,10 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
         return this._styleScope;
     }
 
-    public _invalidateOptionsMenu() {
-        // 
+    public _eachChildView(callback: (child: view.View) => boolean) {
+        super._eachChildView(callback);
+
+        callback(this.actionBar);
     }
 
     private _applyCss() {
@@ -233,133 +249,14 @@ export class Page extends contentView.ContentView implements dts.Page, view.AddA
 
         resetCssValuesFunc(this);
         view.eachDescendant(this, resetCssValuesFunc);
-
     }
 
-    public _addArrayFromBuilder(name: string, value: Array<any>) {
-        if (name === OPTIONS_MENU) {
-            this.optionsMenu.setItems(value);
-        }
-    }
-
-}
-
-export class OptionsMenu implements dts.OptionsMenu {
-    private _items: Array<MenuItem> = new Array<MenuItem>();
-    private _page: Page;
-
-    constructor(page: Page) {
-        this._page = page;
-    }
-
-    public addItem(item: MenuItem): void {
-        if (!item) {
-            throw new Error("Cannot add empty item");
+    public _addViewToNativeVisualTree(view: view.View): boolean {
+        // ActionBar is added to the native visual tree by default
+        if (view === this.actionBar) {
+            return true;
         }
 
-        this._items.push(item);
-        item.menu = this;
-        item.bind({
-            sourceProperty: "bindingContext",
-            targetProperty: "bindingContext"
-        }, this._page);
-
-        this.invalidate();
+        return super._addViewToNativeVisualTree(view);
     }
-
-    public removeItem(item: MenuItem): void {
-        if (!item) {
-            throw new Error("Cannot remove empty item");
-        }
-
-        var itemIndex = this._items.indexOf(item);
-        if (itemIndex < 0) {
-            throw new Error("Cannot find item to remove");
-        }
-
-        item.menu = undefined;
-        item.unbind("bindingContext");
-        this._items.splice(itemIndex, 1);
-        this.invalidate();
-    }
-
-    public getItems(): Array<MenuItem> {
-        return this._items.slice();
-    }
-
-    public getItemAt(index: number): MenuItem {
-        return this._items[index];
-    }
-
-    public setItems(items: Array<MenuItem>) {
-        // Remove all existing items
-        while (this._items.length > 0) {
-            this.removeItem(this._items[this._items.length - 1]);
-        }
-
-        // Add new items
-        for (var i = 0; i < items.length; i++) {
-            this.addItem(items[i]);
-        }
-
-        this.invalidate();
-    }
-
-    invalidate() {
-        if (this._page) {
-            this._page._invalidateOptionsMenu();
-        }
-    }
-}
-
-export class MenuItem extends bindable.Bindable implements dts.MenuItem {
-    public static tapEvent = "tap";
-
-    public static textProperty = new dependencyObservable.Property(
-        "text", "MenuItem", new dependencyObservable.PropertyMetadata("", null, MenuItem.onItemChanged));
-
-    public static iconProperty = new dependencyObservable.Property(
-        "icon", "MenuItem", new dependencyObservable.PropertyMetadata(null, null, MenuItem.onItemChanged));
-
-    private static onItemChanged(data: dependencyObservable.PropertyChangeData) {
-        var menuItem = <MenuItem>data.object;
-        if (menuItem.menu) {
-            menuItem.menu.invalidate();
-        }
-    }
-
-    private _android: dts.AndroidMenuItemOptions;
-
-    constructor() {
-        super();
-        if (global.android) {
-            this._android = {
-                position: enums.MenuItemPosition.actionBar
-            };
-        }
-    }
-
-    get android(): dts.AndroidMenuItemOptions {
-        return this._android;
-    }
-
-    get text(): string {
-        return this._getValue(MenuItem.textProperty);
-    }
-    set text(value: string) {
-        this._setValue(MenuItem.textProperty, value);
-    }
-
-    get icon(): string {
-        return this._getValue(MenuItem.iconProperty);
-    }
-    set icon(value: string) {
-        this._setValue(MenuItem.iconProperty, value);
-    }
-
-    public _raiseTap() {
-        this._emit(MenuItem.tapEvent);
-    }
-
-    menu: OptionsMenu;
 }
