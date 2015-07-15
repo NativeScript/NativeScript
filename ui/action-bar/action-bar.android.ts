@@ -204,6 +204,10 @@ export class ActionBar extends common.ActionBar {
             this._updateIcon(frame.topmost().android.actionBar);
         }
     }
+
+    public _clearAndroidReference() {
+        // don't clear _android field!
+    }
 }
 
 var setHomeAsUpIndicatorWithResoruceId: java.lang.reflect.Method;
