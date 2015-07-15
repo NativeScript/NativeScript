@@ -602,7 +602,7 @@ export function test_ConverterIsCalledJustOnce_onAddingItemsToListView() {
 
         TKUnit.wait(ASYNC);
 
-        if (utils.ios.MajorVersion < 8) {
+        if (utils.ios && utils.ios.MajorVersion < 8) {
             TKUnit.assertEqual(converterCalledCounter, listViewModel.get("items").length * 2, "Converter should be called once for every item.");
         }
         else {
