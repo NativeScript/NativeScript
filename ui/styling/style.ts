@@ -147,6 +147,47 @@ function isMinWidthHeightValid(value: number): boolean {
     return !isNaN(value) && value >= 0.0 && isFinite(value);
 }
 
+function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var url: string = data.newValue;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    var isValid = false;
+
+    if (types.isString(data.newValue)) {
+        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
+        var match = url.match(pattern);
+        if (match && match[2]) {
+            url = match[2];
+        }
+
+        if (utils.isDataURI(url)) {
+            var base64Data = url.split(",")[1];
+            if (types.isDefined(base64Data)) {
+                style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromBase64(base64Data)));
+                isValid = true;
+            }
+        }
+        else if (utils.isFileOrResourcePath(url)) {
+            style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromFileOrResource(url)));
+            isValid = true;
+        }
+        else if (url.indexOf("http") !== -1) {
+            style["_url"] = url;
+            style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
+            imageSource.fromUrl(url).then((r) => {
+                if (style && style["_url"] === url) {
+                    style._setValue(backgroundInternalProperty, currentBackground.withImage(r));
+                }
+            });
+            isValid = true;
+        }
+    }
+
+    if (!isValid) {
+        style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
+    }
+}
+
 function getHandlerInternal(propertyId: number, classInfo: types.ClassInfo): styling.stylers.StylePropertyChangedHandler {
     var className = classInfo ? classInfo.name : "default";
     var handlerKey = className + propertyId;
@@ -439,7 +480,7 @@ export class Style extends observable.DependencyObservable implements styling.St
         super();
         this._view = parentView;
     }
-    
+
     public _beginUpdate() {
         this._updateCounter++;
     }
@@ -450,9 +491,9 @@ export class Style extends observable.DependencyObservable implements styling.St
             throw new Error("style._endUpdate() called, but no update is in progress.");
         }
         if (this._updateCounter === 0) {
-        this._nativeSetters.forEach((newValue, property, map) => { this._applyStyleProperty(property, newValue); });
-        this._nativeSetters.clear();
-    }
+            this._nativeSetters.forEach((newValue, property, map) => { this._applyStyleProperty(property, newValue); });
+            this._nativeSetters.clear();
+        }
     }
 
     public _resetCssValues() {

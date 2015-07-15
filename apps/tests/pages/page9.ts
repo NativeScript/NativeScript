@@ -25,4 +25,4 @@ export function createPage() {
     page.content = grid;
     page.css = "GridLayout { background-color: pink } image { background-color: green }";
     return page;
-} 
+}

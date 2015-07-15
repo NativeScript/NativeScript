@@ -50,7 +50,7 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
             v.android.setBackgroundDrawable(_defaultBackgrounds.get(viewClass));
         }
     }
-        }
+}
 
 export class DefaultStyler implements definition.stylers.Styler {
     //Background and borders methods
@@ -250,7 +250,7 @@ export class TextViewStyler implements definition.stylers.Styler {
 
         if (fontValue.fontSize) {
             tv.setTextSize(fontValue.fontSize);
-    }
+        }
         else {
             tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
         }
