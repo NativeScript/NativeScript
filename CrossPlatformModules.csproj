@@ -1688,6 +1688,8 @@
     <Content Include="js-libs\reworkcss-value\package.json" />
     <Content Include="js-libs\reworkcss-value\Readme.md" />
     <Content Include="ui\action-bar\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="ui\html-view\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
