@@ -10,6 +10,7 @@ import webViewModule = require("ui/web-view");
 // ```
 // </snippet>
 
+// <snippet module="ui/web-view" title="WebView">
 // ### Declaring a WebView.
 //```XML
 //  <Page>
@@ -60,9 +61,10 @@ export var testLoadExistingUrl = function () {
         else {
             message = "Error loading " + args.url + ": " + args.error;
         }
-        //console.log(message);
     });
     webView.url = "http://nsbuild01.telerik.com/docs/";
+    // ```
+    // </snippet>
 
     TKUnit.wait(4);
 
@@ -117,9 +119,10 @@ export var testLoadLocalFile = function () {
         else {
             message = "Error loading " + args.url + ": " + args.error;
         }
-        //console.log(message);
     });
     webView.src = "~/ui/web-view/test.html";
+    // ```
+    // </snippet>
 
     TKUnit.wait(4);
 
@@ -178,9 +181,10 @@ export var testLoadHTMLString = function () {
         else {
             message = "Error loading " + args.url + ": " + args.error;
         }
-        //console.log(message);
     });
     webView.src = '<!DOCTYPE html><html><head><title>MyTitle</title><meta charset="utf-8" /></head><body><span style="color:red">Test</span></body></html>';
+    // ```
+    // </snippet>
 
     TKUnit.wait(4);
 

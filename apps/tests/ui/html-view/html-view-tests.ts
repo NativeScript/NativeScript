@@ -11,6 +11,7 @@ import htmlViewModule = require("ui/html-view");
 // ```
 // </snippet>
 
+// <snippet module="ui/html-view" title="HtmlView">
 // ### Declaring a HtmlView.
 //```XML
 //  <Page>
@@ -45,6 +46,8 @@ export var testLoadHTMLString = function () {
     // ### Using HtmlView
     // ``` JavaScript
     htmlView.html = '<span><font color="#ff0000">Test</font></span>';
+    // ```
+    // </snippet>
 
     helper.goBack();
 
