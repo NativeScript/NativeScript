@@ -236,6 +236,7 @@
     <TypeScriptCompile Include="apps\tests\ui\search-bar\search-bar-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\style\style-properties-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\view\view-tests.d.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\html-view\html-view-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\web-view\web-view-tests.ts" />
     <TypeScriptCompile Include="apps\editable-text-demo\app.ts" />
     <TypeScriptCompile Include="apps\editable-text-demo\main-page.ts">
@@ -277,7 +278,7 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\label.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\button.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\web-view\webview.ts">
-	  <DependentUpon>webview.xml</DependentUpon>
+      <DependentUpon>webview.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="es-collections.d.ts" />
     <TypeScriptCompile Include="es6-promise.d.ts" />
@@ -436,6 +437,10 @@
     <TypeScriptCompile Include="ui\action-bar\action-bar.ios.ts">
       <DependentUpon>action-bar.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\html-view\html-view-common.ts" />
+    <TypeScriptCompile Include="ui\html-view\html-view.android.ts" />
+    <TypeScriptCompile Include="ui\html-view\html-view.d.ts" />
+    <TypeScriptCompile Include="ui\html-view\html-view.ios.ts" />
     <TypeScriptCompile Include="ui\repeater\repeater.ts">
       <DependentUpon>repeater.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -797,7 +802,7 @@
     <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
     <Content Include="apps\ui-tests-app\pages\text\label.xml" />
     <Content Include="apps\ui-tests-app\pages\text\button.xml" />
-	<Content Include="apps\ui-tests-app\web-view\webview.xml" />
+    <Content Include="apps\ui-tests-app\web-view\webview.xml" />
     <Content Include="js-libs\reworkcss-value\reworkcss-value.js" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -1683,6 +1688,9 @@
     <Content Include="js-libs\reworkcss-value\package.json" />
     <Content Include="js-libs\reworkcss-value\Readme.md" />
     <Content Include="ui\action-bar\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ui\html-view\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

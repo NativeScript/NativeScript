@@ -31,6 +31,7 @@ var MODULES = {
     "FormattedString": "text/formatted-string",
     "Span": "text/span",
     "WebView": "ui/web-view",
+    "HtmlView": "ui/html-view",
     "SegmentedBar": "ui/segmented-bar",
     "SegmentedBarItem": "ui/segmented-bar",
     "ToolBar": "ui/tool-bar",
