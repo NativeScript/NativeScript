@@ -147,40 +147,6 @@ function isMinWidthHeightValid(value: number): boolean {
     return !isNaN(value) && value >= 0.0 && isFinite(value);
 }
 
-function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
-    var view: view.View = (<any>data.object)._view;
-    var style = <Style>data.object;
-    var url: string = data.newValue;
-
-    style._setValue(backgroundImageSourceProperty, undefined, observable.ValueSource.Local);
-
-    if (types.isString(data.newValue)) {
-        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
-        var match = url.match(pattern);
-        if (match && match[2]) {
-            url = match[2];
-        }
-
-        if (utils.isDataURI(url)) {
-            var base64Data = url.split(",")[1];
-            if (types.isDefined(base64Data)) {
-                style._setValue(backgroundImageSourceProperty, imageSource.fromBase64(base64Data), observable.ValueSource.Local);
-            }
-        } else if (utils.isFileOrResourcePath(url)) {
-            style._setValue(backgroundImageSourceProperty, imageSource.fromFileOrResource(url), observable.ValueSource.Local);
-        } else if (url.indexOf("http") !== -1) {
-            if (view) {
-                view["_url"] = url;
-            }
-            imageSource.fromUrl(url).then(r=> {
-                if (view && view["_url"] === url) {
-                    style._setValue(backgroundImageSourceProperty, r, observable.ValueSource.Local);
-                }
-            });
-        }
-    }
-}
-
 function getHandlerInternal(propertyId: number, classInfo: types.ClassInfo): styling.stylers.StylePropertyChangedHandler {
     var className = classInfo ? classInfo.name : "default";
     var handlerKey = className + propertyId;
