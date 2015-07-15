@@ -1,5 +1,4 @@
-﻿import definition = require("ui/layouts/dock-layout");
-import dependencyObservable = require("ui/core/dependency-observable");
+﻿import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
 import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
@@ -43,7 +42,7 @@ function setNativeDockProperty(data: dependencyObservable.PropertyChangeData) {
 
 (<proxy.PropertyMetadata>common.DockLayout.dockProperty.metadata).onSetNativeValue = setNativeDockProperty;
 
-export class DockLayout extends common.DockLayout implements definition.DockLayout {
+export class DockLayout extends common.DockLayout {
 
     static setNativeStretchLastChildProperty(data: dependencyObservable.PropertyChangeData) {
         var dockLayout = <DockLayout>data.object;
