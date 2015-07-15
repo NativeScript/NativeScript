@@ -85,13 +85,18 @@ export class View extends viewCommon.View {
         // For UILabel and UIImage.
         view.userInteractionEnabled = true;
     }
+    
+    get isLayoutRequested(): boolean {
+        return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
+    }
 
     public requestLayout(): void {
         super.requestLayout();
         this._privateFlags |= PFLAG_FORCE_LAYOUT;
 
-        if (this.parent) {
-            this.parent.requestLayout();
+        var parent = <View>this.parent;
+        if (parent && !parent.isLayoutRequested) {
+            parent.requestLayout();
         }
     }
 
@@ -236,7 +241,7 @@ export class CustomLayoutView extends View {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        // Don't call super because it will trigger measure again.
+        // Don't call super because it will set MeasureDimension. This method must be overriden and calculate its measuredDimensions.
 
         var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
         var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);

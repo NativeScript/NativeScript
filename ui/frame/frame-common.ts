@@ -327,25 +327,6 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         return 0;
     }
 
-    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-
-        var result = view.View.measureChild(this, this.currentPage, widthMeasureSpec, utils.layout.makeMeasureSpec(height - this.navigationBarHeight, heightMode));
-
-        var widthAndState = view.View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
-        var heightAndState = view.View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
-
-        this.setMeasuredDimension(widthAndState, heightAndState);
-    }
-
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
-        view.View.layoutChild(this, this.currentPage, 0, this.navigationBarHeight, right - left, bottom - top);
-    }
-
     // We don't need to put Page as visual child. Don't call super.
     public _addViewToNativeVisualTree(child: view.View): boolean {
         return true;

@@ -1,7 +1,7 @@
 ﻿import observable = require("data/observable");
 import enums = require("ui/enums");
 import view = require("ui/core/view");
-import layouts = require("ui/layouts/layout");
+import layouts = require("ui/layouts/layout-base");
 
 export class ViewModel extends observable.Observable {
 
@@ -67,7 +67,7 @@ export class ViewModel extends observable.Observable {
 
     public onVisibile(args: { eventName: string, object: any }): void {
         var view: view.View = <view.View>args.object;
-        var layout = <layouts.Layout>view.parent;
+        var layout = <layouts.LayoutBase>view.parent;
 
         var child = layout.getViewById("collapse");
         child.visibility = enums.Visibility.visible;

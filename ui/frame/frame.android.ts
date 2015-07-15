@@ -373,8 +373,7 @@ var NativeActivity = {
         this.androidFrame.setActivity(this);
 
         // Create and set content container.
-        var root = new view.NativeViewGroup(this);
-        root[OWNER] = this.frame;
+        var root = new org.nativescript.widgets.ContentLayout(this);
 
         this.androidFrame.rootViewGroup = root;
         this.androidFrame.rootViewGroup.setId(this.frame.containerViewId);

@@ -31,6 +31,7 @@ export module layout {
 
     export var MEASURED_STATE_TOO_SMALL = 0x01000000;
     export var MEASURED_STATE_MASK = 0xff000000;
+    export var MEASURED_SIZE_MASK = 0x00ffffff;
 
     export function getMode(mode: number): string {
         switch (mode) {

@@ -50,7 +50,7 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
             v.android.setBackgroundDrawable(_defaultBackgrounds.get(viewClass));
         }
     }
-}
+        }
 
 export class DefaultStyler implements definition.stylers.Styler {
     //Background and borders methods
@@ -99,6 +99,94 @@ export class DefaultStyler implements definition.stylers.Styler {
         (<android.view.View>view._nativeView).setMinimumHeight(0);
     }
 
+    private static setNativeLayoutParamsProperty(view: view.View, params: style.CommonLayoutParams): void {
+        var nativeView: android.view.View = view._nativeView;
+
+        var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
+        if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
+            lp = new org.nativescript.widgets.CommonLayoutParams();
+        }
+        
+        lp.leftMargin = params.leftMargin * utils.layout.getDisplayDensity();
+        lp.topMargin = params.topMargin * utils.layout.getDisplayDensity();
+        lp.rightMargin = params.rightMargin * utils.layout.getDisplayDensity();
+        lp.bottomMargin = params.bottomMargin * utils.layout.getDisplayDensity();
+
+        var width = params.width * utils.layout.getDisplayDensity();
+        var height = params.height * utils.layout.getDisplayDensity();
+        
+        // If width is not specified set it as WRAP_CONTENT
+        if (width < 0) {
+            width = -2;
+        }
+
+        // If height is not specified set it as WRAP_CONTENT
+        if (lp.height < 0) {
+            lp.height = -2;
+        }
+
+        var gravity = 0;
+        switch (params.horizontalAlignment) {
+            case enums.HorizontalAlignment.left:
+               	gravity |= android.view.Gravity.LEFT;
+                break;
+
+            case enums.HorizontalAlignment.center:
+                gravity |= android.view.Gravity.CENTER_HORIZONTAL;
+                break;
+
+            case enums.HorizontalAlignment.right:
+                gravity |= android.view.Gravity.RIGHT;
+                break;
+
+            case enums.HorizontalAlignment.stretch:
+                gravity |= android.view.Gravity.FILL_HORIZONTAL;
+                 // If width is not specified set it as MATCH_PARENT
+                if (width < 0) {
+                    width = -1;
+                }
+                break;
+
+            default:
+                throw new Error("Invalid horizontalAlignment value: " + params.horizontalAlignment);
+        }
+
+        switch (params.verticalAlignment) {
+            case enums.VerticalAlignment.top:
+                gravity |= android.view.Gravity.TOP;
+                break;
+
+            case enums.VerticalAlignment.center:
+                gravity |= android.view.Gravity.CENTER_VERTICAL;
+                break;
+
+            case enums.VerticalAlignment.bottom:
+                gravity |= android.view.Gravity.BOTTOM;
+                break;
+
+            case enums.VerticalAlignment.stretch:
+                gravity |= android.view.Gravity.FILL_VERTICAL;
+                // If height is not specified set it as MATCH_PARENT
+                if (height < 0) {
+                    height = -1;
+                }
+                break;
+
+            default:
+                throw new Error("Invalid verticalAlignment value: " + params.verticalAlignment);
+        }
+
+        lp.width = width;
+        lp.height = height;
+        lp.gravity = gravity;
+        nativeView.setLayoutParams(lp);
+    }
+
+    private static resetNativeLayoutParamsProperty(view: view.View, nativeValue: any): void {
+        var nativeView: android.view.View = view._nativeView;
+        nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.visibilityProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setVisibilityProperty,
@@ -126,6 +214,10 @@ export class DefaultStyler implements definition.stylers.Styler {
         style.registerHandler(style.borderWidthProperty, borderHandler);
         style.registerHandler(style.borderColorProperty, borderHandler);
         style.registerHandler(style.borderRadiusProperty, borderHandler);
+
+        style.registerHandler(style.nativeLayoutParamsProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setNativeLayoutParamsProperty,
+            DefaultStyler.resetNativeLayoutParamsProperty));
     }
 }
 
@@ -158,7 +250,7 @@ export class TextViewStyler implements definition.stylers.Styler {
 
         if (fontValue.fontSize) {
             tv.setTextSize(fontValue.fontSize);
-        }
+    }
         else {
             tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
         }
@@ -368,6 +460,28 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class LayoutBaseStyler implements definition.stylers.Styler {
+    
+    //nativePadding methods
+    private static setPaddingNativeProperty(view: view.View, newValue: style.Thickness): void {
+        var left = (newValue.left * utils.layout.getDisplayDensity());
+        var top = (newValue.top * utils.layout.getDisplayDensity());
+        var right = (newValue.right * utils.layout.getDisplayDensity());
+        var bottom = (newValue.bottom * utils.layout.getDisplayDensity());
+        (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
+    }
+
+    private static resetPaddingNativeProperty(view: view.View, nativeValue: any): void {
+        (<android.view.View>view._nativeView).setPadding(0, 0, 0, 0);
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.nativePaddingsProperty, new stylersCommon.StylePropertyChangedHandler(
+            LayoutStyler.setPaddingNativeProperty,
+            LayoutStyler.resetPaddingNativeProperty), "Layout");
+    }
+}
+
 // Register all styler at the end.
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
@@ -376,4 +490,5 @@ export function _registerDefaultStylers() {
     ActivityIndicatorStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
     SearchBarStyler.registerHandlers();
+    LayoutBaseStyler.registerHandlers();
 }

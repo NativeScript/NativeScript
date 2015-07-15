@@ -527,6 +527,62 @@
     <TypeScriptCompile Include="ui\html-view\html-view.android.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view.d.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view.ios.ts" />
+    <TypeScriptCompile Include="org.nativescript.widgets.d.ts" />
+    <TypeScriptCompile Include="ui\layouts\absolute-layout\absolute-layout-common.ts">
+      <DependentUpon>absolute-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\absolute-layout\absolute-layout.ios.ts">
+      <DependentUpon>absolute-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\absolute-layout\absolute-layout.android.ts">
+      <DependentUpon>absolute-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\dock-layout\dock-layout.ios.ts">
+      <DependentUpon>dock-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\dock-layout\dock-layout.android.ts">
+      <DependentUpon>dock-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\dock-layout\dock-layout-common.ts">
+      <DependentUpon>dock-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\grid-layout\grid-layout-common.ts">
+      <DependentUpon>grid-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\grid-layout\grid-layout.android.ts">
+      <DependentUpon>grid-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\grid-layout\grid-layout.ios.ts">
+      <DependentUpon>grid-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\layout.ios.ts">
+      <DependentUpon>layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\layout.android.ts">
+      <DependentUpon>layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\layout-base.ts">
+      <DependentUpon>layout-base.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\layout-base.d.ts" />
+    <TypeScriptCompile Include="ui\layouts\stack-layout\stack-layout.ios.ts">
+      <DependentUpon>stack-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\stack-layout\stack-layout.android.ts">
+      <DependentUpon>stack-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\stack-layout\stack-layout-common.ts">
+      <DependentUpon>stack-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\wrap-layout\wrap-layout-common.ts">
+      <DependentUpon>wrap-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\wrap-layout\wrap-layout.android.ts">
+      <DependentUpon>wrap-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\wrap-layout\wrap-layout.ios.ts">
+      <DependentUpon>wrap-layout.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\repeater\repeater.ts">
       <DependentUpon>repeater.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -588,26 +644,11 @@
     <TypeScriptCompile Include="ui\image-cache\image-cache.ios.ts">
       <DependentUpon>image-cache.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\layouts\absolute-layout\absolute-layout.ts">
-      <DependentUpon>absolute-layout.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\layouts\dock-layout\dock-layout.ts">
-      <DependentUpon>dock-layout.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\layouts\grid-layout\grid-layout.ts">
-      <DependentUpon>grid-layout.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\layouts\layout.ts">
-      <DependentUpon>layout.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\layouts\layout.d.ts" />
     <TypeScriptCompile Include="ui\layouts\absolute-layout\absolute-layout.d.ts" />
     <TypeScriptCompile Include="ui\layouts\wrap-layout\wrap-layout.d.ts" />
     <TypeScriptCompile Include="ui\layouts\grid-layout\grid-layout.d.ts" />
     <TypeScriptCompile Include="ui\layouts\dock-layout\dock-layout.d.ts" />
-    <TypeScriptCompile Include="ui\layouts\stack-layout\stack-layout.ts">
-      <DependentUpon>stack-layout.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\layouts\stack-layout\stack-layout.d.ts" />
     <TypeScriptCompile Include="ui\layouts\wrap-layout\wrap-layout.ts">
       <DependentUpon>wrap-layout.d.ts</DependentUpon>

@@ -1,12 +1,12 @@
 ﻿declare module "ui/layouts/absolute-layout" {
-    import layout = require("ui/layouts/layout");
+    import layout = require("ui/layouts/layout-base");
     import view = require("ui/core/view");
     import dependencyObservable = require("ui/core/dependency-observable");    
 
     /**
      *  A layout that lets you specify exact locations (left/top coordinates) of its children.
      */
-    class AbsoluteLayout extends layout.Layout {
+    class AbsoluteLayout extends layout.LayoutBase {
         
         /**
          * Represents the observable property backing the left property.

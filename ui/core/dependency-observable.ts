@@ -68,7 +68,7 @@ export class PropertyMetadata implements definition.PropertyMetadata {
         equalityComparer?: definition.PropertyEqualityComparer) {
         this._defaultValue = defaultValue;
         this._options = options;
-        if (types.isUndefined(this._options)) {
+        if (types.isNullOrUndefined(this._options)) {
             this._options = PropertyMetadataSettings.None;
         }
         this._onChanged = onChanged;

@@ -1,73 +1,20 @@
-﻿import layouts = require("ui/layouts/layout");
-import definition = require("ui/layouts/wrap-layout");
-import utils = require("utils/utils");
-import dependencyObservable = require("ui/core/dependency-observable");
+﻿import utils = require("utils/utils");
 import view = require("ui/core/view");
 import enums = require("ui/enums");
+import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import common = require("ui/layouts/wrap-layout/wrap-layout-common");
 
-function isWidthHeightValid(value: any): boolean {
-    return isNaN(value) || (value >= 0.0 && value !== Number.POSITIVE_INFINITY);
-}
+// merge the exports of the common file with the exports of this file
+declare var exports;
+require("utils/module-merge").merge(common, exports);
 
-function isValidOrientation(value: any): boolean {
-    return value === enums.Orientation.vertical || value === enums.Orientation.horizontal;
-}
-
-export class WrapLayout extends layouts.Layout implements definition.WrapLayout {
+export class WrapLayout extends common.WrapLayout {
 
     private _lenghts: Array<number>;
 
-    public static orientationProperty = new dependencyObservable.Property(
-        "orientation",
-        "WrapLayout",
-        new proxy.PropertyMetadata(enums.Orientation.horizontal,
-            dependencyObservable.PropertyMetadataSettings.AffectsLayout,
-            undefined,
-            isValidOrientation)
-        );
-
-    public static itemWidthProperty = new dependencyObservable.Property(
-        "itemWidth",
-        "WrapLayout",
-        new proxy.PropertyMetadata(Number.NaN,
-            dependencyObservable.PropertyMetadataSettings.AffectsLayout,
-            undefined,
-            isWidthHeightValid)
-        );
-
-    public static itemHeightProperty = new dependencyObservable.Property(
-        "itemHeight",
-        "WrapLayout",
-        new proxy.PropertyMetadata(Number.NaN,
-            dependencyObservable.PropertyMetadataSettings.AffectsLayout,
-            undefined,
-            isWidthHeightValid)
-        );
-
-    get orientation(): string {
-        return this._getValue(WrapLayout.orientationProperty);
-    }
-    set orientation(value: string) {
-        this._setValue(WrapLayout.orientationProperty, value);
-    }
-
-    get itemWidth(): number {
-        return this._getValue(WrapLayout.itemWidthProperty);
-    }
-    set itemWidth(value: number) {
-        this._setValue(WrapLayout.itemWidthProperty, value);
-    }
-
-    get itemHeight(): number {
-        return this._getValue(WrapLayout.itemHeightProperty);
-    }
-    set itemHeight(value: number) {
-        this._setValue(WrapLayout.itemHeightProperty, value);
-    }
-
     private static getChildMeasureSpec(parentMode: number, parentLength: number, itemLength): number {
-        if (!isNaN(itemLength)) {
+        if (itemLength > 0) {
             return utils.layout.makeMeasureSpec(itemLength, utils.layout.EXACTLY);
         }
         else if (parentMode === utils.layout.UNSPECIFIED) {

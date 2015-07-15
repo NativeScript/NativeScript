@@ -128,6 +128,7 @@ export class View extends proxy.ProxyObject implements definition.View {
     private _requestedVisualState: string;
     private _isLoaded: boolean;
     private _isLayoutValid: boolean = false;
+
     public _domId: number;
     public _isAddedToNativeVisualTree = false;
 
@@ -291,41 +292,6 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
     set marginBottom(value: number) {
         this.style.marginBottom = value;
-    }
-
-    get padding(): string {
-        return this.style.padding;
-    }
-    set padding(value: string) {
-        this.style.padding = value;
-    }
-
-    get paddingLeft(): number {
-        return this.style.paddingLeft;
-    }
-    set paddingLeft(value: number) {
-        this.style.paddingLeft = value;
-    }
-
-    get paddingTop(): number {
-        return this.style.paddingTop;
-    }
-    set paddingTop(value: number) {
-        this.style.paddingTop = value;
-    }
-
-    get paddingRight(): number {
-        return this.style.paddingRight;
-    }
-    set paddingRight(value: number) {
-        this.style.paddingRight = value;
-    }
-
-    get paddingBottom(): number {
-        return this.style.paddingBottom;
-    }
-    set paddingBottom(value: number) {
-        this.style.paddingBottom = value;
     }
 
     get horizontalAlignment(): string {
@@ -510,11 +476,11 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
 
     public getMeasuredWidth(): number {
-        return this._measuredWidth;
+        return this._measuredWidth & utils.layout.MEASURED_SIZE_MASK;
     }
 
     public getMeasuredHeight(): number {
-        return this._measuredHeight;
+        return this._measuredHeight & utils.layout.MEASURED_SIZE_MASK;
     }
 
     public setMeasuredDimension(measuredWidth: number, measuredHeight: number): void {

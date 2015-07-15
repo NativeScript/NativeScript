@@ -42,14 +42,14 @@ function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeD
 (<proxy.PropertyMetadata>imageCommon.Image.stretchProperty.metadata).onSetNativeValue = onStretchPropertyChanged;
 
 export class Image extends imageCommon.Image {
-    private _android: android.widget.ImageView;
+    private _android: org.nativescript.widgets.ImageView;
 
-    get android(): android.widget.ImageView {
+    get android(): org.nativescript.widgets.ImageView {
         return this._android;
     }
 
     public _createUI() {
-        this._android = new android.widget.ImageView(this._context);
+        this._android = new org.nativescript.widgets.ImageView(this._context);
     }
 
     public _setNativeImage(nativeImage: any) {

@@ -1,53 +1,12 @@
-﻿import layouts = require("ui/layouts/layout");
-import definition = require("ui/layouts/dock-layout");
-import utils = require("utils/utils");
-import dependencyObservable = require("ui/core/dependency-observable");
+﻿import utils = require("utils/utils");
 import view = require("ui/core/view");
 import enums = require("ui/enums");
-import proxy = require("ui/core/proxy");
+import common = require("ui/layouts/dock-layout/dock-layout-common");
 
-function isDockValid(value: any): boolean {
-    return value === enums.Dock.left || value === enums.Dock.top || value === enums.Dock.right || value === enums.Dock.bottom;
-}
+export class DockLayout extends common.DockLayout {
 
-function onDockPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var uiView = data.object;
-    if (uiView instanceof view.View) {
-        var layout = (<view.View>uiView).parent;
-        if (layout instanceof DockLayout) {
-            layout.requestLayout();
-        }
-    }
-}
-
-export class DockLayout extends layouts.Layout implements definition.DockLayout {
-
-    public static dockProperty = new dependencyObservable.Property(
-        "dock", "DockLayout", new dependencyObservable.PropertyMetadata(enums.Dock.left, undefined, onDockPropertyChanged, isDockValid));
-
-    public static stretchLastChildProperty = new dependencyObservable.Property(
-        "stretchLastChild", "DockLayout", new proxy.PropertyMetadata(true, dependencyObservable.PropertyMetadataSettings.AffectsLayout));
-
-    public static getDock(element: view.View): string {
-        if (!element) {
-            throw new Error("element cannot be null or undefinied.");
-        }
-
-        return element._getValue(DockLayout.dockProperty);
-    }
-
-    public static setDock(element: view.View, value: string): void {
-        if (!element) {
-            throw new Error("element cannot be null or undefinied.");
-        }
-        element._setValue(DockLayout.dockProperty, value);
-    }
-
-    get stretchLastChild(): boolean {
-        return this._getValue(DockLayout.stretchLastChildProperty);
-    }
-    set stretchLastChild(value: boolean) {
-        this._setValue(DockLayout.stretchLastChildProperty, value);
+    protected onDockChanged(view: view.View, oldValue: number, newValue: number) {
+        this.requestLayout();
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {

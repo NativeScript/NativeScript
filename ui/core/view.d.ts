@@ -206,31 +206,6 @@ declare module "ui/core/view" {
         marginBottom: number;
 
         /**
-         * Gets or sets padding style property.
-         */
-        padding: string;
-
-        /**
-         * Specify the left padding of this view.
-         */
-        paddingLeft: number;
-
-        /**
-         * Specify the top padding of this view.
-         */
-        paddingTop: number;
-
-        /**
-         * Specify the right padding of this view.
-         */
-        paddingRight: number;
-
-        /**
-         * Specify the bottom padding of this view.
-         */
-        paddingBottom: number;
-
-        /**
          * Gets or sets the alignment of this view within its parent along the Horizontal axis.
          */
         horizontalAlignment: string;

@@ -1,34 +1,15 @@
-﻿import layouts = require("ui/layouts/layout");
-import definition = require("ui/layouts/stack-layout");
-import utils = require("utils/utils");
-import dependencyObservable = require("ui/core/dependency-observable");
+﻿import utils = require("utils/utils");
 import enums = require("ui/enums");
-import proxy = require("ui/core/proxy");
 import view = require("ui/core/view");
+import common = require("ui/layouts/stack-layout/stack-layout-common");
 
-function validateOrientation(value: any): boolean {
-    return value === enums.Orientation.vertical || value === enums.Orientation.horizontal;
-}
+// merge the exports of the common file with the exports of this file
+declare var exports;
+require("utils/module-merge").merge(common, exports);
 
-export var orientationProperty = new dependencyObservable.Property(
-    "orientation",
-    "StackLayout",
-    new proxy.PropertyMetadata(enums.Orientation.vertical,
-        dependencyObservable.PropertyMetadataSettings.AffectsLayout,
-        undefined,
-        validateOrientation)
-    );
-
-export class StackLayout extends layouts.Layout implements definition.StackLayout {
+export class StackLayout extends common.StackLayout {
 
     private _totalLength = 0;
-
-    get orientation(): string {
-        return this._getValue(orientationProperty);
-    }
-    set orientation(value: string) {
-        this._setValue(orientationProperty, value);
-    }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);

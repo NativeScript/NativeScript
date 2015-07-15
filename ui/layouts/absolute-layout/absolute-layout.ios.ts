@@ -1,56 +1,19 @@
-﻿import layouts = require("ui/layouts/layout");
-import definition = require("ui/layouts/absolute-layout");
-import utils = require("utils/utils");
-import dependencyObservable = require("ui/core/dependency-observable");
+﻿import utils = require("utils/utils");
 import view = require("ui/core/view");
-import numberUtils = require("utils/number-utils");
+import common = require("ui/layouts/absolute-layout/absolute-layout-common");
 
-function onPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var uiView = data.object;
-    if (uiView instanceof view.View) {
-        var layout = uiView.parent;
-        if (layout instanceof AbsoluteLayout) {
-            layout.requestLayout();
-        }
-    }
-}
+// merge the exports of the common file with the exports of this file
+declare var exports;
+require("utils/module-merge").merge(common, exports);
 
-export class AbsoluteLayout extends layouts.Layout implements definition.AbsoluteLayout {
+export class AbsoluteLayout extends common.AbsoluteLayout {
 
-    public static leftProperty = new dependencyObservable.Property("left", "AbsoluteLayout",
-        new dependencyObservable.PropertyMetadata(0, undefined, onPropertyChanged, numberUtils.isFiniteNumber));
-
-    public static topProperty = new dependencyObservable.Property("top", "AbsoluteLayout",
-        new dependencyObservable.PropertyMetadata(0, undefined, onPropertyChanged, numberUtils.isFiniteNumber));
-
-    public static getLeft(element: view.View): number {
-        if (!element) {
-            throw new Error("element cannot be null or undefinied.");
-        }
-
-        return element._getValue(AbsoluteLayout.leftProperty);
+    protected onLeftChanged(view: view.View, oldValue: number, newValue: number) {
+        this.requestLayout();
     }
 
-    public static setLeft(element: view.View, value: number): void {
-        if (!element) {
-            throw new Error("element cannot be null or undefinied.");
-        }
-        element._setValue(AbsoluteLayout.leftProperty, value);
-    }
-
-    public static getTop(element: view.View): number {
-        if (!element) {
-            throw new Error("element cannot be null or undefinied.");
-        }
-
-        return element._getValue(AbsoluteLayout.topProperty);
-    }
-
-    public static setTop(element: view.View, value: number): void {
-        if (!element) {
-            throw new Error("element cannot be null or undefinied.");
-        }
-        element._setValue(AbsoluteLayout.topProperty, value);
+    protected onTopChanged(view: view.View, oldValue: number, newValue: number) {
+        this.requestLayout();
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
