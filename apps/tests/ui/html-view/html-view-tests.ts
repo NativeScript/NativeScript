@@ -15,7 +15,7 @@ import htmlViewModule = require("ui/html-view");
 // ### Declaring a HtmlView.
 //```XML
 //  <Page>
-//      <HtmlView html="{{ htmlString }}" />
+//       {%raw%}<HtmlView html="{{ htmlString }}" />{%endraw%}
 //  </Page>
 //```
 

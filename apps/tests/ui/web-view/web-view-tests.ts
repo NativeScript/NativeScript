@@ -14,7 +14,7 @@ import webViewModule = require("ui/web-view");
 // ### Declaring a WebView.
 //```XML
 //  <Page>
-//      <WebView src="{{ someUrl | pathToLocalFile | htmlString }}" />
+//       {%raw%}<WebView src="{{ someUrl | pathToLocalFile | htmlString }}" />{%endraw%}
 //  </Page>
 //```
 
