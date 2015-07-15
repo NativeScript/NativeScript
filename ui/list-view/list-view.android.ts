@@ -1,6 +1,5 @@
 ﻿import observable = require("data/observable");
 import common = require("ui/list-view/list-view-common");
-import viewModule = require("ui/core/view");
 import layout = require("ui/layouts/layout");
 import stackLayout = require("ui/layouts/stack-layout");
 import proxy = require("ui/core/proxy");
@@ -19,40 +18,36 @@ require("utils/module-merge").merge(common, exports);
 
 function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var bar = <ListView>data.object;
-    if (!bar.android) {
+    if (!bar._android) {
         return;
     }
 
     if (data.newValue instanceof color.Color) {
-        bar.android.setDivider(new android.graphics.drawable.ColorDrawable((<color.Color>data.newValue).android));
-        bar.android.setDividerHeight(1);
+        bar._android.setDivider(new android.graphics.drawable.ColorDrawable((<color.Color>data.newValue).android));
+        bar._android.setDividerHeight(1);
     }
 }
 
 // register the setNativeValue callbacks
 (<proxy.PropertyMetadata>common.ListView.separatorColorProperty.metadata).onSetNativeValue = onSeparatorColorPropertyChanged;
 
-export class ListView extends common.ListView {
-    private _android: android.widget.ListView;
+export class AbstractListView extends common.AbstractListView {
+    public _android: android.widget.ListView;
     public _realizedItems = {};
-    private _androidViewId: number;
+    protected _androidViewId: number;
 
-    public _createUI() {
-        this._android = new android.widget.ListView(this._context);
+    public _createListView(): android.widget.ListView {
+        let listview = new android.widget.ListView(this._context);
 
         // Fixes issue with black random black items when scrolling
-        this._android.setCacheColorHint(android.graphics.Color.TRANSPARENT);
-        if (!this._androidViewId) {
-            this._androidViewId = android.view.View.generateViewId();
-        }
-        this._android.setId(this._androidViewId);
+        listview.setCacheColorHint(android.graphics.Color.TRANSPARENT);
 
-        this.android.setAdapter(new ListViewAdapter(this));
+        listview.setAdapter(new ListViewAdapter(this));
 
         var that = new WeakRef(this);
 
         // TODO: This causes many marshalling calls, rewrite in Java and generate bindings
-        this.android.setOnScrollListener(new android.widget.AbsListView.OnScrollListener({
+        listview.setOnScrollListener(new android.widget.AbsListView.OnScrollListener({
             onScrollStateChanged: function (view: android.widget.AbsListView, scrollState: number) {
                 var owner: ListView = this.owner;
                 if (!owner) {
@@ -82,7 +77,7 @@ export class ListView extends common.ListView {
             }
         }));
 
-        this.android.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener({
+        listview.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener({
             onItemClick: function (parent: any, convertView: android.view.View, index: number, id: number) {
                 var owner = that.get();
                 if (owner) {
@@ -90,10 +85,20 @@ export class ListView extends common.ListView {
                 }
             }
         }));
+        return listview;
     }
 
-    get android(): android.widget.ListView {
-        return this._android;
+    public _createUI() {
+        var listview = this._createListView();
+        listview.setId(this._createViewId());
+        this._android = listview;
+    }
+
+    protected _createViewId(): number {
+        if (!this._androidViewId) {
+            this._androidViewId = android.view.View.generateViewId();
+        }
+        return this._androidViewId;
     }
 
     public refresh() {
@@ -101,22 +106,17 @@ export class ListView extends common.ListView {
             return;
         }
 
-        (<ListViewAdapter>this.android.getAdapter()).notifyDataSetChanged();
+        (<ListViewAdapter>this._android.getAdapter()).notifyDataSetChanged();
     }
 
     public _onDetached(force?: boolean) {
         super._onDetached(force);
 
         // clear the cache
-        var keys = Object.keys(this._realizedItems);
-        var i;
-        var length = keys.length;
-        var view: viewModule.View;
-        var key;
+        let keys = Object.keys(this._realizedItems);
 
-        for (i = 0; i < length; i++) {
-            key = keys[i];
-            view = this._realizedItems[key];
+        for (let key in keys) {
+            let view = this._realizedItems[key];
             view.parent._removeView(view);
             delete this._realizedItems[key];
         }
@@ -132,14 +132,9 @@ export class ListView extends common.ListView {
 
     public _notifyScrollIdle() {
         var keys = Object.keys(this._realizedItems);
-        var i;
-        var length = keys.length;
-        var view: viewModule.View;
-        var key;
 
-        for (i = 0; i < length; i++) {
-            key = keys[i];
-            view = this._realizedItems[key];
+        for (let key in keys) {
+            let view = this._realizedItems[key];
 
             this.notify({
                 eventName: ITEMLOADING,
@@ -148,6 +143,12 @@ export class ListView extends common.ListView {
                 view: view
             });
         }
+    }
+}
+
+export class ListView extends AbstractListView implements common.ListView {
+    get android(): android.widget.ListView {
+        return this._android;
     }
 }
 
