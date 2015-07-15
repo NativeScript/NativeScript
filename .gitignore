@@ -1,0 +1,13 @@
+/.metadata/
+node_modules/
+dist/
+
+local.properties
+
+gen/
+armeabi-v7a/
+x86/
+obj/
+bin/
+.svn/
+.settings/
