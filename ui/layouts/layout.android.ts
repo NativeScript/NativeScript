@@ -3,7 +3,6 @@ import view = require("ui/core/view");
 import layoutBase = require("ui/layouts/layout-base");
 import trace = require("trace");
 import utils = require("utils/utils");
-import proxy = require("ui/core/proxy");
 
 var OWNER = "_owner";
 

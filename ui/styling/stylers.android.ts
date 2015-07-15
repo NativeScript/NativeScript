@@ -477,8 +477,8 @@ export class LayoutBaseStyler implements definition.stylers.Styler {
 
     public static registerHandlers() {
         style.registerHandler(style.nativePaddingsProperty, new stylersCommon.StylePropertyChangedHandler(
-            LayoutStyler.setPaddingNativeProperty,
-            LayoutStyler.resetPaddingNativeProperty), "Layout");
+            LayoutBaseStyler.setPaddingNativeProperty,
+            LayoutBaseStyler.resetPaddingNativeProperty), "Layout");
     }
 }
 

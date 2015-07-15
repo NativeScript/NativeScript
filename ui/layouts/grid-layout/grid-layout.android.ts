@@ -1,17 +1,12 @@
-﻿import definition = require("ui/layouts/grid-layout");
-import utils = require("utils/utils");
+﻿import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
-import enums = require("ui/enums");
 import view = require("ui/core/view");
-import bindable = require("ui/core/bindable");
-import types = require("utils/types");
 import proxy = require("ui/core/proxy");
 import common = require("ui/layouts/grid-layout/grid-layout-common");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
 require("utils/module-merge").merge(common, exports);
-
 
 function setNativeProperty(data: dependencyObservable.PropertyChangeData, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
 

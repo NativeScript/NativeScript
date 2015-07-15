@@ -5,7 +5,7 @@ import types = require("utils/types");
 import trace = require("trace");
 import builder = require("ui/builder");
 import fs = require("file-system");
-import utils = require("utils/utils");
+import platform = require("platform");
 import fileResolverModule = require("file-system/file-name-resolver");
 
 var frameStack: Array<Frame> = [];

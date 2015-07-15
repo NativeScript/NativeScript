@@ -43,7 +43,7 @@ function setNativeDockProperty(data: dependencyObservable.PropertyChangeData) {
 
 (<proxy.PropertyMetadata>common.DockLayout.dockProperty.metadata).onSetNativeValue = setNativeDockProperty;
 
-export class DockLayout extends common.DockLayout {
+export class DockLayout extends common.DockLayout implements definition.DockLayout {
 
     static setNativeStretchLastChildProperty(data: dependencyObservable.PropertyChangeData) {
         var dockLayout = <DockLayout>data.object;

@@ -1,5 +1,4 @@
 ﻿declare module "ui/layouts/layout" {
-    import view = require("ui/core/view");
     import layoutBase = require("ui/layouts/layout-base");
 
     /**

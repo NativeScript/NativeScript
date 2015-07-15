@@ -4,7 +4,6 @@ import pages = require("ui/page");
 import trace = require("trace");
 import observable = require("data/observable");
 import utils = require("utils/utils");
-import view = require("ui/core/view");
 import application = require("application");
 
 global.moduleMerge(frameCommon, exports);

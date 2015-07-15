@@ -1,8 +1,6 @@
 ﻿import utils = require("utils/utils");
 import view = require("ui/core/view");
 import enums = require("ui/enums");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
 import common = require("ui/layouts/wrap-layout/wrap-layout-common");
 
 // merge the exports of the common file with the exports of this file
