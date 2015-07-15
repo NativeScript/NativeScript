@@ -150,6 +150,10 @@ export class Page extends pageCommon.Page {
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         (<any>this)._isModal = true;
 
+        if (!parent.ios.view.window) {
+            throw new Error("Parent page is not part of the window hierarchy. Close the current modal page before showing another one!");
+        }
+
         if (fullscreen) {
             this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFullScreen;
             utils.ios._layoutRootView(this, UIScreen.mainScreen().bounds);
