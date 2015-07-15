@@ -5,6 +5,7 @@ import viewModule = require("ui/core/view");
 import observable = require("data/observable");
 import types = require("utils/types");
 import platform = require("platform");
+import utils = require("utils/utils");
 
 // <snippet module="ui/list-view" title="list-view">
 // # ListView
@@ -601,7 +602,12 @@ export function test_ConverterIsCalledJustOnce_onAddingItemsToListView() {
 
         TKUnit.wait(ASYNC);
 
-        TKUnit.assertEqual(converterCalledCounter, listViewModel.get("items").length, "Converter should be called once for every item.");
+        if (utils.ios.MajorVersion < 8) {
+            TKUnit.assertEqual(converterCalledCounter, listViewModel.get("items").length * 2, "Converter should be called once for every item.");
+        }
+        else {
+            TKUnit.assertEqual(converterCalledCounter, listViewModel.get("items").length, "Converter should be called once for every item.");
+        }
     }
 
     helper.buildUIAndRunTest(listView, testAction);
