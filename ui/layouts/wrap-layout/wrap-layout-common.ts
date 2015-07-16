@@ -6,6 +6,7 @@ import proxy = require("ui/core/proxy");
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (so we skip unnecessary native call).
 var AffectsLayout = global.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
+var defailtItemWidthHeight = global.android ? 0 : Number.NaN;
 
 function isWidthHeightValid(value: any): boolean {
     return (value >= 0.0 && value !== Number.POSITIVE_INFINITY);
@@ -21,10 +22,10 @@ export class WrapLayout extends layouts.LayoutBase implements definition.WrapLay
         new proxy.PropertyMetadata(enums.Orientation.horizontal, AffectsLayout, undefined, isValidOrientation));
 
     public static itemWidthProperty = new dependencyObservable.Property("itemWidth", "WrapLayout",
-        new proxy.PropertyMetadata(0, AffectsLayout, undefined, isWidthHeightValid));
+        new proxy.PropertyMetadata(defailtItemWidthHeight, AffectsLayout, undefined, isWidthHeightValid));
 
     public static itemHeightProperty = new dependencyObservable.Property("itemHeight", "WrapLayout",
-        new proxy.PropertyMetadata(0, AffectsLayout, undefined, isWidthHeightValid));
+        new proxy.PropertyMetadata(defailtItemWidthHeight, AffectsLayout, undefined, isWidthHeightValid));
 
     get orientation(): string {
         return this._getValue(WrapLayout.orientationProperty);
