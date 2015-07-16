@@ -266,7 +266,7 @@ export class GridLayout extends layouts.LayoutBase implements definition.GridLay
         //
     }
 
-    applyXmlAttribute(attributeName: string, attributeValue: any): boolean {
+    _applyXmlAttribute(attributeName: string, attributeValue: any): boolean {
         if (attributeName === "columns") {
             this.setColumns(attributeValue);
             return true;
