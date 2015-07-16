@@ -650,9 +650,6 @@
     <TypeScriptCompile Include="ui\layouts\grid-layout\grid-layout.d.ts" />
     <TypeScriptCompile Include="ui\layouts\dock-layout\dock-layout.d.ts" />
     <TypeScriptCompile Include="ui\layouts\stack-layout\stack-layout.d.ts" />
-    <TypeScriptCompile Include="ui\layouts\wrap-layout\wrap-layout.ts">
-      <DependentUpon>wrap-layout.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\styling\background-common.ts">
       <DependentUpon>background.d.ts</DependentUpon>
     </TypeScriptCompile>
