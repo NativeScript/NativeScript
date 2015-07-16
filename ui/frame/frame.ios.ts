@@ -84,7 +84,7 @@ export class Frame extends frameCommon.Frame {
 
             case enums.NavigationBarVisibility.auto:
                 var pageInstance: pages.Page = page || this.currentPage;
-                newValue = this.backStack.length > 0 || (pageInstance && pageInstance.actionBar.shouldShow());
+                newValue = this.backStack.length > 0 || (pageInstance && pageInstance.actionBar._shouldShow());
                 newValue = !!newValue; // Make sure it is boolean
                 break;
         }
