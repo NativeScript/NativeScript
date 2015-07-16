@@ -114,6 +114,7 @@ export class ListView extends view.View implements definition.ListView {
     public _prepareItem(item: view.View, index: number) {
         if (item) {
             item.bindingContext = this._getDataItem(index);
+            item._inheritProperties(this);
         }
     }
 
@@ -144,5 +145,9 @@ export class ListView extends view.View implements definition.ListView {
 
     private _onItemsChanged(args: observable.EventData) {
         this.refresh();
+    }
+
+    public _propagateInheritableProperties(view: view.View) {
+        // do not get binding context from parent when adding items, since the binding context of the items will be different.
     }
 }

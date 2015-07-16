@@ -409,6 +409,8 @@ declare module "ui/core/view" {
         isLoaded: boolean;
 
         _addView(view: View);
+        _propagateInheritableProperties(view: View)
+        _inheritProperties(parentView: View)
         _removeView(view: View);
         _context: android.content.Context;
 

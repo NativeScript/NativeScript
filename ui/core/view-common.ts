@@ -829,9 +829,7 @@ export class View extends proxy.ProxyObject implements definition.View {
      * Method is intended to be overridden by inheritors and used as "protected"
      */
     public _addViewCore(view: View) {
-        view._setValue(bindable.Bindable.bindingContextProperty, this.bindingContext, dependencyObservable.ValueSource.Inherited);
-
-        view._inheritProperties(this);
+        this._propagateInheritableProperties(view);
 
         view.style._inheritStyleProperties();
 
@@ -845,7 +843,11 @@ export class View extends proxy.ProxyObject implements definition.View {
         }
     }
 
-    private _inheritProperties(parentView: View) {
+    public _propagateInheritableProperties(view: View) {
+        view._inheritProperties(this);
+    }
+
+    public _inheritProperties(parentView: View) {
         var that = this;
         var inheritablePropertySetCallback = function (property: dependencyObservable.Property) {
             if (property instanceof styling.Property) {
