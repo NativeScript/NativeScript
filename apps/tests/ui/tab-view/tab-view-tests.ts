@@ -384,7 +384,6 @@ export var testWhenSettingSelectedIndexProgramaticallySelectedIndexChangedEventI
     }
 }
 
-
 export var testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere = function () {
     return;
 
