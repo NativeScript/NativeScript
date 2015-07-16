@@ -5,6 +5,7 @@ import pages = require("ui/page");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
+import types = require("utils/types");
 
 declare var exports;
 require("utils/module-merge").merge(frameCommon, exports);
@@ -84,7 +85,12 @@ export class Frame extends frameCommon.Frame {
 
             case enums.NavigationBarVisibility.auto:
                 var pageInstance: pages.Page = page || this.currentPage;
-                newValue = this.backStack.length > 0 || (pageInstance && pageInstance.actionBar._shouldShow());
+                if (pageInstance && types.isDefined(pageInstance.actionBarHidden)) {
+                    newValue = !pageInstance.actionBarHidden;
+                }
+                else {
+                    newValue = this.backStack.length > 0 || (pageInstance && !pageInstance.actionBar._isEmpty());
+                }
                 newValue = !!newValue; // Make sure it is boolean
                 break;
         }

@@ -49,7 +49,7 @@ declare module "ui/page" {
         /**
          * Dependency property used to hide the Navigation Bar in iOS and the Action Bar in Android.
          */
-        public static navigationBarHiddenProperty: dependencyObservable.Property;
+        public static actionBarHiddenProperty: dependencyObservable.Property;
 
         /**
          * String value used when hooking to shownModally event.
@@ -81,7 +81,7 @@ declare module "ui/page" {
         /**
          * Used to hide the Navigation Bar in iOS and the Action Bar in Android.
          */
-        navigationBarHidden: boolean;
+        actionBarHidden: boolean;
 
         /**
          * A valid css string which will be applied for all nested UI components (based on css rules).

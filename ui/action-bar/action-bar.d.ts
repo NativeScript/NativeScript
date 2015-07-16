@@ -49,7 +49,7 @@ declare module "ui/action-bar" {
         update();
 
         //@private
-        _shouldShow(): boolean
+        _isEmpty(): boolean
         _updateAndroid(menu: android.view.IMenu);
         _onAndroidItemSelected(itemId: number): boolean
 
