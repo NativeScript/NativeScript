@@ -347,7 +347,7 @@ export class TabView extends common.TabView {
 
     public _addTabs(newItems: Array<definition.TabViewItem>) {
         var parentPage = <page.Page>view.getAncestor(this, "Page");
-        if (parentPage && parentPage.navigationBarHidden) {
+        if (parentPage && parentPage.actionBarHidden) {
             return;
         }
 
@@ -424,7 +424,7 @@ export class TabView extends common.TabView {
 
     public _removeTabs(oldItems: Array<definition.TabViewItem>) {
         var parentPage = <page.Page>view.getAncestor(this, "Page");
-        if (parentPage && parentPage.navigationBarHidden) {
+        if (parentPage && parentPage.actionBarHidden) {
             return;
         }
 

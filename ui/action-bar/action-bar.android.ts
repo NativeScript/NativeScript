@@ -105,6 +105,20 @@ export class ActionBar extends common.ActionBar {
     public _updateAndroid(menu: android.view.IMenu) {
         var actionBar: android.app.ActionBar = frame.topmost().android.actionBar;
 
+        if (this.page.actionBarHidden) {
+            if (actionBar.isShowing()) {
+                actionBar.hide();
+            }
+
+            // If action bar is hidden - no need to fill it with items.
+            return;
+        }
+
+        // Assure action bar is showing;
+        if (!actionBar.isShowing()) {
+            actionBar.show();
+        }
+
         this._addActionItems(menu);
 
         // Set title

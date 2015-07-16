@@ -10,23 +10,23 @@ import actionBar = require("ui/action-bar");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 
-var navigationBarHiddenProperty = new dependencyObservable.Property(
-    "navigationBarHidden",
+var actionBarHiddenProperty = new dependencyObservable.Property(
+    "actionBarHidden",
     "Page",
     new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
     );
 
-function onNavigationBarHiddenPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onActionBarHiddenPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var page = <Page>data.object;
     if (page.isLoaded) {
-        page._updateNavigationBar(data.newValue);
+        page._updateActionBar(data.newValue);
     }
 }
 
-(<proxy.PropertyMetadata>navigationBarHiddenProperty.metadata).onSetNativeValue = onNavigationBarHiddenPropertyChanged;
+(<proxy.PropertyMetadata>actionBarHiddenProperty.metadata).onSetNativeValue = onActionBarHiddenPropertyChanged;
 
 export class Page extends contentView.ContentView implements dts.Page {
-    public static navigationBarHiddenProperty = navigationBarHiddenProperty;
+    public static actionBarHiddenProperty = actionBarHiddenProperty;
     public static navigatingToEvent = "navigatingTo";
     public static navigatedToEvent = "navigatedTo";
     public static navigatingFromEvent = "navigatingFrom";
@@ -47,22 +47,22 @@ export class Page extends contentView.ContentView implements dts.Page {
     public onLoaded() {
         this._applyCss();
 
-        if (this.navigationBarHidden !== undefined) {
-            this._updateNavigationBar(this.navigationBarHidden);
+        if (this.actionBarHidden !== undefined) {
+            this._updateActionBar(this.actionBarHidden);
         }
 
         super.onLoaded();
     }
 
-    get navigationBarHidden(): boolean {
-        return this._getValue(Page.navigationBarHiddenProperty);
+    get actionBarHidden(): boolean {
+        return this._getValue(Page.actionBarHiddenProperty);
     }
 
-    set navigationBarHidden(value: boolean) {
-        this._setValue(Page.navigationBarHiddenProperty, value);
+    set actionBarHidden(value: boolean) {
+        this._setValue(Page.actionBarHiddenProperty, value);
     }
 
-    public _updateNavigationBar(hidden: boolean) {
+    public _updateActionBar(hidden: boolean) {
         //
     }
 
