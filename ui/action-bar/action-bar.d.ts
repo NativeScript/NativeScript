@@ -167,7 +167,7 @@ declare module "ui/action-bar" {
     }
     
     /**
-     * Represents Android specific options of the action item.
+     * Represents iOS specific options of the action item.
      */
     export interface IOSActionItemSettings {
         /**
