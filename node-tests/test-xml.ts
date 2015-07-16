@@ -22,9 +22,6 @@ describe("xml parser", () => {
     });
 
     it("handles whitespace around attribute =", () => {
-        let attributes = null;
-        let element = null;
-
         parser.parse("<TextField text = \n 'hello' />");
 
         assert.equal('TextField', last_element);
