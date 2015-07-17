@@ -171,6 +171,7 @@
     <TypeScriptCompile Include="apps\tests\file-name-resolver-tests\file-name-resolver-tests.ts" />
     <TypeScriptCompile Include="apps\tests\frame-tests.ts" />
     <TypeScriptCompile Include="apps\tests\gestures-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\fetch-tests.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\dock-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\pages\app.ts" />
     <TypeScriptCompile Include="apps\tests\pages\file-load-test.ts" />
@@ -288,6 +289,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="es-collections.d.ts" />
     <TypeScriptCompile Include="es6-promise.d.ts" />
+    <TypeScriptCompile Include="fetch\fetch.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.ts">
       <DependentUpon>file-name-resolver.d.ts</DependentUpon>
@@ -809,6 +811,7 @@
     <Content Include="apps\ui-tests-app\pages\text\label.xml" />
     <Content Include="apps\ui-tests-app\pages\text\button.xml" />
     <Content Include="apps\ui-tests-app\web-view\webview.xml" />
+    <Content Include="fetch\fetch.js" />
     <Content Include="js-libs\reworkcss-value\reworkcss-value.js" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -1670,6 +1673,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="apps\action-bar-demo\package.json" />
+    <Content Include="fetch\package.json" />
+    <Content Include="fetch\README.md" />
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">
