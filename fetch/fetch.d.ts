@@ -85,5 +85,6 @@ declare module "fetch" {
     type BodyInit = Blob|FormData|string;
     type RequestInfo = Request|string;
 
+    /* tslint:disable */
     function fetch(url: string, init?: RequestInit): Promise<Response>;
 }
