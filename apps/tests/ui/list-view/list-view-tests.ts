@@ -5,6 +5,7 @@ import viewModule = require("ui/core/view");
 import observable = require("data/observable");
 import types = require("utils/types");
 import platform = require("platform");
+import utils = require("utils/utils");
 
 // <snippet module="ui/list-view" title="list-view">
 // # ListView
@@ -525,6 +526,88 @@ export function test_BindingListViewToASimpleArrayWithExpression() {
         TKUnit.assertEqual(firstNativeElementText, "1 some static text", "first element text");
         TKUnit.assertEqual(secondNativeElementText, "2 some static text", "second element text");
         TKUnit.assertEqual(thirdNativeElementText, "3 some static text", "third element text");
+    }
+
+    helper.buildUIAndRunTest(listView, testAction);
+}
+
+export function test_bindingToParentObject() {
+    var listView = new listViewModule.ListView();
+    var expectedValue = "parentTestValue";
+
+    function testAction(views: Array<viewModule.View>) {
+        var listViewModel = new observable.Observable();
+        listViewModel.set("items", [1, 2, 3]);
+        listViewModel.set("parentTestProp", expectedValue);
+        listView.bindingContext = listViewModel;
+        listView.bind({ sourceProperty: "items", targetProperty: "items" });
+        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ sourceProperty = $parents[ListView].parentTestProp }}\" />";
+
+        TKUnit.wait(ASYNC);
+        var firstNativeElementText = getTextFromNativeElementAt(listView, 0);
+        var secondNativeElementText = getTextFromNativeElementAt(listView, 1);
+        var thirdNativeElementText = getTextFromNativeElementAt(listView, 2);
+
+        TKUnit.assertEqual(firstNativeElementText, expectedValue, "first element text");
+        TKUnit.assertEqual(secondNativeElementText, expectedValue, "second element text");
+        TKUnit.assertEqual(thirdNativeElementText, expectedValue, "third element text");
+    }
+
+    helper.buildUIAndRunTest(listView, testAction);
+}
+
+export function test_bindingToParentObjectWithSpacesInIndexer() {
+    var listView = new listViewModule.ListView();
+    var expectedValue = "parentTestValue";
+
+    function testAction(views: Array<viewModule.View>) {
+        var listViewModel = new observable.Observable();
+        listViewModel.set("items", [1, 2, 3]);
+        listViewModel.set("parentTestProp", expectedValue);
+        listView.bindingContext = listViewModel;
+        listView.bind({ sourceProperty: "items", targetProperty: "items" });
+        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ sourceProperty = $parents[ ListView ].parentTestProp }}\" />";
+
+        TKUnit.wait(ASYNC);
+        var firstNativeElementText = getTextFromNativeElementAt(listView, 0);
+        var secondNativeElementText = getTextFromNativeElementAt(listView, 1);
+        var thirdNativeElementText = getTextFromNativeElementAt(listView, 2);
+
+        TKUnit.assertEqual(firstNativeElementText, expectedValue, "first element text");
+        TKUnit.assertEqual(secondNativeElementText, expectedValue, "second element text");
+        TKUnit.assertEqual(thirdNativeElementText, expectedValue, "third element text");
+    }
+
+    helper.buildUIAndRunTest(listView, testAction);
+}
+
+export function test_ConverterIsCalledJustOnce_onAddingItemsToListView() {
+    var listView = new listViewModule.ListView();
+    var converterCalledCounter = 0;
+
+    var testConverter = function (value) {
+        converterCalledCounter++;
+        return value;
+    }
+
+    app.resources["testConverter"] = testConverter;
+
+    function testAction(views: Array<viewModule.View>) {
+        var listViewModel = new observable.Observable();
+        listViewModel.set("items", [1, 2, 3]);
+        listView.bindingContext = listViewModel;
+
+        listView.bind({ sourceProperty: "items", targetProperty: "items" });
+        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ $value, $value | testConverter }}\" />";
+
+        TKUnit.wait(ASYNC);
+
+        if (utils.ios && utils.ios.MajorVersion < 8) {
+            TKUnit.assertEqual(converterCalledCounter, listViewModel.get("items").length * 2, "Converter should be called once for every item.");
+        }
+        else {
+            TKUnit.assertEqual(converterCalledCounter, listViewModel.get("items").length, "Converter should be called once for every item.");
+        }
     }
 
     helper.buildUIAndRunTest(listView, testAction);

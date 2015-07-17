@@ -25,6 +25,7 @@ import textBase = require("ui/text-base");
 import enums = require("ui/enums");
 import labelTestsNative = require("./label-tests-native");
 import fs = require("file-system");
+import background = require("ui/styling/background");
 
 export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
@@ -32,30 +33,30 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         var label = new LabelModule.Label();
         label.text = "Label";
         return label;
-}
+    }
 
     public test_Label_Members() {
-    var label = new LabelModule.Label();
-    TKUnit.assert(types.isDefined(label.text), "Label.text is not defined");
-    TKUnit.assert(types.isDefined(label.textWrap), "Label.textWrap is not defined");
-}
+        var label = new LabelModule.Label();
+        TKUnit.assert(types.isDefined(label.text), "Label.text is not defined");
+        TKUnit.assert(types.isDefined(label.textWrap), "Label.textWrap is not defined");
+    }
 
     public snippet_Set_Text_TNS() {
-    // <snippet module="ui/label" title="Label">
-    // ### How to set label text content
-    // ``` JavaScript
-    var label = new LabelModule.Label();
-    var expectedValue = "Expected Value";
-    label.text = expectedValue;
-    // ```
-    // </snippet>
-}
+        // <snippet module="ui/label" title="Label">
+        // ### How to set label text content
+        // ``` JavaScript
+        var label = new LabelModule.Label();
+        var expectedValue = "Expected Value";
+        label.text = expectedValue;
+        // ```
+        // </snippet>
+    }
 
     public snippet_Set_TextWrap_TNS() {
         // <snippet module="ui/label" title="Label">
         // ### How to turn on text wrapping for a label
         // ``` JavaScript
-    var label = new LabelModule.Label();
+        var label = new LabelModule.Label();
         label.textWrap = true;
         // ```
         // </snippet>
@@ -85,15 +86,15 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         }
 
         TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");
-}
+    }
 
     public test_measuredWidth_is_not_clipped() {
         var label = this.testView;
-    label.horizontalAlignment = "left";
-    label.text = "i";
-    label.fontSize = 9;
+        label.horizontalAlignment = "left";
+        label.text = "i";
+        label.fontSize = 9;
 
-    if (label.ios) {
+        if (label.ios) {
 
             this.waitUntilTestElementLayoutIsValid();
 
@@ -105,11 +106,11 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
     public test_Set_TextWrap_TNS() {
         var label = this.testView;
-    label.textWrap = true;
+        label.textWrap = true;
 
-    var actual = label._getValue(LabelModule.Label.textWrapProperty);
+        var actual = label._getValue(LabelModule.Label.textWrapProperty);
         TKUnit.assertEqual(actual, true);
-}
+    }
 
     public test_Set_TextWrap_Native() {
         var testLabel = this.testView;
@@ -178,40 +179,40 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         }
 
         TKUnit.assertEqual(actualLinesNumber, expectedLinesNumber, "LinesNumber");
-}
+    }
 
     public test_SetStyleProperties_via_css_class_Native() {
         var label = this.testView;
 
-    var fontSize = 14;
-    var color = "#ffff0000";
-    var backgroundColor = "#ff00ff00";
-    var testCss = [".title {background-color: ", backgroundColor, "; ",
-        "color: ", color, "; ",
-        "font-size: ", fontSize, ";}"].join("");
+        var fontSize = 14;
+        var color = "#ffff0000";
+        var backgroundColor = "#ff00ff00";
+        var testCss = [".title {background-color: ", backgroundColor, "; ",
+            "color: ", color, "; ",
+            "font-size: ", fontSize, ";}"].join("");
 
-    // <snippet module="ui/label" title="Label">
-    // ### How to style a label via css class
-    // ``` JavaScript
-    label.text = "The quick brown fox jumps over the lazy dog.";
-    label.cssClass = "title";
-    //// after that all we have to do is to set a similar css entry within parent page css property
-    //// label.parentPage.css = ".title {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
-    // ```
-    // </snippet>
+        // <snippet module="ui/label" title="Label">
+        // ### How to style a label via css class
+        // ``` JavaScript
+        label.text = "The quick brown fox jumps over the lazy dog.";
+        label.cssClass = "title";
+        //// after that all we have to do is to set a similar css entry within parent page css property
+        //// label.parentPage.css = ".title {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
+        // ```
+        // </snippet>
 
-    var actualTextSize;
-    var expSize;
-    var actualColors;
-    var expColor;
-    var normalColor;
-    var actualBackgroundColor;
-    var expBackgroundColor;
+        var actualTextSize;
+        var expSize;
+        var actualColors;
+        var expColor;
+        var normalColor;
+        var actualBackgroundColor;
+        var expBackgroundColor;
 
         this.testPage.css = testCss;
         this.waitUntilTestElementIsLoaded();
         var testLabel = label;
-        
+
         if (testLabel.android) {
             actualTextSize = testLabel.android.getTextSize();
             var density = utils.layout.getDisplayDensity();
@@ -223,7 +224,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             normalColor = actualColors.getDefaultColor()
             TKUnit.assert(normalColor, "Expected: " + expColor + ", Actual: " + normalColor);
 
-            actualBackgroundColor = (<android.graphics.drawable.ColorDrawable>testLabel.android.getBackground()).getColor();
+            var bkg = (<background.ad.BorderDrawable>testLabel.android.getBackground());
+            actualBackgroundColor = bkg.background.color.android;
             expBackgroundColor = android.graphics.Color.parseColor(backgroundColor);
             TKUnit.assertEqual(actualBackgroundColor, expBackgroundColor);
         }
@@ -244,12 +246,12 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
     public test_SetStyleProperties_via_css_type_TNS() {
         var label = this.testView;
-    var fontSize = 14;
-    var color = "#10C2B0";
-    var backgroundColor = "#C6C6C6";
-    var testCss = ["label {background-color: ", backgroundColor, "; ",
-        "color: ", color, "; ",
-        "font-size: ", fontSize, ";}"].join("");
+        var fontSize = 14;
+        var color = "#10C2B0";
+        var backgroundColor = "#C6C6C6";
+        var testCss = ["label {background-color: ", backgroundColor, "; ",
+            "color: ", color, "; ",
+            "font-size: ", fontSize, ";}"].join("");
 
         this.testPage.css = testCss;
         this.waitUntilTestElementIsLoaded();
@@ -277,25 +279,25 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
     public test_SetStyleProperties_via_css_id() {
         var label = this.testView;
-    var fontSize = 14;
-    var color = "#10C2B0";
-    var backgroundColor = "#C6C6C6";
-    var testCss = ["#testLabel {background-color: ", backgroundColor, "; ",
-        "color: ", color, "; ",
-        "font-size: ", fontSize, ";}"].join("");
+        var fontSize = 14;
+        var color = "#10C2B0";
+        var backgroundColor = "#C6C6C6";
+        var testCss = ["#testLabel {background-color: ", backgroundColor, "; ",
+            "color: ", color, "; ",
+            "font-size: ", fontSize, ";}"].join("");
 
         this.testPage.css = testCss;
         this.waitUntilTestElementIsLoaded();
 
-    // <snippet module="ui/label" title="Label">
-    // ### How to style a label via css control identifier
-    // ``` JavaScript
-    label.text = "The quick brown fox jumps over the lazy dog.";
-    label.id = "testLabel";
-    //// after that all we have to do is to set a similar css entry within parent page css property
-    //// label.parentPage.css = "#testLabel {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
-    // ```
-    // </snippet>
+        // <snippet module="ui/label" title="Label">
+        // ### How to style a label via css control identifier
+        // ``` JavaScript
+        label.text = "The quick brown fox jumps over the lazy dog.";
+        label.id = "testLabel";
+        //// after that all we have to do is to set a similar css entry within parent page css property
+        //// label.parentPage.css = "#testLabel {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
+        // ```
+        // </snippet>
 
         var expectedBackgroundColor = new colorModule.Color(backgroundColor);
         var actualBackgroundColor = label.style.backgroundColor;
@@ -307,27 +309,27 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         var actualFontSize = label.style.fontSize;
         TKUnit.assertEqual(fontSize, actualFontSize);
-}
+    }
 
     public test_BindingToText() {
-    // <snippet module="ui/label" title="Label">
-    // ### How to bind text property of a label to an observable model
-    // ``` JavaScript
-    var label = new LabelModule.Label();
-    var expValue = "Expected Value";
-    var sourceModel = new observableModule.Observable();
-    var bindingOptions: bindable.BindingOptions = {
-        sourceProperty: "sourceProperty",
-        targetProperty: "text"
-    };
-    label.bind(bindingOptions, sourceModel);
-    sourceModel.set("sourceProperty", expValue);
-    //// console.log(label.text); --> prints: "Expected Value"
-    // ```
-    // </snippet>
+        // <snippet module="ui/label" title="Label">
+        // ### How to bind text property of a label to an observable model
+        // ``` JavaScript
+        var label = new LabelModule.Label();
+        var expValue = "Expected Value";
+        var sourceModel = new observableModule.Observable();
+        var bindingOptions: bindable.BindingOptions = {
+            sourceProperty: "sourceProperty",
+            targetProperty: "text"
+        };
+        label.bind(bindingOptions, sourceModel);
+        sourceModel.set("sourceProperty", expValue);
+        //// console.log(label.text); --> prints: "Expected Value"
+        // ```
+        // </snippet>
 
         TKUnit.assertEqual(label.text, expValue);
-}
+    }
 
     public test_BindingToText_Native() {
         var label = this.testView;
@@ -348,10 +350,10 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         }
         else if (label.ios) {
             actualNative = label.ios.text;
-    }
+        }
 
         TKUnit.assertEqual(actualNative, expValue);
-}
+    }
 
     public test_BindingToText_WithBindingContext() {
         var label = this.testView;
@@ -375,7 +377,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         this.testPage.bindingContext = secondSourceObject;
 
         TKUnit.assertEqual(label.text, secondExpValue);
-}
+    }
 
     public test_BindingToText_BindingContext_SetingLocalValue() {
         var label = this.testView;
@@ -400,7 +402,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         firstSourceObject.set("sourceProperty", "some value");
         // after setting a value one way binding should be gone.
         TKUnit.assertEqual(label.text, secondExpValue);
-}
+    }
 
     private expectedTextAlignment = enums.TextAlignment.right;
     public testLocalTextAlignmentFromCss() {
@@ -408,7 +410,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         this.testPage.css = "label { text-align: " + this.expectedTextAlignment + "; }";
         this.waitUntilTestElementIsLoaded();
         TKUnit.assertEqual(label.style.textAlignment, this.expectedTextAlignment);
-}
+    }
 
     public testLocalTextAlignmentFromCssWhenAddingCss() {
         var view = this.testView;
@@ -421,7 +423,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         page.addCss("label { text-align: " + enums.TextAlignment.left + "; }");
         TKUnit.assertEqual(view.style.textAlignment, view.style.textAlignment);
-}
+    }
 
     public testLocalTextAlignmentFromCssWhenAddingCssAllSelectorsAreApplied() {
         var view = this.testView;
@@ -435,7 +437,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         var actualResult = view.style.textAlignment;
         // actual result is taken from #testLabel tag, because it has a greater priority (id vs type).
         TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
-}
+    }
 
     public testLocalTextAlignmentFromCssWhenAddingCssFileAllSelectorsAreApplied() {
         var view = this.testView;
@@ -450,7 +452,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         // actual result is taken from #testLabel tag, because it has a greater priority (id vs type).
         TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
         TKUnit.assertEqual(view.style.backgroundColor.hex, "#FF0000");
-}
+    }
 
     public testNativeTextAlignmentFromCss() {
         var view = this.testView;
@@ -460,7 +462,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         page.css = "label { text-align: " + this.expectedTextAlignment + "; }";
         var actualResult = labelTestsNative.getNativeTextAlignment(view);
         TKUnit.assert(actualResult, this.expectedTextAlignment);
-}
+    }
 
     public testNativeTextAlignmentFromLocal() {
         var view = this.testView;
@@ -470,7 +472,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         var actualResult = labelTestsNative.getNativeTextAlignment(view);
         TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
-}
+    }
 
     public testErrorMessageWhenWrongCssIsAddedWithFile() {
         var view = this.testView;
@@ -481,7 +483,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         page.addCssFile(fs.path.join(__dirname, "label-tests-wrong.css"));
         TKUnit.assertNotEqual(this.errorMessage, undefined);
     }
-    
+
     public testErrorMessageWhenWrongCssIsAdded() {
         var view = this.testView;
         var page = this.testPage;

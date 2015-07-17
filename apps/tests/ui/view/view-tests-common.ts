@@ -3,6 +3,7 @@ import viewModule = require("ui/core/view");
 import frame = require("ui/frame");
 import page = require("ui/page");
 import button = require("ui/button");
+import label = require("ui/label");
 import types = require("utils/types");
 import helper = require("../../ui/helper");
 import color = require("color");
@@ -11,6 +12,8 @@ import proxy = require("ui/core/proxy");
 import layoutModule = require("ui/layouts/layout");
 import observable = require("data/observable");
 import bindable = require("ui/core/bindable");
+import definition = require("./view-tests");
+import enums = require("ui/enums");
 
 export var test_eachDescendant = function () {
     var test = function (views: Array<viewModule.View>) {
@@ -24,7 +27,8 @@ export var test_eachDescendant = function () {
         }
 
         viewModule.eachDescendant(frame.topmost(), callback);
-        TKUnit.assert(counter === 2);
+        // Descendants: page, actionBar, button
+        TKUnit.assertEqual(counter, 3, "descendants");
     }
 
     helper.do_PageTest_WithButton(test);
@@ -258,13 +262,13 @@ var inheritanceTestProperty = new dependensyObservable.Property(
     "inheritanceTest",
     "TestView",
     new proxy.PropertyMetadata(inheritanceTestDefaultValue, dependensyObservable.PropertyMetadataSettings.Inheritable)
-);
+    );
 
 var dummyProperty = new dependensyObservable.Property(
     "dummy",
     "TestView",
     new proxy.PropertyMetadata(0)
-);
+    );
 
 class TestView extends layoutModule.Layout {
 
@@ -280,7 +284,7 @@ class TestView extends layoutModule.Layout {
     }
     set tralala(value: string) {
         this._tralala = value;
-    } 
+    }
 
     get inheritanceTest(): number {
         return this._getValue(inheritanceTestProperty);
@@ -320,7 +324,7 @@ export var test_InheritableProperties_getValuesFromParent = function () {
 
     firstView.addChild(secondView);
     secondView.addChild(thirdView);
-    
+
     helper.do_PageTest(test, firstView, secondView, thirdView);
 }
 
@@ -386,11 +390,11 @@ export var test_InheritableProperties_ChangeNotification = function () {
     helper.do_PageTest(test, firstView, secondView, thirdView);
 }
 
-function property_binding_test (propName: string, firstValue: any, secondValue: any, view?: viewModule.View) {
+function property_binding_test(propName: string, firstValue: any, secondValue: any, view?: viewModule.View) {
     var actualResult;
     var model = new observable.Observable();
     model.set(propName, firstValue);
-    
+
     var options: bindable.BindingOptions = {
         sourceProperty: propName,
         targetProperty: propName
@@ -399,7 +403,7 @@ function property_binding_test (propName: string, firstValue: any, secondValue: 
     if (!view) {
         view = new TestView("view");
     }
-    
+
     view.bind(options, model);
 
     actualResult = view.get(propName);
@@ -580,4 +584,74 @@ export var test_binding_style_visibility = function () {
 
 export var test_binding_style_opacity = function () {
     property_binding_style_test("opacity", 0.5, 0.6);
+}
+
+function _createLabelWithBorder(): viewModule.View {
+    var lbl = new label.Label();
+    lbl.borderRadius = 10;
+    lbl.borderWidth = 2;
+    lbl.borderColor = new color.Color("#FF0000");
+    lbl.backgroundColor = new color.Color("#FFFF00");
+
+    return lbl;
+}
+
+export var testIsVisible = function () {
+    var lbl = new label.Label();
+
+    helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
+        TKUnit.assert(lbl.visibility === enums.Visibility.visible, "Actual: " + lbl.visibility + "; Expected: " + enums.Visibility.visible);
+        TKUnit.assert(lbl._isVisible, "Actual: " + lbl._isVisible + "; Expected: true;");
+
+        lbl.visibility = enums.Visibility.collapse;
+        TKUnit.assert(lbl.visibility === enums.Visibility.collapse, "Actual: " + lbl.visibility + "; Expected: " + enums.Visibility.collapse);
+        TKUnit.assert(!lbl._isVisible, "Actual: " + lbl._isVisible + "; Expected: false;");
+
+        lbl.visibility = enums.Visibility.collapsed;
+        TKUnit.assert(lbl.visibility === enums.Visibility.collapsed, "Actual: " + lbl.visibility + "; Expected: " + enums.Visibility.collapsed);
+        TKUnit.assert(!lbl._isVisible, "Actual: " + lbl._isVisible + "; Expected: false;");
+    });
+}
+
+export var testBorderWidth = function () {
+    helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
+        var lbl = <label.Label>views[0];
+        var expectedValue = lbl.borderWidth;
+        var actualValue = definition.getNativeBorderWidth(lbl);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testCornerRadius = function () {
+    helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
+        var lbl = <label.Label>views[0];
+        var expectedValue = lbl.borderRadius;
+        var actualValue = definition.getNativeCornerRadius(lbl);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testBorderColor = function () {
+    helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
+        var lbl = <label.Label>views[0];
+        TKUnit.assert(definition.checkNativeBorderColor(lbl), "BorderColor not applied correctly!");
+    });
+}
+
+export var testBackgroundColor = function () {
+    helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
+        var lbl = <label.Label>views[0];
+        TKUnit.assert(definition.checkNativeBackgroundColor(lbl), "BackgroundColor not applied correctly!");
+    });
+}
+
+export var testBackgroundImage = function () {
+    var lbl = _createLabelWithBorder();
+    lbl.cssClass = "myClass";
+    helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
+        var page = <page.Page>views[1];
+        page.css = ".myClass { background-image: url('~/logo.png') }";
+
+        TKUnit.assert(definition.checkNativeBackgroundImage(lbl), "Style background-image not loaded correctly.");
+    });
 }

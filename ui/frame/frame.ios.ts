@@ -5,6 +5,7 @@ import pages = require("ui/page");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
+import types = require("utils/types");
 
 declare var exports;
 require("utils/module-merge").merge(frameCommon, exports);
@@ -84,7 +85,12 @@ export class Frame extends frameCommon.Frame {
 
             case enums.NavigationBarVisibility.auto:
                 var pageInstance: pages.Page = page || this.currentPage;
-                newValue = this.backStack.length > 0 || (pageInstance && pageInstance.optionsMenu.getItems().length > 0);
+                if (pageInstance && types.isDefined(pageInstance.actionBarHidden)) {
+                    newValue = !pageInstance.actionBarHidden;
+                }
+                else {
+                    newValue = this.backStack.length > 0 || (pageInstance && !pageInstance.actionBar._isEmpty());
+                }
                 newValue = !!newValue; // Make sure it is boolean
                 break;
         }
@@ -95,7 +101,7 @@ export class Frame extends frameCommon.Frame {
         }
     }
 
-    public get ios(): iOSFrame {
+    public get ios(): definition.iOSFrame {
         return this._ios;
     }
 
@@ -191,11 +197,12 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             }
 
             frame._addView(newPage);
-            newPage._invalidateOptionsMenu();
         }
         else if (newPage.parent !== frame) {
             throw new Error("Page is already shown on another frame.");
         }
+
+        newPage.actionBar.update();
     }
 
     public navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
@@ -226,6 +233,8 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         frame._navigateToEntry = null;
         frame._currentEntry = newEntry;
         frame.updateNavigationBar();
+
+        frame.ios.controller.navigationBar.backIndicatorImage
 
         var newPage = newEntry.resolvedPage;
 

@@ -7,7 +7,7 @@ import TKUnit = require("../TKUnit");
 import utils = require("utils/utils");
 import types = require("utils/types");
 import styling = require("ui/styling");
-import platform = require("platform"); 
+import platform = require("platform");
 
 var DELTA = 0.1;
 
@@ -25,7 +25,7 @@ export function do_PageTest(test: (views: Array<view.View>) => void, content: vi
     navigate(pageFactory);
 
     try {
-        test([newPage, content, secondView, thirdView]);
+        test([newPage, content, secondView, thirdView, newPage.actionBar]);
     }
     finally {
         goBack();
@@ -45,7 +45,7 @@ export function do_PageTest_WithButton(test: (views: Array<view.View>) => void) 
     navigate(pageFactory);
 
     try {
-        test([newPage, btn]);
+        test([newPage, btn, newPage.actionBar]);
     }
     finally {
         goBack();
@@ -69,7 +69,7 @@ export function do_PageTest_WithStackLayout_AndButton(test: (views: Array<view.V
     navigate(pageFactory);
 
     try {
-        test([newPage, stackLayout, btn]);
+        test([newPage, stackLayout, btn, newPage.actionBar]);
     }
     finally {
         goBack();
@@ -94,14 +94,14 @@ export function do_PageTest_WithStackLayout_AndButton_NavigatedBack(test: (views
     navigate(pageFactory);
 
     try {
-        test([newPage, stackLayout, btn]);
+        test([newPage, stackLayout, btn, newPage.actionBar]);
     }
     finally {
         goBack();
     }
 
     try {
-        assert([newPage, stackLayout, btn]);
+        assert([newPage, stackLayout, btn, newPage.actionBar]);
     }
     finally {
         // wait to ensure asynchronous navigation
@@ -198,7 +198,7 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
     }
 }
 
-export function navigate(pageFactory: () => page.Page,  navigationContext?: any) {
+export function navigate(pageFactory: () => page.Page, navigationContext?: any) {
     var currentPage = frame.topmost().currentPage;
     frame.topmost().navigate({ create: pageFactory, animated: false, context: navigationContext });
     TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });

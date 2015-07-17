@@ -25,7 +25,7 @@ class UIAlertViewDelegateImpl extends NSObject implements UIAlertViewDelegate {
         this._callback = callback;
         return this;
     }
-    
+
     public alertViewClickedButtonAtIndex(view, index) {
         this._callback(view, index);
     }
@@ -57,22 +57,53 @@ function createUIAlertView(options: dialogs.DialogOptions): UIAlertView {
     return alert;
 }
 
+enum allertButtons {
+    cancel = 1 << 0,
+    neutral = 1 << 1,
+    ok = 1 << 2,
+}
+
 function addButtonsToAlertDialog(alert: UIAlertView, options: dialogs.ConfirmOptions): void {
     if (!options) {
         return;
     }
 
     if (options.cancelButtonText) {
+        alert.tag = allertButtons.cancel;
         alert.addButtonWithTitle(options.cancelButtonText);
     }
 
     if (options.neutralButtonText) {
+        alert.tag = alert.tag | allertButtons.neutral;
         alert.addButtonWithTitle(options.neutralButtonText);
     }
 
     if (options.okButtonText) {
+        alert.tag = alert.tag | allertButtons.ok;
         alert.addButtonWithTitle(options.okButtonText);
     }
+}
+
+function getDialogResult(buttons: allertButtons, index: number) {
+    var hasCancel = buttons & allertButtons.cancel;
+    var hasNeutral = buttons & allertButtons.neutral;
+    var hasOk = buttons & allertButtons.ok;
+
+    if (hasCancel && hasNeutral && hasOk) {
+        return index === 0 ? false : index === 2 ? true : undefined;
+    } else if (buttons & hasNeutral && hasOk) {
+        return index === 0 ? undefined : true;
+    } else if (hasCancel && hasOk) {
+        return index !== 0;
+    } else if (hasCancel && hasNeutral) {
+        return index === 0 ? false : undefined;
+    } else if (hasCancel) {
+        return false;
+    } else if (hasOk) {
+        return true;
+    }
+
+    return undefined;
 }
 
 function addButtonsToAlertController(alertController: UIAlertController, options: dialogs.ConfirmOptions,
@@ -153,7 +184,8 @@ export function confirm(arg: any): Promise<boolean> {
 
                 // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
                 var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
-                    resolve(index === 2 ? undefined : index === 0);
+                    resolve(getDialogResult(alert.tag, index));
+
                     // Remove the local variable for the delegate.
                     delegate = undefined;
                 });
@@ -220,7 +252,7 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
 
                 // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
                 var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
-                    resolve({ result: index === 2 ? undefined : index === 0, text: textField.text });
+                    resolve({ result: getDialogResult(alert.tag, index), text: textField.text });
                     // Remove the local variable for the delegate.
                     delegate = undefined;
                 });
@@ -294,12 +326,12 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
                 userNameTextField = alert.textFieldAtIndex(0);
                 userNameTextField.text = types.isString(options.userName) ? options.userName : "";
 
-                userNameTextField = alert.textFieldAtIndex(1);
-                userNameTextField.text = types.isString(options.password) ? options.password : "";
+                passwordTextField = alert.textFieldAtIndex(1);
+                passwordTextField.text = types.isString(options.password) ? options.password : "";
 
                 // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
                 var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
-                    resolve({ result: index === 2 ? undefined : index === 0, userName: userNameTextField.text, password: userNameTextField.text });
+                    resolve({ result: getDialogResult(alert.tag, index), userName: userNameTextField.text, password: passwordTextField.text });
                     // Remove the local variable for the delegate.
                     delegate = undefined;
                 });
@@ -343,6 +375,12 @@ function showUIAlertController(alertController: UIAlertController) {
     if (topMostFrame) {
         var viewController: UIViewController = topMostFrame.currentPage && topMostFrame.currentPage.ios;
         if (viewController) {
+            if (alertController.popoverPresentationController) {
+                alertController.popoverPresentationController.sourceView = viewController.view;
+                alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
+                alertController.popoverPresentationController.permittedArrowDirections = 0;
+            }
+
             viewController.presentModalViewControllerAnimated(alertController, true);
         }
     }

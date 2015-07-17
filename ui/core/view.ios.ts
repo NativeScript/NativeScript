@@ -3,6 +3,7 @@ import trace = require("trace");
 import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import background = require("ui/styling/background");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -124,6 +125,7 @@ export class View extends viewCommon.View {
         if (changed || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
             this.onLayout(left, top, right, bottom);
             this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
+            this._onBoundsChanged();
         }
         this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
     }
@@ -170,6 +172,10 @@ export class View extends viewCommon.View {
     }
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
+        if (!this._nativeView) {
+            return;
+        }
+
         var frame = CGRectMake(left, top, right - left, bottom - top);
 
         // This is done because when rotated in iOS7 there is rotation applied on the first subview on the Window which is our frame.nativeView.view.
@@ -177,7 +183,7 @@ export class View extends viewCommon.View {
         // When in landscape in iOS 7 there is transformation on the first subview of the window so we set frame to its subview.
         // in iOS 8 we set frame to subview again otherwise we get clipped.
         var nativeView: UIView;
-        if (!this.parent && this._nativeView.subviews.count > 0) {
+        if (!this.parent && this._nativeView.subviews.count > 0 && !(<any>this)._isModal) {
             trace.write(this + " has no parent. Setting frame to first child instead.", trace.categories.Layout);
             nativeView = (<UIView>this._nativeView.subviews[0]);
         }
@@ -202,6 +208,13 @@ export class View extends viewCommon.View {
         }
 
         return false;
+    }
+
+    private _onBoundsChanged() {
+        var bgColor = background.ios.createBackgroundUIColor(this);
+        if (bgColor) {
+            this._nativeView.backgroundColor = bgColor;
+        }
     }
 }
 

@@ -465,6 +465,39 @@ export var test_getBindableOptionsFromStringTwoParamsNamedFormat = function () {
     TKUnit.assert(bindOptions.twoWay === true, "Expected: true, Actual: " + bindOptions.twoWay);
 }
 
+export var test_getBindingOptionsFromStringWithFunctionWitnMoreParams = function () {
+    var bindingExpression = "bindProperty, converter(bindProperty, param1)";
+    var bindOptions = bindingBuilder.getBindingOptions("targetBindProperty", bindingExpression);
+
+    TKUnit.assertEqual(bindOptions.sourceProperty, "bindProperty");
+    TKUnit.assertEqual(bindOptions.targetProperty, "targetBindProperty");
+    TKUnit.assertEqual(bindOptions.expression, "converter(bindProperty, param1)");
+    TKUnit.assertEqual(bindOptions.twoWay, true);
+}
+
+export var test_getBindingOptionsFromStringWithFunctionArrayParams = function () {
+    var bindingExpression = "bindProperty, converter(bindProperty, [param1, param2])";
+    var bindOptions = bindingBuilder.getBindingOptions("targetBindProperty", bindingExpression);
+
+    TKUnit.assertEqual(bindOptions.sourceProperty, "bindProperty");
+    TKUnit.assertEqual(bindOptions.targetProperty, "targetBindProperty");
+    TKUnit.assertEqual(bindOptions.expression, "converter(bindProperty, [param1, param2])");
+    TKUnit.assertEqual(bindOptions.twoWay, true);
+}
+
+export var test_bindingToNestedPropertyWithValueSyntax = function () {
+    var bindingSource = new observable.Observable();
+    bindingSource.set("testProperty", "testValue");
+
+    var testElement = new bindable.Bindable();
+    testElement.bind({
+        sourceProperty: "$value.testProperty",
+        targetProperty: "targetPropertyName"
+    }, bindingSource);
+
+    TKUnit.assertEqual(testElement.get("targetPropertyName"), "testValue");
+}
+
 export var test_TwoElementsBindingToSameBindingContext = function () {
     var testFunc = function (page: pageModule.Page) {
         var upperStackLabel = <labelModule.Label>(page.getViewById("upperStackLabel"));

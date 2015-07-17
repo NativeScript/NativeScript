@@ -6,7 +6,6 @@ import observable = require("data/observable");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
 import application = require("application");
-import enums = require("ui/enums");
 
 declare var exports;
 require("utils/module-merge").merge(frameCommon, exports);
@@ -140,49 +139,18 @@ class PageFragmentBody extends android.app.Fragment {
         super.onCreateOptionsMenu(menu, inflater);
 
         var page: pages.Page = this.entry.resolvedPage;
-        var items = page.optionsMenu.getItems();
 
-        for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            var menuItem = menu.add(android.view.Menu.NONE, i, android.view.Menu.NONE, item.text);
-            if (item.icon) {
-                var androidApp = application.android;
-                var res = androidApp.context.getResources();
-                var id = res.getIdentifier(item.icon, 'drawable', androidApp.packageName);
-                if (id) {
-                    menuItem.setIcon(id);
-                }
-            }
-
-            var showAsAction = PageFragmentBody.getShowAsAction(item);
-            menuItem.setShowAsAction(showAsAction);
-        }
-    }
-
-    private static getShowAsAction(menuItem: pages.MenuItem): number {
-        switch (menuItem.android.position) {
-            case enums.MenuItemPosition.actionBarIfRoom:
-                return android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM;
-
-            case enums.MenuItemPosition.popup:
-                return android.view.MenuItem.SHOW_AS_ACTION_NEVER;
-
-            case enums.MenuItemPosition.actionBar:
-            default:
-                return android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
-        }
+        page.actionBar._updateAndroid(menu);
     }
 
     onOptionsItemSelected(item: android.view.IMenuItem) {
         var page: pages.Page = this.entry.resolvedPage;
         var itemId = item.getItemId();
 
-        var menuItem = page.optionsMenu.getItemAt(itemId);
-        if (menuItem) {
-            menuItem._raiseTap();
+        if (page.actionBar._onAndroidItemSelected(itemId)) {
             return true;
         }
-
+       
         return super.onOptionsItemSelected(item);
     }
 }
@@ -426,6 +394,15 @@ var NativeActivity = {
         if (result) {
             result(requestCode, resultCode, data);
         }
+
+        application.android.notify(<application.AndroidActivityResultEventData>{
+            eventName: "activityResult",
+            object: application.android,
+            activity: this,
+            requestCode: requestCode,
+            resultCode: resultCode,
+            intent: data
+        });
     },
 
     onAttachFragment: function (fragment: android.app.Fragment) {
@@ -485,6 +462,19 @@ var NativeActivity = {
 
     onBackPressed: function () {
         trace.write("NativeScriptActivity.onBackPressed;", trace.categories.NativeLifecycle);
+
+        var args = <application.AndroidActivityBackPressedEventData>{
+            eventName: "activityBackPressed",
+            object: application.android,
+            activity: this,
+            cancel: false,
+        };
+        application.android.notify(args);
+
+        if (args.cancel) {
+            return;
+        }
+
         if (!frameCommon.goBack()) {
             this.super.onBackPressed();
         }
@@ -670,8 +660,9 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
 }
 
 function startActivity(activity: android.app.Activity, entry: definition.NavigationEntry) {
-    var intent = new android.content.Intent(activity,(<any>com).tns.NativeScriptActivity.class);
+    var intent = new android.content.Intent(activity, (<any>com).tns.NativeScriptActivity.class);
     intent.setAction(android.content.Intent.ACTION_DEFAULT);
     // TODO: Put the navigation context (if any) in the intent
     activity.startActivity(intent);
 }
+

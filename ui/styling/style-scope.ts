@@ -1,9 +1,8 @@
 ﻿import view = require("ui/core/view");
 import trace = require("trace");
-import visualState = require("ui/styling/visual-state");
 import cssSelector = require("ui/styling/css-selector");
 import cssParser = require("js-libs/reworkcss");
-import VisualState = visualState.VisualState;
+import {VisualState} from "ui/styling/visual-state";
 import application = require("application");
 import utils = require("utils/utils");
 import types = require("utils/types");
@@ -33,18 +32,17 @@ export class StyleScope {
     }
 
     public addCss(cssString: string, cssFileName: string): void {
-        if (this._css === undefined) {
-            this._css = cssString;
-        }
-        else {
-            this._css += cssString;
-        }
-        this._cssFileName = cssFileName;
+        this._css = this._css ? this._css + cssString : cssString;
+        this._cssFileName = cssFileName
+
         this._reset();
-        if (this._cssSelectors) {
-            var addedSelectors = StyleScope.createSelectorsFromCss(cssString, cssFileName);
-            this._cssSelectors = StyleScope._joinCssSelectorsArrays([this._cssSelectors, addedSelectors]);
+
+        if (!this._cssSelectors) {
+            this._cssSelectors = new Array<cssSelector.CssSelector>();
         }
+
+        var selectorsFromFile = StyleScope.createSelectorsFromCss(cssString, cssFileName);
+        this._cssSelectors = StyleScope._joinCssSelectorsArrays([this._cssSelectors, selectorsFromFile]);
     }
 
     public static createSelectorsFromCss(css: string, cssFileName: string): cssSelector.CssSelector[] {
@@ -123,6 +121,7 @@ export class StyleScope {
             return;
         }
 
+        view.style._beginUpdate();
         var i,
             selector: cssSelector.CssSelector,
             matchedStateSelectors = new Array<cssSelector.CssVisualStateSelector>()
@@ -153,6 +152,8 @@ export class StyleScope {
                 this._createVisualsStatesForSelectors(key, matchedStateSelectors);
             }
         }
+
+        view.style._endUpdate();
     }
 
     public getVisualStates(view: view.View): Object {

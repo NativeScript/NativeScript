@@ -22,9 +22,10 @@ export function test_css_dataURI_is_applied_to_backgroundImageSource() {
         var page = <pageModule.Page>views[1];
         page.css = "StackLayout { background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD///l2Z/dAAAAM0lEQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4Ug9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC;') }";
 
-        var value = stack.style._getValue(styleModule.backgroundImageSourceProperty);
+        var value = stack.style._getValue(styleModule.backgroundInternalProperty);
 
-        TKUnit.assert(value !== undefined, "Style background-image not loaded correctly from data URI.");
+        TKUnit.assert(types.isDefined(value), "Style background-image not loaded correctly from data URI.");
+        TKUnit.assert(types.isDefined(value.image), "Style background-image not loaded correctly from data URI.");
     });
 }
 
@@ -98,23 +99,23 @@ export function test_type_selector() {
     var pageFactory = function (): pageModule.Page {
         page = new pageModule.Page();
 
-    // <snippet module="ui/styling" title="styling">
-    // ### Using type selector
-    // ``` JavaScript
-    page.css = "button { color: red; }";
+        // <snippet module="ui/styling" title="styling">
+        // ### Using type selector
+        // ``` JavaScript
+        page.css = "button { color: red; }";
 
-    //// Will be styled
+        //// Will be styled
         btn = new buttonModule.Button();
 
-    //// Won't be styled
+        //// Won't be styled
         label = new labelModule.Label();
-    // ```
-    // </snippet>
+        // ```
+        // </snippet>
 
-    var stack = new stackModule.StackLayout();
-    page.content = stack;
-    stack.addChild(label);
-    stack.addChild(btn);
+        var stack = new stackModule.StackLayout();
+        page.content = stack;
+        stack.addChild(label);
+        stack.addChild(btn);
         return page;
     };
 
@@ -134,24 +135,24 @@ export function test_class_selector() {
     var pageFactory = function (): pageModule.Page {
         page = new pageModule.Page();
 
-    // <snippet module="ui/styling" title="styling">
-    // ### Using class selector
-    // ``` JavaScript
-    page.css = ".test { color: red; }";
+        // <snippet module="ui/styling" title="styling">
+        // ### Using class selector
+        // ``` JavaScript
+        page.css = ".test { color: red; }";
 
-    //// Will be styled
+        //// Will be styled
         btnWithClass = new buttonModule.Button();
-    btnWithClass.cssClass = "test";
+        btnWithClass.cssClass = "test";
 
-    //// Won't be styled
+        //// Won't be styled
         btnWithNoClass = new buttonModule.Button();
-    // ```
-    // </snippet>
+        // ```
+        // </snippet>
 
-    var stack = new stackModule.StackLayout();
-    page.content = stack;
-    stack.addChild(btnWithClass);
-    stack.addChild(btnWithNoClass);
+        var stack = new stackModule.StackLayout();
+        page.content = stack;
+        stack.addChild(btnWithClass);
+        stack.addChild(btnWithNoClass);
         return page;
     };
 
@@ -198,24 +199,24 @@ export function test_id_selector() {
     var pageFactory = function (): pageModule.Page {
         page = new pageModule.Page();
 
-    // <snippet module="ui/styling" title="styling">
-    // ### Using id selector
-    // ``` JavaScript
-    page.css = "#myButton { color: red; }";
+        // <snippet module="ui/styling" title="styling">
+        // ### Using id selector
+        // ``` JavaScript
+        page.css = "#myButton { color: red; }";
 
-    //// Will be styled
+        //// Will be styled
         btnWithId = new buttonModule.Button();
-    btnWithId.id = "myButton";
+        btnWithId.id = "myButton";
 
-    //// Won't be styled
+        //// Won't be styled
         btnWithNoId = new buttonModule.Button();
-    // ```
-    // </snippet>
+        // ```
+        // </snippet>
 
-    var stack = new stackModule.StackLayout();
-    page.content = stack;
-    stack.addChild(btnWithId);
-    stack.addChild(btnWithNoId);
+        var stack = new stackModule.StackLayout();
+        page.content = stack;
+        stack.addChild(btnWithId);
+        stack.addChild(btnWithNoId);
         return page;
     };
 
@@ -233,13 +234,13 @@ export function test_state_selector() {
     var page: pageModule.Page;
     var btn: buttonModule.Button;
     var pageFactory = function (): pageModule.Page {
-    // Arrange
+        // Arrange
         page = new pageModule.Page();
-    var testStack = new stackModule.StackLayout();
+        var testStack = new stackModule.StackLayout();
         page.content = testStack;
 
         btn = new buttonModule.Button();
-    testStack.addChild(btn);
+        testStack.addChild(btn);
 
         page.css = ":pressed { color: red; }";
         return page;
@@ -259,18 +260,18 @@ export function test_type_and_state_selector() {
     var pageFactory = function (): pageModule.Page {
         page = new pageModule.Page();
 
-    // <snippet module="ui/styling" title="styling">
-    // ### Using state selector
-    // ``` JavaScript
-    page.css = "button:pressed { color: red; }";
+        // <snippet module="ui/styling" title="styling">
+        // ### Using state selector
+        // ``` JavaScript
+        page.css = "button:pressed { color: red; }";
 
-    //// Will be red when pressed
+        //// Will be red when pressed
         btn = new buttonModule.Button();
-    // ```
-    // </snippet>
-    var stack = new stackModule.StackLayout();
-    page.content = stack;
-    stack.addChild(btn);
+        // ```
+        // </snippet>
+        var stack = new stackModule.StackLayout();
+        page.content = stack;
+        stack.addChild(btn);
         return page;
     };
 
@@ -286,14 +287,14 @@ export function test_class_and_state_selector() {
     var page: pageModule.Page;
     var btn: buttonModule.Button;
     var pageFactory = function (): pageModule.Page {
-    // Arrange
+        // Arrange
         page = new pageModule.Page();
-    var testStack = new stackModule.StackLayout();
+        var testStack = new stackModule.StackLayout();
         page.content = testStack;
 
         btn = new buttonModule.Button();
-    btn.cssClass = "test"
-    testStack.addChild(btn);
+        btn.cssClass = "test"
+        testStack.addChild(btn);
 
         page.css = ".test:pressed { color: red; }";
         return page;
@@ -336,14 +337,14 @@ export function test_id_and_state_selector() {
     var page: pageModule.Page;
     var btn: buttonModule.Button;
     var pageFactory = function (): pageModule.Page {
-    // Arrange
+        // Arrange
         page = new pageModule.Page();
-    var testStack = new stackModule.StackLayout();
+        var testStack = new stackModule.StackLayout();
         page.content = testStack;
 
         btn = new buttonModule.Button();
-    btn.id = "myButton";
-    testStack.addChild(btn);
+        btn.id = "myButton";
+        testStack.addChild(btn);
 
         page.css = "#myButton:pressed { color: red; }";
         return page;
@@ -361,16 +362,16 @@ export function test_restore_original_values_when_state_is_changed() {
     var page: pageModule.Page;
     var btn: buttonModule.Button;
     var pageFactory = function (): pageModule.Page {
-    // Arrange
+        // Arrange
         page = new pageModule.Page();
-    var testStack = new stackModule.StackLayout();
+        var testStack = new stackModule.StackLayout();
         page.content = testStack;
 
         btn = new buttonModule.Button();
-    testStack.addChild(btn);
+        testStack.addChild(btn);
 
         page.css = "button { color: blue; } " +
-    "button:pressed { color: red; } ";
+        "button:pressed { color: red; } ";
         return page;
     };
 
@@ -482,7 +483,7 @@ export var test_style_is_applied_when_control_is_added_after_load = function () 
     };
 
     helper.navigate(pageFactory);
-    
+
     testStack.addChild(btn);
     TKUnit.assert(btn.style.color, "Color property no applied correctly.");
     TKUnit.assert(btn.style.color.hex === "#FF0000", "Color property no applied correctly.");
@@ -656,20 +657,20 @@ function testSelectorsPrioritiesTemplate(css: string) {
     var btnWithId: buttonModule.Button;
     var pageFactory = function (): pageModule.Page {
         page = new pageModule.Page();
-    var testStack = new stackModule.StackLayout();
+        var testStack = new stackModule.StackLayout();
         page.content = testStack;
 
         btn = new buttonModule.Button();
-    testStack.addChild(btn);
+        testStack.addChild(btn);
 
         btnWithClass = new buttonModule.Button();
-    btnWithClass.cssClass = "button-class";
-    testStack.addChild(btnWithClass);
+        btnWithClass.cssClass = "button-class";
+        testStack.addChild(btnWithClass);
 
         btnWithId = new buttonModule.Button();
-    btnWithId.cssClass = "button-class";
-    btnWithId.id = "myButton"
-    testStack.addChild(btnWithId);
+        btnWithId.cssClass = "button-class";
+        btnWithId.id = "myButton"
+        testStack.addChild(btnWithId);
 
         page.css = css;
         return page;
@@ -747,6 +748,14 @@ export function test_setInlineStyle_setsLocalValues() {
     });
 }
 
+export function test_setStyle_throws() {
+    var testButton = new buttonModule.Button();
+
+    TKUnit.assertThrows(function () {
+        (<any>testButton).style = "background-color: red;";
+    }, "View.style property is read-only.");
+}
+
 export var test_CSS_isAppliedOnPage = function () {
     var testButton = new buttonModule.Button();
     testButton.text = "Test";
@@ -765,6 +774,17 @@ export var test_CSS_isAppliedOnPage_From_Import = function () {
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         var page: pageModule.Page = <pageModule.Page> views[1];
         page.css = "@import url('~/ui/style/test.css');";
+        helper.assertViewBackgroundColor(page, "#FF0000");
+    });
+}
+
+export var test_CSS_isAppliedOnPage_From_addCssFile = function () {
+    var testButton = new buttonModule.Button();
+    testButton.text = "Test";
+
+    helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
+        var page: pageModule.Page = <pageModule.Page> views[1];
+        page.addCssFile("~/ui/style/test.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }

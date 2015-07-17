@@ -10,10 +10,11 @@ import webViewModule = require("ui/web-view");
 // ```
 // </snippet>
 
+// <snippet module="ui/web-view" title="WebView">
 // ### Declaring a WebView.
 //```XML
 //  <Page>
-//      <WebView src="{{ someUrl | pathToLocalFile | htmlString }}" />
+//       {%raw%}<WebView src="{{ someUrl | pathToLocalFile | htmlString }}" />{%endraw%}
 //  </Page>
 //```
 
@@ -37,7 +38,7 @@ export var testLoadExistingUrl = function () {
         newPage.content = webView;
         return newPage;
     };
-    
+
     helper.navigate(pageFactory);
 
     var testFinished = false;
@@ -60,16 +61,17 @@ export var testLoadExistingUrl = function () {
         else {
             message = "Error loading " + args.url + ": " + args.error;
         }
-        //console.log(message);
     });
-    webView.url = "https://httpbin.org/html";
+    webView.url = "http://nsbuild01.telerik.com/docs/";
+    // ```
+    // </snippet>
 
     TKUnit.wait(4);
 
     helper.goBack();
 
     if (testFinished) {
-        TKUnit.assert(actualUrl === "https://httpbin.org/html", "args.url should equal https://httpbin.org/html");
+        TKUnit.assert(actualUrl === "http://nsbuild01.telerik.com/docs/", "args.url should equal http://nsbuild01.telerik.com/docs/");
         TKUnit.assert(actualError === undefined, actualError);
     }
     else {
@@ -117,9 +119,10 @@ export var testLoadLocalFile = function () {
         else {
             message = "Error loading " + args.url + ": " + args.error;
         }
-        //console.log(message);
     });
     webView.src = "~/ui/web-view/test.html";
+    // ```
+    // </snippet>
 
     TKUnit.wait(4);
 
@@ -178,9 +181,10 @@ export var testLoadHTMLString = function () {
         else {
             message = "Error loading " + args.url + ": " + args.error;
         }
-        //console.log(message);
     });
     webView.src = '<!DOCTYPE html><html><head><title>MyTitle</title><meta charset="utf-8" /></head><body><span style="color:red">Test</span></body></html>';
+    // ```
+    // </snippet>
 
     TKUnit.wait(4);
 

@@ -4,13 +4,14 @@
 .sublime-grunt.cache
 tscommand*.tmp.txt
 .tscache
-*.js
 
 node_modules/
 dist/
 
+*.js
 !gruntfile.js
 !js-libs/**/*.*
+!fetch/**/*.*
 !apps/TelerikNEXT/lib/**/*.*
 CrossPlatformModules.sln.ide/
 *.suo
@@ -20,3 +21,7 @@ CrossPlatformModules.csproj.user
 bin/
 obj/
 .vs/
+
+.baseDir.ts
+.ctags-exclude
+tags

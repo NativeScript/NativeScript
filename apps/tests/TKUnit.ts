@@ -120,12 +120,15 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
         }
     }
 
-    if (testInfo.instance) {
-        testInfo.testFunc.apply(testInfo.instance, [doneCallback]);
-    }
-    else {
-        var func: any = testInfo.testFunc;
-        func(doneCallback);
+    try {
+        if (testInfo.instance) {
+            testInfo.testFunc.apply(testInfo.instance, [doneCallback]);
+        } else {
+            var func: any = testInfo.testFunc;
+            func(doneCallback);
+        }
+    } catch (e) {
+        doneCallback(e);
     }
 
     setTimeout(checkFinished, 0);

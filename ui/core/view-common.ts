@@ -77,25 +77,25 @@ function onCssClassPropertyChanged(data: dependencyObservable.PropertyChangeData
     }
 }
 
-    var idProperty = new dependencyObservable.Property(
+var idProperty = new dependencyObservable.Property(
     "id",
     "View",
     new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle)
     );
 
-    var cssClassProperty = new dependencyObservable.Property(
+var cssClassProperty = new dependencyObservable.Property(
     "cssClass",
     "View",
     new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged)
     );
 
-    var isEnabledProperty = new dependencyObservable.Property(
+var isEnabledProperty = new dependencyObservable.Property(
     "isEnabled",
     "View",
     new proxy.PropertyMetadata(true)
     );
 
-    var isUserInteractionEnabledProperty = new dependencyObservable.Property(
+var isUserInteractionEnabledProperty = new dependencyObservable.Property(
     "isUserInteractionEnabled",
     "View",
     new proxy.PropertyMetadata(true)
@@ -187,6 +187,26 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
 
     // START Style property shortcuts
+    get borderRadius(): number {
+        return this.style.borderRadius;
+    }
+    set borderRadius(value: number) {
+        this.style.borderRadius = value;
+    }
+
+    get borderWidth(): number {
+        return this.style.borderWidth;
+    }
+    set borderWidth(value: number) {
+        this.style.borderWidth = value;
+    }
+
+    get borderColor(): color.Color {
+        return this.style.borderColor;
+    }
+    set borderColor(value: color.Color) {
+        this.style.borderColor = value;
+    }
 
     get color(): color.Color {
         return this.style.color;
@@ -200,6 +220,13 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
     set backgroundColor(value: color.Color) {
         this.style.backgroundColor = value;
+    }
+
+    get backgroundImage(): string {
+        return this.style.backgroundImage;
+    }
+    set backgroundImage(value: string) {
+        this.style.backgroundImage = value;
     }
 
     get minWidth(): number {
@@ -299,7 +326,7 @@ export class View extends proxy.ProxyObject implements definition.View {
     set paddingBottom(value: number) {
         this.style.paddingBottom = value;
     }
-    
+
     get horizontalAlignment(): string {
         return this.style.horizontalAlignment;
     }
@@ -362,7 +389,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         return this._style;
     }
     set style(value) {
-        this._applyInlineStyle(value);
+        throw new Error("View.style property is read-only.");
     }
 
     get isLayoutValid(): boolean {
@@ -734,7 +761,12 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     private _applyInlineStyle(inlineStyle) {
         if (types.isString(inlineStyle)) {
-            styleScope.applyInlineSyle(this, <string>inlineStyle);
+            try {
+                this.style._beginUpdate();
+                styleScope.applyInlineSyle(this, <string>inlineStyle);
+            } finally {
+                this.style._endUpdate();
+            }
         }
     }
 
@@ -797,9 +829,7 @@ export class View extends proxy.ProxyObject implements definition.View {
      * Method is intended to be overridden by inheritors and used as "protected"
      */
     public _addViewCore(view: View) {
-        view._setValue(bindable.Bindable.bindingContextProperty, this.bindingContext, dependencyObservable.ValueSource.Inherited);
-
-        view._inheritProperties(this);
+        this._propagateInheritableProperties(view);
 
         view.style._inheritStyleProperties();
 
@@ -813,7 +843,11 @@ export class View extends proxy.ProxyObject implements definition.View {
         }
     }
 
-    private _inheritProperties(parentView: View) {
+    public _propagateInheritableProperties(view: View) {
+        view._inheritProperties(this);
+    }
+
+    public _inheritProperties(parentView: View) {
         var that = this;
         var inheritablePropertySetCallback = function (property: dependencyObservable.Property) {
             if (property instanceof styling.Property) {
@@ -907,6 +941,15 @@ export class View extends proxy.ProxyObject implements definition.View {
 
         // TODO: What state should we set here - the requested or the actual one?
         this._requestedVisualState = state;
+    }
+
+    public _applyXmlAttribute(attribute, value): boolean {
+        if (attribute === "style") {
+            this._applyInlineStyle(value);
+            return true;
+        }
+
+        return false;
     }
 
     public _updateLayout() {

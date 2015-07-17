@@ -48,6 +48,7 @@ export module Stretch {
 
 export module Visibility {
     export var visible: string = "visible";
+    export var collapse: string = "collapse";
     export var collapsed: string = "collapsed";
 }
 
@@ -92,13 +93,41 @@ export module NavigationBarVisibility {
     export var always: string = "always";
 }
 
-export module MenuItemPosition {
+export module AndroidActionBarIconVisibility {
+    export var auto: string = "auto";
+    export var never: string = "never";
+    export var always: string = "always";
+}
+
+export module AndroidActionItemPosition {
     export var actionBar: string = "actionBar";
     export var actionBarIfRoom: string = "actionBarIfRoom";
     export var popup: string = "popup";
 }
 
+export module IOSActionItemPosition {
+    export var left: string = "left";
+    export var right: string = "right";
+}
+
 export module ImageFormat {
     export var png: string = "png";
     export var jpeg: string = "jpeg";
+}
+
+export module FontStyle {
+    export var normal: string = "normal";
+    export var italic: string = "italic";
+}
+
+export module FontWeight {
+    export var normal: string = "normal";
+    export var bold: string = "bold";
+}
+
+export module BackgroundRepeat {
+    export var repeat: string = "repeat";
+    export var repeatX: string = "repeat-x";
+    export var repeatY: string = "repeat-y";
+    export var noRepeat: string = "no-repeat";
 }

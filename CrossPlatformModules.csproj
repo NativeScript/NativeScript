@@ -3,7 +3,7 @@
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <TypeScriptToolsVersion>1.4</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>1.5</TypeScriptToolsVersion>
     <ProjectGuid>{2313F1BF-1F2D-4F11-806A-87927FA6A7C0}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
@@ -61,6 +61,54 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <ItemGroup>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\action-bar-hidden.ts">
+      <DependentUpon>action-bar-hidden.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\action-items-text.ts">
+      <DependentUpon>action-items-text.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view-stack.ts">
+      <DependentUpon>center-view-stack.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view-segmented.ts">
+      <DependentUpon>center-view-segmented.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view.ts">
+      <DependentUpon>center-view.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\data-binding.ts">
+      <DependentUpon>data-binding.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\cuteness.unoptimized\app.ts" />
+    <TypeScriptCompile Include="apps\cuteness.unoptimized\details-page.ts">
+      <DependentUpon>details-page.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\cuteness.unoptimized\main-page.ts">
+      <DependentUpon>main-page.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\cuteness.unoptimized\reddit-app-view-model.ts" />
+    <Content Include="apps\action-bar-demo\pages\action-bar-hidden.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\action-bar-demo\pages\center-view-stack.xml" />
+    <Content Include="apps\action-bar-demo\pages\center-view-segmented.xml" />
+    <Content Include="apps\action-bar-demo\pages\center-view.xml" />
+    <Content Include="apps\action-bar-demo\pages\data-binding.xml" />
+    <Content Include="apps\cuteness.unoptimized\reddit-item-view-model.ts" />
+    <TypeScriptCompile Include="apps\cuteness.unoptimized\reddit-model.d.ts" />
+    <TypeScriptCompile Include="apps\action-bar-demo\app.ts" />
+    <TypeScriptCompile Include="apps\action-bar-demo\main-page.ts">
+      <DependentUpon>main-page.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\navigation-button.ts">
+      <DependentUpon>navigation-button.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\action-items-icon.ts">
+      <DependentUpon>action-items-icon.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\page-title-icon.ts">
+      <DependentUpon>page-title-icon.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\gallery-app\views\list-picker.ts">
       <DependentUpon>list-picker.xml</DependentUpon>
     </TypeScriptCompile>
@@ -123,6 +171,7 @@
     <TypeScriptCompile Include="apps\tests\file-name-resolver-tests\file-name-resolver-tests.ts" />
     <TypeScriptCompile Include="apps\tests\frame-tests.ts" />
     <TypeScriptCompile Include="apps\tests\gestures-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\fetch-tests.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\dock-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\pages\app.ts" />
     <TypeScriptCompile Include="apps\tests\pages\file-load-test.ts" />
@@ -146,6 +195,9 @@
     <TypeScriptCompile Include="apps\tests\fps-meter-tests.ts" />
     <TypeScriptCompile Include="apps\tests\trace-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui-test.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\action-bar\action-bar-tests-common.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\action-bar\action-bar-tests.android.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\action-bar\action-bar-tests.ios.ts" />
     <TypeScriptCompile Include="apps\tests\ui\bindingContext_testPage.ts">
       <DependentUpon>bindingContext_testPage.xml</DependentUpon>
     </TypeScriptCompile>
@@ -190,6 +242,8 @@
     <TypeScriptCompile Include="apps\tests\ui\scroll-view\scroll-view-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\search-bar\search-bar-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\style\style-properties-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\view\view-tests.d.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\html-view\html-view-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\web-view\web-view-tests.ts" />
     <TypeScriptCompile Include="apps\editable-text-demo\app.ts" />
     <TypeScriptCompile Include="apps\editable-text-demo\main-page.ts">
@@ -197,11 +251,45 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\editable-text-demo\model.ts" />
     <TypeScriptCompile Include="apps\tests\weak-event-listener-tests.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\bindings\xmlbasics.ts">
+      <DependentUpon>xmlbasics.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\bindings\basics.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\dialogs\dialogs.ts">
+      <DependentUpon>dialogs.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\dialogs\view-model.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\absolute.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\dock.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\grid.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\myview.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\stack.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\wrap.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\background.ts">
+      <DependentUpon>background.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\pages\console.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i61.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i73.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\gestures.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\listview_binding.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\modal-view\login-page.ts">
+      <DependentUpon>login-page.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\modal-view\modalview.ts">
+      <DependentUpon>modalview.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\textfield.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-field.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-view.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\label.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\button.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\web-view\webview.ts">
+      <DependentUpon>webview.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="es-collections.d.ts" />
+    <TypeScriptCompile Include="es6-promise.d.ts" />
+    <TypeScriptCompile Include="fetch\fetch.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.ts">
       <DependentUpon>file-name-resolver.d.ts</DependentUpon>
@@ -215,6 +303,7 @@
     <TypeScriptCompile Include="image-source\image-source.ios.ts">
       <DependentUpon>image-source.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="js-libs\reworkcss-value\reworkcss-value.d.ts" />
     <TypeScriptCompile Include="platform\platform.ios.ts">
       <DependentUpon>platform.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -241,16 +330,9 @@
       <DependentUpon>color.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="color\known-colors.ts" />
-    <TypeScriptCompile Include="console\console-native.android.ts">
-      <DependentUpon>console-native.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="console\console-native.ios.ts">
-      <DependentUpon>console-native.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="console\console.ts">
       <DependentUpon>console.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="console\console-native.d.ts" />
     <TypeScriptCompile Include="declarations.d.ts" />
     <TypeScriptCompile Include="declarations.android.d.ts">
       <DependentUpon>declarations.d.ts</DependentUpon>
@@ -350,6 +432,23 @@
     <TypeScriptCompile Include="trace\trace.ts">
       <DependentUpon>trace.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\border\border.ts">
+      <DependentUpon>border.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\action-bar\action-bar-common.ts">
+      <DependentUpon>action-bar.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\action-bar\action-bar.android.ts">
+      <DependentUpon>action-bar.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\action-bar\action-bar.d.ts" />
+    <TypeScriptCompile Include="ui\action-bar\action-bar.ios.ts">
+      <DependentUpon>action-bar.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\html-view\html-view-common.ts" />
+    <TypeScriptCompile Include="ui\html-view\html-view.android.ts" />
+    <TypeScriptCompile Include="ui\html-view\html-view.d.ts" />
+    <TypeScriptCompile Include="ui\html-view\html-view.ios.ts" />
     <TypeScriptCompile Include="ui\repeater\repeater.ts">
       <DependentUpon>repeater.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -435,8 +534,30 @@
     <TypeScriptCompile Include="ui\layouts\wrap-layout\wrap-layout.ts">
       <DependentUpon>wrap-layout.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\background-common.ts">
+      <DependentUpon>background.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\background.ios.ts">
+      <DependentUpon>background.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\background.d.ts" />
+    <TypeScriptCompile Include="ui\styling\background.android.ts">
+      <DependentUpon>background.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\styling\css-selector.d.ts" />
-    <TypeScriptCompile Include="ui\styling\css-selector.ts" />
+    <TypeScriptCompile Include="ui\styling\css-selector.ts">
+      <DependentUpon>css-selector.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\font.android.ts">
+      <DependentUpon>font.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\font.ios.ts">
+      <DependentUpon>font.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\styling\font.d.ts" />
+    <TypeScriptCompile Include="ui\styling\font-common.ts">
+      <DependentUpon>font.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\styling\style-property.d.ts" />
     <TypeScriptCompile Include="ui\styling\style.ts" />
     <TypeScriptCompile Include="ui\styling\visual-state.ts" />
@@ -579,9 +700,34 @@
     <TypeScriptCompile Include="apps\tests\timer-tests.ts" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="libjs.d.ts" />
-  </ItemGroup>
-  <ItemGroup>
+    <Content Include="apps\cuteness.unoptimized\details-page.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="apps\cuteness.unoptimized\details-page.xml" />
+    <Content Include="apps\cuteness.unoptimized\main-page.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="apps\cuteness.unoptimized\main-page.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\cuteness.unoptimized\res\first-image.png" />
+    <Content Include="apps\cuteness.unoptimized\res\no-image.png" />
+    <Content Include="apps\cuteness.unoptimized\res\reddit-logo-transparent.png" />
+    <Content Include="apps\cuteness.unoptimized\res\reddit-logo.png" />
+    <Content Include="apps\cuteness.unoptimized\res\telerik-logo.png" />
+    <Content Include="apps\action-bar-demo\app.css" />
+    <Content Include="apps\action-bar-demo\main-page.xml" />
+    <Content Include="apps\action-bar-demo\pages\action-items-text.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\action-bar-demo\pages\action-items-icon.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\action-bar-demo\pages\page-title-icon.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\action-bar-demo\pages\navigation-button.xml" />
+    <Content Include="apps\action-bar-demo\test-icon.png" />
     <Content Include="apps\gallery-app\content\border.xml" />
     <Content Include="apps\gallery-app\app.css" />
     <Content Include="apps\gallery-app\views\list-picker.xml" />
@@ -600,6 +746,12 @@
     <Content Include="apps\template-master-detail\main-page.minWH600.xml" />
     <Content Include="apps\template-settings\app.css" />
     <Content Include="apps\tests\app\location-example.xml" />
+    <TypeScriptCompile Include="apps\tests\pages\fonts-test.ts">
+      <DependentUpon>fonts-test.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\pages\background-test.ts">
+      <DependentUpon>background-test.xml</DependentUpon>
+    </TypeScriptCompile>
     <Content Include="apps\tests\pages\page-load-performance\start.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -607,7 +759,10 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\tests\pages\page-load-performance\test-small.xml" />
+    <Content Include="apps\tests\pages\fonts-test.xml" />
+    <Content Include="apps\tests\pages\background-test.xml" />
     <Content Include="apps\tests\pages\page18.xml" />
+    <Content Include="apps\tests\pages\test2.png" />
     <Content Include="apps\tests\ui\bindingContext_testPage.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage1.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage2.xml" />
@@ -630,12 +785,34 @@
     <Content Include="apps\tests\xml-declaration\mymodulewithxml\my-control-no-js.xml">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="apps\ui-tests-app\pages\console.xml" />
+    <Content Include="apps\tests\xml-declaration\mymodulewithxml\MyControl.css" />
+    <Content Include="apps\tests\xml-declaration\mymodule\MyControl.css" />
+    <Content Include="apps\ui-tests-app\bindings\xmlbasics.xml" />
+    <Content Include="apps\ui-tests-app\dialogs\dialogs.xml" />
+    <Content Include="apps\ui-tests-app\layouts\absolute.xml" />
+    <Content Include="apps\ui-tests-app\layouts\dock.xml" />
+    <Content Include="apps\ui-tests-app\layouts\grid.xml" />
+    <Content Include="apps\ui-tests-app\layouts\stack.xml" />
+    <Content Include="apps\ui-tests-app\layouts\wrap.xml" />
+    <Content Include="apps\ui-tests-app\pages\background.xml" />
+    <Content Include="apps\ui-tests-app\pages\circle.xml" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />
     <Content Include="apps\template-blank\app.css" />
     <Content Include="apps\template-hello-world\app.css" />
     <Content Include="apps\template-master-detail\app.css" />
     <Content Include="apps\template-tab-navigation\app.css" />
+    <Content Include="apps\ui-tests-app\modal-view\login-page.xml" />
+    <Content Include="apps\ui-tests-app\modal-view\modalview.xml" />
+    <Content Include="apps\ui-tests-app\pages\red.png" />
+    <Content Include="apps\ui-tests-app\pages\test2.png" />
+    <Content Include="apps\ui-tests-app\pages\textfield.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\text-field.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\label.xml" />
+    <Content Include="apps\ui-tests-app\pages\text\button.xml" />
+    <Content Include="apps\ui-tests-app\web-view\webview.xml" />
+    <Content Include="fetch\fetch.js" />
+    <Content Include="js-libs\reworkcss-value\reworkcss-value.js" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -684,15 +861,6 @@
       <DependentUpon>switch.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\border\border.d.ts" />
-    <TypeScriptCompile Include="ui\border\border-common.ts">
-      <DependentUpon>border.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\border\border.android.ts">
-      <DependentUpon>border.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\border\border.ios.ts">
-      <DependentUpon>border.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\activity-indicator\activity-indicator.d.ts" />
     <TypeScriptCompile Include="ui\activity-indicator\activity-indicator.android.ts">
       <DependentUpon>activity-indicator.d.ts</DependentUpon>
@@ -1171,7 +1339,6 @@
     <TypeScriptCompile Include="ui\editable-text-base\editable-text-base.ios.ts">
       <DependentUpon>editable-text-base.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <Content Include="_references.ts" />
     <Content Include="image-source\Readme.md" />
     <Content Include="http\Readme.md" />
     <Content Include="Readme.md" />
@@ -1502,6 +1669,12 @@
     <Content Include="apps\modal-views-demo\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="apps\cuteness.unoptimized\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="apps\action-bar-demo\package.json" />
+    <Content Include="fetch\package.json" />
+    <Content Include="fetch\README.md" />
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">
@@ -1520,6 +1693,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ui\repeater\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="js-libs\reworkcss-value\LICENSE" />
+    <Content Include="js-libs\reworkcss-value\package.json" />
+    <Content Include="js-libs\reworkcss-value\Readme.md" />
+    <Content Include="ui\action-bar\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ui\html-view\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

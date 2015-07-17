@@ -2,6 +2,7 @@
 import colorModule = require("color");
 import utilsModule = require("utils/utils");
 import enums = require("ui/enums");
+import background = require("ui/styling/background");
 
 export function getNativeText(button: buttonModule.Button): string {
     return button.android.getText();
@@ -17,7 +18,13 @@ export function getNativeColor(button: buttonModule.Button): colorModule.Color {
 }
 
 export function getNativeBackgroundColor(button: buttonModule.Button): colorModule.Color {
-    return new colorModule.Color((<android.graphics.drawable.ColorDrawable>button.android.getBackground()).getColor());
+    var bkg = <any>button.android.getBackground();
+    if (bkg instanceof background.ad.BorderDrawable) {
+        return (<background.ad.BorderDrawable>bkg).background.color;
+    }
+    else {
+        return new colorModule.Color(bkg.backgroundColor)
+    }
 }
 
 export function getNativeTextAlignment(button: buttonModule.Button): string {

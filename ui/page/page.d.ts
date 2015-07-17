@@ -6,8 +6,8 @@ declare module "ui/page" {
     import view = require("ui/core/view");
     import contentView = require("ui/content-view");
     import frame = require("ui/frame");
+    import actionBar = require("ui/action-bar");
     import dependencyObservable = require("ui/core/dependency-observable");
-    import bindable = require("ui/core/bindable");
 
     //@private
     import styleScope = require("ui/styling/style-scope");
@@ -18,7 +18,7 @@ declare module "ui/page" {
      */
     export interface NavigatedData extends observable.EventData {
         /**
-         * The navigation context (optional, may be undefined) passed to the page navigation evetns method.
+         * The navigation context (optional, may be undefined) passed to the page navigation events method.
          */
         context: any;
     }
@@ -39,13 +39,18 @@ declare module "ui/page" {
     }
 
     export module knownCollections {
-        export var optionsMenu: string;
+        export var actionItems: string;
     }
 
     /**
      * Represents a logical unit for navigation (inside Frame).
      */
-    export class Page extends contentView.ContentView implements view.AddArrayFromBuilder {
+    export class Page extends contentView.ContentView {
+        /**
+         * Dependency property used to hide the Navigation Bar in iOS and the Action Bar in Android.
+         */
+        public static actionBarHiddenProperty: dependencyObservable.Property;
+
         /**
          * String value used when hooking to shownModally event.
          */
@@ -72,6 +77,11 @@ declare module "ui/page" {
         public static navigatedFromEvent: string;
 
         constructor(options?: Options)
+
+        /**
+         * Used to hide the Navigation Bar in iOS and the Action Bar in Android.
+         */
+        actionBarHidden: boolean;
 
         /**
          * A valid css string which will be applied for all nested UI components (based on css rules).
@@ -101,9 +111,9 @@ declare module "ui/page" {
         frame: frame.Frame;
 
         /**
-         * Gets the OptionsMenu for this page.
+         * Gets the ActionBar for this page.
          */
-        optionsMenu: OptionsMenu;
+        actionBar: actionBar.ActionBar;
 
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -143,10 +153,9 @@ declare module "ui/page" {
          * @param moduleName - The name of the page module to load starting from the application root.
          * @param context - Any context you want to pass to the modally shown page. This same context will be available in the arguments of the Page.shownModally event handler.
          * @param closeCallback - A function that will be called when the page is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
+         * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
          */
-        showModal(moduleName: string, context: any, closeCallback: Function);
-
-        _addArrayFromBuilder(name: string, value: Array<any>): void;
+        showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean);
 
         //@private
 
@@ -173,7 +182,6 @@ declare module "ui/page" {
         onNavigatedFrom(isBackNavigation: boolean): void;
 
         _getStyleScope(): styleScope.StyleScope;
-        _invalidateOptionsMenu();
         //@endprivate
     }
 
@@ -195,60 +203,5 @@ declare module "ui/page" {
          * Gets or sets the page module exports.
          */
         exports?: any;
-    }
-
-    export class OptionsMenu {
-        addItem(item: MenuItem): void;
-        removeItem(item: MenuItem): void;
-        getItems(): Array<MenuItem>;
-        getItemAt(index: number): MenuItem;
-    }
-
-    export class MenuItem extends bindable.Bindable {
-        /**
-         * String value used when hooking to tap event.
-         */
-        public static tapEvent: string;
-
-        /**
-         * Represents the observable property backing the text property.
-         */
-        public static textProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the icon property.
-         */
-        public static iconProperty: dependencyObservable.Property;
-
-        text: string;
-        icon: string;
-        android: AndroidMenuItemOptions;
-
-        /**
-         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
-         * @param callback - Callback function which will be executed when event is raised.
-         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
-         */
-        on(eventNames: string, callback: (data: observable.EventData) => void);
-
-        /**
-         * Raised when a tap event occurs.
-         */
-        on(event: "tap", callback: (args: observable.EventData) => void);
-
-        //@private
-        _raiseTap(): void;
-        //@endprivate
-    }
-
-    interface AndroidMenuItemOptions {
-
-        /**
-         * Specify if android menuItem should appear in the actionBar or in the popup.
-         * Use values from enums MenuItemPosition.
-         * Changes after menuItem is created are not supported.
-         */
-        position: string;
     }
 }

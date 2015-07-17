@@ -40,6 +40,93 @@ export function test_load_ShouldNotCrashWithoutExports() {
     TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 };
 
+export function test_loadWithOptionsNoXML() {
+    var v = builder.load({
+        path: "~/xml-declaration/mymodule",
+        name: "MyControl",
+        exports: exports
+    });
+
+    TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+};
+
+export function test_loadWithOptionsNoXML_CSSIsApplied() {
+    var newPage: page.Page;
+    var pageFactory = function (): page.Page {
+        newPage = new page.Page();
+
+        newPage.content = builder.load({
+            path: "~/xml-declaration/mymodule",
+            name: "MyControl",
+            exports: exports,
+            page: newPage
+        });
+
+        return newPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
+    try {
+        helper.assertViewBackgroundColor(newPage.content, "#FF0000");
+    }
+    finally {
+        helper.goBack();
+    }
+};
+
+export function test_loadWithOptionsWithXML() {
+    var v = builder.load({
+        path: "~/xml-declaration/mymodulewithxml",
+        name: "MyControl",
+        exports: exports
+    });
+    TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+};
+
+export function test_loadWithOptionsWithXML_CSSIsApplied() {
+    var newPage: page.Page;
+    var pageFactory = function (): page.Page {
+        newPage = new page.Page();
+
+        newPage.content = builder.load({
+            path: "~/xml-declaration/mymodulewithxml",
+            name: "MyControl",
+            exports: exports,
+            page: newPage
+        });
+
+        return newPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
+    try {
+        helper.assertViewBackgroundColor(newPage.content, "#008000");
+    }
+    finally {
+        helper.goBack();
+    }
+};
+
+export function test_loadWithOptionsFromTNS() {
+    var v = builder.load({
+        path: "ui/label",
+        name: "Label"
+    });
+
+    TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");
+};
+
+export function test_loadWithOptionsFromTNSPath() {
+    var v = builder.load({
+        path: "tns_modules/ui/label",
+        name: "Label"
+    });
+
+    TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");
+};
+
 export function test_parse_ShouldNotCrashWithoutExports() {
     var fileAccess = new fileSystemAccess.FileSystemAccess();
 
@@ -142,6 +229,27 @@ export function test_parse_ShouldParsePlatformSpecificProperties() {
     }
 };
 
+export function test_parse_ShouldParsePlatformSpecificComponents() {
+    var p = <page.Page>builder.parse("<Page><ios><TextField /></ios><android><Label /></android></Page>");
+    if (platform.device.os === platform.platformNames.ios) {
+        TKUnit.assert(p.content instanceof textFieldModule.TextField, "Expected result: TextField; Actual result: " + p.content);
+    }
+    else {
+        TKUnit.assert(p.content instanceof labelModule.Label, "Expected result: Label; Actual result: " + p.content);
+    }
+};
+
+export function test_parse_ThrowErrorWhenNestingPlatforms() {
+    var e: Error;
+    try {
+        builder.parse("<Page><ios><TextField /><android><Label /></android></ios></Page>");
+    } catch (ex) {
+        e = ex;
+    }
+
+    TKUnit.assert(e, "Expected result: Error; Actual result: " + e);
+};
+
 export function test_parse_ShouldParseBindings() {
     var p = <page.Page>builder.parse("<Page><Switch checked='{{ myProp }}' /></Page>");
     p.bindingContext = { myProp: true };
@@ -203,6 +311,17 @@ export function test_parse_ShouldParseSubProperties() {
     TKUnit.assert(sw.visibility === "collapsed", "Expected result: collapsed; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
 };
 
+export function test_parse_CanBindBackgroundImage() {
+    var p = <page.Page>builder.parse("<Page><StackLayout backgroundImage='{{ myProp }}' /></Page>");
+    var expected = "~/logo.png"
+    var obj = new observable.Observable();
+    obj.set("myProp", expected);
+    p.bindingContext = obj;
+    var sw = <stackLayoutModule.StackLayout>p.content;
+
+    TKUnit.assert(sw.backgroundImage === expected, "Expected result: " + expected + "; Actual result: " + sw.backgroundImage);
+};
+
 export function test_parse_ShouldParseCustomComponentWithoutXml() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodule"><customControls:MyControl /></Page>');
     var ctrl = p.content;
@@ -210,7 +329,21 @@ export function test_parse_ShouldParseCustomComponentWithoutXml() {
     TKUnit.assert(ctrl instanceof myCustomControlWithoutXml.MyControl, "Expected result: custom control is defined!; Actual result: " + ctrl);
 };
 
-export function test_parse_ShouldParseCustomComponentWitXml() {
+export function test_parse_ShouldParseCustomComponentWithoutXmlFromTNSModules() {
+    var p = <page.Page>builder.parse('<Page xmlns' + ':customControls="tns_modules/ui/label"><customControls:Label /></Page>');
+    var ctrl = p.content;
+
+    TKUnit.assert(ctrl instanceof labelModule.Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
+};
+
+export function test_parse_ShouldParseCustomComponentWithoutXmlFromTNSModulesWhenNotSpecified() {
+    var p = <page.Page>builder.parse('<Page xmlns' + ':customControls="ui/label"><customControls:Label /></Page>');
+    var ctrl = p.content;
+
+    TKUnit.assert(ctrl instanceof labelModule.Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
+};
+
+export function test_parse_ShouldParseCustomComponentWithXml() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
     var lbl = <labelModule.Label>panel.getChildAt(0);
@@ -218,21 +351,21 @@ export function test_parse_ShouldParseCustomComponentWitXml() {
     TKUnit.assert(lbl.text === "mymodulewithxml", "Expected result: 'mymodulewithxml'; Actual result: " + lbl);
 };
 
-export function test_parse_ShouldParseCustomComponentWitXml_WithAttributes() {
+export function test_parse_ShouldParseCustomComponentWithXml_WithAttributes() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl visibility="collapsed" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assertEqual(panel.visibility, "collapsed", "panel.visibility");
 };
 
-export function test_parse_ShouldParseCustomComponentWitXml_WithCustomAttributes() {
+export function test_parse_ShouldParseCustomComponentWithXml_WithCustomAttributes() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl myProperty="myValue" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assertEqual(panel["myProperty"], "myValue", "customControl.myProperty");
 };
 
-export function test_parse_ShouldParseCustomComponentWitXmlNoJS() {
+export function test_parse_ShouldParseCustomComponentWithXmlNoJS() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
     var lbl = <labelModule.Label>panel.getChildAt(0);
@@ -240,14 +373,14 @@ export function test_parse_ShouldParseCustomComponentWitXmlNoJS() {
     TKUnit.assertEqual(lbl.text, "I'm all about taht XML, no JS", "label.text");
 };
 
-export function test_parse_ShouldParseCustomComponentWitXmlNoJS_WithAttributes() {
+export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithAttributes() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js visibility="collapsed" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assertEqual(panel.visibility, "collapsed", "panel.visibility");
 };
 
-export function test_parse_ShouldParseCustomComponentWitXmlNoJS_WithCustomAttributes() {
+export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithCustomAttributes() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js myProperty="myValue" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 

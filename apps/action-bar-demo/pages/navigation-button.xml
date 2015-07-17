@@ -1,0 +1,12 @@
+<Page>
+  <Page.actionBar>
+    <ActionBar title="Navigation Button">
+      <NavigationButton text="go back" icon="res://ic_test" tap="navTap"/>
+    </ActionBar>
+  </Page.actionBar>
+  
+  <StackLayout>
+    <Button text="button" tap="buttonTap"/>
+    <Button text="change icon visibility" tap="visibilityTap"/>
+  </StackLayout>
+</Page>

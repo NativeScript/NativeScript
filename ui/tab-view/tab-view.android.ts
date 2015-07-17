@@ -6,6 +6,7 @@ import trace = require("trace");
 import imageSource = require("image-source");
 import types = require("utils/types");
 import app = require("application");
+import page = require("ui/page");
 
 var VIEWS_STATES = "_viewStates";
 var RESOURCE_PREFIX = "res://";
@@ -345,6 +346,11 @@ export class TabView extends common.TabView {
     }
 
     public _addTabs(newItems: Array<definition.TabViewItem>) {
+        var parentPage = <page.Page>view.getAncestor(this, "Page");
+        if (parentPage && parentPage.actionBarHidden) {
+            return;
+        }
+
         trace.write("TabView._addTabs(" + newItems + ");", common.traceCategory);
         super._addTabs(newItems);
 
@@ -364,6 +370,7 @@ export class TabView extends common.TabView {
         actionBar.setNavigationMode(android.app.ActionBar.NAVIGATION_MODE_TABS);
 
         this._originalActionBarIsShowing = actionBar.isShowing();
+
         actionBar.show();
 
         // TODO: Where will be the support for more ActionBar settings like Title, Navigation buttons, etc.?
@@ -416,6 +423,11 @@ export class TabView extends common.TabView {
     }
 
     public _removeTabs(oldItems: Array<definition.TabViewItem>) {
+        var parentPage = <page.Page>view.getAncestor(this, "Page");
+        if (parentPage && parentPage.actionBarHidden) {
+            return;
+        }
+
         trace.write("TabView._removeTabs(" + oldItems + ");", common.traceCategory);
         super._removeTabs(oldItems);
 
@@ -469,12 +481,9 @@ export class TabView extends common.TabView {
 
         // Select the respective tab in the ActionBar.
         var actionBar = this._getActionBar();
-        if (actionBar) {
-            var actionBarSelectedIndex = actionBar.getSelectedNavigationIndex();
-            if (actionBarSelectedIndex !== index) {
-                trace.write("TabView actionBar.setSelectedNavigationItem("+index+")", common.traceCategory);
-                actionBar.setSelectedNavigationItem(index);
-            }
+        if (actionBar && index < actionBar.getNavigationItemCount() && index !== actionBar.getSelectedNavigationIndex()) {
+            trace.write("TabView actionBar.setSelectedNavigationItem("+index+")", common.traceCategory);
+            actionBar.setSelectedNavigationItem(index);
         }
 
         // Select the respective page in the ViewPager

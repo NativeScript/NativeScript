@@ -1,9 +1,9 @@
 ﻿import pageCommon = require("ui/page/page-common");
 import definition = require("ui/page");
 import viewModule = require("ui/core/view");
-import imageSource = require("image-source");
 import trace = require("trace");
 import utils = require("utils/utils");
+import types = require("utils/types");
 
 declare var exports;
 require("utils/module-merge").merge(pageCommon, exports);
@@ -22,9 +22,10 @@ class UIViewControllerImpl extends UIViewController {
     }
 
     public didRotateFromInterfaceOrientation(fromInterfaceOrientation: number) {
-        trace.write(this._owner + " didRotateFromInterfaceOrientation(" + fromInterfaceOrientation+ ")", trace.categories.ViewHierarchy);
-        if (this._owner._isModal) {
-            utils.ios._layoutRootView(this._owner);
+        trace.write(this._owner + " didRotateFromInterfaceOrientation(" + fromInterfaceOrientation + ")", trace.categories.ViewHierarchy);
+        if ((<any>this._owner)._isModal) {
+            var parentBounds = (<any>this._owner)._UIModalPresentationFormSheet ? (<UIView>this._owner._nativeView).superview.bounds : UIScreen.mainScreen().bounds;
+            utils.ios._layoutRootView(this._owner, parentBounds);
         }
     }
 
@@ -57,7 +58,6 @@ class UIViewControllerImpl extends UIViewController {
 export class Page extends pageCommon.Page {
     private _ios: UIViewController;
     public _enableLoadedEvents: boolean;
-    public _isModal = false;
 
     constructor(options?: definition.Options) {
         super(options);
@@ -71,14 +71,14 @@ export class Page extends pageCommon.Page {
     }
 
     public onLoaded() {
-        // loaded/unloaded events are handeled in page viewWillAppear/viewDidDisappear
+        // loaded/unloaded events are handled in page viewWillAppear/viewDidDisappear
         if (this._enableLoadedEvents) {
             super.onLoaded();
         }
     }
-    
+
     public onUnloaded() {
-        // loaded/unloaded events are handeled in page viewWillAppear/viewDidDisappear
+        // loaded/unloaded events are handled in page viewWillAppear/viewDidDisappear
         if (this._enableLoadedEvents) {
             super.onUnloaded();
         }
@@ -116,70 +116,53 @@ export class Page extends pageCommon.Page {
         return this.ios.view;
     }
 
-    public _invalidateOptionsMenu() {
-        this.populateMenuItems();
-    }
+    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
+        (<any>this)._isModal = true;
 
-    public populateMenuItems() {
-        var items = this.optionsMenu.getItems();
-
-        var navigationItem: UINavigationItem = (<UIViewController>this.ios).navigationItem;
-        var array: NSMutableArray = items.length > 0 ? NSMutableArray.new() : null;
-
-        for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            var tapHandler = TapBarItemHandlerImpl.new().initWithOwner(item);
-            // associate handler with menuItem or it will get collected by JSC.
-            (<any>item).handler = tapHandler;
-
-            var barButtonItem: UIBarButtonItem;
-            if (item.icon) {
-                var img = imageSource.fromResource(item.icon);
-                barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img.ios, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
-            }
-            else {
-                barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
-            }
-
-            array.addObject(barButtonItem);
+        if (!parent.ios.view.window) {
+            throw new Error("Parent page is not part of the window hierarchy. Close the current modal page before showing another one!");
         }
 
-        navigationItem.setRightBarButtonItemsAnimated(array, true);
-    }
-
-    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function) {
-        this._isModal = true;
-        utils.ios._layoutRootView(this);
+        if (fullscreen) {
+            this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFullScreen;
+            utils.ios._layoutRootView(this, UIScreen.mainScreen().bounds);
+        }
+        else {
+            this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFormSheet;
+            (<any>this)._UIModalPresentationFormSheet = true;
+        }
 
         var that = this;
         parent.ios.presentViewControllerAnimatedCompletion(this._ios, false, function completion() {
+            if (!fullscreen) {
+                // We can measure and layout the modal page after we know its parent's dimensions.
+                utils.ios._layoutRootView(that, that._nativeView.superview.bounds);
+            }
+
             that._raiseShownModallyEvent(parent, context, closeCallback);
         });
     }
 
     protected _hideNativeModalView(parent: Page) {
         parent._ios.dismissModalViewControllerAnimated(false);
-        this._isModal = false;
-    }
-}
-
-class TapBarItemHandlerImpl extends NSObject {
-    static new(): TapBarItemHandlerImpl {
-        return <TapBarItemHandlerImpl>super.new();
+        (<any>this)._isModal = false;
+        (<any>this)._UIModalPresentationFormSheet = false;
     }
 
-    private _owner: definition.MenuItem;
-
-    public initWithOwner(owner: definition.MenuItem): TapBarItemHandlerImpl {
-        this._owner = owner;
-        return this;
+    public _updateActionBar(hidden: boolean) {
+        if (types.isDefined(hidden) && this.ios.navigationController.navigationBarHidden !== hidden) {
+            this.ios.navigationController.navigationBarHidden = hidden;
+            this.requestLayout();
+        }
     }
 
-    public tap(args) {
-        this._owner._raiseTap();
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
+        viewModule.View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    public static ObjCExposedMethods = {
-        "tap": { returns: interop.types.void, params: [interop.types.id] }
-    };
+    public onLayout(left: number, top: number, right: number, bottom: number) {
+        viewModule.View.layoutChild(this, this.actionBar, 0, 0, right - left, bottom - top);
+        super.onLayout(left, top, right, bottom);
+    }
 }

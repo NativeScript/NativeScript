@@ -1,65 +1,67 @@
 ﻿import types = require("utils/types");
-import trace = require("trace");
 import view = require("ui/core/view");
-import border = require("ui/border");
 import constants = require("utils/android_constants");
 import style = require("ui/styling/style");
 import definition = require("ui/styling");
 import stylersCommon = require("ui/styling/stylers-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
+import styleModule = require("ui/styling/style");
+import font = require("ui/styling/font");
+import background = require("ui/styling/background");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
 require("utils/module-merge").merge(stylersCommon, exports);
 
+var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
+function onBackgroundOrBorderPropertyChanged(v: view.View) {
+    if (!v._nativeView) {
+        return;
+    }
+
+    var backgroundValue = <background.Background>v.style._getValue(styleModule.backgroundInternalProperty);
+
+    if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
+        var nativeView = <android.view.View>v._nativeView;
+
+        var bkg = <background.ad.BorderDrawable>nativeView.getBackground();
+        if (!(bkg instanceof background.ad.BorderDrawable)) {
+            bkg = new background.ad.BorderDrawable();
+            let viewClass = types.getClass(v);
+            if (!_defaultBackgrounds.has(viewClass)) {
+                _defaultBackgrounds.set(viewClass, nativeView.getBackground());
+            }
+
+            nativeView.setBackground(bkg);
+        }
+
+        var padding = v.borderWidth * utils.layout.getDisplayDensity();
+
+        nativeView.setPadding(padding, padding, padding, padding);
+
+        bkg.borderWidth = v.borderWidth;
+        bkg.cornerRadius = v.borderRadius;
+        bkg.borderColor = v.borderColor ? v.borderColor.android : android.graphics.Color.TRANSPARENT;
+        bkg.background = backgroundValue;
+    }
+    else {
+        // reset the value with the default native value
+        let viewClass = types.getClass(v);
+        if (_defaultBackgrounds.has(viewClass)) {
+            v.android.setBackgroundDrawable(_defaultBackgrounds.get(viewClass));
+        }
+    }
+}
+
 export class DefaultStyler implements definition.stylers.Styler {
-    //Background methods
-    private static setBackgroundProperty(view: view.View, newValue: any) {
-        (<android.view.View>view.android).setBackgroundColor(newValue);
+    //Background and borders methods
+    private static setBackgroundBorderProperty(view: view.View, newValue: any, defaultValue: any) {
+        onBackgroundOrBorderPropertyChanged(view);
     }
 
-    private static resetBackgroundProperty(view: view.View, nativeValue: any) {
-        if (types.isDefined(nativeValue)) {
-            (<android.view.View>view.android).setBackground(nativeValue)
-        }
-    }
-
-    private static getNativeBackgroundValue(view: view.View): any {
-        var drawable = view.android.getBackground();
-        if (drawable instanceof android.graphics.drawable.StateListDrawable) {
-            // StateListDrawables should not be cached as they should be created per instance of view as they contain the current state within.
-            trace.write("Native value of view: " + view + " is StateListDrawable. It will not be cached.", trace.categories.Style);
-            return undefined;
-        }
-
-        return drawable;
-    }
-
-    //Background image methods
-    private static setBackgroundImageSourceProperty(view: view.View, newValue: any) {
-        var nativeView = <android.view.View>view.android;
-        var bmp = <android.graphics.Bitmap>newValue;
-        var d = new android.graphics.drawable.BitmapDrawable(bmp);
-        d.setTileModeXY(android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
-        d.setDither(true); 
-        nativeView.setBackgroundDrawable(d);
-    }
-
-    private static resetBackgroundImageSourceProperty(view: view.View, nativeValue: any) {
-        if (types.isDefined(nativeValue)) {
-            (<android.view.View>view.android).setBackgroundDrawable(nativeValue)
-        }
-    }
-
-    private static getNativeBackgroundImageSourceValue(view: view.View): any {
-        var drawable = view.android.getBackground();
-
-        if (drawable instanceof android.graphics.drawable.BitmapDrawable) {
-            return drawable;
-        }
-
-        return undefined;
+    private static resetBackgroundBorderProperty(view: view.View, nativeValue: any) {
+        onBackgroundOrBorderPropertyChanged(view);
     }
 
     //Visibility methods
@@ -100,16 +102,6 @@ export class DefaultStyler implements definition.stylers.Styler {
     }
 
     public static registerHandlers() {
-        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBackgroundProperty,
-            DefaultStyler.resetBackgroundProperty,
-            DefaultStyler.getNativeBackgroundValue));
-
-        style.registerHandler(style.backgroundImageSourceProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setBackgroundImageSourceProperty,
-            DefaultStyler.resetBackgroundImageSourceProperty,
-            DefaultStyler.getNativeBackgroundImageSourceValue));
-
         style.registerHandler(style.visibilityProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setVisibilityProperty,
             DefaultStyler.resetVisibilityProperty));
@@ -125,6 +117,17 @@ export class DefaultStyler implements definition.stylers.Styler {
         style.registerHandler(style.minHeightProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setMinHeightProperty,
             DefaultStyler.resetMinHeightProperty))
+
+        // Use the same handler for all background/border properties
+        // Note: There is no default value getter - the default value is handled in onBackgroundOrBorderPropertyChanged
+        var borderHandler = new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setBackgroundBorderProperty,
+            DefaultStyler.resetBackgroundBorderProperty);
+
+        style.registerHandler(style.backgroundInternalProperty, borderHandler);
+        style.registerHandler(style.borderWidthProperty, borderHandler);
+        style.registerHandler(style.borderColorProperty, borderHandler);
+        style.registerHandler(style.borderRadiusProperty, borderHandler);
     }
 }
 
@@ -142,17 +145,39 @@ export class TextViewStyler implements definition.stylers.Styler {
         return (<android.widget.TextView>view.android).getTextColors().getDefaultColor();
     }
 
-    // font-size
-    private static setFontSizeProperty(view: view.View, newValue: any) {
-        (<android.widget.TextView>view.android).setTextSize(newValue);
+    // font
+    private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
+        var tv = <android.widget.TextView>view.android;
+        var fontValue = <font.Font>newValue;
+
+        var typeface = fontValue.getAndroidTypeface();
+        if (typeface) {
+            tv.setTypeface(typeface);
+        }
+        else {
+            tv.setTypeface(nativeValue.typeface);
+        }
+
+        if (fontValue.fontSize) {
+            tv.setTextSize(fontValue.fontSize);
+        }
+        else {
+            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+        }
     }
 
-    private static resetFontSizeProperty(view: view.View, nativeValue: any) {
-        (<android.widget.TextView>view.android).setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue);
+    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
+        var tv: android.widget.TextView = <android.widget.TextView>view.android;
+        tv.setTypeface(nativeValue.typeface);
+        tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
     }
 
-    private static getNativeFontSizeValue(view: view.View): any {
-        return (<android.widget.TextView>view.android).getTextSize();
+    private static getNativeFontInternalValue(view: view.View): any {
+        var tv: android.widget.TextView = <android.widget.TextView>view.android;
+        return {
+            typeface: tv.getTypeface(),
+            size: tv.getTextSize()
+        };
     }
 
     // text-align
@@ -185,34 +210,35 @@ export class TextViewStyler implements definition.stylers.Styler {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setColorProperty,
             TextViewStyler.resetColorProperty,
-            TextViewStyler.getNativeColorValue));
+            TextViewStyler.getNativeColorValue), "TextBase");
 
-        style.registerHandler(style.fontSizeProperty, new stylersCommon.StylePropertyChangedHandler(
-            TextViewStyler.setFontSizeProperty,
-            TextViewStyler.resetFontSizeProperty,
-            TextViewStyler.getNativeFontSizeValue));
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setFontInternalProperty,
+            TextViewStyler.resetFontInternalProperty,
+            TextViewStyler.getNativeFontInternalValue), "TextBase");
 
         style.registerHandler(style.textAlignmentProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setTextAlignmentProperty,
             TextViewStyler.resetTextAlignmentProperty,
-            TextViewStyler.getNativeTextAlignmentValue));
-    }
-}
+            TextViewStyler.getNativeTextAlignmentValue), "TextBase");
 
-export class ButtonStyler implements definition.stylers.Styler {
-    //Background methods
-    private static setButtonBackgroundProperty(view: view.View, newValue: any) {
-        (<android.view.View>view.android).setBackgroundColor(newValue);
-    }
+        // Register the same stylers for Button.
+        // It also derives from TextView but is not under TextBase in our View hierarchy.
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setColorProperty,
+            TextViewStyler.resetColorProperty,
+            TextViewStyler.getNativeColorValue), "Button");
 
-    private static resetButtonBackgroundProperty(view: view.View, nativeValue: any) {
-        (<android.view.View>view.android).setBackgroundResource(constants.btn_default);
-    }
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setFontInternalProperty,
+            TextViewStyler.resetFontInternalProperty,
+            TextViewStyler.getNativeFontInternalValue), "Button");
 
-    public static registerHandlers() {
-        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
-            ButtonStyler.setButtonBackgroundProperty,
-            ButtonStyler.resetButtonBackgroundProperty), "Button");
+        style.registerHandler(style.textAlignmentProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setTextAlignmentProperty,
+            TextViewStyler.resetTextAlignmentProperty,
+            TextViewStyler.getNativeTextAlignmentValue), "Button");
+
     }
 }
 
@@ -227,7 +253,7 @@ export class ActivityIndicatorStyler implements definition.stylers.Styler {
     }
 
     public static setIndicatorVisibility(isBusy: boolean, visibility: string, nativeView: android.view.View) {
-        if (visibility === enums.Visibility.collapsed) {
+        if (visibility === enums.Visibility.collapsed || visibility === enums.Visibility.collapse) {
             nativeView.setVisibility(android.view.View.GONE);
         }
         else {
@@ -344,32 +370,12 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 }
 
-export class BorderStyler implements definition.stylers.Styler {
-    //Background methods
-    private static setBackgroundProperty(view: view.View, newValue: any) {
-        var border = <border.Border>view;
-        border._updateAndroidBorder();
-    }
-
-    private static resetBackgroundProperty(view: view.View, nativeValue: any) {
-        var border = <border.Border>view;
-        border._updateAndroidBorder();
-    }
-
-   public static registerHandlers() {
-        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
-            BorderStyler.setBackgroundProperty,
-            BorderStyler.resetBackgroundProperty), "Border");
-    }
-}
-
+// Register all styler at the end.
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();
-    ButtonStyler.registerHandlers();
     TextViewStyler.registerHandlers();
     ActivityIndicatorStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
     SearchBarStyler.registerHandlers();
-    BorderStyler.registerHandlers();
 }

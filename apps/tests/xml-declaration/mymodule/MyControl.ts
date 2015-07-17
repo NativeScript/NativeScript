@@ -18,5 +18,7 @@ export class MyControl extends stackLayoutModule.StackLayout {
 
         this.addChild(lbl);
         this.addChild(btn);
+
+        this.cssClass = "MyStackLayout";
     }
 }

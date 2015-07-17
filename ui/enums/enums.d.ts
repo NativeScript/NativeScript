@@ -191,9 +191,14 @@
         export var visible: string;
 
         /**
-         * The view is not visible and won't take place in the layout.
+         * Obsolete. Please use 'collapse' instead!
          */
         export var collapsed: string;
+
+        /**
+         * The view is not visible and won't take place in the layout.
+         */
+        export var collapse: string;
     }
 
     /**
@@ -347,9 +352,18 @@
     }
 
     /**
+     * Specifies the visibility of the application bar icon
+     */
+    export module AndroidActionBarIconVisibility {
+        export var auto: string;
+        export var never: string;
+        export var always: string;
+    }
+
+    /**
      * Specifies android MenuItem position.
      */
-    module MenuItemPosition {
+    module AndroidActionItemPosition {
         /**
          * Always show this item as a button in an Action Bar.
          */
@@ -364,5 +378,61 @@
          * Never show this item as a button in an Action Bar.
          */
         export var popup: string;
+    }
+    
+    /**
+     * Specifies different font styles.
+     */
+    export module FontStyle {
+        /**
+         * Normal font style.
+         */
+        export var normal: string;
+        
+        /**
+         * Italic font style.
+         */
+        export var italic: string;
+    }
+    
+    
+    /**
+     * Specifies different font weights.
+     */
+    export module FontWeight {
+        /**
+         * Normal font weight.
+         */
+        export var normal: string;
+        
+        /**
+         * Bold font weight.
+         */
+        export var bold: string;
+    }
+    
+    /**
+     * Specifies background repeat.
+     */
+    export module BackgroundRepeat {
+        export var repeat: string;
+        export var repeatX: string;
+        export var repeatY: string;
+        export var noRepeat: string;
+    }
+
+    /**
+     * Specifies android MenuItem position.
+     */
+    module IOSActionItemPosition {
+        /**
+         * Show this item at the left of the navigation bar.
+         */
+        export var left: string;
+
+        /**
+         * Show this item at the right of the action bar.
+         */
+        export var right: string;
     }
 }

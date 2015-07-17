@@ -153,7 +153,7 @@ export class SegmentedBar extends common.SegmentedBar {
         this._android.setup();
     }
 
-    get android(): OurTabHost {
+    get android(): android.widget.TabHost {
         return this._android;
     }
 }

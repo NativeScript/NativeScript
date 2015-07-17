@@ -1,14 +1,15 @@
 {
   "name": "tns-core",
   "description": "Telerik NativeScript Core",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/NativeScript/NativeScript"
   },
   "files": [
     "**/*.*",
-    "**/*"
+    "**/*",
+    "!node-tests/"
   ],
   "license": "Apache-2.0",
   "devDependencies": {
@@ -19,7 +20,11 @@
     "grunt-multi-dest": "1.0.0",
     "grunt-shell": "1.1.2",
     "grunt-ts": "4.0.1",
-    "grunt-tslint": "0.4.2",
+    "grunt-tslint": "2.3.1-beta",
+    "mocha": "2.2.5",
+    "grunt-simple-mocha": "0.4.0",
+    "grunt-env": "0.4.4",
+    "chai": "2.3.0",
     "typescript": "1.5.0-beta"
   }
 }

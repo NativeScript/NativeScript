@@ -1,0 +1,25 @@
+<Page>
+  <StackLayout>
+    <Button text="RESET" tap="resetStyles"/>
+
+    <Label text="no align"    />
+    <Label text="left"    style="text-align: left" />
+    <Label text="center"  style="text-align: center" />
+    <Label text="right"   style="text-align: right" />
+
+    <WrapLayout>
+      <Label text="normal" />
+      <Label text="color"       style="color: green"/>
+      <Label text="size"        style="font-size: 32" />
+      <Label text="italic"      style="font-style: italic" />
+      <Label text="bold"        style="font-weight: bold"/>
+      <Label text="bold-italic" style="font-weight: bold; font-style: italic"/>
+      <Label text="serif"       style="font-family: serif"/>
+      <Label text="sans-serif"  style="font-family: sans-serif"/>
+      <Label text="monospace"   style="font-family: monospace"/>
+      <Label text="Times New Roman"   style="font-family: Times New Roman"/>
+      <Label text="invalid font"   style="font-family: InvalidFont"/>
+      <Label text="all in one"  style="font-family: serif; font-weight: bold; font-style: italic; font-size: 32; color: green" />
+    </WrapLayout>
+  </StackLayout>
+</Page>

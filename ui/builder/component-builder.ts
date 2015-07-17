@@ -31,6 +31,7 @@ var MODULES = {
     "FormattedString": "text/formatted-string",
     "Span": "text/span",
     "WebView": "ui/web-view",
+    "HtmlView": "ui/html-view",
     "SegmentedBar": "ui/segmented-bar",
     "SegmentedBarItem": "ui/segmented-bar",
     "ToolBar": "ui/tool-bar",
@@ -38,7 +39,9 @@ var MODULES = {
     "TimePicker": "ui/time-picker",
     "DatePicker": "ui/date-picker",
     "ListPicker": "ui/list-picker",
-    "MenuItem": "ui/page",
+    "ActionBar": "ui/action-bar",
+    "ActionItem": "ui/action-bar",
+    "NavigationButton": "ui/action-bar",
 };
 
 var ROW = "row";
@@ -58,8 +61,19 @@ export function getComponentModule(elementName: string, namespace: string, attri
     var moduleId = MODULES[elementName] || UI_PATH + elementName.toLowerCase();
 
     try {
+        if (types.isString(namespace)) {
+            var pathInsideTNSModules = fs.path.join(fs.knownFolders.currentApp().path, "tns_modules", namespace);
+
+            if (fs.Folder.exists(pathInsideTNSModules)) {
+                moduleId = pathInsideTNSModules;
+            } else {
+                // We expect module at root level in the app.
+                moduleId = fs.path.join(fs.knownFolders.currentApp().path, namespace);
+            }
+        }
+
         // Require module by module id.
-        instanceModule = require(types.isString(namespace) && fs.path.join(fs.knownFolders.currentApp().path, namespace) || moduleId);
+        instanceModule = require(moduleId);
 
         // Get the component type from module.
         var instanceType = instanceModule[elementName] || Object;
@@ -163,8 +177,8 @@ export function setPropertyValue(instance: view.View, instanceModule: Object, ex
     } else {
         var attrHandled = false;
 
-        if ((<any>instance).applyXmlAttribute) {
-            attrHandled = (<any>instance).applyXmlAttribute(propertyName, propertyValue);
+        if ((<any>instance)._applyXmlAttribute) {
+            attrHandled = (<any>instance)._applyXmlAttribute(propertyName, propertyValue);
         }
 
         if (!attrHandled) {

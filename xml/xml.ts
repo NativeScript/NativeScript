@@ -148,6 +148,14 @@ export class XmlParser implements definition.XmlParser {
         }
     }
 
+    public get angularSyntax() : boolean {
+        return this._parser.angularSyntax;
+    }
+
+    public set angularSyntax(value: boolean) {
+        this._parser.angularSyntax = value;
+    }
+
     public parse(xmlString: string): void {
         if (this._processNamespaces) {
             this._namespaceStack = [];

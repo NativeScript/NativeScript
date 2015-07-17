@@ -11,6 +11,8 @@ import converters = require("ui/styling/converters");
 import enums = require("ui/enums");
 import imageSource = require("image-source");
 import utils = require("utils/utils");
+import font = require("ui/styling/font");
+import background = require("ui/styling/background");
 
 // key is the property id and value is Dictionary<string, StylePropertyChangedHandler>;
 var _registeredHandlers = Array<Object>();
@@ -23,6 +25,8 @@ var noStylingClasses = {};
 
 export class Style extends observable.DependencyObservable implements styling.Style {
     private _view: view.View;
+    private _updateCounter = 0;
+    private _nativeSetters = new Map<dependencyObservable.Property, any>();
 
     get color(): color.Color {
         return this._getValue(colorProperty);
@@ -45,11 +49,81 @@ export class Style extends observable.DependencyObservable implements styling.St
         this._setValue(backgroundImageProperty, value, observable.ValueSource.Local);
     }
 
+    get backgroundRepeat(): string {
+        return this._getValue(backgroundRepeatProperty);
+    }
+    set backgroundRepeat(value: string) {
+        this._setValue(backgroundRepeatProperty, value, observable.ValueSource.Local);
+    }
+
+    get backgroundSize(): string {
+        return this._getValue(backgroundSizeProperty);
+    }
+    set backgroundSize(value: string) {
+        this._setValue(backgroundSizeProperty, value, observable.ValueSource.Local);
+    }
+
+    get backgroundPosition(): string {
+        return this._getValue(backgroundPositionProperty);
+    }
+    set backgroundPosition(value: string) {
+        this._setValue(backgroundPositionProperty, value, observable.ValueSource.Local);
+    }
+
+    get borderColor(): color.Color {
+        return this._getValue(borderColorProperty);
+    }
+    set borderColor(value: color.Color) {
+        this._setValue(borderColorProperty, value, observable.ValueSource.Local);
+    }
+
+    get borderWidth(): number {
+        return this._getValue(borderWidthProperty);
+    }
+    set borderWidth(value: number) {
+        this._setValue(borderWidthProperty, value, observable.ValueSource.Local);
+    }
+
+    get borderRadius(): number {
+        return this._getValue(borderRadiusProperty);
+    }
+    set borderRadius(value: number) {
+        this._setValue(borderRadiusProperty, value, observable.ValueSource.Local);
+    }
+
     get fontSize(): number {
         return this._getValue(fontSizeProperty);
     }
     set fontSize(value: number) {
         this._setValue(fontSizeProperty, value, observable.ValueSource.Local);
+    }
+
+    get fontFamily(): string {
+        return this._getValue(fontFamilyProperty);
+    }
+    set fontFamily(value: string) {
+        this._setValue(fontFamilyProperty, value, observable.ValueSource.Local);
+    }
+
+    get fontStyle(): string {
+        return this._getValue(fontStyleProperty);
+    }
+    set fontStyle(value: string) {
+        this._setValue(fontStyleProperty, value, observable.ValueSource.Local);
+    }
+
+    get fontWeight(): string {
+        return this._getValue(fontWeightProperty);
+    }
+    set fontWeight(value: string) {
+        this._setValue(fontWeightProperty, value, observable.ValueSource.Local);
+    }
+
+    get font(): string {
+        return this._getValue(fontProperty);
+    }
+    set font(value: string) {
+        this._setValue(fontProperty, value, observable.ValueSource.Local);
     }
 
     get textAlignment(): string {
@@ -190,10 +264,33 @@ export class Style extends observable.DependencyObservable implements styling.St
         this._view = parentView;
     }
 
+    public _beginUpdate() {
+        this._updateCounter++;
+    }
+
+    public _endUpdate() {
+        this._updateCounter--;
+        if (this._updateCounter < 0) {
+            throw new Error("style._endUpdate() called, but no update is in progress.");
+        }
+        if (this._updateCounter === 0) {
+            this._nativeSetters.forEach((newValue, property, map) => { this._applyStyleProperty(property, newValue); });
+            this._nativeSetters.clear();
+        }
+    }
+
     public _resetCssValues() {
         var that = this;
         this._eachSetProperty(function (property: observable.Property) {
             that._resetValue(property, observable.ValueSource.Css);
+            return true;
+        });
+    }
+
+    public _resetLocalValues() {
+        var that = this;
+        this._eachSetProperty(function (property: observable.Property) {
+            that._resetValue(property, observable.ValueSource.Local);
             return true;
         });
     }
@@ -242,6 +339,11 @@ export class Style extends observable.DependencyObservable implements styling.St
     }
 
     private _applyStyleProperty(property: dependencyObservable.Property, newValue: any) {
+        if (this._updateCounter > 0) {
+            this._nativeSetters.set(property, newValue);
+            return;
+        }
+
         try {
             var handler: styling.stylers.StylePropertyChangedHandler = getHandler(property, this._view);
 
@@ -251,7 +353,15 @@ export class Style extends observable.DependencyObservable implements styling.St
             else {
                 trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
 
-                if (types.isUndefined(newValue)) {
+                var shouldReset = false;
+                if (property.metadata.equalityComparer) {
+                    shouldReset = property.metadata.equalityComparer(newValue, property.metadata.defaultValue);
+                }
+                else {
+                    shouldReset = (newValue === property.metadata.defaultValue);
+                }
+
+                if (shouldReset) {
                     (<any>handler).resetProperty(property, this._view);
                 } else {
                     (<any>handler).applyProperty(property, this._view, newValue);
@@ -351,41 +461,175 @@ export var colorProperty = new styleProperty.Property("color", "color",
 export var backgroundImageProperty = new styleProperty.Property("backgroundImage", "background-image",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundImagePropertyChanged));
 
-function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-
-    if (types.isString(data.newValue)) {
-        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
-        var match = data.newValue && (<string>data.newValue).match(pattern);
-        var url = match && match[2];
-
-        if (types.isDefined(url)) {
-            if (utils.isDataURI(url)) {
-                var base64Data = url.split(",")[1];
-                if (types.isDefined(base64Data)) {
-                    style._setValue(backgroundImageSourceProperty, imageSource.fromBase64(base64Data), observable.ValueSource.Local);
-                }
-            } else if (utils.isFileOrResourcePath(url)) {
-                style._setValue(backgroundImageSourceProperty, imageSource.fromFileOrResource(url), observable.ValueSource.Local);
-            } else {
-                imageSource.fromUrl(url).then(r=> {
-                    style._setValue(backgroundImageSourceProperty, r, observable.ValueSource.Local);
-                });
-            }
-        }
-    }
-}
-
-export var backgroundImageSourceProperty = new styleProperty.Property("backgroundImageSource", "background-image-source",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, undefined));
-
 export var backgroundColorProperty = new styleProperty.Property("backgroundColor", "background-color",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundColorPropertyChanged, undefined, color.Color.equals),
+    converters.colorConverter);
+
+export var backgroundRepeatProperty = new styleProperty.Property("backgroundRepeat", "background-repeat",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundRepeatPropertyChanged));
+
+export var backgroundSizeProperty = new styleProperty.Property("backgroundSize", "background-size",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundSizePropertyChanged));
+
+export var backgroundPositionProperty = new styleProperty.Property("backgroundPosition", "background-position",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundPositionPropertyChanged));
+
+export var borderColorProperty = new styleProperty.Property("borderColor", "border-color",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, color.Color.equals),
     converters.colorConverter);
 
+export var borderWidthProperty = new styleProperty.Property("borderWidth", "border-width",
+    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
+
+export var borderRadiusProperty = new styleProperty.Property("borderRadius", "border-radius",
+    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
+
+export var backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
+    new observable.PropertyMetadata(background.Background.default, observable.PropertyMetadataSettings.None, undefined, undefined, background.Background.equals));
+
+function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var url: string = data.newValue;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    var isValid = false;
+
+    if (types.isString(data.newValue)) {
+        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
+        var match = url.match(pattern);
+        if (match && match[2]) {
+            url = match[2];
+        }
+
+        if (utils.isDataURI(url)) {
+            var base64Data = url.split(",")[1];
+            if (types.isDefined(base64Data)) {
+                style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromBase64(base64Data)));
+                isValid = true;
+            }
+        } else if (utils.isFileOrResourcePath(url)) {
+            style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromFileOrResource(url)));
+            isValid = true;
+        } else if (url.indexOf("http") !== -1) {
+            style["_url"] = url;
+            style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
+            imageSource.fromUrl(url).then((r) => {
+                if (style && style["_url"] === url) {
+                    style._setValue(backgroundInternalProperty, currentBackground.withImage(r));
+                }
+            });
+            isValid = true;
+        }
+    }
+
+    if (!isValid) {
+        style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
+    }
+}
+
+function onBackgroundColorPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (!color.Color.equals(currentBackground.color, data.newValue)) {
+        style._setValue(backgroundInternalProperty, currentBackground.withColor(data.newValue));
+    }
+}
+
+function onBackgroundSizePropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.size) {
+        style._setValue(backgroundInternalProperty, currentBackground.withSize(data.newValue));
+    }
+}
+
+function onBackgroundRepeatPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.repeat) {
+        style._setValue(backgroundInternalProperty, currentBackground.withRepeat(data.newValue));
+    }
+}
+
+function onBackgroundPositionPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.position) {
+        style._setValue(backgroundInternalProperty, currentBackground.withPosition(data.newValue));
+    }
+}
+
+export var fontProperty = new styleProperty.Property("font", "font",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onFontChanged));
+
 export var fontSizeProperty = new styleProperty.Property("fontSize", "font-size",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.AffectsLayout | observable.PropertyMetadataSettings.Inheritable),
-    converters.fontSizeConverter);
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontSizeChanged), converters.fontSizeConverter);
+
+export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family",
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, onFontFamilyChanged));
+
+export var fontStyleProperty = new styleProperty.Property("fontStyle", "font-style",
+    new observable.PropertyMetadata(enums.FontStyle.normal, observable.PropertyMetadataSettings.Inheritable, onFontStyleChanged, isFontStyleValid));
+
+export var fontWeightProperty = new styleProperty.Property("fontWeight", "font-weight",
+    new observable.PropertyMetadata(enums.FontWeight.normal, observable.PropertyMetadataSettings.Inheritable, onFontWeightChanged, isFontWeightValid));
+
+export var fontInternalProperty = new styleProperty.Property("_fontInternal", "_fontInternal",
+    new observable.PropertyMetadata(font.Font.default, observable.PropertyMetadataSettings.AffectsLayout, null, null, font.Font.equals), font.Font.parse);
+
+function isFontWeightValid(value: string): boolean {
+    return value === enums.FontWeight.normal || value === enums.FontWeight.bold;
+}
+
+function isFontStyleValid(value: string): boolean {
+    return value === enums.FontStyle.normal || value === enums.FontStyle.italic;
+}
+
+function onFontFamilyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontFamily !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontFamily(data.newValue));
+    }
+}
+
+function onFontStyleChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontStyle !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontStyle(data.newValue));
+    }
+}
+
+function onFontWeightChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontWeight !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontWeight(data.newValue));
+    }
+}
+
+function onFontSizeChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontSize !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontSize(data.newValue));
+    }
+}
+
+function onFontChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var newFont = font.Font.parse(data.newValue);
+    var valueSource = style._getValueSource(fontProperty);
+    style._setValue(fontFamilyProperty, newFont.fontFamily, valueSource);
+    style._setValue(fontStyleProperty, newFont.fontStyle, valueSource);
+    style._setValue(fontWeightProperty, newFont.fontWeight, valueSource);
+    style._setValue(fontSizeProperty, newFont.fontSize, valueSource);
+}
 
 export var textAlignmentProperty = new styleProperty.Property("textAlignment", "text-align",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.AffectsLayout | observable.PropertyMetadataSettings.Inheritable),
@@ -504,11 +748,11 @@ export var paddingBottomProperty = new styleProperty.Property("paddingBottom", "
     new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
 
 function isVisibilityValid(value: string): boolean {
-    return value === enums.Visibility.visible || value === enums.Visibility.collapsed;
+    return value === enums.Visibility.visible || value === enums.Visibility.collapse || value === enums.Visibility.collapsed;
 }
 
 function setLayoutInfoVisibility(data: observable.PropertyChangeData) {
-    (<any>data.object)._view._isVisibleCache = data.newValue !== enums.Visibility.collapsed;
+    (<any>data.object)._view._isVisibleCache = (data.newValue === enums.Visibility.visible);
 }
 
 export var visibilityProperty = new styleProperty.Property("visibility", "visibility",

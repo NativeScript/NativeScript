@@ -2,12 +2,11 @@
 import dts = require("application");
 import frame = require("ui/frame");
 import types = require("utils/types");
+import observable = require("data/observable");
 
 // merge the exports of the application_common file with the exports of this file
 declare var exports;
 require("utils/module-merge").merge(appModule, exports);
-
-var callbacks = android.app.Application.ActivityLifecycleCallbacks;
 
 export var mainModule: string;
 
@@ -15,12 +14,14 @@ export var mainModule: string;
 // TODO: This is kind of hacky and is "pure JS in TypeScript"
 
 var initEvents = function () {
-    var androidApp: AndroidApplication = exports.android;
+    var androidApp: dts.AndroidApplication = exports.android;
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
-    var lifecycleCallbacks = new callbacks({
+    var lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: function (activity: any, bundle: any) {
             if (!androidApp.startActivity) {
                 androidApp.startActivity = activity;
+
+                androidApp.notify(<dts.AndroidActivityBundleEventData>{ eventName: "activityCreated", object: androidApp, activity: activity, bundle: bundle });
 
                 if (androidApp.onActivityCreated) {
                     androidApp.onActivityCreated(activity, bundle);
@@ -29,6 +30,7 @@ var initEvents = function () {
 
             androidApp.currentContext = activity;
         },
+
         onActivityDestroyed: function (activity: any) {
             // Clear the current activity reference to prevent leak
             if (activity === androidApp.foregroundActivity) {
@@ -44,10 +46,12 @@ var initEvents = function () {
                     exports.onExit();
                 }
 
-                exports.notify({ eventName: dts.exitEvent, object: androidApp, android: activity });
+                exports.notify(<dts.ApplicationEventData>{ eventName: dts.exitEvent, object: androidApp, android: activity });
 
                 androidApp.startActivity = undefined;
             }
+
+            androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityDestroyed", object: androidApp, activity: activity });
 
             if (androidApp.onActivityDestroyed) {
                 androidApp.onActivityDestroyed(activity);
@@ -56,47 +60,60 @@ var initEvents = function () {
             // TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
             gc();
         },
+
         onActivityPaused: function (activity: any) {
             if (activity === androidApp.foregroundActivity) {
                 if (exports.onSuspend) {
                     exports.onSuspend();
                 }
 
-                exports.notify({ eventName: dts.suspendEvent, object: androidApp, android: activity });
-
+                exports.notify(<dts.ApplicationEventData>{ eventName: dts.suspendEvent, object: androidApp, android: activity });
             }
+
+            androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityPaused", object: androidApp, activity: activity });
 
             if (androidApp.onActivityPaused) {
                 androidApp.onActivityPaused(activity);
             }
         },
+
         onActivityResumed: function (activity: any) {
             if (activity === androidApp.foregroundActivity) {
                 if (exports.onResume) {
                     exports.onResume();
                 }
 
-                exports.notify({ eventName: dts.resumeEvent, object: androidApp, android: activity });
-
+                exports.notify(<dts.ApplicationEventData>{ eventName: dts.resumeEvent, object: androidApp, android: activity });
             }
+
+            androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityResumed", object: androidApp, activity: activity });
 
             if (androidApp.onActivityResumed) {
                 androidApp.onActivityResumed(activity);
             }
         },
+
         onActivitySaveInstanceState: function (activity: any, bundle: any) {
+            androidApp.notify(<dts.AndroidActivityBundleEventData>{ eventName: "saveActivityState", object: androidApp, activity: activity, bundle: bundle });
+
             if (androidApp.onSaveActivityState) {
                 androidApp.onSaveActivityState(activity, bundle);
             }
         },
+
         onActivityStarted: function (activity: any) {
             androidApp.foregroundActivity = activity;
+
+            androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityStarted", object: androidApp, activity: activity });
 
             if (androidApp.onActivityStarted) {
                 androidApp.onActivityStarted(activity);
             }
         },
+
         onActivityStopped: function (activity: any) {
+            androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityStopped", object: androidApp, activity: activity });
+
             if (androidApp.onActivityStopped) {
                 androidApp.onActivityStopped(activity);
             }
@@ -113,13 +130,21 @@ app.init({
     },
 
     onCreate: function () {
-        var androidApp = new AndroidApplication(this);
-        exports.android = androidApp;
-        androidApp.init();
+        exports.android.init(this);
     }
 });
 
-class AndroidApplication implements dts.AndroidApplication {
+export class AndroidApplication extends observable.Observable implements dts.AndroidApplication {
+    public static activityCreatedEvent = "activityCreated";
+    public static activityDestroyedEvent = "activityDestroyed";
+    public static activityStartedEvent = "activityStarted";
+    public static activityPausedEvent = "activityPaused";
+    public static activityResumedEvent = "activityResumed";
+    public static activityStoppedEvent = "activityStopped";
+    public static saveActivityStateEvent = "saveActivityState";
+    public static activityResultEvent = "activityResult";
+    public static activityBackPressedEvent = "activityBackPressed";
+
     public nativeApp: android.app.Application;
     public context: android.content.Context;
     public currentContext: android.content.Context;
@@ -127,64 +152,49 @@ class AndroidApplication implements dts.AndroidApplication {
     public startActivity: android.app.Activity;
     public packageName: string;
     public hasActionBar: boolean;
-    // public getActivity: (intent: android.content.Intent) => any;
 
+    /* tslint:disable */
+    @Deprecated
+    /* tslint:enable */
     public onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
+
+    /* tslint:disable */
+    @Deprecated
+    /* tslint:enable */
     public onActivityDestroyed: (activity: android.app.Activity) => void;
+
+    /* tslint:disable */
+    @Deprecated
+    /* tslint:enable */
     public onActivityStarted: (activity: android.app.Activity) => void;
+
+    /* tslint:disable */
+    @Deprecated
+    /* tslint:enable */
     public onActivityPaused: (activity: android.app.Activity) => void;
+
+    /* tslint:disable */
+    @Deprecated
+    /* tslint:enable */
     public onActivityResumed: (activity: android.app.Activity) => void;
+
+    /* tslint:disable */
+    @Deprecated
+    /* tslint:enable */
     public onActivityStopped: (activity: android.app.Activity) => void;
+
+    /* tslint:disable */
+    @Deprecated
+    /* tslint:enable */
     public onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
 
+    /* tslint:disable */
+    @Deprecated
+    /* tslint:enable */
     public onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void;
 
     private _eventsToken: any;
-
-    //private _initialized: boolean;
     
-    constructor(nativeApp: any) {
-        this.nativeApp = nativeApp;
-        this.packageName = nativeApp.getPackageName();
-        this.context = nativeApp.getApplicationContext();
-    }
-
-    //private setupUI() {
-    //    // TODO: We probably don't need this flag if onCreate is going to be called once.
-    //    if (!this._initialized) {
-    //        this._initialized = true;
-    //        if (mainModule && mainModule !== "") {
-    //            var mainPage = require(mainModule).Page;
-
-    //            if (mainPage instanceof page.Page) {
-    //                this._rootView.addView(<android.view.View>mainPage.android);
-    //                // TODO: We need to show ActionBar if there are any toolBar items
-    //                // or if navigation page - showNavigationBar is true
-
-    //                var showActionBar = false;
-    //                if (mainPage instanceof page.TabbedPage) {
-    //                    showActionBar = true;
-    //                    this.startActivity.getActionBar().NavigationMode = android.app.ActionBar.NAVIGATION_MODE_TABS;
-    //                }
-    //                else if (mainPage instanceof page.NavigationPage) {
-    //                    showActionBar = (<page.NavigationPage>mainPage).showActionBar;
-    //                    this.startActivity.getActionBar().NavigationMode = android.app.ActionBar.NAVIGATION_MODE_STANDARD;
-    //                }
-
-    //                if (showActionBar) {
-    //                    this.startActivity.getActionBar().show();
-    //                }
-    //                else {
-    //                    this.startActivity.getActionBar().hide();
-    //                }
-    //            }
-    //            else {
-    //                // TODO: Throw exception when/if we remove Page/Frame support.
-    //            }
-    //        }
-    //    }
-    //}
-
     public getActivity(intent: android.content.Intent): Object {
         if (intent && intent.getAction() === android.content.Intent.ACTION_MAIN) {
             // application's main activity
@@ -216,7 +226,11 @@ class AndroidApplication implements dts.AndroidApplication {
         return topFrame.android.onActivityRequested(intent);
     }
 
-    public init() {
+    public init(nativeApp: any) {
+        this.nativeApp = nativeApp;
+        this.packageName = nativeApp.getPackageName();
+        this.context = nativeApp.getApplicationContext();
+
         this._eventsToken = initEvents();
         this.nativeApp.registerActivityLifecycleCallbacks(this._eventsToken);
         this.context = this.nativeApp.getApplicationContext();
@@ -242,3 +256,5 @@ global.__onUncaughtError = function (error: Error) {
 exports.start = function () {
     dts.loadCss();
 }
+
+exports.android = new AndroidApplication();

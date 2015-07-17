@@ -1,0 +1,6 @@
+﻿<Page loaded="pageLoaded">
+  <StackLayout orientation="vertical">
+    <TextField id="textField" text="{{ textProperty }}" />
+    <TextField id="textFieldSecured" text="{{ textProperty }}" />
+  </StackLayout>
+</Page>

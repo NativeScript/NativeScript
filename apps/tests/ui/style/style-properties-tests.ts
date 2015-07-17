@@ -39,8 +39,32 @@ export function test_setting_backgroundColor_property_from_CSS_is_applied_to_Sty
     test_property_from_CSS_is_applied_to_style("backgroundColor", "background-color", new color.Color("#FF0000"), "#FF0000");
 }
 
-export function test_setting_fontSize_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("fontSize", "font-size", 32);
+export function test_setting_backgroundRepeat_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("backgroundRepeat", "background-repeat", "repeat-x");
+}
+
+export function test_setting_backgroundSize_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("backgroundSize", "background-size", "10% 20%");
+}
+
+export function test_setting_backgroundPosition_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("backgroundPosition", "background-position", "left center");
+}
+
+export function test_setting_backgroundImage_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("backgroundImage", "background-image", "url('~/pages/test2.png')");
+}
+
+export function test_setting_borderWidth_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("borderWidth", "border-width", 5);
+}
+
+export function test_setting_borderColor_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("borderColor", "border-color", new color.Color("#FF0000"), "#FF0000");
+}
+
+export function test_setting_borderRadius_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("borderRadius", "border-radius", 20);
 }
 
 export function test_setting_textAlignment_property_from_CSS_is_applied_to_Style() {
@@ -79,6 +103,22 @@ export function test_setting_visibility_property_from_CSS_is_applied_to_Style() 
 
 export function test_setting_opacity_property_from_CSS_is_applied_to_Style() {
     test_property_from_CSS_is_applied_to_style("opacity", "opacity", 0.5);
+}
+
+export function test_setting_fontSize_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("fontSize", "font-size", 32);
+}
+
+export function test_setting_fontFamily_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("fontFamily", "font-family", "Helvetica");
+}
+
+export function test_setting_fontWeight_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("fontWeight", "font-weight", "bold");
+}
+
+export function test_setting_fontStyle_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("fontStyle", "font-style", "italic");
 }
 
 function test_property_from_CSS_is_applied_to_style(propName: string, cssName: string, value: any, cssValue?: string) {
@@ -231,7 +271,7 @@ export function test_setting_margin_shorthand_property_sets_all_margins() {
     test_margin_shorthand_property("10 20 30 40", 10, 20, 30, 40);
 }
 
-function test_margin_shorthand_property(short: string, top:number, right:number, bottom:number, left:number) {
+function test_margin_shorthand_property(short: string, top: number, right: number, bottom: number, left: number) {
     var testView = new buttonModule.Button();
     testView.style.margin = short;
 
@@ -257,3 +297,23 @@ function test_padding_shorthand_property(short: string, top: number, right: numb
     TKUnit.assertEqual(testView.style.paddingLeft, left, "left");
 }
 
+export function test_setting_font_shorthand_property() {
+    test_font_shorthand_property("15px Arial", "Arial", 15, "normal", "normal");
+    test_font_shorthand_property("bold 15px Arial", "Arial", 15, "normal", "bold");
+    test_font_shorthand_property("italic 15px Arial", "Arial", 15, "italic", "normal");
+    test_font_shorthand_property("bold italic 15px Arial", "Arial", 15, "italic", "bold");
+    test_font_shorthand_property("italic normal bold 15px Arial, serif", "Arial, serif", 15, "italic", "bold");
+    test_font_shorthand_property("small-caps normal bold 15px Arial", "Arial", 15, "normal", "bold");
+    test_font_shorthand_property("normal normal normal 15px Arial", "Arial", 15, "normal", "normal");
+    test_font_shorthand_property("normal normal normal 15px/30px Arial", "Arial", 15, "normal", "normal");
+}
+
+function test_font_shorthand_property(short: string, family: string, size: number, style: string, weight:string) {
+    var testView = new buttonModule.Button();
+    (<any>testView.style)["font"] = short;
+
+    TKUnit.assertEqual(testView.style.fontFamily, family, "style.fontFamily");
+    TKUnit.assertEqual(testView.style.fontStyle, style, "style.fontStyle");
+    TKUnit.assertEqual(testView.style.fontWeight, weight, "style.fontWeight");
+    TKUnit.assertEqual(testView.style.fontSize, size, "style.fontSize");
+}

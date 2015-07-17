@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Page>
-  <StackLayout>
-    <Button text="alert" tap="alertTapped"/>
-    <Button text="confirm" tap="confirmTapped"/>
-    <Button text="prompt" tap="promptTapped"/>
-    <Button text="login" tap="loginTapped"/>
-  </StackLayout>
+  <ScrollView>
+    <StackLayout>
+      <Button text="alert" tap="alertTapped"/>
+      <Button text="alert with options" tap="alertWithOptionsTapped"/>
+      <Button text="confirm" tap="confirmTapped"/>
+      <Button text="confirm with options" tap="confirmWithOptionsTapped"/>
+      <Button text="prompt" tap="promptTapped"/>
+      <Button text="prompt with options" tap="promptWithOptionsTapped"/>
+      <Button text="prompt with options password" tap="promptWithOptionsPasswordTapped"/>
+      <Button text="login" tap="loginTapped"/>
+      <Button text="login with options" tap="loginWithOptionsTapped"/>
+      <Button text="action" tap="actionTapped"/>
+      <Button text="action with options" tap="actionWithOptionsTapped"/>
+    </StackLayout>
+  </ScrollView>
 </Page>
