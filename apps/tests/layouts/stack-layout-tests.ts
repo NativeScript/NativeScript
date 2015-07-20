@@ -1,6 +1,6 @@
-﻿import page = require("ui/page");
-import layout = require("ui/layouts/stack-layout");
-import button = require("ui/button");
+﻿import {Page} from "ui/page";
+import {StackLayout} from "ui/layouts/stack-layout";
+import {Button} from "ui/button";
 import TKUnit = require("../TKUnit");
 import helper = require("./layout-helper");
 import navHelper = require("../ui/helper");
@@ -9,7 +9,7 @@ import utils = require("utils/utils");
 
 var ASYNC = 2;
 
-export class MyStackLayout extends layout.StackLayout {
+export class MyStackLayout extends StackLayout {
     public measureCount: number = 0;
     public arrangeCount: number = 0;
 
@@ -32,16 +32,16 @@ export class MyStackLayout extends layout.StackLayout {
     }
 }
 
-var tmp: button.Button;
-var newPage: page.Page;
+var tmp: Button;
+var newPage: Page;
 var rootLayout: MyStackLayout;
 var btn1: helper.MyButton;
 var btn2: helper.MyButton;
 
 export function setUpModule() {
     var pageFactory = function () {
-        newPage = new page.Page();
-        tmp = new button.Button();
+        newPage = new Page();
+        tmp = new Button();
         tmp.text = "Loading test";
         newPage.content = tmp;
         return newPage;
@@ -65,7 +65,7 @@ export function setUp() {
     btn1.text = "btn1";
     rootLayout.addChild(btn1);
     btn2 = new helper.MyButton();
-    btn2.text = "btn 2";
+    btn2.text = "btn2";
     rootLayout.addChild(btn2);
     newPage.content = rootLayout;
 }
@@ -206,11 +206,37 @@ export function test_StackLayout_Padding_Horizontal() {
     helper.assertLayout(btn2, 60, 20, 50, 240, "btn2");
 }
 
+function assertChildTexts(expected, layout, message) {
+    let texts: Array<string> = [];
+    layout._eachChildView((child: {text: string}) => texts.push(child.text));
+    TKUnit.assertEqual(expected, texts.join('|'), message);
+}
+
+export function test_insertChildAtPosition() {
+    assertChildTexts("btn1|btn2", rootLayout, "initial 2 buttons");
+
+    let newChild = new Button();
+    newChild.text = 'in-between';
+    rootLayout.insertChild(1, newChild);
+
+    assertChildTexts("btn1|in-between|btn2", rootLayout, "button inserted at correct location");
+}
+
+export function test_getChildIndex() {
+    let lastChildIndex = rootLayout.getChildrenCount() - 1;
+    let lastButton = <Button>rootLayout.getChildAt(lastChildIndex);
+    TKUnit.assertEqual("btn2", lastButton.text);
+    TKUnit.assertEqual(lastChildIndex, rootLayout.getChildIndex(lastButton));
+
+    let nonChild = new Button();
+    TKUnit.assertEqual(-1, rootLayout.getChildIndex(nonChild));
+}
+
 export function test_codesnippets() {
     // <snippet module="ui/layouts/stack-layout" title="stack-layout">
     // ### Create StackLayout
     // ``` JavaScript
-    var stackLayout = new layout.StackLayout();
+    var stackLayout = new StackLayout();
     //  ```
 
     // ### Declaring a StackLayout.
@@ -225,7 +251,7 @@ export function test_codesnippets() {
 
     // ### Add child view to layout
     // ``` JavaScript
-    var btn = new button.Button();
+    var btn = new Button();
     stackLayout.addChild(btn);
     //  ```
 
