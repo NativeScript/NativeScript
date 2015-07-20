@@ -22,7 +22,8 @@ export class Span extends spanCommon.Span {
             if (realFontFamily) {
                 font = UIFont.fontWithNameSize(realFontFamily, realFontSize);
             }
-            else {
+            
+            if (!font) {
                 var fontDescriptor = UIFontDescriptor.new();
                 var symbolicTraits;
                 if (realFontAttributes & enums.FontAttributes.Bold) {
@@ -33,12 +34,11 @@ export class Span extends spanCommon.Span {
                 }
                 font = UIFont.fontWithDescriptorSize(fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits), realFontSize);
             }
-            if (font) {
-                this.spanModifiers.push({
-                    key: NSFontAttributeName,
-                    value: font
-                });
-            }
+
+            this.spanModifiers.push({
+                key: NSFontAttributeName,
+                value: font
+            });
         }
 
         var realForegroundColor = this.foregroundColor ||

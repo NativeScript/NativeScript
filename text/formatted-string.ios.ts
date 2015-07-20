@@ -21,7 +21,7 @@ export class FormattedString extends formattedStringCommon.FormattedString {
             for (p = 0; p < span.spanModifiers.length; p++) {
                 attrDict.setObjectForKey(span.spanModifiers[p].value, span.spanModifiers[p].key);
             }
-            var nsAttributedString = NSMutableAttributedString.alloc().initWithStringAttributes(spanText, attrDict);
+            var nsAttributedString = NSMutableAttributedString.alloc().initWithStringAttributes(String(spanText), attrDict);
             mas.insertAttributedStringAtIndex(nsAttributedString, spanStart);
             spanStart += spanLength;
         }
