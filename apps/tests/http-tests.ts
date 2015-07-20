@@ -333,15 +333,15 @@ export var test_request_headersSentAndReceivedProperly = function (done) {
         method: "GET",
         headers: { "Content-Type": "application/json" }
     }).then(function (response) {
-            result = response.headers;
-            try {
-                TKUnit.assert(result["Content-Type"] === "application/json", "Headers not sent/received properly!");
-                done(null);
-            }
-            catch (err) {
-                done(err);
-            }
-        }, function (e) {
+        result = response.headers;
+        try {
+            TKUnit.assert(result["Content-Type"] === "application/json", "Headers not sent/received properly!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    }, function (e) {
             done(e);
         });
 };
@@ -355,15 +355,15 @@ export var test_request_contentSentAndReceivedProperly = function (done) {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         content: "MyVariableOne=ValueOne&MyVariableTwo=ValueTwo"
     }).then(function (response) {
-            result = response.content.toJSON();
-            try {
-                TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
-                done(null);
-            }
-            catch (err) {
-                done(err);
-            }
-        }, function (e) {
+        result = response.content.toJSON();
+        try {
+            TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    }, function (e) {
             done(e);
         });
 };
@@ -379,15 +379,15 @@ export var test_request_NonStringHeadersSentAndReceivedProperly = function (done
         headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": postData.length },
         content: postData
     }).then(function (response) {
-            result = response.content.toJSON();
-            try {
-                TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
-                done(null);
-            }
-            catch (err) {
-                done(err);
-            }
-        }, function (e) {
+        result = response.content.toJSON();
+        try {
+            TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    }, function (e) {
             done(e);
         });
 };
@@ -404,24 +404,23 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
         headers: { "Content-Type": "application/json" },
         content: JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })
     }).then(function (response) {
-            // result = response.content.toJSON();
-            // <hide>
-            result = response.content.toJSON();
-            try
-            {
-                TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
-                done(null);
-            }
-            catch (err) {
-                done(err);
-            }
+        // result = response.content.toJSON();
+        // <hide>
+        result = response.content.toJSON();
+        try {
+            TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
         // </hide>
         // console.log(result);
-        }, function (e) {
-        // <hide>
+    }, function (e) {
+            // <hide>
             done(e);
-        // </hide>
-        // console.log("Error occurred " + e);
+            // </hide>
+            // console.log("Error occurred " + e);
         });
     // ```
     // </snippet>
@@ -452,4 +451,4 @@ function doRequest(url: string, done: Function) {
     }, function (e) {
             done(e);
         });
-}
+};
