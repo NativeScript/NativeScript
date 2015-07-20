@@ -110,7 +110,7 @@ export var test_getImage = function (done) {
     // <snippet module="http" title="http">
     // ### Get Image from URL
     // ``` JavaScript
-    http.getImage("http://www.google.com/images/errors/logo_sm_2.png").then(function (r) {
+    http.getImage("https://httpbin.org/image/png").then(function (r) {
         //// Argument (r) is Image!
         // <hide>
         result = r;
@@ -309,7 +309,7 @@ export var test_request_responseContentToJSONShouldReturnJSON = function (done) 
 export var test_request_responseContentToImageShouldReturnCorrectImage = function (done) {
     var result;
 
-    http.request({ url: "http://www.google.com/images/errors/logo_sm_2.png", method: "GET" }).then(function (response) {
+    http.request({ url: "https://httpbin.org/image/png", method: "GET" }).then(function (response) {
         response.content.toImage().then((source) => {
             result = source;
             try {
@@ -333,15 +333,15 @@ export var test_request_headersSentAndReceivedProperly = function (done) {
         method: "GET",
         headers: { "Content-Type": "application/json" }
     }).then(function (response) {
-            result = response.headers;
-            try {
-                TKUnit.assert(result["Content-Type"] === "application/json", "Headers not sent/received properly!");
-                done(null);
-            }
-            catch (err) {
-                done(err);
-            }
-        }, function (e) {
+        result = response.headers;
+        try {
+            TKUnit.assert(result["Content-Type"] === "application/json", "Headers not sent/received properly!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    }, function (e) {
             done(e);
         });
 };
@@ -355,15 +355,41 @@ export var test_request_contentSentAndReceivedProperly = function (done) {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         content: "MyVariableOne=ValueOne&MyVariableTwo=ValueTwo"
     }).then(function (response) {
-            result = response.content.toJSON();
-            try {
-                TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
-                done(null);
-            }
-            catch (err) {
-                done(err);
-            }
-        }, function (e) {
+        result = response.content.toJSON();
+        try {
+            TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    }, function (e) {
+            done(e);
+        });
+};
+
+export var test_request_FormDataContentSentAndReceivedProperly = function (done) {
+    var result;
+
+    var data = new FormData();
+    data.append("MyVariableOne", "ValueOne");
+    data.append("MyVariableTwo", "ValueTwo");
+
+    http.request({
+        url: "https://httpbin.org/post",
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        content: data
+    }).then(function (response) {
+        result = response.content.toJSON();
+        try {
+            TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    }, function (e) {
             done(e);
         });
 };
@@ -379,15 +405,15 @@ export var test_request_NonStringHeadersSentAndReceivedProperly = function (done
         headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": postData.length },
         content: postData
     }).then(function (response) {
-            result = response.content.toJSON();
-            try {
-                TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
-                done(null);
-            }
-            catch (err) {
-                done(err);
-            }
-        }, function (e) {
+        result = response.content.toJSON();
+        try {
+            TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    }, function (e) {
             done(e);
         });
 };
@@ -404,24 +430,23 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
         headers: { "Content-Type": "application/json" },
         content: JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })
     }).then(function (response) {
-            // result = response.content.toJSON();
-            // <hide>
-            result = response.content.toJSON();
-            try
-            {
-                TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
-                done(null);
-            }
-            catch (err) {
-                done(err);
-            }
+        // result = response.content.toJSON();
+        // <hide>
+        result = response.content.toJSON();
+        try {
+            TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
         // </hide>
         // console.log(result);
-        }, function (e) {
-        // <hide>
+    }, function (e) {
+            // <hide>
             done(e);
-        // </hide>
-        // console.log("Error occurred " + e);
+            // </hide>
+            // console.log("Error occurred " + e);
         });
     // ```
     // </snippet>
@@ -452,180 +477,4 @@ function doRequest(url: string, done: Function) {
     }, function (e) {
             done(e);
         });
-}
-
-export var test_XMLHttpRequest_isDefined = function () {
-    TKUnit.assert(types.isDefined(global["XMLHttpRequest"]), "XMLHttpRequest should be defined!");
 };
-
-var xhr = new XMLHttpRequest();
-
-export var test_XMLHttpRequest_open_isDefined = function () {
-    TKUnit.assert(types.isFunction(xhr.open), "XMLHttpRequest.open should be defined!");
-};
-
-export var test_XMLHttpRequest_send_isDefined = function () {
-    TKUnit.assert(types.isFunction(xhr.send), "XMLHttpRequest.send should be defined!");
-};
-
-export var test_XMLHttpRequest_setRequestHeader_isDefined = function () {
-    TKUnit.assert(types.isFunction(xhr.setRequestHeader), "XMLHttpRequest.setRequestHeader should be defined!");
-};
-
-export var test_XMLHttpRequest_getAllResponseHeaders_isDefined = function () {
-    TKUnit.assert(types.isFunction(xhr.getAllResponseHeaders), "XMLHttpRequest.getAllResponseHeaders should be defined!");
-};
-
-export var test_XMLHttpRequest_getResponseHeader_isDefined = function () {
-    TKUnit.assert(types.isFunction(xhr.getResponseHeader), "XMLHttpRequest.getResponseHeader should be defined!");
-};
-
-export var test_XMLHttpRequest_overrideMimeType_isDefined = function () {
-    TKUnit.assert(types.isFunction(xhr.overrideMimeType), "XMLHttpRequest.overrideMimeType should be defined!");
-};
-
-export var test_XMLHttpRequest_readyState_isDefined = function () {
-    TKUnit.assert(types.isDefined(xhr.readyState), "XMLHttpRequest.readyState should be defined!");
-};
-
-export var test_XMLHttpRequest_responseText_isDefined = function () {
-    TKUnit.assert(types.isDefined(xhr.responseText), "XMLHttpRequest.responseText should be defined!");
-};
-
-export var test_XMLHttpRequest_readyStateShouldChange = function (done) {
-    var count = 0;
-    xhr = new XMLHttpRequest();
-
-    TKUnit.assert(xhr.readyState === 0, "xhr.readyState should be UNSENT!");
-
-    xhr.onreadystatechange = function () {
-        try {
-
-            if (count === 0) {
-                TKUnit.assert(xhr.readyState === 1, "xhr.readyState should be OPEN!");
-            } else if (count === 1) {
-                TKUnit.assert(xhr.readyState === 2, "xhr.readyState should be HEADERS_RECEIVED!");
-            } else if (count === 2) {
-                TKUnit.assert(xhr.readyState === 3, "xhr.readyState should be LOADING!");
-            } else if (count === 3) {
-                TKUnit.assert(xhr.readyState === 4, "xhr.readyState should be DONE!");
-            }
-
-            count++;
-
-            done(null);
-        }
-        catch (err) {
-            done(err);
-        }
-    };
-
-    xhr.open("GET", "https://httpbin.org/get");
-    xhr.send();
-};
-
-export var test_XMLHttpRequest_headersSentAndReceivedProperly = function (done) {
-    xhr = new XMLHttpRequest();
-    xhr.open("GET", "https://httpbin.org/get");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState > 1) {
-            try {
-                TKUnit.assert(xhr.getResponseHeader("Content-Type") === "application/json", "Headers not sent/received properly!");
-                done(null);
-            }
-            catch (err) {
-                done(err);
-            }
-        }
-    };
-    xhr.send();
-};
-
-export var test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) {
-    xhr = new XMLHttpRequest();
-    xhr.open("POST", "https://httpbin.org/post");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState > 3) {
-            var result = JSON.parse(xhr.responseText);
-            try {
-                TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
-                done(null);
-            }
-            catch (err) {
-                done(err);
-            }
-        }
-    };
-    xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
-};
-
-export var test_XMLHttpRequest_abortShouldCancelonreadystatechange = function (done) {
-    var flag = false;
-
-    xhr = new XMLHttpRequest();
-    xhr.open("POST", "https://httpbin.org/post");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-        flag = true;
-    };
-    xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
-    xhr.abort();
-
-    TKUnit.assert(flag === false, "Content not sent/received properly!");
-    done(null);
-};
-
-export var test_XMLHttpRequest_requestShouldBePossibleAfterAbort = function (done) {
-    xhr = new XMLHttpRequest();
-    xhr.open("POST", "https://httpbin.org/post");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState > 3) {
-            var result = JSON.parse(xhr.responseText);
-            try {
-                TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
-                done(null);
-            }
-            catch (err) {
-                done(err);
-            }
-        }
-    };
-    xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
-    xhr.abort();
-
-    xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
-};
-
-export function test_raises_onload_Event(done) {
-    let xhr = new XMLHttpRequest();
-    xhr.onload = () => {
-        done(null);
-    }
-    xhr.open("GET", "https://httpbin.org/get");
-    xhr.send();
-}
-
-export function test_raises_onerror_Event(done) {
-    let xhr = new XMLHttpRequest();
-    xhr.onerror = () => {
-        done(null);
-    }
-    xhr.open("GET", "https://no-such-domain-httpbin.org");
-    xhr.send();
-}
-
-export function test_responseType(done) {
-    let xhr = new XMLHttpRequest();
-    xhr.responseType = "";
-    xhr.responseType = "text";
-
-    TKUnit.assertThrows(
-        () => xhr.responseType = "json",
-        "Didn't raise on unsupported type.",
-        "Response type of 'json' not supported."
-    );
-    done(null);
-}

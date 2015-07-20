@@ -1,7 +1,7 @@
 ﻿import types = require("utils/types");
 import timer = require("timer");
 import consoleModule = require("console");
-import http = require("http");
+import xhr = require("xhr/xhr");
 import dialogs = require("ui/dialogs");
 
 global.setTimeout = timer.setTimeout;
@@ -14,8 +14,12 @@ if (types.isUndefined(global.NSObject)) {
     global.console = new consoleModule.Console();
 }
 
-global.XMLHttpRequest = (<any>http).XMLHttpRequest;
+global.XMLHttpRequest = xhr.XMLHttpRequest;
+global.FormData = xhr.FormData;
 global.alert = dialogs.alert;
+
+var fetchModule = require("fetch");
+require("utils/module-merge").merge(fetchModule, global);
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {

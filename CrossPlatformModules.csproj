@@ -182,6 +182,7 @@
     <TypeScriptCompile Include="apps\tests\frame-tests.ts" />
     <TypeScriptCompile Include="apps\tests\gestures-tests.ts" />
     <TypeScriptCompile Include="apps\tests\fetch-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\xhr-tests.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\dock-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\pages\app.ts" />
     <TypeScriptCompile Include="apps\tests\pages\file-load-test.ts" />
@@ -299,7 +300,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="es-collections.d.ts" />
     <TypeScriptCompile Include="es6-promise.d.ts" />
-    <TypeScriptCompile Include="fetch\fetch.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.ts">
       <DependentUpon>file-name-resolver.d.ts</DependentUpon>
@@ -1032,6 +1032,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\xml-demo\app.ts" />
     <TypeScriptCompile Include="apps\xml-demo\mainPage.ts" />
+    <TypeScriptCompile Include="xhr\xhr.ts" />
     <TypeScriptCompile Include="xml\xml.d.ts" />
     <TypeScriptCompile Include="data\observable-array\observable-array.d.ts" />
     <TypeScriptCompile Include="apps\tests\observable-array-tests.ts" />
@@ -1688,6 +1689,10 @@
     <Content Include="apps\list-view-demo\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="xhr\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="xhr\Readme.md" />
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">
