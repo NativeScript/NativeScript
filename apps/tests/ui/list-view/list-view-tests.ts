@@ -684,3 +684,43 @@ function performNativeItemTap(listView: listViewModule.ListView, index: number):
         throw new Error("Cannot perform native item tap");
     }
 }
+
+//export function test_LoadedUnloaded() {
+//    var listView = new listViewModule.ListView();
+//    var vm = {
+//        loadedCount: 0,
+//        unloadedCount: 0,
+//        onViewLoaded: function onViewLoaded(args) {
+//            this.loadedCount++;
+//            console.log(args.object._domId + " LOADED");
+//        },
+//        onViewUnloaded: function onViewUnloaded(args) {
+//            this.unloadedCount++;
+//            console.log(args.object._domId + " UNLOADED");
+//        }
+//    };
+//    listView.itemTemplate = "<Label text=\"{{ $value }}\" loaded=\"{{ onViewLoaded }}\" unloaded=\"{{ onViewUnloaded }}\"/>";
+//    listView.bindingContext = vm;
+
+//    var count = 10;
+//    var modifier = listView.ios ? 1 : 0; // iOS has one fake measure cell that raises loaded.
+//    var generate = function (count: number): observableArray.ObservableArray<string>  {
+//        var items = new observableArray.ObservableArray<string>();
+//        for (var i = 0; i < count; i++) {
+//            items.push("Item " + i);
+//        }
+//        return items;
+//    }
+
+//    function testAction(views: Array<viewModule.View>) {
+//        listView.items = generate(count);
+//        TKUnit.wait(ASYNC);
+//        frame.topmost().navigate("pages/navigation/pageB");
+//        TKUnit.wait(ASYNC);
+//        frame.topmost().goBack();
+//        TKUnit.assertEqual(vm.loadedCount, count + modifier, "Loaded Count");
+//        TKUnit.assertEqual(vm.unloadedCount, count, "Unloaded Count");
+//    }
+
+//    helper.buildUIAndRunTest(listView, testAction);
+//}
