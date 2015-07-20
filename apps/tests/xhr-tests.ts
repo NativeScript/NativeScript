@@ -134,7 +134,7 @@ export var test_XMLHttpRequest_FormDataContentSentAndReceivedProperly = function
     data.append("MyVariableOne", "ValueOne");
     data.append("MyVariableTwo", "ValueTwo");
 
-    xhr.send(<any>data);
+    xhr.send(data);
 };
 
 export var test_XMLHttpRequest_abortShouldCancelonreadystatechange = function (done) {

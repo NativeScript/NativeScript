@@ -1,4 +1,8 @@
 ﻿/* tslint:disable:no-unused-variable */
+interface XMLHttpRequest extends EventTarget, XMLHttpRequestEventTarget {
+    send(data?: FormData): void;
+}
+
 interface Console {
     time(reportName: string): void;
     timeEnd(reportName: string): void;
