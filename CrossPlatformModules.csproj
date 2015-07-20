@@ -78,6 +78,9 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\action-bar-demo\pages\data-binding.ts">
       <DependentUpon>data-binding.xml</DependentUpon>
+    <TypeScriptCompile Include="apps\list-view-demo\app.ts" />
+    <TypeScriptCompile Include="apps\list-view-demo\main-page.ts">
+      <DependentUpon>main-page.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\cuteness.unoptimized\app.ts" />
     <TypeScriptCompile Include="apps\cuteness.unoptimized\details-page.ts">
@@ -94,6 +97,12 @@
     <Content Include="apps\action-bar-demo\pages\center-view-segmented.xml" />
     <Content Include="apps\action-bar-demo\pages\center-view.xml" />
     <Content Include="apps\action-bar-demo\pages\data-binding.xml" />
+    <Content Include="apps\list-view-demo\another-page.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\list-view-demo\main-page.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\cuteness.unoptimized\reddit-item-view-model.ts" />
     <TypeScriptCompile Include="apps\cuteness.unoptimized\reddit-model.d.ts" />
     <TypeScriptCompile Include="apps\action-bar-demo\app.ts" />
@@ -1675,6 +1684,9 @@
     <Content Include="apps\action-bar-demo\package.json" />
     <Content Include="fetch\package.json" />
     <Content Include="fetch\README.md" />
+    <Content Include="apps\list-view-demo\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">

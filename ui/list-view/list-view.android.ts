@@ -36,6 +36,7 @@ export class ListView extends common.ListView {
     private _android: android.widget.ListView;
     public _realizedItems = {};
     private _androidViewId: number;
+    public _attachStateChangeListener: android.view.View.OnAttachStateChangeListener;
 
     public _createUI() {
         this._android = new android.widget.ListView(this._context);
@@ -90,6 +91,28 @@ export class ListView extends common.ListView {
                 }
             }
         }));
+
+        this._attachStateChangeListener = new android.view.View.OnAttachStateChangeListener({
+            get owner() {
+                return that.get();
+            },
+
+            onViewAttachedToWindow: function (view: android.view.View) {
+                //
+            },
+            onViewDetachedFromWindow: function (androidView: android.view.View) {
+                var owner = that.get();
+                if (!owner) {
+                    return;
+                }
+
+                var view: viewModule.View = this.owner._realizedItems[androidView.hashCode()];
+                if (!view) {
+                    return;
+                }
+                view.onUnloaded();
+            }
+        });
     }
 
     get android(): android.widget.ListView {
@@ -213,6 +236,10 @@ class ListViewAdapter extends android.widget.BaseAdapter {
                 }
             }
 
+            if (!this._listView._realizedItems[convertView.hashCode()]) {
+                convertView.addOnAttachStateChangeListener(this._listView._attachStateChangeListener);
+            }
+
             this._listView._realizedItems[convertView.hashCode()] = args.view;
             // cache the realized index (used to raise the ItemLoading event upon scroll stop)
             args.view[REALIZED_INDEX] = index;
@@ -223,3 +250,4 @@ class ListViewAdapter extends android.widget.BaseAdapter {
         return convertView;
     }
 }
+
