@@ -2,12 +2,12 @@
     import view = require("ui/core/view");
 
     /**
-     * Base class for all views that supports children positioning.
+     * Base class for all views that support children positioning.
      */
     export class Layout extends view.View {
 
         /**
-         * Returns the number of children in this Layout.
+         * Returns the number of children in this layout.
          */
         getChildrenCount(): number;
 
@@ -21,13 +21,18 @@
          * Adds the view to children array.
          * @param view The view to be added to the end of the children array.
          */
-        addChild(view: view.View);
+        addChild(view: view.View): void;
 
         /**
          * Removes the specified view from the children array.
          * @param view The view to remove from the children array.
          */
-        removeChild(view: view.View);
+        removeChild(view: view.View): void;
+
+        /**
+         * Removes all views in this layout.
+         */
+        removeChildren(): void;
 
         /**
          * Specify the bottom padding of this layout.

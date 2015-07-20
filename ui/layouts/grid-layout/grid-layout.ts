@@ -189,14 +189,14 @@ export class GridLayout extends layouts.Layout implements definition.GridLayout,
         this._singleColumn.index = 0;
     }
 
-    public addRow(itemSpec: ItemSpec) {
+    public addRow(itemSpec: ItemSpec): void {
         GridLayout.validateItemSpec(itemSpec);
         itemSpec.owner = this;
         this._rows.push(itemSpec);
         this.invalidate();
     }
 
-    public addColumn(itemSpec: ItemSpec) {
+    public addColumn(itemSpec: ItemSpec): void {
         GridLayout.validateItemSpec(itemSpec);
         itemSpec.owner = this;
         this._cols.push(itemSpec);
@@ -218,6 +218,16 @@ export class GridLayout extends layouts.Layout implements definition.GridLayout,
         this.invalidate();
     }
 
+    public removeColumns(): void {
+        if (this._cols.length !== 0) {
+            for (var i = 0; i < this._cols.length; i++) {
+                this._cols[i].index = -1;
+            }
+            this._cols.length = 0;
+            this.invalidate();
+        }
+    }
+
     public removeRow(itemSpec: ItemSpec): void {
         if (!itemSpec) {
             throw new Error("Value is null.");
@@ -231,6 +241,16 @@ export class GridLayout extends layouts.Layout implements definition.GridLayout,
         itemSpec.index = -1;
         this._rows.splice(index, 1);
         this.invalidate();
+    }
+
+    public removeRows(): void {
+        if (this._rows.length !== 0) {
+            for (var i = 0; i < this._rows.length; i++) {
+                this._rows[i].index = -1;
+            }
+            this._rows.length = 0;
+            this.invalidate();
+        }
     }
 
     public getColumns(): Array<ItemSpec> {
