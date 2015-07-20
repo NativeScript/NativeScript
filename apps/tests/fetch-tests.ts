@@ -1,6 +1,5 @@
 /* tslint:disable:no-unused-variable */
 import TKUnit = require("./TKUnit");
-import fetchModule = require("fetch");
 import types = require("utils/types");
 
 // <snippet module="fetch" title="fetch">
@@ -12,7 +11,7 @@ import types = require("utils/types");
 // </snippet>
 
 export var test_fetch_defined = function () {
-    TKUnit.assert(types.isDefined((fetchModule.fetch)), "Method fetch() should be defined!");
+    TKUnit.assert(types.isDefined((fetch)), "Method fetch() should be defined!");
 };
 
 export var test_fetch = function (done: (err: Error, res?: string) => void) {
@@ -20,10 +19,10 @@ export var test_fetch = function (done: (err: Error, res?: string) => void) {
     // <snippet module="fetch" title="fetch">
     // ### Get Response from URL
     // ``` JavaScript
-    fetchModule.fetch("https://httpbin.org/get").then(function (r) {
+    fetch("https://httpbin.org/get").then(function (r) {
         //// Argument (r) is Response!
         // <hide>
-        TKUnit.assert(r instanceof fetchModule.Response, "Result from fetch() should be valid Response object! Actual result is: " + result);
+        TKUnit.assert(r instanceof Response, "Result from fetch() should be valid Response object! Actual result is: " + result);
         done(null);
         // </hide>
     }, function (e) {
@@ -42,7 +41,7 @@ export var test_fetch_text = function (done: (err: Error, res?: string) => void)
     // <snippet module="fetch" title="fetch">
     // ### Get string from URL
     // ``` JavaScript
-    fetchModule.fetch("https://httpbin.org/get").then(response => { return response.text(); }).then(function (r) {
+    fetch("https://httpbin.org/get").then(response => { return response.text(); }).then(function (r) {
         //// Argument (r) is string!
         // <hide>
         TKUnit.assert(types.isString(r), "Result from text() should be string! Actual result is: " + r);
@@ -64,7 +63,7 @@ export var test_fetch_json = function (done: (err: Error, res?: string) => void)
     // <snippet module="fetch" title="fetch">
     // ### Get JSON from URL
     // ``` JavaScript
-    fetchModule.fetch("https://httpbin.org/get").then(response => { return response.json(); }).then(function (r) {
+    fetch("https://httpbin.org/get").then(response => { return response.json(); }).then(function (r) {
         //// Argument (r) is JSON object!
         // <hide>
         TKUnit.assert(types.isString(JSON.stringify(r)), "Result from json() should be JSON object! Actual result is: " + r);
@@ -86,7 +85,7 @@ export var test_fetch_blob = function (done: (err: Error, res?: string) => void)
     // <snippet module="fetch" title="fetch">
     // ### Get Blob from URL
     // ``` JavaScript
-    fetchModule.fetch("https://httpbin.org/get").then(response => { return response.blob(); }).then(function (r) {
+    fetch("https://httpbin.org/get").then(response => { return response.blob(); }).then(function (r) {
         //// Argument (r) is Blob object!
         // <hide>
         TKUnit.assert(r instanceof Blob, "Result from blob() should be Blob object! Actual result is: " + r);
@@ -108,7 +107,7 @@ export var test_fetch_arrayBuffer = function (done: (err: Error, res?: string) =
     // <snippet module="fetch" title="fetch">
     // ### Get ArrayBuffer from URL
     // ``` JavaScript
-    fetchModule.fetch("https://httpbin.org/get").then(response => { return response.arrayBuffer(); }).then(function (r) {
+    fetch("https://httpbin.org/get").then(response => { return response.arrayBuffer(); }).then(function (r) {
         //// Argument (r) is ArrayBuffer object!
         // <hide>
         TKUnit.assert(r instanceof ArrayBuffer, "Result from arrayBuffer() should be ArrayBuffer object! Actual result is: " + r);
@@ -131,7 +130,7 @@ export var test_fetch_formData = function (done: (err: Error, res?: string) => v
     // <snippet module="fetch" title="fetch">
     // ### Get FormData from URL
     // ``` JavaScript
-    fetchModule.fetch("https://httpbin.org/get").then(response => { return response.formData(); }).then(function (r) {
+    fetch("https://httpbin.org/get").then(response => { return response.formData(); }).then(function (r) {
         //// Argument (r) is FormData object!
         // <hide>
         TKUnit.assert(r instanceof FormData, "Result from formData() should be FormData object! Actual result is: " + r);
@@ -151,7 +150,7 @@ export var test_fetch_fail_invalid_url = function (done) {
     var completed: boolean;
     var isReady = function () { return completed; }
 
-    fetchModule.fetch("hgfttp://httpbin.org/get").catch(function (e) {
+    fetch("hgfttp://httpbin.org/get").catch(function (e) {
         completed = true;
         done(null)
     });
@@ -162,7 +161,7 @@ export var test_fetch_response_status = function (done) {
     // <snippet module="fetch" title="fetch">
     // ### Get Response status
     // ``` fetch
-    fetchModule.fetch("https://httpbin.org/get").then(function (response) {
+    fetch("https://httpbin.org/get").then(function (response) {
         //// Argument (response) is Response!
         var statusCode = response.status;
         // <hide>
@@ -189,7 +188,7 @@ export var test_fetch_response_headers = function (done) {
     // <snippet module="fetch" title="fetch">
     // ### Get response headers
     // ``` JavaScript
-    fetchModule.fetch("https://httpbin.org/get").then(function (response) {
+    fetch("https://httpbin.org/get").then(function (response) {
         //// Argument (response) is Response!
         // var all = response.headers.getAll();
         // <hide>
@@ -212,9 +211,9 @@ export var test_fetch_response_headers = function (done) {
 };
 
 export var test_fetch_headers_sent = function (done) {
-    var result: fetchModule.Headers;
+    var result: Headers;
 
-    fetchModule.fetch("https://httpbin.org/get", {
+    fetch("https://httpbin.org/get", {
         method: "GET",
         headers: { "Content-Type": "application/json" }
     }).then(function (response) {
@@ -236,7 +235,7 @@ export var test_fetch_post_form_data = function (done) {
     data.append("MyVariableOne", "ValueOne");
     data.append("MyVariableTwo", "ValueTwo");
 
-    fetchModule.fetch("https://httpbin.org/post", {
+    fetch("https://httpbin.org/post", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: data
@@ -259,7 +258,7 @@ export var test_fetch_post_json = function (done) {
     // <snippet module="fetch" title="fetch">
     // ### Post JSON
     // ``` JavaScript
-    fetchModule.fetch("https://httpbin.org/post", {
+    fetch("https://httpbin.org/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })

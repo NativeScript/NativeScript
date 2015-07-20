@@ -18,6 +18,9 @@ global.XMLHttpRequest = xhr.XMLHttpRequest;
 global.FormData = xhr.FormData;
 global.alert = dialogs.alert;
 
+var fetchModule = require("fetch");
+require("utils/module-merge").merge(fetchModule, global);
+
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {
         var originalMethod = descriptor.value;
