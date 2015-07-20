@@ -54,8 +54,8 @@ declare module "fetch" {
 /*
         arrayBuffer(): Promise<ArrayBuffer>;
         blob(): Promise<Blob>;
-        formData(): Promise<FormData>;
 */
+        formData(): Promise<FormData>;
         json(): Promise<any>;
         text(): Promise<string>;
     }

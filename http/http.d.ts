@@ -69,7 +69,7 @@ declare module "http" {
          /**
           * Gets or sets the request body.
           */
-        content?: string;
+        content?: string | FormData;
 
          /**
           * Gets or sets the request timeout in milliseconds.

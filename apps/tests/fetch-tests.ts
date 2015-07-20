@@ -123,6 +123,7 @@ export var test_fetch_arrayBuffer = function (done: (err: Error, res?: string) =
     // ```
     // </snippet>
 };
+*/
 
 export var test_fetch_formData = function (done: (err: Error, res?: string) => void) {
     var result;
@@ -145,7 +146,7 @@ export var test_fetch_formData = function (done: (err: Error, res?: string) => v
     // ```
     // </snippet>
 };
-*/
+
 export var test_fetch_fail_invalid_url = function (done) {
     var completed: boolean;
     var isReady = function () { return completed; }
@@ -231,16 +232,19 @@ export var test_fetch_headers_sent = function (done) {
 };
 
 export var test_fetch_post_form_data = function (done) {
+    var data = new FormData();
+    data.append("MyVariableOne", "ValueOne");
+    data.append("MyVariableTwo", "ValueTwo");
+
     fetchModule.fetch("https://httpbin.org/post", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "MyVariableOne=ValueOne&MyVariableTwo=ValueTwo"
+        body: data
     }).then(r => {
-        // return r.formData(); Uncomment this when FormData is available!
-        return r.json();
+        return r.formData();
     }).then(function (r) {
         try {
-            TKUnit.assert(r.form["MyVariableOne"] === "ValueOne" && r.form["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly! Actual result is: " + r.form);
+            TKUnit.assert(r instanceof FormData, "Content not sent/received properly! Actual result is: " + r);
             done(null);
         }
         catch (err) {

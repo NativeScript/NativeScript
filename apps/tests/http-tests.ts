@@ -368,6 +368,32 @@ export var test_request_contentSentAndReceivedProperly = function (done) {
         });
 };
 
+export var test_request_FormDataContentSentAndReceivedProperly = function (done) {
+    var result;
+
+    var data = new FormData();
+    data.append("MyVariableOne", "ValueOne");
+    data.append("MyVariableTwo", "ValueTwo");
+
+    http.request({
+        url: "https://httpbin.org/post",
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        content: data
+    }).then(function (response) {
+        result = response.content.toJSON();
+        try {
+            TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    }, function (e) {
+            done(e);
+        });
+};
+
 export var test_request_NonStringHeadersSentAndReceivedProperly = function (done) {
     var result;
 

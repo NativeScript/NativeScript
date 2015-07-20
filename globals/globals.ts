@@ -15,6 +15,7 @@ if (types.isUndefined(global.NSObject)) {
 }
 
 global.XMLHttpRequest = xhr.XMLHttpRequest;
+global.FormData = xhr.FormData;
 global.alert = dialogs.alert;
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {

@@ -1,6 +1,12 @@
 import http = require("http");
 import types = require("utils/types");
 
+module XMLHttpRequestResponseType {
+    export var empty = "";
+    export var text = "text";
+    export var json = "json";
+}
+
 export class XMLHttpRequest {
     public UNSENT = 0;
     public OPENED = 1;
@@ -15,7 +21,7 @@ export class XMLHttpRequest {
     private _readyState: number;
     private _status: number;
     private _response: any;
-    private _responseText: string = "";
+    private _responseText: Function;
     private _headers: any;
     private _errorFlag: boolean;
     private _responseType: string = "";
@@ -58,7 +64,7 @@ export class XMLHttpRequest {
         }
     }
 
-    public send(data?: string) {
+    public send(data?: any) {
         this._errorFlag = false;
         this._response = null;
         this._responseText = null;
@@ -68,6 +74,8 @@ export class XMLHttpRequest {
         if (types.isDefined(this._options)) {
             if (types.isString(data)) {
                 this._options.content = data;
+            } else if (data instanceof FormData) {
+                this._options.content = (<FormData>data).toString();
             }
 
             http.request(this._options).then(r=> {
@@ -80,7 +88,12 @@ export class XMLHttpRequest {
 
                     this._setReadyState(this.LOADING);
 
-                    this._responseText = r.content.toString();
+                    if (this.responseType === XMLHttpRequestResponseType.empty ||
+                        this.responseType === XMLHttpRequestResponseType.text ||
+                        this.responseType === XMLHttpRequestResponseType.json) {
+                        this._responseText = r.content.toString;
+                    }
+
                     this._setReadyState(this.DONE);
                 }
 
@@ -138,7 +151,7 @@ export class XMLHttpRequest {
     }
 
     public set responseType(value: string) {
-        if (value === "" || value === "text") {
+        if (value === XMLHttpRequestResponseType.empty || value in XMLHttpRequestResponseType) {
             this._responseType = value;
         } else {
             throw new Error(`Response type of '${value}' not supported.`);
@@ -165,7 +178,11 @@ export class XMLHttpRequest {
     }
 
     get responseText(): string {
-        return this._responseText;
+        if (types.isFunction(this._responseText)) {
+            return this._responseText();
+        }
+
+        return "";
     }
 
     get response(): any {
@@ -226,3 +243,25 @@ var statuses = {
     504: "Gateway Timeout",
     505: "HTTP Version Not Supported"
 };
+
+export class FormData {
+    private _data: Map<string, any>;
+
+    constructor() {
+        this._data = new Map<string, any>();
+    }
+
+    append(name: string, value: any) {
+        this._data.set(name, value);
+    }
+
+    toString(): string {
+        var arr = new Array<string>();
+
+        this._data.forEach(function (value, name, map) {
+            arr.push(`${encodeURIComponent(name) }=${encodeURIComponent(value) }`);
+        });
+
+        return arr.join("&");
+    }
+}

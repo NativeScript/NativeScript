@@ -113,6 +113,30 @@ export var test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) 
     xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
 };
 
+export var test_XMLHttpRequest_FormDataContentSentAndReceivedProperly = function (done) {
+    xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://httpbin.org/post");
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState > 3) {
+            var result = JSON.parse(xhr.responseText);
+            try {
+                TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly! Result is: " + xhr.responseText);
+                done(null);
+            }
+            catch (err) {
+                done(err);
+            }
+        }
+    };
+
+    var data = new FormData();
+    data.append("MyVariableOne", "ValueOne");
+    data.append("MyVariableTwo", "ValueTwo");
+
+    xhr.send(<any>data);
+};
+
 export var test_XMLHttpRequest_abortShouldCancelonreadystatechange = function (done) {
     var flag = false;
 
@@ -173,11 +197,12 @@ export function test_responseType(done) {
     let xhr = new XMLHttpRequest();
     xhr.responseType = "";
     xhr.responseType = "text";
+    xhr.responseType = "json";
 
     TKUnit.assertThrows(
-        () => xhr.responseType = "json",
+        () => xhr.responseType = "arraybuffer",
         "Didn't raise on unsupported type.",
-        "Response type of 'json' not supported."
+        "Response type of 'arraybuffer' not supported."
     );
     done(null);
 }
