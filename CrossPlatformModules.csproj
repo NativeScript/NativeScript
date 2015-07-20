@@ -78,6 +78,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\action-bar-demo\pages\data-binding.ts">
       <DependentUpon>data-binding.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\list-view-demo\app.ts" />
     <TypeScriptCompile Include="apps\list-view-demo\main-page.ts">
       <DependentUpon>main-page.xml</DependentUpon>
