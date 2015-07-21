@@ -79,6 +79,10 @@
     <TypeScriptCompile Include="apps\action-bar-demo\pages\data-binding.ts">
       <DependentUpon>data-binding.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\connectivity-demo\app.ts" />
+    <TypeScriptCompile Include="apps\connectivity-demo\main-page.ts">
+      <DependentUpon>main-page.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\list-view-demo\app.ts" />
     <TypeScriptCompile Include="apps\list-view-demo\main-page.ts">
       <DependentUpon>main-page.xml</DependentUpon>
@@ -98,6 +102,9 @@
     <Content Include="apps\action-bar-demo\pages\center-view-segmented.xml" />
     <Content Include="apps\action-bar-demo\pages\center-view.xml" />
     <Content Include="apps\action-bar-demo\pages\data-binding.xml" />
+    <Content Include="apps\connectivity-demo\main-page.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\list-view-demo\another-page.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -177,6 +184,7 @@
       <DependentUpon>location-example.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\app\style_props.ts" />
+    <TypeScriptCompile Include="apps\tests\connectivity-tests.ts" />
     <TypeScriptCompile Include="apps\tests\console-tests.ts" />
     <TypeScriptCompile Include="apps\tests\file-name-resolver-tests\file-name-resolver-tests.ts" />
     <TypeScriptCompile Include="apps\tests\frame-tests.ts" />
@@ -298,8 +306,18 @@
     <TypeScriptCompile Include="apps\ui-tests-app\web-view\webview.ts">
       <DependentUpon>webview.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="connectivity\connectivity-common.ts">
+      <DependentUpon>connectivity.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="es-collections.d.ts" />
     <TypeScriptCompile Include="es6-promise.d.ts" />
+    <TypeScriptCompile Include="connectivity\connectivity.android.ts">
+      <DependentUpon>connectivity.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="connectivity\connectivity.d.ts" />
+    <TypeScriptCompile Include="connectivity\connectivity.ios.ts">
+      <DependentUpon>connectivity.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="file-system\file-name-resolver.d.ts" />
     <TypeScriptCompile Include="file-system\file-name-resolver.ts">
       <DependentUpon>file-name-resolver.d.ts</DependentUpon>
@@ -1693,6 +1711,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="xhr\Readme.md" />
+    <Content Include="connectivity\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="apps\connectivity-demo\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">
@@ -1784,7 +1808,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
