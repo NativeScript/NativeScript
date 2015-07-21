@@ -18,10 +18,23 @@
         getChildAt(index: number): view.View;
 
         /**
+         * Returns the position of the child view
+         * @param child The child view that we are looking for.
+         */
+        getChildIndex(child: view.View): number;
+
+        /**
          * Adds the view to children array.
          * @param view The view to be added to the end of the children array.
          */
         addChild(view: view.View);
+
+        /**
+         * Inserts the view to children array at the specified index.
+         * @param atIndex The insertion index.
+         * @param view The view to be added to the end of the children array.
+         */
+        insertChild(atIndex: number, child: view.View);
 
         /**
          * Removes the specified view from the children array.

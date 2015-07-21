@@ -28,6 +28,10 @@ export class Layout extends view.CustomLayoutView implements definition.Layout, 
         return this._subViews[index];
     }
 
+    getChildIndex(child: view.View): number {
+        return this._subViews.indexOf(child);
+    }
+
     public getChildById(id: string) {
         return view.getViewById(this, id);
     }
@@ -36,6 +40,11 @@ export class Layout extends view.CustomLayoutView implements definition.Layout, 
         // TODO: Do we need this method since we have the core logic in the View implementation?
         this._addView(child);
         this._subViews.push(child);
+    }
+
+    public insertChild(atIndex: number, child: view.View) {
+        this._addView(child);
+        this._subViews.splice(atIndex, 0, child);
     }
 
     public removeChild(child: view.View) {
