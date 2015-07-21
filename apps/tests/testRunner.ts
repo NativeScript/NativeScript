@@ -76,6 +76,7 @@ allTests["HTML-VIEW"] = require("./ui/html-view/html-view-tests");
 allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
 allTests["REPEATER"] = require("./ui/repeater/repeater-tests");
 allTests["SEARCH-BAR"] = require('./ui/search-bar/search-bar-tests');
+allTests["CONNECTIVITY"] = require("./connectivity-tests");
 
 if (!isRunningOnEmulator()) {
     allTests["LOCATION"] = require("./location-tests");
