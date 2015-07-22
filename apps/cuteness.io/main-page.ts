@@ -1,34 +1,31 @@
-﻿import observable = require("data/observable");
-import pages = require("ui/page");
-import frames = require("ui/frame");
-import listView = require("ui/list-view");
+﻿import {EventData as ObservableEventData} from "data/observable";
+import {Page, ItemEventData, topmost as topmostFrame, ItemEventData as ListViewItemEventData} from "ui";
+import {AppViewModel} from "./reddit-app-view-model";
 
-import redditAppViewModel = require("./reddit-app-view-model");
-
-var appViewModel = new redditAppViewModel.AppViewModel();
+var appViewModel = new AppViewModel();
 
 // Event handler for Page "loaded" event attached in main-page.xml
-export function pageLoaded(args: observable.EventData) {
+export function pageLoaded(args: ObservableEventData) {
     // Get the event sender
-    var page = <pages.Page>args.object;
+    var page = <Page>args.object;
 
     page.bindingContext = appViewModel;
 
     // Enable platform specific feature (in this case Android page caching)
-    if (frames.topmost().android) {
-        frames.topmost().android.cachePagesOnNavigate = true;
+    if (topmostFrame().android) {
+        topmostFrame().android.cachePagesOnNavigate = true;
     }
 }
 
-export function listViewItemTap(args: listView.ItemEventData) {
+export function listViewItemTap(args: ListViewItemEventData) {
     // Navigate to the details page with context set to the data item for specified index
-    frames.topmost().navigate({
+    topmostFrame().navigate({
         moduleName: "./details-page",
         context: appViewModel.redditItems.getItem(args.index)
     });
 }
 
-export function listViewLoadMoreItems(args: observable.EventData) {
+export function listViewLoadMoreItems(args: ObservableEventData) {
     // Increase model items length with model items loadSize property value
     appViewModel.redditItems.length += appViewModel.redditItems.loadSize;
 }

@@ -1,10 +1,10 @@
-﻿import pages = require("ui/page");
-import observable = require("data/observable");
+﻿import {Page} from "ui";
+import {EventData as ObservableEventData} from "data/observable";
 
 // Event handler for Page "navigatedTo" event attached in details-page.xml
-export function pageNavigatedTo(args: observable.EventData) {
+export function pageNavigatedTo(args: ObservableEventData) {
     // Get the event sender
-    var page = <pages.Page>args.object;
+    var page = <Page>args.object;
 
     page.bindingContext = page.navigationContext;
 }

@@ -473,6 +473,7 @@
     <TypeScriptCompile Include="ui\action-bar\action-bar.ios.ts">
       <DependentUpon>action-bar.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\ui.d.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view-common.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view.android.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view.d.ts" />
@@ -688,6 +689,7 @@
       <DependentUpon>text-field.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\text-view\text-view.d.ts" />
+    <TypeScriptCompile Include="ui\ui.ts" />
     <TypeScriptCompile Include="utils\android_constants.ts" />
     <TypeScriptCompile Include="utils\module-merge.ts" />
     <TypeScriptCompile Include="utils\utils.android.ts">
@@ -1746,6 +1748,7 @@
     <Content Include="ui\html-view\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="ui\package.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />
