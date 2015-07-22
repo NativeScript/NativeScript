@@ -21,8 +21,8 @@ declare module "ui/content-view" {
          * @param newView The new content.
          */
         _onContentChanged(oldView: view.View, newView: view.View);
+        //@endprivate
 
         _addChildFromBuilder(name: string, value: any): void;
-        //@endprivate
     }
 } 
