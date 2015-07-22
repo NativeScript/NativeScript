@@ -18,6 +18,10 @@ var initEvents = function () {
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     var lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: function (activity: any, bundle: any) {
+            if (!(activity instanceof (<any>com).tns.NativeScriptActivity)) {
+                return;
+            }
+
             if (!androidApp.startActivity) {
                 androidApp.startActivity = activity;
 
@@ -32,6 +36,10 @@ var initEvents = function () {
         },
 
         onActivityDestroyed: function (activity: any) {
+            if (!(activity instanceof (<any>com).tns.NativeScriptActivity)) {
+                return;
+            }
+
             // Clear the current activity reference to prevent leak
             if (activity === androidApp.foregroundActivity) {
                 androidApp.foregroundActivity = undefined;
@@ -62,6 +70,10 @@ var initEvents = function () {
         },
 
         onActivityPaused: function (activity: any) {
+            if (!(activity instanceof (<any>com).tns.NativeScriptActivity)) {
+                return;
+            }
+
             if (activity === androidApp.foregroundActivity) {
                 if (exports.onSuspend) {
                     exports.onSuspend();
@@ -78,6 +90,10 @@ var initEvents = function () {
         },
 
         onActivityResumed: function (activity: any) {
+            if (!(activity instanceof (<any>com).tns.NativeScriptActivity)) {
+                return;
+            }
+
             if (activity === androidApp.foregroundActivity) {
                 if (exports.onResume) {
                     exports.onResume();
@@ -94,6 +110,10 @@ var initEvents = function () {
         },
 
         onActivitySaveInstanceState: function (activity: any, bundle: any) {
+            if (!(activity instanceof (<any>com).tns.NativeScriptActivity)) {
+                return;
+            }
+
             androidApp.notify(<dts.AndroidActivityBundleEventData>{ eventName: "saveActivityState", object: androidApp, activity: activity, bundle: bundle });
 
             if (androidApp.onSaveActivityState) {
@@ -102,6 +122,10 @@ var initEvents = function () {
         },
 
         onActivityStarted: function (activity: any) {
+            if (!(activity instanceof (<any>com).tns.NativeScriptActivity)) {
+                return;
+            }
+
             androidApp.foregroundActivity = activity;
 
             androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityStarted", object: androidApp, activity: activity });
@@ -112,6 +136,10 @@ var initEvents = function () {
         },
 
         onActivityStopped: function (activity: any) {
+            if (!(activity instanceof (<any>com).tns.NativeScriptActivity)) {
+                return;
+            }
+
             androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityStopped", object: androidApp, activity: activity });
 
             if (androidApp.onActivityStopped) {
