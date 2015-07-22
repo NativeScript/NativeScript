@@ -14,11 +14,6 @@ import platform = require("platform");
 var EVENT = "Event";
 var UI_PATH = "ui/";
 var MODULES = {
-    "GridLayout": "ui/layouts/grid-layout",
-    "DockLayout": "ui/layouts/dock-layout",
-    "WrapLayout": "ui/layouts/wrap-layout",
-    "AbsoluteLayout": "ui/layouts/absolute-layout",
-    "StackLayout": "ui/layouts/stack-layout",
     "TabViewItem": "ui/tab-view",
     "FormattedString": "text/formatted-string",
     "Span": "text/span",
@@ -41,7 +36,9 @@ export function getComponentModule(elementName: string, namespace: string, attri
     var componentModule: definition.ComponentModule;
 
     // Get module id.
-    var moduleId = MODULES[elementName] || UI_PATH + elementName.split(/(?=[A-Z])/).join("-").toLowerCase();
+    var moduleId = MODULES[elementName] || UI_PATH +
+        (elementName.toLowerCase().indexOf("layout") !== -1 ? "layouts/" : "") +
+        elementName.split(/(?=[A-Z])/).join("-").toLowerCase();
 
     try {
         if (types.isString(namespace)) {
