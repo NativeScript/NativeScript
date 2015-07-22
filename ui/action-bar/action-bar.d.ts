@@ -52,10 +52,10 @@ declare module "ui/action-bar" {
         _isEmpty(): boolean
         _updateAndroid(menu: android.view.IMenu);
         _onAndroidItemSelected(itemId: number): boolean
+        //@endprivate
 
         _addArrayFromBuilder(name: string, value: Array<any>): void;
         _addChildFromBuilder(name: string, value: any): void;
-        //@endprivate
     }
 
     /**
