@@ -1,0 +1,11 @@
+﻿<Page loaded="pageLoaded">
+  <StackLayout>
+    <TextField id="textField1" text="{{ var0 + var1 }}" />
+    <TextField id="textField2" text="{{ var0 - var1 }}" />
+    <TextField id="textField3" text="{{ var0 * var1 }}" />
+    <TextField id="textField4" text="{{ var0 / var1 }}" />
+    <TextField id="textField5" text="{{ var1 / var0 }}" />
+    <TextField id="textField6" text="{{ var0 % var1 }}" />
+    <TextField id="textField7" text="{{ var1 % var0 }}" />
+  </StackLayout>
+</Page>
