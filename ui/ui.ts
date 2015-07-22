@@ -4,7 +4,6 @@ export * from "ui/builder";
 export * from "ui/button";
 export * from "ui/content-view";
 export * from "ui/core/bindable";
-export * from "ui/core/control-state-change";
 export * from "ui/core/dependency-observable";
 export * from "ui/core/proxy";
 export * from "ui/core/view";
