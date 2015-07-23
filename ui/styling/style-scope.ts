@@ -38,7 +38,13 @@ export class StyleScope {
         this._reset();
 
         if (!this._cssSelectors) {
-            this._cssSelectors = new Array<cssSelector.CssSelector>();
+            // Always add app.css when initializing selectors
+            if (application.cssSelectorsCache) {
+                this._cssSelectors = StyleScope._joinCssSelectorsArrays([application.cssSelectorsCache]);
+            }
+            else {
+                this._cssSelectors = new Array<cssSelector.CssSelector>();
+            }
         }
 
         var selectorsFromFile = StyleScope.createSelectorsFromCss(cssString, cssFileName);
