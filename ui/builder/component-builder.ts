@@ -14,34 +14,12 @@ import platform = require("platform");
 var EVENT = "Event";
 var UI_PATH = "ui/";
 var MODULES = {
-    "ActivityIndicator": "ui/activity-indicator",
-    "ListView": "ui/list-view",
-    "GridLayout": "ui/layouts/grid-layout",
-    "DockLayout": "ui/layouts/dock-layout",
-    "WrapLayout": "ui/layouts/wrap-layout",
-    "AbsoluteLayout": "ui/layouts/absolute-layout",
-    "StackLayout": "ui/layouts/stack-layout",
-    "ScrollView": "ui/scroll-view",
-    "SearchBar": "ui/search-bar",
-    "SlideOut": "ui/slide-out",
-    "TabView": "ui/tab-view",
     "TabViewItem": "ui/tab-view",
-    "TextField": "ui/text-field",
-    "TextView": "ui/text-view",
     "FormattedString": "text/formatted-string",
     "Span": "text/span",
-    "WebView": "ui/web-view",
-    "HtmlView": "ui/html-view",
-    "SegmentedBar": "ui/segmented-bar",
-    "SegmentedBarItem": "ui/segmented-bar",
-    "ToolBar": "ui/tool-bar",
-    "ToolBarItem": "ui/tool-bar",
-    "TimePicker": "ui/time-picker",
-    "DatePicker": "ui/date-picker",
-    "ListPicker": "ui/list-picker",
-    "ActionBar": "ui/action-bar",
     "ActionItem": "ui/action-bar",
     "NavigationButton": "ui/action-bar",
+    "SegmentedBarItem": "ui/segmented-bar",
 };
 
 var ROW = "row";
@@ -58,7 +36,9 @@ export function getComponentModule(elementName: string, namespace: string, attri
     var componentModule: definition.ComponentModule;
 
     // Get module id.
-    var moduleId = MODULES[elementName] || UI_PATH + elementName.toLowerCase();
+    var moduleId = MODULES[elementName] || UI_PATH +
+        (elementName.toLowerCase().indexOf("layout") !== -1 ? "layouts/" : "") +
+        elementName.split(/(?=[A-Z])/).join("-").toLowerCase();
 
     try {
         if (types.isString(namespace)) {
