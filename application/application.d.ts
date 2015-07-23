@@ -304,42 +304,42 @@ declare module "application" {
         getActivity(intent: android.content.Intent): any;
 
         /**
-         * Direct handler of the [onActivityCreated method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
+         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityCreated method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
         onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
 
         /**
-         * Direct handler of the [onActivityDestroyed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
+         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityDestroyed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
         onActivityDestroyed: (activity: android.app.Activity) => void;
 
         /**
-         * Direct handler of the [onActivityDestroyed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
+         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityDestroyed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
         onActivityStarted: (activity: android.app.Activity) => void;
 
         /**
-         * Direct handler of the [onActivityPaused method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
+         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityPaused method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
         onActivityPaused: (activity: android.app.Activity) => void;
 
         /**
-         * Direct handler of the [onActivityResumed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
+         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityResumed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
         onActivityResumed: (activity: android.app.Activity) => void;
 
         /**
-         * Direct handler of the [onActivityStopped method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
+         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityStopped method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
         onActivityStopped: (activity: android.app.Activity) => void;
 
         /**
-         * Direct handler of the [onActivitySaveInstanceState method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
+         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivitySaveInstanceState method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
         onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
 
         /**
-         * Direct handler of the onActivityResult method.
+         * [Deprecated. Please use the respective event instead.] Direct handler of the onActivityResult method.
          */
         onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void;
             

@@ -153,44 +153,20 @@ export class AndroidApplication extends observable.Observable implements dts.And
     public packageName: string;
     public hasActionBar: boolean;
 
-    /* tslint:disable */
-    @Deprecated
-    /* tslint:enable */
     public onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
 
-    /* tslint:disable */
-    @Deprecated
-    /* tslint:enable */
     public onActivityDestroyed: (activity: android.app.Activity) => void;
 
-    /* tslint:disable */
-    @Deprecated
-    /* tslint:enable */
     public onActivityStarted: (activity: android.app.Activity) => void;
 
-    /* tslint:disable */
-    @Deprecated
-    /* tslint:enable */
     public onActivityPaused: (activity: android.app.Activity) => void;
 
-    /* tslint:disable */
-    @Deprecated
-    /* tslint:enable */
     public onActivityResumed: (activity: android.app.Activity) => void;
 
-    /* tslint:disable */
-    @Deprecated
-    /* tslint:enable */
     public onActivityStopped: (activity: android.app.Activity) => void;
 
-    /* tslint:disable */
-    @Deprecated
-    /* tslint:enable */
     public onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
 
-    /* tslint:disable */
-    @Deprecated
-    /* tslint:enable */
     public onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void;
 
     private _eventsToken: any;
