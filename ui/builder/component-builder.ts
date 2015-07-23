@@ -35,6 +35,9 @@ export function getComponentModule(elementName: string, namespace: string, attri
     var instanceModule: Object;
     var componentModule: definition.ComponentModule;
 
+    // Support lower-case-dashed component declaration in the XML (https://github.com/NativeScript/NativeScript/issues/309).
+    elementName = elementName.split("-").map(s => { return s[0].toUpperCase() + s.substring(1) }).join("");
+
     // Get module id.
     var moduleId = MODULES[elementName] || UI_PATH +
         (elementName.toLowerCase().indexOf("layout") !== -1 ? "layouts/" : "") +
