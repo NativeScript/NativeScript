@@ -440,6 +440,21 @@ declare module "application" {
          * String value used when hooking to activityBackPressed event.
          */
         public static activityBackPressedEvent: string;
+
+        /**
+         * Register a BroadcastReceiver to be run in the main activity thread. The receiver will be called with any broadcast Intent that matches filter, in the main application thread. 
+         * For more information, please visit 'http://developer.android.com/reference/android/content/Context.html#registerReceiver%28android.content.BroadcastReceiver,%20android.content.IntentFilter%29'
+         * @param intentFilter A string containing the intent filter.
+         * @param onReceiveCallback A callback function that will be called each time the receiver receives a broadcast.
+         */
+        registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void;
+
+        /**
+         * Unregister a previously registered BroadcastReceiver. 
+         * For more information, please visit 'http://developer.android.com/reference/android/content/Context.html#unregisterReceiver(android.content.BroadcastReceiver)'
+         * @param intentFilter A string containing the intent filter with which the receiver was originally registered.
+         */
+        unregisterBroadcastReceiver(intentFilter: string): void;
     }
 
     /* tslint:disable */
@@ -457,5 +472,21 @@ declare module "application" {
          * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html) object instance provided to the init of the module.
          */
         nativeApp: UIApplication;
+
+        /**
+         * Adds an observer to the default notification center for the specified notification.
+         * For more information, please visit 'https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Classes/NSNotificationCenter_Class/#//apple_ref/occ/instm/NSNotificationCenter/addObserver:selector:name:object:'
+         * @param notificationName A string containing the name of the notification.
+         * @param onReceiveCallback A callback function that will be called each time the observer receives a notification.
+         */
+        addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): void;
+
+        /**
+         * Removes the observer for the specified notification from the default notification center.
+         * For more information, please visit 'https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Classes/NSNotificationCenter_Class/#//apple_ref/occ/instm/NSNotificationCenter/addObserver:selector:name:object:'
+         * @param notificationName A string containing the name of the notification.
+         * @param onReceiveCallback A callback function that will be called each time the observer receives a notification.
+         */
+        removeNotificationObserver(notificationName: string): void;
     }
 }

@@ -25,3 +25,26 @@ export var test_DummyTestForSnippetOnly0 = function () {
     // ```
     // </snippet>
 }
+
+export var test_DummyTestForSnippetOnly1 = function () {
+    // <snippet module="connectivity" title="connectivity">
+    // ### Monitoring connection type.
+    // ``` JavaScript
+    connectivity.starMonitoring(function onConnectionTypeChanged(newConnectionType: number) {
+        switch (newConnectionType) {
+            case connectivity.connectionType.none:
+                ////console.log("Connection type changed to none.");
+                break;
+            case connectivity.connectionType.wifi:
+                ////console.log("Connection type changed to WiFi.");
+                break;
+            case connectivity.connectionType.mobile:
+                ////console.log("Connection type changed to mobile.");
+                break;
+        }
+    });
+    ////...
+    connectivity.stopMonitoring();
+    // ```
+    // </snippet>
+}
