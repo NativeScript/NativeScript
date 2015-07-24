@@ -121,11 +121,33 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
     }
 }
 
+class NotificationReceiver extends NSObject {
+    private _onReceiveCallback: (notification: NSNotification) => void;
+
+    static new(): NotificationReceiver {
+        return <NotificationReceiver>super.new();
+    }
+
+    public initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationReceiver {
+        this._onReceiveCallback = onReceiveCallback;
+        return this;
+    }
+
+    public onReceive(notification: NSNotification): void {
+        this._onReceiveCallback(notification);
+    }
+
+    public static ObjCExposedMethods = {
+        "onReceive": { returns: interop.types.void, params: [NSNotification] }
+    };
+}
+
 class IOSApplication implements definition.iOSApplication {
 
     public nativeApp: any;
     public rootController: any;
     private _tnsAppdelegate: TNSAppDelegate;
+    private _registeredObservers = {};
 
     constructor() {
         // TODO: in iOS there is the singleton instance, while in Android such does not exist hence we pass it as argument
@@ -134,6 +156,19 @@ class IOSApplication implements definition.iOSApplication {
 
     public init() {
         this._tnsAppdelegate = new TNSAppDelegate();
+    }
+
+    public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void) {
+        var observer = NotificationReceiver.new().initWithCallback(onReceiveCallback);
+        NSNotificationCenter.defaultCenter().addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
+        this._registeredObservers[notificationName] = observer;
+    }
+
+    public removeNotificationObserver(notificationName: string) {
+        var observer = this._registeredObservers[notificationName];
+        if (observer) {
+            NSNotificationCenter.defaultCenter().removeObserverNameObject(observer, notificationName, null);
+        }
     }
 }
 

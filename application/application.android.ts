@@ -209,9 +209,64 @@ export class AndroidApplication extends observable.Observable implements dts.And
 
         this._eventsToken = initEvents();
         this.nativeApp.registerActivityLifecycleCallbacks(this._eventsToken);
-        this.context = this.nativeApp.getApplicationContext();
+        this._registerPendingReceivers();
+    }
+
+    private _registeredReceivers = {};
+    private _pendingReceiverRegistrations = new Array<(context: android.content.Context) => void>();
+    private _registerPendingReceivers() {
+        if (this._pendingReceiverRegistrations) {
+            var i = 0;
+            var length = this._pendingReceiverRegistrations.length;
+            for (; i < length; i++) {
+                var registerFunc = this._pendingReceiverRegistrations[i];
+                registerFunc(this.context);
+            }
+            this._pendingReceiverRegistrations = new Array<(context: android.content.Context) => void>();
+        }
+    }
+
+    public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+        var that = this;
+        var registerFunc = function (context: android.content.Context) {
+            var receiver = new BroadcastReceiver(onReceiveCallback);
+            context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
+            that._registeredReceivers[intentFilter] = receiver;
+        }
+
+        if (this.context) {
+            registerFunc(this.context);
+        }
+        else {
+            this._pendingReceiverRegistrations.push(registerFunc);
+        }
+    }
+
+    public unregisterBroadcastReceiver(intentFilter: string) {
+        var receiver = this._registeredReceivers[intentFilter];
+        if (receiver) {
+            this.context.unregisterReceiver(receiver);
+            this._registeredReceivers[intentFilter] = undefined;
+            delete this._registeredReceivers[intentFilter];
+        }
     }
 }
+
+class BroadcastReceiver extends android.content.BroadcastReceiver {
+    private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
+
+    constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+        super();
+        this._onReceiveCallback = onReceiveCallback;
+        return global.__native(this);
+    }
+
+    public onReceive(context: android.content.Context, intent: android.content.Intent) {
+        if (this._onReceiveCallback) {
+            this._onReceiveCallback(context, intent);
+        }
+    }
+} 
 
 global.__onUncaughtError = function (error: Error) {
     if (!types.isFunction(exports.onUncaughtError)) {

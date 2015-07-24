@@ -3,9 +3,9 @@
 declare var exports;
 require("utils/module-merge").merge(common, exports);
 
+// Get Connection Type
 declare var sockaddr;
-
-function getNetworkReachability(host?: string): any {
+function _createReachability(host?: string): any {
     if (host) {
         return SCNetworkReachabilityCreateWithName(null, host);
     }
@@ -18,8 +18,8 @@ function getNetworkReachability(host?: string): any {
     }
 }
 
-function getReachabilityFlags(host?: string): number {
-    var reachability = getNetworkReachability(host);
+function _getReachabilityFlags(host?: string): number {
+    var reachability = _createReachability(host);
     var flagsRef = new interop.Reference<number>();
     var gotFlags = SCNetworkReachabilityGetFlags(reachability, flagsRef);
     CFRelease(reachability);
@@ -29,8 +29,12 @@ function getReachabilityFlags(host?: string): number {
     return flagsRef.value;
 }
 
-function getConnectionTypeToHost(host?: string): number {
-    var flags = getReachabilityFlags(host);
+function _getConnectionType(host?: string): number {
+    var flags = _getReachabilityFlags(host);
+    return _getConnectionTypeFromFlags(flags);
+}
+
+function _getConnectionTypeFromFlags(flags: number): number {
     if (!flags) {
         return common.connectionType.none;
     }
@@ -50,5 +54,35 @@ function getConnectionTypeToHost(host?: string): number {
 }
 
 export function getConnectionType(): number {
-    return getConnectionTypeToHost();
+    return _getConnectionType();
+}
+
+// Start/Stop Monitoring
+function _reachabilityCallback(target: any, flags: number, info: any) {
+    if (_connectionTypeChangedCallback) {
+        var newConnectionType = _getConnectionTypeFromFlags(flags);
+        _connectionTypeChangedCallback(newConnectionType);
+    }
+}
+var _reachabilityCallbackFunctionRef = new interop.FunctionReference(_reachabilityCallback)
+
+var _monitorReachabilityRef: any;
+var _connectionTypeChangedCallback: (newConnectionType: number) => void;
+
+export function starMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
+    if (!_monitorReachabilityRef) {
+        _monitorReachabilityRef = _createReachability();
+        _connectionTypeChangedCallback = connectionTypeChangedCallback;
+        SCNetworkReachabilitySetCallback(_monitorReachabilityRef, _reachabilityCallbackFunctionRef, null);
+        SCNetworkReachabilityScheduleWithRunLoop(_monitorReachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+    }
+}
+
+export function stopMonitoring(): void {
+    if (_monitorReachabilityRef) {
+        SCNetworkReachabilityUnscheduleFromRunLoop(_monitorReachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        CFRelease(_monitorReachabilityRef);
+        _monitorReachabilityRef = undefined;
+        _connectionTypeChangedCallback = undefined;;
+    }
 }

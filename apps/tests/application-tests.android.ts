@@ -26,7 +26,26 @@ var dir = context.getFilesDir();
 // ### Tracking the current Activity
 // ``` JavaScript
 if (androidApp.foregroundActivity === androidApp.startActivity) {
-    console.log("We are currently in the main (start) activity of the application");
+    ////console.log("We are currently in the main (start) activity of the application");
+}
+// ```
+// </snippet>
+// <snippet module="application" title="application">
+// ### Registering a Broadcast Receiver (Android)
+// ``` JavaScript
+//// Register the broadcast receiver
+if (app.android) {
+    app.android.registerBroadcastReceiver(android.content.Intent.ACTION_BATTERY_CHANGED,
+        function onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
+            var level = intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1);
+            var scale = intent.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1);
+            var percent = (level / scale) * 100.0;
+            ////console.log("Battery: " + percent + "%");
+        });
+}
+//// When no longer needed, unregister the broadcast receiver
+if (app.android) {
+    app.android.unregisterBroadcastReceiver(android.content.Intent.ACTION_BATTERY_CHANGED);
 }
 // ```
 // </snippet>

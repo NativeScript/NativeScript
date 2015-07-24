@@ -24,7 +24,7 @@ if (app.android) {
 import TKUnit = require("./TKUnit");
 
 export var testInitialized = function () {
-    if (android) {
+    if (global.android) {
         // we have the android defined
         TKUnit.assert(app.android, "Application module not properly intialized");
     } else if (NSObject) {

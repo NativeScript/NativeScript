@@ -79,6 +79,10 @@
     <TypeScriptCompile Include="apps\action-bar-demo\pages\data-binding.ts">
       <DependentUpon>data-binding.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\notifications-demo\app.ts" />
+    <TypeScriptCompile Include="apps\notifications-demo\main-page.ts">
+      <DependentUpon>main-page.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\connectivity-demo\app.ts" />
     <TypeScriptCompile Include="apps\connectivity-demo\main-page.ts">
       <DependentUpon>main-page.xml</DependentUpon>
@@ -102,6 +106,9 @@
     <Content Include="apps\action-bar-demo\pages\center-view-segmented.xml" />
     <Content Include="apps\action-bar-demo\pages\center-view.xml" />
     <Content Include="apps\action-bar-demo\pages\data-binding.xml" />
+    <Content Include="apps\notifications-demo\main-page.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\connectivity-demo\main-page.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -1752,6 +1759,9 @@
     <Content Include="apps\connectivity-demo\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="apps\notifications-demo\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">
@@ -1844,7 +1854,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
