@@ -332,7 +332,6 @@ export function test_parse_ShouldParseLowerCaseDashedComponentDeclaration() {
     TKUnit.assert(ctrl.getChildAt(1) instanceof segmentedBar.SegmentedBar, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
 };
 
-
 export function test_parse_ShouldParseCustomComponentWithoutXml() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodule"><customControls:MyControl /></Page>');
     var ctrl = p.content;
