@@ -19,6 +19,7 @@ import helper = require("../ui/helper");
 import viewModule = require("ui/core/view");
 import platform = require("platform");
 import gesturesModule = require("ui/gestures");
+import segmentedBar = require("ui/segmented-bar");
 
 export function test_load_IsDefined() {
     TKUnit.assert(types.isFunction(builder.load), "ui/builder should have load method!");
@@ -320,6 +321,15 @@ export function test_parse_CanBindBackgroundImage() {
     var sw = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assert(sw.backgroundImage === expected, "Expected result: " + expected + "; Actual result: " + sw.backgroundImage);
+};
+
+export function test_parse_ShouldParseLowerCaseDashedComponentDeclaration() {
+    var p = <page.Page>builder.parse('<page><stack-layout><label text="Label" /><segmented-bar><segmented-bar.items><segmented-bar-item title="test" /></segmented-bar.items></segmented-bar></stack-layout></page>');
+    var ctrl = <stackLayoutModule.StackLayout>p.content;
+
+    TKUnit.assert(ctrl instanceof stackLayoutModule.StackLayout, "Expected result: StackLayout!; Actual result: " + ctrl);
+    TKUnit.assert(ctrl.getChildAt(0) instanceof labelModule.Label, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
+    TKUnit.assert(ctrl.getChildAt(1) instanceof segmentedBar.SegmentedBar, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
 };
 
 export function test_parse_ShouldParseCustomComponentWithoutXml() {
