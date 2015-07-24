@@ -47,6 +47,10 @@ Fixed
 
 - [(#261)](https://github.com/NativeScript/NativeScript/issues/261) WebView crash when navigating back
 
+### Breaking changes
+-  [(#304)](https://github.com/NativeScript/NativeScript/issues/304) ActionBar/NavigationBar is now defined using the `page.actionBar` instead of `page.optionsMenu`. [See an example...](../ApiReference/ui/action-bar/HOW-TO.md)
+
+
 ##1.1.0 (2015, June 10)
 
 ### New
