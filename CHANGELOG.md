@@ -50,6 +50,8 @@ Fixed
 ### Breaking changes
 -  [(#304)](https://github.com/NativeScript/NativeScript/issues/304) ActionBar/NavigationBar is now defined using the `page.actionBar` instead of `page.optionsMenu`. [See an example...](../ApiReference/ui/action-bar/HOW-TO.md)
 
+### Known issues
+-  ```tns debug ios``` command is not working. The workaround is to use ```tns debug ios --framework-path "__path to the iOS runtime__"```. A fix for this is coming in 1.2.1 which will be released in the week of July, 27th.
 
 ##1.1.0 (2015, June 10)
 
