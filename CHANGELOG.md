@@ -1,6 +1,52 @@
 Cross Platform Modules Changelog
 ==============================
 
+##1.2.0 (2015, July 24)
+
+New
+=========
+
+- [(#393)](https://github.com/NativeScript/NativeScript/issues/393) Create application.android instance immediately and move all android-specific events to application.android.
+
+- [(#391)](https://github.com/NativeScript/NativeScript/issues/391) Implement cancellable back button pressed for Android.
+
+- [(#304)](https://github.com/NativeScript/NativeScript/issues/304) Expose additional properties of NavBar/ActionBar
+
+- [(#294)](https://github.com/NativeScript/NativeScript/issues/294) Add an optional fullscreen parameter to Page.showModal method.
+
+- [(#263)](https://github.com/NativeScript/NativeScript/issues/263) Provide per page option for manipulating NavigationBar
+
+- [(#191)](https://github.com/NativeScript/NativeScript/issues/191) Extend the set of support CSS properties in {N}
+
+Fixed
+=========
+
+- [(#423)](https://github.com/NativeScript/NativeScript/issues/423) Showing a modal page from another modal page results in error on iOS.
+
+- [(#422)](https://github.com/NativeScript/NativeScript/issues/422) Login dialog - iOS7: loginResult.userName returns password as a value instead of username
+
+- [(#421)](https://github.com/NativeScript/NativeScript/issues/421) Page.showModal seems completely broken in IOS
+
+- [(#406)](https://github.com/NativeScript/NativeScript/issues/406) Prompt dialog - iOS7: okButton returns result equal to false, cancelButton returns result equal to true
+
+- [(#405)](https://github.com/NativeScript/NativeScript/pull/405) FPS module will now correctly count frames while scrolling in iOS
+
+- [(#395)](https://github.com/NativeScript/NativeScript/issues/395) dialogs.action() causes app to crash on iPad
+
+- [(#372)](https://github.com/NativeScript/NativeScript/issues/372) Simple location app doesn't perform until real gps apps are also running
+
+- [(#368)](https://github.com/NativeScript/NativeScript/issues/368) [Screen Builder] Model is not updated when an observable object property is used in two text fields
+
+- [(#343)](https://github.com/NativeScript/NativeScript/issues/343) Not returning a view on the view parameter of the creatingView event handler of the placeholder crash the application
+
+- [(#322)](https://github.com/NativeScript/NativeScript/issues/322) Creating an Observable by passing a JSON object in the constructor does not define the respective properties on the Observable object instance.
+
+- [(#285)](https://github.com/NativeScript/NativeScript/issues/285) `visibility` property inconsistent with CSS
+
+- [(#270)](https://github.com/NativeScript/NativeScript/issues/270) BackgroundImage property does not respect the CornerRadius when set to Border.
+
+- [(#261)](https://github.com/NativeScript/NativeScript/issues/261) WebView crash when navigating back
+
 ##1.1.0 (2015, June 10)
 
 ### New
