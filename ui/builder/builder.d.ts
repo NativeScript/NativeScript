@@ -1,5 +1,4 @@
-﻿//@private
-declare module "ui/builder" {
+﻿declare module "ui/builder" {
     import view = require("ui/core/view");
     import page = require("ui/page");
 
