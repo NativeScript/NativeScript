@@ -208,13 +208,15 @@ export class ActionBar extends common.ActionBar {
     }
 
     public _onTitlePropertyChanged() {
-        if (frame.topmost().currentPage === this.page) {
+        var topFrame = frame.topmost();
+        if (topFrame && topFrame.currentPage === this.page) {
             this._updateTitleAndTitleView(frame.topmost().android.actionBar);
         }
     }
 
     public _onIconPropertyChanged() {
-        if (frame.topmost().currentPage === this.page) {
+        var topFrame = frame.topmost();
+        if (topFrame && topFrame.currentPage === this.page) {
             this._updateIcon(frame.topmost().android.actionBar);
         }
     }
