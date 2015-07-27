@@ -3,7 +3,7 @@ import types = require("utils/types");
 import knownColors = require("color/known-colors");
 
 var AMP = "#";
-var HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$|(^#[0-9A-F]{8}$)/i;
+var HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
 
 export class Color implements definition.Color {
     private _a: number;
