@@ -812,7 +812,6 @@ export function test_set_invalid_CSS_values_dont_cause_crash() {
     testButton.cssClass = "invalid";
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
-        var page: pageModule.Page = <pageModule.Page> views[1];
         TKUnit.assertEqual(30, testButton.style.fontSize);
     }, invalidCSS);
 }
