@@ -1,17 +1,17 @@
-﻿import types = require("utils/types");
-import timer = require("timer");
-import consoleModule = require("console");
-import xhr = require("xhr/xhr");
-import dialogs = require("ui/dialogs");
-var fetchModule = require("fetch");
-
-// This method iterates all the keys in the source exports object and copies them to the destination exports one.
+﻿// This method iterates all the keys in the source exports object and copies them to the destination exports one.
 // Note: the method will not check for naming collisions and will override any already existing entries in the destination exports.
 global.moduleMerge = function (sourceExports: any, destExports: any) {
     for (var key in sourceExports) {
         destExports[key] = sourceExports[key];
     }
 }
+
+import types = require("utils/types");
+import timer = require("timer");
+import consoleModule = require("console");
+import xhr = require("xhr/xhr");
+import dialogs = require("ui/dialogs");
+var fetchModule = require("fetch");
 
 global.moduleMerge(fetchModule, global);
 
