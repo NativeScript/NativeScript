@@ -2,6 +2,7 @@
 import observable = require("ui/core/dependency-observable");
 import cssParser = require("js-libs/reworkcss");
 import styleProperty = require("ui/styling/style-property");
+import trace = require("trace");
 
 var ID_SPECIFICITY = 10000;
 var CLASS_SPECIFICITY = 100;
@@ -34,7 +35,12 @@ export class CssSelector {
 
     public apply(view: view.View) {
         this.eachSetter((property, value) => {
-            view.style._setValue(property, value, observable.ValueSource.Css);
+            try {
+                view.style._setValue(property, value, observable.ValueSource.Css);
+            }
+            catch (ex) {
+                trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+            }
         });
     }
 
@@ -177,7 +183,7 @@ class InlineStyleSelector extends CssSelector {
     }
 }
 
-export function applyInlineSyle(view: view.View, declarations : cssParser.Declaration[]) {
+export function applyInlineSyle(view: view.View, declarations: cssParser.Declaration[]) {
     var localStyleSelector = new InlineStyleSelector(declarations);
     localStyleSelector.apply(view);
 }

@@ -455,14 +455,14 @@ function getHandlerInternal(propertyId: number, classInfo: types.ClassInfo): sty
 
 // Property registration
 export var colorProperty = new styleProperty.Property("color", "color",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, undefined, undefined, color.Color.equals),
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.Inheritable, undefined, color.Color.isValid, color.Color.equals),
     converters.colorConverter);
 
 export var backgroundImageProperty = new styleProperty.Property("backgroundImage", "background-image",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundImagePropertyChanged));
 
 export var backgroundColorProperty = new styleProperty.Property("backgroundColor", "background-color",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundColorPropertyChanged, undefined, color.Color.equals),
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundColorPropertyChanged, color.Color.isValid, color.Color.equals),
     converters.colorConverter);
 
 export var backgroundRepeatProperty = new styleProperty.Property("backgroundRepeat", "background-repeat",
@@ -475,7 +475,7 @@ export var backgroundPositionProperty = new styleProperty.Property("backgroundPo
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onBackgroundPositionPropertyChanged));
 
 export var borderColorProperty = new styleProperty.Property("borderColor", "border-color",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, undefined, color.Color.equals),
+    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, undefined, color.Color.isValid, color.Color.equals),
     converters.colorConverter);
 
 export var borderWidthProperty = new styleProperty.Property("borderWidth", "border-width",
