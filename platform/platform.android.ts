@@ -1,7 +1,7 @@
 ﻿/* tslint:disable:class-name */
 import definition = require("platform");
 import enums = require("ui/enums");
-import application = require("application");
+import utils = require("utils/utils");
 
 export module platformNames {
     export var android = "Android";
@@ -75,11 +75,11 @@ export class device implements definition.device {
     static get uuid(): string {
         if (!device._uuid) {
             device._uuid = android.provider.Settings.Secure.getString(
-              application.android.context.getContentResolver(),
-              android.provider.Settings.Secure.ANDROID_ID
-            );
+                utils.ad.getApplicationContext().getContentResolver(),
+                android.provider.Settings.Secure.ANDROID_ID
+                );
         }
-        
+
         return device._uuid;
     }
 
@@ -87,7 +87,7 @@ export class device implements definition.device {
         if (!device._language) {
             device._language = java.util.Locale.getDefault().toString();
         }
-        
+
         return device._language;
     }
 }
@@ -99,7 +99,7 @@ var mainScreenInfo: definition.ScreenMetrics;
 export class screen implements definition.screen {
     static get mainScreen(): definition.ScreenMetrics {
         if (!mainScreenInfo) {
-            var metrics = application.android.context.getResources().getDisplayMetrics();
+            var metrics = utils.ad.getApplicationContext().getResources().getDisplayMetrics();
             mainScreenInfo = {
                 widthPixels: metrics.widthPixels,
                 heightPixels: metrics.heightPixels,

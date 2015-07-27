@@ -1,5 +1,4 @@
-﻿import application = require("application");
-import common = require("utils/utils-common");
+﻿import common = require("utils/utils-common");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -17,9 +16,9 @@ export module layout {
     var useOldMeasureSpec = false;
 
     export function makeMeasureSpec(size: number, mode: number): number {
-        if (sdkVersion === -1 && application.android && application.android.context) {
+        if (sdkVersion === -1) {
             // check whether the old layout is needed
-            sdkVersion = application.android.context.getApplicationInfo().targetSdkVersion;
+            sdkVersion = ad.getApplicationContext().getApplicationInfo().targetSdkVersion;
             useOldMeasureSpec = sdkVersion <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
         }
 
@@ -40,7 +39,7 @@ export module layout {
 
     function getDisplayMetrics(): android.util.DisplayMetrics {
         if (!metrics) {
-            metrics = application.android.context.getResources().getDisplayMetrics();
+            metrics = ad.getApplicationContext().getResources().getDisplayMetrics();
         }
 
         return metrics;
@@ -49,6 +48,10 @@ export module layout {
 
 // We are using "ad" here to avoid namespace collision with the global android object
 export module ad {
+
+    export function getApplication() { return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance(); }
+    export function getApplicationContext() { return <android.content.Context>getApplication().getApplicationContext(); }
+
     export module collections {
         export function stringArrayToStringSet(str: string[]): any {
             var hashSet = new java.util.HashSet();
@@ -84,9 +87,8 @@ export module ad {
         }
 
         export function getId(name: string): number {
-            var context = application.android.context;
-            var resources = context.getResources();
-            var packageName = context.getPackageName();
+            var resources = getApplicationContext().getResources();
+            var packageName = getApplicationContext().getPackageName();
             var uri = packageName + name;
             return resources.getIdentifier(uri, null, null);
         }

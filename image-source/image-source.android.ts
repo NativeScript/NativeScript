@@ -1,9 +1,9 @@
 ﻿import types = require("utils/types");
 import fs = require("file-system");
-import appModule = require("application");
 import definition = require("image-source");
 import common = require("image-source/image-source-common");
 import enums = require("ui/enums");
+import utils = require("utils/utils");
 
 // merge the exports of the common file with the exports of this file
 declare var exports;
@@ -16,10 +16,9 @@ export class ImageSource implements definition.ImageSource {
     public loadFromResource(name: string): boolean {
         this.android = null;
 
-        var androidApp = appModule.android;
-        var res = androidApp.context.getResources();
+        var res = utils.ad.getApplicationContext().getResources();
         if (res) {
-            var identifier: number = res.getIdentifier(name, 'drawable', androidApp.packageName);
+            var identifier: number = res.getIdentifier(name, 'drawable', utils.ad.getApplication().getPackageName());
             if (0 < identifier) {
                 // Load BitmapDrawable with getDrawable to make use of Android internal caching
                 var bitmapDrawable = <android.graphics.drawable.BitmapDrawable>res.getDrawable(identifier);

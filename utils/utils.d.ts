@@ -45,6 +45,16 @@
      */
     module ad {
         /**
+         * Gets the native Android application instance.
+         */
+        export function getApplication(): android.app.Application;
+
+        /**
+         * Gets the Android application context.
+         */
+        export function getApplicationContext(): android.content.Context;
+
+        /**
          * Utility module dealing with some android collections.
          */
         module collections {
