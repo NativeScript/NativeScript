@@ -3,7 +3,7 @@ import types = require("utils/types");
 import knownColors = require("color/known-colors");
 
 var AMP = "#";
-var HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i;
+var HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$|(^#[0-9A-F]{8}$)/i;
 
 export class Color implements definition.Color {
     private _a: number;
@@ -108,7 +108,11 @@ export class Color implements definition.Color {
         return value1.equals(value2);
     }
 
-    public static isValid(value: string): boolean {
+    public static isValid(value: any): boolean {
+        if (types.isNullOrUndefined(value) || value instanceof Color) {
+            return true;
+        }
+
         if (!types.isString(value)) {
             return false;
         }

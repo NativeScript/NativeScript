@@ -70,9 +70,9 @@ declare module "color" {
         public static equals(value1: Color, value2: Color): boolean;
 
         /**
-         * Validates if a string value can be converted to color.
+         * Validates if a value can be converted to color.
          * @param value Input string.
          */
-        public static isValid(value: string): boolean;
+        public static isValid(value: any): boolean;
     }
 }
