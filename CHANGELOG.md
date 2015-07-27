@@ -141,4 +141,4 @@ Fixed
   * Image: `source` property renamed to `imageSource`
   * TabView: `TabEntry` renamed to `TabViewItem`
   * Module `local-settings` changed to `application-settings`.Only the name of the module is changed (API remains the same), hence the `require` statements must be updated, i.e. `require("local-settings")` should be changed to `require("application-settings")`.
-  
+
