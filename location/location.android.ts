@@ -1,7 +1,7 @@
 ﻿import enums = require("ui/enums");
-import appModule = require("application");
 import locationModule = require("location");
 import common = require("location/location-common");
+import utils = require("utils/utils");
 
 import merger = require("utils/module-merge");
 declare var exports;
@@ -101,7 +101,7 @@ export class LocationManager implements locationModule.LocationManager {
     public static isEnabled(): boolean {
         var criteria = new android.location.Criteria();
         criteria.setAccuracy(android.location.Criteria.ACCURACY_COARSE);
-        var lm = appModule.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
+        var lm = utils.ad.getApplicationContext().getSystemService(android.content.Context.LOCATION_SERVICE);
         // due to bug in android API getProviders() with criteria parameter overload should be called (so most loose acuracy is used).
         var enabledProviders = lm.getProviders(criteria, true);
         return (enabledProviders.size() > 0) ? true : false;
@@ -122,8 +122,8 @@ export class LocationManager implements locationModule.LocationManager {
         this.desiredAccuracy = enums.Accuracy.any;
         this.updateDistance = 0; 
         
-		//this.androidLocationManager = appModule.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
-		var alm = appModule.android.context.getSystemService(android.content.Context.LOCATION_SERVICE);
+		//this.androidLocationManager = utils.ad.getApplicationContext().getSystemService(android.content.Context.LOCATION_SERVICE);
+        var alm = utils.ad.getApplicationContext().getSystemService(android.content.Context.LOCATION_SERVICE);
 		this.androidLocationManager = new AndroidLocationManager(alm);
 		this.androidLocationManager.minimumUpdateTime = 200;
     }

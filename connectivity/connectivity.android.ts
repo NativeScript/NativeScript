@@ -1,5 +1,6 @@
 ﻿import appModule = require("application");
 import common = require("connectivity/connectivity-common");
+import utils = require("utils/utils");
 
 declare var exports;
 require("utils/module-merge").merge(common, exports);
@@ -9,11 +10,7 @@ var MOBILE = "MOBILE";
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
-    if (!appModule.android || !appModule.android.context) {
-        return null;
-    }
-
-    return appModule.android.context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+    return utils.ad.getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
 }
 
 function getActiveNetworkInfo(): android.net.NetworkInfo {

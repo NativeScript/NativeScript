@@ -1,6 +1,6 @@
-﻿import appModule = require("application");
-import textModule = require("text");
+﻿import textModule = require("text");
 import types = require("utils/types");
+import utils = require("utils/utils");
 
 export class FileSystemAccess {
     private _pathSeparator = java.io.File.separator.toString();
@@ -211,14 +211,12 @@ export class FileSystemAccess {
     }
 
     public getDocumentsFolderPath(): string {
-        var context = appModule.android.context;
-        var dir = context.getFilesDir();
+        var dir = utils.ad.getApplicationContext().getFilesDir();
         return dir.getAbsolutePath();
     }
 
     public getTempFolderPath(): string {
-        var context = appModule.android.context;
-        var dir = context.getCacheDir();
+        var dir = utils.ad.getApplicationContext().getCacheDir();
         return dir.getAbsolutePath();
     }
 
