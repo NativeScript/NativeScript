@@ -6,8 +6,7 @@ import enums = require("ui/enums");
 import view = require("ui/core/view");
 import utils = require("utils/utils");
 
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class ActionItem extends common.ActionItemBase implements dts.ActionItem {
     private _ios: dts.IOSActionItemSettings = { position: enums.IOSActionItemPosition.left };

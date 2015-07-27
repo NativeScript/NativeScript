@@ -1,7 +1,6 @@
 ﻿import common = require("connectivity/connectivity-common");
 
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 // Get Connection Type
 declare var sockaddr;

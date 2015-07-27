@@ -5,9 +5,7 @@ import types = require("utils/types");
 import view = require("ui/core/view");
 import definition = require("application");
 
-// merge the exports of the application_common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(appModule, exports);
+global.moduleMerge(appModule, exports);
 
 export var mainModule: string;
 

@@ -24,9 +24,7 @@ function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 // register the setNativeValue callback
 (<proxy.PropertyMetadata>common.HtmlView.htmlProperty.metadata).onSetNativeValue = onHtmlPropertyChanged;
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class HtmlView extends common.HtmlView {
     private _ios: UILabel;

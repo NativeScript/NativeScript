@@ -63,9 +63,7 @@ function onMinDatePropertyChanged(data: dependencyObservable.PropertyChangeData)
 
 (<proxy.PropertyMetadata>common.DatePicker.minDateProperty.metadata).onSetNativeValue = onMinDatePropertyChanged;
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class DatePicker extends common.DatePicker {
     private _android: android.widget.DatePicker;

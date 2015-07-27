@@ -3,9 +3,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import enums = require("ui/enums");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(imageCommon, exports);
+global.moduleMerge(imageCommon, exports);
 
 function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;

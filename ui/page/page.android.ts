@@ -3,8 +3,7 @@ import definition = require("ui/page");
 import trace = require("trace");
 import color = require("color");
 
-declare var exports;
-require("utils/module-merge").merge(pageCommon, exports);
+global.moduleMerge(pageCommon, exports);
 
 class DialogFragmentClass extends android.app.DialogFragment {
     private _owner: Page;

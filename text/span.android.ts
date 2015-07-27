@@ -3,8 +3,7 @@ import enums = require("ui/enums");
 import formattedString = require("text/formatted-string");
 import utils = require("utils/utils");
 
-declare var exports;
-require("utils/module-merge").merge(spanCommon, exports);
+global.moduleMerge(spanCommon, exports);
 
 export class Span extends spanCommon.Span {
     public updateSpanModifiers(parent: formattedString.FormattedString) {

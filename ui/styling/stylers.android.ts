@@ -10,9 +10,7 @@ import styleModule = require("ui/styling/style");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(stylersCommon, exports);
+global.moduleMerge(stylersCommon, exports);
 
 var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
 function onBackgroundOrBorderPropertyChanged(v: view.View) {

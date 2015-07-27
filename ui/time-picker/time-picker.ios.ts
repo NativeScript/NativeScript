@@ -26,9 +26,7 @@ function onMinutePropertyChanged(data: dependencyObservable.PropertyChangeData) 
 
 (<proxy.PropertyMetadata>common.TimePicker.minuteProperty.metadata).onSetNativeValue = onMinutePropertyChanged;
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class TimePicker extends common.TimePicker {
     private _ios: UIDatePicker;

@@ -3,8 +3,7 @@ import trace = require("trace");
 import utils = require("utils/utils");
 import fs = require("file-system");
 
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
     public static ObjCProtocols = [UIWebViewDelegate];

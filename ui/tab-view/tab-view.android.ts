@@ -11,9 +11,7 @@ import page = require("ui/page");
 var VIEWS_STATES = "_viewStates";
 var RESOURCE_PREFIX = "res://";
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 class ViewPagerClass extends android.support.v4.view.ViewPager {
     private owner: TabView;

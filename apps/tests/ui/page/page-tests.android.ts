@@ -5,8 +5,7 @@ import PageTestCommon = require("./page-tests-common");
 import helper = require("../helper");
 import frame = require("ui/frame");
 
-declare var exports;
-require("utils/module-merge").merge(PageTestCommon, exports);
+global.moduleMerge(PageTestCommon, exports);
 
 export var test_NavigateToNewPage_WithAndroidCache = function () {
     var testPage: PageModule.Page;

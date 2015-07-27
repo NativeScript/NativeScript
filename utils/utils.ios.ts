@@ -1,11 +1,8 @@
 ﻿import common = require("utils/utils-common");
 import colorModule = require("color");
 import view = require("ui/core/view");
-//import trace = require("trace");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 function isOrientationLandscape(orientation: number) {
     return orientation === UIDeviceOrientation.UIDeviceOrientationLandscapeLeft || orientation === UIDeviceOrientation.UIDeviceOrientationLandscapeRight;

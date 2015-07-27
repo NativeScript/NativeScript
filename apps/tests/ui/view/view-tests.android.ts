@@ -12,9 +12,7 @@ import trace = require("trace");
 // enable the trace, it is disabled by default
 trace.enable();
 
-// merge the exports of the view-tests-common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(commonTests, exports);
+global.moduleMerge(commonTests, exports);
 
 export var test_event_onAttached_IsRaised = function () {
     var listener = new Listener("_onAttached");

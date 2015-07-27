@@ -35,9 +35,7 @@ function onMaxValuePropertyChanged(data: dependencyObservable.PropertyChangeData
 (<proxy.PropertyMetadata>common.Slider.minValueProperty.metadata).onSetNativeValue = onMinValuePropertyChanged;
 (<proxy.PropertyMetadata>common.Slider.maxValueProperty.metadata).onSetNativeValue = onMaxValuePropertyChanged;
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class Slider extends common.Slider {
     private _supressNativeValue: boolean;

@@ -22,9 +22,7 @@ function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData
 // register the setNativeValue callback
 (<proxy.PropertyMetadata>common.Label.textWrapProperty.metadata).onSetNativeValue = onTextWrapPropertyChanged;
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class Label extends common.Label {
     private _ios: UILabel;

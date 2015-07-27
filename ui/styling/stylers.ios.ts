@@ -6,9 +6,7 @@ import enums = require("ui/enums");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(stylersCommon, exports);
+global.moduleMerge(stylersCommon, exports);
 
 interface TextUIView {
     font: UIFont;

@@ -8,9 +8,7 @@ import view = require("ui/core/view");
 import imageSource = require("image-source");
 import types = require("utils/types");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 class UITabBarControllerImpl extends UITabBarController {
     static new(): UITabBarControllerImpl {

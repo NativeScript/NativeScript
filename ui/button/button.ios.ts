@@ -22,9 +22,7 @@ class TapHandlerImpl extends NSObject {
     };
 }
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class Button extends common.Button {
     private _ios: UIButton;

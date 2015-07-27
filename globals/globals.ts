@@ -3,6 +3,17 @@ import timer = require("timer");
 import consoleModule = require("console");
 import xhr = require("xhr/xhr");
 import dialogs = require("ui/dialogs");
+var fetchModule = require("fetch");
+
+// This method iterates all the keys in the source exports object and copies them to the destination exports one.
+// Note: the method will not check for naming collisions and will override any already existing entries in the destination exports.
+global.moduleMerge = function (sourceExports: any, destExports: any) {
+    for (var key in sourceExports) {
+        destExports[key] = sourceExports[key];
+    }
+}
+
+global.moduleMerge(fetchModule, global);
 
 global.setTimeout = timer.setTimeout;
 global.clearTimeout = timer.clearTimeout;
@@ -17,9 +28,6 @@ if (types.isUndefined(global.NSObject)) {
 global.XMLHttpRequest = xhr.XMLHttpRequest;
 global.FormData = xhr.FormData;
 global.alert = dialogs.alert;
-
-var fetchModule = require("fetch");
-require("utils/module-merge").merge(fetchModule, global);
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {

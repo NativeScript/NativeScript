@@ -4,9 +4,7 @@ import view = require("ui/core/view");
 import observable = require("data/observable");
 import trace = require("trace");
 
-// merge the exports of the request file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 class UIGestureRecognizerImpl extends NSObject {
     static new(): UIGestureRecognizerImpl {

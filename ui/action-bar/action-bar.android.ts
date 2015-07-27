@@ -11,8 +11,7 @@ import dts = require("ui/action-bar");
 var ACTION_ITEM_ID_OFFSET = 1000;
 var API_LVL = android.os.Build.VERSION.SDK_INT;
 
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class ActionItem extends common.ActionItemBase implements dts.ActionItem {
     private _androidPosition: dts.AndroidActionItemSettings = { position: enums.AndroidActionItemPosition.actionBar };

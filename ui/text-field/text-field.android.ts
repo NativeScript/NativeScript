@@ -40,9 +40,7 @@ function onSecurePropertyChanged(data: dependencyObservable.PropertyChangeData) 
 // register the setNativeValue callbacks
 (<proxy.PropertyMetadata>common.secureProperty.metadata).onSetNativeValue = onSecurePropertyChanged;
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class TextField extends common.TextField {
     public _configureEditText() {

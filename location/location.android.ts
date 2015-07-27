@@ -3,9 +3,7 @@ import locationModule = require("location");
 import common = require("location/location-common");
 import utils = require("utils/utils");
 
-import merger = require("utils/module-merge");
-declare var exports;
-merger.merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class LocationManager implements locationModule.LocationManager {
 	get android(): locationModule.AndroidLocationManager {

@@ -1,9 +1,7 @@
 import image = require("image-source");
 import httpRequest = require("http/http-request");
 
-// merge the exports of the request file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(httpRequest, exports);
+global.moduleMerge(httpRequest, exports);
 
 export function getString(arg: any): Promise<string> {
     return new Promise<string>((resolve, reject) => {
