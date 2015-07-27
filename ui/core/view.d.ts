@@ -387,7 +387,7 @@ declare module "ui/core/view" {
         onUnloaded(): void;
         isLoaded: boolean;
 
-        _addView(view: View);
+        _addView(view: View, atIndex?: number);
         _propagateInheritableProperties(view: View)
         _inheritProperties(parentView: View)
         _removeView(view: View);
@@ -407,7 +407,7 @@ declare module "ui/core/view" {
         /**
          * Performs the core logic of adding a child view to the native visual tree. Returns true if the view's native representation has been successfully added, false otherwise.
          */
-        _addViewToNativeVisualTree(view: View): boolean;
+        _addViewToNativeVisualTree(view: View, atIndex?: number): boolean;
         _removeViewFromNativeVisualTree(view: View): void;
 
         _eachChildView(callback: (child: View) => boolean);

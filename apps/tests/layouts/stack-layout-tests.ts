@@ -217,7 +217,7 @@ export function test_insertChildAtPosition() {
 
     let newChild = new Button();
     newChild.text = 'in-between';
-    rootLayout.insertChild(1, newChild);
+    rootLayout.insertChild(newChild, 1);
 
     assertChildTexts("btn1|in-between|btn2", rootLayout, "button inserted at correct location");
 }

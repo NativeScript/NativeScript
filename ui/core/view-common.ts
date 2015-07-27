@@ -777,7 +777,7 @@ export class View extends proxy.ProxyObject implements definition.View {
      * Core logic for adding a child view to this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
      * // TODO: Think whether we need the base Layout routine.
      */
-    public _addView(view: View) {
+    public _addView(view: View, atIndex?: number) {
         if (!view) {
             throw new Error("Expecting a valid View instance.");
         }
@@ -787,7 +787,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         }
 
         view._parent = this;
-        this._addViewCore(view);
+        this._addViewCore(view, atIndex);
 
         trace.write("called _addView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
     }
@@ -795,13 +795,13 @@ export class View extends proxy.ProxyObject implements definition.View {
     /**
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    public _addViewCore(view: View) {
+    public _addViewCore(view: View, atIndex?: number) {
         this._propagateInheritableProperties(view);
 
         view.style._inheritStyleProperties();
 
         if (!view._isAddedToNativeVisualTree) {
-            view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view);
+            view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view, atIndex);
         }
 
         // TODO: Discuss this.
@@ -874,7 +874,7 @@ export class View extends proxy.ProxyObject implements definition.View {
     /**
      * Method is intended to be overridden by inheritors and used as "protected".
      */
-    public _addViewToNativeVisualTree(view: View): boolean {
+    public _addViewToNativeVisualTree(view: View, atIndex?: number): boolean {
         if (view._isAddedToNativeVisualTree) {
             throw new Error("Child already added to the native visual tree.");
         }

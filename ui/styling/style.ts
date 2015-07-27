@@ -188,6 +188,38 @@ function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
     }
 }
 
+function onBackgroundColorPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (!color.Color.equals(currentBackground.color, data.newValue)) {
+        style._setValue(backgroundInternalProperty, currentBackground.withColor(data.newValue));
+    }
+}
+
+function onBackgroundSizePropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.size) {
+        style._setValue(backgroundInternalProperty, currentBackground.withSize(data.newValue));
+    }
+}
+
+function onBackgroundRepeatPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.repeat) {
+        style._setValue(backgroundInternalProperty, currentBackground.withRepeat(data.newValue));
+    }
+}
+
+function onBackgroundPositionPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.position) {
+        style._setValue(backgroundInternalProperty, currentBackground.withPosition(data.newValue));
+    }
+}
+
 function getHandlerInternal(propertyId: number, classInfo: types.ClassInfo): styling.stylers.StylePropertyChangedHandler {
     var className = classInfo ? classInfo.name : "default";
     var handlerKey = className + propertyId;
@@ -238,6 +270,61 @@ function isMarginValid(value: number): boolean {
 function isOpacityValid(value: string): boolean {
     var parsedValue: number = parseFloat(value);
     return !isNaN(parsedValue) && 0 <= parsedValue && parsedValue <= 1;
+}
+
+function isFontWeightValid(value: string): boolean {
+    return value === enums.FontWeight.normal || value === enums.FontWeight.bold;
+}
+
+function isFontStyleValid(value: string): boolean {
+    return value === enums.FontStyle.normal || value === enums.FontStyle.italic;
+}
+
+function onFontFamilyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontFamily !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontFamily(data.newValue));
+    }
+}
+
+function onFontStyleChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontStyle !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontStyle(data.newValue));
+    }
+}
+
+function onFontWeightChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontWeight !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontWeight(data.newValue));
+    }
+}
+
+function onFontSizeChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontSize !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontSize(data.newValue));
+    }
+}
+
+function onFontChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var newFont = font.Font.parse(data.newValue);
+    var valueSource = style._getValueSource(fontProperty);
+    style._setValue(fontFamilyProperty, newFont.fontFamily, valueSource);
+    style._setValue(fontStyleProperty, newFont.fontStyle, valueSource);
+    style._setValue(fontWeightProperty, newFont.fontWeight, valueSource);
+    style._setValue(fontSizeProperty, newFont.fontSize, valueSource);
 }
 
 export class Style extends observable.DependencyObservable implements styling.Style {
@@ -671,77 +758,6 @@ export var borderRadiusProperty = new styleProperty.Property("borderRadius", "bo
 export var backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
     new observable.PropertyMetadata(background.Background.default, observable.PropertyMetadataSettings.None, undefined, undefined, background.Background.equals));
 
-function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-    var url: string = data.newValue;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    var isValid = false;
-
-    if (types.isString(data.newValue)) {
-        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
-        var match = url.match(pattern);
-        if (match && match[2]) {
-            url = match[2];
-        }
-
-        if (utils.isDataURI(url)) {
-            var base64Data = url.split(",")[1];
-            if (types.isDefined(base64Data)) {
-                style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromBase64(base64Data)));
-                isValid = true;
-            }
-        } else if (utils.isFileOrResourcePath(url)) {
-            style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromFileOrResource(url)));
-            isValid = true;
-        } else if (url.indexOf("http") !== -1) {
-            style["_url"] = url;
-            style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
-            imageSource.fromUrl(url).then((r) => {
-                if (style && style["_url"] === url) {
-                    style._setValue(backgroundInternalProperty, currentBackground.withImage(r));
-                }
-            });
-            isValid = true;
-        }
-    }
-
-    if (!isValid) {
-        style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
-    }
-}
-
-function onBackgroundColorPropertyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (!color.Color.equals(currentBackground.color, data.newValue)) {
-        style._setValue(backgroundInternalProperty, currentBackground.withColor(data.newValue));
-    }
-}
-
-function onBackgroundSizePropertyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.size) {
-        style._setValue(backgroundInternalProperty, currentBackground.withSize(data.newValue));
-    }
-}
-
-function onBackgroundRepeatPropertyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.repeat) {
-        style._setValue(backgroundInternalProperty, currentBackground.withRepeat(data.newValue));
-    }
-}
-
-function onBackgroundPositionPropertyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.position) {
-        style._setValue(backgroundInternalProperty, currentBackground.withPosition(data.newValue));
-    }
-}
-
 export var fontProperty = new styleProperty.Property("font", "font",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onFontChanged));
 
@@ -759,61 +775,6 @@ export var fontWeightProperty = new styleProperty.Property("fontWeight", "font-w
 
 export var fontInternalProperty = new styleProperty.Property("_fontInternal", "_fontInternal",
     new observable.PropertyMetadata(font.Font.default, AffectsLayout, null, null, font.Font.equals), font.Font.parse);
-
-function isFontWeightValid(value: string): boolean {
-    return value === enums.FontWeight.normal || value === enums.FontWeight.bold;
-}
-
-function isFontStyleValid(value: string): boolean {
-    return value === enums.FontStyle.normal || value === enums.FontStyle.italic;
-}
-
-function onFontFamilyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-
-    var currentFont = <font.Font>style._getValue(fontInternalProperty);
-    if (currentFont.fontFamily !== data.newValue) {
-        style._setValue(fontInternalProperty, currentFont.withFontFamily(data.newValue));
-    }
-}
-
-function onFontStyleChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-
-    var currentFont = <font.Font>style._getValue(fontInternalProperty);
-    if (currentFont.fontStyle !== data.newValue) {
-        style._setValue(fontInternalProperty, currentFont.withFontStyle(data.newValue));
-    }
-}
-
-function onFontWeightChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-
-    var currentFont = <font.Font>style._getValue(fontInternalProperty);
-    if (currentFont.fontWeight !== data.newValue) {
-        style._setValue(fontInternalProperty, currentFont.withFontWeight(data.newValue));
-    }
-}
-
-function onFontSizeChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-
-    var currentFont = <font.Font>style._getValue(fontInternalProperty);
-    if (currentFont.fontSize !== data.newValue) {
-        style._setValue(fontInternalProperty, currentFont.withFontSize(data.newValue));
-    }
-}
-
-function onFontChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-
-    var newFont = font.Font.parse(data.newValue);
-    var valueSource = style._getValueSource(fontProperty);
-    style._setValue(fontFamilyProperty, newFont.fontFamily, valueSource);
-    style._setValue(fontStyleProperty, newFont.fontStyle, valueSource);
-    style._setValue(fontWeightProperty, newFont.fontWeight, valueSource);
-    style._setValue(fontSizeProperty, newFont.fontSize, valueSource);
-}
 
 export var textAlignmentProperty = new styleProperty.Property("textAlignment", "text-align",
     new observable.PropertyMetadata(undefined, AffectsLayout | observable.PropertyMetadataSettings.Inheritable), converters.textAlignConverter);
@@ -868,7 +829,8 @@ export var marginTopProperty = new styleProperty.Property("marginTop", "margin-t
 export var marginBottomProperty = new styleProperty.Property("marginBottom", "margin-bottom",
     new observable.PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), converters.numberConverter);
 
-export var paddingProperty = new styleProperty.Property("padding", "padding", new observable.PropertyMetadata(null, null, onPaddingChanged));
+export var paddingProperty = new styleProperty.Property("padding", "padding",
+    new observable.PropertyMetadata(null, null, onPaddingChanged));
 
 export var paddingLeftProperty = new styleProperty.Property("paddingLeft", "padding-left",
     new observable.PropertyMetadata(0, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);

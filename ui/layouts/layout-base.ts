@@ -43,8 +43,8 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         this._subViews.push(child);
     }
 
-    public insertChild(atIndex: number, child: view.View) {
-        this._addView(child);
+    public insertChild(child: view.View, atIndex: number) {
+        this._addView(child, atIndex);
         this._subViews.splice(atIndex, 0, child);
     }
 

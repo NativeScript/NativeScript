@@ -217,13 +217,19 @@
     <TypeScriptCompile Include="apps\tests\frame-tests.ts" />
     <TypeScriptCompile Include="apps\tests\gestures-tests.ts" />
     <TypeScriptCompile Include="apps\tests\fetch-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\layouts\layout-helper.d.ts" />
+    <TypeScriptCompile Include="apps\tests\layouts\layout-helper.ios.ts">
+      <DependentUpon>layout-helper.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\xhr-tests.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\dock-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\pages\app.ts" />
     <TypeScriptCompile Include="apps\tests\pages\file-load-test.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page12.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\absolute-layout-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\layouts\layout-helper.ts" />
+    <TypeScriptCompile Include="apps\tests\layouts\layout-helper.android.ts">
+      <DependentUpon>layout-helper.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\layouts\wrap-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page12.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page16.ts" />

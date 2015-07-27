@@ -5,6 +5,7 @@ import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import gestures = require("ui/gestures");
+import types = require("utils/types");
 
 global.moduleMerge(viewCommon, exports);
 
@@ -336,11 +337,16 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
         this._viewGroup = new org.nativescript.widgets.ContentLayout(this._context);
     }
 
-    public _addViewToNativeVisualTree(child: View): boolean {
+    public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
         super._addViewToNativeVisualTree(child);
 
         if (this._nativeView && child._nativeView) {
-            this._nativeView.addView(child._nativeView);
+            if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.getChildCount()) {
+                this._nativeView.addView(child._nativeView);
+            }
+            else {
+                this._nativeView.addView(child._nativeView, atIndex);
+            }
             return true;
         }
 
