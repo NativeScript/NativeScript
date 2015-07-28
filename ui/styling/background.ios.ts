@@ -2,8 +2,7 @@ import viewModule = require("ui/core/view");
 import style = require("ui/styling/style");
 import common = require("ui/styling/background-common");
 
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export module ios {
     export function createBackgroundUIColor(view: viewModule.View): UIColor {

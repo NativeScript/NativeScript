@@ -1,4 +1,12 @@
-﻿import types = require("utils/types");
+﻿// This method iterates all the keys in the source exports object and copies them to the destination exports one.
+// Note: the method will not check for naming collisions and will override any already existing entries in the destination exports.
+global.moduleMerge = function (sourceExports: any, destExports: any) {
+    for (var key in sourceExports) {
+        destExports[key] = sourceExports[key];
+    }
+}
+
+import types = require("utils/types");
 import timer = require("timer");
 import consoleModule = require("console");
 import xhr = require("xhr/xhr");
@@ -18,8 +26,9 @@ global.XMLHttpRequest = xhr.XMLHttpRequest;
 global.FormData = xhr.FormData;
 global.alert = dialogs.alert;
 
+// Fetch module should be after XMLHttpRequest/FormData! 
 var fetchModule = require("fetch");
-require("utils/module-merge").merge(fetchModule, global);
+global.moduleMerge(fetchModule, global);
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {

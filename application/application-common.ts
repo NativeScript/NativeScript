@@ -6,7 +6,7 @@ import styleScope = require("ui/styling/style-scope");
 import observable = require("data/observable");
 
 var events = new observable.Observable();
-require("utils/module-merge").merge(events, exports);
+global.moduleMerge(events, exports);
 
 export var launchEvent = "launch";
 export var suspendEvent = "suspend";

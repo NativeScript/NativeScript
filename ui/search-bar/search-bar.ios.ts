@@ -60,9 +60,7 @@ function getUITextField(bar: UISearchBar): UITextField {
     return undefined;
 }
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
     public static ObjCProtocols = [UISearchBarDelegate];

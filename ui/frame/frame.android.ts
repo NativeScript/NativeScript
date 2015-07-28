@@ -7,8 +7,7 @@ import utils = require("utils/utils");
 import view = require("ui/core/view");
 import application = require("application");
 
-declare var exports;
-require("utils/module-merge").merge(frameCommon, exports);
+global.moduleMerge(frameCommon, exports);
 
 var TAG = "_fragmentTag";
 var OWNER = "_owner";

@@ -7,8 +7,7 @@ import utils = require("utils/utils");
 import view = require("ui/core/view");
 import types = require("utils/types");
 
-declare var exports;
-require("utils/module-merge").merge(frameCommon, exports);
+global.moduleMerge(frameCommon, exports);
 
 var ENTRY = "_entry";
 

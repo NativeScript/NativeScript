@@ -5,9 +5,7 @@ import common = require("ui/scroll-view/scroll-view-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class ScrollView extends contentView.ContentView implements definition.ScrollView {
     private _scroll: UIScrollView;

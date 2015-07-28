@@ -3,13 +3,11 @@
  */
 
 import dialogs = require("ui/dialogs");
-import dialogs_common = require("ui/dialogs/dialogs-common");
+import dialogsCommon = require("ui/dialogs/dialogs-common");
 import appmodule = require("application");
 import types = require("utils/types");
 
-// merge the exports of the request file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(dialogs_common, exports);
+global.moduleMerge(dialogsCommon, exports);
 
 function createAlertDialog(options?: dialogs.DialogOptions): android.app.AlertDialog.Builder {
     var alert = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
@@ -56,7 +54,7 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
 export function alert(arg: any): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         try {
-            var options = types.isString(arg) ? { title: dialogs_common.ALERT, okButtonText: dialogs_common.OK, message: arg } : arg;
+            var options = types.isString(arg) ? { title: dialogsCommon.ALERT, okButtonText: dialogsCommon.OK, message: arg } : arg;
 
             var alert = createAlertDialog(options);
 
@@ -78,7 +76,7 @@ export function alert(arg: any): Promise<void> {
 export function confirm(arg: any): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
         try {
-            var options = types.isString(arg) ? { title: dialogs_common.CONFIRM, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL, message: arg } : arg;
+            var options = types.isString(arg) ? { title: dialogsCommon.CONFIRM, okButtonText: dialogsCommon.OK, cancelButtonText: dialogsCommon.CANCEL, message: arg } : arg;
             var alert = createAlertDialog(options);
 
             addButtonsToAlertDialog(alert, options, function (result) { resolve(result); });
@@ -95,9 +93,9 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
     var options: dialogs.PromptOptions;
 
     var defaultOptions = {
-        title: dialogs_common.PROMPT,
-        okButtonText: dialogs_common.OK,
-        cancelButtonText: dialogs_common.CANCEL,
+        title: dialogsCommon.PROMPT,
+        okButtonText: dialogsCommon.OK,
+        cancelButtonText: dialogsCommon.CANCEL,
         inputType: dialogs.inputType.text,
     };
 
@@ -146,7 +144,7 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
 export function login(arg: any): Promise<dialogs.LoginResult> {
     var options: dialogs.LoginOptions;
 
-    var defaultOptions = { title: dialogs_common.LOGIN, okButtonText: dialogs_common.OK, cancelButtonText: dialogs_common.CANCEL };
+    var defaultOptions = { title: dialogsCommon.LOGIN, okButtonText: dialogsCommon.OK, cancelButtonText: dialogsCommon.CANCEL };
 
     if (arguments.length === 1) {
         if (types.isString(arguments[0])) {
@@ -211,7 +209,7 @@ export function action(arg: any): Promise<string> {
 
     var options: dialogs.ActionOptions;
 
-    var defaultOptions = { cancelButtonText: dialogs_common.CANCEL };
+    var defaultOptions = { cancelButtonText: dialogsCommon.CANCEL };
 
     if (arguments.length === 1) {
         if (types.isString(arguments[0])) {

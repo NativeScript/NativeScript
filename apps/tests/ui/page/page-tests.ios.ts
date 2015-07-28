@@ -4,8 +4,7 @@ import TKUnit = require("../../TKUnit");
 import LabelModule = require("ui/label");
 import helper = require("../helper");
 
-declare var exports;
-require("utils/module-merge").merge(PageTestCommon, exports);
+global.moduleMerge(PageTestCommon, exports);
 
 export function test_NavigateToNewPage_InnerControl() {
     var testPage: PageModule.Page;

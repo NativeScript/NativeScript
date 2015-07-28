@@ -5,8 +5,7 @@ import trace = require("trace");
 import utils = require("utils/utils");
 import types = require("utils/types");
 
-declare var exports;
-require("utils/module-merge").merge(pageCommon, exports);
+global.moduleMerge(pageCommon, exports);
 
 class UIViewControllerImpl extends UIViewController {
     static new(): UIViewControllerImpl {

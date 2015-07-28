@@ -1,8 +1,7 @@
 ﻿import formattedStringCommon = require("text/formatted-string-common");
 import spanModule = require("text/span");
 
-declare var exports;
-require("utils/module-merge").merge(formattedStringCommon, exports);
+global.moduleMerge(formattedStringCommon, exports);
 
 export class FormattedString extends formattedStringCommon.FormattedString {
     public createFormattedStringCore() {

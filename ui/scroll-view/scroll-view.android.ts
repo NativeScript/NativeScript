@@ -6,9 +6,7 @@ import common = require("ui/scroll-view/scroll-view-common");
 import utils = require("utils/utils");
 import enums = require("ui/enums");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 var OWNER = "_owner";
 var STATE = "_scrollViewState";

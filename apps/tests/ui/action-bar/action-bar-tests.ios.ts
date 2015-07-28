@@ -6,8 +6,7 @@ import helper = require("../helper");
 import view = require("ui/core/view");
 import actionBar = require("ui/action-bar");
 
-declare var exports;
-require("utils/module-merge").merge(actionTestsCommon, exports);
+global.moduleMerge(actionTestsCommon, exports);
 
 export function test_NavBar_isVisible_when_MenuItems_areSet() {
 

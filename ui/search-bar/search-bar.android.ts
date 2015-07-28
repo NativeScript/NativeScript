@@ -90,9 +90,7 @@ function _changeSearchViewHintColor(bar: android.widget.SearchView, color: numbe
     }
 }
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class SearchBar extends common.SearchBar {
     private _android: android.widget.SearchView;

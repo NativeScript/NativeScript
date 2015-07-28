@@ -2,11 +2,6 @@
 //import locationManagerModule = require("location/location-manager");
 import defModule = require("location");
 
-// merge the exports of the types module with the exports of this file
-//import merger = require("utils/module-merge");
-//declare var exports;
-//merger.merge(locationManagerModule, exports);
-
 var defaultGetLocationTimeout = 20000;
 
 export class Location implements defModule.Location {

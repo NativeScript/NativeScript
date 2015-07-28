@@ -18,9 +18,7 @@ function onBusyPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 // register the setNativeValue callback
 (<proxy.PropertyMetadata>aiCommon.ActivityIndicator.busyProperty.metadata).onSetNativeValue = onBusyPropertyChanged;
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(aiCommon, exports);
+global.moduleMerge(aiCommon, exports);
 
 export class ActivityIndicator extends aiCommon.ActivityIndicator  {
     private _ios: UIActivityIndicatorView;

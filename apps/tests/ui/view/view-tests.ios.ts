@@ -1,9 +1,7 @@
 import commonTests = require("./view-tests-common");
 import view = require("ui/core/view");
 
-// merge the exports of the application_common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(commonTests, exports);
+global.moduleMerge(commonTests, exports);
 
 export function getNativeBorderWidth(v: view.View): number {
     return (<UIView>v.ios).layer.borderWidth;

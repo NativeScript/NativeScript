@@ -4,9 +4,7 @@ import frame = require("ui/frame");
 import types = require("utils/types");
 import observable = require("data/observable");
 
-// merge the exports of the application_common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(appModule, exports);
+global.moduleMerge(appModule, exports);
 
 export var mainModule: string;
 
