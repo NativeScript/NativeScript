@@ -225,6 +225,7 @@ module.exports = function(grunt) {
                     "!" + localCfg.srcDir + "/apps/**"
                 ].concat(localCfg.defaultExcludes).concat(localCfg.excludedModules),
                 dest: localCfg.outDefinitionsDir + "/",
+                expand: true,
                 options: {
                     process: filterTypeScriptFiles
                 }
