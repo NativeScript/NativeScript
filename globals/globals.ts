@@ -11,9 +11,6 @@ import timer = require("timer");
 import consoleModule = require("console");
 import xhr = require("xhr/xhr");
 import dialogs = require("ui/dialogs");
-var fetchModule = require("fetch");
-
-global.moduleMerge(fetchModule, global);
 
 global.setTimeout = timer.setTimeout;
 global.clearTimeout = timer.clearTimeout;
@@ -28,6 +25,10 @@ if (types.isUndefined(global.NSObject)) {
 global.XMLHttpRequest = xhr.XMLHttpRequest;
 global.FormData = xhr.FormData;
 global.alert = dialogs.alert;
+
+// Fetch module should be after XMLHttpRequest/FormData! 
+var fetchModule = require("fetch");
+global.moduleMerge(fetchModule, global);
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {
