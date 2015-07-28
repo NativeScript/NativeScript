@@ -756,7 +756,7 @@ export function test_setStyle_throws() {
     }, "View.style property is read-only.");
 }
 
-export var test_CSS_isAppliedOnPage = function () {
+export function test_CSS_isAppliedOnPage() {
     var testButton = new buttonModule.Button();
     testButton.text = "Test";
 
@@ -767,7 +767,7 @@ export var test_CSS_isAppliedOnPage = function () {
     });
 }
 
-export var test_CSS_isAppliedOnPage_From_Import = function () {
+export function test_CSS_isAppliedOnPage_From_Import() {
     var testButton = new buttonModule.Button();
     testButton.text = "Test";
 
@@ -778,7 +778,7 @@ export var test_CSS_isAppliedOnPage_From_Import = function () {
     });
 }
 
-export var test_CSS_isAppliedOnPage_From_addCssFile = function () {
+export function test_CSS_isAppliedOnPage_From_addCssFile() {
     var testButton = new buttonModule.Button();
     testButton.text = "Test";
 
@@ -787,6 +787,33 @@ export var test_CSS_isAppliedOnPage_From_addCssFile = function () {
         page.addCssFile("~/ui/style/test.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
+}
+
+var invalidCSS = ".invalid { " +
+    "color: invalidValue; " +
+    "background-color: invalidValue; " +
+    "border-color: invalidValue; " +
+    "border-width: invalidValue; " +
+    "border-radius: invalidValue; " +
+    "font: invalidValue; " +
+    "font-style: invalidValue; " +
+    "font-weight: invalidValue; " +
+    "text-align: invalidValue; " +
+    "min-width: invalidValue; " +
+    "min-height: invalidValue; " +
+    "visibility: invalidValue; " +
+    "opacity: invalidValue; " +
+    "font-size: 30;" + // set one valid value to test it is applied
+"}";
+
+export function test_set_invalid_CSS_values_dont_cause_crash() {
+    var testButton = new buttonModule.Button();
+    testButton.text = "Test";
+    testButton.cssClass = "invalid";
+
+    helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
+        TKUnit.assertEqual(30, testButton.style.fontSize);
+    }, invalidCSS);
 }
 
 // <snippet module="ui/styling" title="styling">

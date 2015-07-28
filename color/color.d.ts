@@ -68,5 +68,11 @@ declare module "color" {
          * @param value2 A Color to compare.
          */
         public static equals(value1: Color, value2: Color): boolean;
+
+        /**
+         * Validates if a value can be converted to color.
+         * @param value Input string.
+         */
+        public static isValid(value: any): boolean;
     }
 }
