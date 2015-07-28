@@ -310,7 +310,8 @@ module.exports = function(grunt) {
                     declaration: false,
                     removeComments: "<%= !grunt.option('leavecomments') || '' %>",
                     compiler: "node_modules/typescript/bin/tsc",
-                    noEmitOnError: true
+                    noEmitOnError: true,
+                    experimentalDecorators: true
                 }
             },
             buildNodeTests: {
