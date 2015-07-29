@@ -105,7 +105,7 @@ export function test_PageLoaded_is_called_once() {
     }
 }
 
-export var test_NavigateToNewPage = function () {
+export function test_NavigateToNewPage() {
     var currentPage;
     currentPage = FrameModule.topmost().currentPage;
     // <snippet module="ui/page" title="Page">
@@ -146,7 +146,7 @@ export var test_NavigateToNewPage = function () {
     TKUnit.assert(testPage._isAddedToNativeVisualTree === false, "Page._isAddedToNativeVisualTree should become false after navigating back");
 }
 
-export var test_PageNavigation_EventSequence = function () {
+export function test_PageNavigation_EventSequence() {
     var testPage: PageModule.Page;
     var context = { property: "this is the context" };
     var eventSequence = [];
@@ -184,7 +184,7 @@ export var test_PageNavigation_EventSequence = function () {
     TKUnit.arrayAssert(eventSequence, expectedEventSequence, "Actual event sequence is not equal to expected.");
 }
 
-export var test_NavigateTo_WithContext = function () {
+export function test_NavigateTo_WithContext() {
     var currentPage;
     currentPage = FrameModule.topmost().currentPage;
     // <snippet module="ui/page" title="Page">
@@ -220,7 +220,7 @@ export var test_NavigateTo_WithContext = function () {
     TKUnit.assert(testPage.navigationContext === undefined, "Navigation context should be cleared on navigating back");
 }
 
-export var test_FrameBackStack_WhenNavigatingForwardAndBack = function () {
+export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
     var testPage: PageModule.Page;
     var pageFactory = function () {
         var testPage = new PageModule.Page();
@@ -243,7 +243,7 @@ export var test_FrameBackStack_WhenNavigatingForwardAndBack = function () {
     TKUnit.assert(topFrame.canGoBack() === false, "canGoBack should return false.");
 }
 
-export var test_LoadPageFromModule = function () {
+export function test_LoadPageFromModule() {
     helper.navigateToModule("ui/page/test-page-module");
     try {
         var topFrame = FrameModule.topmost();
@@ -256,7 +256,7 @@ export var test_LoadPageFromModule = function () {
     }
 }
 
-export var test_NavigateToPageCreatedWithNavigationEntry = function () {
+export function test_NavigateToPageCreatedWithNavigationEntry() {
     var expectedText = "Label created with a NavigationEntry";
     var testPage: PageModule.Page;
     var pageFactory = function () {
@@ -276,7 +276,7 @@ export var test_NavigateToPageCreatedWithNavigationEntry = function () {
     }
 }
 
-export var test_cssShouldBeAppliedToAllNestedElements = function () {
+export function test_cssShouldBeAppliedToAllNestedElements() {
     var testPage: PageModule.Page;
     var label: LabelModule.Label;
     var StackLayout: stackLayoutModule.StackLayout;
@@ -303,7 +303,7 @@ export var test_cssShouldBeAppliedToAllNestedElements = function () {
     }
 }
 
-export var test_cssShouldBeAppliedAfterChangeToAllNestedElements = function () {
+export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
     var testPage: PageModule.Page;
     var label: LabelModule.Label;
     var StackLayout: stackLayoutModule.StackLayout;
@@ -332,4 +332,11 @@ export var test_cssShouldBeAppliedAfterChangeToAllNestedElements = function () {
     finally {
         helper.goBack();
     }
+}
+
+export function test_page_backgroundColor_is_white() {
+    helper.do_PageTest_WithButton(function testBackground(views: Array<view.View>) {
+        var page = <PageModule.Page>views[0];
+        TKUnit.assertEqual(page.style.backgroundColor.hex.toLowerCase(), "#ffffff", "page background-color");
+    });
 }

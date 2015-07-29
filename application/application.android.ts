@@ -196,7 +196,7 @@ export class AndroidApplication extends observable.Observable implements dts.And
     public onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void;
 
     private _eventsToken: any;
-    
+
     public getActivity(intent: android.content.Intent): Object {
         if (intent && intent.getAction() === android.content.Intent.ACTION_MAIN) {
             // application's main activity
@@ -292,7 +292,7 @@ class BroadcastReceiver extends android.content.BroadcastReceiver {
             this._onReceiveCallback(context, intent);
         }
     }
-} 
+}
 
 global.__onUncaughtError = function (error: Error) {
     if (!types.isFunction(exports.onUncaughtError)) {

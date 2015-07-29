@@ -2,6 +2,7 @@
 import view = require("ui/core/view");
 import dts = require("ui/page");
 import frame = require("ui/frame");
+import styleModule = require("ui/styling/style");
 import styleScope = require("ui/styling/style-scope");
 import fs = require("file-system");
 import fileSystemAccess = require("file-system/file-system-access");
@@ -42,6 +43,9 @@ export class Page extends contentView.ContentView implements dts.Page {
     constructor(options?: dts.Options) {
         super(options);
         this.actionBar = new actionBar.ActionBar();
+
+        // The default style of the page should be white background
+        this.style._setValue(styleModule.backgroundColorProperty, "white", dependencyObservable.ValueSource.Inherited);
     }
 
     public onLoaded() {
