@@ -231,6 +231,7 @@ module.exports = function(grunt) {
                 }
             },
             modulesPackageDef: {
+                expand: true,
                 src: localCfg.packageJsonFilePath,
                 dest: localCfg.outModulesDir + "/",
                 options: {
@@ -254,6 +255,7 @@ module.exports = function(grunt) {
                 }
             },
             childPackageFiles: {
+                expand: true,
                 src: [
                     localCfg.srcDir + "/**/package.json",
                     "!./package.json",
@@ -312,7 +314,8 @@ module.exports = function(grunt) {
                     removeComments: "<%= !grunt.option('leavecomments') || '' %>",
                     compiler: "node_modules/typescript/bin/tsc",
                     noEmitOnError: true,
-                    experimentalDecorators: true
+                    experimentalDecorators: true,
+                    noEmitHelpers: true
                 }
             },
             buildNodeTests: {
