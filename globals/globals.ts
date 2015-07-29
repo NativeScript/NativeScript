@@ -17,12 +17,16 @@ global.clearTimeout = timer.clearTimeout;
 global.setInterval = timer.setInterval;
 global.clearInterval = timer.clearInterval;
 
-if (typeof global.__decorate !== "function") global.__decorate = function (decorators, target, key, desc) {
-    if (typeof global.Reflect === "object" && typeof global.Reflect.decorate === "function") return global.Reflect.decorate(decorators, target, key, desc);
-    switch (arguments.length) {
-        case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
-        case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
-        case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
+if (typeof global.__decorate !== "function") {
+    global.__decorate = function (decorators, target, key, desc) {
+        if (typeof global.Reflect === "object" && typeof global.Reflect.decorate === "function") {
+            return global.Reflect.decorate(decorators, target, key, desc);
+        }
+        switch (arguments.length) {
+            case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
+            case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
+            case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
+        }
     }
 };
 
