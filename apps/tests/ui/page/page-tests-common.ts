@@ -221,7 +221,6 @@ export function test_NavigateTo_WithContext() {
 }
 
 export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
-    var testPage: PageModule.Page;
     var pageFactory = function () {
         var testPage = new PageModule.Page();
         addLabelToPage(testPage);
@@ -277,7 +276,6 @@ export function test_NavigateToPageCreatedWithNavigationEntry() {
 }
 
 export function test_cssShouldBeAppliedToAllNestedElements() {
-    var testPage: PageModule.Page;
     var label: LabelModule.Label;
     var StackLayout: stackLayoutModule.StackLayout;
     var pageFactory = function () {
