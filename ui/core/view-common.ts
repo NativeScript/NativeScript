@@ -12,6 +12,7 @@ import styleScope = require("ui/styling/style-scope");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 import color = require("color");
+import animationModule = require("ui/animation");
 
 export function getViewById(view: View, id: string): View {
     if (!view) {
@@ -966,5 +967,15 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     public focus(): boolean {
         return undefined;
+    }
+
+    public animate(animation: animationModule.AnimationDefinition): Promise<void> {
+        return this.createAnimation(animation).play().finished;
+    }
+
+    public createAnimation(animation: animationModule.AnimationDefinition): animationModule.Animation {
+        var that = this;
+        animation.target = that;
+        return new animationModule.Animation([animation]);
     }
 }

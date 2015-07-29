@@ -4,8 +4,8 @@ export class ViewModel extends observable.Observable {
     constructor() {
         super();
 
-        this._duration = 300;
-        this._repeatCount = 0;
+        this._duration = 3000;
+        this._iterations = 1;
     }
 
     private _playSequentially: boolean;
@@ -26,12 +26,12 @@ export class ViewModel extends observable.Observable {
         this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "duration", value: value });
     }
 
-    private _repeatCount: number;
-    get repeatCount(): number {
-        return this._repeatCount;
+    private _iterations: number;
+    get iterations(): number {
+        return this._iterations;
     }
-    set repeatCount(value: number) {
-        this._repeatCount = value;
-        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "repeatCount", value: value });
+    set iterations(value: number) {
+        this._iterations = value;
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "iterations", value: value });
     }
 }

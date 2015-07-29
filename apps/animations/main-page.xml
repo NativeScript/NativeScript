@@ -5,8 +5,8 @@
       <Label text="{{ duration, 'Duration: ' + duration + ' ms' }}" width="180" marginTop="5" marginBottom="5"/>
       <Slider minValue="0" maxValue="10000" value="{{ duration }}" marginTop="5" marginBottom="5" marginLeft="10" marginRight="10"/>
 
-      <Label text="{{ repeatCount, 'Repeat Count: ' + repeatCount + ' times' }}" width="180" marginTop="5" marginBottom="5"/>
-      <Slider minValue="0" maxValue="10" value="{{ repeatCount }}" marginTop="5" marginBottom="5" marginLeft="10" marginRight="10"/>
+      <Label text="{{ iterations, 'Iterations: ' + iterations + ' times' }}" width="180" marginTop="5" marginBottom="5"/>
+      <Slider minValue="0" maxValue="10" value="{{ iterations }}" marginTop="5" marginBottom="5" marginLeft="10" marginRight="10"/>
 
       <StackLayout orientation="horizontal" marginTop="5" marginBottom="5" horizontalAlignment="center">
         <Label text="Play Sequentially?"/>
@@ -14,9 +14,10 @@
       </StackLayout>
 
       <StackLayout orientation="horizontal" marginTop="5" marginBottom="5" horizontalAlignment="center" paddingLeft="5" paddingRight="5">
-        <Button text="Slide Out" tap="onSlideOut" width="100" marginLeft="5" marginRight="5" />
-        <Button text="Slide In" tap="onSlideIn" width="100" marginLeft="5" marginRight="5" />
-        <Button text="Cancel" tap="onStop" width="100" marginLeft="5" marginRight="5" />
+        <Button text="Out" tap="onSlideOut" width="75" marginLeft="5" marginRight="5" />
+        <Button text="In" tap="onSlideIn" width="75" marginLeft="5" marginRight="5" />
+        <Button text="Single" tap="onSingle" width="75" marginLeft="5" marginRight="5" />
+        <Button text="Cancel" tap="onCancel" width="75" marginLeft="5" marginRight="5" />
       </StackLayout>
 
     </StackLayout>

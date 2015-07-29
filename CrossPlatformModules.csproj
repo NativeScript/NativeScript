@@ -135,6 +135,7 @@
       <DependentUpon>page-title-icon.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\animations\model.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\animation\animation-tests.ts" />
     <TypeScriptCompile Include="ui\animation\animation.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation-common.ts">
       <DependentUpon>animation.d.ts</DependentUpon>
@@ -1763,7 +1764,7 @@
     <Content Include="apps\modal-views-demo\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="apps\cuteness.unoptimized\package.json">
+    <Content Include="apps\cuteness.unoptimized\package.json" />
     <Content Include="apps\animations\package.json" />
     <Content Include="ui\animation\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
