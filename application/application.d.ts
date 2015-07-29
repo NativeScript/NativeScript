@@ -46,6 +46,11 @@ declare module "application" {
     export var lowMemoryEvent: string;
 
     /**
+     * String value used when hooking to orientationChanged event.
+     */
+    export var orientationChangedEvent: string;
+
+    /**
      * Event data containing information for the application events.
      */
     export interface ApplicationEventData {
@@ -68,6 +73,16 @@ declare module "application" {
          * The instance that has raised the event.
          */
         object: any;
+    }
+
+    /**
+     * Event data containing information for orientation changed event.
+     */
+    export interface OrientationChangedEventData extends ApplicationEventData {
+        /**
+         * New orientation value.
+         */
+        newValue: string;
     }
 
     /**
@@ -147,6 +162,14 @@ declare module "application" {
     export function on(eventNames: string, callback: (data: any) => void, thisArg?: any);
 
     /**
+     * Shortcut alias to the removeEventListener method.
+     * @param eventNames - String corresponding to events (e.g. "onLaunch").
+     * @param callback - Callback function which will be removed.
+     * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+     */
+    export function off(eventNames: string, callback ?: any, thisArg ?: any);
+
+    /**
      * Notifies all the registered listeners for the event provided in the data.eventName.
      * @param data The data associated with the event.
      */
@@ -187,6 +210,11 @@ declare module "application" {
      * This event is raised when an uncaught error occurs while the application is running.
      */
     export function on(event: "uncaughtError", callback: (args: ApplicationEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised the orientation of the current device has changed.
+     */
+    export function on(event: "orientationChanged", callback: (args: OrientationChangedEventData) => void, thisArg?: any);
 
     /**
      * This is the Android-specific application object instance.

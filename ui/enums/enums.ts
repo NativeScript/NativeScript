@@ -25,6 +25,12 @@ export module Orientation {
     export var vertical = "vertical";
 }
 
+export module DeviceOrientation {
+    export var portrait = "portrait";
+    export var landscape = "landscape";
+    export var unknown = "unknown";
+}
+
 export module HorizontalAlignment {
     export var left = "left";
     export var center = "center";

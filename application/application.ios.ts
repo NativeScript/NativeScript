@@ -4,7 +4,7 @@ import utils = require("utils/utils");
 import types = require("utils/types");
 import view = require("ui/core/view");
 import definition = require("application");
-
+import enums = require("ui/enums");
 global.moduleMerge(appModule, exports);
 
 export var mainModule: string;
@@ -61,10 +61,11 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
                 return;
             }
         }
+        var app: IOSApplication = exports.ios;
+        setupOrientationListener(app);
 
         this.window.content = topFrame;
         this.window.rootViewController = topFrame.ios.controller;
-        var app: IOSApplication = exports.ios;
         app.rootController = this.window.rootViewController;
         this.window.makeKeyAndVisible();
         return true;
@@ -192,5 +193,41 @@ exports.start = function () {
         exports.onUncaughtError(error);
 
         definition.notify({ eventName: definition.uncaughtErrorEvent, object: <any>definition.ios, ios: error });
+    }
+}
+
+var currentOrientation: number;
+function setupOrientationListener(iosApp: IOSApplication) {
+    iosApp.addNotificationObserver(UIDeviceOrientationDidChangeNotification, onOreintationDidChange)
+    currentOrientation = UIDevice.currentDevice().orientation;
+}
+
+function onOreintationDidChange(notification: NSNotification) {
+    var orientation = UIDevice.currentDevice().orientation;
+
+    if (currentOrientation !== orientation) {
+        currentOrientation = orientation;
+
+        var newValue;
+        switch (orientation) {
+            case UIDeviceOrientation.UIDeviceOrientationLandscapeRight:
+            case UIDeviceOrientation.UIDeviceOrientationLandscapeLeft:
+                newValue = enums.DeviceOrientation.landscape;
+                break;
+            case UIDeviceOrientation.UIDeviceOrientationPortrait:
+            case UIDeviceOrientation.UIDeviceOrientationPortraitUpsideDown:
+                newValue = enums.DeviceOrientation.portrait;
+                break;
+            default:
+                newValue = enums.DeviceOrientation.unknown;
+                break;
+        }
+
+        exports.notify(<definition.OrientationChangedEventData>{
+            eventName: definition.orientationChangedEvent,
+            ios: exports.ios,
+            newValue: newValue,
+            object: exports.ios,
+        });
     }
 }

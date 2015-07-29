@@ -1,0 +1,5 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="onPageLoaded" unloaded="onPageUnloaded" navigatedTo="pageNavigatedTo">
+  <GridLayout>
+    <TextView text="{{ oreintation }}" />
+  </GridLayout>
+</Page>

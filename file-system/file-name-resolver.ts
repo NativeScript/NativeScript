@@ -2,6 +2,8 @@
 import fs = require("file-system");
 import types = require("utils/types");
 import trace = require("trace");
+import platform = require("platform");
+import application = require("application");
 
 var MIN_WH: string = "minWH";
 var MIN_W: string = "minW";
@@ -79,7 +81,7 @@ var paltformQualifier: QualifierSpec = {
             value === "ios";
 
     },
-    getMatchValue(value: string, context: definition.PlatformContext): number{
+    getMatchValue(value: string, context: definition.PlatformContext): number {
         return value === context.os.toLowerCase() ? 1 : -1;
     }
 }
@@ -90,7 +92,7 @@ var orientationQualifier: QualifierSpec = {
             value === "port";
 
     },
-    getMatchValue(value: string, context: definition.PlatformContext): number{
+    getMatchValue(value: string, context: definition.PlatformContext): number {
         var isLandscape: number = (context.width > context.height) ? 1 : -1;
         return (value === "land") ? isLandscape : -isLandscape;
     }
@@ -213,3 +215,27 @@ function checkQualifier(value: string, context: definition.PlatformContext) {
 
     return -1;
 }
+
+var appEventAttached: boolean = false;
+var resolverInstance: FileNameResolver;
+
+export function resolveFileName(path: string, ext: string): string {
+    if (!appEventAttached) {
+        application.on(application.orientationChangedEvent, (data) => {
+            resolverInstance = undefined;
+        });
+        appEventAttached = true;
+    }
+
+    if (!resolverInstance) {
+        resolverInstance = new FileNameResolver({
+            width: platform.screen.mainScreen.widthDIPs,
+            height: platform.screen.mainScreen.heightDIPs,
+            os: platform.device.os,
+            deviceType: platform.device.deviceType
+        });
+    }
+
+    return resolverInstance.resolveFileName(path, ext);
+}
+
