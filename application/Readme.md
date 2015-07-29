@@ -1,6 +1,4 @@
-Use the frame in the following way:
-
-### To navigate to the starting page of the application
+# Ani
 ```javascript
 // put this in the bootstrap.js
 var app = require("application");

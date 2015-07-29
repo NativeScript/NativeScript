@@ -5,6 +5,7 @@ declare module "ui/core/view" {
     import gestures = require("ui/gestures");
     import color = require("color");
     import observable = require("data/observable");
+    import animation = require("ui/animation");
 
     /**
      * Gets a child view by id.
@@ -403,6 +404,9 @@ declare module "ui/core/view" {
          */
         on(event: "unloaded", callback: (args: observable.EventData) => void, thisArg?: any);
 
+        public animate(options: animation.AnimationDefinition): Promise<void>;
+        public createAnimation(options: animation.AnimationDefinition): animation.Animation;
+
         // Lifecycle events
         onLoaded(): void;
         onUnloaded(): void;
@@ -521,4 +525,5 @@ declare module "ui/core/view" {
          */
         _applyXmlAttribute(attributeName: string, attrValue: any): boolean;
     }
+
 }
