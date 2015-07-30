@@ -292,6 +292,35 @@ export class View extends viewCommon.View {
         }
     }
 
+    _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
+        if (this._nativeView) {
+            return {
+                left: this._nativeView.getLeft(),
+                top: this._nativeView.getTop(),
+                right: this._nativeView.getRight(),
+                bottom: this._nativeView.getBottom()
+            };
+        }
+
+        return super._getCurrentLayoutBounds();
+    }
+
+    public getMeasuredWidth(): number {
+        if (this._nativeView) {
+            return this._nativeView.getMeasuredWidth();
+        }
+
+        return super.getMeasuredWidth();
+    }
+
+    public getMeasuredHeight(): number {
+        if (this._nativeView) {
+            return this._nativeView.getMeasuredHeight();
+        }
+
+        return super.getMeasuredHeight();
+    }
+
     public focus(): boolean {
         if (this._nativeView) {
             return this._nativeView.requestFocus();

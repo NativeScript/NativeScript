@@ -51,7 +51,7 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
             return 0;
         }
 
-        return this._android.getScrollableLength();
+        return this._android.getScrollableLength() / utils.layout.getDisplayDensity();
     }
 
     get scrollableHeight(): number {
@@ -59,7 +59,7 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
             return 0;
         }
 
-        return this._android.getScrollableLength();
+        return this._android.getScrollableLength() / utils.layout.getDisplayDensity();
     }
 
     public scrollToVerticalOffset(value: number, animated: boolean) {

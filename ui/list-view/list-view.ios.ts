@@ -56,8 +56,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
         if (cellView) {
             // Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called 
             // from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
-            var specs = this._owner._getCurrentMeasureSpecs();
-            var width = utils.layout.getMeasureSpecSize(specs.widthMeasureSpec);
+            var width = utils.layout.getMeasureSpecSize(this._owner.widthMeasureSpec);
             var cellHeight = this._owner.getHeight(indexPath.row);
             view.View.layoutChild(this._owner, cellView, 0, 0, width, cellHeight);
         }
@@ -75,6 +74,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 
     private _owner: ListView;
     private _measureCell: UITableViewCell;
+
     public initWithOwner(owner: ListView): UITableViewDelegateImpl {
         this._owner = owner;
         return this;
@@ -134,6 +134,8 @@ export class ListView extends common.ListView {
     private _heights: Array<number>;
     private _preparingCell: boolean = false;
     private _isDataDirty: boolean = false;
+
+    widthMeasureSpec: number = 0;
 
     constructor() {
         super();
@@ -197,6 +199,7 @@ export class ListView extends common.ListView {
     }
 
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        this.widthMeasureSpec = widthMeasureSpec;
         var changed = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
         super.measure(widthMeasureSpec, heightMeasureSpec);
         if (changed) {
@@ -207,8 +210,7 @@ export class ListView extends common.ListView {
     private _layoutCell(cellView: view.View, indexPath: NSIndexPath): number {
 
         if (cellView) {
-            var widthMeasureSpecs = this._getCurrentMeasureSpecs().widthMeasureSpec;
-            var measuredSize = view.View.measureChild(this, cellView, widthMeasureSpecs, infinity);
+            var measuredSize = view.View.measureChild(this, cellView, this.widthMeasureSpec, infinity);
             var height = measuredSize.measuredHeight;
             this.setHeight(indexPath.row, height);
             return height;

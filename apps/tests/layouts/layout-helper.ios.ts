@@ -1,8 +1,32 @@
 ﻿import button = require("ui/button");
 import utils = require("utils/utils");
 import TKUnit = require("../TKUnit");
+import {StackLayout} from "ui/layouts/stack-layout";
 
 var DELTA = 0.1;
+
+export class MyStackLayout extends StackLayout {
+    public measureCount: number = 0;
+    public arrangeCount: number = 0;
+
+    public get measured(): boolean {
+        return this.measureCount > 0;
+    }
+
+    public get arranged(): boolean {
+        return this.arrangeCount > 0;
+    }
+
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        this.measureCount++;
+    }
+
+    public onLayout(left: number, top: number, right: number, bottom: number): void {
+        super.onLayout(left, top, right, bottom);
+        this.arrangeCount++;
+    }
+}
 
 export class MyButton extends button.Button {
     public measureCount: number = 0;

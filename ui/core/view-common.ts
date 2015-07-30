@@ -688,13 +688,6 @@ export class View extends proxy.ProxyObject implements definition.View {
         return utils.layout.makeMeasureSpec(resultSize, resultMode);
     }
 
-    _getCurrentMeasureSpecs(): { widthMeasureSpec: number; heightMeasureSpec: number } {
-        return {
-            widthMeasureSpec: this._oldWidthMeasureSpec,
-            heightMeasureSpec: this._oldHeightMeasureSpec
-        };
-    }
-
     _setCurrentMeasureSpecs(widthMeasureSpec: number, heightMeasureSpec: number): boolean {
         var changed: boolean = this._oldWidthMeasureSpec !== widthMeasureSpec || this._oldHeightMeasureSpec !== heightMeasureSpec;
         this._oldWidthMeasureSpec = widthMeasureSpec;

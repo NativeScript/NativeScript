@@ -31,16 +31,15 @@ export var testAll = function () {
     absoluteLayout.width = 230;
     absoluteLayout.height = 230;
     absoluteLayout.style.backgroundColor = new colorModule.Color("LightGray");
-    var label;
+    var label = new labelModule.Label();
     //// In absolute layout place of an UI element is determined by 4 parameters : left, top, width and height.
-    label = new labelModule.Label();
+    absoluteLayoutModule.AbsoluteLayout.setLeft(label, 10);
+    absoluteLayoutModule.AbsoluteLayout.setTop(label, 10);
     label.width = 100;
     label.height = 100;
     label.text = "LT";
     label.id = "LT";
     label.style.backgroundColor = new colorModule.Color("Red");
-    absoluteLayoutModule.AbsoluteLayout.setLeft(label, 10);
-    absoluteLayoutModule.AbsoluteLayout.setTop(label, 10);
     absoluteLayout.addChild(label);
     // ```
     // </snippet>

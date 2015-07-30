@@ -44,7 +44,7 @@ function setNativeColumnSpanProperty(data: dependencyObservable.PropertyChangeDa
 (<proxy.PropertyMetadata>common.GridLayout.columnProperty.metadata).onSetNativeValue = setNativeColumnProperty;
 (<proxy.PropertyMetadata>common.GridLayout.columnSpanProperty.metadata).onSetNativeValue = setNativeColumnSpanProperty;
 
-function createNativeSpec(itemSpec: common.ItemSpec): org.nativescript.widgets.ItemSpec {
+function createNativeSpec(itemSpec: ItemSpec): org.nativescript.widgets.ItemSpec {
     switch (itemSpec.gridUnitType) {
         case common.GridUnitType.auto:
             return new org.nativescript.widgets.ItemSpec(itemSpec.value, org.nativescript.widgets.GridUnitType.auto);
@@ -57,6 +57,18 @@ function createNativeSpec(itemSpec: common.ItemSpec): org.nativescript.widgets.I
 
         default:
             throw new Error("Invalid gridUnitType: " + itemSpec.gridUnitType);
+    }
+}
+
+export class ItemSpec extends common.ItemSpec {
+    nativeSpec: org.nativescript.widgets.ItemSpec;
+
+    public get actualLength(): number {
+        if (this.nativeSpec) {
+            return this.nativeSpec.getActualLength() / utils.layout.getDisplayDensity();
+        }
+
+        return 0;
     }
 }
 
@@ -76,29 +88,35 @@ export class GridLayout extends common.GridLayout {
         this._layout = new org.nativescript.widgets.GridLayout(this._context);
         
         // Update native GridLayout
-        this.getRows().forEach((itemSpec, index, rows) => { this.onRowAdded(itemSpec); }, this);
-        this.getColumns().forEach((itemSpec, index, rows) => { this.onColumnAdded(itemSpec); }, this);
+        this.getRows().forEach((itemSpec: ItemSpec, index, rows) => { this.onRowAdded(itemSpec); }, this);
+        this.getColumns().forEach((itemSpec: ItemSpec, index, rows) => { this.onColumnAdded(itemSpec); }, this);
     }
 
-    protected onRowAdded(itemSpec: common.ItemSpec) {
+    protected onRowAdded(itemSpec: ItemSpec) {
         if (this._layout) {
-            this._layout.addRow(createNativeSpec(itemSpec));
+            var nativeSpec = createNativeSpec(itemSpec);
+            itemSpec.nativeSpec = nativeSpec;
+            this._layout.addRow(nativeSpec);
         }
     }
 
-    protected onColumnAdded(itemSpec: common.ItemSpec) {
+    protected onColumnAdded(itemSpec: ItemSpec) {
         if (this._layout) {
-            this._layout.addColumn(createNativeSpec(itemSpec));
+            var nativeSpec = createNativeSpec(itemSpec);
+            itemSpec.nativeSpec = nativeSpec;
+            this._layout.addColumn(nativeSpec);
         }
     }
 
-    protected onRowRemoved(itemSpec: common.ItemSpec, index: number) {
+    protected onRowRemoved(itemSpec: ItemSpec, index: number) {
+        itemSpec.nativeSpec = null;
         if (this._layout) {
             this._layout.removeRowAt(index);
         }
     }
 
-    protected onColumnRemoved(itemSpec: common.ItemSpec, index: number) {
+    protected onColumnRemoved(itemSpec: ItemSpec, index: number) {
+        itemSpec.nativeSpec = null;
         if (this._layout) {
             this._layout.removeColumnAt(index);
         }

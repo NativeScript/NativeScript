@@ -99,13 +99,18 @@ export class DefaultStyler implements definition.stylers.Styler {
         (<android.view.View>view._nativeView).setMinimumHeight(0);
     }
 
-    private static setNativeLayoutParamsProperty(view: view.View, params: style.CommonLayoutParams): void {
-        var nativeView: android.view.View = view._nativeView;
-
+    private static getNativeLayoutParams(nativeView: android.view.View): org.nativescript.widgets.CommonLayoutParams {
         var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
         if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
             lp = new org.nativescript.widgets.CommonLayoutParams();
         }
+
+        return lp;
+    }
+
+    private static setNativeLayoutParamsProperty(view: view.View, params: style.CommonLayoutParams): void {
+        var nativeView: android.view.View = view._nativeView;
+        var lp = DefaultStyler.getNativeLayoutParams(nativeView);
         
         lp.leftMargin = params.leftMargin * utils.layout.getDisplayDensity();
         lp.topMargin = params.topMargin * utils.layout.getDisplayDensity();
@@ -176,15 +181,25 @@ export class DefaultStyler implements definition.stylers.Styler {
                 throw new Error("Invalid verticalAlignment value: " + params.verticalAlignment);
         }
 
+        lp.gravity = gravity;
         lp.width = width;
         lp.height = height;
-        lp.gravity = gravity;
+        
         nativeView.setLayoutParams(lp);
     }
 
     private static resetNativeLayoutParamsProperty(view: view.View, nativeValue: any): void {
         var nativeView: android.view.View = view._nativeView;
-        nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
+        var lp = DefaultStyler.getNativeLayoutParams(nativeView);
+
+        lp.width = -1;
+        lp.height = -1;
+        lp.leftMargin = 0;
+        lp.topMargin = 0;
+        lp.rightMargin = 0;
+        lp.bottomMargin = 0;
+        lp.gravity = android.view.Gravity.FILL_HORIZONTAL | android.view.Gravity.FILL_VERTICAL;
+        nativeView.setLayoutParams(lp);
     }
 
     public static registerHandlers() {
@@ -478,7 +493,7 @@ export class LayoutBaseStyler implements definition.stylers.Styler {
     public static registerHandlers() {
         style.registerHandler(style.nativePaddingsProperty, new stylersCommon.StylePropertyChangedHandler(
             LayoutBaseStyler.setPaddingNativeProperty,
-            LayoutBaseStyler.resetPaddingNativeProperty), "Layout");
+            LayoutBaseStyler.resetPaddingNativeProperty), "LayoutBase");
     }
 }
 

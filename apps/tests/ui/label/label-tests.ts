@@ -217,7 +217,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             actualTextSize = testLabel.android.getTextSize();
             var density = utils.layout.getDisplayDensity();
             expSize = fontSize * density;
-            TKUnit.assertEqual(actualTextSize, expSize, "Wrong native FontSize");
+            TKUnit.assertAreClose(actualTextSize, expSize, 0.1, "Wrong native FontSize");
 
             actualColors = testLabel.android.getTextColors();
             expColor = android.graphics.Color.parseColor(color);

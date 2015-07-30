@@ -425,17 +425,12 @@ declare module "ui/core/view" {
         _updateLayout(): void;
 
         /**
-         * Called my measure method to cache measureSpecs.
+         * Called by measure method to cache measureSpecs.
          */
         _setCurrentMeasureSpecs(widthMeasureSpec: number, heightMeasureSpec: number): boolean;
 
         /**
-         * Returns view measureSpecs.
-         */
-        _getCurrentMeasureSpecs(): { widthMeasureSpec: number; heightMeasureSpec: number };
-
-        /**
-         * Called my layout method to cache view bounds.
+         * Called by layout method to cache view bounds.
          */
         _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): void;
 
