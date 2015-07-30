@@ -9,7 +9,6 @@ import types = require("utils/types");
 declare var exports;
 require("utils/module-merge").merge(common, exports);
 
-var intType = java.lang.Integer.class.getField("TYPE").get(null);
 var floatType = java.lang.Float.class.getField("TYPE").get(null);
 var argbEvaluator = new android.animation.ArgbEvaluator();
 
