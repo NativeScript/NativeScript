@@ -3,6 +3,7 @@ import gridModule = require("ui/layouts/grid-layout");
 import sp = require("ui/layouts/stack-layout");
 import button = require("ui/button");
 import enums = require("ui/enums");
+import native_api = require("native-api");
 
 export function createPage() {
     var StackLayout = new sp.StackLayout();
@@ -57,13 +58,13 @@ export function createPage() {
         var gravity;
         //btn1.android.setLayoutParams(new android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.FILL_PARENT, android.view.ViewGroup.LayoutParams.FILL_PARENT));
         if (x === 1) {
-            gravity = android.view.Gravity.CENTER;
+            gravity = native_api.android.view.Gravity.CENTER;
         }
         else if (x === 2) {
-            gravity = android.view.Gravity.RIGHT | android.view.Gravity.BOTTOM;
+            gravity = native_api.android.view.Gravity.RIGHT | native_api.android.view.Gravity.BOTTOM;
         }
         else {
-            gravity = android.view.Gravity.LEFT | android.view.Gravity.TOP;
+            gravity = native_api.android.view.Gravity.LEFT | native_api.android.view.Gravity.TOP;
             x = 0;
         }
 

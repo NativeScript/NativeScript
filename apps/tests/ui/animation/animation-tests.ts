@@ -4,6 +4,7 @@ import pageModule = require("ui/page");
 import labelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import colorModule = require("color");
+import native_api = require("native-api");
 
 // <snippet module="ui/animation" title="animation">
 // # Animation
@@ -41,7 +42,7 @@ export var test_AnimatingProperties = function (done) {
         duration: 1000,
         delay: 100,
         iterations: 3,
-        curve: label.ios ? UIViewAnimationCurve.UIViewAnimationCurveEaseIn : new android.view.animation.AccelerateInterpolator(1),
+        curve: label.ios ? native_api.UIViewAnimationCurve.UIViewAnimationCurveEaseIn : new native_api.android.view.animation.AccelerateInterpolator(1),
     })
         .then(() => {
         ////console.log("Animation finished.");

@@ -1,5 +1,6 @@
 ﻿import TKUnit = require("../../TKUnit");
 import testModule = require("../../ui-test");
+import native_api = require("native-api");
 
 // <snippet module="ui/label" title="Label">
 // # Label
@@ -135,7 +136,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             TKUnit.assertNull(actualTransformationMethod, "TransformationMethod");
         }
         else {
-            expectedLineBreakMode = NSLineBreakMode.NSLineBreakByWordWrapping;
+            expectedLineBreakMode = native_api.NSLineBreakMode.NSLineBreakByWordWrapping;
             actualLineBreakMode = testLabel.ios.lineBreakMode;
             actualLinesNumber = testLabel.ios.numberOfLines;
 
@@ -166,12 +167,12 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             actualHorizontalScrolling = testLabel.android.canScrollHorizontally(-1) || testLabel.android.canScrollHorizontally(1);
             actualTransformationMethod = testLabel.android.getTransformationMethod();
 
-            TKUnit.assertEqual(actualEllipsize, android.text.TextUtils.TruncateAt.END, "Ellipsize");
+            TKUnit.assertEqual(actualEllipsize, native_api.android.text.TextUtils.TruncateAt.END, "Ellipsize");
             TKUnit.assertEqual(actualHorizontalScrolling, false, "HorizontalScrolling");
             TKUnit.assert(("" + actualTransformationMethod).indexOf("SingleLineTransformationMethod") > -1, "Expected: SingleLineTransformationMethod, Actual: " + actualTransformationMethod);
         }
         else {
-            expectedLineBreakMode = NSLineBreakMode.NSLineBreakByTruncatingTail;
+            expectedLineBreakMode = native_api.NSLineBreakMode.NSLineBreakByTruncatingTail;
             actualLineBreakMode = testLabel.ios.lineBreakMode;
             actualLinesNumber = testLabel.ios.numberOfLines;
 
@@ -220,13 +221,13 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             TKUnit.assertEqual(actualTextSize, expSize, "Wrong native FontSize");
 
             actualColors = testLabel.android.getTextColors();
-            expColor = android.graphics.Color.parseColor(color);
+            expColor = native_api.android.graphics.Color.parseColor(color);
             normalColor = actualColors.getDefaultColor()
             TKUnit.assert(normalColor, "Expected: " + expColor + ", Actual: " + normalColor);
 
-            var bkg = (<background.ad.BorderDrawable>testLabel.android.getBackground());
-            actualBackgroundColor = bkg.background.color.android;
-            expBackgroundColor = android.graphics.Color.parseColor(backgroundColor);
+            var bkg = (<native_api.android.graphics.drawable.ColorDrawable>testLabel.android.getBackground());
+            actualBackgroundColor = (<any>bkg).background.color.android;
+            expBackgroundColor = native_api.android.graphics.Color.parseColor(backgroundColor);
             TKUnit.assertEqual(actualBackgroundColor, expBackgroundColor);
         }
         else {

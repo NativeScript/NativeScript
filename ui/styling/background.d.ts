@@ -1,4 +1,6 @@
+
 declare module "ui/styling/background" {
+    import native_api = require("native-api");
     import imageSource = require("image-source");
     import colorModule = require("color");
     import viewModule = require("ui/core/view");
@@ -44,16 +46,6 @@ declare module "ui/styling/background" {
     }
 
     export module ios {
-        export function createBackgroundUIColor(view: viewModule.View): UIColor;
-    }
-
-    // We are using "ad" here to avoid namespace collision with the global android object
-    export module ad {
-        export class BorderDrawable extends android.graphics.drawable.ColorDrawable {
-            borderWidth: number;
-            cornerRadius: number;
-            borderColor: number;
-            background: Background;
-        }
+        export function createBackgroundUIColor(view: viewModule.View): native_api.UIColor;
     }
 }

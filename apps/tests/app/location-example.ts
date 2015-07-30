@@ -5,6 +5,7 @@ import platformModule = require("platform");
 import textViewModule = require("ui/text-view");
 import observable = require("data/observable");
 import appModule = require("application");
+import native_api = require("native-api");
 
 var locationManager = new locationModule.LocationManager();
 
@@ -53,7 +54,7 @@ var checkLocationService = function (page: pages.Page) {
 			}).then((r) => {
 				if (r) {
 					// do not forget to add android.permission.ACCESS_FINE_LOCATION in your manifest file
-					(<android.app.Activity>appModule.android.currentContext).startActivityForResult(new android.content.Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
+					(<native_api.android.app.Activity>appModule.android.currentContext).startActivityForResult(new native_api.android.content.Intent(native_api.android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
 				}
 			}, null);
 		}
@@ -61,7 +62,7 @@ var checkLocationService = function (page: pages.Page) {
 			if (platformModule.device.osVersion.indexOf("8") === 0) {
 				// we need special handling of iOS 8.0 version, since some breaking changes regarding location
 				// do not forget to put NSLocationWhenInUseUsageDescription in app.plist file
-				var iosLocationManager = CLLocationManager.alloc().init();
+				var iosLocationManager = native_api.CLLocationManager.alloc().init();
 				iosLocationManager.requestWhenInUseAuthorization();
 			}
 		}

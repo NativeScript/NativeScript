@@ -5,6 +5,7 @@ declare module "ui/frame" {
     import view = require("ui/core/view");
     import observable = require("data/observable");
     import pages = require("ui/page");
+    import native_api = require("native-api");
 
     /**
      * Represents the logical View unit that is responsible for navigation withing an application.
@@ -162,7 +163,7 @@ declare module "ui/frame" {
         /**
          * Gets the Android-specific menu item that has been selected.
          */
-        item: android.view.IMenuItem;
+        item: native_api.android.view.IMenuItem;
 
         /**
          * True to mark the event as handled (that is to prevent the default processing).
@@ -179,28 +180,28 @@ declare module "ui/frame" {
         /**
          * Gets the native [android ViewGroup](http://developer.android.com/reference/android/view/ViewGroup.html) instance that represents the root layout part of the Frame.
          */
-        rootViewGroup: android.view.ViewGroup;
+        rootViewGroup: native_api.android.view.ViewGroup;
 
         /**
          * Gets the native [android Activity](http://developer.android.com/reference/android/app/Activity.html) instance associated with this Frame. In case of nested Frame objects, this property points to the activity of the root Frame.
          */
-        activity: android.app.Activity;
+        activity: native_api.android.app.Activity;
 
         /**
          * Gets the current (foreground) activity for the application. This property will recursively traverse all existing Frame objects and check for own Activity property.
          */
-        currentActivity: android.app.Activity;
+        currentActivity: native_api.android.app.Activity;
 
         /**
          * Gets the actionBar property of the currentActivity.
          */
-        actionBar: android.app.ActionBar;
+        actionBar: native_api.android.app.ActionBar;
 
         /**
          * A function called by the Runtime whenever a new Activity is about to be opened.
          * @param intent The native [android Intent](http://developer.android.com/reference/android/content/Intent.html) object passed to the Activity's onCreate method.
          */
-        onActivityRequested(intent: android.content.Intent): Object;
+        onActivityRequested(intent: native_api.android.content.Intent): Object;
 
         /**
          * Determines whether the Activity associated with this Frame will display an action bar or not.
@@ -223,7 +224,7 @@ declare module "ui/frame" {
         /**
          * Gets the native [UINavigationController](https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UINavigationController_Class/index.html) instance associated with this Frame.
          */
-        controller: UINavigationController;
+        controller: native_api.UINavigationController;
 
         /**
          * Gets or sets the visibility of navigationBar.

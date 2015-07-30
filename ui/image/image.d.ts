@@ -5,6 +5,7 @@ declare module "ui/image" {
     import dependencyObservable = require("ui/core/dependency-observable");
     import imageSource = require("image-source");
     import view = require("ui/core/view");
+    import native_api = require("native-api");
 
     /**
      * Represents a class that provides functionality for loading and streching image(s).
@@ -18,12 +19,12 @@ declare module "ui/image" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/ImageView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.ImageView;
+        android: native_api.android.widget.ImageView;
 
         /**
          * Gets the native iOS [UIImageView](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIImageView_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UIImageView;
+        ios: native_api.UIImageView;
 
         /**
          * Gets or sets the image source of the image.

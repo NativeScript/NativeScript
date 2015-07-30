@@ -6,6 +6,7 @@ declare module "ui/core/view" {
     import color = require("color");
     import observable = require("data/observable");
     import animation = require("ui/animation");
+    import native_api = require("native-api");
 
     /**
      * Gets a child view by id.
@@ -416,7 +417,7 @@ declare module "ui/core/view" {
         _propagateInheritableProperties(view: View)
         _inheritProperties(parentView: View)
         _removeView(view: View);
-        _context: android.content.Context;
+        _context: native_api.android.content.Context;
 
         public _applyXmlAttribute(attribute: string, value: any): boolean;
 
@@ -438,12 +439,12 @@ declare module "ui/core/view" {
         _eachChildView(callback: (child: View) => boolean);
         _childrenCount: number;
 
-        _onAttached(context: android.content.Context): void;
+        _onAttached(context: native_api.android.content.Context): void;
         _onContextChanged(): void;
         _onDetached(force?: boolean): void;
         _createUI(): void;
 
-        _prepareNativeView(view: UIView);
+        _prepareNativeView(view: native_api.UIView);
 
         _checkMetadataOnPropertyChanged(metadata: dependencyObservable.PropertyMetadata);
 
@@ -480,13 +481,6 @@ declare module "ui/core/view" {
      */
     export class CustomLayoutView extends View {
     }
-
-    //@private
-    export class NativeViewGroup extends android.view.ViewGroup {
-        constructor(context: android.content.Context);
-        public setOwner(view: View);
-    }
-    //@endprivate
 
     /**
      * Defines an interface for adding arrays declared in xml.

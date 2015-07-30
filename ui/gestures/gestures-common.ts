@@ -1,5 +1,6 @@
 ﻿import definition = require("ui/gestures");
 import view = require("ui/core/view");
+import native_api = require("native-api");
 
 export enum GestureTypes {
     tap = 1 << 0,
@@ -115,7 +116,7 @@ export class GesturesObserver implements definition.GesturesObserver {
         this._context = context;
     }
 
-    public androidOnTouchEvent(motionEvent: android.view.MotionEvent) {
+    public androidOnTouchEvent(motionEvent: native_api.android.view.MotionEvent) {
         //
     }
 

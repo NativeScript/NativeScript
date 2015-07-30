@@ -1,6 +1,7 @@
 ﻿import enums = require("ui/enums");
 import common = require("ui/styling/font-common");
 import fs = require("file-system");
+import native_api = require("native-api");
 
 var DEFAULT_SERIF = "Times New Roman";
 var DEFAULT_SANS_SERIF = "Helvetica";
@@ -9,13 +10,13 @@ var DEFAULT_MONOSPACE = "Courier New";
 export class Font extends common.Font {
     public static default = new Font(undefined, undefined, enums.FontStyle.normal, enums.FontWeight.normal);
 
-    private _uiFont: UIFont;
+    private _uiFont: native_api.UIFont;
 
     constructor(family: string, size: number, style: string, weight: string) {
         super(family, size, style, weight);
     }
 
-    public getUIFont(defaultFont: UIFont): UIFont {
+    public getUIFont(defaultFont: native_api.UIFont): native_api.UIFont {
         if (!this._uiFont) {
             var symbolicTraits: number = 0;
             if (this.isBold) {
@@ -31,7 +32,7 @@ export class Font extends common.Font {
             }
             var size = this.fontSize || defaultFont.pointSize;
 
-            this._uiFont = UIFont.fontWithDescriptorSize(descriptor, size);
+            this._uiFont = native_api.UIFont.fontWithDescriptorSize(descriptor, size);
         }
         return this._uiFont;
     }
@@ -59,12 +60,12 @@ var systemFonts = new Set();
 
 function assureSystemFontSets() {
     if (!areSystemFontSetsValid) {
-        var nsFontFamilies = UIFont.familyNames();
+        var nsFontFamilies = native_api.UIFont.familyNames();
         for (var i = 0; i < nsFontFamilies.count; i++) {
             var family = nsFontFamilies.objectAtIndex(i);
             systemFontFamilies.add(family);
 
-            var nsFonts = UIFont.fontNamesForFamilyName(family);
+            var nsFonts = native_api.UIFont.fontNamesForFamilyName(family);
             for (var j = 0; j < nsFonts.count; j++) {
                 var font = nsFonts.objectAtIndex(j);
                 systemFonts.add(font);

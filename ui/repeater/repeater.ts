@@ -12,6 +12,7 @@ import builder = require("ui/builder");
 import utils = require("utils/utils");
 import platform = require("platform");
 import labelModule = require("ui/label");
+import {UIView} from "native-api";
 
 var ITEMS = "items";
 var ITEMTEMPLATE = "itemTemplate";

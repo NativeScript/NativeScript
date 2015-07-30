@@ -1,5 +1,6 @@
 import definition = require("console");
 import trace = require("trace");
+import native_api = require("native-api");
 
 export class Console implements definition.Console {
     private TAG: string = "JS";
@@ -217,7 +218,7 @@ export class Console implements definition.Console {
     }
 
     private timeMillis() {
-        return java.lang.System.nanoTime() / 1000000; // 1 ms = 1000000 ns
+        return native_api.java.lang.System.nanoTime() / 1000000; // 1 ms = 1000000 ns
     }
 
     public time(reportName: string): void {
@@ -305,19 +306,19 @@ export class Console implements definition.Console {
         for (i = 0; i < arrayToLog.length; i++) {
             switch (messageType) {
                 case trace.messageType.log: {
-                    android.util.Log.v(this.TAG, arrayToLog[i]);
+                    native_api.android.util.Log.v(this.TAG, arrayToLog[i]);
                     break;
                 }
                 case trace.messageType.warn: {
-                    android.util.Log.w(this.TAG, arrayToLog[i]);
+                    native_api.android.util.Log.w(this.TAG, arrayToLog[i]);
                     break;
                 }
                 case trace.messageType.error: {
-                    android.util.Log.e(this.TAG, arrayToLog[i]);
+                    native_api.android.util.Log.e(this.TAG, arrayToLog[i]);
                     break;
                 }
                 case trace.messageType.info: {
-                    android.util.Log.i(this.TAG, arrayToLog[i]);
+                    native_api.android.util.Log.i(this.TAG, arrayToLog[i]);
                     break;
                 }
             }

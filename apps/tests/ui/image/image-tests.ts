@@ -1,4 +1,5 @@
 ﻿import TKUnit = require("../../TKUnit");
+import native_api = require("native-api");
 // <snippet module="ui/image" title="Image">
 // # Image
 // Using an image requires the Image module to be loaded.
@@ -146,12 +147,12 @@ export var test_SettingStretch_AspectFit = function () {
 
         if (image.android) {
             var actualScaleType = testImage.android.getScaleType();
-            var expectedScaleType = android.widget.ImageView.ScaleType.FIT_CENTER;
+            var expectedScaleType = native_api.android.widget.ImageView.ScaleType.FIT_CENTER;
             TKUnit.assertEqual(actualScaleType, expectedScaleType, "actualScaleType");
         }
         else if (image.ios) {
             var actualContentMode = testImage.ios.contentMode;
-            var expectedContentMode = UIViewContentMode.UIViewContentModeScaleAspectFit;
+            var expectedContentMode = native_api.UIViewContentMode.UIViewContentModeScaleAspectFit;
             TKUnit.assertEqual(actualContentMode, expectedContentMode, "actualContentMode");
         }
     }
@@ -168,12 +169,12 @@ export var test_SettingStretch_Default = function () {
 
         if (image.android) {
             var actualScaleType = testImage.android.getScaleType();
-            var expectedScaleType = android.widget.ImageView.ScaleType.FIT_CENTER;
+            var expectedScaleType = native_api.android.widget.ImageView.ScaleType.FIT_CENTER;
             TKUnit.assert(actualScaleType === expectedScaleType, "Expected: " + expectedScaleType + ", Actual: " + actualScaleType);
         }
         else if (image.ios) {
             var actualContentMode = testImage.ios.contentMode;
-            var expectedContentMode = UIViewContentMode.UIViewContentModeScaleAspectFit;
+            var expectedContentMode = native_api.UIViewContentMode.UIViewContentModeScaleAspectFit;
             TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
         }
     }
@@ -191,12 +192,12 @@ export var test_SettingStretch_AspectFill = function () {
 
         if (image.android) {
             var actualScaleType = testImage.android.getScaleType();
-            var expectedScaleType = android.widget.ImageView.ScaleType.CENTER_CROP;
+            var expectedScaleType = native_api.android.widget.ImageView.ScaleType.CENTER_CROP;
             TKUnit.assert(actualScaleType === expectedScaleType, "Expected: " + expectedScaleType + ", Actual: " + actualScaleType);
         }
         else if (image.ios) {
             var actualContentMode = testImage.ios.contentMode;
-            var expectedContentMode = UIViewContentMode.UIViewContentModeScaleAspectFill;
+            var expectedContentMode = native_api.UIViewContentMode.UIViewContentModeScaleAspectFill;
             TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
         }
     }
@@ -214,12 +215,12 @@ export var test_SettingStretch_Fill = function () {
 
         if (image.android) {
             var actualScaleType = testImage.android.getScaleType();
-            var expectedScaleType = android.widget.ImageView.ScaleType.FIT_XY;
+            var expectedScaleType = native_api.android.widget.ImageView.ScaleType.FIT_XY;
             TKUnit.assert(actualScaleType === expectedScaleType, "Expected: " + expectedScaleType + ", Actual: " + actualScaleType);
         }
         else if (image.ios) {
             var actualContentMode = testImage.ios.contentMode;
-            var expectedContentMode = UIViewContentMode.UIViewContentModeScaleToFill;
+            var expectedContentMode = native_api.UIViewContentMode.UIViewContentModeScaleToFill;
             TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
         }
     }
@@ -237,12 +238,12 @@ export var test_SettingStretch_none = function () {
 
         if (image.android) {
             var actualScaleType = testImage.android.getScaleType();
-            var expectedScaleType = android.widget.ImageView.ScaleType.MATRIX;
+            var expectedScaleType = native_api.android.widget.ImageView.ScaleType.MATRIX;
             TKUnit.assert(actualScaleType === expectedScaleType, "Expected: " + expectedScaleType + ", Actual: " + actualScaleType);
         }
         else if (image.ios) {
             var actualContentMode = testImage.ios.contentMode;
-            var expectedContentMode = UIViewContentMode.UIViewContentModeTopLeft;
+            var expectedContentMode = native_api.UIViewContentMode.UIViewContentModeTopLeft;
             TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
         }
     }

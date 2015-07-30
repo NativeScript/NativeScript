@@ -5,6 +5,7 @@ import buttonModule = require("ui/button");
 import textFieldModule = require("ui/text-field");
 import gridLayoutModule = require("ui/layouts/grid-layout");
 import model = require("./model");
+import native_api = require("native-api");
 
 var gridLayout: gridLayoutModule.GridLayout; 
 var backButton: buttonModule.Button;
@@ -25,17 +26,17 @@ export function onPageLoaded(args: observableModule.EventData) {
 
     if (page.android) {
         // Prevent the urlTextField from getting the focus because it will show its soft keyboard.
-        (<android.view.ViewGroup>gridLayout.android).setFocusableInTouchMode(true);
+        (<native_api.android.view.ViewGroup>gridLayout.android).setFocusableInTouchMode(true);
     }
 
     if (page.android) {
-        urlTextField.android.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI);
-        urlTextField.android.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE);
+        urlTextField.android.setInputType(native_api.android.text.InputType.TYPE_CLASS_TEXT | native_api.android.text.InputType.TYPE_TEXT_VARIATION_URI);
+        urlTextField.android.setImeOptions(native_api.android.view.inputmethod.EditorInfo.IME_ACTION_DONE);
     }
 
     if (page.ios) {
-        urlTextField.ios.keyboardType = UIKeyboardType.UIKeyboardTypeURL;
-        urlTextField.ios.returnKeyType = UIReturnKeyType.UIReturnKeyGo;
+        urlTextField.ios.keyboardType = native_api.UIKeyboardType.UIKeyboardTypeURL;
+        urlTextField.ios.returnKeyType = native_api.UIReturnKeyType.UIReturnKeyGo;
     }
 
     var viewModel = new model.WebViewModel();

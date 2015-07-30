@@ -4,12 +4,13 @@ import definition = require("image-source");
 import common = require("image-source/image-source-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
+import native_api = require("native-api");
 
 global.moduleMerge(common, exports);
 
 export class ImageSource implements definition.ImageSource {
     public android: android.graphics.Bitmap;
-    public ios: UIImage;
+    public ios: native_api.UIImage;
 
     public loadFromResource(name: string): boolean {
         this.android = null;

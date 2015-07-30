@@ -4,6 +4,7 @@
 declare module "ui/slider" {
     import view = require("ui/core/view");
     import dependencyObservable = require("ui/core/dependency-observable");
+    import native_api = require("native-api");
 
     /**
      * Represents a slider component.
@@ -27,12 +28,12 @@ declare module "ui/slider" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/SeekBar.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.SeekBar;
+        android: native_api.android.widget.SeekBar;
 
         /**
          * Gets the native iOS [UISlider](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UISlider_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UISlider;
+        ios: native_api.UISlider;
 
         /**
          * Gets or sets a slider current value. The default value is 0.

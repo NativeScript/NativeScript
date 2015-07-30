@@ -139,7 +139,19 @@ module.exports = function(grunt) {
 
         excludedModules: [
             "!./ui/slide-out/**/*.*"
-        ]
+        ],
+        typeScriptCompileOptions: {
+            fast: 'never',
+            module: "commonjs",
+            target: "es5",
+            sourceMap: false,
+            declaration: false,
+            removeComments: "<%= !grunt.option('leavecomments') || '' %>",
+            compiler: "node_modules/typescript/bin/tsc",
+            noEmitOnError: true,
+            experimentalDecorators: true,
+            noEmitHelpers: true
+        }
     };
 
     var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
@@ -303,20 +315,34 @@ module.exports = function(grunt) {
         },
         ts: {
             build: {
-                src: localCfg.typeScriptSrc,
+                src: [
+                    localCfg.typeScriptSrc,
+                    '!./native-api-ios.android.d.ts',
+                    '!./native-api-android.ios.d.ts',
+                    '!./global_alias*ts',
+                ],
                 outDir: localCfg.outModulesDir,
-                options: {
-                    fast: 'never',
-                    module: "commonjs",
-                    target: "es5",
-                    sourceMap: false,
-                    declaration: false,
-                    removeComments: "<%= !grunt.option('leavecomments') || '' %>",
-                    compiler: "node_modules/typescript/bin/tsc",
-                    noEmitOnError: true,
-                    experimentalDecorators: true,
-                    noEmitHelpers: true
-                }
+                options: localCfg.typeScriptCompileOptions
+            },
+            android: {
+                src: [
+                    localCfg.typeScriptSrc,
+                    '!./**/*.ios.ts',
+                    '!./**/*.ios.d.ts',
+                    '!./ios.d.ts',
+                ],
+                outDir: localCfg.outModulesDir,
+                options: localCfg.typeScriptCompileOptions
+            },
+            ios: {
+                src: [
+                    localCfg.typeScriptSrc,
+                    '!./**/*.android.ts',
+                    '!./**/*.android.d.ts',
+                    '!./android17.d.ts',
+                ],
+                outDir: localCfg.outModulesDir,
+                options: localCfg.typeScriptCompileOptions
             },
             buildNodeTests: {
                 src: [

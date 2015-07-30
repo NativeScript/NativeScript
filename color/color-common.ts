@@ -1,6 +1,7 @@
 ﻿import definition = require("color");
 import types = require("utils/types");
 import knownColors = require("color/known-colors");
+import native_api = require("native-api");
 
 var AMP = "#";
 var HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
@@ -78,7 +79,7 @@ export class Color implements definition.Color {
         return this._name;
     }
 
-    get ios(): UIColor {
+    get ios(): native_api.UIColor {
         return undefined;
     }
 

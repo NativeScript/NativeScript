@@ -1,12 +1,13 @@
 ﻿import pages = require("ui/page");
 import fpsModule = require("fps-meter");
+import native_api = require("native-api");
 
 export function createPage() {
     var startTime;
     var count = 0;
     fpsModule.addCallback(function (fps) {
         if (count < 2) {
-            var stopTime = java.lang.System.nanoTime();
+            var stopTime = native_api.java.lang.System.nanoTime();
             console.log("Frame " + count + " Render time: " + ((stopTime - startTime) / 1000000));
             startTime = stopTime;
         }
@@ -17,7 +18,7 @@ export function createPage() {
     });
 
     fpsModule.start();
-    startTime = java.lang.System.nanoTime();
+    startTime = native_api.java.lang.System.nanoTime();
 
     var page = new pages.Page();
     return page;

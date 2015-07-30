@@ -5,6 +5,7 @@ import buttonModule = require("ui/button");
 import page = require("ui/page");
 import button = require("ui/button");
 import enums = require("ui/enums");
+import native_api = require("native-api");
 
 // <snippet module="ui/scroll-view" title="scroll-view">
 // # ScrollView
@@ -79,10 +80,10 @@ export function test_vertical_oriantation_creates_correct_native_view() {
     scrollView.orientation = enums.Orientation.vertical;
 
     if (app.android) {
-        TKUnit.assert(scrollView.android instanceof android.widget.ScrollView, "android property is android.widget.ScrollView");
+        TKUnit.assert(scrollView.android instanceof native_api.android.widget.ScrollView, "android property is android.widget.ScrollView");
     }
     else if (app.ios) {
-        TKUnit.assert(scrollView.ios instanceof UIScrollView, "ios property is UIScrollView");
+        TKUnit.assert(scrollView.ios instanceof native_api.UIScrollView, "ios property is UIScrollView");
     }
 }
 
@@ -90,10 +91,10 @@ export function test_horizontal_oriantation_creates_correct_native_view() {
     scrollView.orientation = enums.Orientation.horizontal;
 
     if (app.android) {
-        TKUnit.assert(scrollView.android instanceof android.widget.HorizontalScrollView, "android property is android.widget.HorizontalScrollView");
+        TKUnit.assert(scrollView.android instanceof native_api.android.widget.HorizontalScrollView, "android property is android.widget.HorizontalScrollView");
     }
     else if (app.ios) {
-        TKUnit.assert(scrollView.ios instanceof UIScrollView, "ios property is UIScrollView");
+        TKUnit.assert(scrollView.ios instanceof native_api.UIScrollView, "ios property is UIScrollView");
     }
 }
 

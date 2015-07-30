@@ -6,6 +6,7 @@ declare module "ui/button" {
     import dependencyObservable = require("ui/core/dependency-observable");
     import view = require("ui/core/view");
     import formattedString = require("text/formatted-string");
+    import native_api = require("native-api");
 
     /**
      * Represents a standard Button widget.
@@ -24,12 +25,12 @@ declare module "ui/button" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/Button.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.Button;
+        android: native_api.android.widget.Button;
 
         /**
          * Gets the native [UIButton](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIButton_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UIButton;
+        ios: native_api.UIButton;
 
         /**
          * Gets or sets the text (label) displayed by this instance.

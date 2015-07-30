@@ -3,6 +3,7 @@ import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import bindable = require("ui/core/bindable");
 import observable = require("data/observable");
+import native_api = require("native-api");
 // <snippet module="ui/switch" title="switch">
 // # Switch
 // Using a switch requires the Switch module.
@@ -147,6 +148,6 @@ function setNativeValue(mySwitch: switchModule.Switch, value: boolean) {
         mySwitch.ios.on = value;
 
         // setting value trough code does not send notification, so simulate that manually.
-        mySwitch.ios.sendActionsForControlEvents(UIControlEvents.UIControlEventValueChanged);
+        mySwitch.ios.sendActionsForControlEvents(native_api.UIControlEvents.UIControlEventValueChanged);
     }
 }

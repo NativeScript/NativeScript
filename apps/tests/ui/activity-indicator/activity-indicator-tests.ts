@@ -2,6 +2,7 @@
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import imageModule = require("ui/image");
+import native_api = require("native-api");
 
 // <snippet module="ui/activity-indicator" title="activity-indicator">
 // # ActivityIndicator
@@ -79,7 +80,7 @@ function binding_busy_to_image() {
 
 function getNativeBusy(indicator: activityIndicatorModule.ActivityIndicator): boolean {
     if (indicator.android) {
-        return indicator.android.getVisibility() === android.view.View.VISIBLE;
+        return indicator.android.getVisibility() === native_api.android.view.View.VISIBLE;
     }
     else if (indicator.ios) {
         return indicator.ios.isAnimating();

@@ -15,6 +15,7 @@ import timer = require("timer");
 import trace = require("trace");
 import types = require("utils/types");
 import platform = require("platform");
+import native_api = require("native-api");
 var sdkVersion = parseInt(platform.device.sdkVersion);
 
 trace.enable();
@@ -257,7 +258,7 @@ export var waitUntilReady = function (isReady: () => boolean, timeoutSec?: numbe
         var waitTime = 20 / 1000;
         var totalWaitTime = 0;
         while (true) {
-            NSRunLoop.currentRunLoop().runUntilDate(NSDate.dateWithTimeIntervalSinceNow(waitTime));
+            native_api.NSRunLoop.currentRunLoop().runUntilDate(native_api.NSDate.dateWithTimeIntervalSinceNow(waitTime));
             if (isReady()) {
                 break;
             }
@@ -283,8 +284,8 @@ var prepareModal = function () {
         return;
     }
 
-    var clsMsgQueue = java.lang.Class.forName("android.os.MessageQueue");
-    var clsMsg = java.lang.Class.forName("android.os.Message");
+    var clsMsgQueue = native_api.java.lang.Class.forName("android.os.MessageQueue");
+    var clsMsg = native_api.java.lang.Class.forName("android.os.Message");
 
     nextMethod;
     var methods = clsMsgQueue.getDeclaredMethods();
@@ -317,7 +318,7 @@ var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number) {
 
     prepareModal();
 
-    var queue = android.os.Looper.myQueue();
+    var queue = native_api.android.os.Looper.myQueue();
 
     var quit = false;
     timer.setTimeout(function () {

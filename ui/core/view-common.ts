@@ -13,6 +13,7 @@ import enums = require("ui/enums");
 import utils = require("utils/utils");
 import color = require("color");
 import animationModule = require("ui/animation");
+import native_api = require("native-api");
 
 export function getViewById(view: View, id: string): View {
     if (!view) {
@@ -773,9 +774,9 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     // TODO: We need to implement some kind of build step that includes these members only when building for Android
     //@android
-    public _context: android.content.Context;
+    public _context: native_api.android.content.Context;
 
-    public _onAttached(context: android.content.Context) {
+    public _onAttached(context: native_api.android.content.Context) {
         //
     }
 
@@ -794,7 +795,7 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     // TODO: We need to implement some kind of build step that includes these members only when building for iOS
     //@ios
-    public _prepareNativeView(view: UIView) {
+    public _prepareNativeView(view: native_api.UIView) {
         //
     }
 

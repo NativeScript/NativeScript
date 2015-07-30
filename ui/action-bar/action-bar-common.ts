@@ -7,6 +7,7 @@ import proxy = require("ui/core/proxy");
 import view = require("ui/core/view");
 import style = require("ui/styling/style");
 import observable = require("ui/core/dependency-observable");
+import native_api = require("native-api");
 
 var ACTION_ITEMS = "actionItems";
 
@@ -119,7 +120,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
         //
     }
 
-    public _updateAndroid(menu: android.view.IMenu) {
+    public _updateAndroid(menu: native_api.android.view.IMenu) {
         //
     }
 

@@ -6,6 +6,7 @@ import observable = require("data/observable");
 import types = require("utils/types");
 import platform = require("platform");
 import utils = require("utils/utils");
+import native_api = require("native-api");
 
 // <snippet module="ui/list-view" title="list-view">
 // # ListView
@@ -85,10 +86,10 @@ export function test_default_TNS_values() {
         TKUnit.assert(types.isUndefined(listView.items), "Default listView.items should be undefined");
 
         if (app.android) {
-            TKUnit.assert(listView.android instanceof android.widget.ListView, "android property is android.widget.ListView");
+            TKUnit.assert(listView.android instanceof native_api.android.widget.ListView, "android property is android.widget.ListView");
         }
         else if (app.ios) {
-            TKUnit.assert(listView.ios instanceof UITableView, "ios property is UITableView");
+            TKUnit.assert(listView.ios instanceof native_api.UITableView, "ios property is UITableView");
         }
 
     };
@@ -148,9 +149,9 @@ export function test_set_native_item_exposed() {
         TKUnit.wait(ASYNC);
         for (var item in indexes) {
             if (platform.device.os === platform.platformNames.ios) {
-                TKUnit.assert(indexes[item] instanceof UITableViewCell, "itemLoading not called for index " + item);
+                TKUnit.assert(indexes[item] instanceof native_api.UITableViewCell, "itemLoading not called for index " + item);
             } else if (platform.device.os === platform.platformNames.android) {
-                TKUnit.assert(indexes[item] instanceof android.view.ViewGroup, "itemLoading not called for index " + item);
+                TKUnit.assert(indexes[item] instanceof native_api.android.view.ViewGroup, "itemLoading not called for index " + item);
             }
         }
     };
@@ -650,10 +651,10 @@ function loadViewWithItemNumber(args: listViewModule.ItemEventData) {
 function getTextFromNativeElementAt(listView: listViewModule.ListView, index: number): any {
     if (listView.android) {
         var nativeElement = listView.android.getChildAt(index);
-        if (nativeElement instanceof android.view.ViewGroup) {
-            return (<android.widget.TextView>((<any>nativeElement).getChildAt(0))).getText();
+        if (nativeElement instanceof native_api.android.view.ViewGroup) {
+            return (<native_api.android.widget.TextView>((<any>nativeElement).getChildAt(0))).getText();
         }
-        return (<android.widget.TextView>nativeElement).getText();
+        return (<native_api.android.widget.TextView>nativeElement).getText();
     }
     else if (listView.ios) {
         return listView.ios.visibleCells()[index].contentView.subviews[0].text;
@@ -678,7 +679,7 @@ function performNativeItemTap(listView: listViewModule.ListView, index: number):
     }
     else if (listView.ios) {
         // Calling selectRowAtIndexPathAnimatedScrollPosition will not tiger [Will|Did]SelectRowAtIndexPath callbacks.
-        listView.ios.delegate.tableViewWillSelectRowAtIndexPath(listView.ios, NSIndexPath.indexPathForItemInSection(index, 0));
+        listView.ios.delegate.tableViewWillSelectRowAtIndexPath(listView.ios, native_api.NSIndexPath.indexPathForItemInSection(index, 0));
     }
     else {
         throw new Error("Cannot perform native item tap");

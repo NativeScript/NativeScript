@@ -2,6 +2,7 @@
 import app = require("application");
 import TKUnit = require("./TKUnit");
 import commonTests = require("./application-tests-common");
+import native_api = require("native-api");
 
 global.moduleMerge(commonTests, exports);
 
@@ -11,7 +12,7 @@ global.moduleMerge(commonTests, exports);
 //// Add the notification observer
 if (app.ios) {
     app.ios.addNotificationObserver(UIDeviceBatteryLevelDidChangeNotification,
-        function onReceiveCallback(notification: NSNotification) {
+        function onReceiveCallback(notification: native_api.NSNotification) {
             var percent = UIDevice.currentDevice().batteryLevel * 100;
             var message = "Battery: " + percent + "%";
             ////console.log(message);

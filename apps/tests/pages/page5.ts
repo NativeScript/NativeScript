@@ -3,15 +3,16 @@ import pages = require("ui/page");
 import buttons = require("ui/button");
 import app = require("application");
 import platform = require("platform");
+import native_api = require("native-api");
 
 function printDeviceInfoAndroid() {
-    console.log("android.os.Build.DEVICE = " + android.os.Build.DEVICE);                     //android.os.Build.DEVICE = hammerhead
-    console.log("android.os.Build.VERSION.SDK = " + android.os.Build.VERSION.SDK);         //android.os.Build.VERSION.SDK = 19
-    console.log("android.os.Build.VERSION.SDK_INT = " + android.os.Build.VERSION.SDK_INT);   //android.os.Build.VERSION.SDK_INT = 19
-    console.log("android.os.Build.VERSION.CODENAME = " + android.os.Build.VERSION.CODENAME); //android.os.Build.VERSION.CODENAME = REL
-    console.log("android.os.Build.VERSION.RELEASE = " + android.os.Build.VERSION.RELEASE);   //android.os.Build.VERSION.RELEASE = 4.4.4
-    android.os.Build.MANUFACTURER
-    var metrics: android.util.DisplayMetrics = app.android.context.getResources().getDisplayMetrics();
+    console.log("android.os.Build.DEVICE = " + native_api.android.os.Build.DEVICE);                     //android.os.Build.DEVICE = hammerhead
+    console.log("android.os.Build.VERSION.SDK = " + native_api.android.os.Build.VERSION.SDK);         //android.os.Build.VERSION.SDK = 19
+    console.log("android.os.Build.VERSION.SDK_INT = " + native_api.android.os.Build.VERSION.SDK_INT);   //android.os.Build.VERSION.SDK_INT = 19
+    console.log("android.os.Build.VERSION.CODENAME = " + native_api.android.os.Build.VERSION.CODENAME); //android.os.Build.VERSION.CODENAME = REL
+    console.log("android.os.Build.VERSION.RELEASE = " + native_api.android.os.Build.VERSION.RELEASE);   //android.os.Build.VERSION.RELEASE = 4.4.4
+    native_api.android.os.Build.MANUFACTURER
+    var metrics: native_api.android.util.DisplayMetrics = app.android.context.getResources().getDisplayMetrics();
     console.log("metrics.density = " + metrics.density);             //metrics.density = 3
     console.log("metrics.scaledDensity = " + metrics.scaledDensity); //metrics.scaledDensity = 3
     console.log("metrics.densityDpi = " + metrics.densityDpi);       //metrics.densityDpi = 480
@@ -24,11 +25,11 @@ function printDeviceInfoAndroid() {
     console.log("config.screenWidthDp = " + config.screenWidthDp);   
     console.log("config.screenHeightDp = " + config.screenHeightDp);   
     console.log("config.smallestScreenWidthDp = " + config.smallestScreenWidthDp);   
-    console.log("config.orientation = " + (config.orientation === android.content.res.Configuration.ORIENTATION_PORTRAIT ? "portrait" : "ladscape"));   
+    console.log("config.orientation = " + (config.orientation === native_api.android.content.res.Configuration.ORIENTATION_PORTRAIT ? "portrait" : "ladscape"));   
 }
 
 function printDeviceInfoIOS() {
-    var device = UIDevice.currentDevice();
+    var device = native_api.UIDevice.currentDevice();
     console.log("device.name = " + device.name);                             //device.name = iPhone Simulator
     console.log("device.systemName = " + device.systemName);                 //device.systemName = iPhone OS
     console.log("device.systemVersion = " + device.systemVersion);           //device.systemVersion = 8.1
@@ -36,7 +37,7 @@ function printDeviceInfoIOS() {
     console.log("device.localizedModel = " + device.localizedModel);         //device.localizedModel = iPhone Simulator
     console.log("device.userInterfaceIdiom = " + device.userInterfaceIdiom); //device.userInterfaceIdiom = 0
     console.log("device.batteryLevel = " + device.batteryLevel);             //device.batteryLevel = -1
-    var screen = UIScreen.mainScreen();
+    var screen = native_api.UIScreen.mainScreen();
     console.log("screen = " + screen);
     console.log("screen.nativeBounds = " + screen.nativeBounds.size.width + ", " + screen.nativeBounds.size.height); //screen.nativeBounds = 640, 1136
     console.log("screen.scale = " + screen.scale);                                                                   //screen.scale = 2

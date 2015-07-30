@@ -7,6 +7,7 @@ declare module "ui/action-bar" {
     import dependencyObservable = require("ui/core/dependency-observable");
     import bindable = require("ui/core/bindable");
     import pages = require("ui/page");
+    import native_api = require("native-api");
 
     /**
      * Provides an abstraction over the ActionBar (android) and NavigationBar (iOS).
@@ -50,7 +51,7 @@ declare module "ui/action-bar" {
 
         //@private
         _isEmpty(): boolean
-        _updateAndroid(menu: android.view.IMenu);
+        _updateAndroid(menu: native_api.android.view.IMenu);
         _onAndroidItemSelected(itemId: number): boolean
         //@endprivate
 
