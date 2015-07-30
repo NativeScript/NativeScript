@@ -60,4 +60,4 @@ We love PRs! Please follow our [contribution guide](https://www.nativescript.org
 - **Forum** - [General discussion](https://groups.google.com/forum/#!forum/nativescript)
 - **StackOverflow** - [http://stackoverflow.com/questions/tagged/nativescript](http://stackoverflow.com/questions/tagged/nativescript)
 - **IRC Chatroom** - [http://webchat.freenode.net/?channels=nativescript](http://webchat.freenode.net/?channels=nativescript)
-![](https://ga-beacon.appspot.com/UA-111455-24/nativescript/nativescript) 
+![](https://ga-beacon.appspot.com/UA-111455-24/nativescript/nativescript?pixel) 
