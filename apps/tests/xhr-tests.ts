@@ -46,11 +46,16 @@ export var test_XMLHttpRequest_responseType_isDefined = function () {
 
 export var test_XMLHttpRequest_readyStateShouldChange = function (done) {
     var count = 0;
-    xhr = new XMLHttpRequest();
+    // <snippet module="xhr" title="xhr">
+    // ### Check readyState
+    // ``` JavaScript
+    let xhr = new XMLHttpRequest();
 
     TKUnit.assert(xhr.readyState === 0, "xhr.readyState should be UNSENT!");
 
     xhr.onreadystatechange = function () {
+        // var state = xhr.readyState;
+        // <hide>
         try {
 
             if (count === 0) {
@@ -70,18 +75,26 @@ export var test_XMLHttpRequest_readyStateShouldChange = function (done) {
         catch (err) {
             done(err);
         }
+        // </hide>
     };
 
     xhr.open("GET", "https://httpbin.org/get");
     xhr.send();
+    // ```
+    // </snippet>
 };
 
 export var test_XMLHttpRequest_headersSentAndReceivedProperly = function (done) {
-    xhr = new XMLHttpRequest();
+    // <snippet module="xhr" title="xhr">
+    // ### Send/receive headers
+    // ``` JavaScript
+    let xhr = new XMLHttpRequest();
     xhr.open("GET", "https://httpbin.org/get");
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
         if (xhr.readyState > 1) {
+            // var contentTypeHeader = xhr.getResponseHeader("Content-Type");
+            // <hide>
             try {
                 TKUnit.assert(xhr.getResponseHeader("Content-Type") === "application/json", "Headers not sent/received properly!");
                 done(null);
@@ -89,18 +102,26 @@ export var test_XMLHttpRequest_headersSentAndReceivedProperly = function (done) 
             catch (err) {
                 done(err);
             }
+            // </hide>
         }
     };
     xhr.send();
+    // ```
+    // </snippet>
 };
 
 export var test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) {
-    xhr = new XMLHttpRequest();
+    // <snippet module="xhr" title="xhr">
+    // ### Send/receive JSON
+    // ``` JavaScript
+    let xhr = new XMLHttpRequest();
     xhr.open("POST", "https://httpbin.org/post");
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onreadystatechange = function () {
         if (xhr.readyState > 3) {
             var result = JSON.parse(xhr.responseText);
+            // var valueOne = result["json"]["MyVariableOne"];
+            // <hide>
             try {
                 TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
                 done(null);
@@ -108,18 +129,26 @@ export var test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) 
             catch (err) {
                 done(err);
             }
+            // </hide>
         }
     };
     xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
+    // ```
+    // </snippet>
 };
 
 export var test_XMLHttpRequest_FormDataContentSentAndReceivedProperly = function (done) {
-    xhr = new XMLHttpRequest();
+    // <snippet module="xhr" title="xhr">
+    // ### Send/receive FormData
+    // ``` JavaScript
+    let xhr = new XMLHttpRequest();
     xhr.open("POST", "https://httpbin.org/post");
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.onreadystatechange = function () {
         if (xhr.readyState > 3) {
             var result = JSON.parse(xhr.responseText);
+            // var valueOne = result["form"]["MyVariableOne"];
+            // <hide>
             try {
                 TKUnit.assert(result["form"]["MyVariableOne"] === "ValueOne" && result["form"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly! Result is: " + xhr.responseText);
                 done(null);
@@ -127,6 +156,7 @@ export var test_XMLHttpRequest_FormDataContentSentAndReceivedProperly = function
             catch (err) {
                 done(err);
             }
+            // </hide>
         }
     };
 
@@ -135,20 +165,27 @@ export var test_XMLHttpRequest_FormDataContentSentAndReceivedProperly = function
     data.append("MyVariableTwo", "ValueTwo");
 
     xhr.send(data);
+    // ```
+    // </snippet>
 };
 
 export var test_XMLHttpRequest_abortShouldCancelonreadystatechange = function (done) {
     var flag = false;
-
-    xhr = new XMLHttpRequest();
+    // <snippet module="xhr" title="xhr">
+    // ### Abort request
+    // ``` JavaScript
+    let xhr = new XMLHttpRequest();
     xhr.open("POST", "https://httpbin.org/post");
     xhr.setRequestHeader("Content-Type", "application/json");
+    // <hide>
     xhr.onreadystatechange = function () {
         flag = true;
     };
+    // </hide>
     xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
     xhr.abort();
-
+    // ```
+    // </snippet>
     TKUnit.assert(flag === false, "Content not sent/received properly!");
     done(null);
 };
@@ -203,6 +240,6 @@ export function test_responseType(done) {
         () => xhr.responseType = "arraybuffer",
         "Didn't raise on unsupported type.",
         "Response type of 'arraybuffer' not supported."
-    );
+        );
     done(null);
 }

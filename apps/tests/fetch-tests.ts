@@ -2,14 +2,6 @@
 import TKUnit = require("./TKUnit");
 import types = require("utils/types");
 
-// <snippet module="fetch" title="fetch">
-// # Fetch module
-// Using fetch methods requires to load "fetch" module.
-// ``` JavaScript
-// var fetch = require("fetch");
-// ```
-// </snippet>
-
 export var test_fetch_defined = function () {
     TKUnit.assert(types.isDefined((fetch)), "Method fetch() should be defined!");
 };
@@ -78,51 +70,6 @@ export var test_fetch_json = function (done: (err: Error, res?: string) => void)
     // ```
     // </snippet>
 };
-/*
-export var test_fetch_blob = function (done: (err: Error, res?: string) => void) {
-    var result;
-
-    // <snippet module="fetch" title="fetch">
-    // ### Get Blob from URL
-    // ``` JavaScript
-    fetch("https://httpbin.org/get").then(response => { return response.blob(); }).then(function (r) {
-        //// Argument (r) is Blob object!
-        // <hide>
-        TKUnit.assert(r instanceof Blob, "Result from blob() should be Blob object! Actual result is: " + r);
-        done(null);
-        // </hide>
-    }, function (e) {
-            //// Argument (e) is Error!
-            // <hide>
-            done(e);
-            // </hide>
-        });
-    // ```
-    // </snippet>
-};
-
-export var test_fetch_arrayBuffer = function (done: (err: Error, res?: string) => void) {
-    var result;
-
-    // <snippet module="fetch" title="fetch">
-    // ### Get ArrayBuffer from URL
-    // ``` JavaScript
-    fetch("https://httpbin.org/get").then(response => { return response.arrayBuffer(); }).then(function (r) {
-        //// Argument (r) is ArrayBuffer object!
-        // <hide>
-        TKUnit.assert(r instanceof ArrayBuffer, "Result from arrayBuffer() should be ArrayBuffer object! Actual result is: " + r);
-        done(null);
-        // </hide>
-    }, function (e) {
-            //// Argument (e) is Error!
-            // <hide>
-            done(e);
-            // </hide>
-        });
-    // ```
-    // </snippet>
-};
-*/
 
 export var test_fetch_formData = function (done: (err: Error, res?: string) => void) {
     var result;
