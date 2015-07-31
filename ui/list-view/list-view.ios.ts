@@ -21,14 +21,6 @@ class ListViewCell extends UITableViewCell {
     static new(): ListViewCell {
         return <ListViewCell>super.new();
     }
-
-    public removeFromSuperview(): void {
-        super.removeFromSuperview();
-        var view: view.View = (<any>this).view;
-        if (view) {
-            view.onUnloaded();
-        }
-    }
 }
 
 function notifyForItemAtIndex(listView: definition.ListView, cell: any, eventName: string, indexPath: NSIndexPath) {
