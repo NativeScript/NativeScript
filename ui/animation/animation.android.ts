@@ -9,15 +9,14 @@ import types = require("utils/types");
 declare var exports;
 require("utils/module-merge").merge(common, exports);
 
-var intType = java.lang.Integer.class.getField("TYPE").get(null);
 var floatType = java.lang.Float.class.getField("TYPE").get(null);
-var argbEvaluator: android.animation.ArgbEvaluator = new android.animation.ArgbEvaluator();
+var argbEvaluator = new android.animation.ArgbEvaluator();
 
 export class Animation extends common.Animation implements definition.Animation {
     private _animatorListener: android.animation.Animator.AnimatorListener;
     private _nativeAnimatorsArray: any;
     private _animatorSet: android.animation.AnimatorSet; 
-    private _animators: Array<android.animation.ObjectAnimator>;
+    private _animators: Array<android.animation.Animator>;
     private _propertyUpdateCallbacks: Array<Function>;
     private _propertyResetCallbacks: Array<Function>;
 
@@ -27,7 +26,7 @@ export class Animation extends common.Animation implements definition.Animation 
         var i: number;
         var length: number;
 
-        this._animators = new Array<android.animation.ObjectAnimator>();
+        this._animators = new Array<android.animation.Animator>();
         this._propertyUpdateCallbacks = new Array<Function>();
         this._propertyResetCallbacks = new Array<Function>();
 
@@ -43,7 +42,7 @@ export class Animation extends common.Animation implements definition.Animation 
             return this;
         }
 
-        this._nativeAnimatorsArray = java.lang.reflect.Array.newInstance(android.animation.ObjectAnimator.class, this._animators.length);
+        this._nativeAnimatorsArray = java.lang.reflect.Array.newInstance(android.animation.Animator.class, this._animators.length);
         i = 0;
         length = this._animators.length;
         for (; i < length; i++) {
@@ -141,10 +140,10 @@ export class Animation extends common.Animation implements definition.Animation 
 
         var nativeArray;
         var nativeView: android.view.View = (<android.view.View>propertyAnimation.target._nativeView);
-        var animators = new Array<android.animation.ObjectAnimator>();
+        var animators = new Array<android.animation.ValueAnimator>();
         var propertyUpdateCallbacks = new Array<Function>();
         var propertyResetCallbacks = new Array<Function>();
-        var animator: android.animation.ObjectAnimator;
+        var animator: android.animation.ValueAnimator;
         var originalValue;
         var density = utils.layout.getDisplayDensity();
         switch (propertyAnimation.property) {
@@ -163,12 +162,17 @@ export class Animation extends common.Animation implements definition.Animation 
             case common.Properties.backgroundColor:
                 originalValue = nativeView.getBackground();
                 if (!color.Color.equals(propertyAnimation.value, propertyAnimation.target.backgroundColor)) {
-                    nativeArray = java.lang.reflect.Array.newInstance(intType, 1);
-                    nativeArray[0] = (<color.Color>propertyAnimation.value).argb;
-                    //https://github.com/NativeScript/android-runtime/issues/168
-                    //animator = android.animation.ObjectAnimator.ofObject(nativeView, "backgroundColor", argbEvaluator, nativeArray);
-                    animator = android.animation.ObjectAnimator.ofInt(nativeView, "backgroundColor", nativeArray);
-                    animator.setEvaluator(argbEvaluator);
+                    nativeArray = java.lang.reflect.Array.newInstance(java.lang.Object.class, 2);
+                    nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<color.Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);
+                    nativeArray[1] = java.lang.Integer.valueOf((<color.Color>propertyAnimation.value).argb);
+                    animator = android.animation.ValueAnimator.ofObject(argbEvaluator, nativeArray);
+                    animator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
+                        onAnimationUpdate(animator: android.animation.ValueAnimator) {
+                            var argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
+                            propertyAnimation.target.backgroundColor = new color.Color(argb);
+                        }
+                    }));
+
                     animators.push(animator);
                     propertyUpdateCallbacks.push(() => { propertyAnimation.target.backgroundColor = propertyAnimation.value; });
                     propertyResetCallbacks.push(() => { nativeView.setBackground(originalValue); });
