@@ -3,6 +3,7 @@ import dts = require("application");
 import frame = require("ui/frame");
 import types = require("utils/types");
 import observable = require("data/observable");
+import enums = require("ui/enums");
 
 global.moduleMerge(appModule, exports);
 
@@ -206,6 +207,8 @@ export class AndroidApplication extends observable.Observable implements dts.And
 
             exports.notify({ eventName: dts.launchEvent, object: this, android: intent });
 
+            setupOrientationListener(this);
+
             /* In the onLaunch event we expect the following setup, which ensures a root frame:
             * var frame = require("ui/frame");
             * var rootFrame = new frame.Frame();
@@ -315,3 +318,36 @@ exports.start = function () {
 }
 
 exports.android = new AndroidApplication();
+
+var currentOrientation: number;
+function setupOrientationListener(androidApp: AndroidApplication) {
+    androidApp.registerBroadcastReceiver(android.content.Intent.ACTION_CONFIGURATION_CHANGED, onConfigurationChanged);
+    currentOrientation = androidApp.context.getResources().getConfiguration().orientation
+}
+function onConfigurationChanged(context: android.content.Context, intent: android.content.Intent) {
+    var orientation = context.getResources().getConfiguration().orientation;
+
+    if (currentOrientation !== orientation) {
+        currentOrientation = orientation;
+
+        var newValue;
+        switch (orientation) {
+            case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
+                newValue = enums.DeviceOrientation.landscape;
+                break;
+            case android.content.res.Configuration.ORIENTATION_PORTRAIT:
+                newValue = enums.DeviceOrientation.portrait;
+                break;
+            default:
+                newValue = enums.DeviceOrientation.unknown;
+                break;
+        }
+
+        exports.notify(<dts.OrientationChangedEventData> {
+            eventName: dts.orientationChangedEvent,
+            android: context,
+            newValue: newValue,
+            object: exports.android,
+        });
+    }
+}

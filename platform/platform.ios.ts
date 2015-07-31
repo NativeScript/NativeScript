@@ -86,26 +86,38 @@ export class device implements definition.device {
     }
 }
 
-var mainScreenInfo: definition.ScreenMetrics = null;
+var mainScreen: MainScreen;
 
 // This is a "static" class and it is used like a name-space.
 // It is not meant to be initialized - thus it is not capitalized
 export class screen implements definition.screen {
     static get mainScreen(): definition.ScreenMetrics {
-        if (!mainScreenInfo) {
-            var mainScreen = UIScreen.mainScreen();
-            if (mainScreen) {
-                var size = mainScreen.bounds.size;
-                var scale = mainScreen.scale;
-                mainScreenInfo = {
-                    widthPixels: size.width * scale,
-                    heightPixels: size.height * scale,
-                    scale: scale,
-                    widthDIPs: size.width,
-                    heightDIPs: size.height
-                }
-            }
+        if (!mainScreen) {
+            mainScreen = new MainScreen(UIScreen.mainScreen());
         }
-        return mainScreenInfo;
+        return mainScreen;
+    }
+}
+
+class MainScreen implements definition.ScreenMetrics {
+    private _screen: UIScreen;
+    constructor(metrics: UIScreen) {
+        this._screen = metrics;
+    }
+
+    get widthPixels(): number {
+        return this.widthDIPs * this.scale;
+    }
+    get heightPixels(): number {
+        return this.heightDIPs * this.scale;
+    }
+    get scale(): number {
+        return this._screen.scale;
+    }
+    get widthDIPs(): number {
+        return this._screen.bounds.size.width;
+    }
+    get heightDIPs(): number {
+        return this._screen.bounds.size.height;
     }
 }

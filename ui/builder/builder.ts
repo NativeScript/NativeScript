@@ -193,11 +193,11 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         fullComponentPathFilePathWithoutExt = fs.path.join(fs.knownFolders.currentApp().path, componentPath, componentName);
     }
 
-    var xmlFilePath = resolveFilePath(fullComponentPathFilePathWithoutExt, "xml");
+    var xmlFilePath = fileResolverModule.resolveFileName(fullComponentPathFilePathWithoutExt, "xml");
 
     if (xmlFilePath) {
         // Custom components with XML
-        var jsFilePath = resolveFilePath(fullComponentPathFilePathWithoutExt, "js");
+        var jsFilePath = fileResolverModule.resolveFileName(fullComponentPathFilePathWithoutExt, "js");
 
         var subExports;
         if (jsFilePath) {
@@ -220,7 +220,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
     }
 
     // Add component CSS file if exists.
-    var cssFilePath = resolveFilePath(fullComponentPathFilePathWithoutExt, "css");
+    var cssFilePath = fileResolverModule.resolveFileName(fullComponentPathFilePathWithoutExt, "css");
     if (cssFilePath) {
         if (parentPage) {
             parentPage.addCssFile(cssFilePath);
@@ -230,19 +230,6 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
     }
 
     return result;
-}
-
-var fileNameResolver: fileResolverModule.FileNameResolver;
-function resolveFilePath(path, ext): string {
-    if (!fileNameResolver) {
-        fileNameResolver = new fileResolverModule.FileNameResolver({
-            width: platform.screen.mainScreen.widthDIPs,
-            height: platform.screen.mainScreen.heightDIPs,
-            os: platform.device.os,
-            deviceType: platform.device.deviceType
-        });
-    }
-    return fileNameResolver.resolveFileName(path, ext);
 }
 
 export function load(pathOrOptions: string | definition.LoadOptions, context?: any): view.View {

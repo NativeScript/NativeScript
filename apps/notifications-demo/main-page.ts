@@ -5,6 +5,7 @@ import labelModule = require("ui/label");
 
 var batteryLabel: labelModule.Label;
 var registered = false;
+
 export function onPageLoaded(args: observable.EventData) {
     var page = <pages.Page>args.object;
     batteryLabel = page.getViewById<labelModule.Label>("batteryLabel");

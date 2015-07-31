@@ -14,6 +14,7 @@ export var resumeEvent = "resume";
 export var exitEvent = "exit";
 export var lowMemoryEvent = "lowMemory";
 export var uncaughtErrorEvent = "uncaughtError";
+export var orientationChangedEvent = "orientationChanged";
 
 export var cssFile: string = "app.css"
 
