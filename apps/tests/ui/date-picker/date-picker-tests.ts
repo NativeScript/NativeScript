@@ -141,7 +141,9 @@ export function testYearFromNativeToLocal() {
 export function testMonthFromNativeToLocal() {
     helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
         var datePicker = <datePickerModule.DatePicker>views[0];
-        var expectedValue = 6;
+
+        //Use July as it has 31 days
+        var expectedValue = 7; 
         datePickerTestsNative.setNativeMonth(datePicker, expectedValue);
         var actualValue = datePicker.month;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
