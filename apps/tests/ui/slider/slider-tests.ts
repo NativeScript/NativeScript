@@ -4,6 +4,7 @@ import viewModule = require("ui/core/view");
 import pagesModule = require("ui/page");
 import bindable = require("ui/core/bindable");
 import observable = require("data/observable");
+import native_api = require("native-api");
 // <snippet module="ui/slider" title="slider">
 // # Slider
 // Using a slider requires the Slider module.
@@ -398,6 +399,6 @@ function setNativeValue(slider: sliderModule.Slider, value: number) {
         slider.ios.value = value;
 
         // setting value trough code does not send notification, so simulate that manually.
-        slider.ios.sendActionsForControlEvents(UIControlEvents.UIControlEventValueChanged);
+        slider.ios.sendActionsForControlEvents(native_api.UIControlEvents.UIControlEventValueChanged);
     }
 }

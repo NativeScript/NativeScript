@@ -1,6 +1,7 @@
 ﻿import enums = require("ui/enums");
 import definitios = require("ui/styling/font");
 import converters = require("ui/styling/converters");
+import native_api = require("native-api");
 
 export class Font implements definitios.Font {
     public static default = undefined;
@@ -59,11 +60,11 @@ export class Font implements definitios.Font {
         this._fontWeight = weight;
     }
 
-    public getAndroidTypeface(): android.graphics.Typeface {
+    public getAndroidTypeface(): native_api.android.graphics.Typeface {
         return undefined;
     }
 
-    public getUIFont(defaultFont: UIFont): UIFont {
+    public getUIFont(defaultFont: native_api.UIFont): native_api.UIFont {
         return undefined;
     }
 

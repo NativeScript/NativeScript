@@ -5,6 +5,7 @@ import proxy = require("ui/core/proxy");
 import formattedString = require("text/formatted-string");
 import observable = require("data/observable");
 import weakEvents = require("ui/core/weak-event-listener");
+import native_api = require("native-api");
 
 var textProperty = new dependencyObservable.Property(
     "text",
@@ -81,7 +82,7 @@ export class Button extends view.View implements definition.Button {
             // the UIControlStateNormal value. If the value for UIControlStateNormal is not set, 
             // then the property defaults to a system value. Therefore, at a minimum, you should 
             // set the value for the normal state.
-            this.ios.setTitleForState(data.newValue + "", UIControlState.UIControlStateNormal);
+            this.ios.setTitleForState(data.newValue + "", native_api.UIControlState.UIControlStateNormal);
         }
     }
 
@@ -94,7 +95,7 @@ export class Button extends view.View implements definition.Button {
             // the UIControlStateNormal value. If the value for UIControlStateNormal is not set, 
             // then the property defaults to a system value. Therefore, at a minimum, you should 
             // set the value for the normal state.
-            this.ios.setAttributedTitleForState(value._formattedText, UIControlState.UIControlStateNormal);
+            this.ios.setAttributedTitleForState(value._formattedText, native_api.UIControlState.UIControlStateNormal);
         }
     }
 

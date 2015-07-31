@@ -6,6 +6,7 @@ declare module "ui/search-bar" {
     import observable = require("data/observable");
     import dependencyObservable = require("ui/core/dependency-observable");
     import color = require("color");
+    import native_api = require("native-api");
 
     /**
      * Represents a search bar component.
@@ -34,12 +35,12 @@ declare module "ui/search-bar" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/SearchView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.SearchView;
+        android: native_api.android.widget.SearchView;
 
         /**
          * Gets the native iOS [UISearchBar](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UISearchBar_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UISearchBar;
+        ios: native_api.UISearchBar;
 
         /**
          * Gets or sets a search bar text.

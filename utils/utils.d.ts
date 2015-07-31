@@ -1,4 +1,5 @@
 ﻿declare module "utils/utils" {
+    import native_api = require("native-api");
     import colorModule = require("color");
     import view = require("ui/core/view");
 
@@ -47,12 +48,12 @@
         /**
          * Gets the native Android application instance.
          */
-        export function getApplication(): android.app.Application;
+        export function getApplication(): native_api.android.app.Application;
 
         /**
          * Gets the Android application context.
          */
-        export function getApplicationContext(): android.content.Context;
+        export function getApplicationContext(): native_api.android.content.Context;
 
         /**
          * Utility module dealing with some android collections.
@@ -117,12 +118,12 @@
          * Gets NativeScript color from [UIColor](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIColor_Class/).
          * @param uiColor - UIColor instance used to create a NativeScript color.
          */
-        export function getColor(uiColor: UIColor): colorModule.Color;
+        export function getColor(uiColor: native_api.UIColor): colorModule.Color;
         /**
          * Gets actual height of a [UIView](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIView_Class/) widget.
          * @param uiView - An instance of UIView.
          */
-        export function getActualHeight(uiView: UIView): number;
+        export function getActualHeight(uiView: native_api.UIView): number;
         /**
          * Gets an information about if current mode is Landscape.
          */
@@ -132,7 +133,7 @@
          */
         export var MajorVersion: number;
 
-        export function _layoutRootView(rootView: view.View, parentBounds: CGRect): void;
+        export function _layoutRootView(rootView: view.View, parentBounds: native_api.CGRect): void;
     }
     /**
      * An utility function that copies properties from source object to target object.

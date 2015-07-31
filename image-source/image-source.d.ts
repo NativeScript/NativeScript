@@ -2,6 +2,7 @@
  * Contains the ImageSource class, which encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
  */
 declare module "image-source" {
+    import native_api = require("native-api");
     
     /**
      * Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
@@ -20,12 +21,12 @@ declare module "image-source" {
        /**
         * The iOS-specific [UIImage](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIImage_Class/) instance. Will be undefined when running on Android.
         */
-        ios: UIImage;
+        ios: native_api.UIImage;
 
        /**
         * The Android-specific [image](http://developer.android.com/reference/android/graphics/Bitmap.html) instance. Will be undefined when running on iOS.
         */
-        android: android.graphics.Bitmap;
+        android: native_api.android.graphics.Bitmap;
 
        /**
         * Loads this instance from the specified resource name.

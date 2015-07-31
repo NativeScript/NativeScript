@@ -4,6 +4,7 @@ import utils = require("utils/utils");
 import types = require("utils/types");
 import view = require("ui/core/view");
 import definition = require("application");
+import native_api = require("native-api");
 
 global.moduleMerge(appModule, exports);
 
@@ -120,23 +121,23 @@ class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
 }
 
 class NotificationReceiver extends NSObject {
-    private _onReceiveCallback: (notification: NSNotification) => void;
+    private _onReceiveCallback: (notification: native_api.NSNotification) => void;
 
     static new(): NotificationReceiver {
         return <NotificationReceiver>super.new();
     }
 
-    public initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationReceiver {
+    public initWithCallback(onReceiveCallback: (notification: native_api.NSNotification) => void): NotificationReceiver {
         this._onReceiveCallback = onReceiveCallback;
         return this;
     }
 
-    public onReceive(notification: NSNotification): void {
+    public onReceive(notification: native_api.NSNotification): void {
         this._onReceiveCallback(notification);
     }
 
     public static ObjCExposedMethods = {
-        "onReceive": { returns: interop.types.void, params: [NSNotification] }
+        "onReceive": { returns: interop.types.void, params: [native_api.NSNotification] }
     };
 }
 
@@ -156,7 +157,7 @@ class IOSApplication implements definition.iOSApplication {
         this._tnsAppdelegate = new TNSAppDelegate();
     }
 
-    public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void) {
+    public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: native_api.NSNotification) => void) {
         var observer = NotificationReceiver.new().initWithCallback(onReceiveCallback);
         NSNotificationCenter.defaultCenter().addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
         this._registeredObservers[notificationName] = observer;

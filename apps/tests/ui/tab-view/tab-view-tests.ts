@@ -9,6 +9,7 @@ import pageModule = require("ui/page");
 import listViewModule = require("ui/list-view");
 import buttonModule = require("ui/button");
 import observable = require("data/observable");
+import native_api = require("native-api");
 
 // <snippet module="ui/tab-view" title="TabView">
 // # TabView
@@ -571,10 +572,10 @@ function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache
 
 function _clickTheFirstButtonInTheListViewNatively(tabView: tabViewModule.TabView) {
     if (tabView.android) {
-        var androidListView = <android.widget.ListView>tabView.android.getChildAt(0);
-        (<android.widget.Button>androidListView.getChildAt(0)).performClick();
+        var androidListView = <native_api.android.widget.ListView>tabView.android.getChildAt(0);
+        (<native_api.android.widget.Button>androidListView.getChildAt(0)).performClick();
     }
     else {
-        (<UIButton>(<UITableView>tabView.ios.viewControllers[0].view.subviews[0]).cellForRowAtIndexPath(NSIndexPath.indexPathForItemInSection(0, 0)).contentView.subviews[0]).sendActionsForControlEvents(UIControlEvents.UIControlEventTouchUpInside);
+        (<native_api.UIButton>(<native_api.UITableView>tabView.ios.viewControllers[0].view.subviews[0]).cellForRowAtIndexPath(native_api.NSIndexPath.indexPathForItemInSection(0, 0)).contentView.subviews[0]).sendActionsForControlEvents(native_api.UIControlEvents.UIControlEventTouchUpInside);
     }
 }

@@ -7,6 +7,7 @@ import formattedString = require("text/formatted-string");
 import weakEvents = require("ui/core/weak-event-listener");
 import utils = require("utils/utils");
 import trace = require("trace");
+import native_api = require("native-api");
 
 var textProperty = new dependencyObservable.Property(
     "text",
@@ -131,7 +132,7 @@ export class TextBase extends view.View implements definition.TextBase {
                 var widthMeasureSpec = utils.layout.makeMeasureSpec(width, utils.layout.EXACTLY);
                 var heightMeasureSpec = utils.layout.makeMeasureSpec(height, utils.layout.EXACTLY);
                 trace.write(this + ", measuredSize: (" + measuredWidth + ", " + measuredHeight + ")" + ", remeasure with: (" + width + ", " + height + ")", trace.categories.Layout);
-                (<android.view.View>this._nativeView).measure(widthMeasureSpec, heightMeasureSpec);
+                (<native_api.android.view.View>this._nativeView).measure(widthMeasureSpec, heightMeasureSpec);
             }
         }
 

@@ -6,6 +6,7 @@ declare module "ui/list-view" {
     import dependencyObservable = require("ui/core/dependency-observable");
     import view = require("ui/core/view");
     import color = require("color");
+    import native_api = require("native-api");
 
     /**
      * Known template names.
@@ -52,12 +53,12 @@ declare module "ui/list-view" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/ListView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.ListView;
+        android: native_api.android.widget.ListView;
 
         /**
          * Gets the native [iOS view](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UITableView;
+        ios: native_api.UITableView;
 
         /**
          * Gets a value indicating whether the ListView is currently scrolling.
@@ -129,11 +130,11 @@ declare module "ui/list-view" {
         /**
          * Gets the native [iOS view](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableViewCell_Class/) that represents the user interface where the view is hosted. Valid only when running on iOS.
          */
-        ios: UITableViewCell;
+        ios: native_api.UITableViewCell;
 
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/view/ViewGroup.html) that represents the user interface where the view is hosted. Valid only when running on Android OS.
          */
-        android: android.view.ViewGroup;
+        android: native_api.android.view.ViewGroup;
     }
 }

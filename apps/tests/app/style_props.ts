@@ -5,6 +5,7 @@ import view = require("ui/core/view");
 import buttonModule = require("ui/button");
 import pages = require("ui/page");
 import stackLayoutDef = require("ui/layouts/stack-layout");
+import native_api = require("native-api");
 
 export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.AffectsLayout));
@@ -12,30 +13,30 @@ export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-f
 export class MyTextViewStyler implements styles.stylers.Styler {
     public static setFontFamilyProperty(view: view.View, newValue: any) {
         if (view.android) {
-            (<android.widget.TextView>view.android).setTypeface(android.graphics.Typeface.create(newValue, android.graphics.Typeface.NORMAL));
+            (<native_api.android.widget.TextView>view.android).setTypeface(native_api.android.graphics.Typeface.create(newValue, native_api.android.graphics.Typeface.NORMAL));
         }
         else if (view.ios) {
-            var fontSize = (<UIButton>view._nativeView).titleLabel.font.pointSize;
-            (<UIButton>view._nativeView).titleLabel.font = UIFont.fontWithNameSize(newValue, fontSize);
+            var fontSize = (<native_api.UIButton>view._nativeView).titleLabel.font.pointSize;
+            (<native_api.UIButton>view._nativeView).titleLabel.font = native_api.UIFont.fontWithNameSize(newValue, fontSize);
         }
     }
 
     public static resetFontFamilyProperty(view: view.View, nativeValue: any) {
         if (view.android) {
-            (<android.widget.TextView>view.android).setTypeface(android.graphics.Typeface.create(nativeValue, android.graphics.Typeface.NORMAL));
+            (<native_api.android.widget.TextView>view.android).setTypeface(native_api.android.graphics.Typeface.create(nativeValue, native_api.android.graphics.Typeface.NORMAL));
         }
         else if (view.ios) {
-            var fontSize = (<UIButton>view._nativeView).titleLabel.font.pointSize;
-            (<UIButton>view._nativeView).titleLabel.font = UIFont.fontWithNameSize(nativeValue, fontSize);;
+            var fontSize = (<native_api.UIButton>view._nativeView).titleLabel.font.pointSize;
+            (<native_api.UIButton>view._nativeView).titleLabel.font = native_api.UIFont.fontWithNameSize(nativeValue, fontSize);;
         }
     }
 
     public static getNativeFontFamilyValue = function (view: view.View): any {
         if (view.android) {
-            return (<android.widget.TextView>view.android).getTypeface();
+            return (<native_api.android.widget.TextView>view.android).getTypeface();
         }
         else if (view.ios) {
-            return (<UIButton>view._nativeView).titleLabel.font.fontName;
+            return (<native_api.UIButton>view._nativeView).titleLabel.font.fontName;
         }
         return null;
     }

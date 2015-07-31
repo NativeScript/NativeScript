@@ -5,6 +5,7 @@ declare module "ui/label" {
     import view = require("ui/core/view");
     import dependencyObservable = require("ui/core/dependency-observable");
     import textBase = require("ui/text-base");
+    import native_api = require("native-api");
 
     /**
      * Represents a text label.
@@ -21,12 +22,12 @@ declare module "ui/label" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/TextView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.TextView;
+        android: native_api.android.widget.TextView;
 
         /**
          * Gets the native [UILabel](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UILabel_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UILabel;
+        ios: native_api.UILabel;
 
         /**
          * Gets or sets whether the Label wraps text or not.

@@ -2,6 +2,7 @@
 import view = require("ui/core/view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import native_api = require("native-api");
 
 function onClipToBoundsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var nativeView = (<Layout>data.object)._nativeView;
@@ -10,11 +11,11 @@ function onClipToBoundsPropertyChanged(data: dependencyObservable.PropertyChange
     }
     var value = <boolean>data.newValue;
 
-    if (nativeView instanceof UIView) {
-        (<UIView>nativeView).clipsToBounds = value;
+    if (nativeView instanceof native_api.UIView) {
+        (<native_api.UIView>nativeView).clipsToBounds = value;
     }
-    else if (nativeView instanceof android.view.ViewGroup) {
-        (<android.view.ViewGroup>nativeView).setClipChildren(value);
+    else if (nativeView instanceof native_api.android.view.ViewGroup) {
+        (<native_api.android.view.ViewGroup>nativeView).setClipChildren(value);
     }
 }
 

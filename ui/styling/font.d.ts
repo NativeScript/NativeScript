@@ -1,4 +1,6 @@
 ﻿declare module "ui/styling/font" {
+    import native_api = require("native-api");
+
     export class Font {
         public static default: Font;
 
@@ -12,8 +14,8 @@
 
         constructor(family: string, size: number, style: string, weight: string);
 
-        public getAndroidTypeface(): android.graphics.Typeface;
-        public getUIFont(defaultFont: UIFont): UIFont;
+        public getAndroidTypeface(): native_api.android.graphics.Typeface;
+        public getUIFont(defaultFont: native_api.UIFont): native_api.UIFont;
 
         public withFontFamily(family: string): Font;
         public withFontStyle(style: string): Font;

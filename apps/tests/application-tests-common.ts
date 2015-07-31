@@ -5,6 +5,7 @@
 // The default bootstrap.js implementation for each platform loads and initializes this module.
 // ``` JavaScript
 import app = require("application");
+import native_api = require("native-api");
 // ```
 // The pre-required `app` module is used throughout the following code snippets.
 // </snippet>
@@ -27,7 +28,7 @@ export var testInitialized = function () {
     if (global.android) {
         // we have the android defined
         TKUnit.assert(app.android, "Application module not properly intialized");
-    } else if (NSObject) {
+    } else if (native_api.NSObject) {
         TKUnit.assert(app.ios, "Application module not properly intialized");
     }
 } 

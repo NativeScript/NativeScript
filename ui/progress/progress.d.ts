@@ -4,6 +4,7 @@
 declare module "ui/progress" {
     import view = require("ui/core/view");
     import dependencyObservable = require("ui/core/dependency-observable");
+    import native_api = require("native-api");
 
     /**
      * Represents a progress component.
@@ -22,12 +23,12 @@ declare module "ui/progress" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/ProgressBar.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.ProgressBar;
+        android: native_api.android.widget.ProgressBar;
 
         /**
          * Gets the native iOS [UIProgressView](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIProgressView_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UIProgressView;
+        ios: native_api.UIProgressView;
 
         /**
          * Gets or sets a progress current value.

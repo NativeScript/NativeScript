@@ -2,6 +2,7 @@
  * Allows creating colors to be used when styling the UI.
  */
 declare module "color" {
+    import native_api = require("native-api");
     /**
      * Represents a color object. Stores all color components (alpha (opacity), red, green, blue) in a [0..255] range.
      */
@@ -54,7 +55,7 @@ declare module "color" {
         /**
          * Gets the iOS-specific UIColor value representation. This is a read-only property.
          */
-        ios: UIColor;
+        ios: native_api.UIColor;
 
         /**
          * Specifies whether this Color is equal to the Color parameter.
