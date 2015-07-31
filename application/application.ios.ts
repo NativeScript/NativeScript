@@ -145,16 +145,11 @@ class IOSApplication implements definition.iOSApplication {
 
     public nativeApp: any;
     public rootController: any;
-    private _tnsAppdelegate: TNSAppDelegate;
     private _registeredObservers = {};
 
     constructor() {
         // TODO: in iOS there is the singleton instance, while in Android such does not exist hence we pass it as argument
         this.nativeApp = UIApplication.sharedApplication();
-    }
-
-    public init() {
-        this._tnsAppdelegate = new TNSAppDelegate();
     }
 
     public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void) {
@@ -174,7 +169,6 @@ class IOSApplication implements definition.iOSApplication {
 // TODO: If we have nested require(application) calls we may enter unfinished module state, which will create two delegates, resulting in an exception
 var app = new IOSApplication();
 exports.ios = app;
-app.init();
 
 exports.start = function () {
     appModule.loadCss();
