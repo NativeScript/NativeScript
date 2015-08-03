@@ -1,5 +1,5 @@
 {
-  "name": "reworkcss-value.js",
+  "name": "css-value",
   "version": "0.0.1",
   "description": "CSS value parser",
   "keywords": ["css", "parser", "value"],

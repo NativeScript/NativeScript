@@ -1,6 +1,6 @@
 ﻿declare module "ui/styling/css-selector" {
     import view = require("ui/core/view");
-    import cssParser = require("js-libs/reworkcss");
+    import cssParser = require("css");
     import styleProperty = require("ui/styling/style-property");
 
     export class CssSelector {

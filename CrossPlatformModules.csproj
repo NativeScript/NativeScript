@@ -380,7 +380,7 @@
     <TypeScriptCompile Include="image-source\image-source.ios.ts">
       <DependentUpon>image-source.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="js-libs\reworkcss-value\reworkcss-value.d.ts" />
+    <TypeScriptCompile Include="css-value\reworkcss-value.d.ts" />
     <TypeScriptCompile Include="platform\platform.ios.ts">
       <DependentUpon>platform.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -900,7 +900,7 @@
     <Content Include="apps\ui-tests-app\pages\text\button.xml" />
     <Content Include="apps\ui-tests-app\web-view\webview.xml" />
     <Content Include="fetch\fetch.js" />
-    <Content Include="js-libs\reworkcss-value\reworkcss-value.js" />
+    <Content Include="css-value\reworkcss-value.js" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1130,7 +1130,7 @@
     <TypeScriptCompile Include="apps\perf-tests\LargeObjectArrayMemoryTest\mainPage.ts" />
     <TypeScriptCompile Include="apps\perf-tests\ComplexObjectGraphMemoryTest\app.ts" />
     <TypeScriptCompile Include="apps\perf-tests\ComplexObjectGraphMemoryTest\mainPage.ts" />
-    <TypeScriptCompile Include="js-libs\reworkcss\reworkcss.d.ts" />
+    <TypeScriptCompile Include="css\reworkcss.d.ts" />
     <Content Include="js-libs\esprima\esprima.js">
       <DependentUpon>esprima.d.ts</DependentUpon>
     </Content>
@@ -1138,7 +1138,7 @@
     <Content Include="js-libs\polymer-expressions\polymer-expressions.js">
       <DependentUpon>polymer-expressions.d.ts</DependentUpon>
     </Content>
-    <Content Include="js-libs\reworkcss\reworkcss.js">
+    <Content Include="css\reworkcss.js">
       <DependentUpon>reworkcss.d.ts</DependentUpon>
     </Content>
     <TypeScriptCompile Include="apps\tests\xml-declaration\app.ts" />
@@ -1662,9 +1662,9 @@
     <Content Include="apps\perf-tests\ApplicationLoadTimeAndFPS\package.json" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="js-libs\reworkcss\LICENSE" />
-    <Content Include="js-libs\reworkcss\package.json" />
-    <Content Include="js-libs\reworkcss\Readme.md" />
+    <Content Include="css\LICENSE" />
+    <Content Include="css\package.json" />
+    <Content Include="css\Readme.md" />
     <Content Include="data\observable\package.json" />
   </ItemGroup>
   <ItemGroup>
@@ -1805,9 +1805,9 @@
     <Content Include="ui\repeater\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="js-libs\reworkcss-value\LICENSE" />
-    <Content Include="js-libs\reworkcss-value\package.json" />
-    <Content Include="js-libs\reworkcss-value\Readme.md" />
+    <Content Include="css-value\LICENSE" />
+    <Content Include="css-value\package.json" />
+    <Content Include="css-value\Readme.md" />
     <Content Include="ui\action-bar\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -309,7 +309,7 @@
         "./js-libs/easysax/easysax.d.ts",
         "./js-libs/esprima/esprima.d.ts",
         "./js-libs/polymer-expressions/polymer-expressions.d.ts",
-        "./js-libs/reworkcss/reworkcss.d.ts",
+        "./css/reworkcss.d.ts",
         "./libjs.d.ts",
         "./location/location-common.ts",
         "./location/location.android.ts",
