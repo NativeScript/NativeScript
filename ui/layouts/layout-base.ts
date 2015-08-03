@@ -5,7 +5,7 @@ import proxy = require("ui/core/proxy");
 
 export class LayoutBase extends view.CustomLayoutView implements definition.LayoutBase, view.AddChildFromBuilder {
 
-    public static clipToBoundsProperty = new dependencyObservable.Property("clipToBounds", "LayoutBase", 
+    public static clipToBoundsProperty = new dependencyObservable.Property("clipToBounds", "LayoutBase",
         new proxy.PropertyMetadata(true, dependencyObservable.PropertyMetadataSettings.None, LayoutBase.onClipToBoundsPropertyChanged));
 
     private _subViews: Array<view.View> = new Array<view.View>();
@@ -71,7 +71,7 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
 
     get padding(): string {
         return this.style.padding;
-        }
+    }
     set padding(value: string) {
         this.style.padding = value;
     }
@@ -105,8 +105,19 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
     }
 
     protected onClipToBoundsChanged(oldValue: boolean, newValue: boolean) {
-        //
+        var nativeView = this._nativeView;
+        if (!nativeView) {
+            return;
         }
+
+        if (nativeView instanceof UIView) {
+            nativeView.clipsToBounds = newValue;
+        }
+
+        else if (nativeView instanceof android.view.ViewGroup) {
+            nativeView.setClipChildren(newValue);
+        }
+    }
 
     private static onClipToBoundsPropertyChanged(data: dependencyObservable.PropertyChangeData): void {
         var layout = <LayoutBase>data.object;

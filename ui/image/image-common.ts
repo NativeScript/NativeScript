@@ -13,6 +13,9 @@ var IMAGE = "Image";
 var ISLOADING = "isLoading";
 var STRETCH = "stretch";
 
+// on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
+var AffectsLayout = global.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
+
 function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
     var value = data.newValue;
@@ -58,7 +61,7 @@ export class Image extends view.View implements definition.Image {
         new proxy.PropertyMetadata(false, dependencyObservable.PropertyMetadataSettings.None));
 
     public static stretchProperty = new dependencyObservable.Property(STRETCH, IMAGE,
-        new proxy.PropertyMetadata(enums.Stretch.aspectFit, dependencyObservable.PropertyMetadataSettings.AffectsLayout));
+        new proxy.PropertyMetadata(enums.Stretch.aspectFit, AffectsLayout));
 
     constructor(options?: definition.Options) {
         super(options);

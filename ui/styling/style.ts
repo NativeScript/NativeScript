@@ -116,23 +116,35 @@ function onPaddingValueChanged(data: observable.PropertyChangeData) {
 function onPaddingChanged(data: observable.PropertyChangeData) {
     var thickness = parseThickness(data.newValue);
     var style = <Style>data.object;
-
     var valueSource = style._getValueSource(paddingProperty);
-    style._setValue(paddingTopProperty, thickness.top, valueSource);
-    style._setValue(paddingRightProperty, thickness.right, valueSource);
-    style._setValue(paddingBottomProperty, thickness.bottom, valueSource);
-    style._setValue(paddingLeftProperty, thickness.left, valueSource);
+
+    try {
+        style._beginUpdate();
+        style._setValue(paddingTopProperty, thickness.top, valueSource);
+        style._setValue(paddingRightProperty, thickness.right, valueSource);
+        style._setValue(paddingBottomProperty, thickness.bottom, valueSource);
+        style._setValue(paddingLeftProperty, thickness.left, valueSource);
+    }
+    finally {
+        style._endUpdate();
+    }
 }
 
 function onMarginChanged(data: observable.PropertyChangeData) {
     var thickness = parseThickness(data.newValue);
     var style = <Style>data.object;
-
     var valueSource = style._getValueSource(marginProperty);
-    style._setValue(marginTopProperty, thickness.top, valueSource);
-    style._setValue(marginRightProperty, thickness.right, valueSource);
-    style._setValue(marginBottomProperty, thickness.bottom, valueSource);
-    style._setValue(marginLeftProperty, thickness.left, valueSource);
+
+    try {
+        style._beginUpdate();
+        style._setValue(marginTopProperty, thickness.top, valueSource);
+        style._setValue(marginRightProperty, thickness.right, valueSource);
+        style._setValue(marginBottomProperty, thickness.bottom, valueSource);
+        style._setValue(marginLeftProperty, thickness.left, valueSource);
+    }
+    finally {
+        style._endUpdate();
+    }
 }
 
 function thicknessComparer(x: Thickness, y: Thickness): boolean {
@@ -321,10 +333,16 @@ function onFontChanged(data: observable.PropertyChangeData) {
 
     var newFont = font.Font.parse(data.newValue);
     var valueSource = style._getValueSource(fontProperty);
-    style._setValue(fontFamilyProperty, newFont.fontFamily, valueSource);
-    style._setValue(fontStyleProperty, newFont.fontStyle, valueSource);
-    style._setValue(fontWeightProperty, newFont.fontWeight, valueSource);
-    style._setValue(fontSizeProperty, newFont.fontSize, valueSource);
+    try {
+        style._beginUpdate();
+        style._setValue(fontFamilyProperty, newFont.fontFamily, valueSource);
+        style._setValue(fontStyleProperty, newFont.fontStyle, valueSource);
+        style._setValue(fontWeightProperty, newFont.fontWeight, valueSource);
+        style._setValue(fontSizeProperty, newFont.fontSize, valueSource);
+    }
+    finally {
+        style._endUpdate();
+    }
 }
 
 export class Style extends observable.DependencyObservable implements styling.Style {

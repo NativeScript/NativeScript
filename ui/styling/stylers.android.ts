@@ -126,8 +126,8 @@ export class DefaultStyler implements definition.stylers.Styler {
         }
 
         // If height is not specified set it as WRAP_CONTENT
-        if (lp.height < 0) {
-            lp.height = -2;
+        if (height < 0) {
+            height = -2;
         }
 
         var gravity = 0;

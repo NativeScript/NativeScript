@@ -32,10 +32,4 @@ export class Layout extends layoutBase.LayoutBase implements definition.Layout {
         var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
         trace.write(this + " :onMeasure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
     }
-
-    protected onClipToBoundsChanged(oldValue: boolean, newValue: boolean): void {
-        if (this._nativeView) {
-            this._nativeView.clipsToBounds = newValue;
-        }
-    }
 }
