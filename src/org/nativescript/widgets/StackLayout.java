@@ -87,7 +87,7 @@ public class StackLayout extends LayoutBase {
                 remainingLength = Math.max(0, remainingLength - childMeasuredHeight);
             }
             else {
-            	CommonLayoutParams.measureChild(child, MeasureSpec.makeMeasureSpec(remainingLength, measureSpecMode), heightMeasureSpec);
+            	CommonLayoutParams.measureChild(child, MeasureSpec.makeMeasureSpec(remainingLength, measureSpecMode), childMeasureSpec);
                 final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
                 final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
                 
