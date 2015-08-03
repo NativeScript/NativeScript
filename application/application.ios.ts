@@ -183,9 +183,9 @@ class IOSApplication implements definition.iOSApplication {
 
             exports.notify(<definition.OrientationChangedEventData>{
                 eventName: definition.orientationChangedEvent,
-                ios: exports.ios,
+                ios: this,
                 newValue: newValue,
-                object: exports.ios,
+                object: this
             });
         }
     }
@@ -195,7 +195,9 @@ class IOSApplication implements definition.iOSApplication {
 exports.ios = new IOSApplication();
 
 exports.start = function () {
+
     appModule.loadCss();
+
     try {
         // The "UIApplicationMain" enters a modal loop and the call will not return while the application is running.
         // This try-catch block here will catch JavaScript errors but no Objective C ones.
