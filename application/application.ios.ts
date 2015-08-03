@@ -68,7 +68,7 @@ class IOSApplication implements definition.iOSApplication {
         this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground);
         this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate);
         this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning);
-        this.addNotificationObserver(UIDeviceOrientationDidChangeNotification, this.oreintationDidChange);
+        this.addNotificationObserver(UIDeviceOrientationDidChangeNotification, this.orientationDidChange);
     }
 
     get nativeApp(): UIApplication {
@@ -162,7 +162,7 @@ class IOSApplication implements definition.iOSApplication {
         exports.notify({ eventName: definition.lowMemoryEvent, object: this, android: undefined, ios: UIApplication.sharedApplication() });
     }
 
-    private oreintationDidChange(notification: NSNotification) {
+    private orientationDidChange(notification: NSNotification) {
         var orientation = UIDevice.currentDevice().orientation;
 
         if (this._currentOrientation !== orientation) {
