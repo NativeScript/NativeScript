@@ -3,7 +3,7 @@ import colorModule = require("color");
 import types = require("utils/types");
 import enums = require("ui/enums");
 import dts = require("ui/styling/background");
-import cssValue = require("js-libs/reworkcss-value");
+import cssValue = require("css-value");
 
 export class Background implements dts.Background {
     public static default = new Background(undefined, undefined, undefined, undefined, undefined);

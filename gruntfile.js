@@ -199,6 +199,8 @@ module.exports = function(grunt) {
                 src: [
                     "./js-libs/**/*.js",
                     "./fetch/**/*.js",
+                    "./css/**/*.js",
+                    "./css-value/**/*.js",
                 ],
                 dest: "<%= localCfg.outModulesDir %>/",
                 cwd: localCfg.srcDir

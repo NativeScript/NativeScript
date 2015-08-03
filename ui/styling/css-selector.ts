@@ -1,6 +1,6 @@
 ﻿import view = require("ui/core/view");
 import observable = require("ui/core/dependency-observable");
-import cssParser = require("js-libs/reworkcss");
+import cssParser = require("css");
 import styleProperty = require("ui/styling/style-property");
 import trace = require("trace");
 

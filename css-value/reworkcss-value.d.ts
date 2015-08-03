@@ -1,4 +1,4 @@
-declare module "js-libs/reworkcss-value" {
+declare module "css-value" {
     export interface CSSValue {
         type: string;
         string: string;
