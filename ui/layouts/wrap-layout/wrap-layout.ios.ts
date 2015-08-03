@@ -146,7 +146,7 @@ export class WrapLayout extends common.WrapLayout {
                 
                 
                 childWidth = length;
-                childHeight = isNaN(this.itemHeight) ? childHeight : this.itemHeight * density;
+                childHeight = this.itemHeight > 0 ? this.itemHeight * density : childHeight;
                 if (childTop + childHeight > childrenLength) {
                     // Move to top.
                     childTop = this.paddingTop * density;
@@ -162,7 +162,7 @@ export class WrapLayout extends common.WrapLayout {
                 }
             }
             else {
-                childWidth = isNaN(this.itemWidth) ? childWidth : this.itemWidth * density;
+                childWidth = this.itemWidth > 0 ? this.itemWidth * density : childWidth;
                 childHeight = length;
                 if (childLeft + childWidth > childrenLength) {
                     // Move to left.

@@ -88,6 +88,13 @@ export class MyButton extends button.Button {
     get layoutTop(): number {
         return this._layoutTop;
     }
+
+    _getCurrentMeasureSpecs(): { widthMeasureSpec: number; heightMeasureSpec: number } {
+        return {
+            widthMeasureSpec: (<any>this)._oldWidthMeasureSpec,
+            heightMeasureSpec: (<any>this)._oldHeightMeasureSpec
+        };
+    }
 }
 
 export function assertMeasure(btn: MyButton, width: number, height: number, name?: string) {
