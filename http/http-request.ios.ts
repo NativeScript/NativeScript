@@ -35,7 +35,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
             if (types.isString(options.content) || options.content instanceof FormData) {
                 urlRequest.HTTPBody = NSString.alloc().initWithString(options.content.toString()).dataUsingEncoding(4);
             }
-            
+
             if (types.isNumber(options.timeout)) {
                 urlRequest.timeoutInterval = options.timeout / 1000;
             }
@@ -46,12 +46,14 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                         reject(new Error(error.localizedDescription));
                     } else {
                         var headers = {};
-                        var headerFields = response.allHeaderFields;
-                        var keys = headerFields.allKeys;
+                        if (response && response.allHeaderFields) {
+                            var headerFields = response.allHeaderFields;
+                            var keys = headerFields.allKeys;
 
-                        for (var i = 0, l = keys.count; i < l; i++) {
-                            var key = keys.objectAtIndex(i);
-                            headers[key] = headerFields.valueForKey(key);
+                            for (var i = 0, l = keys.count; i < l; i++) {
+                                var key = keys.objectAtIndex(i);
+                                headers[key] = headerFields.valueForKey(key);
+                            }
                         }
 
                         resolve({
