@@ -58,6 +58,7 @@ class IOSApplication implements definition.iOSApplication {
     private _delegate: typeof UIApplicationDelegate;
     public rootController: any;
     private _registeredObservers = {};
+    private _currentOrientation = UIDevice.currentDevice().orientation;
 
     constructor() {
         this.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, this.didFinishLaunchingWithOptions);
@@ -65,6 +66,7 @@ class IOSApplication implements definition.iOSApplication {
         this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground);
         this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate);
         this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning);
+        this.addNotificationObserver(UIDeviceOrientationDidChangeNotification, this.oreintationDidChange);
     }
 
     get nativeApp(): UIApplication {
@@ -118,12 +120,11 @@ class IOSApplication implements definition.iOSApplication {
                 return;
             }
         }
-        var app: IOSApplication = exports.ios;
-        setupOrientationListener(app);
 
         window.content = topFrame;
-        window.rootViewController = topFrame.ios.controller;
-        app.rootController = window.rootViewController;
+
+        this.rootController = window.rootViewController = topFrame.ios.controller;
+
         window.makeKeyAndVisible();
     }
 
@@ -158,11 +159,40 @@ class IOSApplication implements definition.iOSApplication {
 
         exports.notify({ eventName: definition.lowMemoryEvent, object: this, android: undefined, ios: UIApplication.sharedApplication() });
     }
+
+    private oreintationDidChange(notification: NSNotification) {
+        var orientation = UIDevice.currentDevice().orientation;
+
+        if (this._currentOrientation !== orientation) {
+            this._currentOrientation = orientation;
+
+            var newValue;
+            switch (orientation) {
+                case UIDeviceOrientation.UIDeviceOrientationLandscapeRight:
+                case UIDeviceOrientation.UIDeviceOrientationLandscapeLeft:
+                    newValue = enums.DeviceOrientation.landscape;
+                    break;
+                case UIDeviceOrientation.UIDeviceOrientationPortrait:
+                case UIDeviceOrientation.UIDeviceOrientationPortraitUpsideDown:
+                    newValue = enums.DeviceOrientation.portrait;
+                    break;
+                default:
+                    newValue = enums.DeviceOrientation.unknown;
+                    break;
+            }
+
+            exports.notify(<definition.OrientationChangedEventData>{
+                eventName: definition.orientationChangedEvent,
+                ios: exports.ios,
+                newValue: newValue,
+                object: exports.ios,
+            });
+        }
+    }
+
 }
 
-// TODO: If we have nested require(application) calls we may enter unfinished module state, which will create two delegates, resulting in an exception
-var app = new IOSApplication();
-exports.ios = app;
+exports.ios = new IOSApplication();
 
 exports.start = function () {
     appModule.loadCss();
@@ -171,7 +201,7 @@ exports.start = function () {
         // This try-catch block here will catch JavaScript errors but no Objective C ones.
         // TODO: We need to implement better error handling for our native calls and to use the "error" parameter of the iOS APIs.
 
-        UIApplicationMain(0, null, null, app.delegate ? NSStringFromClass(app.delegate) : null);
+        UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : null);
     }
     catch (error) {
         // At this point the main application loop is exited and no UI May be created.
@@ -182,41 +212,5 @@ exports.start = function () {
         exports.onUncaughtError(error);
 
         definition.notify({ eventName: definition.uncaughtErrorEvent, object: <any>definition.ios, ios: error });
-    }
-}
-
-var currentOrientation: number;
-function setupOrientationListener(iosApp: IOSApplication) {
-    iosApp.addNotificationObserver(UIDeviceOrientationDidChangeNotification, onOreintationDidChange)
-    currentOrientation = UIDevice.currentDevice().orientation;
-}
-
-function onOreintationDidChange(notification: NSNotification) {
-    var orientation = UIDevice.currentDevice().orientation;
-
-    if (currentOrientation !== orientation) {
-        currentOrientation = orientation;
-
-        var newValue;
-        switch (orientation) {
-            case UIDeviceOrientation.UIDeviceOrientationLandscapeRight:
-            case UIDeviceOrientation.UIDeviceOrientationLandscapeLeft:
-                newValue = enums.DeviceOrientation.landscape;
-                break;
-            case UIDeviceOrientation.UIDeviceOrientationPortrait:
-            case UIDeviceOrientation.UIDeviceOrientationPortraitUpsideDown:
-                newValue = enums.DeviceOrientation.portrait;
-                break;
-            default:
-                newValue = enums.DeviceOrientation.unknown;
-                break;
-        }
-
-        exports.notify(<definition.OrientationChangedEventData>{
-            eventName: definition.orientationChangedEvent,
-            ios: exports.ios,
-            newValue: newValue,
-            object: exports.ios,
-        });
     }
 }
