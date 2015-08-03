@@ -33,93 +33,6 @@ class Window extends UIWindow {
     }
 }
 
-class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
-    
-    // An array of protocols to be implemented by the native class
-    public static ObjCProtocols = [UIApplicationDelegate];
-
-    public window: Window;
-
-    applicationDidFinishLaunchingWithOptions(application: UIApplication, launchOptions: NSDictionary): boolean {
-        this.window = <Window>Window.alloc().initWithFrame(UIScreen.mainScreen().bounds);
-        this.window.backgroundColor = UIColor.whiteColor();
-
-        if (exports.onLaunch) {
-            exports.onLaunch();
-        }
-
-        exports.notify({ eventName: definition.launchEvent, object: this, ios: launchOptions });
-
-        var topFrame = frame.topmost();
-        if (!topFrame) {
-            if (mainModule) {
-                topFrame = new frame.Frame();
-                topFrame.navigate(mainModule);
-            } else {
-                // TODO: Throw an exception?
-                // throw new Error("A Frame must be used to navigate to a Page.");
-                return;
-            }
-        }
-        var app: IOSApplication = exports.ios;
-        setupOrientationListener(app);
-
-        this.window.content = topFrame;
-        this.window.rootViewController = topFrame.ios.controller;
-        app.rootController = this.window.rootViewController;
-        this.window.makeKeyAndVisible();
-        return true;
-    }
-
-    applicationDidBecomeActive(application: UIApplication) {
-        if (exports.onResume) {
-            exports.onResume();
-        }
-
-        exports.notify({ eventName: definition.resumeEvent, object: this, ios: application });
-    }
-
-    applicationWillResignActive(application: UIApplication) {
-        //
-    }
-
-    applicationDidEnterBackground(application: UIApplication) {
-        if (exports.onSuspend) {
-            exports.onSuspend();
-        }
-
-        exports.notify({ eventName: definition.suspendEvent, object: this, ios: application });
-    }
-
-    applicationWillEnterForeground(application: UIApplication) {
-        //
-    }
-
-    applicationWillTerminate(application: UIApplication) {
-        if (exports.onExit) {
-            exports.onExit();
-        }
-
-        exports.notify({ eventName: definition.exitEvent, object: this, ios: application });
-    }
-
-    applicationDidReceiveMemoryWarning(application: UIApplication) {
-        if (exports.onLowMemory) {
-            exports.onLowMemory();
-        }
-
-        exports.notify({ eventName: definition.lowMemoryEvent, object: this, android: undefined, ios: application });
-    }
-
-    applicationOpenURLSourceApplicationAnnotation(application: UIApplication, url: NSURL, sourceApplication: string, annotation: any): boolean {
-        var dictionary = new NSMutableDictionary();
-        dictionary.setObjectForKey(url, "TLKApplicationOpenURL");
-        dictionary.setObjectForKey(application, "TLKApplication");
-        NSNotificationCenter.defaultCenter().postNotificationNameObjectUserInfo("com.telerik.TLKApplicationOpenURL", null, dictionary);
-        return true; // or should we return false???
-    }
-}
-
 class NotificationReceiver extends NSObject {
     private _onReceiveCallback: (notification: NSNotification) => void;
 
@@ -142,14 +55,29 @@ class NotificationReceiver extends NSObject {
 }
 
 class IOSApplication implements definition.iOSApplication {
-
-    public nativeApp: any;
+    private _delegate: typeof UIApplicationDelegate;
     public rootController: any;
     private _registeredObservers = {};
 
     constructor() {
-        // TODO: in iOS there is the singleton instance, while in Android such does not exist hence we pass it as argument
-        this.nativeApp = UIApplication.sharedApplication();
+        this.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, this.didFinishLaunchingWithOptions);
+        this.addNotificationObserver(UIApplicationDidBecomeActiveNotification, this.didBecomeActive);
+        this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground);
+        this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate);
+        this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning);
+    }
+
+    get nativeApp(): UIApplication {
+        return UIApplication.sharedApplication();
+    }
+
+    get delegate(): typeof UIApplicationDelegate {
+        return this._delegate;
+    }
+    set delegate(value: typeof UIApplicationDelegate) {
+        if (this._delegate !== value) {
+            this._delegate = value;
+        }
     }
 
     public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void) {
@@ -164,6 +92,72 @@ class IOSApplication implements definition.iOSApplication {
             NSNotificationCenter.defaultCenter().removeObserverNameObject(observer, notificationName, null);
         }
     }
+
+    private didFinishLaunchingWithOptions(notification: NSNotification) {
+        let window = <Window>Window.alloc().initWithFrame(UIScreen.mainScreen().bounds);
+        window.backgroundColor = UIColor.whiteColor();
+
+        if (exports.onLaunch) {
+            exports.onLaunch();
+        }
+
+        exports.notify({
+            eventName: definition.launchEvent,
+            object: this,
+            ios: notification.userInfo && notification.userInfo.objectForKey("UIApplicationLaunchOptionsLocalNotificationKey") || null
+        });
+
+        var topFrame = frame.topmost();
+        if (!topFrame) {
+            if (mainModule) {
+                topFrame = new frame.Frame();
+                topFrame.navigate(mainModule);
+            } else {
+                // TODO: Throw an exception?
+                // throw new Error("A Frame must be used to navigate to a Page.");
+                return;
+            }
+        }
+        var app: IOSApplication = exports.ios;
+        setupOrientationListener(app);
+
+        window.content = topFrame;
+        window.rootViewController = topFrame.ios.controller;
+        app.rootController = window.rootViewController;
+        window.makeKeyAndVisible();
+    }
+
+    private didBecomeActive(notification: NSNotification) {
+        if (exports.onResume) {
+            exports.onResume();
+        }
+
+        exports.notify({ eventName: definition.resumeEvent, object: this, ios: UIApplication.sharedApplication() });
+    }
+
+    private didEnterBackground(notification: NSNotification) {
+        if (exports.onSuspend) {
+            exports.onSuspend();
+        }
+
+        exports.notify({ eventName: definition.suspendEvent, object: this, ios: UIApplication.sharedApplication() });
+    }
+
+    private willTerminate(notification: NSNotification) {
+        if (exports.onExit) {
+            exports.onExit();
+        }
+
+        exports.notify({ eventName: definition.exitEvent, object: this, ios: UIApplication.sharedApplication() });
+    }
+
+    private didReceiveMemoryWarning(notification: NSNotification) {
+        if (exports.onLowMemory) {
+            exports.onLowMemory();
+        }
+
+        exports.notify({ eventName: definition.lowMemoryEvent, object: this, android: undefined, ios: UIApplication.sharedApplication() });
+    }
 }
 
 // TODO: If we have nested require(application) calls we may enter unfinished module state, which will create two delegates, resulting in an exception
@@ -176,7 +170,8 @@ exports.start = function () {
         // The "UIApplicationMain" enters a modal loop and the call will not return while the application is running.
         // This try-catch block here will catch JavaScript errors but no Objective C ones.
         // TODO: We need to implement better error handling for our native calls and to use the "error" parameter of the iOS APIs.
-        UIApplicationMain(0, null, null, "TNSAppDelegate");
+
+        UIApplicationMain(0, null, null, app.delegate ? NSStringFromClass(app.delegate) : null);
     }
     catch (error) {
         // At this point the main application loop is exited and no UI May be created.

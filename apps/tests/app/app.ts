@@ -1,5 +1,17 @@
 ﻿import application = require("application");
 
+// Specify custom UIApplicationDelegate.
+/*
+class MyDelegate extends UIResponder implements UIApplicationDelegate {
+    public window: UIWindow;
+
+    constructor() {
+        super();
+    }
+}
+
+application.ios.delegate = MyDelegate;
+*/
 application.mainModule = "app/mainPage";
 
 // Common events for both Android and iOS.
