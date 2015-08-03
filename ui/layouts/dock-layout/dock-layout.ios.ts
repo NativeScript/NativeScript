@@ -3,6 +3,8 @@ import view = require("ui/core/view");
 import enums = require("ui/enums");
 import common = require("ui/layouts/dock-layout/dock-layout-common");
 
+global.moduleMerge(common, exports);
+
 export class DockLayout extends common.DockLayout {
 
     protected onDockChanged(view: view.View, oldValue: number, newValue: number) {

@@ -4,9 +4,7 @@ import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
 import common = require("ui/layouts/grid-layout/grid-layout-common");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 function setNativeProperty(data: dependencyObservable.PropertyChangeData, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
 

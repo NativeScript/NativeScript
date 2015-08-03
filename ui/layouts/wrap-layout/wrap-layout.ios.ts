@@ -3,9 +3,7 @@ import view = require("ui/core/view");
 import enums = require("ui/enums");
 import common = require("ui/layouts/wrap-layout/wrap-layout-common");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class WrapLayout extends common.WrapLayout {
 

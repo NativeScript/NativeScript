@@ -2,9 +2,7 @@
 import view = require("ui/core/view");
 import common = require("ui/layouts/absolute-layout/absolute-layout-common");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class AbsoluteLayout extends common.AbsoluteLayout {
 

@@ -3,9 +3,7 @@ import proxy = require("ui/core/proxy");
 import common = require("ui/layouts/stack-layout/stack-layout-common");
 import enums = require("ui/enums");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 export class StackLayout extends common.StackLayout {
 
