@@ -55,10 +55,12 @@ class NotificationReceiver extends NSObject {
 }
 
 class IOSApplication implements definition.iOSApplication {
-    private _delegate: typeof UIApplicationDelegate;
     public rootController: any;
+
+    private _delegate: typeof UIApplicationDelegate;
     private _registeredObservers = {};
     private _currentOrientation = UIDevice.currentDevice().orientation;
+    private _window: Window;
 
     constructor() {
         this.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, this.didFinishLaunchingWithOptions);
@@ -96,8 +98,8 @@ class IOSApplication implements definition.iOSApplication {
     }
 
     private didFinishLaunchingWithOptions(notification: NSNotification) {
-        let window = <Window>Window.alloc().initWithFrame(UIScreen.mainScreen().bounds);
-        window.backgroundColor = UIColor.whiteColor();
+        this._window = <Window>Window.alloc().initWithFrame(UIScreen.mainScreen().bounds);
+        this._window.backgroundColor = UIColor.whiteColor();
 
         if (exports.onLaunch) {
             exports.onLaunch();
@@ -121,11 +123,11 @@ class IOSApplication implements definition.iOSApplication {
             }
         }
 
-        window.content = topFrame;
+        this._window.content = topFrame;
 
-        this.rootController = window.rootViewController = topFrame.ios.controller;
+        this.rootController = this._window.rootViewController = topFrame.ios.controller;
 
-        window.makeKeyAndVisible();
+        this._window.makeKeyAndVisible();
     }
 
     private didBecomeActive(notification: NSNotification) {
