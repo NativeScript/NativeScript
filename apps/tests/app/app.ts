@@ -1,6 +1,7 @@
 ﻿import application = require("application");
 
 // Specify custom UIApplicationDelegate.
+/*
 class MyDelegate extends UIResponder implements UIApplicationDelegate {
     public static ObjCProtocols = [UIApplicationDelegate];
 
@@ -15,11 +16,14 @@ class MyDelegate extends UIResponder implements UIApplicationDelegate {
 }
 
 application.ios.delegate = MyDelegate;
+*/
 
-// Observe application notifications.
-application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, (notification: NSNotification) => {
-    console.log("UIApplicationDidFinishLaunchingNotification: " + notification)
-});
+if (application.ios) {
+    // Observe application notifications.
+    application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, (notification: NSNotification) => {
+        console.log("UIApplicationDidFinishLaunchingNotification: " + notification)
+    });
+}
 
 application.mainModule = "app/mainPage";
 
