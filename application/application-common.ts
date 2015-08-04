@@ -38,10 +38,12 @@ export var ios = undefined;
 export function loadCss() {
     if (definition.cssFile) {
         var cssFileName = fs.path.join(fs.knownFolders.currentApp().path, definition.cssFile);
-        var applicationCss;
         if (fs.File.exists(cssFileName)) {
             var file = fs.File.fromPath(cssFileName);
-            definition.cssSelectorsCache = styleScope.StyleScope.createSelectorsFromCss(file.readTextSync(), cssFileName);
+            var applicationCss = file.readTextSync();
+            if (applicationCss) {
+                definition.cssSelectorsCache = styleScope.StyleScope.createSelectorsFromCss(applicationCss, cssFileName);
+            }
         }
     }
 }
