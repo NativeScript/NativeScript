@@ -7,9 +7,7 @@ import application = require("application");
 import utils = require("utils/utils");
 import types = require("utils/types");
 import fs = require("file-system");
-import file_access_module = require("file-system/file-system-access");
 
-var fileAccess = new file_access_module.FileSystemAccess();
 var pattern: RegExp = /url\(('|")(.*?)\1\)/;
 
 export class StyleScope {
@@ -89,9 +87,13 @@ export class StyleScope {
                             fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
                         }
 
-                        fileAccess.readText(fileName, result => {
-                            selectors = StyleScope._joinCssSelectorsArrays([selectors, StyleScope.createSelectorsFromCss(result, fileName)]);
-                        });
+                        if (fs.File.exists(fileName)) {
+                            var file = fs.File.fromPath(fileName);
+                            var text = file.readTextSync();
+                            if (text) {
+                                selectors = StyleScope._joinCssSelectorsArrays([selectors, StyleScope.createSelectorsFromCss(text, fileName)]);
+                            }
+                        }
                     }
                 }
             }

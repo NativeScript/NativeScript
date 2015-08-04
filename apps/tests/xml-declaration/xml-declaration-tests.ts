@@ -9,7 +9,6 @@ import gridLayoutModule = require("ui/layouts/grid-layout");
 import absoluteLayoutModule = require("ui/layouts/absolute-layout");
 import types = require("utils/types");
 import fs = require("file-system");
-import fileSystemAccess = require("file-system/file-system-access");
 import observable = require("data/observable");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import labelModule = require("ui/label");
@@ -129,24 +128,15 @@ export function test_loadWithOptionsFromTNSPath() {
 };
 
 export function test_parse_ShouldNotCrashWithoutExports() {
-    var fileAccess = new fileSystemAccess.FileSystemAccess();
+    var file = fs.File.fromPath(fs.path.join(__dirname, "mainPage.xml"));
+    var text = file.readTextSync();
 
-    var v: view.View;
-    fileAccess.readText(fs.path.join(__dirname, "mainPage.xml"), r => {
-        v = builder.parse(r);
-    });
-
+    var v: view.View = builder.parse(text);    
     TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 };
 
 export function test_parse_ShouldNotCrashWithInvalidXml() {
-    var fileAccess = new fileSystemAccess.FileSystemAccess();
-
-    var v: view.View;
-    fileAccess.readText("<Page loaded='myLoaded'></Pa", r => {
-        v = builder.parse(r);
-    });
-
+    var v: view.View = builder.parse("<Page loaded='myLoaded'></Pa");
     TKUnit.assert(types.isUndefined(v), "Expected result: undefined; Actual result: " + v + ";");
 };
 

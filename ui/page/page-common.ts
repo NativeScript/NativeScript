@@ -5,7 +5,6 @@ import frame = require("ui/frame");
 import styleModule = require("ui/styling/style");
 import styleScope = require("ui/styling/style-scope");
 import fs = require("file-system");
-import fileSystemAccess = require("file-system/file-system-access");
 import frameCommon = require("ui/frame/frame-common");
 import actionBar = require("ui/action-bar");
 import dependencyObservable = require("ui/core/dependency-observable");
@@ -131,10 +130,12 @@ export class Page extends contentView.ContentView implements dts.Page {
         }
         if (!this._cssFiles[cssFileName]) {
             if (fs.File.exists(cssFileName)) {
-                new fileSystemAccess.FileSystemAccess().readText(cssFileName, r => {
+                var file = fs.File.fromPath(cssFileName);
+                var text = file.readTextSync();
+                if (text) {
                     this._addCssInternal(r, cssFileName);
                     this._cssFiles[cssFileName] = true;
-                });
+                }
             }
         }
     }

@@ -120,12 +120,9 @@ export class FileSystemAccess {
         this.enumEntities(path, onEntity, onError);
     }
 
-    public getEntities(path: string, onSuccess: (files: Array<{ path: string; name: string; extension: string }>) => any, onError?: (error: any) => any) {
-        if (!onSuccess) {
-            return;
-        }
-
+    public getEntities(path: string, onError?: (error: any) => any): Array<{ path: string; name: string; extension: string }> {
         var fileInfos = new Array<{ path: string; name: string; extension: string }>();
+
         var onEntity = function (entity: { path: string; name: string; extension: string }): boolean {
             fileInfos.push(entity);
             return true;
@@ -143,8 +140,10 @@ export class FileSystemAccess {
         this.enumEntities(path, onEntity, localError);
 
         if (!errorOccurred) {
-            onSuccess(fileInfos);
+            return fileInfos;
         }
+
+        return null;
     }
 
     public fileExists(path: string): boolean {
@@ -169,49 +168,38 @@ export class FileSystemAccess {
         return nsString.toString();
     }
 
-    public deleteFile(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
-        this.deleteEntity(path, onSuccess, onError);
+    public deleteFile(path: string, onError?: (error: any) => any) {
+        this.deleteEntity(path, onError);
     }
 
-    public deleteFolder(path: string, isKnown?: boolean, onSuccess?: () => any, onError?: (error: any) => any) {
-        if (isKnown) {
-            if (onError) {
-                onError({ message: "Cannot delete known folder." });
-            }
+    public deleteFolder(path: string, onError?: (error: any) => any) {
+        this.deleteEntity(path, onError);
+    }
 
+    public emptyFolder(path: string, onError?: (error: any) => any) {
+        var fileManager = NSFileManager.defaultManager();
+        var entities = this.getEntities(path, onError);
+
+        if (!entities) {
             return;
         }
 
-        this.deleteEntity(path, onSuccess, onError);
-    }
-
-    public emptyFolder(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
-        var fileManager = NSFileManager.defaultManager();
-
-        var filesEnum = function (files: Array<{ path: string; name: string; extension: string }>) {
-            var i;
-            for (i = 0; i < files.length; i++) {
-                try {
-                    fileManager.removeItemAtPathError(files[i].path);
-                }
-                catch (ex) {
-                    if (onError) {
-                        onError(new Error("Failed to empty folder '" + path + "': " + ex));
-                    }
-
-                    return;
-                }
+        var i;
+        for (i = 0; i < entities.length; i++) {
+            try {
+                fileManager.removeItemAtPathError(entities[i].path);
             }
+            catch (ex) {
+                if (onError) {
+                    onError(new Error("Failed to empty folder '" + path + "': " + ex));
+                }
 
-            if (onSuccess) {
-                onSuccess();
+                return;
             }
         }
-
-        this.getEntities(path, filesEnum, onError);
     }
 
-    public rename(path: string, newPath: string, onSuccess?: () => any, onError?: (error: any) => any) {
+    public rename(path: string, newPath: string, onError?: (error: any) => any) {
         var fileManager = NSFileManager.defaultManager();
 
         try {
@@ -221,12 +209,6 @@ export class FileSystemAccess {
             if (onError) {
                 onError(new Error("Failed to rename '" + path + "' to '" + newPath + "': " + ex));
             }
-
-            return;
-        }
-
-        if (onSuccess) {
-            onSuccess();
         }
     }
 
@@ -238,7 +220,7 @@ export class FileSystemAccess {
         return this.getKnownPath(this.cachesDir);
     }
 
-    public readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: any) {
+    public readText(path: string, onError?: (error: any) => any, encoding?: any) {
         var actualEncoding = encoding;
         if (!actualEncoding) {
             actualEncoding = textModule.encoding.UTF_8;
@@ -246,21 +228,16 @@ export class FileSystemAccess {
 
         try {
             var nsString = NSString.stringWithContentsOfFileEncodingError(path, actualEncoding);
+            return nsString.toString();
         }
         catch (ex) {
             if (onError) {
                 onError(new Error("Failed to read file at path '" + path + "': " + ex));
             }
-
-            return;
-        }
-
-        if (onSuccess) {
-            onSuccess(nsString.toString());
         }
     }
 
-    public writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: any) {
+    public writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
         var nsString = NSString.alloc().initWithString(content);
 
         var actualEncoding = encoding;
@@ -276,12 +253,6 @@ export class FileSystemAccess {
             if (onError) {
                 onError(new Error("Failed to write to file '" + path + "': " + ex));
             }
-
-            return;
-        }
-
-        if (onSuccess) {
-            onSuccess();
         }
     }
 
@@ -313,7 +284,7 @@ export class FileSystemAccess {
         return "";
     }
 
-    private deleteEntity(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
+    private deleteEntity(path: string, onError?: (error: any) => any) {
         var fileManager = NSFileManager.defaultManager();
         try {
             fileManager.removeItemAtPathError(path);
@@ -322,10 +293,6 @@ export class FileSystemAccess {
             if (onError) {
                 onError(new Error("Failed to delete file at path '" + path + "': " + ex));
             }
-        }
-
-        if (onSuccess) {
-            onSuccess();
         }
     }
 
