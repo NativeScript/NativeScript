@@ -20267,7 +20267,7 @@ interface UIAlertViewDelegate {
 	alertViewShouldEnableFirstOtherButton?(alertView: UIAlertView): boolean;
 }
 interface UIApplicationDelegate {
-	window: UIWindow;
+	window?: UIWindow;
 	applicationDidFinishLaunching?(application: UIApplication): void;
 	applicationWillFinishLaunchingWithOptions?(application: UIApplication, launchOptions: NSDictionary): boolean;
 	applicationDidFinishLaunchingWithOptions?(application: UIApplication, launchOptions: NSDictionary): boolean;
