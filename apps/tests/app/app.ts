@@ -1,17 +1,26 @@
 ﻿import application = require("application");
 
 // Specify custom UIApplicationDelegate.
-/*
 class MyDelegate extends UIResponder implements UIApplicationDelegate {
-    public window: UIWindow;
+    public static ObjCProtocols = [UIApplicationDelegate];
 
-    constructor() {
-        super();
+    applicationDidFinishLaunchingWithOptions(application: UIApplication, launchOptions: NSDictionary): boolean {
+        console.log("applicationWillFinishLaunchingWithOptions: " + launchOptions)
+        return true;
+    }
+
+    applicationDidBecomeActive(application: UIApplication): void {
+        console.log("applicationDidBecomeActive: " + application)
     }
 }
 
 application.ios.delegate = MyDelegate;
-*/
+
+// Observe application notifications.
+application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, (notification: NSNotification) => {
+    console.log("UIApplicationDidFinishLaunchingNotification: " + notification)
+});
+
 application.mainModule = "app/mainPage";
 
 // Common events for both Android and iOS.
