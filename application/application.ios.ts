@@ -9,6 +9,10 @@ global.moduleMerge(appModule, exports);
 
 export var mainModule: string;
 
+class Responder extends UIResponder {
+    //
+}
+
 class Window extends UIWindow {
 
     private _content: view.View;
@@ -206,7 +210,7 @@ exports.start = function () {
         // This try-catch block here will catch JavaScript errors but no Objective C ones.
         // TODO: We need to implement better error handling for our native calls and to use the "error" parameter of the iOS APIs.
 
-        UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(UIResponder));
+        UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(Responder));
     }
     catch (error) {
         // At this point the main application loop is exited and no UI May be created.
