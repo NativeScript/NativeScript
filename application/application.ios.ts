@@ -194,7 +194,8 @@ class IOSApplication implements definition.iOSApplication {
 
 }
 
-exports.ios = new IOSApplication();
+var iosApp = new IOSApplication();
+exports.ios = iosApp;
 
 exports.start = function () {
 
