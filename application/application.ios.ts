@@ -33,93 +33,6 @@ class Window extends UIWindow {
     }
 }
 
-class TNSAppDelegate extends UIResponder implements UIApplicationDelegate {
-    
-    // An array of protocols to be implemented by the native class
-    public static ObjCProtocols = [UIApplicationDelegate];
-
-    public window: Window;
-
-    applicationDidFinishLaunchingWithOptions(application: UIApplication, launchOptions: NSDictionary): boolean {
-        this.window = <Window>Window.alloc().initWithFrame(UIScreen.mainScreen().bounds);
-        this.window.backgroundColor = UIColor.whiteColor();
-
-        if (exports.onLaunch) {
-            exports.onLaunch();
-        }
-
-        exports.notify({ eventName: definition.launchEvent, object: this, ios: launchOptions });
-
-        var topFrame = frame.topmost();
-        if (!topFrame) {
-            if (mainModule) {
-                topFrame = new frame.Frame();
-                topFrame.navigate(mainModule);
-            } else {
-                // TODO: Throw an exception?
-                // throw new Error("A Frame must be used to navigate to a Page.");
-                return;
-            }
-        }
-        var app: IOSApplication = exports.ios;
-        setupOrientationListener(app);
-
-        this.window.content = topFrame;
-        this.window.rootViewController = topFrame.ios.controller;
-        app.rootController = this.window.rootViewController;
-        this.window.makeKeyAndVisible();
-        return true;
-    }
-
-    applicationDidBecomeActive(application: UIApplication) {
-        if (exports.onResume) {
-            exports.onResume();
-        }
-
-        exports.notify({ eventName: definition.resumeEvent, object: this, ios: application });
-    }
-
-    applicationWillResignActive(application: UIApplication) {
-        //
-    }
-
-    applicationDidEnterBackground(application: UIApplication) {
-        if (exports.onSuspend) {
-            exports.onSuspend();
-        }
-
-        exports.notify({ eventName: definition.suspendEvent, object: this, ios: application });
-    }
-
-    applicationWillEnterForeground(application: UIApplication) {
-        //
-    }
-
-    applicationWillTerminate(application: UIApplication) {
-        if (exports.onExit) {
-            exports.onExit();
-        }
-
-        exports.notify({ eventName: definition.exitEvent, object: this, ios: application });
-    }
-
-    applicationDidReceiveMemoryWarning(application: UIApplication) {
-        if (exports.onLowMemory) {
-            exports.onLowMemory();
-        }
-
-        exports.notify({ eventName: definition.lowMemoryEvent, object: this, android: undefined, ios: application });
-    }
-
-    applicationOpenURLSourceApplicationAnnotation(application: UIApplication, url: NSURL, sourceApplication: string, annotation: any): boolean {
-        var dictionary = new NSMutableDictionary();
-        dictionary.setObjectForKey(url, "TLKApplicationOpenURL");
-        dictionary.setObjectForKey(application, "TLKApplication");
-        NSNotificationCenter.defaultCenter().postNotificationNameObjectUserInfo("com.telerik.TLKApplicationOpenURL", null, dictionary);
-        return true; // or should we return false???
-    }
-}
-
 class NotificationReceiver extends NSObject {
     private _onReceiveCallback: (notification: NSNotification) => void;
 
@@ -142,14 +55,33 @@ class NotificationReceiver extends NSObject {
 }
 
 class IOSApplication implements definition.iOSApplication {
-
-    public nativeApp: any;
     public rootController: any;
+
+    private _delegate: typeof UIApplicationDelegate;
     private _registeredObservers = {};
+    private _currentOrientation = UIDevice.currentDevice().orientation;
+    private _window: Window;
 
     constructor() {
-        // TODO: in iOS there is the singleton instance, while in Android such does not exist hence we pass it as argument
-        this.nativeApp = UIApplication.sharedApplication();
+        this.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, this.didFinishLaunchingWithOptions);
+        this.addNotificationObserver(UIApplicationDidBecomeActiveNotification, this.didBecomeActive);
+        this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground);
+        this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate);
+        this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning);
+        this.addNotificationObserver(UIDeviceOrientationDidChangeNotification, this.orientationDidChange);
+    }
+
+    get nativeApp(): UIApplication {
+        return UIApplication.sharedApplication();
+    }
+
+    get delegate(): typeof UIApplicationDelegate {
+        return this._delegate;
+    }
+    set delegate(value: typeof UIApplicationDelegate) {
+        if (this._delegate !== value) {
+            this._delegate = value;
+        }
     }
 
     public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void) {
@@ -164,19 +96,117 @@ class IOSApplication implements definition.iOSApplication {
             NSNotificationCenter.defaultCenter().removeObserverNameObject(observer, notificationName, null);
         }
     }
+
+    private didFinishLaunchingWithOptions(notification: NSNotification) {
+        this._window = <Window>Window.alloc().initWithFrame(UIScreen.mainScreen().bounds);
+        this._window.backgroundColor = UIColor.whiteColor();
+
+        if (exports.onLaunch) {
+            exports.onLaunch();
+        }
+
+        exports.notify({
+            eventName: definition.launchEvent,
+            object: this,
+            ios: notification.userInfo && notification.userInfo.objectForKey("UIApplicationLaunchOptionsLocalNotificationKey") || null
+        });
+
+        var topFrame = frame.topmost();
+        if (!topFrame) {
+            if (mainModule) {
+                topFrame = new frame.Frame();
+                topFrame.navigate(mainModule);
+            } else {
+                // TODO: Throw an exception?
+                // throw new Error("A Frame must be used to navigate to a Page.");
+                return;
+            }
+        }
+
+        this._window.content = topFrame;
+
+        this.rootController = this._window.rootViewController = topFrame.ios.controller;
+
+        this._window.makeKeyAndVisible();
+    }
+
+    private didBecomeActive(notification: NSNotification) {
+        if (exports.onResume) {
+            exports.onResume();
+        }
+
+        exports.notify({ eventName: definition.resumeEvent, object: this, ios: UIApplication.sharedApplication() });
+    }
+
+    private didEnterBackground(notification: NSNotification) {
+        if (exports.onSuspend) {
+            exports.onSuspend();
+        }
+
+        exports.notify({ eventName: definition.suspendEvent, object: this, ios: UIApplication.sharedApplication() });
+    }
+
+    private willTerminate(notification: NSNotification) {
+        if (exports.onExit) {
+            exports.onExit();
+        }
+
+        exports.notify({ eventName: definition.exitEvent, object: this, ios: UIApplication.sharedApplication() });
+    }
+
+    private didReceiveMemoryWarning(notification: NSNotification) {
+        if (exports.onLowMemory) {
+            exports.onLowMemory();
+        }
+
+        exports.notify({ eventName: definition.lowMemoryEvent, object: this, android: undefined, ios: UIApplication.sharedApplication() });
+    }
+
+    private orientationDidChange(notification: NSNotification) {
+        var orientation = UIDevice.currentDevice().orientation;
+
+        if (this._currentOrientation !== orientation) {
+            this._currentOrientation = orientation;
+
+            var newValue;
+            switch (orientation) {
+                case UIDeviceOrientation.UIDeviceOrientationLandscapeRight:
+                case UIDeviceOrientation.UIDeviceOrientationLandscapeLeft:
+                    newValue = enums.DeviceOrientation.landscape;
+                    break;
+                case UIDeviceOrientation.UIDeviceOrientationPortrait:
+                case UIDeviceOrientation.UIDeviceOrientationPortraitUpsideDown:
+                    newValue = enums.DeviceOrientation.portrait;
+                    break;
+                default:
+                    newValue = enums.DeviceOrientation.unknown;
+                    break;
+            }
+
+            exports.notify(<definition.OrientationChangedEventData>{
+                eventName: definition.orientationChangedEvent,
+                ios: this,
+                newValue: newValue,
+                object: this
+            });
+        }
+    }
+
 }
 
-// TODO: If we have nested require(application) calls we may enter unfinished module state, which will create two delegates, resulting in an exception
-var app = new IOSApplication();
-exports.ios = app;
+var iosApp = new IOSApplication();
+exports.ios = iosApp;
 
 exports.start = function () {
+
     appModule.loadCss();
+
     try {
         // The "UIApplicationMain" enters a modal loop and the call will not return while the application is running.
         // This try-catch block here will catch JavaScript errors but no Objective C ones.
         // TODO: We need to implement better error handling for our native calls and to use the "error" parameter of the iOS APIs.
-        UIApplicationMain(0, null, null, "TNSAppDelegate");
+
+        UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(UIResponder));
     }
     catch (error) {
         // At this point the main application loop is exited and no UI May be created.
@@ -187,41 +217,5 @@ exports.start = function () {
         exports.onUncaughtError(error);
 
         definition.notify({ eventName: definition.uncaughtErrorEvent, object: <any>definition.ios, ios: error });
-    }
-}
-
-var currentOrientation: number;
-function setupOrientationListener(iosApp: IOSApplication) {
-    iosApp.addNotificationObserver(UIDeviceOrientationDidChangeNotification, onOreintationDidChange)
-    currentOrientation = UIDevice.currentDevice().orientation;
-}
-
-function onOreintationDidChange(notification: NSNotification) {
-    var orientation = UIDevice.currentDevice().orientation;
-
-    if (currentOrientation !== orientation) {
-        currentOrientation = orientation;
-
-        var newValue;
-        switch (orientation) {
-            case UIDeviceOrientation.UIDeviceOrientationLandscapeRight:
-            case UIDeviceOrientation.UIDeviceOrientationLandscapeLeft:
-                newValue = enums.DeviceOrientation.landscape;
-                break;
-            case UIDeviceOrientation.UIDeviceOrientationPortrait:
-            case UIDeviceOrientation.UIDeviceOrientationPortraitUpsideDown:
-                newValue = enums.DeviceOrientation.portrait;
-                break;
-            default:
-                newValue = enums.DeviceOrientation.unknown;
-                break;
-        }
-
-        exports.notify(<definition.OrientationChangedEventData>{
-            eventName: definition.orientationChangedEvent,
-            ios: exports.ios,
-            newValue: newValue,
-            object: exports.ios,
-        });
     }
 }

@@ -497,9 +497,14 @@ declare module "application" {
         rootController: UIViewController;
 
         /**
-         * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html) object instance provided to the init of the module.
+         * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html).
          */
         nativeApp: UIApplication;
+
+        /**
+         * The [UIApplicationDelegate](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplicationDelegate_Protocol/index.html) class.
+         */
+        delegate: typeof UIApplicationDelegate;
 
         /**
          * Adds an observer to the default notification center for the specified notification.
