@@ -27,8 +27,3 @@ export function greaterThanZero(value: Object): boolean {
 export function notNegative(value: Object): boolean {
     return (<number>value) >= 0;
 }
-
-export function isFiniteNumber(value: Object): boolean {
-    var num = <number>value;
-    return isFinite(num);
-}

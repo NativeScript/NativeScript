@@ -5,6 +5,7 @@ import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import gestures = require("ui/gestures");
+import types = require("utils/types");
 
 global.moduleMerge(viewCommon, exports);
 
@@ -32,16 +33,13 @@ function onIsUserInteractionEnabledPropertyChanged(data: dependencyObservable.Pr
 (<proxy.PropertyMetadata>viewCommon.View.isUserInteractionEnabledProperty.metadata).onSetNativeValue = onIsUserInteractionEnabledPropertyChanged;
 
 export var NativeViewGroup = (<any>android.view.ViewGroup).extend({
-    get owner() {
-        return this[OWNER];
-    },
     onMeasure: function (widthMeasureSpec, heightMeasureSpec) {
-        var owner: viewDefinition.View = this.owner;
+        var owner: viewDefinition.View = this[OWNER];
         owner.onMeasure(widthMeasureSpec, heightMeasureSpec);
         this.setMeasuredDimension(owner.getMeasuredWidth(), owner.getMeasuredHeight());
     },
     onLayout: function (changed: boolean, left: number, top: number, right: number, bottom: number): void {
-        var owner: viewDefinition.View = this.owner;
+        var owner: viewDefinition.View = this[OWNER];
         owner.onLayout(left, top, right, bottom);
     }
 });
@@ -239,6 +237,14 @@ export class View extends viewCommon.View {
         return this.android;
     }
 
+    get isLayoutValid(): boolean {
+        if (this._nativeView) {
+            return !this._nativeView.isLayoutRequested();
+        }
+
+        return false;
+    }
+
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
         if (this._nativeView) {
             this._nativeView.layout(left, top, right, bottom);
@@ -286,9 +292,38 @@ export class View extends viewCommon.View {
         }
     }
 
+    _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
+        if (this._nativeView) {
+            return {
+                left: this._nativeView.getLeft(),
+                top: this._nativeView.getTop(),
+                right: this._nativeView.getRight(),
+                bottom: this._nativeView.getBottom()
+            };
+        }
+
+        return super._getCurrentLayoutBounds();
+    }
+
+    public getMeasuredWidth(): number {
+        if (this._nativeView) {
+            return this._nativeView.getMeasuredWidth();
+        }
+
+        return super.getMeasuredWidth();
+    }
+
+    public getMeasuredHeight(): number {
+        if (this._nativeView) {
+            return this._nativeView.getMeasuredHeight();
+        }
+
+        return super.getMeasuredHeight();
+    }
+
     public focus(): boolean {
-        if (this.android) {
-            return this.android.requestFocus();
+        if (this._nativeView) {
+            return this._nativeView.requestFocus();
         }
 
         return false;
@@ -328,20 +363,19 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
     }
 
     public _createUI() {
-        this._viewGroup = new NativeViewGroup(this._context);
-        this._viewGroup[OWNER] = this;
+        this._viewGroup = new org.nativescript.widgets.ContentLayout(this._context);
     }
 
-    //public _onDetached(force?: boolean) {
-    //    delete this._viewGroup[OWNER];
-    //    super._onDetached(force);
-    //}
-
-    public _addViewToNativeVisualTree(child: View): boolean {
+    public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
         super._addViewToNativeVisualTree(child);
 
         if (this._nativeView && child._nativeView) {
-            this._nativeView.addView(child._nativeView);
+            if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.getChildCount()) {
+                this._nativeView.addView(child._nativeView);
+            }
+            else {
+                this._nativeView.addView(child._nativeView, atIndex);
+            }
             return true;
         }
 
@@ -355,47 +389,5 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
             this._nativeView.removeView(child._nativeView);
             trace.notifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
         }
-    }
-
-    public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
-
-        var view = this._nativeView;
-        if (view) {
-            var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-            var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-
-            var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-            var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-
-            trace.write(this + " :measure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
-            view.measure(widthMeasureSpec, heightMeasureSpec);
-        }
-    }
-
-    public layout(left: number, top: number, right: number, bottom: number): void {
-        this._setCurrentLayoutBounds(left, top, right, bottom);
-
-        var view = this._nativeView;
-        if (view) {
-            this.layoutNativeView(left, top, right, bottom);
-            trace.write(this + " :layout: " + left + ", " + top + ", " + (right - left) + ", " + (bottom - top), trace.categories.Layout);
-        }
-    }
-    
-    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        // Don't call super because it will trigger measure again.
-
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-        trace.write(this + " :onMeasure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
-    }
-
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
-        // Don't call super because it will trigger layout again.
-        trace.write(this + " :onLayout: " + left + ", " + top + ", " + (right - left) + ", " + (bottom - top), trace.categories.Layout);
     }
 }

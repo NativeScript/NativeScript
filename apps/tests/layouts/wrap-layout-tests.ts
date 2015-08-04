@@ -64,17 +64,17 @@ export function testHorizontalOrientation() {
             return wrapLayout.getChildAt(wrapLayout.getChildrenCount() - 1).isLayoutValid;
         }, 1);
 
-        var actualValue = viewModule.getViewById(wrapLayout, "0")._getCurrentLayoutBounds();
-        TKUnit.assertEqual(actualValue.left, 0, "ActualLeft");
-        TKUnit.assertEqual(actualValue.top, 0, "ActualTop");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom");
+        var actualValue = wrapLayout.getChildAt(0)._getCurrentLayoutBounds();
+        TKUnit.assertEqual(actualValue.left, 0, "ActualLeft on Index 0");
+        TKUnit.assertEqual(actualValue.top, 0, "ActualTop on Index 0");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight on Index 0");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom on Index 0");
 
         actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds();
-        TKUnit.assertEqual(actualValue.left, layoutHelper.dip(100), "ActualLeft");
-        TKUnit.assertEqual(actualValue.top, 0, "ActualTop");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(200), "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom");
+        TKUnit.assertEqual(actualValue.left, layoutHelper.dip(100), "ActualLeft on Index 1");
+        TKUnit.assertEqual(actualValue.top, 0, "ActualTop on Index 1");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(200), "ActualRight on Index 1");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom on Index 1");
     });
 }
 
@@ -92,16 +92,16 @@ export function testVerticalOrientation() {
         }, 1);
 
         var actualValue = viewModule.getViewById(wrapLayout, "0")._getCurrentLayoutBounds();
-        TKUnit.assertEqual(actualValue.left, 0, "ActualLeft");
-        TKUnit.assertEqual(actualValue.top, 0, "ActualTop");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom");
+        TKUnit.assertEqual(actualValue.left, 0, "ActualLeft on Index 0");
+        TKUnit.assertEqual(actualValue.top, 0, "ActualTop on Index 0");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight on Index 0");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom on Index 0");
 
         actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds();
-        TKUnit.assertEqual(actualValue.left, 0, "ActualLeft");
-        TKUnit.assertEqual(actualValue.top, layoutHelper.dip(100), "ActualTop");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(200), "ActualBottom");
+        TKUnit.assertEqual(actualValue.left, 0, "ActualLeft on Index 1");
+        TKUnit.assertEqual(actualValue.top, layoutHelper.dip(100), "ActualTop on Index 1");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight on Index 1");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(200), "ActualBottom on Index 1");
     });
 }
 
@@ -116,16 +116,16 @@ export function testChangeOrientation() {
         });
 
         var actualValue = viewModule.getViewById(wrapLayout, "0")._getCurrentLayoutBounds();
-        TKUnit.assertEqual(actualValue.left, 0, "ActualLeft");
-        TKUnit.assertEqual(actualValue.top, 0, "ActualTop");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom");
+        TKUnit.assertEqual(actualValue.left, 0, "ActualLeft on Index 0");
+        TKUnit.assertEqual(actualValue.top, 0, "ActualTop on Index 0");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight on Index 0");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom on Index 0");
 
         actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds();
-        TKUnit.assertEqual(actualValue.left, 0, "ActualLeft");
-        TKUnit.assertEqual(actualValue.top, layoutHelper.dip(100), "ActualTop");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(200), "ActualBottom");
+        TKUnit.assertEqual(actualValue.left, 0, "ActualLeft on Index 1");
+        TKUnit.assertEqual(actualValue.top, layoutHelper.dip(100), "ActualTop on Index 1");
+        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight on Index 1");
+        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(200), "ActualBottom on Index 1");
     });
 }
 
@@ -138,7 +138,7 @@ export function testItemWidth() {
         }, 1);
 
         var actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds().left;
-        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualLeft");
+        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualLeft on Index 1");
     });
 }
 
@@ -156,7 +156,7 @@ export function testChangeItemWidth() {
         });
 
         var actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds().left;
-        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualLeft");
+        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualLeft on Index 1");
     });
 }
 
@@ -170,7 +170,7 @@ export function testItemHeight() {
         }, 1);
 
         var actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds().top;
-        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualTop");
+        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualTop on Index 1");
     });
 }
 
@@ -189,7 +189,7 @@ export function testChangeItemHeight() {
         });
 
         var actualValue = viewModule.getViewById(wrapLayout, "1")._getCurrentLayoutBounds().top;
-        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualTop");
+        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualTop on Index 1");
     });
 }
 

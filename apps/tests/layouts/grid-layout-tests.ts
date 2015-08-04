@@ -82,130 +82,130 @@ function colSpan(view: view.View): number {
     return layout.GridLayout.getColumnSpan(view);
 }
 
-export function test_GridLayout_row_defaultValue() {
+export function test_row_defaultValue() {
     TKUnit.assert(tmp !== null);
     TKUnit.assertEqual(row(tmp), 0, "'row' property default value should be 0.");
 }
 
-export function test_GridLayout_rowSpan_defaultValue() {
+export function test_rowSpan_defaultValue() {
 
     TKUnit.assert(tmp !== null);
     TKUnit.assertEqual(rowSpan(tmp), 1, "'rowSpan' property default value should be 1.");
 }
 
-export function test_GridLayout_column_defaultValue() {
+export function test_column_defaultValue() {
 
     TKUnit.assert(tmp !== null);
     TKUnit.assertEqual(col(tmp), 0, "'column' property default value should be 0.");
 }
 
-export function test_GridLayout_columnSpan_defaultValue() {
+export function test_columnSpan_defaultValue() {
     TKUnit.assert(tmp !== null);
     TKUnit.assertEqual(colSpan(tmp), 1, "'columnSpan' property default value should be 1.");
 }
 
-export function test_GridLayout_getRow_shouldThrow_onNullValues() {
+export function test_getRow_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.getRow(null);
     }, "getRow called with null should throw exception");
 }
 
-export function test_GridLayout_getRowSpan_shouldThrow_onNullValues() {
+export function test_getRowSpan_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.getRowSpan(null);
     }, "getRowSpan called with null should throw exception");
 }
 
-export function test_GridLayout_getColumn_shouldThrow_onNullValues() {
+export function test_getColumn_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.getColumn(null);
     }, "getColumn called with null should throw exception");
 }
 
-export function test_GridLayout_getColumnSpan_shouldThrow_onNullValues() {
+export function test_getColumnSpan_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.getColumnSpan(null);
     }, "getColumnSpan called with null should throw exception");
 }
 
-export function test_GridLayout_setRow_shouldThrow_onNullValues() {
+export function test_setRow_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.setRow(null, 1);
     }, "setRow called with null should throw exception");
 }
 
-export function test_GridLayout_setRowSpan_shouldThrow_onNullValues() {
+export function test_setRowSpan_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.setRowSpan(null, 1);
     }, "setRowSpan called with null should throw exception");
 }
 
-export function test_GridLayout_setColumn_shouldThrow_onNullValues() {
+export function test_setColumn_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.setColumn(null, 1);
     }, "setColumn called with null should throw exception")
 }
 
-export function test_GridLayout_setColumnSpan_shouldThrow_onNullValues() {
+export function test_setColumnSpan_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.setColumnSpan(null, 1);
     }, "setColumnSpan called with null should throw exception");
 }
 
-export function test_GridLayout_setRow_shouldThrow_onNegativeValues() {
+export function test_setRow_shouldThrow_onNegativeValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.setRow(tmp, -1);
     }, "setRow should throw when value < 0");
 }
 
-export function test_GridLayout_setRowSpan_shouldThrow_onNotPositiveValues() {
+export function test_setRowSpan_shouldThrow_onNotPositiveValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.setRowSpan(tmp, 0);
     }, "setRowSpan should throw when value <= 0");
 }
 
-export function test_GridLayout_setColumn_shouldThrow_onNegativeValues() {
+export function test_setColumn_shouldThrow_onNegativeValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.setColumn(tmp, -1);
     }, "setColumn should when value < 0");
 }
 
-export function test_GridLayout_setColumnSpan_shouldThrow_onNotPositiveValues() {
+export function test_setColumnSpan_shouldThrow_onNotPositiveValues() {
     TKUnit.assertThrows(() => {
         layout.GridLayout.setColumnSpan(tmp, 0);
     }, "setColumnSpan should throw when value <= 0");
 }
 
-export function test_GridLayout_addRow_shouldThrow_onNullValues() {
+export function test_addRow_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         rootLayout.addRow(null);
     }, "addRow called with null should throw exception");
 }
 
-export function test_GridLayout_addColumn_shouldThrow_onNullValues() {
+export function test_addColumn_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         rootLayout.addColumn(null);
     }, "addColumn called with null should throw exception");
 }
 
-export function test_GridLayout_removeRow_shouldThrow_onNullValues() {
+export function test_removeRow_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         rootLayout.removeRow(null);
     }, "removeRow called with null should throw exception");
 }
 
-export function test_GridLayout_removeColumn_shouldThrow_onNullValues() {
+export function test_removeColumn_shouldThrow_onNullValues() {
     TKUnit.assertThrows(() => {
         rootLayout.removeColumn(null);
     }, "removeColumn called with null should throw exception");
 }
 
-export function test_GridLayout_getRows_shouldNotReturnNULL() {
+export function test_getRows_shouldNotReturnNULL() {
     var rows = rootLayout.getRows();
     TKUnit.assert(rows, "getRows should not return null/undefinied");
 }
 
-export function test_GridLayout_getColumns_shouldNotReturnNULL() {
+export function test_getColumns_shouldNotReturnNULL() {
     var cols = rootLayout.getColumns();
     TKUnit.assert(cols, "getColumns should not return null/undefinied");
 }
@@ -300,19 +300,19 @@ function prepareGridLayout(wait?: boolean) {
 
     if (wait) {
         TKUnit.waitUntilReady(function () {
-            return (rootLayout.getChildAt(rootLayout.getChildrenCount() - 1)).isLayoutValid;
+            return rootLayout.isLayoutValid;
         }, ASYNC);
     }
 }
 
-export function test_GridLayout_desiredSize_isCorrect() {
+export function test_desiredSize_isCorrect() {
     prepareGridLayout(false);
 
     rootLayout.width = Number.NaN;
     rootLayout.height = Number.NaN;
 
     TKUnit.waitUntilReady(function () {
-        return rootLayout.getChildAt(rootLayout.getChildrenCount() - 1).isLayoutValid;
+        return rootLayout.isLayoutValid;
     }, ASYNC);
 
     var maxWidth = 0;
@@ -356,7 +356,7 @@ export function test_GridLayout_desiredSize_isCorrect() {
     TKUnit.assertAreClose(measuredHeight, maxHeight, delta, "GridLayout incorrect measured height");
 }
 
-export function test_GridLayout_columnsActualWidth_isCorrect() {
+export function test_columnsActualWidth_isCorrect() {
     prepareGridLayout(true);
 
     var cols = rootLayout.getColumns();
@@ -366,7 +366,7 @@ export function test_GridLayout_columnsActualWidth_isCorrect() {
     TKUnit.assertEqual(cols[3].actualLength, 100, "Auto column should be 100px width");
 }
 
-export function test_GridLayout_rowsActualHeight_isCorrect() {
+export function test_rowsActualHeight_isCorrect() {
     prepareGridLayout(true);
 
     var rows = rootLayout.getRows();
@@ -376,7 +376,7 @@ export function test_GridLayout_rowsActualHeight_isCorrect() {
     TKUnit.assertEqual(rows[3].actualLength, 100, "Auto row should be 100px width");
 }
 
-export function test_GridLayout_Measure_and_Layout_Children_withCorrect_size() {
+export function test_Measure_and_Layout_Children_withCorrect_size() {
 
     prepareGridLayout(true);
 
@@ -407,7 +407,7 @@ export function test_GridLayout_Measure_and_Layout_Children_withCorrect_size() {
                 TKUnit.assertAreClose(btn.layoutHeight, h, delta, "Absolute rows should layout with specific height");
             }
             else {
-                TKUnit.assertAreClose(btn.measureHeight, h, delta, "Auto rows should measure with specific height");
+                TKUnit.assertAreClose(btn.measureHeight, h, delta, "Star rows should measure with specific height");
                 TKUnit.assertAreClose(btn.layoutHeight, h, delta, "Star rows should layout with exact length");
             }
 
@@ -419,14 +419,14 @@ export function test_GridLayout_Measure_and_Layout_Children_withCorrect_size() {
                 TKUnit.assertAreClose(btn.layoutWidth, w, delta, "Absolute columns should layout with specific width");
             }
             else {
-                TKUnit.assertAreClose(btn.measureWidth, w, delta, "Auto columns should should measure with specific width");
+                TKUnit.assertAreClose(btn.measureWidth, w, delta, "Star columns should measure with specific width");
                 TKUnit.assertAreClose(btn.layoutWidth, w, delta, "Star columns should layout with exact length");
             }
         }
     }
 }
 
-export function test_GridLayout_ColumnWidth_when_4stars_and_width_110() {
+export function test_ColumnWidth_when_4stars_and_width_110() {
 
     rootLayout.width = 110;
     rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
@@ -449,7 +449,7 @@ export function test_GridLayout_ColumnWidth_when_4stars_and_width_110() {
     TKUnit.assertAreClose(cols[3].actualLength, 27, delta, "Column[3] actual length should be 27");
 }
 
-export function test_GridLayout_margins_and_verticalAlignment_center() {
+export function test_margins_and_verticalAlignment_center() {
 
     rootLayout.height = 200;
     rootLayout.width = 200;
@@ -472,7 +472,7 @@ export function test_GridLayout_margins_and_verticalAlignment_center() {
     TKUnit.assertAreClose(btn.layoutLeft, 25 * density, delta, "horizontal margins");
 }
 
-export function test_GridLayout_set_columns_in_XML() {
+export function test_set_columns_in_XML() {
     var p = <page.Page>builder.parse("<Page><GridLayout columns=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
     var grid = <layout.GridLayout>p.content;
 
@@ -491,7 +491,7 @@ export function test_GridLayout_set_columns_in_XML() {
     TKUnit.assertEqual(columns[3].value, 100, "columns[3].value");
 };
 
-export function test_GridLayout_set_rows_in_XML() {
+export function test_set_rows_in_XML() {
     var p = <page.Page>builder.parse("<Page><GridLayout rows=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
     var grid = <layout.GridLayout>p.content;
 
@@ -510,7 +510,7 @@ export function test_GridLayout_set_rows_in_XML() {
     TKUnit.assertEqual(rows[3].value, 100, "rows[3].value");
 };
 
-export function test_GridLayout_padding() {
+export function test_padding() {
     rootLayout.paddingLeft = 10;
     rootLayout.paddingTop = 20;
     rootLayout.paddingRight = 30;

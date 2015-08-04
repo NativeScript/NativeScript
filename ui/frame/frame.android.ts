@@ -4,7 +4,6 @@ import pages = require("ui/page");
 import trace = require("trace");
 import observable = require("data/observable");
 import utils = require("utils/utils");
-import view = require("ui/core/view");
 import application = require("application");
 
 global.moduleMerge(frameCommon, exports);
@@ -373,8 +372,7 @@ var NativeActivity = {
         this.androidFrame.setActivity(this);
 
         // Create and set content container.
-        var root = new view.NativeViewGroup(this);
-        root[OWNER] = this.frame;
+        var root = new org.nativescript.widgets.ContentLayout(this);
 
         this.androidFrame.rootViewGroup = root;
         this.androidFrame.rootViewGroup.setId(this.frame.containerViewId);

@@ -8,6 +8,10 @@
      * Utility module related to layout.
      */
     module layout {
+        /**
+         * Bits that provide the actual measured size.
+         */
+        export var MEASURED_SIZE_MASK: number;
         export var MEASURED_STATE_MASK: number;
         export var MEASURED_STATE_TOO_SMALL: number;
         export var UNSPECIFIED: number;

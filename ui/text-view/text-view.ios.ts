@@ -3,9 +3,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import textBase = require("ui/text-base");
 import enums = require("ui/enums");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public static ObjCProtocols = [UITextViewDelegate];

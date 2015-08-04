@@ -47,6 +47,7 @@ export class ContentView extends view.CustomLayoutView implements definition.Con
         }
     }
 
+    // This method won't be called in Android because we use the native android layout.
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var result = view.View.measureChild(this, this.content, widthMeasureSpec, heightMeasureSpec);
         
@@ -66,6 +67,7 @@ export class ContentView extends view.CustomLayoutView implements definition.Con
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
+    // This method won't be called in Android because we use the native android layout.
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         view.View.layoutChild(this, this.content, 0, 0, right - left, bottom - top);
     }

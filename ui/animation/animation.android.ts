@@ -5,9 +5,7 @@ import color = require("color");
 import trace = require("trace");
 import types = require("utils/types");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 var floatType = java.lang.Float.class.getField("TYPE").get(null);
 var argbEvaluator = new android.animation.ArgbEvaluator();

@@ -9,32 +9,9 @@ import utils = require("utils/utils");
 
 var ASYNC = 2;
 
-export class MyStackLayout extends StackLayout {
-    public measureCount: number = 0;
-    public arrangeCount: number = 0;
-
-    public get measured(): boolean {
-        return this.measureCount > 0;
-    }
-
-    public get arranged(): boolean {
-        return this.arrangeCount > 0;
-    }
-
-    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        this.measureCount++;
-    }
-
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
-        super.onLayout(left, top, right, bottom);
-        this.arrangeCount++;
-    }
-}
-
 var tmp: Button;
 var newPage: Page;
-var rootLayout: MyStackLayout;
+var rootLayout: helper.MyStackLayout;
 var btn1: helper.MyButton;
 var btn2: helper.MyButton;
 
@@ -60,7 +37,7 @@ export function tearDownModule() {
 }
 
 export function setUp() {
-    rootLayout = new MyStackLayout();
+    rootLayout = new helper.MyStackLayout();
     btn1 = new helper.MyButton();
     btn1.text = "btn1";
     rootLayout.addChild(btn1);
@@ -83,7 +60,7 @@ export function test_SetWrongOrientation_ShouldThrowError() {
         "Setting invalid value for orientation should throw exception.");
 }
 
-export function test_StackLayout_Orientation_Change() {
+export function test_Orientation_Change() {
 
     TKUnit.waitUntilReady(function () {
         return rootLayout.arranged;
@@ -102,7 +79,7 @@ export function test_StackLayout_Orientation_Change() {
     TKUnit.assertEqual(rootLayout.arrangeCount, 2, "Orientation change should invalidate arrange.");
 }
 
-export function test_StackLayout_ShouldMeasureWith_AtMost_OnVertical() {
+export function test_ShouldMeasureWith_AtMost_OnVertical() {
 
     TKUnit.waitUntilReady(function () {
         return btn1.isLayoutValid;
@@ -117,7 +94,7 @@ export function test_StackLayout_ShouldMeasureWith_AtMost_OnVertical() {
     TKUnit.assertEqual(utils.layout.getMeasureSpecMode(specs.heightMeasureSpec), utils.layout.AT_MOST, "Layout should measure child with AT_MOST Height in vertical orientation.");
 }
 
-export function test_StackLayout_ShouldMeasureWith_AtMost_OnHorizontal() {
+export function test_ShouldMeasureWith_AtMost_OnHorizontal() {
 
     rootLayout.orientation = enums.Orientation.horizontal;
 
@@ -133,7 +110,7 @@ export function test_StackLayout_ShouldMeasureWith_AtMost_OnHorizontal() {
     TKUnit.assertEqual(utils.layout.getMeasureSpecMode(specs.widthMeasureSpec), utils.layout.AT_MOST, "Layout should measure child with AT_MOST Width in horizontal orientation.");
 }
 
-export function test_StackLayout_DesiredSize_Vertical() {
+export function test_DesiredSize_Vertical() {
 
     rootLayout.verticalAlignment = enums.VerticalAlignment.top;
     rootLayout.horizontalAlignment = enums.HorizontalAlignment.left;
@@ -145,7 +122,7 @@ export function test_StackLayout_DesiredSize_Vertical() {
     TKUnit.assertEqual(rootLayout.getMeasuredHeight(), (btn1.getMeasuredHeight() + btn2.getMeasuredHeight()), "Layout getMeasuredHeight should be Sum of children getMeasuredHeight");
 }
 
-export function test_StackLayout_DesiredSize_Horizontal() {
+export function test_DesiredSize_Horizontal() {
 
     rootLayout.horizontalAlignment = enums.HorizontalAlignment.left;
     rootLayout.verticalAlignment = enums.VerticalAlignment.top;
@@ -159,7 +136,7 @@ export function test_StackLayout_DesiredSize_Horizontal() {
     TKUnit.assertEqual(rootLayout.getMeasuredHeight(), Math.max(btn1.getMeasuredHeight(), btn2.getMeasuredHeight()), "Layout getMeasuredHeight should be Max of children getMeasuredHeight");
 }
 
-export function test_StackLayout_Padding_Vertical() {
+export function test_Padding_Vertical() {
     rootLayout.width = 300;
     rootLayout.height = 300;
 
@@ -176,13 +153,13 @@ export function test_StackLayout_Padding_Vertical() {
     }, ASYNC);
 
     helper.assertMeasure(btn1, 260, 50);
-    helper.assertMeasure(btn1, 260, 50);
+    helper.assertMeasure(btn2, 260, 50);
 
     helper.assertLayout(btn1, 10, 20, 260, 50, "btn1");
     helper.assertLayout(btn2, 10, 70, 260, 50, "btn2");
 }
 
-export function test_StackLayout_Padding_Horizontal() {
+export function test_Padding_Horizontal() {
     rootLayout.width = 300;
     rootLayout.height = 300;
     rootLayout.orientation = enums.Orientation.horizontal;
@@ -200,7 +177,7 @@ export function test_StackLayout_Padding_Horizontal() {
     }, ASYNC);
 
     helper.assertMeasure(btn1, 50, 240);
-    helper.assertMeasure(btn1, 50, 240);
+    helper.assertMeasure(btn2, 50, 240);
 
     helper.assertLayout(btn1, 10, 20, 50, 240, "btn1");
     helper.assertLayout(btn2, 60, 20, 50, 240, "btn2");
@@ -217,7 +194,7 @@ export function test_insertChildAtPosition() {
 
     let newChild = new Button();
     newChild.text = 'in-between';
-    rootLayout.insertChild(1, newChild);
+    rootLayout.insertChild(newChild, 1);
 
     assertChildTexts("btn1|in-between|btn2", rootLayout, "button inserted at correct location");
 }
@@ -266,4 +243,4 @@ export function test_codesnippets() {
     // ```
 
     // </snippet>
-};
+}

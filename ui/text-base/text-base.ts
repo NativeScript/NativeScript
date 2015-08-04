@@ -5,8 +5,6 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import formattedString = require("text/formatted-string");
 import weakEvents = require("ui/core/weak-event-listener");
-import utils = require("utils/utils");
-import trace = require("trace");
 
 var textProperty = new dependencyObservable.Property(
     "text",
@@ -114,27 +112,5 @@ export class TextBase extends view.View implements definition.TextBase {
             (<formattedString.FormattedString>data.newValue).parent = this;
         }
         this.setFormattedTextPropertyToNative(data.newValue);
-    }
-
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
-        if (this.android && this._nativeView) {
-            var measuredWidth = this.getMeasuredWidth();
-            var measuredHeight = this.getMeasuredHeight();
-
-            var measureSpecs = this._getCurrentMeasureSpecs();
-            var widthModeIsNotExact = utils.layout.getMeasureSpecMode(measureSpecs.widthMeasureSpec) !== utils.layout.EXACTLY;
-            var heightModeIsNotExact = utils.layout.getMeasureSpecMode(measureSpecs.heightMeasureSpec) !== utils.layout.EXACTLY;
-
-            var width = right - left;
-            var height = bottom - top;
-            if ((Math.abs(measuredWidth - width) > 1 && widthModeIsNotExact) || (Math.abs(measuredHeight - height) > 1 && heightModeIsNotExact)) {
-                var widthMeasureSpec = utils.layout.makeMeasureSpec(width, utils.layout.EXACTLY);
-                var heightMeasureSpec = utils.layout.makeMeasureSpec(height, utils.layout.EXACTLY);
-                trace.write(this + ", measuredSize: (" + measuredWidth + ", " + measuredHeight + ")" + ", remeasure with: (" + width + ", " + height + ")", trace.categories.Layout);
-                (<android.view.View>this._nativeView).measure(widthMeasureSpec, heightMeasureSpec);
-            }
-        }
-
-        super.onLayout(left, top, right, bottom);
     }
 }

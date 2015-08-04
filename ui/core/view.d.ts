@@ -206,31 +206,6 @@ declare module "ui/core/view" {
         marginBottom: number;
 
         /**
-         * Gets or sets padding style property.
-         */
-        padding: string;
-
-        /**
-         * Specify the left padding of this view.
-         */
-        paddingLeft: number;
-
-        /**
-         * Specify the top padding of this view.
-         */
-        paddingTop: number;
-
-        /**
-         * Specify the right padding of this view.
-         */
-        paddingRight: number;
-
-        /**
-         * Specify the bottom padding of this view.
-         */
-        paddingBottom: number;
-
-        /**
          * Gets or sets the alignment of this view within its parent along the Horizontal axis.
          */
         horizontalAlignment: string;
@@ -412,7 +387,7 @@ declare module "ui/core/view" {
         onUnloaded(): void;
         isLoaded: boolean;
 
-        _addView(view: View);
+        _addView(view: View, atIndex?: number);
         _propagateInheritableProperties(view: View)
         _inheritProperties(parentView: View)
         _removeView(view: View);
@@ -432,7 +407,7 @@ declare module "ui/core/view" {
         /**
          * Performs the core logic of adding a child view to the native visual tree. Returns true if the view's native representation has been successfully added, false otherwise.
          */
-        _addViewToNativeVisualTree(view: View): boolean;
+        _addViewToNativeVisualTree(view: View, atIndex?: number): boolean;
         _removeViewFromNativeVisualTree(view: View): void;
 
         _eachChildView(callback: (child: View) => boolean);
@@ -450,17 +425,12 @@ declare module "ui/core/view" {
         _updateLayout(): void;
 
         /**
-         * Called my measure method to cache measureSpecs.
+         * Called by measure method to cache measureSpecs.
          */
         _setCurrentMeasureSpecs(widthMeasureSpec: number, heightMeasureSpec: number): boolean;
 
         /**
-         * Returns view measureSpecs.
-         */
-        _getCurrentMeasureSpecs(): { widthMeasureSpec: number; heightMeasureSpec: number };
-
-        /**
-         * Called my layout method to cache view bounds.
+         * Called by layout method to cache view bounds.
          */
         _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): void;
 

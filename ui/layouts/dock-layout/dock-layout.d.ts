@@ -1,12 +1,12 @@
 ﻿declare module "ui/layouts/dock-layout" {
     import view = require("ui/core/view");
-    import layout = require("ui/layouts/layout");
+    import layout = require("ui/layouts/layout-base");
     import dependencyObservable = require("ui/core/dependency-observable");    
 
     /**
      * A Layout that arranges its children at its outer edges, and allows its last child to take up the remaining space. 
      */
-    class DockLayout extends layout.Layout {
+    class DockLayout extends layout.LayoutBase {
 
         /**
          * Represents the observable property backing the dock property.

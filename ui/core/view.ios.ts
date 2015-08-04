@@ -4,6 +4,7 @@ import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import background = require("ui/styling/background");
+import types = require("utils/types");
 
 global.moduleMerge(viewCommon, exports);
 
@@ -85,13 +86,18 @@ export class View extends viewCommon.View {
         // For UILabel and UIImage.
         view.userInteractionEnabled = true;
     }
+    
+    get isLayoutRequested(): boolean {
+        return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
+    }
 
     public requestLayout(): void {
         super.requestLayout();
         this._privateFlags |= PFLAG_FORCE_LAYOUT;
 
-        if (this.parent) {
-            this.parent.requestLayout();
+        var parent = <View>this.parent;
+        if (parent && !parent.isLayoutRequested) {
+            parent.requestLayout();
         }
     }
 
@@ -236,7 +242,7 @@ export class CustomLayoutView extends View {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        // Don't call super because it will trigger measure again.
+        // Don't call super because it will set MeasureDimension. This method must be overriden and calculate its measuredDimensions.
 
         var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
         var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
@@ -246,11 +252,17 @@ export class CustomLayoutView extends View {
         trace.write(this + " :onMeasure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
     }
 
-    public _addViewToNativeVisualTree(child: View): boolean {
+    public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
         super._addViewToNativeVisualTree(child);
 
         if (this._nativeView && child._nativeView) {
-            this._nativeView.addSubview(child._nativeView);
+            if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.subviews.count) {
+                this._nativeView.addSubview(child._nativeView);
+            }
+            else {
+                this._nativeView.insertSubviewAtIndex(child._nativeView, atIndex);
+            }
+            
             return true;
         }
 

@@ -2,9 +2,7 @@
 import common = require("ui/animation/animation-common");
 import trace = require("trace");
 
-// merge the exports of the common file with the exports of this file
-declare var exports;
-require("utils/module-merge").merge(common, exports);
+global.moduleMerge(common, exports);
 
 var _transform = "_transform";
 var _skip = "_skip";

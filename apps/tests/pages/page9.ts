@@ -1,14 +1,10 @@
 ﻿import pages = require("ui/page");
-import slider = require("ui/slider");
 import imageSource = require("image-source");
 import gridModule = require("ui/layouts/grid-layout");
 import enums = require("ui/enums");
+import img = require("ui/image");
 
 export function createPage() {
-    var StackLayout = require("ui/layouts/stack-layout").StackLayout;
-    var Image = require("ui/image").Image;
-
-    var stack = new StackLayout();
     var grid = new gridModule.GridLayout();
 
     grid.addColumn(new gridModule.ItemSpec(1, gridModule.GridUnitType.auto));
@@ -17,24 +13,16 @@ export function createPage() {
     grid.addRow(new gridModule.ItemSpec(1, gridModule.GridUnitType.auto));
     grid.addRow(new gridModule.ItemSpec(1, gridModule.GridUnitType.star));
 
-    var sldr = new slider.Slider();
-    gridModule.GridLayout.setColumnSpan(sldr, 2);
-    sldr.maxValue = 500;
- 
-    stack.addChild(sldr);
-    stack.addChild(grid);
-
-    var image = new Image();
+    var image = new img.Image();
     image.stretch = enums.Stretch.fill;
-    image.verticalAlignment = 2;
-    image.horizontalAlignment = 1;
+    image.verticalAlignment = enums.VerticalAlignment.bottom;
+    image.horizontalAlignment = enums.HorizontalAlignment.center;
 
-    image.source = imageSource.fromFile(__dirname + "test.png");
+    image.imageSource = imageSource.fromFile(__dirname + "/test.png");
     grid.addChild(image);
 
     var page = new pages.Page();
-    page.content = stack;
+    page.content = grid;
     page.css = "GridLayout { background-color: pink } image { background-color: green }";
     return page;
 }
-//export var Page = page; 

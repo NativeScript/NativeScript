@@ -23,6 +23,328 @@ var _handlersCache = {};
 // classes like Frame that does not need to handle styling properties.
 var noStylingClasses = {};
 
+// on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
+var AffectsLayout = global.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
+
+export interface Thickness {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+}
+
+export interface CommonLayoutParams {
+    width: number;
+    height: number;
+
+    leftMargin: number;
+    topMargin: number;
+    rightMargin: number;
+    bottomMargin: number;
+
+    horizontalAlignment: string;
+    verticalAlignment: string;
+}
+
+function parseThickness(value: any): Thickness {
+    var result: Thickness = { top: 0, right: 0, bottom: 0, left: 0 };
+    if (types.isString(value)) {
+        var arr = value.split(/[ ,]+/);
+        var top = parseInt(arr[0]);
+        top = isNaN(top) ? 0 : top;
+
+        var right = parseInt(arr[1]);
+        right = isNaN(right) ? top : right;
+
+        var bottom = parseInt(arr[2]);
+        bottom = isNaN(bottom) ? top : bottom;
+
+        var left = parseInt(arr[3]);
+        left = isNaN(left) ? right : left;
+
+        result.top = top;
+        result.right = right;
+        result.bottom = bottom;
+        result.left = left;
+
+    } else if (types.isNumber(value)) {
+        result.top = result.right = result.bottom = result.left = value;
+    }
+
+    return result;
+}
+
+function layoutParamsComparer(x: CommonLayoutParams, y: CommonLayoutParams): boolean {
+    return x.width === y.width
+        && x.height === y.height
+        && x.leftMargin === y.leftMargin
+        && x.topMargin === y.topMargin
+        && x.rightMargin === y.rightMargin
+        && x.bottomMargin === y.bottomMargin
+        && x.horizontalAlignment === y.horizontalAlignment
+        && x.verticalAlignment === y.verticalAlignment
+}
+
+function onLayoutParamsChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var layoutParams: CommonLayoutParams = {
+        width: isNaN(style.width) ? -1 : style.width,
+        height: isNaN(style.height) ? -1 : style.height,
+        leftMargin: style.marginLeft,
+        topMargin: style.marginTop,
+        rightMargin: style.marginRight,
+        bottomMargin: style.marginBottom,
+        horizontalAlignment: style.horizontalAlignment,
+        verticalAlignment: style.verticalAlignment
+    };
+
+    style._setValue(nativeLayoutParamsProperty, layoutParams);
+}
+
+function onPaddingValueChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var thickness: Thickness = {
+        top: style.paddingTop,
+        right: style.paddingRight,
+        bottom: style.paddingBottom,
+        left: style.paddingLeft
+    };
+
+    style._setValue(nativePaddingsProperty, thickness);
+}
+
+function onPaddingChanged(data: observable.PropertyChangeData) {
+    var thickness = parseThickness(data.newValue);
+    var style = <Style>data.object;
+    var valueSource = style._getValueSource(paddingProperty);
+
+    try {
+        style._beginUpdate();
+        style._setValue(paddingTopProperty, thickness.top, valueSource);
+        style._setValue(paddingRightProperty, thickness.right, valueSource);
+        style._setValue(paddingBottomProperty, thickness.bottom, valueSource);
+        style._setValue(paddingLeftProperty, thickness.left, valueSource);
+    }
+    finally {
+        style._endUpdate();
+    }
+}
+
+function onMarginChanged(data: observable.PropertyChangeData) {
+    var thickness = parseThickness(data.newValue);
+    var style = <Style>data.object;
+    var valueSource = style._getValueSource(marginProperty);
+
+    try {
+        style._beginUpdate();
+        style._setValue(marginTopProperty, thickness.top, valueSource);
+        style._setValue(marginRightProperty, thickness.right, valueSource);
+        style._setValue(marginBottomProperty, thickness.bottom, valueSource);
+        style._setValue(marginLeftProperty, thickness.left, valueSource);
+    }
+    finally {
+        style._endUpdate();
+    }
+}
+
+function thicknessComparer(x: Thickness, y: Thickness): boolean {
+    return x.left === y.left && x.top === y.top && x.right === y.right && x.bottom === y.bottom;
+}
+
+function isWidthHeightValid(value: number): boolean {
+    return isNaN(value) || (value >= 0.0 && isFinite(value));
+}
+
+function isMinWidthHeightValid(value: number): boolean {
+    return !isNaN(value) && value >= 0.0 && isFinite(value);
+}
+
+function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var url: string = data.newValue;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    var isValid = false;
+
+    if (types.isString(data.newValue)) {
+        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
+        var match = url.match(pattern);
+        if (match && match[2]) {
+            url = match[2];
+        }
+
+        if (utils.isDataURI(url)) {
+            var base64Data = url.split(",")[1];
+            if (types.isDefined(base64Data)) {
+                style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromBase64(base64Data)));
+                isValid = true;
+            }
+        }
+        else if (utils.isFileOrResourcePath(url)) {
+            style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromFileOrResource(url)));
+            isValid = true;
+        }
+        else if (url.indexOf("http") !== -1) {
+            style["_url"] = url;
+            style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
+            imageSource.fromUrl(url).then((r) => {
+                if (style && style["_url"] === url) {
+                    style._setValue(backgroundInternalProperty, currentBackground.withImage(r));
+                }
+            });
+            isValid = true;
+        }
+    }
+
+    if (!isValid) {
+        style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
+    }
+}
+
+function onBackgroundColorPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (!color.Color.equals(currentBackground.color, data.newValue)) {
+        style._setValue(backgroundInternalProperty, currentBackground.withColor(data.newValue));
+    }
+}
+
+function onBackgroundSizePropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.size) {
+        style._setValue(backgroundInternalProperty, currentBackground.withSize(data.newValue));
+    }
+}
+
+function onBackgroundRepeatPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.repeat) {
+        style._setValue(backgroundInternalProperty, currentBackground.withRepeat(data.newValue));
+    }
+}
+
+function onBackgroundPositionPropertyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.position) {
+        style._setValue(backgroundInternalProperty, currentBackground.withPosition(data.newValue));
+    }
+}
+
+function getHandlerInternal(propertyId: number, classInfo: types.ClassInfo): styling.stylers.StylePropertyChangedHandler {
+    var className = classInfo ? classInfo.name : "default";
+    var handlerKey = className + propertyId;
+
+    // try the cache first
+    var result = _handlersCache[handlerKey];
+    if (types.isDefined(result)) {
+        return result;
+    }
+
+    var propertyHandlers = _registeredHandlers[propertyId];
+    if (noStylingClasses.hasOwnProperty(className) || !propertyHandlers) {
+        // Reached 'no-styling' class or no property handlers are registered for this proeprtyID
+        result = null;
+    }
+    else if (propertyHandlers.hasOwnProperty(className)) {
+        // Found handler for this class
+        result = propertyHandlers[className];
+    }
+    else if (classInfo) {
+        // Check the base class
+        result = getHandlerInternal(propertyId, classInfo.baseClassInfo);
+    }
+    else {
+        result = null;
+    }
+
+    _handlersCache[handlerKey] = result;
+    return result;
+}
+
+function isVisibilityValid(value: string): boolean {
+    return value === enums.Visibility.visible || value === enums.Visibility.collapse || value === enums.Visibility.collapsed;
+}
+
+function onVisibilityChanged(data: observable.PropertyChangeData) {
+    (<any>data.object)._view._isVisibleCache = data.newValue === enums.Visibility.visible;
+}
+
+function isPaddingValid(value: number): boolean {
+    return isFinite(value) && !isNaN(value) && value >= 0;
+}
+
+function isMarginValid(value: number): boolean {
+    return isFinite(value) && !isNaN(value);
+}
+
+function isOpacityValid(value: string): boolean {
+    var parsedValue: number = parseFloat(value);
+    return !isNaN(parsedValue) && 0 <= parsedValue && parsedValue <= 1;
+}
+
+function isFontWeightValid(value: string): boolean {
+    return value === enums.FontWeight.normal || value === enums.FontWeight.bold;
+}
+
+function isFontStyleValid(value: string): boolean {
+    return value === enums.FontStyle.normal || value === enums.FontStyle.italic;
+}
+
+function onFontFamilyChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontFamily !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontFamily(data.newValue));
+    }
+}
+
+function onFontStyleChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontStyle !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontStyle(data.newValue));
+    }
+}
+
+function onFontWeightChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontWeight !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontWeight(data.newValue));
+    }
+}
+
+function onFontSizeChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var currentFont = <font.Font>style._getValue(fontInternalProperty);
+    if (currentFont.fontSize !== data.newValue) {
+        style._setValue(fontInternalProperty, currentFont.withFontSize(data.newValue));
+    }
+}
+
+function onFontChanged(data: observable.PropertyChangeData) {
+    var style = <Style>data.object;
+
+    var newFont = font.Font.parse(data.newValue);
+    var valueSource = style._getValueSource(fontProperty);
+    try {
+        style._beginUpdate();
+        style._setValue(fontFamilyProperty, newFont.fontFamily, valueSource);
+        style._setValue(fontStyleProperty, newFont.fontStyle, valueSource);
+        style._setValue(fontWeightProperty, newFont.fontWeight, valueSource);
+        style._setValue(fontSizeProperty, newFont.fontSize, valueSource);
+    }
+    finally {
+        style._endUpdate();
+    }
+}
+
 export class Style extends observable.DependencyObservable implements styling.Style {
     private _view: view.View;
     private _updateCounter = 0;
@@ -400,9 +722,7 @@ export class Style extends observable.DependencyObservable implements styling.St
     }
 }
 
-export function registerHandler(property: dependencyObservable.Property,
-    handler: styling.stylers.StylePropertyChangedHandler,
-    className?: string) {
+export function registerHandler(property: dependencyObservable.Property, handler: styling.stylers.StylePropertyChangedHandler, className?: string) {
     var realClassName = className ? className : "default";
 
     var handlerRecord = _registeredHandlers[property.id];
@@ -420,37 +740,6 @@ export function registerNoStylingClass(className) {
 
 export function getHandler(property: dependencyObservable.Property, view: view.View): styling.stylers.StylePropertyChangedHandler {
     return getHandlerInternal(property.id, types.getClassInfo(view));
-}
-
-function getHandlerInternal(propertyId: number, classInfo: types.ClassInfo): styling.stylers.StylePropertyChangedHandler {
-    var className = classInfo ? classInfo.name : "default";
-    var handlerKey = className + propertyId;
-
-    // try the cache first
-    var result = _handlersCache[handlerKey];
-    if (types.isDefined(result)) {
-        return result;
-    }
-
-    var propertyHandlers = _registeredHandlers[propertyId];
-    if (noStylingClasses.hasOwnProperty(className) || !propertyHandlers) {
-        // Reached 'no-styling' class or no property handlers are registered for this proeprtyID
-        result = null;
-    }
-    else if (propertyHandlers.hasOwnProperty(className)) {
-        // Found handler for this class
-        result = propertyHandlers[className];
-    }
-    else if (classInfo) {
-        // Check the base class
-        result = getHandlerInternal(propertyId, classInfo.baseClassInfo);
-    }
-    else {
-        result = null;
-    }
-
-    _handlersCache[handlerKey] = result;
-    return result;
 }
 
 // Property registration
@@ -487,77 +776,6 @@ export var borderRadiusProperty = new styleProperty.Property("borderRadius", "bo
 export var backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
     new observable.PropertyMetadata(background.Background.default, observable.PropertyMetadataSettings.None, undefined, undefined, background.Background.equals));
 
-function onBackgroundImagePropertyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-    var url: string = data.newValue;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    var isValid = false;
-
-    if (types.isString(data.newValue)) {
-        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
-        var match = url.match(pattern);
-        if (match && match[2]) {
-            url = match[2];
-        }
-
-        if (utils.isDataURI(url)) {
-            var base64Data = url.split(",")[1];
-            if (types.isDefined(base64Data)) {
-                style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromBase64(base64Data)));
-                isValid = true;
-            }
-        } else if (utils.isFileOrResourcePath(url)) {
-            style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromFileOrResource(url)));
-            isValid = true;
-        } else if (url.indexOf("http") !== -1) {
-            style["_url"] = url;
-            style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
-            imageSource.fromUrl(url).then((r) => {
-                if (style && style["_url"] === url) {
-                    style._setValue(backgroundInternalProperty, currentBackground.withImage(r));
-                }
-            });
-            isValid = true;
-        }
-    }
-
-    if (!isValid) {
-        style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
-    }
-}
-
-function onBackgroundColorPropertyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (!color.Color.equals(currentBackground.color, data.newValue)) {
-        style._setValue(backgroundInternalProperty, currentBackground.withColor(data.newValue));
-    }
-}
-
-function onBackgroundSizePropertyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.size) {
-        style._setValue(backgroundInternalProperty, currentBackground.withSize(data.newValue));
-    }
-}
-
-function onBackgroundRepeatPropertyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.repeat) {
-        style._setValue(backgroundInternalProperty, currentBackground.withRepeat(data.newValue));
-    }
-}
-
-function onBackgroundPositionPropertyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.position) {
-        style._setValue(backgroundInternalProperty, currentBackground.withPosition(data.newValue));
-    }
-}
-
 export var fontProperty = new styleProperty.Property("font", "font",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.None, onFontChanged));
 
@@ -574,207 +792,81 @@ export var fontWeightProperty = new styleProperty.Property("fontWeight", "font-w
     new observable.PropertyMetadata(enums.FontWeight.normal, observable.PropertyMetadataSettings.Inheritable, onFontWeightChanged, isFontWeightValid));
 
 export var fontInternalProperty = new styleProperty.Property("_fontInternal", "_fontInternal",
-    new observable.PropertyMetadata(font.Font.default, observable.PropertyMetadataSettings.AffectsLayout, null, null, font.Font.equals), font.Font.parse);
-
-function isFontWeightValid(value: string): boolean {
-    return value === enums.FontWeight.normal || value === enums.FontWeight.bold;
-}
-
-function isFontStyleValid(value: string): boolean {
-    return value === enums.FontStyle.normal || value === enums.FontStyle.italic;
-}
-
-function onFontFamilyChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-
-    var currentFont = <font.Font>style._getValue(fontInternalProperty);
-    if (currentFont.fontFamily !== data.newValue) {
-        style._setValue(fontInternalProperty, currentFont.withFontFamily(data.newValue));
-    }
-}
-
-function onFontStyleChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-
-    var currentFont = <font.Font>style._getValue(fontInternalProperty);
-    if (currentFont.fontStyle !== data.newValue) {
-        style._setValue(fontInternalProperty, currentFont.withFontStyle(data.newValue));
-    }
-}
-
-function onFontWeightChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-
-    var currentFont = <font.Font>style._getValue(fontInternalProperty);
-    if (currentFont.fontWeight !== data.newValue) {
-        style._setValue(fontInternalProperty, currentFont.withFontWeight(data.newValue));
-    }
-}
-
-function onFontSizeChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-
-    var currentFont = <font.Font>style._getValue(fontInternalProperty);
-    if (currentFont.fontSize !== data.newValue) {
-        style._setValue(fontInternalProperty, currentFont.withFontSize(data.newValue));
-    }
-}
-
-function onFontChanged(data: observable.PropertyChangeData) {
-    var style = <Style>data.object;
-
-    var newFont = font.Font.parse(data.newValue);
-    var valueSource = style._getValueSource(fontProperty);
-    style._setValue(fontFamilyProperty, newFont.fontFamily, valueSource);
-    style._setValue(fontStyleProperty, newFont.fontStyle, valueSource);
-    style._setValue(fontWeightProperty, newFont.fontWeight, valueSource);
-    style._setValue(fontSizeProperty, newFont.fontSize, valueSource);
-}
+    new observable.PropertyMetadata(font.Font.default, AffectsLayout, null, null, font.Font.equals), font.Font.parse);
 
 export var textAlignmentProperty = new styleProperty.Property("textAlignment", "text-align",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.AffectsLayout | observable.PropertyMetadataSettings.Inheritable),
-    converters.textAlignConverter);
-
-function isWidthHeightValid(value: number): boolean {
-    return isNaN(value) || (value >= 0.0 && isFinite(value));
-}
-
-function isMinWidthHeightValid(value: number): boolean {
-    return !isNaN(value) && value >= 0.0 && isFinite(value);
-}
-
-export var widthProperty = new styleProperty.Property("width", "width",
-    new observable.PropertyMetadata(
-        Number.NaN, observable.PropertyMetadataSettings.AffectsLayout, null, isWidthHeightValid),
-    converters.numberConverter);
-
-export var heightProperty = new styleProperty.Property("height", "height",
-    new observable.PropertyMetadata(
-        Number.NaN, observable.PropertyMetadataSettings.AffectsLayout, null, isWidthHeightValid),
-    converters.numberConverter);
+    new observable.PropertyMetadata(undefined, AffectsLayout | observable.PropertyMetadataSettings.Inheritable), converters.textAlignConverter);
 
 export var minWidthProperty = new styleProperty.Property("minWidth", "min-width",
-    new observable.PropertyMetadata(
-        0, observable.PropertyMetadataSettings.AffectsLayout, null, isMinWidthHeightValid),
-    converters.numberConverter);
+    new observable.PropertyMetadata(0, AffectsLayout, null, isMinWidthHeightValid), converters.numberConverter);
 
 export var minHeightProperty = new styleProperty.Property("minHeight", "min-height",
-    new observable.PropertyMetadata(
-        0, observable.PropertyMetadataSettings.AffectsLayout, null, isMinWidthHeightValid),
-    converters.numberConverter);
+    new observable.PropertyMetadata(0, AffectsLayout, null, isMinWidthHeightValid), converters.numberConverter);
 
-function parseThickness(value: any): { top: number; right: number; bottom: number; left: number } {
-    var result = { top: 0, right: 0, bottom: 0, left: 0 };
-    if (types.isString(value)) {
-        var arr = value.split(/[ ,]+/);
-        var top = parseInt(arr[0]);
-        top = isNaN(top) ? 0 : top;
+// Helper property holding most layout related properties available in CSS.
+// When layout related properties are set in CSS we chache them and send them to the native view in a single call.
+export var nativeLayoutParamsProperty = new styleProperty.Property("nativeLayoutParams", "nativeLayoutParams",
+    new observable.PropertyMetadata({
+        width: -1,
+        height: -1,
+        leftMargin: 0,
+        topMargin: 0,
+        rightMargin: 0,
+        bottomMargin: 0,
+        horizontalAlignment: enums.HorizontalAlignment.stretch,
+        verticalAlignment: enums.VerticalAlignment.stretch
+    }, null, null, null, layoutParamsComparer));
 
-        var right = parseInt(arr[1]);
-        right = isNaN(right) ? top : right;
+// Helper property holding all paddings. When paddings are set through CSS we cache them and send them to the native view in a single call.
+export var nativePaddingsProperty = new styleProperty.Property("paddingNative", "paddingNative",
+    new observable.PropertyMetadata({ top: 0, right: 0, bottom: 0, left: 0 }, null, null, null, thicknessComparer));
 
-        var bottom = parseInt(arr[2]);
-        bottom = isNaN(bottom) ? top : bottom;
+export var widthProperty = new styleProperty.Property("width", "width",
+    new observable.PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), converters.numberConverter);
 
-        var left = parseInt(arr[3]);
-        left = isNaN(left) ? right : left;
-
-        result.top = top;
-        result.right = right;
-        result.bottom = bottom;
-        result.left = left;
-
-    } else if (types.isNumber(value)) {
-        result.top = result.right = result.bottom = result.left = value;
-    }
-
-    return result;
-}
-
-function onPaddingChanged(data: observable.PropertyChangeData) {
-    var thickness = parseThickness(data.newValue);
-    var style = <Style>data.object;
-
-    style.paddingTop = thickness.top;
-    style.paddingRight = thickness.right;
-    style.paddingBottom = thickness.bottom;
-    style.paddingLeft = thickness.left;
-}
-
-function onMarginChanged(data: observable.PropertyChangeData) {
-    var thickness = parseThickness(data.newValue);
-    var style = <Style>data.object;
-
-    style.marginTop = thickness.top;
-    style.marginRight = thickness.right;
-    style.marginBottom = thickness.bottom;
-    style.marginLeft = thickness.left;
-}
+export var heightProperty = new styleProperty.Property("height", "height",
+    new observable.PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), converters.numberConverter);
 
 export var verticalAlignmentProperty = new styleProperty.Property("verticalAlignment", "vertical-align",
-    new observable.PropertyMetadata(enums.VerticalAlignment.stretch, observable.PropertyMetadataSettings.AffectsLayout));
+    new observable.PropertyMetadata(enums.VerticalAlignment.stretch, AffectsLayout, onLayoutParamsChanged));
 
 export var horizontalAlignmentProperty = new styleProperty.Property("horizontalAlignment", "horizontal-align",
-    new observable.PropertyMetadata(enums.HorizontalAlignment.stretch, observable.PropertyMetadataSettings.AffectsLayout));
+    new observable.PropertyMetadata(enums.HorizontalAlignment.stretch, AffectsLayout, onLayoutParamsChanged));
 
-export var marginProperty = new styleProperty.Property("margin", "margin",
-    new observable.PropertyMetadata(null, null, onMarginChanged));
+export var marginProperty = new styleProperty.Property("margin", "margin", new observable.PropertyMetadata(null, null, onMarginChanged));
+
+export var marginLeftProperty = new styleProperty.Property("marginLeft", "margin-left",
+    new observable.PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), converters.numberConverter);
+
+export var marginRightProperty = new styleProperty.Property("marginRight", "margin-right",
+    new observable.PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), converters.numberConverter);
+
+export var marginTopProperty = new styleProperty.Property("marginTop", "margin-top",
+    new observable.PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), converters.numberConverter);
+
+export var marginBottomProperty = new styleProperty.Property("marginBottom", "margin-bottom",
+    new observable.PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), converters.numberConverter);
 
 export var paddingProperty = new styleProperty.Property("padding", "padding",
     new observable.PropertyMetadata(null, null, onPaddingChanged));
 
-export var marginLeftProperty = new styleProperty.Property("marginLeft", "margin-left",
-    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isMarginValid), converters.numberConverter);
-
-export var marginRightProperty = new styleProperty.Property("marginRight", "margin-right",
-    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isMarginValid), converters.numberConverter);
-
-export var marginTopProperty = new styleProperty.Property("marginTop", "margin-top",
-    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isMarginValid), converters.numberConverter);
-
-export var marginBottomProperty = new styleProperty.Property("marginBottom", "margin-bottom",
-    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isMarginValid), converters.numberConverter);
-
 export var paddingLeftProperty = new styleProperty.Property("paddingLeft", "padding-left",
-    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
+    new observable.PropertyMetadata(0, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);
 
 export var paddingRightProperty = new styleProperty.Property("paddingRight", "padding-right",
-    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
+    new observable.PropertyMetadata(0, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);
 
 export var paddingTopProperty = new styleProperty.Property("paddingTop", "padding-top",
-    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
+    new observable.PropertyMetadata(0, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);
 
 export var paddingBottomProperty = new styleProperty.Property("paddingBottom", "padding-bottom",
-    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
-
-function isVisibilityValid(value: string): boolean {
-    return value === enums.Visibility.visible || value === enums.Visibility.collapse || value === enums.Visibility.collapsed;
-}
-
-function setLayoutInfoVisibility(data: observable.PropertyChangeData) {
-    (<any>data.object)._view._isVisibleCache = (data.newValue === enums.Visibility.visible);
-}
+    new observable.PropertyMetadata(0, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);
 
 export var visibilityProperty = new styleProperty.Property("visibility", "visibility",
-    new observable.PropertyMetadata(enums.Visibility.visible, observable.PropertyMetadataSettings.AffectsLayout, setLayoutInfoVisibility, isVisibilityValid),
-    converters.visibilityConverter);
-
-function isPaddingValid(value: number): boolean {
-    return isFinite(value) && !isNaN(value) && value >= 0;
-}
-
-function isMarginValid(value: number): boolean {
-    return isFinite(value) && !isNaN(value);
-}
-
-function isOpacityValid(value: string): boolean {
-    var parsedValue: number = parseFloat(value);
-    return !isNaN(parsedValue) && 0 <= parsedValue && parsedValue <= 1;
-}
+    new observable.PropertyMetadata(enums.Visibility.visible, AffectsLayout, onVisibilityChanged, isVisibilityValid), converters.visibilityConverter);
 
 export var opacityProperty = new styleProperty.Property("opacity", "opacity",
-    new observable.PropertyMetadata(1.0, observable.PropertyMetadataSettings.None, undefined, isOpacityValid),
-    converters.opacityConverter);
+    new observable.PropertyMetadata(1.0, observable.PropertyMetadataSettings.None, undefined, isOpacityValid), converters.opacityConverter);
 
 // register default stylers once all properties are defined.
 stylers._registerDefaultStylers();

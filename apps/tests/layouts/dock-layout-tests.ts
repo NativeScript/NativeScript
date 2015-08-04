@@ -1,5 +1,6 @@
 ﻿import pageModule = require("ui/page");
 import button = require("ui/button");
+import {DockLayout} from "ui/layouts/dock-layout";
 import TKUnit = require("../TKUnit");
 import helper = require("./layout-helper");
 import navHelper = require("../ui/helper");
@@ -31,31 +32,8 @@ import enums = require("ui/enums");
 // ```
 // </snippet> 
 
-export class MyDockLayout extends dockModule.DockLayout {
-    public measureCount: number = 0;
-    public arrangeCount: number = 0;
-
-    public get measured(): boolean {
-        return this.measureCount > 0;
-    }
-
-    public get arranged(): boolean {
-        return this.arrangeCount > 0;
-    }
-
-    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        this.measureCount++;
-    }
-
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
-        super.onLayout(left, top, right, bottom);
-        this.arrangeCount++;
-    }
-}
-
 var testPage: pageModule.Page;
-var rootLayout: MyDockLayout;
+var rootLayout: DockLayout;
 var tmp: button.Button;
 
 export function setUpModule() {
@@ -78,7 +56,7 @@ export function tearDownModule() {
 }
 
 export function setUp() {
-    rootLayout = new MyDockLayout();
+    rootLayout = new DockLayout();
     rootLayout.height = 300;
     rootLayout.width = 300;
     testPage.content = rootLayout;
@@ -234,4 +212,4 @@ export function test_codesnippets() {
     dockLayout.addChild(btnDockedToRight);
     // ```
     // </snippet>
-};
+}

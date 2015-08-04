@@ -128,6 +128,7 @@ export class View extends proxy.ProxyObject implements definition.View {
     private _requestedVisualState: string;
     private _isLoaded: boolean;
     private _isLayoutValid: boolean = false;
+
     public _domId: number;
     public _isAddedToNativeVisualTree = false;
 
@@ -291,41 +292,6 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
     set marginBottom(value: number) {
         this.style.marginBottom = value;
-    }
-
-    get padding(): string {
-        return this.style.padding;
-    }
-    set padding(value: string) {
-        this.style.padding = value;
-    }
-
-    get paddingLeft(): number {
-        return this.style.paddingLeft;
-    }
-    set paddingLeft(value: number) {
-        this.style.paddingLeft = value;
-    }
-
-    get paddingTop(): number {
-        return this.style.paddingTop;
-    }
-    set paddingTop(value: number) {
-        this.style.paddingTop = value;
-    }
-
-    get paddingRight(): number {
-        return this.style.paddingRight;
-    }
-    set paddingRight(value: number) {
-        this.style.paddingRight = value;
-    }
-
-    get paddingBottom(): number {
-        return this.style.paddingBottom;
-    }
-    set paddingBottom(value: number) {
-        this.style.paddingBottom = value;
     }
 
     get horizontalAlignment(): string {
@@ -510,11 +476,11 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
 
     public getMeasuredWidth(): number {
-        return this._measuredWidth;
+        return this._measuredWidth & utils.layout.MEASURED_SIZE_MASK;
     }
 
     public getMeasuredHeight(): number {
-        return this._measuredHeight;
+        return this._measuredHeight & utils.layout.MEASURED_SIZE_MASK;
     }
 
     public setMeasuredDimension(measuredWidth: number, measuredHeight: number): void {
@@ -722,13 +688,6 @@ export class View extends proxy.ProxyObject implements definition.View {
         return utils.layout.makeMeasureSpec(resultSize, resultMode);
     }
 
-    _getCurrentMeasureSpecs(): { widthMeasureSpec: number; heightMeasureSpec: number } {
-        return {
-            widthMeasureSpec: this._oldWidthMeasureSpec,
-            heightMeasureSpec: this._oldHeightMeasureSpec
-        };
-    }
-
     _setCurrentMeasureSpecs(widthMeasureSpec: number, heightMeasureSpec: number): boolean {
         var changed: boolean = this._oldWidthMeasureSpec !== widthMeasureSpec || this._oldHeightMeasureSpec !== heightMeasureSpec;
         this._oldWidthMeasureSpec = widthMeasureSpec;
@@ -811,7 +770,7 @@ export class View extends proxy.ProxyObject implements definition.View {
      * Core logic for adding a child view to this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
      * // TODO: Think whether we need the base Layout routine.
      */
-    public _addView(view: View) {
+    public _addView(view: View, atIndex?: number) {
         if (!view) {
             throw new Error("Expecting a valid View instance.");
         }
@@ -821,7 +780,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         }
 
         view._parent = this;
-        this._addViewCore(view);
+        this._addViewCore(view, atIndex);
 
         trace.write("called _addView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
     }
@@ -829,13 +788,13 @@ export class View extends proxy.ProxyObject implements definition.View {
     /**
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    public _addViewCore(view: View) {
+    public _addViewCore(view: View, atIndex?: number) {
         this._propagateInheritableProperties(view);
 
         view.style._inheritStyleProperties();
 
         if (!view._isAddedToNativeVisualTree) {
-            view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view);
+            view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view, atIndex);
         }
 
         // TODO: Discuss this.
@@ -908,7 +867,7 @@ export class View extends proxy.ProxyObject implements definition.View {
     /**
      * Method is intended to be overridden by inheritors and used as "protected".
      */
-    public _addViewToNativeVisualTree(view: View): boolean {
+    public _addViewToNativeVisualTree(view: View, atIndex?: number): boolean {
         if (view._isAddedToNativeVisualTree) {
             throw new Error("Child already added to the native visual tree.");
         }

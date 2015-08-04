@@ -1,12 +1,12 @@
 ﻿declare module "ui/layouts/wrap-layout" {
-    import layout = require("ui/layouts/layout");
+    import layout = require("ui/layouts/layout-base");
     import dependencyObservable = require("ui/core/dependency-observable");
 
     /**
      * WrapLayout position children in rows or columns depending on orientation property
      * until space is filled and then wraps them on new row or column.
      */
-    class WrapLayout extends layout.Layout {
+    class WrapLayout extends layout.LayoutBase {
 
         /**
          * Represents the observable property backing the orientation property of each WrapLayout instance.
