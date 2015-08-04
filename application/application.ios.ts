@@ -205,7 +205,7 @@ exports.start = function () {
         // This try-catch block here will catch JavaScript errors but no Objective C ones.
         // TODO: We need to implement better error handling for our native calls and to use the "error" parameter of the iOS APIs.
 
-        UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : null);
+        UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(UIResponder));
     }
     catch (error) {
         // At this point the main application loop is exited and no UI May be created.
