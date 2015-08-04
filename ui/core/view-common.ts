@@ -752,10 +752,6 @@ export class View extends proxy.ProxyObject implements definition.View {
     //@endandroid
 
     // TODO: We need to implement some kind of build step that includes these members only when building for iOS
-    //@ios
-    public _prepareNativeView(view: UIView) {
-        //
-    }
 
     //@endios
     get _childrenCount(): number {

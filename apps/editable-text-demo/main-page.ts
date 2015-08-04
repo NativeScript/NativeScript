@@ -18,34 +18,34 @@ var label: labelModule.Label;
 export function onPageLoaded(args: observableModule.EventData) {
     var page = <pagesModule.Page>args.object;
 
-    stackLayout = page.getViewById<stackLayoutModule.StackLayout>("stack");
-    button = page.getViewById<buttonModule.Button>("button");
-    label = page.getViewById<labelModule.Label>("label");
+    //stackLayout = page.getViewById<stackLayoutModule.StackLayout>("stack");
+    //button = page.getViewById<buttonModule.Button>("button");
+    //label = page.getViewById<labelModule.Label>("label");
 
-    if (stackLayout.android) {
-        stackLayout.android.setClickable(true);
-        stackLayout.android.setFocusableInTouchMode(true);
-    }
+    //if (stackLayout.android) {
+    //    stackLayout.android.setClickable(true);
+    //    stackLayout.android.setFocusableInTouchMode(true);
+    //}
 
-    textField = page.getViewById<textFieldModule.TextField>("textField");
-    textField.style.backgroundColor = new colorModule.Color("LightGray");
+    //textField = page.getViewById<textFieldModule.TextField>("textField");
+    //textField.style.backgroundColor = new colorModule.Color("LightGray");
 
-    textView = page.getViewById<textViewModule.TextView>("textView");
-    textView.style.backgroundColor = new colorModule.Color("BlanchedAlmond");
+    //textView = page.getViewById<textViewModule.TextView>("textView");
+    //textView.style.backgroundColor = new colorModule.Color("BlanchedAlmond");
 
-    var viewModel = new model.WebViewModel();
-    page.bindingContext = viewModel;
+    //var viewModel = new model.WebViewModel();
+    //page.bindingContext = viewModel;
 }
 
 export function onTap(args: observableModule.EventData) {
-    if (textField.updateTextTrigger === enums.UpdateTextTrigger.focusLost) {
-        textField.updateTextTrigger = enums.UpdateTextTrigger.textChanged;
-        textView.updateTextTrigger = enums.UpdateTextTrigger.textChanged;
-        button.text = "textChanged";
-    }
-    else {
-        textField.updateTextTrigger = enums.UpdateTextTrigger.focusLost;
-        textView.updateTextTrigger = enums.UpdateTextTrigger.focusLost;
-        button.text = "focusLost";
-    }
+    //if (textField.updateTextTrigger === enums.UpdateTextTrigger.focusLost) {
+    //    textField.updateTextTrigger = enums.UpdateTextTrigger.textChanged;
+    //    textView.updateTextTrigger = enums.UpdateTextTrigger.textChanged;
+    //    button.text = "textChanged";
+    //}
+    //else {
+    //    textField.updateTextTrigger = enums.UpdateTextTrigger.focusLost;
+    //    textView.updateTextTrigger = enums.UpdateTextTrigger.focusLost;
+    //    button.text = "focusLost";
+    //}
 }

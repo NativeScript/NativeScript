@@ -227,6 +227,39 @@ export class ButtonStyler implements definition.stylers.Styler {
         }
     }
 
+    // Padding
+    private static setPaddingLeftProperty(view: view.View, newValue: any) {
+        (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString("{" + view.paddingTop + "," + newValue + "," + view.paddingBottom + "," + view.paddingRight + "}");
+    }
+
+    private static resetPaddingLeftProperty(view: view.View, nativeValue: any) {
+        (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString("{" + view.paddingTop + "," + 0 + "," + view.paddingBottom + "," + view.paddingRight + "}");
+    }
+
+    private static setPaddingTopProperty(view: view.View, newValue: any) {
+        (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString("{" + newValue + "," + view.paddingLeft + "," + view.paddingBottom + "," + view.paddingRight + "}");
+    }
+
+    private static resetPaddingTopProperty(view: view.View, nativeValue: any) {
+        (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString("{" + 0 + "," + view.paddingLeft + "," + view.paddingBottom + "," + view.paddingRight + "}");
+    }
+
+    private static setPaddingRightProperty(view: view.View, newValue: any) {
+        (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString("{" + view.paddingTop + "," + view.paddingLeft + "," + view.paddingBottom + "," + newValue + "}");
+    }
+
+    private static resetPaddingRightProperty(view: view.View, nativeValue: any) {
+        (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString("{" + view.paddingTop + "," + view.paddingLeft + "," + view.paddingBottom + "," + 0 + "}");
+    }
+
+    private static setPaddingBottomProperty(view: view.View, newValue: any) {
+        (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString("{" + view.paddingTop + "," + view.paddingLeft + "," + newValue + "," + view.paddingRight + "}");
+    }
+
+    private static resetPaddingBottomProperty(view: view.View, nativeValue: any) {
+        (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString("{" + view.paddingTop + "," + view.paddingLeft + "," + 0 + "," + view.paddingRight + "}");
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             ButtonStyler.setColorProperty,
@@ -242,6 +275,22 @@ export class ButtonStyler implements definition.stylers.Styler {
             ButtonStyler.setTextAlignmentProperty,
             ButtonStyler.resetTextAlignmentProperty,
             ButtonStyler.getNativeTextAlignmentValue), "Button");
+
+        style.registerHandler(style.paddingLeftProperty, new stylersCommon.StylePropertyChangedHandler(
+            ButtonStyler.setPaddingLeftProperty,
+            ButtonStyler.resetPaddingLeftProperty), "Button");
+
+        style.registerHandler(style.paddingTopProperty, new stylersCommon.StylePropertyChangedHandler(
+            ButtonStyler.setPaddingTopProperty,
+            ButtonStyler.resetPaddingTopProperty), "Button");
+
+        style.registerHandler(style.paddingRightProperty, new stylersCommon.StylePropertyChangedHandler(
+            ButtonStyler.setPaddingRightProperty,
+            ButtonStyler.resetPaddingRightProperty), "Button");
+
+        style.registerHandler(style.paddingBottomProperty, new stylersCommon.StylePropertyChangedHandler(
+            ButtonStyler.setPaddingBottomProperty,
+            ButtonStyler.resetPaddingBottomProperty), "Button");
     }
 }
 

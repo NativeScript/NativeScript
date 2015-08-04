@@ -69,15 +69,48 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     }
 }
 
+class UITextFieldImpl extends UITextField {
+    static new(): UITextFieldImpl {
+        return <UITextFieldImpl>super.new();
+    }
+
+    private _owner: TextField;
+
+    public initWithOwner(owner: TextField): UITextFieldImpl {
+        this._owner = owner;
+        return this;
+    }
+
+    private _getTextRectForBounds(bounds: CGRect): CGRect {
+        if (!this._owner) {
+            return bounds;
+        }
+
+        return CGRectMake(
+            this._owner.borderWidth + this._owner.paddingLeft,
+            this._owner.borderWidth + this._owner.paddingTop,
+            bounds.size.width - (this._owner.borderWidth + this._owner.paddingLeft + this._owner.paddingRight + this._owner.borderWidth),
+            bounds.size.height - (this._owner.borderWidth + this._owner.paddingTop + this._owner.paddingBottom + this._owner.borderWidth)
+            );
+    }
+    
+    public textRectForBounds(bounds: CGRect): CGRect {
+        return this._getTextRectForBounds(bounds);
+    }
+
+    public editingRectForBounds(bounds: CGRect): CGRect {
+        return this._getTextRectForBounds(bounds);
+    }
+}
+
 export class TextField extends common.TextField {
     private _ios: UITextField;
-    private _delegate: any;
+    private _delegate: UITextFieldDelegateImpl;
 
     constructor() {
         super();
 
-        this._ios = new UITextField();
-
+        this._ios = UITextFieldImpl.new().initWithOwner(this);
         this._delegate = UITextFieldDelegateImpl.new().initWithOwner(this);
     }
 

@@ -418,8 +418,6 @@ declare module "ui/core/view" {
         _onDetached(force?: boolean): void;
         _createUI(): void;
 
-        _prepareNativeView(view: UIView);
-
         _checkMetadataOnPropertyChanged(metadata: dependencyObservable.PropertyMetadata);
 
         _updateLayout(): void;

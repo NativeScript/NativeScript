@@ -82,11 +82,6 @@ export class View extends viewCommon.View {
         return this.ios;
     }
 
-    public _prepareNativeView(view: UIView) {
-        // For UILabel and UIImage.
-        view.userInteractionEnabled = true;
-    }
-    
     get isLayoutRequested(): boolean {
         return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
     }
@@ -257,7 +252,7 @@ export class CustomLayoutView extends View {
 
         if (this._nativeView && child._nativeView) {
             if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.subviews.count) {
-                this._nativeView.addSubview(child._nativeView);
+            this._nativeView.addSubview(child._nativeView);
             }
             else {
                 this._nativeView.insertSubviewAtIndex(child._nativeView, atIndex);

@@ -1,8 +1,8 @@
 <Page loaded="onPageLoaded">
   <StackLayout id="stack">
-    <Button id="button" text="textChanged" height="100" margin="20" tap="onTap" backgroundColor="Red"/>
-    <Label id="label" text="{{ text }}" height="100" margin="20"/>
-    <TextField id="textField" text="{{ text }}" margin="20" autocapitalizationType="none" autocorrect="false"/>
-    <TextView id="textView" text="{{ text }}" height="100" margin="20" autocapitalizationType="none" autocorrect="false"/>
+    <Button id="button" text="button" tap="onTap" backgroundColor="Green" />
+    <Label id="label" text="label"  backgroundColor="Yellow"/>
+    <TextField id="textField" text="text-field" hint="hint" backgroundColor="Red"/>
+    <TextView id="textView" text="text-view" backgroundColor="Blue"/>
   </StackLayout>
 </Page>

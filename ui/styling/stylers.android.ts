@@ -34,9 +34,11 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
             nativeView.setBackground(bkg);
         }
 
-        var padding = v.borderWidth * utils.layout.getDisplayDensity();
-
-        nativeView.setPadding(padding, padding, padding, padding);
+        var density = utils.layout.getDisplayDensity();
+        nativeView.setPadding((v.borderWidth + v.paddingLeft) * density,
+            (v.borderWidth + v.paddingTop) * density,
+            (v.borderWidth + v.paddingRight) * density,
+            (v.borderWidth + v.paddingBottom) * density);
 
         bkg.borderWidth = v.borderWidth;
         bkg.cornerRadius = v.borderRadius;
@@ -218,6 +220,22 @@ export class DefaultStyler implements definition.stylers.Styler {
         style.registerHandler(style.minHeightProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setMinHeightProperty,
             DefaultStyler.resetMinHeightProperty))
+
+        style.registerHandler(style.paddingLeftProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setPaddingLeftProperty,
+            DefaultStyler.resetPaddingLeftProperty))
+
+        style.registerHandler(style.paddingTopProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setPaddingTopProperty,
+            DefaultStyler.resetPaddingTopProperty))
+
+        style.registerHandler(style.paddingRightProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setPaddingRightProperty,
+            DefaultStyler.resetPaddingRightProperty))
+
+        style.registerHandler(style.paddingBottomProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setPaddingBottomProperty,
+            DefaultStyler.resetPaddingBottomProperty))
 
         // Use the same handler for all background/border properties
         // Note: There is no default value getter - the default value is handled in onBackgroundOrBorderPropertyChanged

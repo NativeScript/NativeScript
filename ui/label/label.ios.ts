@@ -24,14 +24,49 @@ function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData
 
 global.moduleMerge(common, exports);
 
+class UILabelImpl extends UILabel {
+    static new(): UILabelImpl {
+        return <UILabelImpl>super.new();
+    }
+
+    private _owner: Label;
+
+    public initWithOwner(owner: Label): UILabelImpl {
+        this._owner = owner;
+        return this;
+    }
+
+    public textRectForBoundsLimitedToNumberOfLines(bounds: CGRect, numberOfLines: number): CGRect {
+        var rect = super.textRectForBoundsLimitedToNumberOfLines(bounds, numberOfLines);
+        var textRect = CGRectMake(
+            - (this._owner.borderWidth + this._owner.paddingLeft),
+            - (this._owner.borderWidth + this._owner.paddingTop),
+            rect.size.width + (this._owner.borderWidth + this._owner.paddingLeft + this._owner.paddingRight + this._owner.borderWidth),
+            rect.size.height + (this._owner.borderWidth + this._owner.paddingTop + this._owner.paddingBottom + this._owner.borderWidth)
+            );
+        return textRect;
+    }
+
+    public drawTextInRect(rect: CGRect): void {
+        var textRect = CGRectMake(
+            (this._owner.borderWidth + this._owner.paddingLeft),
+            (this._owner.borderWidth + this._owner.paddingTop),
+            rect.size.width - (this._owner.borderWidth + this._owner.paddingLeft + this._owner.paddingRight + this._owner.borderWidth),
+            rect.size.height - (this._owner.borderWidth + this._owner.paddingTop + this._owner.paddingBottom + this._owner.borderWidth)
+            );
+        super.drawTextInRect(textRect);
+    }
+}
+
 export class Label extends common.Label {
     private _ios: UILabel;
 
     constructor(options?: definition.Options) {
         super(options);
 
-        this._ios = new UILabel();
-        super._prepareNativeView(this._ios);
+        //this._ios = new UILabel();
+        this._ios = UILabelImpl.new().initWithOwner(this);
+        this._ios.userInteractionEnabled = true;
     }
 
     get ios(): UILabel {

@@ -1,0 +1,12 @@
+﻿Button, Label, TextView, TextField {
+    border-color: black;
+    border-width: 50;
+    border-radius: 3;
+    padding-left: 50;
+    padding-top: 50;
+    padding-right: 50;
+    padding-bottom: 50;
+    margin: 10;
+    font-size: 24;
+    text-align: right;
+}
