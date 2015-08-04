@@ -133,7 +133,7 @@ export class Page extends contentView.ContentView implements dts.Page {
                 var file = fs.File.fromPath(cssFileName);
                 var text = file.readTextSync();
                 if (text) {
-                    this._addCssInternal(r, cssFileName);
+                    this._addCssInternal(text, cssFileName);
                     this._cssFiles[cssFileName] = true;
                 }
             }
