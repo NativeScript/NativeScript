@@ -67,12 +67,12 @@ class IOSApplication implements definition.iOSApplication {
     private _window: Window;
 
     constructor() {
-        this.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, this.didFinishLaunchingWithOptions);
-        this.addNotificationObserver(UIApplicationDidBecomeActiveNotification, this.didBecomeActive);
-        this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground);
-        this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate);
-        this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning);
-        this.addNotificationObserver(UIDeviceOrientationDidChangeNotification, this.orientationDidChange);
+        this.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, this.didFinishLaunchingWithOptions.bind(this));
+        this.addNotificationObserver(UIApplicationDidBecomeActiveNotification, this.didBecomeActive.bind(this));
+        this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground.bind(this));
+        this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate.bind(this));
+        this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning.bind(this));
+        this.addNotificationObserver(UIDeviceOrientationDidChangeNotification, this.orientationDidChange.bind(this));
     }
 
     get nativeApp(): UIApplication {
