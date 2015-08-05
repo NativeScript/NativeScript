@@ -24,7 +24,7 @@ export function pageLoaded(args) {
 }
 var i = 0;
 export function buttonTap(args) {
-    var page = <pages.Page>view.getAncestor(<view.View>args.object, "Page")
+    var page = <pages.Page>(<view.View>args.object).page;
     var vm = page.bindingContext;
     var icon;
     if (i % 3 === 0) {

@@ -12,7 +12,7 @@ import fs = require("file-system");
 import fileSystemAccess = require("file-system/file-system-access");
 import observable = require("data/observable");
 import stackLayoutModule = require("ui/layouts/stack-layout");
-import labelModule = require("ui/label");
+import {Label} from "ui/label";
 import myCustomControlWithoutXml = require("./mymodule/MyControl");
 import listViewModule = require("ui/list-view");
 import helper = require("../ui/helper");
@@ -76,6 +76,16 @@ export function test_loadWithOptionsNoXML_CSSIsApplied() {
     }
 };
 
+export function test_loadInheritedPageAndResolveFromChild() {
+    helper.navigateToModuleAndRunTest("./xml-declaration/inherited-page", null, (page) => {
+        let contentLabel = <Label>page.content;
+        TKUnit.assertEqual("Inherited and loaded", contentLabel.text);
+
+        let discoveredPage = contentLabel.page;
+        TKUnit.assert(page === discoveredPage);
+    });
+}
+
 export function test_loadWithOptionsWithXML() {
     var v = builder.load({
         path: "~/xml-declaration/mymodulewithxml",
@@ -116,7 +126,7 @@ export function test_loadWithOptionsFromTNS() {
         name: "Label"
     });
 
-    TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");
+    TKUnit.assert(v instanceof Label, "Expected result: Label; Actual result: " + v + ";");
 };
 
 export function test_loadWithOptionsFromTNSPath() {
@@ -125,7 +135,7 @@ export function test_loadWithOptionsFromTNSPath() {
         name: "Label"
     });
 
-    TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");
+    TKUnit.assert(v instanceof Label, "Expected result: Label; Actual result: " + v + ";");
 };
 
 export function test_parse_ShouldNotCrashWithoutExports() {
@@ -236,7 +246,7 @@ export function test_parse_ShouldParsePlatformSpecificComponents() {
         TKUnit.assert(p.content instanceof textFieldModule.TextField, "Expected result: TextField; Actual result: " + p.content);
     }
     else {
-        TKUnit.assert(p.content instanceof labelModule.Label, "Expected result: Label; Actual result: " + p.content);
+        TKUnit.assert(p.content instanceof Label, "Expected result: Label; Actual result: " + p.content);
     }
 };
 
@@ -294,7 +304,7 @@ export function test_parse_ShouldParseBindingsToGestures() {
     };
 
     p.bindingContext = context;
-    var lbl = <labelModule.Label>p.content;
+    var lbl = <Label>p.content;
 
     var observer = (<view.View>lbl).getGestureObservers(gesturesModule.GestureTypes.tap)[0];
 
@@ -315,11 +325,11 @@ export function test_parse_ShouldParseSubProperties() {
 export function test_parse_ShouldParseBindingsWithCommaInsideSingleQuote() {
     var expected = "Hi,test"
     var bindingString = "{{ 'Hi,' + myProp }}";
-    var p = <page.Page>builder.parse('<Page><Label text="' + bindingString + '" /></Page>');
+    var p = <Page>builder.parse('<Page><Label text="' + bindingString + '" /></Page>');
     var obj = new observable.Observable();
     obj.set("myProp", "test");
     p.bindingContext = obj;
-    var lbl = <labelModule.Label>p.content;
+    var lbl = <Label>p.content;
 
     TKUnit.assert(lbl.text === expected, "Expected " + expected + "; Actual result: " + lbl.text + "; type: " + typeof (lbl.text));
 };
@@ -327,11 +337,11 @@ export function test_parse_ShouldParseBindingsWithCommaInsideSingleQuote() {
 export function test_parse_ShouldParseBindingsWithCommaInsideDoubleQuote() {
     var expected = "Hi,test"
     var bindingString = '{{ "Hi," + myProp }}';
-    var p = <page.Page>builder.parse("<Page><Label text='" + bindingString + "' /></Page>");
+    var p = <Page>builder.parse("<Page><Label text='" + bindingString + "' /></Page>");
     var obj = new observable.Observable();
     obj.set("myProp", "test");
     p.bindingContext = obj;
-    var lbl = <labelModule.Label>p.content;
+    var lbl = <Label>p.content;
 
     TKUnit.assert(lbl.text === expected, "Expected " + expected + "; Actual result: " + lbl.text + "; type: " + typeof (lbl.text));
 };
@@ -352,7 +362,7 @@ export function test_parse_ShouldParseLowerCaseDashedComponentDeclaration() {
     var ctrl = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assert(ctrl instanceof stackLayoutModule.StackLayout, "Expected result: StackLayout!; Actual result: " + ctrl);
-    TKUnit.assert(ctrl.getChildAt(0) instanceof labelModule.Label, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
+    TKUnit.assert(ctrl.getChildAt(0) instanceof Label, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
     TKUnit.assert(ctrl.getChildAt(1) instanceof segmentedBar.SegmentedBar, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
 };
 
@@ -367,20 +377,20 @@ export function test_parse_ShouldParseCustomComponentWithoutXmlFromTNSModules() 
     var p = <page.Page>builder.parse('<Page xmlns' + ':customControls="tns_modules/ui/label"><customControls:Label /></Page>');
     var ctrl = p.content;
 
-    TKUnit.assert(ctrl instanceof labelModule.Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
+    TKUnit.assert(ctrl instanceof Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
 };
 
 export function test_parse_ShouldParseCustomComponentWithoutXmlFromTNSModulesWhenNotSpecified() {
     var p = <page.Page>builder.parse('<Page xmlns' + ':customControls="ui/label"><customControls:Label /></Page>');
     var ctrl = p.content;
 
-    TKUnit.assert(ctrl instanceof labelModule.Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
+    TKUnit.assert(ctrl instanceof Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
 };
 
 export function test_parse_ShouldParseCustomComponentWithXml() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
-    var lbl = <labelModule.Label>panel.getChildAt(0);
+    var lbl = <Label>panel.getChildAt(0);
 
     TKUnit.assert(lbl.text === "mymodulewithxml", "Expected result: 'mymodulewithxml'; Actual result: " + lbl);
 };
@@ -402,7 +412,7 @@ export function test_parse_ShouldParseCustomComponentWithXml_WithCustomAttribute
 export function test_parse_ShouldParseCustomComponentWithXmlNoJS() {
     var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
-    var lbl = <labelModule.Label>panel.getChildAt(0);
+    var lbl = <Label>panel.getChildAt(0);
 
     TKUnit.assertEqual(lbl.text, "I'm all about taht XML, no JS", "label.text");
 };
@@ -492,15 +502,15 @@ export function test_parse_NestedRepeaters() {
         "    </Repeater.itemTemplate>" +
         "  </Repeater>" +
         "</Page>";
-    var p = <page.Page>builder.parse(pageXML);
+    var p = <Page>builder.parse(pageXML);
 
     function testAction(views: Array<viewModule.View>) {
         p.bindingContext = [["0", "1"], ["2", "3"]];
         TKUnit.wait(0.2);
 
-        var lbls = new Array<labelModule.Label>();
+        var lbls = new Array<Label>();
         view.eachDescendant(p, (v) => {
-            if (v instanceof labelModule.Label) {
+            if (v instanceof Label) {
                 lbls.push(v);
             }
             return true;

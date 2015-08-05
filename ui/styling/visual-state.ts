@@ -19,7 +19,7 @@ export class VisualState {
  * 
  */
 export function goToState(view: viewModule.View, state: string): string {
-    var root = <any>viewModule.getAncestor(view, "Page");
+    var root = <any>view.page;
     if (!root) {
         return undefined;
     }

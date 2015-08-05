@@ -55,16 +55,6 @@ export function eachDescendant(view: definition.View, callback: (child: View) =>
     view._eachChildView(localCallback);
 }
 
-export function getAncestor(view: View, typeName: string): definition.View {
-    var parent = view.parent;
-
-    while (parent && parent.typeName !== typeName) {
-        parent = parent.parent;
-    }
-
-    return parent;
-}
-
 var viewIdCounter = 0;
 
 function onCssClassPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -329,6 +319,13 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
     set isEnabled(value: boolean) {
         this._setValue(View.isEnabledProperty, value);
+    }
+
+    get page(): definition.View {
+        if (this.parent)
+            return this.parent.page;
+
+        return null;
     }
 
     get isUserInteractionEnabled(): boolean {
@@ -710,7 +707,7 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
 
     private _applyStyleFromScope() {
-        var rootPage = getAncestor(this, "Page");
+        var rootPage = this.page;
         if (!rootPage || !rootPage.isLoaded) {
             return;
         }
