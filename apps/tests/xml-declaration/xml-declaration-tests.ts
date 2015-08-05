@@ -135,11 +135,6 @@ export function test_parse_ShouldNotCrashWithoutExports() {
     TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 };
 
-export function test_parse_ShouldNotCrashWithInvalidXml() {
-    var v: view.View = builder.parse("<Page loaded='myLoaded'></Pa");
-    TKUnit.assert(types.isUndefined(v), "Expected result: undefined; Actual result: " + v + ";");
-};
-
 export function test_parse_ShouldFindEventHandlersInExports() {
     var loaded;
     var page = builder.parse("<Page loaded='myLoaded'></Page>", {
