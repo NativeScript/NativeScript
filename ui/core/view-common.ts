@@ -55,6 +55,21 @@ export function eachDescendant(view: definition.View, callback: (child: View) =>
     view._eachChildView(localCallback);
 }
 
+export function getAncestor(view: View, criterion: string | Function): definition.View {
+    let matcher: (view: definition.View) => boolean = null;
+    if (typeof criterion === "string")
+        matcher = (view: definition.View) => view.typeName === criterion;
+    else
+        matcher = (view: definition.View) => view instanceof criterion;
+
+    for (let parent: definition.View = view.parent; parent != null; parent = parent.parent) {
+        if (matcher(parent))
+            return parent;
+    }
+
+    return null;
+}
+
 var viewIdCounter = 0;
 
 function onCssClassPropertyChanged(data: dependencyObservable.PropertyChangeData) {
