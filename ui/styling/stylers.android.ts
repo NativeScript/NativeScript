@@ -35,10 +35,12 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
         }
 
         var density = utils.layout.getDisplayDensity();
-        nativeView.setPadding((v.borderWidth + v.paddingLeft) * density,
-            (v.borderWidth + v.paddingTop) * density,
-            (v.borderWidth + v.paddingRight) * density,
-            (v.borderWidth + v.paddingBottom) * density);
+        nativeView.setPadding(
+            (v.borderWidth + v.style.paddingLeft) * density,
+            (v.borderWidth + v.style.paddingTop) * density,
+            (v.borderWidth + v.style.paddingRight) * density,
+            (v.borderWidth + v.style.paddingBottom) * density
+            );
 
         bkg.borderWidth = v.borderWidth;
         bkg.cornerRadius = v.borderRadius;
@@ -204,6 +206,24 @@ export class DefaultStyler implements definition.stylers.Styler {
         nativeView.setLayoutParams(lp);
     }
 
+    public static setPaddingProperty(view: view.View, newValue: any) {
+        var density = utils.layout.getDisplayDensity();
+        var left = (newValue.left + view.borderWidth) * density;
+        var top = (newValue.top + view.borderWidth) * density;
+        var right = (newValue.right + view.borderWidth) * density;
+        var bottom = (newValue.bottom + view.borderWidth) * density;
+        (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
+    }
+
+    public static resetPaddingProperty(view: view.View, nativeValue: any) {
+        var density = utils.layout.getDisplayDensity();
+        var left = view.borderWidth * density;
+        var top = view.borderWidth * density;
+        var right = view.borderWidth * density;
+        var bottom = view.borderWidth * density;
+        (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.visibilityProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setVisibilityProperty,
@@ -221,22 +241,6 @@ export class DefaultStyler implements definition.stylers.Styler {
             DefaultStyler.setMinHeightProperty,
             DefaultStyler.resetMinHeightProperty))
 
-        style.registerHandler(style.paddingLeftProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setPaddingLeftProperty,
-            DefaultStyler.resetPaddingLeftProperty))
-
-        style.registerHandler(style.paddingTopProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setPaddingTopProperty,
-            DefaultStyler.resetPaddingTopProperty))
-
-        style.registerHandler(style.paddingRightProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setPaddingRightProperty,
-            DefaultStyler.resetPaddingRightProperty))
-
-        style.registerHandler(style.paddingBottomProperty, new stylersCommon.StylePropertyChangedHandler(
-            DefaultStyler.setPaddingBottomProperty,
-            DefaultStyler.resetPaddingBottomProperty))
-
         // Use the same handler for all background/border properties
         // Note: There is no default value getter - the default value is handled in onBackgroundOrBorderPropertyChanged
         var borderHandler = new stylersCommon.StylePropertyChangedHandler(
@@ -251,6 +255,18 @@ export class DefaultStyler implements definition.stylers.Styler {
         style.registerHandler(style.nativeLayoutParamsProperty, new stylersCommon.StylePropertyChangedHandler(
             DefaultStyler.setNativeLayoutParamsProperty,
             DefaultStyler.resetNativeLayoutParamsProperty));
+
+        style.registerHandler(style.nativePaddingsProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setPaddingProperty,
+            DefaultStyler.resetPaddingProperty), "TextBase");
+
+        style.registerHandler(style.nativePaddingsProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setPaddingProperty,
+            DefaultStyler.resetPaddingProperty), "Button");
+
+        style.registerHandler(style.nativePaddingsProperty, new stylersCommon.StylePropertyChangedHandler(
+            DefaultStyler.setPaddingProperty,
+            DefaultStyler.resetPaddingProperty), "LayoutBase");
     }
 }
 
@@ -361,7 +377,6 @@ export class TextViewStyler implements definition.stylers.Styler {
             TextViewStyler.setTextAlignmentProperty,
             TextViewStyler.resetTextAlignmentProperty,
             TextViewStyler.getNativeTextAlignmentValue), "Button");
-
     }
 }
 
@@ -493,28 +508,6 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 }
 
-export class LayoutBaseStyler implements definition.stylers.Styler {
-    
-    //nativePadding methods
-    private static setPaddingNativeProperty(view: view.View, newValue: style.Thickness): void {
-        var left = (newValue.left * utils.layout.getDisplayDensity());
-        var top = (newValue.top * utils.layout.getDisplayDensity());
-        var right = (newValue.right * utils.layout.getDisplayDensity());
-        var bottom = (newValue.bottom * utils.layout.getDisplayDensity());
-        (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
-    }
-
-    private static resetPaddingNativeProperty(view: view.View, nativeValue: any): void {
-        (<android.view.View>view._nativeView).setPadding(0, 0, 0, 0);
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.nativePaddingsProperty, new stylersCommon.StylePropertyChangedHandler(
-            LayoutBaseStyler.setPaddingNativeProperty,
-            LayoutBaseStyler.resetPaddingNativeProperty), "LayoutBase");
-    }
-}
-
 // Register all styler at the end.
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
@@ -523,5 +516,4 @@ export function _registerDefaultStylers() {
     ActivityIndicatorStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
     SearchBarStyler.registerHandlers();
-    LayoutBaseStyler.registerHandlers();
 }

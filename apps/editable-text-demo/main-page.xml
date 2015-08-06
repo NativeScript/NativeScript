@@ -1,6 +1,6 @@
-<Page loaded="onPageLoaded">
-  <StackLayout id="stack">
-    <Button id="button" text="button" tap="onTap" backgroundColor="Green" />
+<Page>
+  <StackLayout id="stack" backgroundColor="LightGray">
+    <Button id="button" text="button" backgroundColor="Green" />
     <Label id="label" text="label"  backgroundColor="Yellow"/>
     <TextField id="textField" text="text-field" hint="hint" backgroundColor="Red"/>
     <TextView id="textView" text="text-view" backgroundColor="Blue"/>

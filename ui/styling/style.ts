@@ -805,34 +805,6 @@ export var minHeightProperty = new styleProperty.Property("minHeight", "min-heig
         0, observable.PropertyMetadataSettings.AffectsLayout, null, isMinWidthHeightValid),
     converters.numberConverter);
 
-export function parseThickness(value: any): { top: number; right: number; bottom: number; left: number } {
-    var result = { top: 0, right: 0, bottom: 0, left: 0 };
-    if (types.isString(value)) {
-        var arr = value.split(/[ ,]+/);
-        var top = parseInt(arr[0]);
-        top = isNaN(top) ? 0 : top;
-
-        var right = parseInt(arr[1]);
-        right = isNaN(right) ? top : right;
-
-        var bottom = parseInt(arr[2]);
-        bottom = isNaN(bottom) ? top : bottom;
-
-        var left = parseInt(arr[3]);
-        left = isNaN(left) ? right : left;
-
-        result.top = top;
-        result.right = right;
-        result.bottom = bottom;
-        result.left = left;
-
-    } else if (types.isNumber(value)) {
-        result.top = result.right = result.bottom = result.left = value;
-    }
-
-    return result;
-}
-
 // Helper property holding most layout related properties available in CSS.
 // When layout related properties are set in CSS we chache them and send them to the native view in a single call.
 export var nativeLayoutParamsProperty = new styleProperty.Property("nativeLayoutParams", "nativeLayoutParams",
@@ -877,11 +849,7 @@ export var marginTopProperty = new styleProperty.Property("marginTop", "margin-t
 export var marginBottomProperty = new styleProperty.Property("marginBottom", "margin-bottom",
     new observable.PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), converters.numberConverter);
 
-export var paddingProperty = new styleProperty.Property("padding", "padding",
-    new observable.PropertyMetadata(null, null, onPaddingChanged));
-
-export var paddingProperty = new styleProperty.Property("padding", "padding",
-    new observable.PropertyMetadata(null, null, onPaddingChanged));
+export var paddingProperty = new styleProperty.Property("padding", "padding", new observable.PropertyMetadata(null, null, onPaddingChanged));
 
 export var paddingLeftProperty = new styleProperty.Property("paddingLeft", "padding-left",
     new observable.PropertyMetadata(0, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);

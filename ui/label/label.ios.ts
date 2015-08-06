@@ -39,20 +39,20 @@ class UILabelImpl extends UILabel {
     public textRectForBoundsLimitedToNumberOfLines(bounds: CGRect, numberOfLines: number): CGRect {
         var rect = super.textRectForBoundsLimitedToNumberOfLines(bounds, numberOfLines);
         var textRect = CGRectMake(
-            - (this._owner.borderWidth + this._owner.paddingLeft),
-            - (this._owner.borderWidth + this._owner.paddingTop),
-            rect.size.width + (this._owner.borderWidth + this._owner.paddingLeft + this._owner.paddingRight + this._owner.borderWidth),
-            rect.size.height + (this._owner.borderWidth + this._owner.paddingTop + this._owner.paddingBottom + this._owner.borderWidth)
+            - (this._owner.borderWidth + this._owner.style.paddingLeft),
+            - (this._owner.borderWidth + this._owner.style.paddingTop),
+            rect.size.width + (this._owner.borderWidth + this._owner.style.paddingLeft + this._owner.style.paddingRight + this._owner.borderWidth),
+            rect.size.height + (this._owner.borderWidth + this._owner.style.paddingTop + this._owner.style.paddingBottom + this._owner.borderWidth)
             );
         return textRect;
     }
 
     public drawTextInRect(rect: CGRect): void {
         var textRect = CGRectMake(
-            (this._owner.borderWidth + this._owner.paddingLeft),
-            (this._owner.borderWidth + this._owner.paddingTop),
-            rect.size.width - (this._owner.borderWidth + this._owner.paddingLeft + this._owner.paddingRight + this._owner.borderWidth),
-            rect.size.height - (this._owner.borderWidth + this._owner.paddingTop + this._owner.paddingBottom + this._owner.borderWidth)
+            (this._owner.borderWidth + this._owner.style.paddingLeft),
+            (this._owner.borderWidth + this._owner.style.paddingTop),
+            rect.size.width - (this._owner.borderWidth + this._owner.style.paddingLeft + this._owner.style.paddingRight + this._owner.borderWidth),
+            rect.size.height - (this._owner.borderWidth + this._owner.style.paddingTop + this._owner.style.paddingBottom + this._owner.borderWidth)
             );
         super.drawTextInRect(textRect);
     }

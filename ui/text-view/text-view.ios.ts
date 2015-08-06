@@ -40,31 +40,6 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     }
 }
 
-//class UITextViewImpl extends UITextView {
-//    static new(): UITextViewImpl {
-//        return <UITextViewImpl>super.new();
-//    }
-
-//    private _owner: TextView;
-
-//    public initWithOwner(owner: TextView): UITextViewImpl {
-//        this._owner = owner;
-//        return this;
-//    }
-
-//    public textRectForBoundsLimitedToNumberOfLines(bounds: CGRect, numberOfLines: number): CGRect {
-//        var rect = super.textRectForBoundsLimitedToNumberOfLines(bounds, numberOfLines);
-//        var textRect = CGRectMake(
-//            this._owner.borderWidth + this._owner.paddingLeft,
-//            this._owner.borderWidth + this._owner.paddingTop,
-//            rect.size.width - (this._owner.borderWidth + this._owner.paddingLeft + this._owner.paddingRight + this._owner.borderWidth),
-//            rect.size.height - (this._owner.borderWidth + this._owner.paddingTop + this._owner.paddingBottom + this._owner.borderWidth)
-//            );
-//        console.log("UITextViewImpl.textRectForBoundsLimitedToNumberOfLines(" + NSStringFromCGRect(bounds) + "): " + NSStringFromCGRect(textRect));
-//        return textRect;
-//    }
-//}
-
 export class TextView extends common.TextView {
     private _ios: UITextView;
     private _delegate: UITextViewDelegateImpl;
@@ -73,7 +48,6 @@ export class TextView extends common.TextView {
         super();
 
         this._ios = new UITextView();
-        //this._ios = UITextViewImpl.new().initWithOwner(this);
         if (!this._ios.font) {
             this._ios.font = UIFont.systemFontOfSize(12);
         }
