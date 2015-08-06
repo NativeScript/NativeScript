@@ -801,9 +801,7 @@ export var minWidthProperty = new styleProperty.Property("minWidth", "min-width"
     new observable.PropertyMetadata(0, AffectsLayout, null, isMinWidthHeightValid), converters.numberConverter);
 
 export var minHeightProperty = new styleProperty.Property("minHeight", "min-height",
-    new observable.PropertyMetadata(
-        0, observable.PropertyMetadataSettings.AffectsLayout, null, isMinWidthHeightValid),
-    converters.numberConverter);
+    new observable.PropertyMetadata(0, AffectsLayout, null, isMinWidthHeightValid), converters.numberConverter);
 
 // Helper property holding most layout related properties available in CSS.
 // When layout related properties are set in CSS we chache them and send them to the native view in a single call.
