@@ -12,6 +12,8 @@ import color = require("color");
 // Using a SegmentedBar requires the "ui/segmented-bar" module.
 // ``` JavaScript
 import segmentedBarModule = require("ui/segmented-bar");
+// ```
+// </snippet>
 
 function _createSegmentedBar(): segmentedBarModule.SegmentedBar {
     // <snippet module="ui/segmented-bar" title="SegmentedBar">
