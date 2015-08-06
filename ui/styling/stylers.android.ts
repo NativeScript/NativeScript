@@ -206,7 +206,7 @@ export class DefaultStyler implements definition.stylers.Styler {
         nativeView.setLayoutParams(lp);
     }
 
-    public static setPaddingProperty(view: view.View, newValue: any) {
+    private static setPaddingProperty(view: view.View, newValue: any) {
         var density = utils.layout.getDisplayDensity();
         var left = (newValue.left + view.borderWidth) * density;
         var top = (newValue.top + view.borderWidth) * density;
@@ -215,7 +215,7 @@ export class DefaultStyler implements definition.stylers.Styler {
         (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
     }
 
-    public static resetPaddingProperty(view: view.View, nativeValue: any) {
+    private static resetPaddingProperty(view: view.View, nativeValue: any) {
         var density = utils.layout.getDisplayDensity();
         var left = view.borderWidth * density;
         var top = view.borderWidth * density;
