@@ -847,8 +847,7 @@ export var marginTopProperty = new styleProperty.Property("marginTop", "margin-t
 export var marginBottomProperty = new styleProperty.Property("marginBottom", "margin-bottom",
     new observable.PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), converters.numberConverter);
 
-export var paddingProperty = new styleProperty.Property("padding", "padding",
-    new observable.PropertyMetadata(null, null, onPaddingChanged));
+export var paddingProperty = new styleProperty.Property("padding", "padding", new observable.PropertyMetadata(null, null, onPaddingChanged));
 
 export var paddingLeftProperty = new styleProperty.Property("paddingLeft", "padding-left",
     new observable.PropertyMetadata(0, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);

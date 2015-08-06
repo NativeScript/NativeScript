@@ -42,17 +42,15 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 
 export class TextView extends common.TextView {
     private _ios: UITextView;
-    private _delegate: any;
+    private _delegate: UITextViewDelegateImpl;
 
     constructor() {
         super();
 
-        this._ios = UITextView.new();
+        this._ios = new UITextView();
         if (!this._ios.font) {
-            // For some reason font is null, not like stated in the docs.
             this._ios.font = UIFont.systemFontOfSize(12);
         }
-
         this._delegate = UITextViewDelegateImpl.new().initWithOwner(this);
     }
 

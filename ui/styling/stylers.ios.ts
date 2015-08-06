@@ -227,6 +227,19 @@ export class ButtonStyler implements definition.stylers.Styler {
         }
     }
 
+    // Padding
+    private static setPaddingProperty(view: view.View, newValue: any) {
+        var top = newValue.top + view.borderWidth;
+        var left = newValue.left + view.borderWidth;
+        var bottom = newValue.bottom + view.borderWidth;
+        var right = newValue.right + view.borderWidth;
+        (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
+    }
+
+    private static resetPaddingProperty(view: view.View, nativeValue: any) {
+        (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString("{0,0,0,0}");
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             ButtonStyler.setColorProperty,
@@ -242,6 +255,10 @@ export class ButtonStyler implements definition.stylers.Styler {
             ButtonStyler.setTextAlignmentProperty,
             ButtonStyler.resetTextAlignmentProperty,
             ButtonStyler.getNativeTextAlignmentValue), "Button");
+
+        style.registerHandler(style.nativePaddingsProperty, new stylersCommon.StylePropertyChangedHandler(
+            ButtonStyler.setPaddingProperty,
+            ButtonStyler.resetPaddingProperty), "Button");
     }
 }
 

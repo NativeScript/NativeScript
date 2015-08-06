@@ -48,7 +48,7 @@ export class Image extends imageCommon.Image {
         this._ios = new UIImageView();
         this._ios.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit;
         this._ios.clipsToBounds = true;
-        super._prepareNativeView(this._ios);
+        this._ios.userInteractionEnabled = true;
     }
 
     get ios(): UIImageView {

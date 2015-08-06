@@ -33,7 +33,7 @@ export class HtmlView extends common.HtmlView {
         super(options);
 
         this._ios = new UILabel();
-        super._prepareNativeView(this._ios);
+        this._ios.userInteractionEnabled = true;
     }
 
     get ios(): UILabel {
