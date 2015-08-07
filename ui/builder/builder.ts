@@ -79,13 +79,13 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
             if (args.eventType === xml.ParserEventType.StartElement) {
                 templateBuilder.addStartElement(args.prefix, args.namespace, args.elementName, args.attributes);
             } else if (args.eventType === xml.ParserEventType.EndElement) {
-                if (templateBuilder.elementName !== args.elementName) {
-                    templateBuilder.addEndElement(args.prefix, args.elementName);
-                } else {
+                templateBuilder.addEndElement(args.prefix, args.elementName);
+                if (templateBuilder.hasFinished()) {
                     templateBuilder.build();
                     templateBuilder = undefined;
                 }
             }
+            return;
         }
 
         // Get the current parent.

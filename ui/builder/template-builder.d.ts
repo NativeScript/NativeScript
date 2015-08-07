@@ -9,6 +9,7 @@ declare module "ui/builder/template-builder" {
         addStartElement(prefix: string, namespace: string, elementName: string, attributes: Object);
         addEndElement(prefix: string, elementName: string);
         build();
+        hasFinished();
     }
 
     export function isKnownTemplate(name: string, exports: any): boolean;
