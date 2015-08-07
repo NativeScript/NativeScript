@@ -55,14 +55,21 @@ export function eachDescendant(view: definition.View, callback: (child: View) =>
     view._eachChildView(localCallback);
 }
 
-export function getAncestor(view: View, typeName: string): definition.View {
-    var parent = view.parent;
-
-    while (parent && parent.typeName !== typeName) {
-        parent = parent.parent;
+export function getAncestor(view: View, criterion: string | Function): definition.View {
+    let matcher: (view: definition.View) => boolean = null;
+    if (typeof criterion === "string") {
+        matcher = (view: definition.View) => view.typeName === criterion;
+    } else {
+        matcher = (view: definition.View) => view instanceof criterion;
     }
 
-    return parent;
+    for (let parent: definition.View = view.parent; parent != null; parent = parent.parent) {
+        if (matcher(parent)) {
+            return parent;
+        }
+    }
+
+    return null;
 }
 
 var viewIdCounter = 0;
@@ -329,6 +336,14 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
     set isEnabled(value: boolean) {
         this._setValue(View.isEnabledProperty, value);
+    }
+
+    get page(): definition.View {
+        if (this.parent) {
+            return this.parent.page;
+        }
+
+        return null;
     }
 
     get isUserInteractionEnabled(): boolean {
@@ -710,7 +725,7 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
 
     private _applyStyleFromScope() {
-        var rootPage = getAncestor(this, "Page");
+        var rootPage = this.page;
         if (!rootPage || !rootPage.isLoaded) {
             return;
         }

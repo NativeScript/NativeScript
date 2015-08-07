@@ -25,10 +25,10 @@ declare module "ui/core/view" {
     /**
      * Gets an ancestor from a given type.
      * @param view - Starting view (child view).
-     * @param typeName - The type name of the parent container which is looking for.
+     * @param criterion - The type of ancestor view we are looking for. Could be a string containing a class name or an actual type.
      * Returns an instance of a view (if found), otherwise undefined.
      */
-    export function getAncestor(view: View, typeName: string): View;
+    export function getAncestor(view: View, criterion: string | Function): View;
 
     /**
      * Defines interface for an optional parameter used to create a view.
@@ -258,13 +258,18 @@ declare module "ui/core/view" {
         parent: View;
 
         /**
-         * Gets is layout is valid. This is read-only property.
+         * Gets is layout is valid. This is a read-only property.
          */
         isLayoutValid: boolean;
 
         cssType: string;
 
         visualState: string;
+
+        /**
+         * Gets owner page. This is a read-only property.
+         */
+        page: View;
 
         /**
          * This is called to find out how big a view should be. The parent supplies constraint information in the width and height parameters.

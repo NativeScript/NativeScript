@@ -465,7 +465,7 @@ export function test_usingAppLevelConvertersInListViewItems() {
     var dateConverter = function (value, format) {
         var result = format;
         var day = value.getDate();
-        result = result.replace("DD", month < 10 ? "0" + day : day);
+        result = result.replace("DD", day < 10 ? "0" + day : day);
         var month = value.getMonth() + 1;
         result = result.replace("MM", month < 10 ? "0" + month : month);
         result = result.replace("YYYY", value.getFullYear());
@@ -475,8 +475,7 @@ export function test_usingAppLevelConvertersInListViewItems() {
     app.resources["dateConverter"] = dateConverter;
 
     var data = new observableArray.ObservableArray();
-
-    data.push({ date: new Date() });
+    data.push({ date: new Date(2020, 2, 7) });
 
     function testAction(views: Array<viewModule.View>) {
         listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ date, date | dateConverter('DD.MM.YYYY') }}\" />";
@@ -485,7 +484,7 @@ export function test_usingAppLevelConvertersInListViewItems() {
         TKUnit.wait(ASYNC);
         var nativeElementText = getTextFromNativeElementAt(listView, 0);
 
-        TKUnit.assertEqual(nativeElementText, dateConverter(new Date(), "DD.MM.YYYY"), "native element");
+        TKUnit.assertEqual(nativeElementText, "07.03.2020", "native element text");
     };
 
     helper.buildUIAndRunTest(listView, testAction);

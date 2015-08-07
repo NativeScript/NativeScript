@@ -3,7 +3,7 @@ import view = require("ui/core/view");
 
 var toggle = false;
 export function toggleTap(args) {
-    var page = <pages.Page>view.getAncestor(<view.View>args.object, "Page")
+    var page = <pages.Page>(<view.View>args.object).page;
     page.actionBarHidden = toggle;
     toggle = !toggle;
 }

@@ -5,7 +5,7 @@ import view = require("ui/core/view");
 
 var i = 0;
 export function buttonTap(args: observable.EventData) {
-    var page = <pages.Page>view.getAncestor(<view.View>args.object, "Page")
+    var page = <pages.Page>(<view.View>args.object).page;
 
     var navBtn = new action.NavigationButton();
     navBtn.text = "nav " + i++;
@@ -26,7 +26,7 @@ export function buttonTap(args: observable.EventData) {
 
 var j = 0;
 export function visibilityTap(args: observable.EventData) {
-    var page = <pages.Page>view.getAncestor(<view.View>args.object, "Page")
+    var page = <pages.Page>(<view.View>args.object).page;
 
     if (page.actionBar.android) {
         if (j % 3 === 0) {

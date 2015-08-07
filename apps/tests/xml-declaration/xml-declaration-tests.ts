@@ -1,7 +1,6 @@
 ﻿import TKUnit = require("../TKUnit");
 import view = require("ui/core/view");
 import builder = require("ui/builder");
-import page = require("ui/page");
 import buttonModule = require("ui/button");
 import switchModule = require("ui/switch");
 import textFieldModule = require("ui/text-field");
@@ -12,7 +11,8 @@ import fs = require("file-system");
 import fileSystemAccess = require("file-system/file-system-access");
 import observable = require("data/observable");
 import stackLayoutModule = require("ui/layouts/stack-layout");
-import labelModule = require("ui/label");
+import {Label} from "ui/label";
+import {Page} from "ui/page";
 import myCustomControlWithoutXml = require("./mymodule/MyControl");
 import listViewModule = require("ui/list-view");
 import helper = require("../ui/helper");
@@ -52,9 +52,9 @@ export function test_loadWithOptionsNoXML() {
 };
 
 export function test_loadWithOptionsNoXML_CSSIsApplied() {
-    var newPage: page.Page;
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
+    var newPage: Page;
+    var pageFactory = function (): Page {
+        newPage = new Page();
 
         newPage.content = builder.load({
             path: "~/xml-declaration/mymodule",
@@ -76,6 +76,22 @@ export function test_loadWithOptionsNoXML_CSSIsApplied() {
     }
 };
 
+export function test_loadInheritedPageAndResolveFromChild() {
+    helper.navigateToModuleAndRunTest("./xml-declaration/inherited-page", null, (page) => {
+        let contentLabel = <Label>page.content;
+        TKUnit.assertEqual("Inherited and loaded", contentLabel.text);
+
+        let discoveredPage = contentLabel.page;
+        TKUnit.assert(page === discoveredPage);
+
+        let discoveredAncestorByBaseType = viewModule.getAncestor(contentLabel, Page);
+        TKUnit.assert(page === discoveredAncestorByBaseType);
+
+        let discoveredAncestorByInheritedTypeName = viewModule.getAncestor(contentLabel, "InheritedPage");
+        TKUnit.assert(page === discoveredAncestorByInheritedTypeName);
+    });
+}
+
 export function test_loadWithOptionsWithXML() {
     var v = builder.load({
         path: "~/xml-declaration/mymodulewithxml",
@@ -86,9 +102,9 @@ export function test_loadWithOptionsWithXML() {
 };
 
 export function test_loadWithOptionsWithXML_CSSIsApplied() {
-    var newPage: page.Page;
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
+    var newPage: Page;
+    var pageFactory = function (): Page {
+        newPage = new Page();
 
         newPage.content = builder.load({
             path: "~/xml-declaration/mymodulewithxml",
@@ -116,7 +132,7 @@ export function test_loadWithOptionsFromTNS() {
         name: "Label"
     });
 
-    TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");
+    TKUnit.assert(v instanceof Label, "Expected result: Label; Actual result: " + v + ";");
 };
 
 export function test_loadWithOptionsFromTNSPath() {
@@ -125,7 +141,7 @@ export function test_loadWithOptionsFromTNSPath() {
         name: "Label"
     });
 
-    TKUnit.assert(v instanceof labelModule.Label, "Expected result: Label; Actual result: " + v + ";");
+    TKUnit.assert(v instanceof Label, "Expected result: Label; Actual result: " + v + ";");
 };
 
 export function test_parse_ShouldNotCrashWithoutExports() {
@@ -163,7 +179,7 @@ export function test_parse_ShouldFindEventHandlersInExports() {
 };
 
 export function test_parse_ShouldSetGridAttachedProperties() {
-    var p = <page.Page>builder.parse("<Page><GridLayout><Label row='1' col='2' rowSpan='3' colSpan='4' /></GridLayout></Page>");
+    var p = <Page>builder.parse("<Page><GridLayout><Label row='1' col='2' rowSpan='3' colSpan='4' /></GridLayout></Page>");
     var grid = <gridLayoutModule.GridLayout>p.content;
     var child = grid.getChildAt(0);
 
@@ -181,7 +197,7 @@ export function test_parse_ShouldSetGridAttachedProperties() {
 };
 
 export function test_parse_ShouldSetCanvasAttachedProperties() {
-    var p = <page.Page>builder.parse("<Page><AbsoluteLayout><Label left='1' top='2' right='3' bottom='4' /></AbsoluteLayout></Page>");
+    var p = <Page>builder.parse("<Page><AbsoluteLayout><Label left='1' top='2' right='3' bottom='4' /></AbsoluteLayout></Page>");
     var grid = <gridLayoutModule.GridLayout>p.content;
     var child = grid.getChildAt(0);
 
@@ -193,34 +209,34 @@ export function test_parse_ShouldSetCanvasAttachedProperties() {
 };
 
 export function test_parse_ShouldParseNumberProperties() {
-    var p = <page.Page>builder.parse("<Page width='100' />");
+    var p = <Page>builder.parse("<Page width='100' />");
 
     TKUnit.assert(p.width === 100, "Expected result: 100; Actual result: " + p.width + "; type: " + typeof (p.width));
 };
 
 export function test_parse_ShouldParseBooleanProperties() {
-    var p = <page.Page>builder.parse("<Page><Switch checked='true' /></Page>");
+    var p = <Page>builder.parse("<Page><Switch checked='true' /></Page>");
     var sw = <switchModule.Switch>p.content;
 
     TKUnit.assert(sw.checked === true, "Expected result: true; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
 };
 
 export function test_parse_ShouldParseBooleanPropertiesIgnoreCase() {
-    var p = <page.Page>builder.parse("<Page><Switch checked='False' /></Page>");
+    var p = <Page>builder.parse("<Page><Switch checked='False' /></Page>");
     var sw = <switchModule.Switch>p.content;
 
     TKUnit.assert(sw.checked === false, "Expected result: false; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
 };
 
 export function test_parse_ShouldParseBooleanPropertiesIgnoreCaseInverted() {
-    var p = <page.Page>builder.parse("<Page><TextField editable='False' /></Page>");
+    var p = <Page>builder.parse("<Page><TextField editable='False' /></Page>");
     var tf = <textFieldModule.TextField>p.content;
 
     TKUnit.assert(tf.editable === false, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
 };
 
 export function test_parse_ShouldParsePlatformSpecificProperties() {
-    var p = <page.Page>builder.parse("<Page><TextField ios:editable='False' android:editable='True' /></Page>");
+    var p = <Page>builder.parse("<Page><TextField ios:editable='False' android:editable='True' /></Page>");
     var tf = <textFieldModule.TextField>p.content;
 
     if (platform.device.os === platform.platformNames.ios) {
@@ -231,12 +247,12 @@ export function test_parse_ShouldParsePlatformSpecificProperties() {
 };
 
 export function test_parse_ShouldParsePlatformSpecificComponents() {
-    var p = <page.Page>builder.parse("<Page><ios><TextField /></ios><android><Label /></android></Page>");
+    var p = <Page>builder.parse("<Page><ios><TextField /></ios><android><Label /></android></Page>");
     if (platform.device.os === platform.platformNames.ios) {
         TKUnit.assert(p.content instanceof textFieldModule.TextField, "Expected result: TextField; Actual result: " + p.content);
     }
     else {
-        TKUnit.assert(p.content instanceof labelModule.Label, "Expected result: Label; Actual result: " + p.content);
+        TKUnit.assert(p.content instanceof Label, "Expected result: Label; Actual result: " + p.content);
     }
 };
 
@@ -252,7 +268,7 @@ export function test_parse_ThrowErrorWhenNestingPlatforms() {
 };
 
 export function test_parse_ShouldParseBindings() {
-    var p = <page.Page>builder.parse("<Page><Switch checked='{{ myProp }}' /></Page>");
+    var p = <Page>builder.parse("<Page><Switch checked='{{ myProp }}' /></Page>");
     p.bindingContext = { myProp: true };
     var sw = <switchModule.Switch>p.content;
 
@@ -260,7 +276,7 @@ export function test_parse_ShouldParseBindings() {
 };
 
 export function test_parse_ShouldParseBindingsWithObservable() {
-    var p = <page.Page>builder.parse("<Page><Switch checked='{{ myProp }}' /></Page>");
+    var p = <Page>builder.parse("<Page><Switch checked='{{ myProp }}' /></Page>");
     var obj = new observable.Observable();
     obj.set("myProp", true);
     p.bindingContext = obj;
@@ -274,7 +290,7 @@ export function test_parse_ShouldParseBindingsWithObservable() {
 };
 
 export function test_parse_ShouldParseBindingsToEvents() {
-    var p = <page.Page>builder.parse("<Page><Button tap='{{ myTap }}' /></Page>");
+    var p = <Page>builder.parse("<Page><Button tap='{{ myTap }}' /></Page>");
     p.bindingContext = {
         myTap: function (args) {
             //
@@ -286,7 +302,7 @@ export function test_parse_ShouldParseBindingsToEvents() {
 };
 
 export function test_parse_ShouldParseBindingsToGestures() {
-    var p = <page.Page>builder.parse("<Page><Label tap='{{ myTap }}' /></Page>");
+    var p = <Page>builder.parse("<Page><Label tap='{{ myTap }}' /></Page>");
     var context = {
         myTap: function (args) {
             //
@@ -294,7 +310,7 @@ export function test_parse_ShouldParseBindingsToGestures() {
     };
 
     p.bindingContext = context;
-    var lbl = <labelModule.Label>p.content;
+    var lbl = <Label>p.content;
 
     var observer = (<view.View>lbl).getGestureObservers(gesturesModule.GestureTypes.tap)[0];
 
@@ -303,7 +319,7 @@ export function test_parse_ShouldParseBindingsToGestures() {
 };
 
 export function test_parse_ShouldParseSubProperties() {
-    var p = <page.Page>builder.parse("<Page><Switch style.visibility='collapsed' checked='{{ myProp }}' /></Page>");
+    var p = <Page>builder.parse("<Page><Switch style.visibility='collapsed' checked='{{ myProp }}' /></Page>");
     var obj = new observable.Observable();
     obj.set("myProp", true);
     p.bindingContext = obj;
@@ -315,11 +331,11 @@ export function test_parse_ShouldParseSubProperties() {
 export function test_parse_ShouldParseBindingsWithCommaInsideSingleQuote() {
     var expected = "Hi,test"
     var bindingString = "{{ 'Hi,' + myProp }}";
-    var p = <page.Page>builder.parse('<Page><Label text="' + bindingString + '" /></Page>');
+    var p = <Page>builder.parse('<Page><Label text="' + bindingString + '" /></Page>');
     var obj = new observable.Observable();
     obj.set("myProp", "test");
     p.bindingContext = obj;
-    var lbl = <labelModule.Label>p.content;
+    var lbl = <Label>p.content;
 
     TKUnit.assert(lbl.text === expected, "Expected " + expected + "; Actual result: " + lbl.text + "; type: " + typeof (lbl.text));
 };
@@ -327,17 +343,17 @@ export function test_parse_ShouldParseBindingsWithCommaInsideSingleQuote() {
 export function test_parse_ShouldParseBindingsWithCommaInsideDoubleQuote() {
     var expected = "Hi,test"
     var bindingString = '{{ "Hi," + myProp }}';
-    var p = <page.Page>builder.parse("<Page><Label text='" + bindingString + "' /></Page>");
+    var p = <Page>builder.parse("<Page><Label text='" + bindingString + "' /></Page>");
     var obj = new observable.Observable();
     obj.set("myProp", "test");
     p.bindingContext = obj;
-    var lbl = <labelModule.Label>p.content;
+    var lbl = <Label>p.content;
 
     TKUnit.assert(lbl.text === expected, "Expected " + expected + "; Actual result: " + lbl.text + "; type: " + typeof (lbl.text));
 };
 
 export function test_parse_CanBindBackgroundImage() {
-    var p = <page.Page>builder.parse("<Page><StackLayout backgroundImage='{{ myProp }}' /></Page>");
+    var p = <Page>builder.parse("<Page><StackLayout backgroundImage='{{ myProp }}' /></Page>");
     var expected = "~/logo.png"
     var obj = new observable.Observable();
     obj.set("myProp", expected);
@@ -348,81 +364,81 @@ export function test_parse_CanBindBackgroundImage() {
 };
 
 export function test_parse_ShouldParseLowerCaseDashedComponentDeclaration() {
-    var p = <page.Page>builder.parse('<page><stack-layout><label text="Label" /><segmented-bar><segmented-bar.items><segmented-bar-item title="test" /></segmented-bar.items></segmented-bar></stack-layout></page>');
+    var p = <Page>builder.parse('<page><stack-layout><label text="Label" /><segmented-bar><segmented-bar.items><segmented-bar-item title="test" /></segmented-bar.items></segmented-bar></stack-layout></page>');
     var ctrl = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assert(ctrl instanceof stackLayoutModule.StackLayout, "Expected result: StackLayout!; Actual result: " + ctrl);
-    TKUnit.assert(ctrl.getChildAt(0) instanceof labelModule.Label, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
+    TKUnit.assert(ctrl.getChildAt(0) instanceof Label, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
     TKUnit.assert(ctrl.getChildAt(1) instanceof segmentedBar.SegmentedBar, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
 };
 
 export function test_parse_ShouldParseCustomComponentWithoutXml() {
-    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodule"><customControls:MyControl /></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodule"><customControls:MyControl /></Page>');
     var ctrl = p.content;
 
     TKUnit.assert(ctrl instanceof myCustomControlWithoutXml.MyControl, "Expected result: custom control is defined!; Actual result: " + ctrl);
 };
 
 export function test_parse_ShouldParseCustomComponentWithoutXmlFromTNSModules() {
-    var p = <page.Page>builder.parse('<Page xmlns' + ':customControls="tns_modules/ui/label"><customControls:Label /></Page>');
+    var p = <Page>builder.parse('<Page xmlns' + ':customControls="tns_modules/ui/label"><customControls:Label /></Page>');
     var ctrl = p.content;
 
-    TKUnit.assert(ctrl instanceof labelModule.Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
+    TKUnit.assert(ctrl instanceof Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
 };
 
 export function test_parse_ShouldParseCustomComponentWithoutXmlFromTNSModulesWhenNotSpecified() {
-    var p = <page.Page>builder.parse('<Page xmlns' + ':customControls="ui/label"><customControls:Label /></Page>');
+    var p = <Page>builder.parse('<Page xmlns' + ':customControls="ui/label"><customControls:Label /></Page>');
     var ctrl = p.content;
 
-    TKUnit.assert(ctrl instanceof labelModule.Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
+    TKUnit.assert(ctrl instanceof Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
 };
 
 export function test_parse_ShouldParseCustomComponentWithXml() {
-    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl /></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
-    var lbl = <labelModule.Label>panel.getChildAt(0);
+    var lbl = <Label>panel.getChildAt(0);
 
     TKUnit.assert(lbl.text === "mymodulewithxml", "Expected result: 'mymodulewithxml'; Actual result: " + lbl);
 };
 
 export function test_parse_ShouldParseCustomComponentWithXml_WithAttributes() {
-    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl visibility="collapsed" /></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl visibility="collapsed" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assertEqual(panel.visibility, "collapsed", "panel.visibility");
 };
 
 export function test_parse_ShouldParseCustomComponentWithXml_WithCustomAttributes() {
-    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl myProperty="myValue" /></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl myProperty="myValue" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assertEqual(panel["myProperty"], "myValue", "customControl.myProperty");
 };
 
 export function test_parse_ShouldParseCustomComponentWithXmlNoJS() {
-    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js /></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
-    var lbl = <labelModule.Label>panel.getChildAt(0);
+    var lbl = <Label>panel.getChildAt(0);
 
     TKUnit.assertEqual(lbl.text, "I'm all about taht XML, no JS", "label.text");
 };
 
 export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithAttributes() {
-    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js visibility="collapsed" /></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js visibility="collapsed" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assertEqual(panel.visibility, "collapsed", "panel.visibility");
 };
 
 export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithCustomAttributes() {
-    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js myProperty="myValue" /></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js myProperty="myValue" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
     TKUnit.assertEqual(panel["myProperty"], "myValue", "customControl.myProperty");
 };
 
 export function test_parse_ShouldParseCustomComponentWithoutXmlInListViewTemplate() {
-    var p = <page.Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodule"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><customControls:MyControl /></ListView.itemTemplate></ListView></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodule"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><customControls:MyControl /></ListView.itemTemplate></ListView></Page>');
 
     function testAction(views: Array<viewModule.View>) {
         var ctrl;
@@ -450,7 +466,7 @@ export function test_parse_ShouldParseCustomComponentWithoutXmlInListViewTemplat
 }
 
 export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
-    var p = <page.Page>builder.parse('<Page xmlns="http://www.nativescript.org/tns.xsd"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><ListView items="{{ subItems }}" /></ListView.itemTemplate></ListView></Page>');
+    var p = <Page>builder.parse('<Page xmlns="http://www.nativescript.org/tns.xsd"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><ListView items="{{ subItems }}" /></ListView.itemTemplate></ListView></Page>');
 
     function testAction(views: Array<viewModule.View>) {
         var ctrl;
@@ -492,15 +508,15 @@ export function test_parse_NestedRepeaters() {
         "    </Repeater.itemTemplate>" +
         "  </Repeater>" +
         "</Page>";
-    var p = <page.Page>builder.parse(pageXML);
+    var p = <Page>builder.parse(pageXML);
 
     function testAction(views: Array<viewModule.View>) {
         p.bindingContext = [["0", "1"], ["2", "3"]];
         TKUnit.wait(0.2);
 
-        var lbls = new Array<labelModule.Label>();
+        var lbls = new Array<Label>();
         view.eachDescendant(p, (v) => {
-            if (v instanceof labelModule.Label) {
+            if (v instanceof Label) {
                 lbls.push(v);
             }
             return true;

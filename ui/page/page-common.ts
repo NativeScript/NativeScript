@@ -104,6 +104,10 @@ export class Page extends contentView.ContentView implements dts.Page {
         }
     }
 
+    get page(): view.View {
+        return this;
+    }
+
     private _refreshCss(): void {
         if (this._cssApplied) {
             this._resetCssValues();
