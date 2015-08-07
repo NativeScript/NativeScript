@@ -312,6 +312,30 @@ export function test_parse_ShouldParseSubProperties() {
     TKUnit.assert(sw.visibility === "collapsed", "Expected result: collapsed; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
 };
 
+export function test_parse_ShouldParseBindingsWithCommaInsideSingleQuote() {
+    var expected = "Hi,test"
+    var bindingString = "{{ 'Hi,' + myProp }}";
+    var p = <page.Page>builder.parse('<Page><Label text="' + bindingString + '" /></Page>');
+    var obj = new observable.Observable();
+    obj.set("myProp", "test");
+    p.bindingContext = obj;
+    var lbl = <labelModule.Label>p.content;
+
+    TKUnit.assert(lbl.text === expected, "Expected " + expected + "; Actual result: " + lbl.text + "; type: " + typeof (lbl.text));
+};
+
+export function test_parse_ShouldParseBindingsWithCommaInsideDoubleQuote() {
+    var expected = "Hi,test"
+    var bindingString = '{{ "Hi," + myProp }}';
+    var p = <page.Page>builder.parse("<Page><Label text='" + bindingString + "' /></Page>");
+    var obj = new observable.Observable();
+    obj.set("myProp", "test");
+    p.bindingContext = obj;
+    var lbl = <labelModule.Label>p.content;
+
+    TKUnit.assert(lbl.text === expected, "Expected " + expected + "; Actual result: " + lbl.text + "; type: " + typeof (lbl.text));
+};
+
 export function test_parse_CanBindBackgroundImage() {
     var p = <page.Page>builder.parse("<Page><StackLayout backgroundImage='{{ myProp }}' /></Page>");
     var expected = "~/logo.png"
