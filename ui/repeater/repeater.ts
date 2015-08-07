@@ -192,7 +192,7 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        viewModule.View.layoutChild(this, this.itemsLayout, 0, 0, right, bottom);
+        viewModule.View.layoutChild(this, this.itemsLayout, 0, 0, right - left, bottom - top);
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
