@@ -476,3 +476,48 @@ export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
         helper.goBack();
     }
 }
+
+export function test_parse_NestedRepeaters() {
+    var pageXML =
+        "<Page xmlns='http://www.nativescript.org/tns.xsd'>" +
+        "  <Repeater items='{{ $value }}'>" +
+        "    <Repeater.itemTemplate>" +
+        "      <StackLayout>" +
+        "        <Repeater items='{{ $value }}'>" +
+        "          <Repeater.itemTemplate>" +
+        "            <Label text='{{ $value }}'/>" +
+        "          </Repeater.itemTemplate>" +
+        "        </Repeater>" +
+        "      </StackLayout>" +
+        "    </Repeater.itemTemplate>" +
+        "  </Repeater>" +
+        "</Page>";
+    var p = <page.Page>builder.parse(pageXML);
+
+    function testAction(views: Array<viewModule.View>) {
+        p.bindingContext = [["0", "1"], ["2", "3"]];
+        TKUnit.wait(0.2);
+
+        var lbls = new Array<labelModule.Label>();
+        view.eachDescendant(p, (v) => {
+            if (v instanceof labelModule.Label) {
+                lbls.push(v);
+            }
+            return true;
+        });
+
+        TKUnit.assertEqual(lbls.length, 4, "labels count");
+        lbls.forEach((lbl, index, arr) => {
+            TKUnit.assertEqual(lbl.text.toString(), index.toString(), "label text");
+        });
+    };
+
+    helper.navigate(function () { return p; });
+
+    try {
+        testAction([p.content, p]);
+    }
+    finally {
+        helper.goBack();
+    }
+}
