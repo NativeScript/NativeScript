@@ -188,11 +188,11 @@ export function assertEqual(actual: any, expected: any, message?: string) {
 
         // Use the equals method
         if (!actual.equals(expected)) {
-            throw new Error(message + " Actual: " + actual + " Expected: " + expected);
+            throw new Error(`${message} Actual: <${actual}>(${typeof(actual)}). Expected: <${expected}>(${typeof(expected)})`);
         }
     }
     else if (actual !== expected) {
-        throw new Error(message + " Actual: " + actual + " Expected: " + expected);
+        throw new Error(`${message} Actual: <${actual}>(${typeof(actual)}). Expected: <${expected}>(${typeof(expected)})`);
     }
 };
 
