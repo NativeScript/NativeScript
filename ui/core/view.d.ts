@@ -22,7 +22,7 @@ declare module "ui/core/view" {
      */
     export function eachDescendant(view: View, callback: (child: View) => boolean);
 
-     /**
+    /**
      * Gets an ancestor from a given type.
      * @param view - Starting view (child view).
      * @param criterion - The type of ancestor view we are looking for. Could be a string containing a class name or an actual type.
