@@ -302,23 +302,24 @@ public class GridLayout extends LayoutBase {
 		this.columnOffsets.clear();
 		this.rowOffsets.clear();
 		
-		this.columnOffsets.add(paddingLeft);	 
+		this.columnOffsets.add(paddingLeft);
 		this.rowOffsets.add(paddingTop);
 			
-		int offset = this.columnOffsets.get(0);
-		int roundedOffset = this.getPaddingLeft();
+		float offset = this.columnOffsets.get(0);
+		int roundedOffset = paddingLeft;
 		int roundedLength = 0;
-		int actualLength = 0;
+		float actualLength = 0;
 		int size = this.helper.columns.size();	 
 		for (int i = 0; i < size; i++) {
 			ItemGroup columnGroup = this.helper.columns.get(i);
 			offset += columnGroup.length;
-			this.columnOffsets.add(offset);
 	
 			actualLength = offset - roundedOffset;
 			roundedLength = Math.round(actualLength);
 			columnGroup.rowOrColumn._actualLength = roundedLength;
 			roundedOffset += roundedLength;
+			
+			this.columnOffsets.add(roundedOffset);
 		}
 	
 		offset = this.rowOffsets.get(0);
@@ -329,12 +330,13 @@ public class GridLayout extends LayoutBase {
 		for (int i = 0; i < size; i++) {
 			ItemGroup rowGroup = this.helper.rows.get(i);
 			offset += rowGroup.length;
-			this.rowOffsets.add(offset);
 	
 			actualLength = offset - roundedOffset;
 			roundedLength = Math.round(actualLength);
 			rowGroup.rowOrColumn._actualLength = roundedLength;
 			roundedOffset += roundedLength;
+			
+			this.rowOffsets.add(roundedOffset);
 		}
 	
 		int columns = this.helper.columns.size();
@@ -442,7 +444,7 @@ class MeasureSpecs {
 }
 
 class ItemGroup {
-	int length = 0;
+	float length = 0;
 	int measuredCount = 0;
 	ItemSpec rowOrColumn;
 	ArrayList<MeasureSpecs> children = new ArrayList<MeasureSpecs>();
@@ -506,8 +508,8 @@ class MeasureHelper {
 	int measuredWidth;
 	int measuredHeight;
 
-	private int columnStarValue;
-	private int rowStarValue;
+	private float columnStarValue;
+	private float rowStarValue;
 	
 	private boolean fakeRowAdded = false;
 	private boolean fakeColumnAdded = false;
@@ -681,7 +683,7 @@ class MeasureHelper {
 	}
 
 	private void fixColumns() {
-		int currentColumnWidth = 0;
+		float currentColumnWidth = 0;
 		int columnStarCount = 0;
 
 		int columnCount = this.columns.size();
@@ -706,7 +708,7 @@ class MeasureHelper {
 	}
 
 	private void fixRows() {
-		int currentRowHeight = 0;
+		float currentRowHeight = 0;
 		int rowStarCount = 0;
 
 		int rowCount = this.rows.size();
@@ -955,7 +957,7 @@ class MeasureHelper {
 			}
 		}
 
-		int measureWidth = columnsWidth + measureSpec.starColumnsCount * this.columnStarValue;
+		int measureWidth = (int)(columnsWidth + measureSpec.starColumnsCount * this.columnStarValue);
 
 		int widthMeasureSpec = MeasureSpec.makeMeasureSpec(measureWidth, this.stretchedHorizontally ? MeasureSpec.EXACTLY : MeasureSpec.AT_MOST);
 		int heightMeasureSpec = (measureSpec.autoRowsCount > 0) ? infinity : MeasureSpec.makeMeasureSpec(measureSpec.pixelHeight, MeasureSpec.EXACTLY);
@@ -1020,7 +1022,7 @@ class MeasureHelper {
 			}
 		}
 
-		int measureHeight = rowsHeight + measureSpec.starRowsCount * this.rowStarValue;
+		int measureHeight = (int)(rowsHeight + measureSpec.starRowsCount * this.rowStarValue);
 
 		int widthMeasureSpec = (measureSpec.autoColumnsCount > 0) ? infinity : MeasureSpec.makeMeasureSpec(measureSpec.pixelWidth, MeasureSpec.EXACTLY);
 		int heightMeasureSpec = MeasureSpec.makeMeasureSpec(measureHeight, this.stretchedVertically ? MeasureSpec.EXACTLY : MeasureSpec.AT_MOST);
@@ -1084,7 +1086,7 @@ class MeasureHelper {
 		ItemGroup columnGroup;
 		ItemGroup rowGroup;
 
-		int columnsWidth = 0;
+		float columnsWidth = 0;
 		for (int i = columnIndex; i < columnSpanEnd; i++) {
 			columnGroup = this.columns.get(i);
 			if (!columnGroup.getIsStar()) {
@@ -1092,7 +1094,7 @@ class MeasureHelper {
 			}
 		}
 
-		int rowsHeight = 0;
+		float rowsHeight = 0;
 		for (int i = rowIndex; i < rowSpanEnd; i++) {
 			rowGroup = this.rows.get(i);
 			if (!rowGroup.getIsStar()) {
@@ -1100,8 +1102,8 @@ class MeasureHelper {
 			}
 		}
 
-		int measureWidth = columnsWidth + measureSpec.starColumnsCount * this.columnStarValue;
-		int measureHeight = rowsHeight + measureSpec.starRowsCount * this.rowStarValue;
+		int measureWidth = (int)(columnsWidth + measureSpec.starColumnsCount * this.columnStarValue);
+		int measureHeight = (int)(rowsHeight + measureSpec.starRowsCount * this.rowStarValue);
 
 		// if (have stars) & (not stretch) - at most
 		int widthMeasureSpec = MeasureSpec.makeMeasureSpec(measureWidth, 

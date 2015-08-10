@@ -126,14 +126,18 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
         
         // Re-measure TextView because it is not centered if layout width is larger than measure width.
         if (child instanceof android.widget.TextView) {
+
+        	boolean canChangeWidth = lp.width < 0;
+        	boolean canChangeHeight = lp.height < 0;
+        	
         	int measuredWidth = child.getMeasuredWidth();
         	int measuredHeight = child.getMeasuredHeight();
 	
-	        int width = right - left;
-	        int height = bottom - top;
-	        if (Math.abs(measuredWidth - width) > 1  || Math.abs(measuredHeight - height) > 1) {
-	            int widthMeasureSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
-	            int heightMeasureSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
+	        int width = childRight - childLeft;
+	        int height = childBottom - childTop;
+	        if ((Math.abs(measuredWidth - width) > 1 && canChangeWidth) || (Math.abs(measuredHeight - height) > 1 && canChangeHeight)) {
+	            int widthMeasureSpec = MeasureSpec.makeMeasureSpec(canChangeWidth ? width : lp.width, MeasureSpec.EXACTLY);
+	            int heightMeasureSpec = MeasureSpec.makeMeasureSpec(canChangeHeight ? height : lp.height, MeasureSpec.EXACTLY);
 	            if (debuggable > 0) {
 	            	sb.setLength(0);
 	            	sb.append("remeasure ");
