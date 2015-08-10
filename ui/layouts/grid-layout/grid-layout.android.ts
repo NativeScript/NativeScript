@@ -63,7 +63,7 @@ export class ItemSpec extends common.ItemSpec {
 
     public get actualLength(): number {
         if (this.nativeSpec) {
-            return this.nativeSpec.getActualLength() / utils.layout.getDisplayDensity();
+            return Math.round(this.nativeSpec.getActualLength() / utils.layout.getDisplayDensity());
         }
 
         return 0;
