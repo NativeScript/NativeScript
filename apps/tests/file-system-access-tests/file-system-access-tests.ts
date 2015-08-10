@@ -1,14 +1,25 @@
 ﻿import TKUnit = require("../TKUnit");
 import fs = require("file-system");
-import fileSystemAccess = require("file-system/file-system-access");
-var fileAccess = new fileSystemAccess.FileSystemAccess();
 
 export var test_UTF8_BOM_is_not_returned = function () {
     var actualResult: string;
-    fileAccess.readText(fs.path.join(__dirname, "xml.expected"), (result) => { actualResult = result; }, (error) => { TKUnit.assert(false, "Could not read file utf8.txt"); });
+    var path = fs.path.join(__dirname, "xml.expected");
+    if (!fs.File.exists(path)) {
+        TKUnit.assert(false, "Could not read file utf8.txt");
+        return;
+    }
 
-    var actualCharCode = actualResult.charCodeAt(0);
-    var expectedCharCode = "{".charCodeAt(0); 
-    TKUnit.assert(actualCharCode === expectedCharCode, "Actual character code: " + actualCharCode + "; Expected character code: " + expectedCharCode);
+    var file = fs.File.fromPath(path);
+
+    var onError = function (error) {
+        TKUnit.assert(false, "Could not read file utf8.txt");
+    }
+
+    var text = file.readTextSync(onError);
+    if (text) {
+        var actualCharCode = text.charCodeAt(0);
+        var expectedCharCode = "{".charCodeAt(0);
+        TKUnit.assert(actualCharCode === expectedCharCode, "Actual character code: " + actualCharCode + "; Expected character code: " + expectedCharCode);
+    }
 };
  

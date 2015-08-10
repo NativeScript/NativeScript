@@ -1,7 +1,6 @@
 ﻿require("globals");
 import definition = require("application");
 import fs = require("file-system");
-import fileSystemAccess = require("file-system/file-system-access");
 import styleScope = require("ui/styling/style-scope");
 import observable = require("data/observable");
 
@@ -39,10 +38,12 @@ export var ios = undefined;
 export function loadCss() {
     if (definition.cssFile) {
         var cssFileName = fs.path.join(fs.knownFolders.currentApp().path, definition.cssFile);
-        var applicationCss;
         if (fs.File.exists(cssFileName)) {
-            new fileSystemAccess.FileSystemAccess().readText(cssFileName, r => { applicationCss = r; });
-            definition.cssSelectorsCache = styleScope.StyleScope.createSelectorsFromCss(applicationCss, cssFileName);
+            var file = fs.File.fromPath(cssFileName);
+            var applicationCss = file.readTextSync();
+            if (applicationCss) {
+                definition.cssSelectorsCache = styleScope.StyleScope.createSelectorsFromCss(applicationCss, cssFileName);
+            }
         }
     }
 }

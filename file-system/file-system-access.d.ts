@@ -38,15 +38,15 @@
          * @param onSuccess A callback function to call if operation is successful
          * @param onError (optional) A callback function to use if any error occurs.
          */
-        getEntities(path: string, onSuccess: (files: Array<{ path: string; name: string; extension: string }>) => any, onError?: (error: any) => any);
+        getEntities(path: string, onError?: (error: any) => any): Array<{ path: string; name: string; extension: string }>;
 
         /**
          * Performs an action onSuccess for every entity in a folder with a given path.
          * Breaks the loop if onSuccess function returns false
-         * @param onSuccess A callback function which is called for each entity.
+         * @param onEntity A callback function which is called for each entity.
          * @param onError (optional) A callback function to use if any error occurs.
          */
-        eachEntity(path: string, onSuccess: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error: any) => any);
+        eachEntity(path: string, onEntity: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error: any) => any);
 
         /**
          * Checks if a file with a given path exist.
@@ -61,35 +61,31 @@
         /**
          * Deletes a file with a given path.
          * @param path Path of the file.
-         * @param onSuccess (optional) A callback function which will be executed if the deletion is successful.
          * @param onError (optional) A callback function to use if any error occurs.
          */
-        deleteFile(path: string, onSuccess?: () => any, onError?: (error: any) => any);
+        deleteFile(path: string, onError?: (error: any) => any);
 
         /**
          * Deletes a folder with a given path.
          * @param path Path of the folder.
-         * @param onSuccess (optional) A callback function which will be executed if the deletion is successful.
          * @param onError (optional) A callback function to use if any error occurs.
          */
-        deleteFolder(path: string, isKnown: boolean, onSuccess?: () => any, onError?: (error: any) => any);
+        deleteFolder(path: string, onError?: (error: any) => any);
 
         /**
          * Deletes a content of a folder with a given path.
          * @param path Path of the folder.
-         * @param onSuccess (optional) A callback function which will be executed if the deletion is successful.
          * @param onError (optional) A callback function to use if any error occurs.
          */
-        emptyFolder(path: string, onSuccess?: () => any, onError?: (error: any) => any): void;
+        emptyFolder(path: string, onError?: (error: any) => any): void;
 
         /**
          * Rename a file or a folder with a given path.
          * @param path Current path of the entity which should be renamed.
          * @param newPath The new path which will be asigned of the entity.
-         * @param onSuccess (optional) A callback function which will be executed if the deletion is successful.
          * @param onError (optional) A callback function to use if any error occurs.
          */
-        rename(path: string, newPath: string, onSuccess?: () => any, onError?: (error: any) => any): void;
+        rename(path: string, newPath: string, onError?: (error: any) => any): void;
 
         /**
          * Gets the special documents folder.
@@ -110,7 +106,7 @@
          * @param onError (optional) A callback function to use if any error occurs.
          * @param encoding (optional) If set reads the text with the specified encoding (default UTF-8).
          */
-        readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: any);
+        readText(path: string, onError?: (error: any) => any, encoding?: any): string;
 
         /**
          * Writes a text to a file with a given path.
@@ -120,7 +116,7 @@
          * @param onError (optional) A callback function to use if any error occurs.
          * @param encoding (optional) If set writes the text with the specified encoding (default UTF-8).
          */
-        writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: any);
+        writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any);
 
         /**
          * Gets extension of the file with a given path.

@@ -48,11 +48,7 @@ export class FileSystemAccess {
         this.enumEntities(path, onEntity, onError);
     }
 
-    public getEntities(path: string, onSuccess: (files: Array<{ path: string; name: string; extension: string }>) => any, onError?: (error: any) => any) {
-        if (!onSuccess) {
-            return;
-        }
-
+    public getEntities(path: string, onError?: (error: any) => any): Array<{ path: string; name: string; extension: string }> {
         var fileInfos = new Array<{ path: string; name: string; extension: string }>();
         var onEntity = function (entity: { path: string; name: string; extension: string }): boolean {
             fileInfos.push(entity);
@@ -71,8 +67,10 @@ export class FileSystemAccess {
         this.enumEntities(path, onEntity, localError);
 
         if (!errorOccurred) {
-            onSuccess(fileInfos);
+            return fileInfos;
         }
+
+        return null;
     }
 
     public fileExists(path: string): boolean {
@@ -89,7 +87,7 @@ export class FileSystemAccess {
         return exists && dir;
     }
 
-    public deleteFile(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
+    public deleteFile(path: string, onError?: (error: any) => any) {
         try {
             var javaFile = new java.io.File(path);
             if (!javaFile.isFile()) {
@@ -104,8 +102,6 @@ export class FileSystemAccess {
                 if (onError) {
                     onError({ message: "File deletion failed" });
                 }
-            } else if (onSuccess) {
-                onSuccess();
             }
         } catch (exception) {
             if (onError) {
@@ -114,7 +110,7 @@ export class FileSystemAccess {
         }
     }
 
-    public deleteFolder(path: string, isKnown?: boolean, onSuccess?: () => any, onError?: (error: any) => any) {
+    public deleteFolder(path: string, onError?: (error: any) => any) {
         try {
             var javaFile = new java.io.File(path);
             if (!javaFile.getCanonicalFile().isDirectory()) {
@@ -125,27 +121,14 @@ export class FileSystemAccess {
                 return;
             }
 
-            if (isKnown) {
-                if (onError) {
-                    onError({ message: "Cannot delete known folder." });
-                }
-
-                return;
-            }
-
             // TODO: Asynchronous
             this.deleteFolderContent(javaFile);
 
-            if (javaFile.delete()) {
-                if (onSuccess) {
-                    onSuccess();
-                }
-            } else {
+            if (!javaFile.delete()) {
                 if (onError) {
                     onError({ message: "Folder deletion failed." });
                 }
             }
-
         } catch (exception) {
             if (onError) {
                 onError(exception);
@@ -153,7 +136,7 @@ export class FileSystemAccess {
         }
     }
 
-    public emptyFolder(path: string, onSuccess?: () => any, onError?: (error: any) => any) {
+    public emptyFolder(path: string, onError?: (error: any) => any) {
         try {
             var javaFile = new java.io.File(path);
             if (!javaFile.getCanonicalFile().isDirectory()) {
@@ -166,11 +149,6 @@ export class FileSystemAccess {
 
             // TODO: Asynchronous
             this.deleteFolderContent(javaFile);
-
-            if (onSuccess) {
-                onSuccess();
-            }
-
         } catch (exception) {
             if (onError) {
                 onError(exception);
@@ -178,7 +156,7 @@ export class FileSystemAccess {
         }
     }
 
-    public rename(path: string, newPath: string, onSuccess?: () => any, onError?: (error: any) => any) {
+    public rename(path: string, newPath: string, onError?: (error: any) => any) {
         var javaFile = new java.io.File(path);
         if (!javaFile.exists()) {
             if (onError) {
@@ -201,12 +179,6 @@ export class FileSystemAccess {
             if (onError) {
                 onError(new Error("Failed to rename file '" + path + "' to '" + newPath + "'"));
             }
-
-            return;
-        }
-
-        if (onSuccess) {
-            onSuccess();
         }
     }
 
@@ -220,7 +192,7 @@ export class FileSystemAccess {
         return dir.getAbsolutePath();
     }
 
-    public readText(path: string, onSuccess: (content: string) => any, onError?: (error: any) => any, encoding?: any) {
+    public readText(path: string, onError?: (error: any) => any, encoding?: any) {
         try {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileInputStream(javaFile);
@@ -258,9 +230,7 @@ export class FileSystemAccess {
 
             bufferedReader.close();
 
-            if (onSuccess) {
-                onSuccess(result);
-            }
+            return result;
         } catch (exception) {
             if (onError) {
                 onError(exception);
@@ -277,7 +247,7 @@ export class FileSystemAccess {
         return s;
     }
 
-    public writeText(path: string, content: string, onSuccess?: () => any, onError?: (error: any) => any, encoding?: any) {
+    public writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
         try {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileOutputStream(javaFile);
@@ -290,10 +260,6 @@ export class FileSystemAccess {
 
             writer.write(content);
             writer.close();
-
-            if (onSuccess) {
-                onSuccess();
-            }
         } catch (exception) {
             if (onError) {
                 onError(exception);

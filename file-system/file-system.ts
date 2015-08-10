@@ -63,58 +63,89 @@ export class FileSystemEntity {
 
     public remove(): Promise<any> {
         return new Promise((resolve, reject) => {
-            var fileAccess = getFileAccess();
-
-            var localSucces = function () {
-                resolve();
-            };
-
+            var hasError = false;
             var localError = function (error: any) {
+                hasError = true;
                 reject(error);
             };
 
-            if (this instanceof File) {
-                fileAccess.deleteFile(this.path, localSucces, localError);
-            } else if (this instanceof Folder) {
-                fileAccess.deleteFolder(this.path, this[isKnownProperty], localSucces, localError);
+            this.removeSync(localError);
+            if (!hasError) {
+                resolve();
             }
         });
     }
 
+    public removeSync(onError?: (error: any) => any): void {
+        if (this[isKnownProperty]) {
+            if (onError) {
+                onError({ message: "Cannot delete known folder." });
+            }
+
+            return;
+        }
+
+        var fileAccess = getFileAccess();
+
+        if (this instanceof File) {
+            fileAccess.deleteFile(this.path, onError);
+        } else if (this instanceof Folder) {
+            fileAccess.deleteFolder(this.path, onError);
+        }
+    }
+
     public rename(newName: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            if (this instanceof Folder) {
-                if (this[isKnownProperty]) {
-                    reject(new Error("Cannot rename known folder."));
-                }
-            }
-
-            var parentFolder = this.parent;
-            if (!parentFolder) {
-                reject(new Error("No parent folder."));
-            }
-
-            var fileAccess = getFileAccess();
-            var path = parentFolder.path;
-            var newPath = fileAccess.joinPath(path, newName);
-
-            var localSucceess = () => {
-                this[pathProperty] = newPath;
-                this[nameProperty] = newName;
-
-                if (this instanceof File) {
-                    this[extensionProperty] = fileAccess.getFileExtension(newPath);
-                }
-
-                resolve();
-            }
-
+            var hasError = false;
             var localError = function (error) {
+                hasError = true;
                 reject(error);
             }
 
-            fileAccess.rename(this.path, newPath, localSucceess, localError);
+            this.renameSync(newName, localError);
+
+            if (!hasError) {
+                resolve();
+            }
         });
+    }
+
+    public renameSync(newName: string, onError?: (error: any) => any): void {
+        if (this[isKnownProperty]) {
+            if (onError) {
+                onError(new Error("Cannot rename known folder."));
+            }
+            return;
+        }
+
+        var parentFolder = this.parent;
+        if (!parentFolder) {
+            if (onError) {
+                onError(new Error("No parent folder."));
+            }
+            return;
+        }
+
+        var fileAccess = getFileAccess();
+        var path = parentFolder.path;
+        var newPath = fileAccess.joinPath(path, newName);
+
+        var hasError = false;
+        var localError = function (error) {
+            hasError = true;
+            if (onError) {
+                onError(error);
+            }
+            return null;
+        }
+
+        fileAccess.rename(this.path, newPath, localError);
+        this[pathProperty] = newPath;
+        this[nameProperty] = newName;
+
+        if (this instanceof File) {
+            this[extensionProperty] = fileAccess.getFileExtension(newPath);
+        }
     }
 
     get name(): string {
@@ -136,7 +167,6 @@ export class FileSystemEntity {
 }
 
 export class File extends FileSystemEntity {
-
     public static fromPath(path: string) {
         var onError = function (error) {
             throw error;
@@ -164,48 +194,69 @@ export class File extends FileSystemEntity {
     }
 
     public readText(encoding?: string): Promise<string> {
-        this.checkAccess();
-
         return new Promise((resolve, reject) => {
-            this[fileLockedProperty] = true;
-
-            var localSuccess = (content: string) => {
-                this[fileLockedProperty] = false;
-                resolve(content);
-            };
-
+            var hasError = false;
             var localError = (error) => {
-                this[fileLockedProperty] = false;
+                hasError = true;
                 reject(error);
             };
 
-            // TODO: Asyncronous
-            getFileAccess().readText(this.path, localSuccess, localError, encoding);
-
+            var content = this.readTextSync(localError, encoding);
+            if (!hasError) {
+                resolve(content);
+            }
         });
     }
 
-    public writeText(content: string, encoding?: string): Promise<any> {
+    public readTextSync(onError?: (error: any) => any, encoding?: string): string {
         this.checkAccess();
 
+        this[fileLockedProperty] = true;
+
+        var that = this;
+        var localError = (error) => {
+            that[fileLockedProperty] = false;
+            if (onError) {
+                onError(error);
+            }
+        };
+
+        var content = getFileAccess().readText(this.path, localError, encoding);        
+        this[fileLockedProperty] = false;
+
+        return content;
+    }
+
+    public writeText(content: string, encoding?: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            this[fileLockedProperty] = true;
-
-            var that = this;
-            var localSuccess = function () {
-                that[fileLockedProperty] = false;
-                resolve();
-            };
-
+            var hasError = false;
             var localError = function (error) {
-                that[fileLockedProperty] = false;
+                hasError = true;
                 reject(error);
             };
 
-            // TODO: Asyncronous
-            getFileAccess().writeText(this.path, content, localSuccess, localError, encoding);
-
+            this.writeTextSync(content, localError, encoding);
+            if (!hasError) {
+                resolve();
+            }
         });
+    }
+
+    public writeTextSync(content: string, onError?: (error: any) => any, encoding?: string): void {
+        this.checkAccess();
+
+        this[fileLockedProperty] = true;
+
+        var that = this;
+        var localError = function (error) {
+            that[fileLockedProperty] = false;
+            if (onError) {
+                onError(error);
+            }
+        };
+
+        // TODO: Asyncronous
+        getFileAccess().writeText(this.path, content, localError, encoding);
     }
 
     private checkAccess() {
@@ -216,7 +267,6 @@ export class File extends FileSystemEntity {
 }
 
 export class Folder extends FileSystemEntity {
-
     public static fromPath(path: string): Folder {
         var onError = function (error) {
             throw error;
@@ -247,18 +297,21 @@ export class Folder extends FileSystemEntity {
 
     public clear(): Promise<any> {
         return new Promise((resolve, reject) => {
-
-            var onSuccess = function () {
-                resolve();
-            };
-
+            var hasError = false;
             var onError = function (error) {
+                hasError = true;
                 reject(error);
             };
 
-            getFileAccess().emptyFolder(this.path, onSuccess, onError);
-
+            this.clearSync(onError);
+            if (!hasError) {
+                resolve();
+            }
         });
+    }
+
+    public clearSync(onError?: (error: any) => void): void {
+        getFileAccess().emptyFolder(this.path, onError);
     }
 
     get isKnown(): boolean {
@@ -299,29 +352,37 @@ export class Folder extends FileSystemEntity {
 
     public getEntities(): Promise<Array<FileSystemEntity>> {
         return new Promise((resolve, reject) => {
-
-            var onSuccess = function (fileInfos: Array<{ path: string; name: string; extension: string }>) {
-                var entities = new Array<FileSystemEntity>();
-                var i;
-
-                for (i = 0; i < fileInfos.length; i++) {
-                    if (fileInfos[i].extension) {
-                        entities.push(createFile(fileInfos[i]));
-                    } else {
-                        entities.push(createFolder(fileInfos[i]));
-                    }
-                }
-
-                resolve(entities);
-            }
-
-            var onError = function (error) {
-                throw error;
+            var hasError = false;
+            var localError = function (error) {
+                hasError = true;
+                reject(error);
             };
 
-            getFileAccess().getEntities(this.path, onSuccess, onError);
-
+            var entities = this.getEntitiesSync(localError);
+            if (!hasError) {
+                resolve(entities);
+            }
         });
+    }
+
+    public getEntitiesSync(onError?: (error: any) => any): Array<FileSystemEntity> {
+        var fileInfos = getFileAccess().getEntities(this.path, onError);
+        if (!fileInfos) {
+            return null;
+        }
+
+        var entities = new Array<FileSystemEntity>();
+
+        var i;
+        for (i = 0; i < fileInfos.length; i++) {
+            if (fileInfos[i].extension) {
+                entities.push(createFile(fileInfos[i]));
+            } else {
+                entities.push(createFolder(fileInfos[i]));
+            }
+        }
+
+        return entities;
     }
 
     public eachEntity(onEntity: (entity: FileSystemEntity) => boolean) {

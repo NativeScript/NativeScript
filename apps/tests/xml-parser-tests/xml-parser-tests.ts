@@ -9,8 +9,6 @@
 import TKUnit = require("../TKUnit");
 import xmlModule = require("xml");
 import fs = require("file-system");
-import fileSystemAccess = require("file-system/file-system-access");
-var fileAccess = new fileSystemAccess.FileSystemAccess();
 
 export var test_XmlParser_IsDefined = function () {
     TKUnit.assert(typeof (xmlModule.XmlParser) !== "undefined", "Class XmlParser should be defined!");
@@ -83,14 +81,14 @@ export var test_XmlParser_IntegrationTest = function () {
         actualResult += event.toString();
     });
 
-    var xmlString;
-    fileAccess.readText(fs.path.join(__dirname, "xml.xml"), (result) => { xmlString = result; });
+    var file = fs.File.fromPath(fs.path.join(__dirname, "xml.xml"));
+    var xmlString = file.readTextSync();
     xmlString = xmlString.replace(/(\r\n|\n|\r)/gm, "\n");
-
     xmlParser.parse(xmlString);
 
     var expectedResult: string;
-    fileAccess.readText(fs.path.join(__dirname, "xml.expected"), (result) => { expectedResult = result; });
+    file = fs.File.fromPath(fs.path.join(__dirname, "xml.expected"));
+    expectedResult = file.readTextSync();
 
     var i;
     var maxLength = Math.max(actualResult.length, expectedResult.length);
@@ -186,8 +184,7 @@ export var test_XmlParser_NamespacesTest = function () {
 
     }, undefined, true);
 
-    var xmlString;
-    fileAccess.readText(fs.path.join(__dirname, "xml-with-namespaces.xml"), (result) => { xmlString = result; });
- 
+    var file = fs.File.fromPath(fs.path.join(__dirname, "xml-with-namespaces.xml"));
+    var xmlString = file.readTextSync();
     xmlParser.parse(xmlString);
 };

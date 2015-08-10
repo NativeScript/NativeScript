@@ -1,7 +1,6 @@
 ﻿import view = require("ui/core/view");
 import fs = require("file-system");
 import xml = require("xml");
-import file_access_module = require("file-system/file-system-access");
 import types = require("utils/types");
 import componentBuilder = require("ui/builder/component-builder");
 import templateBuilderDef = require("ui/builder/template-builder");
@@ -261,15 +260,12 @@ function loadInternal(fileName: string, context?: any): componentBuilder.Compone
 
     // Check if the XML file exists.
     if (fs.File.exists(fileName)) {
-
-        var fileAccess = new file_access_module.FileSystemAccess();
-
-        // Read the XML file.
-        fileAccess.readText(fileName, result => {
-            componentModule = parseInternal(result, context);
-        }, (e) => {
-                throw new Error("Error loading file " + fileName + " :" + e.message);
-            });
+        var file = fs.File.fromPath(fileName);
+        var onError = function (error) {
+            throw new Error("Error loading file " + fileName + " :" + error.message);
+        }
+        var text = file.readTextSync(onError);
+        componentModule = parseInternal(text, context);
     }
 
     if (componentModule && componentModule.component) {
