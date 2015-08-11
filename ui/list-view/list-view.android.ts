@@ -1,7 +1,7 @@
 ﻿import observable = require("data/observable");
 import common = require("ui/list-view/list-view-common");
 import viewModule = require("ui/core/view");
-import layout = require("ui/layouts/layout");
+import layoutBaseModule = require("ui/layouts/layout-base");
 import stackLayout = require("ui/layouts/stack-layout");
 import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
@@ -199,7 +199,7 @@ class ListViewAdapter extends android.widget.BaseAdapter {
 
         if (args.view) {
             if (!args.view.parent) {
-                if (args.view instanceof layout.Layout) {
+                if (args.view instanceof layoutBaseModule.LayoutBase) {
                     this._listView._addView(args.view);
                     convertView = args.view.android;
                 } else {

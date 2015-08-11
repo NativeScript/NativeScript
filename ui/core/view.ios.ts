@@ -152,8 +152,6 @@ export class View extends viewCommon.View {
                 height = Number.POSITIVE_INFINITY;
             }
 
-            trace.write(this + " :onMeasure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
-
             var nativeSize = view.sizeThatFits(CGSizeMake(width, height));
 
             var measureWidth = Math.max(nativeSize.width, this.minWidth);
@@ -167,7 +165,7 @@ export class View extends viewCommon.View {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        trace.write(this + " :onLayout: " + left + ", " + top + ", " + (right - left) + ", " + (bottom - top), trace.categories.Layout);
+        //
     }
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
@@ -238,13 +236,6 @@ export class CustomLayoutView extends View {
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // Don't call super because it will set MeasureDimension. This method must be overriden and calculate its measuredDimensions.
-
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-        trace.write(this + " :onMeasure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {

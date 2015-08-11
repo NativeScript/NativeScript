@@ -6,7 +6,7 @@ import observable = require("data/observable");
 import observableArray = require("data/observable-array");
 import weakEvents = require("ui/core/weak-event-listener");
 import types = require("utils/types");
-import layoutModule = require("ui/layouts/layout");
+import layoutBaseModule = require("ui/layouts/layout-base");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import builder = require("ui/builder");
 import utils = require("utils/utils");
@@ -93,10 +93,10 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
         this._setValue(Repeater.itemTemplateProperty, value);
     }
 
-    get itemsLayout(): layoutModule.Layout {
+    get itemsLayout(): layoutBaseModule.LayoutBase {
         return this._getValue(Repeater.itemsLayoutProperty);
     }
-    set itemsLayout(value: layoutModule.Layout) {
+    set itemsLayout(value: layoutBaseModule.LayoutBase) {
         this._setValue(Repeater.itemsLayoutProperty, value);
     }
 
@@ -211,7 +211,7 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 }
 
-function clearItemsLayout(itemsLayout: layoutModule.Layout) {
+function clearItemsLayout(itemsLayout: layoutBaseModule.LayoutBase) {
     if (!types.isNullOrUndefined(itemsLayout)) {
         var i: number = itemsLayout.getChildrenCount();
         if (i > 0) {

@@ -22,6 +22,7 @@ declare module "ui" {
     export * from "ui/image";
     export * from "ui/image-cache";
     export * from "ui/label";
+    export * from "ui/layouts/layout-base";
     export * from "ui/layouts/layout";
     export * from "ui/layouts/absolute-layout";
     export * from "ui/layouts/dock-layout";

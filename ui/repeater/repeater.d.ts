@@ -4,7 +4,7 @@
 declare module "ui/repeater" {
     import view = require("ui/core/view");
     import dependencyObservable = require("ui/core/dependency-observable");
-    import layoutModule = require("ui/layouts/layout");
+    import layoutBaseModule = require("ui/layouts/layout-base");
 
     /**
      * Represents a UI Repeater component.
@@ -39,7 +39,7 @@ declare module "ui/repeater" {
         /**
          * Gets or set the items layout of the Repeater. Default value is StackLayout with orientation="vertical".
          */
-        itemsLayout: layoutModule.Layout;
+        itemsLayout: layoutBaseModule.LayoutBase;
 
         /**
          * Forces the Repeater to reload all its items.
