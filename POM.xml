@@ -1,0 +1,6 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.nativescript.widgets</groupId>
+  <artifactId>nativescript-widgets</artifactId>
+  <version>0.1.0</version>
+</project>
