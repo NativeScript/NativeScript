@@ -55,17 +55,9 @@ export class Layout extends layoutBase.LayoutBase implements definition.Layout {
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // Don't call super because it will trigger measure again.
-
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-        trace.write(this + " :onMeasure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         // Don't call super because it will trigger layout again.
-        trace.write(this + " :onLayout: " + left + ", " + top + ", " + (right - left) + ", " + (bottom - top), trace.categories.Layout);
     }
 }

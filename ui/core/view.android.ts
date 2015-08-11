@@ -271,14 +271,6 @@ export class View extends viewCommon.View {
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var view = this._nativeView;
         if (view) {
-            var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-            var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-
-            var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-            var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-
-            trace.write(this + " :onMeasure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
-
             view.measure(widthMeasureSpec, heightMeasureSpec);
             this.setMeasuredDimension(view.getMeasuredWidth(), view.getMeasuredHeight());
         }
@@ -288,7 +280,6 @@ export class View extends viewCommon.View {
         var view = this._nativeView;
         if (view) {
             this.layoutNativeView(left, top, right, bottom);
-            trace.write(this + " :onLayout: " + left + ", " + top + ", " + (right - left) + ", " + (bottom - top), trace.categories.Layout);
         }
     }
 

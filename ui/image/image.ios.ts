@@ -71,7 +71,6 @@ export class Image extends imageCommon.Image {
 
         var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
         var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-        trace.write(this + " :onMeasure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
 
         var nativeWidth = this.imageSource ? this.imageSource.width : 0;
         var nativeHeight = this.imageSource ? this.imageSource.height : 0;

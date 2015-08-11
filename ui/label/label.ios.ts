@@ -4,7 +4,6 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import utils = require("utils/utils");
 import viewModule = require("ui/core/view");
-import trace = require("trace");
 
 function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var label = <Label>data.object;
@@ -94,8 +93,6 @@ export class Label extends common.Label {
             if (heightMode === utils.layout.UNSPECIFIED) {
                 height = Number.POSITIVE_INFINITY;
             }
-
-            trace.write(this + " :onMeasure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
 
             var nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
             var labelWidth = nativeSize.width;
