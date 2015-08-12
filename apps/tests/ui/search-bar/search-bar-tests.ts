@@ -58,6 +58,27 @@ export var testSearchBarHintColorAndroid = function () {
     });
 };
 
+export var testSearchBarFontSize = function () {
+    helper.buildUIAndRunTest(_createSearchBarFunc(), function (views: Array<viewModule.View>) {
+        var searchBar = <searchBarModule.SearchBar>views[0];
+
+        // TODO: create IOS test once IOS support is working
+        if (!searchBar.android) {
+            return;
+        }
+
+        searchBar.text = "";
+        searchBar.hint = "hint color test";
+
+        var expectedValue = 30;
+        var actualValue;
+
+        searchBar.style.fontSize = expectedValue;
+        actualValue = searchBarTestsNative.getNativeFontSize(searchBar);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+};
+
 export function test_DummyTestForSnippetOnly() {
     // <snippet module="ui/search-bar" title="search-bar">
     // ### Searching

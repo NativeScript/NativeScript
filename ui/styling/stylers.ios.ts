@@ -437,6 +437,33 @@ export class SearchBarStyler implements definition.stylers.Styler {
         }
     }
 
+    // font
+    private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
+        var bar = <UISearchBar>view.ios;
+        var sf = <UITextField>bar.valueForKey("_searchField");
+        if (sf) {
+            sf.font = (<font.Font>newValue).getUIFont(newValue);
+        }
+    }
+
+    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
+        var bar = <UISearchBar>view.ios;
+        var sf = <UITextField>bar.valueForKey("_searchField");
+        if (sf) {
+            sf.font = nativeValue;
+        }
+    }
+
+    private static getNativeFontInternalValue(view: view.View): any {
+        var bar = <UISearchBar>view.ios;
+        var sf = <UITextField>bar.valueForKey("_searchField");
+        if (sf) {
+            return sf.font;
+        }
+
+        return undefined;
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             SearchBarStyler.setBackgroundColorProperty,
@@ -447,6 +474,11 @@ export class SearchBarStyler implements definition.stylers.Styler {
             SearchBarStyler.setColorProperty,
             SearchBarStyler.resetColorProperty,
             SearchBarStyler.getColorProperty), "SearchBar");
+
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            SearchBarStyler.setFontInternalProperty,
+            SearchBarStyler.resetFontInternalProperty,
+            SearchBarStyler.getNativeFontInternalValue), "SearchBar");
     }
 }
 
