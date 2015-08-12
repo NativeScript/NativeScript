@@ -442,7 +442,7 @@ export class SearchBarStyler implements definition.stylers.Styler {
         var bar = <UISearchBar>view.ios;
         var sf = <UITextField>bar.valueForKey("_searchField");
         if (sf) {
-            sf.font = (<font.Font>newValue).getUIFont(newValue);
+            sf.font = (<font.Font>newValue).getUIFont(nativeValue);
         }
     }
 
