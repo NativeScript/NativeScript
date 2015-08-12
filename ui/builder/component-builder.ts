@@ -30,7 +30,8 @@ var DOCK = "dock";
 var LEFT = "left";
 var TOP = "top";
 
-var eventHandlers, gestureHandlers = {};
+var eventHandlers = {},
+    gestureHandlers = {};
 
 export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object): definition.ComponentModule {
     var instance: view.View;
