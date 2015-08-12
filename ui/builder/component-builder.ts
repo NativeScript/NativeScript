@@ -30,6 +30,9 @@ var DOCK = "dock";
 var LEFT = "left";
 var TOP = "top";
 
+var eventHandlers = {},
+    gestureHandlers = {};
+
 export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object): definition.ComponentModule {
     var instance: view.View;
     var instanceModule: Object;
@@ -102,6 +105,8 @@ export function getComponentModule(elementName: string, namespace: string, attri
                 setPropertyValue(instance, instanceModule, exports, attr, attrValue);
             }
         }
+
+        eventHandlers, gestureHandlers = {};
 
         componentModule = { component: instance, exports: instanceModule, bindings: bindings };
     }
@@ -180,34 +185,34 @@ export function setPropertyValue(instance: view.View, instanceModule: Object, ex
 
 function attachEventBinding(instance: view.View, eventName: string, value: string) {
     // Get the event handler from instance.bindingContext.
-    var propertyChangeHandler = (args: observable.PropertyChangeData) => {
+    eventHandlers[eventName] = (args: observable.PropertyChangeData) => {
         if (args.propertyName === "bindingContext") {
             var handler = instance.bindingContext && instance.bindingContext[getBindingExpressionFromAttribute(value)];
             // Check if the handler is function and add it to the instance for specified event name.
             if (types.isFunction(handler)) {
                 instance.on(eventName, handler, instance.bindingContext);
             }
-            instance.off(observable.Observable.propertyChangeEvent, propertyChangeHandler);
+            instance.off(observable.Observable.propertyChangeEvent, eventHandlers[eventName]);
         }
     };
 
-    instance.on(observable.Observable.propertyChangeEvent, propertyChangeHandler);
+    instance.on(observable.Observable.propertyChangeEvent, eventHandlers[eventName]);
 }
 
 function attachGestureBinding(instance: view.View, gestureName: string, value: string) {
     // Get the event handler from instance.bindingContext.
-    var propertyChangeHandler = (args: observable.PropertyChangeData) => {
+    gestureHandlers[gestureName] = (args: observable.PropertyChangeData) => {
         if (args.propertyName === "bindingContext") {
             var handler = instance.bindingContext && instance.bindingContext[getBindingExpressionFromAttribute(value)];
             // Check if the handler is function and add it to the instance for specified event name.
             if (types.isFunction(handler)) {
                 instance.observe(gestures.fromString(gestureName.toLowerCase()), handler, instance.bindingContext);
             }
-            instance.off(observable.Observable.propertyChangeEvent, propertyChangeHandler);
+            instance.off(observable.Observable.propertyChangeEvent, gestureHandlers[gestureName]);
         }
     };
 
-    instance.on(observable.Observable.propertyChangeEvent, propertyChangeHandler);
+    instance.on(observable.Observable.propertyChangeEvent, gestureHandlers[gestureName]);
 }
 
 function isGesture(name: string, instance: any): boolean {
