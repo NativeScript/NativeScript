@@ -650,7 +650,7 @@ function getTextFromNativeElementAt(listView: listViewModule.ListView, index: nu
     if (listView.android) {
         var nativeElement = listView.android.getChildAt(index);
         if (nativeElement instanceof android.view.ViewGroup) {
-            return (<android.widget.TextView>((<any>nativeElement).getChildAt(0))).getText();
+            return (<android.widget.TextView>((<any>nativeElement).getChildAt(0))).getText() + "";
         }
         return (<android.widget.TextView>nativeElement).getText() + "";
     }
