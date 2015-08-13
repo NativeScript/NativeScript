@@ -481,17 +481,25 @@ export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
 export function test_parse_NestedRepeaters() {
     var pageXML =
         "<Page xmlns='http://www.nativescript.org/tns.xsd'>" +
-        "  <Repeater items='{{ $value }}'>" +
-        "    <Repeater.itemTemplate>" +
-        "      <StackLayout>" +
-        "        <Repeater items='{{ $value }}'>" +
-        "          <Repeater.itemTemplate>" +
-        "            <Label text='{{ $value }}'/>" +
-        "          </Repeater.itemTemplate>" +
-        "        </Repeater>" +
-        "      </StackLayout>" +
-        "    </Repeater.itemTemplate>" +
-        "  </Repeater>" +
+        "  <TabView>" +
+        "    <TabView.items>" +
+        "      <TabViewItem title='List'>" +
+        "        <TabViewItem.view>" +
+        "          <Repeater items='{{ $value }}'>" +
+        "            <Repeater.itemTemplate>" +
+        "              <StackLayout>" +
+        "                <Repeater items='{{ $value }}'>" +
+        "                  <Repeater.itemTemplate>" +
+        "                    <Label text='{{ $value }}'/>" +
+        "                  </Repeater.itemTemplate>" +
+        "                </Repeater>" +
+        "              </StackLayout>" +
+        "            </Repeater.itemTemplate>" +
+        "          </Repeater>" +
+        "        </TabViewItem.view>" +
+        "      </TabViewItem>" +
+        "    </TabView.items>" +
+        "  </TabView>" +
         "</Page>";
     var p = <Page>builder.parse(pageXML);
 
