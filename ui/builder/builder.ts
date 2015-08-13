@@ -75,20 +75,13 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
         }
 
         if (templateBuilder) {
-            if (args.eventType === xml.ParserEventType.StartElement) {
-                templateBuilder.addStartElement(args.prefix, args.namespace, args.elementName, args.attributes);
-                return;
-            } else if (args.eventType === xml.ParserEventType.EndElement) {
-                templateBuilder.addEndElement(args.prefix, args.elementName);
-                if (templateBuilder.hasFinished()) {
-                    templateBuilder.build();
-                    templateBuilder = undefined;
-                }
-                else {
-                    return;
-                }
+            var finished = templateBuilder.handleElement(args);
+            if (finished) {
+                // Clean-up and continnue
+                templateBuilder = undefined;
             }
             else {
+                // Skip processing untill the template builder finishes his job.
                 return;
             }
         }
