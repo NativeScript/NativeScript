@@ -1,4 +1,5 @@
 ﻿import definition = require("ui/builder/template-builder");
+import xml = require("xml");
 
 var KNOWNTEMPLATES = "knownTemplates";
 
@@ -17,7 +18,23 @@ export class TemplateBuilder {
         return this._templateProperty.elementName;
     }
 
-    public addStartElement(prefix: string, namespace: string, elementName: string, attributes: Object) {
+    handleElement(args: xml.ParserEvent): boolean {
+        if (args.eventType === xml.ParserEventType.StartElement) {
+            this.addStartElement(args.prefix, args.namespace, args.elementName, args.attributes);
+        } else if (args.eventType === xml.ParserEventType.EndElement) {
+            this.addEndElement(args.prefix, args.elementName);
+        }
+
+        if (this.hasFinished()) {
+            this.build();
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    private addStartElement(prefix: string, namespace: string, elementName: string, attributes: Object) {
         this._nestingLevel++;
         this._items.push("<" +
             getElementNameWithPrefix(prefix, elementName) +
@@ -26,18 +43,18 @@ export class TemplateBuilder {
             ">");
     }
 
-    public addEndElement(prefix: string, elementName: string) {
+    private addEndElement(prefix: string, elementName: string) {
         this._nestingLevel--;
         if (!this.hasFinished()) {
             this._items.push("</" + getElementNameWithPrefix(prefix, elementName) + ">");
         }
     }
 
-    public hasFinished() {
+    private hasFinished() {
         return this._nestingLevel < 0;
     }
 
-    public build() {
+    private build() {
         if (this._templateProperty.name in this._templateProperty.parent.component) {
             this._templateProperty.parent.component[this._templateProperty.name] = this._items.join("");
         }
