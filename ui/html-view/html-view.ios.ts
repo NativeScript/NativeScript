@@ -34,6 +34,7 @@ export class HtmlView extends common.HtmlView {
 
         this._ios = new UILabel();
         this._ios.userInteractionEnabled = true;
+        this._ios.numberOfLines = 0;
     }
 
     get ios(): UILabel {
