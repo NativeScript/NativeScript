@@ -8,7 +8,7 @@ declare module "ui/builder/template-builder" {
 
         elementName: string;
 
-        /**
+        /*
 	     * Returns true if the template builder has finished parsing template and the parsing should continue.
 	     * @param args - ParserEvent argument to handle.
 	     */
