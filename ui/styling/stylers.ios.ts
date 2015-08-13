@@ -409,9 +409,7 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 
     private static getColorProperty(view: view.View): any {
-        var bar = <UISearchBar>view.ios;
-
-        var sf = <UITextField>bar.valueForKey("_searchField");
+        var sf = <UITextField>(<any>view)._textField;
         if (sf) {
             return sf.textColor;
         }
@@ -420,21 +418,41 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 
     private static setColorProperty(view: view.View, newValue: any) {
-        var bar = <UISearchBar>view.ios;
-
-        var sf = <UITextField>bar.valueForKey("_searchField");
+        var sf = <UITextField>(<any>view)._textField;
         if (sf) {
             sf.textColor = newValue;
         }
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
-        var bar = <UISearchBar>view.ios;
-
-        var sf = <UITextField>bar.valueForKey("_searchField");
+        var sf = <UITextField>(<any>view)._textField;
         if (sf) {
             sf.textColor = nativeValue;
         }
+    }
+
+    // font
+    private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
+        var sf = <UITextField>(<any>view)._textField;
+        if (sf) {
+            sf.font = (<font.Font>newValue).getUIFont(nativeValue);
+        }
+    }
+
+    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
+        var sf = <UITextField>(<any>view)._textField;
+        if (sf) {
+            sf.font = nativeValue;
+        }
+    }
+
+    private static getNativeFontInternalValue(view: view.View): any {
+        var sf = <UITextField>(<any>view)._textField;
+        if (sf) {
+            return sf.font;
+        }
+
+        return undefined;
     }
 
     public static registerHandlers() {
@@ -447,6 +465,11 @@ export class SearchBarStyler implements definition.stylers.Styler {
             SearchBarStyler.setColorProperty,
             SearchBarStyler.resetColorProperty,
             SearchBarStyler.getColorProperty), "SearchBar");
+
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            SearchBarStyler.setFontInternalProperty,
+            SearchBarStyler.resetFontInternalProperty,
+            SearchBarStyler.getNativeFontInternalValue), "SearchBar");
     }
 }
 

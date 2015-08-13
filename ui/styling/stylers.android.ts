@@ -475,6 +475,45 @@ export class SearchBarStyler implements definition.stylers.Styler {
         SearchBarStyler._changeSearchViewTextColor(bar, nativeValue);
     }
 
+    // font
+    private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
+        var bar = <android.widget.SearchView>view.android;
+        var textView = SearchBarStyler._getSearchViewTextView(bar);
+
+        var fontValue = <font.Font>newValue;
+
+        var typeface = fontValue.getAndroidTypeface();
+        if (typeface) {
+            textView.setTypeface(typeface);
+        }
+        else {
+            textView.setTypeface(nativeValue.typeface);
+        }
+
+        if (fontValue.fontSize) {
+            textView.setTextSize(fontValue.fontSize);
+        }
+        else {
+            textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+        }
+    }
+
+    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
+        var bar = <android.widget.SearchView>view.android;
+        var textView = SearchBarStyler._getSearchViewTextView(bar);
+        textView.setTypeface(nativeValue.typeface);
+        textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+    }
+
+    private static getNativeFontInternalValue(view: view.View): any {
+        var bar = <android.widget.SearchView>view.android;
+        var textView = SearchBarStyler._getSearchViewTextView(bar);
+        return {
+            typeface: textView.getTypeface(),
+            size: textView.getTextSize()
+        };
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             SearchBarStyler.setBackgroundColorProperty,
@@ -485,6 +524,11 @@ export class SearchBarStyler implements definition.stylers.Styler {
             SearchBarStyler.setColorProperty,
             SearchBarStyler.resetColorProperty,
             SearchBarStyler.getColorProperty), "SearchBar");
+
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            SearchBarStyler.setFontInternalProperty,
+            SearchBarStyler.resetFontInternalProperty,
+            SearchBarStyler.getNativeFontInternalValue), "SearchBar");
     }
 
     private static _getSearchViewTextView(bar: android.widget.SearchView): android.widget.TextView {

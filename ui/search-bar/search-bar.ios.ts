@@ -14,7 +14,7 @@ function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 function onTextFieldBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var bar = <SearchBar>data.object;
     if (data.newValue instanceof color.Color) {
-        var tf = getUITextField(bar.ios);
+        var tf = (<any>bar)._textField;
         if (tf) {
             tf.backgroundColor = data.newValue.ios;
         }
@@ -24,15 +24,15 @@ function onTextFieldBackgroundColorPropertyChanged(data: dependencyObservable.Pr
 (<proxy.PropertyMetadata>common.SearchBar.textFieldBackgroundColorProperty.metadata).onSetNativeValue = onTextFieldBackgroundColorPropertyChanged;
 
 function onTextFieldHintColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-  // This should be in a Try Catch in case Apple eliminates which ever method in the future; 
-  try {
-		// TODO; convert this code into NativeScript Code		
+    // This should be in a Try Catch in case Apple eliminates which ever method in the future; 
+    try {
+        // TODO; convert this code into NativeScript Code		
 		/* if ([textField respondsToSelector:@selector(setAttributedPlaceholder:)]) {
 			textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:textField.placeholder attributes:@{NSForegroundColorAttributeName: [UIColor whiteColor]}];
 		} */
-  } catch (Err) {
-	// Do Nothing 
-  }
+    } catch (Err) {
+        // Do Nothing 
+    }
 }
 
 (<proxy.PropertyMetadata>common.SearchBar.textFieldHintColorProperty.metadata).onSetNativeValue = onTextFieldHintColorPropertyChanged;
@@ -51,14 +51,6 @@ function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 }
 
 (<proxy.PropertyMetadata>common.SearchBar.hintProperty.metadata).onSetNativeValue = onHintPropertyChanged;
-
-function getUITextField(bar: UISearchBar): UITextField {
-    if (bar) {
-        return <UITextField> bar.valueForKey("_searchField");
-    }
-
-    return undefined;
-}
 
 global.moduleMerge(common, exports);
 
@@ -102,9 +94,11 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 export class SearchBar extends common.SearchBar {
     private _ios: UISearchBar;
     private _delegate;
+    public _textField: UITextField;
 
     constructor() {
         super();
+
         this._ios = new UISearchBar();
 
         this._delegate = UISearchBarDelegateImpl.new().initWithOwner(this);
@@ -113,6 +107,7 @@ export class SearchBar extends common.SearchBar {
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;
+        this._textField = SearchBar.findTextField(this.ios);
     }
 
     public onUnloaded() {
@@ -122,5 +117,18 @@ export class SearchBar extends common.SearchBar {
 
     get ios(): UISearchBar {
         return this._ios;
+    }  
+
+    private static findTextField(view: UIView) {
+        for (let i = 0, l = view.subviews.count; i < l; i++) {
+            let v: UIView = view.subviews[i];
+            if (v instanceof UITextField) {
+                return v;
+            } else if (v.subviews.count > 0) {
+                return SearchBar.findTextField(v);
+            }
+        }
+
+        return undefined;
     }
 }

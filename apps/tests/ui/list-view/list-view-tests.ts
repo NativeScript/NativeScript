@@ -646,16 +646,16 @@ function loadViewWithItemNumber(args: listViewModule.ItemEventData) {
     (<labelModule.Label>args.view).text = "item " + args.index;
 }
 
-function getTextFromNativeElementAt(listView: listViewModule.ListView, index: number): any {
+function getTextFromNativeElementAt(listView: listViewModule.ListView, index: number): string {
     if (listView.android) {
         var nativeElement = listView.android.getChildAt(index);
         if (nativeElement instanceof android.view.ViewGroup) {
-            return (<android.widget.TextView>((<any>nativeElement).getChildAt(0))).getText();
+            return (<android.widget.TextView>((<any>nativeElement).getChildAt(0))).getText() + "";
         }
-        return (<android.widget.TextView>nativeElement).getText();
+        return (<android.widget.TextView>nativeElement).getText() + "";
     }
     else if (listView.ios) {
-        return listView.ios.visibleCells()[index].contentView.subviews[0].text;
+        return listView.ios.visibleCells()[index].contentView.subviews[0].text + "";
     }
 }
 
