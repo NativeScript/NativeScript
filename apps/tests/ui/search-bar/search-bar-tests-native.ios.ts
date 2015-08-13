@@ -6,8 +6,7 @@ export function getNativeHintColor(searchBar: searchBarModule.SearchBar): colorM
     return undefined;
 }
 export function getNativeFontSize(searchBar: searchBarModule.SearchBar): number {
-    var bar = <UISearchBar>searchBar.ios;
-    var sf = <UITextField>bar.valueForKey("_searchField");
+    var sf = <UITextField>(<any>searchBar)._textField;
     if (sf) {
         return sf.font.pointSize;
     }
