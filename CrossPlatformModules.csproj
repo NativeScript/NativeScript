@@ -150,7 +150,7 @@
     <TypeScriptCompile Include="apps\tests\xml-declaration\inherited-base-page.ts" />
     <TypeScriptCompile Include="apps\tests\xml-declaration\inherited-page.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\handlers.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\pages\html-view.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\htmlview.ts" />
     <TypeScriptCompile Include="ui\animation\animation.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation-common.ts">
       <DependentUpon>animation.d.ts</DependentUpon>
@@ -940,7 +940,7 @@
     <Content Include="apps\ui-tests-app\pages\background.xml" />
     <Content Include="apps\ui-tests-app\pages\circle.xml" />
     <Content Include="apps\ui-tests-app\pages\handlers.xml" />
-    <Content Include="apps\ui-tests-app\pages\html-view.xml" />
+    <Content Include="apps\ui-tests-app\pages\htmlview.xml" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />
     <Content Include="apps\template-blank\app.css" />
     <Content Include="apps\template-hello-world\app.css" />
