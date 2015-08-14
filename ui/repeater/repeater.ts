@@ -149,8 +149,8 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
                 for (i = 0; i < this.items.length; i++) {
                     var viewToAdd = !types.isNullOrUndefined(this.itemTemplate) ? builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
                     if (!types.isNullOrUndefined(viewToAdd)) {
-                        this.itemsLayout.addChild(viewToAdd);
                         viewToAdd.bindingContext = this._getDataItem(i);
+                        this.itemsLayout.addChild(viewToAdd);
                     }
                 }
             }

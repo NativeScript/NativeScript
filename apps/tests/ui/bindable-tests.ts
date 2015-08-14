@@ -14,6 +14,9 @@ import labelModule = require("ui/label");
 import textFieldModule = require("ui/text-field");
 import fs = require("file-system");
 import appModule = require("application");
+import repeaterModule = require("ui/repeater");
+import gestureModule = require("ui/gestures");
+import layoutBaseModule = require("ui/layouts/layout-base");
 
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic. 
@@ -526,6 +529,30 @@ export var test_BindingContext_NavigatingForwardAndBack = function () {
 
     var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
     helper.navigateToModuleAndRunTest(("." + moduleName + "/bindingContext_testPage1"), null, testFunc);
+}
+
+export var test_RepeaterItemsGestureBindings = function () {
+    var testFunc = function (page: pageModule.Page) {
+        var repeater = <repeaterModule.Repeater>(page.getViewById("repeater"));
+        var hasObservers = false;
+        var eachChildCallback = function (childItem: viewModule.View) {
+            if (childItem instanceof labelModule.Label) {
+                var gestureObservers = childItem.getGestureObservers(gestureModule.GestureTypes.tap);
+                hasObservers = gestureObservers ? gestureObservers.length > 0 : false;
+            }
+            else if (childItem instanceof layoutBaseModule.LayoutBase) {
+                childItem._eachChildView(eachChildCallback);
+            }
+            return true;
+        }
+
+        repeater._eachChildView(eachChildCallback);
+
+        TKUnit.assertEqual(hasObservers, true, "Every item should have tap observer!");
+    }
+
+    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+    helper.navigateToModuleAndRunTest(("." + moduleName + "/repeaterItems-bindingToGestures"), null, testFunc);
 }
 
 export var test_BindingToSource_FailsAfterBindingContextChange = function () {
