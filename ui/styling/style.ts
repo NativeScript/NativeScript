@@ -768,10 +768,10 @@ export var borderColorProperty = new styleProperty.Property("borderColor", "bord
     converters.colorConverter);
 
 export var borderWidthProperty = new styleProperty.Property("borderWidth", "border-width",
-    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
+    new observable.PropertyMetadata(0, AffectsLayout, null, isPaddingValid), converters.numberConverter);
 
 export var borderRadiusProperty = new styleProperty.Property("borderRadius", "border-radius",
-    new observable.PropertyMetadata(0, observable.PropertyMetadataSettings.AffectsLayout, null, isPaddingValid), converters.numberConverter);
+    new observable.PropertyMetadata(0, AffectsLayout, null, isPaddingValid), converters.numberConverter);
 
 export var backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
     new observable.PropertyMetadata(background.Background.default, observable.PropertyMetadataSettings.None, undefined, undefined, background.Background.equals));
