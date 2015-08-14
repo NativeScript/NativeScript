@@ -96,7 +96,7 @@ export class Animation extends common.Animation implements definition.Animation 
                     that._finishedAnimations++;
                 }
 
-                if (that._cancelledAnimations === that._mergedPropertyAnimations.length) {
+                if (that._cancelledAnimations > 0 && (that._cancelledAnimations + that._finishedAnimations) === that._mergedPropertyAnimations.length) {
                     trace.write(that._cancelledAnimations + " animations cancelled.", trace.categories.Animation);
                     that._rejectAnimationFinishedPromise();
                 }
