@@ -1,7 +1,7 @@
 Cross Platform Modules Changelog
 ==============================
 
-##1.2.1 (2015, August 17)
+##1.2.1 (2015, August 18)
 
 Fixed
 =========
