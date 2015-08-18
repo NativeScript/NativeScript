@@ -69,6 +69,21 @@
         backgroundRepeat: string;
 
         /**
+         * Gets or sets the border-color style property.
+         */
+        borderColor: color.Color 
+
+        /**
+         * Gets or sets the border-width style property.
+         */
+        borderWidth: number
+
+        /**
+         * Gets or sets the border-radius style property.
+         */
+        borderRadius: number;
+
+        /**
          * Gets or sets font-size style property.
          */
         fontSize: number;

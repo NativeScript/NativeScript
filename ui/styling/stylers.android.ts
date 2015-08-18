@@ -270,6 +270,58 @@ export class DefaultStyler implements definition.stylers.Styler {
     }
 }
 
+export class ImageStyler implements definition.stylers.Styler {
+    // Corner radius
+    private static setBorderRadiusProperty(view: view.View, newValue: any, defaultValue: any) {
+        if (!view._nativeView) {
+            return;
+        }
+        var val = newValue * utils.layout.getDisplayDensity();
+        (<org.nativescript.widgets.ImageView>view._nativeView).setCornerRadius(val);
+        onBackgroundOrBorderPropertyChanged(view);
+    }
+
+    private static resetBorderRadiusProperty(view: view.View, nativeValue: any) {
+        if (!view._nativeView) {
+            return;
+        }
+        (<org.nativescript.widgets.ImageView>view._nativeView).setCornerRadius(0);
+        onBackgroundOrBorderPropertyChanged(view);
+    }
+
+    // Border width
+    private static setBorderWidthProperty(view: view.View, newValue: any, defaultValue: any) {
+        if (!view._nativeView) {
+            return;
+        }
+
+        var val = newValue * utils.layout.getDisplayDensity();
+        (<org.nativescript.widgets.ImageView>view._nativeView).setBorderWidth(val);
+        onBackgroundOrBorderPropertyChanged(view);
+    }
+
+    private static resetBorderWidthProperty(view: view.View, nativeValue: any) {
+        if (!view._nativeView) {
+            return;
+        }
+        (<org.nativescript.widgets.ImageView>view._nativeView).setBorderWidth(0);
+        onBackgroundOrBorderPropertyChanged(view);
+    }
+
+    public static registerHandlers() {
+        // Use the same handler for all background/border properties
+        // Note: There is no default value getter - the default value is handled in onBackgroundOrBorderPropertyChanged
+
+        style.registerHandler(style.borderRadiusProperty, new stylersCommon.StylePropertyChangedHandler(
+            ImageStyler.setBorderRadiusProperty,
+            ImageStyler.resetBorderRadiusProperty), "Image");
+
+        style.registerHandler(style.borderWidthProperty, new stylersCommon.StylePropertyChangedHandler(
+            ImageStyler.setBorderWidthProperty,
+            ImageStyler.resetBorderWidthProperty), "Image");
+    }
+}
+
 export class TextViewStyler implements definition.stylers.Styler {
     // color
     private static setColorProperty(view: view.View, newValue: any) {
@@ -556,6 +608,7 @@ export class SearchBarStyler implements definition.stylers.Styler {
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
     DefaultStyler.registerHandlers();
+    ImageStyler.registerHandlers();
     TextViewStyler.registerHandlers();
     ActivityIndicatorStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
