@@ -1,6 +1,15 @@
 Cross Platform Modules Changelog
 ==============================
 
+##1.2.1 (2015, August 18)
+
+Fixed
+=========
+
+- [(#575)](https://github.com/NativeScript/NativeScript/issues/575) Application crashes in Android when there is an ActionBar on the first page.
+
+- [(#576)](https://github.com/NativeScript/NativeScript/issues/576) app.css now applied when there is page-specific css.
+
 ##1.2.0 (2015, July 24)
 
 New
