@@ -1,6 +1,0 @@
-﻿<Page>
-  <StackLayout>
-    <Button text="ButtonCircle" id="btnCircle" style="width:200;height:200;color:white;border-width:2;border-color:red;border-radius:100;background-color:blue" />
-    <Button text="ButtonImage" id="btnImage" style="width:200;height:200;color:white;border-width:2;border-color:blue;border-radius:100;background-image:url('~/pages/red.png')" />
-  </StackLayout>
-</Page>

@@ -49,3 +49,13 @@
     border-width: 5;
     border-color: gray;
 }
+
+style {
+    width: 200;
+    height: 200;
+    color: white;
+    border-width: 2;
+    border-color: blue;
+    border-radius: 100;
+    background-image: url('~/pages/red.png');
+}
