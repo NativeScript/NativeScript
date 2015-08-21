@@ -1,0 +1,9 @@
+﻿<Page loaded="onLoaded">
+  <WrapLayout>
+    <Button id="app" text="app" />
+    <Button id="inline" text="inline" style="background-color: lightgreen;" />
+    <Button id="page" text="page" />
+    <Button id="property" text="property" />
+    <Button id="import" text="import" />
+  </WrapLayout>
+</Page>

@@ -150,6 +150,7 @@
     <TypeScriptCompile Include="apps\tests\ui\repeaterItems-bindingToGestures.ts" />
     <TypeScriptCompile Include="apps\tests\xml-declaration\inherited-base-page.ts" />
     <TypeScriptCompile Include="apps\tests\xml-declaration\inherited-page.ts" />
+    <Content Include="apps\ui-tests-app\app.css" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\handlers.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\htmlview.ts" />
     <TypeScriptCompile Include="ui\animation\animation.d.ts" />
@@ -933,6 +934,10 @@
     <Content Include="apps\tests\xml-declaration\mymodulewithxml\MyControl.css" />
     <Content Include="apps\tests\xml-declaration\mymodule\MyControl.css" />
     <Content Include="apps\ui-tests-app\bindings\xmlbasics.xml" />
+    <TypeScriptCompile Include="apps\ui-tests-app\css\styles.ts" />
+    <Content Include="apps\ui-tests-app\css\import.css" />
+    <Content Include="apps\ui-tests-app\css\styles.css" />
+    <Content Include="apps\ui-tests-app\css\styles.xml" />
     <Content Include="apps\ui-tests-app\dialogs\dialogs.xml" />
     <Content Include="apps\ui-tests-app\image-view\gravatar.png" />
     <Content Include="apps\ui-tests-app\image-view\roundimg.css" />
@@ -953,7 +958,7 @@
     <Content Include="apps\template-tab-navigation\app.css" />
     <Content Include="apps\ui-tests-app\modal-view\login-page.xml" />
     <Content Include="apps\ui-tests-app\modal-view\modalview.xml" />
-    <Content Include="apps\ui-tests-app\pages\red.png" />
+    <Content Include="apps\ui-tests-app\image-view\red.png" />
     <Content Include="apps\ui-tests-app\pages\test2.png" />
     <Content Include="apps\ui-tests-app\pages\textfield.xml" />
     <Content Include="apps\ui-tests-app\pages\text\text-field.xml" />
