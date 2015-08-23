@@ -73,7 +73,7 @@ export class GesturesObserver extends common.GesturesObserver {
             };
             this._onTargetUnloaded = args => {
                 trace.write(this.target + ".target unloaded. _nativeView:" + this.target._nativeView, "gestures");
-                this._dettach();
+                this._detach();
             };
 
             this.target.on(view.View.loadedEvent, this._onTargetLoaded);
@@ -87,7 +87,7 @@ export class GesturesObserver extends common.GesturesObserver {
 
     private _attach(target: view.View, type: definition.GestureTypes) {
         trace.write(target + "._attach() _nativeView:" + target._nativeView, "gestures");
-        this._dettach();
+        this._detach();
 
         if (target && target._nativeView && target._nativeView.addGestureRecognizer) {
             var nativeView = <UIView>target._nativeView;
@@ -145,8 +145,8 @@ export class GesturesObserver extends common.GesturesObserver {
         }
     }
 
-    private _dettach() {
-        trace.write(this.target + "._dettach() _nativeView:" + this.target._nativeView, "gestures");
+    private _detach() {
+        trace.write(this.target + "._detach() _nativeView:" + this.target._nativeView, "gestures");
         if (this.target && this.target._nativeView) {
             for (var name in this._recognizers) {
                 if (this._recognizers.hasOwnProperty(name)) {
@@ -162,7 +162,7 @@ export class GesturesObserver extends common.GesturesObserver {
     }
 
     public disconnect() {
-        this._dettach();
+        this._detach();
 
         if (this.target) {
             this.target.off(view.View.loadedEvent, this._onTargetLoaded);
