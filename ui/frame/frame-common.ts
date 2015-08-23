@@ -130,6 +130,9 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
             // TODO: Do we need to throw an error?
             return;
         }
+        if (!this._onCanNavigateFrom()) {
+            return;
+        }
 
         var backstackEntry = this._backStack.pop();
         var navigationContext: NavigationContext = {
@@ -149,6 +152,9 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
 
     public navigate(param: any) {
         trace.write(this._getTraceId() + ".navigate();", trace.categories.Navigation);
+        if (!this._onCanNavigateFrom()) {
+            return;
+        }
 
         var entry = buildEntryFromArgs(param);
         var page = resolvePageFromEntry(entry);
@@ -230,6 +236,13 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
 
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
         //
+    }
+
+    public _onCanNavigateFrom() {
+        if (this.currentPage) {
+            return this.currentPage.onCanNavigateFrom();
+        }
+        return true;
     }
 
     public _onNavigatingTo(backstackEntry: definition.BackstackEntry) {
