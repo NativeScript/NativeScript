@@ -8,7 +8,7 @@ import utils = require("utils/utils");
 import types = require("utils/types");
 import fs = require("file-system");
 
-var pattern: RegExp = /url\(('|")(.*?)\1\)/;
+var pattern: RegExp = /('|")(.*?)\1/;
 
 export class StyleScope {
     // caches all the visual states by the key of the visual state selectors
