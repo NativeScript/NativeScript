@@ -57,6 +57,10 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): pages.P
         if (moduleExports && moduleExports.createPage) {
             trace.write("Calling createPage()", trace.categories.Navigation);
             page = moduleExports.createPage();
+            var cssFileName = fileResolverModule.resolveFileName(moduleNamePath, "css");
+            if (cssFileName) {
+                page.addCssFile(cssFileName);
+            }
         }
         else {
             page = pageFromBuilder(moduleNamePath, moduleExports);
