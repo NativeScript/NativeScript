@@ -1,0 +1,6 @@
+﻿<Page>
+  <GridLayout>
+    <WebView src="~/test.html" />
+  </GridLayout>
+</Page>
+

@@ -2,7 +2,7 @@
   <ListView loaded="loaded">
     <ListView.itemTemplate>
       <WebView loaded="onLoaded" loadStarted="onLoadStarted" loadFinished="onLoadFinished" unloaded="onUnloaded" 
-               url="http://www.bbc.com/" minHeight="250" />
+               src="http://www.bbc.com/" minHeight="250" />
     </ListView.itemTemplate>
   </ListView>
 </Page>
