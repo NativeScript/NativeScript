@@ -89,8 +89,9 @@ export class WebView extends common.WebView {
 
             var file = fs.File.fromPath(src);
             if (file) {
-                file.readText().then((r) => {
-                    this._android.loadData(r, "text/html", null);
+                var baseUrl = `file:///${src.substring(0, src.lastIndexOf('/') + 1)}`;
+                file.readText().then(r => {
+                    this._android.loadDataWithBaseURL(baseUrl, r, "text/html", null, null);
                 });
             }
         } else if (src.indexOf("http://") === 0 || src.indexOf("https://") === 0) {

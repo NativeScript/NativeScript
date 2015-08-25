@@ -97,8 +97,9 @@ export class WebView extends common.WebView {
 
             var file = fs.File.fromPath(src);
             if (file) {
+                var baseURL = NSURL.fileURLWithPath(NSString.stringWithString(src).stringByDeletingLastPathComponent);
                 file.readText().then((r) => {
-                    this._ios.loadHTMLStringBaseURL(r, null);
+                    this._ios.loadHTMLStringBaseURL(r, baseURL);
                 });
             }
         } else if (src.indexOf("http://") === 0 || src.indexOf("https://") === 0) {
