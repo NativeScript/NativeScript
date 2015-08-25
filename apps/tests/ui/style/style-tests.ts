@@ -778,6 +778,17 @@ export function test_CSS_isAppliedOnPage_From_Import() {
     });
 }
 
+export function test_CSS_isAppliedOnPage_From_Import_Without_Url() {
+    var testButton = new buttonModule.Button();
+    testButton.text = "Test";
+
+    helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
+        var page: pageModule.Page = <pageModule.Page> views[1];
+        page.css = "@import '~/ui/style/test.css';";
+        helper.assertViewBackgroundColor(page, "#FF0000");
+    });
+}
+
 export function test_CSS_isAppliedOnPage_From_addCssFile() {
     var testButton = new buttonModule.Button();
     testButton.text = "Test";
