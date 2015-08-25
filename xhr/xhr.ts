@@ -197,7 +197,7 @@ export class XMLHttpRequest {
         if (this._readyState === this.UNSENT || this._readyState === this.OPENED || this._errorFlag) {
             return "";
         }
-        return this._status + " " + statuses[this._status];
+        return statuses[this._status];
     }
 }
 

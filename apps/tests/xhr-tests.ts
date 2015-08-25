@@ -221,6 +221,24 @@ export function test_raises_onload_Event(done) {
     xhr.send();
 }
 
+export function test_sets_status_and_statusText(done) {
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = () => {
+        if (xhr.readyState > 3) {
+            try {
+                TKUnit.assertEqual(xhr.status, 200);
+                TKUnit.assertEqual(xhr.statusText, 'OK');
+                done(null);
+            }
+            catch (err) {
+                done(err);
+            }
+        }
+    };
+    xhr.open("GET", "https://httpbin.org/get");
+    xhr.send();
+}
+
 export function test_raises_onerror_Event(done) {
     let xhr = new XMLHttpRequest();
     xhr.onerror = () => {
