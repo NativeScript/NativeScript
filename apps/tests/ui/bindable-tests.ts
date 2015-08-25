@@ -634,3 +634,257 @@ export function test_UpdatingNestedPropertyViaBinding() {
     TKUnit.assertEqual(parentViewModel.get("name"), expectedValue2);
     TKUnit.assertEqual(testElement2.get("targetProperty"), expectedValue2);
 }
+
+class Person extends observable.Observable {
+    private _firstName: string;
+    private _lastName: string;
+
+    public get FirstName(): string {
+        return this._firstName;
+    }
+
+    public set FirstName(value: string) {
+        if (this._firstName !== value) {
+            this._firstName = value;
+            this.notifyPropertyChange("FirstName", value);
+        }
+    }
+
+    public get LastName(): string {
+        return this._lastName;
+    }
+
+    public set LastName(value: string) {
+        if (this._lastName !== value) {
+            this._lastName = value;
+            this.notifyPropertyChange("LastName", value);
+        }
+    }
+}
+
+class Activity extends observable.Observable {
+    private _text: string;
+    private _owner: Person;
+
+    public get Text(): string {
+        return this._text;
+    }
+
+    public set Text(value: string) {
+        if (this._text !== value) {
+            this._text = value;
+            this.notifyPropertyChange("Text", value);
+        }
+    }
+
+    public get Owner(): Person {
+        return this._owner;
+    }
+
+    public set Owner(value: Person) {
+        if (this._owner !== value) {
+            this._owner = value;
+            this.notifyPropertyChange("Owner", value);
+        }
+    }
+
+    constructor(text: string, firstName: string, lastName: string) {
+        super();
+        this._text = text;
+        var owner = new Person();
+        owner.FirstName = firstName;
+        owner.LastName = lastName;
+        this.Owner = owner;
+    }
+}
+
+export function test_NestedPropertiesBinding() {
+    var expectedValue = "Default Text";
+    var viewModel = new observable.Observable();
+    viewModel.set("activity", new Activity(expectedValue, "Default First Name", "Default Last Name"));
+
+    var target1 = new bindable.Bindable();
+    target1.bind({
+        sourceProperty: "activity.Text",
+        targetProperty: "targetProperty",
+        twoWay: true
+    }, viewModel);
+
+    TKUnit.assertEqual(target1.get("targetProperty"), expectedValue);
+
+    var newExpectedValue = "Alabala";
+    var act = new Activity(newExpectedValue, "Default First Name", "Default Last Name");
+
+    viewModel.set("activity", act);
+
+    TKUnit.assertEqual(target1.get("targetProperty"), newExpectedValue);
+}
+
+export function test_NestedPropertiesBindingTwoTargets() {
+    var expectedText = "Default Text";
+    var expectedFirstName = "Default First Name";
+    var expectedLastName = "Default Last Name";
+    var viewModel = new observable.Observable();
+    viewModel.set("activity", new Activity(expectedText, expectedFirstName, expectedLastName));
+
+    var target1 = new bindable.Bindable();
+    target1.bind({
+        sourceProperty: "activity.Text",
+        targetProperty: "targetProperty",
+        twoWay: true
+    }, viewModel);
+
+    var target2 = new bindable.Bindable();
+    target2.bind({
+        sourceProperty: "activity.Owner.FirstName",
+        targetProperty: "targetProp",
+        twoWay: true
+    }, viewModel);
+
+    TKUnit.assertEqual(target1.get("targetProperty"), expectedText);
+    TKUnit.assertEqual(target2.get("targetProp"), expectedFirstName);
+
+    var newExpectedText = "Alabala";
+    var newExpectedFirstName = "First Tralala";
+    var newExpectedLastName = "Last Tralala";
+    var act = new Activity(newExpectedText, newExpectedFirstName, newExpectedLastName);
+
+    viewModel.set("activity", act);
+
+    TKUnit.assertEqual(target1.get("targetProperty"), newExpectedText);
+    TKUnit.assertEqual(target2.get("targetProp"), newExpectedFirstName);
+}
+
+export function test_NestedPropertiesBindingTwoTargetsAndSecondChange() {
+    var expectedText = "Default Text";
+    var expectedFirstName = "Default First Name";
+    var expectedLastName = "Default Last Name";
+    var viewModel = new observable.Observable();
+    viewModel.set("activity", new Activity(expectedText, expectedFirstName, expectedLastName));
+
+    var target1 = new bindable.Bindable();
+    target1.bind({
+        sourceProperty: "activity.Text",
+        targetProperty: "targetProperty",
+        twoWay: true
+    }, viewModel);
+
+    var target2 = new bindable.Bindable();
+    target2.bind({
+        sourceProperty: "activity.Owner.FirstName",
+        targetProperty: "targetProp",
+        twoWay: true
+    }, viewModel);
+
+    TKUnit.assertEqual(target1.get("targetProperty"), expectedText);
+    TKUnit.assertEqual(target2.get("targetProp"), expectedFirstName);
+
+    var newExpectedText = "Alabala";
+    var newExpectedFirstName = "First Tralala";
+    var newExpectedLastName = "Last Tralala";
+    var act = new Activity(newExpectedText, newExpectedFirstName, newExpectedLastName);
+
+    viewModel.set("activity", act);
+
+    TKUnit.assertEqual(target1.get("targetProperty"), newExpectedText);
+    TKUnit.assertEqual(target2.get("targetProp"), newExpectedFirstName);
+
+    var secondExpectedText = "Second expected text";
+    var secondExpectedFirstName = "Second expected first name";
+    var secondExpectedLastName = "Second expected last name";
+    var act1 = new Activity(secondExpectedText, secondExpectedFirstName, secondExpectedLastName);
+
+    viewModel.set("activity", act1);
+
+    TKUnit.assertEqual(target1.get("targetProperty"), secondExpectedText);
+    TKUnit.assertEqual(target2.get("targetProp"), secondExpectedFirstName);
+}
+
+export function test_NestedPropertiesBindingTwoTargetsAndRegularChange() {
+    var expectedText = "Default Text";
+    var expectedFirstName = "Default First Name";
+    var expectedLastName = "Default Last Name";
+    var viewModel = new observable.Observable();
+    viewModel.set("activity", new Activity(expectedText, expectedFirstName, expectedLastName));
+
+    var target1 = new bindable.Bindable();
+    target1.bind({
+        sourceProperty: "activity.Text",
+        targetProperty: "targetProperty",
+        twoWay: true
+    }, viewModel);
+
+    var target2 = new bindable.Bindable();
+    target2.bind({
+        sourceProperty: "activity.Owner.FirstName",
+        targetProperty: "targetProp",
+        twoWay: true
+    }, viewModel);
+
+    TKUnit.assertEqual(target1.get("targetProperty"), expectedText);
+    TKUnit.assertEqual(target2.get("targetProp"), expectedFirstName);
+
+    var newExpectedText = "Alabala";
+    var newExpectedFirstName = "First Tralala";
+    var newExpectedLastName = "Last Tralala";
+    var act = new Activity(newExpectedText, newExpectedFirstName, newExpectedLastName);
+
+    viewModel.set("activity", act);
+
+    TKUnit.assertEqual(target1.get("targetProperty"), newExpectedText);
+    TKUnit.assertEqual(target2.get("targetProp"), newExpectedFirstName);
+
+    var newAct = viewModel.get("activity");
+    var secondExpectedText = "Second expected text";
+    newAct.Text = secondExpectedText;
+    var secondExpectedFirstName = "Second expected First Name";
+    newAct.Owner.FirstName = secondExpectedFirstName;
+
+    TKUnit.assertEqual(target1.get("targetProperty"), secondExpectedText);
+    TKUnit.assertEqual(target2.get("targetProp"), secondExpectedFirstName);
+}
+
+export function test_NestedPropertiesBindingTwoTargetsAndReplacingSomeNestedObject() {
+    var expectedText = "Default Text";
+    var expectedFirstName = "Default First Name";
+    var expectedLastName = "Default Last Name";
+    var viewModel = new observable.Observable();
+    viewModel.set("activity", new Activity(expectedText, expectedFirstName, expectedLastName));
+
+    var target1 = new bindable.Bindable();
+    target1.bind({
+        sourceProperty: "activity.Text",
+        targetProperty: "targetProperty",
+        twoWay: true
+    }, viewModel);
+
+    var target2 = new bindable.Bindable();
+    target2.bind({
+        sourceProperty: "activity.Owner.FirstName",
+        targetProperty: "targetProp",
+        twoWay: true
+    }, viewModel);
+
+    TKUnit.assertEqual(target1.get("targetProperty"), expectedText);
+    TKUnit.assertEqual(target2.get("targetProp"), expectedFirstName);
+
+    var newExpectedText = "Alabala";
+    var newExpectedFirstName = "First Tralala";
+    var newExpectedLastName = "Last Tralala";
+    var act = new Activity(newExpectedText, newExpectedFirstName, newExpectedLastName);
+
+    viewModel.set("activity", act);
+
+    TKUnit.assertEqual(target1.get("targetProperty"), newExpectedText);
+    TKUnit.assertEqual(target2.get("targetProp"), newExpectedFirstName);
+
+    var secondExpectedFirstName = "Second expected first name";
+    var newPerson = new Person();
+    newPerson.FirstName = secondExpectedFirstName;
+    newPerson.LastName = "Last Name";
+
+    var act1 = viewModel.get("activity");
+    (<Activity>act1).Owner = newPerson;
+
+    TKUnit.assertEqual(target2.get("targetProp"), secondExpectedFirstName);
+}

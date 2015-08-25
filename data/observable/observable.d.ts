@@ -100,6 +100,11 @@ declare module "data/observable" {
         notify(data: EventData): void;
 
         /**
+         * Notifies all the registered listeners for the property change event.
+         */
+        notifyPropertyChange(propertyName: string, newValue: any): void;
+
+        /**
          * Checks whether a listener is registered for the specified event name.
          * @param eventName The name of the event to check for.
          */

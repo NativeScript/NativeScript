@@ -133,8 +133,12 @@ export class Binding {
     source: WeakRef<Object>;
     target: WeakRef<Bindable>;
 
+    private propertyChangeListeners = {};
+
     private sourceOptions: { instance: WeakRef<any>; property: any };
     private targetOptions: { instance: WeakRef<any>; property: any };
+
+    private sourcePropertiesArray: Array<string>;
 
     constructor(target: Bindable, options: definition.BindingOptions) {
         this.target = new WeakRef(target);
@@ -160,20 +164,70 @@ export class Binding {
         }
         /* tslint:enable */
         this.source = new WeakRef(obj);
-        this.updateTarget(this.getSourceProperty());
+        this.updateTarget(this.getSourcePropertyValue());
 
         if (!this.sourceOptions) {
-            this.sourceOptions = this.resolveOptions(this.source, this.options.sourceProperty);
+            this.sourceOptions = this.resolveOptions(this.source, this.getSourceProperties());
         }
 
-        if (this.sourceOptions) {
-            var sourceOptionsInstance = this.sourceOptions.instance.get();
-            if (sourceOptionsInstance instanceof observable.Observable) {
-                weakEvents.addWeakEventListener(
-                    sourceOptionsInstance,
-                    observable.Observable.propertyChangeEvent,
-                    this.onSourcePropertyChanged,
-                    this);
+        this.addPropertyChangeListeners(this.source, this.getSourceProperties());
+    }
+
+    private getSourceProperties(): Array<string> {
+        if (!this.sourcePropertiesArray) {
+            this.sourcePropertiesArray = Binding.getProperties(this.options.sourceProperty);
+        }
+        return this.sourcePropertiesArray;
+    }
+
+    private static getProperties(property: string) {
+        return property.split(".");
+    }
+
+    private resolveObjectsAndProperties(source: Object, propsArray: Array<string>) {
+        var result = [];
+        var i;
+        var propsArrayLength = propsArray.length;
+        var currentObject = source;
+        var objProp = "";
+        var currentObjectChanged = false;
+        for (i = 0; i < propsArrayLength; i++) {
+            objProp = propsArray[i];
+            if (propsArray[i] === bc.bindingValueKey) {
+                currentObjectChanged = true;
+            }
+            if (propsArray[i] === bc.parentValueKey || propsArray[i].indexOf(bc.parentsValueKey) === 0) {
+                var parentView = this.getParentView(this.target.get(), propsArray[i]).view;
+                if (parentView) {
+                    currentObject = parentView.bindingContext;
+                }
+                currentObjectChanged = true;
+            }
+            result.push({ instance: currentObject, property: objProp });
+            if (!currentObjectChanged) {
+                currentObject = currentObject[propsArray[i]];
+                currentObjectChanged = false;
+            }
+        }
+        return result;
+    }
+
+    private addPropertyChangeListeners(source: WeakRef<Object>, sourceProperty: Array<string>) {
+        var objectsAndProperties = this.resolveObjectsAndProperties(source.get(), sourceProperty)
+        var objectsAndPropertiesLength = objectsAndProperties.length;
+        if (objectsAndPropertiesLength > 0) {
+            var i;
+            for (i = 0; i < objectsAndPropertiesLength; i++) {
+                var prop = objectsAndProperties[i].property;
+                var currentObject = objectsAndProperties[i].instance;
+                if (!this.propertyChangeListeners[prop] && currentObject instanceof observable.Observable) {
+                    weakEvents.addWeakEventListener(
+                        currentObject,
+                        observable.Observable.propertyChangeEvent,
+                        this.onSourcePropertyChanged,
+                        this);
+                    this.propertyChangeListeners[prop] = currentObject;
+                }
             }
         }
     }
@@ -183,14 +237,15 @@ export class Binding {
             return;
         }
 
-        if (this.sourceOptions) {
-            var sourceOptionsInstance = this.sourceOptions.instance.get();
-            if (sourceOptionsInstance) {
-                weakEvents.removeWeakEventListener(sourceOptionsInstance,
-                    observable.Observable.propertyChangeEvent,
-                    this.onSourcePropertyChanged,
-                    this);
-            }
+        var i;
+        var propertyChangeListenersKeys = Object.keys(this.propertyChangeListeners);
+        for (i = 0; i < propertyChangeListenersKeys.length; i++) {
+            weakEvents.removeWeakEventListener(
+                this.propertyChangeListeners[propertyChangeListenersKeys[i]],
+                observable.Observable.propertyChangeEvent,
+                this.onSourcePropertyChanged,
+                this);
+            delete this.propertyChangeListeners[propertyChangeListenersKeys[i]];
         }
 
         if (this.source) {
@@ -203,6 +258,7 @@ export class Binding {
         if (this.targetOptions) {
             this.targetOptions = undefined;
         }
+        this.sourcePropertiesArray = undefined;
     }
 
     private prepareExpressionForUpdate(): string {
@@ -281,7 +337,6 @@ export class Binding {
 
     public onSourcePropertyChanged(data: observable.PropertyChangeData) {
         if (this.options.expression) {
-            //this.prepareContextForExpression(this.source.get(), this.options.expression);
             var expressionValue = this._getExpressionValue(this.options.expression, false, undefined);
             if (expressionValue instanceof Error) {
                 trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
@@ -289,8 +344,47 @@ export class Binding {
             else {
                 this.updateTarget(expressionValue);
             }
-        } else if (data.propertyName === this.sourceOptions.property) {
-            this.updateTarget(data.value);
+        } else {
+            var propIndex = this.getSourceProperties().indexOf(data.propertyName);
+            if (propIndex > -1) {
+                var props = this.getSourceProperties().slice(propIndex + 1);
+                var propsLength = props.length;
+                if (propsLength > 0) {
+                    var value = data.value;
+                    var i;
+                    for (i = 0; i < propsLength; i++) {
+                        value = value[props[i]];
+                    }
+                    this.updateTarget(value);
+                }
+                else if (data.propertyName === this.sourceOptions.property) {
+                    this.updateTarget(data.value);
+                }
+            }
+        }
+
+        var sourceProps = Binding.getProperties(this.options.sourceProperty);
+        var sourcePropsLength = sourceProps.length;
+        var changedPropertyIndex = sourceProps.indexOf(data.propertyName);
+        if (changedPropertyIndex > -1) {
+            var probablyChangedObject = this.propertyChangeListeners[sourceProps[changedPropertyIndex + 1]];
+            if (probablyChangedObject &&
+                probablyChangedObject !== data.object[sourceProps[changedPropertyIndex]]) {
+                // remove all weakevent listeners after change, because changed object replaces object that is hooked for
+                // propertyChange event
+                for (i = sourcePropsLength - 1; i > changedPropertyIndex; i--) {
+                    weakEvents.removeWeakEventListener(
+                        this.propertyChangeListeners[sourceProps[i]],
+                        observable.Observable.propertyChangeEvent,
+                        this.onSourcePropertyChanged,
+                        this);
+                    delete this.propertyChangeListeners[sourceProps[i]];
+                }
+                //var newProps = this.options.sourceProperty.substr(this.options.sourceProperty.indexOf(data.propertyName) + data.propertyName.length + 1);
+                var newProps = sourceProps.slice(changedPropertyIndex + 1);
+                // add new weakevent listeners
+                this.addPropertyChangeListeners(new WeakRef(data.object[sourceProps[changedPropertyIndex]]), newProps);
+            }
         }
     }
 
@@ -317,11 +411,10 @@ export class Binding {
         }
     }
 
-    private getSourceProperty() {
+    private getSourcePropertyValue() {
         if (this.options.expression) {
             var changedModel = {};
             changedModel[bc.bindingValueKey] = this.source.get();
-            //this.prepareContextForExpression(this.source.get(), this.options.expression);
             var expressionValue = this._getExpressionValue(this.options.expression, false, changedModel);
             if (expressionValue instanceof Error) {
                 trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
@@ -332,7 +425,7 @@ export class Binding {
         }
 
         if (!this.sourceOptions) {
-            this.sourceOptions = this.resolveOptions(this.source, this.options.sourceProperty);
+            this.sourceOptions = this.resolveOptions(this.source, this.getSourceProperties());
         }
 
         var value;
@@ -359,7 +452,7 @@ export class Binding {
         }
 
         if (!this.targetOptions) {
-            this.targetOptions = this.resolveOptions(this.target, this.options.targetProperty);
+            this.targetOptions = this.resolveOptions(this.target, Binding.getProperties(this.options.targetProperty));
         }
 
         this.updateOptions(this.targetOptions, value);
@@ -371,7 +464,7 @@ export class Binding {
         }
 
         if (!this.sourceOptions) {
-            this.sourceOptions = this.resolveOptions(this.source, this.options.sourceProperty);
+            this.sourceOptions = this.resolveOptions(this.source, this.getSourceProperties());
         }
 
         this.updateOptions(this.sourceOptions, value);
@@ -412,51 +505,19 @@ export class Binding {
         return { view: result, index: index };
     }
 
-    private resolveOptions(obj: WeakRef<any>, property: string): { instance: any; property: any } {
-        var options;
-
-        if (property === bc.bindingValueKey) {
-            options = {
-                instance: obj,
-                property: property
-            };
-            return options;
-        }
-
-        if (types.isString(property) && property.indexOf(".") !== -1) {
-            var properties = property.split(".");
-
-            var i: number;
-            var currentObject = obj.get();
-
-            for (i = 0; i < properties.length - 1; i++) {
-                if (properties[i] === bc.bindingValueKey) {
-                    continue;
-                }
-                if (properties[i] === bc.parentValueKey || properties[i].indexOf(bc.parentsValueKey) === 0) {
-                    var parentView = this.getParentView(this.target.get(), properties[i]).view;
-                    if (parentView) {
-                        currentObject = parentView.bindingContext;
-                    }
-                    continue;
-                }
-                currentObject = currentObject[properties[i]];
-            }
-
-            if (!types.isNullOrUndefined(currentObject)) {
-                options = {
-                    instance: new WeakRef(currentObject),
-                    property: properties[properties.length - 1]
-                }
-            }
-        } else {
-            options = {
-                instance: obj,
-                property: property
+    private resolveOptions(obj: WeakRef<any>, properties: Array<string>): { instance: any; property: any } {
+        var objectsAndProperties = this.resolveObjectsAndProperties(obj.get(), properties);
+        if (objectsAndProperties.length > 0) {
+            var resolvedObj = objectsAndProperties[objectsAndProperties.length - 1].instance;
+            var prop = objectsAndProperties[objectsAndProperties.length - 1].property;
+            return {
+                instance: new WeakRef(resolvedObj),
+                property: prop
             }
         }
-
-        return options;
+        else {
+            return null;
+        }
     }
 
     private updateOptions(options: { instance: WeakRef<any>; property: any }, value: any) {
