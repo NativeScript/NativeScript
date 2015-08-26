@@ -91,6 +91,10 @@ export class Observable implements definition.Observable {
         }
     }
 
+    public notifyPropertyChange(propertyName: string, newValue: any) {
+        this.notify(this._createPropertyChangeData(propertyName, newValue));
+    }
+
     public set(name: string, value: any) {
         // TODO: Parameter validation
         if (this[name] === value) {
@@ -122,8 +126,8 @@ export class Observable implements definition.Observable {
 
         var i;
         var entry: ListenerEntry;
-
-        for (i = 0; i < observers.length; i++) {
+        var observersLength = observers.length;
+        for (i = 0; i < observersLength; i++) {
             entry = observers[i];
             if (entry.thisArg) {
                 entry.callback.apply(entry.thisArg, [data]);
