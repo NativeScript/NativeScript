@@ -65,6 +65,12 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): pages.P
         if (!(page && page instanceof pages.Page)) {
             throw new Error("Failed to load Page from entry.moduleName: " + entry.moduleName);
         }
+
+        // Possible CSS file path.
+        var cssFileName = fileResolverModule.resolveFileName(moduleNamePath, "css");
+        if (cssFileName) {
+            page.addCssFile(cssFileName);
+        }
     }
 
     return page;
@@ -83,12 +89,6 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): pages.Page
         element = builder.load(fileName, moduleExports);
         if (element instanceof pages.Page) {
             page = <pages.Page>element;
-
-            // Possible CSS file path.
-            var cssFileName = fileResolverModule.resolveFileName(moduleNamePath, "css");
-            if (cssFileName) {
-                page.addCssFile(cssFileName);
-            }
         }
     }
 

@@ -1,0 +1,3 @@
+﻿<Page>
+    <Label text="Label created within a page declarative file with css."/>
+</Page>
