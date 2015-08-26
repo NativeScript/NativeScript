@@ -247,8 +247,37 @@ export function test_LoadPageFromModule() {
     try {
         var topFrame = FrameModule.topmost();
         TKUnit.assert(topFrame.currentPage.content instanceof LabelModule.Label, "Content of the test page should be a Label created within test-page-module.");
-        var testLabel = <LabelModule.Label>topFrame.currentPage.content
+        var testLabel = <LabelModule.Label>topFrame.currentPage.content;
         TKUnit.assert(testLabel.text === "Label created within a page module.");
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_LoadPageFromDeclarativeWithCSS() {
+    helper.navigateToModule("ui/page/test-page-declarative-css");
+    try {
+        var topFrame = FrameModule.topmost();
+        TKUnit.assert(topFrame.currentPage.content instanceof LabelModule.Label, "Content of the test page should be a Label created within test-page-module-css.");
+        var testLabel = <LabelModule.Label>topFrame.currentPage.content;
+        TKUnit.assert(testLabel.text === "Label created within a page declarative file with css.");
+        TKUnit.assert(testLabel.style.backgroundColor.hex === "#ff00ff00", "Expected: #ff00ff00, Actual: " + testLabel.style.backgroundColor.hex);
+    }
+    finally {
+        helper.goBack();
+    }
+
+}
+
+export function test_LoadPageFromModuleWithCSS() {
+    helper.navigateToModule("ui/page/test-page-module-css");
+    try {
+        var topFrame = FrameModule.topmost();
+        TKUnit.assert(topFrame.currentPage.content instanceof LabelModule.Label, "Content of the test page should be a Label created within test-page-module-css.");
+        var testLabel = <LabelModule.Label>topFrame.currentPage.content;
+        TKUnit.assert(testLabel.text === "Label created within a page module css.");
+        TKUnit.assert(testLabel.style.backgroundColor.hex === "#ff00ff00", "Expected: #ff00ff00, Actual: " + testLabel.style.backgroundColor.hex);
     }
     finally {
         helper.goBack();
