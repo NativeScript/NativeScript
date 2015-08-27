@@ -86,6 +86,14 @@ declare module "ui/list-view" {
         refresh();
 
         /**
+         * Scrolls the specified item with index into view. 
+         * [iOS](https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITableView_Class/#//apple_ref/occ/instm/UITableView/scrollToRowAtIndexPath:atScrollPosition:animated:)
+         * [Android](http://developer.android.com/reference/android/widget/ListView.html#setSelection(int))
+         * @param index - Item index. 
+         */
+        scrollToIndex(index: number);
+
+        /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
          * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
          * @param callback - Callback function which will be executed when event is raised.

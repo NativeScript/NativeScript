@@ -173,6 +173,13 @@ export class ListView extends common.ListView {
         return this._ios;
     }
 
+    public scrollToIndex(index: number) {
+        if (this._ios) {
+            this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
+                UITableViewScrollPosition.UITableViewScrollPositionTop, true);
+        }
+    }
+
     public refresh() {
         if (this.isLoaded) {
             this._ios.reloadData();

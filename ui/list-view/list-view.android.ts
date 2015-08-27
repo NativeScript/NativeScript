@@ -102,6 +102,12 @@ export class ListView extends common.ListView {
         (<ListViewAdapter>this.android.getAdapter()).notifyDataSetChanged();
     }
 
+    public scrollToIndex(index: number) {
+        if (this._android) {
+            this._android.smoothScrollToPosition(index, );
+        }
+    }
+
     public _onDetached(force?: boolean) {
         super._onDetached(force);
 

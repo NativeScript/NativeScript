@@ -101,6 +101,10 @@ export class ListView extends view.View implements definition.ListView {
         //
     }
 
+    public scrollToIndex(index: number) {
+        //
+    }
+
     public _getItemTemplateContent(index: number): view.View {
         var v;
 
