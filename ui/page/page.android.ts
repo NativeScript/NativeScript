@@ -1,7 +1,12 @@
 ﻿import pageCommon = require("ui/page/page-common");
 import definition = require("ui/page");
+import view = require("ui/core/view");
 import trace = require("trace");
 import color = require("color");
+import actionBarModule = require("ui/action-bar");
+import types = require("utils/types");
+import gridModule = require("ui/layouts/grid-layout");
+import enums = require("ui/enums");
 
 global.moduleMerge(pageCommon, exports);
 
@@ -31,11 +36,44 @@ class DialogFragmentClass extends android.app.DialogFragment {
         return dialog;
     }
 };
+
 export class Page extends pageCommon.Page {
     private _isBackNavigation = false;
 
+    private _grid: org.nativescript.widgets.GridLayout;
+
     constructor(options?: definition.Options) {
         super(options);
+    }
+
+    get android(): android.view.ViewGroup {
+        return this._grid;
+    }
+
+    get _nativeView(): android.view.ViewGroup {
+        return this._grid;
+    }
+
+    public _createUI() {
+        this._grid = new org.nativescript.widgets.GridLayout(this._context);
+        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+    }
+
+    public _addViewToNativeVisualTree(child: view.View, atIndex?: number): boolean {
+        // Set the row property for the child 
+        if (this._nativeView && child._nativeView) {
+            if (child instanceof actionBarModule.ActionBar) {
+                gridModule.GridLayout.setRow(child, 0);
+                child.horizontalAlignment = enums.HorizontalAlignment.stretch;
+                child.verticalAlignment = enums.VerticalAlignment.top;
+            }
+            else {
+                gridModule.GridLayout.setRow(child, 1);
+            }
+        }
+
+        return super._addViewToNativeVisualTree(child, atIndex);
     }
 
     public _onDetached(force?: boolean) {

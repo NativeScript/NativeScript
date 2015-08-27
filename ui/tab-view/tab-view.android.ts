@@ -3,38 +3,32 @@ import definition = require("ui/tab-view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
 import trace = require("trace");
-import imageSource = require("image-source");
 import types = require("utils/types");
-import app = require("application");
-import page = require("ui/page");
 
 var VIEWS_STATES = "_viewStates";
-var RESOURCE_PREFIX = "res://";
+//var RESOURCE_PREFIX = "res://";
 
 global.moduleMerge(common, exports);
 
-class ViewPagerClass extends android.support.v4.view.ViewPager {
-    private owner: TabView;
+export class TabViewItem extends common.TabViewItem {
+    public _tab: android.app.ActionBar.Tab;
+    public _parent: TabView;
 
-    constructor(ctx, owner: TabView) {
-        super(ctx);
-
-        this.owner = owner;
-        return global.__native(this);
+    public _update() {
+        if (this._parent && this._tab) {
+            var androidApp = app.android;
+            var resources = androidApp.context.getResources();
+            this._tab.setText(this.title);
+            this._parent._setIcon(this.iconSource, this._tab, resources, androidApp.packageName);
+        }
     }
-
-    protected onVisibilityChanged(changedView: android.view.View, visibility: number) {
-        super.onVisibilityChanged(changedView, visibility);
-
-        this.owner._onVisibilityChanged(changedView, visibility);
-    }
-};
+}
 
 class PagerAdapterClass extends android.support.v4.view.PagerAdapter {
     private owner: TabView;
-    private items: any;
+    private items: Array<definition.TabViewItem>;
 
-    constructor(owner: TabView, items) {
+    constructor(owner: TabView, items: Array<definition.TabViewItem>) {
         super();
 
         this.owner = owner;
@@ -133,408 +127,98 @@ class PagerAdapterClass extends android.support.v4.view.PagerAdapter {
     }
 };
 
-export class TabViewItem extends common.TabViewItem {
-    public _tab: android.app.ActionBar.Tab;
-    public _parent: TabView;
+class PageChangedListener extends android.support.v4.view.ViewPager.SimpleOnPageChangeListener {
+    private _owner: TabView;
+    constructor(owner: TabView) {
+        super();
+        this._owner = owner;
+        return global.__native(this);
+    }
 
-    public _update() {
-        if (this._parent && this._tab) {
-            var androidApp = app.android;
-            var resources = androidApp.context.getResources();
-            this._tab.setText(this.title);
-            this._parent._setIcon(this.iconSource, this._tab, resources, androidApp.packageName);
-        }
+    public onPageSelected(position: number) {
+        this._owner.selectedIndex = position;
     }
 }
 
 export class TabView extends common.TabView {
-    private _android: android.support.v4.view.ViewPager;
+    private _grid: org.nativescript.widgets.GridLayout;
+    private _tabLayout: org.nativescript.widgets.SlidingTabLayout;
+    private _viewPager: android.support.v4.view.ViewPager;
     private _pagerAdapter: android.support.v4.view.PagerAdapter;
-    private _tabListener: android.app.ActionBar.TabListener;
-    private _pageChangeListener: android.support.v4.view.ViewPager.OnPageChangeListener;
-    private _originalActionBarNavigationMode: number;
-    private _originalActionBarIsShowing: boolean;
-    private _listenersSuspended = false;
-    private _tabsAddedByMe = new Array<android.app.ActionBar.Tab>();
-    private _tabsCache = {};
     private _androidViewId: number;
-    private _iconsCache = {};
 
-    constructor() {
-        super();
+    private _pageChagedListener: PageChangedListener;
 
-        var that = new WeakRef(this);
-
-        this._tabListener = new android.app.ActionBar.TabListener({
-            get owner() {
-                return that.get();
-            },
-
-            onTabSelected: function (tab: android.app.ActionBar.Tab, transaction) {
-                var owner = this.owner;
-                if (!owner) {
-                    return;
-                }
-
-                if (owner._listenersSuspended || !owner.isLoaded) {
-                    // Don't touch the selectedIndex property if the control is not yet loaded
-                    // or if we are currently rebinding it -- i.e. _removeTabs and _addTabs.
-                    return;
-                }
-
-                var index = owner._tabsCache[tab.hashCode()];
-                trace.write("TabView.TabListener.onTabSelected(" + index + ");", common.traceCategory);
-                owner.selectedIndex = index;
-            },
-            onTabUnselected: function (tab: android.app.ActionBar.Tab, transaction) {
-                //
-            },
-            onTabReselected: function (tab: android.app.ActionBar.Tab, transaction) {
-                //
-            }
-        });
-
-        this._pageChangeListener = new android.support.v4.view.ViewPager.OnPageChangeListener({
-            get owner() {
-                return that.get();
-            },
-
-            onPageSelected: function (index: number) {
-                var owner = this.owner;
-                if (!owner) {
-                    return;
-                }
-
-                if (owner._listenersSuspended || !owner.isLoaded) {
-                    // Don't touch the selectedIndex property if the control is not yet loaded
-                    // or if we are currently rebinding it -- i.e. _removeTabs and _addTabs.
-                    return;
-                }
-
-                trace.write("TabView.OnPageChangeListener.onPageSelected(" + index + ");", common.traceCategory);
-                owner.selectedIndex = index;
-            },
-            onPageScrollStateChanged: function (state: number) {
-                //
-            },
-            onPageScrolled: function (index: number, offset: number, offsetPixels: number) {
-                //
-            }
-        });
-    }
-
-    get android(): android.support.v4.view.ViewPager {
-        return this._android;
+    get android(): android.view.View {
+        return this._grid;
     }
 
     public _createUI() {
-        trace.write("TabView._createUI(" + this._android + ");", common.traceCategory);
+        trace.write("TabView._createUI(" + this + ");", common.traceCategory);
 
-        this._android = new ViewPagerClass(this._context, this);
+        this._grid = new org.nativescript.widgets.GridLayout(this._context);
+        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+
+        this._tabLayout = new org.nativescript.widgets.SlidingTabLayout(this._context);
+        this._tabLayout.setDistributeEvenly(true);
+        this._grid.addView(this._tabLayout);
+
+        this._viewPager = new android.support.v4.view.ViewPager(this._context);
+        var lp = new org.nativescript.widgets.CommonLayoutParams()
+        lp.row = 1;
+        this._viewPager.setLayoutParams(lp);
+        this._grid.addView(this._viewPager);
 
         if (!this._androidViewId) {
             this._androidViewId = android.view.View.generateViewId();
         }
-        this._android.setId(this._androidViewId);
+        this._grid.setId(this._androidViewId);
 
-        this._android.setOnPageChangeListener(this._pageChangeListener);
-    }
-
-    /* tslint:disable */
-    public _onVisibilityChanged(changedView: android.view.View, visibility: number) {
-        /* tslint:enable */
-        trace.write("TabView._onVisibilityChanged:" + this.android + " isShown():" + this.android.isShown(), common.traceCategory);
-
-        if (this.isLoaded && this.android && this.android.isShown()) {
-            this._setAdapterIfNeeded();
-            this._addTabsIfNeeded();
-            this._setNativeSelectedIndex(this.selectedIndex);
-        }
-        else {
-            // Remove the tabs from the ActionBar only when navigating away from a cached page containing a TabView.
-            if (TabView._isProxyOfOrDescendantOfNativeView(this, changedView)) {
-                this._removeTabsIfNeeded();
-            }
-            // If the application is being brought to the background (i.e. minimized with the Home Button) we do not need to remove anything.
-        }
-    }
-
-    private static _isProxyOfOrDescendantOfNativeView(view: view.View, nativeView: android.view.View): boolean {
-        if (view.android === nativeView) {
-            return true;
-        }
-
-        if (!view.parent) {
-            return false;
-        }
-
-        return TabView._isProxyOfOrDescendantOfNativeView(view.parent, nativeView);
-    }
-
-    public _onAttached(context: android.content.Context) {
-        trace.write("TabView._onAttached(" + context + ");", common.traceCategory);
-        super._onAttached(context);
-    }
-
-    public _onDetached(force?: boolean) {
-        trace.write("TabView._onDetached(" + force + ");", common.traceCategory);
-        super._onDetached(force);
-    }
-
-    public onLoaded() {
-        trace.write("TabView.onLoaded(); selectedIndex: " + this.selectedIndex +"; items: " + this.items + ";", common.traceCategory);
-        super.onLoaded();
-
-        // If we are loading a TabView inside a hidden fragment this check will prevent it from polluting the action bar.
-        if (this.android && this.android.isShown()) {
-            // Cover the case when pageCacheOnNavigate is enabled - set adapter in loaded as the TabView is already 
-            // attached and _onItemsPropertyChangedSetNativeValue will not be called
-            this._setAdapterIfNeeded();
-
-            this._addTabsIfNeeded();
-            this._setNativeSelectedIndex(this.selectedIndex);
-        }
-    }
-
-    public onUnloaded() {
-        trace.write("TabView.onUnloaded();", common.traceCategory);
-        this._removeTabsIfNeeded();
-        this._unsetAdapter();
-        super.onUnloaded();
-    }
-
-    private _addTabsIfNeeded() {
-        if (this.items && this.items.length > 0 && this._tabsAddedByMe.length === 0) {
-            this._listenersSuspended = true;
-            this._addTabs(this.items);
-            this._listenersSuspended = false;
-        }
-    }
-
-    private _removeTabsIfNeeded() {
-        if (this._tabsAddedByMe.length > 0) {
-            this._listenersSuspended = true;
-            this._removeTabs(this.items);
-            this._listenersSuspended = false;
-        }
+        this._pageChagedListener = new PageChangedListener(this);
+        (<any>this._viewPager).addOnPageChangeListener(this._pageChagedListener);
     }
 
     public _onItemsPropertyChangedSetNativeValue(data: dependencyObservable.PropertyChangeData) {
         trace.write("TabView._onItemsPropertyChangedSetNativeValue(" + data.oldValue + " ---> " + data.newValue + ");", common.traceCategory);
 
-        this._listenersSuspended = true;
-
         if (data.oldValue) {
-            this._removeTabs(data.oldValue);
-            this._unsetAdapter();
+            this._viewPager.setAdapter(null);
+            this._pagerAdapter = null;
+            this._tabLayout.setViewPager(null);
         }
 
         if (data.newValue) {
-            this._addTabs(data.newValue);
-            this._setAdapter(data.newValue);
+            var items: Array<definition.TabViewItem> = data.newValue;
+            items.forEach((item, idx, arr) => {
+                if (types.isNullOrUndefined(item.view)) {
+                    throw new Error("View of TabViewItem at index " + idx + " is " + item.view);
+                }
+            });
+
+            this._pagerAdapter = new PagerAdapterClass(this, data.newValue);
+            this._viewPager.setAdapter(this._pagerAdapter);
+            this._tabLayout.setViewPager(this._viewPager);
         }
 
         this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
-
-        this._listenersSuspended = false;
-    }
-
-    private _setAdapterIfNeeded() {
-        if (!this._pagerAdapter && this.items && this.items.length > 0) {
-            this._setAdapter(this.items);
-        }
-    }
-
-    private _setAdapter(items) {
-        this._pagerAdapter = new PagerAdapterClass(this, items);
-        this._android.setAdapter(this._pagerAdapter);
-    }
-
-    private _unsetAdapter() {
-        if (this._pagerAdapter) {
-            this._android.setAdapter(null);
-            this._pagerAdapter = null;
-        }
-    }
-
-    public _addTabs(newItems: Array<definition.TabViewItem>) {
-        var parentPage = <page.Page>this.page;
-        if (parentPage && parentPage.actionBarHidden) {
-            return;
-        }
-
-        trace.write("TabView._addTabs(" + newItems + ");", common.traceCategory);
-        super._addTabs(newItems);
-
-        var actionBar = this._getActionBar();
-        if (!actionBar) {
-            return;
-        }
-
-        if (this._tabsAddedByMe.length > 0) {
-            throw new Error("TabView has already added its tabs to the ActionBar.");
-        }
-
-        // Save the original navigation mode so we can restore it later.
-        this._originalActionBarNavigationMode = actionBar.getNavigationMode();
-
-        // Tell the action-bar to display tabs.
-        actionBar.setNavigationMode(android.app.ActionBar.NAVIGATION_MODE_TABS);
-
-        this._originalActionBarIsShowing = actionBar.isShowing();
-
-        actionBar.show();
-
-        // TODO: Where will be the support for more ActionBar settings like Title, Navigation buttons, etc.?
-        var i: number = 0;
-        var length = newItems.length;
-        var item: TabViewItem;
-        var tab: android.app.ActionBar.Tab;
-        var androidApp = app.android;
-        var resources = androidApp.context.getResources();
-        for (i; i < length; i++) {
-            item = <TabViewItem>newItems[i];
-            tab = actionBar.newTab();
-            item._tab = tab;
-            item._parent = this;
-            tab.setText(item.title);
-            this._setIcon(item.iconSource, tab, resources, androidApp.packageName);
-
-            tab.setTabListener(this._tabListener);
-
-            actionBar.addTab(tab);
-            this._tabsCache[tab.hashCode()] = i;
-            this._tabsAddedByMe.push(tab);
-        }
-    }
-
-    public _setIcon(iconSource: string, tab: android.app.ActionBar.Tab, resources: android.content.res.Resources, packageName: string): void {
-        if (!iconSource) {
-            return;
-        }
-
-        if (iconSource.indexOf(RESOURCE_PREFIX) === 0 && resources) {
-            var resourceId: number = resources.getIdentifier(iconSource.substr(RESOURCE_PREFIX.length), 'drawable', packageName);
-            if (resourceId > 0) {
-                tab.setIcon(resourceId);
-            }
-        }
-        else {
-            var drawable: android.graphics.drawable.BitmapDrawable;
-            drawable = this._iconsCache[iconSource];
-            if (!drawable) {
-                var is = imageSource.fromFileOrResource(iconSource);
-                if (is) {
-                    drawable = new android.graphics.drawable.BitmapDrawable(is.android);
-                    this._iconsCache[iconSource] = drawable;
-                }
-            }
-
-            if (drawable) {
-                tab.setIcon(drawable);
-            }
-        }
-    }
-
-    public _removeTabs(oldItems: Array<definition.TabViewItem>) {
-        var parentPage = <page.Page>this.page;
-        if (parentPage && parentPage.actionBarHidden) {
-            return;
-        }
-
-        trace.write("TabView._removeTabs(" + oldItems + ");", common.traceCategory);
-        super._removeTabs(oldItems);
-
-        var i = 0;
-        if (oldItems && oldItems.length) {
-            var item: TabViewItem;
-            for (; i < oldItems.length; i++) {
-                item = <TabViewItem>oldItems[i];
-                item._tab = null;
-                item._parent = null;
-            }
-        }
-
-        var actionBar = this._getActionBar();
-        if (!actionBar) {
-            return;
-        }
-
-        // Remove all the existing tabs added by this instance
-        i = actionBar.getTabCount() - 1;
-        var tab: android.app.ActionBar.Tab;
-        var index;
-        for (; i >= 0; i--) {
-            tab = actionBar.getTabAt(i);
-            index = this._tabsAddedByMe.indexOf(tab);
-            if (index > -1) {// This tab was added by me.
-                actionBar.removeTabAt(i);
-                tab.setTabListener(null);
-                delete this._tabsCache[tab.hashCode()];
-                this._tabsAddedByMe.splice(index, 1);// Remove the tab from this._tabsAddedByMe
-            }
-        }
-
-        if (this._tabsAddedByMe.length > 0) {
-            throw new Error("TabView did not remove all of its tabs from the ActionBar.");
-        }
-
-        if (this._originalActionBarNavigationMode !== undefined) {
-            actionBar.setNavigationMode(this._originalActionBarNavigationMode);
-        }
-
-        if (!this._originalActionBarIsShowing) {
-            actionBar.hide();
-        }
     }
 
     public _onSelectedIndexPropertyChangedSetNativeValue(data: dependencyObservable.PropertyChangeData) {
         trace.write("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + data.oldValue + " ---> " + data.newValue + ");", common.traceCategory);
         super._onSelectedIndexPropertyChangedSetNativeValue(data);
-        
-        this._setNativeSelectedIndex(data.newValue);
+
+        var index = data.newValue;
+        if (!types.isNullOrUndefined(index)) {
+            // Select the respective page in the ViewPager
+            var viewPagerSelectedIndex = this._viewPager.getCurrentItem();
+            if (viewPagerSelectedIndex !== index) {
+                trace.write("TabView this._viewPager.setCurrentItem(" + index + ", true);", common.traceCategory);
+                this._viewPager.setCurrentItem(index, true);
+            }
+        }
 
         var args = { eventName: TabView.selectedIndexChangedEvent, object: this, oldIndex: data.oldValue, newIndex: data.newValue };
         this.notify(args);
     }
-
-    private _setNativeSelectedIndex(index: number) {
-        if (types.isNullOrUndefined(index)) {
-            return;
-        }
-
-        // Select the respective tab in the ActionBar.
-        var actionBar = this._getActionBar();
-        if (actionBar && index < actionBar.getNavigationItemCount() && index !== actionBar.getSelectedNavigationIndex()) {
-            trace.write("TabView actionBar.setSelectedNavigationItem("+index+")", common.traceCategory);
-            actionBar.setSelectedNavigationItem(index);
-        }
-
-        // Select the respective page in the ViewPager
-        var viewPagerSelectedIndex = this._android.getCurrentItem();
-        if (viewPagerSelectedIndex !== index) {
-            trace.write("TabView this._android.setCurrentItem("+index+", true);", common.traceCategory);
-            this._android.setCurrentItem(index, true);
-        }
-    }
-
-    public _loadEachChildView() {
-        // Do nothing here, since the children will be loaded and 
-        // attached when PageAdapter.instantiateItem is called by Android.
-    }
-
-    public _unloadEachChildView() {
-        // Do nothing here, since the children will be unloaded and 
-        // detached when PageAdapter.destroyItem is called by Android.
-    }
-
-    private _getActionBar(): android.app.ActionBar {
-        if (!this._android) {
-            // TODO: We may have the ActionBar not enabled as a Window feature. We may extend the control to support custom tabs through the PageTabStrip component.
-            return undefined;
-        }
-
-        var activity = <android.app.Activity>this._android.getContext();
-        return activity.getActionBar();
-    }
-} 
+}

@@ -6,6 +6,7 @@ import frameModule = require("ui/frame");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import textViewModule = require("ui/text-view");
 import colorModule = require("color");
+import observable = require("data/observable");
 
 export function createPage() {
     var generateItems = function () {
@@ -27,7 +28,7 @@ export function createPage() {
             }
 
             var clickHandlerFactory = function (nextIndex: number, length: number) {
-            return function () {
+                return function () {
                     if (nextIndex < length) {
                         tabView.selectedIndex = nextIndex;
                     }
@@ -35,8 +36,8 @@ export function createPage() {
                         tabView.items = generateItems();
                     }
                 }
-        }
-        var clickHandler = clickHandlerFactory(nextIndex, length);
+            }
+            var clickHandler = clickHandlerFactory(nextIndex, length);
             goToNextTabButton.on(buttonModule.Button.tapEvent, clickHandler);
 
             // Second button
@@ -118,6 +119,14 @@ export function createPage() {
     }
     var tabView = new tabViewModule.TabView();
     tabView.items = generateItems();
+    tabView.on("selectedIndexChanged", (changedArgs) => {
+        console.log("tabView.selectedIndexChanged new: " + changedArgs.newIndex + " old: " + changedArgs.oldIndex);
+    });
+
+    tabView.on("propertyChange", (changedArgs) => {
+        var args = <observable.PropertyChangeData>changedArgs;
+        console.log("tabView.propertyChange property: " + args.propertyName +  " value:" + args.value);
+    }); 
 
     var page = new pagesModule.Page();
     page.content = tabView;

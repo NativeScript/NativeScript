@@ -119,14 +119,6 @@ export class ActionBar extends view.View implements dts.ActionBar {
         //
     }
 
-    public _updateAndroid(menu: android.view.IMenu) {
-        //
-    }
-
-    public _onAndroidItemSelected(itemId: number): boolean {
-        return false;
-    }
-
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === ACTION_ITEMS) {
             this.actionItems.setItems(value);

@@ -62,7 +62,7 @@ declare module "ui/tab-view" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.support.v4.view.ViewPager;
+        android: android.view.View;//android.support.v4.view.ViewPager;
 
         /**
          * Gets the native iOS [UITabBarController](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITabBarController_Class/) that represents the user interface for this component. Valid only when running on iOS.

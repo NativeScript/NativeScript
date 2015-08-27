@@ -142,6 +142,13 @@
                 getBorderWidth(): number;
                 setBorderWidth(width: number): void;
             }
+
+            export class SlidingTabLayout extends android.widget.HorizontalScrollView {
+                constructor(context: android.content.Context);
+
+                setDistributeEvenly(distributeEvenly: boolean): void;
+                setViewPager(viewPager: android.support.v4.view.ViewPager): void;
+            }
         }
     }
 }
