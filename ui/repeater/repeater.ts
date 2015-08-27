@@ -141,7 +141,7 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     private _createChildren() {
-        if (this.isDirty && this.isLoaded) {
+        if (this.isDirty) {
             clearItemsLayout(this.itemsLayout);
 
             if (!types.isNullOrUndefined(this.items) && types.isNumber(this.items.length)) {
