@@ -459,6 +459,26 @@ export function test_loadMoreItems_not_raised_when_showing_many_items() {
     helper.buildUIAndRunTest(listView, testAction);
 }
 
+export function test_loadMoreItems_is_raised_when_scroll_to_last_item() {
+    var listView = new listViewModule.ListView();
+    listView.on(listViewModule.ListView.itemLoadingEvent, loadViewWithItemNumber);
+
+    function testAction(views: Array<viewModule.View>) {
+        var loadMoreItemsCount = 0;
+        listView.items = MANY_ITEMS;
+        listView.on(listViewModule.ListView.loadMoreItemsEvent, function (data: observable.EventData) {
+            loadMoreItemsCount++;
+        });
+
+        listView.scrollToIndex(MANY_ITEMS.length - 1);
+
+        TKUnit.wait(ASYNC);
+        TKUnit.assertEqual(loadMoreItemsCount, 1, "loadMoreItemsCount");
+    };
+
+    helper.buildUIAndRunTest(listView, testAction);
+}
+
 export function test_usingAppLevelConvertersInListViewItems() {
     var listView = new listViewModule.ListView();
 
