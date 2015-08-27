@@ -104,7 +104,7 @@ export class ListView extends common.ListView {
 
     public scrollToIndex(index: number) {
         if (this._android) {
-            this._android.smoothScrollToPosition(index, );
+            this._android.setSelection(index);
         }
     }
 
