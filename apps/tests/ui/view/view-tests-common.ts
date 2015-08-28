@@ -613,6 +613,20 @@ export var testIsVisible = function () {
     });
 }
 
+export var testSetStyle = function () {
+    var lbl = new label.Label();
+
+    var expectedColor = "#ff0000";
+    var expectedBackgroundColor = "#ff0000";
+
+    lbl.setStyle(`color: ${expectedColor};background-color: ${expectedBackgroundColor};`);
+
+    helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
+        TKUnit.assert(lbl.color.hex === expectedColor, "Actual: " + lbl.color.hex + "; Expected: " + expectedColor);
+        TKUnit.assert(lbl.backgroundColor.hex === expectedBackgroundColor, "Actual: " + lbl.backgroundColor.hex + "; Expected: " + expectedBackgroundColor);
+    });
+}
+
 export var testBorderWidth = function () {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
         var lbl = <label.Label>views[0];

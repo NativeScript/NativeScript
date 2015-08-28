@@ -923,6 +923,12 @@ export class View extends proxy.ProxyObject implements definition.View {
         return false;
     }
 
+    public setStyle(style: string): void {
+        if (types.isString(style)) {
+            this._applyInlineStyle(style);
+        }
+    }
+
     public _updateLayout() {
         // needed for iOS.
     }
