@@ -1,5 +1,4 @@
 ﻿/* tslint:disable:no-unused-variable */
-/// <reference path="C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\CommonExtensions\Microsoft\TypeScript\lib.d.ts"/> 
 
 declare class Request {
     constructor(input: string|Request, init?: RequestInit);
