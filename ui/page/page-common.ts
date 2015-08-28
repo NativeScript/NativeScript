@@ -42,12 +42,12 @@ export class Page extends contentView.ContentView implements dts.Page {
     constructor(options?: dts.Options) {
         super(options);
         this.actionBar = new actionBar.ActionBar();
-
-        // The default style of the page should be white background
-        this.style._setValue(styleModule.backgroundColorProperty, "white", dependencyObservable.ValueSource.Inherited);
     }
 
     public onLoaded() {
+        // The default style of the page should be white background
+        this.style._setValue(styleModule.backgroundColorProperty, "white", dependencyObservable.ValueSource.Inherited);
+
         this._applyCss();
 
         if (this.actionBarHidden !== undefined) {

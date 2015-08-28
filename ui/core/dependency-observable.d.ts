@@ -5,6 +5,15 @@ declare module "ui/core/dependency-observable" {
     import observable = require("data/observable");
 
     /**
+     * Interface used by Propery 'defaultValueGetter' function to specify if the default value returned by the native instance can be cached or not.
+     * One example is - android.widget.Button background. It is state drawable so it cannot be reused/cached.
+     */
+    export interface NativeValueResult {
+        result: any;
+        cacheable: boolean;
+    }
+
+    /**
      * Represents a special Property which supports changed callback, metadata and value validation.
      */
     export class Property {
@@ -36,6 +45,12 @@ declare module "ui/core/dependency-observable" {
          * Gets the valueConverter function associated with the property. This is a read-only property.
          */
         valueConverter: (value: string) => any
+
+        /**
+         * Gets or sets the defaultValueGetter function used to get the default value for this property.
+         * If default value is 'undefined' and this property is set this function will be used to extract the default value from the native instance.
+         */
+        defaultValueGetter: (instance: DependencyObservable) => NativeValueResult;
     }
 
     /**

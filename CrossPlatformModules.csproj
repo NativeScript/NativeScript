@@ -369,7 +369,9 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-field.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-view.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\label.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\button.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\button.ts">
+      <DependentUpon>button.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\web-view\webview.ts">
       <DependentUpon>webview.xml</DependentUpon>
     </TypeScriptCompile>
@@ -795,7 +797,6 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\text-view\text-view.d.ts" />
     <TypeScriptCompile Include="ui\ui.ts" />
-    <TypeScriptCompile Include="utils\android_constants.ts" />
     <TypeScriptCompile Include="utils\module-merge.ts" />
     <TypeScriptCompile Include="utils\utils.android.ts">
       <DependentUpon>utils.d.ts</DependentUpon>
@@ -1379,7 +1380,9 @@
       <DependentUpon>styling.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\styling\styling.d.ts" />
-    <TypeScriptCompile Include="ui\styling\style-property.ts" />
+    <TypeScriptCompile Include="ui\styling\style-property.ts">
+      <DependentUpon>style-property.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\styling\converters.ts" />
     <TypeScriptCompile Include="apps\tests\ui\label\label-tests.ts" />
     <TypeScriptCompile Include="ui\tab-view\tab-view-common.ts">
@@ -1947,7 +1950,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2linear-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

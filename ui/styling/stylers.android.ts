@@ -1,6 +1,5 @@
 ﻿import types = require("utils/types");
 import view = require("ui/core/view");
-import constants = require("utils/android_constants");
 import style = require("ui/styling/style");
 import definition = require("ui/styling");
 import stylersCommon = require("ui/styling/stylers-common");
@@ -9,38 +8,35 @@ import utils = require("utils/utils");
 import styleModule = require("ui/styling/style");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
+var btn;
 
 global.moduleMerge(stylersCommon, exports);
 
 var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
+
 function onBackgroundOrBorderPropertyChanged(v: view.View) {
-    if (!v._nativeView) {
+    var nativeView = <android.view.View>v._nativeView;
+    if (!nativeView) {
         return;
     }
 
     var backgroundValue = <background.Background>v.style._getValue(styleModule.backgroundInternalProperty);
-
+    var borderWidth = v.borderWidth;
     if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
-        var nativeView = <android.view.View>v._nativeView;
 
         var bkg = <background.ad.BorderDrawable>nativeView.getBackground();
         if (!(bkg instanceof background.ad.BorderDrawable)) {
             bkg = new background.ad.BorderDrawable();
             let viewClass = types.getClass(v);
-            if (!_defaultBackgrounds.has(viewClass)) {
+            if (!btn) {
+                btn = require("ui/button");
+            }
+            if (!(v instanceof btn.Button) && !_defaultBackgrounds.has(viewClass)) {
                 _defaultBackgrounds.set(viewClass, nativeView.getBackground());
             }
 
             nativeView.setBackground(bkg);
         }
-
-        var density = utils.layout.getDisplayDensity();
-        nativeView.setPadding(
-            (v.borderWidth + v.style.paddingLeft) * density,
-            (v.borderWidth + v.style.paddingTop) * density,
-            (v.borderWidth + v.style.paddingRight) * density,
-            (v.borderWidth + v.style.paddingBottom) * density
-            );
 
         bkg.borderWidth = v.borderWidth;
         bkg.cornerRadius = v.borderRadius;
@@ -49,11 +45,25 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
     }
     else {
         // reset the value with the default native value
-        let viewClass = types.getClass(v);
-        if (_defaultBackgrounds.has(viewClass)) {
-            v._nativeView.setBackgroundDrawable(_defaultBackgrounds.get(viewClass));
+        if (v instanceof btn.Button) {
+            var nativeButton = new android.widget.Button(nativeView.getContext());
+            nativeView.setBackground(nativeButton.getBackground());
+        }
+        else {
+            let viewClass = types.getClass(v);
+            if (_defaultBackgrounds.has(viewClass)) {
+                nativeView.setBackground(_defaultBackgrounds.get(viewClass));
+            }
         }
     }
+
+    var density = utils.layout.getDisplayDensity();
+    nativeView.setPadding(
+        (borderWidth + v.style.paddingLeft) * density,
+        (borderWidth + v.style.paddingTop) * density,
+        (borderWidth + v.style.paddingRight) * density,
+        (borderWidth + v.style.paddingBottom) * density
+        );
 }
 
 export class DefaultStyler implements definition.stylers.Styler {
@@ -206,7 +216,7 @@ export class DefaultStyler implements definition.stylers.Styler {
         nativeView.setLayoutParams(lp);
     }
 
-    private static setPaddingProperty(view: view.View, newValue: any) {
+    private static setPaddingProperty(view: view.View, newValue: style.Thickness) {
         var density = utils.layout.getDisplayDensity();
         var left = (newValue.left + view.borderWidth) * density;
         var top = (newValue.top + view.borderWidth) * density;
@@ -215,12 +225,12 @@ export class DefaultStyler implements definition.stylers.Styler {
         (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
     }
 
-    private static resetPaddingProperty(view: view.View, nativeValue: any) {
+    private static resetPaddingProperty(view: view.View, nativeValue: style.Thickness) {
         var density = utils.layout.getDisplayDensity();
-        var left = view.borderWidth * density;
-        var top = view.borderWidth * density;
-        var right = view.borderWidth * density;
-        var bottom = view.borderWidth * density;
+        var left = (nativeValue.left + view.borderWidth) * density;
+        var top = (nativeValue.top + view.borderWidth) * density;
+        var right = (nativeValue.right + view.borderWidth) * density;
+        var bottom = (nativeValue.bottom + view.borderWidth) * density;
         (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
     }
 
@@ -470,20 +480,27 @@ export class SegmentedBarStyler implements definition.stylers.Styler {
         }
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: any) {
+    private static resetColorProperty(view: view.View, nativeValue: number) {
         var tabHost = <android.widget.TabHost>view._nativeView;
 
         for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
             var tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
             var t = <android.widget.TextView>tab.getChildAt(1);
-            t.setTextColor(constants.btn_default);
+            t.setTextColor(nativeValue);
         }
+    }
+
+    private static getColorProperty(view: view.View): number {
+        var tabHost = <android.widget.TabHost>view._nativeView;
+        var textView = new android.widget.TextView(tabHost.getContext());
+        return textView.getCurrentTextColor();
     }
 
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             SegmentedBarStyler.setColorProperty,
-            SegmentedBarStyler.resetColorProperty), "SegmentedBar");
+            SegmentedBarStyler.resetColorProperty,
+            SegmentedBarStyler.getColorProperty), "SegmentedBar");
     }
 }
 

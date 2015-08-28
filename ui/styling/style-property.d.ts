@@ -2,6 +2,10 @@
     import definition = require("ui/styling");
     import observable = require("ui/core/dependency-observable");
 
+    export function getShorthandPairs(name: string, value: any): Array<KeyValuePair<Property, any>>;
+
+    export function registerShorthandCallback(name: string, callback: (value: any) => Array<KeyValuePair<Property, any>>): void;
+
     export function getPropertyByName(name: string): Property;
 
     export function getPropertyByCssName(name: string): Property;
@@ -15,5 +19,10 @@
         constructor(name: string, cssName: string, metadata: observable.PropertyMetadata, valueConverter?: (value: any) => any);
 
         cssName: string;
+    }
+
+    export interface KeyValuePair<K, V> {
+        property: K;
+        value: V;
     }
 }
