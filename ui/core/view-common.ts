@@ -924,9 +924,11 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
 
     public setStyle(style: string): void {
-        if (types.isString(style)) {
-            this._applyInlineStyle(style);
+        if (!types.isString(style)) {
+            throw new Error("Parameter should be valid CSS string!");
         }
+
+        this._applyInlineStyle(style);
     }
 
     public _updateLayout() {
