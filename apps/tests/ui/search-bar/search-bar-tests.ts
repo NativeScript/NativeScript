@@ -70,7 +70,7 @@ export var testSearchBarFontSize = function () {
 
         searchBar.style.fontSize = expectedValue;
         actualValue = searchBarTestsNative.getNativeFontSize(searchBar);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertAreClose(actualValue, expectedValue, 0.2);
     });
 };
 

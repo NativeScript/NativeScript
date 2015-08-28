@@ -1,9 +1,9 @@
 ﻿export function isString(value: any): boolean {
-    return typeof value === "string";
+    return typeof value === "string" || value instanceof String;
 }
 
 export function isNumber(value: any): boolean {
-    return typeof value === "number";
+    return typeof value === "number" || value instanceof Number;
 }
 
 export function isFunction(value: any): boolean {

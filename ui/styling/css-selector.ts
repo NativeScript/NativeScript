@@ -45,16 +45,24 @@ export class CssSelector {
     }
 
     public eachSetter(callback: (property: styleProperty.Property, resolvedValue: any) => void) {
-        var i,
-            property: styleProperty.Property,
-            resolvedValue;
+        for (let i = 0; i < this._declarations.length; i++) {
+            let declaration = this._declarations[i];
+            let name = declaration.property;
+            let resolvedValue = declaration.value;
+            let property = styleProperty.getPropertyByCssName(name);
 
-        for (i = 0; i < this._declarations.length; i++) {
-            property = styleProperty.getPropertyByCssName(this._declarations[i].property);
-            if (property) {
-                resolvedValue = this._declarations[i].value;
+            if (property) {                
                 // The property.valueConverter is now used to convert the value later on in DependencyObservable._setValueInternal.
                 callback(property, resolvedValue);
+            }
+            else {
+                var pairs = styleProperty.getShorthandPairs(name, resolvedValue);
+                if (pairs) {
+                    for (let j = 0; j < pairs.length; j++) {
+                        let pair = pairs[j];
+                        callback(pair.property, pair.value);
+                    }
+                }
             }
         }
     }

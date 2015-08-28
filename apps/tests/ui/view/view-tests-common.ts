@@ -407,11 +407,11 @@ function property_binding_test(propName: string, firstValue: any, secondValue: a
     view.bind(options, model);
 
     actualResult = view.get(propName);
-    TKUnit.assert(actualResult === firstValue, "Actual result: " + actualResult + "; Expected result: " + firstValue);
+    TKUnit.assertEqual(actualResult, firstValue);
 
     model.set(propName, secondValue);
     actualResult = view.get(propName);
-    TKUnit.assert(actualResult === secondValue, "Actual result: " + actualResult + "; Expected result: " + secondValue);
+    TKUnit.assertEqual(actualResult, secondValue);
 }
 
 function property_binding_style_test(propName: string, firstValue: any, secondValue: any, view?: viewModule.View) {
@@ -431,11 +431,11 @@ function property_binding_style_test(propName: string, firstValue: any, secondVa
     view.bind(options, model);
 
     actualResult = view.style.get(propName);
-    TKUnit.assert(actualResult === firstValue, "Actual result: " + actualResult + "; Expected result: " + firstValue);
+    TKUnit.assertEqual(actualResult, firstValue);
 
     model.set(propName, secondValue);
     actualResult = view.style.get(propName);
-    TKUnit.assert(actualResult === secondValue, "Actual result: " + actualResult + "; Expected result: " + secondValue);
+    TKUnit.assertEqual(actualResult, secondValue);
 }
 
 export var test_binding_width = function () {
@@ -531,7 +531,7 @@ export var test_binding_style_minHeight = function () {
 }
 
 export var test_binding_style_margin = function () {
-    property_binding_style_test("margin", "1,1,1,1", "2,2,2,2");
+    property_binding_style_test("margin", "1 1 1 1", "2 2 2 2");
 }
 
 export var test_binding_style_marginLeft = function () {
@@ -551,7 +551,7 @@ export var test_binding_style_marginBottom = function () {
 }
 
 export var test_binding_style_padding = function () {
-    property_binding_style_test("padding", "1,1,1,1", "2,2,2,2");
+    property_binding_style_test("padding", "1 1 1 1", "2 2 2 2");
 }
 
 export var test_binding_style_paddingLeft = function () {
@@ -600,16 +600,16 @@ export var testIsVisible = function () {
     var lbl = new label.Label();
 
     helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
-        TKUnit.assert(lbl.visibility === enums.Visibility.visible, "Actual: " + lbl.visibility + "; Expected: " + enums.Visibility.visible);
-        TKUnit.assert(lbl._isVisible, "Actual: " + lbl._isVisible + "; Expected: true;");
+        TKUnit.assertEqual(lbl.visibility, enums.Visibility.visible);
+        TKUnit.assertEqual(lbl._isVisible, true);
 
         lbl.visibility = enums.Visibility.collapse;
-        TKUnit.assert(lbl.visibility === enums.Visibility.collapse, "Actual: " + lbl.visibility + "; Expected: " + enums.Visibility.collapse);
-        TKUnit.assert(!lbl._isVisible, "Actual: " + lbl._isVisible + "; Expected: false;");
+        TKUnit.assertEqual(lbl.visibility, enums.Visibility.collapse);
+        TKUnit.assertEqual(lbl._isVisible, false);
 
         lbl.visibility = enums.Visibility.collapsed;
-        TKUnit.assert(lbl.visibility === enums.Visibility.collapsed, "Actual: " + lbl.visibility + "; Expected: " + enums.Visibility.collapsed);
-        TKUnit.assert(!lbl._isVisible, "Actual: " + lbl._isVisible + "; Expected: false;");
+        TKUnit.assertEqual(lbl.visibility, enums.Visibility.collapsed);
+        TKUnit.assertEqual(lbl._isVisible, false);
     });
 }
 
@@ -632,7 +632,7 @@ export var testBorderWidth = function () {
         var lbl = <label.Label>views[0];
         var expectedValue = lbl.borderWidth;
         var actualValue = definition.getNativeBorderWidth(lbl);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -641,21 +641,21 @@ export var testCornerRadius = function () {
         var lbl = <label.Label>views[0];
         var expectedValue = lbl.borderRadius;
         var actualValue = definition.getNativeCornerRadius(lbl);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
 export var testBorderColor = function () {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
         var lbl = <label.Label>views[0];
-        TKUnit.assert(definition.checkNativeBorderColor(lbl), "BorderColor not applied correctly!");
+        TKUnit.assertEqual(definition.checkNativeBorderColor(lbl), true, "BorderColor not applied correctly!");
     });
 }
 
 export var testBackgroundColor = function () {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
         var lbl = <label.Label>views[0];
-        TKUnit.assert(definition.checkNativeBackgroundColor(lbl), "BackgroundColor not applied correctly!");
+        TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, "BackgroundColor not applied correctly!");
     });
 }
 
@@ -665,7 +665,6 @@ export var testBackgroundImage = function () {
     helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
         var page = <page.Page>views[1];
         page.css = ".myClass { background-image: url('~/logo.png') }";
-
-        TKUnit.assert(definition.checkNativeBackgroundImage(lbl), "Style background-image not loaded correctly.");
+        TKUnit.assertEqual(definition.checkNativeBackgroundImage(lbl), true, "Style background-image not loaded correctly.");
     });
 }

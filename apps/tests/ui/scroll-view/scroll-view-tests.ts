@@ -124,7 +124,7 @@ export function test_scrollabeHeight_vertical_orientation_when_content_is_big() 
     scrollView.content = btn;
 
     waitForLayout();
-    TKUnit.assertEqual(scrollView.scrollableHeight, 200, "scrollView.scrollableHeight");
+    TKUnit.assertAreClose(scrollView.scrollableHeight, 200, 0.4, "scrollView.scrollableHeight");
     TKUnit.assertEqual(scrollView.scrollableWidth, 0, "scrollView.scrollableWidth");
 
 }
@@ -157,7 +157,7 @@ export function test_scrollabeWidth_horizontal_orientation_when_content_is_big()
 
     waitForLayout();
     TKUnit.assertEqual(scrollView.scrollableHeight, 0, "scrollView.scrollableHeight");
-    TKUnit.assertEqual(scrollView.scrollableWidth, 300, "scrollView.scrollableWidth");
+    TKUnit.assertAreClose(scrollView.scrollableWidth, 300, 0.4, "scrollView.scrollableWidth");
 }
 
 export function test_scrollToVerticalOffset_no_animation() {
@@ -174,7 +174,7 @@ export function test_scrollToVerticalOffset_no_animation() {
 
     TKUnit.assertEqual(scrollView.verticalOffset, 0, "scrollView.verticalOffset");
     scrollView.scrollToVerticalOffset(100, false);
-    TKUnit.assertEqual(scrollView.verticalOffset, 100, "scrollView.verticalOffset");
+    TKUnit.assertAreClose(scrollView.verticalOffset, 100, 0.1, "scrollView.verticalOffset");
 }
 
 export function test_scrollToVerticalOffset_with_animation() {
@@ -198,7 +198,7 @@ export function test_scrollToVerticalOffset_with_animation() {
     TKUnit.waitUntilReady(() => { return scrollView.verticalOffset === 100 }, ASYNC);
 
     // The scrolling animation should be finished by now
-    TKUnit.assertEqual(scrollView.verticalOffset, 100, "scrollView.verticalOffset");
+    TKUnit.assertAreClose(scrollView.verticalOffset, 100, 0.1, "scrollView.verticalOffset");
 }
 
 export function test_scrollToHorizontalOffset_no_animation() {
@@ -215,7 +215,7 @@ export function test_scrollToHorizontalOffset_no_animation() {
 
     TKUnit.assertEqual(scrollView.horizontalOffset, 0, "scrollView.horizontalOffset");
     scrollView.scrollToHorizontalOffset(100, false);
-    TKUnit.assertEqual(scrollView.horizontalOffset, 100, "scrollView.horizontalOffset");
+    TKUnit.assertAreClose(scrollView.horizontalOffset, 100, 0.1, "scrollView.horizontalOffset");
 }
 
 export function test_scrollToHorizontalOffset_with_animation() {
@@ -239,7 +239,7 @@ export function test_scrollToHorizontalOffset_with_animation() {
     TKUnit.waitUntilReady(() => { return scrollView.horizontalOffset === 100 }, ASYNC);
 
     // The scrolling animation should be finished by now
-    TKUnit.assertEqual(scrollView.horizontalOffset, 100, "scrollView.horizontalOffset");
+    TKUnit.assertAreClose(scrollView.horizontalOffset, 100, 0.1, "scrollView.horizontalOffset");
 }
 
 export function test_scrollView_persistsState_vertical() {
@@ -256,7 +256,7 @@ export function test_scrollView_persistsState_vertical() {
 
     scrollView.scrollToVerticalOffset(100, false);
 
-    TKUnit.assertEqual(scrollView.verticalOffset, 100, "scrollView.verticalOffset before navigation");
+    TKUnit.assertAreClose(scrollView.verticalOffset, 100, 0.1, "scrollView.verticalOffset before navigation");
 
     helper.do_PageTest_WithButton((t) => {
         // Just navigate forward and back.
@@ -264,11 +264,11 @@ export function test_scrollView_persistsState_vertical() {
 
     // Wait for the page to reload.
     TKUnit.waitUntilReady(function () {
-        return scrollView.verticalOffset === 100;
+        return Math.abs(scrollView.verticalOffset - 100) < 0.1;
     }, ASYNC);
 
     // Check verticalOffset after navigation
-    TKUnit.assertEqual(scrollView.verticalOffset, 100, "scrollView.verticalOffset after navigation");
+    TKUnit.assertAreClose(scrollView.verticalOffset, 100, 0.1, "scrollView.verticalOffset after navigation");
 }
 
 export function test_scrollView_persistsState_horizontal() {
@@ -285,7 +285,7 @@ export function test_scrollView_persistsState_horizontal() {
 
     scrollView.scrollToHorizontalOffset(100, false);
 
-    TKUnit.assertEqual(scrollView.horizontalOffset, 100, "scrollView.horizontalOffset before navigation");
+    TKUnit.assertAreClose(scrollView.horizontalOffset, 100, 0.1, "scrollView.horizontalOffset before navigation");
 
     helper.do_PageTest_WithButton((t) => {
         // Just navigate forward and back.
@@ -293,9 +293,9 @@ export function test_scrollView_persistsState_horizontal() {
 
     // Wait for the page to reload.
     TKUnit.waitUntilReady(function () {
-        return scrollView.horizontalOffset === 100;
+        return Math.abs(scrollView.horizontalOffset - 100) < 0.1;
     }, ASYNC);
 
     // Check verticalOffset after navigation
-    TKUnit.assertEqual(scrollView.horizontalOffset, 100, "scrollView.horizontalOffset after navigation");
+    TKUnit.assertAreClose(scrollView.horizontalOffset, 100, 0.1, "scrollView.horizontalOffset after navigation");
 }

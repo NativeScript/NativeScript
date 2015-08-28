@@ -147,6 +147,8 @@ export class Property implements definition.Property {
         this._valueConverter = valueConverter;
     }
 
+    public defaultValueGetter: (instance: definition.DependencyObservable) => definition.NativeValueResult;
+
     public get name(): string {
         return this._name;
     }
@@ -263,6 +265,8 @@ export class PropertyEntry implements definition.PropertyEntry {
     }
 }
 
+var defaultValueForPropertyPerType: Map<string, any> = new Map<string, any>();
+
 export class DependencyObservable extends observable.Observable {
     private _propertyEntries = {};
 
@@ -309,6 +313,21 @@ export class DependencyObservable extends observable.Observable {
         var entry: PropertyEntry = this._propertyEntries[property.id];
         if (entry) {
             return entry.effectiveValue;
+        }
+        else if (property.defaultValueGetter) { // we check for cached properties only for these which have 'defaultValueGetter' defined;
+            // When DependencyProperties are removed from Style - fix this check.
+            var view = (<any>this)._view || this;
+            let key = types.getClass(view) + "." + property.id;
+            let defaultValue = defaultValueForPropertyPerType.get(key);
+            if (types.isUndefined(defaultValue) && view._nativeView) {
+                let defaultValueResult = property.defaultValueGetter(this);
+                defaultValue = defaultValueResult.result;
+                if (defaultValueResult.cacheable) {
+                    defaultValueForPropertyPerType.set(key, defaultValue);
+                }
+            }
+
+            return defaultValue;
         }
 
         return property.metadata.defaultValue;

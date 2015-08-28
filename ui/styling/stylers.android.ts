@@ -1,6 +1,5 @@
 ﻿import types = require("utils/types");
 import view = require("ui/core/view");
-import constants = require("utils/android_constants");
 import style = require("ui/styling/style");
 import definition = require("ui/styling");
 import stylersCommon = require("ui/styling/stylers-common");
@@ -9,38 +8,35 @@ import utils = require("utils/utils");
 import styleModule = require("ui/styling/style");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
+var btn;
 
 global.moduleMerge(stylersCommon, exports);
 
 var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
+
 function onBackgroundOrBorderPropertyChanged(v: view.View) {
-    if (!v._nativeView) {
+    var nativeView = <android.view.View>v._nativeView;
+    if (!nativeView) {
         return;
     }
 
     var backgroundValue = <background.Background>v.style._getValue(styleModule.backgroundInternalProperty);
-
+    var borderWidth = v.borderWidth;
     if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
-        var nativeView = <android.view.View>v._nativeView;
 
         var bkg = <background.ad.BorderDrawable>nativeView.getBackground();
         if (!(bkg instanceof background.ad.BorderDrawable)) {
             bkg = new background.ad.BorderDrawable();
             let viewClass = types.getClass(v);
-            if (!_defaultBackgrounds.has(viewClass)) {
+            if (!btn) {
+                btn = require("ui/button");
+            }
+            if (!(v instanceof btn.Button) && !_defaultBackgrounds.has(viewClass)) {
                 _defaultBackgrounds.set(viewClass, nativeView.getBackground());
             }
 
             nativeView.setBackground(bkg);
         }
-
-        var density = utils.layout.getDisplayDensity();
-        nativeView.setPadding(
-            (v.borderWidth + v.style.paddingLeft) * density,
-            (v.borderWidth + v.style.paddingTop) * density,
-            (v.borderWidth + v.style.paddingRight) * density,
-            (v.borderWidth + v.style.paddingBottom) * density
-            );
 
         bkg.borderWidth = v.borderWidth;
         bkg.cornerRadius = v.borderRadius;
@@ -49,11 +45,25 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
     }
     else {
         // reset the value with the default native value
-        let viewClass = types.getClass(v);
-        if (_defaultBackgrounds.has(viewClass)) {
-            v.android.setBackgroundDrawable(_defaultBackgrounds.get(viewClass));
+        if (v instanceof btn.Button) {
+            var nativeButton = new android.widget.Button(nativeView.getContext());
+            nativeView.setBackground(nativeButton.getBackground());
+        }
+        else {
+            let viewClass = types.getClass(v);
+            if (_defaultBackgrounds.has(viewClass)) {
+                nativeView.setBackground(_defaultBackgrounds.get(viewClass));
+            }
         }
     }
+
+    var density = utils.layout.getDisplayDensity();
+    nativeView.setPadding(
+        (borderWidth + v.style.paddingLeft) * density,
+        (borderWidth + v.style.paddingTop) * density,
+        (borderWidth + v.style.paddingRight) * density,
+        (borderWidth + v.style.paddingBottom) * density
+        );
 }
 
 export class DefaultStyler implements definition.stylers.Styler {
@@ -69,20 +79,20 @@ export class DefaultStyler implements definition.stylers.Styler {
     //Visibility methods
     private static setVisibilityProperty(view: view.View, newValue: any) {
         var androidValue = (newValue === enums.Visibility.visible) ? android.view.View.VISIBLE : android.view.View.GONE;
-        (<android.view.View>view.android).setVisibility(androidValue);
+        (<android.view.View>view._nativeView).setVisibility(androidValue);
     }
 
     private static resetVisibilityProperty(view: view.View, nativeValue: any) {
-        (<android.view.View>view.android).setVisibility(android.view.View.VISIBLE);
+        (<android.view.View>view._nativeView).setVisibility(android.view.View.VISIBLE);
     }
 
     //Opacity methods
     private static setOpacityProperty(view: view.View, newValue: any) {
-        (<android.view.View>view.android).setAlpha(float(newValue));
+        (<android.view.View>view._nativeView).setAlpha(float(newValue));
     }
 
     private static resetOpacityProperty(view: view.View, nativeValue: any) {
-        (<android.view.View>view.android).setAlpha(float(1.0));
+        (<android.view.View>view._nativeView).setAlpha(float(1.0));
     }
 
     //minWidth methods
@@ -206,7 +216,7 @@ export class DefaultStyler implements definition.stylers.Styler {
         nativeView.setLayoutParams(lp);
     }
 
-    private static setPaddingProperty(view: view.View, newValue: any) {
+    private static setPaddingProperty(view: view.View, newValue: style.Thickness) {
         var density = utils.layout.getDisplayDensity();
         var left = (newValue.left + view.borderWidth) * density;
         var top = (newValue.top + view.borderWidth) * density;
@@ -215,12 +225,12 @@ export class DefaultStyler implements definition.stylers.Styler {
         (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
     }
 
-    private static resetPaddingProperty(view: view.View, nativeValue: any) {
+    private static resetPaddingProperty(view: view.View, nativeValue: style.Thickness) {
         var density = utils.layout.getDisplayDensity();
-        var left = view.borderWidth * density;
-        var top = view.borderWidth * density;
-        var right = view.borderWidth * density;
-        var bottom = view.borderWidth * density;
+        var left = (nativeValue.left + view.borderWidth) * density;
+        var top = (nativeValue.top + view.borderWidth) * density;
+        var right = (nativeValue.right + view.borderWidth) * density;
+        var bottom = (nativeValue.bottom + view.borderWidth) * density;
         (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
     }
 
@@ -325,20 +335,20 @@ export class ImageStyler implements definition.stylers.Styler {
 export class TextViewStyler implements definition.stylers.Styler {
     // color
     private static setColorProperty(view: view.View, newValue: any) {
-        (<android.widget.TextView>view.android).setTextColor(newValue);
+        (<android.widget.TextView>view._nativeView).setTextColor(newValue);
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
-        (<android.widget.TextView>view.android).setTextColor(nativeValue);
+        (<android.widget.TextView>view._nativeView).setTextColor(nativeValue);
     }
 
     private static getNativeColorValue(view: view.View): any {
-        return (<android.widget.TextView>view.android).getTextColors().getDefaultColor();
+        return (<android.widget.TextView>view._nativeView).getTextColors().getDefaultColor();
     }
 
     // font
     private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
-        var tv = <android.widget.TextView>view.android;
+        var tv = <android.widget.TextView>view._nativeView;
         var fontValue = <font.Font>newValue;
 
         var typeface = fontValue.getAndroidTypeface();
@@ -358,13 +368,13 @@ export class TextViewStyler implements definition.stylers.Styler {
     }
 
     private static resetFontInternalProperty(view: view.View, nativeValue: any) {
-        var tv: android.widget.TextView = <android.widget.TextView>view.android;
+        var tv: android.widget.TextView = <android.widget.TextView>view._nativeView;
         tv.setTypeface(nativeValue.typeface);
         tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
     }
 
     private static getNativeFontInternalValue(view: view.View): any {
-        var tv: android.widget.TextView = <android.widget.TextView>view.android;
+        var tv: android.widget.TextView = <android.widget.TextView>view._nativeView;
         return {
             typeface: tv.getTypeface(),
             size: tv.getTextSize()
@@ -373,16 +383,16 @@ export class TextViewStyler implements definition.stylers.Styler {
 
     // text-align
     private static setTextAlignmentProperty(view: view.View, newValue: any) {
-        var verticalGravity = view.android.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+        var verticalGravity = view._nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
         switch (newValue) {
             case enums.TextAlignment.left:
-                view.android.setGravity(android.view.Gravity.LEFT | verticalGravity);
+                view._nativeView.setGravity(android.view.Gravity.LEFT | verticalGravity);
                 break;
             case enums.TextAlignment.center:
-                view.android.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
+                view._nativeView.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
                 break;
             case enums.TextAlignment.right:
-                view.android.setGravity(android.view.Gravity.RIGHT | verticalGravity);
+                view._nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
                 break;
             default:
                 break;
@@ -390,11 +400,11 @@ export class TextViewStyler implements definition.stylers.Styler {
     }
 
     private static resetTextAlignmentProperty(view: view.View, nativeValue: any) {
-        view.android.setGravity(nativeValue);
+        view._nativeView.setGravity(nativeValue);
     }
 
     private static getNativeTextAlignmentValue(view: view.View): any {
-        return view.android.getGravity();
+        return view._nativeView.getGravity();
     }
 
     public static registerHandlers() {
@@ -435,11 +445,11 @@ export class TextViewStyler implements definition.stylers.Styler {
 export class ActivityIndicatorStyler implements definition.stylers.Styler {
     //Visibility methods
     public static setActivityIndicatorVisibilityProperty(view: view.View, newValue: any) {
-        ActivityIndicatorStyler.setIndicatorVisibility((<any>view).busy, newValue, view.android);
+        ActivityIndicatorStyler.setIndicatorVisibility((<any>view).busy, newValue, view._nativeView);
     }
 
     public static resetActivityIndicatorVisibilityProperty(view: view.View, nativeValue: any) {
-        ActivityIndicatorStyler.setIndicatorVisibility((<any>view).busy, enums.Visibility.visible, view.android);
+        ActivityIndicatorStyler.setIndicatorVisibility((<any>view).busy, enums.Visibility.visible, view._nativeView);
     }
 
     public static setIndicatorVisibility(isBusy: boolean, visibility: string, nativeView: android.view.View) {
@@ -461,7 +471,7 @@ export class ActivityIndicatorStyler implements definition.stylers.Styler {
 export class SegmentedBarStyler implements definition.stylers.Styler {
     //Text color methods
     private static setColorProperty(view: view.View, newValue: any) {
-        var tabHost = <android.widget.TabHost>view.android;
+        var tabHost = <android.widget.TabHost>view._nativeView;
 
         for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
             var tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
@@ -470,44 +480,51 @@ export class SegmentedBarStyler implements definition.stylers.Styler {
         }
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: any) {
-        var tabHost = <android.widget.TabHost>view.android;
+    private static resetColorProperty(view: view.View, nativeValue: number) {
+        var tabHost = <android.widget.TabHost>view._nativeView;
 
         for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
             var tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
             var t = <android.widget.TextView>tab.getChildAt(1);
-            t.setTextColor(constants.btn_default);
+            t.setTextColor(nativeValue);
         }
+    }
+
+    private static getColorProperty(view: view.View): number {
+        var tabHost = <android.widget.TabHost>view._nativeView;
+        var textView = new android.widget.TextView(tabHost.getContext());
+        return textView.getCurrentTextColor();
     }
 
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             SegmentedBarStyler.setColorProperty,
-            SegmentedBarStyler.resetColorProperty), "SegmentedBar");
+            SegmentedBarStyler.resetColorProperty,
+            SegmentedBarStyler.getColorProperty), "SegmentedBar");
     }
 }
 
 export class SearchBarStyler implements definition.stylers.Styler {
 
     private static getBackgroundColorProperty(view: view.View): any {
-        var bar = <android.widget.SearchView>view.android;
+        var bar = <android.widget.SearchView>view._nativeView;
         return bar.getDrawingCacheBackgroundColor();
     }
 
     private static setBackgroundColorProperty(view: view.View, newValue: any) {
-        var bar = <android.widget.SearchView>view.android;
+        var bar = <android.widget.SearchView>view._nativeView;
         bar.setBackgroundColor(newValue);
         SearchBarStyler._changeSearchViewPlateBackgroundColor(bar, newValue);
     }
 
     private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
-        var bar = <android.widget.SearchView>view.android;
+        var bar = <android.widget.SearchView>view._nativeView;
         bar.setBackgroundColor(nativeValue);
         SearchBarStyler._changeSearchViewPlateBackgroundColor(bar, nativeValue);
     }
 
     private static getColorProperty(view: view.View): any {
-        var bar = <android.widget.SearchView>view.android;
+        var bar = <android.widget.SearchView>view._nativeView;
         var textView = SearchBarStyler._getSearchViewTextView(bar);
 
         if (textView) {
@@ -518,12 +535,12 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 
     private static setColorProperty(view: view.View, newValue: any) {
-        var bar = <android.widget.SearchView>view.android;
+        var bar = <android.widget.SearchView>view._nativeView;
         SearchBarStyler._changeSearchViewTextColor(bar, newValue);
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
-        var bar = <android.widget.SearchView>view.android;
+        var bar = <android.widget.SearchView>view._nativeView;
         SearchBarStyler._changeSearchViewTextColor(bar, nativeValue);
     }
 

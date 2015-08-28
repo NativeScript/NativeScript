@@ -1,9 +1,10 @@
-﻿import definition = require("ui/styling");
+﻿import definition = require("ui/styling/style-property");
 import types = require("utils/types");
 import observable = require("ui/core/dependency-observable"); 
 
 var propertiesByName = {};
 var propertiesByCssName = {};
+var callbackByShorthandName = new Map<string, (value: any) => Array<definition.KeyValuePair<definition.Property, any>>>();
 var inheritableProperties: Array<Property> = [];
 
 function registerProperty(property: Property) {
@@ -17,6 +18,23 @@ function registerProperty(property: Property) {
     if (property.metadata.inheritable) {
         inheritableProperties.push(property);
     }
+}
+
+export function getShorthandPairs(name: string, value: any): Array<definition.KeyValuePair<definition.Property, any>> {
+    var callback = callbackByShorthandName.get(name);
+    if (callback) {
+        return callback(value)
+    }
+
+    return undefined;
+}
+
+export function registerShorthandCallback(name: string, callback: (value: any) => Array<definition.KeyValuePair<definition.Property, any>>): void {
+    if (callbackByShorthandName.has(name)) {
+        throw new Error("Shorthand callback already registered for property: " + name);
+    }
+
+    callbackByShorthandName.set(name, callback);
 }
 
 export function getPropertyByName(name: string): Property {
