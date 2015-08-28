@@ -57,10 +57,10 @@ function _createItems(count: number): Array<tabViewModule.TabViewItem> {
     for (var i = 0; i < count; i++) {
         var label = new labelModule.Label();
         label.text = "Tab " + i;
-        var tabEntry = {
+        var tabEntry = new tabViewModule.TabViewItem({
             title: "Tab " + i,
             view: label
-        };
+        });
         items.push(tabEntry);
     }
     return items;
@@ -267,7 +267,7 @@ export var testBindingToTabEntryWithUndefinedViewShouldThrow = function () {
     helper.buildUIAndRunTest(tabView, function (views: Array<viewModule.View>) {
         var tabView = <tabViewModule.TabView>views[0];
         TKUnit.assertThrows(function () {
-            tabView.items = [{ title: "Tab 0", view: undefined }];
+            tabView.items = [new tabViewModule.TabViewItem({ title: "Tab 0", view: undefined })];
         }, "Binding TabView to a TabViewItem with undefined view should throw.");
     });
 }
@@ -277,7 +277,7 @@ export var testBindingToTabEntryWithNullViewShouldThrow = function () {
     helper.buildUIAndRunTest(tabView, function (views: Array<viewModule.View>) {
         var tabView = <tabViewModule.TabView>views[0];
         TKUnit.assertThrows(function () {
-            tabView.items = [{ title: "Tab 0", view: null }];
+            tabView.items = [new tabViewModule.TabViewItem({ title: "Tab 0", view: null })];
         }, "Binding TabView to a TabViewItem with null view should throw.");
     });
 }
@@ -462,10 +462,10 @@ export function testBindingIsRefreshedWhenTabViewItemIsUnselectedAndThenSelected
         label0.id = "testLabel";
         label0.bind({ sourceProperty: "counter", targetProperty: "text", twoWay: true });
         StackLayout0.addChild(label0);
-        var tabEntry0 = {
+        var tabEntry0 = new tabViewModule.TabViewItem({
             title: "Tab 0",
             view: StackLayout0
-        };
+        });
         items.push(tabEntry0);
         tabView.items = items;
 
