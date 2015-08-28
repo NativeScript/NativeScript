@@ -87,10 +87,25 @@ function resolveFontDescriptor(fontFamilyValue: string, symbolicTraits: number):
         var fontFamily = getFontFamilyRespectingGenericFonts(fonts[i]);
         if (systemFontFamilies.has(fontFamily)) {
             // This is a font family - we should apply symbolic traits if there are such
-            result = UIFontDescriptor.fontDescriptorWithNameSize(fontFamily, 0);
-            if (symbolicTraits) {
-                result = result.fontDescriptorWithSymbolicTraits(symbolicTraits);
-            }
+            var fontFaceAttribute = "";
+            
+            if (!symbolicTraits) {
+                fontFaceAttribute = "Regular";
+            } 
+			else {
+				if (symbolicTraits & UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold) {
+					fontFaceAttribute += " Bold";
+				}
+				if (symbolicTraits & UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic) {
+					fontFaceAttribute += " Italic";
+				}
+			}
+
+            var fontAttributes = NSMutableDictionary.alloc().init();
+            fontAttributes.setObjectForKey(fontFamily, "NSFontFamilyAttribute");
+            fontAttributes.setObjectForKey(fontFaceAttribute.trim(), "NSFontFaceAttribute");
+
+            result = UIFontDescriptor.fontDescriptorWithFontAttributes(fontAttributes);
         }
         else if (systemFonts.has(fontFamily)) {
             // This is an actual font - don't apply symbolic traits
