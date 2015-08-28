@@ -622,8 +622,8 @@ export var testSetStyle = function () {
     lbl.setStyle(`color: ${expectedColor};background-color: ${expectedBackgroundColor};`);
 
     helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
-        TKUnit.assert(lbl.color.hex === expectedColor, "Actual: " + lbl.color.hex + "; Expected: " + expectedColor);
-        TKUnit.assert(lbl.backgroundColor.hex === expectedBackgroundColor, "Actual: " + lbl.backgroundColor.hex + "; Expected: " + expectedBackgroundColor);
+        TKUnit.assertEqual(lbl.color.hex, expectedColor);
+        TKUnit.assertEqual(lbl.backgroundColor.hex, expectedBackgroundColor);
     });
 }
 
