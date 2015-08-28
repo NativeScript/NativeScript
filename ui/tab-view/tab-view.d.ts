@@ -5,25 +5,26 @@ declare module "ui/tab-view" {
     import view = require("ui/core/view");
     import dependencyObservable = require("ui/core/dependency-observable");
     import observable = require("data/observable");
+    import bindable = require("ui/core/bindable");
 
     /**
      * Represents a tab view entry.
      */
-    interface TabViewItem {
+    class TabViewItem extends bindable.Bindable {
         /**
          * Gets or sets the title of the TabViewItem.
          */
-        title: string;
+        public title: string;
 
         /**
          * Gets or sets the view of the TabViewItem.
          */
-        view: view.View;
+        public view: view.View;
         
         /**
          * Gets or sets the icon source of the TabViewItem. This could either be a a file name or resource id.
          */
-        iconSource?: string;
+        public iconSource: string;
     }
 
     /**

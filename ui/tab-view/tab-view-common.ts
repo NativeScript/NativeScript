@@ -4,8 +4,45 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
 import trace = require("trace");
+import bindable = require("ui/core/bindable");
 
 export var traceCategory = "TabView";
+
+export class TabViewItem extends bindable.Bindable implements definition.TabViewItem {
+    private _title: string;
+    private _view: view.View;
+    private _iconSource: string;
+
+    get title(): string {
+        return this._title;
+    }
+
+    set title(value: string) {
+        if (this._title !== value) {
+            this._title = value;
+        }
+    }
+
+    get view(): view.View {
+        return this._view;
+    }
+
+    set view(value: view.View) {
+        if (this._view !== value) {
+            this._view = value;
+        }
+    }
+
+    get iconSource(): string {
+        return this._iconSource;
+    }
+
+    set iconSource(value: string) {
+        if (this._iconSource !== value) {
+            this._iconSource = value;
+        }
+    }
+}
 
 var TAB_VIEW = "TabView";
 var ITEMS = "items";
@@ -174,6 +211,17 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
                     break;
                 }
             }
+        }
+    }
+
+    public _onBindingContextChanged(oldValue: any, newValue: any) {
+        super._onBindingContextChanged(oldValue, newValue);
+        if (this.items && this.items.length > 0) {
+            var i = 0;
+            var length = this.items.length;
+            for (; i < length; i++) {
+                this.items[i].bindingContext = newValue;
+            }    
         }
     }
 } 
