@@ -7,7 +7,7 @@ global.moduleMerge(common, exports);
 
 export class WrapLayout extends common.WrapLayout {
 
-    private _lenghts: Array<number>;
+    private _lengths: Array<number>;
 
     private static getChildMeasureSpec(parentMode: number, parentLength: number, itemLength): number {
         if (itemLength > 0) {
@@ -42,9 +42,9 @@ export class WrapLayout extends common.WrapLayout {
         var remainingWidth = widthMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : width - ((this.paddingLeft + this.paddingRight) * density);
         var remainingHeight = heightMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : height - ((this.paddingTop + this.paddingBottom) * density);
 
-        this._lenghts = [0];
+        this._lengths = [0];
         var rowOrColumn = 0;
-        var maxLenght = 0;
+        var maxLength = 0;
         var i: number = 0;
         var isVertical = this.orientation === enums.Orientation.vertical;
         for (i = 0; i < count; i++) {
@@ -57,43 +57,43 @@ export class WrapLayout extends common.WrapLayout {
             if (isVertical) {
                 if (childSize.measuredHeight > remainingHeight) {
                     rowOrColumn++;
-                    maxLenght = Math.max(maxLenght, measureHeight);
+                    maxLength = Math.max(maxLength, measureHeight);
                     measureHeight = childSize.measuredHeight;
                     remainingWidth = height - childSize.measuredHeight;
-                    this._lenghts[rowOrColumn] = childSize.measuredWidth;
+                    this._lengths[rowOrColumn] = childSize.measuredWidth;
                 }
                 else {
                     remainingHeight -= childSize.measuredHeight;
-                    this._lenghts[rowOrColumn] = Math.max(this._lenghts[rowOrColumn], childSize.measuredWidth);
+                    this._lengths[rowOrColumn] = Math.max(this._lengths[rowOrColumn], childSize.measuredWidth);
                     measureHeight += childSize.measuredHeight;
                 }
             }
             else {
                 if (childSize.measuredWidth > remainingWidth) {
                     rowOrColumn++;
-                    maxLenght = Math.max(maxLenght, measureWidth);
+                    maxLength = Math.max(maxLength, measureWidth);
                     measureWidth = childSize.measuredWidth;
                     remainingWidth = width - childSize.measuredWidth;
-                    this._lenghts[rowOrColumn] = childSize.measuredHeight;
+                    this._lengths[rowOrColumn] = childSize.measuredHeight;
                 }
                 else {
                     remainingWidth -= childSize.measuredWidth;
-                    this._lenghts[rowOrColumn] = Math.max(this._lenghts[rowOrColumn], childSize.measuredHeight);
+                    this._lengths[rowOrColumn] = Math.max(this._lengths[rowOrColumn], childSize.measuredHeight);
                     measureWidth += childSize.measuredWidth;
                 }
             }
         }
 
         if (isVertical) {
-            measureHeight = Math.max(maxLenght, measureHeight);
-            for (i = 0; i < this._lenghts.length; i++) {
-                measureWidth += this._lenghts[i];
+            measureHeight = Math.max(maxLength, measureHeight);
+            for (i = 0; i < this._lengths.length; i++) {
+                measureWidth += this._lengths[i];
             }
         }
         else {
-            measureWidth = Math.max(maxLenght, measureWidth);
-            for (i = 0; i < this._lenghts.length; i++) {
-                measureHeight += this._lenghts[i];
+            measureWidth = Math.max(maxLength, measureWidth);
+            for (i = 0; i < this._lengths.length; i++) {
+                measureHeight += this._lengths[i];
             }
         }
 
@@ -121,10 +121,10 @@ export class WrapLayout extends common.WrapLayout {
         var childTop = this.paddingTop * density;
         var childrenLength: number;
         if (isVertical) {
-            childrenLength = bottom - top - (this.paddingTop + this.paddingBottom) * density;
+            childrenLength = bottom - top - (this.paddingBottom * density);
         }
         else {
-            childrenLength = right - left - (this.paddingLeft + this.paddingRight) * density;
+            childrenLength = right - left - (this.paddingRight * density);
         }
 
         var rowOrColumn = 0;
@@ -139,7 +139,7 @@ export class WrapLayout extends common.WrapLayout {
             var childWidth = child.getMeasuredWidth() + (child.marginLeft + child.marginRight) * density;
             var childHeight = child.getMeasuredHeight() + (child.marginTop + child.marginBottom) * density;
 
-            var length = this._lenghts[rowOrColumn];
+            var length = this._lengths[rowOrColumn];
             if (isVertical) {
                 
                 
@@ -156,7 +156,7 @@ export class WrapLayout extends common.WrapLayout {
                     rowOrColumn++;
 
                     // Take current column width.
-                    childWidth = length = this._lenghts[rowOrColumn];
+                    childWidth = length = this._lengths[rowOrColumn];
                 }
             }
             else {
@@ -173,7 +173,7 @@ export class WrapLayout extends common.WrapLayout {
                     rowOrColumn++;
 
                     // Take current row height.
-                    childHeight = length = this._lenghts[rowOrColumn];
+                    childHeight = length = this._lengths[rowOrColumn];
                 }
             }
 
