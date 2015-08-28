@@ -613,6 +613,20 @@ export var testIsVisible = function () {
     });
 }
 
+export var testSetInlineStyle = function () {
+    var lbl = new label.Label();
+
+    var expectedColor = "#ff0000";
+    var expectedBackgroundColor = "#ff0000";
+
+    lbl.setInlineStyle(`color: ${expectedColor};background-color: ${expectedBackgroundColor};`);
+
+    helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
+        TKUnit.assertEqual(lbl.color.hex, expectedColor);
+        TKUnit.assertEqual(lbl.backgroundColor.hex, expectedBackgroundColor);
+    });
+}
+
 export var testBorderWidth = function () {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
         var lbl = <label.Label>views[0];

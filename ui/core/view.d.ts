@@ -356,6 +356,12 @@ declare module "ui/core/view" {
          */
         public focus(): boolean;
 
+        /**
+         * Sets in-line CSS string as style.
+         * @param style - In-line CSS string. 
+         */
+        public setInlineStyle(style: string) : void;
+
         public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver>;
 
         /**
