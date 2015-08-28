@@ -923,7 +923,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         return false;
     }
 
-    public setStyle(style: string): void {
+    public setInlineStyle(style: string): void {
         if (!types.isString(style)) {
             throw new Error("Parameter should be valid CSS string!");
         }

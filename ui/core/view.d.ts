@@ -360,7 +360,7 @@ declare module "ui/core/view" {
          * Sets in-line CSS string as style.
          * @param style - In-line CSS string. 
          */
-        public setStyle(style: string) : void;
+        public setInlineStyle(style: string) : void;
 
         public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver>;
 

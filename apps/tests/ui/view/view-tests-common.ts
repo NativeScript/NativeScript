@@ -613,13 +613,13 @@ export var testIsVisible = function () {
     });
 }
 
-export var testSetStyle = function () {
+export var testSetInlineStyle = function () {
     var lbl = new label.Label();
 
     var expectedColor = "#ff0000";
     var expectedBackgroundColor = "#ff0000";
 
-    lbl.setStyle(`color: ${expectedColor};background-color: ${expectedBackgroundColor};`);
+    lbl.setInlineStyle(`color: ${expectedColor};background-color: ${expectedBackgroundColor};`);
 
     helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
         TKUnit.assertEqual(lbl.color.hex, expectedColor);
