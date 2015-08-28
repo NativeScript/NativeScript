@@ -28,7 +28,7 @@ export class GesturesObserver extends common.GesturesObserver {
             };
             this._onTargetUnloaded = args => {
                 trace.write(this.target + ".target unloaded. android:" + this.target._nativeView, "gestures");
-                this._dettach();
+                this._detach();
             };
 
             this.target.on(view.View.loadedEvent, this._onTargetLoaded);
@@ -41,7 +41,7 @@ export class GesturesObserver extends common.GesturesObserver {
     }
 
     public disconnect() {
-        this._dettach();
+        this._detach();
 
         if (this.target) {
             this.target.off(view.View.loadedEvent, this._onTargetLoaded);
@@ -54,7 +54,7 @@ export class GesturesObserver extends common.GesturesObserver {
         super.disconnect();
     }
 
-    private _dettach() {
+    private _detach() {
         trace.write(this.target + "._detach() android:" + this.target._nativeView, "gestures");
 
         this._onTouchListener = null;
@@ -66,7 +66,7 @@ export class GesturesObserver extends common.GesturesObserver {
 
     private _attach(target: view.View, type: definition.GestureTypes) {
         trace.write(this.target + "._attach() android:" + this.target._nativeView, "gestures");
-        this._dettach();
+        this._detach();
 
         if (type & definition.GestureTypes.tap || type & definition.GestureTypes.doubleTap || type & definition.GestureTypes.longPress) {
             this._simpleGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this.target, type));

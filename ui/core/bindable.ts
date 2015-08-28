@@ -35,7 +35,14 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
     public static bindingContextProperty = bindingContextProperty;
 
     // TODO: Implement with WeakRef to prevent memory leaks.
-    private _bindings = {};
+    private _bindings: Object;
+
+    private get bindings(): Object {
+        if (!this._bindings) {
+            this._bindings = {};
+        }
+        return this._bindings;
+    }
 
     get bindingContext(): Object {
         return this._getValue(Bindable.bindingContextProperty);
@@ -45,13 +52,13 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
     }
 
     public bind(options: definition.BindingOptions, source?: Object) {
-        var binding: Binding = this._bindings[options.targetProperty];
+        var binding: Binding = this.bindings[options.targetProperty];
         if (binding) {
             binding.unbind();
         }
 
         binding = new Binding(this, options);
-        this._bindings[options.targetProperty] = binding;
+        this.bindings[options.targetProperty] = binding;
 
         var bindingSource = source;
         if (!bindingSource) {
@@ -64,15 +71,15 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
     }
 
     public unbind(property: string) {
-        var binding: Binding = this._bindings[property];
+        var binding: Binding = this.bindings[property];
         if (binding) {
             binding.unbind();
-            delete this._bindings[property];
+            delete this.bindings[property];
         }
     }
 
     public _updateTwoWayBinding(propertyName: string, value: any) {
-        var binding: Binding = this._bindings[propertyName];
+        var binding: Binding = this.bindings[propertyName];
 
         if (binding) {
             binding.updateTwoWay(value);
@@ -92,7 +99,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
                 return;
             }
         }
-        var binding = this._bindings[property.name];
+        var binding = this.bindings[property.name];
         if (binding && !binding.updating) {
             if (binding.options.twoWay) {
                 trace.write("_updateTwoWayBinding(" + this + "): " + property.name, trace.categories.Binding);
@@ -107,8 +114,8 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
 
     public _onBindingContextChanged(oldValue: any, newValue: any) {
         var binding: Binding;
-        for (var p in this._bindings) {
-            binding = this._bindings[p];
+        for (var p in this.bindings) {
+            binding = this.bindings[p];
 
             if (binding.updating || !binding.sourceIsBindingContext) {
                 continue;
