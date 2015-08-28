@@ -1,6 +1,5 @@
 ﻿import definition = require("ui/tab-view");
 import view = require("ui/core/view");
-import observable = require("data/observable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
@@ -21,7 +20,6 @@ export class TabViewItem extends bindable.Bindable implements definition.TabView
     set title(value: string) {
         if (this._title !== value) {
             this._title = value;
-            console.log(`set this._title = ${value};`)
         }
     }
 
@@ -32,7 +30,6 @@ export class TabViewItem extends bindable.Bindable implements definition.TabView
     set view(value: view.View) {
         if (this._view !== value) {
             this._view = value;
-            console.log(`set this._view = ${value};`)
         }
     }
 
@@ -43,7 +40,6 @@ export class TabViewItem extends bindable.Bindable implements definition.TabView
     set iconSource(value: string) {
         if (this._iconSource !== value) {
             this._iconSource = value;
-            console.log(`set this._iconSource = ${value};`)
         }
     }
 }
