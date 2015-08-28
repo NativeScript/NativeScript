@@ -16,7 +16,7 @@ public class WrapLayout extends LayoutBase {
 	private int _itemWidth = -1;
 	private int _itemHeight = -1;
 	private Orientation _orientation = Orientation.horzontal;
-    private ArrayList<Integer> _lenghts = new ArrayList<Integer>();
+    private ArrayList<Integer> _lengths = new ArrayList<Integer>();
     
 	public WrapLayout(Context context) {
 		super(context);
@@ -82,9 +82,9 @@ public class WrapLayout extends LayoutBase {
 
         int count = this.getChildCount();
         
-        this._lenghts.clear();
+        this._lengths.clear();
         int rowOrColumn = 0;
-        int maxLenght = 0;
+        int maxLength = 0;
         
         for (int i = 0; i < count; i++) {
             View child = this.getChildAt(i);
@@ -99,10 +99,10 @@ public class WrapLayout extends LayoutBase {
             if (isVertical) {
                 if (childMeasuredHeight > remainingHeight) {
                     rowOrColumn++;
-                    maxLenght = Math.max(maxLenght, measureHeight);
+                    maxLength = Math.max(maxLength, measureHeight);
                     measureHeight = childMeasuredHeight;
                     remainingWidth = height - childMeasuredHeight;
-                    this._lenghts.add(rowOrColumn, childMeasuredWidth);
+                    this._lengths.add(rowOrColumn, childMeasuredWidth);
                 }
                 else {
                     remainingHeight -= childMeasuredHeight;
@@ -112,10 +112,10 @@ public class WrapLayout extends LayoutBase {
             else {
                 if (childMeasuredWidth > remainingWidth) {
                     rowOrColumn++;
-                    maxLenght = Math.max(maxLenght, measureWidth);
+                    maxLength = Math.max(maxLength, measureWidth);
                     measureWidth = childMeasuredWidth;
                     remainingWidth = width - childMeasuredWidth;
-                    this._lenghts.add(rowOrColumn, childMeasuredHeight);
+                    this._lengths.add(rowOrColumn, childMeasuredHeight);
                 }
                 else {
                     remainingWidth -= childMeasuredWidth;
@@ -123,25 +123,25 @@ public class WrapLayout extends LayoutBase {
                 }
             }
             
-            if(this._lenghts.size() <= rowOrColumn) {
-            	this._lenghts.add(rowOrColumn, isVertical ? childMeasuredWidth : childMeasuredHeight);
+            if(this._lengths.size() <= rowOrColumn) {
+            	this._lengths.add(rowOrColumn, isVertical ? childMeasuredWidth : childMeasuredHeight);
             }
             else {
-            	this._lenghts.set(rowOrColumn, Math.max(this._lenghts.get(rowOrColumn), isVertical ? childMeasuredWidth : childMeasuredHeight));
+            	this._lengths.set(rowOrColumn, Math.max(this._lengths.get(rowOrColumn), isVertical ? childMeasuredWidth : childMeasuredHeight));
             }
         }
 
-        count = this._lenghts.size();
+        count = this._lengths.size();
         if (isVertical) {
-            measureHeight = Math.max(maxLenght, measureHeight);
+            measureHeight = Math.max(maxLength, measureHeight);
             for (int i = 0; i < count; i++) {
-                measureWidth += this._lenghts.get(i);
+                measureWidth += this._lengths.get(i);
             }
         }
         else {
-            measureWidth = Math.max(maxLenght, measureWidth);
+            measureWidth = Math.max(maxLength, measureWidth);
             for (int i = 0; i < count; i++) {
-                measureHeight += this._lenghts.get(i);
+                measureHeight += this._lengths.get(i);
             }
         }
         
@@ -170,7 +170,7 @@ public class WrapLayout extends LayoutBase {
 
         int childLeft = paddingLeft;
         int childTop = paddingTop;
-        int childrenLength = isVertical ? bottom - top - (paddingRight + paddingBottom) : right - left - (paddingLeft + paddingRight);
+        int childrenLength = isVertical ? bottom - top - paddingBottom : right - left - paddingRight;
 
         int rowOrColumn = 0;
         int count = this.getChildCount();        
@@ -184,7 +184,7 @@ public class WrapLayout extends LayoutBase {
             int childWidth = CommonLayoutParams.getDesiredWidth(child);
             int childHeight = CommonLayoutParams.getDesiredHeight(child);
 
-            int length = this._lenghts.get(rowOrColumn);
+            int length = this._lengths.get(rowOrColumn);
             if (isVertical) {
                 
                 childWidth = length;
@@ -200,7 +200,7 @@ public class WrapLayout extends LayoutBase {
                     rowOrColumn++;
 
                     // Take current column width.
-                    childWidth = length = this._lenghts.get(rowOrColumn);
+                    childWidth = length = this._lengths.get(rowOrColumn);
                 }
             }
             else {
@@ -217,7 +217,7 @@ public class WrapLayout extends LayoutBase {
                     rowOrColumn++;
 
                     // Take current row height.
-                    childHeight = length = this._lenghts.get(rowOrColumn);
+                    childHeight = length = this._lengths.get(rowOrColumn);
                 }
             }
 
