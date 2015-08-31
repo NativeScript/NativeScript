@@ -5,15 +5,16 @@ declare module "ui/segmented-bar" {
     import view = require("ui/core/view");
     import dependencyObservable = require("ui/core/dependency-observable");
     import color = require("color");
+    import bindable = require("ui/core/bindable");
 
     /**
      * Represents a SegmentedBar item.
      */
-    interface SegmentedBarItem {
+    class SegmentedBarItem extends bindable.Bindable {
         /**
          * Gets or sets the title of the SegmentedBarItem.
          */
-        title: string;
+        public title: string;
     }
 
     /**

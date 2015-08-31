@@ -31,15 +31,20 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         return;
     }
 
-    var newItems = <Array<definition.SegmentedBarItem>>data.newValue;
-
+    var oldItems = <Array<definition.SegmentedBarItem>>data.oldValue;
+    if (oldItems && oldItems.length) {
+        for (var i = 0; i < oldItems.length; i++) {
+            (<SegmentedBarItem>oldItems[i])._parent = null;
+        }
+    }
     view._adjustSelectedIndex(newItems);
-
     view.ios.removeAllSegments();
 
+    var newItems = <Array<definition.SegmentedBarItem>>data.newValue;
     if (newItems && newItems.length) {
         for (var i = 0; i < newItems.length; i++) {
             view.ios.insertSegmentWithTitleAtIndexAnimated(newItems[i].title, i, false);
+            (<SegmentedBarItem>newItems[i])._parent = view;
         }
 
         if (view.ios.selectedSegmentIndex !== view.selectedIndex) {
@@ -60,6 +65,15 @@ function onSelectedBackgroundColorPropertyChanged(data: dependencyObservable.Pro
     }
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.selectedBackgroundColorProperty.metadata).onSetNativeValue = onSelectedBackgroundColorPropertyChanged;
+
+export class SegmentedBarItem extends common.SegmentedBarItem {
+    public _update() {
+        if (this._parent) {
+            var tabIndex = this._parent.items.indexOf(this);
+            this._parent.ios.setTitleForSegmentAtIndex("" + this.title, tabIndex);
+        }
+    }
+}
 
 export class SegmentedBar extends common.SegmentedBar {
     private _ios: UISegmentedControl;

@@ -31,6 +31,12 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         return;
     }
 
+    var oldItems = <Array<definition.SegmentedBarItem>>data.oldValue;
+    if (oldItems && oldItems.length) {
+        for (var i = 0; i < oldItems.length; i++) {
+            (<SegmentedBarItem>oldItems[i])._parent = null;
+        }
+    }
     view.android.clearAllTabs();
 
     var newItems = <Array<definition.SegmentedBarItem>>data.newValue;
@@ -39,7 +45,8 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
     if (newItems && newItems.length) {
         for (var i = 0; i < newItems.length; i++) {
-            var title = newItems[i].title;
+            (<SegmentedBarItem>newItems[i])._parent = view;
+            var title = "" + newItems[i].title;
             var tab = view.android.newTabSpec(i + "");
 
             tab.setIndicator(title);
@@ -106,6 +113,19 @@ class SegmentedBarColorDrawable extends android.graphics.drawable.ColorDrawable 
         p.setColor(this.getColor());
         p.setStyle(android.graphics.Paint.Style.FILL);
         canvas.drawRect(0, this.getBounds().height() - 15, this.getBounds().width(), this.getBounds().height(), p);
+    }
+}
+
+export class SegmentedBarItem extends common.SegmentedBarItem {
+    public _update() {
+        if (this._parent && this._parent.android) {
+            // TabHost.TabSpec.setIndicator DOES NOT WORK once the title has been set.
+            // http://stackoverflow.com/questions/2935781/modify-tab-indicator-dynamically-in-android
+            var tabIndex = this._parent.items.indexOf(this);
+            var titleTextViewId = 16908310; // http://developer.android.com/reference/android/R.id.html#title
+            var titleTextView = <android.widget.TextView>this._parent.android.getTabWidget().getChildAt(tabIndex).findViewById(titleTextViewId);
+            titleTextView.setText("" + this.title);
+        }
     }
 }
 
