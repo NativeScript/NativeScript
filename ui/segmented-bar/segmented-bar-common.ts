@@ -4,9 +4,30 @@ import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import color = require("color");
 import types = require("utils/types");
+import bindable = require("ui/core/bindable");
 
 export module knownCollections {
     export var items = "items";
+}
+
+export class SegmentedBarItem extends bindable.Bindable implements definition.SegmentedBarItem {
+    private _title: string;
+    public _parent: SegmentedBar;
+
+    get title(): string {
+        return this._title;
+    }
+
+    set title(value: string) {
+        if (this._title !== value) {
+            this._title = value;
+            this._update();
+        }
+    }
+
+    public _update() {
+        //
+    }
 }
 
 export class SegmentedBar extends view.View implements definition.SegmentedBar {
@@ -52,7 +73,19 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
             value instanceof color.Color ? value : new color.Color(<any>value));
     }
 
-    public static selectedBackgroundColorProperty = new dependencyObservable.Property("selectedBackgroundColor", "SegmentedBar", new proxy.PropertyMetadata(undefined))
-    public static selectedIndexProperty = new dependencyObservable.Property("selectedIndex", "SegmentedBar", new proxy.PropertyMetadata(undefined))
-    public static itemsProperty = new dependencyObservable.Property("items", "SegmentedBar", new proxy.PropertyMetadata(undefined))
+    public static selectedBackgroundColorProperty = new dependencyObservable.Property("selectedBackgroundColor", "SegmentedBar", new proxy.PropertyMetadata(undefined));
+    public static selectedIndexProperty = new dependencyObservable.Property("selectedIndex", "SegmentedBar", new proxy.PropertyMetadata(undefined));
+    public static itemsProperty = new dependencyObservable.Property("items", "SegmentedBar", new proxy.PropertyMetadata(undefined));
+
+    public _onBindingContextChanged(oldValue: any, newValue: any) {
+        super._onBindingContextChanged(oldValue, newValue);
+        if (this.items && this.items.length > 0) {
+            var i = 0;
+            var length = this.items.length;
+            for (; i < length; i++) {
+                console.log(`this.items[i].bindingContext = ${newValue};`);
+                this.items[i].bindingContext = newValue;
+            }
+        }
+    }
 }
