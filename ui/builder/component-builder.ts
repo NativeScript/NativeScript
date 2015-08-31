@@ -11,7 +11,6 @@ import gestures = require("ui/gestures");
 import bindingBuilder = require("ui/builder/binding-builder");
 import platform = require("platform");
 
-var EVENT = "Event";
 var UI_PATH = "ui/";
 var MODULES = {
     "TabViewItem": "ui/tab-view",
@@ -30,8 +29,7 @@ var DOCK = "dock";
 var LEFT = "left";
 var TOP = "top";
 
-var eventHandlers = {},
-    gestureHandlers = {};
+var eventHandlers = {};
 
 export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object): definition.ComponentModule {
     var instance: view.View;
@@ -106,7 +104,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
             }
         }
 
-        eventHandlers, gestureHandlers = {};
+        eventHandlers = {};
 
         componentModule = { component: instance, exports: instanceModule, bindings: bindings };
     }
@@ -116,13 +114,11 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
 export function setPropertyValue(instance: view.View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
     // Note: instanceModule can be null if we are loading custom compnenet with no code-behind.
-    var isEvent: boolean = instanceModule && isKnownEvent(propertyName, instanceModule[instance.typeName]);
+    var isEventOrGesture: boolean = isKnownEventOrGesture(propertyName, instance);
 
     if (isBinding(propertyValue) && instance.bind) {
-        if (isEvent) {
+        if (isEventOrGesture) {
             attachEventBinding(instance, propertyName, propertyValue);
-        } else if (isGesture(propertyName, instance)) {
-            attachGestureBinding(instance, propertyName, propertyValue);
         } else {
             var bindOptions = bindingBuilder.getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
             instance.bind({
@@ -132,21 +128,13 @@ export function setPropertyValue(instance: view.View, instanceModule: Object, ex
                 twoWay: bindOptions[bindingBuilder.bindingConstants.twoWay]
             }, bindOptions[bindingBuilder.bindingConstants.source]);
         }
-    } else if (isEvent) {
+    } else if (isEventOrGesture) {
         // Get the event handler from page module exports.
         var handler = exports && exports[propertyValue];
 
         // Check if the handler is function and add it to the instance for specified event name.
         if (types.isFunction(handler)) {
             instance.on(propertyName, handler);
-        }
-    } else if (isGesture(propertyName, instance)) {
-        // Get the event handler from page module exports.
-        var gestureHandler = exports && exports[propertyValue];
-
-        // Check if the handler is function and add it to the instance for specified gesture.
-        if (types.isFunction(gestureHandler)) {
-            instance.observe(gestures.fromString(propertyName.toLowerCase()), gestureHandler);
         }
     } else if (propertyName === ROW) {
         gridLayoutModule.GridLayout.setRow(instance, !isNaN(+propertyValue) && +propertyValue);
@@ -199,30 +187,15 @@ function attachEventBinding(instance: view.View, eventName: string, value: strin
     instance.on(observable.Observable.propertyChangeEvent, eventHandlers[eventName]);
 }
 
-function attachGestureBinding(instance: view.View, gestureName: string, value: string) {
-    // Get the event handler from instance.bindingContext.
-    gestureHandlers[gestureName] = (args: observable.PropertyChangeData) => {
-        if (args.propertyName === "bindingContext") {
-            var handler = instance.bindingContext && instance.bindingContext[getBindingExpressionFromAttribute(value)];
-            // Check if the handler is function and add it to the instance for specified event name.
-            if (types.isFunction(handler)) {
-                instance.observe(gestures.fromString(gestureName.toLowerCase()), handler, instance.bindingContext);
-            }
-            instance.off(observable.Observable.propertyChangeEvent, gestureHandlers[gestureName]);
-        }
-    };
+function isKnownEventOrGesture(name: string, instance: any): boolean {
+    if (types.isString(name)) {
+        var evt = `${name}Event`;
 
-    instance.on(observable.Observable.propertyChangeEvent, gestureHandlers[gestureName]);
-}
+        return instance.constructor && evt in instance.constructor ||
+            gestures.fromString(name.toLowerCase()) !== undefined;
+    }
 
-function isGesture(name: string, instance: any): boolean {
-    return gestures.fromString(name.toLowerCase()) !== undefined;
-}
-
-function isKnownEvent(name: string, exports: any): boolean {
-    var nameEvent = name + EVENT;
-    var result = !types.isNullOrUndefined(exports) ? nameEvent in exports : false;
-    return result;
+    return false;
 }
 
 function getBindingExpressionFromAttribute(value: string): string {

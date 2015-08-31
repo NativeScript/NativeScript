@@ -3,6 +3,7 @@
  */
 declare module "ui/gestures" {
     import view = require("ui/core/view");
+    import observable = require("data/observable");
 
     /**
      * Defines an enum with supported gesture types.
@@ -63,7 +64,7 @@ declare module "ui/gestures" {
     /**
      * Provides gesture event data.
      */
-    export interface GestureEventData {
+    export interface GestureEventData extends observable.EventData {
         /**
          * Gets the type of the gesture.
          */

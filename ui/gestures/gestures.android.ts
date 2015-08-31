@@ -130,7 +130,10 @@ function _getArgs(type: definition.GestureTypes, view: view.View, e: android.vie
     return <definition.GestureEventData>{
         type: type,
         view: view,
-        android: e
+        android: e,
+        ios: undefined,
+        object: view,
+        eventName: definition.toString(type),
     };
 }
 
@@ -140,7 +143,10 @@ function _getSwipeArgs(direction: definition.SwipeDirection, view: view.View,
         type: definition.GestureTypes.swipe,
         view: view,
         android: { initial: initialEvent, current: currentEvent },
-        direction: direction
+        direction: direction,
+        ios: undefined,
+        object: view,
+        eventName: definition.toString(definition.GestureTypes.swipe),
     };
 }
 
@@ -151,7 +157,10 @@ function _getPanArgs(deltaX: number, deltaY: number, view: view.View,
         view: view,
         android: { initial: initialEvent, current: currentEvent },
         deltaX: deltaX,
-        deltaY: deltaY
+        deltaY: deltaY,
+        ios: undefined,
+        object: view,
+        eventName: definition.toString(definition.GestureTypes.pan),
     };
 }
 

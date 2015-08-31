@@ -44,7 +44,9 @@ class UIGestureRecognizerImpl extends NSObject {
             type: type,
             view: target,
             ios: recognizer,
-            android: undefined
+            android: undefined,
+            object: view,
+            eventName: definition.toString(type),
         };
 
         if (callback) {
@@ -257,6 +259,8 @@ function _getPinchData(args: definition.GestureEventData): definition.PinchGestu
         ios: args.ios,
         android: undefined,
         scale: recognizer.scale,
+        object: args.view,
+        eventName: definition.toString(args.type)
     };
 }
 
@@ -268,6 +272,8 @@ function _getSwipeData(args: definition.GestureEventData): definition.SwipeGestu
         ios: args.ios,
         android: undefined,
         direction: _getSwipeDirection(recognizer.direction),
+        object: args.view,
+        eventName: definition.toString(args.type)
     };
 }
 
@@ -279,7 +285,9 @@ function _getPanData(args: definition.GestureEventData, view: UIView): definitio
         ios: args.ios,
         android: undefined,
         deltaX: recognizer.translationInView(view).x,
-        deltaY: recognizer.translationInView(view).y
+        deltaY: recognizer.translationInView(view).y,
+        object: args.view,
+        eventName: definition.toString(args.type)
     };
 }
 
@@ -291,5 +299,7 @@ function _getRotationData(args: definition.GestureEventData): definition.Rotatio
         ios: args.ios,
         android: undefined,
         rotation: recognizer.rotation * (180.0 / Math.PI),
+        object: args.view,
+        eventName: definition.toString(args.type)
     };
 }
