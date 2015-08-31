@@ -187,8 +187,13 @@ export class Binding {
         return this.sourcePropertiesArray;
     }
 
-    private static getProperties(property: string) {
-        return property.split(".");
+    private static getProperties(property: string): Array<string> {
+		if (property) {
+			return property.split(".");
+		}
+		else {
+			return [];
+		}
     }
 
     private resolveObjectsAndProperties(source: Object, propsArray: Array<string>) {
