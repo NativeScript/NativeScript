@@ -888,3 +888,21 @@ export function test_NestedPropertiesBindingTwoTargetsAndReplacingSomeNestedObje
 
     TKUnit.assertEqual(target2.get("targetProp"), secondExpectedFirstName);
 }
+
+export function test_NullSourcePropertyShouldNotCrash() {
+	var expectedValue = "Expected Value";
+	var target = new bindable.Bindable();
+	var convFunc = function (value) {
+		return value + "Converted";
+	}
+	var model = new observable.Observable();
+	model.set("field", expectedValue);
+	model.set("convFunc", convFunc);
+	target.bind({
+		sourceProperty: null,
+		targetProperty: "targetProp",
+		expression: "convFunc(field)"
+	}, model);
+
+	TKUnit.assertEqual(target.get("targetProp"), convFunc(expectedValue)); 
+}
