@@ -33,7 +33,7 @@ declare module "connectivity" {
      * Starts monitoring the connection type.
      * @param connectionChangedCallback A function that will be called when the connection type changes.
      */
-    export function starMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void;
+    export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void;
 
     /**
      * Stops monitoring the connection type.

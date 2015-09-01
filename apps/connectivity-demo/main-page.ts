@@ -17,7 +17,7 @@ export function onGetConnectionType(args: observable.EventData) {
 
 export function onStartMonitoring(args: observable.EventData) {
     onGetConnectionType(null);
-    connectivity.starMonitoring(onConnectionTypeChanged);
+    connectivity.startMonitoring(onConnectionTypeChanged);
 }
 
 export function onStopMonitoring(args: observable.EventData) {

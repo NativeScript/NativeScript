@@ -30,7 +30,7 @@ export var test_DummyTestForSnippetOnly1 = function () {
     // <snippet module="connectivity" title="connectivity">
     // ### Monitoring connection type.
     // ``` JavaScript
-    connectivity.starMonitoring(function onConnectionTypeChanged(newConnectionType: number) {
+    connectivity.startMonitoring(function onConnectionTypeChanged(newConnectionType: number) {
         switch (newConnectionType) {
             case connectivity.connectionType.none:
                 ////console.log("Connection type changed to none.");

@@ -36,7 +36,7 @@ export function getConnectionType(): number {
     }
 }
 
-export function starMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
+export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
     var onReceiveCallback = function onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
         var newConnectionType = getConnectionType();
         connectionTypeChangedCallback(newConnectionType);
