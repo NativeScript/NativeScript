@@ -13,6 +13,7 @@ import enums = require("ui/enums");
 import utils = require("utils/utils");
 import color = require("color");
 import animationModule = require("ui/animation");
+import observable = require("data/observable");
 
 export function getViewById(view: View, id: string): View {
     if (!view) {
@@ -189,6 +190,70 @@ export class View extends proxy.ProxyObject implements definition.View {
             }
         }
         return list;
+    }
+
+    public addEventListener(arg: string | gestures.GestureTypes, callback: (data: observable.EventData) => void, thisArg?: any) {
+        if (types.isString(arg)) {
+            var gesture = gestures.fromString(<string>arg);
+            if (gesture && !this._isEvent(<string>arg)) {
+                this.observe(gesture, callback, thisArg);
+            } else {
+                var events = (<string>arg).split(",");
+                if (events.length > 0) {
+                    for (let i = 0; i < events.length; i++) {
+                        let evt = events[i].trim();
+                        let gst = gestures.fromString(evt);
+                        if (gst && !this._isEvent(<string>arg)) {
+                            this.observe(gst, callback, thisArg);
+                        } else {
+                            super.addEventListener(evt, callback, thisArg);
+                        }
+                    }
+                } else {
+                    super.addEventListener(<string>arg, callback, thisArg);
+                }
+            }
+        } else if (types.isNumber(arg)) {
+            this.observe(<gestures.GestureTypes>arg, callback, thisArg);
+        }
+    }
+
+    public removeEventListener(arg: string | gestures.GestureTypes, callback?: any, thisArg?: any) {
+        if (types.isString(arg)) {
+            var gesture = gestures.fromString(<string>arg);
+            if (gesture && !this._isEvent(<string>arg)) {
+                this._disconnectGestureObservers(gesture);
+            } else {
+                var events = (<string>arg).split(",");
+                if (events.length > 0) {
+                    for (let i = 0; i < events.length; i++) {
+                        let evt = events[i].trim();
+                        let gst = gestures.fromString(evt);
+                        if (gst && !this._isEvent(<string>arg)) {
+                            this._disconnectGestureObservers(gst);
+                        } else {
+                            super.removeEventListener(evt, callback, thisArg);
+                        }
+                    }
+                } else {
+                    super.removeEventListener(<string>arg, callback, thisArg);
+                }
+
+            }
+        } else if (types.isNumber(arg)) {
+            this._disconnectGestureObservers(<gestures.GestureTypes>arg);
+        }
+    }
+
+    private _isEvent(name: string): boolean {
+        return this.constructor && `${name}Event` in this.constructor;
+    }
+
+    private _disconnectGestureObservers(type: gestures.GestureTypes): void {
+        var observers = this.getGestureObservers(type);
+        for (let i = 0; i < observers.length; i++) {
+            observers[i].disconnect();
+        }
     }
 
     getViewById<T extends View>(id: string): T {
