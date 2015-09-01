@@ -13,6 +13,8 @@ var OWNER = "_owner";
 var HIDDEN = "_hidden";
 var INTENT_EXTRA = "com.tns.activity";
 var ANDROID_FRAME = "android_frame";
+var BACKSTAK_TAG = "_backstackTag";
+var NAV_DEPTH = "_navDepth";
 
 var navDepth = 0;
 
@@ -227,8 +229,10 @@ export class Frame extends frameCommon.Frame {
         var manager = activity.getFragmentManager();
         var fragmentTransaction = manager.beginTransaction();
 
-        var newFragmentTag = "fragment" + this.backStack.length;
+        var newFragmentTag = "fragment" + navDepth;
         var newFragment = new PageFragmentBody(this, backstackEntry);
+        backstackEntry[BACKSTAK_TAG] = newFragmentTag;
+        backstackEntry[NAV_DEPTH] = navDepth;
 
         // remember the fragment tag at page level so that we can retrieve the fragment associated with a Page instance
         backstackEntry.resolvedPage[TAG] = newFragmentTag;
@@ -285,13 +289,15 @@ export class Frame extends frameCommon.Frame {
         trace.write("fragmentTransaction.commit();", trace.categories.NativeLifecycle);
     }
 
-    public _goBackCore(entry: definition.NavigationEntry) {
-        navDepth--;
+    public _goBackCore(backstackEntry: definition.BackstackEntry) {
+        navDepth = backstackEntry[NAV_DEPTH];
         trace.write("Frame<" + this._domId + ">.fragmentTransaction POP depth = " + navDepth, trace.categories.Navigation);
 
         var manager = this._android.activity.getFragmentManager();
         if (manager.getBackStackEntryCount() > 0) {
-            manager.popBackStack();
+            // pop all other fragments up until the named one
+            // this handles cases where user may navigate to an inner page without adding it on the backstack
+            manager.popBackStack(<string>backstackEntry[BACKSTAK_TAG], android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
     }
 

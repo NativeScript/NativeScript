@@ -3,6 +3,7 @@ import definition = require("application");
 import fs = require("file-system");
 import styleScope = require("ui/styling/style-scope");
 import observable = require("data/observable");
+import frame = require("ui/frame");
 
 var events = new observable.Observable();
 global.moduleMerge(events, exports);
@@ -14,6 +15,9 @@ export var exitEvent = "exit";
 export var lowMemoryEvent = "lowMemory";
 export var uncaughtErrorEvent = "uncaughtError";
 export var orientationChangedEvent = "orientationChanged";
+
+export var mainModule: string;
+export var mainEntry: frame.NavigationEntry;
 
 export var cssFile: string = "app.css"
 

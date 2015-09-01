@@ -5,9 +5,8 @@ import types = require("utils/types");
 import view = require("ui/core/view");
 import definition = require("application");
 import enums = require("ui/enums");
-global.moduleMerge(appModule, exports);
 
-export var mainModule: string;
+global.moduleMerge(appModule, exports);
 
 class Responder extends UIResponder {
     //
@@ -120,13 +119,18 @@ class IOSApplication implements definition.iOSApplication {
 
         var topFrame = frame.topmost();
         if (!topFrame) {
-            if (mainModule) {
+            // try to navigate to the mainEntry/Module (if specified)
+            var navParam = definition.mainEntry;
+            if (!navParam) {
+                navParam = definition.mainModule;
+            }
+
+            if (navParam) {
                 topFrame = new frame.Frame();
-                topFrame.navigate(mainModule);
+                topFrame.navigate(navParam);
             } else {
                 // TODO: Throw an exception?
-                // throw new Error("A Frame must be used to navigate to a Page.");
-                return;
+                throw new Error("A Frame must be used to navigate to a Page.");
             }
         }
 
