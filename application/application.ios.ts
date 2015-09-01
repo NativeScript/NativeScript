@@ -37,14 +37,14 @@ class Window extends UIWindow {
     }
 }
 
-class NotificationReceiver extends NSObject {
+class NotificationObserver extends NSObject {
     private _onReceiveCallback: (notification: NSNotification) => void;
 
-    static new(): NotificationReceiver {
-        return <NotificationReceiver>super.new();
+    static new(): NotificationObserver {
+        return <NotificationObserver>super.new();
     }
 
-    public initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationReceiver {
+    public initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
         this._onReceiveCallback = onReceiveCallback;
         return this;
     }
@@ -62,7 +62,6 @@ class IOSApplication implements definition.iOSApplication {
     public rootController: any;
 
     private _delegate: typeof UIApplicationDelegate;
-    private _registeredObservers = {};
     private _currentOrientation = UIDevice.currentDevice().orientation;
     private _window: Window;
 
@@ -88,17 +87,14 @@ class IOSApplication implements definition.iOSApplication {
         }
     }
 
-    public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void) {
-        var observer = NotificationReceiver.new().initWithCallback(onReceiveCallback);
+    public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
+        var observer = NotificationObserver.new().initWithCallback(onReceiveCallback);
         NSNotificationCenter.defaultCenter().addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
-        this._registeredObservers[notificationName] = observer;
+        return observer;
     }
 
-    public removeNotificationObserver(notificationName: string) {
-        var observer = this._registeredObservers[notificationName];
-        if (observer) {
-            NSNotificationCenter.defaultCenter().removeObserverNameObject(observer, notificationName, null);
-        }
+    public removeNotificationObserver(observer: any, notificationName: string) {
+        NSNotificationCenter.defaultCenter().removeObserverNameObject(observer, notificationName, null);
     }
 
     private didFinishLaunchingWithOptions(notification: NSNotification) {

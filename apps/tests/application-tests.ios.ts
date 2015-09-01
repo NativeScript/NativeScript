@@ -10,7 +10,7 @@ global.moduleMerge(commonTests, exports);
 // ``` JavaScript
 //// Add the notification observer
 if (app.ios) {
-    app.ios.addNotificationObserver(UIDeviceBatteryLevelDidChangeNotification,
+    var observer = app.ios.addNotificationObserver(UIDeviceBatteryLevelDidChangeNotification,
         function onReceiveCallback(notification: NSNotification) {
             var percent = UIDevice.currentDevice().batteryLevel * 100;
             var message = "Battery: " + percent + "%";
@@ -19,7 +19,7 @@ if (app.ios) {
 }
 //// When no longer needed, remove the notification observer
 if (app.ios) {
-    app.ios.removeNotificationObserver(UIDeviceBatteryLevelDidChangeNotification);
+    app.ios.removeNotificationObserver(observer, UIDeviceBatteryLevelDidChangeNotification);
 }
 // ```
 // </snippet> 
