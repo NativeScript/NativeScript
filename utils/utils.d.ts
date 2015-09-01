@@ -88,11 +88,18 @@
              * @param name - Name of the resource.
              */
             export function getStringId(name)
+
             /**
              * Gets the id from a given name.
              * @param name - Name of the resource.
              */
             export function getId(name: string): number;
+
+            /**
+             * Gets a color from the current theme.
+             * @param name - Name of the color resource.
+             */
+            export function getPalleteColor(name: string, context: android.content.Context): number;
         }
 
         export function async<T>(doInBackground: () => T, callback: (result: T) => void);

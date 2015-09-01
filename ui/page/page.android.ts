@@ -4,7 +4,6 @@ import view = require("ui/core/view");
 import trace = require("trace");
 import color = require("color");
 import actionBarModule = require("ui/action-bar");
-import types = require("utils/types");
 import gridModule = require("ui/layouts/grid-layout");
 import enums = require("ui/enums");
 

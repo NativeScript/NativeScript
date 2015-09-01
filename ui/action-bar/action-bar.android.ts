@@ -10,7 +10,6 @@ import dts = require("ui/action-bar");
 import view = require("ui/core/view");
 
 var ACTION_ITEM_ID_OFFSET = 1000;
-var API_LVL = android.os.Build.VERSION.SDK_INT;
 
 global.moduleMerge(common, exports);
 
@@ -299,11 +298,9 @@ function getIconVisibility(iconVisibility: string): boolean {
         case enums.AndroidActionBarIconVisibility.always:
             return true;
 
-        case enums.AndroidActionBarIconVisibility.never:
-            return false;
-
         case enums.AndroidActionBarIconVisibility.auto:
+        case enums.AndroidActionBarIconVisibility.never:
         default:
-            return API_LVL <= 20;
+            return false;
     }
 }

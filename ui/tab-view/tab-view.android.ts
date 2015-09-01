@@ -4,8 +4,14 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
 import trace = require("trace");
 import types = require("utils/types");
+import utils = require("utils/utils");
+import imageSource = require("image-source");
 
 var VIEWS_STATES = "_viewStates";
+var ACCENT_COLOR = "colorAccent";
+var PRIMARY_COLOR = "colorPrimary";
+var DEFAULT_ELEVATION = 4;
+
 //var RESOURCE_PREFIX = "res://";
 
 global.moduleMerge(common, exports);
@@ -142,7 +148,7 @@ class PageChangedListener extends android.support.v4.view.ViewPager.SimpleOnPage
 
 export class TabView extends common.TabView {
     private _grid: org.nativescript.widgets.GridLayout;
-    private _tabLayout: org.nativescript.widgets.SlidingTabLayout;
+    private _tabLayout: org.nativescript.widgets.TabLayout;
     private _viewPager: android.support.v4.view.ViewPager;
     private _pagerAdapter: android.support.v4.view.PagerAdapter;
     private _androidViewId: number;
@@ -160,9 +166,20 @@ export class TabView extends common.TabView {
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
 
-        this._tabLayout = new org.nativescript.widgets.SlidingTabLayout(this._context);
-        this._tabLayout.setDistributeEvenly(true);
+        this._tabLayout = new org.nativescript.widgets.TabLayout(this._context);
         this._grid.addView(this._tabLayout);
+
+        this.setElevation();
+
+        let accentColor = utils.ad.resources.getPalleteColor(ACCENT_COLOR, this._context);
+        if (accentColor) {
+            this._tabLayout.setSelectedIndicatorColors([accentColor]);
+        }
+
+        let primaryColor = utils.ad.resources.getPalleteColor(PRIMARY_COLOR, this._context);
+        if (primaryColor) {
+            this._tabLayout.setBackgroundColor(primaryColor);
+        }
 
         this._viewPager = new android.support.v4.view.ViewPager(this._context);
         var lp = new org.nativescript.widgets.CommonLayoutParams()
@@ -179,26 +196,39 @@ export class TabView extends common.TabView {
         (<any>this._viewPager).addOnPageChangeListener(this._pageChagedListener);
     }
 
+    private setElevation() {
+        var compat = <any>android.support.v4.view.ViewCompat;
+        if (compat.setElevation) {
+            let val = DEFAULT_ELEVATION * utils.layout.getDisplayDensity();
+            compat.setElevation(this._grid, val);
+            compat.setElevation(this._tabLayout, val);
+        }
+    }
+
     public _onItemsPropertyChangedSetNativeValue(data: dependencyObservable.PropertyChangeData) {
         trace.write("TabView._onItemsPropertyChangedSetNativeValue(" + data.oldValue + " ---> " + data.newValue + ");", common.traceCategory);
 
         if (data.oldValue) {
             this._viewPager.setAdapter(null);
             this._pagerAdapter = null;
-            this._tabLayout.setViewPager(null);
+            this._tabLayout.setItems(null, null);
         }
 
         if (data.newValue) {
             var items: Array<definition.TabViewItem> = data.newValue;
+            var tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
             items.forEach((item, idx, arr) => {
                 if (types.isNullOrUndefined(item.view)) {
                     throw new Error("View of TabViewItem at index " + idx + " is " + item.view);
                 }
+
+                tabItems.push(this.createTabItem(item));
             });
 
             this._pagerAdapter = new PagerAdapterClass(this, data.newValue);
             this._viewPager.setAdapter(this._pagerAdapter);
-            this._tabLayout.setViewPager(this._viewPager);
+
+            this._tabLayout.setItems(tabItems, this._viewPager);
         }
 
         this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
@@ -220,5 +250,25 @@ export class TabView extends common.TabView {
 
         var args = { eventName: TabView.selectedIndexChangedEvent, object: this, oldIndex: data.oldValue, newIndex: data.newValue };
         this.notify(args);
+    }
+
+    private createTabItem(item: definition.TabViewItem): org.nativescript.widgets.TabItemSpec {
+        var result = new org.nativescript.widgets.TabItemSpec();
+        result.title = item.title;
+
+        if (item.iconSource) {
+
+            if (item.iconSource.indexOf(utils.RESOURCE_PREFIX) === 0) {
+                result.iconId = utils.ad.resources.getDrawableId(item.iconSource.substr(utils.RESOURCE_PREFIX.length));
+            }
+            else {
+                var is = imageSource.fromFileOrResource(item.iconSource);
+                if (is) {
+                    result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
+                }
+            }
+        }
+
+        return result;
     }
 }
