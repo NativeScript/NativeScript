@@ -68,7 +68,7 @@ var _reachabilityCallbackFunctionRef = new interop.FunctionReference(_reachabili
 var _monitorReachabilityRef: any;
 var _connectionTypeChangedCallback: (newConnectionType: number) => void;
 
-export function starMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
+export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
     if (!_monitorReachabilityRef) {
         _monitorReachabilityRef = _createReachability();
         _connectionTypeChangedCallback = connectionTypeChangedCallback;
