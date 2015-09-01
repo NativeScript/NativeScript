@@ -133,6 +133,20 @@ class PagerAdapterClass extends android.support.v4.view.PagerAdapter {
     }
 };
 
+export class TabViewItem extends common.TabViewItem {
+    public _tab: android.app.ActionBar.Tab;
+    public _parent: TabView;
+
+    public _update() {
+        if (this._parent && this._tab) {
+            var androidApp = app.android;
+            var resources = androidApp.context.getResources();
+            this._tab.setText(this.title);
+            this._parent._setIcon(this.iconSource, this._tab, resources, androidApp.packageName);
+        }
+    }
+}
+
 export class TabView extends common.TabView {
     private _android: android.support.v4.view.ViewPager;
     private _pagerAdapter: android.support.v4.view.PagerAdapter;
@@ -374,13 +388,15 @@ export class TabView extends common.TabView {
         // TODO: Where will be the support for more ActionBar settings like Title, Navigation buttons, etc.?
         var i: number = 0;
         var length = newItems.length;
-        var item: definition.TabViewItem;
+        var item: TabViewItem;
         var tab: android.app.ActionBar.Tab;
         var androidApp = app.android;
         var resources = androidApp.context.getResources();
         for (i; i < length; i++) {
-            item = newItems[i];
+            item = <TabViewItem>newItems[i];
             tab = actionBar.newTab();
+            item._tab = tab;
+            item._parent = this;
             tab.setText(item.title);
             this._setIcon(item.iconSource, tab, resources, androidApp.packageName);
 
@@ -392,7 +408,7 @@ export class TabView extends common.TabView {
         }
     }
 
-    private _setIcon(iconSource: string, tab: android.app.ActionBar.Tab, resources: android.content.res.Resources, packageName: string): void {
+    public _setIcon(iconSource: string, tab: android.app.ActionBar.Tab, resources: android.content.res.Resources, packageName: string): void {
         if (!iconSource) {
             return;
         }
@@ -438,7 +454,7 @@ export class TabView extends common.TabView {
         var i: number = actionBar.getTabCount() - 1;
         var tab: android.app.ActionBar.Tab;
         var index;
-        for (i; i >= 0; i--) {
+        for (; i >= 0; i--) {
             tab = actionBar.getTabAt(i);
             index = this._tabsAddedByMe.indexOf(tab);
             if (index > -1) {// This tab was added by me.
@@ -447,6 +463,15 @@ export class TabView extends common.TabView {
                 delete this._tabsCache[tab.hashCode()];
                 this._tabsAddedByMe.splice(index, 1);// Remove the tab from this._tabsAddedByMe
             }
+        }
+
+        i = 0;
+        var length = this.items.length;
+        var item: TabViewItem;
+        for (; i < length; i++) {
+            item = <TabViewItem>this.items[i];
+            item._tab = null;
+            item._parent = null;
         }
 
         if (this._tabsAddedByMe.length > 0) {

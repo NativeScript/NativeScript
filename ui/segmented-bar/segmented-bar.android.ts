@@ -46,10 +46,8 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     if (newItems && newItems.length) {
         for (var i = 0; i < newItems.length; i++) {
             (<SegmentedBarItem>newItems[i])._parent = view;
-            var title = "" + newItems[i].title;
             var tab = view.android.newTabSpec(i + "");
-
-            tab.setIndicator(title);
+            tab.setIndicator(newItems[i].title || "");
 
             tab.setContent(new android.widget.TabHost.TabContentFactory({
                 createTabContent: function (tag: string): android.view.View {
@@ -124,7 +122,7 @@ export class SegmentedBarItem extends common.SegmentedBarItem {
             var tabIndex = this._parent.items.indexOf(this);
             var titleTextViewId = 16908310; // http://developer.android.com/reference/android/R.id.html#title
             var titleTextView = <android.widget.TextView>this._parent.android.getTabWidget().getChildAt(tabIndex).findViewById(titleTextViewId);
-            titleTextView.setText("" + this.title);
+            titleTextView.setText(this.title || "");
         }
     }
 }

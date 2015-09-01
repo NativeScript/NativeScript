@@ -20,6 +20,7 @@ export class TabViewItem extends bindable.Bindable implements definition.TabView
     set title(value: string) {
         if (this._title !== value) {
             this._title = value;
+            this._update();
         }
     }
 
@@ -29,6 +30,9 @@ export class TabViewItem extends bindable.Bindable implements definition.TabView
 
     set view(value: view.View) {
         if (this._view !== value) {
+            if (this._view) {
+                throw new Error("Changing the view of an already loaded TabViewItem is not currently supported.");
+            }
             this._view = value;
         }
     }
@@ -40,7 +44,12 @@ export class TabViewItem extends bindable.Bindable implements definition.TabView
     set iconSource(value: string) {
         if (this._iconSource !== value) {
             this._iconSource = value;
+            this._update();
         }
+    }
+
+    public _update() {
+        //
     }
 }
 
