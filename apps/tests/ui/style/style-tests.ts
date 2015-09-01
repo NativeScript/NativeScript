@@ -824,6 +824,26 @@ export function test_set_invalid_CSS_values_dont_cause_crash() {
     }, invalidCSS);
 }
 
+// Check Mixed, Upper and lower case properties
+var casedCSS = ".cased {" +
+    "cOlOr: blue; " +
+    "FONT-SIZE: 30; " +
+    "background-color: red; " +
+    "}";
+
+export function test_set_mixed_CSS_cases_works() {
+    var testButton = new buttonModule.Button();
+    testButton.text = "Test";
+    testButton.cssClass = "cased";
+
+    helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
+        TKUnit.assertEqual(30, testButton.style.fontSize);
+        helper.assertViewBackgroundColor(testButton, "#FF0000");
+        helper.assertViewColor(testButton, "#0000FF");
+    }, casedCSS);
+}
+
+
 // <snippet module="ui/styling" title="styling">
 // For information and example how to use style properties please refer to special [**Styling**](../../../styling.md) topic. 
 // </snippet>
