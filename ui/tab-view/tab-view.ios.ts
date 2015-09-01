@@ -73,6 +73,22 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     }
 }
 
+export class TabViewItem extends common.TabViewItem {
+    public _controller: UIViewController;
+    public _parent: TabView;
+    
+    public _update() {
+        if (this._parent && this._controller) {
+            var icon = this._parent._getIcon(this.iconSource);
+            var tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((this.title || ""), icon, this._parent.items.indexOf(this));
+            if (!icon) {
+                tabBarItem.setTitlePositionAdjustment({ horizontal: 0, vertical: -20 });
+            }
+            this._controller.tabBarItem = tabBarItem;
+        }
+    }
+}
+
 export class TabView extends common.TabView {
     private _ios: UITabBarControllerImpl;
     private _delegate: UITabBarControllerDelegateImpl;
@@ -128,9 +144,11 @@ export class TabView extends common.TabView {
 
         var i: number;
         var length = oldItems.length;
-        var oldItem: definition.TabViewItem;
+        var oldItem: TabViewItem;
         for (i = 0; i < length; i++) {
-            oldItem = oldItems[i];
+            oldItem = <TabViewItem>oldItems[i];
+            oldItem._parent = null;
+            oldItem._controller = null;
             this._removeView(oldItem.view);
         }
 
@@ -143,12 +161,12 @@ export class TabView extends common.TabView {
 
         var i: number;
         var length = newItems.length;
-        var item: definition.TabViewItem;
+        var item: TabViewItem;
         var newControllers: NSMutableArray = NSMutableArray.alloc().initWithCapacity(length);
         var newController: UIViewController;
 
         for (i = 0; i < length; i++) {
-            item = newItems[i];
+            item = <TabViewItem>newItems[i];
 
             this._addView(item.view);
 
@@ -159,12 +177,16 @@ export class TabView extends common.TabView {
                 newController.view.addSubview(item.view.ios);
             }
 
-            var icon = this._getIcon(item.iconSource);
-            newController.tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title, icon, i);
-            if (!icon) {
-                newController.tabBarItem.setTitlePositionAdjustment({ horizontal: 0, vertical: -20 });
-            }
+            item._parent = this;
+            item._controller = newController;
 
+            var icon = this._getIcon(item.iconSource);
+            
+            var tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
+            if (!icon) {
+                tabBarItem.setTitlePositionAdjustment({ horizontal: 0, vertical: -20 });
+            }
+            newController.tabBarItem = tabBarItem;
             newControllers.addObject(newController);
         }
 
@@ -175,7 +197,7 @@ export class TabView extends common.TabView {
         this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
     }
 
-    private _getIcon(iconSource: string): UIImage {
+    public _getIcon(iconSource: string): UIImage {
         if (!iconSource) {
             return null;
         }

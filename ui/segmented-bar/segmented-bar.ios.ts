@@ -43,7 +43,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var newItems = <Array<definition.SegmentedBarItem>>data.newValue;
     if (newItems && newItems.length) {
         for (var i = 0; i < newItems.length; i++) {
-            view.ios.insertSegmentWithTitleAtIndexAnimated(newItems[i].title, i, false);
+            view.ios.insertSegmentWithTitleAtIndexAnimated(newItems[i].title || "", i, false);
             (<SegmentedBarItem>newItems[i])._parent = view;
         }
 
@@ -70,7 +70,7 @@ export class SegmentedBarItem extends common.SegmentedBarItem {
     public _update() {
         if (this._parent) {
             var tabIndex = this._parent.items.indexOf(this);
-            this._parent.ios.setTitleForSegmentAtIndex("" + this.title, tabIndex);
+            this._parent.ios.setTitleForSegmentAtIndex(this.title || "", tabIndex);
         }
     }
 }
