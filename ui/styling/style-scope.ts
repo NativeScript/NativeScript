@@ -200,7 +200,6 @@ export class StyleScope {
 
         var rules = ast.stylesheet.rules;
         var rule: cssParser.Rule;
-        var filteredDeclarations: cssParser.Declaration[];
         var i;
         var j;
 
@@ -209,11 +208,25 @@ export class StyleScope {
             rule = rules[i];
             // Skip comment nodes.
             if (rule.type === "rule") {
+
                 // Filter comment nodes.
-                filteredDeclarations = rule.declarations.filter((val, i, arr) => { return val.type === "declaration" });
-                for (j = 0; j < rule.selectors.length; j++) {
-                    result.push(cssSelector.createSelector(rule.selectors[j], filteredDeclarations));
+                var filteredDeclarations = [];
+                if (rule.declarations) {
+                    for (j = 0; j < rule.declarations.length; j++) {
+                        var declaration = rule.declarations[j];
+                        if (declaration.type === "declaration") {
+                            filteredDeclarations.push({
+                                property: declaration.property.toLowerCase(),
+                                value: declaration.value
+                            });
+                        }
+                    }
                 }
+
+                    for (j = 0; j < rule.selectors.length; j++) {
+                        result.push(cssSelector.createSelector(rule.selectors[j], filteredDeclarations));
+                    }
+                //}
             }
         }
 
