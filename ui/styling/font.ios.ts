@@ -92,14 +92,14 @@ function resolveFontDescriptor(fontFamilyValue: string, symbolicTraits: number):
             if (!symbolicTraits) {
                 fontFaceAttribute = "Regular";
             } 
-			else {
-				if (symbolicTraits & UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold) {
-					fontFaceAttribute += " Bold";
-				}
-				if (symbolicTraits & UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic) {
-					fontFaceAttribute += " Italic";
-				}
-			}
+            else {
+                if (symbolicTraits & UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold) {
+                    fontFaceAttribute += " Bold";
+                }
+                if (symbolicTraits & UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic) {
+                    fontFaceAttribute += " Italic";
+                }
+            }
 
             var fontAttributes = NSMutableDictionary.alloc().init();
             fontAttributes.setObjectForKey(fontFamily, "NSFontFamilyAttribute");
