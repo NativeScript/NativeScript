@@ -205,20 +205,20 @@ export class EditableTextBase extends common.EditableTextBase {
         }
 
         var inputType = editableTextBase.android.getInputType();
-        inputType = inputType & ~28762; //28762 (0x00007000) 13,14,15bits
+        inputType = inputType & ~28672; //28672 (0x00070000) 13,14,15bits (111 0000 0000 0000)
 
         switch (data.newValue) {
             case enums.AutocapitalizationType.none:
                 //Do nothing, we have lowered the three bits above.
                 break;
             case enums.AutocapitalizationType.words:
-                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS; //8192 (0x00002000) 14th bit
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS; //8192 (0x00020000) 14th bit
                 break;
             case enums.AutocapitalizationType.sentences:
-                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES; //16384(0x00004000) 15th bit
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES; //16384(0x00040000) 15th bit
                 break;
             case enums.AutocapitalizationType.allCharacters:
-                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS; //4096 (0x00001000) 13th bit
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS; //4096 (0x00010000) 13th bit
                 break;
             default:
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
