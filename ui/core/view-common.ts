@@ -142,14 +142,10 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     public _cssClasses: Array<string> = [];
 
-    public _gestureObservers: Map<number, Array<gestures.GesturesObserver>>;
+    public _gestureObservers = {};
 
     public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver> {
-        var result;
-        if (this._gestureObservers) {
-            result = this._gestureObservers.get(type) ? this._gestureObservers.get(type).slice(0) : undefined;
-        }
-        return result;
+        return this._gestureObservers[type];
     }
 
     private _updatingInheritedProperties: boolean;
@@ -167,29 +163,11 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
 
     observe(type: gestures.GestureTypes, callback: (args: gestures.GestureEventData) => void, thisArg?: any): void {
-        var gesturesList = this._getGesturesList(type, true);
-        gesturesList.push(gestures.observe(this, type, callback, thisArg));
-    }
+        if (!this._gestureObservers[type]) {
+            this._gestureObservers[type] = [];
+        } 
 
-    private _getGesturesList(gestureType: number, createIfNeeded): Array<gestures.GesturesObserver> {
-        if (!gestureType) {
-            throw new Error("GestureType must be a valid gesture!");
-        }
-
-        var list: Array<gestures.GesturesObserver>;
-        if (this._gestureObservers && this._gestureObservers.has(gestureType)) {
-            list = this._gestureObservers.get(gestureType);
-        }
-        else {
-            if (createIfNeeded) {
-                list = [];
-                if (!this._gestureObservers) {
-                    this._gestureObservers = new Map<number, Array<gestures.GesturesObserver>>();
-                }
-                this._gestureObservers.set(gestureType, list);
-            }
-        }
-        return list;
+        this._gestureObservers[type].push(gestures.observe(this, type, callback, thisArg));
     }
 
     public addEventListener(arg: string | gestures.GestureTypes, callback: (data: observable.EventData) => void, thisArg?: any) {

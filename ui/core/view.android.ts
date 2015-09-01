@@ -97,7 +97,7 @@ export class View extends viewCommon.View {
     }
 
     private hasGestureObservers() {
-        return this._gestureObservers ? this._gestureObservers.size > 0 : false;
+        return this._gestureObservers && Object.keys(this._gestureObservers).length > 0
     }
 
     private setOnTouchListener() {
@@ -114,18 +114,13 @@ export class View extends viewCommon.View {
                         return false;
                     }
 
-                    var i;
-                    for (var gestType in gestures.GestureTypes) {
-                        if (gestures.GestureTypes.hasOwnProperty(gestType) && typeof gestures.GestureTypes[gestType] === "number") {
-                            var gestArray = owner.getGestureObservers(parseInt(gestures.GestureTypes[gestType]));
-                            if (gestArray) {
-                                for (i = 0; i < gestArray.length; i++) {
-                                    var gestObserver = gestArray[i];
-                                    gestObserver.androidOnTouchEvent(motionEvent);
-                                }
-                            }
+                    for (let type in owner._gestureObservers) {
+                        let list = owner._gestureObservers[type];
+                        for (let i = 0; i < list.length; i++) {
+                            list[i].androidOnTouchEvent(motionEvent);
                         }
                     }
+
                     return owner._nativeView.onTouchEvent(motionEvent);
                 }
             }));
