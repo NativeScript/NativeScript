@@ -64,8 +64,10 @@ class IOSApplication implements definition.iOSApplication {
     private _delegate: typeof UIApplicationDelegate;
     private _currentOrientation = UIDevice.currentDevice().orientation;
     private _window: Window;
+    private _observers: Array<NotificationObserver>;
 
     constructor() {
+        this._observers = new Array<NotificationObserver>();
         this.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, this.didFinishLaunchingWithOptions.bind(this));
         this.addNotificationObserver(UIApplicationDidBecomeActiveNotification, this.didBecomeActive.bind(this));
         this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground.bind(this));
@@ -90,11 +92,16 @@ class IOSApplication implements definition.iOSApplication {
     public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
         var observer = NotificationObserver.new().initWithCallback(onReceiveCallback);
         NSNotificationCenter.defaultCenter().addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
+        this._observers.push(observer);
         return observer;
     }
 
     public removeNotificationObserver(observer: any, notificationName: string) {
-        NSNotificationCenter.defaultCenter().removeObserverNameObject(observer, notificationName, null);
+        var index = this._observers.indexOf(observer);
+        if (index >= 0) {
+            this._observers.splice(index, 1);
+            NSNotificationCenter.defaultCenter().removeObserverNameObject(observer, notificationName, null);
+        }
     }
 
     private didFinishLaunchingWithOptions(notification: NSNotification) {
