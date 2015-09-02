@@ -10,7 +10,6 @@ import types = require("utils/types");
 global.moduleMerge(frameCommon, exports);
 
 var ENTRY = "_entry";
-var PREV_ENTRY = "_prevEntry";
 var NAV_DEPTH = "_navDepth";
 
 var navDepth = -1;
@@ -19,7 +18,6 @@ export class Frame extends frameCommon.Frame {
     private _ios: iOSFrame;
     private _paramToNavigate: any;
     public _navigateToEntry: definition.BackstackEntry;
-    public _goBackScheduled: boolean;
 
     constructor() {
         super();
@@ -60,11 +58,33 @@ export class Frame extends frameCommon.Frame {
         backstackEntry[NAV_DEPTH] = navDepth;
         viewController[ENTRY] = backstackEntry;
         this._navigateToEntry = backstackEntry;
-        
-        trace.write("Frame<" + this._domId + ">.pushViewControllerAnimated depth = " + navDepth, trace.categories.Navigation);
 
         this._updateActionBar(backstackEntry.resolvedPage);
-        this._ios.controller.pushViewControllerAnimated(viewController, animated);
+
+        if (this._currentEntry && !this._isEntryBackstackVisible(this._currentEntry)) {
+            var newControllers = NSMutableArray.alloc().initWithArray(this._ios.controller.viewControllers);
+            if (newControllers.count === 0) {
+                throw new Error("Wrong controllers count.");
+            }
+
+            var newController: UIViewController = backstackEntry.resolvedPage.ios;
+
+            // the code below fixes a phantom animation that appears in this case
+            // TODO: investigate why the animation happens at first place before working around it
+            newController.navigationItem.hidesBackButton = this.backStack.length === 0;
+
+            // swap the top entry with the new one
+            newControllers.removeLastObject();
+            newControllers.addObject(newController);
+
+            // replace the controllers instead of pushing directly
+            this._ios.controller.setViewControllersAnimated(newControllers, animated);
+        }
+        else {
+            this._ios.controller.pushViewControllerAnimated(viewController, animated);
+        }
+        
+        trace.write("Frame<" + this._domId + ">.pushViewControllerAnimated depth = " + navDepth, trace.categories.Navigation);
     }
 
     public _goBackCore(backstackEntry: definition.BackstackEntry) {
@@ -74,21 +94,18 @@ export class Frame extends frameCommon.Frame {
         var controller = backstackEntry.resolvedPage.ios;
         var animated = this._getIsAnimatedNavigation(backstackEntry.entry);
         this._navigateToEntry = backstackEntry;
-        //this._updateActionBar(backstackEntry.resolvedPage);
+
+        this._updateActionBar(backstackEntry.resolvedPage);
         this._ios.controller.popToViewControllerAnimated(controller, animated);
     }
 
     public _updateActionBar(page?: pages.Page): void {
         super._updateActionBar(page);
 
-        var previousValue = !!this._ios.showNavigationBar;
         var page = page || this.currentPage;
         var newValue = this._getNavBarVisible(page);
 
         this._ios.showNavigationBar = newValue;
-        if (previousValue !== newValue) {
-            this.requestLayout();
-        }
     }
 
     public _getNavBarVisible(page: pages.Page) {
@@ -177,126 +194,18 @@ export class Frame extends frameCommon.Frame {
     }
 }
 
-class UINavigationBarImpl extends UINavigationBar {
-    public static ObjCProtocols = [UINavigationBarDelegate];
-
-    static new(): UINavigationBarImpl {
-        return <UINavigationBarImpl>super.new();
-    }
-
-    private _originalDelegate: UINavigationBarDelegate;
-
-    get controller(): UINavigationControllerImpl {
-        return <UINavigationControllerImpl>this._originalDelegate;
-    }
-
-    get ownerFrame(): Frame {
-        return this.controller.owner;
-    }
-
-    get delegate() {
-        return this;
-    }
-    set delegate(value: UINavigationBarDelegate) {
-        this._originalDelegate = value;
-        (<any>this).super.delegate = this;
-    }
-
-    public setItemsAnimated(items: NSArray, animated: boolean) {
-        if (items) {
-            trace.write("updating navigation bar items stack; original items count: " + items.count, trace.categories.Navigation);
-
-            items = this.controller._getNavBarItems();
-
-            trace.write("updated navigation bar items stack; new items count: " + items.count, trace.categories.Navigation);
-        }
-
-        super.setItemsAnimated(items, animated);
-    }
-
-    public navigationBarShouldPopItem(navBar: UINavigationBar, item: UINavigationItem): boolean {
-        // should pop will be called only when the NavigationBar is visible and in the following cases:
-        // 1. The user has pressed the back button - we need to manually call 'goBack' on the Frame
-        // 2. The user has programmatically called goBack on the Frame - in this case the '_popScheduled' flag is set to true
-        if (!this.controller._popScheduled) {
-            this.ownerFrame.goBack();
-        }
-        return true;
-    }
-
-    public navigationBarShouldPushItem(navBar: UINavigationBar, item: UINavigationItem): boolean {
-        var entry = this.ownerFrame._navigateToEntry || this.ownerFrame._currentEntry;
-        if (!entry) {
-            return true;
-        }
-
-        var prevEntry: definition.BackstackEntry = entry[PREV_ENTRY];
-        if (!prevEntry) {
-            return true;
-        }
-
-        return this.ownerFrame._isEntryBackstackVisible(prevEntry);
-    }
-
-    //private _callBaseDelegateMethod() {
-    //    //var controller = UINavigationController.alloc().init();
-    //    //var methodSignature = controller.methodSignatureForSelector("navigationBar:shouldPopItem:");
-    //    //if (methodSignature != null) {
-    //    //    var invocation = NSInvocation.invocationWithMethodSignature(methodSignature);
-    //    //    invocation.target = controller;
-    //    //    invocation.selector = "navigationBar:shouldPopItem:";
-
-    //    //    invocation.setArgumentAtIndex(new interop.Reference(UINavigationBar, UINavigationBar.alloc().init()), 2);
-    //    //    invocation.setArgumentAtIndex(new interop.Reference(UINavigationItem, UINavigationItem.alloc().init()), 3);
-
-    //    //    invocation.invoke();
-
-    //    //    var result = new interop.Reference(interop.types.bool, false);
-    //    //    invocation.getReturnValue(result);
-
-    //    //    console.log(result.value);
-    //    //}
-    //}
-}
-
 class UINavigationControllerImpl extends UINavigationController implements UINavigationControllerDelegate {
     public static ObjCProtocols = [UINavigationControllerDelegate];
 
     static new(): UINavigationControllerImpl {
-        return new UINavigationControllerImpl(UINavigationBarImpl.class(), null);
+        return new UINavigationControllerImpl();
     }
 
     private _owner: Frame;
-    public _popScheduled;
 
     public initWithOwner(owner: Frame): UINavigationControllerImpl {
         this._owner = owner;
         return this;
-    }
-
-    public _getNavBarItems(): NSArray {
-        var frame = this._owner;
-        var backstack = frame.backStack;
-        var length = backstack.length;
-        var entry: definition.BackstackEntry;
-
-        var navItems = NSMutableArray.alloc().init();
-        for (let i = 0; i < length; i++) {
-            entry = backstack[i];
-            var controller: UIViewController = entry.resolvedPage.ios;
-            navItems.addObject(controller.navigationItem);
-        }
-
-        // add the top controller
-        entry = frame._navigateToEntry || frame._currentEntry;
-        if (entry) {
-            var topController = entry.resolvedPage.ios;
-            if (topController) {
-                navItems.addObject(topController.navigationItem);
-            }
-        }
-
-        return navItems;
     }
 
     get owner(): Frame {
@@ -314,43 +223,25 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         this._owner._updateLayout();
     }
 
-    public popToViewControllerAnimated(controller: UIViewController, animated: boolean): NSArray {
-        // our _goBackCore routine uses popToViewController, hence it is granted this method is called through the navbar back button click
-        this._popScheduled = true;
-        return super.popToViewControllerAnimated(controller, animated);
+    public popViewControllerAnimated(animated: boolean): UIViewController {
+        // this method is called when the Back button on the NavBar is pressed
+        // we are always using the other method - 'popToViewControllerAnimated', so it is safe to call goBack on the Frame here
+        this._owner.goBack();
+
+        // skip the base implementation
+        return null;
     }
 
-    navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        //// In this method we need to layout the new page otherwise page will be shown empty and update after that which is bad UX.
-        //var frame = this._owner;
-        //var newEntry: definition.BackstackEntry = viewController[ENTRY];
-        //var newPage = newEntry.resolvedPage;
-        //if (!newPage.parent) {
-        //    if (!frame._currentEntry) {
-        //        // First navigation
-        //        frame._currentEntry = newEntry;
-        //    }
-        //    else {
-        //        frame._navigateToEntry = newEntry;
-        //    }
-
-        //    frame._addView(newPage);
-        //}
-        //else if (newPage.parent !== frame) {
-        //    throw new Error("Page is already shown on another frame.");
-        //}
-
-        //newPage.actionBar.update();
+    public navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+        // In this method we need to layout the new page otherwise page will be shown empty and update after that which is bad UX.
         var currEntry = this._owner._currentEntry;
         if (currEntry) {
             this._owner._removeView(currEntry.resolvedPage);
-            //delete currEntry[PREV_ENTRY];
         }
 
         var newEntry: definition.BackstackEntry = viewController[ENTRY];
         var newPage = newEntry.resolvedPage;
 
-        newEntry[PREV_ENTRY] = currEntry;
         this._owner._currentEntry = newEntry;
         this._owner._navigateToEntry = undefined;
         this._owner._addView(newEntry.resolvedPage);
@@ -360,45 +251,9 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         newPage.actionBar.update();
     }
 
-    navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        this._popScheduled = false;
+    public navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
         var entry: definition.BackstackEntry = viewController[ENTRY];
         this._owner._processNavigationQueue(entry.resolvedPage);
-
-        //var frame: Frame = this._owner;
-        //var backStack = frame.backStack;
-        //var currentEntry = backStack.length > 0 ? backStack[backStack.length - 1] : null;
-        //var newEntry: definition.BackstackEntry = viewController[ENTRY];
-
-        //// This code check if navigation happened through UI (e.g. back button or swipe gesture).
-        //// When calling goBack on frame isBack will be false.
-        //var isBack: boolean = currentEntry && newEntry === currentEntry;
-        //if (isBack) {
-        //    try {
-        //        frame._shouldSkipNativePop = true;
-        //        frame.goBack();
-        //    }
-        //    finally {
-        //        frame._shouldSkipNativePop = false;
-        //    }
-        //}
-
-        //var page = frame.currentPage;
-        //if (page && !navigationController.viewControllers.containsObject(page.ios)) {
-        //    frame._removeView(page);
-        //}
-
-        //frame._navigateToEntry = null;
-        //frame._currentEntry = newEntry;
-        //frame.updateNavigationBar();
-
-        //frame.ios.controller.navigationBar.backIndicatorImage
-
-        //var newPage = newEntry.resolvedPage;
-
-        //// notify the page
-        //newPage.onNavigatedTo();
-        //frame._processNavigationQueue(newPage);
     }
 
     public supportedInterfaceOrientation(): number {
@@ -429,8 +284,13 @@ class iOSFrame implements definition.iOSFrame {
         return this._showNavigationBar;
     }
     public set showNavigationBar(value: boolean) {
+        var change = this._showNavigationBar !== value;
         this._showNavigationBar = value;
         this._controller.navigationBarHidden = !value;
+
+        if (change) {
+            this._controller.owner.requestLayout();
+        }
     }
 
     public get navBarVisibility(): string {

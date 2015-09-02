@@ -13,10 +13,10 @@ var OWNER = "_owner";
 var HIDDEN = "_hidden";
 var INTENT_EXTRA = "com.tns.activity";
 var ANDROID_FRAME = "android_frame";
-var BACKSTAK_TAG = "_backstackTag";
+var BACKSTACK_TAG = "_backstackTag";
 var NAV_DEPTH = "_navDepth";
 
-var navDepth = 0;
+var navDepth = -1;
 
 class PageFragmentBody extends android.app.Fragment {
     public frame: Frame;
@@ -226,18 +226,19 @@ export class Frame extends frameCommon.Frame {
             return;
         }
 
+        navDepth++;
+
         var manager = activity.getFragmentManager();
         var fragmentTransaction = manager.beginTransaction();
 
         var newFragmentTag = "fragment" + navDepth;
         var newFragment = new PageFragmentBody(this, backstackEntry);
-        backstackEntry[BACKSTAK_TAG] = newFragmentTag;
+        backstackEntry[BACKSTACK_TAG] = newFragmentTag;
         backstackEntry[NAV_DEPTH] = navDepth;
 
         // remember the fragment tag at page level so that we can retrieve the fragment associated with a Page instance
         backstackEntry.resolvedPage[TAG] = newFragmentTag;
-
-        navDepth++;
+        
         trace.write("Frame<" + this._domId + ">.fragmentTransaction PUSH depth = " + navDepth, trace.categories.Navigation);
 
         if (this._isFirstNavigation) {
@@ -265,8 +266,10 @@ export class Frame extends frameCommon.Frame {
             }
 
             if (this.backStack.length > 0) {
-                fragmentTransaction.addToBackStack(newFragmentTag);
-                trace.write("fragmentTransaction.addToBackStack(" + newFragmentTag + ");", trace.categories.NativeLifecycle);
+                // We add each entry in the backstack to avoid the "Stack corrupted" mismatch
+                var backstackTag = this._currentEntry[BACKSTACK_TAG];
+                fragmentTransaction.addToBackStack(backstackTag);
+                trace.write("fragmentTransaction.addToBackStack(" + backstackTag + ");", trace.categories.NativeLifecycle);
             }
         }
 
@@ -297,7 +300,7 @@ export class Frame extends frameCommon.Frame {
         if (manager.getBackStackEntryCount() > 0) {
             // pop all other fragments up until the named one
             // this handles cases where user may navigate to an inner page without adding it on the backstack
-            manager.popBackStack(<string>backstackEntry[BACKSTAK_TAG], android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            manager.popBackStack(backstackEntry[BACKSTACK_TAG], android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
     }
 
