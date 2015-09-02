@@ -185,7 +185,7 @@ class TapAndDoubleTapGestureListener extends android.view.GestureDetector.Simple
     }
 
     public onSingleTapConfirmed(motionEvent: android.view.MotionEvent): boolean {
-        if (this._type === definition.GestureTypes.tap) {
+        if (this._type & definition.GestureTypes.tap) {
             var args = _getArgs(definition.GestureTypes.tap, this._target, motionEvent);
             _executeCallback(this._observer, args);
         }
@@ -193,7 +193,7 @@ class TapAndDoubleTapGestureListener extends android.view.GestureDetector.Simple
     }
 
     public onDoubleTap(motionEvent: android.view.MotionEvent): boolean {
-        if (this._type === definition.GestureTypes.doubleTap) {
+        if (this._type & definition.GestureTypes.doubleTap) {
             var args = _getArgs(definition.GestureTypes.doubleTap, this._target, motionEvent);
             _executeCallback(this._observer, args);
         }
@@ -204,12 +204,11 @@ class TapAndDoubleTapGestureListener extends android.view.GestureDetector.Simple
         return true;
     }
 
-    public onLongPress(motionEvent: android.view.MotionEvent): boolean {
-        if (this._type === definition.GestureTypes.longPress) {
+    public onLongPress(motionEvent: android.view.MotionEvent): void {
+        if (this._type & definition.GestureTypes.longPress) {
             var args = _getArgs(definition.GestureTypes.longPress, this._target, motionEvent);
             _executeCallback(this._observer, args);
         }
-        return true;
     }
 }
 

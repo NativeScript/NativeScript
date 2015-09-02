@@ -416,7 +416,7 @@ declare module "ui/core/view" {
 
         // TODO: Implement logic for stripping these lines out
         //@private
-        _gestureObservers: Map<number, Array<gestures.GesturesObserver>>;
+        _gestureObservers: any;
         _isInheritedChange(): boolean;
         _domId: number;
         _cssClasses: Array<string>;

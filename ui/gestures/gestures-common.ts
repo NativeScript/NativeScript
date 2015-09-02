@@ -126,18 +126,15 @@ export class GesturesObserver implements definition.GesturesObserver {
     public disconnect() {
         // remove gesture observer from map
         if (this.target) {
-            var gestureObserversArray = this.target._gestureObservers.get(this.type);
-            if (gestureObserversArray) {
-                var i;
-                for (i = 0; i < gestureObserversArray.length; i++) {
-                    if (gestureObserversArray[i].callback === this.callback) {
+            var list = this.target.getGestureObservers(this.type);
+            if (list && list.length > 0) {
+                for (let i = 0; i < list.length; i++) {
+                    if (list[i].callback === this.callback) {
                         break;
                     }
                 }
-                gestureObserversArray.splice(i, 1);
-                if (gestureObserversArray.length === 0) {
-                    this.target._gestureObservers.delete(this.type);
-                }
+                list.length = 0;
+                this.target._gestureObservers.delete(this.type);
             }
         }
         this._target = null;
