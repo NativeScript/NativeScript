@@ -69,7 +69,7 @@ export class Frame extends frameCommon.Frame {
 
             var newController: UIViewController = backstackEntry.resolvedPage.ios;
 
-            // the code below fixes a phantom animation that appears in this case
+            // the code below fixes a phantom animation that appears on the Back button in this case
             // TODO: investigate why the animation happens at first place before working around it
             newController.navigationItem.hidesBackButton = this.backStack.length === 0;
 
@@ -135,7 +135,7 @@ export class Frame extends frameCommon.Frame {
                 break;
         }
 
-        return !!newValue;
+        return newValue;
     }
 
     public get ios(): definition.iOSFrame {

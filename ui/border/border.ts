@@ -3,7 +3,7 @@ import contentView = require("ui/content-view");
 import viewModule = require("ui/core/view");
 import utils = require("utils/utils");
 
-//@Deprecated
+@Deprecated
 export class Border extends contentView.ContentView implements definition.Border {
     get cornerRadius(): number {
         return this.borderRadius;
