@@ -512,14 +512,15 @@ declare module "application" {
          * @param notificationName A string containing the name of the notification.
          * @param onReceiveCallback A callback function that will be called each time the observer receives a notification.
          */
-        addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): void;
+        addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): any;
 
         /**
          * Removes the observer for the specified notification from the default notification center.
          * For more information, please visit 'https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Classes/NSNotificationCenter_Class/#//apple_ref/occ/instm/NSNotificationCenter/addObserver:selector:name:object:'
+         * @param observer The observer that was returned from the addNotificationObserver method.
          * @param notificationName A string containing the name of the notification.
          * @param onReceiveCallback A callback function that will be called each time the observer receives a notification.
          */
-        removeNotificationObserver(notificationName: string): void;
+        removeNotificationObserver(observer: any, notificationName: string): void;
     }
 }
