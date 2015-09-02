@@ -50,6 +50,21 @@ export var test_getString_fail = function (done) {
     });
 };
 
+export var test_getString_fail_when_result_is_not_string = function (done) {
+    var result;
+
+    http.getJSON({ url: "https://httpbin.org/image/png", method: "GET" }).catch(function (e) {
+        result = e;
+        try {
+            TKUnit.assert(result instanceof Error, "Result from getString().catch() should be Error! Current type is " + typeof result);
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    });
+};
+
 export var test_getJSON_isDefined = function () {
     TKUnit.assert(typeof (http.getJSON) !== "undefined", "Method http.getJSON() should be defined!");
 };
@@ -91,7 +106,22 @@ export var test_getJSON_fail = function (done) {
     http.getJSON({ url: "hgfttp://httpbin.org/get", method: "GET", timeout: 2000 }).catch(function (e) {
         result = e;
         try {
-            TKUnit.assert(result instanceof Error, "Result from getJSON().fail() should be Error! Current type is " + typeof result);
+            TKUnit.assert(result instanceof Error, "Result from getJSON().catch() should be Error! Current type is " + typeof result);
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    });
+};
+
+export var test_getJSON_fail_when_result_is_not_JSON = function (done) {
+    var result;
+
+    http.getJSON({ url: "https://httpbin.org/html", method: "GET" }).catch(function (e) {
+        result = e;
+        try {
+            TKUnit.assert(result instanceof Error, "Result from getJSON().catch() should be Error! Current type is " + typeof result);
             done(null);
         }
         catch (err) {
@@ -138,7 +168,22 @@ export var test_getImage_fail = function (done) {
     http.getImage({ url: "hgfttp://www.google.com/images/errors/logo_sm_2.png", method: "GET", timeout: 2000 }).catch(function (e) {
         result = e;
         try {
-            TKUnit.assert(result instanceof Error, "Result from getImage().fail() should be Error! Current type is " + typeof result);
+            TKUnit.assert(result instanceof Error, "Result from getImage().catch() should be Error! Current type is " + typeof result);
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    });
+};
+
+export var test_getImage_fail_when_result_is_not_image = function (done) {
+    var result;
+
+    http.getImage({ url: "https://httpbin.org/html", method: "GET" }).catch(function (e) {
+        result = e;
+        try {
+            TKUnit.assert(result instanceof Error, "Result from getImage().catch() should be Error! Current type is " + typeof result);
             done(null);
         }
         catch (err) {
@@ -157,7 +202,7 @@ export var test_request_shouldFailIfOptionsUrlIsNotDefined = function (done) {
     http.request({ url: undefined, method: undefined }).catch(function (e) {
         result = e;
         try {
-            TKUnit.assert(result instanceof Error, "Result from request().fail() should be Error! Current type is " + typeof result);
+            TKUnit.assert(result instanceof Error, "Result from request().catch() should be Error! Current type is " + typeof result);
             done(null);
         }
         catch (err) {
@@ -171,7 +216,7 @@ export var test_request_requestShouldTimeout = function (done) {
     http.request({ url: "http://10.255.255.1", method: "GET", timeout: 500 }).catch(function (e) {
         result = e;
         try {
-            TKUnit.assert(result instanceof Error, "Result from request().fail() should be Error! Current type is " + typeof result);
+            TKUnit.assert(result instanceof Error, "Result from request().catch() should be Error! Current type is " + typeof result);
             done(null);
         }
         catch (err) {

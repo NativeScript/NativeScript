@@ -62,8 +62,14 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                 toString: () => { return NSDataToString(data); },
                                 toJSON: () => { return JSON.parse(NSDataToString(data)); },
                                 toImage: () => {
-                                    return new Promise<imageSource.ImageSource>((resolveImage, reject) => {
-                                        resolveImage(imageSource.fromData(data));
+                                    return new Promise<imageSource.ImageSource>((resolveImage, rejectImage) => {
+                                        var img = imageSource.fromData(data);
+                                        if (img instanceof imageSource.ImageSource) {
+                                            resolveImage(img);
+                                        } else {
+                                            rejectImage(new Error("Response content may not be converted to an Image"));
+                                        }
+
                                     });
                                 }
                             },
