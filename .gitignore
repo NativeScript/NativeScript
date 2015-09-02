@@ -11,3 +11,4 @@ obj/
 bin/
 .svn/
 .settings/
+test/
