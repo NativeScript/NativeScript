@@ -445,13 +445,23 @@ export class TabView extends common.TabView {
         trace.write("TabView._removeTabs(" + oldItems + ");", common.traceCategory);
         super._removeTabs(oldItems);
 
+        var i = 0;
+        if (oldItems && oldItems.length) {
+            var item: TabViewItem;
+            for (; i < oldItems.length; i++) {
+                item = <TabViewItem>oldItems[i];
+                item._tab = null;
+                item._parent = null;
+            }
+        }
+
         var actionBar = this._getActionBar();
         if (!actionBar) {
             return;
         }
 
         // Remove all the existing tabs added by this instance
-        var i: number = actionBar.getTabCount() - 1;
+        i = actionBar.getTabCount() - 1;
         var tab: android.app.ActionBar.Tab;
         var index;
         for (; i >= 0; i--) {
@@ -463,15 +473,6 @@ export class TabView extends common.TabView {
                 delete this._tabsCache[tab.hashCode()];
                 this._tabsAddedByMe.splice(index, 1);// Remove the tab from this._tabsAddedByMe
             }
-        }
-
-        i = 0;
-        var length = this.items.length;
-        var item: TabViewItem;
-        for (; i < length; i++) {
-            item = <TabViewItem>this.items[i];
-            item._tab = null;
-            item._parent = null;
         }
 
         if (this._tabsAddedByMe.length > 0) {
