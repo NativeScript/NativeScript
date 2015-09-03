@@ -276,7 +276,7 @@ export class GridLayout extends layouts.LayoutBase implements definition.GridLay
             return true;
         }
 
-        return false;
+        return super._applyXmlAttribute(attributeName, attributeValue);
     }
 
     private static parseItemSpecs(value: string): Array<ItemSpec> {
