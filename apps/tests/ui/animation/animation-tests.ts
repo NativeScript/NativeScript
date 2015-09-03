@@ -61,7 +61,7 @@ export var test_AnimatingProperties = function (done) {
     // </snippet>
 }
 
- export var test_CancellingAnimation = function (done) {
+export var test_CancellingAnimation = function (done) {
      var mainPage: pageModule.Page;
      var label: labelModule.Label;
      var pageFactory = function (): pageModule.Page {
@@ -241,3 +241,146 @@ export var test_ChainingAnimations = function (done) {
      // ```
      // </snippet>
  }
+
+export var test_AnimateOpacity = function (done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function (): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
+
+    label.animate({opacity: 0.75})
+        .then(() => {
+            TKUnit.assert(label.opacity === 0.75);
+            helper.goBack();
+            done();
+        })
+        .catch((e) => {
+            helper.goBack();
+            done(e);
+        });
+}
+
+export var test_AnimateBackgroundColor = function (done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function (): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
+    var red = new colorModule.Color("Red");
+
+    label.animate({ backgroundColor: red })
+        .then(() => {
+        TKUnit.assert(label.backgroundColor.equals(red));
+            helper.goBack();
+            done();
+        })
+        .catch((e) => {
+            helper.goBack();
+            done(e);
+        });
+}
+
+export var test_AnimateTranslate = function (done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function (): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
+
+    label.animate({ translate: {x: 100, y: 200} })
+        .then(() => {
+            TKUnit.assert(label.translateX === 100);
+            TKUnit.assert(label.translateY === 200);
+            helper.goBack();
+            done();
+        })
+        .catch((e) => {
+            helper.goBack();
+            done(e);
+        });
+}
+
+export var test_AnimateScale = function (done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function (): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
+
+    label.animate({ scale: { x: 1, y: 2 } })
+        .then(() => {
+            TKUnit.assert(label.scaleX === 1);
+            TKUnit.assert(label.scaleY === 2);
+            helper.goBack();
+            done();
+        })
+        .catch((e) => {
+            helper.goBack();
+            done(e);
+        });
+}
+
+export var test_AnimateRotate = function (done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function (): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
+
+    label.animate({ rotate: 123 })
+        .then(() => {
+            TKUnit.assert(label.rotate === 123);
+            helper.goBack();
+            done();
+        })
+        .catch((e) => {
+            helper.goBack();
+            done(e);
+        });
+}

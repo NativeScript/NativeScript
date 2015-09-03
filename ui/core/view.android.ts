@@ -20,6 +20,36 @@ function onIdPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 }
 (<proxy.PropertyMetadata>viewCommon.View.idProperty.metadata).onSetNativeValue = onIdPropertyChanged;
 
+function onTranslateXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <View>data.object;
+    view._nativeView.setTranslationX(data.newValue * utils.layout.getDisplayDensity());
+}
+(<proxy.PropertyMetadata>viewCommon.View.translateXProperty.metadata).onSetNativeValue = onTranslateXPropertyChanged;
+
+function onTranslateYPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <View>data.object;
+    view._nativeView.setTranslationY(data.newValue * utils.layout.getDisplayDensity());
+}
+(<proxy.PropertyMetadata>viewCommon.View.translateYProperty.metadata).onSetNativeValue = onTranslateYPropertyChanged;
+
+function onScaleXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <View>data.object;
+    view._nativeView.setScaleX(data.newValue);
+}
+(<proxy.PropertyMetadata>viewCommon.View.scaleXProperty.metadata).onSetNativeValue = onScaleXPropertyChanged;
+
+function onScaleYPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <View>data.object;
+    view._nativeView.setScaleY(data.newValue);
+}
+(<proxy.PropertyMetadata>viewCommon.View.scaleYProperty.metadata).onSetNativeValue = onScaleYPropertyChanged;
+
+function onRotatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <View>data.object;
+    view._nativeView.setRotation(data.newValue);
+}
+(<proxy.PropertyMetadata>viewCommon.View.rotateProperty.metadata).onSetNativeValue = onRotatePropertyChanged;
+
 function onIsEnabledPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
     view._nativeView.setEnabled(data.newValue);

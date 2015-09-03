@@ -102,6 +102,28 @@ export class Animation extends common.Animation implements definition.Animation 
                 }
                 else if (that._finishedAnimations === that._mergedPropertyAnimations.length) {
                     trace.write(that._finishedAnimations + " animations finished.", trace.categories.Animation);
+
+                    // Update our properties on the view.
+                    var i = 0;
+                    var len = that._propertyAnimations.length;
+                    var a: common.PropertyAnimation;
+                    for (; i < len; i++) {
+                        a = that._propertyAnimations[i];
+                        switch (a.property) {
+                            case common.Properties.translate:
+                                a.target.translateX = a.value.x;
+                                a.target.translateY = a.value.y;
+                                break;
+                            case common.Properties.rotate:
+                                a.target.rotate = a.value;
+                                break;
+                            case common.Properties.scale:
+                                a.target.scaleX = a.value.x;
+                                a.target.scaleY = a.value.y;
+                                break;
+                        }
+                    }
+
                     that._resolveAnimationFinishedPromise();
                 }
             }
