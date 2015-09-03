@@ -203,7 +203,7 @@ export class TabView extends common.TabView {
         trace.write("TabView._onItemsPropertyChangedSetNativeValue(" + data.oldValue + " ---> " + data.newValue + ");", common.traceCategory);
 
         if (data.oldValue) {
-            var oldItems: Array<TabViewItem> = data.newValue;
+            var oldItems: Array<TabViewItem> = data.oldValue;
             oldItems.forEach((oldItem) => { oldItem._parent = null; });
 
             this._viewPager.setAdapter(null);
@@ -276,7 +276,6 @@ export class TabView extends common.TabView {
             }
         }
 
-        console.log("createTabItem: " + result.title + " result.iconId: " + result.iconId + " result.iconDrawable: " + result.iconDrawable);
         return result;
     }
 }
