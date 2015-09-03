@@ -12,20 +12,14 @@ var ACCENT_COLOR = "colorAccent";
 var PRIMARY_COLOR = "colorPrimary";
 var DEFAULT_ELEVATION = 4;
 
-//var RESOURCE_PREFIX = "res://";
-
 global.moduleMerge(common, exports);
 
 export class TabViewItem extends common.TabViewItem {
-    public _tab: android.app.ActionBar.Tab;
     public _parent: TabView;
 
     public _update() {
-        if (this._parent && this._tab) {
-            var androidApp = app.android;
-            var resources = androidApp.context.getResources();
-            this._tab.setText(this.title);
-            this._parent._setIcon(this.iconSource, this._tab, resources, androidApp.packageName);
+        if (this._parent) {
+            this._parent._updateTabForItem(this);
         }
     }
 }
@@ -209,19 +203,23 @@ export class TabView extends common.TabView {
         trace.write("TabView._onItemsPropertyChangedSetNativeValue(" + data.oldValue + " ---> " + data.newValue + ");", common.traceCategory);
 
         if (data.oldValue) {
+            var oldItems: Array<TabViewItem> = data.newValue;
+            oldItems.forEach((oldItem) => { oldItem._parent = null; });
+
             this._viewPager.setAdapter(null);
             this._pagerAdapter = null;
             this._tabLayout.setItems(null, null);
         }
 
         if (data.newValue) {
-            var items: Array<definition.TabViewItem> = data.newValue;
+            var items: Array<TabViewItem> = data.newValue;
             var tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
             items.forEach((item, idx, arr) => {
                 if (types.isNullOrUndefined(item.view)) {
                     throw new Error("View of TabViewItem at index " + idx + " is " + item.view);
                 }
 
+                item._parent = this;
                 tabItems.push(this.createTabItem(item));
             });
 
@@ -232,6 +230,15 @@ export class TabView extends common.TabView {
         }
 
         this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
+    }
+
+    public _updateTabForItem(item: TabViewItem) {
+        if (this.items && this.items.length > 0) {
+            var index = this.items.indexOf(item);
+            if (index >= 0) {
+                this._tabLayout.updateItemAt(index, this.createTabItem(item));
+            }
+        }
     }
 
     public _onSelectedIndexPropertyChangedSetNativeValue(data: dependencyObservable.PropertyChangeData) {
@@ -269,6 +276,7 @@ export class TabView extends common.TabView {
             }
         }
 
+        console.log("createTabItem: " + result.title + " result.iconId: " + result.iconId + " result.iconDrawable: " + result.iconDrawable);
         return result;
     }
 }

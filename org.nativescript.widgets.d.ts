@@ -151,6 +151,7 @@
                 setSelectedIndicatorColors(color: Array<number>): void;
 
                 setItems(items: Array<TabItemSpec>, viewPager: android.support.v4.view.ViewPager): void;
+                updateItemAt(position: number, itemSpec: TabItemSpec): void;
             }
 
             export class TabItemSpec {
