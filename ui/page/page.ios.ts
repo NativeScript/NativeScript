@@ -21,7 +21,7 @@ class UIViewControllerImpl extends UIViewController {
 
     public didRotateFromInterfaceOrientation(fromInterfaceOrientation: number) {
         trace.write(this._owner + " didRotateFromInterfaceOrientation(" + fromInterfaceOrientation + ")", trace.categories.ViewHierarchy);
-        if ((<any>this._owner)._isModal) {
+        if (this._owner._isModal) {
             var parentBounds = (<any>this._owner)._UIModalPresentationFormSheet ? (<UIView>this._owner._nativeView).superview.bounds : UIScreen.mainScreen().bounds;
             utils.ios._layoutRootView(this._owner, parentBounds);
         }
@@ -35,7 +35,13 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewDidLayoutSubviews() {
         trace.write(this._owner + " viewDidLayoutSubviews, isLoaded = " + this._owner.isLoaded, trace.categories.ViewHierarchy);
-        this._owner._updateLayout();
+        if (this._owner._isModal) {
+            var parentBounds = (<any>this._owner)._UIModalPresentationFormSheet ? this._owner._nativeView.superview.bounds : UIScreen.mainScreen().bounds;
+            utils.ios._layoutRootView(this._owner, parentBounds);
+        }
+        else {
+            this._owner._updateLayout();
+        }
     }
 
     public viewWillAppear() {
@@ -56,10 +62,18 @@ class UIViewControllerImpl extends UIViewController {
 export class Page extends pageCommon.Page {
     private _ios: UIViewController;
     public _enableLoadedEvents: boolean;
+    public _isModal: boolean = false;
 
     constructor(options?: definition.Options) {
         super(options);
         this._ios = UIViewControllerImpl.new().initWithOwner(this);
+    }
+
+    public requestLayout(): void {
+        super.requestLayout();
+        if (!this.parent && this.ios && this._nativeView) {
+            this._nativeView.setNeedsLayout();
+        }
     }
 
     public _onContentChanged(oldView: viewModule.View, newView: viewModule.View) {
@@ -110,12 +124,12 @@ export class Page extends pageCommon.Page {
         return this._ios;
     }
 
-    get _nativeView(): any {
+    get _nativeView(): UIView {
         return this.ios.view;
     }
 
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
-        (<any>this)._isModal = true;
+        this._isModal = true;
 
         if (!parent.ios.view.window) {
             throw new Error("Parent page is not part of the window hierarchy. Close the current modal page before showing another one!");
@@ -143,7 +157,7 @@ export class Page extends pageCommon.Page {
 
     protected _hideNativeModalView(parent: Page) {
         parent._ios.dismissModalViewControllerAnimated(false);
-        (<any>this)._isModal = false;
+        this._isModal = false;
         (<any>this)._UIModalPresentationFormSheet = false;
     }
 
