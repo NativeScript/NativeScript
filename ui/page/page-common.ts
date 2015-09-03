@@ -210,7 +210,9 @@ export class Page extends contentView.ContentView implements dts.Page {
         var that = this;
         var closeProxy = function () {
             that._hideNativeModalView(parent);
-            closeCallback.apply(undefined, arguments);
+            if (closeCallback){
+                closeCallback.apply(undefined, arguments);
+            }
         };
 
         this.notify({
