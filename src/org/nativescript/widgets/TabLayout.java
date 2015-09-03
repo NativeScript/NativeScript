@@ -130,7 +130,7 @@ public class TabLayout extends HorizontalScrollView {
      * {@link TabLayout} you are required to set any
      * {@link ViewPager.OnPageChangeListener} through this method. This is so
      * that the layout can update it's scroll position correctly.
-     *
+     * 
      * @see ViewPager#setOnPageChangeListener(ViewPager.OnPageChangeListener)
      */
     public void setOnPageChangeListener(ViewPager.OnPageChangeListener listener) {
@@ -158,6 +158,16 @@ public class TabLayout extends HorizontalScrollView {
     }
 
     /**
+     * Updates the ui of an item at specified index
+     */
+    public void updateItemAt(int position, TabItemSpec tabItem) {
+        LinearLayout ll = (LinearLayout)mTabStrip.getChildAt(position);
+        ImageView imgView = (ImageView)ll.getChildAt(0);
+        TextView textView = (TextView)ll.getChildAt(1);
+        this.setupItem(ll, textView, imgView, tabItem);
+    }
+
+    /**
      * Create a default view to be used for tabs.
      */
     protected View createDefaultTabView(Context context, TabItemSpec tabItem) {
@@ -172,53 +182,61 @@ public class TabLayout extends HorizontalScrollView {
         getContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
         ll.setBackgroundResource(outValue.resourceId);
 
-        ImageView imgView = null;
-        if (tabItem.iconId != 0 || tabItem.iconDrawable != null) {
-            imgView = new ImageView(context);
-            imgView.setScaleType(ScaleType.FIT_CENTER);
-            LinearLayout.LayoutParams imgLP = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            imgLP.gravity = Gravity.CENTER;
+        ImageView imgView = new ImageView(context);
+        imgView.setScaleType(ScaleType.FIT_CENTER);
+        LinearLayout.LayoutParams imgLP = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        imgLP.gravity = Gravity.CENTER;
+        imgView.setLayoutParams(imgLP);
 
-            imgView.setLayoutParams(imgLP);
+        TextView textView = new TextView(context);
+        textView.setGravity(Gravity.CENTER);
+        textView.setMaxWidth((int) (TEXT_MAX_WIDHT * density));
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, TAB_VIEW_TEXT_SIZE_SP);
+        textView.setTypeface(Typeface.DEFAULT_BOLD);
+        textView.setEllipsize(TextUtils.TruncateAt.END);
+        textView.setAllCaps(true);
+        textView.setMaxLines(2);
+        textView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        textView.setPadding(padding, 0, padding, 0);
 
-            if (tabItem.iconId != 0) {
-               imgView.setImageResource(tabItem.iconId);
-            } else {
-                imgView.setImageDrawable(tabItem.iconDrawable);
-            }
+        this.setupItem(ll, textView, imgView, tabItem);
+
+        ll.addView(imgView);
+        ll.addView(textView);
+        return ll;
+    }
+    
+    private void setupItem(LinearLayout ll, TextView textView,ImageView imgView, TabItemSpec tabItem){
+        float density = getResources().getDisplayMetrics().density;
+        
+        if (tabItem.iconId != 0) {
+            imgView.setImageResource(tabItem.iconId);
+            imgView.setVisibility(VISIBLE);
+        } else if (tabItem.iconDrawable != null) {
+            imgView.setImageDrawable(tabItem.iconDrawable);
+            imgView.setVisibility(VISIBLE);
+        } else {
+            imgView.setVisibility(GONE);
         }
 
-        TextView textView = null;
-        if(tabItem.title != null && !tabItem.title.isEmpty()) {
-            textView = new TextView(context);
+        if (tabItem.title != null && !tabItem.title.isEmpty()) {
             textView.setText(tabItem.title);
-            textView.setGravity(Gravity.CENTER);
-            textView.setMaxWidth((int) (TEXT_MAX_WIDHT * density));
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, TAB_VIEW_TEXT_SIZE_SP);
-            textView.setTypeface(Typeface.DEFAULT_BOLD);
-            textView.setEllipsize(TextUtils.TruncateAt.END);
-            textView.setAllCaps(true);
-            textView.setMaxLines(2);
-            textView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            textView.setPadding(padding, 0, padding, 0);
+            textView.setVisibility(VISIBLE);
+        } else {
+            textView.setVisibility(GONE);
         }
 
-        if(imgView != null && textView!= null){
+        if (imgView.getVisibility() == VISIBLE && textView.getVisibility() == VISIBLE) {
             ll.setMinimumHeight((int) (LARGE_MIN_HEIGHT * density));
-        }
-        else{
+        } else {
             ll.setMinimumHeight((int) (SMALL_MIN_HEIGHT * density));
         }
-
-        if(imgView != null){
-            ll.addView(imgView);
-        }
         
-        if(textView != null) {
-            ll.addView(textView);
+        if (mDistributeEvenly) {
+            LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) ll.getLayoutParams();
+            lp.width = 0;
+            lp.weight = 1;
         }
-
-        return ll;
     }
 
     private void populateTabStrip() {
@@ -229,21 +247,14 @@ public class TabLayout extends HorizontalScrollView {
             View tabView = null;
 
             TabItemSpec tabItem;
-            if(this.mTabItems != null && this.mTabItems.length > i) {
+            if (this.mTabItems != null && this.mTabItems.length > i) {
                 tabItem = this.mTabItems[i];
-            }
-            else{
+            } else {
                 tabItem = new TabItemSpec();
                 tabItem.title = adapter.getPageTitle(i).toString();
             }
 
             tabView = createDefaultTabView(getContext(), tabItem);
-
-            if (mDistributeEvenly) {
-                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) tabView.getLayoutParams();
-                lp.width = 0;
-                lp.weight = 1;
-            }
 
             tabView.setOnClickListener(tabClickListener);
             String desc = mContentDescriptions.get(i, null);
