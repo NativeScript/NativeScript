@@ -3,7 +3,6 @@ import definition = require("ui/page");
 import viewModule = require("ui/core/view");
 import trace = require("trace");
 import utils = require("utils/utils");
-import types = require("utils/types");
 
 global.moduleMerge(pageCommon, exports);
 
@@ -149,9 +148,9 @@ export class Page extends pageCommon.Page {
     }
 
     public _updateActionBar(hidden: boolean) {
-        if (types.isDefined(hidden) && this.ios.navigationController.navigationBarHidden !== hidden) {
-            this.ios.navigationController.navigationBarHidden = hidden;
-            this.requestLayout();
+        var frame = this.frame;
+        if (frame) {
+            frame._updateActionBar(this);
         }
     }
 

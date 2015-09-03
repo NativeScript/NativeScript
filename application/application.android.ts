@@ -7,8 +7,6 @@ import enums = require("ui/enums");
 
 global.moduleMerge(appModule, exports);
 
-export var mainModule: string;
-
 // We are using the exports object for the common events since we merge the appModule with this module's exports, which is what users will receive when require("application") is called;
 // TODO: This is kind of hacky and is "pure JS in TypeScript"
 
@@ -218,10 +216,15 @@ export class AndroidApplication extends observable.Observable implements dts.And
 
         var topFrame = frame.topmost();
         if (!topFrame) {
-            // try to navigate to the mainModule (if specified)
-            if (mainModule) {
+            // try to navigate to the mainEntry/Module (if specified)
+            var navParam = dts.mainEntry;
+            if (!navParam) {
+                navParam = dts.mainModule;
+            }
+
+            if (navParam) {
                 topFrame = new frame.Frame();
-                topFrame.navigate(mainModule);
+                topFrame.navigate(navParam);
             } else {
                 // TODO: Throw an exception?
                 throw new Error("A Frame must be used to navigate to a Page.");

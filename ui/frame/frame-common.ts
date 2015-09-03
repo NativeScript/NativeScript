@@ -196,6 +196,21 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         }
     }
 
+    public _isEntryBackstackVisible(entry: definition.BackstackEntry): boolean {
+        if (!entry) {
+            return false;
+        }
+
+        var backstackVisibleValue = entry.entry.backstackVisible;
+        var backstackHidden = types.isDefined(backstackVisibleValue) && !backstackVisibleValue;
+
+        return !backstackHidden;
+    }
+
+    public _updateActionBar(page?: pages.Page) {
+        trace.write("calling _updateActionBar on Frame", trace.categories.Navigation);
+    }
+
     private _processNavigationContext(navigationContext: NavigationContext) {
         if (navigationContext.isBackNavigation) {
             this.performGoBack(navigationContext);
@@ -209,7 +224,7 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         var navContext = navigationContext.entry;
         this._onNavigatingTo(navContext);
 
-        if (this.currentPage) {
+        if (this._isEntryBackstackVisible(this._currentEntry)) {
             this._backStack.push(this._currentEntry);
         }
 

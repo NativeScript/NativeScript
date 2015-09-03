@@ -89,6 +89,7 @@ declare module "ui/frame" {
 
         //@private
         _processNavigationQueue(page: pages.Page);
+        _updateActionBar(page?: pages.Page);
         //@endprivate
 
         /**
@@ -144,6 +145,12 @@ declare module "ui/frame" {
          * True to navigate to the new Page using animated transitions, false otherwise.
          */
         animated?: boolean;
+
+        /**
+         * True to record the navigation in the backstack, false otherwise. 
+         * If the parameter is set to false then the Page will be displayed but once navigated from it will not be able to be navigated back to.
+         */
+        backstackVisible?: boolean;
     }
 
     /**

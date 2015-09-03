@@ -4,6 +4,7 @@
 declare module "application" {
     import cssSelector = require("ui/styling/css-selector");
     import observable = require("data/observable");
+    import frame = require("ui/frame");
 
     /**
      * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
@@ -93,6 +94,11 @@ declare module "application" {
      * application.start();
      */
     export var mainModule: string;
+
+    /**
+     * The main navigation entry to be used when loading the main Page.
+     */
+    export var mainEntry: frame.NavigationEntry;
 
 	/**
 	 * An application level static resources.
