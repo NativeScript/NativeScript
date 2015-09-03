@@ -98,6 +98,36 @@ var cssClassProperty = new dependencyObservable.Property(
     new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged)
     );
 
+var translateXProperty = new dependencyObservable.Property(
+    "translateX",
+    "View",
+    new proxy.PropertyMetadata(0)
+    );
+
+var translateYProperty = new dependencyObservable.Property(
+    "translateY",
+    "View",
+    new proxy.PropertyMetadata(0)
+    );
+
+var scaleXProperty = new dependencyObservable.Property(
+    "scaleX",
+    "View",
+    new proxy.PropertyMetadata(1)
+    );
+
+var scaleYProperty = new dependencyObservable.Property(
+    "scaleY",
+    "View",
+    new proxy.PropertyMetadata(1)
+    );
+
+var rotateProperty = new dependencyObservable.Property(
+    "rotate",
+    "View",
+    new proxy.PropertyMetadata(0)
+    );
+
 var isEnabledProperty = new dependencyObservable.Property(
     "isEnabled",
     "View",
@@ -116,6 +146,11 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     public static idProperty = idProperty;
     public static cssClassProperty = cssClassProperty;
+    public static translateXProperty = translateXProperty;
+    public static translateYProperty = translateYProperty;
+    public static scaleXProperty = scaleXProperty;
+    public static scaleYProperty = scaleYProperty;
+    public static rotateProperty = rotateProperty;
     public static isEnabledProperty = isEnabledProperty;
     public static isUserInteractionEnabledProperty = isUserInteractionEnabledProperty;
 
@@ -373,6 +408,41 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
             
     //END Style property shortcuts
+
+    get translateX(): number {
+        return this._getValue(View.translateXProperty);
+    }
+    set translateX(value: number) {
+        this._setValue(View.translateXProperty, value);
+    }
+
+    get translateY(): number {
+        return this._getValue(View.translateYProperty);
+    }
+    set translateY(value: number) {
+        this._setValue(View.translateYProperty, value);
+    }
+
+    get scaleX(): number {
+        return this._getValue(View.scaleXProperty);
+    }
+    set scaleX(value: number) {
+        this._setValue(View.scaleXProperty, value);
+    }
+
+    get scaleY(): number {
+        return this._getValue(View.scaleYProperty);
+    }
+    set scaleY(value: number) {
+        this._setValue(View.scaleYProperty, value);
+    }
+
+    get rotate(): number {
+        return this._getValue(View.rotateProperty);
+    }
+    set rotate(value: number) {
+        this._setValue(View.rotateProperty, value);
+    }
 
     get isEnabled(): boolean {
         return this._getValue(View.isEnabledProperty);

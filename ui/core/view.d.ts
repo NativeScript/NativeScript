@@ -228,6 +228,31 @@ declare module "ui/core/view" {
         //----------Style property shortcuts----------
 
         /**
+         * Gets or sets the translateX affine transform of the view.
+         */
+        translateX: number;
+
+        /**
+         * Gets or sets the translateY affine transform of the view.
+         */
+        translateY: number;
+
+        /**
+         * Gets or sets the scaleX affine transform of the view.
+         */
+        scaleX: number;
+
+        /**
+         * Gets or sets the scaleY affine transform of the view.
+         */
+        scaleY: number;
+
+        /**
+         * Gets or sets the rotate affine transform of the view.
+         */
+        rotate: number;
+
+        /**
          * Gets or sets a value indicating whether the the view is enabled. This affects the appearance of the view.
          */
         isEnabled: boolean;

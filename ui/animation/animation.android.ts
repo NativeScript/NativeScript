@@ -183,6 +183,7 @@ export class Animation extends common.Animation implements definition.Animation 
                     nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                     nativeArray[0] = propertyAnimation.value.x * density;
                     animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "translationX", nativeArray));
+                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.translateX = propertyAnimation.value.x; });
                     propertyResetCallbacks.push(() => { nativeView.setTranslationX(originalValue); });
                 }
 
@@ -191,6 +192,7 @@ export class Animation extends common.Animation implements definition.Animation 
                     nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                     nativeArray[0] = propertyAnimation.value.y * density;
                     animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "translationY", nativeArray));
+                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.translateY = propertyAnimation.value.y; });
                     propertyResetCallbacks.push(() => { nativeView.setTranslationY(originalValue); });
                 }
                 break;
@@ -201,6 +203,7 @@ export class Animation extends common.Animation implements definition.Animation 
                     nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                     nativeArray[0] = propertyAnimation.value;
                     animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
+                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.rotate = propertyAnimation.value; });
                     propertyResetCallbacks.push(() => { nativeView.setRotation(originalValue); });
                 }
                 break;
@@ -211,6 +214,7 @@ export class Animation extends common.Animation implements definition.Animation 
                     nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                     nativeArray[0] = propertyAnimation.value.x;
                     animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "scaleX", nativeArray));
+                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.scaleX = propertyAnimation.value.x; });
                     propertyResetCallbacks.push(() => { nativeView.setScaleX(originalValue); });
                 }
 
@@ -219,6 +223,7 @@ export class Animation extends common.Animation implements definition.Animation 
                     nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                     nativeArray[0] = propertyAnimation.value.y;
                     animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "scaleY", nativeArray));
+                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.scaleY = propertyAnimation.value.y; });
                     propertyResetCallbacks.push(() => { nativeView.setScaleY(originalValue); });
                 }
                 break;

@@ -1,0 +1,29 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded" id="mainPage">
+  <StackLayout orientation="vertical" backgroundColor="LightGray" paddingLeft="5" paddingRight="5">
+
+    <Label text="translateX" marginTop="5" />
+    <Slider minValue="-300" maxValue="300" value="{{ translateX }}"/>
+
+    <Label text="translateY" marginTop="5" />
+    <Slider minValue="-300" maxValue="300" value="{{ translateY }}"/>
+
+    <Label text="scaleX" marginTop="5" />
+    <Slider minValue="0" maxValue="5" value="{{ scaleX }}"/>
+
+    <Label text="scaleY" marginTop="5" />
+    <Slider minValue="0" maxValue="5" value="{{ scaleY }}"/>
+
+    <Label text="rotate" marginTop="5" />
+    <Slider minValue="-360" maxValue="360" value="{{ rotate }}"/>
+
+    <AbsoluteLayout backgroundColor="Yellow" width="300" height="300" clipToBounds="true" marginTop="5" marginBottom="5">
+      <Label text="Transform Me!" backgroundColor="Green" width="100" height="100" left="100" top="100"
+              translateX="{{ translateX }}"
+              translateY="{{ translateY }}"
+              scaleX="{{ scaleX }}"
+              scaleY="{{ scaleY }}"
+              rotate="{{ rotate }}"
+            />
+    </AbsoluteLayout>
+  </StackLayout>
+</Page>
