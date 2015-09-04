@@ -571,7 +571,8 @@ function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache
 
 function _clickTheFirstButtonInTheListViewNatively(tabView: tabViewModule.TabView) {
     if (tabView.android) {
-        var androidListView = <android.widget.ListView>tabView.android.getChildAt(0);
+        var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+        var androidListView = <android.widget.ListView>viewPager.getChildAt(0);
         (<android.widget.Button>androidListView.getChildAt(0)).performClick();
     }
     else {

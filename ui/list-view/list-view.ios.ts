@@ -176,7 +176,7 @@ export class ListView extends common.ListView {
     public scrollToIndex(index: number) {
         if (this._ios) {
             this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
-                UITableViewScrollPosition.UITableViewScrollPositionTop, true);
+                UITableViewScrollPosition.UITableViewScrollPositionTop, false);
         }
     }
 

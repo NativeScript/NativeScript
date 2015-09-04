@@ -177,4 +177,13 @@ export class Page extends pageCommon.Page {
         viewModule.View.layoutChild(this, this.actionBar, 0, 0, right - left, bottom - top);
         super.onLayout(left, top, right, bottom);
     }
+
+    public _addViewToNativeVisualTree(view: viewModule.View): boolean {
+        // ActionBar is added to the native visual tree by default
+        if (view === this.actionBar) {
+            return true;
+        }
+
+        return super._addViewToNativeVisualTree(view);
+    }
 }

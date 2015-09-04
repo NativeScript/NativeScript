@@ -7,9 +7,9 @@ import imageSource = require("image-source");
 import enums = require("ui/enums");
 import application = require("application");
 import dts = require("ui/action-bar");
+import view = require("ui/core/view");
 
 var ACTION_ITEM_ID_OFFSET = 1000;
-var API_LVL = android.os.Build.VERSION.SDK_INT;
 
 global.moduleMerge(common, exports);
 
@@ -60,6 +60,7 @@ export class AndroidActionBarSettings implements dts.AndroidActionBarSettings {
 export class ActionBar extends common.ActionBar {
     private _appResources: android.content.res.Resources;
     private _android: AndroidActionBarSettings;
+    private _toolbar: android.support.v7.widget.Toolbar;
 
     get android(): AndroidActionBarSettings {
         return this._android;
@@ -70,7 +71,7 @@ export class ActionBar extends common.ActionBar {
     }
 
     get _nativeView() {
-        return undefined;
+        return this._toolbar;
     }
 
     constructor() {
@@ -80,10 +81,42 @@ export class ActionBar extends common.ActionBar {
         this._android = new AndroidActionBarSettings(this);
     }
 
+    public _createUI() {
+        this._toolbar = new android.support.v7.widget.Toolbar(this._context);
+        var owner = this;
+        this._toolbar.setOnMenuItemClickListener(new android.support.v7.widget.Toolbar.OnMenuItemClickListener({
+            onMenuItemClick: function (item: android.view.IMenuItem): boolean {
+                var itemId = item.getItemId();
+                return owner._onAndroidItemSelected(itemId);
+            }
+        }));
+        this.update();
+    }
+
     public update() {
-        if (this.page && this.page.frame && this.page.frame.android && this.page.frame.android.activity) {
-            this.page.frame.android.activity.invalidateOptionsMenu();
+        if (!this._toolbar) {
+            return;
         }
+
+        if (this.page.actionBarHidden) {
+            this._toolbar.setVisibility(android.view.View.GONE);
+
+            // If action bar is hidden - no need to fill it with items.
+            return;
+        }
+        this._toolbar.setVisibility(android.view.View.VISIBLE);
+
+        // Add menu items
+        this._addActionItems();
+
+        // Set title
+        this._updateTitleAndTitleView();
+
+        // Set home icon
+        this._updateIcon();
+
+        // Set navigation button
+        this._updateNavigationButton();
     }
 
     public _onAndroidItemSelected(itemId: number): boolean {
@@ -101,98 +134,64 @@ export class ActionBar extends common.ActionBar {
         return false;
     }
 
-    public _updateAndroid(menu: android.view.IMenu) {
-        var actionBar: android.app.ActionBar = frame.topmost().android.actionBar;
-
-        if (this.page.actionBarHidden) {
-            if (actionBar.isShowing()) {
-                actionBar.hide();
-            }
-
-            // If action bar is hidden - no need to fill it with items.
-            return;
-        }
-
-        // Assure action bar is showing;
-        if (!actionBar.isShowing()) {
-            actionBar.show();
-        }
-
-        this._addActionItems(menu);
-
-        // Set title
-        this._updateTitleAndTitleView(actionBar);
-
-        // Set home icon
-        this._updateIcon(actionBar);
-
-        // Set navigation button
-        this._updateNavigationButton(actionBar);
-    }
-
-    public _updateNavigationButton(actionBar: android.app.ActionBar) {
+    public _updateNavigationButton() {
         var navButton = this.navigationButton;
         if (navButton) {
-            // No API to set the icon in pre-lvl 18 
-            if (API_LVL >= 18) {
-                var drawableOrId = getDrawableOrResourceId(navButton.icon, this._appResources);
-                if (!drawableOrId) {
-                    drawableOrId = 0;
+            var drawableOrId = getDrawableOrResourceId(navButton.icon, this._appResources);
+            this._toolbar.setNavigationIcon(drawableOrId);
+
+            this._toolbar.setNavigationOnClickListener(new android.view.View.OnClickListener({
+                onClick: function (v) {
+                    if (navButton) {
+                        navButton._raiseTap();
+                    }
                 }
-
-                setHomeAsUpIndicator(actionBar, drawableOrId);
-            }
-            actionBar.setDisplayHomeAsUpEnabled(true);
+            }));
         }
         else {
-            actionBar.setDisplayHomeAsUpEnabled(false);
+            this._toolbar.setNavigationIcon(null);
         }
     }
 
-    public _updateIcon(actionBar: android.app.ActionBar) {
-        var icon = this.android.icon;
-        if (types.isDefined(icon)) {
-            var drawableOrId = getDrawableOrResourceId(icon, this._appResources);
-            if (drawableOrId) {
-                actionBar.setIcon(drawableOrId);
-            }
-        }
-        else {
-            var defaultIcon = application.android.nativeApp.getApplicationInfo().icon;
-            actionBar.setIcon(defaultIcon);
-        }
-
+    public _updateIcon() {
         var visibility = getIconVisibility(this.android.iconVisibility);
-        actionBar.setDisplayShowHomeEnabled(visibility);
-    }
-
-    public _updateTitleAndTitleView(actionBar: android.app.ActionBar) {
-        if (this.titleView) {
-            actionBar.setCustomView(this.titleView.android);
-            actionBar.setDisplayShowCustomEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
+        if (visibility) {
+            var icon = this.android.icon;
+            if (types.isDefined(icon)) {
+                var drawableOrId = getDrawableOrResourceId(icon, this._appResources);
+                if (drawableOrId) {
+                    this._toolbar.setLogo(drawableOrId);
+                }
+            }
+            else {
+                var defaultIcon = application.android.nativeApp.getApplicationInfo().icon;
+                this._toolbar.setLogo(defaultIcon);
+            }
         }
         else {
-            actionBar.setCustomView(null);
-            actionBar.setDisplayShowCustomEnabled(false);
-            actionBar.setDisplayShowTitleEnabled(true);
+            this._toolbar.setLogo(null);
+        }
+    }
 
+    public _updateTitleAndTitleView() {
+        if (!this.titleView) {
             // No title view - show the title
             var title = this.title;
             if (types.isDefined(title)) {
-                actionBar.setTitle(title);
+                this._toolbar.setTitle(title);
             } else {
                 var appContext = application.android.context;
                 var appInfo = appContext.getApplicationInfo();
                 var appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
                 if (appLabel) {
-                    actionBar.setTitle(appLabel);
+                    this._toolbar.setTitle(appLabel);
                 }
             }
         }
     }
 
-    public _addActionItems(menu: android.view.IMenu) {
+    public _addActionItems() {
+        var menu = this._toolbar.getMenu();
         var items = this.actionItems.getItems();
 
         for (var i = 0; i < items.length; i++) {
@@ -213,52 +212,46 @@ export class ActionBar extends common.ActionBar {
     public _onTitlePropertyChanged() {
         var topFrame = frame.topmost();
         if (topFrame && topFrame.currentPage === this.page) {
-            this._updateTitleAndTitleView(frame.topmost().android.actionBar);
+            this._updateTitleAndTitleView();
         }
     }
 
     public _onIconPropertyChanged() {
         var topFrame = frame.topmost();
         if (topFrame && topFrame.currentPage === this.page) {
-            this._updateIcon(frame.topmost().android.actionBar);
+            this._updateIcon();
         }
     }
 
     public _clearAndroidReference() {
         // don't clear _android field!
+        this._toolbar = undefined;
     }
-}
 
-var setHomeAsUpIndicatorWithResoruceId: java.lang.reflect.Method;
-var setHomeAsUpIndicatorWithDrawable: java.lang.reflect.Method;
-function setHomeAsUpIndicator(actionBar: android.app.ActionBar, drawableOrId: any) {
-    try {
-        // TODO: Remove reflection as soon as AppCopmat libs are available
-        var paramsArr = java.lang.reflect.Array.newInstance(java.lang.Object.class, 1);
-        if (types.isNumber(drawableOrId)) {
-            if (!setHomeAsUpIndicatorWithResoruceId) {
-                // get setHomeAsUpIndicator(resourceId: number) method with reflection and cache it
-                let typeArr = java.lang.reflect.Array.newInstance(java.lang.Class.class, 1);
-                typeArr[0] = java.lang.Integer.TYPE;
-                setHomeAsUpIndicatorWithResoruceId = actionBar.getClass().getMethod("setHomeAsUpIndicator", typeArr);
+    public _addViewToNativeVisualTree(child: view.View, atIndex?: number): boolean {
+        super._addViewToNativeVisualTree(child);
+
+        if (this._toolbar && child._nativeView) {
+
+            if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.getChildCount()) {
+                this._toolbar.addView(child._nativeView);
             }
-
-            paramsArr[0] = new java.lang.Integer(drawableOrId);
-            setHomeAsUpIndicatorWithResoruceId.invoke(actionBar, paramsArr);
-        } else {
-            if (!setHomeAsUpIndicatorWithDrawable) {
-                // get setHomeAsUpIndicator(drawable) method with reflection and cache it
-                let typeArr = java.lang.reflect.Array.newInstance(java.lang.Class.class, 1);
-                typeArr[0] = android.graphics.drawable.Drawable.class;
-                setHomeAsUpIndicatorWithDrawable = actionBar.getClass().getMethod("setHomeAsUpIndicator", typeArr);
+            else {
+                this._toolbar.addView(child._nativeView, atIndex);
             }
-
-            paramsArr[0] = drawableOrId;
-            setHomeAsUpIndicatorWithDrawable.invoke(actionBar, paramsArr);
+            return true;
         }
+
+        return false;
     }
-    catch (e) {
-        trace.write("Failed to set navigation icon: " + e, trace.categories.Error, trace.messageType.error);
+
+    public _removeViewFromNativeVisualTree(child: view.View): void {
+        super._removeViewFromNativeVisualTree(child);
+
+        if (this._toolbar && child._nativeView) {
+            this._toolbar.removeView(child._nativeView);
+            trace.notifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
+        }
     }
 }
 
@@ -305,11 +298,9 @@ function getIconVisibility(iconVisibility: string): boolean {
         case enums.AndroidActionBarIconVisibility.always:
             return true;
 
-        case enums.AndroidActionBarIconVisibility.never:
-            return false;
-
         case enums.AndroidActionBarIconVisibility.auto:
+        case enums.AndroidActionBarIconVisibility.never:
         default:
-            return API_LVL <= 20;
+            return false;
     }
 }

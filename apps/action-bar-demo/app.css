@@ -11,3 +11,7 @@ ScrollView {
     font-size: 24;
     margin: 6 0;
 }
+
+.custom-action-bar {
+    background-color: lightcoral;
+} 

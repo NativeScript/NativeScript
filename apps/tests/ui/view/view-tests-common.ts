@@ -196,7 +196,7 @@ export var test_addView_WillThrow_IfView_IsAlreadyAdded = function () {
             views[1]._addView(newButton);
         } catch (e) {
             thrown = true;
-            TKUnit.assert(e.message === "View already has a parent.");
+            TKUnit.assert(e.message.indexOf("View already has a parent.") >= 0);
         }
 
         TKUnit.assert(thrown);
