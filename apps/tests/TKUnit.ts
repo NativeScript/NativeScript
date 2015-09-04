@@ -156,6 +156,12 @@ export function assert(test: any, message?: string) {
     }
 };
 
+export function assertTrue(test: boolean, message?: string) {
+    if (test !== true) {
+        throw new Error(message);
+    }
+};
+
 export function assertNotEqual(actual: any, expected: any, message?: string) {
 
     var equals = false;
