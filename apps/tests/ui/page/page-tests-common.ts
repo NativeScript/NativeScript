@@ -367,3 +367,40 @@ export function test_page_backgroundColor_is_white() {
         TKUnit.assertEqual(page.style.backgroundColor.hex.toLowerCase(), "#ffffff", "page background-color");
     });
 }
+
+//export function test_ModalPage_Layout_is_Correct() {
+//    var testPage: PageModule.Page;
+//    var label: LabelModule.Label;
+//    var pageFactory = function () {
+//        testPage = new PageModule.Page();
+//        label = new LabelModule.Label();
+//        label.text = "Will Show modal page";
+//        testPage.content = label;
+//        return testPage;
+//    };
+
+//    helper.navigate(pageFactory);
+//    var basePath = "ui/page/";
+//    testPage.showModal(basePath + "page21", testPage, () => { }, false);
+
+//    // TODO: Remove this once navigate and showModal returns Promise<Page>.
+//    TKUnit.wait(0.350);
+//    var childPage = (<any>testPage).childPage;
+//    var closeCallback: Function = (<any>testPage).close;
+
+//    try {
+//        var layout = <stackLayoutModule.StackLayout>childPage.content;
+//        var repeater = layout.getChildAt(1);
+//        TKUnit.assertTrue(repeater.isLayoutValid, "layout should be valid.");
+//        var bounds = repeater._getCurrentLayoutBounds();
+//        var height = bounds.bottom - bounds.top;
+//        TKUnit.assertTrue(height > 0, "Layout should be >0.");
+
+//        closeCallback();
+//        TKUnit.wait(0.150);
+//    }
+//    finally {
+//        helper.goBack
+//        helper.goBack();
+//    }
+//}
