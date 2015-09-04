@@ -87,10 +87,25 @@ function resolveFontDescriptor(fontFamilyValue: string, symbolicTraits: number):
         var fontFamily = getFontFamilyRespectingGenericFonts(fonts[i]);
         if (systemFontFamilies.has(fontFamily)) {
             // This is a font family - we should apply symbolic traits if there are such
-            result = UIFontDescriptor.fontDescriptorWithNameSize(fontFamily, 0);
-            if (symbolicTraits) {
-                result = result.fontDescriptorWithSymbolicTraits(symbolicTraits);
+            var fontFaceAttribute = "";
+
+            if (!symbolicTraits) {
+                fontFaceAttribute = "Regular";
             }
+            else {
+                if (symbolicTraits & UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold) {
+                    fontFaceAttribute += " Bold";
+                }
+                if (symbolicTraits & UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic) {
+                    fontFaceAttribute += " Italic";
+                }
+            }
+
+            var fontAttributes = NSMutableDictionary.alloc().init();
+            fontAttributes.setObjectForKey(fontFamily, "NSFontFamilyAttribute");
+            fontAttributes.setObjectForKey(fontFaceAttribute.trim(), "NSFontFaceAttribute");
+
+            result = UIFontDescriptor.fontDescriptorWithFontAttributes(fontAttributes);
         }
         else if (systemFonts.has(fontFamily)) {
             // This is an actual font - don't apply symbolic traits
@@ -128,6 +143,9 @@ function getFontFamilyRespectingGenericFonts(fontFamily: string): string {
 export module ios {
     export function registerFont(fontFile: string) {
         var filePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFile);
+        if (!fs.File.exists(filePath)) {
+            filePath = fs.path.join(fs.knownFolders.currentApp().path, fontFile);
+        }
         var fontData = NSFileManager.defaultManager().contentsAtPath(filePath);
         if (!fontData) {
             throw new Error("Could not load font from: " + fontFile);
@@ -139,9 +157,9 @@ export module ios {
             throw new Error("Could not load font from: " + fontFile);
         }
 
-        var error = NSError.alloc().init();
+        var error = new interop.Reference();
         if (!CTFontManagerRegisterGraphicsFont(font, error)) {
-            throw new Error(error.localizedDescription);
+            throw new Error(CFErrorCopyDescription(<NSError>error.value));
         }
 
         areSystemFontSetsValid = false;
