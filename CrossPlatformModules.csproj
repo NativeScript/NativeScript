@@ -150,7 +150,6 @@
     <TypeScriptCompile Include="apps\animations\model.ts" />
     <TypeScriptCompile Include="apps\orientation-demo\main-page.ts" />
     <TypeScriptCompile Include="apps\tests\navigation-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\pages\page21.ts">
     <TypeScriptCompile Include="apps\tests\ui\page\page21.ts">
       <DependentUpon>page21.xml</DependentUpon>
     </TypeScriptCompile>
