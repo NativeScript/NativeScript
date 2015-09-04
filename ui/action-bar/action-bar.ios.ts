@@ -66,6 +66,9 @@ export class ActionBar extends common.ActionBar {
             img = imageSource.fromFileOrResource(this.navigationButton.icon);
         }
 
+        // TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to 
+        // show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
+        // Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
         if (img && img.ios) {
             var image = img.ios.imageWithRenderingMode(UIImageRenderingMode.UIImageRenderingModeAlwaysOriginal)
             navigationBar.backIndicatorImage = image;
