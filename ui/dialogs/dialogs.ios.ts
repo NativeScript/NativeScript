@@ -445,7 +445,7 @@ export function action(arg: any): Promise<string> {
                 actionSheet.delegate = delegate;
                 actionSheet.showInView(UIApplication.sharedApplication().keyWindow);
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.message, "", UIAlertControllerStyle.UIAlertControllerStyleActionSheet);
+                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.message, null, UIAlertControllerStyle.UIAlertControllerStyleActionSheet);
 
                 if (options.actions) {
                     for (i = 0; i < options.actions.length; i++) {
