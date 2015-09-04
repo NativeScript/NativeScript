@@ -6,7 +6,7 @@ import def = require("./layout-helper");
 
 var DELTA = 0.1;
 
-class NativeButton extends android.widget.Button {
+export class NativeButton extends android.widget.Button {
     
     private owner: MyButton;
 
@@ -106,7 +106,7 @@ export class MyButton extends button.Button implements def.MyButton {
     }
 }
 
-class NativeStackLayout extends org.nativescript.widgets.StackLayout {
+export class NativeStackLayout extends org.nativescript.widgets.StackLayout {
  
     private owner: MyStackLayout;
 
