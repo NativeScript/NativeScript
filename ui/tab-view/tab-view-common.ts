@@ -9,7 +9,7 @@ import bindable = require("ui/core/bindable");
 export var traceCategory = "TabView";
 
 export class TabViewItem extends bindable.Bindable implements definition.TabViewItem {
-    private _title: string;
+    private _title: string = "";
     private _view: view.View;
     private _iconSource: string;
 

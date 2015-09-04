@@ -11,7 +11,7 @@ export module knownCollections {
 }
 
 export class SegmentedBarItem extends bindable.Bindable implements definition.SegmentedBarItem {
-    private _title: string;
+    private _title: string = "";
     public _parent: SegmentedBar;
 
     get title(): string {
