@@ -162,12 +162,15 @@ export var test_events_onDetachedAndRemovedFromNativeVisualTree_AreRaised_WhenNa
 
         // this is an event fired from CustomLayoutView when a child is removed from the native visual tree
         // therefore this event is fired for StackLayout and Button (which is inside StackLayout).
-        TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents.length, 2);
+        TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents.length, 3);
         TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[0].name, "childInLayoutRemovedFromNativeVisualTree");
         TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[0].sender, views[1]);
 
         TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[1].name, "childInLayoutRemovedFromNativeVisualTree");
         TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[1].sender, views[2]);
+
+        TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[2].name, "childInLayoutRemovedFromNativeVisualTree");
+        TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[2].sender, views[3]);
 
         trace.removeEventListener(onDetachedListener);
         trace.removeEventListener(removeFromNativeVisualTreeListener);

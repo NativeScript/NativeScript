@@ -134,25 +134,6 @@ class PageFragmentBody extends android.app.Fragment {
         super.onDetach();
         trace.write(this.getTag() + ".onDetach();", trace.categories.NativeLifecycle);
     }
-
-    onCreateOptionsMenu(menu: android.view.IMenu, inflater: android.view.MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-
-        var page: pages.Page = this.entry.resolvedPage;
-
-        page.actionBar._updateAndroid(menu);
-    }
-
-    onOptionsItemSelected(item: android.view.IMenuItem) {
-        var page: pages.Page = this.entry.resolvedPage;
-        var itemId = item.getItemId();
-
-        if (page.actionBar._onAndroidItemSelected(itemId)) {
-            return true;
-        }
-       
-        return super.onOptionsItemSelected(item);
-    }
 }
 
 function onFragmentShown(fragment: PageFragmentBody) {

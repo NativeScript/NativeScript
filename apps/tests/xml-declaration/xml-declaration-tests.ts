@@ -76,7 +76,8 @@ export function test_loadWithOptionsNoXML_CSSIsApplied() {
 };
 
 export function test_loadInheritedPageAndResolveFromChild() {
-    helper.navigateToModuleAndRunTest("./xml-declaration/inherited-page", null, (page) => {
+    var basePath = "xml-declaration/";
+    helper.navigateToModuleAndRunTest(basePath + "inherited-page", null, (page) => {
         let contentLabel = <Label>page.content;
         TKUnit.assertEqual("Inherited and loaded", contentLabel.text);
 

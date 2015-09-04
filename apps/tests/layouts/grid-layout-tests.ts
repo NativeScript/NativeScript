@@ -1,6 +1,6 @@
 ﻿import page = require("ui/page");
 import layout = require("ui/layouts/grid-layout");
-import button = require("ui/button");
+import {Button} from "ui/button";
 import TKUnit = require("../TKUnit");
 import helper = require("./layout-helper");
 import view = require("ui/core/view");
@@ -34,14 +34,14 @@ export class MyGridLayout extends layout.GridLayout {
     }
 }
 
-var tmp: button.Button;
+var tmp: Button;
 var newPage: page.Page;
 var rootLayout: MyGridLayout;
 
 export function setUpModule() {
     var pageFactory = function (): page.Page {
         newPage = new page.Page;
-        tmp = new button.Button();
+        tmp = new Button();
         tmp.text = "Loading test";
         newPage.content = tmp;
         return newPage;
@@ -83,25 +83,27 @@ function colSpan(view: view.View): number {
 }
 
 export function test_row_defaultValue() {
-    TKUnit.assert(tmp !== null);
-    TKUnit.assertEqual(row(tmp), 0, "'row' property default value should be 0.");
+    var test = new Button();
+    TKUnit.assert(test !== null);
+    TKUnit.assertEqual(row(test), 0, "'row' property default value should be 0.");
 }
 
 export function test_rowSpan_defaultValue() {
-
-    TKUnit.assert(tmp !== null);
-    TKUnit.assertEqual(rowSpan(tmp), 1, "'rowSpan' property default value should be 1.");
+    var test = new Button();
+    TKUnit.assert(test !== null);
+    TKUnit.assertEqual(rowSpan(test), 1, "'rowSpan' property default value should be 1.");
 }
 
 export function test_column_defaultValue() {
-
-    TKUnit.assert(tmp !== null);
-    TKUnit.assertEqual(col(tmp), 0, "'column' property default value should be 0.");
+    var test = new Button();
+    TKUnit.assert(test !== null);
+    TKUnit.assertEqual(col(test), 0, "'column' property default value should be 0.");
 }
 
 export function test_columnSpan_defaultValue() {
-    TKUnit.assert(tmp !== null);
-    TKUnit.assertEqual(colSpan(tmp), 1, "'columnSpan' property default value should be 1.");
+    var test = new Button();
+    TKUnit.assert(test !== null);
+    TKUnit.assertEqual(colSpan(test), 1, "'columnSpan' property default value should be 1.");
 }
 
 export function test_getRow_shouldThrow_onNullValues() {
@@ -550,10 +552,10 @@ export var test_codesnippets = function () {
 
     // ### Add views to grid layout
     // ``` JavaScript
-    var btn1 = new button.Button();
-    var btn2 = new button.Button();
-    var btn3 = new button.Button();
-    var btn4 = new button.Button();
+    var btn1 = new Button();
+    var btn2 = new Button();
+    var btn3 = new Button();
+    var btn4 = new Button();
     gridLayout.addChild(btn1);
     gridLayout.addChild(btn2);
     gridLayout.addChild(btn3);

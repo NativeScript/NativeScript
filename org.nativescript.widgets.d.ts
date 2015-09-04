@@ -11,7 +11,7 @@
 
                 public row: number;
                 public column: number;
-                
+
                 public rowSpan: number;
                 public columnSpan: number;
 
@@ -141,6 +141,23 @@
 
                 getBorderWidth(): number;
                 setBorderWidth(width: number): void;
+            }
+
+            export class TabLayout extends android.widget.HorizontalScrollView {
+                constructor(context: android.content.Context);
+                constructor(context: android.content.Context, attrs: android.util.IAttributeSet);
+                constructor(context: android.content.Context, attrs: android.util.IAttributeSet, defStyle: number);
+
+                setSelectedIndicatorColors(color: Array<number>): void;
+
+                setItems(items: Array<TabItemSpec>, viewPager: android.support.v4.view.ViewPager): void;
+                updateItemAt(position: number, itemSpec: TabItemSpec): void;
+            }
+
+            export class TabItemSpec {
+                title: string;
+                iconId: number;
+                iconDrawable: android.graphics.drawable.Drawable;
             }
         }
     }

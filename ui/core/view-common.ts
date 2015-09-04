@@ -900,7 +900,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         }
 
         if (view._parent) {
-            throw new Error("View already has a parent.");
+            throw new Error("View already has a parent. View: " + view + " Parent: " + view._parent);
         }
 
         view._parent = this;
@@ -954,7 +954,7 @@ export class View extends proxy.ProxyObject implements definition.View {
      */
     public _removeView(view: View) {
         if (view._parent !== this) {
-            throw new Error("View not added to this instance.");
+            throw new Error("View not added to this instance. View: " + view + " CurrentParent: " + view._parent + " ExpectedParent: " + this);
         }
 
         this._removeViewCore(view);

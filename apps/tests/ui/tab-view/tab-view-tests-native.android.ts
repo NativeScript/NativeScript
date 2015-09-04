@@ -1,29 +1,11 @@
 ﻿import tabViewModule = require("ui/tab-view");
 
 export function getNativeTabCount(tabView: tabViewModule.TabView): number {
-    var actionBar = _getActionBar(tabView);
-    if (actionBar) {
-        return actionBar.getTabCount();
-    }
-
-    return tabView.android.getAdapter().getCount();
+    var pagerAdapter: android.support.v4.view.PagerAdapter = (<any>tabView)._pagerAdapter;
+    return pagerAdapter.getCount();
 }
 
 export function selectNativeTab(tabView: tabViewModule.TabView, index: number): void {
-    var actionBar = _getActionBar(tabView);
-    if (actionBar) {
-        actionBar.setSelectedNavigationItem(index);
-    }
-    else {
-        tabView.android.setCurrentItem(index);
-    }
-}
-
-function _getActionBar(tabView: tabViewModule.TabView) {
-    if (!tabView.android) {
-        return undefined;
-    }
-
-    var activity = <android.app.Activity>tabView.android.getContext();
-    return activity.getActionBar();
+    var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+    return viewPager.setCurrentItem(index);
 }

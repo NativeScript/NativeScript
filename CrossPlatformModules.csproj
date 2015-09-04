@@ -159,6 +159,7 @@
     <TypeScriptCompile Include="apps\tests\pages\page19.ts">
       <DependentUpon>page19.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\pages\tab-view.ts" />
     <TypeScriptCompile Include="apps\tests\ui\animation\animation-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\search-bar\search-bar-tests-native.android.ts" />
     <TypeScriptCompile Include="apps\tests\ui\search-bar\search-bar-tests-native.d.ts" />
@@ -175,6 +176,7 @@
     <Content Include="apps\tests\pages\page19.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\tests\pages\tab-view.xml" />
     <Content Include="apps\ui-tests-app\app.css" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\handlers.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\htmlview.ts" />

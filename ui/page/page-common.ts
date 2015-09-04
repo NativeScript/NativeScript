@@ -49,7 +49,7 @@ export class Page extends contentView.ContentView implements dts.Page {
         this.style._setValue(styleModule.backgroundColorProperty, "white", dependencyObservable.ValueSource.Inherited);
 
         this._applyCss();
-
+        
         if (this.actionBarHidden !== undefined) {
             this._updateActionBar(this.actionBarHidden);
         }
@@ -260,14 +260,5 @@ export class Page extends contentView.ContentView implements dts.Page {
 
         resetCssValuesFunc(this);
         view.eachDescendant(this, resetCssValuesFunc);
-    }
-
-    public _addViewToNativeVisualTree(view: view.View): boolean {
-        // ActionBar is added to the native visual tree by default
-        if (view === this.actionBar) {
-            return true;
-        }
-
-        return super._addViewToNativeVisualTree(view);
     }
 }

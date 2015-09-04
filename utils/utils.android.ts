@@ -1,4 +1,5 @@
 ﻿import common = require("utils/utils-common");
+import trace = require("trace");
 
 global.moduleMerge(common, exports);
 
@@ -76,6 +77,9 @@ export module ad {
     }
 
     export module resources {
+        var attr;
+        var attrCache = new Map<string, number>();
+
         export function getDrawableId(name) {
             return getId(":drawable/" + name);
         }
@@ -89,6 +93,37 @@ export module ad {
             var packageName = getApplicationContext().getPackageName();
             var uri = packageName + name;
             return resources.getIdentifier(uri, null, null);
+        }
+
+        export function getPalleteColor(name: string, context: android.content.Context): number {
+            if (attrCache.has(name)) {
+                return attrCache.get(name);
+            }
+
+            var result = 0;
+            try {
+                if (!attr) {
+                    attr = java.lang.Class.forName("android.support.v7.appcompat.R$attr")
+                }
+
+                let colorID = 0;
+                let field = attr.getField(name);
+                if (field) {
+                    colorID = field.getInt(null);
+                }
+
+                if (colorID) {
+                    let typedValue = new android.util.TypedValue();
+                    context.getTheme().resolveAttribute(colorID, typedValue, true);
+                    result = typedValue.data;
+                }
+            }
+            catch (ex) {
+                trace.write("Cannot get pallete color: " + name, trace.categories.Error, trace.messageType.error);
+            }
+
+            attrCache.set(name, result);
+            return result;
         }
     }
 }
