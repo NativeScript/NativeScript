@@ -209,7 +209,7 @@ export function action(arg: any): Promise<string> {
 
     var options: dialogs.ActionOptions;
 
-    var defaultOptions = { cancelButtonText: dialogsCommon.CANCEL };
+    var defaultOptions = { title: null, cancelButtonText: dialogsCommon.CANCEL };
 
     if (arguments.length === 1) {
         if (types.isString(arguments[0])) {
@@ -236,7 +236,16 @@ export function action(arg: any): Promise<string> {
     return new Promise<string>((resolve, reject) => {
         try {
             var alert = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
-            alert.setTitle(options && types.isString(options.message) ? options.message : "");
+            var message = options && types.isString(options.message) ? options.message : "";
+            var title = options && types.isString(options.title) ? options.title : "";
+            
+            if (title) {
+                alert.setTitle(title);
+                alert.setMessage(message);
+            }
+            else {
+                alert.setTitle(message);
+            }
 
             if (options.actions) {
                 alert.setItems(options.actions, new android.content.DialogInterface.OnClickListener({

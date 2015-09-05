@@ -387,7 +387,7 @@ function showUIAlertController(alertController: UIAlertController) {
 export function action(arg: any): Promise<string> {
     var options: dialogs.ActionOptions;
 
-    var defaultOptions = { cancelButtonText: dialogsCommon.CANCEL };
+    var defaultOptions = { title: null, cancelButtonText: dialogsCommon.CANCEL };
 
     if (arguments.length === 1) {
         if (types.isString(arguments[0])) {
@@ -445,7 +445,7 @@ export function action(arg: any): Promise<string> {
                 actionSheet.delegate = delegate;
                 actionSheet.showInView(UIApplication.sharedApplication().keyWindow);
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.message, null, UIAlertControllerStyle.UIAlertControllerStyleActionSheet);
+                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.UIAlertControllerStyleActionSheet);
 
                 if (options.actions) {
                     for (i = 0; i < options.actions.length; i++) {
