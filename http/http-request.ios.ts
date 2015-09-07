@@ -5,6 +5,7 @@
 import http = require("http");
 import imageSource = require("image-source");
 import types = require("utils/types");
+import utils = require("utils/utils");
 
 var GET = "GET";
 var USER_AGENT_HEADER = "User-Agent";
@@ -60,7 +61,9 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                             content: {
                                 raw: data,
                                 toString: () => { return NSDataToString(data); },
-                                toJSON: () => { return JSON.parse(NSDataToString(data)); },
+                                toJSON: () => {
+                                    return utils.parseJSON(NSDataToString(data));
+                                },
                                 toImage: () => {
                                     return new Promise<imageSource.ImageSource>((resolveImage, rejectImage) => {
                                         var img = imageSource.fromData(data);
