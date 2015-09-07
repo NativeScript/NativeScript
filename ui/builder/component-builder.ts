@@ -29,6 +29,16 @@ var DOCK = "dock";
 var LEFT = "left";
 var TOP = "top";
 
+export var specialProperties: Array<string> = [
+    ROW,
+    COL,
+    COL_SPAN,
+    ROW_SPAN,
+    DOCK,
+    LEFT,
+    TOP,
+]
+
 var eventHandlers = {};
 
 export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object): definition.ComponentModule {
@@ -112,6 +122,28 @@ export function getComponentModule(elementName: string, namespace: string, attri
     return componentModule;
 }
 
+export function setSpecialPropertyValue(instance: view.View, propertyName: string, propertyValue: string) {
+    if (propertyName === ROW) {
+        gridLayoutModule.GridLayout.setRow(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === COL) {
+        gridLayoutModule.GridLayout.setColumn(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === COL_SPAN) {
+        gridLayoutModule.GridLayout.setColumnSpan(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === ROW_SPAN) {
+        gridLayoutModule.GridLayout.setRowSpan(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === LEFT) {
+        absoluteLayoutDef.AbsoluteLayout.setLeft(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === TOP) {
+        absoluteLayoutDef.AbsoluteLayout.setTop(instance, !isNaN(+propertyValue) && +propertyValue);
+    } else if (propertyName === DOCK) {
+        console.log('set dock: ' + propertyName + ' -> ' + propertyValue);
+        dockLayoutDef.DockLayout.setDock(instance, propertyValue);
+    } else {
+        return false;
+    }
+    return true;
+}
+
 export function setPropertyValue(instance: view.View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
     // Note: instanceModule can be null if we are loading custom compnenet with no code-behind.
     var isEventOrGesture: boolean = isKnownEventOrGesture(propertyName, instance);
@@ -136,20 +168,8 @@ export function setPropertyValue(instance: view.View, instanceModule: Object, ex
         if (types.isFunction(handler)) {
             instance.on(propertyName, handler);
         }
-    } else if (propertyName === ROW) {
-        gridLayoutModule.GridLayout.setRow(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === COL) {
-        gridLayoutModule.GridLayout.setColumn(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === COL_SPAN) {
-        gridLayoutModule.GridLayout.setColumnSpan(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === ROW_SPAN) {
-        gridLayoutModule.GridLayout.setRowSpan(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === LEFT) {
-        absoluteLayoutDef.AbsoluteLayout.setLeft(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === TOP) {
-        absoluteLayoutDef.AbsoluteLayout.setTop(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === DOCK) {
-        dockLayoutDef.DockLayout.setDock(instance, propertyValue);
+    } else if (setSpecialPropertyValue(instance, propertyName, propertyValue)) {
+        // Already set by setSpecialPropertyValue
     } else {
         var attrHandled = false;
 
