@@ -27,21 +27,24 @@ function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 global.moduleMerge(common, exports);
 
 export class HtmlView extends common.HtmlView {
-    private _ios: UILabel;
+    private _ios: UITextView;
 
     constructor(options?: definition.Options) {
         super(options);
+        this._ios = UITextView.new();
 
-        this._ios = new UILabel();
-        this._ios.userInteractionEnabled = true;
-        this._ios.numberOfLines = 0;
+        this._ios.scrollEnabled = false;
+        this._ios.editable = false;
+        this._ios.selectable = true;
+        this._ios.userInteractionEnabled  = true;
+        this._ios.dataDetectorTypes = 255; // Future Proof this; valid max in iOS is currently 15; however ALL = MAX UNSIGNED INT which isn't valid in JavaScript
     }
 
-    get ios(): UILabel {
+    get ios(): UITextView {
         return this._ios;
     }
 
-    get _nativeView(): UILabel {
+    get _nativeView(): UITextView {
         return this._ios;
     }
 

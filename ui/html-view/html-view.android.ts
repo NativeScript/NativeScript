@@ -30,5 +30,7 @@ export class HtmlView extends common.HtmlView {
 
     public _createUI() {
         this._android = new android.widget.TextView(this._context);
+        this._android.setAutoLinkMask(15); // 15 (0x0f) = Linkify All
     }
+
 }
