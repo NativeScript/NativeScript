@@ -176,10 +176,12 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
 
             var userNameInput = new android.widget.EditText(context);
             userNameInput.setText(options.userName ? options.userName : "");
+            userNameInput.setHint(options.userNameHint ? options.userNameHint : "");
 
             var passwordInput = new android.widget.EditText(context);
             passwordInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
             passwordInput.setText(options.password ? options.password : "");
+            passwordInput.setHint(options.passwordHint ? options.passwordHint : "");
 
             var layout = new android.widget.LinearLayout(context);
             layout.setOrientation(1);
