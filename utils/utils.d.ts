@@ -167,4 +167,10 @@
      * @param uri The URI.
      */
     export function isDataURI(uri: string): boolean
+
+    /**
+     * Returns object from JSON or JSONP string.
+     * @param source The JSON or JSONP string.
+     */
+    export function parseJSON(source: string): any
 }

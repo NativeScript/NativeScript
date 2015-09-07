@@ -4,6 +4,7 @@
 
 import imageSource = require("image-source");
 import types = require("utils/types");
+import utils = require("utils/utils");
 
 // this is imported for definition purposes only
 import http = require("http");
@@ -45,7 +46,7 @@ function onRequestComplete(requestId: number, result: com.tns.Async.Http.Request
         content: {
             raw: result.raw,
             toString: () => { return result.responseAsString; },
-            toJSON: () => { return JSON.parse(result.responseAsString); },
+            toJSON: () => { return utils.parseJSON(result.responseAsString); },
             toImage: () => {
                 return new Promise<imageSource.ImageSource>((resolveImage, rejectImage) => {
                     if (result.responseAsImage != null) {

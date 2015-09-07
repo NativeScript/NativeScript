@@ -130,6 +130,39 @@ export var test_getJSON_fail_when_result_is_not_JSON = function (done) {
     });
 };
 
+export var test_getJSONP = function (done) {
+    var result;
+
+    http.getJSON("http://demos.telerik.com/kendo-ui/service/Products").then(function (r) {
+        result = r;
+        try {
+            TKUnit.assert(typeof (JSON.stringify(result)) === "string", "Result from getJSON() should be valid JSON object!");
+            done(null);
+        }
+        catch (e) {
+            done(e);
+        }
+        done(null);
+    }, function (e) {
+            done(e);
+        });
+};
+
+export var test_getJSON_fail_when_result_is_not_JSONP = function (done) {
+    var result;
+
+    http.getJSON({ url: "https://httpbin.org/html", method: "GET" }).catch(function (e) {
+        result = e;
+        try {
+            TKUnit.assert(result instanceof Error, "Result from getJSON().catch() should be Error! Current type is " + typeof result);
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    });
+};
+
 export var test_getImage_isDefined = function () {
     TKUnit.assert(typeof (http.getImage) !== "undefined", "Method http.getImage() should be defined!");
 };
