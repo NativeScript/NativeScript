@@ -87,6 +87,11 @@ declare module "ui/dialogs" {
      */
     export interface ActionOptions {
         /**
+         * Gets or sets the dialog title.
+         */
+        title?: string;
+
+        /**
          * Gets or sets the dialog message.
          */
         message?: string;
