@@ -10,6 +10,13 @@ function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     }
 
     if (types.isString(data.newValue)) {
+        // If the data.newValue actually has a <a...> in it; we need to disable auto-linking
+        // as it internally disables anyways; and then links won't work..
+        if (data.newValue.toLowerCase().indexOf("<a ") > 0) {
+            view.android.setAutoLinkMask(0);
+        } else {
+            view.android.setAutoLinkMask(15); // 15 (0x0f) = Linkify All text links
+        }
         view.android.setText(<any>android.text.Html.fromHtml(data.newValue));
     } else {
         view.android.setText("");
@@ -30,7 +37,10 @@ export class HtmlView extends common.HtmlView {
 
     public _createUI() {
         this._android = new android.widget.TextView(this._context);
-        this._android.setAutoLinkMask(15); // 15 (0x0f) = Linkify All
+        // This makes the <a href...> work
+        this._android.setLinksClickable(true);
+        this._android.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+
     }
 
 }
