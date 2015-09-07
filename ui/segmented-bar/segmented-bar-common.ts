@@ -83,7 +83,6 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
             var i = 0;
             var length = this.items.length;
             for (; i < length; i++) {
-                console.log(`this.items[i].bindingContext = ${newValue};`);
                 this.items[i].bindingContext = newValue;
             }
         }
