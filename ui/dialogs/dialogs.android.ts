@@ -120,8 +120,14 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
 
             var input = new android.widget.EditText(appmodule.android.currentContext);
 
-            if (options && options.inputType === dialogs.inputType.password) {
-                input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            if (options) {
+                if (options.inputType === dialogs.inputType.password) {
+                    input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                }
+                if (options.inputType === dialogs.inputType.textView) {
+                    input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+                    input.setGravity(android.view.Gravity.TOP | android.view.Gravity.LEFT);
+                }
             }
 
             input.setText(options && options.defaultText || "");
