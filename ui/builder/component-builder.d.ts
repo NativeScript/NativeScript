@@ -1,4 +1,3 @@
-//@private
 declare module "ui/builder/component-builder" {
     import view = require("ui/core/view");
 
