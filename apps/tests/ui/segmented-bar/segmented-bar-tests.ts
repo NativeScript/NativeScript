@@ -192,3 +192,32 @@ export var testSettingSelectedIndexLargerThanCountShouldThrow = function () {
         }, "Setting selectedIndex to a larger number should throw.");
     });
 }
+
+export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = function () {
+    var oldIndex;
+    var newIndex;
+    var segmentedBar = _createSegmentedBar();
+
+    segmentedBar.on(segmentedBarModule.SegmentedBar.selectedIndexChangedEvent, (args : segmentedBarModule.SelectedIndexChangedEventData) => {
+        oldIndex = args.oldIndex;
+        newIndex = args.newIndex;
+    });
+
+    segmentedBar.items = _createItems(10);
+    
+    helper.buildUIAndRunTest(segmentedBar, function (views: Array<viewModule.View>) {
+        var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+
+        segmentedBar.selectedIndex = 6;
+        TKUnit.assertEqual(oldIndex, 0);
+        TKUnit.assertEqual(newIndex, 6);
+
+        segmentedBar.selectedIndex = 3;
+        TKUnit.assertEqual(oldIndex, 6);
+        TKUnit.assertEqual(newIndex, 3);
+
+        segmentedBar.selectedIndex = 9;
+        TKUnit.assertEqual(oldIndex, 3);
+        TKUnit.assertEqual(newIndex, 9);
+    });
+}

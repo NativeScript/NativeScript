@@ -6,6 +6,7 @@ declare module "ui/segmented-bar" {
     import dependencyObservable = require("ui/core/dependency-observable");
     import color = require("color");
     import bindable = require("ui/core/bindable");
+    import observable = require("data/observable");
 
     /**
      * Represents a SegmentedBar item.
@@ -15,6 +16,21 @@ declare module "ui/segmented-bar" {
          * Gets or sets the title of the SegmentedBarItem.
          */
         public title: string;
+    }
+
+    /**
+     * Defines the data for the SegmentedBar.selectedIndexChanged event.
+     */
+    export interface SelectedIndexChangedEventData extends observable.EventData {
+        /**
+         * The old selected index.
+         */
+        oldIndex: number;
+        
+        /**
+         * The new selected index.
+         */
+        newIndex: number;
     }
 
     /**
@@ -50,5 +66,23 @@ declare module "ui/segmented-bar" {
          * Gets or sets the items dependency property of the SegmentedBar.
          */
         public static itemsProperty: dependencyObservable.Property;
+
+        /**
+         * String value used when hooking to the selectedIndexChanged event.
+         */
+        public static selectedIndexChangedEvent: string;
+        
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+
+        /**
+         * Raised when the selected index changes.
+         */
+        on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
     }
 }
