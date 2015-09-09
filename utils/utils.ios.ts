@@ -50,7 +50,7 @@ export module ios {
         var greenRef = new interop.Reference<number>();
         var blueRef = new interop.Reference<number>();
         var alphaRef = new interop.Reference<number>();
-        
+
         uiColor.getRedGreenBlueAlpha(redRef, greenRef, blueRef, alphaRef);
         var red = redRef.value * 255;
         var green = greenRef.value * 255;
@@ -142,8 +142,15 @@ export module ios {
         rootView.measure(widthSpec, heightSpec);
         rootView.layout(left, top, width, height);
     }
-} 
+}
 
 export function GC() {
     __collect();
+}
+
+export function openUrl(url: string): void {
+    var sharedApp = UIApplication.sharedApplication()
+    if (sharedApp) {
+        sharedApp.openURL(NSURL.URLWithString(url));
+    }
 }

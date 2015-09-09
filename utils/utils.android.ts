@@ -131,3 +131,10 @@ export module ad {
 export function GC() {
     gc();
 }
+
+export function openUrl(url: string): void {
+    var context = ad.getApplicationContext();
+    if (context) {
+        context.startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)));
+    }
+}
