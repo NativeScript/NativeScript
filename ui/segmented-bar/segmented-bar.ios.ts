@@ -21,6 +21,9 @@ function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChang
             view.selectedIndex = undefined;
             throw new Error("selectedIndex should be between [0, items.length - 1]");
         }
+
+        var args = { eventName: SegmentedBar.selectedIndexChangedEvent, object: view, oldIndex: data.oldValue, newIndex: data.newValue };
+        view.notify(args);
     }
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.selectedIndexProperty.metadata).onSetNativeValue = onSelectedIndexPropertyChanged;
