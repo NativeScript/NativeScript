@@ -147,3 +147,17 @@ export module ios {
 export function GC() {
     __collect();
 }
+
+export function openUrl(location: string): boolean {
+    try {
+        var url = NSURL.URLWithString(location.trim());
+        if (UIApplication.sharedApplication().canOpenURL(url)) {
+            return UIApplication.sharedApplication().openURL(url);
+        }
+    }
+    catch (e) {
+        // We Don't do anything with an error.  We just output it
+        console.error("Error in OpenURL", e);
+    }
+    return false;
+}
