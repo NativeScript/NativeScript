@@ -178,5 +178,5 @@
      * Opens url.
      * @param url The url.
      */
-    export function openUrl(url: string): void
+    export function openUrl(url: string): boolean
 }
