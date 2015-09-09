@@ -50,7 +50,7 @@ export module ios {
         var greenRef = new interop.Reference<number>();
         var blueRef = new interop.Reference<number>();
         var alphaRef = new interop.Reference<number>();
-        
+
         uiColor.getRedGreenBlueAlpha(redRef, greenRef, blueRef, alphaRef);
         var red = redRef.value * 255;
         var green = greenRef.value * 255;
@@ -142,8 +142,22 @@ export module ios {
         rootView.measure(widthSpec, heightSpec);
         rootView.layout(left, top, width, height);
     }
-} 
+}
 
 export function GC() {
     __collect();
+}
+
+export function openUrl(location: string): boolean {
+    try {
+        var url = NSURL.URLWithString(location.trim());
+        if (UIApplication.sharedApplication().canOpenURL(url)) {
+            return UIApplication.sharedApplication().openURL(url);
+        }
+    }
+    catch (e) {
+        // We Don't do anything with an error.  We just output it
+        console.error("Error in OpenURL", e);
+    }
+    return false;
 }

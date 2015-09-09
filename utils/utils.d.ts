@@ -173,4 +173,10 @@
      * @param source The JSON or JSONP string.
      */
     export function parseJSON(source: string): any
+
+    /**
+     * Opens url.
+     * @param url The url.
+     */
+    export function openUrl(url: string): boolean
 }

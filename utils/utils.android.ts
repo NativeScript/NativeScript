@@ -131,3 +131,18 @@ export module ad {
 export function GC() {
     gc();
 }
+
+export function openUrl(location: string): boolean {
+    var context = ad.getApplicationContext();
+    try {
+        var intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
+        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        context.startActivity(intent);
+    } catch (e) {
+        // We Don't do anything with an error.  We just output it
+        console.error("Error in OpenURL", e);
+        return false;
+    }
+    return true;
+}
