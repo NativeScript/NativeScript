@@ -10,6 +10,7 @@ import fs = require("file-system");
 import gestures = require("ui/gestures");
 import bindingBuilder = require("ui/builder/binding-builder");
 import platform = require("platform");
+import pages = require("ui/page");
 
 var UI_PATH = "ui/";
 var MODULES = {
@@ -28,6 +29,8 @@ var ROW_SPAN = "rowSpan";
 var DOCK = "dock";
 var LEFT = "left";
 var TOP = "top";
+var CODEFILE = "codeFile";
+var CSSFILE = "cssFile";
 
 export var specialProperties: Array<string> = [
     ROW,
@@ -37,6 +40,8 @@ export var specialProperties: Array<string> = [
     DOCK,
     LEFT,
     TOP,
+    CODEFILE,
+    CSSFILE
 ]
 
 var eventHandlers = {};
@@ -76,6 +81,40 @@ export function getComponentModule(elementName: string, namespace: string, attri
         instance = new instanceType();
     } catch (ex) {
         throw new Error("Cannot create module " + moduleId + ". " + ex + ". StackTrace: " + ex.stack);
+    }
+
+    if (attributes) {
+        if (attributes[CODEFILE]) {
+            if (instance instanceof pages.Page) {
+                var codeFilePath = attributes[CODEFILE].trim();
+                if (codeFilePath.indexOf("~/") === 0) {
+                    codeFilePath = fs.path.join(fs.knownFolders.currentApp().path, codeFilePath.replace("~/", ""));
+                }
+                try {
+                    exports = require(codeFilePath);
+                    (<any>instance).exports = exports;
+                } catch (ex) {
+                    throw new Error(`Code file with path "${codeFilePath}" cannot be found!`);
+                }
+            } else {
+                throw new Error("Code file atribute is valid only for pages!");
+            }
+        } else if (attributes[CSSFILE]) {
+            if (instance instanceof pages.Page) {
+                var cssFilePath = attributes[CSSFILE].trim();
+                if (cssFilePath.indexOf("~/") === 0) {
+                    cssFilePath = fs.path.join(fs.knownFolders.currentApp().path, cssFilePath.replace("~/", ""));
+                }
+                if (fs.File.exists(cssFilePath)) {
+                    (<pages.Page>instance).addCssFile(cssFilePath);
+                    instance[CSSFILE] = true;
+                } else {
+                    throw new Error(`Css file with path "${cssFilePath}" cannot be found!`);
+                }
+            } else {
+                throw new Error("Css file atribute is valid only for pages!");
+            }
+        }
     }
 
     if (instance && instanceModule) {

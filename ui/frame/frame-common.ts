@@ -66,9 +66,9 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): pages.P
             throw new Error("Failed to load Page from entry.moduleName: " + entry.moduleName);
         }
 
-        // Possible CSS file path.
+        // Possible CSS file path. Add it only if CSS not already specified and loaded from cssFile Page attribute in XML.
         var cssFileName = fileResolverModule.resolveFileName(moduleNamePath, "css");
-        if (cssFileName) {
+        if (cssFileName && !page["cssFile"]) {
             page.addCssFile(cssFileName);
         }
     }

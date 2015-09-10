@@ -148,8 +148,71 @@ export function test_parse_ShouldNotCrashWithoutExports() {
     var file = fs.File.fromPath(fs.path.join(__dirname, "mainPage.xml"));
     var text = file.readTextSync();
 
-    var v: view.View = builder.parse(text);    
+    var v: view.View = builder.parse(text);
     TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+};
+
+export function test_parse_ShouldResolveExportsFromCodeFile() {
+    var page = builder.parse("<Page codeFile='~/xml-declaration/custom-code-file' loaded='loaded'></Page>");
+    page._emit("loaded");
+
+    TKUnit.assert((<any>page).customCodeLoaded, "Parse should resolve exports from custom code file.");
+}
+
+export function test_parse_ShouldThrowErrorWhenInvalidCodeFileIsSpecified() {
+    var e: Error;
+    try {
+        builder.parse("<Page codeFile='~/xml-declaration/some-code-file' loaded='pageLoaded'></Page>");
+    } catch (ex) {
+        e = ex;
+    }
+
+    TKUnit.assert(e, "Expected result: Error; Actual result: " + e);
+};
+
+export function test_parse_ShouldResolveExportsFromCodeFileForTemplates() {
+    var p = <Page>builder.parse('<Page codeFile="~/xml-declaration/custom-code-file" xmlns:customControls="xml-declaration/mymodulewithxml"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><customControls:MyControl loaded="loaded" /></ListView.itemTemplate></ListView></Page>');
+
+    function testAction(views: Array<viewModule.View>) {
+        var ctrl;
+
+        var obj = new observable.Observable();
+        obj.set("items", [1]);
+        obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
+            ctrl = args.view
+        });
+        p.bindingContext = obj;
+
+        TKUnit.wait(0.2);
+
+        TKUnit.assert((<any>ctrl).customCodeLoaded, "Parse should resolve exports for templates from custom code file.");
+    };
+
+    helper.navigate(function () { return p; });
+
+    try {
+        testAction([p.content, p]);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_parse_ShouldApplyCssFromCssFile() {
+    var newPage: Page;
+    var pageFactory = function (): Page {
+        newPage = <Page>builder.parse("<Page cssFile='~/xml-declaration/custom-css-file.css'><Label cssClass='MyClass' /></Page>");
+        return newPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
+    try {
+        helper.assertViewBackgroundColor(newPage.content, "#008000");
+    }
+    finally {
+        helper.goBack();
+    }
 };
 
 export function test_parse_ShouldFindEventHandlersInExports() {
