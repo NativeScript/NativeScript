@@ -843,7 +843,6 @@ export function test_set_mixed_CSS_cases_works() {
     }, casedCSS);
 }
 
-
 // <snippet module="ui/styling" title="styling">
 // For information and example how to use style properties please refer to special [**Styling**](../../../styling.md) topic. 
 // </snippet>
