@@ -3,6 +3,7 @@ import definition = require("ui/layouts/absolute-layout");
 import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
+import {registerSpecialProperty} from "ui/builder/special-properties";
 
 function validateArgs(element: view.View): view.View {
     if (!element) {
@@ -10,6 +11,13 @@ function validateArgs(element: view.View): view.View {
     }
     return element;
 }
+
+registerSpecialProperty("left", (instance, propertyValue) => {
+    AbsoluteLayout.setLeft(instance, !isNaN(+propertyValue) && +propertyValue);
+});
+registerSpecialProperty("top", (instance, propertyValue) => {
+    AbsoluteLayout.setTop(instance, !isNaN(+propertyValue) && +propertyValue);
+});
 
 export class AbsoluteLayout extends layouts.LayoutBase implements definition.AbsoluteLayout {
 
