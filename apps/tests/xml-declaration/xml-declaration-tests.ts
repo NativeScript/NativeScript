@@ -215,6 +215,25 @@ export function test_parse_ShouldApplyCssFromCssFile() {
     }
 };
 
+export function test_parse_ShouldResolveExportsFromCodeFileAndApplyCssFile() {
+    var newPage: Page;
+    var pageFactory = function (): Page {
+        newPage = <Page>builder.parse("<Page codeFile='~/xml-declaration/custom-code-file' cssFile='~/xml-declaration/custom-css-file.css' loaded='loaded'><Label cssClass='MyClass' /></Page>");
+        return newPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
+    TKUnit.assert((<any>newPage).customCodeLoaded, "Parse should resolve exports from custom code file.");
+    try {
+        helper.assertViewBackgroundColor(newPage.content, "#008000");
+    }
+    finally {
+        helper.goBack();
+    }
+};
+
+
 export function test_parse_ShouldFindEventHandlersInExports() {
     var loaded;
     var page = builder.parse("<Page loaded='myLoaded'></Page>", {

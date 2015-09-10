@@ -99,7 +99,9 @@ export function getComponentModule(elementName: string, namespace: string, attri
             } else {
                 throw new Error("Code file atribute is valid only for pages!");
             }
-        } else if (attributes[CSSFILE]) {
+        }
+
+        if (attributes[CSSFILE]) {
             if (instance instanceof pages.Page) {
                 var cssFilePath = attributes[CSSFILE].trim();
                 if (cssFilePath.indexOf("~/") === 0) {
