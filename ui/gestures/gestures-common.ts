@@ -134,7 +134,9 @@ export class GesturesObserver implements definition.GesturesObserver {
                     }
                 }
                 list.length = 0;
-                this.target._gestureObservers.delete(this.type);
+
+                this.target._gestureObservers[this.type] = undefined;
+                delete this.target._gestureObservers[this.type];
             }
         }
         this._target = null;
