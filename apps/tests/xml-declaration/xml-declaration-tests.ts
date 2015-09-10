@@ -233,7 +233,6 @@ export function test_parse_ShouldResolveExportsFromCodeFileAndApplyCssFile() {
     }
 };
 
-
 export function test_parse_ShouldFindEventHandlersInExports() {
     var loaded;
     var page = builder.parse("<Page loaded='myLoaded'></Page>", {
