@@ -37,7 +37,7 @@ export class HtmlView extends common.HtmlView {
         this._ios.editable = false;
         this._ios.selectable = true;
         this._ios.userInteractionEnabled  = true;
-        this._ios.dataDetectorTypes = 255; // Future Proof this; valid max in iOS is currently 15; however ALL = MAX UNSIGNED INT which isn't valid in JavaScript
+        this._ios.dataDetectorTypes = UIDataDetectorTypes.UIDataDetectorTypeAll;
     }
 
     get ios(): UITextView {

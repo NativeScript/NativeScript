@@ -10,13 +10,14 @@ function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     }
 
     if (types.isString(data.newValue)) {
-        // If the data.newValue actually has a <a...> in it; we need to disable auto-linking
-        // as it internally disables anyways; and then links won't work..
-        if (data.newValue.toLowerCase().indexOf("<a ") > 0) {
-            view.android.setAutoLinkMask(0);
-        } else {
-            view.android.setAutoLinkMask(15); // 15 (0x0f) = Linkify All text links
+        // If the data.newValue actually has a <a...> in it; we need to disable autolink mask
+        // it internally disables the coloring, but then the <a> links won't work..  So to support both
+        // styles of links (html and just text based) we have to manually enable/disable the autolink mask
+        var mask = 15;
+        if (data.newValue.search(/<a\s/i) >= 0) {
+            mask = 0;
         }
+        view.android.setAutoLinkMask(mask);
         view.android.setText(<any>android.text.Html.fromHtml(data.newValue));
     } else {
         view.android.setText("");
@@ -37,7 +38,7 @@ export class HtmlView extends common.HtmlView {
 
     public _createUI() {
         this._android = new android.widget.TextView(this._context);
-        // This makes the <a href...> work
+        // This makes the html <a href...> vwork
         this._android.setLinksClickable(true);
         this._android.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
 
