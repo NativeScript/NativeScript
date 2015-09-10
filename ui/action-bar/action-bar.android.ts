@@ -194,6 +194,7 @@ export class ActionBar extends common.ActionBar {
         var menu = this._toolbar.getMenu();
         var items = this.actionItems.getItems();
 
+        menu.clear();
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
             var menuItem = menu.add(android.view.Menu.NONE, i + ACTION_ITEM_ID_OFFSET, android.view.Menu.NONE, item.text);
