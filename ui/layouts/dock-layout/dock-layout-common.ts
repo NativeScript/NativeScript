@@ -4,6 +4,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
 import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
+import {registerSpecialProperty} from "ui/builder/special-properties";
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
 var AffectsLayout = global.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
@@ -18,6 +19,10 @@ function validateArgs(element: view.View): view.View {
     }
     return element;
 }
+
+registerSpecialProperty("dock", (instance, propertyValue) => {
+    DockLayout.setDock(instance, propertyValue);
+});
 
 export class DockLayout extends layouts.LayoutBase implements definition.DockLayout {
 

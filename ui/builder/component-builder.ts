@@ -1,9 +1,6 @@
 ﻿import observable = require("data/observable");
 import view = require("ui/core/view");
 import bindable = require("ui/core/bindable");
-import dockLayoutDef = require("ui/layouts/dock-layout");
-import gridLayoutModule = require("ui/layouts/grid-layout");
-import absoluteLayoutDef = require("ui/layouts/absolute-layout");
 import types = require("utils/types");
 import definition = require("ui/builder/component-builder");
 import fs = require("file-system");
@@ -11,6 +8,13 @@ import gestures = require("ui/gestures");
 import bindingBuilder = require("ui/builder/binding-builder");
 import platform = require("platform");
 import pages = require("ui/page");
+
+//the imports below are needed for special property registration
+import "ui/layouts/dock-layout";
+import "ui/layouts/grid-layout";
+import "ui/layouts/absolute-layout";
+
+import {getSpecialPropertySetter} from "ui/builder/special-properties";
 
 var UI_PATH = "ui/";
 var MODULES = {
@@ -22,27 +26,8 @@ var MODULES = {
     "SegmentedBarItem": "ui/segmented-bar",
 };
 
-var ROW = "row";
-var COL = "col";
-var COL_SPAN = "colSpan";
-var ROW_SPAN = "rowSpan";
-var DOCK = "dock";
-var LEFT = "left";
-var TOP = "top";
 var CODEFILE = "codeFile";
 var CSSFILE = "cssFile";
-
-export var specialProperties: Array<string> = [
-    ROW,
-    COL,
-    COL_SPAN,
-    ROW_SPAN,
-    DOCK,
-    LEFT,
-    TOP,
-    CODEFILE,
-    CSSFILE
-]
 
 var eventHandlers = {};
 
@@ -163,28 +148,6 @@ export function getComponentModule(elementName: string, namespace: string, attri
     return componentModule;
 }
 
-export function setSpecialPropertyValue(instance: view.View, propertyName: string, propertyValue: string) {
-    if (propertyName === ROW) {
-        gridLayoutModule.GridLayout.setRow(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === COL) {
-        gridLayoutModule.GridLayout.setColumn(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === COL_SPAN) {
-        gridLayoutModule.GridLayout.setColumnSpan(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === ROW_SPAN) {
-        gridLayoutModule.GridLayout.setRowSpan(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === LEFT) {
-        absoluteLayoutDef.AbsoluteLayout.setLeft(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === TOP) {
-        absoluteLayoutDef.AbsoluteLayout.setTop(instance, !isNaN(+propertyValue) && +propertyValue);
-    } else if (propertyName === DOCK) {
-        console.log('set dock: ' + propertyName + ' -> ' + propertyValue);
-        dockLayoutDef.DockLayout.setDock(instance, propertyValue);
-    } else {
-        return false;
-    }
-    return true;
-}
-
 export function setPropertyValue(instance: view.View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
     // Note: instanceModule can be null if we are loading custom compnenet with no code-behind.
     var isEventOrGesture: boolean = isKnownEventOrGesture(propertyName, instance);
@@ -209,15 +172,16 @@ export function setPropertyValue(instance: view.View, instanceModule: Object, ex
         if (types.isFunction(handler)) {
             instance.on(propertyName, handler);
         }
-    } else if (setSpecialPropertyValue(instance, propertyName, propertyValue)) {
-        // Already set by setSpecialPropertyValue
     } else {
-        var attrHandled = false;
-
-        if ((<any>instance)._applyXmlAttribute) {
+        let attrHandled = false;
+        let specialSetter = getSpecialPropertySetter(propertyName);
+        if (!attrHandled && specialSetter) {
+            specialSetter(instance, propertyValue);
+            attrHandled = true;
+        }
+        if (!attrHandled && (<any>instance)._applyXmlAttribute) {
             attrHandled = (<any>instance)._applyXmlAttribute(propertyName, propertyValue);
         }
-
         if (!attrHandled) {
             // Try to convert value to number.
             var valueAsNumber = +propertyValue;

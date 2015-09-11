@@ -6,6 +6,7 @@ import bindable = require("ui/core/bindable");
 import types = require("utils/types");
 import numberUtils = require("utils/number-utils");
 import proxy = require("ui/core/proxy");
+import {registerSpecialProperty} from "ui/builder/special-properties";
 
 function validateArgs(element: view.View): view.View {
     if (!element) {
@@ -19,6 +20,19 @@ export module GridUnitType {
     export var pixel: string = "pixel";
     export var star: string = "star";
 }
+
+registerSpecialProperty("row", (instance, propertyValue) => {
+    GridLayout.setRow(instance, !isNaN(+propertyValue) && +propertyValue);
+});
+registerSpecialProperty("col", (instance, propertyValue) => {
+    GridLayout.setColumn(instance, !isNaN(+propertyValue) && +propertyValue);
+});
+registerSpecialProperty("colSpan", (instance, propertyValue) => {
+    GridLayout.setColumnSpan(instance, !isNaN(+propertyValue) && +propertyValue);
+});
+registerSpecialProperty("rowSpan", (instance, propertyValue) => {
+    GridLayout.setRowSpan(instance, !isNaN(+propertyValue) && +propertyValue);
+});
 
 export class ItemSpec extends bindable.Bindable implements definition.ItemSpec {
 
