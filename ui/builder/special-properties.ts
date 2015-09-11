@@ -8,7 +8,7 @@ function specialPropertyKey(name: string) {
     return name.toLowerCase();
 }
 
-export function registerSpecialProperty(name: string, setter: PropertySetter) {
+export function registerSpecialProperty(name: string, setter: PropertySetter): void {
     let propertyKey = specialPropertyKey(name);
     if (specialProperties.has(propertyKey)) {
         throw new Error(`Property for ${propertyKey} already registered`);
