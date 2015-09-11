@@ -272,6 +272,7 @@ public class GridLayout extends LayoutBase {
 				continue;
 			}
 
+			CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
 			MeasureSpecs measureSpecs = this.map.get(child);
 			this.updateMeasureSpecs(child, measureSpecs);
 			this.helper.addMeasureSpec(measureSpecs);

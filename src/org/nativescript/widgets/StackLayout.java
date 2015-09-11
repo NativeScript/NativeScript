@@ -77,6 +77,7 @@ public class StackLayout extends LayoutBase {
                 continue;
             }
 
+            CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
             if (isVertical) {
             	CommonLayoutParams.measureChild(child, childMeasureSpec, MeasureSpec.makeMeasureSpec(remainingLength, measureSpecMode));
                 final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);

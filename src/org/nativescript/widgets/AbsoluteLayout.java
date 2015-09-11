@@ -30,6 +30,7 @@ public class AbsoluteLayout extends LayoutBase {
 			    continue;
 			}
 			
+			CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
 			CommonLayoutParams.measureChild(child, childMeasureSpec, childMeasureSpec);		   	
 		    final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
 		    final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);

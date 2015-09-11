@@ -75,6 +75,7 @@ public class VerticalScrollView extends ScrollView {
 	        this.setPadding(0, 0, 0, 0);
 	    }
 	    else {
+	    	CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
 	    	CommonLayoutParams.measureChild(child, widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));	    	
 	    	this.contentMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
 	    	this.contentMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
@@ -85,6 +86,7 @@ public class VerticalScrollView extends ScrollView {
 	    }
 	
 	    // Don't add in our paddings because they are already added as child margins. (we will include them twice if we add them).
+	    // check the previous line - this.setPadding(lp.leftMargin, lp.topMargin, lp.rightMargin, lp.bottomMargin);
 //	    this.contentMeasuredWidth += this.getPaddingLeft() + this.getPaddingRight();
 //	    this.contentMeasuredHeight += this.getPaddingTop() + this.getPaddingBottom();
 	

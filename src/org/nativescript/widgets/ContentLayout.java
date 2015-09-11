@@ -29,6 +29,7 @@ public class ContentLayout extends LayoutBase {
                 continue;
             }
 
+            CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
         	CommonLayoutParams.measureChild(child, widthMeasureSpec, heightMeasureSpec);
             final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
             final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);

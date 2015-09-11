@@ -74,6 +74,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
             this.contentMeasuredHeight = 0;
         }
         else {
+        	CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
         	CommonLayoutParams.measureChild(child, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), heightMeasureSpec);
         	this.contentMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
         	this.contentMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
@@ -84,6 +85,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 	    }
 	
 	    // Don't add in our paddings because they are already added as child margins. (we will include them twice if we add them).
+        // Check the previous line - this.setPadding(lp.leftMargin, lp.topMargin, lp.rightMargin, lp.bottomMargin);
 //	    this.contentMeasuredWidth += this.getPaddingLeft() + this.getPaddingRight();
 //	    this.contentMeasuredHeight += this.getPaddingTop() + this.getPaddingBottom();
 

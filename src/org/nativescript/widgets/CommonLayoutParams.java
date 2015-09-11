@@ -28,6 +28,14 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 		super(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 	}
 
+	public float widthPercent = 0;
+	public float heightPercent = 0;
+	
+	public float topMarginPercent = 0;
+	public float leftMarginPercent = 0;
+	public float bottomMarginPercent = 0;
+	public float rightMarginPercent = 0;
+	
 	public int left = 0;
 	public int top = 0;
 	public int row = 0;
@@ -177,7 +185,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
             return;
         }
 
-        // Negative means we are not initialized.
+        // Negative means not initialized.
         if(debuggable < 0) {
         	try {
 				Context context = child.getContext();
@@ -189,25 +197,50 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 			}
         }
         
+        int childWidthMeasureSpec = getMeasureSpec(child, widthMeasureSpec, true);
+        int childHeightMeasureSpec = getMeasureSpec(child, heightMeasureSpec, false);
+
         if (debuggable > 0) {
         	sb.setLength(0);
 	        sb.append(child.getParent().toString());
 	        sb.append(" :measureChild: ");
 	        sb.append(child.toString());
 	        sb.append(" ");
-	        sb.append(MeasureSpec.toString(widthMeasureSpec));
+	        sb.append(MeasureSpec.toString(childWidthMeasureSpec));
 	        sb.append(", ");
-	        sb.append(MeasureSpec.toString(heightMeasureSpec));
+	        sb.append(MeasureSpec.toString(childHeightMeasureSpec));
 	        log(tag,  sb.toString());
         }
         
-        int childWidthMeasureSpec = getMeasureSpec(child, widthMeasureSpec, true);
-        int childHeightMeasureSpec = getMeasureSpec(child, heightMeasureSpec, false);
-
         child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
     }
 
-    static void log(String tag, String message) {
+    public static void updateChildLayoutParams(View child, int widthMeasureSpec, int heightMeasureSpec) {
+    	
+    	int availableWidth = MeasureSpec.getSize(widthMeasureSpec);
+    	int availableHeight = MeasureSpec.getSize(heightMeasureSpec);    	
+    	CommonLayoutParams lp = (CommonLayoutParams)child.getLayoutParams();	    	
+    	if (lp.widthPercent > 0) {
+    		lp.width = (int)(availableWidth * lp.widthPercent);
+    	}	    	
+    	if (lp.heightPercent > 0) {
+    		lp.height = (int)(availableHeight * lp.heightPercent);
+    	}	    	
+    	if (lp.leftMarginPercent > 0) {
+    		lp.leftMargin = (int)(availableWidth * lp.leftMarginPercent);
+    	}	    	
+    	if (lp.rightMarginPercent > 0) {
+    		lp.rightMargin = (int)(availableWidth * lp.rightMarginPercent);
+    	}	    	
+    	if (lp.topMarginPercent > 0) {
+    		lp.topMargin = (int)(availableHeight * lp.topMarginPercent);
+    	}	    	
+    	if (lp.bottomMarginPercent > 0) {
+    		lp.bottomMargin = (int)(availableHeight * lp.bottomMarginPercent);
+    	}
+    }
+
+	static void log(String tag, String message) {
         Log.d(tag, message);
     }
     

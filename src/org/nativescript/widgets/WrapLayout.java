@@ -92,6 +92,7 @@ public class WrapLayout extends LayoutBase {
                 continue;
             }
             
+            CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
         	CommonLayoutParams.measureChild(child, childWidthMeasureSpec, childHeightMeasureSpec);
             final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
             final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);

@@ -64,6 +64,7 @@ public class DockLayout extends LayoutBase {
                 childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(remainingHeight, heightMode == MeasureSpec.EXACTLY ? MeasureSpec.AT_MOST : heightMode);
             }
 
+            CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
             CommonLayoutParams.measureChild(child, childWidthMeasureSpec, childHeightMeasureSpec);
             final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
             final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
