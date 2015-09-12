@@ -15,6 +15,17 @@ import color = require("color");
 import animationModule = require("ui/animation");
 import observable = require("data/observable");
 
+export function isEventOrGesture(name: string, view: View): boolean {
+    if (types.isString(name)) {
+        var evt = `${name}Event`;
+
+        return view.constructor && evt in view.constructor ||
+            gestures.fromString(name.toLowerCase()) !== undefined;
+    }
+
+    return false;
+}
+
 export function getViewById(view: View, id: string): View {
     if (!view) {
         return undefined;
