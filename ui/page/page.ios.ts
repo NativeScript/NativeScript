@@ -130,6 +130,7 @@ export class Page extends pageCommon.Page {
     }
 
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
+        super._showNativeModalView(parent, context, closeCallback, fullscreen);
         this._isModal = true;
 
         if (!parent.ios.view.window) {

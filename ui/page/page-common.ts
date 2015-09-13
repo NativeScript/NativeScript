@@ -35,6 +35,7 @@ export class Page extends contentView.ContentView implements dts.Page {
 
     private _navigationContext: any;
 
+    private _closeDialogCallback: Function;
     private _cssApplied: boolean;
     private _styleScope: styleScope.StyleScope = new styleScope.StyleScope();
     private _actionBar: actionBar.ActionBar;
@@ -189,6 +190,12 @@ export class Page extends contentView.ContentView implements dts.Page {
         (<Page>page)._showNativeModalView(this, context, closeCallback, fullscreen);
     }
 
+    public closeDialog() {
+        if (this._closeDialogCallback) {
+            this._closeDialogCallback.apply(undefined, arguments);
+        }
+    }
+
     public _addChildFromBuilder(name: string, value: any) {
         if (value instanceof actionBar.ActionBar) {
             this.actionBar = value;
@@ -199,7 +206,16 @@ export class Page extends contentView.ContentView implements dts.Page {
     }
 
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
-        //
+        var that = this;
+        this._closeDialogCallback = function () {
+            if (that._closeDialogCallback) {
+                that._closeDialogCallback = null;
+                that._hideNativeModalView(parent);
+                if (typeof closeCallback === "function") {
+                    closeCallback.apply(undefined, arguments);
+                }
+            }
+        };
     }
 
     protected _hideNativeModalView(parent: Page) {
@@ -207,19 +223,11 @@ export class Page extends contentView.ContentView implements dts.Page {
     }
 
     protected _raiseShownModallyEvent(parent: Page, context: any, closeCallback: Function) {
-        var that = this;
-        var closeProxy = function () {
-            that._hideNativeModalView(parent);
-            if (closeCallback){
-                closeCallback.apply(undefined, arguments);
-            }
-        };
-
         this.notify({
             eventName: Page.shownModallyEvent,
             object: this,
             context: context,
-            closeCallback: closeProxy
+            closeCallback: this._closeDialogCallback
         });
     }
 
