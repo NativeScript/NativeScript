@@ -779,16 +779,6 @@
     <TypeScriptCompile Include="ui\search-bar\search-bar-common.ts">
       <DependentUpon>search-bar.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\slide-out\slide-out-common.ts">
-      <DependentUpon>slide-out.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\slide-out\slide-out.android.ts">
-      <DependentUpon>slide-out.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\slide-out\slide-out.d.ts" />
-    <TypeScriptCompile Include="ui\slide-out\slide-out.ios.ts">
-      <DependentUpon>slide-out.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\slider\slider-common.ts">
       <DependentUpon>slider.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -1741,9 +1731,6 @@
     <Content Include="trace\Readme.md" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ui\slide-out\package.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="apps\perf-tests\LargeObjectArrayMemoryLeakTest\package.json" />
   </ItemGroup>
   <ItemGroup>
@@ -1984,7 +1971,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
