@@ -1,10 +1,8 @@
-﻿import observable = require("data/observable");
-import view = require("ui/core/view");
+﻿import view = require("ui/core/view");
 import bindable = require("ui/core/bindable");
 import types = require("utils/types");
 import definition = require("ui/builder/component-builder");
 import fs = require("file-system");
-import gestures = require("ui/gestures");
 import bindingBuilder = require("ui/builder/binding-builder");
 import platform = require("platform");
 import pages = require("ui/page");
@@ -28,8 +26,6 @@ var MODULES = {
 
 var CODEFILE = "codeFile";
 var CSSFILE = "cssFile";
-
-var eventHandlers = {};
 
 export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object): definition.ComponentModule {
     var instance: view.View;
@@ -140,8 +136,6 @@ export function getComponentModule(elementName: string, namespace: string, attri
             }
         }
 
-        eventHandlers = {};
-
         componentModule = { component: instance, exports: instanceModule, bindings: bindings };
     }
 
@@ -150,21 +144,16 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
 export function setPropertyValue(instance: view.View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
     // Note: instanceModule can be null if we are loading custom compnenet with no code-behind.
-    var isEventOrGesture: boolean = isKnownEventOrGesture(propertyName, instance);
 
     if (isBinding(propertyValue) && instance.bind) {
-        if (isEventOrGesture) {
-            attachEventBinding(instance, propertyName, propertyValue);
-        } else {
-            var bindOptions = bindingBuilder.getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
-            instance.bind({
-                sourceProperty: bindOptions[bindingBuilder.bindingConstants.sourceProperty],
-                targetProperty: bindOptions[bindingBuilder.bindingConstants.targetProperty],
-                expression: bindOptions[bindingBuilder.bindingConstants.expression],
-                twoWay: bindOptions[bindingBuilder.bindingConstants.twoWay]
-            }, bindOptions[bindingBuilder.bindingConstants.source]);
-        }
-    } else if (isEventOrGesture) {
+        var bindOptions = bindingBuilder.getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
+        instance.bind({
+            sourceProperty: bindOptions[bindingBuilder.bindingConstants.sourceProperty],
+            targetProperty: bindOptions[bindingBuilder.bindingConstants.targetProperty],
+            expression: bindOptions[bindingBuilder.bindingConstants.expression],
+            twoWay: bindOptions[bindingBuilder.bindingConstants.twoWay]
+        }, bindOptions[bindingBuilder.bindingConstants.source]);
+    } else if (view.isEventOrGesture(propertyName, instance)) {
         // Get the event handler from page module exports.
         var handler = exports && exports[propertyValue];
 
@@ -194,33 +183,6 @@ export function setPropertyValue(instance: view.View, instanceModule: Object, ex
             }
         }
     }
-}
-
-function attachEventBinding(instance: view.View, eventName: string, value: string) {
-    // Get the event handler from instance.bindingContext.
-    eventHandlers[eventName] = (args: observable.PropertyChangeData) => {
-        if (args.propertyName === "bindingContext") {
-            var handler = instance.bindingContext && instance.bindingContext[getBindingExpressionFromAttribute(value)];
-            // Check if the handler is function and add it to the instance for specified event name.
-            if (types.isFunction(handler)) {
-                instance.on(eventName, handler, instance.bindingContext);
-            }
-            instance.off(observable.Observable.propertyChangeEvent, eventHandlers[eventName]);
-        }
-    };
-
-    instance.on(observable.Observable.propertyChangeEvent, eventHandlers[eventName]);
-}
-
-function isKnownEventOrGesture(name: string, instance: any): boolean {
-    if (types.isString(name)) {
-        var evt = `${name}Event`;
-
-        return instance.constructor && evt in instance.constructor ||
-            gestures.fromString(name.toLowerCase()) !== undefined;
-    }
-
-    return false;
 }
 
 function getBindingExpressionFromAttribute(value: string): string {

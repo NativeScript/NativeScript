@@ -30,6 +30,8 @@ declare module "ui/core/view" {
      */
     export function getAncestor(view: View, criterion: string | Function): View;
 
+    export function isEventOrGesture(name: string, view: View): boolean;
+
     /**
      * Defines interface for an optional parameter used to create a view.
      */

@@ -188,12 +188,12 @@ export class Binding {
     }
 
     private static getProperties(property: string): Array<string> {
-		if (property) {
-			return property.split(".");
-		}
-		else {
-			return [];
-		}
+        if (property) {
+            return property.split(".");
+        }
+        else {
+            return [];
+        }
     }
 
     private resolveObjectsAndProperties(source: Object, propsArray: Array<string>) {
@@ -336,8 +336,8 @@ export class Binding {
 
                 this.prepareContextForExpression(context, expression);
 
-				model[contextKey] = context;
-				return exp.getValue(model, isBackConvert, changedModel);
+                model[contextKey] = context;
+                return exp.getValue(model, isBackConvert, changedModel);
             }
             return new Error(expression + " is not a valid expression.");
         }
@@ -484,10 +484,10 @@ export class Binding {
 
     private getParentView(target, property) {
         if (!target || !(target instanceof viewModule.View)) {
-            return {view: null, index: null};
+            return { view: null, index: null };
         }
-        
-        var result;        
+
+        var result;
         if (property === bc.parentValueKey) {
             result = target.parent;
         }
@@ -499,7 +499,7 @@ export class Binding {
             if (indexParams && indexParams.length > 1) {
                 index = indexParams[2];
             }
-            
+
             if (!isNaN(index)) {
                 var indexAsInt = parseInt(index);
                 while (indexAsInt > 0) {
@@ -544,10 +544,16 @@ export class Binding {
         this.updating = true;
 
         try {
-            if (optionsInstance instanceof observable.Observable) {
-                optionsInstance.set(options.property, value);
+            if (optionsInstance instanceof viewModule.View &&
+                viewModule.isEventOrGesture(options.property, optionsInstance) &&
+                types.isFunction(value)) {
+                optionsInstance.on(options.property, value, optionsInstance.bindingContext);
             } else {
-                optionsInstance[options.property] = value;
+                if (optionsInstance instanceof observable.Observable) {
+                    optionsInstance.set(options.property, value);
+                } else {
+                    optionsInstance[options.property] = value;
+                }
             }
         }
         catch (ex) {

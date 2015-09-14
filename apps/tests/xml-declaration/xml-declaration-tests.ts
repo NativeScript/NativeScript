@@ -560,6 +560,43 @@ export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
     }
 }
 
+export function test_parse_ShouldEvaluateEventBindingExpressionInListViewTemplate() {
+    var p = <Page>builder.parse('<Page xmlns="http://www.nativescript.org/tns.xsd"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><SegmentedBar items="{{ $parents[\'ListView\'].items }}" selectedIndexChanged="{{ $parents[\'ListView\'].changed }}" /></ListView.itemTemplate></ListView></Page>');
+
+    function testAction(views: Array<viewModule.View>) {
+        var ctrl: segmentedBar.SegmentedBar;
+        var changed;
+
+        var obj = new observable.Observable();
+        obj.set("items", [1, 2, 3]);
+
+        obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
+            ctrl = <segmentedBar.SegmentedBar>args.view
+        });
+
+        obj.set("changed", function (args: observable.EventData) {
+            changed = true;
+        });
+
+        p.bindingContext = obj;
+
+        TKUnit.wait(0.2);
+
+        ctrl.selectedIndex = 1;
+
+        TKUnit.assert(changed, "Expected result: true!; Actual result: " + changed);
+    };
+
+    helper.navigate(function () { return p; });
+
+    try {
+        testAction([p.content, p]);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
 export function test_parse_NestedRepeaters() {
     var pageXML =
         "<Page xmlns='http://www.nativescript.org/tns.xsd'>" +
