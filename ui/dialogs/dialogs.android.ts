@@ -235,7 +235,8 @@ export function action(arg: any): Promise<string> {
 
     return new Promise<string>((resolve, reject) => {
         try {
-            var alert = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
+            var activity = appmodule.android.foregroundActivity || appmodule.android.startActivity;
+            var alert = new android.app.AlertDialog.Builder(activity);
             var message = options && types.isString(options.message) ? options.message : "";
             var title = options && types.isString(options.title) ? options.title : "";
             
