@@ -143,7 +143,7 @@ export class XmlParser implements definition.XmlParser {
         });
 
         this._parser.on('textNode', function (text, uq) {
-            var data = uq(text);// Decode entity references such as &lt; and &gt;
+            var data = uq(XmlParser._dereferenceEntities(text));// Decode entity references such as &lt; and &gt;
             onEvent(new ParserEvent(ParserEventType.Text, undefined, undefined, undefined, undefined, data));
         });
 
@@ -262,25 +262,6 @@ export class XmlParser implements definition.XmlParser {
         s = String(s);
         if (s.length > 3 && s.indexOf('&') !== -1) {
             s = s.replace(_entitySearchRegEx, _HandleAmpEntities);
-            /* if (s.indexOf('&lt;') !== -1) {
-                s = s.replace(/&lt;/g, '<'); 
-            }
-            
-            if (s.indexOf('&gt;') !== -1) { 
-                s = s.replace(/&gt;/g, '>'); 
-            }
-            
-            if (s.indexOf('&amp;') !== -1) { 
-                s = s.replace(/&amp;/g, '&'); 
-            }
-            
-            if (s.indexOf('&apos;') !== -1) { 
-                s = s.replace(/&apos;/g, "'"); 
-            }
-            
-            if (s.indexOf('&quot;') !== -1) { 
-                s = s.replace(/&quot;/g, '"'); 
-            }*/
         };
 
         return s;
