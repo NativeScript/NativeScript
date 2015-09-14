@@ -210,7 +210,7 @@ export class FileSystemAccess {
             var result = "";
             while (true) {
                 line = bufferedReader.readLine();
-                if (types.isUndefined(line)) {
+                if (types.isNullOrUndefined(line)) {
                     break;
                 }
 
