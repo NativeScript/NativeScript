@@ -44,7 +44,7 @@ export class ActionBar extends common.ActionBar {
 
         // Find previous ViewController in the navigation stack
         var indexOfViewController = navController.viewControllers.indexOfObject(viewController);
-        if (indexOfViewController !== NSNotFound && indexOfViewController > 0) {
+        if (indexOfViewController < navController.viewControllers.count && indexOfViewController > 0) {
             previousController = navController.viewControllers[indexOfViewController - 1];
         }
    
