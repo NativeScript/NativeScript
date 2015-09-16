@@ -2,9 +2,23 @@ Cross Platform Modules Changelog
 ==============================
 ##1.3.0 (2015, September ?)
 
-###Fixed
+### Fixed
 
 - [(#680)](https://github.com/NativeScript/NativeScript/issues/680) Fix dialogs module parameter positions and add title as optional parameter
+
+- [(#667)](https://github.com/NativeScript/NativeScript/issues/667) Layout is not updated once Page is shown modally and layout is requested.
+
+- [(#654)](https://github.com/NativeScript/NativeScript/issues/654) Multiple gestures not working for Android
+
+- [(#651)](https://github.com/NativeScript/NativeScript/issues/651) http getJSON never completes when response is not JSON
+
+- [(#623)](https://github.com/NativeScript/NativeScript/issues/623) CSS Inconsistency...
+
+- [(#616)](https://github.com/NativeScript/NativeScript/issues/616) TitleView in ActionBar not taking full width in android 5.1
+
+- [(#613)](https://github.com/NativeScript/NativeScript/issues/613) WebView - support for loading local files
+
+- [(#590)](https://github.com/NativeScript/NativeScript/issues/590) CSS not working on Repeater when bindingContext set on 'navigatingTo'
 
 - [(#587)](https://github.com/NativeScript/NativeScript/issues/587) Animation promise in iOS may never be resolved nor rejected.
 
@@ -14,17 +28,43 @@ Cross Platform Modules Changelog
 
 - [(#540)](https://github.com/NativeScript/NativeScript/issues/540) border-radius CSS property not applying properly to image on Android
 
+- [(#537)](https://github.com/NativeScript/NativeScript/issues/537) FileSystemAccess.prototype.readText has an async interface, but is synchronous
+
+- [(#535)](https://github.com/NativeScript/NativeScript/issues/535) Random exception when using http.getJSON()
+
 - [(#513)](https://github.com/NativeScript/NativeScript/issues/513) Android backgroundColor animation is not gradual.
 
 - [(#508)](https://github.com/NativeScript/NativeScript/issues/508) iOS Page lack of a background screws the page transitions
 
-###New
+- [(#411)](https://github.com/NativeScript/NativeScript/issues/411) Setting invalid value for css properties causes app to crash
 
-- [(#680)](https://github.com/NativeScript/NativeScript/issues/680) Fix dialogs module parameter positions and add title as optional parameter
+- [(#408)](https://github.com/NativeScript/NativeScript/issues/408) ScrollView does not scroll
+
+- [(#360)](https://github.com/NativeScript/NativeScript/issues/360) Changing wrap layout paddings and its view margins runtime causes a crash on iOS.
+
+### New
+
+- [(#698)](https://github.com/NativeScript/NativeScript/issues/698) Implement events for the SegmentedBar similar to TabView
+
+- [(#688)](https://github.com/NativeScript/NativeScript/issues/688) JSONP support for HTTP module
+
+- [(#672)](https://github.com/NativeScript/NativeScript/issues/672) html-view doesn't open urls
 
 - [(#670)](https://github.com/NativeScript/NativeScript/issues/670) Add a cross platform "openUrl"
 
 - [(#634)](https://github.com/NativeScript/NativeScript/issues/634) Make SegmentedBarItem bindable.
+
+- [(#619)](https://github.com/NativeScript/NativeScript/issues/619) View.style is not consistent with Declarative UI .style property.
+
+- [(#615)](https://github.com/NativeScript/NativeScript/issues/615) View Component consistancy
+
+- [(#612)](https://github.com/NativeScript/NativeScript/issues/612) CSS @import: Make url optional for local files
+
+- [(#610)](https://github.com/NativeScript/NativeScript/issues/610) Hiding the action bar also hides the headers of a tab view
+
+- [(#578)](https://github.com/NativeScript/NativeScript/issues/578) Add scrollToIndex method to ListView
+
+- [(#558)](https://github.com/NativeScript/NativeScript/issues/558) Bind multiple events on one view
 
 - [(#551)](https://github.com/NativeScript/NativeScript/issues/551) Implement an image picker
 
@@ -32,7 +72,32 @@ Cross Platform Modules Changelog
 
 - [(#541)](https://github.com/NativeScript/NativeScript/issues/541) Make TabViewItem properties data-bindable.
 
+- [(#530)](https://github.com/NativeScript/NativeScript/issues/530) Ability to set text size of searchBar 
+
 - [(#481)](https://github.com/NativeScript/NativeScript/issues/481) Support padding on TextField and Button elements
+
+- [(#473)](https://github.com/NativeScript/NativeScript/issues/473) Add support for Notification Observers (iOS) and Broadcast Receivers (Android)
+
+- [(#451)](https://github.com/NativeScript/NativeScript/issues/451) Improve the Network Stack
+
+- [(#432)](https://github.com/NativeScript/NativeScript/issues/432) Expose all of the iOS UIApplicationDelegate methods as events in the application module
+
+- [(#409)](https://github.com/NativeScript/NativeScript/issues/409) Support for modules that depend on Android AppCompat libraries
+
+- [(#309)](https://github.com/NativeScript/NativeScript/issues/309) Support lower-case-dashed component declaration in the XML
+
+- [(#305)](https://github.com/NativeScript/NativeScript/issues/305) Improve android layout performance by reducing marshalling calls
+
+- [(#255)](https://github.com/NativeScript/NativeScript/issues/255) Implement cross-platform animations support
+
+- [(#169)](https://github.com/NativeScript/NativeScript/issues/169) Create a schema for the XML UI to enable Intellisense inside AppBuilder and other IDEs.
+
+- [(#110)](https://github.com/NativeScript/NativeScript/issues/110) Add support for orientation changed event
+
+- [(#69)](https://github.com/NativeScript/NativeScript/issues/69) Add rotate, translate & scale transforms properties on View
+
+- [(#68)](https://github.com/NativeScript/NativeScript/issues/68) Create common UI module that includes most commonly used UI views
+
 
 ### Breaking changes
 -  [(#473)](https://github.com/NativeScript/NativeScript/issues/473) The `application.ios.removeNotificationObserver` method now requires an observer instance to be supplied as the first argument. The observer instance is obtained from the `application.ios.addNotificationObserver` method:
