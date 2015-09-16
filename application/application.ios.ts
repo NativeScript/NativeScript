@@ -1,10 +1,10 @@
 ﻿import appModule = require("application/application-common");
 import frame = require("ui/frame");
-import utils = require("utils/utils");
 import types = require("utils/types");
 import view = require("ui/core/view");
 import definition = require("application");
 import enums = require("ui/enums");
+import uiUtils = require("ui/utils");
 
 global.moduleMerge(appModule, exports);
 
@@ -32,7 +32,7 @@ class Window extends UIWindow {
     }
 
     public layoutSubviews(): void {
-        utils.ios._layoutRootView(this._content, UIScreen.mainScreen().bounds);
+        uiUtils.ios._layoutRootView(this._content, UIScreen.mainScreen().bounds);
     }
 }
 

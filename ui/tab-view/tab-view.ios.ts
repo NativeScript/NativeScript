@@ -1,9 +1,9 @@
 ﻿import common = require("ui/tab-view/tab-view-common");
 import definition = require("ui/tab-view");
 import dependencyObservable = require("ui/core/dependency-observable");
-import utilsModule = require("utils/utils");
 import trace = require("trace");
 import utils = require("utils/utils");
+import uiUtils = require("ui/utils");
 import view = require("ui/core/view");
 import imageSource = require("image-source");
 import types = require("utils/types");
@@ -244,8 +244,8 @@ export class TabView extends common.TabView {
             var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
             var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
-            this._tabBarHeight = utilsModule.ios.getActualHeight(this._ios.tabBar);
-            this._navBarHeight = utilsModule.ios.getActualHeight(this._ios.moreNavigationController.navigationBar);
+            this._tabBarHeight = uiUtils.ios.getActualHeight(this._ios.tabBar);
+            this._navBarHeight = uiUtils.ios.getActualHeight(this._ios.moreNavigationController.navigationBar);
 
             var density = utils.layout.getDisplayDensity();
             var measureWidth = 0;

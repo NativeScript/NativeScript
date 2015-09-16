@@ -2,7 +2,7 @@
 import definition = require("ui/page");
 import viewModule = require("ui/core/view");
 import trace = require("trace");
-import utils = require("utils/utils");
+import uiUtils = require("ui/utils");
 
 global.moduleMerge(pageCommon, exports);
 
@@ -23,7 +23,7 @@ class UIViewControllerImpl extends UIViewController {
         trace.write(this._owner + " didRotateFromInterfaceOrientation(" + fromInterfaceOrientation + ")", trace.categories.ViewHierarchy);
         if (this._owner._isModal) {
             var parentBounds = (<any>this._owner)._UIModalPresentationFormSheet ? (<UIView>this._owner._nativeView).superview.bounds : UIScreen.mainScreen().bounds;
-            utils.ios._layoutRootView(this._owner, parentBounds);
+            uiUtils.ios._layoutRootView(this._owner, parentBounds);
         }
     }
 
@@ -37,7 +37,7 @@ class UIViewControllerImpl extends UIViewController {
         trace.write(this._owner + " viewDidLayoutSubviews, isLoaded = " + this._owner.isLoaded, trace.categories.ViewHierarchy);
         if (this._owner._isModal) {
             var parentBounds = (<any>this._owner)._UIModalPresentationFormSheet ? this._owner._nativeView.superview.bounds : UIScreen.mainScreen().bounds;
-            utils.ios._layoutRootView(this._owner, parentBounds);
+            uiUtils.ios._layoutRootView(this._owner, parentBounds);
         }
         else {
             this._owner._updateLayout();
@@ -137,7 +137,7 @@ export class Page extends pageCommon.Page {
 
         if (fullscreen) {
             this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFullScreen;
-            utils.ios._layoutRootView(this, UIScreen.mainScreen().bounds);
+            uiUtils.ios._layoutRootView(this, UIScreen.mainScreen().bounds);
         }
         else {
             this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFormSheet;
@@ -148,7 +148,7 @@ export class Page extends pageCommon.Page {
         parent.ios.presentViewControllerAnimatedCompletion(this._ios, false, function completion() {
             if (!fullscreen) {
                 // We can measure and layout the modal page after we know its parent's dimensions.
-                utils.ios._layoutRootView(that, that._nativeView.superview.bounds);
+                uiUtils.ios._layoutRootView(that, that._nativeView.superview.bounds);
             }
 
             that._raiseShownModallyEvent(parent, context, closeCallback);
