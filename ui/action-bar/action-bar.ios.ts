@@ -52,7 +52,7 @@ export class ActionBar extends common.ActionBar {
         if (previousController) {
             if (this.navigationButton) {
                 var tapHandler = TapBarItemHandlerImpl.new().initWithOwner(this.navigationButton);
-                var barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
+                var barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + "", UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
                 previousController.navigationItem.backBarButtonItem = barButtonItem;
             }
             else {
@@ -124,7 +124,7 @@ export class ActionBar extends common.ActionBar {
             }
         }
         else {
-            barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
+            barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text + "", UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
         }
 
         return barButtonItem;

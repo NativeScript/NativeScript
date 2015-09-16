@@ -79,6 +79,7 @@
     <TypeScriptCompile Include="apps\action-bar-demo\pages\data-binding.ts">
       <DependentUpon>data-binding.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.ts" />
     <TypeScriptCompile Include="apps\tests\xml-declaration\custom-code-file.ts" />
     <TypeScriptCompile Include="apps\transforms\app.ts" />
     <TypeScriptCompile Include="apps\transforms\main-page.ts" />
@@ -111,6 +112,7 @@
     <Content Include="apps\action-bar-demo\pages\center-view-segmented.xml" />
     <Content Include="apps\action-bar-demo\pages\center-view.xml" />
     <Content Include="apps\action-bar-demo\pages\data-binding.xml" />
+    <Content Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.xml" />
     <Content Include="apps\tests\xml-declaration\custom-css-file.css" />
     <Content Include="apps\transforms\main-page.xml">
       <SubType>Designer</SubType>

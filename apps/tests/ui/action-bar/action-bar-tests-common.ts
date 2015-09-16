@@ -4,6 +4,7 @@ import helper = require("../helper");
 import builder = require("ui/builder");
 import button = require("ui/button");
 import PageModule = require("ui/page");
+import fs = require("file-system");
 
 // <snippet module="ui/action-bar" title="ActionBar">
 // # ActionBar
@@ -191,6 +192,27 @@ export function test_Setting_ActionItems_doesnt_thrown() {
 
     try {
         helper.navigate(pageFactory);
+    }
+    catch (e) {
+        gotException = true;
+    }
+
+    try {
+        TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
+
+    var gotException = false;
+
+    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+
+    try {
+        helper.navigateToModule(moduleName + "/ActionBar_NumberAsText");
     }
     catch (e) {
         gotException = true;

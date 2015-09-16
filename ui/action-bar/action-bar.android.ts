@@ -197,7 +197,7 @@ export class ActionBar extends common.ActionBar {
         menu.clear();
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
-            var menuItem = menu.add(android.view.Menu.NONE, i + ACTION_ITEM_ID_OFFSET, android.view.Menu.NONE, item.text);
+            var menuItem = menu.add(android.view.Menu.NONE, i + ACTION_ITEM_ID_OFFSET, android.view.Menu.NONE, item.text + "");
             if (item.icon) {
                 var drawableOrId = getDrawableOrResourceId(item.icon, this._appResources);
                 if (drawableOrId) {
