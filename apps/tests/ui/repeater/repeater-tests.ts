@@ -3,6 +3,10 @@ import app = require("application");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import stackLayoutModule = require("ui/layouts/stack-layout");
+import layoutBaseModule = require("ui/layouts/layout-base");
+import fs = require("file-system");
+import pageModule = require("ui/page");
+import gestureModule = require("ui/gestures");
 
 // <snippet module="ui/repeater" title="repeater">
 // # Repeater
@@ -378,6 +382,58 @@ export function test_BindingRepeaterToASimpleArrayWithExpression() {
 
     helper.buildUIAndRunTest(repeater, testAction);
 }
+
+export var test_RepeaterItemsGestureBindings = function () {
+    var testFunc = function (page: pageModule.Page) {
+        var repeater = <repeaterModule.Repeater>(page.getViewById("repeater"));
+        var hasObservers = false;
+        var eachChildCallback = function (childItem: viewModule.View) {
+            if (childItem instanceof labelModule.Label) {
+                var gestureObservers = childItem.getGestureObservers(gestureModule.GestureTypes.tap);
+                hasObservers = gestureObservers ? gestureObservers.length > 0 : false;
+            }
+            else if (childItem instanceof layoutBaseModule.LayoutBase) {
+                childItem._eachChildView(eachChildCallback);
+            }
+            return true;
+        }
+
+        repeater._eachChildView(eachChildCallback);
+
+        TKUnit.assertEqual(hasObservers, true, "Every item should have tap observer!");
+    }
+
+    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+    helper.navigateToModuleAndRunTest(("." + moduleName + "/repeaterItems-bindingToGestures"), null, testFunc);
+}
+
+export var test_RepeaterItemsParentBindingsShouldWork = function () {
+    var testFunc = function (page: pageModule.Page) {
+        var repeater = <repeaterModule.Repeater>(page.getViewById("repeater"));
+        var expectedText = page.bindingContext["parentViewProperty"];
+        var testPass = false;
+        var eachChildCallback = function (childItem: viewModule.View) {
+            if (childItem instanceof labelModule.Label) {
+                testPass = (<labelModule.Label>childItem).text === expectedText;
+                if (testPass === false) {
+                    return false;
+                }
+            }
+            else if (childItem instanceof layoutBaseModule.LayoutBase) {
+                childItem._eachChildView(eachChildCallback);
+            }
+            return true;
+        }
+
+        repeater._eachChildView(eachChildCallback);
+
+        TKUnit.assertEqual(testPass, true, "Every item should have text bound to Page binding context!");
+    }
+
+    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+    helper.navigateToModuleAndRunTest(("." + moduleName + "/repeaterItems-bindingToGestures"), null, testFunc);
+}
+
 /*
 export function test_no_memory_leak_when_items_is_regular_array() {
     var createFunc = function (): repeaterModule.Repeater {
