@@ -2,6 +2,38 @@ Cross Platform Modules Changelog
 ==============================
 ##1.3.0 (2015, September ?)
 
+###Fixed
+
+- [(#680)](https://github.com/NativeScript/NativeScript/issues/680) Fix dialogs module parameter positions and add title as optional parameter
+
+- [(#587)](https://github.com/NativeScript/NativeScript/issues/587) Animation promise in iOS may never be resolved nor rejected.
+
+- [(#581)](https://github.com/NativeScript/NativeScript/issues/581) HtmlView only for single line?
+
+- [(#557)](https://github.com/NativeScript/NativeScript/issues/557) Handlebar syntax in view with comma breaks silently
+
+- [(#540)](https://github.com/NativeScript/NativeScript/issues/540) border-radius CSS property not applying properly to image on Android
+
+- [(#513)](https://github.com/NativeScript/NativeScript/issues/513) Android backgroundColor animation is not gradual.
+
+- [(#508)](https://github.com/NativeScript/NativeScript/issues/508) iOS Page lack of a background screws the page transitions
+
+###New
+
+- [(#680)](https://github.com/NativeScript/NativeScript/issues/680) Fix dialogs module parameter positions and add title as optional parameter
+
+- [(#670)](https://github.com/NativeScript/NativeScript/issues/670) Add a cross platform "openUrl"
+
+- [(#634)](https://github.com/NativeScript/NativeScript/issues/634) Make SegmentedBarItem bindable.
+
+- [(#551)](https://github.com/NativeScript/NativeScript/issues/551) Implement an image picker
+
+- [(#548)](https://github.com/NativeScript/NativeScript/issues/548) Expose public API controlling whether a Page should be added to the navigation backstack or not
+
+- [(#541)](https://github.com/NativeScript/NativeScript/issues/541) Make TabViewItem properties data-bindable.
+
+- [(#481)](https://github.com/NativeScript/NativeScript/issues/481) Support padding on TextField and Button elements
+
 ### Breaking changes
 -  [(#473)](https://github.com/NativeScript/NativeScript/issues/473) The `application.ios.removeNotificationObserver` method now requires an observer instance to be supplied as the first argument. The observer instance is obtained from the `application.ios.addNotificationObserver` method:
 
@@ -15,8 +47,7 @@ application.ios.removeNotificationObserver(observer, UIDeviceBatteryLevelDidChan
 
 ##1.2.1 (2015, August 18)
 
-Fixed
-=========
+###Fixed
 
 - [(#575)](https://github.com/NativeScript/NativeScript/issues/575) Application crashes in Android when there is an ActionBar on the first page.
 
@@ -24,8 +55,7 @@ Fixed
 
 ##1.2.0 (2015, July 24)
 
-New
-=========
+###New
 
 - [(#393)](https://github.com/NativeScript/NativeScript/issues/393) Create application.android instance immediately and move all android-specific events to application.android.
 
@@ -39,8 +69,7 @@ New
 
 - [(#191)](https://github.com/NativeScript/NativeScript/issues/191) Extend the set of support CSS properties in {N}
 
-Fixed
-=========
+###Fixed
 
 - [(#423)](https://github.com/NativeScript/NativeScript/issues/423) Showing a modal page from another modal page results in error on iOS.
 
