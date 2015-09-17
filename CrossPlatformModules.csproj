@@ -816,6 +816,10 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\text-view\text-view.d.ts" />
     <TypeScriptCompile Include="ui\ui.ts" />
+    <TypeScriptCompile Include="ui\utils.d.ts" />
+    <TypeScriptCompile Include="ui\utils.ios.ts">
+      <DependentUpon>utils.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="utils\module-merge.ts" />
     <TypeScriptCompile Include="utils\utils.android.ts">
       <DependentUpon>utils.d.ts</DependentUpon>
