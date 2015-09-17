@@ -1,0 +1,25 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded">
+    <GridLayout rows="*,auto,8*,auto,auto">
+        <GridLayout row="0" columns="*,auto,*" cssClass="title">
+            <Image src="~/tns_modules/unit-test-runner/nativescript.png" stretch="aspectFill" col="1"/>
+        </GridLayout>
+
+        <Progress row="1" value="{{ testsRan }}" maxValue="{{ testsTotal }}" cssClass="testProgress"/>
+
+        <StackLayout row="2" style="margin: 20px;">
+            <Label text="{{ testsTotal, 'Total: ' + testsTotal}} " cssClass="testsTotal"/>
+            <Label text="{{ testsPassed, 'Passed: ' + testsPassed }}" cssClass="testsPassed"/>
+            <Label text="{{ testsFailed, 'Failed: ' + testsFailed }}" cssClass="testsFailed"/>
+            <StackLayout orientation="horizontal" visibility="{{ testsRunning, testsRunning ? 'visible' : 'collapsed' }}" horizontalAlignment="left">
+                <ActivityIndicator busy="true"/>
+                <Label text="Testing in progress..." verticalAlignment="center"/>
+            </StackLayout>
+        </StackLayout>
+
+        <Button text="View Test Run Details" tap="{{ viewTestRunDetails }}" row="3"/>
+
+        <GridLayout row="4" cssClass="statusBar">
+            <Label text="{{ serverInfo }}" cssClass="statusText"/>
+        </GridLayout>
+    </GridLayout>
+</Page>
