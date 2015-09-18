@@ -245,6 +245,18 @@ export function test_parse_ShouldFindEventHandlersInExports() {
     TKUnit.assert(loaded, "Parse should find event handlers in exports.");
 };
 
+export function test_parse_ShouldFindEventHandlersWithOnInExports() {
+    var loaded;
+    var page = builder.parse("<Page onloaded='myLoaded'></Page>", {
+        myLoaded: args => {
+            loaded = true;
+        }
+    });
+    page._emit("loaded");
+
+    TKUnit.assert(loaded, "Parse should find event handlers in exports.");
+};
+
 export function test_parse_ShouldSetGridAttachedProperties() {
     var p = <Page>builder.parse("<Page><GridLayout><Label row='1' col='2' rowSpan='3' colSpan='4' /></GridLayout></Page>");
     var grid = <gridLayoutModule.GridLayout>p.content;
@@ -368,8 +380,37 @@ export function test_parse_ShouldParseBindingsToEvents() {
     TKUnit.assert(btn.hasListeners("tap"), "Expected result: true.");
 };
 
+export function test_parse_ShouldParseBindingsToEventsWithOn() {
+    var p = <Page>builder.parse("<Page><Button ontap='{{ myTap }}' /></Page>");
+    p.bindingContext = {
+        myTap: function (args) {
+            //
+        }
+    };
+    var btn = <buttonModule.Button>p.content;
+
+    TKUnit.assert(btn.hasListeners("tap"), "Expected result: true.");
+};
+
 export function test_parse_ShouldParseBindingsToGestures() {
     var p = <Page>builder.parse("<Page><Label tap='{{ myTap }}' /></Page>");
+    var context = {
+        myTap: function (args) {
+            //
+        }
+    };
+
+    p.bindingContext = context;
+    var lbl = <Label>p.content;
+
+    var observer = (<view.View>lbl).getGestureObservers(gesturesModule.GestureTypes.tap)[0];
+
+    TKUnit.assert(observer !== undefined, "Expected result: true.");
+    TKUnit.assert(observer.context === context, "Context should be equal to binding context. Actual result: " + observer.context);
+};
+
+export function test_parse_ShouldParseBindingsToGesturesWithOn() {
+    var p = <Page>builder.parse("<Page><Label ontap='{{ myTap }}' /></Page>");
     var context = {
         myTap: function (args) {
             //

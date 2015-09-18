@@ -20,12 +20,17 @@ registerSpecialProperty("class", (instance: definition.View, propertyValue: stri
     instance.className = propertyValue;
 });
 
+function getEventOrGestureName(name: string) : string {
+    return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
+}
+
 export function isEventOrGesture(name: string, view: View): boolean {
     if (types.isString(name)) {
-        var evt = `${name}Event`;
+        var eventOrGestureName = getEventOrGestureName(name);
+        var evt = `${eventOrGestureName}Event`;
 
         return view.constructor && evt in view.constructor ||
-            gestures.fromString(name.toLowerCase()) !== undefined;
+            gestures.fromString(eventOrGestureName.toLowerCase()) !== undefined;
     }
 
     return false;
@@ -230,6 +235,9 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     public addEventListener(arg: string | gestures.GestureTypes, callback: (data: observable.EventData) => void, thisArg?: any) {
         if (types.isString(arg)) {
+
+            arg = getEventOrGestureName(<string>arg);
+
             var gesture = gestures.fromString(<string>arg);
             if (gesture && !this._isEvent(<string>arg)) {
                 this.observe(gesture, callback, thisArg);
