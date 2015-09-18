@@ -195,7 +195,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         // ### How to style a label via css class
         // ``` JavaScript
         label.text = "The quick brown fox jumps over the lazy dog.";
-        label.cssClass = "title";
+        label.className = "title";
         //// after that all we have to do is to set a similar css entry within parent page css property
         //// label.parentPage.css = ".title {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
         // ```

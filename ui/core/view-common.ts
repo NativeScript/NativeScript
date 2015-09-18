@@ -17,7 +17,7 @@ import observable = require("data/observable");
 import {registerSpecialProperty} from "ui/builder/special-properties";
 
 registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
-    instance.cssClass = propertyValue;
+    instance.className = propertyValue;
 });
 
 export function isEventOrGesture(name: string, view: View): boolean {
@@ -112,7 +112,13 @@ var cssClassProperty = new dependencyObservable.Property(
     "cssClass",
     "View",
     new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged)
-    );
+);
+
+var classNameProperty = new dependencyObservable.Property(
+    "className",
+    "View",
+    new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged)
+);
 
 var translateXProperty = new dependencyObservable.Property(
     "translateX",
@@ -162,6 +168,7 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     public static idProperty = idProperty;
     public static cssClassProperty = cssClassProperty;
+    public static classNameProperty = classNameProperty;
     public static translateXProperty = translateXProperty;
     public static translateYProperty = translateYProperty;
     public static scaleXProperty = scaleXProperty;
@@ -493,6 +500,13 @@ export class View extends proxy.ProxyObject implements definition.View {
         return this._getValue(View.cssClassProperty);
     }
     set cssClass(value: string) {
+        this._setValue(View.cssClassProperty, value);
+    }
+
+    get className(): string {
+        return this._getValue(View.cssClassProperty);
+    }
+    set className(value: string) {
         this._setValue(View.cssClassProperty, value);
     }
 

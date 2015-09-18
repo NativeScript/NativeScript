@@ -49,7 +49,7 @@ export function createPage() {
 
     var info = new btns.Button();
     info.text = "info";
-    info.cssClass = "info";
+    info.className = "info";
     info.on(btns.Button.tapEvent, function () {
         info.text = "hi: " + counter++;
         btn.isEnabled = true;
