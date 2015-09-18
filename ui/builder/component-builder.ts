@@ -1,5 +1,4 @@
 ﻿import view = require("ui/core/view");
-import bindable = require("ui/core/bindable");
 import types = require("utils/types");
 import definition = require("ui/builder/component-builder");
 import fs = require("file-system");
