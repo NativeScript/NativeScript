@@ -1,6 +1,7 @@
 ﻿import common = require("ui/switch/switch-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import utils = require("utils/utils")
 
 function onCheckedPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var swtch = <Switch>data.object;
@@ -16,10 +17,6 @@ function onCheckedPropertyChanged(data: dependencyObservable.PropertyChangeData)
 
 global.moduleMerge(common, exports);
 
-interface Owned {
-    owner: any;
-}
-
 export class Switch extends common.Switch {
     private _android: android.widget.Switch;
 
@@ -32,7 +29,7 @@ export class Switch extends common.Switch {
 
         var that = new WeakRef(this);
 
-        this._android.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener(<Owned & android.widget.CompoundButton.IOnCheckedChangeListener>{
+        this._android.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener(<utils.Owned & android.widget.CompoundButton.IOnCheckedChangeListener>{
             get owner() {
                 return that.get();
             },

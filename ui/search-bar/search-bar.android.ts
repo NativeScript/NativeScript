@@ -3,6 +3,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import color = require("color");
 import types = require("utils/types");
+import utils = require("utils/utils")
 
 var SEARCHTEXT = "searchText";
 var QUERY = "query";
@@ -92,10 +93,6 @@ function _changeSearchViewHintColor(bar: android.widget.SearchView, color: numbe
 
 global.moduleMerge(common, exports);
 
-interface Owned {
-    owner: any;
-}
-
 export class SearchBar extends common.SearchBar {
     private _android: android.widget.SearchView;
 
@@ -105,7 +102,7 @@ export class SearchBar extends common.SearchBar {
         this._android.setIconified(false);
 
         var that = new WeakRef(this);
-        this._android.setOnQueryTextListener(new android.widget.SearchView.OnQueryTextListener(<Owned & android.widget.SearchView.IOnQueryTextListener>{
+        this._android.setOnQueryTextListener(new android.widget.SearchView.OnQueryTextListener(<utils.Owned & android.widget.SearchView.IOnQueryTextListener>{
             get owner() {
                 return that.get();
             },
@@ -136,7 +133,7 @@ export class SearchBar extends common.SearchBar {
             }
         }));
 
-        this._android.setOnCloseListener(new android.widget.SearchView.OnCloseListener(<Owned & android.widget.SearchView.IOnCloseListener>{
+        this._android.setOnCloseListener(new android.widget.SearchView.OnCloseListener(<utils.Owned & android.widget.SearchView.IOnCloseListener>{
             get owner() {
                 return that.get();
             },
