@@ -1,34 +1,34 @@
 <Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded">
-  <StackLayout cssClass="content">
+  <StackLayout class="content">
     <!-- Profile sttings -->
-    <Label cssClass="header" text="Profile"/>
-    <GridLayout cssClass="field-group" columns="auto, 50, *" rows="auto, auto, auto">
+    <Label class="header" text="Profile"/>
+    <GridLayout class="field-group" columns="auto, 50, *" rows="auto, auto, auto">
 
       <!-- Name -->
-      <Label cssClass="field" text="Name"/>
-      <Button cssClass="field-dialog-button" text="{{ name }}" tap="{{ promptName }}" col="1" colSpan="2"/>
+      <Label class="field" text="Name"/>
+      <Button class="field-dialog-button" text="{{ name }}" tap="{{ promptName }}" col="1" colSpan="2"/>
 
       <!-- Height -->
-      <Label cssClass="field" text="Height" row="1"/>
-      <TextField cssClass="field-value" text="{{ height }}" keyboardType="number" row="1" col="1"/>
-      <Label cssClass="field-unit" text="cm" col="2" row="1"/>
+      <Label class="field" text="Height" row="1"/>
+      <TextField class="field-value" text="{{ height }}" keyboardType="number" row="1" col="1"/>
+      <Label class="field-unit" text="cm" col="2" row="1"/>
 
       <!-- Weight -->
-      <Label cssClass="field" text="Weight" row="2"/>
-      <TextField cssClass="field-value" text="{{ weight }}" keyboardType="number" row="2" col="1"/>
-      <Label cssClass="field-unit" text="kg"  row="2" col="2"/>
+      <Label class="field" text="Weight" row="2"/>
+      <TextField class="field-value" text="{{ weight }}" keyboardType="number" row="2" col="1"/>
+      <Label class="field-unit" text="kg"  row="2" col="2"/>
     </GridLayout>
 
     <!-- Notifications settings -->
-    <Label cssClass="header" text="Notifications"/>
-    <GridLayout cssClass="field-group" columns="*, auto" rows="auto, auto, auto">
+    <Label class="header" text="Notifications"/>
+    <GridLayout class="field-group" columns="*, auto" rows="auto, auto, auto">
       <!-- Notifications -->
-      <Label cssClass="field" text="Vibrate"/>
-      <Switch cssClass="field-value" checked="{{ vibrateEnabled }}" col="1"/>
+      <Label class="field" text="Vibrate"/>
+      <Switch class="field-value" checked="{{ vibrateEnabled }}" col="1"/>
 
       <!-- Notifications -->
-      <Label cssClass="field" text="Sound" row="1"/>
-      <Switch cssClass="field-value"  checked="{{ soundEnabled }}" row="1" col="1"/>
+      <Label class="field" text="Sound" row="1"/>
+      <Switch class="field-value"  checked="{{ soundEnabled }}" row="1" col="1"/>
       <Slider maxValue="100" value="{{ soundVolume }}" isEnabled="{{ soundEnabled }}"  row="2" colSpan="2"/>
     </GridLayout>
   </StackLayout>

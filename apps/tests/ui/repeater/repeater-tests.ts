@@ -32,7 +32,7 @@ import labelModule = require("ui/label");
 // <Page>
 //  {%raw%}<Repeater items="{{ myItems }}">
 //     <Repeater.itemTemplate>
-//        <Label text="{{ title || 'Downloading...' }}" textWrap="true" cssClass="title" />
+//        <Label text="{{ title || 'Downloading...' }}" textWrap="true" class="title" />
 //     </Repeater.itemTemplate>
 //  </Repeater>{%endraw%}
 // </Page>

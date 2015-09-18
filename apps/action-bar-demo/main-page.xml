@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Page>
   <Page.actionBar>
-    <ActionBar title="Title" cssClass="custom-action-bar">
+    <ActionBar title="Title" class="custom-action-bar">
       <ActionBar.actionItems>
         <ActionItem text="hi" />
       </ActionBar.actionItems>

@@ -14,6 +14,11 @@ import utils = require("utils/utils");
 import color = require("color");
 import animationModule = require("ui/animation");
 import observable = require("data/observable");
+import {registerSpecialProperty} from "ui/builder/special-properties";
+
+registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
+    instance.cssClass = propertyValue;
+});
 
 export function isEventOrGesture(name: string, view: View): boolean {
     if (types.isString(name)) {

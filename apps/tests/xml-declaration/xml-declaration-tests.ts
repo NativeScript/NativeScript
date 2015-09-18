@@ -201,7 +201,7 @@ export function test_parse_ShouldResolveExportsFromCodeFileForTemplates() {
 export function test_parse_ShouldApplyCssFromCssFile() {
     var newPage: Page;
     var pageFactory = function (): Page {
-        newPage = <Page>builder.parse("<Page cssFile='~/xml-declaration/custom-css-file.css'><Label cssClass='MyClass' /></Page>");
+        newPage = <Page>builder.parse("<Page cssFile='~/xml-declaration/custom-css-file.css'><Label class='MyClass' /></Page>");
         return newPage;
     };
 
@@ -218,7 +218,7 @@ export function test_parse_ShouldApplyCssFromCssFile() {
 export function test_parse_ShouldResolveExportsFromCodeFileAndApplyCssFile() {
     var newPage: Page;
     var pageFactory = function (): Page {
-        newPage = <Page>builder.parse("<Page codeFile='~/xml-declaration/custom-code-file' cssFile='~/xml-declaration/custom-css-file.css' loaded='loaded'><Label cssClass='MyClass' /></Page>");
+        newPage = <Page>builder.parse("<Page codeFile='~/xml-declaration/custom-code-file' cssFile='~/xml-declaration/custom-css-file.css' loaded='loaded'><Label class='MyClass' /></Page>");
         return newPage;
     };
 

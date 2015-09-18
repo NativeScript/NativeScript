@@ -2,7 +2,7 @@
 <Page>
   <ScrollView>
     <StackLayout>
-      <Label cssClass="title" text="Layouts" />
+      <Label class="title" text="Layouts" />
       <StackLayout>
         <Button tag="layouts/stack-layout" text="StackLayout" tap="itemTap" />
         <Button tag="layouts/grid-layout" text="GridLayout" tap="itemTap" />
@@ -11,7 +11,7 @@
         <Button tag="layouts/absolute-layout" text="AbsoluteLayout" tap="itemTap" />
       </StackLayout>
 
-      <Label cssClass="title" text="Content" />
+      <Label class="title" text="Content" />
       <StackLayout>
         <Button tag="content/tab-view" text="TabView" tap="itemTap" />
         <Button tag="content/web-view" text="WebView" tap="itemTap" />
@@ -20,7 +20,7 @@
         <Button tag="content/border" text="Border" tap="itemTap" />
       </StackLayout>
 
-      <Label cssClass="title" text="Views" />
+      <Label class="title" text="Views" />
       <StackLayout>
         <Button tag="views/button" text="Button" tap="itemTap" />
         <Button tag="views/label" text="Label" tap="itemTap" />
