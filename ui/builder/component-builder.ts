@@ -101,8 +101,6 @@ export function getComponentModule(elementName: string, namespace: string, attri
     }
 
     if (instance && instanceModule) {
-        var bindings = new Array<bindable.BindingOptions>();
-
         for (var attr in attributes) {
 
             var attrValue = <string>attributes[attr];
@@ -136,7 +134,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
             }
         }
 
-        componentModule = { component: instance, exports: instanceModule, bindings: bindings };
+        componentModule = {component: instance, exports: instanceModule};
     }
 
     return componentModule;

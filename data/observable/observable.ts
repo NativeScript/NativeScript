@@ -127,7 +127,7 @@ export class Observable implements definition.Observable {
         this[data.propertyName] = data.value;
     }
 
-    public notify(data: definition.EventData) {
+    public notify<T extends definition.EventData>(data: T) {
         var observers = this._getEventList(data.eventName);
         if (!observers) {
             return;

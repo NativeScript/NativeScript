@@ -50,9 +50,9 @@ export function setUpModule() {
 
 export function tearDownModule() {
     navHelper.goBack();
-    delete testPage;
-    delete rootLayout;
-    delete tmp;
+    testPage = null;
+    rootLayout = null;
+    tmp = null;
 }
 
 export function setUp() {

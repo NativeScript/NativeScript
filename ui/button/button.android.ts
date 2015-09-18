@@ -2,6 +2,10 @@
 
 global.moduleMerge(common, exports);
 
+interface Owned {
+    owner: any;
+}
+
 export class Button extends common.Button {
     private _android: android.widget.Button;
     private _isPressed: boolean;
@@ -22,7 +26,8 @@ export class Button extends common.Button {
 
         this._android = new android.widget.Button(this._context);
 
-        this._android.setOnClickListener(new android.view.View.OnClickListener({
+        this._android.setOnClickListener(new android.view.View.OnClickListener(
+            <Owned & android.view.View.IOnClickListener>{
             get owner() {
                 return that.get();
             },
