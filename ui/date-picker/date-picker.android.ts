@@ -2,6 +2,7 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
+import utils = require("utils/utils")
 
 function onYearPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
@@ -78,7 +79,8 @@ export class DatePicker extends common.DatePicker {
 
         var that = new WeakRef(this);
 
-        this._listener = new android.widget.DatePicker.OnDateChangedListener({
+        this._listener = new android.widget.DatePicker.OnDateChangedListener(
+            <utils.Owned & android.widget.DatePicker.IOnDateChangedListener>{
             get owner() {
                 return that.get();
             },

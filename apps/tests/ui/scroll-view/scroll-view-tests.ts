@@ -49,9 +49,9 @@ export function setUpModule() {
 
 export function tearDownModule() {
     helper.goBack();
-    delete tmp;
-    delete newPage;
-    delete scrollView;
+    tmp = null;
+    newPage = null;
+    scrollView = null;
 }
 
 export function setUp() {

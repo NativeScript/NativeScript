@@ -25,8 +25,8 @@ export function setUpModule() {
 
 export function tearDownModule() {
     helper.goBack();
-    delete testBtn;
-    delete testPage;
+    testBtn = null;
+    testPage = null;
 }
 
 export function tearDown() {

@@ -97,7 +97,7 @@ declare module "data/observable" {
          * Notifies all the registered listeners for the event provided in the data.eventName.
          * @param data The data associated with the event.
          */
-        notify(data: EventData): void;
+        notify<T extends EventData>(data: T): void;
 
         /**
          * Notifies all the registered listeners for the property change event.

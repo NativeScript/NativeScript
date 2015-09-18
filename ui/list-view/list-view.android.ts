@@ -7,6 +7,7 @@ import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import color = require("color");
 import definition = require("ui/list-view");
+import utils = require("utils/utils")
 
 var ITEMLOADING = common.ListView.itemLoadingEvent;
 var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
@@ -50,7 +51,7 @@ export class ListView extends common.ListView {
         var that = new WeakRef(this);
 
         // TODO: This causes many marshalling calls, rewrite in Java and generate bindings
-        this.android.setOnScrollListener(new android.widget.AbsListView.OnScrollListener({
+        this.android.setOnScrollListener(new android.widget.AbsListView.OnScrollListener(<utils.Owned & android.widget.AbsListView.IOnScrollListener>{
             onScrollStateChanged: function (view: android.widget.AbsListView, scrollState: number) {
                 var owner: ListView = this.owner;
                 if (!owner) {

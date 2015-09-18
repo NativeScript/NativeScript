@@ -3,6 +3,15 @@
 
     export var RESOURCE_PREFIX: string;
 
+    //@private
+    /**
+     * Used by various android event listener implementations
+     */
+    interface Owned {
+        owner: any;
+    }
+    //@endprivate
+
     /**
      * Utility module related to layout.
      */

@@ -1,5 +1,4 @@
 ﻿import view = require("ui/core/view");
-import bindable = require("ui/core/bindable");
 import types = require("utils/types");
 import definition = require("ui/builder/component-builder");
 import fs = require("file-system");
@@ -101,8 +100,6 @@ export function getComponentModule(elementName: string, namespace: string, attri
     }
 
     if (instance && instanceModule) {
-        var bindings = new Array<bindable.BindingOptions>();
-
         for (var attr in attributes) {
 
             var attrValue = <string>attributes[attr];
@@ -136,7 +133,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
             }
         }
 
-        componentModule = { component: instance, exports: instanceModule, bindings: bindings };
+        componentModule = {component: instance, exports: instanceModule};
     }
 
     return componentModule;

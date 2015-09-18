@@ -3,6 +3,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import color = require("color");
 import types = require("utils/types");
+import utils = require("utils/utils")
 
 var SEARCHTEXT = "searchText";
 var QUERY = "query";
@@ -101,7 +102,7 @@ export class SearchBar extends common.SearchBar {
         this._android.setIconified(false);
 
         var that = new WeakRef(this);
-        this._android.setOnQueryTextListener(new android.widget.SearchView.OnQueryTextListener({
+        this._android.setOnQueryTextListener(new android.widget.SearchView.OnQueryTextListener(<utils.Owned & android.widget.SearchView.IOnQueryTextListener>{
             get owner() {
                 return that.get();
             },
@@ -132,7 +133,7 @@ export class SearchBar extends common.SearchBar {
             }
         }));
 
-        this._android.setOnCloseListener(new android.widget.SearchView.OnCloseListener({
+        this._android.setOnCloseListener(new android.widget.SearchView.OnCloseListener(<utils.Owned & android.widget.SearchView.IOnCloseListener>{
             get owner() {
                 return that.get();
             },

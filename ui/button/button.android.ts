@@ -1,4 +1,5 @@
 ﻿import common = require("ui/button/button-common");
+import utils = require("utils/utils")
 
 global.moduleMerge(common, exports);
 
@@ -22,7 +23,8 @@ export class Button extends common.Button {
 
         this._android = new android.widget.Button(this._context);
 
-        this._android.setOnClickListener(new android.view.View.OnClickListener({
+        this._android.setOnClickListener(new android.view.View.OnClickListener(
+            <utils.Owned & android.view.View.IOnClickListener>{
             get owner() {
                 return that.get();
             },

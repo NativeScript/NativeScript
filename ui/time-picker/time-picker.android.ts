@@ -1,6 +1,7 @@
 ﻿import common = require("ui/time-picker/time-picker-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import utils = require("utils/utils")
 
 function onHourPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <TimePicker>data.object;
@@ -32,7 +33,8 @@ export class TimePicker extends common.TimePicker {
 
         var that = new WeakRef(this);
 
-        this._listener = new android.widget.TimePicker.OnTimeChangedListener({
+        this._listener = new android.widget.TimePicker.OnTimeChangedListener(
+            <utils.Owned & android.widget.TimePicker.IOnTimeChangedListener>{
             get owner() {
                 return that.get();
             },
