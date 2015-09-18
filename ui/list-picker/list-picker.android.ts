@@ -1,12 +1,9 @@
 ﻿import common = require("ui/list-picker/list-picker-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import types = require("utils/types");
+import utils = require("utils/utils")
 
 global.moduleMerge(common, exports);
-
-interface Owned {
-    owner: any;
-}
 
 export class ListPicker extends common.ListPicker {
     private _android: android.widget.NumberPicker;
@@ -33,7 +30,7 @@ export class ListPicker extends common.ListPicker {
         var that = new WeakRef(this);
 
         this._formatter = new android.widget.NumberPicker.Formatter(
-            <Owned & android.widget.NumberPicker.IFormatter>{
+            <utils.Owned & android.widget.NumberPicker.IFormatter>{
             get owner(): ListPicker {
                 return that.get();
             },
@@ -48,7 +45,7 @@ export class ListPicker extends common.ListPicker {
         });
         this._android.setFormatter(this._formatter);
 
-        this._valueChangedListener = new android.widget.NumberPicker.OnValueChangeListener(<Owned & android.widget.NumberPicker.IOnValueChangeListener>{
+        this._valueChangedListener = new android.widget.NumberPicker.OnValueChangeListener(<utils.Owned & android.widget.NumberPicker.IOnValueChangeListener>{
             get owner() {
                 return that.get();
             },
