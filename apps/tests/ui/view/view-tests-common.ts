@@ -495,10 +495,10 @@ export var test_binding_id = function () {
 }
 
 export var test_binding_cssClass = function () {
-    property_binding_test("className", "class1", "class2");
+    property_binding_test("cssClass", "class1", "class2");
 }
 
-export var test_binding_cssClass = function () {
+export var test_binding_className = function () {
     property_binding_test("className", "class1", "class2");
 }
 
