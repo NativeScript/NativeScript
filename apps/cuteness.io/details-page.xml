@@ -3,7 +3,7 @@
     <ScrollView>
       <StackLayout>
         <Image imageSource="{{ imageSource }}" stretch="aspectFill"/>
-        <Label text="{{ title }}" cssClass="detailsTitle" textWrap="true" />
+        <Label text="{{ title }}" class="detailsTitle" textWrap="true" />
       </StackLayout>
     </ScrollView>
     <StackLayout orientation="horizontal" row="1">

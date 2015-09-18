@@ -1,4 +1,4 @@
-<StackLayout xmlns:customControls="xml-declaration/mymodule" cssClass="MySecondCustomStackLayout">
+<StackLayout xmlns:customControls="xml-declaration/mymodule" class="MySecondCustomStackLayout">
   <Label id="Label1" text="mymodulewithxml" />
   <Button text="Click!" tap="buttonTap2" /> 
 </StackLayout>

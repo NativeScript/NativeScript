@@ -2,11 +2,11 @@
       xmlns:app="."
       loaded="pageLoaded">
   <GridLayout rows="auto, *" columns="300, *">
-    <Label text="Master Details Page" cssClass="title" colSpan="2" />
+    <Label text="Master Details Page" class="title" colSpan="2" />
 
     <ListView items="{{ items }}" itemTap="listViewItemTap" row="1">
       <ListView.itemTemplate>
-        <Label text="{{ title }}" cssClass="listItem" />
+        <Label text="{{ title }}" class="listItem" />
       </ListView.itemTemplate>
     </ListView>
 

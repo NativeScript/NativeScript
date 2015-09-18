@@ -118,7 +118,7 @@ export function createPage() {
     createStringPropertyUI({ name: "style.verticalAlignment", value: "stretch" });
     createStringPropertyUI({ name: "margin", value: "20" });
 
-    createStringPropertyUI({ name: "cssClass", value: "testClass" });
+    createStringPropertyUI({ name: "className", value: "testClass" });
 
     page.css = ".testClass { background-color: LightGreen }";
     return page;

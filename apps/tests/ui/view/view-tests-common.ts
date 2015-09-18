@@ -498,6 +498,10 @@ export var test_binding_cssClass = function () {
     property_binding_test("cssClass", "class1", "class2");
 }
 
+export var test_binding_className = function () {
+    property_binding_test("className", "class1", "class2");
+}
+
 export var test_binding_style_color = function () {
     property_binding_style_test("color", new color.Color("#FF0000"), new color.Color("#00FF00"));
 }
@@ -661,7 +665,7 @@ export var testBackgroundColor = function () {
 
 export var testBackgroundImage = function () {
     var lbl = _createLabelWithBorder();
-    lbl.cssClass = "myClass";
+    lbl.className = "myClass";
     helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
         var page = <page.Page>views[1];
         page.css = ".myClass { background-image: url('~/logo.png') }";

@@ -14,13 +14,23 @@ import utils = require("utils/utils");
 import color = require("color");
 import animationModule = require("ui/animation");
 import observable = require("data/observable");
+import {registerSpecialProperty} from "ui/builder/special-properties";
+
+registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
+    instance.className = propertyValue;
+});
+
+function getEventOrGestureName(name: string) : string {
+    return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
+}
 
 export function isEventOrGesture(name: string, view: View): boolean {
     if (types.isString(name)) {
-        var evt = `${name}Event`;
+        var eventOrGestureName = getEventOrGestureName(name);
+        var evt = `${eventOrGestureName}Event`;
 
         return view.constructor && evt in view.constructor ||
-            gestures.fromString(name.toLowerCase()) !== undefined;
+            gestures.fromString(eventOrGestureName.toLowerCase()) !== undefined;
     }
 
     return false;
@@ -107,7 +117,13 @@ var cssClassProperty = new dependencyObservable.Property(
     "cssClass",
     "View",
     new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged)
-    );
+);
+
+var classNameProperty = new dependencyObservable.Property(
+    "className",
+    "View",
+    new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged)
+);
 
 var translateXProperty = new dependencyObservable.Property(
     "translateX",
@@ -157,6 +173,7 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     public static idProperty = idProperty;
     public static cssClassProperty = cssClassProperty;
+    public static classNameProperty = classNameProperty;
     public static translateXProperty = translateXProperty;
     public static translateYProperty = translateYProperty;
     public static scaleXProperty = scaleXProperty;
@@ -218,6 +235,9 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     public addEventListener(arg: string | gestures.GestureTypes, callback: (data: observable.EventData) => void, thisArg?: any) {
         if (types.isString(arg)) {
+
+            arg = getEventOrGestureName(<string>arg);
+
             var gesture = gestures.fromString(<string>arg);
             if (gesture && !this._isEvent(<string>arg)) {
                 this.observe(gesture, callback, thisArg);
@@ -488,6 +508,13 @@ export class View extends proxy.ProxyObject implements definition.View {
         return this._getValue(View.cssClassProperty);
     }
     set cssClass(value: string) {
+        this._setValue(View.cssClassProperty, value);
+    }
+
+    get className(): string {
+        return this._getValue(View.cssClassProperty);
+    }
+    set className(value: string) {
         this._setValue(View.cssClassProperty, value);
     }
 
