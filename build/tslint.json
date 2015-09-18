@@ -15,7 +15,7 @@
         "variable-name": [false, "allow-leading-underscore"],
         "no-empty": true,
         "no-eval": true,
-		"no-unused-variable": [true],
+		"no-unused-variable": [false],
 		"no-duplicate-variable": true,
 
 "CONSIDER THE FOLLOWING ONE": false,
