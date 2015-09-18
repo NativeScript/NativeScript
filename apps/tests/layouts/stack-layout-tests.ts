@@ -29,11 +29,11 @@ export function setUpModule() {
 
 export function tearDownModule() {
     navHelper.goBack();
-    delete tmp;
-    delete newPage;
-    delete rootLayout;
-    delete btn1;
-    delete btn2;
+    tmp = null;
+    newPage = null;
+    rootLayout = null;
+    btn1 = null;
+    btn2 = null;
 }
 
 export function setUp() {

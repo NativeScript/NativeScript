@@ -27,6 +27,10 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
     }
 }
 
+interface Owned {
+    owner: any;
+}
+
 // register the setNativeValue callbacks
 (<proxy.PropertyMetadata>common.ListView.separatorColorProperty.metadata).onSetNativeValue = onSeparatorColorPropertyChanged;
 
@@ -50,7 +54,7 @@ export class ListView extends common.ListView {
         var that = new WeakRef(this);
 
         // TODO: This causes many marshalling calls, rewrite in Java and generate bindings
-        this.android.setOnScrollListener(new android.widget.AbsListView.OnScrollListener({
+        this.android.setOnScrollListener(new android.widget.AbsListView.OnScrollListener(<Owned & android.widget.AbsListView.IOnScrollListener>{
             onScrollStateChanged: function (view: android.widget.AbsListView, scrollState: number) {
                 var owner: ListView = this.owner;
                 if (!owner) {

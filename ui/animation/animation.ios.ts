@@ -272,8 +272,7 @@ export class Animation extends common.Animation implements definition.Animation 
                         value: Animation._affineTransform(CGAffineTransformIdentity, propertyAnimations[i].property, propertyAnimations[i].value),
                         duration: propertyAnimations[i].duration,
                         delay: propertyAnimations[i].delay,
-                        iterations: propertyAnimations[i].iterations,
-                        iosUIViewAnimationCurve: propertyAnimations[i].curve
+                        iterations: propertyAnimations[i].iterations
                     };
                     trace.write("Created new transform animation: " + common.Animation._getAnimationInfo(newTransformAnimation), trace.categories.Animation);
 

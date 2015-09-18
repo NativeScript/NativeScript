@@ -65,6 +65,10 @@ function onMinDatePropertyChanged(data: dependencyObservable.PropertyChangeData)
 
 global.moduleMerge(common, exports);
 
+interface Owned {
+    owner: any;
+}
+
 export class DatePicker extends common.DatePicker {
     private _android: android.widget.DatePicker;
     public _listener: android.widget.DatePicker.OnDateChangedListener;
@@ -78,7 +82,8 @@ export class DatePicker extends common.DatePicker {
 
         var that = new WeakRef(this);
 
-        this._listener = new android.widget.DatePicker.OnDateChangedListener({
+        this._listener = new android.widget.DatePicker.OnDateChangedListener(
+            <Owned & android.widget.DatePicker.IOnDateChangedListener>{
             get owner() {
                 return that.get();
             },
