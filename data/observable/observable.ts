@@ -53,7 +53,12 @@ export class Observable implements definition.Observable {
     }
 
     public addEventListener(eventNames: string, callback: (data: definition.EventData) => void, thisArg?: any) {
+        if (!types.isString(eventNames)) {
+            throw new TypeError("Events name(s) must be string.");
+        }
+
         types.verifyCallback(callback);
+
         var events: Array<string> = eventNames.split(",");
 
         for (var i = 0, l = events.length; i < l; i++) {
@@ -68,6 +73,10 @@ export class Observable implements definition.Observable {
     }
 
     public removeEventListener(eventNames: string, callback?: any, thisArg?: any) {
+        if (!types.isString(eventNames)) {
+            throw new TypeError("Events name(s) must be string.");
+        }
+
         var events: Array<string> = eventNames.split(",");
 
         for (var i = 0, l = events.length; i < l; i++) {
