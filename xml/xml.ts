@@ -62,6 +62,40 @@ export class ParserEvent implements definition.ParserEvent {
     }
 }
 
+var _ampCodes = {Tab: 9, NewLine: 10, excl: 33, quot: 34, QUOT: 34, num: 35, dollar: 36, percent: 37, amp: 38, AMP: 38, apos: 39, lpar: 40, rpar: 41, ast: 42, midast: 42, plus: 43, comma: 44, period: 46, sol: 47, colon: 58, semi: 59, lt: 60, LT: 60, equals: 61, gt: 62, GT: 62, quest: 63, commat: 64, lsqb: 91, lbrack: 91, bsol: 92, rsqb: 92, rbrack: 92, Hat: 94, lowbar: 95, grave: 96, DiacriticalGrave: 96, lcub: 123, lbrace: 123, verbar: 124, vert: 124, VerticalLine: 124, rcub: 125, rbrace: 125, brkbar:166, hibar: 175, Dstrok: 208, fnof: 402, imped: 437, gacute: 501, jmath: 567, circ: 710, caron: 711, Hacek: 711, breve: 728, Breve: 728, dot: 729, DiacriticalDot: 729, ring: 730, ogon: 731, tilde: 732, DiacriticalTilde: 732, dblac: 733, DiacriticalDoubleAcute: 733, DownBreve: 785, UnderBar: 818, epsiv: 949, varepsilon: 949, sigmav:962, varsigma: 962, thetav: 977, vartheta: 977, thetasym: 977, Upsi: 978, upsih: 978, straightphi: 981, piv: 982, varpi: 982, Gammad: 988, gammad: 989, digamma: 989, kappav: 1008, varkappa: 1008, rhov: 1009, varrho: 1009, epsi:1013, straightepsilon: 1013, bepsi: 1014, backepsilon: 1014, /* Skipped Codes 1015 - 1119 */ euro: 8364, trade: 8482, TRADE: 8482, forall: 8704, part: 8706, larr: 8592, rarr: 8593, hyphen: 8208, dash: 8208, ndash: 8211, mdash: 8212, horbar: 8213, Vert: 8214, Verbar: 8214, lsquo: 8216, OpenCurlyQuote: 8216, rsquo: 8217, rsquor: 8217, CloseCurlyQuote: 8217, lsquor: 8218, sbquo: 8218, ldquo: 8220, OpenCurlyDoubleQuote: 8220, rdquo: 8221, rdquor: 8221, CloseCurlyDoubleQuote: 8221, ldquor: 8222, bdquo: 8222, dagger: 8224, Dagger: 8225, ddagger: 8225, bull: 8226, bullet: 8226, nldr: 8229, hellip: 8230, mldr: 8230, hybull: 8259, tdot: 8411, TripleDot: 8411 ,DotDot: 8412, star: 9734, phone: 9742, spades: 9824, clubs: 9827, hearts: 9829, diams: 9830, female: 9792, male: 9794, check: 10003, checkmark: 10003, cross: 10007, VerticalSeparator: 10072, EmptySmallSquare: 9723, FilledSmallSquare: 9724, starf: 9733, bigstar: 9733, square: 9633, squ: 9633, Square: 9633};
+var _amp160List = ['nbsp','iexcl','cent','pound','curren','yen','brvbar','sect','uml','copy','ordf','laquo','not','shy','reg','macr','deg','plusmn','sup2','sup3','acute','micro','para','middot','cedil','sup1','ordm','raquo','frac14','frac12','frac34','iquest','Agrave','Aacute','Acirc','Atilde','Auml','Aring','AElig','Ccedil','Egrave','Eacute','Ecirc','Euml','Igrave','Iacute','Icirc','Iuml','ETH','Ntilde','Ograve','Oacute','Ocirc','Otilde','Ouml','times','Oslash','Ugrave','Uacute','Ucirc','Uuml','Yacute','THORN','szlig','agrave','aacute','acirc','atilde','auml','aring','aelig','ccedil','egrave','eacute','ecirc','euml','igrave','iacute','icirc','iuml','eth','ntilde','ograve','oacute','ocirc','otilde','ouml','divide','oslash','ugrave','uacute','ucirc','uuml','yacute','thorn','yuml','Amacr','amacr','Abreve','abreve','Aogon','aogon'];
+var _ampGreekUpper = ['Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Mu','Nu','Xi','Omicron','Pi','Rho','M!SS!NG','Sigma','Tau','Upsilon','Phi','Chi','Psi','Omega'];
+var _ampGreekLower = ['alpha','beta','gamma','delta','epsilon','zeta','eta','theta','iota','kappa','lambda','mu','nu','xi','omicron','pi','rho','sigmaf','sigma','tau','upsilon','phi','chi','psi','omega'];
+var _entitySearchRegEx = /&#(\d+);|&#x([0123456789abcdef]+);|&(\w+);/ig;
+
+function _HandleAmpEntities(found: string, decimalValue: string, hexValue: string, wordValue: string): string {
+
+    if (wordValue) {
+        if (_ampCodes.hasOwnProperty(wordValue)) {
+            return String.fromCharCode(_ampCodes[wordValue]);
+        }
+        var idx = _amp160List.indexOf(wordValue);
+        if (idx >= 0) {
+            return String.fromCharCode(160 + idx);
+        }
+        idx = _ampGreekUpper.indexOf(wordValue);
+        if (idx >= 0) {
+            return String.fromCharCode(913 + idx);
+        }
+        idx = _ampGreekLower.indexOf(wordValue);
+        if (idx >= 0) {
+            return String.fromCharCode(945 + idx);
+        }
+        // Invalid word; so we just return it
+        return found;
+    }
+    if (decimalValue) {
+        return String.fromCharCode(parseInt(decimalValue,10));
+    }
+
+    return String.fromCharCode(parseInt(hexValue, 16));
+};
+
 export class XmlParser implements definition.XmlParser {
     //TODO: Add option to configure whether the parser should report ignorable whitespace, i.e. document formatting whitespace.
     private _parser: easysax.EasySAXParser;
@@ -109,7 +143,7 @@ export class XmlParser implements definition.XmlParser {
         });
 
         this._parser.on('textNode', function (text, uq) {
-            var data = uq(text);// Decode entity references such as &lt; and &gt;
+            var data = uq(XmlParser._dereferenceEntities(text));// Decode entity references such as &lt; and &gt;
             onEvent(new ParserEvent(ParserEventType.Text, undefined, undefined, undefined, undefined, data));
         });
 
@@ -227,25 +261,7 @@ export class XmlParser implements definition.XmlParser {
     private static _dereferenceEntities(s: string): string {
         s = String(s);
         if (s.length > 3 && s.indexOf('&') !== -1) {
-            if (s.indexOf('&lt;') !== -1) { 
-                s = s.replace(/&lt;/g, '<'); 
-            }
-            
-            if (s.indexOf('&gt;') !== -1) { 
-                s = s.replace(/&gt;/g, '>'); 
-            }
-            
-            if (s.indexOf('&amp;') !== -1) { 
-                s = s.replace(/&amp;/g, '&'); 
-            }
-            
-            if (s.indexOf('&apos;') !== -1) { 
-                s = s.replace(/&apos;/g, "'"); 
-            }
-            
-            if (s.indexOf('&quot;') !== -1) { 
-                s = s.replace(/&quot;/g, '"'); 
-            }
+            s = s.replace(_entitySearchRegEx, _HandleAmpEntities);
         };
 
         return s;

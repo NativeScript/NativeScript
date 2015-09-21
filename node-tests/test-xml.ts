@@ -32,4 +32,14 @@ describe("xml parser", () => {
         parser.parse("<element>&lt;&gt;&quot;&amp;&apos;</element>");
         assert.equal("<>\"&'", last_data);
     });
+
+    it("resolves greek letter entities in attributes", () => {
+        parser.parse("<element text='&Omega;'>blah</element>");
+        assert.equal("Ω", last_attrs.text);
+    })
+
+    it("resolves entities in element text", () => {
+        parser.parse("<element>&Omega;</element>");
+        assert.equal("Ω", last_data);
+    })
 });
