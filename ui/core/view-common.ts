@@ -1099,7 +1099,7 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
 
     public animate(animation: animationModule.AnimationDefinition): Promise<void> {
-        return this.createAnimation(animation).play().finished;
+        return this.createAnimation(animation).play();
     }
 
     public createAnimation(animation: animationModule.AnimationDefinition): animationModule.Animation {

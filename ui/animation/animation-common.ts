@@ -26,25 +26,25 @@ export class Animation implements definition.Animation {
     private _isPlaying: boolean;
     private _resolve;
     private _reject;
-    private _animationFinishedPromise: Promise<void>;
 
-    public play(): Animation {
+    public play(): Promise<void> {
         if (this.isPlaying) {
             throw new Error("Animation is already playing.");
         }
 
+        var animationFinishedPromise = new Promise<void>((resolve, reject) => {
+            this._resolve = resolve;
+            this._reject = reject;
+        });
+
         this._isPlaying = true;
-        return this;
+        return animationFinishedPromise;
     }
 
     public cancel(): void {
         if (!this.isPlaying) {
             throw new Error("Animation is not currently playing.");
         }
-    }
-
-    public get finished(): Promise<void> {
-        return this._animationFinishedPromise;
     }
 
     public get isPlaying(): boolean {
@@ -70,11 +70,6 @@ export class Animation implements definition.Animation {
         trace.write("Created " + this._propertyAnimations.length + " individual property animations.", trace.categories.Animation);
 
         this._playSequentially = playSequentially;
-        var that = this;
-        this._animationFinishedPromise = new Promise<void>((resolve, reject) => {
-            that._resolve = resolve;
-            that._reject = reject;
-        });
     }
 
     public _resolveAnimationFinishedPromise() {
