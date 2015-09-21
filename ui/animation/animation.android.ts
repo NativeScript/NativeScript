@@ -148,84 +148,70 @@ export class Animation extends common.Animation implements definition.Animation 
 
             case common.Properties.opacity:
                 originalValue = nativeView.getAlpha();
-                if (propertyAnimation.value !== propertyAnimation.target.opacity) {
-                    nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
-                    nativeArray[0] = propertyAnimation.value;
-                    animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
-                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.opacity = propertyAnimation.value });
-                    propertyResetCallbacks.push(() => { nativeView.setAlpha(originalValue); });
-                }
+                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray[0] = propertyAnimation.value;
+                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
+                propertyUpdateCallbacks.push(() => { propertyAnimation.target.opacity = propertyAnimation.value });
+                propertyResetCallbacks.push(() => { nativeView.setAlpha(originalValue); });
                 break;
 
             case common.Properties.backgroundColor:
                 originalValue = nativeView.getBackground();
-                if (!color.Color.equals(propertyAnimation.value, propertyAnimation.target.backgroundColor)) {
-                    nativeArray = java.lang.reflect.Array.newInstance(java.lang.Object.class, 2);
-                    nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<color.Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);
-                    nativeArray[1] = java.lang.Integer.valueOf((<color.Color>propertyAnimation.value).argb);
-                    animator = android.animation.ValueAnimator.ofObject(argbEvaluator, nativeArray);
-                    animator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
-                        onAnimationUpdate(animator: android.animation.ValueAnimator) {
-                            var argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
-                            propertyAnimation.target.backgroundColor = new color.Color(argb);
-                        }
-                    }));
+                nativeArray = java.lang.reflect.Array.newInstance(java.lang.Object.class, 2);
+                nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<color.Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);
+                nativeArray[1] = java.lang.Integer.valueOf((<color.Color>propertyAnimation.value).argb);
+                animator = android.animation.ValueAnimator.ofObject(argbEvaluator, nativeArray);
+                animator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
+                    onAnimationUpdate(animator: android.animation.ValueAnimator) {
+                        var argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
+                        propertyAnimation.target.backgroundColor = new color.Color(argb);
+                    }
+                }));
 
-                    animators.push(animator);
-                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.backgroundColor = propertyAnimation.value; });
-                    propertyResetCallbacks.push(() => { nativeView.setBackground(originalValue); });
-                }
+                animators.push(animator);
+                propertyUpdateCallbacks.push(() => { propertyAnimation.target.backgroundColor = propertyAnimation.value; });
+                propertyResetCallbacks.push(() => { nativeView.setBackground(originalValue); });
                 break;
 
             case common.Properties.translate:
                 originalValue = nativeView.getTranslationX();
-                if (propertyAnimation.value.x * density !== originalValue) {
-                    nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
-                    nativeArray[0] = propertyAnimation.value.x * density;
-                    animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "translationX", nativeArray));
-                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.translateX = propertyAnimation.value.x; });
-                    propertyResetCallbacks.push(() => { nativeView.setTranslationX(originalValue); });
-                }
+                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray[0] = propertyAnimation.value.x * density;
+                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "translationX", nativeArray));
+                propertyUpdateCallbacks.push(() => { propertyAnimation.target.translateX = propertyAnimation.value.x; });
+                propertyResetCallbacks.push(() => { nativeView.setTranslationX(originalValue); });
 
                 originalValue = nativeView.getTranslationY();
-                if (propertyAnimation.value.y * density !== originalValue) {
-                    nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
-                    nativeArray[0] = propertyAnimation.value.y * density;
-                    animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "translationY", nativeArray));
-                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.translateY = propertyAnimation.value.y; });
-                    propertyResetCallbacks.push(() => { nativeView.setTranslationY(originalValue); });
-                }
+                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray[0] = propertyAnimation.value.y * density;
+                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "translationY", nativeArray));
+                propertyUpdateCallbacks.push(() => { propertyAnimation.target.translateY = propertyAnimation.value.y; });
+                propertyResetCallbacks.push(() => { nativeView.setTranslationY(originalValue); });
                 break;
 
             case common.Properties.rotate:
                 originalValue = nativeView.getRotation();
-                if (propertyAnimation.value !== originalValue) {
-                    nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
-                    nativeArray[0] = propertyAnimation.value;
-                    animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
-                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.rotate = propertyAnimation.value; });
-                    propertyResetCallbacks.push(() => { nativeView.setRotation(originalValue); });
-                }
+                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray[0] = propertyAnimation.value;
+                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
+                propertyUpdateCallbacks.push(() => { propertyAnimation.target.rotate = propertyAnimation.value; });
+                propertyResetCallbacks.push(() => { nativeView.setRotation(originalValue); });
                 break;
 
             case common.Properties.scale:
                 originalValue = nativeView.getScaleX();
-                if (propertyAnimation.value.x !== originalValue) {
-                    nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
-                    nativeArray[0] = propertyAnimation.value.x;
-                    animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "scaleX", nativeArray));
-                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.scaleX = propertyAnimation.value.x; });
-                    propertyResetCallbacks.push(() => { nativeView.setScaleX(originalValue); });
-                }
+                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray[0] = propertyAnimation.value.x;
+                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "scaleX", nativeArray));
+                propertyUpdateCallbacks.push(() => { propertyAnimation.target.scaleX = propertyAnimation.value.x; });
+                propertyResetCallbacks.push(() => { nativeView.setScaleX(originalValue); });
 
                 originalValue = nativeView.getScaleY();
-                if (propertyAnimation.value.y !== originalValue) {
-                    nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
-                    nativeArray[0] = propertyAnimation.value.y;
-                    animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "scaleY", nativeArray));
-                    propertyUpdateCallbacks.push(() => { propertyAnimation.target.scaleY = propertyAnimation.value.y; });
-                    propertyResetCallbacks.push(() => { nativeView.setScaleY(originalValue); });
-                }
+                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray[0] = propertyAnimation.value.y;
+                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "scaleY", nativeArray));
+                propertyUpdateCallbacks.push(() => { propertyAnimation.target.scaleY = propertyAnimation.value.y; });
+                propertyResetCallbacks.push(() => { nativeView.setScaleY(originalValue); });
                 break;
 
             default:
