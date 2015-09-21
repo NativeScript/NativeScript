@@ -72,9 +72,8 @@
      */
     export class Animation {
         constructor(animationDefinitions: Array<AnimationDefinition>, playSequentially?: boolean);
-        public play: () => Animation;
+        public play: () => Promise<void>;
         public cancel: () => void;
-        public finished: Promise<void>;
         public isPlaying: boolean;
     }
 }

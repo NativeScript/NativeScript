@@ -38,8 +38,8 @@ export function onSlideOut(args: observable.EventData) {
 
     panelAnimation = panel.createAnimation({ opacity: 0, scale: { x: 0.5, y: 0.5 }, rotate: -360, backgroundColor: new colorModule.Color("red"), duration: vm.duration, iterations: vm.iterations });
 
-    buttonAnimation.play().finished
-        .then(() => panelAnimation.play().finished)
+    buttonAnimation.play()
+        .then(() => panelAnimation.play())
         .catch((e) => console.log(e.message));
 }
 
@@ -56,8 +56,8 @@ export function onSlideIn(args: observable.EventData) {
     ]
     buttonAnimation = new animationModule.Animation(buttonAnimations, vm.playSequentially);
 
-    panelAnimation.play().finished
-        .then(() => buttonAnimation.play().finished)
+    panelAnimation.play()
+        .then(() => buttonAnimation.play())
         .catch((e) => console.log(e.message));
 }
 

@@ -81,7 +81,7 @@ export var test_CancellingAnimation = function (done) {
     // # Cancelling animation
     // ``` JavaScript
     var animation1 = label.createAnimation({ translate: { x: 100, y: 100 } });
-    animation1.play().finished
+    animation1.play()
         .then(() => {
             ////console.log("Animation finished");
             // <hide>
@@ -145,51 +145,51 @@ export var test_ChainingAnimations = function (done) {
     // </snippet>
 }
 
-//export var test_ReusingAnimations = function (done) {
-//    var mainPage: pageModule.Page;
-//    var label: labelModule.Label;
-//    var pageFactory = function (): pageModule.Page {
-//        label = new labelModule.Label();
-//        label.text = "label";
-//        var stackLayout = new stackLayoutModule.StackLayout();
-//        stackLayout.addChild(label);
-//        mainPage = new pageModule.Page();
-//        mainPage.content = stackLayout;
-//        return mainPage;
-//    };
+export var test_ReusingAnimations = function (done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function (): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
 
-//    helper.navigate(pageFactory);
-//    TKUnit.waitUntilReady(() => { return label.isLoaded });
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
 
-//    // <snippet module="ui/animation" title="animation">
-//    // # Reusing animations
-//    // ``` JavaScript
-//    var animation1 = label.createAnimation({ translate: { x: 100, y: 100 } });
-//    var animation2 = label.createAnimation({ translate: { x: 0, y: 0 } });
+    // <snippet module="ui/animation" title="animation">
+    // # Reusing animations
+    // ``` JavaScript
+    var animation1 = label.createAnimation({ translate: { x: 100, y: 100 } });
+    var animation2 = label.createAnimation({ translate: { x: 0, y: 0 } });
 
-//    animation1.play().finished
-//        .then(() => animation1.play().finished)
-//        .then(() => animation1.play().finished)
-//        .then(() => animation2.play().finished)
-//        .then(() => animation1.play().finished)
-//        .then(() => animation2.play().finished)
-//        .then(() => {
-//            ////console.log("Animation finished");
-//            // <hide>
-//            helper.goBack();
-//            done();
-//            // </hide>
-//        })
-//        .catch((e) => {
-//            console.log(e.message);
-//            // <hide>
-//            helper.goBack();
-//            done(e);
-//            // </hide>
-//        });
-//    // ```
-//    // </snippet>
-//}
+    animation1.play()
+        .then(() => animation2.play())
+        .then(() => animation1.play())
+        .then(() => animation2.play())
+        .then(() => animation1.play())
+        .then(() => animation2.play())
+        .then(() => {
+            ////console.log("Animation finished");
+            // <hide>
+            helper.goBack();
+            done();
+            // </hide>
+        })
+        .catch((e) => {
+            console.log(e.message);
+            // <hide>
+            helper.goBack();
+            done(e);
+            // </hide>
+        });
+    // ```
+    // </snippet>
+}
 
 export var test_AnimatingMultipleViews = function (done) {
     var mainPage: pageModule.Page;
@@ -223,7 +223,7 @@ export var test_AnimatingMultipleViews = function (done) {
         { target: label3, translate: { x: 200, y: 200 }, duration: 1000, delay: 666 },
     ];
     var a = new animation.Animation(animations);
-    a.play().finished
+    a.play()
         .then(() => {
             ////console.log("Animations finished");
             // <hide>
@@ -404,10 +404,13 @@ export var test_AnimationsAreAlwaysPlayed = function (done) {
     var animation1 = label.createAnimation({ opacity: 0 });
     var animation2 = label.createAnimation({ opacity: 1 });
 
-    animation1.play().finished
-        .then(() => animation2.play().finished)
+    animation1.play()
         .then(() => {
-            TKUnit.assert(label.opacity === 1, `Label opacity expected vaue is 1, actual value is ${label.opacity}.`);
+            TKUnit.assert(label.opacity === 0, `Label opacity should be 0 after first animation, actual value is ${label.opacity}.`);
+            return animation2.play()
+        })
+        .then(() => {
+            TKUnit.assert(label.opacity === 1, `Label opacity should be 1 after second animation, actual value is ${label.opacity}.`);
             helper.goBack();
             done();
         })
@@ -416,4 +419,66 @@ export var test_AnimationsAreAlwaysPlayed = function (done) {
             helper.goBack();
             done(e);
         });
+}
+
+export var test_PlayPromiseIsResolvedWhenAnimationFinishes = function (done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function (): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
+
+    var animation = label.createAnimation({ opacity: 0, duration: 1000 });
+
+    animation.play()
+        .then(function onResolved() {
+            TKUnit.assert(animation.isPlaying === false, "Animation.isPlaying should be false when animation play promise is resolved.");
+            helper.goBack();
+            done();
+        }, function onRejected(e) {
+            TKUnit.assert(1 === 2, "Animation play promise should be resolved, not rejected.");
+            helper.goBack();
+            done(e);
+        });
+}
+
+export var test_PlayPromiseIsRejectedWhenAnimationIsCancelled = function (done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function (): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
+
+    var animation = label.createAnimation({ opacity: 0, duration: 1000 });
+
+    animation.play()
+        .then(function onResolved() {
+            TKUnit.assert(1 === 2, "Animation play promise should be rejected, not resolved.");
+            helper.goBack();
+            done();
+        }, function onRejected(e) {
+            TKUnit.assert(animation.isPlaying === false, "Animation.isPlaying should be false when animation play promise is rejected.");
+            helper.goBack();
+            done();
+        });
+
+    animation.cancel();
 }

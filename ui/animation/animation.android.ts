@@ -18,8 +18,8 @@ export class Animation extends common.Animation implements definition.Animation 
     private _propertyUpdateCallbacks: Array<Function>;
     private _propertyResetCallbacks: Array<Function>;
 
-    public play(): Animation {
-        super.play();
+    public play(): Promise<void> {
+        var animationFinishedPromise = super.play();
 
         var i: number;
         var length: number;
@@ -32,12 +32,6 @@ export class Animation extends common.Animation implements definition.Animation 
         length = this._propertyAnimations.length;
         for (; i < length; i++) {
             this._createAnimators(this._propertyAnimations[i]);
-        }
-
-        if (this._animators.length === 0) {
-            trace.write("Nothing to animate.", trace.categories.Animation);
-            this._resolveAnimationFinishedPromise();
-            return this;
         }
 
         this._nativeAnimatorsArray = java.lang.reflect.Array.newInstance(android.animation.Animator.class, this._animators.length);
@@ -58,7 +52,7 @@ export class Animation extends common.Animation implements definition.Animation 
 
         trace.write("Starting " + this._nativeAnimatorsArray.length + " animations " + (this._playSequentially ? "sequentially." : "together."), trace.categories.Animation);
         this._animatorSet.start();
-        return this;
+        return animationFinishedPromise;
     }
 
     public cancel(): void {
