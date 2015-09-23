@@ -65,7 +65,11 @@ export class Page extends pageCommon.Page {
     public _createUI() {
         this._grid = new org.nativescript.widgets.GridLayout(this._context);
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+        var gridUnitType = org.nativescript.widgets.GridUnitType.star
+        if (this._closeModalCallback) {
+            gridUnitType = org.nativescript.widgets.GridUnitType.auto;
+        }
+        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, gridUnitType));
     }
 
     public _addViewToNativeVisualTree(child: view.View, atIndex?: number): boolean {
@@ -116,7 +120,7 @@ export class Page extends pageCommon.Page {
 
         var that = this;
         this._dialogFragment = new DialogFragmentClass(this, fullscreen, function() {
-            that.closeDialog();
+            that.closeModal();
         });
         this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), "dialog");        
         

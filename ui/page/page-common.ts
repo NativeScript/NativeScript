@@ -33,9 +33,10 @@ export class Page extends contentView.ContentView implements dts.Page {
     public static navigatedFromEvent = "navigatedFrom";
     public static shownModallyEvent = "shownModally";
 
+    protected _closeModalCallback: Function;
+
     private _navigationContext: any;
 
-    private _closeDialogCallback: Function;
     private _cssApplied: boolean;
     private _styleScope: styleScope.StyleScope = new styleScope.StyleScope();
     private _actionBar: actionBar.ActionBar;
@@ -190,9 +191,9 @@ export class Page extends contentView.ContentView implements dts.Page {
         (<Page>page)._showNativeModalView(this, context, closeCallback, fullscreen);
     }
 
-    public closeDialog() {
-        if (this._closeDialogCallback) {
-            this._closeDialogCallback.apply(undefined, arguments);
+    public closeModal() {
+        if (this._closeModalCallback) {
+            this._closeModalCallback.apply(undefined, arguments);
         }
     }
 
@@ -207,9 +208,9 @@ export class Page extends contentView.ContentView implements dts.Page {
 
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         var that = this;
-        this._closeDialogCallback = function () {
-            if (that._closeDialogCallback) {
-                that._closeDialogCallback = null;
+        this._closeModalCallback = function () {
+            if (that._closeModalCallback) {
+                that._closeModalCallback = null;
                 that._hideNativeModalView(parent);
                 if (typeof closeCallback === "function") {
                     closeCallback.apply(undefined, arguments);
@@ -227,7 +228,7 @@ export class Page extends contentView.ContentView implements dts.Page {
             eventName: Page.shownModallyEvent,
             object: this,
             context: context,
-            closeCallback: this._closeDialogCallback
+            closeCallback: this._closeModalCallback
         });
     }
 
