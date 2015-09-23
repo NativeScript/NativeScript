@@ -130,6 +130,6 @@ export class TextField extends common.TextField {
 
     public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         var textField = <TextField>data.object;
-        textField.ios.placeholder = data.newValue;
+        textField.ios.placeholder = data.newValue + "";
     }
 } 

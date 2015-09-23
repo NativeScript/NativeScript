@@ -260,6 +260,6 @@ export class EditableTextBase extends common.EditableTextBase {
             return;
         }
 
-        editableTextBase.android.setHint(data.newValue);
+        editableTextBase.android.setHint(data.newValue + "");
     }
 }  
