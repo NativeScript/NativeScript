@@ -67,7 +67,7 @@ export var testSetText = function () {
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });    
 }
-
+/* tslint:disable */
 export var testSetHintToNumber = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
@@ -84,7 +84,7 @@ export var testSetHintToNumber = function () {
         TKUnit.assert(<any>actualValue == expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
 }
-
+/* tslint:enable */
 export var testBindTextDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
