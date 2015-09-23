@@ -382,7 +382,7 @@
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\myview.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\stack.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\wrap.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\pages\background.ts">
+    <TypeScriptCompile Include="apps\ui-tests-app\css\background.ts">
       <DependentUpon>background.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\pages\console.ts" />
@@ -960,7 +960,10 @@
     <Content Include="apps\tests\xml-declaration\mymodulewithxml\MyControl.css" />
     <Content Include="apps\tests\xml-declaration\mymodule\MyControl.css" />
     <Content Include="apps\ui-tests-app\bindings\xmlbasics.xml" />
-    <TypeScriptCompile Include="apps\ui-tests-app\css\styles.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\css\styles.ts">
+      <DependentUpon>styles.xml</DependentUpon>
+    </TypeScriptCompile>
+    <Content Include="apps\ui-tests-app\css\radius.xml" />
     <Content Include="apps\ui-tests-app\css\import.css" />
     <Content Include="apps\ui-tests-app\css\styles.css" />
     <Content Include="apps\ui-tests-app\css\styles.xml" />
@@ -973,7 +976,7 @@
     <Content Include="apps\ui-tests-app\layouts\grid.xml" />
     <Content Include="apps\ui-tests-app\layouts\stack.xml" />
     <Content Include="apps\ui-tests-app\layouts\wrap.xml" />
-    <Content Include="apps\ui-tests-app\pages\background.xml" />
+    <Content Include="apps\ui-tests-app\css\background.xml" />
     <Content Include="apps\ui-tests-app\image-view\roundbtn.xml" />
     <Content Include="apps\ui-tests-app\pages\handlers.xml" />
     <Content Include="apps\ui-tests-app\pages\htmlview.xml" />

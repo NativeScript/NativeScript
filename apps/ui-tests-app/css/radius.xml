@@ -1,0 +1,8 @@
+<Page>
+  <StackLayout>
+    <TextView text="TextView" borderRadius="17" backgroundColor="lightpink"/>
+    <TextField text="TextField" borderRadius="29" backgroundColor="lightsalmon"/>
+    <Button text="Button" borderRadius="41" backgroundColor="lightcoral"/>
+    <Label text="Label" borderRadius="53" backgroundColor="lightgreen"/>
+  </StackLayout>
+</Page>
