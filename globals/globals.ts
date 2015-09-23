@@ -5,7 +5,7 @@ global.moduleMerge = function (sourceExports: any, destExports: any) {
         destExports[key] = sourceExports[key];
     }
 }
-
+import platform = require("platform");
 import types = require("utils/types");
 import timer = require("timer");
 import consoleModule = require("console");
@@ -30,9 +30,12 @@ if (typeof global.__decorate !== "function") {
     }
 };
 
-// Temporary workaround for console in iOS. We will use runtime console instead our implementation.
-if (types.isUndefined(global.NSObject)) {
-    global.console = new consoleModule.Console();
+var c = new consoleModule.Console();
+
+if (platform.device.os === platform.platformNames.android) {
+    global.console = c;
+} else if (platform.device.os === platform.platformNames.ios) {
+    global.console.dump = function (args) { c.dump(args); };
 }
 
 global.XMLHttpRequest = xhr.XMLHttpRequest;

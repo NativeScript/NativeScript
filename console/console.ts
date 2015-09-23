@@ -1,5 +1,6 @@
 import definition = require("console");
 import trace = require("trace");
+import platform = require("platform");
 
 export class Console implements definition.Console {
     private TAG: string = "JS";
@@ -249,29 +250,6 @@ export class Console implements definition.Console {
         if (!test) {
             Array.prototype.shift.apply(arguments);
             this.error(this.formatParams.apply(this, arguments));
-
-            // duplicating trace code here because android version shows only 2 frames and if we call trace()
-            // this would be assert() and trace() which leaves all important stack frames out of our view
-
-            //this._nativeClass.log('=== trace(): JS stack ===')
-            //if (i.TargetOS.Android == targetOS) {
-            //    var e = <any>new Error('console.trace()');
-            //    this.log(e.stack);
-            //}
-            //else if (i.TargetOS.iOS == targetOS) {
-            //    var callstack = [];
-            //    var currentFunction = arguments.callee.caller;
-            //    while (currentFunction) {
-            //        var fn = currentFunction.toString();
-            //        var fname = fn.substring(fn.indexOf('function') + 8, fn.indexOf('{')).trim() || 'anonymous';
-            //        if ('()' === fname) {
-            //            fname = 'anonymous';
-            //        }
-            //        callstack.push(fname);
-            //        currentFunction = currentFunction.caller;
-            //        this.log(callstack.join('\n'));
-            //    }
-            //}
         }
     }
 
@@ -380,7 +358,13 @@ export class Console implements definition.Console {
     }
 
     public dump(obj: any): void {
-        this.log(this.createDump(obj));
+        var dump = this.createDump(obj);
+
+        if (platform.device.os === platform.platformNames.android) {
+            this.log(dump);
+        } else if (platform.device.os === platform.platformNames.ios) {
+            console.log(dump);
+        }
     }
 
     public dir = this.dump;
