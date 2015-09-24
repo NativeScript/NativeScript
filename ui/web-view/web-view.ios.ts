@@ -1,7 +1,5 @@
 ﻿import common = require("./web-view-common");
 import trace = require("trace");
-import utils = require("utils/utils");
-import fs = require("file-system");
 
 global.moduleMerge(common, exports);
 
@@ -73,6 +71,10 @@ export class WebView extends common.WebView {
         return this._ios;
     }
 
+    public stopLoading() {
+        this._ios.stopLoading();
+    }
+
     public _loadUrl(url: string) {
         trace.write("WebView._loadUrl(" + url + ")", trace.categories.Debug);
 
@@ -82,31 +84,17 @@ export class WebView extends common.WebView {
         this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(url)));
     }
 
-    public _loadSrc(src: string) {
-        trace.write("WebView._loadSrc(" + src + ")", trace.categories.Debug);
+    public _loadFileOrResource(path: string, content: string) {
+        var baseURL = NSURL.fileURLWithPath(NSString.stringWithString(path).stringByDeletingLastPathComponent);
+        this._ios.loadHTMLStringBaseURL(content, baseURL);
+    }
 
-        if (this._ios.loading) {
-            this._ios.stopLoading();
-        }
+    public _loadHttp(src: string) {
+        this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
+    }
 
-        if (utils.isFileOrResourcePath(src)) {
-
-            if (src.indexOf("~/") === 0) {
-                src = fs.path.join(fs.knownFolders.currentApp().path, src.replace("~/", ""));
-            }
-
-            var file = fs.File.fromPath(src);
-            if (file) {
-                var baseURL = NSURL.fileURLWithPath(NSString.stringWithString(src).stringByDeletingLastPathComponent);
-                file.readText().then((r) => {
-                    this._ios.loadHTMLStringBaseURL(r, baseURL);
-                });
-            }
-        } else if (src.indexOf("http://") === 0 || src.indexOf("https://") === 0) {
-            this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
-        } else {
-            this._ios.loadHTMLStringBaseURL(src, null);
-        }
+    public _loadData(src: string) {
+        this._ios.loadHTMLStringBaseURL(src, null);
     }
 
     get canGoBack(): boolean {
