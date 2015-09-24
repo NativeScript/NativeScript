@@ -112,6 +112,7 @@ export class DefaultStyler implements definition.stylers.Styler {
     private static setBorderRadiusProperty(view: view.View, newValue: any) {
         if (view._nativeView instanceof UIView) {
             (<UIView>view._nativeView).layer.cornerRadius = newValue;
+            (<UIView>view._nativeView).clipsToBounds = true;
         }
     }
 
