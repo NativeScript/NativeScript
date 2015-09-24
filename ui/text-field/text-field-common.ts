@@ -13,6 +13,8 @@ export var secureProperty = new dependencyObservable.Property(
 global.moduleMerge(textBase, exports);
 
 export class TextField extends editableTextBase.EditableTextBase implements definition.TextField {
+    public static returnPressEvent = "returnPress";
+
     constructor(options?: definition.Options) {
         super(options);
     }

@@ -49,4 +49,8 @@ export class TextField extends common.TextField {
         this.android.setMaxLines(1);
         this.android.setHorizontallyScrolling(true);
     }
+
+    public _onReturnPress() {
+        this.notify({ eventName: TextField.returnPressEvent, object: this })
+    }
 }

@@ -50,6 +50,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldShouldReturn(textField: UITextField): boolean {
         // Called when the user presses the return button.
         this._owner.dismissSoftInput();
+        this._owner.notify({ eventName: TextField.returnPressEvent, object: this._owner });
         return true;
     }
 

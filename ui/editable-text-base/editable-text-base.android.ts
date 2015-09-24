@@ -81,8 +81,10 @@ export class EditableTextBase extends common.EditableTextBase {
                     if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
                         actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
                         actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
-                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND) {
+                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
+                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
                         owner.dismissSoftInput();
+                        owner._onReturnPress();
                     }
                 }
 
@@ -93,6 +95,10 @@ export class EditableTextBase extends common.EditableTextBase {
     }
 
     public _configureEditText() {
+        // abstract
+    }
+
+    public _onReturnPress() {
         // abstract
     }
 
