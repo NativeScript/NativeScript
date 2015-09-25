@@ -221,3 +221,32 @@ export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = funct
         TKUnit.assertEqual(newIndex, 9);
     });
 }
+
+export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSetNative = function () {
+    var oldIndex;
+    var newIndex;
+    var segmentedBar = _createSegmentedBar();
+
+    segmentedBar.on(segmentedBarModule.SegmentedBar.selectedIndexChangedEvent, (args: segmentedBarModule.SelectedIndexChangedEventData) => {
+        oldIndex = args.oldIndex;
+        newIndex = args.newIndex;
+    });
+
+    segmentedBar.items = _createItems(10);
+
+    helper.buildUIAndRunTest(segmentedBar, function (views: Array<viewModule.View>) {
+        var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
+
+        segmentedBarTestsNative.setNativeSelectedIndex(segmentedBar, 6);
+        TKUnit.assertEqual(oldIndex, 0);
+        TKUnit.assertEqual(newIndex, 6);
+
+        segmentedBarTestsNative.setNativeSelectedIndex(segmentedBar, 3);
+        TKUnit.assertEqual(oldIndex, 6);
+        TKUnit.assertEqual(newIndex, 3);
+
+        segmentedBarTestsNative.setNativeSelectedIndex(segmentedBar, 9);
+        TKUnit.assertEqual(oldIndex, 3);
+        TKUnit.assertEqual(newIndex, 9);
+    });
+}
