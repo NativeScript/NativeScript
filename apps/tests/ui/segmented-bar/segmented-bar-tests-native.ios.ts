@@ -12,3 +12,8 @@ export function checkNativeItemsTextColor(bar: segmentedBarModule.SegmentedBar):
 
     return isValid;
 }
+
+export function setNativeSelectedIndex(bar: segmentedBarModule.SegmentedBar, index: number): void {
+    bar.ios.selectedSegmentIndex = index;
+    (<UISegmentedControl>bar.ios).sendActionsForControlEvents(UIControlEvents.UIControlEventValueChanged);
+}
