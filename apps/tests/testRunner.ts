@@ -79,7 +79,7 @@ allTests["REPEATER"] = require("./ui/repeater/repeater-tests");
 allTests["SEARCH-BAR"] = require('./ui/search-bar/search-bar-tests');
 allTests["CONNECTIVITY"] = require("./connectivity-tests");
 allTests["ANIMATION"] = require("./ui/animation/animation-tests");
-allTests["NAVIGATION"] = require("./navigation-tests");
+//allTests["NAVIGATION"] = require("./navigation-tests");
 allTests["SEGMENTED-BAR"] = require("./ui/segmented-bar/segmented-bar-tests");
 
 if (!isRunningOnEmulator()) {
