@@ -182,6 +182,9 @@
     </Content>
     <Content Include="apps\tests\pages\tab-view.xml" />
     <Content Include="apps\ui-tests-app\app.css" />
+    <TypeScriptCompile Include="apps\ui-tests-app\nordic\nordic.ts">
+		<DependentUpon>nordic.xml</DependentUpon>
+	</TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\pages\handlers.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\htmlview.ts" />
     <TypeScriptCompile Include="ui\animation\animation.d.ts" />
@@ -978,6 +981,7 @@
     <Content Include="apps\ui-tests-app\layouts\wrap.xml" />
     <Content Include="apps\ui-tests-app\css\background.xml" />
     <Content Include="apps\ui-tests-app\image-view\roundbtn.xml" />
+    <Content Include="apps\ui-tests-app\nordic\nordic.xml" />
     <Content Include="apps\ui-tests-app\pages\handlers.xml" />
     <Content Include="apps\ui-tests-app\pages\htmlview.xml" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />

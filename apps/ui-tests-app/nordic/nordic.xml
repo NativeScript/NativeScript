@@ -1,0 +1,6 @@
+﻿<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded">
+  <StackLayout>
+    <Label id="label" />
+    <Button text="æøå" />
+  </StackLayout>
+</Page>
