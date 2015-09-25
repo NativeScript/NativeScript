@@ -45,7 +45,7 @@ export class Frame extends frameCommon.Frame {
     }
 
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
-        var viewController = backstackEntry.resolvedPage.ios;
+        var viewController: UIViewController = backstackEntry.resolvedPage.ios;
         if (!viewController) {
             throw new Error("Required page does have an viewController created.");
         }
@@ -63,30 +63,48 @@ export class Frame extends frameCommon.Frame {
 
         this._updateActionBar(backstackEntry.resolvedPage);
 
-        if (this._currentEntry && !this._isEntryBackstackVisible(this._currentEntry)) {
+        // First navigation.
+        if (!this._currentEntry) {
+            this._ios.controller.pushViewControllerAnimated(viewController, animated);
+            trace.write("Frame<" + this._domId + ">.pushViewControllerAnimated(newController) depth = " + navDepth, trace.categories.Navigation);
+            return;
+        }
+
+        // We should clear the entire history.
+        if (backstackEntry.entry.clearHistory) {
+            viewController.navigationItem.hidesBackButton = true;
+            var newControllers = NSMutableArray.alloc().initWithCapacity(1);
+            newControllers.addObject(viewController);
+            this._ios.controller.setViewControllersAnimated(newControllers, animated);
+            trace.write("Frame<" + this._domId + ">.setViewControllersAnimated([newController]) depth = " + navDepth, trace.categories.Navigation);
+            return;
+
+        }
+
+        // We should hide the current entry from the back stack.
+        if (!this._isEntryBackstackVisible(this._currentEntry)) {
             var newControllers = NSMutableArray.alloc().initWithArray(this._ios.controller.viewControllers);
             if (newControllers.count === 0) {
                 throw new Error("Wrong controllers count.");
             }
 
-            var newController: UIViewController = backstackEntry.resolvedPage.ios;
-
             // the code below fixes a phantom animation that appears on the Back button in this case
             // TODO: investigate why the animation happens at first place before working around it
-            newController.navigationItem.hidesBackButton = this.backStack.length === 0;
+            viewController.navigationItem.hidesBackButton = this.backStack.length === 0;
 
             // swap the top entry with the new one
             newControllers.removeLastObject();
-            newControllers.addObject(newController);
+            newControllers.addObject(viewController);
 
             // replace the controllers instead of pushing directly
             this._ios.controller.setViewControllersAnimated(newControllers, animated);
+            trace.write("Frame<" + this._domId + ">.setViewControllersAnimated([originalControllers - lastController + newController]) depth = " + navDepth, trace.categories.Navigation);
+            return;
         }
-        else {
-            this._ios.controller.pushViewControllerAnimated(viewController, animated);
-        }
-        
-        trace.write("Frame<" + this._domId + ">.pushViewControllerAnimated depth = " + navDepth, trace.categories.Navigation);
+
+        // General case.
+        this._ios.controller.pushViewControllerAnimated(viewController, animated);
+        trace.write("Frame<" + this._domId + ">.pushViewControllerAnimated(newController) depth = " + navDepth, trace.categories.Navigation);
     }
 
     public _goBackCore(backstackEntry: definition.BackstackEntry) {

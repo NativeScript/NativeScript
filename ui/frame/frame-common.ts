@@ -184,7 +184,8 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         var entry = this._navigationQueue[0].entry;
         var currentNavigationPage = entry.resolvedPage;
         if (page !== currentNavigationPage) {
-            throw new Error("Corrupted navigation stack.");
+            console.trace();
+            throw new Error(`Corrupted navigation stack; page: ${page.id}; currentNavigationPage: ${currentNavigationPage.id}`);
         }
 
         // remove completed operation.
@@ -224,7 +225,10 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         var navContext = navigationContext.entry;
         this._onNavigatingTo(navContext);
 
-        if (this._isEntryBackstackVisible(this._currentEntry)) {
+        if (navigationContext.entry.entry.clearHistory) {
+            this._backStack.length = 0;
+        }
+        else if (this._isEntryBackstackVisible(this._currentEntry)) {
             this._backStack.push(this._currentEntry);
         }
 

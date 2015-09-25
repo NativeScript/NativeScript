@@ -6,10 +6,13 @@ import labelModule = require("ui/label");
 import buttonModule = require("ui/button");
 import textFieldModule = require("ui/text-field");
 import enums = require("ui/enums");
+import switchModule = require("ui/switch");
 
 export class NavPage extends pagesModule.Page implements definition.ControlsPage {
     constructor(id: number) {
         super();
+
+        this.id = "NavPage " + id;
 
         var stackLayout = new stackLayoutModule.StackLayout();
         stackLayout.orientation = enums.Orientation.vertical;
@@ -20,6 +23,11 @@ export class NavPage extends pagesModule.Page implements definition.ControlsPage
             frameModule.topmost().goBack();
         });
         stackLayout.addChild(goBackButton);
+
+        this.on(pagesModule.Page.navigatedToEvent, function () {
+            //console.log("Navigated to NavPage " + id + "; backStack.length: " + frameModule.topmost().backStack.length);
+            goBackButton.isEnabled = frameModule.topmost().canGoBack();
+        });
 
         var stateLabel = new labelModule.Label();
         stateLabel.text = "NavPage " + id;
@@ -39,13 +47,37 @@ export class NavPage extends pagesModule.Page implements definition.ControlsPage
         });
         stackLayout.addChild(changeStateButton);
 
+        var optionsLayout = new stackLayoutModule.StackLayout();
+
+        var addToBackStackLabel = new labelModule.Label();
+        addToBackStackLabel.text = "backStackVisible";
+        optionsLayout.addChild(addToBackStackLabel);
+
+        var addToBackStackSwitch = new switchModule.Switch();
+        addToBackStackSwitch.checked = true;
+        optionsLayout.addChild(addToBackStackSwitch);
+
+        var clearHistoryLabel = new labelModule.Label();
+        clearHistoryLabel.text = "clearHistory";
+        optionsLayout.addChild(clearHistoryLabel);
+
+        var clearHistorySwitch = new switchModule.Switch();
+        clearHistorySwitch.checked = false;
+        optionsLayout.addChild(clearHistorySwitch);
+
+        stackLayout.addChild(optionsLayout);
+
         var forwardButton = new buttonModule.Button();
         forwardButton.text = "->";
         forwardButton.on(buttonModule.Button.tapEvent, function () {
             var pageFactory = function () {
                 return new NavPage(id + 1);
             };
-            frameModule.topmost().navigate(pageFactory);
+            frameModule.topmost().navigate({
+                create: pageFactory,
+                backstackVisible: addToBackStackSwitch.checked,
+                clearHistory: clearHistorySwitch.checked
+            });
         });
         stackLayout.addChild(forwardButton);
 
