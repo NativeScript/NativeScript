@@ -251,6 +251,8 @@ export class View extends viewCommon.View {
         if (!CGRectEqualToRect(nativeView.frame, frame)) {
             trace.write(this + ", Native setFrame: = " + NSStringFromCGRect(frame), trace.categories.Layout);
             nativeView.frame = frame;
+            var boundsOrigin = nativeView.bounds.origin;
+            nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
         }
     }
 
