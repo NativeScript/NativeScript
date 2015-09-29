@@ -3,6 +3,7 @@ import view = require("ui/core/view");
 import builder = require("ui/builder");
 import buttonModule = require("ui/button");
 import switchModule = require("ui/switch");
+import searchBarModule = require("ui/search-bar");
 import textFieldModule = require("ui/text-field");
 import gridLayoutModule = require("ui/layouts/grid-layout");
 import absoluteLayoutModule = require("ui/layouts/absolute-layout");
@@ -690,3 +691,17 @@ export function test_parse_NestedRepeaters() {
         helper.goBack();
     }
 }
+
+export function test_searchbar_donotcrash_whentext_isempty() {
+    var p = <Page>builder.parse('<Page><SearchBar text="" hint="Search" /></Page>');
+    var sb = <searchBarModule.SearchBar>p.content;
+
+    TKUnit.assertEqual(sb.text, "");
+};
+
+export function test_searchbar_donotcrash_whentext_isspace() {
+    var p = <Page>builder.parse('<Page><SearchBar text=" " hint="Search" /></Page>');
+    var sb = <searchBarModule.SearchBar>p.content;
+
+    TKUnit.assertEqual(sb.text, " ");
+};
