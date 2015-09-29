@@ -1,4 +1,4 @@
-﻿import common = require("ui/button/button-common");
+﻿import common = require("./button-common");
 import utils = require("utils/utils")
 
 global.moduleMerge(common, exports);

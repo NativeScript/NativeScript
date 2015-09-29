@@ -1,4 +1,4 @@
-﻿import frameCommon = require("ui/frame/frame-common");
+﻿import frameCommon = require("./frame-common");
 import definition = require("ui/frame");
 import trace = require("trace");
 import pages = require("ui/page");

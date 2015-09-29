@@ -1,4 +1,4 @@
-﻿import pageCommon = require("ui/page/page-common");
+﻿import pageCommon = require("./page-common");
 import definition = require("ui/page");
 import {View} from "ui/core/view";
 import trace = require("trace");

@@ -1,4 +1,4 @@
-﻿import common = require("ui/date-picker/date-picker-common");
+﻿import common = require("./date-picker-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");

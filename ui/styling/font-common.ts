@@ -1,6 +1,6 @@
 ﻿import enums = require("ui/enums");
 import definitios = require("ui/styling/font");
-import converters = require("ui/styling/converters");
+import converters = require("./converters");
 
 export class Font implements definitios.Font {
     public static default = undefined;

@@ -1,4 +1,4 @@
-﻿import common = require("ui/slider/slider-common");
+﻿import common = require("./slider-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 

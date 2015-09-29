@@ -1,11 +1,11 @@
 ﻿import types = require("utils/types");
 import view = require("ui/core/view");
-import style = require("ui/styling/style");
+import style = require("./style");
 import definition = require("ui/styling");
-import stylersCommon = require("ui/styling/stylers-common");
+import stylersCommon = require("./stylers-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
-import styleModule = require("ui/styling/style");
+import styleModule = require("./style");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
 var btn;

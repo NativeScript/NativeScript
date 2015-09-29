@@ -1,4 +1,4 @@
-﻿import aiCommon = require("ui/activity-indicator/activity-indicator-common");
+﻿import aiCommon = require("./activity-indicator-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import enums = require("ui/enums");

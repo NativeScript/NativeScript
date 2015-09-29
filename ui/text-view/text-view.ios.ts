@@ -1,4 +1,4 @@
-﻿import common = require("ui/text-view/text-view-common");
+﻿import common = require("./text-view-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import textBase = require("ui/text-base");
 import enums = require("ui/enums");

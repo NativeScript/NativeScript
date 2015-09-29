@@ -1,5 +1,5 @@
 ﻿import enums = require("ui/enums");
-import common = require("ui/styling/font-common");
+import common = require("./font-common");
 import application = require("application");
 import trace = require("trace");
 import types = require("utils/types");

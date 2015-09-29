@@ -1,5 +1,5 @@
 ﻿import definition = require("ui/segmented-bar");
-import common = require("ui/segmented-bar/segmented-bar-common");
+import common = require("./segmented-bar-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");

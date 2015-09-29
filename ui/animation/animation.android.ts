@@ -1,5 +1,5 @@
 ﻿import definition = require("ui/animation");
-import common = require("ui/animation/animation-common");
+import common = require("./animation-common");
 import utils = require("utils/utils");
 import color = require("color");
 import trace = require("trace");

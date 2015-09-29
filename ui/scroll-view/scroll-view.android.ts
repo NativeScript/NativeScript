@@ -1,7 +1,7 @@
 ﻿import dependencyObservable = require("ui/core/dependency-observable");
 import definition = require("ui/scroll-view");
 import contentView = require("ui/content-view");
-import common = require("ui/scroll-view/scroll-view-common");
+import common = require("./scroll-view-common");
 import utils = require("utils/utils");
 import enums = require("ui/enums");
 

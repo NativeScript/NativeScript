@@ -9,7 +9,7 @@ import platform = require("platform");
 import types = require("utils/types");
 import timer = require("timer");
 import consoleModule = require("console");
-import xhr = require("xhr/xhr");
+import xhr = require("../xhr/xhr");
 import dialogs = require("ui/dialogs");
 
 global.setTimeout = timer.setTimeout;

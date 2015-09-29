@@ -1,8 +1,8 @@
-﻿import styleModule = require("ui/styling/style");
-import stylePropertyModule = require("ui/styling/style-property");
-import stylersCommonModule = require("ui/styling/stylers-common");
-import visualStateConstatnsModule = require("ui/styling/visual-state-constants");
-import convertersModule = require("ui/styling/converters");
+﻿import styleModule = require("./style");
+import stylePropertyModule = require("./style-property");
+import stylersCommonModule = require("./stylers-common");
+import visualStateConstatnsModule = require("./visual-state-constants");
+import convertersModule = require("./converters");
 
 // Exports form style-property module.
 export var Property = stylePropertyModule.Property;

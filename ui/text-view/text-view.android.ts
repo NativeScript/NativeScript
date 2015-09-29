@@ -1,4 +1,4 @@
-﻿import common = require("ui/text-view/text-view-common");
+﻿import common = require("./text-view-common");
 
 global.moduleMerge(common, exports);
 

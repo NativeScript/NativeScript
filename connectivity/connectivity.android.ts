@@ -1,5 +1,5 @@
 ﻿import appModule = require("application");
-import common = require("connectivity/connectivity-common");
+import common = require("./connectivity-common");
 import utils = require("utils/utils");
 
 global.moduleMerge(common, exports);

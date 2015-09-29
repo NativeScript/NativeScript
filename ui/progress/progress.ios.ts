@@ -1,4 +1,4 @@
-﻿import common = require("ui/progress/progress-common");
+﻿import common = require("./progress-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 

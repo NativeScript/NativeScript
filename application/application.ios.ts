@@ -1,4 +1,4 @@
-﻿import appModule = require("application/application-common");
+﻿import appModule = require("./application-common");
 import frame = require("ui/frame");
 import types = require("utils/types");
 import view = require("ui/core/view");

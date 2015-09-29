@@ -1,5 +1,7 @@
 ﻿//@private
 
-import http = require("http");
+declare module "http/http-request" {
+    import http = require("http");
 
-export declare var request: (options: http.HttpRequestOptions) => Promise<http.HttpResponse>;
+    export var request: (options: http.HttpRequestOptions) => Promise<http.HttpResponse>;
+}

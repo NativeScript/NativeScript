@@ -1,4 +1,4 @@
-﻿import common = require("ui/gestures/gestures-common");
+﻿import common = require("./gestures-common");
 import definition = require("ui/gestures");
 import view = require("ui/core/view");
 import observable = require("data/observable");

@@ -1,4 +1,4 @@
-﻿import viewCommon = require("ui/core/view-common");
+﻿import viewCommon = require("./view-common");
 import viewDefinition = require("ui/core/view");
 import trace = require("trace");
 import utils = require("utils/utils");

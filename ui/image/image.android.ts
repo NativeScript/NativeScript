@@ -1,4 +1,4 @@
-﻿import imageCommon = require("ui/image/image-common");
+﻿import imageCommon = require("./image-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import enums = require("ui/enums");

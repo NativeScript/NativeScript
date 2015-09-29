@@ -1,5 +1,5 @@
 import utils = require("utils/utils");
-import common = require("ui/styling/background-common");
+import common = require("./background-common");
 import dts = require("ui/styling/background");
 
 global.moduleMerge(common, exports);

@@ -1,4 +1,4 @@
-﻿import common = require("ui/action-bar/action-bar-common");
+﻿import common = require("./action-bar-common");
 import dts = require("ui/action-bar");
 import imageSource = require("image-source");
 import frameModule = require("ui/frame");

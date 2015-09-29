@@ -1,4 +1,4 @@
-﻿import viewCommon = require("ui/core/view-common");
+﻿import viewCommon = require("./view-common");
 import trace = require("trace");
 import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");

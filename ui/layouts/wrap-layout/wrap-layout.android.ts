@@ -1,6 +1,6 @@
 ﻿import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import common = require("ui/layouts/wrap-layout/wrap-layout-common");
+import common = require("./wrap-layout-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 

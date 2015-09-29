@@ -1,4 +1,4 @@
-﻿import common = require("ui/list-picker/list-picker-common");
+﻿import common = require("./list-picker-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import types = require("utils/types");
 

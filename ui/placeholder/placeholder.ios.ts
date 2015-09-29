@@ -1,5 +1,5 @@
 ﻿import definition = require("ui/placeholder");
-import common = require("ui/placeholder/placeholder-common");
+import common = require("./placeholder-common");
 
 global.moduleMerge(common, exports);
 

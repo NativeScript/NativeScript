@@ -1,4 +1,4 @@
-﻿import common = require("utils/utils-common");
+﻿import common = require("./utils-common");
 import colorModule = require("color");
 
 global.moduleMerge(common, exports);

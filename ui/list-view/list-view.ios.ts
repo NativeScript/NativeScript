@@ -1,6 +1,6 @@
 ﻿import observable = require("data/observable");
 import definition = require("ui/list-view");
-import common = require("ui/list-view/list-view-common");
+import common = require("./list-view-common");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");

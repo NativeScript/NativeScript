@@ -1,4 +1,4 @@
-﻿import common = require("ui/web-view/web-view-common");
+﻿import common = require("./web-view-common");
 import trace = require("trace");
 import utils = require("utils/utils");
 import fs = require("file-system");

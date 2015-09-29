@@ -1,6 +1,6 @@
 import viewModule = require("ui/core/view");
-import style = require("ui/styling/style");
-import common = require("ui/styling/background-common");
+import style = require("./style");
+import common = require("./background-common");
 
 global.moduleMerge(common, exports);
 

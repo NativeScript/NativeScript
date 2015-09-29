@@ -1,4 +1,4 @@
-﻿import common = require("ui/text-field/text-field-common");
+﻿import common = require("./text-field-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 

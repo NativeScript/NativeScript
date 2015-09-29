@@ -1,4 +1,4 @@
-﻿import common = require("ui/editable-text-base/editable-text-base-common");
+﻿import common = require("./editable-text-base-common");
 import textBase = require("ui/text-base");
 import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
