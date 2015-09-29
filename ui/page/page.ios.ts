@@ -1,8 +1,9 @@
 ﻿import pageCommon = require("ui/page/page-common");
 import definition = require("ui/page");
-import viewModule = require("ui/core/view");
+import {View} from "ui/core/view";
 import trace = require("trace");
 import uiUtils = require("ui/utils");
+import utils = require("utils/utils");
 
 global.moduleMerge(pageCommon, exports);
 
@@ -76,7 +77,7 @@ export class Page extends pageCommon.Page {
         }
     }
 
-    public _onContentChanged(oldView: viewModule.View, newView: viewModule.View) {
+    public _onContentChanged(oldView: View, newView: View) {
         super._onContentChanged(oldView, newView);
         this._removeNativeView(oldView);
         this._addNativeView(newView);
@@ -96,7 +97,7 @@ export class Page extends pageCommon.Page {
         }
     }
 
-    private _addNativeView(view: viewModule.View) {
+    private _addNativeView(view: View) {
         if (view) {
             trace.write("Native: Adding " + view + " to " + this, trace.categories.ViewHierarchy);
             if (view.ios instanceof UIView) {
@@ -108,7 +109,7 @@ export class Page extends pageCommon.Page {
         }
     }
 
-    private _removeNativeView(view: viewModule.View) {
+    private _removeNativeView(view: View) {
         if (view) {
             trace.write("Native: Removing " + view + " from " + this, trace.categories.ViewHierarchy);
             if (view.ios instanceof UIView) {
@@ -169,16 +170,39 @@ export class Page extends pageCommon.Page {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-        viewModule.View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+
+        let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+
+        let navigationBarHeight = this.frame ? this.frame.navigationBarHeight : 0;
+        let heightSpec = utils.layout.makeMeasureSpec(height - navigationBarHeight, heightMode);
+
+        // Measure ActionBar with the full height. 
+        let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
+
+        // Measure content with height - navigationBarHeight. Here we could use actionBarSize.measuredHeight probably.
+        let result = View.measureChild(this, this.content, widthMeasureSpec, heightSpec);
+
+        let measureWidth = Math.max(actionBarSize.measuredWidth, result.measuredWidth, this.minWidth);
+        let measureHeight = Math.max(result.measuredHeight + actionBarSize.measuredHeight, this.minHeight);
+
+        let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+
+        this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
-        viewModule.View.layoutChild(this, this.actionBar, 0, 0, right - left, bottom - top);
-        super.onLayout(left, top, right, bottom);
+        View.layoutChild(this, this.actionBar, 0, 0, right - left, bottom - top);
+
+        let navigationBarHeight = this.frame ? this.frame.navigationBarHeight : 0;
+        View.layoutChild(this, this.content, 0, navigationBarHeight, right - left, bottom - top);
     }
 
-    public _addViewToNativeVisualTree(view: viewModule.View): boolean {
+    public _addViewToNativeVisualTree(view: View): boolean {
         // ActionBar is added to the native visual tree by default
         if (view === this.actionBar) {
             return true;

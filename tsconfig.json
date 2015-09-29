@@ -1,6 +1,7 @@
 {
     "version": "1.5.0-beta",
     "compilerOptions": {
+		"moduleResolution": "classic",
         "target": "es5",
         "module": "commonjs",
         "declaration": false,
