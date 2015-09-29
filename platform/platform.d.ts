@@ -53,7 +53,10 @@ declare module "platform" {
         static deviceType: string;
 
         /**
-         * Gets the uuid
+         * Gets the uuid.
+         * On iOS this will return a new uuid if the application re-installed on the device.
+         * If you need to receive the same uuid even after the application has been re-installed on the device,
+         * use this plugin: https://www.npmjs.com/package/nativescript-ios-uuid
          */
          static uuid: string;
 
