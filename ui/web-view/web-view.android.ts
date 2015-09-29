@@ -91,13 +91,13 @@ export class WebView extends common.WebView {
             if (file) {
                 var baseUrl = `file:///${src.substring(0, src.lastIndexOf('/') + 1)}`;
                 file.readText().then(r => {
-                    this._android.loadDataWithBaseURL(baseUrl, r, "text/html", null, null);
+                    this._android.loadDataWithBaseURL(baseUrl, r, "text/html; charset=utf-8", "utf-8", null);
                 });
             }
         } else if (src.indexOf("http://") === 0 || src.indexOf("https://") === 0) {
             this._android.loadUrl(src);
         } else {
-            this._android.loadData(src, "text/html", null);
+            this._android.loadData(src, "text/html; charset=utf-8", "utf-8");
         }
     }
 
