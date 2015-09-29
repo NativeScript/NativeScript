@@ -8,6 +8,8 @@ declare module "ui/text-field" {
      * Represents an editable text field.
      */
     export class TextField extends editableTextBase.EditableTextBase {
+        public static returnPressEvent: string;
+
         constructor(options?: editableTextBase.Options);
         
         /**
