@@ -192,9 +192,9 @@ export class Frame extends frameCommon.Frame {
         var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
         var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
-        var result = view.View.measureChild(this, this.currentPage, widthMeasureSpec, utils.layout.makeMeasureSpec(height - this.navigationBarHeight, heightMode));
-        if (this._navigateToEntry) {
-            view.View.measureChild(this, this._navigateToEntry.resolvedPage, widthMeasureSpec, utils.layout.makeMeasureSpec(height - this.navigationBarHeight, heightMode));
+        var result = view.View.measureChild(this, this.currentPage, widthMeasureSpec, heightMeasureSpec);
+        if (this._navigateToEntry && this.currentPage) {
+            view.View.measureChild(this, this._navigateToEntry.resolvedPage, widthMeasureSpec, heightMeasureSpec);
         }
 
         var widthAndState = view.View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
@@ -204,13 +204,13 @@ export class Frame extends frameCommon.Frame {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        view.View.layoutChild(this, this.currentPage, 0, this.navigationBarHeight, right - left, bottom - top);
-        if (this._navigateToEntry) {
-            view.View.layoutChild(this, this._navigateToEntry.resolvedPage, 0, this.navigationBarHeight, right - left, bottom - top);
+        view.View.layoutChild(this, this.currentPage, 0, 0, right - left, bottom - top);
+        if (this._navigateToEntry && this.currentPage) {
+            view.View.layoutChild(this, this._navigateToEntry.resolvedPage, 0, 0, right - left, bottom - top);
         }
     }
 
-    protected get navigationBarHeight(): number {
+    public get navigationBarHeight(): number {
         var navigationBar = this._ios.controller.navigationBar;
         return (navigationBar && !this._ios.controller.navigationBarHidden) ? navigationBar.frame.size.height : 0;
     }

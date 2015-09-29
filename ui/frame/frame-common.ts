@@ -341,7 +341,7 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         return "Frame<" + this._domId + ">";
     }
 
-    protected get navigationBarHeight(): number {
+    public get navigationBarHeight(): number {
         return 0;
     }
 
