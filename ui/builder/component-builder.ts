@@ -169,14 +169,18 @@ export function setPropertyValue(instance: view.View, instanceModule: Object, ex
             attrHandled = (<any>instance)._applyXmlAttribute(propertyName, propertyValue);
         }
         if (!attrHandled) {
-            // Try to convert value to number.
-            var valueAsNumber = +propertyValue;
-            if (!isNaN(valueAsNumber)) {
-                instance[propertyName] = valueAsNumber;
-            } else if (propertyValue && (propertyValue.toLowerCase() === "true" || propertyValue.toLowerCase() === "false")) {
-                instance[propertyName] = propertyValue.toLowerCase() === "true" ? true : false;
-            } else {
+            if (propertyValue.trim() === "") {
                 instance[propertyName] = propertyValue;
+            } else {
+                // Try to convert value to number.
+                var valueAsNumber = +propertyValue;
+                if (!isNaN(valueAsNumber)) {
+                    instance[propertyName] = valueAsNumber;
+                } else if (propertyValue && (propertyValue.toLowerCase() === "true" || propertyValue.toLowerCase() === "false")) {
+                    instance[propertyName] = propertyValue.toLowerCase() === "true" ? true : false;
+                } else {
+                    instance[propertyName] = propertyValue;
+                }
             }
         }
     }
