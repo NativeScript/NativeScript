@@ -80,6 +80,7 @@
       <DependentUpon>data-binding.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\placeholder\placeholder-tests.ts" />
     <TypeScriptCompile Include="apps\tests\xml-declaration\custom-code-file.ts" />
     <TypeScriptCompile Include="apps\transforms\app.ts" />
     <TypeScriptCompile Include="apps\transforms\main-page.ts" />
@@ -183,8 +184,8 @@
     <Content Include="apps\tests\pages\tab-view.xml" />
     <Content Include="apps\ui-tests-app\app.css" />
     <TypeScriptCompile Include="apps\ui-tests-app\nordic\nordic.ts">
-		<DependentUpon>nordic.xml</DependentUpon>
-	</TypeScriptCompile>
+      <DependentUpon>nordic.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\pages\handlers.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\htmlview.ts" />
     <TypeScriptCompile Include="ui\animation\animation.d.ts" />
@@ -1984,7 +1985,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

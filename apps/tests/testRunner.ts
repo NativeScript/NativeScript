@@ -61,6 +61,7 @@ allTests["IMAGE"] = require("./ui/image/image-tests");
 allTests["SLIDER"] = require("./ui/slider/slider-tests");
 allTests["SWITCH"] = require("./ui/switch/switch-tests");
 allTests["PROGRESS"] = require("./ui/progress/progress-tests");
+allTests["PLACEHOLDER"] = require("./ui/placeholder/placeholder-tests");
 allTests["PAGE"] = require("./ui/page/page-tests");
 allTests["LISTVIEW"] = require("./ui/list-view/list-view-tests");
 allTests["ACTIVITY-INDICATOR"] = require("./ui/activity-indicator/activity-indicator-tests");

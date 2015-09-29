@@ -10,7 +10,7 @@ export class Placeholder extends common.Placeholder {
         if (!this._ios) {
             var args = <definition.CreateViewEventData>{ eventName: common.Placeholder.creatingViewEvent, object: this, view: undefined, context: undefined };
             super.notify(args);
-            this._ios = args.view || new UIView();
+            this._ios = args.view;
         }
         return this._ios;
     }

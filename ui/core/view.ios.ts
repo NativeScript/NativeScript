@@ -196,8 +196,10 @@ export class View extends viewCommon.View {
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var view = this._nativeView;
-        if (view) {
+        let nativeWidth = 0;
+        let nativeHeight = 0;
 
+        if (view) {
             var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
             var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -213,15 +215,17 @@ export class View extends viewCommon.View {
             }
 
             var nativeSize = view.sizeThatFits(CGSizeMake(width, height));
-
-            var measureWidth = Math.max(nativeSize.width, this.minWidth);
-            var measureHeight = Math.max(nativeSize.height, this.minHeight);
-
-            var widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-            var heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
-
-            this.setMeasuredDimension(widthAndState, heightAndState);
+            nativeWidth = nativeSize.width;
+            nativeHeight = nativeSize.height;
         }
+
+        var measureWidth = Math.max(nativeWidth, this.minWidth);
+        var measureHeight = Math.max(nativeHeight, this.minHeight);
+
+        var widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        var heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+
+        this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
@@ -305,12 +309,12 @@ export class CustomLayoutView extends View {
 
         if (this._nativeView && child._nativeView) {
             if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.subviews.count) {
-            this._nativeView.addSubview(child._nativeView);
+                this._nativeView.addSubview(child._nativeView);
             }
             else {
                 this._nativeView.insertSubviewAtIndex(child._nativeView, atIndex);
             }
-            
+
             return true;
         }
 
