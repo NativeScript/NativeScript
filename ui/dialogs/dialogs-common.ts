@@ -15,6 +15,12 @@ export module inputType {
      */
     export var text: string = "text";
 
+    
+    /**
+     * Multi line plain text input type.
+     */
+    export var textView: string = "textView";
+
     /**
      * Password input type.
      */
