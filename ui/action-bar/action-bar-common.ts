@@ -5,7 +5,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
 import view = require("ui/core/view");
-import style = require("ui/styling/style");
+import style = require("../styling/style");
 import observable = require("ui/core/dependency-observable");
 
 var ACTION_ITEMS = "actionItems";

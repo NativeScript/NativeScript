@@ -4,7 +4,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
 import bindable = require("ui/core/bindable");
 import types = require("utils/types");
-import numberUtils = require("utils/number-utils");
+import numberUtils = require("../../../utils/number-utils");
 import proxy = require("ui/core/proxy");
 import {registerSpecialProperty} from "ui/builder/special-properties";
 

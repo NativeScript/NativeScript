@@ -1,4 +1,4 @@
-﻿import formattedStringCommon = require("text/formatted-string-common");
+﻿import formattedStringCommon = require("./formatted-string-common");
 import spanModule = require("text/span");
 
 global.moduleMerge(formattedStringCommon, exports);

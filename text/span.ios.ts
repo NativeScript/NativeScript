@@ -1,4 +1,4 @@
-import spanCommon = require("text/span-common");
+import spanCommon = require("./span-common");
 import enums = require("ui/enums");
 import formattedString = require("text/formatted-string");
 

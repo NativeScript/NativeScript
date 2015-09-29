@@ -1,4 +1,4 @@
-﻿import common = require("color/color-common");
+﻿import common = require("./color-common");
 
 var AMP = "#";
 

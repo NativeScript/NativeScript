@@ -1,4 +1,4 @@
-import common = require("ui/tab-view/tab-view-common");
+import common = require("./tab-view-common");
 import definition = require("ui/tab-view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");

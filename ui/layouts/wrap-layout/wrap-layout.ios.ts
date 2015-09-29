@@ -1,7 +1,7 @@
 ﻿import utils = require("utils/utils");
 import view = require("ui/core/view");
 import enums = require("ui/enums");
-import common = require("ui/layouts/wrap-layout/wrap-layout-common");
+import common = require("./wrap-layout-common");
 
 global.moduleMerge(common, exports);
 

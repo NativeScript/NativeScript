@@ -1,4 +1,4 @@
-﻿import common = require("utils/utils-common");
+﻿import common = require("./utils-common");
 import trace = require("trace");
 
 global.moduleMerge(common, exports);

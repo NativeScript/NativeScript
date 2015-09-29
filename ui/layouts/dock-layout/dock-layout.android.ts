@@ -2,7 +2,7 @@
 import view = require("ui/core/view");
 import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
-import common = require("ui/layouts/dock-layout/dock-layout-common");
+import common = require("./dock-layout-common");
 
 global.moduleMerge(common, exports);
 

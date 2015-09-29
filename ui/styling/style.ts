@@ -6,7 +6,7 @@ import {View} from "ui/core/view";
 import {Color} from "color";
 import stylers = require("ui/styling/stylers");
 import styleProperty = require("ui/styling/style-property");
-import converters = require("ui/styling/converters");
+import converters = require("./converters");
 import enums = require("ui/enums");
 import imageSource = require("image-source");
 import utils = require("utils/utils");

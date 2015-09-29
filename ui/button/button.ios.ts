@@ -1,4 +1,4 @@
-﻿import common = require("ui/button/button-common");
+﻿import common = require("./button-common");
 import stateChanged = require("ui/core/control-state-change");
 
 class TapHandlerImpl extends NSObject {

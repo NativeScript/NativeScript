@@ -1,6 +1,6 @@
 ﻿import utils = require("utils/utils");
 import view = require("ui/core/view");
-import common = require("ui/layouts/absolute-layout/absolute-layout-common");
+import common = require("./absolute-layout-common");
 
 global.moduleMerge(common, exports);
 

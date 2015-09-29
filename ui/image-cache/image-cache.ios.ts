@@ -1,4 +1,4 @@
-﻿import common = require("ui/image-cache/image-cache-common");
+﻿import common = require("./image-cache-common");
 import httpRequest = require("http/http-request");
 import utils = require("utils/utils");
 import trace = require("trace");

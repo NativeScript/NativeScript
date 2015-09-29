@@ -1,5 +1,5 @@
 ﻿import enums = require("ui/enums");
-import common = require("ui/styling/font-common");
+import common = require("./font-common");
 import fs = require("file-system");
 
 var DEFAULT_SERIF = "Times New Roman";

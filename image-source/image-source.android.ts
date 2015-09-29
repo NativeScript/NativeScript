@@ -1,7 +1,7 @@
 ﻿import types = require("utils/types");
 import fs = require("file-system");
 import definition = require("image-source");
-import common = require("image-source/image-source-common");
+import common = require("./image-source-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 

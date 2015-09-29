@@ -1,4 +1,4 @@
-﻿import common = require("ui/label/label-common");
+﻿import common = require("./label-common");
 import definition = require("ui/label");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");

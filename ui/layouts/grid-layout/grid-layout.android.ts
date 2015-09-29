@@ -2,7 +2,7 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
-import common = require("ui/layouts/grid-layout/grid-layout-common");
+import common = require("./grid-layout-common");
 
 global.moduleMerge(common, exports);
 

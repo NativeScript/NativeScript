@@ -1,4 +1,4 @@
-﻿import Common = require("application-settings/application-settings-common");
+﻿import Common = require("./application-settings-common");
 import utils = require("utils/utils");
 
 var sharedPreferences = utils.ad.getApplicationContext().getSharedPreferences("prefs.db", 0);

@@ -1,7 +1,7 @@
 ﻿import utils = require("utils/utils");
 import enums = require("ui/enums");
 import view = require("ui/core/view");
-import common = require("ui/layouts/stack-layout/stack-layout-common");
+import common = require("./stack-layout-common");
 
 global.moduleMerge(common, exports);
 

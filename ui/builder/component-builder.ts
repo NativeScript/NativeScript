@@ -2,7 +2,7 @@
 import types = require("utils/types");
 import definition = require("ui/builder/component-builder");
 import fs = require("file-system");
-import bindingBuilder = require("ui/builder/binding-builder");
+import bindingBuilder = require("./binding-builder");
 import platform = require("platform");
 import pages = require("ui/page");
 

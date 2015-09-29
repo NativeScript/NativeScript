@@ -3,7 +3,7 @@
  */
 
 import dialogs = require("ui/dialogs");
-import dialogsCommon = require("ui/dialogs/dialogs-common");
+import dialogsCommon = require("./dialogs-common");
 import appmodule = require("application");
 import types = require("utils/types");
 

@@ -1,6 +1,6 @@
 ﻿import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import common = require("ui/layouts/stack-layout/stack-layout-common");
+import common = require("./stack-layout-common");
 import enums = require("ui/enums");
 
 global.moduleMerge(common, exports);

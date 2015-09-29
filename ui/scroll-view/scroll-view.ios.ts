@@ -1,7 +1,7 @@
 ﻿import view = require("ui/core/view");
 import definition = require("ui/scroll-view");
 import contentView = require("ui/content-view");
-import common = require("ui/scroll-view/scroll-view-common");
+import common = require("./scroll-view-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 

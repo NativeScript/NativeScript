@@ -1,4 +1,4 @@
-﻿import common = require("ui/action-bar/action-bar-common");
+﻿import common = require("./action-bar-common");
 import trace = require("trace");
 import frame = require("ui/frame");
 import types = require("utils/types");

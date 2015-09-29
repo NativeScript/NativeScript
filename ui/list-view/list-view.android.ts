@@ -1,5 +1,5 @@
 ﻿import observable = require("data/observable");
-import common = require("ui/list-view/list-view-common");
+import common = require("./list-view-common");
 import viewModule = require("ui/core/view");
 import layoutBaseModule = require("ui/layouts/layout-base");
 import stackLayout = require("ui/layouts/stack-layout");

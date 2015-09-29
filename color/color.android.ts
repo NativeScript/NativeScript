@@ -1,4 +1,4 @@
-﻿import common = require("color/color-common");
+﻿import common = require("./color-common");
 
 export class Color extends common.Color {
     get android(): number {

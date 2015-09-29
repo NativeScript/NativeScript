@@ -1,4 +1,4 @@
-﻿import common = require("ui/search-bar/search-bar-common");
+﻿import common = require("./search-bar-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import color = require("color");
