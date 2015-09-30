@@ -171,23 +171,28 @@ export class Page extends pageCommon.Page {
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
 
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
         let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
         let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let navigationBarHeight = this.frame ? this.frame.navigationBarHeight : 0;
-        let heightSpec = utils.layout.makeMeasureSpec(height - navigationBarHeight, heightMode);
+        let actionBarWidth: number = 0;
+        let actionBarHeight: number = 0;        
+        if (this.frame && this.frame._getNavBarVisible(this)) {
+            // Measure ActionBar with the full height. 
+            let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
+            actionBarWidth = actionBarSize.measuredWidth;
+            actionBarHeight = actionBarSize.measuredHeight;
+        }
 
-        // Measure ActionBar with the full height. 
-        let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
+        let heightSpec = utils.layout.makeMeasureSpec(height - actionBarHeight, heightMode);        
 
         // Measure content with height - navigationBarHeight. Here we could use actionBarSize.measuredHeight probably.
         let result = View.measureChild(this, this.content, widthMeasureSpec, heightSpec);
 
-        let measureWidth = Math.max(actionBarSize.measuredWidth, result.measuredWidth, this.minWidth);
-        let measureHeight = Math.max(result.measuredHeight + actionBarSize.measuredHeight, this.minHeight);
+        let measureWidth = Math.max(actionBarWidth, result.measuredWidth, this.minWidth);
+        let measureHeight = Math.max(result.measuredHeight + actionBarHeight, this.minHeight);
 
         let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
         let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);

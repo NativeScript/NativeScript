@@ -345,6 +345,10 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         return 0;
     }
 
+    public _getNavBarVisible(page: pages.Page): boolean {
+        throw new Error();
+    }
+
     // We don't need to put Page as visual child. Don't call super.
     public _addViewToNativeVisualTree(child: view.View): boolean {
         return true;
