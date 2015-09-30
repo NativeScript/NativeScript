@@ -136,8 +136,7 @@ export var test_setInterval_callbackCalledDuringPeriod = function () {
 
 export var test_setInterval_callbackShouldBeCleared = function () {
     var counter = 0;
-    var expected = 1;
-    var isReady = function () { return counter === expected; }
+    var isReady = function () { return false; }
 
     // <snippet module="timer" title="timer">
     // ### Cancel the interval previously started using the setInterval method.
@@ -152,5 +151,5 @@ export var test_setInterval_callbackShouldBeCleared = function () {
     // </snippet>
 
     TKUnit.waitUntilReady(isReady, 0.5);
-    TKUnit.assert(isReady(), "Callback should be raised only once!");
+    TKUnit.assert(counter === 1, "Callback should be raised only once!");
 };
