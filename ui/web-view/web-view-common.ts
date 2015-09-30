@@ -63,7 +63,7 @@ function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 // register the setNativeValue callback
 (<proxy.PropertyMetadata>srcProperty.metadata).onSetNativeValue = onSrcPropertyChanged;
 
-export class WebView extends view.View implements definition.WebView {
+export abstract class WebView extends view.View implements definition.WebView {
     public static loadStartedEvent = "loadStarted";
     public static loadFinishedEvent = "loadFinished";
 
@@ -119,25 +119,15 @@ export class WebView extends view.View implements definition.WebView {
         this.notify(args);
     }
 
-    public _loadUrl(url: string) {
-        throw new Error("This member is abstract.");
-    }
+    abstract _loadUrl(url: string): void;
 
-    public _loadFileOrResource(path: string, content: string) {
-        throw new Error("This member is abstract.");
-    }
+    abstract _loadFileOrResource(path: string, content: string): void;
 
-    public _loadHttp(src: string) {
-        throw new Error("This member is abstract.");
-    }
+    abstract _loadHttp(src: string): void;
 
-    public _loadData(src: string) {
-        throw new Error("This member is abstract.");
-    }
+    abstract _loadData(src: string): void;
 
-    public stopLoading(): void {
-        throw new Error("This member is abstract.");
-    }
+    abstract stopLoading(): void;
 
     get canGoBack(): boolean {
         throw new Error("This member is abstract.");
@@ -147,15 +137,9 @@ export class WebView extends view.View implements definition.WebView {
         throw new Error("This member is abstract.");
     }
 
-    public goBack() {
-        throw new Error("This member is abstract.");
-    }
+    abstract goBack(): void;
 
-    public goForward() {
-        throw new Error("This member is abstract.");
-    }
+    abstract goForward(): void;
 
-    public reload() {
-        throw new Error("This member is abstract.");
-    }
+    abstract reload(): void;
 } 

@@ -30,7 +30,7 @@ var _createWebViewFunc = function (): webViewModule.WebView {
     return webView;
 }
 
-export var testLoadExistingUrl = function () {
+function prepare(): webViewModule.WebView {
     var newPage: page.Page;
     var webView = _createWebViewFunc();
     var pageFactory = function (): page.Page {
@@ -41,6 +41,12 @@ export var testLoadExistingUrl = function () {
 
     helper.navigate(pageFactory);
 
+    return webView;
+}
+
+export var testLoadExistingUrl = function () {
+    var webView = prepare();
+    
     var testFinished = false;
     var actualUrl;
     var actualError;
@@ -80,15 +86,7 @@ export var testLoadExistingUrl = function () {
 }
 
 export var testLoadLocalFile = function () {
-    var newPage: page.Page;
-    var webView = _createWebViewFunc();
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
-        newPage.content = webView;
-        return newPage;
-    };
-
-    helper.navigate(pageFactory);
+    var webView = prepare();
 
     var testFinished = false;
     var actualHtml;
@@ -142,15 +140,7 @@ export var testLoadLocalFile = function () {
 }
 
 export var testLoadHTMLString = function () {
-    var newPage: page.Page;
-    var webView = _createWebViewFunc();
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
-        newPage.content = webView;
-        return newPage;
-    };
-
-    helper.navigate(pageFactory);
+    var webView = prepare();
 
     var testFinished = false;
     var actualHtml;
@@ -204,15 +194,7 @@ export var testLoadHTMLString = function () {
 }
 
 export var testLoadInvalidUrl = function () {
-    var newPage: page.Page;
-    var webView = _createWebViewFunc();
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
-        newPage.content = webView;
-        return newPage;
-    };
-
-    helper.navigate(pageFactory);
+    var webView = prepare();
 
     var testFinished = false;
     var actualError;
@@ -232,6 +214,34 @@ export var testLoadInvalidUrl = function () {
 
     if (testFinished) {
         TKUnit.assert(actualError !== undefined, "There should be an error.");
+    }
+    else {
+        TKUnit.assert(false, "TIMEOUT");
+    }
+}
+
+export var testLoadUpperCaseSrc = function () {
+    var webView = prepare();
+
+    var testFinished = false;
+    var actualSrc;
+    var actualError;
+
+    webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
+        actualSrc = args.url;
+        actualError = args.error;
+        testFinished = true;
+    });
+    var targetSrc = "HTTP://nsbuild01.telerik.com/docs/";
+    webView.src = targetSrc;
+    
+    TKUnit.wait(4);
+
+    helper.goBack();
+
+    if (testFinished) {
+        TKUnit.assert(actualSrc === targetSrc, "args.url should equal '" + targetSrc + "'");
+        TKUnit.assert(actualError === undefined, actualError);
     }
     else {
         TKUnit.assert(false, "TIMEOUT");

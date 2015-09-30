@@ -1,5 +1,5 @@
 {
-    "version": "1.5.0-beta",
+    "version": "1.6.2",
     "compilerOptions": {
 		"moduleResolution": "classic",
         "target": "es5",
@@ -8,7 +8,8 @@
         "noImplicitAny": false,
         "removeComments": true,
         "noLib": true,
-        "outDir": "dist"
+        "outDir": "dist",
+        "experimentalDecorators": true
     },
     "filesGlob": [
         "./**/*.ts",
