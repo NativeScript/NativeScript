@@ -76,7 +76,8 @@ export function actionTapped(args) {
 
 export function actionWithOptionsTapped(args) {
     dialogs.action({
-        message: "Action",
+        title: "Action Title",
+        message: "Action Message",
         cancelButtonText: "Close",
         actions: ["One", "Two", "Three"]
     }).then(r=> console.log(`Action result: ${r}`));
