@@ -91,6 +91,7 @@ declare module "ui/frame" {
         navigationBarHeight: number;
         _processNavigationQueue(page: pages.Page);
         _updateActionBar(page?: pages.Page);
+        _getNavBarVisible(page: pages.Page): boolean;
         //@endprivate
 
         /**

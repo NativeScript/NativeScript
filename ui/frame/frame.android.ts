@@ -410,6 +410,10 @@ export class Frame extends frameCommon.Frame {
             console.log("[ " + backstackEntry.resolvedPage.id + " ]");
         }
     }
+
+    public _getNavBarVisible(page: pages.Page): boolean {
+        return this._android.showActionBar;
+    }
 }
 
 var NativeActivity = {

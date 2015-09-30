@@ -20,6 +20,10 @@ export class Frame extends frameCommon.Frame {
 
     public _shouldSkipNativePop: boolean = false;
     public _navigateToEntry: definition.BackstackEntry;
+    public _widthMeasureSpec: number;
+    public _heightMeasureSpec: number;
+    public _layoutWidth: number;
+    public _layoutheight: number;
 
     constructor() {
         super();
@@ -130,34 +134,26 @@ export class Frame extends frameCommon.Frame {
         this._ios.showNavigationBar = newValue;
     }
 
-    public _getNavBarVisible(page: pages.Page) {
-        if (!page) {
-            return false;
-        }
-
-        var newValue = false;
-
+    public _getNavBarVisible(page: pages.Page): boolean {
         switch (this._ios.navBarVisibility) {
             case enums.NavigationBarVisibility.always:
-                newValue = true;
-                break;
+                return true;
 
             case enums.NavigationBarVisibility.never:
-                newValue = false;
-                break;
+                return false;
 
             case enums.NavigationBarVisibility.auto:
+                let newValue: boolean;
                 if (page && types.isDefined(page.actionBarHidden)) {
                     newValue = !page.actionBarHidden;
                 }
                 else {
-                    newValue = this.backStack.length > 0 || (page && !page.actionBar._isEmpty());
+                    newValue = this.backStack.length > 0 || (page && page.actionBar && !page.actionBar._isEmpty());
                 }
-                newValue = !!newValue; // Make sure it is boolean
-                break;
-        }
 
-        return newValue;
+                newValue = !!newValue; // Make sure it is boolean
+                return newValue;
+        }
     }
 
     public get ios(): definition.iOSFrame {
@@ -192,10 +188,10 @@ export class Frame extends frameCommon.Frame {
         var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
         var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
+        this._widthMeasureSpec = widthMeasureSpec;
+        this._heightMeasureSpec = heightMeasureSpec;
+
         var result = view.View.measureChild(this, this.currentPage, widthMeasureSpec, heightMeasureSpec);
-        if (this._navigateToEntry && this.currentPage) {
-            view.View.measureChild(this, this._navigateToEntry.resolvedPage, widthMeasureSpec, heightMeasureSpec);
-        }
 
         var widthAndState = view.View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
         var heightAndState = view.View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
@@ -204,10 +200,9 @@ export class Frame extends frameCommon.Frame {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
+        this._layoutWidth = right - left;
+        this._layoutheight = bottom - top;
         view.View.layoutChild(this, this.currentPage, 0, 0, right - left, bottom - top);
-        if (this._navigateToEntry && this.currentPage) {
-            view.View.layoutChild(this, this._navigateToEntry.resolvedPage, 0, 0, right - left, bottom - top);
-        }
     }
 
     public get navigationBarHeight(): number {
@@ -257,6 +252,8 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             }
 
             frame._addView(newPage);
+            view.View.measureChild(frame, newPage, frame._widthMeasureSpec, frame._heightMeasureSpec);
+            view.View.layoutChild(frame, newPage, 0, 0, frame._layoutWidth, frame._layoutheight);
         }
         else if (newPage.parent !== frame) {
             throw new Error("Page is already shown on another frame.");

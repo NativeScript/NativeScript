@@ -139,31 +139,39 @@ export class ActionBar extends common.ActionBar {
         navigationItem.title = this.title;
     }
 
+    private _navigationBarHeight: number = 0;
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-        if (this.titleView) {
-            var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+        
+        let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
-            view.View.measureChild(this, this.titleView,
-                utils.layout.makeMeasureSpec(width, utils.layout.AT_MOST),
-                utils.layout.makeMeasureSpec(this.navigationBarHeight, utils.layout.AT_MOST));
+        let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+
+        let navBarWidth = 0;
+        let navBarHeight = 0;
+
+        let frame = <frameModule.Frame>this.page.frame;
+        if (frame) {
+            let navBar: UIView = frame.ios.controller.navigationBar;
+            let navBarSize = navBar.sizeThatFits(CGSizeMake(width, height));
+            navBarWidth = navBarSize.width;
+            this._navigationBarHeight = navBarHeight = navBarSize.height;
         }
 
-        this.setMeasuredDimension(0, 0);
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        if (this.titleView) {
+            view.View.measureChild(this, this.titleView,
+                utils.layout.makeMeasureSpec(width, utils.layout.AT_MOST),
+                utils.layout.makeMeasureSpec(navBarHeight, utils.layout.AT_MOST));
+        }
+
+        // We ignore our width/height, minWidth/minHeight dimensions because it is against Apple policy to change height of NavigationBar.
+        this.setMeasuredDimension(navBarWidth, navBarHeight);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
-        view.View.layoutChild(this, this.titleView, 0, 0, right - left, this.navigationBarHeight);
+        view.View.layoutChild(this, this.titleView, 0, 0, right - left, this._navigationBarHeight);
         super.onLayout(left, top, right, bottom);
-    }
-
-    protected get navigationBarHeight(): number {
-        var navController = frameModule.topmost().ios.controller;
-        if (!navController) {
-            return 0;
-        }
-        var navigationBar = navController.navigationBar;
-        return (navigationBar && !navController.navigationBarHidden) ? navigationBar.frame.size.height : 0;
     }
 }
 
