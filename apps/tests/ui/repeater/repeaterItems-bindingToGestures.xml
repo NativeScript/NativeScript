@@ -2,7 +2,7 @@
 	<Repeater id="repeater" items="{{ items }}">
 		<Repeater.itemTemplate>
 			<GridLayout width="94" height="94" >
-				<Label text="{{ $parents['Page'].parentViewProperty }}" tap="{{ tapItem }}" />
+				<Label text="{{ sourceProperty = $parents['Page'].parentViewProperty }}" tap="{{ tapItem }}" />
 			</GridLayout>
 		</Repeater.itemTemplate>
 	</Repeater>

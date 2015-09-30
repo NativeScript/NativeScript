@@ -7,7 +7,7 @@ import uiTestModule = require("./ui-test");
 
 frameModule.Frame.defaultAnimatedNavigation = false;
 
-function isRunningOnEmulator(): boolean {
+export function isRunningOnEmulator(): boolean {
     // This checks are not good enough to be added to modules but keeps unittests green.
 
     if (platform.device.os === platform.platformNames.android) {
