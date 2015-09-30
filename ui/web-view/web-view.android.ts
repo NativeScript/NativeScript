@@ -83,7 +83,7 @@ export class WebView extends common.WebView {
         }
 
         var baseUrl = `file:///${path.substring(0, path.lastIndexOf('/') + 1) }`;
-        this._android.loadDataWithBaseURL(baseUrl, content, "text/html", null, null);
+        this._android.loadDataWithBaseURL(baseUrl, content, "text/html; charset=utf-8", "utf-8", null);
     }
 
     public _loadHttp(src: string) {
@@ -99,7 +99,7 @@ export class WebView extends common.WebView {
             return;
         }
 
-        this._android.loadData(src, "text/html", null);
+        this._android.loadData(src, "text/html; charset=utf-8", "utf-8");
     }
 
     get canGoBack(): boolean {
