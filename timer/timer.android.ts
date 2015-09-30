@@ -50,7 +50,9 @@ export function setInterval(callback: Function, milliseconds = 0): number {
     var runnable = new java.lang.Runnable({
         run: () => {
             callback();
-            handler.postDelayed(runnable, long(milliseconds));
+            if (timeoutCallbacks[id]) {
+                handler.postDelayed(runnable, long(milliseconds));
+            }
         }
     });
 
