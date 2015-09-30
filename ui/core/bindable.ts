@@ -140,6 +140,15 @@ export class Binding {
     source: WeakRef<Object>;
     target: WeakRef<Bindable>;
 
+    public loadedHandlerVisualTreeBinding(args) {
+        var targetInstance = args.object;
+        targetInstance.off(viewModule.View.loadedEvent, this.loadedHandlerVisualTreeBinding, this);
+        this.unbind();
+        if (!types.isNullOrUndefined(targetInstance.bindingContext)) {
+            this.bind(targetInstance.bindingContext);
+        }
+    };
+
     private propertyChangeListeners = {};
 
     private sourceOptions: { instance: WeakRef<any>; property: any };
@@ -212,6 +221,11 @@ export class Binding {
                 var parentView = this.getParentView(this.target.get(), propsArray[i]).view;
                 if (parentView) {
                     currentObject = parentView.bindingContext;
+                }
+                else {
+                    var targetInstance = this.target.get();
+                    targetInstance.off(viewModule.View.loadedEvent, this.loadedHandlerVisualTreeBinding, this);
+                    targetInstance.on(viewModule.View.loadedEvent, this.loadedHandlerVisualTreeBinding, this);
                 }
                 currentObjectChanged = true;
             }
@@ -507,7 +521,7 @@ export class Binding {
                     indexAsInt--;
                 }
             }
-            else {
+            else if (types.isString(index)) {
                 while (result && result.typeName !== index) {
                     result = result.parent;
                 }

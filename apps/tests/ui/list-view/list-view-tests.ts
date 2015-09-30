@@ -6,6 +6,7 @@ import observable = require("data/observable");
 import types = require("utils/types");
 import platform = require("platform");
 import utils = require("utils/utils");
+import testRunner = require("../../testRunner");
 
 // <snippet module="ui/list-view" title="list-view">
 // # ListView
@@ -633,6 +634,9 @@ export function test_ConverterIsCalledJustOnce_onAddingItemsToListView() {
 }
 
 export function test_no_memory_leak_when_items_is_regular_array() {
+    if (testRunner.isRunningOnEmulator()) {
+        return;
+    }
     var createFunc = function (): listViewModule.ListView {
         var listView = new listViewModule.ListView();
         listView.items = FEW_ITEMS;
@@ -645,6 +649,9 @@ export function test_no_memory_leak_when_items_is_regular_array() {
 }
 
 export function test_no_memory_leak_when_items_is_observable_array() {
+    if (testRunner.isRunningOnEmulator()) {
+        return;
+    }
     // Keep the reference to the observable array to test the weakEventListener 
     var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
 
