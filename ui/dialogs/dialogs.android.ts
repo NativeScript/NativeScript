@@ -242,7 +242,9 @@ export function action(arg: any): Promise<string> {
             
             if (title) {
                 alert.setTitle(title);
-                alert.setMessage(message);
+                if (!options.actions) {
+                    alert.setMessage(message);
+                }
             }
             else {
                 alert.setTitle(message);
