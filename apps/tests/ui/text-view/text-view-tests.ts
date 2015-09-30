@@ -1,4 +1,5 @@
 ﻿import TKUnit = require("../../TKUnit");
+import testRunner = require("../../testRunner");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import pagesModule = require("ui/page");
@@ -468,6 +469,9 @@ export var testNativeTextAlignmentFromLocal = function () {
 }
 
 export var testMemoryLeak = function () {
+    if (testRunner.isRunningOnEmulator()) {
+        return;
+    }
     helper.buildUIWithWeakRefAndInteract(_createTextViewFunc, function (textView) {
         textViewTestsNative.typeTextNatively(textView, "Hello, world!");
     });

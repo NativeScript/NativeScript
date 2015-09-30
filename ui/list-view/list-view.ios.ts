@@ -239,12 +239,12 @@ export class ListView extends common.ListView {
             var args = notifyForItemAtIndex(this, cell, ITEMLOADING, indexPath);
             var view = cell.view = args.view || this._getDefaultItemContent(indexPath.row);
 
+            this._prepareItem(view, indexPath.row);
             if (view && !view.parent && view.ios) {
                 cell.contentView.addSubview(view.ios);
                 this._addView(view);
             }
 
-            this._prepareItem(view, indexPath.row);
             cellHeight = this._layoutCell(view, indexPath);
         }
         finally {

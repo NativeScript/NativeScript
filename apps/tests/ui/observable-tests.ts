@@ -378,3 +378,30 @@ export var test_Observable_WhenCreatedWithJSON_PropertyChangedWithBracketsNotati
 
     TKUnit.assert(receivedCount === 1, "PropertyChanged event not raised properly.");
 }
+
+export function test_AddingTwoEventHandlersAndRemovingWithinHandlerShouldRaiseAllEvents() {
+    var observableInstance = new observable.Observable();
+    var firstHandlerCalled = false;
+    var secondHandlerCalled= false;
+
+    var firstHandler = function (args) {
+        observableInstance.off(observable.Observable.propertyChangeEvent, firstHandler, firstObserver);
+        firstHandlerCalled = true;
+    }
+
+    var secondHandler = function (args) {
+        observableInstance.off(observable.Observable.propertyChangeEvent, secondHandler, secondObserver);
+        secondHandlerCalled = true;
+    }
+
+    var firstObserver = new observable.Observable();
+    var secondObserver = new observable.Observable();
+
+    observableInstance.on(observable.Observable.propertyChangeEvent, firstHandler, firstObserver);
+    observableInstance.on(observable.Observable.propertyChangeEvent, secondHandler, secondObserver);
+
+    observableInstance.set("someProperty", "some value");
+
+    TKUnit.assertEqual(firstHandlerCalled, true);
+    TKUnit.assertEqual(secondHandlerCalled, true);
+}

@@ -205,6 +205,7 @@ class ListViewAdapter extends android.widget.BaseAdapter {
         }
 
         if (args.view) {
+            this._listView._prepareItem(args.view, index);
             if (!args.view.parent) {
                 if (args.view instanceof layoutBaseModule.LayoutBase) {
                     this._listView._addView(args.view);
@@ -221,8 +222,6 @@ class ListViewAdapter extends android.widget.BaseAdapter {
             this._listView._realizedItems[convertView.hashCode()] = args.view;
             // cache the realized index (used to raise the ItemLoading event upon scroll stop)
             args.view[REALIZED_INDEX] = index;
-
-            this._listView._prepareItem(args.view, index);
         }
 
         return convertView;

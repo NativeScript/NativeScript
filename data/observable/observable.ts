@@ -136,7 +136,7 @@ export class Observable implements definition.Observable {
         var i;
         var entry: ListenerEntry;
         var observersLength = observers.length;
-        for (i = 0; i < observersLength; i++) {
+        for (i = observersLength - 1; i >= 0 ; i--) {
             entry = observers[i];
             if (entry.thisArg) {
                 entry.callback.apply(entry.thisArg, [data]);
