@@ -240,7 +240,7 @@ export var testLoadUpperCaseSrc = function () {
     helper.goBack();
 
     if (testFinished) {
-        TKUnit.assert(actualSrc === targetSrc, "args.url should equal '" + targetSrc + "'");
+        TKUnit.assert(actualSrc === targetSrc.toLowerCase(), "args.url should equal '" + targetSrc.toLowerCase() + "'");
         TKUnit.assert(actualError === undefined, actualError);
     }
     else {
