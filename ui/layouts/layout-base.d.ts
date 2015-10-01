@@ -30,20 +30,25 @@
          * Adds the view to children array.
          * @param view The view to be added to the end of the children array.
          */
-        addChild(view: view.View);
+        addChild(view: view.View): void;
 
         /**
          * Inserts the view to children array at the specified index.
          * @param view The view to be added to the end of the children array.
          * @param atIndex The insertion index.
          */
-        insertChild(child: view.View, atIndex: number);
+        insertChild(child: view.View, atIndex: number): void;
 
         /**
          * Removes the specified view from the children array.
          * @param view The view to remove from the children array.
          */
-        removeChild(view: view.View);
+        removeChild(view: view.View): void;
+
+        /**
+         * Removes all views in this layout.
+         */
+        removeChildren(): void;
 
         /**
          * Gets or sets padding style property.
