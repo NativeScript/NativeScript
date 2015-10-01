@@ -222,6 +222,20 @@ export function test_removeRows() {
     rows.forEach(r=> rootLayout.addRow(r));
 }
 
+export function test_removeChildren() {
+    var children = [];
+
+    for (let i = 0; i < rootLayout.getChildrenCount(); i++) {
+        children.push(rootLayout.getChildAt(i));
+    }
+
+    rootLayout.removeChildren();
+
+    TKUnit.assertEqual(rootLayout.getChildrenCount(), 0);
+
+    children.forEach(c=> rootLayout.addChild(c));
+}
+
 export function test_getRows_shouldNotReturnNULL() {
     var rows = rootLayout.getRows();
     TKUnit.assert(rows, "getRows should not return null/undefinied");
