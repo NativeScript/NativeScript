@@ -17,3 +17,7 @@ export function onTap(args: observable.EventData) {
         label.text = username + "/" + password;
     }, fullscreen);
 }
+
+export function onCloseModal(args: observable.EventData) {
+    page.closeModal();
+}
