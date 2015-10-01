@@ -109,8 +109,6 @@
              */
             export function getPalleteColor(name: string, context: android.content.Context): number;
         }
-
-        export function async<T>(doInBackground: () => T, callback: (result: T) => void);
     }
     /**
      * Module with ios specific utilities.
