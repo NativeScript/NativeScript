@@ -257,42 +257,43 @@ export class Animation extends common.Animation implements definition.Animation 
         var j;
         var length = propertyAnimations.length;
         for (; i < length; i++) {
-            if (propertyAnimations[i].property !== _skip) {
+            if (propertyAnimations[i][_skip]) {
+                continue;
+            }
 
-                if (!Animation._isAffineTransform(propertyAnimations[i].property)) {
-                    // This is not an affine transform animation, so there is nothing to merge.
-                    result.push(propertyAnimations[i]);
-                }
-                else {
+            if (!Animation._isAffineTransform(propertyAnimations[i].property)) {
+                // This is not an affine transform animation, so there is nothing to merge.
+                result.push(propertyAnimations[i]);
+            }
+            else {
 
-                    // This animation has not been merged anywhere. Create a new transform animation.
-                    var newTransformAnimation: common.PropertyAnimation = {
-                        target: propertyAnimations[i].target,
-                        property: _transform,
-                        value: Animation._affineTransform(CGAffineTransformIdentity, propertyAnimations[i].property, propertyAnimations[i].value),
-                        duration: propertyAnimations[i].duration,
-                        delay: propertyAnimations[i].delay,
-                        iterations: propertyAnimations[i].iterations
-                    };
-                    trace.write("Created new transform animation: " + common.Animation._getAnimationInfo(newTransformAnimation), trace.categories.Animation);
+                // This animation has not been merged anywhere. Create a new transform animation.
+                var newTransformAnimation: common.PropertyAnimation = {
+                    target: propertyAnimations[i].target,
+                    property: _transform,
+                    value: Animation._affineTransform(CGAffineTransformIdentity, propertyAnimations[i].property, propertyAnimations[i].value),
+                    duration: propertyAnimations[i].duration,
+                    delay: propertyAnimations[i].delay,
+                    iterations: propertyAnimations[i].iterations
+                };
+                trace.write("Created new transform animation: " + common.Animation._getAnimationInfo(newTransformAnimation), trace.categories.Animation);
 
-                    j = i + 1;
-                    if (j < length) {
-                        // Merge all compatible affine transform animations to the right into this new animation.
-                        for (; j < length; j++) {
-                            if (Animation._canBeMerged(propertyAnimations[i], propertyAnimations[j])) {
-                                trace.write("Merging animations: " + common.Animation._getAnimationInfo(newTransformAnimation) + " + " + common.Animation._getAnimationInfo(propertyAnimations[j]) + " = ", trace.categories.Animation);
-                                trace.write("New native transform is: " + NSStringFromCGAffineTransform(newTransformAnimation.value), trace.categories.Animation);
-                                newTransformAnimation.value = Animation._affineTransform(newTransformAnimation.value, propertyAnimations[j].property, propertyAnimations[j].value);
+                j = i + 1;
+                if (j < length) {
+                    // Merge all compatible affine transform animations to the right into this new animation.
+                    for (; j < length; j++) {
+                        if (Animation._canBeMerged(propertyAnimations[i], propertyAnimations[j])) {
+                            trace.write("Merging animations: " + common.Animation._getAnimationInfo(newTransformAnimation) + " + " + common.Animation._getAnimationInfo(propertyAnimations[j]) + " = ", trace.categories.Animation);
+                            trace.write("New native transform is: " + NSStringFromCGAffineTransform(newTransformAnimation.value), trace.categories.Animation);
+                            newTransformAnimation.value = Animation._affineTransform(newTransformAnimation.value, propertyAnimations[j].property, propertyAnimations[j].value);
                             
-                                // Mark that it has been merged so we can skip it on our outer loop.
-                                propertyAnimations[j].property = _skip;
-                            }
+                            // Mark that it has been merged so we can skip it on our outer loop.
+                            propertyAnimations[j][_skip] = true;
                         }
                     }
-
-                    result.push(newTransformAnimation);
                 }
+
+                result.push(newTransformAnimation);
             }
         }
 
