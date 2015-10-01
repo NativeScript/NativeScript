@@ -216,9 +216,6 @@ export class Frame extends frameCommon.Frame {
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
         trace.write(`_navigateCore; id: ${backstackEntry.resolvedPage.id}; backstackVisible: ${this._isEntryBackstackVisible(backstackEntry)}; clearHistory: ${backstackEntry.entry.clearHistory};`, trace.categories.Navigation);
 
-        //this._printFrameBackStack();
-        //this._printNativeBackStack();
-
         var activity = this._android.activity;
         if (!activity) {
             // We do not have an Activity yet associated. In this case we have two execution paths:
@@ -300,9 +297,7 @@ export class Frame extends frameCommon.Frame {
             }
 
             // Add to backStack if needed.
-            if (this.backStack.length > 0 &&
-                this._currentEntry &&
-                this._isEntryBackstackVisible(this._currentEntry)) {
+            if (this.backStack.length > 0) {
                 // We add each entry in the backstack to avoid the "Stack corrupted" mismatch
                 var backstackTag = this._currentEntry[BACKSTACK_TAG];
                 fragmentTransaction.addToBackStack(backstackTag);
@@ -327,11 +322,6 @@ export class Frame extends frameCommon.Frame {
 
         fragmentTransaction.commit();
         trace.write("fragmentTransaction.commit();", trace.categories.NativeLifecycle);
-
-        //setTimeout(() => {
-        //    this._printFrameBackStack();
-        //    this._printNativeBackStack();
-        //}, 100);
     }
 
     public _goBackCore(backstackEntry: definition.BackstackEntry) {

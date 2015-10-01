@@ -3,7 +3,7 @@ import pageModule = require("ui/page");
 import frame = require("ui/frame");
 
 export var test_backstackVisible = function() {
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         return new pageModule.Page();
     };
 
@@ -32,34 +32,41 @@ export var test_backstackVisible = function() {
 }
 
 // Clearing the history messes up the tests app.
-//export var test_ClearHistory = function () {
-//    var pageFactory = function (): pageModule.Page {
-//        return new pageModule.Page();
-//    };
+export var test_ClearHistory = function () {
+    var pageFactory = function(): pageModule.Page {
+        return new pageModule.Page();
+    };
 
-//    var mainTestPage = frame.topmost().currentPage;
-//    var currentPage: pageModule.Page;
+    var mainTestPage = frame.topmost().currentPage;
+    var mainPageFactory = function(): pageModule.Page {
+        return mainTestPage;
+    };
 
-//    currentPage = frame.topmost().currentPage;
-//    frame.topmost().navigate({ create: pageFactory });
-//    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
+    var currentPage: pageModule.Page;
 
-//    currentPage = frame.topmost().currentPage;
-//    frame.topmost().navigate({ create: pageFactory });
-//    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
+    currentPage = frame.topmost().currentPage;
+    frame.topmost().navigate({ create: pageFactory });
+    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
 
-//    currentPage = frame.topmost().currentPage;
-//    frame.topmost().navigate({ create: pageFactory });
-//    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
+    currentPage = frame.topmost().currentPage;
+    frame.topmost().navigate({ create: pageFactory });
+    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
 
-//    TKUnit.assert(frame.topmost().canGoBack(), "Frame should be able to go back.");
-//    TKUnit.assert(frame.topmost().backStack.length === 3, "Back stack should have 3 entries.");
+    currentPage = frame.topmost().currentPage;
+    frame.topmost().navigate({ create: pageFactory });
+    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
 
-//    // Navigate with clear history.
-//    currentPage = frame.topmost().currentPage;
-//    frame.topmost().navigate({ create: pageFactory, clearHistory: true });
-//    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
+    TKUnit.assert(frame.topmost().canGoBack(), "Frame should be able to go back.");
+    TKUnit.assert(frame.topmost().backStack.length === 3, "Back stack should have 3 entries.");
 
-//    TKUnit.assert(!frame.topmost().canGoBack(), "Frame should NOT be able to go back.");
-//    TKUnit.assert(frame.topmost().backStack.length === 0, "Back stack should have 0 entries.");
-//}
+    // Navigate with clear history.
+    currentPage = frame.topmost().currentPage;
+    frame.topmost().navigate({ create: pageFactory, clearHistory: true });
+    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
+
+    TKUnit.assert(!frame.topmost().canGoBack(), "Frame should NOT be able to go back.");
+    TKUnit.assert(frame.topmost().backStack.length === 0, "Back stack should have 0 entries.");
+
+    frame.topmost().navigate({ create: mainPageFactory });
+    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage === mainTestPage; });
+}
