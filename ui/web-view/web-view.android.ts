@@ -1,7 +1,5 @@
 ﻿import common = require("./web-view-common");
 import trace = require("trace");
-import utils = require("utils/utils");
-import fs = require("file-system");
 
 global.moduleMerge(common, exports);
 
@@ -70,39 +68,48 @@ export class WebView extends common.WebView {
     }
 
     public _loadUrl(url: string) {
+        if (!this._android) {
+            return;
+        }
+
         trace.write("WebView._loadUrl(" + url + ")", trace.categories.Debug);
         this._android.stopLoading();
         this._android.loadUrl(url);
     }
 
-    public _loadSrc(src: string) {
-        trace.write("WebView._loadSrc(" + src + ")", trace.categories.Debug);
-
-        this._android.stopLoading();
-        this._android.loadUrl("about:blank");
-
-        if (utils.isFileOrResourcePath(src)) {
-
-            if (src.indexOf("~/") === 0) {
-                src = fs.path.join(fs.knownFolders.currentApp().path, src.replace("~/", ""));
-            }
-
-            var file = fs.File.fromPath(src);
-            if (file) {
-                var baseUrl = `file:///${src.substring(0, src.lastIndexOf('/') + 1)}`;
-                file.readText().then(r => {
-                    this._android.loadDataWithBaseURL(baseUrl, r, "text/html; charset=utf-8", "utf-8", null);
-                });
-            }
-        } else if (src.indexOf("http://") === 0 || src.indexOf("https://") === 0) {
-            this._android.loadUrl(src);
-        } else {
-            this._android.loadData(src, "text/html; charset=utf-8", "utf-8");
+    public _loadFileOrResource(path: string, content: string) {
+        if (!this._android) {
+            return;
         }
+
+        var baseUrl = `file:///${path.substring(0, path.lastIndexOf('/') + 1) }`;
+        this._android.loadDataWithBaseURL(baseUrl, content, "text/html; charset=utf-8", "utf-8", null);
+    }
+
+    public _loadHttp(src: string) {
+        if (!this._android) {
+            return;
+        }
+
+        this._android.loadUrl(src);
+    }
+
+    public _loadData(src: string) {
+        if (!this._android) {
+            return;
+        }
+
+        this._android.loadData(src, "text/html; charset=utf-8", "utf-8");
     }
 
     get canGoBack(): boolean {
         return this._android.canGoBack();
+    }
+
+    public stopLoading() {
+        if (this._android) {
+            this._android.stopLoading();
+        }
     }
 
     get canGoForward(): boolean {

@@ -188,6 +188,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\pages\handlers.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\htmlview.ts" />
+    <TypeScriptCompile Include="color\known-colors.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation-common.ts">
       <DependentUpon>animation.d.ts</DependentUpon>
@@ -577,6 +578,11 @@
     <TypeScriptCompile Include="ui\action-bar\action-bar.ios.ts">
       <DependentUpon>action-bar.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\builder\binding-builder.d.ts" />
+    <TypeScriptCompile Include="ui\builder\special-properties.d.ts" />
+    <TypeScriptCompile Include="ui\builder\special-properties.ts" />
+    <TypeScriptCompile Include="ui\styling\style-scope.d.ts" />
+    <TypeScriptCompile Include="ui\styling\style.d.ts" />
     <TypeScriptCompile Include="ui\ui.d.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view-common.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view.android.ts" />
@@ -1923,6 +1929,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ui\package.json" />
+    <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />

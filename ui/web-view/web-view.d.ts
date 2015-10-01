@@ -56,6 +56,11 @@ declare module "ui/web-view" {
         canGoForward: boolean;
 
         /**
+         * Stops loading the current content (if any).
+         */
+        stopLoading(): void;
+
+        /**
          * Navigates back.
          */
         goBack();
