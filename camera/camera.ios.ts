@@ -91,10 +91,12 @@ export var takePicture = function (options?: definition.CameraOptions): Promise<
         }
         imagePickerController.delegate = listener;
 
-        if (UIDevice.currentDevice().model !== "iPhone Simulator") {
-            // UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera is not available in emulators!
-            imagePickerController.mediaTypes = UIImagePickerController.availableMediaTypesForSourceType(UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera);
-            imagePickerController.sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera;
+        var sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera;
+        var mediaTypes = UIImagePickerController.availableMediaTypesForSourceType(sourceType);
+
+        if (mediaTypes) {
+            imagePickerController.mediaTypes = mediaTypes;
+            imagePickerController.sourceType = sourceType;
         }
 
         imagePickerController.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationCurrentContext;
