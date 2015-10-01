@@ -33,6 +33,8 @@ export class Page extends contentView.ContentView implements dts.Page {
     public static navigatedFromEvent = "navigatedFrom";
     public static shownModallyEvent = "shownModally";
 
+    protected _closeModalCallback: Function;
+
     private _navigationContext: any;
 
     private _cssApplied: boolean;
@@ -189,6 +191,12 @@ export class Page extends contentView.ContentView implements dts.Page {
         (<Page>page)._showNativeModalView(this, context, closeCallback, fullscreen);
     }
 
+    public closeModal() {
+        if (this._closeModalCallback) {
+            this._closeModalCallback.apply(undefined, arguments);
+        }
+    }
+
     public _addChildFromBuilder(name: string, value: any) {
         if (value instanceof actionBar.ActionBar) {
             this.actionBar = value;
@@ -199,7 +207,16 @@ export class Page extends contentView.ContentView implements dts.Page {
     }
 
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
-        //
+        var that = this;
+        this._closeModalCallback = function () {
+            if (that._closeModalCallback) {
+                that._closeModalCallback = null;
+                that._hideNativeModalView(parent);
+                if (typeof closeCallback === "function") {
+                    closeCallback.apply(undefined, arguments);
+                }
+            }
+        };
     }
 
     protected _hideNativeModalView(parent: Page) {
@@ -207,19 +224,11 @@ export class Page extends contentView.ContentView implements dts.Page {
     }
 
     protected _raiseShownModallyEvent(parent: Page, context: any, closeCallback: Function) {
-        var that = this;
-        var closeProxy = function () {
-            that._hideNativeModalView(parent);
-            if (closeCallback){
-                closeCallback.apply(undefined, arguments);
-            }
-        };
-
         this.notify({
             eventName: Page.shownModallyEvent,
             object: this,
             context: context,
-            closeCallback: closeProxy
+            closeCallback: this._closeModalCallback
         });
     }
 

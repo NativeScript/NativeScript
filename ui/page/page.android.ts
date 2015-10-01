@@ -12,12 +12,14 @@ global.moduleMerge(pageCommon, exports);
 class DialogFragmentClass extends android.app.DialogFragment {
     private _owner: Page;
     private _fullscreen: boolean;
+    private _dismissCallback: Function;
 
-    constructor(owner: Page, fullscreen?: boolean) {
+    constructor(owner: Page, fullscreen?: boolean, dismissCallback?: Function) {
         super();
 
         this._owner = owner;
         this._fullscreen = fullscreen;
+        this._dismissCallback = dismissCallback;
         return global.__native(this);
     }
 
@@ -29,11 +31,18 @@ class DialogFragmentClass extends android.app.DialogFragment {
         window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
 
         if (this._fullscreen) {
-        window.setLayout(android.view.ViewGroup.LayoutParams.FILL_PARENT, android.view.ViewGroup.LayoutParams.FILL_PARENT);
+            window.setLayout(android.view.ViewGroup.LayoutParams.FILL_PARENT, android.view.ViewGroup.LayoutParams.FILL_PARENT);
         }
         
         return dialog;
     }
+
+    public onDismiss() {
+        if (typeof this._dismissCallback === "function") {
+            this._dismissCallback();
+        }
+    }
+
 };
 
 export class Page extends pageCommon.Page {
@@ -56,7 +65,11 @@ export class Page extends pageCommon.Page {
     public _createUI() {
         this._grid = new org.nativescript.widgets.GridLayout(this._context);
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+        var gridUnitType = org.nativescript.widgets.GridUnitType.star
+        if (this._closeModalCallback) {
+            gridUnitType = org.nativescript.widgets.GridUnitType.auto;
+        }
+        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, gridUnitType));
     }
 
     public _addViewToNativeVisualTree(child: view.View, atIndex?: number): boolean {
@@ -96,6 +109,7 @@ export class Page extends pageCommon.Page {
     private _dialogFragment: DialogFragmentClass;
     /* tslint:enable */
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
+        super._showNativeModalView(parent, context, closeCallback, fullscreen);
         if (!this.backgroundColor) {
             this.backgroundColor = new color.Color("White");
         }
@@ -104,7 +118,10 @@ export class Page extends pageCommon.Page {
         this._isAddedToNativeVisualTree = true;
         this.onLoaded();
 
-        this._dialogFragment = new DialogFragmentClass(this, fullscreen);
+        var that = this;
+        this._dialogFragment = new DialogFragmentClass(this, fullscreen, function() {
+            that.closeModal();
+        });
         this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), "dialog");        
         
         super._raiseShownModallyEvent(parent, context, closeCallback);

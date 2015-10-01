@@ -157,6 +157,11 @@ declare module "ui/page" {
          */
         showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean);
 
+        /**
+         * Closes the current modal dialog that this page is showing.
+         */
+        closeModal();
+        
         //@private
 
         /**
