@@ -15,6 +15,10 @@ export module bindingConstants {
 
 var hasEqualSignRegex = /=+/;
 var equalSignComparisionOperatorsRegex = /(==|===|>=|<=|!=|!==)/;
+
+// this regex is used to search for all instaces of '$parents[]' within an expression
+export var parentsRegex = /\$parents\s*\[\s*(['"]*)\w*\1\s*\]/g;
+
 function isNamedParam(value) {
     var equalSignIndex = value.search(hasEqualSignRegex);
     if (equalSignIndex > -1) {
@@ -80,17 +84,6 @@ function parseNamedProperties(parameterList, knownOptions, callback) {
     return result;
 }
 
-function extractPropertyNameFromExpression(expression: string): string {
-    var firstExpressionSymbolIndex = expression.search(expressionSymbolsRegex);
-    if (firstExpressionSymbolIndex > -1) {
-        var sourceProp = expression.substr(0, firstExpressionSymbolIndex).trim();
-        return sourceProp;
-    }
-    else {
-        return expression;
-    }
-}
-
 function getParamsArray(value: string) {
     var result = [];
     var i;
@@ -126,16 +119,37 @@ function getParamsArray(value: string) {
     return result;
 }
 
+function isExpression(expression: string): boolean {
+    if (expression.search(expressionSymbolsRegex) > -1) {
+        var parentsMatches = expression.match(parentsRegex);
+        if (parentsMatches) {
+            var restOfExpression = expression.substr(expression.indexOf(parentsMatches[0]) + parentsMatches[0].length);
+            // no more expression regognition symbols so it is safe for sourceProperty
+            if (!(restOfExpression.search(expressionSymbolsRegex) > -1)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 export function getBindingOptions(name: string, value: string): any {
     var namedParams = [];
     var params = getParamsArray(value);
     if (!areNamedParams(params)) {
         if (params.length === 1) {
-            namedParams.push(bindingConstants.sourceProperty + " = " + extractPropertyNameFromExpression(params[0].trim()));
-            var expression = params[0].search(expressionSymbolsRegex) > -1 ? params[0].trim() : null;
-            if (expression) {
-                namedParams.push(bindingConstants.expression + " = " + expression);
+            var trimmedValue = params[0].trim();
+            var sourceProp;
+            if (isExpression(trimmedValue)) {
+                sourceProp = bindingConstants.bindingValueKey;
+                namedParams.push(bindingConstants.expression + " = " + trimmedValue);
             }
+            else {
+                sourceProp = trimmedValue;
+            }
+            namedParams.push(bindingConstants.sourceProperty + " = " + sourceProp);
+
             namedParams.push(bindingConstants.twoWay + " = true");
         }
         else {

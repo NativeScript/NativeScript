@@ -400,7 +400,7 @@ export var test_getBindableOptionsFromStringShortFormatExpression = function () 
     var bindingExpression = "bindProperty * 2";
     var bindOptions = bindingBuilder.getBindingOptions("targetBindProperty", bindingExpression);
 
-    TKUnit.assert(bindOptions.sourceProperty === "bindProperty", "Expected: bindProperty, Actual: " + bindOptions.sourceProperty);
+    TKUnit.assert(bindOptions.sourceProperty === "$value", "Expected: bindProperty, Actual: " + bindOptions.sourceProperty);
     TKUnit.assert(bindOptions.targetProperty === "targetBindProperty", "Expected: targetBindProperty, Actual: " + bindOptions.targetProperty);
     TKUnit.assert(bindOptions.expression === "bindProperty * 2", "Expected: bindProperty * 2, Actual: " + bindOptions.expression);
     TKUnit.assert(bindOptions.twoWay === true, "Expected: true, Actual: " + bindOptions.twoWay);

@@ -26,8 +26,6 @@ var contextKey = "context";
 // from $parents[1] will return 1
 var paramsRegex = /\[\s*(['"])*(\w*)\1\s*\]/;
 
-// this regex is used to search for all instaces of '$parents[]' within an expression
-var parentsRegex = /\$parents\s*\[\s*(['"]*)\w*\1\s*\]/g;
 var bc = bindingBuilder.bindingConstants;
 
 export class Bindable extends dependencyObservable.DependencyObservable implements definition.Bindable {
@@ -424,7 +422,7 @@ export class Binding {
             }
         }
 
-        var parentsArray = expression.match(parentsRegex);
+        var parentsArray = expression.match(bindingBuilder.parentsRegex);
         if (parentsArray) {
             var i;
             for (i = 0; i < parentsArray.length; i++) {
