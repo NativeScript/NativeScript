@@ -202,6 +202,26 @@ export function test_removeColumn_shouldThrow_onNullValues() {
     }, "removeColumn called with null should throw exception");
 }
 
+export function test_removeColumns() {
+    var columns = rootLayout.getColumns();
+
+    rootLayout.removeColumns();
+
+    TKUnit.assertEqual(rootLayout.getColumns().length, 0);
+
+    columns.forEach(c=> rootLayout.addColumn(c));
+}
+
+export function test_removeRows() {
+    var rows = rootLayout.getRows();
+
+    rootLayout.removeRows();
+
+    TKUnit.assertEqual(rootLayout.getRows().length, 0);
+
+    rows.forEach(r=> rootLayout.addRow(r));
+}
+
 export function test_getRows_shouldNotReturnNULL() {
     var rows = rootLayout.getRows();
     TKUnit.assert(rows, "getRows should not return null/undefinied");
