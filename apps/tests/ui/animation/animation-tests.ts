@@ -344,10 +344,10 @@ export var test_AnimateScale = function (done) {
     helper.navigate(pageFactory);
     TKUnit.waitUntilReady(() => { return label.isLoaded });
 
-    label.animate({ scale: { x: 1, y: 2 } })
+    label.animate({ scale: { x: 2, y: 3 } })
         .then(() => {
-            TKUnit.assert(label.scaleX === 1);
-            TKUnit.assert(label.scaleY === 2);
+            TKUnit.assert(label.scaleX === 2);
+            TKUnit.assert(label.scaleY === 3);
             helper.goBack();
             done();
         })
@@ -375,6 +375,42 @@ export var test_AnimateRotate = function (done) {
 
     label.animate({ rotate: 123 })
         .then(() => {
+            TKUnit.assert(label.rotate === 123);
+            helper.goBack();
+            done();
+        })
+        .catch((e) => {
+            helper.goBack();
+            done(e);
+        });
+}
+
+export var test_AnimateTranslateScaleAndRotateSimultaneously = function (done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function (): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
+
+    label.animate({
+        translate: { x: 100, y: 200 },
+        scale: { x: 2, y: 3 },
+        rotate: 123
+    })
+        .then(() => {
+            TKUnit.assert(label.translateX === 100);
+            TKUnit.assert(label.translateY === 200);
+            TKUnit.assert(label.scaleX === 2);
+            TKUnit.assert(label.scaleY === 3);
             TKUnit.assert(label.rotate === 123);
             helper.goBack();
             done();
