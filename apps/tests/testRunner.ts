@@ -18,11 +18,13 @@ export function isRunningOnEmulator(): boolean {
             android.os.Build.PRODUCT.toLocaleLowerCase().indexOf("emulator") > -1; // VS Emulator
     }
     else if (platform.device.os === platform.platformNames.ios) {
-        return platform.device.model === "iPhone Simulator";
+        //return platform.device.model === "iPhone Simulator";
+        return (__dirname.search("Simulator") > -1);
     }
 }
 
 export var allTests = {};
+allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
 allTests["ACTION-BAR"] = require("./ui/action-bar/action-bar-tests");
 allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
 allTests["APPLICATION"] = require("./application-tests");
@@ -33,7 +35,6 @@ allTests["GRIDLAYOUT"] = require("./layouts/grid-layout-tests");
 allTests["STACKLAYOUT"] = require("./layouts/stack-layout-tests");
 allTests["PLATFORM"] = require("./platform-tests");
 allTests["STYLE-PROPERTIES"] = require("./ui/style/style-properties-tests");
-allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
 allTests["FILE SYSTEM"] = require("./file-system-tests");
 allTests["HTTP"] = require("./http-tests");
 allTests["XHR"] = require("./xhr-tests");

@@ -9,7 +9,7 @@ import utils = require("utils/utils");
 import builder = require("ui/builder");
 
 var ASYNC = 2;
-var DELTA = 0.1;
+var DELTA = 1;
 
 export class MyGridLayout extends layout.GridLayout {
     public measureCount: number = 0;
