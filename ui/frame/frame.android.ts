@@ -297,7 +297,7 @@ export class Frame extends frameCommon.Frame {
             }
 
             // Add to backStack if needed.
-            if (this.backStack.length > 0) {
+            if (this.backStack.length > 0 && this._currentEntry) {
                 // We add each entry in the backstack to avoid the "Stack corrupted" mismatch
                 var backstackTag = this._currentEntry[BACKSTACK_TAG];
                 fragmentTransaction.addToBackStack(backstackTag);
