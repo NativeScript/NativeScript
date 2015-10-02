@@ -3,7 +3,7 @@ import pageModule = require("ui/page");
 import frame = require("ui/frame");
 
 export var test_backstackVisible = function() {
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         return new pageModule.Page();
     };
 
@@ -33,11 +33,15 @@ export var test_backstackVisible = function() {
 
 // Clearing the history messes up the tests app.
 //export var test_ClearHistory = function () {
-//    var pageFactory = function (): pageModule.Page {
+//    var pageFactory = function(): pageModule.Page {
 //        return new pageModule.Page();
 //    };
 
 //    var mainTestPage = frame.topmost().currentPage;
+//    var mainPageFactory = function(): pageModule.Page {
+//        return mainTestPage;
+//    };
+
 //    var currentPage: pageModule.Page;
 
 //    currentPage = frame.topmost().currentPage;
@@ -62,4 +66,7 @@ export var test_backstackVisible = function() {
 
 //    TKUnit.assert(!frame.topmost().canGoBack(), "Frame should NOT be able to go back.");
 //    TKUnit.assert(frame.topmost().backStack.length === 0, "Back stack should have 0 entries.");
+
+//    frame.topmost().navigate({ create: mainPageFactory });
+//    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage === mainTestPage; });
 //}

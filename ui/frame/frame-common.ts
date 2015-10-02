@@ -184,7 +184,6 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         var entry = this._navigationQueue[0].entry;
         var currentNavigationPage = entry.resolvedPage;
         if (page !== currentNavigationPage) {
-            console.trace();
             throw new Error(`Corrupted navigation stack; page: ${page.id}; currentNavigationPage: ${currentNavigationPage.id}`);
         }
 
