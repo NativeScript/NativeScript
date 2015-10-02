@@ -32,7 +32,7 @@ export module ios {
                     UIGraphicsEndImageContext();
                 }
 
-                UIGraphicsBeginImageContextWithOptions(frame.size, false, 1.0);
+                UIGraphicsBeginImageContextWithOptions(frame.size, false, 0.0);
                 var context = UIGraphicsGetCurrentContext();
 
                 if (background.color && background.color.ios) {
