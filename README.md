@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg)](https://travis-ci.org/NativeScript/NativeScript)
 # Welcome to the NativeScript framework repository 
 
 ## What is the NativeScript framework
