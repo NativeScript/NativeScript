@@ -3,6 +3,7 @@ import app = require("application");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import stackLayoutModule = require("ui/layouts/stack-layout");
+import wrapLayoutModule = require("ui/layouts/wrap-layout");
 import layoutBaseModule = require("ui/layouts/layout-base");
 import fs = require("file-system");
 import pageModule = require("ui/page");
@@ -180,7 +181,7 @@ export function test_set_itmes_to_null_clears_items() {
     helper.buildUIAndRunTest(repeater, testAction);
 }
 
-export function test_set_itmeLayout_accepted() {
+export function test_set_itemsLayout_accepted() {
     // <snippet module="ui/repeater" title="repeater">
     // ### Using Repeater with different layout.
     // ``` JavaScript
@@ -432,6 +433,26 @@ export var test_RepeaterItemsParentBindingsShouldWork = function () {
 
     var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
     helper.navigateToModuleAndRunTest(("." + moduleName + "/repeaterItems-bindingToGestures"), null, testFunc);
+}
+
+export function test_ChildrenAreNotCreatedUntilTheRepeaterIsLoaded() {
+    var repeater = new repeaterModule.Repeater();
+
+    repeater.itemsLayout = new wrapLayoutModule.WrapLayout();
+    TKUnit.assertEqual(getChildrenCount(repeater), 0, "Repeater should not create its children until loaded.");
+
+    repeater.itemTemplate = "<Label id=\"testLabel\" text=\"{{ $value, $value + ' some static text' }}\" />";
+    TKUnit.assertEqual(getChildrenCount(repeater), 0, "Repeater should not create its children until loaded.");
+
+    repeater.items = [1, 2, 3];
+    TKUnit.assertEqual(getChildrenCount(repeater), 0, "Repeater should not create its children until loaded.");
+
+    function testAction(views: Array<viewModule.View>) {
+        TKUnit.waitUntilReady(() => repeater.isLoaded);
+        TKUnit.assertEqual(getChildrenCount(repeater), 3, "Repeater should have created its children when loaded.");
+    }
+
+    helper.buildUIAndRunTest(repeater, testAction);
 }
 
 /*
