@@ -13,4 +13,6 @@ declare module "ui/builder/binding-builder" {
     }
 
     export function getBindingOptions(name: string, value: string): any;
+
+    export var parentsRegex: RegExp;
 }

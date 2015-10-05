@@ -561,7 +561,7 @@ export function test_bindingToParentObject() {
         listViewModel.set("parentTestProp", expectedValue);
         listView.bindingContext = listViewModel;
         listView.bind({ sourceProperty: "items", targetProperty: "items" });
-        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ sourceProperty = $parents[ListView].parentTestProp }}\" />";
+        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ $parents[ListView].parentTestProp }}\" />";
 
         TKUnit.wait(ASYNC);
         var firstNativeElementText = getTextFromNativeElementAt(listView, 0);
@@ -586,7 +586,7 @@ export function test_bindingToParentObjectWithSpacesInIndexer() {
         listViewModel.set("parentTestProp", expectedValue);
         listView.bindingContext = listViewModel;
         listView.bind({ sourceProperty: "items", targetProperty: "items" });
-        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ sourceProperty = $parents[ ListView ].parentTestProp }}\" />";
+        listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ $parents[ ListView ].parentTestProp }}\" />";
 
         TKUnit.wait(ASYNC);
         var firstNativeElementText = getTextFromNativeElementAt(listView, 0);
