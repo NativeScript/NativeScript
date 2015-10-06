@@ -186,7 +186,6 @@ export class Page extends pageCommon.Page {
 
         if (fullscreen) {
             this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFullScreen;
-            //uiUtils.ios._layoutRootView(this, UIScreen.mainScreen().bounds);
         }
         else {
             this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFormSheet;
@@ -195,11 +194,6 @@ export class Page extends pageCommon.Page {
 
         var that = this;
         parent.ios.presentViewControllerAnimatedCompletion(this._ios, false, function completion() {
-            if (!fullscreen) {
-                // We can measure and layout the modal page after we know its parent's dimensions.
-                //uiUtils.ios._layoutRootView(that, that._nativeView.superview.bounds);
-            }
-
             that._raiseShownModallyEvent(parent, context, closeCallback);
         });
     }
