@@ -154,11 +154,16 @@ export class ActionBar extends common.ActionBar {
         let frame = <frameModule.Frame>this.page.frame;
         if (frame) {
             let navBar: UIView = frame.ios.controller.navigationBar;
-            let navBarSize = navBar.sizeThatFits(CGSizeMake(width, height));
-            navBarWidth = navBarSize.width;
-            this._navigationBarHeight = navBarHeight = navBarSize.height;
+            if (!navBar.hidden) {
+                let navBarSize = navBar.sizeThatFits(CGSizeMake(
+                    (widthMode === utils.layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : width,
+                    (heightMode === utils.layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
+                navBarWidth = navBarSize.width;
+                navBarHeight = navBarSize.height;
+            }
         }
 
+        this._navigationBarHeight = navBarHeight;
         if (this.titleView) {
             view.View.measureChild(this, this.titleView,
                 utils.layout.makeMeasureSpec(width, utils.layout.AT_MOST),
