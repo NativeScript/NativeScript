@@ -47,6 +47,11 @@ declare module "ui/page" {
      */
     export class Page extends contentView.ContentView {
         /**
+         * Dependency property that specify if page background should span under status bar.
+         */
+        public static backgroundSpanUnderStatusBarProperty: dependencyObservable.Property;
+
+        /**
          * Dependency property used to hide the Navigation Bar in iOS and the Action Bar in Android.
          */
         public static actionBarHiddenProperty: dependencyObservable.Property;
@@ -77,6 +82,11 @@ declare module "ui/page" {
         public static navigatedFromEvent: string;
 
         constructor(options?: Options)
+
+        /**
+         * Gets or sets whether page background spans under status bar.
+         */
+        backgroundSpanUnderStatusBar: boolean;
 
         /**
          * Used to hide the Navigation Bar in iOS and the Action Bar in Android.

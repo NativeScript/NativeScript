@@ -1,4 +1,4 @@
-﻿import contentView = require("ui/content-view");
+﻿import {ContentView} from "ui/content-view";
 import view = require("ui/core/view");
 import dts = require("ui/page");
 import frame = require("ui/frame");
@@ -6,17 +6,19 @@ import styleModule = require("../styling/style");
 import styleScope = require("../styling/style-scope");
 import fs = require("file-system");
 import frameCommon = require("../frame/frame-common");
-import actionBar = require("ui/action-bar");
-import dependencyObservable = require("ui/core/dependency-observable");
+import {ActionBar} from "ui/action-bar";
+import {DependencyObservable, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData, Property, ValueSource} from "ui/core/dependency-observable";
+
 import proxy = require("ui/core/proxy");
 
-var actionBarHiddenProperty = new dependencyObservable.Property(
-    "actionBarHidden",
-    "Page",
-    new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-    );
+// on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
+var AffectsLayout = global.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
-function onActionBarHiddenPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+var backgroundSpanUnderStatusBarProperty = new Property("backgroundSpanUnderStatusBar", "Page", new proxy.PropertyMetadata(false, AffectsLayout));
+
+var actionBarHiddenProperty = new Property("actionBarHidden", "Page", new proxy.PropertyMetadata(undefined, AffectsLayout));
+
+function onActionBarHiddenPropertyChanged(data: PropertyChangeData) {
     var page = <Page>data.object;
     if (page.isLoaded) {
         page._updateActionBar(data.newValue);
@@ -25,7 +27,8 @@ function onActionBarHiddenPropertyChanged(data: dependencyObservable.PropertyCha
 
 (<proxy.PropertyMetadata>actionBarHiddenProperty.metadata).onSetNativeValue = onActionBarHiddenPropertyChanged;
 
-export class Page extends contentView.ContentView implements dts.Page {
+export class Page extends ContentView implements dts.Page {
+    public static backgroundSpanUnderStatusBarProperty = backgroundSpanUnderStatusBarProperty;
     public static actionBarHiddenProperty = actionBarHiddenProperty;
     public static navigatingToEvent = "navigatingTo";
     public static navigatedToEvent = "navigatedTo";
@@ -39,16 +42,16 @@ export class Page extends contentView.ContentView implements dts.Page {
 
     private _cssApplied: boolean;
     private _styleScope: styleScope.StyleScope = new styleScope.StyleScope();
-    private _actionBar: actionBar.ActionBar;
+    private _actionBar: ActionBar;
 
     constructor(options?: dts.Options) {
         super(options);
-        this.actionBar = new actionBar.ActionBar();
+        this.actionBar = new ActionBar();
     }
 
     public onLoaded() {
         // The default style of the page should be white background
-        this.style._setValue(styleModule.backgroundColorProperty, "white", dependencyObservable.ValueSource.Inherited);
+        this.style._setValue(styleModule.backgroundColorProperty, "white", ValueSource.Inherited);
 
         this._applyCss();
         
@@ -59,6 +62,14 @@ export class Page extends contentView.ContentView implements dts.Page {
         super.onLoaded();
     }
 
+    get backgroundSpanUnderStatusBar(): boolean {
+        return this._getValue(Page.backgroundSpanUnderStatusBarProperty);
+    }
+
+    set backgroundSpanUnderStatusBar(value: boolean) {
+        this._setValue(Page.backgroundSpanUnderStatusBarProperty, value);
+    }
+    
     get actionBarHidden(): boolean {
         return this._getValue(Page.actionBarHiddenProperty);
     }
@@ -86,10 +97,10 @@ export class Page extends contentView.ContentView implements dts.Page {
         this._refreshCss();
     }
 
-    get actionBar(): actionBar.ActionBar {
+    get actionBar(): ActionBar {
         return this._actionBar;
     }
-    set actionBar(value: actionBar.ActionBar) {
+    set actionBar(value: ActionBar) {
         if (!value) {
             throw new Error("ActionBar cannot be null or undefined.");
         }
@@ -198,7 +209,7 @@ export class Page extends contentView.ContentView implements dts.Page {
     }
 
     public _addChildFromBuilder(name: string, value: any) {
-        if (value instanceof actionBar.ActionBar) {
+        if (value instanceof ActionBar) {
             this.actionBar = value;
         }
         else {

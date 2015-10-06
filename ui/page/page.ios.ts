@@ -4,6 +4,8 @@ import {View} from "ui/core/view";
 import trace = require("trace");
 import uiUtils = require("ui/utils");
 import utils = require("utils/utils");
+import {device} from "platform";
+import {DeviceType} from "ui/enums";
 
 global.moduleMerge(pageCommon, exports);
 
@@ -22,23 +24,67 @@ class UIViewControllerImpl extends UIViewController {
 
     public didRotateFromInterfaceOrientation(fromInterfaceOrientation: number) {
         trace.write(this._owner + " didRotateFromInterfaceOrientation(" + fromInterfaceOrientation + ")", trace.categories.ViewHierarchy);
-        if (this._owner._isModal) {
-            var parentBounds = (<any>this._owner)._UIModalPresentationFormSheet ? (<UIView>this._owner._nativeView).superview.bounds : UIScreen.mainScreen().bounds;
-            uiUtils.ios._layoutRootView(this._owner, parentBounds);
-        }
     }
 
     public viewDidLoad() {
         trace.write(this._owner + " viewDidLoad", trace.categories.ViewHierarchy);
-        this.view.autoresizesSubviews = false;
-        this.view.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
     }
 
     public viewDidLayoutSubviews() {
         trace.write(this._owner + " viewDidLayoutSubviews, isLoaded = " + this._owner.isLoaded, trace.categories.ViewHierarchy);
+        if (!this._owner.isLoaded) {
+            return;
+        }
+
         if (this._owner._isModal) {
-            var parentBounds = (<any>this._owner)._UIModalPresentationFormSheet ? this._owner._nativeView.superview.bounds : UIScreen.mainScreen().bounds;
-            uiUtils.ios._layoutRootView(this._owner, parentBounds);
+            let isTablet = device.deviceType === DeviceType.Tablet;
+            let isFullScreen = !this._owner._UIModalPresentationFormSheet || !isTablet;
+            let frame = isFullScreen ? UIScreen.mainScreen().bounds : this.view.frame;
+            let origin = frame.origin;
+            let size = frame.size;
+            let width = size.width;
+            let height = size.height;
+            let mode: number = utils.layout.EXACTLY;
+
+            let superViewRotationRadians;
+            if (this.view.superview) {
+                let transform = this.view.superview.transform;
+                superViewRotationRadians = atan2f(transform.b, transform.a);
+            }
+
+            if (utils.ios.MajorVersion < 8 && utils.ios.isLandscape() && !superViewRotationRadians) {
+                // in iOS 7 when in landscape we switch width with height because on device they don't change even when rotated.
+                width = size.height;
+                height = size.width;
+            }
+
+            let bottom = height;
+            let statusBarHeight = uiUtils.ios.getStatusBarHeight();
+            let statusBarVisible = !UIApplication.sharedApplication().statusBarHidden;
+            let backgroundSpanUnderStatusBar = this._owner.backgroundSpanUnderStatusBar;
+            if (statusBarVisible && !backgroundSpanUnderStatusBar) {
+                height -= statusBarHeight;
+            }
+
+            let widthSpec = utils.layout.makeMeasureSpec(width, mode);
+            let heightSpec = utils.layout.makeMeasureSpec(height, mode);
+
+            View.measureChild(null, this._owner, widthSpec, heightSpec);
+            let top = ((backgroundSpanUnderStatusBar && isFullScreen) || utils.ios.MajorVersion < 8 || !isFullScreen) ? 0 : statusBarHeight;
+            View.layoutChild(null, this._owner, 0, top, width, bottom);
+
+            if (utils.ios.MajorVersion < 8) {
+                if (!backgroundSpanUnderStatusBar && (!isTablet || isFullScreen)) {
+                    if (utils.ios.isLandscape() && !superViewRotationRadians) {
+                        this.view.center = CGPointMake(this.view.center.x - statusBarHeight, this.view.center.y);
+                    }
+                    else {
+                        this.view.center = CGPointMake(this.view.center.x, this.view.center.y + statusBarHeight);
+                    }
+                }
+            }
+
+            trace.write(this._owner + ", native frame = " + NSStringFromCGRect(this.view.frame), trace.categories.Layout);
         }
         else {
             this._owner._updateLayout();
@@ -64,6 +110,7 @@ export class Page extends pageCommon.Page {
     private _ios: UIViewController;
     public _enableLoadedEvents: boolean;
     public _isModal: boolean = false;
+    public _UIModalPresentationFormSheet: boolean = false;
 
     constructor(options?: definition.Options) {
         super(options);
@@ -139,18 +186,18 @@ export class Page extends pageCommon.Page {
 
         if (fullscreen) {
             this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFullScreen;
-            uiUtils.ios._layoutRootView(this, UIScreen.mainScreen().bounds);
+            //uiUtils.ios._layoutRootView(this, UIScreen.mainScreen().bounds);
         }
         else {
             this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFormSheet;
-            (<any>this)._UIModalPresentationFormSheet = true;
+            this._UIModalPresentationFormSheet = true;
         }
 
         var that = this;
         parent.ios.presentViewControllerAnimatedCompletion(this._ios, false, function completion() {
             if (!fullscreen) {
                 // We can measure and layout the modal page after we know its parent's dimensions.
-                uiUtils.ios._layoutRootView(that, that._nativeView.superview.bounds);
+                //uiUtils.ios._layoutRootView(that, that._nativeView.superview.bounds);
             }
 
             that._raiseShownModallyEvent(parent, context, closeCallback);
@@ -158,9 +205,10 @@ export class Page extends pageCommon.Page {
     }
 
     protected _hideNativeModalView(parent: Page) {
-        parent._ios.dismissModalViewControllerAnimated(false);
         this._isModal = false;
-        (<any>this)._UIModalPresentationFormSheet = false;
+        this._UIModalPresentationFormSheet = false;
+        parent.requestLayout();
+        parent._ios.dismissModalViewControllerAnimated(false);
     }
 
     public _updateActionBar(hidden: boolean) {
@@ -179,7 +227,16 @@ export class Page extends pageCommon.Page {
         let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
         let actionBarWidth: number = 0;
-        let actionBarHeight: number = 0;        
+        let actionBarHeight: number = 0;
+
+        // If background span under statusbar reduce available height for page content.
+        let statusBarHeight = this.backgroundSpanUnderStatusBar ? uiUtils.ios.getStatusBarHeight() : 0;
+        
+        // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
+        if (this._isModal && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
+            statusBarHeight = 0;
+        }
+
         if (this.frame && this.frame._getNavBarVisible(this)) {
             // Measure ActionBar with the full height. 
             let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
@@ -187,7 +244,7 @@ export class Page extends pageCommon.Page {
             actionBarHeight = actionBarSize.measuredHeight;
         }
 
-        let heightSpec = utils.layout.makeMeasureSpec(height - actionBarHeight, heightMode);        
+        let heightSpec = utils.layout.makeMeasureSpec(height - actionBarHeight - statusBarHeight, heightMode);
 
         // Measure content with height - navigationBarHeight. Here we could use actionBarSize.measuredHeight probably.
         let result = View.measureChild(this, this.content, widthMeasureSpec, heightSpec);
@@ -204,8 +261,18 @@ export class Page extends pageCommon.Page {
     public onLayout(left: number, top: number, right: number, bottom: number) {
         View.layoutChild(this, this.actionBar, 0, 0, right - left, bottom - top);
 
-        let navigationBarHeight = this.frame ? this.frame.navigationBarHeight : 0;
-        View.layoutChild(this, this.content, 0, navigationBarHeight, right - left, bottom - top);
+        let navigationBarHeight: number = 0;
+        if (this.frame && this.frame._getNavBarVisible(this)) {
+            navigationBarHeight = this.actionBar.getMeasuredHeight();
+        }
+
+        let statusBarHeight = this.backgroundSpanUnderStatusBar ? uiUtils.ios.getStatusBarHeight() : 0;
+        // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
+        if (this._isModal && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
+            statusBarHeight = 0;
+        }
+
+        View.layoutChild(this, this.content, 0, navigationBarHeight + statusBarHeight, right - left, bottom - top);
     }
 
     public _addViewToNativeVisualTree(view: View): boolean {

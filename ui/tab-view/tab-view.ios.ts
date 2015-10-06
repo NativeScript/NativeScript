@@ -254,8 +254,9 @@ export class TabView extends common.TabView {
             var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
             var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
-            this._tabBarHeight = uiUtils.ios.getActualHeight(this._ios.tabBar);
-            this._navBarHeight = uiUtils.ios.getActualHeight(this._ios.moreNavigationController.navigationBar);
+            this._tabBarHeight = TabView.measureHelper(this._ios.tabBar, width, widthMode, height, heightMode).height;
+            let moreNavBarVisible = !!this._ios.moreNavigationController.navigationBar.window;
+            this._navBarHeight = moreNavBarVisible ? TabView.measureHelper(this._ios.moreNavigationController.navigationBar, width, widthMode, height, heightMode).height : 0;
 
             var density = utils.layout.getDisplayDensity();
             var measureWidth = 0;
@@ -263,7 +264,7 @@ export class TabView extends common.TabView {
 
             var child = this._selectedView;
             if (child) {
-                var childHeightMeasureSpec = utils.layout.makeMeasureSpec(height - (this._navBarHeight + this._tabBarHeight), heightMode);
+                var childHeightMeasureSpec = utils.layout.makeMeasureSpec(height - this._navBarHeight - this._tabBarHeight, heightMode);
                 var childSize = view.View.measureChild(this, child, widthMeasureSpec, childHeightMeasureSpec);
 
                 measureHeight = childSize.measuredHeight;
@@ -289,4 +290,9 @@ export class TabView extends common.TabView {
         }
     }
 
+    private static measureHelper(nativeView: UIView, width: number, widthMode: number, height: number, heightMode: number): CGSize {
+        return nativeView.sizeThatFits(CGSizeMake(
+            (widthMode === utils.layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : width,
+            (heightMode === utils.layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
+    }
 }

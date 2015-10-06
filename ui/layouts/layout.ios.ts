@@ -7,9 +7,7 @@ export class Layout extends layoutBase.LayoutBase implements definition.Layout {
 
     constructor() {
         super();
-
         this._view = new UIView();
-        this._view.autoresizesSubviews = false;
     }
 
     get ios(): UIView {

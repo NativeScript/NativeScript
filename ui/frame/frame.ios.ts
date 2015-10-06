@@ -6,6 +6,7 @@ import enums = require("ui/enums");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
 import types = require("utils/types");
+import uiUtils = require("ui/utils");
 
 global.moduleMerge(frameCommon, exports);
 
@@ -182,27 +183,47 @@ export class Frame extends frameCommon.Frame {
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
 
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
         this._widthMeasureSpec = widthMeasureSpec;
         this._heightMeasureSpec = heightMeasureSpec;
 
-        var result = view.View.measureChild(this, this.currentPage, widthMeasureSpec, heightMeasureSpec);
-
-        var widthAndState = view.View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
-        var heightAndState = view.View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
+        let result = this.measurePage(this.currentPage);
+        let widthAndState = view.View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
+        let heightAndState = view.View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
+    }
+
+    public measurePage(page: pages.Page): { measuredWidth: number; measuredHeight: number } {
+        
+        // If background does not span under statusbar - reduce available height.
+        let heightSpec: number = this._heightMeasureSpec;
+        if (page && !page.backgroundSpanUnderStatusBar) {
+            let height = utils.layout.getMeasureSpecSize(this._heightMeasureSpec);
+            let heightMode = utils.layout.getMeasureSpecMode(this._heightMeasureSpec);
+            let statusBarHeight = uiUtils.ios.getStatusBarHeight();
+            heightSpec = utils.layout.makeMeasureSpec(height - statusBarHeight, heightMode);
+        }
+
+        return view.View.measureChild(this, page, this._widthMeasureSpec, heightSpec);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         this._layoutWidth = right - left;
         this._layoutheight = bottom - top;
-        view.View.layoutChild(this, this.currentPage, 0, 0, right - left, bottom - top);
+        this.layoutPage(this.currentPage);
+    }
+
+    public layoutPage(page: pages.Page): void {
+        // If background does not span under statusbar - reduce available height and adjust top offset.
+        let statusBarHeight = (page && !page.backgroundSpanUnderStatusBar) ? uiUtils.ios.getStatusBarHeight() : 0;
+
+        view.View.layoutChild(this, page, 0, statusBarHeight, this._layoutWidth, this._layoutheight);
     }
 
     public get navigationBarHeight(): number {
@@ -227,8 +248,6 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
     }
 
     public viewDidLoad(): void {
-        this.view.autoresizesSubviews = false;
-        this.view.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
         this._owner.onLoaded();
     }
 
@@ -252,8 +271,8 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             }
 
             frame._addView(newPage);
-            view.View.measureChild(frame, newPage, frame._widthMeasureSpec, frame._heightMeasureSpec);
-            view.View.layoutChild(frame, newPage, 0, 0, frame._layoutWidth, frame._layoutheight);
+            frame.measurePage(newPage);
+            frame.layoutPage(newPage)
         }
         else if (newPage.parent !== frame) {
             throw new Error("Page is already shown on another frame.");

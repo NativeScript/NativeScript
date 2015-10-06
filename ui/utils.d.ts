@@ -8,5 +8,7 @@
         export function getActualHeight(uiView: UIView): number;
 
         export function _layoutRootView(rootView: view.View, parentBounds: CGRect): void;
+
+        export function getStatusBarHeight(): number;
     }
 }
