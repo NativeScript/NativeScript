@@ -686,10 +686,10 @@ function getTextFromNativeElementAt(listView: listViewModule.ListView, index: nu
         return (<android.widget.TextView>nativeElement).getText() + "";
     }
     else if (listView.ios) {
-        if (utils.ios.MajorVersion <= 8) {
+        if (types.isFunction(listView.ios.visibleCells)) {
             return listView.ios.visibleCells()[index].contentView.subviews[0].text + "";
         }
-        else if (utils.ios.MajorVersion > 8) {
+        else {
             return listView.ios.visibleCells[index].contentView.subviews[0].text + "";
         }
     }
@@ -700,10 +700,10 @@ function getNativeViewCount(listView: listViewModule.ListView): number {
         return listView.android.getChildCount();
     }
     else if (listView.ios) {
-        if (utils.ios.MajorVersion <= 8) {
+        if (types.isFunction(listView.ios.visibleCells)) {
             return listView.ios.visibleCells().count;
         }
-        else if (utils.ios.MajorVersion > 8) {
+        else {
             return (<any>listView.ios.visibleCells).count;
         }
     }
