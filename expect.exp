@@ -1,0 +1,9 @@
+#! /usr/bin/expect
+
+#exp_internal 1
+
+set timeout 600
+
+spawn grunt
+expect "TypeScript compilation complete"
+send \003
