@@ -30,6 +30,7 @@ function onActionBarHiddenPropertyChanged(data: PropertyChangeData) {
 export class Page extends ContentView implements dts.Page {
     public static backgroundSpanUnderStatusBarProperty = backgroundSpanUnderStatusBarProperty;
     public static actionBarHiddenProperty = actionBarHiddenProperty;
+    public static canNavigateFromEvent = "canNavigateFrom";
     public static navigatingToEvent = "navigatingTo";
     public static navigatedToEvent = "navigatedTo";
     public static navigatingFromEvent = "navigatingFrom";
@@ -195,6 +196,16 @@ export class Page extends ContentView implements dts.Page {
         });
 
         this._navigationContext = undefined;
+    }
+
+    public onCanNavigateFrom(): boolean {
+        var event = {
+            eventName: Page.canNavigateFromEvent,
+            object: this,
+            canNavigate: true
+        }
+        this.notify(event);
+        return !!event.canNavigate;
     }
 
     public showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean) {

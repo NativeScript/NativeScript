@@ -23,6 +23,13 @@ declare module "ui/page" {
         context: any;
     }
 
+    export interface CanNavigateFromData extends observable.EventData {
+        /**
+         * The can Navigate Value
+         */
+        canNavigate: boolean;
+    }
+
     /**
      * Defines the data for the Page.shownModally event.
      */
@@ -55,6 +62,11 @@ declare module "ui/page" {
          * Dependency property used to hide the Navigation Bar in iOS and the Action Bar in Android.
          */
         public static actionBarHiddenProperty: dependencyObservable.Property;
+
+        /**
+         * String value used when hooking to canNavigateFrom event.
+         */
+        public static canNavigateFromEvent: string;
 
         /**
          * String value used when hooking to shownModally event.
@@ -144,6 +156,11 @@ declare module "ui/page" {
         on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any);
 
         /**
+         * Raised when checking to see if we can navigate from.
+         */
+        on(event: "canNavigateFrom", callback: (args: CanNavigateFromData) => void, thisArg?: any);
+
+        /**
          * Raised when navigation from the page has started.
          */
         on(event: "navigatingFrom", callback: (args: NavigatedData) => void, thisArg?: any);
@@ -184,6 +201,11 @@ declare module "ui/page" {
          * A method called after navigated to the page.
          */
         onNavigatedTo(): void;
+
+        /**
+         * A method called to check if navigation from this page is allowed
+         */
+        onCanNavigateFrom(): boolean;
 
         /**
          * A method called before navigating from the page.
