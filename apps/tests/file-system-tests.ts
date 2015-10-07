@@ -303,14 +303,18 @@ export var testEnumEntities = function () {
     // <hide>
     var file = documents.getFile("Test.txt");
     var file1 = documents.getFile("Test1.txt");
-    var fileFound,
-        file1Found;
+    var testFolder = documents.getFolder("testFolder");
+    var fileFound = false;
+    var file1Found = false;
+    var testFolderFound = false;
     var console = {
         log: function (file) {
             if (file === "Test.txt") {
                 fileFound = true;
             } else if (file === "Test1.txt") {
                 file1Found = true;
+            } else if (file === "testFolder") {
+                testFolderFound = true;
             }
         }
     }
@@ -323,9 +327,11 @@ export var testEnumEntities = function () {
     // <hide>
     TKUnit.assert(fileFound, "Failed to enumerate Test.txt");
     TKUnit.assert(file1Found, "Failed to enumerate Test1.txt");
+    TKUnit.assert(testFolderFound, "Failed to enumerate testFolder");
 
     file.remove();
     file1.remove();
+    testFolder.remove();
     // </hide>
     // ```
     // </snippet>
