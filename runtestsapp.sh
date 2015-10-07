@@ -48,7 +48,7 @@ cd $workingdir
 
 echo "------------------------------------------------"
 echo "Uninstalling the app..."
-time adb uninstall org.nativescript.TestApp
+time adb uninstall org.nativescript.TestsApp
 
 echo "------------------------------------------------"
 echo "Installing the app..."

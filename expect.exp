@@ -10,6 +10,6 @@
 
 
 set timeout 600
-spawn adb logcat
-expect 'Done.'
+spawn adb logcat | tee __TESTRESULT__.txt
+expect '=== ALL TESTS COMPLETE ==='
 send \003

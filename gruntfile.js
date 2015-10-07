@@ -388,8 +388,8 @@ module.exports = function(grunt) {
 //                    "adb install ./platforms/android/build/outputs/apk/TestsApp-debug.apk",
 //                    "adb shell am start -n org.nativescript.TestsApp/com.tns.NativeScriptActivity",
 ////                    "expect -c '
-                ].join(" && ")
-            }
+//                ].join(" && ")
+//            }
         },
         multidest: {
             copyLicenseFiles: {
