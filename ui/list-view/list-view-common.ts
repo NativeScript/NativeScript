@@ -32,6 +32,7 @@ function onItemTemplatePropertyChanged(data: dependencyObservable.PropertyChange
 export class ListView extends view.View implements definition.ListView {
     public static itemLoadingEvent = "itemLoading";
     public static itemTapEvent = "itemTap";
+    public static itemLongPressEvent = "itemLongPress";
     public static loadMoreItemsEvent = "loadMoreItems";
 
     public static separatorColorProperty = new dependencyObservable.Property(
