@@ -12,6 +12,7 @@ import utils = require("utils/utils")
 var ITEMLOADING = common.ListView.itemLoadingEvent;
 var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
 var ITEMTAP = common.ListView.itemTapEvent;
+var ITEMLONGPRESS = common.ListView.itemLongPressEvent;
 var REALIZED_INDEX = "realizedIndex";
 
 global.moduleMerge(common, exports);
@@ -87,6 +88,16 @@ export class ListView extends common.ListView {
                 if (owner) {
                     owner.notify({ eventName: ITEMTAP, object: owner, index: index, view: owner._getRealizedView(convertView, index) });
                 }
+            }
+        }));
+        
+        this.android.setOnItemLongClickListener(new android.widget.AdapterView.OnItemLongClickListener({
+            onItemLongClick: function (parent, convertView, index, id) {
+                var owner = that.get();
+                if (owner) {
+                    owner.notify({ eventName: ITEMLONGPRESS, object: owner, index: index, view: owner._getRealizedView(convertView, index) });
+                }
+                return true;
             }
         }));
     }
