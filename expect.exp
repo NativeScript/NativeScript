@@ -2,8 +2,14 @@
 
 #exp_internal 1
 
-set timeout 600
+#set timeout 600
 
-spawn grunt
-expect "TypeScript compilation complete"
+#spawn grunt
+#expect "TypeScript compilation complete"
+#send \003
+
+
+set timeout 600
+spawn adb logcat
+expect 'Done.'
 send \003

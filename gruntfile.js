@@ -365,17 +365,21 @@ module.exports = function(grunt) {
             mochaNode: {
                 cmd: "grunt simplemocha:node"
             },
+            setupTestsApp: {
+                cmd: "./runtestsapp.sh"
+            }
 //            setupTestsApp: {
 ////TODO: TNS PATH MIGHT GET PASSED FROM OUTSIDE!
 //                cmd: [
-//                    "pkill emulator64-arm && true",
-//                    "emulator -avd Api19 -no-skin -no-audio -no-window &",
+//                    'pkill ".*emulator64-arm" && true',
+//                    "emulator -avd Api19 -no-skin -no-audio &",
+////                    "emulator -avd Api19 -no-skin -no-audio -no-window &",
 //                    "tns create TestsApp",
 //                    "cd TestsApp",
 //                    "rm app/*.*",
 //                    "cp -r " + pathModule.join(localCfg.outAppsDir, "tests") + "/* ./app/",
 //                    "tns platform add android",
-//            DO THE REPLACEMENTS IN THE Info.plist and AndroidManifest.xml
+////TODO:            DO THE REPLACEMENTS IN THE Info.plist and AndroidManifest.xml
 //                    "tns build android",
 //
 //                    "adb kill-server",
@@ -383,8 +387,9 @@ module.exports = function(grunt) {
 //
 //                    "adb install ./platforms/android/build/outputs/apk/TestsApp-debug.apk",
 //                    "adb shell am start -n org.nativescript.TestsApp/com.tns.NativeScriptActivity",
-//                    "expect -c '
-//            }
+////                    "expect -c '
+                ].join(" && ")
+            }
         },
         multidest: {
             copyLicenseFiles: {
@@ -579,6 +584,6 @@ module.exports = function(grunt) {
     ]);
 
     grunt.registerTask("testsapp", [
-        "exec:..."
+        "exec:setupTestsApp"
     ]);
 };
