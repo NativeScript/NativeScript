@@ -25,11 +25,11 @@ cd $workingdir
 
     echo "------------------------------------------------"
     echo "Copying the test app files..."
-    time cp -r ./bin/dist/apps/tests* ./app/
+    time cp -r ../../bin/dist/apps/tests/* ./app/
 
     echo "------------------------------------------------"
     echo "Adding the android platform..."
-    time tns platform add android
+    time tns platform add android #--frameworkPath=/Users/erjan/tns-android.tgz
     # #DO THE REPLACEMENTS IN THE Info.plist and AndroidManifest.xml
 
     echo "------------------------------------------------"
