@@ -21,7 +21,6 @@ function _getReachabilityFlags(host?: string): number {
     var reachability = _createReachability(host);
     var flagsRef = new interop.Reference<number>();
     var gotFlags = SCNetworkReachabilityGetFlags(reachability, flagsRef);
-    CFRelease(reachability);
     if (!gotFlags) {
         return null;
     }
@@ -80,7 +79,6 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 export function stopMonitoring(): void {
     if (_monitorReachabilityRef) {
         SCNetworkReachabilityUnscheduleFromRunLoop(_monitorReachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
-        CFRelease(_monitorReachabilityRef);
         _monitorReachabilityRef = undefined;
         _connectionTypeChangedCallback = undefined;;
     }
