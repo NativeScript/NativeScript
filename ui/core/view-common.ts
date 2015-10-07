@@ -549,11 +549,9 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
 
     public onLoaded() {
-        this._loadEachChildView();
-
-        this._applyStyleFromScope();
-
         this._isLoaded = true;
+        this._loadEachChildView();
+        this._applyStyleFromScope();
         this._emit("loaded");
     }
 
