@@ -43,7 +43,6 @@ To learn more about the NativeScript framework, you can check the following reso
 - **[Docs](//github.com/NativeScript/docs)** - Contains the NativeScript framework documentation (available on http://docs.nativescript.org/) in MarkDown format
 - **[TelerikNEXT conference app](//github.com/NativeScript/sample-TelerikNEXT)** - Stores the code of a complete sample application using user authentication and cloud storage.
 - **[Hello-World Template](//github.com/NativeScript/template-hello-world)** - Contains the code of the application the CLI creates by default
-- **[Cuteness Sample](//github.com/NativeScript/sample-cuteness)** - Stores the code of the Cuteness proof of concept application (A Reddit Kitten browser)
 
 ## Getting Started and How to Install the NativeScript framework
 Please follow this [article to get started with the NativeScript framework](http://docs.nativescript.org/getting-started).
