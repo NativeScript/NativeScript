@@ -4,6 +4,8 @@ rm -rd $workingdir
 mkdir $workingdir
 cd $workingdir
 
+#android create avd -t "android-21" -n Api21 -b "default/x86"
+
 #if [ 1 == 2 ] ; then
     echo "------------------------------------------------"
     echo "Killing the emulator..."
@@ -11,7 +13,7 @@ cd $workingdir
 
     echo "------------------------------------------------"
     echo "Starting the emulator..."
-    time emulator -avd Api19 -no-skin -no-audio &
+    time emulator -avd Api19 -no-skin -no-audio &  # -gpu on
     #emulator -avd Api19 -no-skin -no-audio -no-window &
 
     echo "------------------------------------------------"
@@ -30,7 +32,9 @@ cd $workingdir
     echo "------------------------------------------------"
     echo "Adding the android platform..."
     time tns platform add android #--frameworkPath=/Users/erjan/tns-android.tgz
+
     # #DO THE REPLACEMENTS IN THE Info.plist and AndroidManifest.xml
+    cp /Users/erjan/work/spikes/__DEL__/AndroidManifest.xml platforms/android/src/main/
 
     echo "------------------------------------------------"
     echo "Building the application..."
