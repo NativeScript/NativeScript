@@ -234,7 +234,8 @@ export class Frame extends frameCommon.Frame {
 
         // Clear history
         if (backstackEntry.entry.clearHistory && !this._isFirstNavigation) {
-            var i = manager.getBackStackEntryCount() - 1;
+            var backStackEntryCount = manager.getBackStackEntryCount();
+            var i = backStackEntryCount - 1;
             var fragment: android.app.Fragment;
             while (i >= 0) {
                 fragment = manager.findFragmentByTag(manager.getBackStackEntryAt(i--).getName());
@@ -251,9 +252,11 @@ export class Frame extends frameCommon.Frame {
                 }
             }
 
-            var firstEntryName = manager.getBackStackEntryAt(0).getName();
-            trace.write(`manager.popBackStack(${firstEntryName}, android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);`, trace.categories.NativeLifecycle);
-            manager.popBackStack(firstEntryName, android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            if (backStackEntryCount) {
+                var firstEntryName = manager.getBackStackEntryAt(0).getName();
+                trace.write(`manager.popBackStack(${firstEntryName}, android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);`, trace.categories.NativeLifecycle);
+                manager.popBackStack(firstEntryName, android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            }
             this._currentEntry = null;
             navDepth = -1;
         }
