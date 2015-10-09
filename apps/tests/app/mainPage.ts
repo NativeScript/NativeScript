@@ -7,15 +7,12 @@ trace.enable();
 trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
 
 export function createPage() {
-//    tests.runAll();
-
     var page = new Page();
-    page.on("navigatedTo", function() {
-        setTimeout(function() {
+    var navigatedToHandler = function() {
         tests.runAll();
-        }, 3000);
-    });
-//    page.content = new GridLayout();
+        page.off("navigatedTo", navigatedToHandler);
+    };
+    page.on("navigatedTo", navigatedToHandler);
     return page;
 }
 

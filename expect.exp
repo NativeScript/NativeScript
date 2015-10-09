@@ -9,7 +9,7 @@
 #send \003
 
 
-set timeout 600
+set timeout 1200
 #spawn (adb logcat | tee ./__TESTRESULT__.txt)
 log_file -noappend ./__TESTRESULT__.txt
 spawn adb logcat

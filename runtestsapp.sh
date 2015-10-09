@@ -13,7 +13,8 @@ cd $workingdir
 
     echo "------------------------------------------------"
     echo "Starting the emulator..."
-    time emulator -avd Api19 -no-skin -no-audio &  # -gpu on
+    #time emulator -avd Api19 -no-skin -no-audio &  # -gpu on
+    time emulator -avd Api19 -no-audio &  # -gpu on
     #emulator -avd Api19 -no-skin -no-audio -no-window &
 
     echo "------------------------------------------------"
@@ -66,4 +67,4 @@ cd $startdir
 
 echo "------------------------------------------------"
 echo "Waiting for the tests to finish executing..."
-./expect.exp
+time ./expect.exp
