@@ -65,6 +65,19 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                     return utils.parseJSON(NSDataToString(data));
                                 },
                                 toImage: () => {
+                                    if (UIImage.imageWithData["async"]) {
+                                        return UIImage.imageWithData["async"](UIImage, [data])
+                                                      .then(image => {
+                                                          if (!image) {
+                                                              throw new Error("Response content may not be converted to an Image");
+                                                          }
+                                    
+                                                          var source = new imageSource.ImageSource();
+                                                          source.setNativeSource(image);
+                                                          return source;
+                                                      });
+                                    }
+   
                                     return new Promise<imageSource.ImageSource>((resolveImage, rejectImage) => {
                                         var img = imageSource.fromData(data);
                                         if (img instanceof imageSource.ImageSource) {
