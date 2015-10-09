@@ -1,6 +1,7 @@
 ﻿import enums = require("ui/enums");
 import common = require("./font-common");
 import fs = require("file-system");
+import trace = require("trace");
 
 var DEFAULT_SERIF = "Times New Roman";
 var DEFAULT_SANS_SERIF = "Helvetica";
@@ -159,9 +160,25 @@ export module ios {
 
         var error = new interop.Reference();
         if (!CTFontManagerRegisterGraphicsFont(font, error)) {
-            throw new Error(CFErrorCopyDescription(<NSError>error.value));
+            trace.write("Error occur while registering font: " + CFErrorCopyDescription(<NSError>error.value), trace.categories.Error, trace.messageType.error);
         }
 
         areSystemFontSetsValid = false;
     }
 }
+
+function registerCustomFonts() {
+    var fontsFolderPath = fs.path.join(__dirname.substring(0, __dirname.indexOf("/tns_modules")), "fonts");
+    var fontsFolder = fs.Folder.fromPath(fontsFolderPath);
+    var onEachEntityFunc = function (fileEntity: fs.FileSystemEntity): boolean {
+        if (fs.Folder.exists(fs.path.join(fontsFolderPath, fileEntity.name))) {
+            return true;
+        }
+        ios.registerFont(fileEntity.name);
+        return true;
+    }
+
+    fontsFolder.eachEntity(onEachEntityFunc);
+}
+
+registerCustomFonts();

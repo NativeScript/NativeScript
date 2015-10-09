@@ -333,7 +333,7 @@ export function test_setting_font_properties_sets_native_font() {
     test_native_font(enums.FontStyle.normal, enums.FontWeight.normal);
     test_native_font(enums.FontStyle.italic, enums.FontWeight.normal);
     test_native_font(enums.FontStyle.normal, enums.FontWeight.bold);
-    test_native_font(enums.FontStyle.italic, enums.FontWeight.bold);    
+    test_native_font(enums.FontStyle.italic, enums.FontWeight.bold);
 }
 
 function test_native_font(style: string, weight: string) {
