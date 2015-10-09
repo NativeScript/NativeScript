@@ -21,7 +21,7 @@ public class WrapLayout extends LayoutBase {
 	public WrapLayout(Context context) {
 		super(context);
 	}	
-	
+
 	public Orientation getOrientation() {
 	    return this._orientation;
 	}

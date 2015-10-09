@@ -20,7 +20,6 @@ public abstract class LayoutBase extends ViewGroup {
 		super(context);
 	}
 
-	
     @Override
     protected LayoutParams generateDefaultLayoutParams() {
         return new CommonLayoutParams();

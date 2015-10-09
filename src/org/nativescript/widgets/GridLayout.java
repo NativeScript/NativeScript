@@ -700,10 +700,12 @@ class MeasureHelper {
 
 		this.columnStarValue = columnStarCount > 0 ? (this.width - currentColumnWidth) / columnStarCount : 0;
 
-		for(int i = 0; i < columnCount; i++) {
-			ItemGroup item = this.columns.get(i);	        	
-			if (item.getIsStar()) {
-				item.length = item.rowOrColumn.getValue() * this.columnStarValue;
+		if (this.stretchedHorizontally) {
+			for (int i = 0; i < columnCount; i++) {
+				ItemGroup item = this.columns.get(i);
+				if (item.getIsStar()) {
+					item.length = item.rowOrColumn.getValue() * this.columnStarValue;
+				}
 			}
 		}
 	}
@@ -725,12 +727,14 @@ class MeasureHelper {
 
 		this.rowStarValue = rowStarCount > 0 ? (this.height - currentRowHeight) / rowStarCount : 0;
 
-		for(int i = 0; i < rowCount; i++) {
-			ItemGroup item = this.rows.get(i);	        	
-			if (item.getIsStar()) {
-				item.length = item.rowOrColumn.getValue() * this.rowStarValue;
-			}
-		}
+        if(this.stretchedVertically) {
+            for (int i = 0; i < rowCount; i++) {
+                ItemGroup item = this.rows.get(i);
+                if (item.getIsStar()) {
+                    item.length = item.rowOrColumn.getValue() * this.rowStarValue;
+                }
+            }
+        }
 	}
 
 	private void fakeMeasure() {

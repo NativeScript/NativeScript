@@ -11,9 +11,9 @@ import android.view.View;
  *
  */
 public class DockLayout extends LayoutBase {
-
-    private boolean _stretchLastChild = true;
     
+    private boolean _stretchLastChild = true;
+
 	public DockLayout(Context context) {
 		super(context);
 	}
