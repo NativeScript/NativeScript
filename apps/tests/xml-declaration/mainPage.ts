@@ -39,7 +39,7 @@ export function buttonTap(args: observable.EventData) {
         }
     }
 
-    http.getString("http://api.openweathermap.org/data/2.5/find?q=London,uk").then(r=> {
+    http.getString("http://it-ebooks-api.info/v1/book/1615005640").then(r=> {
         console.log("R: " + r)
     });
 
