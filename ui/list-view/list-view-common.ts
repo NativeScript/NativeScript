@@ -117,7 +117,11 @@ export class ListView extends view.View implements definition.ListView {
 
     public _prepareItem(item: view.View, index: number) {
         if (item) {
-            item.bindingContext = this._getDataItem(index);
+            var dataItem = this._getDataItem(index);
+            if (!(dataItem instanceof observable.Observable)) {
+                item.bindingContext = null;
+            }
+            item.bindingContext = dataItem;
             item._inheritProperties(this);
         }
     }
