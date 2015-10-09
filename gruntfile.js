@@ -537,6 +537,22 @@ module.exports = function(grunt) {
         "pack-definitions",
         "get-ready-packages"
     ]));
+	
+    grunt.registerTask("just-build", ((typeof(grunt.option('runtslint')) != "undefined" && !grunt.option('runtslint')) ? [] : ["tslint:build"]).concat([
+        "clean:build",
+        "shell:getGitSHA",
+
+        "collect-apps-raw-files",
+        "collect-definitions-raw-files",
+        "collect-modules-raw-files",
+
+        "compile-ts",
+        "distribute-apps-files",
+        "distribute-ts-apps-files",
+        "distribute-definition-files",
+
+        "pack-modules"
+    ]));	
 
     grunt.registerTask("testEnv", function() {
         console.log('fafla', process.env.NODE_PATH);
