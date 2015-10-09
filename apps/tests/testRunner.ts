@@ -80,15 +80,15 @@ allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
 allTests["REPEATER"] = require("./ui/repeater/repeater-tests");
 allTests["SEARCH-BAR"] = require('./ui/search-bar/search-bar-tests');
 allTests["CONNECTIVITY"] = require("./connectivity-tests");
-allTests["ANIMATION"] = require("./ui/animation/animation-tests");
 allTests["SEGMENTED-BAR"] = require("./ui/segmented-bar/segmented-bar-tests");
 
 if (!isRunningOnEmulator()) {
+    allTests["ANIMATION"] = require("./ui/animation/animation-tests");
     allTests["LOCATION"] = require("./location-tests");
 }
 
 // Navigation tests should always be last.
-allTests["NAVIGATION"] = require("./navigation-tests");
+//allTests["NAVIGATION"] = require("./navigation-tests");
 
 import utils = require("utils/utils");
 var density = utils.layout.getDisplayDensity();
