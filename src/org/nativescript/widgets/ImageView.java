@@ -99,7 +99,7 @@ public class ImageView extends android.widget.ImageView {
             sb.append(", measureHeight: ");
             sb.append(measureHeight);
 
-            CommonLayoutParams.log(CommonLayoutParams.tag, sb.toString());
+            CommonLayoutParams.log(CommonLayoutParams.TAG, sb.toString());
         }
 
         int widthSizeAndState = resolveSizeAndState(measureWidth, widthMeasureSpec, 0);

@@ -20,7 +20,7 @@ import android.widget.FrameLayout;
  */
 public class CommonLayoutParams extends FrameLayout.LayoutParams {
 
-	static final String tag = "NSLayout";
+	static final String TAG = "NSLayout";
 	static int debuggable = -1;
 	private static final StringBuilder sb = new StringBuilder();
 	
@@ -154,7 +154,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 	    	        sb.append(MeasureSpec.toString(widthMeasureSpec));
 	    	        sb.append(", ");
 	    	        sb.append(MeasureSpec.toString(heightMeasureSpec));
-	            	log(tag, sb.toString());	
+	            	log(TAG, sb.toString());	
 	            }
 	            
 	            child.measure(widthMeasureSpec, heightMeasureSpec);
@@ -174,7 +174,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 	        sb.append(childRight);
 	        sb.append(", ");
 	        sb.append(childBottom);
-	        log(tag, sb.toString());
+	        log(TAG, sb.toString());
         }
         
         child.layout(childLeft, childTop, childRight, childBottom);
@@ -188,13 +188,18 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
         // Negative means not initialized.
         if(debuggable < 0) {
         	try {
-				Context context = child.getContext();
-				int flags = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).applicationInfo.flags;
-				debuggable = (flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0 ? 1 : 0;
-			} 
-			catch (NameNotFoundException e) { 
-				debuggable = 0;
-			}
+        		Context context = child.getContext();
+        	    ApplicationInfo ai = context.getPackageManager().getApplicationInfo(context.getPackageName(), android.content.pm.PackageManager.GET_META_DATA);
+        	    android.os.Bundle bundle = ai.metaData;
+        	    Boolean debugLayouts = bundle != null ? bundle.getBoolean("debugLayouts", false) : false;
+        	    debuggable = debugLayouts ? 1 : 0;
+        	} catch (NameNotFoundException e) {
+        		debuggable = 0;
+        	    Log.e(TAG, "Failed to load meta-data, NameNotFound: " + e.getMessage());
+        	} catch (NullPointerException e) {
+        		debuggable = 0;
+        	    Log.e(TAG, "Failed to load meta-data, NullPointer: " + e.getMessage());         
+        	}
         }
         
         int childWidthMeasureSpec = getMeasureSpec(child, widthMeasureSpec, true);
@@ -209,7 +214,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 	        sb.append(MeasureSpec.toString(childWidthMeasureSpec));
 	        sb.append(", ");
 	        sb.append(MeasureSpec.toString(childHeightMeasureSpec));
-	        log(tag,  sb.toString());
+	        log(TAG,  sb.toString());
         }
         
         child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
@@ -218,25 +223,38 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
     public static void updateChildLayoutParams(View child, int widthMeasureSpec, int heightMeasureSpec) {
     	
     	int availableWidth = MeasureSpec.getSize(widthMeasureSpec);
-    	int availableHeight = MeasureSpec.getSize(heightMeasureSpec);    	
-    	CommonLayoutParams lp = (CommonLayoutParams)child.getLayoutParams();	    	
-    	if (lp.widthPercent > 0) {
-    		lp.width = (int)(availableWidth * lp.widthPercent);
-    	}	    	
-    	if (lp.heightPercent > 0) {
-    		lp.height = (int)(availableHeight * lp.heightPercent);
-    	}	    	
-    	if (lp.leftMarginPercent > 0) {
-    		lp.leftMargin = (int)(availableWidth * lp.leftMarginPercent);
-    	}	    	
-    	if (lp.rightMarginPercent > 0) {
-    		lp.rightMargin = (int)(availableWidth * lp.rightMarginPercent);
-    	}	    	
-    	if (lp.topMarginPercent > 0) {
-    		lp.topMargin = (int)(availableHeight * lp.topMarginPercent);
-    	}	    	
-    	if (lp.bottomMarginPercent > 0) {
-    		lp.bottomMargin = (int)(availableHeight * lp.bottomMarginPercent);
+    	int widthSpec = MeasureSpec.getMode(widthMeasureSpec);
+    			
+    	int availableHeight = MeasureSpec.getSize(heightMeasureSpec);
+    	int heightSpec = MeasureSpec.getMode(heightMeasureSpec);
+    	
+    	CommonLayoutParams lp = (CommonLayoutParams)child.getLayoutParams();
+    	if (widthSpec != MeasureSpec.UNSPECIFIED) {
+    		if (lp.widthPercent > 0) {
+        		lp.width = (int)(availableWidth * lp.widthPercent);
+        	}
+    		
+    		if (lp.leftMarginPercent > 0) {
+        		lp.leftMargin = (int)(availableWidth * lp.leftMarginPercent);
+    		}
+    		
+        	if (lp.rightMarginPercent > 0) {
+        		lp.rightMargin = (int)(availableWidth * lp.rightMarginPercent);
+        	}
+    	}
+    	
+    	if (heightSpec != MeasureSpec.UNSPECIFIED) {
+	    	if (lp.heightPercent > 0) {
+	    		lp.height = (int)(availableHeight * lp.heightPercent);
+	    	}
+	    	
+	    	if (lp.topMarginPercent > 0) {
+	    		lp.topMargin = (int)(availableHeight * lp.topMarginPercent);
+	    	}
+	    	
+	    	if (lp.bottomMarginPercent > 0) {
+	    		lp.bottomMargin = (int)(availableHeight * lp.bottomMarginPercent);
+	    	}
     	}
     }
 
