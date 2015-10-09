@@ -7,6 +7,7 @@ import view = require("ui/core/view");
 import navHelper = require("../ui/helper");
 import utils = require("utils/utils");
 import builder = require("ui/builder");
+import enums = require("ui/enums");
 
 var ASYNC = 2;
 var DELTA = 1;
@@ -203,37 +204,90 @@ export function test_removeColumn_shouldThrow_onNullValues() {
 }
 
 export function test_removeColumns() {
-    var columns = rootLayout.getColumns();
-
+    prepareGridLayout(false);
+    TKUnit.assertTrue(rootLayout.getColumns().length > 0, "There should be columns.");
     rootLayout.removeColumns();
-
-    TKUnit.assertEqual(rootLayout.getColumns().length, 0);
-
-    columns.forEach(c=> rootLayout.addColumn(c));
+    TKUnit.assertTrue(rootLayout.getColumns().length === 0, "Columns should be empty.");
 }
 
 export function test_removeRows() {
-    var rows = rootLayout.getRows();
-
+    prepareGridLayout(false);
+    TKUnit.assertTrue(rootLayout.getRows().length > 0, "There should be rows.");
     rootLayout.removeRows();
-
-    TKUnit.assertEqual(rootLayout.getRows().length, 0);
-
-    rows.forEach(r=> rootLayout.addRow(r));
+    TKUnit.assertTrue(rootLayout.getRows().length === 0, "Rows should be empty.");
 }
 
 export function test_removeChildren() {
-    var children = [];
+    prepareGridLayout(false);
+    TKUnit.assertTrue(rootLayout.getChildrenCount() > 0, "There should be children.");
+    rootLayout.removeChildren();
+    TKUnit.assertTrue(rootLayout.getChildrenCount() === 0, "Childrens should be empty.");
+}
 
-    for (let i = 0; i < rootLayout.getChildrenCount(); i++) {
-        children.push(rootLayout.getChildAt(i));
+export function test_measuredWidth_when_not_stretched_single_column() {
+    rootLayout.horizontalAlignment = enums.HorizontalAlignment.center;
+    let btn = new Button();
+    btn.text = "A";
+    rootLayout.addChild(btn);
+    TKUnit.waitUntilReady(function () {
+        return rootLayout.isLayoutValid;
+    }, ASYNC);
+
+    TKUnit.assertTrue(btn.getMeasuredWidth() === rootLayout.getMeasuredWidth());
+}
+
+export function test_measuredWidth_when_not_stretched_two_columns() {
+    rootLayout.horizontalAlignment = enums.HorizontalAlignment.center;
+    rootLayout.addColumn(new layout.ItemSpec(80, layout.GridUnitType.pixel));
+    rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
+
+    let btn = new Button();
+    btn.text = "A";
+    btn.width = 100;
+    MyGridLayout.setColumnSpan(btn, 2);
+    rootLayout.addChild(btn);
+    TKUnit.waitUntilReady(function () {
+        return rootLayout.isLayoutValid;
+    }, ASYNC);
+
+    var density = utils.layout.getDisplayDensity();
+    var delta = Math.floor(density) !== density ? 2 : DELTA;
+    var cols = rootLayout.getColumns();
+    TKUnit.assertAreClose(cols[0].actualLength, 80, delta);
+    TKUnit.assertAreClose(cols[1].actualLength, 20, delta);
+    TKUnit.assertAreClose(rootLayout.getMeasuredWidth(), 100 * density, delta);
+}
+
+export function test_measuredWidth_when_not_stretched_three_columns() {
+    rootLayout.horizontalAlignment = enums.HorizontalAlignment.center;
+    rootLayout.addColumn(new layout.ItemSpec(80, layout.GridUnitType.pixel));
+    rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
+    rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.auto));
+
+    for (let i = 1; i < 4; i++) {
+        let btn = new Button();
+        btn.text = "A";
+        btn.width = i * 20;
+        MyGridLayout.setColumn(btn, i - 1);
+        rootLayout.addChild(btn);
     }
 
-    rootLayout.removeChildren();
+    let btn = new Button();
+    btn.text = "B";
+    btn.width = 100;
+    MyGridLayout.setColumnSpan(btn, 3);
+    rootLayout.addChild(btn);
+    TKUnit.waitUntilReady(function () {
+        return rootLayout.isLayoutValid;
+    }, ASYNC);
 
-    TKUnit.assertEqual(rootLayout.getChildrenCount(), 0);
-
-    children.forEach(c=> rootLayout.addChild(c));
+    var density = utils.layout.getDisplayDensity();
+    var delta = Math.floor(density) !== density ? 2 : DELTA;
+    var cols = rootLayout.getColumns();
+    TKUnit.assertAreClose(cols[0].actualLength, 80, delta);
+    TKUnit.assertAreClose(cols[1].actualLength, 40, delta);
+    TKUnit.assertAreClose(cols[2].actualLength, 60, delta);
+    TKUnit.assertAreClose(rootLayout.getMeasuredWidth(), 180 * density, delta);
 }
 
 export function test_getRows_shouldNotReturnNULL() {

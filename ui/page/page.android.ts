@@ -26,7 +26,14 @@ class DialogFragmentClass extends android.app.DialogFragment {
     public onCreateDialog(savedInstanceState: android.os.Bundle): android.app.Dialog {
         var dialog = new android.app.Dialog(this._owner._context);
         dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
-        dialog.setContentView(this._owner._nativeView);
+
+        // Hide actionBar and adjust alignment based on _fullscreen value.
+        this._owner.horizontalAlignment = this._fullscreen ? enums.HorizontalAlignment.stretch : enums.HorizontalAlignment.center;
+        this._owner.verticalAlignment = this._fullscreen ? enums.VerticalAlignment.stretch : enums.VerticalAlignment.center;
+        this._owner.actionBarHidden = true;
+
+        dialog.setContentView(this._owner._nativeView, this._owner._nativeView.getLayoutParams());
+
         var window = dialog.getWindow();
         window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
 
@@ -65,11 +72,7 @@ export class Page extends pageCommon.Page {
     public _createUI() {
         this._grid = new org.nativescript.widgets.GridLayout(this._context);
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-        var gridUnitType = org.nativescript.widgets.GridUnitType.star
-        if (this._closeModalCallback) {
-            gridUnitType = org.nativescript.widgets.GridUnitType.auto;
-        }
-        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, gridUnitType));
+        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
     }
 
     public _addViewToNativeVisualTree(child: view.View, atIndex?: number): boolean {
@@ -119,18 +122,18 @@ export class Page extends pageCommon.Page {
         this.onLoaded();
 
         var that = this;
-        this._dialogFragment = new DialogFragmentClass(this, fullscreen, function() {
+        this._dialogFragment = new DialogFragmentClass(this, fullscreen, function () {
             that.closeModal();
         });
-        this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), "dialog");        
-        
+        this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), "dialog");
+
         super._raiseShownModallyEvent(parent, context, closeCallback);
     }
 
     protected _hideNativeModalView(parent: Page) {
         this._dialogFragment.dismissAllowingStateLoss();
         this._dialogFragment = null;
-        
+
         this.onUnloaded();
         this._isAddedToNativeVisualTree = false;
         this._onDetached(true);
