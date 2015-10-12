@@ -1,18 +1,22 @@
-﻿import tests = require("../testRunner");
-import trace = require("trace");
-import {Page} from "ui/page";
-import {GridLayout} from "ui/layouts/grid-layout";
+﻿import {Page} from "ui/page";
+import tests = require("../testRunner");
 
 trace.enable();
 trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
 
+let started = false;
+let page = new Page();
+
+page.on(Page.navigatedToEvent, function () {
+    if (!started) {
+        started = true;
+        setTimeout(function () {
+            tests.runAll();
+        }, 10);
+    }
+});
+
 export function createPage() {
-    var page = new Page();
-    var navigatedToHandler = function() {
-        tests.runAll();
-        page.off("navigatedTo", navigatedToHandler);
-    };
-    page.on("navigatedTo", navigatedToHandler);
     return page;
 }
 
