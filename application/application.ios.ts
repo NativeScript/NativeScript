@@ -208,25 +208,16 @@ class IOSApplication implements definition.iOSApplication {
 var iosApp = new IOSApplication();
 exports.ios = iosApp;
 
-exports.start = function () {
-
-    appModule.loadCss();
-
-    try {
-        // The "UIApplicationMain" enters a modal loop and the call will not return while the application is running.
-        // This try-catch block here will catch JavaScript errors but no Objective C ones.
-        // TODO: We need to implement better error handling for our native calls and to use the "error" parameter of the iOS APIs.
-
-        UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(Responder));
-    }
-    catch (error) {
-        // At this point the main application loop is exited and no UI May be created.
-        if (!types.isFunction(exports.onUncaughtError)) {
-            return;
-        }
-
+global.__onUncaughtError = function (error: Error) {
+    // TODO: This should be obsoleted
+    if (types.isFunction(exports.onUncaughtError)) {
         exports.onUncaughtError(error);
-
-        definition.notify({ eventName: definition.uncaughtErrorEvent, object: <any>definition.ios, ios: error });
     }
+    
+    definition.notify({ eventName: definition.uncaughtErrorEvent, object: <any>definition.ios, ios: error });
+}
+
+exports.start = function () {
+    appModule.loadCss();
+    UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(Responder));
 }

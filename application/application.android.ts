@@ -301,19 +301,12 @@ class BroadcastReceiver extends android.content.BroadcastReceiver {
 }
 
 global.__onUncaughtError = function (error: Error) {
-    if (!types.isFunction(exports.onUncaughtError)) {
-        return;
+    // TODO: Obsolete this
+    if (types.isFunction(exports.onUncaughtError)) {
+        exports.onUncaughtError(error);
     }
 
-    var nsError = {
-        message: error.message,
-        name: error.name,
-        nativeError: (<any>error).nativeException
-    }
-
-    exports.onUncaughtError(nsError);
-
-    exports.notify({ eventName: dts.uncaughtErrorEvent, object: appModule.android, android: nsError });
+    exports.notify({ eventName: dts.uncaughtErrorEvent, object: appModule.android, android: error });
 }
 
 exports.start = function () {
