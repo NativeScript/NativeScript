@@ -42,6 +42,7 @@ allTests["APPLICATION SETTINGS"] = require("./application-settings-tests");
 allTests["IMAGE SOURCE"] = require("./image-source-tests");
 allTests["TIMER"] = require("./timer-tests");
 allTests["COLOR"] = require("./color-tests");
+allTests["OBSERVABLE"] = require("./observable-tests");
 allTests["OBSERVABLE-ARRAY"] = require("./observable-array-tests");
 allTests["VIRTUAL-ARRAY"] = require("./virtual-array-tests");
 allTests["OBSERVABLE"] = require("./ui/observable-tests");
