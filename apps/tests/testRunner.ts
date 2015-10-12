@@ -88,7 +88,7 @@ if (!isRunningOnEmulator()) {
 }
 
 // Navigation tests should always be last.
-//allTests["NAVIGATION"] = require("./navigation-tests");
+allTests["NAVIGATION"] = require("./navigation-tests");
 
 import utils = require("utils/utils");
 var density = utils.layout.getDisplayDensity();
