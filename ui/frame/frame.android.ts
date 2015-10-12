@@ -450,7 +450,7 @@ var NativeActivity = {
 
         this.androidFrame.rootViewGroup = root;
         this.androidFrame.rootViewGroup.setId(this.frame.containerViewId);
-        this.setContentView(this.androidFrame.rootViewGroup);
+        this.setContentView(this.androidFrame.rootViewGroup, new org.nativescript.widgets.CommonLayoutParams());
 
         // If there is no instance state - we call navigateCore from here since Activity is created AFTER the navigate call and navigateCore will fail.
         var isRestart = !!savedInstanceState;
