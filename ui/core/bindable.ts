@@ -195,8 +195,27 @@ export class Binding {
     }
 
     private static getProperties(property: string): Array<string> {
+        var result: Array<string>;
         if (property) {
-            return property.split(".");
+            // first replace all '$parents[..]' with a safe string
+            // second removes all ] since they are not important for property access and not needed 
+            // then split properties either on '.' or '['
+            var parentsMatches = property.match(bindingBuilder.parentsRegex);
+            result = property.replace(bindingBuilder.parentsRegex, "parentsMatch")
+                                    .replace(/\]/g, "")
+                                    .split(/\.|\[/);
+
+            var i;
+            var resultLength = result.length;
+            var parentsMatchesCounter = 0;
+            for (i = 0; i < resultLength; i++) {
+                if (result[i] === "parentsMatch") {
+                    result[i] = parentsMatches[parentsMatchesCounter];
+                    parentsMatchesCounter++;
+                }
+            }
+
+            return result;
         }
         else {
             return [];
