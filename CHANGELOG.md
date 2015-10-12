@@ -1,6 +1,6 @@
 Cross Platform Modules Changelog
 ==============================
-##1.4.0 (planned for 2015, October 7)
+##1.4.0 (2015, October 12)
 
 ### Breaking changes
 -  [(#774)](https://github.com/NativeScript/NativeScript/issues/774) Animation class no longer has a **finished** property because an animation can be played multiple times. The **play** method now returns a new Promise each time it is invoked. Use this to listen for the animation finishing or being cancelled. When upgrading to version 1.4.0 or above simply remove **.finished** from your code.
@@ -21,6 +21,80 @@ animation1.play().finished.then(()=>console.log("Finished"));
 ```JavaScript
 animation1.play().then(()=>console.log("Finished"));
 ```
+
+### Fixed
+
+- [(#904)](https://github.com/NativeScript/NativeScript/issues/904)  Navigate clearHistory sometimes crashes Android with a null pointer exception
+
+- [(#901)](https://github.com/NativeScript/NativeScript/issues/901) TypeError: using <Placeholder> example from docs
+
+- [(#893)](https://github.com/NativeScript/NativeScript/pull/893) isLoaded is set before calling applyStyleFromScope
+
+- [(#873)](https://github.com/NativeScript/NativeScript/issues/873) The Repeater is re-creating its children multiple times during initialization.
+
+- [(#867)](https://github.com/NativeScript/NativeScript/issues/867) utils.ad.async method is not implemented
+
+- [(#857)](https://github.com/NativeScript/NativeScript/issues/857) Android action dialog actions are not shown if message is provided
+
+- [(#851)](https://github.com/NativeScript/NativeScript/issues/851) takePicture crashes iOS Simulator
+
+- [(#848)](https://github.com/NativeScript/NativeScript/issues/848) web-view loads local data with UTF-8
+
+- [(#843)](https://github.com/NativeScript/NativeScript/issues/843) [iOS] Page is layouted as there is no NavigationBar
+
+- [(#839)](https://github.com/NativeScript/NativeScript/pull/839) Page background now spans under ActionBar
+
+- [(#837)](https://github.com/NativeScript/NativeScript/issues/837) Blank Text attribute on SearchBar crashes app
+
+- [(#835)](https://github.com/NativeScript/NativeScript/issues/835) iOS animations combining several affine transform properties set only the first property on our view after they finish.
+
+- [(#832)](https://github.com/NativeScript/NativeScript/pull/832) Transformations such as scale, translate, rotate won't be incorrectly affected by the layout
+
+- [(#819)](https://github.com/NativeScript/NativeScript/issues/819) WebView check for http/https should be case insensitive
+
+- [(#817)](https://github.com/NativeScript/NativeScript/issues/817) timers.clearInterval doesn't work on Android
+
+- [(#814)](https://github.com/NativeScript/NativeScript/issues/814) Ternary if and parenthesis makes UI not update
+
+- [(#808)](https://github.com/NativeScript/NativeScript/issues/808) Segmentedbar selectedIndexChanged doesn't work
+
+- [(#805)](https://github.com/NativeScript/NativeScript/issues/805) Missing console.dump on ios...
+
+- [(#793)](https://github.com/NativeScript/NativeScript/issues/793) Label.backgroundColor cannot be animated in iOS.
+
+- [(#790)](https://github.com/NativeScript/NativeScript/issues/790) Cannot use number values in EditableText's hint field
+
+- [(#777)](https://github.com/NativeScript/NativeScript/issues/777) ios Border-radius on Label
+
+- [(#774)](https://github.com/NativeScript/NativeScript/issues/774) If an Animation instance is played more than once, the same promise is resolved each time leading to unexpected results.
+
+- [(#772)](https://github.com/NativeScript/NativeScript/issues/772) Placeholder with an id attribute doesn't call creatingView handler
+
+- [(#763)](https://github.com/NativeScript/NativeScript/issues/763) 1.3 - Can not build new project due to missing App_Resources
+
+- [(#759)](https://github.com/NativeScript/NativeScript/issues/759) Android animations that animate a property to its current value do not run.
+
+- [(#756)](https://github.com/NativeScript/NativeScript/issues/756) Nordic characters: "æøå"
+
+- [(#744)](https://github.com/NativeScript/NativeScript/issues/744) iOS 9 issues
+
+- [(#732)](https://github.com/NativeScript/NativeScript/issues/732) Closing an alert on the iPad crashesh the whole app.
+
+- [(#605)](https://github.com/NativeScript/NativeScript/issues/605) Guard for "undefined" in Observable's on and off
+
+### New
+
+- [(#890)](https://github.com/NativeScript/NativeScript/pull/890) Implement Page background option to span under status bar (iOS only)
+
+- [(#766)](https://github.com/NativeScript/NativeScript/issues/766) Rename cssClass property to just class
+
+- [(#740)](https://github.com/NativeScript/NativeScript/issues/740) Modules does not support iOS9
+
+- [(#713)](https://github.com/NativeScript/NativeScript/issues/713) ReturnKeyType Listener
+
+- [(#283)](https://github.com/NativeScript/NativeScript/issues/283) Cross platform way to clear history
+
+- [(#241)](https://github.com/NativeScript/NativeScript/issues/241) Set base URL in WebView to be able to load resources
 
 ##1.3.0 (2015, September 16)
 
