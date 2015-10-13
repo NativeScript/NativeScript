@@ -236,7 +236,9 @@ export function test_scrollToHorizontalOffset_with_animation() {
     // No synchronous change. 
     TKUnit.assertEqual(scrollView.horizontalOffset, 0, "scrollView.horizontalOffset");
 
-    TKUnit.waitUntilReady(() => { return scrollView.horizontalOffset === 100 }, ASYNC);
+    //For some reason this wait here causes the test to fail on PR builds.
+    //TKUnit.waitUntilReady(() => { return scrollView.horizontalOffset === 100 }, ASYNC);
+    TKUnit.wait(1);
 
     // The scrolling animation should be finished by now
     TKUnit.assertAreClose(scrollView.horizontalOffset, 100, 0.1, "scrollView.horizontalOffset");

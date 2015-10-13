@@ -544,11 +544,13 @@ function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache
                 // Go back to the test page.
                 helper.goBack();
             }
+            
+            //For some reason this wait here causes the test to fail on PR builds.
             //TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
             TKUnit.wait(1);
 
-            console.log(">>>>>>>>>>>>> loaded items: " + loadedItems.join(", "));
-            console.log(">>>>>>>>>>>>> unloadedItems items: " + unloadedItems.join(", "));
+            //console.log(">>>>>>>>>>>>> loaded items: " + loadedItems.join(", "));
+            //console.log(">>>>>>>>>>>>> unloadedItems items: " + unloadedItems.join(", "));
 
             // Check that at least the first item is loaded and unloaded
             TKUnit.assert(items[0].view.isLoaded, "The content of the first tab should be loaded.");
