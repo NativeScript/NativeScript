@@ -1,5 +1,5 @@
 ﻿// regex that contains all symbols applicable for expression used to AI detect an expression.
-var expressionSymbolsRegex = /[ \+\-\*%\?:<>=!\|&\(\)\[\]^~]/;
+var expressionSymbolsRegex = /[\+\-\*\/%\?:<>=!\|&\(\)^~]/;
 
 export module bindingConstants {
     export var sourceProperty = "sourceProperty";
