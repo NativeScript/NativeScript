@@ -832,6 +832,15 @@
     <TypeScriptCompile Include="ui\utils.ios.ts">
       <DependentUpon>utils.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="unit-test-runner\app.ts" />
+    <TypeScriptCompile Include="unit-test-runner\declarations.d.ts" />
+    <TypeScriptCompile Include="unit-test-runner\main-page.ts" />
+    <TypeScriptCompile Include="unit-test-runner\main-view-model.ts" />
+    <TypeScriptCompile Include="unit-test-runner\run-details.ts" />
+    <TypeScriptCompile Include="unit-test-runner\stop-process.android.ts" />
+    <TypeScriptCompile Include="unit-test-runner\stop-process.d.ts" />
+    <TypeScriptCompile Include="unit-test-runner\stop-process.ios.ts" />
+    <TypeScriptCompile Include="unit-test-runner\test-run-page.ts" />
     <TypeScriptCompile Include="utils\module-merge.ts" />
     <TypeScriptCompile Include="utils\utils.android.ts">
       <DependentUpon>utils.d.ts</DependentUpon>
@@ -1713,6 +1722,11 @@
     <Content Include="apps\xml-demo\package.json" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="unit-test-runner\app.css" />
+    <Content Include="unit-test-runner\main-page.xml" />
+    <Content Include="unit-test-runner\nativescript.png" />
+    <Content Include="unit-test-runner\run-details.xml" />
+    <Content Include="unit-test-runner\test-run-page.xml" />
     <Content Include="xml\package.json" />
     <Content Include="xml\Readme.md" />
   </ItemGroup>
