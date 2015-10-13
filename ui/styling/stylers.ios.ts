@@ -5,6 +5,7 @@ import stylersCommon = require("./stylers-common");
 import enums = require("ui/enums");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
+import frame = require("ui/frame");
 
 global.moduleMerge(stylersCommon, exports);
 
@@ -474,6 +475,31 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class ActionBarStyler implements definition.stylers.Styler {
+    // color
+    private static setColorProperty(view: view.View, newValue: any) {
+        var topFrame = frame.topmost();
+        if (topFrame) {
+            var bar = topFrame.ios.controller.navigationBar;
+            (<any>bar).titleTextAttributes = { [NSForegroundColorAttributeName]: newValue };
+        }
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var topFrame = frame.topmost();
+        if (topFrame) {
+            var bar = topFrame.ios.controller.navigationBar;
+            (<any>bar).titleTextAttributes = null;
+        }
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            ActionBarStyler.setColorProperty,
+            ActionBarStyler.resetColorProperty), "ActionBar");
+    }
+}
+
 function setTextAlignment(view: TextUIView, value: string) {
     switch (value) {
         case enums.TextAlignment.left:
@@ -499,4 +525,5 @@ export function _registerDefaultStylers() {
     TextViewStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
     SearchBarStyler.registerHandlers();
+    ActionBarStyler.registerHandlers();
 }

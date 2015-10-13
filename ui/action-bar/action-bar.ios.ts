@@ -129,7 +129,7 @@ export class ActionBar extends common.ActionBar {
 
         return barButtonItem;
     }
-
+    
     public _onTitlePropertyChanged() {
         if (!this.page) {
             return;
@@ -177,6 +177,11 @@ export class ActionBar extends common.ActionBar {
     public onLayout(left: number, top: number, right: number, bottom: number) {
         view.View.layoutChild(this, this.titleView, 0, 0, right - left, this._navigationBarHeight);
         super.onLayout(left, top, right, bottom);
+    }
+
+    public _shouldApplyStyleHandlers() {
+        var topFrame = frameModule.topmost();
+        return !!topFrame;
     }
 }
 
