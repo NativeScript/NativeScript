@@ -544,7 +544,8 @@ function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache
                 // Go back to the test page.
                 helper.goBack();
             }
-            TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
+            //TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
+            TKUnit.wait(500);
 
             //console.log("loaded items: " + loadedItems.join(", "));
             //console.log("unloadedItems items: " + unloadedItems.join(", "));
