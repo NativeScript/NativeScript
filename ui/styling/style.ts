@@ -617,7 +617,7 @@ export class Style extends DependencyObservable implements styling.Style {
 
     private _applyStyleProperty(property: Property, newValue: any) {
 
-        if (!this._view._nativeView) {
+        if (!this._view._shouldApplyStyleHandlers()) {
             return;
         }
 

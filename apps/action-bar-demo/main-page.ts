@@ -7,3 +7,14 @@ export function itemTap(args: observable.EventData) {
     });
 }
  
+export function setStyle(args) {
+    var page = args.object.actionBar.page;
+
+    page.css = "ActionBar { color: red; }";
+}
+
+export function clearStyle(args) {
+    var page = args.object.actionBar.page;
+
+    page.css = "Page { background-color: red; }";
+}

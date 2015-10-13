@@ -621,6 +621,28 @@ export class SearchBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class ActionBarStyler implements definition.stylers.Styler {
+    // color
+    private static setColorProperty(view: view.View, newValue: any) {
+        var toolbar = (<android.support.v7.widget.Toolbar>view._nativeView);
+        toolbar.setTitleTextColor(newValue);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        // there is no toolbar.getTitleTextColor - so default to black
+        if (types.isNullOrUndefined(nativeValue)) {
+            nativeValue = android.graphics.Color.BLACK;
+        }
+        (<android.support.v7.widget.Toolbar>view._nativeView).setTitleTextColor(nativeValue);
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            ActionBarStyler.setColorProperty,
+            ActionBarStyler.resetColorProperty), "ActionBar");
+    }
+}
+
 // Register all styler at the end.
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
@@ -630,4 +652,5 @@ export function _registerDefaultStylers() {
     ActivityIndicatorStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
     SearchBarStyler.registerHandlers();
+    ActionBarStyler.registerHandlers();
 }

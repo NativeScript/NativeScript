@@ -1092,6 +1092,11 @@ export class View extends proxy.ProxyObject implements definition.View {
         return this._isVisibleCache;
     }
 
+    public _shouldApplyStyleHandlers() {
+        // If we have native view we are ready to apply style handelr;
+        return !!this._nativeView;
+    }
+
     public focus(): boolean {
         return undefined;
     }

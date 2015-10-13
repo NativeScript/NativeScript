@@ -3,7 +3,8 @@
   <Page.actionBar>
     <ActionBar title="Title" class="custom-action-bar">
       <ActionBar.actionItems>
-        <ActionItem text="hi" />
+        <ActionItem text="set" tap="setStyle"/>
+        <ActionItem text="clear" tap="clearStyle"/>
       </ActionBar.actionItems>
     </ActionBar>
   </Page.actionBar>
