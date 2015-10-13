@@ -379,7 +379,7 @@ export var test_Observable_WhenCreatedWithJSON_PropertyChangedWithBracketsNotati
     TKUnit.assert(receivedCount === 1, "PropertyChanged event not raised properly.");
 }
 
-export function test_AddingTwoEventHandlersAndRemovingWithinHandlerShouldRaiseAllEvents() {
+export var test_AddingTwoEventHandlersAndRemovingWithinHandlerShouldRaiseAllEvents = function() {
     var observableInstance = new observable.Observable();
     var firstHandlerCalled = false;
     var secondHandlerCalled= false;
@@ -406,7 +406,7 @@ export function test_AddingTwoEventHandlersAndRemovingWithinHandlerShouldRaiseAl
     TKUnit.assertEqual(secondHandlerCalled, true);
 }
 
-export function test_Observable_shouldDistinguishSeparateObjects() {
+export var test_ObservableCreatedWithJSON_shouldDistinguishSeparateObjects = function () {
     var obj1 = {val: 1};
     var obj2 = {val: 2};
     var observable1 = new observable.Observable(obj1);
@@ -416,25 +416,66 @@ export function test_Observable_shouldDistinguishSeparateObjects() {
     var val2 = observable2.get("val");
     TKUnit.assert(val1 === 1 && val2 === 2, `Observable should keep separate objects separate! val1: ${val1}; val2: ${val2};`);
 
+    var propName1;
     var newValue1;
     observable1.on(observable.Observable.propertyChangeEvent, (data: observable.PropertyChangeData) => {
+        propName1 = data.propertyName;
         newValue1 = data.value;
     });
 
+    var propName2;
     var newValue2;
     observable2.on(observable.Observable.propertyChangeEvent, (data: observable.PropertyChangeData) => {
+        propName2 = data.propertyName;
         newValue2 = data.value;
     });
 
     observable1.set("val", 10);
     TKUnit.wait(0.1);
+    TKUnit.assert(propName1 === "val", "propName1 should be 'val'");
     TKUnit.assert(newValue1 === 10, "newValue1 should be 10");
 
     observable2.set("val", 20);
     TKUnit.wait(0.1);
+    TKUnit.assert(propName2 === "val", "propName2 should be 'val'");
     TKUnit.assert(newValue2 === 20, "newValue2 should be 20");
 
     val1 = observable1.get("val");
     val2 = observable2.get("val");
     TKUnit.assert(val1 === 10 && val2 === 20, `Observable should keep separate objects separate! val1: ${val1}; val2: ${val2};`);
+};
+
+export var test_ObservablesCreatedWithJSON_shouldNotInterfereWithOneAnother = function () {
+    var observable1 = new observable.Observable({ property1: 1 });
+    var observable2 = new observable.Observable({ property2: 2 });
+
+    TKUnit.assert(observable1.get("property1") === 1, `Expected: 1; Actual: ${observable1.get("property1")}`);
+    TKUnit.assert(observable1.get("property2") === undefined, `Expected: undefined; Actual: ${observable1.get("property2") }`);
+
+    TKUnit.assert(observable2.get("property1") === undefined, `Expected: undefined; Actual: ${observable2.get("property1") }`);
+    TKUnit.assert(observable2.get("property2") === 2, `Expected: 2; Actual: ${observable2.get("property2") }`);
+
+    var propName1;
+    var newValue1;
+    observable1.on(observable.Observable.propertyChangeEvent, (data: observable.PropertyChangeData) => {
+        propName1 = data.propertyName;
+        newValue1 = data.value;
+    });
+
+    var propName2;
+    var newValue2;
+    observable2.on(observable.Observable.propertyChangeEvent, (data: observable.PropertyChangeData) => {
+        propName2 = data.propertyName;
+        newValue2 = data.value;
+    });
+
+    observable1.set("property1", 10);
+    TKUnit.wait(0.1);
+    TKUnit.assert(propName1 === "property1", "propName1 should be 'property1'");
+    TKUnit.assert(newValue1 === 10, "newValue1 should be 10");
+
+    observable2.set("property2", 20);
+    TKUnit.wait(0.1);
+    TKUnit.assert(propName2 === "property2", "propName2 should be 'property2'");
+    TKUnit.assert(newValue2 === 20, "newValue2 should be 20");
 };
