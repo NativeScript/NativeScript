@@ -24,7 +24,7 @@ import scrollViewModule = require("ui/scroll-view");
 
 // </snippet>
 
-var ASYNC = 0.3;
+var ASYNC = 2;
 var tmp: buttonModule.Button;
 var newPage: page.Page;
 
@@ -236,9 +236,7 @@ export function test_scrollToHorizontalOffset_with_animation() {
     // No synchronous change. 
     TKUnit.assertEqual(scrollView.horizontalOffset, 0, "scrollView.horizontalOffset");
 
-    //For some reason this wait here causes the test to fail on PR builds.
-    //TKUnit.waitUntilReady(() => { return scrollView.horizontalOffset === 100 }, ASYNC);
-    TKUnit.wait(1);
+    TKUnit.waitUntilReady(() => { return scrollView.horizontalOffset === 100 }, ASYNC);
 
     // The scrolling animation should be finished by now
     TKUnit.assertAreClose(scrollView.horizontalOffset, 100, 0.1, "scrollView.horizontalOffset");

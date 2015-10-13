@@ -39,7 +39,7 @@ import tabViewModule = require("ui/tab-view");
 // ```
 // </snippet>
 
-var ASYNC = 0.3;
+var ASYNC = 2;
 
 function _createTabView(): tabViewModule.TabView {
     // <snippet module="ui/tab-view" title="TabView">
@@ -545,9 +545,7 @@ function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache
                 helper.goBack();
             }
             
-            //For some reason this wait here causes the test to fail on PR builds.
-            //TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
-            TKUnit.wait(1);
+            TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
 
             //console.log(">>>>>>>>>>>>> loaded items: " + loadedItems.join(", "));
             //console.log(">>>>>>>>>>>>> unloadedItems items: " + unloadedItems.join(", "));
