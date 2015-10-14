@@ -1,6 +1,7 @@
 ﻿import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
 import pageModule = require("ui/page");
+import viewModule = require("ui/core/view");
 import labelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import colorModule = require("color");
@@ -46,6 +47,7 @@ export var test_AnimatingProperties = function (done) {
         .then(() => {
             ////console.log("Animation finished.");
             // <hide>
+            assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
             // </hide>
@@ -85,6 +87,7 @@ export var test_CancellingAnimation = function (done) {
         .then(() => {
             ////console.log("Animation finished");
             // <hide>
+            assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
             // </hide>
@@ -130,6 +133,7 @@ export var test_ChainingAnimations = function (done) {
         .then(() => {
             ////console.log("Animation finished");
             // <hide>
+            assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
             // </hide>
@@ -176,6 +180,7 @@ export var test_ReusingAnimations = function (done) {
         .then(() => {
             ////console.log("Animation finished");
             // <hide>
+            assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
             // </hide>
@@ -227,6 +232,9 @@ export var test_AnimatingMultipleViews = function (done) {
         .then(() => {
             ////console.log("Animations finished");
             // <hide>
+            assertIOSNativeTransformIsCorrect(label1);
+            assertIOSNativeTransformIsCorrect(label2);
+            assertIOSNativeTransformIsCorrect(label3);
             helper.goBack();
             done();
             // </hide>
@@ -319,6 +327,7 @@ export var test_AnimateTranslate = function (done) {
         .then(() => {
             TKUnit.assert(label.translateX === 100);
             TKUnit.assert(label.translateY === 200);
+            assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
         })
@@ -348,6 +357,7 @@ export var test_AnimateScale = function (done) {
         .then(() => {
             TKUnit.assert(label.scaleX === 2);
             TKUnit.assert(label.scaleY === 3);
+            assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
         })
@@ -376,6 +386,7 @@ export var test_AnimateRotate = function (done) {
     label.animate({ rotate: 123 })
         .then(() => {
             TKUnit.assert(label.rotate === 123);
+            assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
         })
@@ -412,6 +423,7 @@ export var test_AnimateTranslateScaleAndRotateSimultaneously = function (done) {
             TKUnit.assert(label.scaleX === 2);
             TKUnit.assert(label.scaleY === 3);
             TKUnit.assert(label.rotate === 123);
+            assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
         })
@@ -419,6 +431,53 @@ export var test_AnimateTranslateScaleAndRotateSimultaneously = function (done) {
             helper.goBack();
             done(e);
         });
+}
+
+export var test_AnimateTranslateScaleAndRotateSequentially = function (done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function (): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
+
+    label.animate({translate: { x: 100, y: 200 }})
+    .then(() => {
+        TKUnit.assert(label.translateX === 100);
+        TKUnit.assert(label.translateY === 200);
+        assertIOSNativeTransformIsCorrect(label);
+        return label.animate({ scale: { x: 2, y: 3 } });
+    })
+    .then(() => {
+        TKUnit.assert(label.translateX === 100);
+        TKUnit.assert(label.translateY === 200);
+        TKUnit.assert(label.scaleX === 2);
+        TKUnit.assert(label.scaleY === 3);
+        assertIOSNativeTransformIsCorrect(label);
+        return label.animate({ rotate: 123 });
+    })
+    .then(() => {
+        TKUnit.assert(label.translateX === 100);
+        TKUnit.assert(label.translateY === 200);
+        TKUnit.assert(label.scaleX === 2);
+        TKUnit.assert(label.scaleY === 3);
+        TKUnit.assert(label.rotate === 123);
+        assertIOSNativeTransformIsCorrect(label);
+        helper.goBack();
+        done();
+    })
+    .catch((e) => {
+        helper.goBack();
+        done(e);
+    });
 }
 
 export var test_AnimationsAreAlwaysPlayed = function (done) {
@@ -517,4 +576,13 @@ export var test_PlayPromiseIsRejectedWhenAnimationIsCancelled = function (done) 
         });
 
     animation.cancel();
+}
+
+function assertIOSNativeTransformIsCorrect(view: viewModule.View) {
+    if (view.ios) {
+        var errorMessage = (<any>animation)._getTransformMismatchErrorMessage(view);
+        if (errorMessage) {
+            TKUnit.assert(false, errorMessage);
+        }
+    }
 }
