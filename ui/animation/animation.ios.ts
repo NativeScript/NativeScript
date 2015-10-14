@@ -1,5 +1,6 @@
 ﻿import definition = require("ui/animation");
 import common = require("./animation-common");
+import viewModule = require("ui/core/view");
 import trace = require("trace");
 
 global.moduleMerge(common, exports);
@@ -104,10 +105,11 @@ export class Animation extends common.Animation implements definition.Animation 
                     trace.write(that._finishedAnimations + " animations finished.", trace.categories.Animation);
 
                     // Update our properties on the view.
-                    var i = 0;
+                    // This should not change the native transform which is already updated by the animation itself.
+                    var i;
                     var len = that._propertyAnimations.length;
                     var a: common.PropertyAnimation;
-                    for (; i < len; i++) {
+                    for (i = 0; i < len; i++) {
                         a = that._propertyAnimations[i];
                         switch (a.property) {
                             case common.Properties.translate:
@@ -121,6 +123,15 @@ export class Animation extends common.Animation implements definition.Animation 
                                 a.target.scaleX = a.value.x;
                                 a.target.scaleY = a.value.y;
                                 break;
+                        }
+                    }
+
+                    // Validate that the properties of our view are aligned with the native transform matrix.
+                    for (i = 0; i < len; i++) {
+                        a = that._propertyAnimations[i];
+                        var errorMessage = _getTransformMismatchErrorMessage(a.target);
+                        if (errorMessage) {
+                            throw new Error(errorMessage);
                         }
                     }
 
@@ -201,7 +212,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 case _transform:
                     originalValue = nativeView.transform;
                     (<any>animation)._propertyResetCallback = () => { nativeView.transform = originalValue };
-                    nativeView.transform = animation.value;
+                    nativeView.transform = Animation._createNativeAffineTransform(animation);
                     break;
                 default:
                     throw new Error("Cannot animate " + animation.property);
@@ -216,6 +227,43 @@ export class Animation extends common.Animation implements definition.Animation 
             }
         }
     }
+
+    private static _createNativeAffineTransform(animation: common.PropertyAnimation): CGAffineTransform {
+        var view = animation.target;
+        var value = animation.value;
+
+        trace.write("Creating native affine transform. Curent transform is: " + NSStringFromCGAffineTransform(view._nativeView.transform), trace.categories.Animation);
+        
+        // Order is important: translate, rotate, scale
+        var result: CGAffineTransform = CGAffineTransformIdentity;
+        trace.write("Identity: " + NSStringFromCGAffineTransform(result), trace.categories.Animation);
+
+        if (value[common.Properties.translate] !== undefined) {
+            result = CGAffineTransformTranslate(result, value[common.Properties.translate].x, value[common.Properties.translate].y);
+        }
+        else {
+            result = CGAffineTransformTranslate(result, view.translateX, view.translateY);
+        }
+        trace.write("After translate: " + NSStringFromCGAffineTransform(result), trace.categories.Animation);
+
+        if (value[common.Properties.rotate] !== undefined) {
+            result = CGAffineTransformRotate(result, value[common.Properties.rotate] * Math.PI / 180);
+        }
+        else {
+            result = CGAffineTransformRotate(result, view.rotate * Math.PI / 180);
+        }
+        trace.write("After rotate: " + NSStringFromCGAffineTransform(result), trace.categories.Animation);
+
+        if (value[common.Properties.scale] !== undefined) {
+            result = CGAffineTransformScale(result, value[common.Properties.scale].x, value[common.Properties.scale].y);
+        }
+        else {
+            result = CGAffineTransformScale(result, view.scaleX, view.scaleY);
+        }
+        trace.write("After scale: " + NSStringFromCGAffineTransform(result), trace.categories.Animation);
+
+        return result;
+    } 
 
     private static _isAffineTransform(property: string): boolean {
         return property === _transform
@@ -236,20 +284,6 @@ export class Animation extends common.Animation implements definition.Animation 
         return result;
     }
 
-    private static _affineTransform(matrix: CGAffineTransform, property: string, value: any): CGAffineTransform {
-        switch (property) {
-            case common.Properties.translate:
-                return CGAffineTransformTranslate(matrix, value.x, value.y);
-            case common.Properties.rotate:
-                return CGAffineTransformRotate(matrix, value * Math.PI / 180);
-            case common.Properties.scale:
-                return CGAffineTransformScale(matrix, value.x, value.y);
-            default:
-                throw new Error("Cannot create transform for" + property);
-                break;
-        }
-    }
-
     private static _mergeAffineTransformAnimations(propertyAnimations: Array<common.PropertyAnimation>): Array<common.PropertyAnimation> {
         var result = new Array<common.PropertyAnimation>();
 
@@ -266,27 +300,31 @@ export class Animation extends common.Animation implements definition.Animation 
                 result.push(propertyAnimations[i]);
             }
             else {
-
                 // This animation has not been merged anywhere. Create a new transform animation.
+                // The value becomes a JSON object combining all affine transforms together like this:
+                // {
+                //    translate: {x: 100, y: 100 },
+                //    rotate: 90,
+                //    scale: {x: 2, y: 2 }
+                // }
                 var newTransformAnimation: common.PropertyAnimation = {
                     target: propertyAnimations[i].target,
                     property: _transform,
-                    value: Animation._affineTransform(CGAffineTransformIdentity, propertyAnimations[i].property, propertyAnimations[i].value),
+                    value: {}, 
                     duration: propertyAnimations[i].duration,
                     delay: propertyAnimations[i].delay,
                     iterations: propertyAnimations[i].iterations
                 };
+                newTransformAnimation.value[propertyAnimations[i].property] = propertyAnimations[i].value;
                 trace.write("Created new transform animation: " + common.Animation._getAnimationInfo(newTransformAnimation), trace.categories.Animation);
 
+                // Merge all compatible affine transform animations to the right into this new animation.
                 j = i + 1;
                 if (j < length) {
-                    // Merge all compatible affine transform animations to the right into this new animation.
                     for (; j < length; j++) {
                         if (Animation._canBeMerged(propertyAnimations[i], propertyAnimations[j])) {
-                            trace.write("Merging animations: " + common.Animation._getAnimationInfo(newTransformAnimation) + " + " + common.Animation._getAnimationInfo(propertyAnimations[j]) + " = ", trace.categories.Animation);
-                            trace.write("New native transform is: " + NSStringFromCGAffineTransform(newTransformAnimation.value), trace.categories.Animation);
-                            newTransformAnimation.value = Animation._affineTransform(newTransformAnimation.value, propertyAnimations[j].property, propertyAnimations[j].value);
-                            
+                            trace.write("Merging animations: " + common.Animation._getAnimationInfo(newTransformAnimation) + " + " + common.Animation._getAnimationInfo(propertyAnimations[j]) + ";", trace.categories.Animation);
+                            newTransformAnimation.value[propertyAnimations[j].property] = propertyAnimations[j].value;
                             // Mark that it has been merged so we can skip it on our outer loop.
                             propertyAnimations[j][_skip] = true;
                         }
@@ -299,4 +337,21 @@ export class Animation extends common.Animation implements definition.Animation 
 
         return result;
     }
+
+}
+
+export function _getTransformMismatchErrorMessage(view: viewModule.View): string {
+    // Order is important: translate, rotate, scale
+    var result: CGAffineTransform = CGAffineTransformIdentity;
+    result = CGAffineTransformTranslate(result, view.translateX, view.translateY);
+    result = CGAffineTransformRotate(result, view.rotate * Math.PI / 180);
+    result = CGAffineTransformScale(result, view.scaleX, view.scaleY);
+    var viewTransform = NSStringFromCGAffineTransform(result);
+    var nativeTransform = NSStringFromCGAffineTransform(view._nativeView.transform);
+
+    if (viewTransform !== nativeTransform) {
+        return "View and Native transforms do not match. View: " + viewTransform + "; Native: " + nativeTransform;
+    }
+
+    return undefined;
 }
