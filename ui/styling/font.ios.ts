@@ -169,16 +169,18 @@ export module ios {
 
 function registerCustomFonts() {
     var fontsFolderPath = fs.path.join(__dirname.substring(0, __dirname.indexOf("/tns_modules")), "fonts");
-    var fontsFolder = fs.Folder.fromPath(fontsFolderPath);
-    var onEachEntityFunc = function (fileEntity: fs.FileSystemEntity): boolean {
-        if (fs.Folder.exists(fs.path.join(fontsFolderPath, fileEntity.name))) {
+    if (fs.Folder.exists(fontsFolderPath)) {
+        var fontsFolder = fs.Folder.fromPath(fontsFolderPath);
+        var onEachEntityFunc = function (fileEntity: fs.FileSystemEntity): boolean {
+            if (fs.Folder.exists(fs.path.join(fontsFolderPath, fileEntity.name))) {
+                return true;
+            }
+            ios.registerFont(fileEntity.name);
             return true;
         }
-        ios.registerFont(fileEntity.name);
-        return true;
-    }
 
-    fontsFolder.eachEntity(onEachEntityFunc);
+        fontsFolder.eachEntity(onEachEntityFunc);
+    }
 }
 
 registerCustomFonts();
