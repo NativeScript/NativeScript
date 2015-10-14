@@ -1,4 +1,5 @@
 ﻿import {Page} from "ui/page";
+import * as trace from "trace";
 import tests = require("../testRunner");
 
 trace.enable();
