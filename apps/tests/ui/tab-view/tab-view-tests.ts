@@ -39,7 +39,7 @@ import tabViewModule = require("ui/tab-view");
 // ```
 // </snippet>
 
-var ASYNC = 0.3;
+var ASYNC = 2;
 
 function _createTabView(): tabViewModule.TabView {
     // <snippet module="ui/tab-view" title="TabView">
@@ -544,13 +544,14 @@ function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache
                 // Go back to the test page.
                 helper.goBack();
             }
+            
             TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
 
-            //console.log("loaded items: " + loadedItems.join(", "));
-            //console.log("unloadedItems items: " + unloadedItems.join(", "));
+            //console.log(">>>>>>>>>>>>> loaded items: " + loadedItems.join(", "));
+            //console.log(">>>>>>>>>>>>> unloadedItems items: " + unloadedItems.join(", "));
 
             // Check that at least the first item is loaded and unloaded
-            TKUnit.assert(items[0].view.isLoaded, "Thecontent of the first tab should be loaded.");
+            TKUnit.assert(items[0].view.isLoaded, "The content of the first tab should be loaded.");
             TKUnit.assertEqual(loadedItems[0], 1, "loaded count for 1st item");
             TKUnit.assertEqual(unloadedItems[0], 1, "unloaded count for 1st item");
 

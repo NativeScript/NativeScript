@@ -24,7 +24,7 @@ import scrollViewModule = require("ui/scroll-view");
 
 // </snippet>
 
-var ASYNC = 0.3;
+var ASYNC = 2;
 var tmp: buttonModule.Button;
 var newPage: page.Page;
 
