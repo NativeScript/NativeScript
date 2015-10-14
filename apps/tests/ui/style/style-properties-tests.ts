@@ -91,8 +91,11 @@ export function test_setting_minHeight_property_from_CSS_is_applied_to_Style() {
 }
 
 export function test_setting_verticalAlignment_property_from_CSS_is_applied_to_Style() {
-
     test_property_from_CSS_is_applied_to_style("verticalAlignment", "vertical-align", "bottom");
+}
+
+export function test_setting_verticalAlignment_middle_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("verticalAlignment", "vertical-align", "middle");
 }
 
 export function test_setting_horizontalAlignment_property_from_CSS_is_applied_to_Style() {
