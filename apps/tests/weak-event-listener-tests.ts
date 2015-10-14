@@ -135,21 +135,28 @@ export function test_handlerIsDetached_WhenAllListenersAreRemoved() {
     TKUnit.assert(!source.hasListeners(observable.Observable.propertyChangeEvent), "All events should be detached");
 }
 
-export function test_autoDetachingOfDeadReferences() {
+export function test_autoDetachingOfDeadReferences(done) {
     var source = new observable.Observable();
 
     for (var i = 0; i < 100; i++) {
         addListenerWithSource(source);
     }
+    try {
+        helper.forceGC();
 
-    helper.forceGC();
+        var target = new Target();
 
-    var target = new Target();
+        weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target.onEvent, target);
+        weakEvents.removeWeakEventListener(source, observable.Observable.propertyChangeEvent, target.onEvent, target)
 
-    weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target.onEvent, target);
-    weakEvents.removeWeakEventListener(source, observable.Observable.propertyChangeEvent, target.onEvent, target)
-
-    TKUnit.assert(!source.hasListeners(observable.Observable.propertyChangeEvent), "All events should be detached");
+        TKUnit.waitUntilReady(() => { return !source.hasListeners(observable.Observable.propertyChangeEvent); });
+        var testPass = (<any>source)._observers[observable.Observable.propertyChangeEvent] ? (<any>source)._observers[observable.Observable.propertyChangeEvent].length <= 1 : true;
+        TKUnit.assert(testPass, "All events should be detached");
+        done(null);
+    }
+    catch (e) {
+        done(e);
+    }
 }
 
 function addListenerWithSource(source: observable.Observable) {

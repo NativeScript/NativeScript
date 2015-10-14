@@ -81,10 +81,10 @@ export var testNativeBackgroundColorFromLocal = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testNativeBackgroundColorFromLocal);
 }
 
-export var testMemoryLeak = function () {
+export var testMemoryLeak = function (done) {
     helper.buildUIWithWeakRefAndInteract(_createButtonFunc, function (button) {
         buttonTestsNative.performNativeClick(button);
-    });
+    }, done);
 }
 
 var _createButtonFunc = function (): buttonModule.Button {

@@ -633,12 +633,7 @@ export function test_ConverterIsCalledJustOnce_onAddingItemsToListView() {
     helper.buildUIAndRunTest(listView, testAction);
 }
 
-export function test_no_memory_leak_when_items_is_regular_array() {
-    if (utils.ios) {
-        if (testRunner.isRunningOnEmulator() || utils.ios.MajorVersion > 8) {
-            return;
-        }
-    }
+export function test_no_memory_leak_when_items_is_regular_array(done) {
     var createFunc = function (): listViewModule.ListView {
         var listView = new listViewModule.ListView();
         listView.items = FEW_ITEMS;
@@ -647,15 +642,10 @@ export function test_no_memory_leak_when_items_is_regular_array() {
 
     helper.buildUIWithWeakRefAndInteract(createFunc, (list) => {
         TKUnit.assert(list.isLoaded, "ListView should be loaded here");
-    });
+    }, done);
 }
 
-export function test_no_memory_leak_when_items_is_observable_array() {
-    if (utils.ios) {
-        if (testRunner.isRunningOnEmulator() || utils.ios.MajorVersion > 8) {
-            return;
-        }
-    }
+export function test_no_memory_leak_when_items_is_observable_array(done) {
     // Keep the reference to the observable array to test the weakEventListener 
     var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
 
@@ -667,7 +657,7 @@ export function test_no_memory_leak_when_items_is_observable_array() {
 
     helper.buildUIWithWeakRefAndInteract(createFunc, (list) => {
         TKUnit.assert(list.isLoaded, "ListView should be loaded here");
-    });
+    }, done);
 }
 
 function loadViewWithItemNumber(args: listViewModule.ItemEventData) {

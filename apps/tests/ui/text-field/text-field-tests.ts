@@ -6,7 +6,6 @@ import pagesModule = require("ui/page");
 import textFieldTestsNative = require("./text-field-tests-native");
 import colorModule = require("color");
 import enums = require("ui/enums");
-import utils = require("utils/utils");
 
 // <snippet module="ui/text-field" title="TextField">
 // # TextField
@@ -428,13 +427,8 @@ export var testNativeTextAlignmentFromLocal = function () {
     });
 }
 
-export var testMemoryLeak = function () {
-    if (utils.ios) {
-        if (testRunner.isRunningOnEmulator() || utils.ios.MajorVersion > 8) {
-            return;
-        }
-    }
+export var testMemoryLeak = function (done) {
     helper.buildUIWithWeakRefAndInteract(_createTextFieldFunc, function (textField) {
         textFieldTestsNative.typeTextNatively(textField, "Hello, world!");
-    });
+    }, done);
 }

@@ -155,7 +155,7 @@ export function navigateToModuleAndRunTest(moduleName, context, testFunction) {
     }
 }
 
-export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: () => T, interactWithViewFunc?: (view: T) => void) {
+export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: () => T, interactWithViewFunc?: (view: T) => void, done?) {
     var newPage: page.Page;
     var testFinished = false;
     var pageFactory = function (): page.Page {
@@ -167,23 +167,28 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
         newPage.on("loaded", () => {
             loaded = true;
             var weakRef = new WeakRef(createFunc());
+            try {
+                sp.addChild(weakRef.get());
 
-            sp.addChild(weakRef.get());
+                if (interactWithViewFunc) {
+                    interactWithViewFunc(weakRef.get());
+                }
 
-            if (interactWithViewFunc) {
-                interactWithViewFunc(weakRef.get());
+                sp.removeChild(weakRef.get());
+                if (newPage.ios) {
+                    // Could cause GC on the next call.
+                    // NOTE: Don't replace this with forceGC();
+                    new ArrayBuffer(4 * 1024 * 1024);
+                }
+                utils.GC();
+
+                TKUnit.waitUntilReady(() => { return weakRef.get() ? !(weakRef.get().isLoaded) : true; }, MEMORY_ASYNC);
+                TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
+                testFinished = true;
             }
-
-            sp.removeChild(weakRef.get());
-            if (newPage.ios) {
-                // Could cause GC on the next call.
-                // NOTE: Don't replace this with forceGC();
-                new ArrayBuffer(4 * 1024 * 1024);
+            catch (e) {
+                done(e);
             }
-            utils.GC();
-
-            TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
-            testFinished = true;
         });
 
         return newPage;
@@ -195,6 +200,7 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
     }
     finally {
         goBack();
+        done(null);
     }
 }
 
