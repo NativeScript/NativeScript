@@ -105,7 +105,7 @@ public class TabLayout extends HorizontalScrollView {
     /**
      * Set the custom {@link TabColorizer} to be used.
      *
-     * If you only require simple custmisation then you can use
+     * If you only require simple customisation then you can use
      * {@link #setSelectedIndicatorColors(int...)} to achieve similar effects.
      */
     public void setCustomTabColorizer(TabColorizer tabColorizer) {
@@ -158,13 +158,34 @@ public class TabLayout extends HorizontalScrollView {
     }
 
     /**
-     * Updates the ui of an item at specified index
+     * Updates the UI of an item at specified index
      */
     public void updateItemAt(int position, TabItemSpec tabItem) {
         LinearLayout ll = (LinearLayout)mTabStrip.getChildAt(position);
         ImageView imgView = (ImageView)ll.getChildAt(0);
         TextView textView = (TextView)ll.getChildAt(1);
         this.setupItem(ll, textView, imgView, tabItem);
+    }
+  
+    /**
+     * Gets the TextView for tab item at index
+     */
+    public TextView getTextViewForItemAt(int index){
+        LinearLayout ll = this.getViewForItemAt(index);
+        return  (ll != null) ? (TextView)ll.getChildAt(1) : null;       
+    }
+    
+    /**
+     * Gets the LinearLayout container for tab item at index
+     */
+    public LinearLayout getViewForItemAt(int index){
+        LinearLayout result = null;
+        
+        if(this.mTabStrip.getChildCount() > index){
+            result = (LinearLayout)this.mTabStrip.getChildAt(index);
+        }
+        
+        return result;
     }
 
     /**
