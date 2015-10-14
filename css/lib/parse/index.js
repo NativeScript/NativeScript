@@ -2,7 +2,7 @@
 // https://github.com/visionmedia/css-parse/pull/49#issuecomment-30088027
 var commentre = /\/\*[^*]*\*+([^/*][^*]*\*+)*\//g
 
-module.exports.parse = function(css, options){
+module.exports = function(css, options){
   options = options || {};
 
   /**
@@ -56,26 +56,21 @@ module.exports.parse = function(css, options){
    * Error `msg`.
    */
 
+  var errorsList = [];
+
   function error(msg) {
-      if (options.silent === true) {
-          return false;
-      };
+    var err = new Error(options.source + ':' + lineno + ':' + column + ': ' + msg);
+    err.reason = msg;
+    err.filename = options.source;
+    err.line = lineno;
+    err.column = column;
+    err.source = css;
 
-      var errorMessage;
-      if (options.source) {
-          errorMessage = options.source + ':' + lineno + ':' + column + ': ' + msg;
-      }
-      else {
-          errorMessage = "Parsing '" + css + "' issue an error: " + msg;
-      }
-
-      var err = new Error(errorMessage);
-      err.reason = msg;
-      err.filename = options.source;
-      err.line = lineno;
-      err.column = column;
-      err.source = css;
+    if (options.silent) {
+      errorsList.push(err);
+    } else {
       throw err;
+    }
   }
 
   /**
@@ -83,10 +78,13 @@ module.exports.parse = function(css, options){
    */
 
   function stylesheet() {
+    var rulesList = rules();
+
     return {
       type: 'stylesheet',
       stylesheet: {
-        rules: rules()
+        rules: rulesList,
+        parsingErrors: errorsList
       }
     };
   }
@@ -200,7 +198,7 @@ module.exports.parse = function(css, options){
      * http://ostermiller.org/findcomment.html */
     return trim(m[0])
       .replace(/\/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*\/+/g, '')
-      .replace(/(?:"[^"]*"|'[^']*')/g, function(m) {
+      .replace(/"(?:\\"|[^"])*"|'(?:\\'|[^'])*'/g, function(m) {
         return m.replace(/,/g, '\u200C');
       })
       .split(/\s*(?![^(]*\)),\s*/)
@@ -291,7 +289,7 @@ module.exports.parse = function(css, options){
 
   function atkeyframes() {
     var pos = position();
-    var m = match(/^@([-\w]+)?keyframes */);
+    var m = match(/^@([-\w]+)?keyframes\s*/);
 
     if (!m) return;
     var vendor = m[1];
@@ -350,7 +348,7 @@ module.exports.parse = function(css, options){
 
   function athost() {
     var pos = position();
-    var m = match(/^@host */);
+    var m = match(/^@host\s*/);
 
     if (!m) return;
 
@@ -397,7 +395,7 @@ module.exports.parse = function(css, options){
 
   function atcustommedia() {
     var pos = position();
-    var m = match(/^@custom-media (--[^\s]+) *([^{;]+);/);
+    var m = match(/^@custom-media\s+(--[^\s]+)\s*([^{;]+);/);
     if (!m) return;
 
     return pos({
@@ -469,7 +467,7 @@ module.exports.parse = function(css, options){
 
   function atfontface() {
     var pos = position();
-    var m = match(/^@font-face */);
+    var m = match(/^@font-face\s*/);
     if (!m) return;
 
     if (!open()) return error("@font-face missing '{'");
@@ -514,7 +512,7 @@ module.exports.parse = function(css, options){
 
 
   function _compileAtrule(name) {
-    var re = new RegExp('^@' + name + ' *([^;\\n]+);');
+    var re = new RegExp('^@' + name + '\\s*([^;]+);');
     return function() {
       var pos = position();
       var m = match(re);
