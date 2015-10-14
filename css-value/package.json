@@ -8,5 +8,10 @@
     "type": "git",
     "url": "git://github.com/visionmedia/css-value.git"
   },
-  "main": "reworkcss-value.js"
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "~1.9.0",
+    "should": "~1.2.2"
+  },
+  "main": "index"
 }
