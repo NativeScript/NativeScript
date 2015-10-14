@@ -75,7 +75,7 @@ export function test_default_TNS_values() {
     TKUnit.assertEqual(scrollView.horizontalOffset, 0, "Default scrollView.horizontalOffset");
 }
 
-export function test_vertical_oriantation_creates_correct_native_view() {
+export function test_vertical_orientation_creates_correct_native_view() {
     scrollView.orientation = enums.Orientation.vertical;
 
     if (app.android) {
@@ -86,7 +86,7 @@ export function test_vertical_oriantation_creates_correct_native_view() {
     }
 }
 
-export function test_horizontal_oriantation_creates_correct_native_view() {
+export function test_horizontal_orientation_creates_correct_native_view() {
     scrollView.orientation = enums.Orientation.horizontal;
 
     if (app.android) {
@@ -97,7 +97,7 @@ export function test_horizontal_oriantation_creates_correct_native_view() {
     }
 }
 
-export function test_scrollabeHeight_vertical_orientation_when_content_is_small() {
+export function test_scrollableHeight_vertical_orientation_when_content_is_small() {
     scrollView.orientation = enums.Orientation.vertical;
     scrollView.width = 200;
     scrollView.height = 300;
@@ -112,7 +112,7 @@ export function test_scrollabeHeight_vertical_orientation_when_content_is_small(
     TKUnit.assertEqual(scrollView.scrollableWidth, 0, "scrollView.scrollableWidth");
 }
 
-export function test_scrollabeHeight_vertical_orientation_when_content_is_big() {
+export function test_scrollableHeight_vertical_orientation_when_content_is_big() {
     scrollView.orientation = enums.Orientation.vertical;
 
     scrollView.width = 200;
@@ -129,7 +129,7 @@ export function test_scrollabeHeight_vertical_orientation_when_content_is_big() 
 
 }
 
-export function test_scrollabeWidth_horizontal_orientation_when_content_is_small() {
+export function test_scrollableWidth_horizontal_orientation_when_content_is_small() {
     scrollView.orientation = enums.Orientation.vertical;
     scrollView.width = 200;
     scrollView.height = 300;
@@ -144,7 +144,7 @@ export function test_scrollabeWidth_horizontal_orientation_when_content_is_small
     TKUnit.assertEqual(scrollView.scrollableWidth, 0, "scrollView.scrollableWidth");
 }
 
-export function test_scrollabeWidth_horizontal_orientation_when_content_is_big() {
+export function test_scrollableWidth_horizontal_orientation_when_content_is_big() {
     scrollView.orientation = enums.Orientation.horizontal;
 
     scrollView.width = 200;
@@ -298,4 +298,20 @@ export function test_scrollView_persistsState_horizontal() {
 
     // Check verticalOffset after navigation
     TKUnit.assertAreClose(scrollView.horizontalOffset, 100, 0.1, "scrollView.horizontalOffset after navigation");
+}
+
+export function test_scrollView_addChild_removeChild() {
+    scrollView.orientation = enums.Orientation.horizontal;
+
+    scrollView.width = 100;
+    scrollView.height = 100;
+
+    var btn = new button.Button();
+    btn.text = "test";
+    scrollView.addChild(btn);
+
+    TKUnit.assertEqual(scrollView.content, btn, "scrollView.content addChild");
+
+    scrollView.removeChild();
+    TKUnit.assertNull(scrollView.content, "scrollView.content removeChild");
 }

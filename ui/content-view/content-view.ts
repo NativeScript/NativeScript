@@ -71,4 +71,12 @@ export class ContentView extends view.CustomLayoutView implements definition.Con
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         view.View.layoutChild(this, this.content, 0, 0, right - left, bottom - top);
     }
+
+    public addChild(value: view.View): void {
+        this.content = value;
+    }
+
+    public removeChild(): void {
+        this.content = null;
+    }
 }
