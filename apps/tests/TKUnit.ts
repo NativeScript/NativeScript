@@ -115,7 +115,7 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
                 runTests(testsQueue, recursiveIndex + 1);
             }
             else {
-                setTimeout(checkFinished, 200);
+                setTimeout(checkFinished, 10);
             }
         }
     }
@@ -208,8 +208,15 @@ export function assertNull(actual: any, message?: string) {
     }
 };
 
-export function assertAreClose(actual: number, expected: number, delta: number, message?: string) {
+export function areClose(actual: number, expected: number, delta: number): boolean {
     if (isNaN(actual) || Math.abs(actual - expected) > delta) {
+        return false;
+    }
+
+    return true;
+}
+export function assertAreClose(actual: number, expected: number, delta: number, message?: string) {
+    if (!areClose(actual, expected, delta)) {
         throw new Error(message + " Numbers are not close enough. Actual: " + actual + " Expected: " + expected + " Delta: " + delta);
     }
 };

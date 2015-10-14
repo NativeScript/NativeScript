@@ -8,8 +8,8 @@ import navHelper = require("../ui/helper");
 import utils = require("utils/utils");
 import builder = require("ui/builder");
 import enums = require("ui/enums");
+import testModule = require("../ui-test");
 
-var ASYNC = 2;
 var DELTA = 1;
 
 export class MyGridLayout extends layout.GridLayout {
@@ -35,660 +35,628 @@ export class MyGridLayout extends layout.GridLayout {
     }
 }
 
-var tmp: Button;
-var newPage: page.Page;
-var rootLayout: MyGridLayout;
+export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
-export function setUpModule() {
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page;
-        tmp = new Button();
-        tmp.text = "Loading test";
-        newPage.content = tmp;
-        return newPage;
-    };
-    navHelper.navigate(pageFactory);
-}
+    public create(): layout.GridLayout {
+        return new MyGridLayout();
+    }
 
-export function tearDownModule() {
-    navHelper.goBack();
+    private row(view: view.View): number {
+        return layout.GridLayout.getRow(view);
+    }
 
-    tmp = null;
-    newPage = null;
-    rootLayout = null;
-}
+    private rowSpan(view: view.View): number {
+        return layout.GridLayout.getRowSpan(view);
+    }
 
-export function setUp() {
-    rootLayout = new MyGridLayout();
-    newPage.content = rootLayout;
-}
+    private col(view: view.View): number {
+        return layout.GridLayout.getColumn(view);
+    }
 
-export function tearDown() {
-    newPage.content = tmp;
-}
+    private colSpan(view: view.View): number {
+        return layout.GridLayout.getColumnSpan(view);
+    }
 
-function row(view: view.View): number {
-    return layout.GridLayout.getRow(view);
-}
+    private prepareGridLayout(wait?: boolean) {
 
-function rowSpan(view: view.View): number {
-    return layout.GridLayout.getRowSpan(view);
-}
+        this.testView.addRow(new layout.ItemSpec(1, layout.GridUnitType.star));
+        this.testView.addRow(new layout.ItemSpec(2, layout.GridUnitType.star));
+        this.testView.addRow(new layout.ItemSpec(50, layout.GridUnitType.pixel));
+        this.testView.addRow(new layout.ItemSpec(50, layout.GridUnitType.auto));
 
-function col(view: view.View): number {
-    return layout.GridLayout.getColumn(view);
-}
+        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
+        this.testView.addColumn(new layout.ItemSpec(2, layout.GridUnitType.star));
+        this.testView.addColumn(new layout.ItemSpec(50, layout.GridUnitType.pixel));
+        this.testView.addColumn(new layout.ItemSpec(50, layout.GridUnitType.auto));
 
-function colSpan(view: view.View): number {
-    return layout.GridLayout.getColumnSpan(view);
-}
+        for (var r = 0; r < 4; r++) {
+            for (var c = 0; c < 4; c++) {
+                var btn = new helper.MyButton();
+                btn.text = "R" + r + "C" + c;
+                layout.GridLayout.setColumn(btn, c);
+                layout.GridLayout.setRow(btn, r);
+                if (c === 3) {
+                    btn.width = 100; // Auto column should take 100px for this test.
+                }
 
-export function test_row_defaultValue() {
-    var test = new Button();
-    TKUnit.assert(test !== null);
-    TKUnit.assertEqual(row(test), 0, "'row' property default value should be 0.");
-}
+                if (r === 3) {
+                    btn.height = 100; // Auto row should take 100px for this test.
+                }
 
-export function test_rowSpan_defaultValue() {
-    var test = new Button();
-    TKUnit.assert(test !== null);
-    TKUnit.assertEqual(rowSpan(test), 1, "'rowSpan' property default value should be 1.");
-}
+                this.testView.addChild(btn);
+            }
+        }
 
-export function test_column_defaultValue() {
-    var test = new Button();
-    TKUnit.assert(test !== null);
-    TKUnit.assertEqual(col(test), 0, "'column' property default value should be 0.");
-}
+        this.testView.width = 300;
+        this.testView.height = 300;
 
-export function test_columnSpan_defaultValue() {
-    var test = new Button();
-    TKUnit.assert(test !== null);
-    TKUnit.assertEqual(colSpan(test), 1, "'columnSpan' property default value should be 1.");
-}
+        if (wait) {
+            this.waitUntilTestElementLayoutIsValid();
+        }
+    }
 
-export function test_getRow_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.getRow(null);
-    }, "getRow called with null should throw exception");
-}
+    public test_row_defaultValue() {
+        var test = new Button();
+        TKUnit.assert(test !== null);
+        TKUnit.assertEqual(this.row(test), 0, "'row' property default value should be 0.");
+    }
 
-export function test_getRowSpan_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.getRowSpan(null);
-    }, "getRowSpan called with null should throw exception");
-}
+    public test_rowSpan_defaultValue() {
+        var test = new Button();
+        TKUnit.assert(test !== null);
+        TKUnit.assertEqual(this.rowSpan(test), 1, "'rowSpan' property default value should be 1.");
+    }
 
-export function test_getColumn_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.getColumn(null);
-    }, "getColumn called with null should throw exception");
-}
+    public test_column_defaultValue() {
+        var test = new Button();
+        TKUnit.assert(test !== null);
+        TKUnit.assertEqual(this.col(test), 0, "'column' property default value should be 0.");
+    }
 
-export function test_getColumnSpan_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.getColumnSpan(null);
-    }, "getColumnSpan called with null should throw exception");
-}
+    public test_columnSpan_defaultValue() {
+        var test = new Button();
+        TKUnit.assert(test !== null);
+        TKUnit.assertEqual(this.colSpan(test), 1, "'columnSpan' property default value should be 1.");
+    }
 
-export function test_setRow_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.setRow(null, 1);
-    }, "setRow called with null should throw exception");
-}
+    public test_getRow_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.getRow(null);
+        }, "getRow called with null should throw exception");
+    }
 
-export function test_setRowSpan_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.setRowSpan(null, 1);
-    }, "setRowSpan called with null should throw exception");
-}
+    public test_getRowSpan_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.getRowSpan(null);
+        }, "getRowSpan called with null should throw exception");
+    }
 
-export function test_setColumn_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.setColumn(null, 1);
-    }, "setColumn called with null should throw exception")
-}
+    public test_getColumn_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.getColumn(null);
+        }, "getColumn called with null should throw exception");
+    }
 
-export function test_setColumnSpan_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.setColumnSpan(null, 1);
-    }, "setColumnSpan called with null should throw exception");
-}
+    public test_getColumnSpan_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.getColumnSpan(null);
+        }, "getColumnSpan called with null should throw exception");
+    }
 
-export function test_setRow_shouldThrow_onNegativeValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.setRow(tmp, -1);
-    }, "setRow should throw when value < 0");
-}
+    public test_setRow_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.setRow(null, 1);
+        }, "setRow called with null should throw exception");
+    }
 
-export function test_setRowSpan_shouldThrow_onNotPositiveValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.setRowSpan(tmp, 0);
-    }, "setRowSpan should throw when value <= 0");
-}
+    public test_setRowSpan_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.setRowSpan(null, 1);
+        }, "setRowSpan called with null should throw exception");
+    }
 
-export function test_setColumn_shouldThrow_onNegativeValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.setColumn(tmp, -1);
-    }, "setColumn should when value < 0");
-}
+    public test_setColumn_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.setColumn(null, 1);
+        }, "setColumn called with null should throw exception")
+    }
 
-export function test_setColumnSpan_shouldThrow_onNotPositiveValues() {
-    TKUnit.assertThrows(() => {
-        layout.GridLayout.setColumnSpan(tmp, 0);
-    }, "setColumnSpan should throw when value <= 0");
-}
+    public test_setColumnSpan_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.setColumnSpan(null, 1);
+        }, "setColumnSpan called with null should throw exception");
+    }
 
-export function test_addRow_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        rootLayout.addRow(null);
-    }, "addRow called with null should throw exception");
-}
+    public test_setRow_shouldThrow_onNegativeValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.setRow(new Button(), -1);
+        }, "setRow should throw when value < 0");
+    }
 
-export function test_addColumn_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        rootLayout.addColumn(null);
-    }, "addColumn called with null should throw exception");
-}
+    public test_setRowSpan_shouldThrow_onNotPositiveValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.setRowSpan(new Button(), 0);
+        }, "setRowSpan should throw when value <= 0");
+    }
 
-export function test_removeRow_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        rootLayout.removeRow(null);
-    }, "removeRow called with null should throw exception");
-}
+    public test_setColumn_shouldThrow_onNegativeValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.setColumn(new Button(), -1);
+        }, "setColumn should when value < 0");
+    }
 
-export function test_removeColumn_shouldThrow_onNullValues() {
-    TKUnit.assertThrows(() => {
-        rootLayout.removeColumn(null);
-    }, "removeColumn called with null should throw exception");
-}
+    public test_setColumnSpan_shouldThrow_onNotPositiveValues() {
+        TKUnit.assertThrows(() => {
+            layout.GridLayout.setColumnSpan(new Button(), 0);
+        }, "setColumnSpan should throw when value <= 0");
+    }
 
-export function test_removeColumns() {
-    prepareGridLayout(false);
-    TKUnit.assertTrue(rootLayout.getColumns().length > 0, "There should be columns.");
-    rootLayout.removeColumns();
-    TKUnit.assertTrue(rootLayout.getColumns().length === 0, "Columns should be empty.");
-}
+    public test_addRow_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            this.testView.addRow(null);
+        }, "addRow called with null should throw exception");
+    }
 
-export function test_removeRows() {
-    prepareGridLayout(false);
-    TKUnit.assertTrue(rootLayout.getRows().length > 0, "There should be rows.");
-    rootLayout.removeRows();
-    TKUnit.assertTrue(rootLayout.getRows().length === 0, "Rows should be empty.");
-}
+    public test_addColumn_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            this.testView.addColumn(null);
+        }, "addColumn called with null should throw exception");
+    }
 
-export function test_removeChildren() {
-    prepareGridLayout(false);
-    TKUnit.assertTrue(rootLayout.getChildrenCount() > 0, "There should be children.");
-    rootLayout.removeChildren();
-    TKUnit.assertTrue(rootLayout.getChildrenCount() === 0, "Childrens should be empty.");
-}
+    public test_removeRow_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            this.testView.removeRow(null);
+        }, "removeRow called with null should throw exception");
+    }
 
-export function test_measuredWidth_when_not_stretched_single_column() {
-    rootLayout.horizontalAlignment = enums.HorizontalAlignment.center;
-    let btn = new Button();
-    btn.text = "A";
-    rootLayout.addChild(btn);
-    TKUnit.waitUntilReady(function () {
-        return rootLayout.isLayoutValid;
-    }, ASYNC);
+    public test_removeColumn_shouldThrow_onNullValues() {
+        TKUnit.assertThrows(() => {
+            this.testView.removeColumn(null);
+        }, "removeColumn called with null should throw exception");
+    }
 
-    TKUnit.assertTrue(btn.getMeasuredWidth() === rootLayout.getMeasuredWidth());
-}
+    public test_removeColumns() {
+        this.prepareGridLayout(false);
+        TKUnit.assertTrue(this.testView.getColumns().length > 0, "There should be columns.");
+        this.testView.removeColumns();
+        TKUnit.assertTrue(this.testView.getColumns().length === 0, "Columns should be empty.");
+    }
 
-export function test_measuredWidth_when_not_stretched_two_columns() {
-    rootLayout.horizontalAlignment = enums.HorizontalAlignment.center;
-    rootLayout.addColumn(new layout.ItemSpec(80, layout.GridUnitType.pixel));
-    rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
+    public test_removeRows() {
+        this.prepareGridLayout(false);
+        TKUnit.assertTrue(this.testView.getRows().length > 0, "There should be rows.");
+        this.testView.removeRows();
+        TKUnit.assertTrue(this.testView.getRows().length === 0, "Rows should be empty.");
+    }
 
-    let btn = new Button();
-    btn.text = "A";
-    btn.width = 100;
-    MyGridLayout.setColumnSpan(btn, 2);
-    rootLayout.addChild(btn);
-    TKUnit.waitUntilReady(function () {
-        return rootLayout.isLayoutValid;
-    }, ASYNC);
+    public test_removeChildren() {
+        this.prepareGridLayout(false);
+        TKUnit.assertTrue(this.testView.getChildrenCount() > 0, "There should be children.");
+        this.testView.removeChildren();
+        TKUnit.assertTrue(this.testView.getChildrenCount() === 0, "Childrens should be empty.");
+    }
 
-    var density = utils.layout.getDisplayDensity();
-    var delta = Math.floor(density) !== density ? 2 : DELTA;
-    var cols = rootLayout.getColumns();
-    TKUnit.assertAreClose(cols[0].actualLength, 80, delta);
-    TKUnit.assertAreClose(cols[1].actualLength, 20, delta);
-    TKUnit.assertAreClose(rootLayout.getMeasuredWidth(), 100 * density, delta);
-}
-
-export function test_measuredWidth_when_not_stretched_three_columns() {
-    rootLayout.horizontalAlignment = enums.HorizontalAlignment.center;
-    rootLayout.addColumn(new layout.ItemSpec(80, layout.GridUnitType.pixel));
-    rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
-    rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.auto));
-
-    for (let i = 1; i < 4; i++) {
+    public test_measuredWidth_when_not_stretched_single_column() {
+        this.testView.horizontalAlignment = enums.HorizontalAlignment.center;
         let btn = new Button();
         btn.text = "A";
-        btn.width = i * 20;
-        MyGridLayout.setColumn(btn, i - 1);
-        rootLayout.addChild(btn);
+        this.testView.addChild(btn);
+
+        this.waitUntilTestElementLayoutIsValid();
+
+        TKUnit.assertTrue(btn.getMeasuredWidth() === this.testView.getMeasuredWidth());
     }
 
-    let btn = new Button();
-    btn.text = "B";
-    btn.width = 100;
-    MyGridLayout.setColumnSpan(btn, 3);
-    rootLayout.addChild(btn);
-    TKUnit.waitUntilReady(function () {
-        return rootLayout.isLayoutValid;
-    }, ASYNC);
+    public test_measuredWidth_when_not_stretched_two_columns() {
+        this.testView.horizontalAlignment = enums.HorizontalAlignment.center;
+        this.testView.addColumn(new layout.ItemSpec(80, layout.GridUnitType.pixel));
+        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
 
-    var density = utils.layout.getDisplayDensity();
-    var delta = Math.floor(density) !== density ? 2 : DELTA;
-    var cols = rootLayout.getColumns();
-    TKUnit.assertAreClose(cols[0].actualLength, 80, delta);
-    TKUnit.assertAreClose(cols[1].actualLength, 40, delta);
-    TKUnit.assertAreClose(cols[2].actualLength, 60, delta);
-    TKUnit.assertAreClose(rootLayout.getMeasuredWidth(), 180 * density, delta);
-}
+        let btn = new Button();
+        btn.text = "A";
+        btn.width = 100;
+        MyGridLayout.setColumnSpan(btn, 2);
+        this.testView.addChild(btn);
 
-export function test_getRows_shouldNotReturnNULL() {
-    var rows = rootLayout.getRows();
-    TKUnit.assert(rows, "getRows should not return null/undefinied");
-}
+        this.waitUntilTestElementLayoutIsValid();
 
-export function test_getColumns_shouldNotReturnNULL() {
-    var cols = rootLayout.getColumns();
-    TKUnit.assert(cols, "getColumns should not return null/undefinied");
-}
-
-export function test_ItemSpec_actualLength_defaultValue() {
-    var def = new layout.ItemSpec(1, layout.GridUnitType.auto);
-    TKUnit.assertEqual(def.actualLength, 0, "'actualLength' property default value should be 0.");
-}
-
-export function test_ItemSpec_constructor_throws_onNegativeValue() {
-    TKUnit.assertThrows(() => {
-        new layout.ItemSpec(-1, layout.GridUnitType.auto);
-    }, "'value' should be positive number.");
-}
-
-export function test_ItemSpec_constructor_doesnt_throw_onCorrectType() {
-    try {
-        new layout.ItemSpec(1, layout.GridUnitType.auto);
-        new layout.ItemSpec(1, layout.GridUnitType.star);
-        new layout.ItemSpec(1, layout.GridUnitType.pixel);
+        var density = utils.layout.getDisplayDensity();
+        var delta = Math.floor(density) !== density ? 2 : DELTA;
+        var cols = this.testView.getColumns();
+        TKUnit.assertAreClose(cols[0].actualLength, 80, delta);
+        TKUnit.assertAreClose(cols[1].actualLength, 20, delta);
+        TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 100 * density, delta);
     }
-    catch (ex) {
-        TKUnit.assert(false, "ItemSpec type should support auto, star and pixel.");
+
+    public test_measuredWidth_when_not_stretched_three_columns() {
+        this.testView.horizontalAlignment = enums.HorizontalAlignment.center;
+        this.testView.addColumn(new layout.ItemSpec(80, layout.GridUnitType.pixel));
+        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
+        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.auto));
+
+        for (let i = 1; i < 4; i++) {
+            let btn = new Button();
+            btn.text = "A";
+            btn.width = i * 20;
+            MyGridLayout.setColumn(btn, i - 1);
+            this.testView.addChild(btn);
+        }
+
+        let btn = new Button();
+        btn.text = "B";
+        btn.width = 100;
+        MyGridLayout.setColumnSpan(btn, 3);
+        this.testView.addChild(btn);
+
+        this.waitUntilTestElementLayoutIsValid();
+
+        var density = utils.layout.getDisplayDensity();
+        var delta = Math.floor(density) !== density ? 2 : DELTA;
+        var cols = this.testView.getColumns();
+        TKUnit.assertAreClose(cols[0].actualLength, 80, delta);
+        TKUnit.assertAreClose(cols[1].actualLength, 40, delta);
+        TKUnit.assertAreClose(cols[2].actualLength, 60, delta);
+        TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 180 * density, delta);
     }
-}
 
-export function test_ItemSpec_constructor_throws_onWrongType() {
-    TKUnit.assertThrows(() => {
-        new layout.ItemSpec(1, "unsupported");
-    }, "'ItemSpec type' incorrect value.");
-}
+    public test_getRows_shouldNotReturnNULL() {
+        var rows = this.testView.getRows();
+        TKUnit.assert(rows, "getRows should not return null/undefinied");
+    }
 
-export function test_ItemSpec_auto() {
-    var w = new layout.ItemSpec(1, layout.GridUnitType.auto);
-    TKUnit.assertEqual(w.gridUnitType, layout.GridUnitType.auto, "'gridUnitType' property default value should be 'auto'");
-    TKUnit.assertEqual(w.isAbsolute, false, "'isAbsolute' property default value should be 'false'");
-    TKUnit.assertEqual(w.isAuto, true, "'isAuto' property default value should be 'false'");
-    TKUnit.assertEqual(w.isStar, false, "'isAuto' property default value should be 'true'");
-    TKUnit.assertEqual(w.value, 1, "'value' property default value should be '1'");
-}
+    public test_getColumns_shouldNotReturnNULL() {
+        var cols = this.testView.getColumns();
+        TKUnit.assert(cols, "getColumns should not return null/undefinied");
+    }
 
-export function test_ItemSpec_unitType_pixel() {
-    var w = new layout.ItemSpec(6, layout.GridUnitType.pixel);
-    TKUnit.assertEqual(w.gridUnitType, layout.GridUnitType.pixel, "'gridUnitType' property default value should be 'pixel'");
-    TKUnit.assertEqual(w.isAbsolute, true, "'isAbsolute' property default value should be 'false'");
-    TKUnit.assertEqual(w.isAuto, false, "'isAuto' property default value should be 'false'");
-    TKUnit.assertEqual(w.isStar, false, "'isAuto' property default value should be 'true'");
-    TKUnit.assertEqual(w.value, 6, "'value' property default value should be '1'");
-}
+    public test_ItemSpec_actualLength_defaultValue() {
+        var def = new layout.ItemSpec(1, layout.GridUnitType.auto);
+        TKUnit.assertEqual(def.actualLength, 0, "'actualLength' property default value should be 0.");
+    }
 
-export function test_ItemSpec_unitType() {
-    var w = new layout.ItemSpec(2, layout.GridUnitType.star);
-    TKUnit.assertEqual(w.gridUnitType, layout.GridUnitType.star, "'gridUnitType' property default value should be 'star'");
-    TKUnit.assertEqual(w.isAbsolute, false, "'isAbsolute' property default value should be 'false'");
-    TKUnit.assertEqual(w.isAuto, false, "'isAuto' property default value should be 'false'");
-    TKUnit.assertEqual(w.isStar, true, "'isAuto' property default value should be 'true'");
-    TKUnit.assertEqual(w.value, 2, "'value' property default value should be '1'");
-}
+    public test_ItemSpec_constructor_throws_onNegativeValue() {
+        TKUnit.assertThrows(() => {
+            new layout.ItemSpec(-1, layout.GridUnitType.auto);
+        }, "'value' should be positive number.");
+    }
 
-function prepareGridLayout(wait?: boolean) {
-
-    rootLayout.addRow(new layout.ItemSpec(1, layout.GridUnitType.star));
-    rootLayout.addRow(new layout.ItemSpec(2, layout.GridUnitType.star));
-    rootLayout.addRow(new layout.ItemSpec(50, layout.GridUnitType.pixel));
-    rootLayout.addRow(new layout.ItemSpec(50, layout.GridUnitType.auto));
-
-    rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
-    rootLayout.addColumn(new layout.ItemSpec(2, layout.GridUnitType.star));
-    rootLayout.addColumn(new layout.ItemSpec(50, layout.GridUnitType.pixel));
-    rootLayout.addColumn(new layout.ItemSpec(50, layout.GridUnitType.auto));
-
-    for (var r = 0; r < 4; r++) {
-        for (var c = 0; c < 4; c++) {
-            var btn = new helper.MyButton();
-            btn.text = "R" + r + "C" + c;
-            layout.GridLayout.setColumn(btn, c);
-            layout.GridLayout.setRow(btn, r);
-            if (c === 3) {
-                btn.width = 100; // Auto column should take 100px for this test.
-            }
-
-            if (r === 3) {
-                btn.height = 100; // Auto row should take 100px for this test.
-            }
-
-            rootLayout.addChild(btn);
+    public test_ItemSpec_constructor_doesnt_throw_onCorrectType() {
+        try {
+            new layout.ItemSpec(1, layout.GridUnitType.auto);
+            new layout.ItemSpec(1, layout.GridUnitType.star);
+            new layout.ItemSpec(1, layout.GridUnitType.pixel);
+        }
+        catch (ex) {
+            TKUnit.assert(false, "ItemSpec type should support auto, star and pixel.");
         }
     }
 
-    rootLayout.width = 300;
-    rootLayout.height = 300;
-
-    if (wait) {
-        TKUnit.waitUntilReady(function () {
-            return rootLayout.isLayoutValid;
-        }, ASYNC);
+    public test_ItemSpec_constructor_throws_onWrongType() {
+        TKUnit.assertThrows(() => {
+            new layout.ItemSpec(1, "unsupported");
+        }, "'ItemSpec type' incorrect value.");
     }
-}
 
-export function test_desiredSize_isCorrect() {
-    prepareGridLayout(false);
+    public test_ItemSpec_auto() {
+        var w = new layout.ItemSpec(1, layout.GridUnitType.auto);
+        TKUnit.assertEqual(w.gridUnitType, layout.GridUnitType.auto, "'gridUnitType' property default value should be 'auto'");
+        TKUnit.assertEqual(w.isAbsolute, false, "'isAbsolute' property default value should be 'false'");
+        TKUnit.assertEqual(w.isAuto, true, "'isAuto' property default value should be 'false'");
+        TKUnit.assertEqual(w.isStar, false, "'isAuto' property default value should be 'true'");
+        TKUnit.assertEqual(w.value, 1, "'value' property default value should be '1'");
+    }
 
-    rootLayout.width = Number.NaN;
-    rootLayout.height = Number.NaN;
+    public test_ItemSpec_unitType_pixel() {
+        var w = new layout.ItemSpec(6, layout.GridUnitType.pixel);
+        TKUnit.assertEqual(w.gridUnitType, layout.GridUnitType.pixel, "'gridUnitType' property default value should be 'pixel'");
+        TKUnit.assertEqual(w.isAbsolute, true, "'isAbsolute' property default value should be 'false'");
+        TKUnit.assertEqual(w.isAuto, false, "'isAuto' property default value should be 'false'");
+        TKUnit.assertEqual(w.isStar, false, "'isAuto' property default value should be 'true'");
+        TKUnit.assertEqual(w.value, 6, "'value' property default value should be '1'");
+    }
 
-    TKUnit.waitUntilReady(function () {
-        return rootLayout.isLayoutValid;
-    }, ASYNC);
+    public test_ItemSpec_unitType() {
+        var w = new layout.ItemSpec(2, layout.GridUnitType.star);
+        TKUnit.assertEqual(w.gridUnitType, layout.GridUnitType.star, "'gridUnitType' property default value should be 'star'");
+        TKUnit.assertEqual(w.isAbsolute, false, "'isAbsolute' property default value should be 'false'");
+        TKUnit.assertEqual(w.isAuto, false, "'isAuto' property default value should be 'false'");
+        TKUnit.assertEqual(w.isStar, true, "'isAuto' property default value should be 'true'");
+        TKUnit.assertEqual(w.value, 2, "'value' property default value should be '1'");
+    }
 
-    var maxWidth = 0;
-    var maxHeight = 0;
-    var width = 0;
-    var height = 0;
-    var i = 0;
-    var cols = rootLayout.getColumns();
-    var rows = rootLayout.getRows();
+    public test_desiredSize_isCorrect() {
+        this.prepareGridLayout(false);
 
-    for (var r = 0; r < 4; r++) {
-        width = 0;
-        height = 0;
-        for (var c = 0; c < 4; c++) {
-            var btn = <helper.MyButton>rootLayout.getChildAt(i++);
-            if (cols[c].isAbsolute) {
-                width += helper.dip(cols[c].actualLength);
+        this.testView.width = Number.NaN;
+        this.testView.height = Number.NaN;
+
+        this.waitUntilTestElementLayoutIsValid();
+
+        var maxWidth = 0;
+        var maxHeight = 0;
+        var width = 0;
+        var height = 0;
+        var i = 0;
+        var cols = this.testView.getColumns();
+        var rows = this.testView.getRows();
+
+        for (var r = 0; r < 4; r++) {
+            width = 0;
+            height = 0;
+            for (var c = 0; c < 4; c++) {
+                var btn = <helper.MyButton>this.testView.getChildAt(i++);
+                if (cols[c].isAbsolute) {
+                    width += helper.dip(cols[c].actualLength);
+                }
+                else {
+                    width += btn.getMeasuredWidth();
+                }
+
+                height = Math.max(height, btn.getMeasuredHeight());
+            }
+
+            maxWidth = Math.max(maxWidth, width);
+
+            if (rows[r].isAbsolute) {
+                maxHeight += helper.dip(rows[r].actualLength);
             }
             else {
-                width += btn.getMeasuredWidth();
+                maxHeight += height;
             }
-
-            height = Math.max(height, btn.getMeasuredHeight());
         }
 
-        maxWidth = Math.max(maxWidth, width);
+        var delta = 1.1; // Set to an overly high value to avoid failing on some emulators.
 
-        if (rows[r].isAbsolute) {
-            maxHeight += helper.dip(rows[r].actualLength);
-        }
-        else {
-            maxHeight += height;
+        let measuredWidth = this.testView.getMeasuredWidth();
+        let measuredHeight = this.testView.getMeasuredHeight();
+        TKUnit.assertAreClose(measuredWidth, maxWidth, delta, "GridLayout incorrect measured width");
+        TKUnit.assertAreClose(measuredHeight, maxHeight, delta, "GridLayout incorrect measured height");
+    }
+
+    public test_columnsActualWidth_isCorrect() {
+        this.prepareGridLayout(true);
+
+        var cols = this.testView.getColumns();
+        TKUnit.assertEqual(cols[0].actualLength, 50, "Star column should be 50px width");
+        TKUnit.assertEqual(cols[1].actualLength, 100, "2*Star column should be 100px width");
+        TKUnit.assertEqual(cols[2].actualLength, 50, "Absolute column should be 50px width");
+        TKUnit.assertEqual(cols[3].actualLength, 100, "Auto column should be 100px width");
+    }
+
+    public test_rowsActualHeight_isCorrect() {
+        this.prepareGridLayout(true);
+
+        var rows = this.testView.getRows();
+        TKUnit.assertEqual(rows[0].actualLength, 50, "Star row should be 50px width");
+        TKUnit.assertEqual(rows[1].actualLength, 100, "2*Star row should be 100px width");
+        TKUnit.assertEqual(rows[2].actualLength, 50, "Absolute row should be 50px width");
+        TKUnit.assertEqual(rows[3].actualLength, 100, "Auto row should be 100px width");
+    }
+
+    public test_Measure_and_Layout_Children_withCorrect_size() {
+
+        this.prepareGridLayout(true);
+
+        var rows = this.testView.getRows();
+        var cols = this.testView.getColumns();
+        var i = 0;
+        var density = utils.layout.getDisplayDensity();
+        var delta = Math.floor(density) !== density ? 1.1 : DELTA;
+
+        for (var r = 0; r < 4; r++) {
+
+            for (var c = 0; c < 4; c++) {
+                var btn = <helper.MyButton>this.testView.getChildAt(i++);
+                var col = cols[c];
+                var row = rows[r];
+
+                var h = r % 2 === 0 ? 50 : 100;
+                var w = c % 2 === 0 ? 50 : 100;
+
+                h = Math.round(h * density);
+                w = Math.round(w * density);
+
+                if (row.isAuto) {
+                    TKUnit.assertAreClose(btn.layoutHeight, btn.getMeasuredHeight(), delta, "Auto rows should layout with measured height");
+                }
+                else if (row.isAbsolute) {
+                    TKUnit.assertAreClose(btn.measureHeight, h, delta, "Absolute rows should measure with specific height");
+                    TKUnit.assertAreClose(btn.layoutHeight, h, delta, "Absolute rows should layout with specific height");
+                }
+                else {
+                    TKUnit.assertAreClose(btn.measureHeight, h, delta, "Star rows should measure with specific height");
+                    TKUnit.assertAreClose(btn.layoutHeight, h, delta, "Star rows should layout with exact length");
+                }
+
+                if (col.isAuto) {
+                    TKUnit.assertAreClose(btn.layoutWidth, btn.getMeasuredWidth(), delta, "Auto columns should layout with measured width");
+                }
+                else if (col.isAbsolute) {
+                    TKUnit.assertAreClose(btn.measureWidth, w, delta, "Absolute columns should measure with specific width");
+                    TKUnit.assertAreClose(btn.layoutWidth, w, delta, "Absolute columns should layout with specific width");
+                }
+                else {
+                    TKUnit.assertAreClose(btn.measureWidth, w, delta, "Star columns should measure with specific width");
+                    TKUnit.assertAreClose(btn.layoutWidth, w, delta, "Star columns should layout with exact length");
+                }
+            }
         }
     }
 
-    var delta = 1.1; // Set to an overly high value to avoid failing on some emulators.
+    public test_ColumnWidth_when_4stars_and_width_110() {
 
-    let measuredWidth = rootLayout.getMeasuredWidth();
-    let measuredHeight = rootLayout.getMeasuredHeight();
-    TKUnit.assertAreClose(measuredWidth, maxWidth, delta, "GridLayout incorrect measured width");
-    TKUnit.assertAreClose(measuredHeight, maxHeight, delta, "GridLayout incorrect measured height");
-}
+        this.testView.width = 110;
+        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
+        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
+        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
+        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
 
-export function test_columnsActualWidth_isCorrect() {
-    prepareGridLayout(true);
+        this.waitUntilTestElementLayoutIsValid();
 
-    var cols = rootLayout.getColumns();
-    TKUnit.assertEqual(cols[0].actualLength, 50, "Star column should be 50px width");
-    TKUnit.assertEqual(cols[1].actualLength, 100, "2*Star column should be 100px width");
-    TKUnit.assertEqual(cols[2].actualLength, 50, "Absolute column should be 50px width");
-    TKUnit.assertEqual(cols[3].actualLength, 100, "Auto column should be 100px width");
-}
+        var cols = this.testView.getColumns();
 
-export function test_rowsActualHeight_isCorrect() {
-    prepareGridLayout(true);
+        var density = utils.layout.getDisplayDensity();
+        var delta = Math.floor(density) !== density ? 1.1 : DELTA;
 
-    var rows = rootLayout.getRows();
-    TKUnit.assertEqual(rows[0].actualLength, 50, "Star row should be 50px width");
-    TKUnit.assertEqual(rows[1].actualLength, 100, "2*Star row should be 100px width");
-    TKUnit.assertEqual(rows[2].actualLength, 50, "Absolute row should be 50px width");
-    TKUnit.assertEqual(rows[3].actualLength, 100, "Auto row should be 100px width");
-}
+        TKUnit.assertAreClose(cols[0].actualLength, 28, delta, "Column[0] actual length should be 28");
+        TKUnit.assertAreClose(cols[1].actualLength, 27, delta, "Column[1] actual length should be 27");
+        TKUnit.assertAreClose(cols[2].actualLength, 28, delta, "Column[2] actual length should be 28");
+        TKUnit.assertAreClose(cols[3].actualLength, 27, delta, "Column[3] actual length should be 27");
+    }
 
-export function test_Measure_and_Layout_Children_withCorrect_size() {
+    public test_margins_and_verticalAlignment_center() {
 
-    prepareGridLayout(true);
+        this.testView.height = 200;
+        this.testView.width = 200;
+        var btn = new helper.MyButton();
+        btn.text = "btn";
+        btn.height = 100;
+        btn.width = 100;
+        btn.marginBottom = 50;
+        btn.marginRight = 50;
+        this.testView.addChild(btn);
 
-    var rows = rootLayout.getRows();
-    var cols = rootLayout.getColumns();
-    var i = 0;
-    var density = utils.layout.getDisplayDensity();
-    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
+        this.waitUntilTestElementLayoutIsValid();
 
-    for (var r = 0; r < 4; r++) {
+        var density = utils.layout.getDisplayDensity();
+        var delta = Math.floor(density) !== density ? 1.1 : DELTA;
 
-        for (var c = 0; c < 4; c++) {
-            var btn = <helper.MyButton>rootLayout.getChildAt(i++);
-            var col = cols[c];
-            var row = rows[r];
+        TKUnit.assertAreClose(btn.layoutTop, 25 * density, delta, "vertical margins");
+        TKUnit.assertAreClose(btn.layoutLeft, 25 * density, delta, "horizontal margins");
+    }
 
-            var h = r % 2 === 0 ? 50 : 100;
-            var w = c % 2 === 0 ? 50 : 100;
+    public test_set_columns_in_XML() {
+        var p = <page.Page>builder.parse("<Page><GridLayout columns=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
+        var grid = <layout.GridLayout>p.content;
 
-            h = Math.round(h * density);
-            w = Math.round(w * density);
+        var columns: Array<layout.ItemSpec> = grid.getColumns();
 
-            if (row.isAuto) {
-                TKUnit.assertAreClose(btn.layoutHeight, btn.getMeasuredHeight(), delta, "Auto rows should layout with measured height");
-            }
-            else if (row.isAbsolute) {
-                TKUnit.assertAreClose(btn.measureHeight, h, delta, "Absolute rows should measure with specific height");
-                TKUnit.assertAreClose(btn.layoutHeight, h, delta, "Absolute rows should layout with specific height");
-            }
-            else {
-                TKUnit.assertAreClose(btn.measureHeight, h, delta, "Star rows should measure with specific height");
-                TKUnit.assertAreClose(btn.layoutHeight, h, delta, "Star rows should layout with exact length");
-            }
+        TKUnit.assertEqual(columns.length, 4, "columns.length");
+        TKUnit.assert(columns[0].isAuto, "columns[0].isAuto");
 
-            if (col.isAuto) {
-                TKUnit.assertAreClose(btn.layoutWidth, btn.getMeasuredWidth(), delta, "Auto columns should layout with measured width");
-            }
-            else if (col.isAbsolute) {
-                TKUnit.assertAreClose(btn.measureWidth, w, delta, "Absolute columns should measure with specific width");
-                TKUnit.assertAreClose(btn.layoutWidth, w, delta, "Absolute columns should layout with specific width");
-            }
-            else {
-                TKUnit.assertAreClose(btn.measureWidth, w, delta, "Star columns should measure with specific width");
-                TKUnit.assertAreClose(btn.layoutWidth, w, delta, "Star columns should layout with exact length");
-            }
-        }
+        TKUnit.assert(columns[1].isStar, "columns[1].isStar");
+        TKUnit.assertEqual(columns[1].value, 1, "columns[1].value");
+
+        TKUnit.assert(columns[2].isStar, "columns[2].isStar");
+        TKUnit.assertEqual(columns[2].value, 10, "columns[2].value");
+
+        TKUnit.assert(columns[3].isAbsolute, "columns[3].isAbsolute");
+        TKUnit.assertEqual(columns[3].value, 100, "columns[3].value");
+    }
+
+    public test_set_rows_in_XML() {
+        var p = <page.Page>builder.parse("<Page><GridLayout rows=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
+        var grid = <layout.GridLayout>p.content;
+
+        var rows: Array<layout.ItemSpec> = grid.getRows();
+
+        TKUnit.assertEqual(rows.length, 4, "rows.length");
+        TKUnit.assert(rows[0].isAuto, "rows[0].isAuto");
+
+        TKUnit.assert(rows[1].isStar, "rows[1].isStar");
+        TKUnit.assertEqual(rows[1].value, 1, "rows[1].value");
+
+        TKUnit.assert(rows[2].isStar, "rows[2].isStar");
+        TKUnit.assertEqual(rows[2].value, 10, "rows[2].value");
+
+        TKUnit.assert(rows[3].isAbsolute, "rows[3].isAbsolute");
+        TKUnit.assertEqual(rows[3].value, 100, "rows[3].value");
+    }
+
+    public test_padding() {
+        this.testView.paddingLeft = 10;
+        this.testView.paddingTop = 20;
+        this.testView.paddingRight = 30;
+        this.testView.paddingBottom = 40;
+
+        this.testView.width = 300;
+        this.testView.height = 300;
+
+        var btn = new helper.MyButton();
+        this.testView.addChild(btn);
+
+        this.waitUntilTestElementLayoutIsValid();
+
+        helper.assertMeasure(btn, 260, 240);
+        helper.assertLayout(btn, 10, 20, 260, 240);
+    }
+
+    public test_codesnippets = function () {
+        // <snippet module="ui/layouts/grid-layout" title="grid-layout">
+        // ## GridLayout sample
+        // ### Creating Grid Layout via code.
+        // ``` JavaScript
+        //var layout = require("ui/layouts/grid-layout");
+        var gridLayout = new layout.GridLayout();
+        //  ```
+
+        // ### Create grid layout with an xml declaration
+        // ``` XML
+        // <GridLayout columns="80, *, auto" rows="auto, *" >
+        //  <Button col="0" />
+        //  <Button col="1" />
+        //  <Button col="2" />
+        //// by default column and row are set to 0
+        //  <Button row="1" colSpan="3" />
+        // </GridLayout>
+        // ```
+
+        // ### Add views to grid layout
+        // ``` JavaScript
+        var btn1 = new Button();
+        var btn2 = new Button();
+        var btn3 = new Button();
+        var btn4 = new Button();
+        gridLayout.addChild(btn1);
+        gridLayout.addChild(btn2);
+        gridLayout.addChild(btn3);
+        gridLayout.addChild(btn4);
+        //  ```
+
+        // ### Set column property on views - btn1 in first column, btn2 is second and btn3 in third
+        // ``` JavaScript
+        layout.GridLayout.setColumn(btn1, 0);
+        layout.GridLayout.setColumn(btn2, 1);
+        layout.GridLayout.setColumn(btn3, 2);
+        // ```
+
+        // ### Set row property on btn4.
+        // ``` JavaScript
+        layout.GridLayout.setRow(btn4, 1);
+        // ```
+
+        // ### Set columnSpan property on btn4 to stretch into all columns
+        // ``` JavaScript
+        layout.GridLayout.setColumnSpan(btn4, 3);
+        // ```
+
+        // ### Create ItemSpec for columns and rows 3 columns - 80px, *, auto size and 2 rows - 100px and auto size
+        // ``` JavaScript
+        //// ItemSpec modes of the column refers to its width.
+        //// Absolute size of the column
+        var firstColumn = new layout.ItemSpec(80, layout.GridUnitType.pixel);
+        //// Star width means that this column will expand to fill the gap left from other columns
+        var secondColumn = new layout.ItemSpec(1, layout.GridUnitType.star);
+        //// Auto size means that column will expand or shrink in order to give enough place for all child UI elements.
+        var thirdColumn = new layout.ItemSpec(1, layout.GridUnitType.auto);
+
+        //// Star and Auto modes for rows behave like corresponding setting for columns but refer to row height.
+        var firstRow = new layout.ItemSpec(1, layout.GridUnitType.auto);
+        var secondRow = new layout.ItemSpec(1, layout.GridUnitType.star);
+        // ```
+
+        // ### Add columns and rows to GridLayout
+        // ``` JavaScript
+        gridLayout.addColumn(firstColumn);
+        gridLayout.addColumn(secondColumn);
+        gridLayout.addColumn(thirdColumn);
+        gridLayout.addRow(firstRow);
+        gridLayout.addRow(secondRow);
+        // ```
+        // </snippet>
     }
 }
 
-export function test_ColumnWidth_when_4stars_and_width_110() {
-
-    rootLayout.width = 110;
-    rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
-    rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
-    rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
-    rootLayout.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
-
-    TKUnit.waitUntilReady(function () {
-        return rootLayout.isLayoutValid;
-    }, ASYNC);
-
-    var cols = rootLayout.getColumns();
-
-    var density = utils.layout.getDisplayDensity();
-    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
-
-    TKUnit.assertAreClose(cols[0].actualLength, 28, delta, "Column[0] actual length should be 28");
-    TKUnit.assertAreClose(cols[1].actualLength, 27, delta, "Column[1] actual length should be 27");
-    TKUnit.assertAreClose(cols[2].actualLength, 28, delta, "Column[2] actual length should be 28");
-    TKUnit.assertAreClose(cols[3].actualLength, 27, delta, "Column[3] actual length should be 27");
+export function createTestCase(): GridLayoutTest {
+    return new GridLayoutTest();
 }
-
-export function test_margins_and_verticalAlignment_center() {
-
-    rootLayout.height = 200;
-    rootLayout.width = 200;
-    var btn = new helper.MyButton();
-    btn.text = "btn";
-    btn.height = 100;
-    btn.width = 100;
-    btn.marginBottom = 50;
-    btn.marginRight = 50;
-    rootLayout.addChild(btn);
-
-    TKUnit.waitUntilReady(function () {
-        return btn.isLayoutValid;
-    }, ASYNC);
-
-    var density = utils.layout.getDisplayDensity();
-    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
-
-    TKUnit.assertAreClose(btn.layoutTop, 25 * density, delta, "vertical margins");
-    TKUnit.assertAreClose(btn.layoutLeft, 25 * density, delta, "horizontal margins");
-}
-
-export function test_set_columns_in_XML() {
-    var p = <page.Page>builder.parse("<Page><GridLayout columns=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
-    var grid = <layout.GridLayout>p.content;
-
-    var columns: Array<layout.ItemSpec> = grid.getColumns();
-
-    TKUnit.assertEqual(columns.length, 4, "columns.length");
-    TKUnit.assert(columns[0].isAuto, "columns[0].isAuto");
-
-    TKUnit.assert(columns[1].isStar, "columns[1].isStar");
-    TKUnit.assertEqual(columns[1].value, 1, "columns[1].value");
-
-    TKUnit.assert(columns[2].isStar, "columns[2].isStar");
-    TKUnit.assertEqual(columns[2].value, 10, "columns[2].value");
-
-    TKUnit.assert(columns[3].isAbsolute, "columns[3].isAbsolute");
-    TKUnit.assertEqual(columns[3].value, 100, "columns[3].value");
-};
-
-export function test_set_rows_in_XML() {
-    var p = <page.Page>builder.parse("<Page><GridLayout rows=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
-    var grid = <layout.GridLayout>p.content;
-
-    var rows: Array<layout.ItemSpec> = grid.getRows();
-
-    TKUnit.assertEqual(rows.length, 4, "rows.length");
-    TKUnit.assert(rows[0].isAuto, "rows[0].isAuto");
-
-    TKUnit.assert(rows[1].isStar, "rows[1].isStar");
-    TKUnit.assertEqual(rows[1].value, 1, "rows[1].value");
-
-    TKUnit.assert(rows[2].isStar, "rows[2].isStar");
-    TKUnit.assertEqual(rows[2].value, 10, "rows[2].value");
-
-    TKUnit.assert(rows[3].isAbsolute, "rows[3].isAbsolute");
-    TKUnit.assertEqual(rows[3].value, 100, "rows[3].value");
-};
-
-export function test_padding() {
-    rootLayout.paddingLeft = 10;
-    rootLayout.paddingTop = 20;
-    rootLayout.paddingRight = 30;
-    rootLayout.paddingBottom = 40;
-
-    rootLayout.width = 300;
-    rootLayout.height = 300;
-
-    var btn = new helper.MyButton();
-    rootLayout.addChild(btn);
-
-    TKUnit.waitUntilReady(() => { return btn.isLayoutValid });
-
-    helper.assertMeasure(btn, 260, 240);
-    helper.assertLayout(btn, 10, 20, 260, 240);
-}
-
-export var test_codesnippets = function () {
-    // <snippet module="ui/layouts/grid-layout" title="grid-layout">
-    // ## GridLayout sample
-    // ### Creating Grid Layout via code.
-    // ``` JavaScript
-    //var layout = require("ui/layouts/grid-layout");
-    var gridLayout = new layout.GridLayout();
-    //  ```
-
-    // ### Create grid layout with an xml declaration
-    // ``` XML
-    // <GridLayout columns="80, *, auto" rows="auto, *" >
-    //  <Button col="0" />
-    //  <Button col="1" />
-    //  <Button col="2" />
-    //// by default column and row are set to 0
-    //  <Button row="1" colSpan="3" />
-    // </GridLayout>
-    // ```
-
-    // ### Add views to grid layout
-    // ``` JavaScript
-    var btn1 = new Button();
-    var btn2 = new Button();
-    var btn3 = new Button();
-    var btn4 = new Button();
-    gridLayout.addChild(btn1);
-    gridLayout.addChild(btn2);
-    gridLayout.addChild(btn3);
-    gridLayout.addChild(btn4);
-    //  ```
-
-    // ### Set column property on views - btn1 in first column, btn2 is second and btn3 in third
-    // ``` JavaScript
-    layout.GridLayout.setColumn(btn1, 0);
-    layout.GridLayout.setColumn(btn2, 1);
-    layout.GridLayout.setColumn(btn3, 2);
-    // ```
-
-    // ### Set row property on btn4.
-    // ``` JavaScript
-    layout.GridLayout.setRow(btn4, 1);
-    // ```
-
-    // ### Set columnSpan property on btn4 to stretch into all columns
-    // ``` JavaScript
-    layout.GridLayout.setColumnSpan(btn4, 3);
-    // ```
-
-    // ### Create ItemSpec for columns and rows 3 columns - 80px, *, auto size and 2 rows - 100px and auto size
-    // ``` JavaScript
-    //// ItemSpec modes of the column refers to its width.
-    //// Absolute size of the column
-    var firstColumn = new layout.ItemSpec(80, layout.GridUnitType.pixel);
-    //// Star width means that this column will expand to fill the gap left from other columns
-    var secondColumn = new layout.ItemSpec(1, layout.GridUnitType.star);
-    //// Auto size means that column will expand or shrink in order to give enough place for all child UI elements.
-    var thirdColumn = new layout.ItemSpec(1, layout.GridUnitType.auto);
-
-    //// Star and Auto modes for rows behave like corresponding setting for columns but refer to row height.
-    var firstRow = new layout.ItemSpec(1, layout.GridUnitType.auto);
-    var secondRow = new layout.ItemSpec(1, layout.GridUnitType.star);
-    // ```
-
-    // ### Add columns and rows to GridLayout
-    // ``` JavaScript
-    gridLayout.addColumn(firstColumn);
-    gridLayout.addColumn(secondColumn);
-    gridLayout.addColumn(thirdColumn);
-    gridLayout.addRow(firstRow);
-    gridLayout.addRow(secondRow);
-    // ```
-    // </snippet>
-};

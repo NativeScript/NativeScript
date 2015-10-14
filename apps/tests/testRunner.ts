@@ -128,6 +128,27 @@ function printRunTestStats() {
     }
 }
 
+function time(): number {
+    if (global.android) {
+        return java.lang.System.nanoTime() / 1000000; // 1 ms = 1000000 ns
+    }
+    else {
+        return CACurrentMediaTime() * 1000;
+    }
+}
+
+function startLog(): void {
+    let testsName: string = this.name;
+    TKUnit.write("START " + testsName + " TESTS.", trace.messageType.info);
+    this.start = time();
+}
+
+function log(): void {
+    let testsName: string = this.name;
+    let duration = time() - this.start;
+    TKUnit.write(testsName + " COMPLETED for " + duration, trace.messageType.info);
+}
+
 export var runAll = function (moduleName?: string) {
     if (running) {
         // TODO: We may schedule pending run requests
@@ -143,18 +164,17 @@ export var runAll = function (moduleName?: string) {
         }
 
         var testModule = allTests[name];
-        //var moduleStart = function (moduleName) {
-        //    return function () {
-        //        TKUnit.write("--- " + moduleName + " TESTS BEGIN ---", trace.messageType.info);
-        //    }
-        //};
-        //testsQueue.push(new TestInfo(moduleStart(name)));
 
         var test = testModule.createTestCase ? testModule.createTestCase() : testModule;
+        test.name = name;
+        
+
+        testsQueue.push(new TestInfo(startLog, test));
 
         if (test.setUpModule) {
             testsQueue.push(new TestInfo(test.setUpModule, test));
         }
+
 
         for (var testName in test) {
             var testFunction = test[testName];
@@ -172,13 +192,7 @@ export var runAll = function (moduleName?: string) {
         if (test.tearDownModule) {
             testsQueue.push(new TestInfo(test.tearDownModule, test));
         }
-        
-        //var moduleEnd = function (moduleName) {
-        //    return function () {
-        //        TKUnit.write("--- " + moduleName + " TESTS COMPLETE --- ", trace.messageType.info);
-        //    };
-        //}
-        //testsQueue.push(new TestInfo(moduleEnd(name)));
+        testsQueue.push(new TestInfo(log, test));
     }
 
     testsQueue.push(new TestInfo(printRunTestStats));
