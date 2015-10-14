@@ -63,7 +63,7 @@ export class StyleScope {
             return pageCssSelectors;
         }
         catch (e) {
-            trace.write("Css styling failed: " + e, trace.categories.Error, trace.messageType.error);
+            //trace.write("Css styling failed: " + e, trace.categories.Error, trace.messageType.error);
         }
     }
 
