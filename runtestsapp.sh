@@ -1,4 +1,4 @@
-workingdir=__TESTSAPP__
+workingdir=./build/__TESTSAPP__
 startdir=$(pwd)
 rm -rd $workingdir
 mkdir $workingdir
@@ -13,7 +13,7 @@ time pkill ".*emulator64-x86" && true
 
 echo "------------------------------------------------"
 echo "Starting the emulator..."
-time emulator -avd Api19 -no-audio --no-window &
+time emulator -avd Api19 -no-audio -no-window &
 
 echo "------------------------------------------------"
 echo "Creating the app..."
@@ -26,7 +26,7 @@ time rm app/*.*
 
 echo "------------------------------------------------"
 echo "Copying the test app files..."
-time cp -r ../../bin/dist/apps/tests/* ./app/
+time cp -r ../../../bin/dist/apps/tests/* ./app/
 
 echo "------------------------------------------------"
 echo "Adding the android platform..."
