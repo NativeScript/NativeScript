@@ -78,7 +78,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 export class TabViewItem extends common.TabViewItem {
     public _controller: UIViewController;
     public _parent: TabView;
-    
+
     public _update() {
         if (this._parent && this._controller) {
             var icon = this._parent._getIcon(this.iconSource);
@@ -198,7 +198,7 @@ export class TabView extends common.TabView {
             item._controller = newController;
 
             var icon = this._getIcon(item.iconSource);
-            
+
             var tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
             if (!icon) {
                 if (types.isFunction(tabBarItem.setTitlePositionAdjustment)) {
@@ -308,7 +308,7 @@ export class TabView extends common.TabView {
             (heightMode === utils.layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
     }
 
-    public _updateIOSTabBarColors() {
+    public _updateIOSTabBarColors(): void {
         if (!this.items) {
             return;
         }
@@ -325,12 +325,12 @@ export class TabView extends common.TabView {
 }
 
 function getTitleAttributesForStates(tabView: TabView): { normalState: any, selectedState: any } {
-    var normalState = <any>{};
+    var normalState = {};
     if (tabView.color instanceof color.Color) {
         normalState[UITextAttributeTextColor] = tabView.color.ios;
     }
 
-    var selectedState = <any>{};
+    var selectedState = {};
     if (tabView.selectedColor instanceof color.Color) {
         selectedState[UITextAttributeTextColor] = tabView.selectedColor.ios;
     }

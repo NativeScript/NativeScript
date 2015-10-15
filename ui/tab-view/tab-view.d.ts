@@ -96,7 +96,7 @@ declare module "ui/tab-view" {
 
         //@private
         _getAndroidTabView(): org.nativescript.widgets.TabLayout;
-        _updateIOSTabBarColors();
+        _updateIOSTabBarColors(): void;
         //@endprivate
     }
 }
