@@ -1,12 +1,12 @@
-﻿import pageModule = require("ui/page");
-import navHelper = require("./ui/helper");
-import viewModule = require("ui/core/view");
+﻿import {Page} from "ui/page";
+import {View} from "ui/core/view";
 import trace = require("trace");
+import navHelper = require("./ui/helper");
 import TKUnit = require("./TKUnit");
 
-export class UITest<T extends viewModule.View> implements trace.TraceWriter {
+export class UITest<T extends View> implements trace.TraceWriter {
     
-    private _testPage: pageModule.Page;
+    private _testPage: Page;
     private _testView: T;
     private _errorMessage;
 
@@ -14,7 +14,7 @@ export class UITest<T extends viewModule.View> implements trace.TraceWriter {
         return this._errorMessage;
     }
 
-    public get testPage(): pageModule.Page {
+    public get testPage(): Page {
         return this._testPage;
     }
 
@@ -41,7 +41,7 @@ export class UITest<T extends viewModule.View> implements trace.TraceWriter {
     public setUpModule(): void {
         
         var pageFactory = () => {
-            var page = new pageModule.Page();
+            var page = new Page();
             this._testPage = page;
             return page;
         };
@@ -67,6 +67,7 @@ export class UITest<T extends viewModule.View> implements trace.TraceWriter {
         this._testPage.content = null;
         this._testPage.bindingContext = null;
         this._testPage.css = "";
+        this._testView = null;
         this._errorMessage = undefined;
     }
 
@@ -77,6 +78,6 @@ export class UITest<T extends viewModule.View> implements trace.TraceWriter {
     }
 }
 
-export function createTestCase(): UITest<viewModule.View> {
+export function createTestCase(): UITest<View> {
     return null;
 }

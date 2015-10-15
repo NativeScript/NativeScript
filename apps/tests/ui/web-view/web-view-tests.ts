@@ -1,6 +1,7 @@
 ﻿import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
 import page = require("ui/page");
+import testModule = require("../../ui-test");
 
 // <snippet module="ui/web-view" title="WebView">
 // # WebView
@@ -20,230 +21,174 @@ import webViewModule = require("ui/web-view");
 
 // </snippet>
 
-var _createWebViewFunc = function (): webViewModule.WebView {
-    // <snippet module="ui/web-view" title="WebView">
-    // ### Creating a WebView
-    // ``` JavaScript
-    var webView = new webViewModule.WebView();
-    // ```
-    // </snippet>
-    return webView;
-}
+export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
-function prepare(): webViewModule.WebView {
-    var newPage: page.Page;
-    var webView = _createWebViewFunc();
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
-        newPage.content = webView;
-        return newPage;
-    };
-
-    helper.navigate(pageFactory);
-
-    return webView;
-}
-
-export var testLoadExistingUrl = function () {
-    var webView = prepare();
-    
-    var testFinished = false;
-    var actualUrl;
-    var actualError;
-
-    // <snippet module="ui/web-view" title="WebView">
-    // ### Using WebView
-    // ``` JavaScript
-    webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
-        // <hide>
-        actualUrl = args.url;
-        actualError = args.error;
-        testFinished = true;
-        // </hide>
-        var message;
-        if (!args.error) {
-            message = "WebView finished loading " + args.url;
-        }
-        else {
-            message = "Error loading " + args.url + ": " + args.error;
-        }
-    });
-    webView.url = "http://nsbuild01.telerik.com/docs/";
-    // ```
-    // </snippet>
-
-    TKUnit.wait(4);
-
-    helper.goBack();
-
-    if (testFinished) {
-        TKUnit.assert(actualUrl === "http://nsbuild01.telerik.com/docs/", "args.url should equal http://nsbuild01.telerik.com/docs/");
-        TKUnit.assert(actualError === undefined, actualError);
+    public create(): webViewModule.WebView {
+        // <snippet module="ui/web-view" title="WebView">
+        // ### Creating a WebView
+        // ``` JavaScript
+        let webView = new webViewModule.WebView();
+        // ```
+        // </snippet>
+        return webView;
     }
-    else {
-        TKUnit.assert(false, "TIMEOUT");
+
+    public testLoadExistingUrl(done) {
+        let webView = this.testView;
+
+        // <snippet module="ui/web-view" title="WebView">
+        // ### Using WebView
+        // ``` JavaScript
+        webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
+            let message;
+            if (!args.error) {
+                message = "WebView finished loading " + args.url;
+            }
+            else {
+                message = "Error loading " + args.url + ": " + args.error;
+            }
+
+            // <hide>
+            try {
+                TKUnit.assertEqual(args.url, "http://nsbuild01.telerik.com/docs/", "args.url");
+                TKUnit.assertNull(args.error, "args.error");
+                done(null);
+            }
+            catch (e) {
+                done(e);
+            }
+
+            // </hide>
+        });
+        webView.url = "http://nsbuild01.telerik.com/docs/";
+        // ```
+        // </snippet>
     }
-}
 
-export var testLoadLocalFile = function () {
-    var webView = prepare();
+    public testLoadLocalFile(done) {
+        let webView = this.testView;
 
-    var testFinished = false;
-    var actualHtml;
-    var actualTitle;
-    var actualError;
+        // <snippet module="ui/web-view" title="WebView">
+        // ### Using WebView
+        // ``` JavaScript
+        webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
+            // <hide>
+            let actual;
+            let expectedTitle = 'MyTitle';
+            let expectedHtml = '<span style="color:red">Test</span>';
 
-    var expectedTitle = 'MyTitle';
-    var expectedHtml = '<span style="color:red">Test</span>';
+            if (webView.ios) {
+                actual = webView.ios.stringByEvaluatingJavaScriptFromString("document.body.innerHTML").trim();
+            } else if (webView.android) {
+                actual = webView.android.getTitle();
+            }
 
-    // <snippet module="ui/web-view" title="WebView">
-    // ### Using WebView
-    // ``` JavaScript
-    webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
-        // <hide>
-        if (webView.ios) {
-            actualHtml = webView.ios.stringByEvaluatingJavaScriptFromString("document.body.innerHTML").trim();
-        } else if (webView.android) {
-            actualTitle = webView.android.getTitle()
-        }
+            try {
+                TKUnit.assertEqual(actual, webView.ios ? expectedHtml : expectedTitle, "File ~/ui/web-view/test.html not loaded properly.");
+                TKUnit.assertNull(args.error, "args.error");
+                done(null);
+            }
+            catch (e) {
+                done(e);
+            }
+            // </hide>
 
-        actualError = args.error;
-        testFinished = true;
-        // </hide>
-        var message;
-        if (!args.error) {
-            message = "WebView finished loading " + args.url;
-        }
-        else {
-            message = "Error loading " + args.url + ": " + args.error;
-        }
-    });
-    webView.src = "~/ui/web-view/test.html";
-    // ```
-    // </snippet>
-
-    TKUnit.wait(4);
-
-    helper.goBack();
-
-    if (testFinished) {
-        if (webView.ios) {
-            TKUnit.assert(actualHtml === expectedHtml, "File ~/ui/web-view/test.html not loaded properly. Actual: " + actualHtml);
-        } else if (webView.android) {
-            TKUnit.assert(actualTitle === expectedTitle, "File ~/ui/web-view/test.html not loaded properly. Actual: " + actualTitle);
-        }
-        TKUnit.assert(actualError === undefined, actualError);
+            let message;
+            if (!args.error) {
+                message = "WebView finished loading " + args.url;
+            }
+            else {
+                message = "Error loading " + args.url + ": " + args.error;
+            }
+        });
+        webView.src = "~/ui/web-view/test.html";
+        // ```
+        // </snippet> 
     }
-    else {
-        TKUnit.assert(false, "TIMEOUT");
+
+    public testLoadHTMLString(done) {
+        let webView = this.testView;
+
+        // <snippet module="ui/web-view" title="WebView">
+        // ### Using WebView
+        // ``` JavaScript
+        webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
+            // <hide>
+
+            let actual;
+            let expected;
+
+            if (webView.ios) {
+                actual = webView.ios.stringByEvaluatingJavaScriptFromString("document.body.innerHTML").trim();
+                expected = '<span style="color:red">Test</span>';
+            } else if (webView.android) {
+                actual = webView.android.getTitle();
+                expected = 'MyTitle';
+            }
+
+            try {
+                TKUnit.assertEqual(actual, expected, "HTML string not loaded properly. Actual: ");
+                TKUnit.assertNull(args.error, "args.error");
+                done(null);
+            }
+            catch (e) {
+                done(e);
+            }
+            // </hide>
+
+            let message;
+            if (!args.error) {
+                message = "WebView finished loading " + args.url;
+            }
+            else {
+                message = "Error loading " + args.url + ": " + args.error;
+            }
+        });
+        webView.src = '<!DOCTYPE html><html><head><title>MyTitle</title><meta charset="utf-8" /></head><body><span style="color:red">Test</span></body></html>';
+        // ```
+        // </snippet>
     }
-}
 
-export var testLoadHTMLString = function () {
-    var webView = prepare();
+    public testLoadInvalidUrl(done) {
+        let webView = this.testView;
+        let actualError;
 
-    var testFinished = false;
-    var actualHtml;
-    var actualTitle;
-    var actualError;
-
-    var expectedTitle = 'MyTitle';
-    var expectedHtml = '<span style="color:red">Test</span>';
-
-    // <snippet module="ui/web-view" title="WebView">
-    // ### Using WebView
-    // ``` JavaScript
-    webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
-        // <hide>
-        if (webView.ios) {
-            actualHtml = webView.ios.stringByEvaluatingJavaScriptFromString("document.body.innerHTML").trim();
-        } else if (webView.android) {
-            actualTitle = webView.android.getTitle()
-        }
-
-        actualError = args.error;
-        testFinished = true;
-        // </hide>
-        var message;
-        if (!args.error) {
-            message = "WebView finished loading " + args.url;
-        }
-        else {
-            message = "Error loading " + args.url + ": " + args.error;
-        }
-    });
-    webView.src = '<!DOCTYPE html><html><head><title>MyTitle</title><meta charset="utf-8" /></head><body><span style="color:red">Test</span></body></html>';
-    // ```
-    // </snippet>
-
-    TKUnit.wait(4);
-
-    helper.goBack();
-
-    if (testFinished) {
-        if (webView.ios) {
-            TKUnit.assert(actualHtml === expectedHtml, "HTML string not loaded properly. Actual: " + actualHtml);
-        } else if (webView.android) {
-            TKUnit.assert(actualTitle === expectedTitle, "HTML string not loaded properly. Actual: " + actualTitle);
-        }
-        TKUnit.assert(actualError === undefined, actualError);
+        webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
+            if (actualError) {
+                // Android call this twice -- the second time args.error is undefined.
+                return;
+            }
+            actualError = args.error;
+            try {
+                TKUnit.assert(actualError !== undefined, "There should be an error.");
+                done(null);
+            }
+            catch (e) {
+                done(e);
+            }
+        });
+        webView.url = "kofti://mnogokofti";
     }
-    else {
-        TKUnit.assert(false, "TIMEOUT");
+
+    public testLoadUpperCaseSrc(done) {
+        let webView = this.testView;
+        let targetSrc = "HTTP://nsbuild01.telerik.com/docs/";
+
+        webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
+            try {
+                TKUnit.assertEqual(args.url, targetSrc.toLowerCase(), "args.url");
+                TKUnit.assertNull(args.error, "args.error");
+                done(null);
+            }
+            catch (e) {
+                done(e);
+            }
+        });
+
+        webView.src = targetSrc;
     }
 }
 
-export var testLoadInvalidUrl = function () {
-    var webView = prepare();
-
-    var testFinished = false;
-    var actualError;
-    webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
-        if (actualError) {
-            // Android call this twice -- the second time args.error is undefined.
-            return;
-        }
-        actualError = args.error;
-        testFinished = true;
-    });
-    webView.url = "kofti://mnogokofti";
-
-    TKUnit.wait(4);
-
-    helper.goBack();
-
-    if (testFinished) {
-        TKUnit.assert(actualError !== undefined, "There should be an error.");
-    }
-    else {
-        TKUnit.assert(false, "TIMEOUT");
-    }
-}
-
-export var testLoadUpperCaseSrc = function () {
-    var webView = prepare();
-
-    var testFinished = false;
-    var actualSrc;
-    var actualError;
-
-    webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
-        actualSrc = args.url;
-        actualError = args.error;
-        testFinished = true;
-    });
-    var targetSrc = "HTTP://nsbuild01.telerik.com/docs/";
-    webView.src = targetSrc;
-    
-    TKUnit.wait(4);
-
-    helper.goBack();
-
-    if (testFinished) {
-        TKUnit.assert(actualSrc === targetSrc.toLowerCase(), "args.url should equal '" + targetSrc.toLowerCase() + "'");
-        TKUnit.assert(actualError === undefined, actualError);
-    }
-    else {
-        TKUnit.assert(false, "TIMEOUT");
-    }
+export function createTestCase(): WebViewTest {
+    return new WebViewTest();
 }
