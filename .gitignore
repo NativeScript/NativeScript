@@ -27,3 +27,5 @@ obj/
 .baseDir.ts
 .ctags-exclude
 tags
+
+TestRunResult.txt

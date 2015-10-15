@@ -4,6 +4,7 @@ startdir=$(pwd)
 emuProcId=".*emulator64-x86"
 emuAvdName=Api19
 androidRuntimePath=/Users/erjan/tns-android.tgz
+outfile=./TestRunResult.txt
 
 testsAppName=TestsApp
 pathToApk=./platforms/android/build/outputs/apk/$testsAppName-debug.apk
@@ -76,7 +77,7 @@ cd $startdir
 
 echo "------------------------------------------------"
 echo "Waiting for the tests to finish executing..."
-time ./expect.exp
+time ./expect.exp $outfile
 
 pkill $emuProcId && true
 
