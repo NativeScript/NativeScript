@@ -1,15 +1,15 @@
 var observableModule = require("data/observable");
 var vm = new observableModule.Observable();
-function onPageLoaded(args) {
+export function onPageLoaded(args) {
     var page = args.object;
     vm.set("firstTitle", "fiiiirst");
     vm.set("secondTitle", "secondTitle");
     vm.set("secondIcon", "res://icon");
     page.bindingContext = vm;
 }
-exports.onPageLoaded = onPageLoaded;
 var i = 0;
-function onTap() {
+
+export function onTap() {
     i++;
     vm.set("firstTitle", "changed " + i);
     if (i === 3) {
@@ -19,5 +19,15 @@ function onTap() {
         vm.set("firstIcon", "");
     }
 }
-exports.onTap = onTap;
-//# sourceMappingURL=tab-view.js.map
+
+export function setStyle(args) {
+    var page = args.object.actionBar.page;
+
+    page.css = "TabView { color: red; }";
+}
+
+export function clearStyle(args) {
+    var page = args.object.actionBar.page;
+
+    page.css = "Page { background-color: red; }";
+}

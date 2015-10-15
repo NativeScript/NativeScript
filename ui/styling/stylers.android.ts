@@ -8,6 +8,7 @@ import utils = require("utils/utils");
 import styleModule = require("./style");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
+import tabView = require("ui/tab-view");
 var btn;
 
 global.moduleMerge(stylersCommon, exports);
@@ -63,7 +64,7 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
         (borderWidth + v.style.paddingTop) * density,
         (borderWidth + v.style.paddingRight) * density,
         (borderWidth + v.style.paddingBottom) * density
-        );
+    );
 }
 
 export class DefaultStyler implements definition.stylers.Styler {
@@ -125,7 +126,7 @@ export class DefaultStyler implements definition.stylers.Styler {
     private static setNativeLayoutParamsProperty(view: view.View, params: style.CommonLayoutParams): void {
         var nativeView: android.view.View = view._nativeView;
         var lp = DefaultStyler.getNativeLayoutParams(nativeView);
-        
+
         lp.leftMargin = params.leftMargin * utils.layout.getDisplayDensity();
         lp.topMargin = params.topMargin * utils.layout.getDisplayDensity();
         lp.rightMargin = params.rightMargin * utils.layout.getDisplayDensity();
@@ -160,7 +161,7 @@ export class DefaultStyler implements definition.stylers.Styler {
 
             case enums.HorizontalAlignment.stretch:
                 gravity |= android.view.Gravity.FILL_HORIZONTAL;
-                 // If width is not specified set it as MATCH_PARENT
+                // If width is not specified set it as MATCH_PARENT
                 if (width < 0) {
                     width = -1;
                 }
@@ -198,7 +199,7 @@ export class DefaultStyler implements definition.stylers.Styler {
         lp.gravity = gravity;
         lp.width = width;
         lp.height = height;
-        
+
         nativeView.setLayoutParams(lp);
     }
 
@@ -602,7 +603,7 @@ export class SearchBarStyler implements definition.stylers.Styler {
 
     private static _getSearchViewTextView(bar: android.widget.SearchView): android.widget.TextView {
         var id = bar.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
-        return <android.widget.TextView> bar.findViewById(id);
+        return <android.widget.TextView>bar.findViewById(id);
     }
 
     private static _changeSearchViewTextColor(bar: android.widget.SearchView, color: number) {
@@ -614,7 +615,7 @@ export class SearchBarStyler implements definition.stylers.Styler {
 
     private static _changeSearchViewPlateBackgroundColor(bar: android.widget.SearchView, color: number) {
         var id = bar.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
-        var textView = <android.view.View> bar.findViewById(id);
+        var textView = <android.view.View>bar.findViewById(id);
         if (textView) {
             textView.setBackgroundColor(color);
         }
@@ -643,6 +644,51 @@ export class ActionBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class TabViewStyler implements definition.stylers.Styler {
+    // color
+    private static setColorProperty(view: view.View, newValue: any) {
+        var tab = <tabView.TabView>view;
+        var count = tab.items ? tab.items.length : 0;
+        var tabLayout = tab._getAndroidTabView();
+
+        for (var i = 0; i < count; i++) {
+            tabLayout.getTextViewForItemAt(i).setTextColor(newValue);
+        }
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        if (types.isNullOrUndefined(nativeValue)) {
+            return;
+        }
+
+        var tab = <tabView.TabView>view;
+        var count = tab.items ? tab.items.length : 0;
+        var tabLayout = tab._getAndroidTabView();
+
+        for (var i = 0; i < count; i++) {
+            tabLayout.getTextViewForItemAt(i).setTextColor(nativeValue);
+        }
+    }
+
+    private static getColorProperty(view: view.View): any {
+        var tab = <tabView.TabView>view;
+        var tv: android.widget.TextView = tab._getAndroidTabView().getTextViewForItemAt(0);
+        if (tv) {
+            return tv.getTextColors().getDefaultColor();
+        }
+        else {
+            return null;
+        }
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            TabViewStyler.setColorProperty,
+            TabViewStyler.resetColorProperty,
+            TabViewStyler.getColorProperty), "TabView");
+    }
+}
+
 // Register all styler at the end.
 export function _registerDefaultStylers() {
     style.registerNoStylingClass("Frame");
@@ -653,4 +699,5 @@ export function _registerDefaultStylers() {
     SegmentedBarStyler.registerHandlers();
     SearchBarStyler.registerHandlers();
     ActionBarStyler.registerHandlers();
+    TabViewStyler.registerHandlers();
 }

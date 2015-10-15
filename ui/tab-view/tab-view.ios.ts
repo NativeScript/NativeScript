@@ -7,6 +7,8 @@ import uiUtils = require("ui/utils");
 import view = require("ui/core/view");
 import imageSource = require("image-source");
 import types = require("utils/types");
+import proxy = require("ui/core/proxy");
+import color = require("color");
 
 global.moduleMerge(common, exports);
 
@@ -89,10 +91,20 @@ export class TabViewItem extends common.TabViewItem {
                     (<any>tabBarItem).titlePositionAdjustment = { horizontal: 0, vertical: -20 };
                 }
             }
+
+            var states = getTitleAttributesForStates(this._parent);
+            tabBarItem.setTitleTextAttributesForState(states.normalState, UIControlState.UIControlStateNormal);
+            tabBarItem.setTitleTextAttributesForState(states.selectedState, UIControlState.UIControlStateSelected);
             this._controller.tabBarItem = tabBarItem;
         }
     }
 }
+
+function selectedColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var tabView = <TabView>data.object;
+    tabView._updateIOSTabBarColors();
+}
+(<proxy.PropertyMetadata>common.TabView.selectedColorProperty.metadata).onSetNativeValue = selectedColorPropertyChanged;
 
 export class TabView extends common.TabView {
     private _ios: UITabBarControllerImpl;
@@ -124,7 +136,7 @@ export class TabView extends common.TabView {
         super.onUnloaded();
     }
 
-    get ios(): UIViewController {
+    get ios(): UITabBarController {
         return this._ios;
     }
 
@@ -295,4 +307,39 @@ export class TabView extends common.TabView {
             (widthMode === utils.layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : width,
             (heightMode === utils.layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
     }
+
+    public _updateIOSTabBarColors() {
+        if (!this.items) {
+            return;
+        }
+
+        var tabBar = this.ios.tabBar;
+        var states = getTitleAttributesForStates(this);
+
+        for (var i = 0; i < this.items.length; i++) {
+            var item = <UITabBarItem>tabBar.items[i];
+            item.setTitleTextAttributesForState(states.normalState, UIControlState.UIControlStateNormal);
+            item.setTitleTextAttributesForState(states.selectedState, UIControlState.UIControlStateSelected);
+        }
+    }
+}
+
+function getTitleAttributesForStates(tabView: TabView): { normalState: any, selectedState: any } {
+    var normalState = <any>{};
+    if (tabView.color instanceof color.Color) {
+        normalState[UITextAttributeTextColor] = tabView.color.ios;
+    }
+
+    var selectedState = <any>{};
+    if (tabView.selectedColor instanceof color.Color) {
+        selectedState[UITextAttributeTextColor] = tabView.selectedColor.ios;
+    }
+    else {
+        selectedState[UITextAttributeTextColor] = tabView.ios.tabBar.tintColor;
+    }
+
+    return {
+        normalState: normalState,
+        selectedState: selectedState
+    };
 }
