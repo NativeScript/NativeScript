@@ -648,11 +648,12 @@ export class TabViewStyler implements definition.stylers.Styler {
     // color
     private static setColorProperty(view: view.View, newValue: any) {
         var tab = <tabView.TabView>view;
-        var count = tab.items ? tab.items.length : 0;
-        var tabLayout = tab._getAndroidTabView();
+        if (tab.items && tab.items.length > 0) {
+            var tabLayout = tab._getAndroidTabView();
 
-        for (var i = 0; i < count; i++) {
-            tabLayout.getTextViewForItemAt(i).setTextColor(newValue);
+            for (var i = 0; i < tab.items.length; i++) {
+                tabLayout.getTextViewForItemAt(i).setTextColor(newValue);
+            }
         }
     }
 
