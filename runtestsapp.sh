@@ -32,6 +32,9 @@ echo "------------------------------------------------"
 echo "Adding the android platform..."
 time tns platform add android #--frameworkPath=/Users/erjan/tns-android.tgz
 
+# GET THIS ONE FROM SOME PLACE...
+cp /Volumes/distributions/DailyBuilds/NativeScript/android-widgets/Stable/widgets.jar platforms/android/libs/
+
 # #DO THE REPLACEMENTS IN THE Info.plist and AndroidManifest.xml
 cp /Users/erjan/work/spikes/__DEL__/AndroidManifest.xml platforms/android/src/main/
 
