@@ -65,4 +65,4 @@ echo "------------------------------------------------"
 echo "Waiting for the tests to finish executing..."
 time ./expect.exp
 
-#pkill ".*emulator64-x86" && true
+pkill ".*emulator64-x86" && true
