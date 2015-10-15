@@ -162,6 +162,11 @@
         export var center: string;
 
         /**
+         * Same as center. An element should be aligned in the middle.
+         */
+        export var middle: string;
+
+        /**
          * An element should be bottom aligned.
          */
         export var bottom: string;

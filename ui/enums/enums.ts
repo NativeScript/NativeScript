@@ -41,6 +41,7 @@ export module HorizontalAlignment {
 export module VerticalAlignment {
     export var top = "top";
     export var center = "center";
+    export var middle = "middle";
     export var bottom = "bottom";
     export var stretch = "stretch";
 }
