@@ -79,3 +79,5 @@ echo "Waiting for the tests to finish executing..."
 time ./expect.exp
 
 pkill $emuProcId && true
+
+rm -rd $workingdir
