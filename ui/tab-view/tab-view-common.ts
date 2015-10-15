@@ -5,6 +5,7 @@ import proxy = require("ui/core/proxy");
 import types = require("utils/types");
 import trace = require("trace");
 import bindable = require("ui/core/bindable");
+import color = require("color");
 
 export var traceCategory = "TabView";
 
@@ -56,6 +57,7 @@ export class TabViewItem extends bindable.Bindable implements definition.TabView
 var TAB_VIEW = "TabView";
 var ITEMS = "items";
 var SELECTED_INDEX = "selectedIndex";
+var SELECTED_COLOR = "selectedColor";
 
 export module knownCollections {
     export var items = "items";
@@ -74,6 +76,13 @@ var selectedIndexProperty = new dependencyObservable.Property(
         undefined,
         dependencyObservable.PropertyMetadataSettings.AffectsLayout));
 
+var selectedColorProperty = new dependencyObservable.Property(
+    SELECTED_COLOR,
+    TAB_VIEW,
+    new proxy.PropertyMetadata(
+        undefined,
+        dependencyObservable.PropertyMetadataSettings.None));
+
 (<proxy.PropertyMetadata>selectedIndexProperty.metadata).onSetNativeValue = function (data: dependencyObservable.PropertyChangeData) {
     var tabView = <TabView>data.object;
     tabView._onSelectedIndexPropertyChangedSetNativeValue(data);
@@ -87,6 +96,7 @@ var selectedIndexProperty = new dependencyObservable.Property(
 export class TabView extends view.View implements definition.TabView, view.AddArrayFromBuilder {
     public static itemsProperty = itemsProperty;
     public static selectedIndexProperty = selectedIndexProperty;
+    public static selectedColorProperty = selectedColorProperty;
     public static selectedIndexChangedEvent = "selectedIndexChanged";
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
@@ -157,6 +167,14 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
     }
     set selectedIndex(value: number) {
         this._setValue(TabView.selectedIndexProperty, value);
+    }
+
+    get selectedColor(): color.Color {
+        return this._getValue(TabView.selectedColorProperty);
+    }
+    set selectedColor(value: color.Color) {
+        this._setValue(TabView.selectedColorProperty,
+            value instanceof color.Color ? value : new color.Color(<any>value));
     }
 
     public _onSelectedIndexPropertyChangedSetNativeValue(data: dependencyObservable.PropertyChangeData) {
@@ -232,5 +250,14 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
                 this.items[i].bindingContext = newValue;
             }    
         }
+    }
+    
+    public _getAndroidTabView(): org.nativescript.widgets.TabLayout {
+        // Android specific
+        return undefined;
+    }
+
+    public _updateIOSTabBarColors(): void {
+        // iOS sepcific
     }
 } 

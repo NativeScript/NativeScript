@@ -6,6 +6,7 @@ declare module "ui/tab-view" {
     import dependencyObservable = require("ui/core/dependency-observable");
     import observable = require("data/observable");
     import bindable = require("ui/core/bindable");
+    import color = require("color");
 
     /**
      * Represents a tab view entry.
@@ -48,6 +49,7 @@ declare module "ui/tab-view" {
     class TabView extends view.View {
         public static itemsProperty: dependencyObservable.Property;
         public static selectedIndexProperty: dependencyObservable.Property;
+        public static selectedColorProperty: dependencyObservable.Property;
 
         /**
          * Gets or sets the items of the TabView.
@@ -58,6 +60,11 @@ declare module "ui/tab-view" {
          * Gets or sets the selectedIndex of the TabView.
          */
         selectedIndex: number;
+
+        /**
+         * Gets or sets the color used for selected item.
+         */
+        selectedColor: color.Color;
 
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.
@@ -86,5 +93,10 @@ declare module "ui/tab-view" {
          * Raised when the selected index changes.
          */
         on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
+
+        //@private
+        _getAndroidTabView(): org.nativescript.widgets.TabLayout;
+        _updateIOSTabBarColors(): void;
+        //@endprivate
     }
-} 
+}

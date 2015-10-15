@@ -6,6 +6,7 @@ import enums = require("ui/enums");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
 import frame = require("ui/frame");
+import tabView = require("ui/tab-view");
 
 global.moduleMerge(stylersCommon, exports);
 
@@ -83,7 +84,7 @@ export class DefaultStyler implements definition.stylers.Styler {
     }
 
     private static getBorderWidthProperty(view: view.View): any {
-        if (view._nativeView instanceof UIView){
+        if (view._nativeView instanceof UIView) {
             return (<UIView>view._nativeView).layer.borderWidth;
         }
         return 0;
@@ -500,6 +501,25 @@ export class ActionBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class TabViewStyler implements definition.stylers.Styler {
+    // color
+    private static setColorProperty(view: view.View, newValue: any) {
+        var tab = <tabView.TabView>view;
+        tab._updateIOSTabBarColors();
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var tab = <tabView.TabView>view;
+        tab._updateIOSTabBarColors();
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            TabViewStyler.setColorProperty,
+            TabViewStyler.resetColorProperty), "TabView");
+    }
+}
+
 function setTextAlignment(view: TextUIView, value: string) {
     switch (value) {
         case enums.TextAlignment.left:
@@ -526,4 +546,5 @@ export function _registerDefaultStylers() {
     SegmentedBarStyler.registerHandlers();
     SearchBarStyler.registerHandlers();
     ActionBarStyler.registerHandlers();
+    TabViewStyler.registerHandlers();
 }

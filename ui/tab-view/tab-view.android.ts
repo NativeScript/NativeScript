@@ -6,6 +6,8 @@ import trace = require("trace");
 import types = require("utils/types");
 import utils = require("utils/utils");
 import imageSource = require("image-source");
+import proxy = require("ui/core/proxy");
+import color = require("color");
 
 var VIEWS_STATES = "_viewStates";
 var ACCENT_COLOR = "colorAccent";
@@ -139,6 +141,14 @@ class PageChangedListener extends android.support.v4.view.ViewPager.SimpleOnPage
         this._owner.selectedIndex = position;
     }
 }
+
+function selectedColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var tabLayout = (<TabView>data.object)._getAndroidTabView();
+    if (tabLayout && data.newValue instanceof color.Color) {
+        tabLayout.setSelectedIndicatorColors([data.newValue.android]);
+    }
+}
+(<proxy.PropertyMetadata>common.TabView.selectedColorProperty.metadata).onSetNativeValue = selectedColorPropertyChanged;
 
 export class TabView extends common.TabView {
     private _grid: org.nativescript.widgets.GridLayout;
@@ -277,5 +287,9 @@ export class TabView extends common.TabView {
         }
 
         return result;
+    }
+
+    public _getAndroidTabView(): org.nativescript.widgets.TabLayout {
+        return this._tabLayout;
     }
 }
