@@ -3,7 +3,7 @@ import colorModule = require("color");
 import types = require("utils/types");
 import enums = require("ui/enums");
 import dts = require("ui/styling/background");
-import cssValue = require("css-value");
+var cssValue = require("css-value");
 
 export class Background implements dts.Background {
     public static default = new Background(undefined, undefined, undefined, undefined, undefined);
@@ -83,7 +83,7 @@ export class Background implements dts.Background {
 
         // size
         if (this.size) {
-            let values = cssValue.parse(this.size);
+            let values = cssValue(this.size);
 
             if (values.length === 2) {
                 let vx = values[0];
@@ -126,7 +126,7 @@ export class Background implements dts.Background {
 
         // position
         if (this.position) {
-            let values = cssValue.parse(this.position);
+            let values = cssValue(this.position);
             let spaceX = width - imageWidth;
             let spaceY = height - imageHeight;
 
