@@ -45,7 +45,7 @@ class UIGestureRecognizerImpl extends NSObject {
             view: target,
             ios: recognizer,
             android: undefined,
-            object: view,
+            object: target,
             eventName: definition.toString(type),
         };
 
