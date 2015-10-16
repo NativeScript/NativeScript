@@ -2,12 +2,21 @@
 import definition = require("ui/core/bindable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import weakEvents = require("ui/core/weak-event-listener");
-import appModule = require("application");
 import types = require("utils/types");
 import trace = require("trace");
 import polymerExpressions = require("js-libs/polymer-expressions");
 import bindingBuilder = require("../builder/binding-builder");
 import viewModule = require("ui/core/view");
+
+//late import
+var _appModule = null;
+
+function appModule() {
+    if (!_appModule) {
+        _appModule = require("application");
+    }
+    return _appModule;
+}
 
 var bindingContextProperty = new dependencyObservable.Property(
     "bindingContext",
@@ -359,9 +368,9 @@ export class Binding {
             if (exp) {
                 var context = this.source && this.source.get && this.source.get() || global;
                 var model = {};
-                for (var prop in appModule.resources) {
-                    if (appModule.resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
-                        context[prop] = appModule.resources[prop];
+                for (var prop in appModule().resources) {
+                    if (appModule().resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
+                        context[prop] = appModule().resources[prop];
                     }
                 }
 
