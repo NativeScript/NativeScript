@@ -1,7 +1,16 @@
 ﻿import view = require("ui/core/view");
-import application = require("application");
 import dependencyObservable = require("ui/core/dependency-observable");
 import types = require("utils/types");
+
+//late import
+var _appModule = null;
+
+function appModule() {
+    if (!_appModule) {
+        _appModule = require("application");
+    }
+    return _appModule;
+}
 
 var _defaultNativeValuesCache = {};
 
@@ -26,10 +35,9 @@ export class StylePropertyChangedHandler {
             _defaultNativeValuesCache[className + property.id] = this._getNativeValue(view);
         }
 
-        if (application.android) {
+        if (appModule().android) {
             newValue = newValue.android ? newValue.android : newValue;
-        }
-        else if (application.ios) {
+        } else if (appModule().ios) {
             newValue = newValue.ios ? newValue.ios : newValue;
         }
 
