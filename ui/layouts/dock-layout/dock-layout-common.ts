@@ -5,9 +5,10 @@ import view = require("ui/core/view");
 import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
 import {registerSpecialProperty} from "ui/builder/special-properties";
+import platform = require("platform");
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-var AffectsLayout = global.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
+var AffectsLayout = platform.device.os === platform.platformNames.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
 
 function isDockValid(value: any): boolean {
     return value === enums.Dock.left || value === enums.Dock.top || value === enums.Dock.right || value === enums.Dock.bottom;

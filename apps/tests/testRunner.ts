@@ -129,10 +129,10 @@ function printRunTestStats() {
 }
 
 function time(): number {
-    if (global.android) {
+    if (platform.device.os === platform.platformNames.android) {
         return java.lang.System.nanoTime() / 1000000; // 1 ms = 1000000 ns
     }
-    else {
+    else if (platform.device.os === platform.platformNames.ios) {
         return CACurrentMediaTime() * 1000;
     }
 }

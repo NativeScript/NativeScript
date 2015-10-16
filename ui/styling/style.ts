@@ -12,6 +12,7 @@ import imageSource = require("image-source");
 import utils = require("utils/utils");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
+import platform = require("platform");
 
 // key is the property id and value is Dictionary<string, StylePropertyChangedHandler>;
 var _registeredHandlers = Array<Object>();
@@ -23,7 +24,7 @@ var _handlersCache = {};
 var noStylingClasses = {};
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-var AffectsLayout = global.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
+var AffectsLayout = platform.device.os === platform.platformNames.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
 export interface Thickness {
     left: number;
@@ -850,7 +851,7 @@ export var nativePaddingsProperty = new styleProperty.Property("paddingNative", 
     new PropertyMetadata(undefined, null, null, null, thicknessComparer));
 
 // TODO: separate into .android/.ios files so that there is no need for such checks
-var defaultPadding = global.android ? undefined : 0;
+var defaultPadding = platform.device.os === platform.platformNames.android ? undefined : 0;
 
 export var paddingLeftProperty = new styleProperty.Property("paddingLeft", "padding-left",
     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);
@@ -865,7 +866,7 @@ export var paddingBottomProperty = new styleProperty.Property("paddingBottom", "
     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);
 
 // TODO: separate into .android/.ios files so that there is no need for such checks
-if (global.android) {
+if (platform.device.os === platform.platformNames.android) {
     paddingTopProperty.defaultValueGetter = getNativePaddingTop;
     paddingLeftProperty.defaultValueGetter = getNativePaddingLeft;
     paddingRightProperty.defaultValueGetter = getNativePaddingRight;
