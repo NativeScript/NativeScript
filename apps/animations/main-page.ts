@@ -96,19 +96,19 @@ export function onSequence(args: observable.EventData) {
     console.log("onSequence");
     
     button3.animate({
-        translate: { x: 80, y: 40 },
+        translate: { x: 80, y: -40 },
         scale: { x: 0.9, y: 0.3 },
         rotate: 25,
         duration: 1000
     })
     .then(() => button3.animate({
-        translate: { x: 0, y: 80 },
+        translate: { x: 0, y: -80 },
         scale: { x: 0.5, y: 0.5 },
         rotate: -25,
         duration: 1000
     }))
     .then(() => button3.animate({
-        translate: { x: -80, y: 40 },
+        translate: { x: -80, y: -40 },
         scale: { x: 0.5, y: 0.9 },
         rotate: 45,
         duration: 1000
@@ -128,7 +128,7 @@ export function onInterrupted(args: observable.EventData) {
     
     setTimeout(() => {
         button3.animate({
-            translate: { x: 80, y: 40 },
+            translate: { x: 80, y: -40 },
             scale: { x: 0.9, y: 0.3 },
             rotate: 25,
             duration: 1000
@@ -137,7 +137,7 @@ export function onInterrupted(args: observable.EventData) {
     
     setTimeout(function() {
         button3.animate({
-            translate: { x: 0, y: 80 },
+            translate: { x: 0, y: -80 },
             scale: { x: 0.5, y: 0.5 },
             rotate: -25,
             duration: 1000
@@ -146,7 +146,7 @@ export function onInterrupted(args: observable.EventData) {
     
     setTimeout(function() {
         button3.animate({
-            translate: { x: -80, y: 40 },
+            translate: { x: -80, y: -40 },
             scale: { x: 0.5, y: 0.9 },
             rotate: 45,
             duration: 1000
