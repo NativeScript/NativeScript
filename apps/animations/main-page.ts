@@ -91,3 +91,74 @@ export function onSingle(args: observable.EventData) {
         .then(() => console.log("Animation finished"))
         .catch((e) => console.log(e.message));
 }
+
+export function onSequence(args: observable.EventData) {
+    console.log("onSequence");
+    
+    button3.animate({
+        translate: { x: 80, y: -40 },
+        scale: { x: 0.9, y: 0.3 },
+        rotate: 25,
+        duration: 1000
+    })
+    .then(() => button3.animate({
+        translate: { x: 0, y: -80 },
+        scale: { x: 0.5, y: 0.5 },
+        rotate: -25,
+        duration: 1000
+    }))
+    .then(() => button3.animate({
+        translate: { x: -80, y: -40 },
+        scale: { x: 0.5, y: 0.9 },
+        rotate: 45,
+        duration: 1000
+    }))
+    .then(() => button3.animate({
+        translate: { x: 0, y: 0 },
+        scale: { x: 1, y: 1 },
+        rotate: 0,
+        duration: 1000
+    }))
+    .then(() => console.log("Animation finished"))
+    .catch((e) => console.log(e.message));
+}
+
+export function onInterrupted(args: observable.EventData) {
+    console.log("onInterrupt");
+    
+    setTimeout(() => {
+        button3.animate({
+            translate: { x: 80, y: -40 },
+            scale: { x: 0.9, y: 0.3 },
+            rotate: 25,
+            duration: 1000
+        });    
+    }, 700 * 0);
+    
+    setTimeout(function() {
+        button3.animate({
+            translate: { x: 0, y: -80 },
+            scale: { x: 0.5, y: 0.5 },
+            rotate: -25,
+            duration: 1000
+        })
+    }, 700 * 1);
+    
+    setTimeout(function() {
+        button3.animate({
+            translate: { x: -80, y: -40 },
+            scale: { x: 0.5, y: 0.9 },
+            rotate: 45,
+            duration: 1000
+        })
+    }, 700 * 2);
+    
+    setTimeout(function() {
+        button3.animate({
+            translate: { x: 0, y: 0 },
+            scale: { x: 1, y: 1 },
+            rotate: 0,
+            duration: 1000
+        })
+    }, 700 * 3);
+}

@@ -168,59 +168,65 @@ export class Animation extends common.Animation implements definition.Animation 
             }
 
             trace.write("UIView.beginAnimationsContext(" + index + "): " + common.Animation._getAnimationInfo(animation), trace.categories.Animation);
-            UIView.beginAnimationsContext(index.toString(), null);
 
-            if (animationDelegate) {
-                UIView.setAnimationDelegate(animationDelegate);
-                UIView.setAnimationWillStartSelector("animationWillStart");
-                UIView.setAnimationDidStopSelector("animationDidStop");
-            }
+            UIView.animateKeyframesWithDurationDelayOptionsAnimationsCompletion(1, 0,
+                UIViewKeyframeAnimationOptions.UIViewKeyframeAnimationOptionBeginFromCurrentState,
+                () => {
+                    UIView.addKeyframeWithRelativeStartTimeRelativeDurationAnimations(0, 1, () => {
+                        if (animationDelegate) {
+                            UIView.setAnimationDelegate(animationDelegate);
+                            UIView.setAnimationWillStartSelector("animationWillStart");
+                            UIView.setAnimationDidStopSelector("animationDidStop");
+                        }
 
-            if (animation.duration !== undefined) {
-                UIView.setAnimationDuration(animation.duration / 1000.0);
-            }
-            else {
-                UIView.setAnimationDuration(0.3); //Default duration.
-            }
-            if (animation.delay !== undefined) {
-                UIView.setAnimationDelay(animation.delay / 1000.0);
-            }
-            if (animation.iterations !== undefined) {
-                if (animation.iterations === Number.POSITIVE_INFINITY) {
-                    UIView.setAnimationRepeatCount(FLT_MAX);
-                }
-                else {
-                    UIView.setAnimationRepeatCount(animation.iterations - 1);
-                }
-            }
-            if (animation.curve !== undefined) {
-                UIView.setAnimationCurve(animation.curve);
-            }
+                        if (animation.duration !== undefined) {
+                            UIView.setAnimationDuration(animation.duration / 1000.0);
+                        }
+                        else {
+                            UIView.setAnimationDuration(0.3); //Default duration.
+                        }
+                        if (animation.delay !== undefined) {
+                            UIView.setAnimationDelay(animation.delay / 1000.0);
+                        }
+                        if (animation.iterations !== undefined) {
+                            if (animation.iterations === Number.POSITIVE_INFINITY) {
+                                UIView.setAnimationRepeatCount(FLT_MAX);
+                            }
+                            else {
+                                UIView.setAnimationRepeatCount(animation.iterations - 1);
+                            }
+                        }
+                        if (animation.curve !== undefined) {
+                            UIView.setAnimationCurve(animation.curve);
+                        }
 
-            var originalValue;
-            switch (animation.property) {
-                case common.Properties.opacity:
-                    originalValue = animation.target.opacity;
-                    (<any>animation)._propertyResetCallback = () => { animation.target.opacity = originalValue };
-                    animation.target.opacity = animation.value;
-                    break;
-                case common.Properties.backgroundColor:
-                    originalValue = animation.target.backgroundColor;
-                    (<any>animation)._propertyResetCallback = () => { animation.target.backgroundColor = originalValue };
-                    animation.target.backgroundColor = animation.value;
-                    break;
-                case _transform:
-                    originalValue = nativeView.transform;
-                    (<any>animation)._propertyResetCallback = () => { nativeView.transform = originalValue };
-                    nativeView.transform = Animation._createNativeAffineTransform(animation);
-                    break;
-                default:
-                    throw new Error("Cannot animate " + animation.property);
-                    break;
-            }
+                        var originalValue;
+                        switch (animation.property) {
+                            case common.Properties.opacity:
+                                originalValue = animation.target.opacity;
+                                (<any>animation)._propertyResetCallback = () => { animation.target.opacity = originalValue };
+                                animation.target.opacity = animation.value;
+                                break;
+                            case common.Properties.backgroundColor:
+                                originalValue = animation.target.backgroundColor;
+                                (<any>animation)._propertyResetCallback = () => { animation.target.backgroundColor = originalValue };
+                                animation.target.backgroundColor = animation.value;
+                                break;
+                            case _transform:
+                                originalValue = nativeView.transform;
+                                (<any>animation)._propertyResetCallback = () => { nativeView.transform = originalValue };
+                                nativeView.transform = Animation._createNativeAffineTransform(animation);
+                                break;
+                            default:
+                                throw new Error("Cannot animate " + animation.property);
+                                break;
+                        }
+                    })
+                },
+                null
+            );
 
             trace.write("UIView.commitAnimations " + index, trace.categories.Animation);
-            UIView.commitAnimations();
 
             if (!playSequentially && nextAnimationCallback) {
                 nextAnimationCallback();
