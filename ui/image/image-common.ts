@@ -5,6 +5,7 @@ import imageSource = require("image-source");
 import definition = require("ui/image");
 import enums = require("ui/enums");
 import types = require("utils/types");
+import platform = require("platform");
 
 var SRC = "src";
 var IMAGE_SOURCE = "imageSource";
@@ -14,7 +15,7 @@ var ISLOADING = "isLoading";
 var STRETCH = "stretch";
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-var AffectsLayout = global.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
+var AffectsLayout = platform.device.os === platform.platformNames.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
 
 function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;

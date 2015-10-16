@@ -8,11 +8,11 @@ import fs = require("file-system");
 import frameCommon = require("../frame/frame-common");
 import {ActionBar} from "ui/action-bar";
 import {DependencyObservable, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData, Property, ValueSource} from "ui/core/dependency-observable";
-
+import platform = require("platform");
 import proxy = require("ui/core/proxy");
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-var AffectsLayout = global.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
+var AffectsLayout = platform.device.os === platform.platformNames.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
 var backgroundSpanUnderStatusBarProperty = new Property("backgroundSpanUnderStatusBar", "Page", new proxy.PropertyMetadata(false, AffectsLayout));
 

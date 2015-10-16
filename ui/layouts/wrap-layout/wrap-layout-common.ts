@@ -3,9 +3,10 @@ import definition = require("ui/layouts/wrap-layout");
 import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
+import platform = require("platform");
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (so we skip unnecessary native call).
-var AffectsLayout = global.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
+var AffectsLayout = platform.device.os === platform.platformNames.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
 
 function isWidthHeightValid(value: any): boolean {
     return (value >= 0.0 && value !== Number.POSITIVE_INFINITY);

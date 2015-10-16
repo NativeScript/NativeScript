@@ -5,6 +5,7 @@
 // The default bootstrap.js implementation for each platform loads and initializes this module.
 // ``` JavaScript
 import app = require("application");
+import platform = require("platform");
 // ```
 // The pre-required `app` module is used throughout the following code snippets.
 // </snippet>
@@ -24,10 +25,10 @@ if (app.android) {
 import TKUnit = require("./TKUnit");
 
 export var testInitialized = function () {
-    if (global.android) {
+    if (platform.device.os === platform.platformNames.android) {
         // we have the android defined
         TKUnit.assert(app.android, "Application module not properly intialized");
-    } else if (NSObject) {
+    } else if (platform.device.os === platform.platformNames.ios) {
         TKUnit.assert(app.ios, "Application module not properly intialized");
     }
 } 
