@@ -63,7 +63,7 @@ export function createPage() {
     });
 
     tapLabel.on(gestures.GestureTypes.tap, function (args: gestures.GestureEventData) {
-        tapLabel.text = "Tap gesture detected, " + (args.object === tapLabelB);
+        tapLabel.text = "Tap gesture detected, " + (args.object === tapLabel);
     });
 
     var observer1 = tapLabel.getGestureObservers(gestures.GestureTypes.tap)[0];
