@@ -51,6 +51,7 @@ export class Animation extends common.Animation implements definition.Animation 
         }
 
         trace.write("Starting " + this._nativeAnimatorsArray.length + " animations " + (this._playSequentially ? "sequentially." : "together."), trace.categories.Animation);
+        this._animatorSet.setupStartValues();
         this._animatorSet.start();
         return animationFinishedPromise;
     }
@@ -67,31 +68,23 @@ export class Animation extends common.Animation implements definition.Animation 
         var that = this;
         this._animatorListener = new android.animation.Animator.AnimatorListener({
             onAnimationStart: function (animator: android.animation.Animator): void {
-                that._onAndroidAnimationStart();
+                trace.write("MainAnimatorListener.onAndroidAnimationStart(" + animator +")", trace.categories.Animation);
             },
             onAnimationRepeat: function (animator: android.animation.Animator): void {
-                that._onAndroidAnimationRepeat();
+                trace.write("MainAnimatorListener.onAnimationRepeat(" + animator + ")", trace.categories.Animation);
             },
             onAnimationEnd: function (animator: android.animation.Animator): void {
+                trace.write("MainAnimatorListener.onAnimationEnd(" + animator + ")", trace.categories.Animation);
                 that._onAndroidAnimationEnd();
             },
             onAnimationCancel: function (animator: android.animation.Animator): void {
+                trace.write("MainAnimatorListener.onAnimationCancel(" + animator + ")", trace.categories.Animation);
                 that._onAndroidAnimationCancel();
             }
         });
     }
 
-    private _onAndroidAnimationStart() {
-        trace.write("AndroidAnimation._onAndroidAnimationStart.", trace.categories.Animation);
-    }
-
-    private _onAndroidAnimationRepeat() {
-        trace.write("AndroidAnimation._onAndroidAnimationRepeat.", trace.categories.Animation);
-    }
-
     private _onAndroidAnimationEnd() {
-        trace.write("AndroidAnimation._onAndroidAnimationEnd.", trace.categories.Animation);
-
         if (!this.isPlaying) {
             // It has been cancelled
             return;
@@ -106,7 +99,6 @@ export class Animation extends common.Animation implements definition.Animation 
     }
 
     private _onAndroidAnimationCancel() {
-        trace.write("AndroidAnimation._onAndroidAnimationCancel.", trace.categories.Animation);
         var i = 0;
         var length = this._propertyResetCallbacks.length;
         for (; i < length; i++) {
@@ -132,21 +124,22 @@ export class Animation extends common.Animation implements definition.Animation 
 
         var nativeArray;
         var nativeView: android.view.View = (<android.view.View>propertyAnimation.target._nativeView);
-        var animators = new Array<android.animation.ValueAnimator>();
+        var animators = new Array<android.animation.Animator>();
         var propertyUpdateCallbacks = new Array<Function>();
         var propertyResetCallbacks = new Array<Function>();
-        var animator: android.animation.ValueAnimator;
         var originalValue;
         var density = utils.layout.getDisplayDensity();
+        var xyObjectAnimators: any;
+        var animatorSet: android.animation.AnimatorSet;
         switch (propertyAnimation.property) {
 
             case common.Properties.opacity:
                 originalValue = nativeView.getAlpha();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value;
-                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
                 propertyUpdateCallbacks.push(() => { propertyAnimation.target.opacity = propertyAnimation.value });
                 propertyResetCallbacks.push(() => { nativeView.setAlpha(originalValue); });
+                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
                 break;
 
             case common.Properties.backgroundColor:
@@ -154,7 +147,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 nativeArray = java.lang.reflect.Array.newInstance(java.lang.Object.class, 2);
                 nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<color.Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);
                 nativeArray[1] = java.lang.Integer.valueOf((<color.Color>propertyAnimation.value).argb);
-                animator = android.animation.ValueAnimator.ofObject(argbEvaluator, nativeArray);
+                var animator = android.animation.ValueAnimator.ofObject(argbEvaluator, nativeArray);
                 animator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
                     onAnimationUpdate(animator: android.animation.ValueAnimator) {
                         var argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
@@ -162,50 +155,68 @@ export class Animation extends common.Animation implements definition.Animation 
                     }
                 }));
 
-                animators.push(animator);
                 propertyUpdateCallbacks.push(() => { propertyAnimation.target.backgroundColor = propertyAnimation.value; });
                 propertyResetCallbacks.push(() => { nativeView.setBackground(originalValue); });
+                animators.push(animator);
                 break;
 
             case common.Properties.translate:
+                xyObjectAnimators = java.lang.reflect.Array.newInstance(android.animation.Animator.class, 2);
+
                 originalValue = nativeView.getTranslationX();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value.x * density;
-                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "translationX", nativeArray));
+                xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationX", nativeArray);
+                xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
                 propertyUpdateCallbacks.push(() => { propertyAnimation.target.translateX = propertyAnimation.value.x; });
                 propertyResetCallbacks.push(() => { nativeView.setTranslationX(originalValue); });
 
                 originalValue = nativeView.getTranslationY();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value.y * density;
-                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "translationY", nativeArray));
+                xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationY", nativeArray);
+                xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
                 propertyUpdateCallbacks.push(() => { propertyAnimation.target.translateY = propertyAnimation.value.y; });
                 propertyResetCallbacks.push(() => { nativeView.setTranslationY(originalValue); });
-                break;
 
-            case common.Properties.rotate:
-                originalValue = nativeView.getRotation();
-                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
-                nativeArray[0] = propertyAnimation.value;
-                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
-                propertyUpdateCallbacks.push(() => { propertyAnimation.target.rotate = propertyAnimation.value; });
-                propertyResetCallbacks.push(() => { nativeView.setRotation(originalValue); });
+                animatorSet = new android.animation.AnimatorSet();
+                animatorSet.playTogether(xyObjectAnimators);
+                animatorSet.setupStartValues();
+                animators.push(animatorSet);
                 break;
 
             case common.Properties.scale:
+                xyObjectAnimators = java.lang.reflect.Array.newInstance(android.animation.Animator.class, 2);
+
                 originalValue = nativeView.getScaleX();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value.x;
-                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "scaleX", nativeArray));
+                xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleX", nativeArray);
+                xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
                 propertyUpdateCallbacks.push(() => { propertyAnimation.target.scaleX = propertyAnimation.value.x; });
                 propertyResetCallbacks.push(() => { nativeView.setScaleX(originalValue); });
 
                 originalValue = nativeView.getScaleY();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value.y;
-                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "scaleY", nativeArray));
+                xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleY", nativeArray);
+                xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
                 propertyUpdateCallbacks.push(() => { propertyAnimation.target.scaleY = propertyAnimation.value.y; });
                 propertyResetCallbacks.push(() => { nativeView.setScaleY(originalValue); });
+
+                animatorSet = new android.animation.AnimatorSet();
+                animatorSet.playTogether(xyObjectAnimators);
+                animatorSet.setupStartValues();
+                animators.push(animatorSet);
+                break;
+
+            case common.Properties.rotate:
+                originalValue = nativeView.getRotation();
+                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray[0] = propertyAnimation.value;
+                propertyUpdateCallbacks.push(() => { propertyAnimation.target.rotate = propertyAnimation.value; });
+                propertyResetCallbacks.push(() => { nativeView.setRotation(originalValue); });
+                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
                 break;
 
             default:
@@ -216,28 +227,35 @@ export class Animation extends common.Animation implements definition.Animation 
         var i = 0;
         var length = animators.length;
         for (; i < length; i++) {
+            
+            // Duration
             if (propertyAnimation.duration !== undefined) {
                 animators[i].setDuration(propertyAnimation.duration);
             }
+
+            // Delay
             if (propertyAnimation.delay !== undefined) {
                 animators[i].setStartDelay(propertyAnimation.delay);
             }
-            if (propertyAnimation.iterations !== undefined) {
-                if (propertyAnimation.iterations === Number.POSITIVE_INFINITY) {
-                    animators[i].setRepeatCount(android.view.animation.Animation.INFINITE);
-                }
-                else {
-                    animators[i].setRepeatCount(propertyAnimation.iterations - 1);
-                }
+
+            // Repeat Count 
+            if (propertyAnimation.iterations !== undefined && animators[i] instanceof android.animation.ValueAnimator) {
+                (<android.animation.ValueAnimator>animators[i]).setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
             }
+
+            // Interpolator
             if (propertyAnimation.curve !== undefined) {
                 animators[i].setInterpolator(propertyAnimation.curve);
             }
-            trace.write("ObjectAnimator created: " + animators[i], trace.categories.Animation);
+            trace.write("Animator created: " + animators[i], trace.categories.Animation);
         }
 
         this._animators = this._animators.concat(animators);
         this._propertyUpdateCallbacks = this._propertyUpdateCallbacks.concat(propertyUpdateCallbacks);
         this._propertyResetCallbacks = this._propertyResetCallbacks.concat(propertyResetCallbacks);
+    }
+
+    private static _getAndroidRepeatCount(iterations: number): number {
+        return (iterations === Number.POSITIVE_INFINITY) ? android.view.animation.Animation.INFINITE : iterations - 1;
     }
 }
