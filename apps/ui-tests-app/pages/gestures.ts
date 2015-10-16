@@ -63,43 +63,43 @@ export function createPage() {
     });
 
     tapLabel.on(gestures.GestureTypes.tap, function (args: gestures.GestureEventData) {
-        tapLabel.text = "Tap gesture detected";
+        tapLabel.text = "Tap gesture detected, " + (args.object === tapLabel);
     });
 
     var observer1 = tapLabel.getGestureObservers(gestures.GestureTypes.tap)[0];
 
     doubletapLabel.on(gestures.GestureTypes.doubleTap, function (args: gestures.GestureEventData) {
-        doubletapLabel.text = "Double Tap gesture detected";
+        doubletapLabel.text = "Double Tap gesture detected, " + (args.object === doubletapLabel);
     });
 
     var observer2 = doubletapLabel.getGestureObservers(gestures.GestureTypes.doubleTap)[0];
 
     longpressLabel.on(gestures.GestureTypes.longPress, function (args: gestures.GestureEventData) {
-        longpressLabel.text = "Long Press gesture detected";
+        longpressLabel.text = "Long Press gesture detected, " + (args.object === longpressLabel);
     });
 
     var observer3 = longpressLabel.getGestureObservers(gestures.GestureTypes.longPress)[0];
 
     swipeLabel.on(gestures.GestureTypes.swipe, function (args: gestures.SwipeGestureEventData) {
-        swipeLabel.text = "Swipe Direction: " + args.direction;
+        swipeLabel.text = "Swipe Direction: " + args.direction + ", " + (args.object === swipeLabel);
     });
 
     var observer4 = swipeLabel.getGestureObservers(gestures.GestureTypes.swipe)[0];
 
     panLabel.on(gestures.GestureTypes.pan, function (args: gestures.PanGestureEventData) {
-        panLabel.text = "Pan deltaX:" + args.deltaX + "; deltaY:" + args.deltaY + ";";
+        panLabel.text = "Pan deltaX:" + args.deltaX + "; deltaY:" + args.deltaY + ";" + ", " + (args.object === panLabel);
     });
 
     var observer5 = panLabel.getGestureObservers(gestures.GestureTypes.pan)[0];
 
     pinchLabel.on(gestures.GestureTypes.pinch, function (args: gestures.PinchGestureEventData) {
-        pinchLabel.text = "Pinch Scale: " + args.scale;
+        pinchLabel.text = "Pinch Scale: " + args.scale + ", " + (args.object === pinchLabel);
     });
 
     var observer6 = pinchLabel.getGestureObservers(gestures.GestureTypes.pinch)[0];
 
     rotaionLabel.on(gestures.GestureTypes.rotation, function (args: gestures.RotationGestureEventData) {
-        rotaionLabel.text = "Rotation: " + args.rotation;
+        rotaionLabel.text = "Rotation: " + args.rotation + ", " + (args.object === rotaionLabel);
     });
 
     var observer7 = rotaionLabel.getGestureObservers(gestures.GestureTypes.rotation)[0];
