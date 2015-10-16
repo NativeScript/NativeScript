@@ -15,6 +15,7 @@ dist/
 !css-value/**/*.*
 !fetch/**/*.*
 !apps/TelerikNEXT/lib/**/*.*
+!build/*.*
 CrossPlatformModules.sln.ide/
 *.suo
 CrossPlatformModules.suo

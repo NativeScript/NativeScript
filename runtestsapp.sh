@@ -11,16 +11,8 @@ pathToApk=./platforms/android/build/outputs/apk/$testsAppName-debug.apk
 deployedAppName=org.nativescript.$testsAppName
 mainActivityName=com.tns.NativeScriptActivity
 
-rm -rd $workingdir
-mkdir $workingdir
-cd $workingdir
-
 # Creating the emulator with:
 #android create avd -t "android-21" -n Api21 -b "default/x86"
-
-echo "------------------------------------------------"
-echo "Killing the emulator..."
-time pkill $emuProcId && true
 
 echo "------------------------------------------------"
 echo "Starting the emulator..."
@@ -78,7 +70,5 @@ cd $startdir
 echo "------------------------------------------------"
 echo "Waiting for the tests to finish executing..."
 time ./expect.exp $outfile
-
-pkill $emuProcId && true
 
 rm -rd $workingdir
