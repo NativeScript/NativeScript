@@ -72,7 +72,10 @@ export class XMLHttpRequest {
         this._status = null;
 
         if (types.isDefined(this._options)) {
-            if (types.isString(data)) {
+            if (types.isString(data) && this._options.method !== 'GET') {
+                //The Android Java HTTP lib throws an exception if we provide a
+                //a request body for GET requests, so we avoid doing that.
+                //Browser implementations silently ignore it as well.
                 this._options.content = data;
             } else if (data instanceof FormData) {
                 this._options.content = (<FormData>data).toString();

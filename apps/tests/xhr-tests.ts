@@ -212,6 +212,14 @@ export var test_XMLHttpRequest_requestShouldBePossibleAfterAbort = function (don
     xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
 };
 
+export function test_ignore_zero_length_request_body(done) {
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", "https://httpbin.org/get");
+
+    xhr.send('');
+    done(null);
+}
+
 export function test_raises_onload_Event(done) {
     let xhr = new XMLHttpRequest();
     xhr.onload = () => {
