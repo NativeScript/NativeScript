@@ -15,7 +15,7 @@ export class XMLHttpRequest {
     public DONE = 4;
 
     public onload: () => void;
-    public onerror: () => void;
+    public onerror: (any) => void;
 
     private _options: http.HttpRequestOptions;
     private _readyState: number;
@@ -99,9 +99,34 @@ export class XMLHttpRequest {
 
             }).catch(e => {
                 this._errorFlag = true;
-                this._setReadyState(this.DONE);
+                this._setReadyState(this.DONE, e);
             });
         }
+    }
+
+    private _listeners: Map<string, Array<Function>> = new Map<string, Array<Function>>();
+
+    public addEventListener(eventName: string, handler: Function) {
+        if (eventName !== 'load' && eventName !== 'error') {
+            throw new Error('Event not supported: ' + eventName);
+        }
+
+        let handlers = this._listeners.get(eventName) || [];
+        handlers.push(handler);
+        this._listeners.set(eventName, handlers);
+    }
+
+    public removeEventListener(eventName: string, toDetach: Function) {
+        let handlers = this._listeners.get(eventName) || [];
+        handlers = handlers.filter((handler) => handler !== toDetach);
+        this._listeners.set(eventName, handlers);
+    }
+
+    private emitEvent(eventName: string, ...args: Array<any>) {
+        let handlers = this._listeners.get(eventName) || [];
+        handlers.forEach((handler) => {
+            handler(...args);
+        });
     }
 
     public setRequestHeader(header: string, value: string) {
@@ -158,7 +183,7 @@ export class XMLHttpRequest {
         }
     }
 
-    private _setReadyState(value: number) {
+    private _setReadyState(value: number, error?: any) {
         if (this._readyState !== value) {
             this._readyState = value;
 
@@ -168,11 +193,16 @@ export class XMLHttpRequest {
         }
 
         if (this._readyState === this.DONE) {
-            if (this._errorFlag && types.isFunction(this.onerror)) {
-                this.onerror();
-            }
-            if (!this._errorFlag && types.isFunction(this.onload)) {
-                this.onload();
+            if (this._errorFlag) {
+                if (types.isFunction(this.onerror)) {
+                    this.onerror(error);
+                }
+                this.emitEvent('error', error);
+            } else {
+                if (types.isFunction(this.onload)) {
+                    this.onload();
+                }
+                this.emitEvent('load');
             }
         }
     }

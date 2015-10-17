@@ -221,6 +221,35 @@ export function test_raises_onload_Event(done) {
     xhr.send();
 }
 
+export function test_xhr_events(done) {
+    let xhr = <any>new XMLHttpRequest();
+
+    let loadCallbackFired = false, loadEventFired = false;
+    xhr.onload = () => loadCallbackFired = true;
+    let badEvent = () => { throw new Error("Shouldn't call me") }
+    xhr.addEventListener('load', () => loadEventFired = true);
+    xhr.addEventListener('load', badEvent);
+    xhr.removeEventListener('load', badEvent);
+
+    xhr._errorFlag = false;
+    xhr._setReadyState(xhr.DONE);
+    TKUnit.assertTrue(loadCallbackFired);
+    TKUnit.assertTrue(loadEventFired);
+
+    let errorCallbackData = null, errorEventData = null;
+    xhr.onerror = (e) => errorCallbackData = e;
+    xhr.addEventListener('error', (e) => errorEventData = e);
+    xhr.addEventListener('error', badEvent);
+    xhr.removeEventListener('error', badEvent);
+
+    xhr._errorFlag = true;
+    xhr._setReadyState(xhr.DONE, 'error data');
+    TKUnit.assertEqual(errorCallbackData, 'error data');
+    TKUnit.assertEqual(errorEventData, 'error data');
+
+    done(null);
+}
+
 export function test_sets_status_and_statusText(done) {
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = () => {
