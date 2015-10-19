@@ -212,12 +212,11 @@ export var test_XMLHttpRequest_requestShouldBePossibleAfterAbort = function (don
     xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
 };
 
-export function test_ignore_zero_length_request_body(done) {
+export function test_ignore_zero_length_request_body() {
     let xhr = new XMLHttpRequest();
     xhr.open("GET", "https://httpbin.org/get");
 
     xhr.send('');
-    done(null);
 }
 
 export function test_raises_onload_Event(done) {
@@ -229,7 +228,7 @@ export function test_raises_onload_Event(done) {
     xhr.send();
 }
 
-export function test_xhr_events(done) {
+export function test_xhr_events() {
     let xhr = <any>new XMLHttpRequest();
 
     let loadCallbackFired = false, loadEventFired = false;
@@ -254,8 +253,6 @@ export function test_xhr_events(done) {
     xhr._setReadyState(xhr.DONE, 'error data');
     TKUnit.assertEqual(errorCallbackData, 'error data');
     TKUnit.assertEqual(errorEventData, 'error data');
-
-    done(null);
 }
 
 export function test_sets_status_and_statusText(done) {
