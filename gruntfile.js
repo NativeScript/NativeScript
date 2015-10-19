@@ -329,149 +329,146 @@ module.exports = function(grunt) {
                 },
                 buildNodeTests: {
                     src: [
-                        'js-libs/easysax/**/*.ts',
-                                             'xml/**/*.ts',
-                                                      'node-tests/**/*.ts',
-                                                                      ],
-                                                                      outDir: localCfg.outModulesDir,
-                                                                      options: {
-                                                                      fast: 'never',
-                                                                      module: "commonjs",
-                                                                      target: "es5",
-                                                                      sourceMap: false,
-                                                                      declaration: false,
-                                                                      removeComments: "<%= !grunt.option('leavecomments') || '' %>",
-                                                                      compiler: "node_modules/typescript/bin/tsc",
-                                                                      noEmitOnError: true
-                                                                      }
-                                                                      }
-                                                                      },
-                                                                      tslint: {
-                                                                      build: {
-                                                                      files: {
-                                                                      src: localCfg.typeScriptSrcForTsLint
-                                                                      },
-                                                                      options: {
-                                                                      configuration: grunt.file.readJSON("./build/tslint.json")
-                                                                      }
-                                                                      }
-                                                                      },
-                                                                      exec: {
-                                                                      packModules: {
-                                                                      cmd: "npm pack",
-                                                                      cwd: localCfg.outModulesDir + "/"
-                                                                      },
-                                                                      packDefinitions: {
-                                                                      cmd: "npm pack",
-                                                                      cwd: localCfg.outDefinitionsDir + "/"
-                                                                      },
-                                                                      packApp: {
-                                                                      cmd: "npm pack",
-                                                                      cwd: "__dummy__"
-                                                                      },
-                                                                      mochaNode: {
-                                                                      cmd: "grunt simplemocha:node"
-                                                                      }
-                                                                      },
-                                                                      multidest: {
-                                                                      copyLicenseFiles: {
-                                                                      tasks: ["copy:appLicense"],
-                                                                      dest: function() {
-                                                                      var apps = getSubDirs(localCfg.srcAppsDir);
-                                                                      var targetDirs = [];
-                                                                      apps.forEach(function(item){
-                                                                      targetDirs.push(pathModule.join(localCfg.outAppsDir, item.name));
-                                                                      targetDirs.push(pathModule.join(localCfg.outTsAppsDir, item.name));
-                                                                      });
-                                                                      return targetDirs;
-                                                                      }()
-                                                                      }
-                                                                      },
-                                                                      shell: {
-                                                                      getGitSHA: {
-                                                                      command: "git rev-parse HEAD",
-                                                                      options: {
-                                                                      callback: assignGitSHA
-                                                                      }
-                                                                      },
-                                                                      },
-                                                                      simplemocha: {
-                                                                      node: {
-                                                                      src: localCfg.nodeTestsDir + '/**/*.js'
-                                                                                                         }
-                                                                                                         },
-                                                                                                         env: {
-                                                                                                         nodeTests: {
-                                                                                                         NODE_PATH: localCfg.outModulesDir,
-                                                                                                         }
-                                                                                                         }
-                                                                                                         });
-
-                                                                                                         grunt.loadNpmTasks("grunt-ts");
-                                                                                                         grunt.loadNpmTasks("grunt-contrib-clean");
-                                                                                                         grunt.loadNpmTasks("grunt-contrib-copy");
-                                                                                                         grunt.loadNpmTasks("grunt-exec");
-                                                                                                         grunt.loadNpmTasks("grunt-tslint");
-                                                                                                         grunt.loadNpmTasks("grunt-multi-dest");
-                                                                                                         grunt.loadNpmTasks("grunt-shell");
-                                                                                                         grunt.loadNpmTasks("grunt-env");
-                                                                                                         grunt.loadNpmTasks("grunt-simple-mocha");
-
-                                                                                                         var cloneTasks = function(originalTasks, taskNameSuffix)
-                                                                                                         {
-                                                                                                         var clonedTasks = [];
-                                                                                                         for(var i=0; i<originalTasks.length; i++)
-                                                                                                         {
-                                                                                                         var originalTask = originalTasks[i];
-
-                                                                                                         var taskCfg = grunt.util._.clone(grunt.config(originalTask.name));
-                                                                                                         var taskName = grunt.util._.clone(originalTask.name);
-                                                                                                         taskName[1] = taskName[1] + "_" + taskNameSuffix;
-
-                                                                                                         originalTask.specializeCfg(taskCfg, taskNameSuffix);
-
-                                                                                                         clonedTasks.push({name: taskName, cfg: taskCfg});
-                                                                                                         }
-                                                                                                         return clonedTasks;
-                                                                                                         }
-
-                                                                                                         var enqueueTasks = function(tasks) {
-                                                                                                         for (var i=0; i<tasks.length; i++) {
-                                                                                                         var task = tasks[i];
-                                                                                                         grunt.config(task.name, task.cfg);
-                                                                                                         grunt.task.run(task.name.join(":"));
-                                                                                                         }
-                                                                                                         }
-
-                                                                                                         grunt.registerTask("processEachApp", function(outAppsDir, pkgAppNameSuffix){
-                                                                                                         var allapps = getSubDirs(localCfg.srcAppsDir);
-                                                                                                         var tasks = [
-                                                                                                         {
-                                                                                                         name: ["copy", "appPackageDef"],
-                                                                                                         specializeCfg: function (cfg, currentAppName) {
-                                                                                                         outAppDir = pathModule.join(outAppsDir, currentAppName);
-                                                                                                         var pkgFilePath = pathModule.join(outAppDir, "package.json");
-                                                                                                         cfg.src = pkgFilePath;
-                                                                                                         cfg.dest = outAppDir;
-                                                                                                         cfg.appName = currentApp.name + (pkgAppNameSuffix || "");
-                                                                                                         }
-                                                                                                         },
-                                                                                                         {
-                                                                                                         name: ["exec", "packApp"],
-                                                                                                         specializeCfg: function(cfg, currentAppName) {
-                                                                                                         cfg.cwd = pathModule.join(outAppsDir, currentAppName);
-                                                                                                         }
-                                                                                                         }
-                                                                                                         ];
-
-                                                                                                         for (var j=0; j<allapps.length; j++)
-                                                                                                         {
-                                                                                                         var currentApp = allapps[j];
-                                                                                                         var clonedTasks = cloneTasks(tasks, currentApp.name);
-
-                        enqueueTasks(clonedTasks);
+                            'js-libs/easysax/**/*.ts',
+                            'xml/**/*.ts',
+                            'node-tests/**/*.ts',
+                        ],
+                    outDir: localCfg.outModulesDir,
+                    options: {
+                        fast: 'never',
+                        module: "commonjs",
+                        target: "es5",
+                        sourceMap: false,
+                        declaration: false,
+                        removeComments: "<%= !grunt.option('leavecomments') || '' %>",
+                        compiler: "node_modules/typescript/bin/tsc",
+                        noEmitOnError: true
+                    }
                 }
-                });
+            },
+            tslint: {
+                build: {
+                    files: {
+                        src: localCfg.typeScriptSrcForTsLint
+                    },
+                    options: {
+                    configuration: grunt.file.readJSON("./build/tslint.json")
+                    }
+                }
+            },
+            exec: {
+                packModules: {
+                    cmd: "npm pack",
+                    cwd: localCfg.outModulesDir + "/"
+                },
+                packDefinitions: {
+                    cmd: "npm pack",
+                    cwd: localCfg.outDefinitionsDir + "/"
+                },
+                packApp: {
+                    cmd: "npm pack",
+                    cwd: "__dummy__"
+                },
+                mochaNode: {
+                    cmd: "grunt simplemocha:node"
+                }
+            },
+            multidest: {
+                copyLicenseFiles: {
+                    tasks: ["copy:appLicense"],
+                    dest: function() {
+                        var apps = getSubDirs(localCfg.srcAppsDir);
+                        var targetDirs = [];
+                        apps.forEach(function(item){
+                            targetDirs.push(pathModule.join(localCfg.outAppsDir, item.name));
+                            targetDirs.push(pathModule.join(localCfg.outTsAppsDir, item.name));
+                        });
+                        return targetDirs;
+                    }()
+                }
+            },
+            shell: {
+                getGitSHA: {
+                    command: "git rev-parse HEAD",
+                    options: {
+                        callback: assignGitSHA
+                    }
+                },
+            },
+            simplemocha: {
+                node: {
+                    src: localCfg.nodeTestsDir + '/**/*.js'
+                }
+            },
+            env: {
+                nodeTests: {
+                    NODE_PATH: localCfg.outModulesDir,
+                }
+            }
+        });
+
+        grunt.loadNpmTasks("grunt-ts");
+        grunt.loadNpmTasks("grunt-contrib-clean");
+        grunt.loadNpmTasks("grunt-contrib-copy");
+        grunt.loadNpmTasks("grunt-exec");
+        grunt.loadNpmTasks("grunt-tslint");
+        grunt.loadNpmTasks("grunt-multi-dest");
+        grunt.loadNpmTasks("grunt-shell");
+        grunt.loadNpmTasks("grunt-env");
+        grunt.loadNpmTasks("grunt-simple-mocha");
+
+        var cloneTasks = function(originalTasks, taskNameSuffix) {
+            var clonedTasks = [];
+            for(var i=0; i<originalTasks.length; i++) {
+                var originalTask = originalTasks[i];
+
+                var taskCfg = grunt.util._.clone(grunt.config(originalTask.name));
+                var taskName = grunt.util._.clone(originalTask.name);
+                taskName[1] = taskName[1] + "_" + taskNameSuffix;
+
+                originalTask.specializeCfg(taskCfg, taskNameSuffix);
+
+                clonedTasks.push({name: taskName, cfg: taskCfg});
+            }
+            return clonedTasks;
+        }
+
+        var enqueueTasks = function(tasks) {
+            for (var i=0; i<tasks.length; i++) {
+                var task = tasks[i];
+                grunt.config(task.name, task.cfg);
+                grunt.task.run(task.name.join(":"));
+            }
+        }
+
+        grunt.registerTask("processEachApp", function(outAppsDir, pkgAppNameSuffix){
+            var allapps = getSubDirs(localCfg.srcAppsDir);
+            var tasks = [
+                {
+                    name: ["copy", "appPackageDef"],
+                    specializeCfg: function (cfg, currentAppName) {
+                        outAppDir = pathModule.join(outAppsDir, currentAppName);
+                        var pkgFilePath = pathModule.join(outAppDir, "package.json");
+                        cfg.src = pkgFilePath;
+                        cfg.dest = outAppDir;
+                        cfg.appName = currentApp.name + (pkgAppNameSuffix || "");
+                    }
+                },
+                {
+                    name: ["exec", "packApp"],
+                    specializeCfg: function(cfg, currentAppName) {
+                        cfg.cwd = pathModule.join(outAppsDir, currentAppName);
+                    }
+                }
+            ];
+
+            for (var j=0; j<allapps.length; j++) {
+                var currentApp = allapps[j];
+                var clonedTasks = cloneTasks(tasks, currentApp.name);
+
+                enqueueTasks(clonedTasks);
+            }
+        });
 
         grunt.registerTask("tests", [
                 "default"
@@ -548,7 +545,7 @@ module.exports = function(grunt) {
                     "distribute-definition-files",
 
                     "pack-modules"
-        ]));	
+        ]));
 
         grunt.registerTask("testEnv", function() {
             console.log('fafla', process.env.NODE_PATH);
