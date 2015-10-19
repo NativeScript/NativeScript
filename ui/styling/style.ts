@@ -593,7 +593,8 @@ export class Style extends DependencyObservable implements styling.Style {
         // TODO: Potential performance bottle-neck
         styleProperty.eachProperty(function (p: styleProperty.Property) {
             var value = that._getValue(p);
-            if (types.isDefined(value)) {
+            var valueSource = that._getValueSource(p);
+            if (valueSource !== ValueSource.Default && types.isDefined(value)) {
                 that._applyProperty(p, value);
             }
         });

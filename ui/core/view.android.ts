@@ -249,6 +249,10 @@ export class View extends viewCommon.View {
         trace.write("calling _onContextChanged on view " + this._domId, trace.categories.VisualTreeEvents);
 
         this._createUI();
+        // Ensure layout params
+        if (this._nativeView && !(this._nativeView.getLayoutParams() instanceof org.nativescript.widgets.CommonLayoutParams)) {
+            this._nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
+        }
 
         utils.copyFrom(this._options, this);
         delete this._options;
