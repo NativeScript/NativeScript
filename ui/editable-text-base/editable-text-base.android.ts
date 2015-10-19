@@ -2,13 +2,13 @@
 import textBase = require("ui/text-base");
 import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
+import utils = require("utils/utils");
 
 export class EditableTextBase extends common.EditableTextBase {
     private _android: android.widget.EditText;
     /* tslint:disable */
     private _dirtyTextAccumulator: string;
     /* tslint:enable */
-    private _imm: android.view.inputmethod.InputMethodManager;
 
     constructor(options?: textBase.Options) {
         super(options);
@@ -18,9 +18,7 @@ export class EditableTextBase extends common.EditableTextBase {
         return this._android;
     }
 
-    public _createUI() {
-        this._imm = <android.view.inputmethod.InputMethodManager>this._context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
-        
+    public _createUI() {      
         this._android = new android.widget.EditText(this._context);
         this._configureEditText();
         this.android.setTag(this.android.getKeyListener());
@@ -103,23 +101,20 @@ export class EditableTextBase extends common.EditableTextBase {
     }
 
     public _onDetached(force?: boolean) {
-        this._imm = undefined;
         this._android = undefined;
 
         super._onDetached(force);
     }
 
     public dismissSoftInput() {
-        if (this._imm) {
-            this._imm.hideSoftInputFromWindow(this._android.getWindowToken(), 0);
-        }
+        utils.ad.dismissSoftInput(this._nativeView);
     }
 
     public focus(): boolean {
         var result = super.focus();
         
-        if (result && this._nativeView) {
-            this._imm.showSoftInput(this._nativeView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        if (result) {
+            utils.ad.showSoftInput(this._nativeView);
         }
         
         return result;

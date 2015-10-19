@@ -50,4 +50,7 @@ export class SearchBar extends view.View implements definition.SearchBar {
             value instanceof color.Color ? value : new color.Color(<any>value));
     }
 	
+    public dismissSoftInput() {
+        //
+    }
 } 
