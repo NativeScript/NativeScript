@@ -14,30 +14,6 @@ mainActivityName=com.tns.NativeScriptActivity
 # Creating the emulator with:
 #android create avd -t "android-21" -n Api21 -b "default/x86"
 
-echo "------------------------------------------------"
-echo "Starting the emulator..."
-time emulator -avd $emuAvdName -no-audio -no-window &
-
-echo "------------------------------------------------"
-echo "Creating the app..."
-time tns create $testsAppName
-cd $testsAppName
-
-echo "------------------------------------------------"
-echo "Removing the original template files..."
-time rm app/*.*
-
-echo "------------------------------------------------"
-echo "Copying the test app files..."
-time cp -r ../../bin/dist/apps/tests/* ./app/
-
-echo "------------------------------------------------"
-echo "Adding the android platform..."
-time tns platform add android --frameworkPath=$androidRuntimePath
-
-# #DO THE REPLACEMENTS IN THE Info.plist and AndroidManifest.xml
-cp /Users/erjan/work/spikes/__DEL__/AndroidManifest.xml platforms/android/src/main/
-
 # GET THIS ONE FROM SOME PLACE...
 cp /Volumes/distributions/DailyBuilds/NativeScript/android-widgets/Stable/widgets.jar platforms/android/libs/
 
