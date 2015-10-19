@@ -96,6 +96,20 @@ global.moduleMerge(common, exports);
 export class SearchBar extends common.SearchBar {
     private _android: android.widget.SearchView;
 
+    public dismissSoftInput() {
+        utils.ad.dismissSoftInput(this._nativeView);
+    }
+
+    public focus(): boolean {
+        var result = super.focus();
+
+        if (result) {
+            utils.ad.showSoftInput(this._nativeView);
+        }
+
+        return result;
+    }
+
     public _createUI() {
         this._android = new android.widget.SearchView(this._context);
 

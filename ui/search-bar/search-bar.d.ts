@@ -78,5 +78,10 @@ declare module "ui/search-bar" {
          * Raised when a search bar search is closed.
          */
         on(event: "close", callback: (args: observable.EventData) => void, thisArg?: any);
+
+        /**
+         * Hides the soft input method, ususally a soft keyboard.
+         */
+        dismissSoftInput(): void;
     }
 }

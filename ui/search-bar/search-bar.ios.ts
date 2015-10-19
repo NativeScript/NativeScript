@@ -115,6 +115,10 @@ export class SearchBar extends common.SearchBar {
         super.onUnloaded();
     }
 
+    public dismissSoftInput() {
+        (<UIResponder>this.ios).resignFirstResponder();
+    }
+
     get ios(): UISearchBar {
         return this._ios;
     }  

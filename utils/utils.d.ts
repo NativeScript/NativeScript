@@ -67,6 +67,21 @@
         export function getApplicationContext(): android.content.Context;
 
         /**
+         * Gets the native Android input method manager.
+         */
+        export function getInputMethodManager(): android.view.inputmethod.InputMethodManager;
+
+        /**
+         * Hides the soft input method, ususally a soft keyboard.
+         */
+        export function dismissSoftInput(nativeView: android.view.View): void;
+
+        /**
+         * Shows the soft input method, ususally a soft keyboard.
+         */
+        export function showSoftInput(nativeView: android.view.View): void;
+
+        /**
          * Utility module dealing with some android collections.
          */
         module collections {

@@ -51,6 +51,28 @@ export module ad {
     export function getApplication() { return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance(); }
     export function getApplicationContext() { return <android.content.Context>getApplication().getApplicationContext(); }
 
+    var inputMethodManager: android.view.inputmethod.InputMethodManager;
+    export function getInputMethodManager() { 
+        if (!inputMethodManager) {
+            inputMethodManager = <android.view.inputmethod.InputMethodManager>getApplicationContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+        }
+        return inputMethodManager;
+    }
+
+    export function showSoftInput(nativeView: android.view.View) : void {
+        var imm = getInputMethodManager();
+        if (imm && nativeView instanceof android.view.View) {
+            imm.showSoftInput(nativeView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    export function dismissSoftInput(nativeView: android.view.View): void {
+        var imm = getInputMethodManager();
+        if (imm && nativeView instanceof android.view.View) {
+            imm.hideSoftInputFromWindow(nativeView.getWindowToken(), 0);
+        }
+    }
+
     export module collections {
         export function stringArrayToStringSet(str: string[]): any {
             var hashSet = new java.util.HashSet();
