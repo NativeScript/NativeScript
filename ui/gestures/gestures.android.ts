@@ -114,7 +114,9 @@ export class GesturesObserver extends common.GesturesObserver {
                 view: this.target,
                 android: motionEvent,
                 rotation: degrees,
-                ios: null
+                ios: undefined,
+                object: this.target,
+                eventName: definition.toString(definition.GestureTypes.rotation)
             }
 
             //var observer = that.get();
@@ -230,7 +232,10 @@ class PinchGestureListener extends android.view.ScaleGestureDetector.SimpleOnSca
             type: definition.GestureTypes.pinch,
             view: this._target,
             android: detector,
-            scale: detector.getScaleFactor()
+            scale: detector.getScaleFactor(),
+            object: this._target,
+            eventName: definition.toString(definition.GestureTypes.pinch),
+            ios: undefined
         };
 
         _executeCallback(this._observer, args);
