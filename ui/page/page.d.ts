@@ -168,6 +168,11 @@ declare module "ui/page" {
         showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean);
 
         /**
+         * Shows the page as a modal view.
+         */
+        showModal();
+
+        /**
          * Closes the current modal dialog that this page is showing.
          */
         closeModal();
