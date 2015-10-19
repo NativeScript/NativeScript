@@ -7,7 +7,7 @@ module.exports = {
             androidRuntimePath:"/Users/erjan/tns-android.tgz",
             outfile:"./TestRunResult.txt",
 
-            workingDir=".testsapprun",
+            workingDir:".testsapprun",
             testsAppName:"TestsApp",
             pathToApk:"./platforms/android/build/outputs/apk/TestsApp-debug.apk",
             deployedAppName:"org.nativescript.$testsAppName",
@@ -21,13 +21,13 @@ module.exports = {
                 }
             },
             mkdir: {
-                workindDir: {
+                workingDir: {
                     options: {
-                        create [localCfg.workingDir],
+                        createi: [localCfg.workingDir],
                         mode: 0700
                     }
                 }
-            }
+            },
             exec: {
                 killEmulator: {
                     cmd: "pkill '" + localCfg.emulatorProcessIdentifier + "'",
@@ -35,8 +35,7 @@ module.exports = {
                 },
                 runTestsApp: {
                     cmd: "./runtestsapp.sh",
-                    stdout: false,
-                    cwd: "../"
+                    stdout: false
                 }
             }
         });
@@ -55,7 +54,7 @@ module.exports = {
                 "clean:workingDir",
                 "mkdir:workingDir",
                 "exec:killEmulator",
-                "exec:runTestsApp",
+//                "exec:runTestsApp",
 
 
 
