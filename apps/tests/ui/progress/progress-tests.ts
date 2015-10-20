@@ -2,6 +2,9 @@
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import observable = require("data/observable");
+import color = require("color");
+import platform = require("platform");
+
 // <snippet module="ui/progress" title="progress">
 // # Progress
 // Using the progress view requires the Progress module.
@@ -68,6 +71,31 @@ export function test_set_value_greater_than_max_should_set_value_to_max() {
     };
 
     helper.buildUIAndRunTest(progress, testAction);
+}
+
+// Uncomment this when find way to check android Drawable color set by setColorFilter() method.
+if (platform.device.os === platform.platformNames.ios) {
+    exports.test_set_color = function () {
+        var progress = new progressModule.Progress();
+        progress.color = new color.Color("red");
+
+        function testAction(views: Array<viewModule.View>) {
+            TKUnit.assertEqual(progress.color.ios.CGColor, progress.ios.progressTintColor.CGColor, "progress.color");
+        };
+
+        helper.buildUIAndRunTest(progress, testAction);
+    }
+
+    exports.test_set_backgroundColor = function () {
+        var progress = new progressModule.Progress();
+        progress.backgroundColor = new color.Color("red");
+
+        function testAction(views: Array<viewModule.View>) {
+            TKUnit.assertEqual(progress.backgroundColor.ios.CGColor, progress.ios.trackTintColor.CGColor, "progress.color");
+        };
+
+        helper.buildUIAndRunTest(progress, testAction);
+    }
 }
 
 export function test_set_maxValue_should_adjust_value() {

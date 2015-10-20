@@ -394,6 +394,51 @@ export class SegmentedBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class ProgressStyler implements definition.stylers.Styler {
+    //Text color methods
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <UIProgressView>view.ios;
+        bar.progressTintColor = newValue;
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UIProgressView>view.ios;
+        bar.progressTintColor = nativeValue;
+    }
+
+    private static getNativeColorValue(view: view.View): any {
+        var bar = <UIProgressView>view.ios;
+        return bar.progressTintColor;
+    }
+
+    private static setBackgroundColorProperty(view: view.View, newValue: any) {
+        var bar = <UIProgressView>view.ios;
+        bar.trackTintColor = newValue;
+    }
+
+    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UIProgressView>view.ios;
+        bar.trackTintColor = nativeValue;
+    }
+
+    private static getBackgroundColorProperty(view: view.View): any {
+        var bar = <UIProgressView>view.ios;
+        return bar.trackTintColor;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            ProgressStyler.setColorProperty,
+            ProgressStyler.resetColorProperty,
+            ProgressStyler.getNativeColorValue), "Progress");
+
+        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
+            ProgressStyler.setBackgroundColorProperty,
+            ProgressStyler.resetBackgroundColorProperty,
+            ProgressStyler.getBackgroundColorProperty), "Progress");
+    }
+}
+
 export class SearchBarStyler implements definition.stylers.Styler {
 
     private static setBackgroundColorProperty(view: view.View, newValue: any) {
@@ -547,4 +592,5 @@ export function _registerDefaultStylers() {
     SearchBarStyler.registerHandlers();
     ActionBarStyler.registerHandlers();
     TabViewStyler.registerHandlers();
+    ProgressStyler.registerHandlers();
 }
