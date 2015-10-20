@@ -505,6 +505,51 @@ export class SegmentedBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class ProgressStyler implements definition.stylers.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <android.widget.ProgressBar>view._nativeView;
+        bar.getProgressDrawable().setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: number) {
+        var bar = <android.widget.ProgressBar>view._nativeView;
+        bar.getProgressDrawable().clearColorFilter();
+    }
+
+    private static setBackgroundAndBorderProperty(view: view.View, newValue: any) {
+        var bar = <android.widget.ProgressBar>view._nativeView;
+        var progressDrawable = <android.graphics.drawable.LayerDrawable>bar.getProgressDrawable();
+
+        if (progressDrawable.getNumberOfLayers && progressDrawable.getNumberOfLayers() > 0) {
+            var backgroundDrawable = progressDrawable.getDrawable(0);
+            if (backgroundDrawable) {
+                backgroundDrawable.setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+            }
+        }
+    }
+
+    private static resetBackgroundAndBorderProperty(view: view.View, nativeValue: number) {
+        var bar = <android.widget.ProgressBar>view._nativeView;
+        // Do nothing.
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            ProgressStyler.setColorProperty,
+            ProgressStyler.resetColorProperty), "Progress");
+
+        var borderHandler = new stylersCommon.StylePropertyChangedHandler(
+            ProgressStyler.setBackgroundAndBorderProperty,
+            ProgressStyler.resetBackgroundAndBorderProperty);
+
+        style.registerHandler(style.backgroundColorProperty, borderHandler, "Progress");
+        style.registerHandler(style.borderWidthProperty, borderHandler, "Progress");
+        style.registerHandler(style.borderColorProperty, borderHandler, "Progress");
+        style.registerHandler(style.borderRadiusProperty, borderHandler, "Progress");
+        style.registerHandler(style.backgroundInternalProperty, borderHandler, "Progress");
+    }
+}
+
 export class SearchBarStyler implements definition.stylers.Styler {
 
     private static getBackgroundColorProperty(view: view.View): any {
@@ -703,4 +748,5 @@ export function _registerDefaultStylers() {
     SearchBarStyler.registerHandlers();
     ActionBarStyler.registerHandlers();
     TabViewStyler.registerHandlers();
+    ProgressStyler.registerHandlers();
 }
