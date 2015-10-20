@@ -9,9 +9,16 @@ declare module "text/formatted-string" {
     import view = require("ui/core/view");
 
     /**
+     * Interface that specifies View that have formattedText property (like TextBase and Button).
+     */
+    export interface FormattedStringView {
+        formattedText: FormattedString;
+    }
+
+    /**
      * A class used to create a formatted (rich text) string.
      */
-    class FormattedString extends observable.Observable {
+    class FormattedString extends observable.Observable implements view.AddArrayFromBuilder, view.AddChildFromBuilder {
         /**
          * An observable collection of Span objects used to define common text properties.
          */
@@ -72,5 +79,24 @@ declare module "text/formatted-string" {
          * Gets the parent view of the formatted string.
          */
         public parent: view.View;
+
+        /**
+         * A function that is called when an array declaration is found in xml.
+         * @param name - Name of the array.
+         * @param value - The actual value of the array.
+         */
+        public _addArrayFromBuilder(name: string, value: Array<any>): void;
+
+        /**
+         * Called for every child element declared in xml.
+         * @param name - Name of the element.
+         * @param value - Value of the element.
+         */
+        public _addChildFromBuilder(name: string, value: any): void;
+
+        /**
+         * A static method used to add child elements of the FormattedString class to a View declared in xml.
+         */
+        public static addFormattedStringToView(view: FormattedStringView, name: string, value: any): void; 
     }
 }

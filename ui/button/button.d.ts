@@ -10,7 +10,7 @@ declare module "ui/button" {
     /**
      * Represents a standard Button widget.
      */
-    export class Button extends view.View {
+    export class Button extends view.View implements formattedString.FormattedStringView, view.AddChildFromBuilder {
         /**
          * Represents the observable property backing the text property of each Button instance.
          */
@@ -53,5 +53,13 @@ declare module "ui/button" {
          * Raised when a tap event occurs.
          */
         on(event: "tap", callback: (args: observable.EventData) => void, thisArg?: any);
+
+        /**
+         * Called for every child element declared in xml.
+         * This method will add a child element (value) to current element.
+         * @param name - Name of the element.
+         * @param value - Value of the element.
+         */
+        _addChildFromBuilder(name: string, value: any): void;
     }
 }

@@ -13,6 +13,7 @@ import observable = require("data/observable");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import {Label} from "ui/label";
 import {Page} from "ui/page";
+import {Button} from "ui/button";
 import myCustomControlWithoutXml = require("./mymodule/MyControl");
 import listViewModule = require("ui/list-view");
 import helper = require("../ui/helper");
@@ -686,6 +687,91 @@ export function test_parse_NestedRepeaters() {
 
     try {
         testAction([p.content, p]);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_parseSpansDirectlyOnLabel() {
+    var p = <Page>builder.parse('<Page xmlns="http://www.nativescript.org/tns.xsd" navigatedTo="pageNavigated"><StackLayout><Label id="testLabel"><Span text="We are" fontSize="10"/><Span text="Awesome" fontAttributes="Bold"/></Label></StackLayout></Page>');
+    function testAction(views: Array<viewModule.View>) {
+        var page = <Page>views[0];
+        var testLabel = <Label>page.getViewById("testLabel");
+        TKUnit.assertEqual(testLabel.formattedText + "", "We areAwesome", "Formatted string should be set");
+    }
+
+    helper.navigate(function () { return p; });
+    try {
+        testAction([p]);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_parseSpansDirectlyOnButton() {
+    var p = <Page>builder.parse('<Page xmlns="http://www.nativescript.org/tns.xsd" navigatedTo="pageNavigated"><StackLayout><Button id="testButton"><Span text="We are" fontSize="10"/><Span text="Awesome" fontAttributes="Bold"/></Button></StackLayout></Page>');
+    function testAction(views: Array<viewModule.View>) {
+        var page = <Page>views[0];
+        var testButton = <Button>page.getViewById("testButton");
+        TKUnit.assertEqual(testButton.formattedText + "", "We areAwesome", "Formatted string should be set");
+    }
+
+    helper.navigate(function () { return p; });
+    try {
+        testAction([p]);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_parseFormattedStringWithoutFormattedText() {
+    var p = <Page>builder.parse('<Page xmlns="http://www.nativescript.org/tns.xsd" navigatedTo="pageNavigated"><StackLayout><Button id="testButton"><FormattedString><FormattedString.spans><Span text="author"/><Span text=" num_comments"/></FormattedString.spans></FormattedString></Button></StackLayout></Page>');
+    function testAction(views: Array<viewModule.View>) {
+        var page = <Page>views[0];
+        var testButton = <Button>page.getViewById("testButton");
+        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
+    }
+
+    helper.navigate(function () { return p; });
+    try {
+        testAction([p]);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_parseFormattedStringFullSyntax() {
+    var p = <Page>builder.parse('<Page xmlns="http://www.nativescript.org/tns.xsd" navigatedTo="pageNavigated"><StackLayout><Button id="testButton"><Button.formattedText><FormattedString><FormattedString.spans><Span text="author"/><Span text=" num_comments"/></FormattedString.spans></FormattedString></Button.formattedText></Button></StackLayout></Page>');
+    function testAction(views: Array<viewModule.View>) {
+        var page = <Page>views[0];
+        var testButton = <Button>page.getViewById("testButton");
+        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
+    }
+
+    helper.navigate(function () { return p; });
+    try {
+        testAction([p]);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_parseSpansDirectlyToFormattedString() {
+    var p = <Page>builder.parse('<Page xmlns="http://www.nativescript.org/tns.xsd" navigatedTo="pageNavigated"><StackLayout><Button id="testButton"><FormattedString><Span text="author"/><Span text=" num_comments"/></FormattedString></Button></StackLayout></Page>');
+    function testAction(views: Array<viewModule.View>) {
+        var page = <Page>views[0];
+        var testButton = <Button>page.getViewById("testButton");
+        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
+    }
+
+    helper.navigate(function () { return p; });
+    try {
+        testAction([p]);
     }
     finally {
         helper.goBack();

@@ -536,7 +536,7 @@ declare module "ui/core/view" {
     interface AddChildFromBuilder {
         /**
          * Called for every child element declared in xml.
-         * This function will create an instance of declared child element.
+         * This method will add a child element (value) to current element.
          * @param name - Name of the element.
          * @param value - Value of the element.
          */

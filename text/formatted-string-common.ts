@@ -10,6 +10,10 @@ export module knownCollections {
     export var spans = "spans";
 }
 
+var CHILD_SPAN = "Span";
+var CHILD_FORMATTED_TEXT = "formattedText";
+var CHILD_FORMATTED_STRING = "FormattedString";
+
 export class FormattedString extends observable.Observable implements definition.FormattedString, view.AddArrayFromBuilder {
     private _spans: observableArray.ObservableArray<spanModule.Span>;
     public _formattedText: any;
@@ -210,6 +214,24 @@ export class FormattedString extends observable.Observable implements definition
         for (i = 0; i < this.spans.length; i++) {
             var span = this.spans.getItem(i);
             span.bindingContext = newBindingContext;
+        }
+    }
+
+    public _addChildFromBuilder(name: string, value: any): void {
+        if(name === CHILD_SPAN) {
+            this.spans.push(value);
+        }
+    }
+
+    public static addFormattedStringToView(view: definition.FormattedStringView, name: string, value: any): void {
+        if(name === CHILD_SPAN) {
+            if (!view.formattedText) {
+                view.formattedText = new definition.FormattedString();
+            }
+            view.formattedText.spans.push(value);
+        }
+        else if (name === CHILD_FORMATTED_TEXT || name === CHILD_FORMATTED_STRING) {
+            view.formattedText = value;
         }
     }
 }

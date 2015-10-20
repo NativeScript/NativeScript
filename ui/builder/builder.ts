@@ -136,6 +136,8 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
                         } else if (complexProperty) {
                             // Add component to complex property of parent component.
                             addToComplexProperty(parent, complexProperty, componentModule);
+                        } else if ((<any>parent.component)._addChildFromBuilder) {
+                            (<any>parent.component)._addChildFromBuilder(args.elementName, componentModule.component);
                         }
                     } else if (parents.length === 0) {
                         // Set root component.
@@ -300,7 +302,7 @@ function addToComplexProperty(parent: componentBuilder.ComponentModule, complexP
     if (isKnownCollection(complexProperty.name, parent.exports)) {
         complexProperty.items.push(elementModule.component);
     } else if (parentComponent._addChildFromBuilder) {
-        parentComponent._addChildFromBuilder("", elementModule.component);
+        parentComponent._addChildFromBuilder(complexProperty.name, elementModule.component);
     } else {
         // Or simply assign the value;
         parentComponent[complexProperty.name] = elementModule.component;
