@@ -55,13 +55,13 @@ module.exports = {
                         process: function(content, srcPath) {
                             var newContent = content;
 
-                            var internetPermissionFinder = /(<uses-permission[^>]*android\.permission\.INTERNET[^>]*>)/;
+                            var internetPermissionFinder = /((\s*)<uses-permission[^>]*android\.permission\.INTERNET[^>]*>)/;
 
                             if (!/uses-permission[^>]*android\.permission\.ACCESS_NETWORK_STATE/.test(content)) {
-                                newContent = newContent.replace(internetPermissionFinder, "$1\n<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>");
+                                newContent = newContent.replace(internetPermissionFinder, "$1$2<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>");
                             }
                             if (!/uses-permission[^>]*android\.permission\.ACCESS_FINE_LOCATION/.test(content)) {
-                                newContent = newContent.replace(internetPermissionFinder, "$1\n<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>");
+                                newContent = newContent.replace(internetPermissionFinder, "$1$2<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>");
                             }
                             return newContent;
                         }
