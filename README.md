@@ -34,6 +34,10 @@ To learn more about the NativeScript framework, you can check the following reso
 - [The NativeScript framework web site](http://www.nativescript.org)
 - [The NativeScript framework blog](http://www.nativescript.org/blog)
 
+## Angular 2.0
+NativeScript is working together with the Google Angular JS team to make Angular 2.0 work on top of NativeScript. To check our progress please see the following links
+- **[NativeScript Angular 2.0 plugin](https://www.npmjs.com/package/nativescript-angular)** - This plugin is the only thing you need to install in order to enable Angular 2.0 in NativeScript
+- **[TodoMVC sample](//github.com/NativeScript/sample-ng-todomvc)** - The classic TodoMVC sample implemented with NativeScript and Angular 2.0
 
 ## Most popular repositories:
 - **[The current repo](//github.com/NativeScript/NativeScript/)** - Stores the code of the cross-platform modules, written in TypeScript
