@@ -1,13 +1,25 @@
 import observable = require("data/observable");
 import pages = require("ui/page");
 import labelModule = require("ui/label");
+import frame = require("ui/frame");
 
 var page: pages.Page;
 var label: labelModule.Label;
 
-export function pageLoaded(args: observable.EventData) {
+export function onLoaded(args: observable.EventData) {
+    console.log("main-page.onLoaded");
+    if (args.object !== frame.topmost().currentPage) {
+        throw new Error("args.object must equal frame.topmost().currentPage on page.loaded");
+    }
     page = <pages.Page>args.object;
-    label = page.getViewById<labelModule.Label>("label");
+    label = frame.topmost().getViewById<labelModule.Label>("label");
+    if (!label) {
+        throw new Error("Could not find `label`");
+    }
+}
+
+export function onNavigatedTo(args: observable.EventData) {
+    console.log("main-page.onNavigatedTo");
 }
 
 export function onTap(args: observable.EventData) {

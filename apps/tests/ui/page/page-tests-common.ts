@@ -27,6 +27,7 @@ import LabelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import helper = require("../helper");
 import view = require("ui/core/view");
+import platform = require("platform");
 
 export function addLabelToPage(page: PageModule.Page, text?: string) {
     var label = new LabelModule.Label();
@@ -366,6 +367,31 @@ export function test_page_backgroundColor_is_white() {
         var page = <PageModule.Page>views[0];
         TKUnit.assertEqual(page.style.backgroundColor.hex.toLowerCase(), "#ffffff", "page background-color");
     });
+}
+
+export function test_WhenPageIsLoadedFrameCurrentPageIsTheSameInstance() {
+    var page;
+    var loadedEventHandler = function (args) {
+        TKUnit.assert(FrameModule.topmost().currentPage === args.object, `frame.topmost().currentPage should be equal to args.object page instance in the page.loaded event handler. Expected: ${args.object.id}; Actual: ${FrameModule.topmost().currentPage.id};`);
+    }
+
+    var pageFactory = function (): PageModule.Page {
+        page = new PageModule.Page();
+        page.id = "newPage";
+        page.on(view.View.loadedEvent, loadedEventHandler);
+        var label = new LabelModule.Label();
+        label.text = "Text";
+        page.content = label;
+        return page;
+    };
+
+    try {
+        helper.navigate(pageFactory);
+        page.off(view.View.loadedEvent, loadedEventHandler);
+    }
+    finally {
+        helper.goBack();
+    }
 }
 
 //export function test_ModalPage_Layout_is_Correct() {

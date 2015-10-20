@@ -3,6 +3,7 @@ import PageModule = require("ui/page");
 import TKUnit = require("../../TKUnit");
 import LabelModule = require("ui/label");
 import helper = require("../helper");
+import view = require("ui/core/view");
 
 global.moduleMerge(PageTestCommon, exports);
 
@@ -22,4 +23,43 @@ export function test_NavigateToNewPage_InnerControl() {
     TKUnit.assert(label._context === undefined, "InnerControl._context should be undefined after navigate back.");
     TKUnit.assert(label.android === undefined, "InnerControl.android should be undefined after navigate back.");
     TKUnit.assert(label.isLoaded === false, "InnerControl.isLoaded should become false after navigating back");
+}
+
+export function test_WhenPageIsLoadedItCanShowAnotherPageAsModal() {
+    var masterPage;
+    var ctx = {
+        shownModally: false
+    };
+
+    var modalClosed = false;
+    var modalCloseCallback = function (returnValue: any) {
+        TKUnit.assert(ctx.shownModally, "Modal-page must be shown!");
+        TKUnit.assert(returnValue === "return value", "Modal-page must return value!");
+        TKUnit.wait(0.350);
+        modalClosed = true;
+    }
+
+    var loadedEventHandler = function (args) {
+        var basePath = "ui/page/";
+        args.object.showModal(basePath + "modal-page", ctx, modalCloseCallback, false);
+    };
+
+    var masterPageFactory = function (): PageModule.Page {
+        masterPage = new PageModule.Page();
+        masterPage.id = "newPage";
+        masterPage.on(view.View.loadedEvent, loadedEventHandler);
+        var label = new LabelModule.Label();
+        label.text = "Text";
+        masterPage.content = label;
+        return masterPage;
+    };
+
+    try {
+        helper.navigate(masterPageFactory);
+        TKUnit.waitUntilReady(() => { return modalClosed; });
+        masterPage.off(view.View.loadedEvent, loadedEventHandler);
+    }
+    finally {
+        helper.goBack();
+    }
 }

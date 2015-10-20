@@ -6,6 +6,7 @@ import uiUtils = require("ui/utils");
 import utils = require("utils/utils");
 import {device} from "platform";
 import {DeviceType} from "ui/enums";
+import observable = require("data/observable");
 
 global.moduleMerge(pageCommon, exports);
 
@@ -94,6 +95,15 @@ class UIViewControllerImpl extends UIViewController {
     public viewWillAppear() {
         trace.write(this._owner + " viewWillAppear", trace.categories.Navigation);
         this._owner._enableLoadedEvents = true;
+
+        // In iOS we intentionally delay the raising of the 'loaded' event so both platforms behave identically.
+        // The loaded event must be raised AFTER the page is part of the windows hierarchy and 
+        // frame.topmost().currentPage is set to the page instance.
+        // https://github.com/NativeScript/NativeScript/issues/779
+        if (!this._owner._isModal) {
+            this._owner._delayLoadedEvent = true;
+        }
+
         this._owner.onLoaded();
         this._owner._enableLoadedEvents = false;
     }
@@ -111,6 +121,7 @@ export class Page extends pageCommon.Page {
     public _enableLoadedEvents: boolean;
     public _isModal: boolean = false;
     public _UIModalPresentationFormSheet: boolean = false;
+    public _delayLoadedEvent;
 
     constructor(options?: definition.Options) {
         super(options);
@@ -135,6 +146,18 @@ export class Page extends pageCommon.Page {
         if (this._enableLoadedEvents) {
             super.onLoaded();
         }
+    }
+
+    public notify<T extends observable.EventData>(data: T) {
+        // In iOS we intentionally delay the raising of the 'loaded' event so both platforms behave identically.
+        // The loaded event must be raised AFTER the page is part of the windows hierarchy and 
+        // frame.topmost().currentPage is set to the page instance.
+        // https://github.com/NativeScript/NativeScript/issues/779
+        if (data.eventName === View.loadedEvent && this._delayLoadedEvent) {
+            return;
+        }
+
+        super.notify(data);
     }
 
     public onUnloaded() {
