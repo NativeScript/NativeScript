@@ -372,7 +372,6 @@ export function test_page_backgroundColor_is_white() {
 export function test_WhenPageIsLoadedFrameCurrentPageIsTheSameInstance() {
     var page;
     var loadedEventHandler = function (args) {
-        console.log("loadedEventHandler");
         TKUnit.assert(FrameModule.topmost().currentPage === args.object, `frame.topmost().currentPage should be equal to args.object page instance in the page.loaded event handler. Expected: ${args.object.id}; Actual: ${FrameModule.topmost().currentPage.id};`);
     }
 
