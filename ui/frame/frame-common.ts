@@ -222,7 +222,7 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
 
     private performNavigation(navigationContext: NavigationContext) {
         var navContext = navigationContext.entry;
-        this._onNavigatingTo(navContext);
+        this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
 
         if (navigationContext.entry.entry.clearHistory) {
             this._backStack.length = 0;
@@ -237,7 +237,7 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
 
     private performGoBack(navigationContext: NavigationContext) {
         var navContext = navigationContext.entry;
-        this._onNavigatingTo(navContext);
+        this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
         this._goBackCore(navContext);
         this._onNavigatedTo(navContext, true);
     }
@@ -250,12 +250,12 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         //
     }
 
-    public _onNavigatingTo(backstackEntry: definition.BackstackEntry) {
+    public _onNavigatingTo(backstackEntry: definition.BackstackEntry, isBack: boolean) {
         if (this.currentPage) {
-            this.currentPage.onNavigatingFrom();
+            this.currentPage.onNavigatingFrom(isBack);
         }
 
-        backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context);
+        backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack);
     }
 
     public _onNavigatedTo(backstackEntry: definition.BackstackEntry, isBack: boolean) {

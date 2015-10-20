@@ -159,11 +159,22 @@ function onFragmentShown(fragment: PageFragmentBody) {
     var entry: definition.BackstackEntry = fragment.entry;
     var page: pages.Page = entry.resolvedPage;
 
+    let currentNavigationContext;
+    let navigationQueue = (<any>frame)._navigationQueue;
+    for (let i = 0; i < navigationQueue.length; i++) {
+        if (navigationQueue[i].entry === entry) {
+            currentNavigationContext = navigationQueue[i];
+            break;
+        }
+    }
+
+    var isBack = currentNavigationContext ? currentNavigationContext.isBackNavigation : false;
+
     frame._currentEntry = entry;
 
     // notify the page
     frame._addView(page);
-    page.onNavigatedTo();
+    page.onNavigatedTo(isBack);
     frame._processNavigationQueue(page);
 }
 
@@ -351,7 +362,7 @@ export class Frame extends frameCommon.Frame {
         var backstackEntry = this.currentEntry || this._delayedNavigationEntry;
 
         if (isRestart) {
-            this._onNavigatingTo(backstackEntry);
+            this._onNavigatingTo(backstackEntry, false);
             this._onNavigatedTo(backstackEntry, false);
         }
         else {
