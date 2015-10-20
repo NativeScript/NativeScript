@@ -1,4 +1,4 @@
-<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded" id="_mainPage" backgroundColor="Red">
+<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="onLoaded" navigatedTo="onNavigatedTo" id="_mainPage" backgroundColor="Red">
   <StackLayout backgroundColor="PaleGreen">
     <Button text="Login (small)" tap="onTap" />
     <Button text="Login (full-screen)" tap="onTap" />

@@ -27,6 +27,7 @@ import LabelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import helper = require("../helper");
 import view = require("ui/core/view");
+import platform = require("platform");
 
 export function addLabelToPage(page: PageModule.Page, text?: string) {
     var label = new LabelModule.Label();
@@ -366,6 +367,75 @@ export function test_page_backgroundColor_is_white() {
         var page = <PageModule.Page>views[0];
         TKUnit.assertEqual(page.style.backgroundColor.hex.toLowerCase(), "#ffffff", "page background-color");
     });
+}
+
+export function test_WhenPageIsLoadedFrameCurrentPageIsTheSameInstance() {
+    var page;
+    var loadedEventHandler = function (args) {
+        console.log("loadedEventHandler");
+        TKUnit.assert(FrameModule.topmost().currentPage === args.object, `frame.topmost().currentPage should be equal to args.object page instance in the page.loaded event handler. Expected: ${args.object.id}; Actual: ${FrameModule.topmost().currentPage.id};`);
+    }
+
+    var pageFactory = function (): PageModule.Page {
+        page = new PageModule.Page();
+        page.id = "newPage";
+        page.on(view.View.loadedEvent, loadedEventHandler);
+        var label = new LabelModule.Label();
+        label.text = "Text";
+        page.content = label;
+        return page;
+    };
+
+    try {
+        helper.navigate(pageFactory);
+        page.off(view.View.loadedEvent, loadedEventHandler);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_WhenPageIsLoadedItCanShowAnotherPageAsModal_iOS() {
+    if (platform.device.os === platform.platformNames.android) {
+        // We can't show a modal from another modal on Android.
+        return;
+    }
+
+    var masterPage;
+    var ctx = {
+        shownModally: false
+    };
+
+    var modalClosed = false;
+    var modalCloseCallback = function (returnValue: any) {
+        TKUnit.assert(ctx.shownModally, "Modal-page must be shown!");
+        TKUnit.assert(returnValue === "return value", "Modal-page must return value!");
+        modalClosed = true;
+    }
+
+    var loadedEventHandler = function (args) {
+        var basePath = "ui/page/";
+        args.object.showModal(basePath + "modal-page", ctx, modalCloseCallback, false);
+    };
+
+    var masterPageFactory = function(): PageModule.Page {
+        masterPage = new PageModule.Page();
+        masterPage.id = "newPage";
+        masterPage.on(view.View.loadedEvent, loadedEventHandler);
+        var label = new LabelModule.Label();
+        label.text = "Text";
+        masterPage.content = label;
+        return masterPage;
+    };
+
+    try {
+        helper.navigate(masterPageFactory);
+        TKUnit.waitUntilReady(() => { return modalClosed; });
+        masterPage.off(view.View.loadedEvent, loadedEventHandler);
+    }
+    finally {
+        helper.goBack();
+    }
 }
 
 //export function test_ModalPage_Layout_is_Correct() {

@@ -309,6 +309,14 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         frame._currentEntry = newEntry;
 
         var newPage = newEntry.resolvedPage;
+
+        // In iOS we intentionally delay the raising of the 'loaded' event so both platforms behave identically.
+        // The loaded event must be raised AFTER the page is part of the windows hierarchy and 
+        // frame.topmost().currentPage is set to the page instance.
+        // https://github.com/NativeScript/NativeScript/issues/779
+        (<any>newPage)._delayLoadedEvent = false;
+        newPage._emit(view.View.loadedEvent);
+
         frame._updateActionBar(newPage);
 
         // notify the page
