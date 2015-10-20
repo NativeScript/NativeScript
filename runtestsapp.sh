@@ -18,18 +18,6 @@ mainActivityName=com.tns.NativeScriptActivity
 cp /Volumes/distributions/DailyBuilds/NativeScript/android-widgets/Stable/widgets.jar platforms/android/libs/
 
 echo "------------------------------------------------"
-echo "Building the application..."
-time tns build android
-
-echo "------------------------------------------------"
-echo "Killing the adb server..."
-time adb kill-server
-
-echo "------------------------------------------------"
-echo "Starting the adb server..."
-time adb start-server
-
-echo "------------------------------------------------"
 echo "Uninstalling the app..."
 time adb uninstall $deployedAppName
 

@@ -28,7 +28,10 @@ module.exports = {
                     src: localCfg.workingDir
                 },
                 originalAppDir: {
-                    src: pathModule.join(localCfg.applicationDir, "app") + "/"
+                    src: [
+                            localCfg.appDir + "/*",
+                            "!" + pathModule.join(localCfg.appDir, "App_Resources") + ""
+                         ]
                 }
             },
             mkdir: {
@@ -73,10 +76,6 @@ module.exports = {
                     cmd: "pkill '" + localCfg.emulatorProcessIdentifier + "'",
                     exitCode: [0, 1]
                 },
-                runTestsApp: {
-                    cmd: "./runtestsapp.sh",
-                    stdout: false
-                },
                 startEmulator: {
                     cmd: "emulator -avd " + localCfg.emuAvdName + " -no-audio -no-window &",
                     stdout: true
@@ -88,6 +87,13 @@ module.exports = {
                 addAndroidPlatform: {
                     cmd: "tns platform add android " + localCfg.androidFrameworkArgument,
                     cwd: localCfg.applicationDir
+                },
+                buildAppAndroid: {
+                    cmd: "tns build android",
+                    cwd: localCfg.applicationDir
+                },
+                restartAdb: {
+                    cmd: "adb kill-server && adb start-server"
                 }
             }
         });
@@ -107,7 +113,6 @@ module.exports = {
                 "mkdir:workingDir",
                 "exec:killEmulator",
                 "exec:startEmulator",
-//                "exec:runTestsApp",
 
                 "exec:createApp",
                 "clean:originalAppDir",
@@ -115,6 +120,8 @@ module.exports = {
 
                 "exec:addAndroidPlatform",
                 "copy:addAndroidPermissions",
+                "exec:buildAppAndroid",
+                "exec:restartAdb",
 
 
 //                "exec:killEmulator",
