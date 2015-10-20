@@ -394,49 +394,6 @@ export function test_WhenPageIsLoadedFrameCurrentPageIsTheSameInstance() {
     }
 }
 
-export function test_WhenPageIsLoadedItCanShowAnotherPageAsModal_iOS() {
-    if (platform.device.os === platform.platformNames.android) {
-        // We can't show a modal from another modal on Android.
-        return;
-    }
-
-    var masterPage;
-    var ctx = {
-        shownModally: false
-    };
-
-    var modalClosed = false;
-    var modalCloseCallback = function (returnValue: any) {
-        TKUnit.assert(ctx.shownModally, "Modal-page must be shown!");
-        TKUnit.assert(returnValue === "return value", "Modal-page must return value!");
-        modalClosed = true;
-    }
-
-    var loadedEventHandler = function (args) {
-        var basePath = "ui/page/";
-        args.object.showModal(basePath + "modal-page", ctx, modalCloseCallback, false);
-    };
-
-    var masterPageFactory = function(): PageModule.Page {
-        masterPage = new PageModule.Page();
-        masterPage.id = "newPage";
-        masterPage.on(view.View.loadedEvent, loadedEventHandler);
-        var label = new LabelModule.Label();
-        label.text = "Text";
-        masterPage.content = label;
-        return masterPage;
-    };
-
-    try {
-        helper.navigate(masterPageFactory);
-        TKUnit.waitUntilReady(() => { return modalClosed; });
-        masterPage.off(view.View.loadedEvent, loadedEventHandler);
-    }
-    finally {
-        helper.goBack();
-    }
-}
-
 //export function test_ModalPage_Layout_is_Correct() {
 //    var testPage: PageModule.Page;
 //    var label: LabelModule.Label;
