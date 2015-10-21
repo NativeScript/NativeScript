@@ -584,9 +584,11 @@ export class Binding {
         this.updating = true;
 
         try {
-            if (optionsInstance instanceof viewModule.View &&
+            if (optionsInstance instanceof Bindable &&
                 viewModule.isEventOrGesture(options.property, optionsInstance) &&
                 types.isFunction(value)) {
+                // calling off method with null as handler will remove all handlers for options.property event
+                optionsInstance.off(options.property, null, optionsInstance.bindingContext);
                 optionsInstance.on(options.property, value, optionsInstance.bindingContext);
             } else {
                 if (optionsInstance instanceof observable.Observable) {
