@@ -186,7 +186,7 @@ class TapAndDoubleTapGestureListener extends android.view.GestureDetector.Simple
         return global.__native(this);
     }
 
-    public onSingleTapConfirmed(motionEvent: android.view.MotionEvent): boolean {
+    public onSingleTapUp(motionEvent: android.view.MotionEvent): boolean {
         if (this._type & definition.GestureTypes.tap) {
             var args = _getArgs(definition.GestureTypes.tap, this._target, motionEvent);
             _executeCallback(this._observer, args);
