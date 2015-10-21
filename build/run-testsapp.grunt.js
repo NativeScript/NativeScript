@@ -6,6 +6,11 @@ module.exports = {
         //Construct and validate the arguments
         var args = {
             platform: grunt.option("platform")
+            tnsPath: grunt.option("tnsPath")
+            emulatorProcessIdentifier: grunt.option("emuPId")
+            emuAvdName: grunt.option("avdNameToStart")
+            outFile: grunt.option("logFilePath")
+            androidRuntimePath: grunt.option("androidRuntimePath")
         };
 
         (function validateInput(){
@@ -16,9 +21,7 @@ module.exports = {
             tnsPath: "tns",
             emulatorProcessIdentifier:".*emulator64-x86",
             emuAvdName:"Api19",
-            androidRuntimePath:"/Users/erjan/tns-android.tgz",
             outfile:"./TestRunResult.txt",
-            androidRuntimePath: "/Users/erjan/tns-android.tgz",
             androidFrameworkArgument: " --frameworkPath=/Users/erjan/tns-android.tgz",
 
             workingDir:".testsapprun",
