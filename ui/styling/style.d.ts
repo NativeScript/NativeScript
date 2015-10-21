@@ -71,6 +71,7 @@ declare module "ui/styling/style" {
         public _syncNativeProperties(): void;
         public _inheritStyleProperty(property: Property): void;
         public _inheritStyleProperties(): void;
+        public _boundsChanged(): void;
     }
 
     export function registerHandler(property: Property, handler: styling.stylers.StylePropertyChangedHandler, className?: string);

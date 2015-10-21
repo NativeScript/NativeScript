@@ -599,6 +599,10 @@ export class Style extends DependencyObservable implements styling.Style {
         });
     }
 
+    public _boundsChanged() {
+        this._applyProperty(backgroundInternalProperty, this._getValue(backgroundInternalProperty));
+    }
+
     private _applyProperty(property: Property, newValue: any) {
         this._applyStyleProperty(property, newValue);
 
