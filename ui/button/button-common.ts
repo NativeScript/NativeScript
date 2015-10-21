@@ -104,4 +104,8 @@ export class Button extends view.View implements definition.Button {
         }
         this.setFormattedTextPropertyToNative(data.newValue);
     }
+
+    public _addChildFromBuilder(name: string, value: any): void {
+        formattedString.FormattedString.addFormattedStringToView(this, name, value);
+    }
 }

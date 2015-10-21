@@ -32,7 +32,7 @@ function onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChang
 
 (<proxy.PropertyMetadata>formattedTextProperty.metadata).onSetNativeValue = onFormattedTextPropertyChanged;
 
-export class TextBase extends view.View implements definition.TextBase {
+export class TextBase extends view.View implements definition.TextBase, formattedString.FormattedStringView {
     public static textProperty = textProperty;
     public static formattedTextProperty = formattedTextProperty;
 
@@ -112,5 +112,9 @@ export class TextBase extends view.View implements definition.TextBase {
             (<formattedString.FormattedString>data.newValue).parent = this;
         }
         this.setFormattedTextPropertyToNative(data.newValue);
+    }
+
+    public _addChildFromBuilder(name: string, value: any): void {
+        formattedString.FormattedString.addFormattedStringToView(this, name, value);
     }
 }
