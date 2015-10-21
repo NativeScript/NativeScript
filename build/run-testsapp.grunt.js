@@ -134,28 +134,28 @@ module.exports = {
         grunt.loadNpmTasks("grunt-contrib-copy");
 
         grunt.registerTask("testsapp", [
-//                "clean:workingDir",
-//                "mkdir:workingDir",
-//                "exec:killEmulator",
-//                "exec:startEmulator",
-//
-//                "exec:createApp",
-//                "clean:originalAppDir",
-//                "copy:testsAppToRunDir",
-//
-//                "exec:addAndroidPlatform",
-//                "copy:addAndroidPermissions",
-//                "exec:buildAppAndroid",
-//                "exec:restartAdb",
-//
+                "clean:workingDir",
+                "mkdir:workingDir",
+                "exec:killEmulator",
+                "exec:startEmulator",
+
+                "exec:createApp",
+                "clean:originalAppDir",
+                "copy:testsAppToRunDir",
+
+                "exec:addAndroidPlatform",
+                "copy:addAndroidPermissions",
+                "exec:buildAppAndroid",
+                "exec:restartAdb",
+
                 "exec:uninstallExistingApp",
                 "exec:installNewApp",
                 "exec:startApp",
                 "shell:collectLog",
 
 
-//                "exec:killEmulator",
-//                "clean:workingDir"
+                "exec:killEmulator",
+                "clean:workingDir"
         ]);
     }
 }
