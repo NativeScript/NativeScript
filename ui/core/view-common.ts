@@ -295,8 +295,10 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     private _disconnectGestureObservers(type: gestures.GestureTypes): void {
         var observers = this.getGestureObservers(type);
-        for (let i = 0; i < observers.length; i++) {
-            observers[i].disconnect();
+        if (observers) {
+            for (let i = 0; i < observers.length; i++) {
+                observers[i].disconnect();
+            }
         }
     }
 
