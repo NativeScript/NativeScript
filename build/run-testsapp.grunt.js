@@ -3,6 +3,15 @@ module.exports = {
     run: function(grunt) {
         var pathModule = require("path");
 
+        //Construct and validate the arguments
+        var args = {
+            platform: grunt.option("platform")
+        };
+
+        (function validateInput(){
+            if (!(/^(Android|iOS)$/).test(args.platform)) { throw new Error("Invalid target platform specified! Use --platform=Android|iOS"); }
+        }());
+
         var localCfg = {
             tnsPath: "tns",
             emulatorProcessIdentifier:".*emulator64-x86",
@@ -19,7 +28,9 @@ module.exports = {
             pathToApk:"./platforms/android/build/outputs/apk/TestsApp-debug.apk",
             deployedAppName:"org.nativescript.TestsApp",
             mainActivityName:"com.tns.NativeScriptActivity",
-            pathToCompiledTests: "bin/dist/apps/tests"
+            pathToCompiledTests: "bin/dist/apps/tests",
+
+            platform: args.platform
         }
 
         grunt.initConfig({
@@ -72,11 +83,11 @@ module.exports = {
                 }
             },
             exec: {
-                killEmulator: {
+                killAndroidEmulator: {
                     cmd: "pkill '" + localCfg.emulatorProcessIdentifier + "'",
                     exitCode: [0, 1]
                 },
-                startEmulator: {
+                startAndroidEmulator: {
                     cmd: "emulator -avd " + localCfg.emuAvdName + " -no-audio -no-window &",
                     stdout: true
                 },
@@ -88,31 +99,26 @@ module.exports = {
                     cmd: "tns platform add android " + localCfg.androidFrameworkArgument,
                     cwd: localCfg.applicationDir
                 },
-                buildAppAndroid: {
+                buildAndroidApp: {
                     cmd: "tns build android",
                     cwd: localCfg.applicationDir
                 },
                 restartAdb: {
                     cmd: "adb kill-server && adb start-server"
                 },
-                uninstallExistingApp: {
+                uninstallExistingAndroidApp: {
                     cmd: "adb uninstall " + localCfg.deployedAppName
                 },
-                installNewApp: {
+                installNewAndroidApp: {
                     cmd: "adb install " + localCfg.pathToApk,
                     cwd: localCfg.applicationDir
                 },
-                startApp: {
+                startAndroidApp: {
                     cmd: "adb shell am start -n " + localCfg.deployedAppName + "/" + localCfg.mainActivityName
-                },
-                collectLog: {
-                    cmd: "./expect.exp " + localCfg.outfile,
-                    stdout: false,
-                    strerr: false
                 }
             },
             shell: {
-                collectLog: {
+                collectAndroidLog: {
                     command: "./expect.exp " + localCfg.outfile,
                     options: {
                         execOptions: {
@@ -123,38 +129,41 @@ module.exports = {
             }
         });
 
-//        grunt.loadNpmTasks("grunt-tslint");
-//        grunt.loadNpmTasks("grunt-multi-dest");
         grunt.loadNpmTasks("grunt-shell");
-//        grunt.loadNpmTasks("grunt-env");
-//        grunt.loadNpmTasks("grunt-simple-mocha");
         grunt.loadNpmTasks("grunt-exec");
         grunt.loadNpmTasks("grunt-mkdir");
         grunt.loadNpmTasks("grunt-contrib-clean");
         grunt.loadNpmTasks("grunt-contrib-copy");
 
+        var getPlatformSpecificTask = function(templatedTaskName) {
+            return templatedTaskName.replace(/\{platform\}/, localCfg.platform);
+        }
+
+        grunt.registerTask("doPostPlatformAdd", [
+                "exec:restartAdb"
+                ]);
+
         grunt.registerTask("testsapp", [
                 "clean:workingDir",
                 "mkdir:workingDir",
-                "exec:killEmulator",
-                "exec:startEmulator",
+                getPlatformSpecificTask("exec:kill{platform}Emulator"),
+                getPlatformSpecificTask("exec:start{platform}Emulator"),
 
                 "exec:createApp",
                 "clean:originalAppDir",
                 "copy:testsAppToRunDir",
 
-                "exec:addAndroidPlatform",
-                "copy:addAndroidPermissions",
-                "exec:buildAppAndroid",
-                "exec:restartAdb",
+                getPlatformSpecificTask("exec:add{platform}Platform"),
+                getPlatformSpecificTask("copy:add{platform}Permissions"),
+                getPlatformSpecificTask("exec:build{platform}App"),
+                "doPostPlatformAdd",
 
-                "exec:uninstallExistingApp",
-                "exec:installNewApp",
-                "exec:startApp",
-                "shell:collectLog",
+                getPlatformSpecificTask("exec:uninstallExisting{platform}App"),
+                getPlatformSpecificTask("exec:installNew{platform}App"),
+                getPlatformSpecificTask("exec:start{platform}App"),
+                getPlatformSpecificTask("shell:collect{platform}Log"),
 
-
-                "exec:killEmulator",
+                getPlatformSpecificTask("exec:kill{platform}Emulator"),
                 "clean:workingDir"
         ]);
     }
