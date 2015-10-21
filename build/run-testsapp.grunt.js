@@ -17,7 +17,7 @@ module.exports = {
             applicationDir: pathModule.join(".testsapprun", "TestsApp"),
             appDir: pathModule.join(".testsapprun", "TestsApp", "app"),
             pathToApk:"./platforms/android/build/outputs/apk/TestsApp-debug.apk",
-            deployedAppName:"org.nativescript.$testsAppName",
+            deployedAppName:"org.nativescript.TestsApp",
             mainActivityName:"com.tns.NativeScriptActivity",
             pathToCompiledTests: "bin/dist/apps/tests"
         }
@@ -94,13 +94,38 @@ module.exports = {
                 },
                 restartAdb: {
                     cmd: "adb kill-server && adb start-server"
+                },
+                uninstallExistingApp: {
+                    cmd: "adb uninstall " + localCfg.deployedAppName
+                },
+                installNewApp: {
+                    cmd: "adb install " + localCfg.pathToApk,
+                    cwd: localCfg.applicationDir
+                },
+                startApp: {
+                    cmd: "adb shell am start -n " + localCfg.deployedAppName + "/" + localCfg.mainActivityName
+                },
+                collectLog: {
+                    cmd: "./expect.exp " + localCfg.outfile,
+                    stdout: false,
+                    strerr: false
+                }
+            },
+            shell: {
+                collectLog: {
+                    command: "./expect.exp " + localCfg.outfile,
+                    options: {
+                        execOptions: {
+                            maxBuffer: Infinity
+                        }
+                    }
                 }
             }
         });
 
 //        grunt.loadNpmTasks("grunt-tslint");
 //        grunt.loadNpmTasks("grunt-multi-dest");
-//        grunt.loadNpmTasks("grunt-shell");
+        grunt.loadNpmTasks("grunt-shell");
 //        grunt.loadNpmTasks("grunt-env");
 //        grunt.loadNpmTasks("grunt-simple-mocha");
         grunt.loadNpmTasks("grunt-exec");
@@ -109,19 +134,24 @@ module.exports = {
         grunt.loadNpmTasks("grunt-contrib-copy");
 
         grunt.registerTask("testsapp", [
-                "clean:workingDir",
-                "mkdir:workingDir",
-                "exec:killEmulator",
-                "exec:startEmulator",
-
-                "exec:createApp",
-                "clean:originalAppDir",
-                "copy:testsAppToRunDir",
-
-                "exec:addAndroidPlatform",
-                "copy:addAndroidPermissions",
-                "exec:buildAppAndroid",
-                "exec:restartAdb",
+//                "clean:workingDir",
+//                "mkdir:workingDir",
+//                "exec:killEmulator",
+//                "exec:startEmulator",
+//
+//                "exec:createApp",
+//                "clean:originalAppDir",
+//                "copy:testsAppToRunDir",
+//
+//                "exec:addAndroidPlatform",
+//                "copy:addAndroidPermissions",
+//                "exec:buildAppAndroid",
+//                "exec:restartAdb",
+//
+                "exec:uninstallExistingApp",
+                "exec:installNewApp",
+                "exec:startApp",
+                "shell:collectLog",
 
 
 //                "exec:killEmulator",
