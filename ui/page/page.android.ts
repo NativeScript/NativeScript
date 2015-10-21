@@ -137,6 +137,8 @@ export class Page extends pageCommon.Page {
         this.onUnloaded();
         this._isAddedToNativeVisualTree = false;
         this._onDetached(true);
+
+        super._hideNativeModalView(parent);
     }
 
     public _updateActionBar(hidden: boolean) {

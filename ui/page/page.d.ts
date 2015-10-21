@@ -173,9 +173,14 @@ declare module "ui/page" {
         showModal();
 
         /**
-         * Closes the current modal dialog that this page is showing.
+         * Closes the current modal view that this page is showing.
          */
         closeModal();
+
+        /**
+         * Returns the current modal view that this page is showing (is parent of), if any.
+         */
+        modal: Page;
         
         //@private
 

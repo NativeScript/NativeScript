@@ -4,6 +4,7 @@ import TKUnit = require("../../TKUnit");
 import LabelModule = require("ui/label");
 import helper = require("../helper");
 import view = require("ui/core/view");
+import frame = require("ui/frame");
 
 global.moduleMerge(PageTestCommon, exports);
 
@@ -35,11 +36,13 @@ export function test_WhenPageIsLoadedItCanShowAnotherPageAsModal() {
     var modalCloseCallback = function (returnValue: any) {
         TKUnit.assert(ctx.shownModally, "Modal-page must be shown!");
         TKUnit.assert(returnValue === "return value", "Modal-page must return value!");
-        TKUnit.wait(0.350);
+        TKUnit.assert(!frame.topmost().currentPage.modal, "frame.topmost().currentPage.modal should be undefined when no modal page is shown!");
+        TKUnit.wait(0.100);
         modalClosed = true;
     }
 
     var loadedEventHandler = function (args) {
+        TKUnit.assert(!frame.topmost().currentPage.modal, "frame.topmost().currentPage.modal should be undefined when no modal page is shown!");
         var basePath = "ui/page/";
         args.object.showModal(basePath + "modal-page", ctx, modalCloseCallback, false);
     };

@@ -226,6 +226,8 @@ export class Page extends pageCommon.Page {
         this._UIModalPresentationFormSheet = false;
         parent.requestLayout();
         parent._ios.dismissModalViewControllerAnimated(false);
+
+        super._hideNativeModalView(parent);
     }
 
     public _updateActionBar(hidden: boolean) {
