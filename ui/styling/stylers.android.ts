@@ -550,6 +550,52 @@ export class ProgressStyler implements definition.stylers.Styler {
     }
 }
 
+export class SwitchStyler implements definition.stylers.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var sw = <android.widget.Switch>view._nativeView;
+
+        var drawable = <android.graphics.drawable.StateListDrawable>sw.getThumbDrawable();
+        if (drawable) {
+            drawable.setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+        }
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: number) {
+        var sw = <android.widget.Switch>view._nativeView;
+        // Do nothing.
+    }
+
+    private static setBackgroundAndBorderProperty(view: view.View, newValue: any) {
+        var sw = <android.widget.Switch>view._nativeView;
+
+        var drawable = <android.graphics.drawable.StateListDrawable>sw.getTrackDrawable();
+        if (drawable) {
+            drawable.setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+        }
+    }
+
+    private static resetBackgroundAndBorderProperty(view: view.View, nativeValue: number) {
+        var sw = <android.widget.Switch>view._nativeView;
+        // Do nothing.
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SwitchStyler.setColorProperty,
+            SwitchStyler.resetColorProperty), "Switch");
+
+        var borderHandler = new stylersCommon.StylePropertyChangedHandler(
+            SwitchStyler.setBackgroundAndBorderProperty,
+            SwitchStyler.resetBackgroundAndBorderProperty);
+
+        style.registerHandler(style.backgroundColorProperty, borderHandler, "Switch");
+        style.registerHandler(style.borderWidthProperty, borderHandler, "Switch");
+        style.registerHandler(style.borderColorProperty, borderHandler, "Switch");
+        style.registerHandler(style.borderRadiusProperty, borderHandler, "Switch");
+        style.registerHandler(style.backgroundInternalProperty, borderHandler, "Switch");
+    }
+}
+
 export class SearchBarStyler implements definition.stylers.Styler {
 
     private static getBackgroundColorProperty(view: view.View): any {
@@ -749,4 +795,5 @@ export function _registerDefaultStylers() {
     ActionBarStyler.registerHandlers();
     TabViewStyler.registerHandlers();
     ProgressStyler.registerHandlers();
+    SwitchStyler.registerHandlers();
 }
