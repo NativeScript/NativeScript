@@ -121,11 +121,19 @@ export class Observable implements definition.Observable {
         return this[name];
     }
 
+    private disableNotifications = false;
+
     public _setCore(data: definition.PropertyChangeData) {
+        this.disableNotifications = true;
         this[data.propertyName] = data.value;
+        this.disableNotifications = false;
     }
 
     public notify<T extends definition.EventData>(data: T) {
+        if (this.disableNotifications) {
+            return;
+        }
+
         var observers = this._getEventList(data.eventName);
         if (!observers) {
             return;
@@ -134,7 +142,7 @@ export class Observable implements definition.Observable {
         var i;
         var entry: ListenerEntry;
         var observersLength = observers.length;
-        for (i = observersLength - 1; i >= 0 ; i--) {
+        for (i = observersLength - 1; i >= 0; i--) {
             entry = observers[i];
             if (entry.thisArg) {
                 entry.callback.apply(entry.thisArg, [data]);
