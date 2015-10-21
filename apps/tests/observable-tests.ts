@@ -479,3 +479,15 @@ export var test_ObservablesCreatedWithJSON_shouldNotInterfereWithOneAnother = fu
     TKUnit.assert(propName2 === "property2", "propName2 should be 'property2'");
     TKUnit.assert(newValue2 === 20, "newValue2 should be 20");
 };
+
+export function test_ObservablesCreatedWithJSON_shouldNotEmitTwoTimesPropertyChangeEvent() {
+    var testObservable = new observable.Observable({ "property1": 1 });
+    var propertyChangeCounter = 0;
+    var propertyChangeHandler = function (args) {
+        propertyChangeCounter++;
+    }
+    testObservable.on(observable.Observable.propertyChangeEvent, propertyChangeHandler);
+    testObservable.set("property1", 2);
+
+    TKUnit.assertEqual(propertyChangeCounter, 1, "PropertyChange event should be fired only once for a single change.");
+}
