@@ -51,7 +51,7 @@ export class ActionBar extends common.ActionBar {
         // Set back button text
         if (previousController) {
             if (this.navigationButton) {
-                var tapHandler = TapBarItemHandlerImpl.new().initWithOwner(this.navigationButton);
+                var tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
                 var barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + "", UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
                 previousController.navigationItem.backBarButtonItem = barButtonItem;
             }
@@ -112,7 +112,7 @@ export class ActionBar extends common.ActionBar {
     }
 
     private createBarButtonItem(item: dts.ActionItem): UIBarButtonItem {
-        var tapHandler = TapBarItemHandlerImpl.new().initWithOwner(item);
+        var tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(item));
         // associate handler with menuItem or it will get collected by JSC.
         (<any>item).handler = tapHandler;
 
@@ -129,7 +129,7 @@ export class ActionBar extends common.ActionBar {
 
         return barButtonItem;
     }
-    
+
     public _onTitlePropertyChanged() {
         if (!this.page) {
             return;
@@ -141,7 +141,7 @@ export class ActionBar extends common.ActionBar {
 
     private _navigationBarHeight: number = 0;
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-        
+
         let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
         let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -186,19 +186,19 @@ export class ActionBar extends common.ActionBar {
 }
 
 class TapBarItemHandlerImpl extends NSObject {
-    static new(): TapBarItemHandlerImpl {
-        return <TapBarItemHandlerImpl>super.new();
-    }
+    private _owner: WeakRef<dts.ActionItemBase>;
 
-    private _owner: dts.ActionItemBase;
-
-    public initWithOwner(owner: dts.ActionItemBase): TapBarItemHandlerImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<dts.ActionItemBase>): TapBarItemHandlerImpl {
+        let handler = <TapBarItemHandlerImpl>TapBarItemHandlerImpl.new();
+        handler._owner = owner;
+        return handler;
     }
 
     public tap(args) {
-        this._owner._raiseTap();
+        let owner = this._owner.get();
+        if (owner) {
+            owner._raiseTap();
+        }
     }
 
     public static ObjCExposedMethods = {

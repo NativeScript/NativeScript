@@ -235,32 +235,42 @@ export class Frame extends frameCommon.Frame {
 class UINavigationControllerImpl extends UINavigationController implements UINavigationControllerDelegate {
     public static ObjCProtocols = [UINavigationControllerDelegate];
 
-    private _owner: Frame;
+    private _owner: WeakRef<Frame>;
 
-    public static initWithOwner(owner: Frame): UINavigationControllerImpl {
+    public static initWithOwner(owner: WeakRef<Frame>): UINavigationControllerImpl {
         var controller = <UINavigationControllerImpl>UINavigationControllerImpl.new();
         controller._owner = owner;
         return controller;
     }
 
     get owner(): Frame {
-        return this._owner;
+        return this._owner.get();
     }
 
     public viewDidLoad(): void {
-        this._owner.onLoaded();
+        let owner = this._owner.get();
+        if (owner) {
+            owner.onLoaded();
+    }
     }
 
     public viewDidLayoutSubviews(): void {
-        trace.write(this._owner + " viewDidLayoutSubviews, isLoaded = " + this._owner.isLoaded, trace.categories.ViewHierarchy);
-        this._owner._updateLayout();
+        let owner = this._owner.get();
+        if (owner) {
+            trace.write(this._owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
+            owner._updateLayout();
+    }
     }
 
     public navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
         // In this method we need to layout the new page otherwise page will be shown empty and update after that which is bad UX.
-        var frame = this._owner;
-        var newEntry: definition.BackstackEntry = viewController[ENTRY];
-        var newPage = newEntry.resolvedPage;
+        let frame = this._owner.get();
+        if (!frame) {
+            return;
+        }
+
+        let newEntry: definition.BackstackEntry = viewController[ENTRY];
+        let newPage = newEntry.resolvedPage;
         if (!newPage.parent) {
             if (!frame._currentEntry) {
                 // First navigation
@@ -282,14 +292,18 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
     }
 
     public navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        var frame: Frame = this._owner;
-        var backStack = frame.backStack;
-        var currentEntry = backStack.length > 0 ? backStack[backStack.length - 1] : null;
-        var newEntry: definition.BackstackEntry = viewController[ENTRY];
+        let frame = this._owner.get();
+        if (!frame) {
+            return;
+        }
+
+        let backStack = frame.backStack;
+        let currentEntry = backStack.length > 0 ? backStack[backStack.length - 1] : null;
+        let newEntry: definition.BackstackEntry = viewController[ENTRY];
 
         // This code check if navigation happened through UI (e.g. back button or swipe gesture).
         // When calling goBack on frame isBack will be false.
-        var isBack: boolean = currentEntry && newEntry === currentEntry;
+        let isBack: boolean = currentEntry && newEntry === currentEntry;
         if (isBack) {
             try {
                 frame._shouldSkipNativePop = true;
@@ -300,7 +314,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             }
         }
 
-        var page = frame.currentPage;
+        let page = frame.currentPage;
         if (page && !navigationController.viewControllers.containsObject(page.ios)) {
             frame._removeView(page);
         }
@@ -308,7 +322,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         frame._navigateToEntry = null;
         frame._currentEntry = newEntry;
 
-        var newPage = newEntry.resolvedPage;
+        let newPage = newEntry.resolvedPage;
 
         // In iOS we intentionally delay the raising of the 'loaded' event so both platforms behave identically.
         // The loaded event must be raised AFTER the page is part of the windows hierarchy and 
@@ -337,7 +351,7 @@ class iOSFrame implements definition.iOSFrame {
     private _navBarVisibility: string;
 
     constructor(owner: Frame) {
-        this._controller = UINavigationControllerImpl.initWithOwner(owner);
+        this._controller = UINavigationControllerImpl.initWithOwner(new WeakRef(owner));
         this._controller.delegate = this._controller;
         this._controller.automaticallyAdjustsScrollViewInsets = false;
         //this.showNavigationBar = false;
@@ -356,8 +370,9 @@ class iOSFrame implements definition.iOSFrame {
         this._showNavigationBar = value;
         this._controller.navigationBarHidden = !value;
 
-        if (change) {
-            this._controller.owner.requestLayout();
+        let owner = this._controller.owner;
+        if (owner && change) {
+            owner.requestLayout();
         }
     }
 

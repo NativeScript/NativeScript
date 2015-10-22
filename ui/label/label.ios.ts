@@ -24,35 +24,44 @@ function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData
 global.moduleMerge(common, exports);
 
 class UILabelImpl extends UILabel {
-    static new(): UILabelImpl {
-        return <UILabelImpl>super.new();
-    }
 
-    private _owner: Label;
+    private _owner: WeakRef<Label>;
 
-    public initWithOwner(owner: Label): UILabelImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<Label>): UILabelImpl {
+        let labelImpl = <UILabelImpl>UILabelImpl.new();
+        labelImpl._owner = owner;
+        return labelImpl;
     }
 
     public textRectForBoundsLimitedToNumberOfLines(bounds: CGRect, numberOfLines: number): CGRect {
-        var rect = super.textRectForBoundsLimitedToNumberOfLines(bounds, numberOfLines);
-        var textRect = CGRectMake(
-            - (this._owner.borderWidth + this._owner.style.paddingLeft),
-            - (this._owner.borderWidth + this._owner.style.paddingTop),
-            rect.size.width + (this._owner.borderWidth + this._owner.style.paddingLeft + this._owner.style.paddingRight + this._owner.borderWidth),
-            rect.size.height + (this._owner.borderWidth + this._owner.style.paddingTop + this._owner.style.paddingBottom + this._owner.borderWidth)
+        let rect = super.textRectForBoundsLimitedToNumberOfLines(bounds, numberOfLines);
+        let owner = this._owner.get();
+        if (owner) {
+            let size = rect.size;
+            rect = CGRectMake(
+                - (owner.borderWidth + owner.style.paddingLeft),
+                - (owner.borderWidth + owner.style.paddingTop),
+                size.width + (owner.borderWidth + owner.style.paddingLeft + owner.style.paddingRight + owner.borderWidth),
+                size.height + (owner.borderWidth + owner.style.paddingTop + owner.style.paddingBottom + owner.borderWidth)
             );
-        return textRect;
+        }
+
+        return rect;
     }
 
     public drawTextInRect(rect: CGRect): void {
-        var textRect = CGRectMake(
-            (this._owner.borderWidth + this._owner.style.paddingLeft),
-            (this._owner.borderWidth + this._owner.style.paddingTop),
-            rect.size.width - (this._owner.borderWidth + this._owner.style.paddingLeft + this._owner.style.paddingRight + this._owner.borderWidth),
-            rect.size.height - (this._owner.borderWidth + this._owner.style.paddingTop + this._owner.style.paddingBottom + this._owner.borderWidth)
-            );
+        let owner = this._owner.get();
+        let textRect: CGRect;
+        let size = rect.size;
+        if (owner) {
+            textRect = CGRectMake((owner.borderWidth + owner.style.paddingLeft), (owner.borderWidth + owner.style.paddingTop),
+                size.width - (owner.borderWidth + owner.style.paddingLeft + owner.style.paddingRight + owner.borderWidth),
+                size.height - (owner.borderWidth + owner.style.paddingTop + owner.style.paddingBottom + owner.borderWidth));
+        }
+        else {
+            textRect = CGRectMake(0, 0, size.width, size.height);
+        }
+
         super.drawTextInRect(textRect);
     }
 }
@@ -63,8 +72,7 @@ export class Label extends common.Label {
     constructor(options?: definition.Options) {
         super(options);
 
-        //this._ios = new UILabel();
-        this._ios = UILabelImpl.new().initWithOwner(this);
+        this._ios = UILabelImpl.initWithOwner(new WeakRef(this));
         this._ios.userInteractionEnabled = true;
     }
 

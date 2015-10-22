@@ -6,21 +6,19 @@ global.moduleMerge(common, exports);
 class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
     public static ObjCProtocols = [UIWebViewDelegate];
 
-    static new(): UIWebViewDelegateImpl {
-        return <UIWebViewDelegateImpl>super.new();
-    }
+    private _owner: WeakRef<WebView>;
 
-    private _owner: WebView;
-
-    public initWithOwner(owner: WebView): UIWebViewDelegateImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<WebView>): UIWebViewDelegateImpl {
+        let delegate = <UIWebViewDelegateImpl>UIWebViewDelegateImpl.new();
+        delegate._owner = owner;
+        return delegate;
     }
 
     public webViewShouldStartLoadWithRequestNavigationType(webView: UIWebView, request: NSURLRequest, navigationType: number) {
-        if (request.URL) {
+        let owner = this._owner.get();
+        if (owner && request.URL) {
             trace.write("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", trace.categories.Debug);
-            this._owner._onLoadStarted(request.URL.absoluteString);
+            owner._onLoadStarted(request.URL.absoluteString);
         }
 
         return true;
@@ -32,17 +30,25 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
 
     public webViewDidFinishLoad(webView: UIWebView) {
         trace.write("UIWebViewDelegateClass.webViewDidFinishLoad(" + webView.request.URL + ")", trace.categories.Debug);
-        this._owner._onLoadFinished(webView.request.URL.absoluteString);
+        let owner = this._owner.get();
+        if (owner) {
+            owner._onLoadFinished(webView.request.URL.absoluteString);
+        }
     }
 
     public webViewDidFailLoadWithError(webView: UIWebView, error: NSError) {
-        var url = this._owner.url;
-        if (webView.request && webView.request.URL) {
-            url = webView.request.URL.absoluteString;
-        }
+        let owner = this._owner.get();
+        if (owner) {
+            var url = owner.url;
+            if (webView.request && webView.request.URL) {
+                url = webView.request.URL.absoluteString;
+            }
 
-        trace.write("UIWebViewDelegateClass.webViewDidFailLoadWithError(" + error.localizedDescription + ")", trace.categories.Debug);
-        this._owner._onLoadFinished(url, error.localizedDescription);
+            trace.write("UIWebViewDelegateClass.webViewDidFailLoadWithError(" + error.localizedDescription + ")", trace.categories.Debug);
+            if (owner) {
+                owner._onLoadFinished(url, error.localizedDescription);
+            }
+        }
     }
 }
 
@@ -54,7 +60,7 @@ export class WebView extends common.WebView {
         super();
 
         this._ios = new UIWebView();
-        this._delegate = UIWebViewDelegateImpl.new().initWithOwner(this);
+        this._delegate = UIWebViewDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
     public onLoaded() {

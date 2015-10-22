@@ -13,13 +13,8 @@ export class ListPicker extends common.ListPicker {
         super();
 
         this._ios = new UIPickerView();
-
-        var dataSource = ListPickerDataSource.new().initWithOwner(this);
-
-        this._dataSource = dataSource;
-        this._ios.dataSource = this._dataSource;
-
-        this._delegate = ListPickerDelegateImpl.new().initWithOwner(this);
+        this._ios.dataSource = this._dataSource = ListPickerDataSource.initWithOwner(new WeakRef(this));
+        this._delegate = ListPickerDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
     public onLoaded() {
@@ -55,16 +50,13 @@ export class ListPicker extends common.ListPicker {
 
 class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
     public static ObjCProtocols = [UIPickerViewDataSource];
+    
+    private _owner: WeakRef<ListPicker>;
 
-    static new(): ListPickerDataSource {
-        return <ListPickerDataSource>super.new();
-    }
-
-    private _owner: ListPicker;
-
-    public initWithOwner(owner: ListPicker): ListPickerDataSource {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<ListPicker>): ListPickerDataSource {
+        let dataSource = <ListPickerDataSource>ListPickerDataSource.new();
+        dataSource._owner = owner;
+        return dataSource;
     }
 
     public numberOfComponentsInPickerView(pickerView: UIPickerView) {
@@ -72,35 +64,35 @@ class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
     }
 
     public pickerViewNumberOfRowsInComponent(pickerView: UIPickerView, component: number) {
-        return this._owner.items ? this._owner.items.length : 0;
+        let owner = this._owner.get();
+        return (owner && owner.items) ? owner.items.length : 0;
     }
 }
 
 class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
     public static ObjCProtocols = [UIPickerViewDelegate];
 
-    static new(): ListPickerDelegateImpl {
-        return <ListPickerDelegateImpl>super.new();
-    }
+    private _owner: WeakRef<ListPicker>;
 
-    private _owner: ListPicker;
-
-    public initWithOwner(owner: ListPicker): ListPickerDelegateImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<ListPicker>): ListPickerDelegateImpl {
+        let delegate = <ListPickerDelegateImpl>ListPickerDelegateImpl.new();
+        delegate._owner = owner;
+        return delegate;
     }
 
     public pickerViewTitleForRowForComponent(pickerView: UIPickerView, row: number, component: number): string {
-        if (this._owner) {
-            return this._owner._getItemAsString(row);
+        let owner = this._owner.get();
+        if (owner) {
+            return owner._getItemAsString(row);
         }
 
         return row.toString();
     }
 
     public pickerViewDidSelectRowInComponent(pickerView: UIPickerView, row: number, component: number): void {
-        if (this._owner) {
-            this._owner._onPropertyChangedFromNative(common.ListPicker.selectedIndexProperty, row);
+        let owner = this._owner.get();
+        if (owner) {
+            owner._onPropertyChangedFromNative(common.ListPicker.selectedIndexProperty, row);
         }
     }
 }

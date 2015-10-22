@@ -165,10 +165,10 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         // No synchronous change. 
         TKUnit.assertEqual(this.testView.verticalOffset, 0, "this.testView.verticalOffset");
 
-        TKUnit.waitUntilReady(() => { return TKUnit.areClose(this.testView.verticalOffset, 100, 0.1); });
+        TKUnit.waitUntilReady(() => { return TKUnit.areClose(this.testView.verticalOffset, 100, 0.9); });
 
         // The scrolling animation should be finished by now
-        TKUnit.assertAreClose(this.testView.verticalOffset, 100, 0.1, "this.testView.verticalOffset");
+        TKUnit.assertAreClose(this.testView.verticalOffset, 100, 0.9, "this.testView.verticalOffset");
     }
 
     public test_scrollToHorizontalOffset_no_animation() {
@@ -206,10 +206,10 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         // No synchronous change. 
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
 
-        TKUnit.waitUntilReady(() => { return TKUnit.areClose(this.testView.horizontalOffset, 100, 0.1); });
+        TKUnit.waitUntilReady(() => { return TKUnit.areClose(this.testView.horizontalOffset, 100, 0.9); });
 
         // The scrolling animation should be finished by now
-        TKUnit.assertAreClose(this.testView.horizontalOffset, 100, 0.1, "this.testView.horizontalOffset");
+        TKUnit.assertAreClose(this.testView.horizontalOffset, 100, 0.9, "this.testView.horizontalOffset");
     }
 
     public test_scrollView_persistsState_vertical() {

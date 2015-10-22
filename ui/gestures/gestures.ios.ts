@@ -7,28 +7,26 @@ import trace = require("trace");
 global.moduleMerge(common, exports);
 
 class UIGestureRecognizerImpl extends NSObject {
-    static new(): UIGestureRecognizerImpl {
-        return <UIGestureRecognizerImpl>super.new();
-    }
 
-    private _owner: GesturesObserver;
+    private _owner: WeakRef<GesturesObserver>;
     private _type: any;
     private _callback: Function;
     private _context: any;
 
-    public initWithOwnerTypeCallback(owner: GesturesObserver, type: any, callback?: Function, thisArg?: any): UIGestureRecognizerImpl {
-        this._owner = owner;
-        this._type = type;
+    public static initWithOwnerTypeCallback(owner: WeakRef<GesturesObserver>, type: any, callback?: Function, thisArg?: any): UIGestureRecognizerImpl {
+        let handler = <UIGestureRecognizerImpl>UIGestureRecognizerImpl.new();
+        handler._owner = owner;
+        handler._type = type;
 
         if (callback) {
-            this._callback = callback;
+            handler._callback = callback;
         }
 
         if (thisArg) {
-            this._context = thisArg;
+            handler._context = thisArg;
         }
 
-        return this;
+        return handler;
     }
 
     public static ObjCExposedMethods = {
@@ -36,17 +34,18 @@ class UIGestureRecognizerImpl extends NSObject {
     };
 
     public recognize(recognizer: UIGestureRecognizer): void {
-        var callback = this._callback ? this._callback : this._owner.callback;
-        var type = this._type;
-        var target = this._owner.target;
+        let owner = this._owner.get();
+        let callback = this._callback ? this._callback : (owner ? owner.callback : null);
+        let typeParam = this._type;
+        let target = owner ? owner.target : undefined;
 
         var args = {
-            type: type,
+            type: typeParam,
             view: target,
             ios: recognizer,
             android: undefined,
             object: target,
-            eventName: definition.toString(type),
+            eventName: definition.toString(typeParam),
         };
 
         if (callback) {
@@ -209,7 +208,7 @@ export class GesturesObserver extends common.GesturesObserver {
 }
 
 function _createUIGestureRecognizerTarget(owner: GesturesObserver, type: definition.GestureTypes, callback?: (args: definition.GestureEventData) => void, thisArg?: any): any {
-    return UIGestureRecognizerImpl.new().initWithOwnerTypeCallback(owner, type, callback, thisArg);
+    return UIGestureRecognizerImpl.initWithOwnerTypeCallback(new WeakRef(owner), type, callback, thisArg);
 }
 
 interface RecognizerCache {

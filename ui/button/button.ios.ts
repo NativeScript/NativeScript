@@ -2,19 +2,19 @@
 import stateChanged = require("ui/core/control-state-change");
 
 class TapHandlerImpl extends NSObject {
-    static new(): TapHandlerImpl {
-        return <TapHandlerImpl>super.new();
-    }
+    private _owner: WeakRef<Button>;
 
-    private _owner: Button;
-
-    public initWithOwner(owner: Button): TapHandlerImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<Button>): TapHandlerImpl {
+        let handler = <TapHandlerImpl>TapHandlerImpl.new();
+        handler._owner = owner;
+        return handler;
     }
 
     public tap(args) {
-        this._owner._emit(common.Button.tapEvent);
+        let owner = this._owner.get();
+        if (owner) {
+            owner._emit(common.Button.tapEvent);
+        }
     }
 
     public static ObjCExposedMethods = {
@@ -33,7 +33,7 @@ export class Button extends common.Button {
         super();
         this._ios = UIButton.buttonWithType(UIButtonType.UIButtonTypeSystem);
 
-        this._tapHandler = TapHandlerImpl.new().initWithOwner(this);
+        this._tapHandler = TapHandlerImpl.initWithOwner(new WeakRef(this));
         this._ios.addTargetActionForControlEvents(this._tapHandler, "tap", UIControlEvents.UIControlEventTouchUpInside);
 
         this._stateChangedHandler = new stateChanged.ControlStateChangeListener(this._ios, (s: string) => {

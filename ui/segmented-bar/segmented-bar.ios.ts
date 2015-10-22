@@ -86,7 +86,7 @@ export class SegmentedBar extends common.SegmentedBar {
         super();
         this._ios = UISegmentedControl.new();
 
-        this._selectionHandler = SelectionHandlerImpl.new().initWithOwner(this);
+        this._selectionHandler = SelectionHandlerImpl.initWithOwner(new WeakRef(this));
         this._ios.addTargetActionForControlEvents(this._selectionHandler, "selected", UIControlEvents.UIControlEventValueChanged);
     }
 
@@ -96,19 +96,20 @@ export class SegmentedBar extends common.SegmentedBar {
 }
 
 class SelectionHandlerImpl extends NSObject {
-    static new(): SelectionHandlerImpl {
-        return <SelectionHandlerImpl>super.new();
-    }
 
-    private _owner: SegmentedBar;
+    private _owner: WeakRef<SegmentedBar>;
 
-    public initWithOwner(owner: SegmentedBar): SelectionHandlerImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<SegmentedBar>): SelectionHandlerImpl {
+        let handler = <SelectionHandlerImpl>SelectionHandlerImpl.new();
+        handler._owner = owner;
+        return handler;
     }
 
     public selected(sender: UISegmentedControl) {
-        this._owner.selectedIndex = sender.selectedSegmentIndex;
+        let owner = this._owner.get();
+        if (owner) {
+            owner.selectedIndex = sender.selectedSegmentIndex;
+        }
     }
 
     public static ObjCExposedMethods = {

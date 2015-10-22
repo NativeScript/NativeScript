@@ -25,19 +25,20 @@ function onMaxValuePropertyChanged(data: dependencyObservable.PropertyChangeData
 global.moduleMerge(common, exports);
 
 class SliderChangeHandlerImpl extends NSObject {
-    static new(): SliderChangeHandlerImpl {
-        return <SliderChangeHandlerImpl>super.new();
+
+    private _owner: WeakRef<Slider>;
+
+    public static initWithOwner(owner: WeakRef<Slider>): SliderChangeHandlerImpl {
+        let handler = <SliderChangeHandlerImpl>SliderChangeHandlerImpl.new();
+        handler._owner = owner;
+        return handler;
     }
 
-    private _owner: Slider;
-
-    public initWithOwner(owner: Slider): SliderChangeHandlerImpl {
-        this._owner = owner;
-        return this;
-    }
-    
     public sliderValueChanged(sender: UISlider) {
-        this._owner._onPropertyChangedFromNative(common.Slider.valueProperty, sender.value);
+        let owner = this._owner.get();
+        if (owner) {
+            owner._onPropertyChangedFromNative(common.Slider.valueProperty, sender.value);
+        }
     }
 
     public static ObjCExposedMethods = {
@@ -57,7 +58,7 @@ export class Slider extends common.Slider {
         this._ios.minimumValue = 0;
         this._ios.maximumValue = this.maxValue;
 
-        this._changeHandler = SliderChangeHandlerImpl.new().initWithOwner(this);
+        this._changeHandler = SliderChangeHandlerImpl.initWithOwner(new WeakRef(this));
         this._ios.addTargetActionForControlEvents(this._changeHandler, "sliderValueChanged", UIControlEvents.UIControlEventValueChanged);
     }
 
