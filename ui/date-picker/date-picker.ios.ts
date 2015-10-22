@@ -71,7 +71,7 @@ export class DatePicker extends common.DatePicker {
         this._ios = new UIDatePicker();
         this._ios.datePickerMode = UIDatePickerMode.UIDatePickerModeDate;
 
-        this._changeHandler = UIDatePickerChangeHandlerImpl.new().initWithOwner(this);
+        this._changeHandler = UIDatePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));
         this._ios.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.UIControlEventValueChanged);
     }
 
@@ -81,30 +81,33 @@ export class DatePicker extends common.DatePicker {
 }
 
 class UIDatePickerChangeHandlerImpl extends NSObject {
-    static new(): UIDatePickerChangeHandlerImpl {
-        return <UIDatePickerChangeHandlerImpl>super.new();
-    }
 
-    private _owner: DatePicker;
+    private _owner: WeakRef<DatePicker>;
 
-    public initWithOwner(owner: DatePicker): UIDatePickerChangeHandlerImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<DatePicker>): UIDatePickerChangeHandlerImpl {
+        let impl = <UIDatePickerChangeHandlerImpl>UIDatePickerChangeHandlerImpl.new();
+        impl._owner = owner;
+        return impl;
     }
 
     public valueChanged(sender: UIDatePicker) {
         var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitYear | NSCalendarUnit.NSCalendarUnitMonth | NSCalendarUnit.NSCalendarUnitDay, sender.date);
         
-        if (comps.year !== this._owner.year) {
-            this._owner._onPropertyChangedFromNative(common.DatePicker.yearProperty, comps.year);
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
         }
 
-        if (comps.month !== this._owner.month) {
-            this._owner._onPropertyChangedFromNative(common.DatePicker.monthProperty, comps.month);
+        if (comps.year !== owner.year) {
+            owner._onPropertyChangedFromNative(common.DatePicker.yearProperty, comps.year);
         }
 
-        if (comps.day !== this._owner.day) {
-            this._owner._onPropertyChangedFromNative(common.DatePicker.dayProperty, comps.day);
+        if (comps.month !== owner.month) {
+            owner._onPropertyChangedFromNative(common.DatePicker.monthProperty, comps.month);
+        }
+
+        if (comps.day !== owner.day) {
+            owner._onPropertyChangedFromNative(common.DatePicker.dayProperty, comps.day);
         }
     }
 

@@ -128,24 +128,15 @@ function printRunTestStats() {
     }
 }
 
-function time(): number {
-    if (platform.device.os === platform.platformNames.android) {
-        return java.lang.System.nanoTime() / 1000000; // 1 ms = 1000000 ns
-    }
-    else if (platform.device.os === platform.platformNames.ios) {
-        return CACurrentMediaTime() * 1000;
-    }
-}
-
 function startLog(): void {
     let testsName: string = this.name;
     TKUnit.write("START " + testsName + " TESTS.", trace.messageType.info);
-    this.start = time();
+    this.start = TKUnit.time();
 }
 
 function log(): void {
     let testsName: string = this.name;
-    let duration = time() - this.start;
+    let duration = TKUnit.time() - this.start;
     TKUnit.write(testsName + " COMPLETED for " + duration, trace.messageType.info);
 }
 

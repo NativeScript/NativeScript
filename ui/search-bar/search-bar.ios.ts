@@ -57,24 +57,26 @@ global.moduleMerge(common, exports);
 class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
     public static ObjCProtocols = [UISearchBarDelegate];
 
-    static new(): UISearchBarDelegateImpl {
-        return <UISearchBarDelegateImpl>super.new();
-    }
-
-    private _owner: SearchBar;
+    private _owner: WeakRef<SearchBar>;
     private _searchText: string;
 
-    public initWithOwner(owner: SearchBar): UISearchBarDelegateImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<SearchBar>): UISearchBarDelegateImpl {
+        let delegate = <UISearchBarDelegateImpl>UISearchBarDelegateImpl.new();
+        delegate._owner = owner;
+        return delegate;
     }
 
     public searchBarTextDidChange(searchBar: UISearchBar, searchText: string) {
-        this._owner._onPropertyChangedFromNative(common.SearchBar.textProperty, searchText);
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
+        owner._onPropertyChangedFromNative(common.SearchBar.textProperty, searchText);
 
         // This code is needed since sometimes searchBarCancelButtonClicked is not called!
         if (searchText === "" && this._searchText !== searchText) {
-            this._owner._emit(common.SearchBar.clearEvent);
+            owner._emit(common.SearchBar.clearEvent);
         }
 
         this._searchText = searchText;
@@ -82,12 +84,22 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 
     public searchBarCancelButtonClicked(searchBar: UISearchBar) {
         searchBar.resignFirstResponder();
-        this._owner._emit(common.SearchBar.clearEvent);
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
+        owner._emit(common.SearchBar.clearEvent);
     }
 
     public searchBarSearchButtonClicked(searchBar: UISearchBar) {
         searchBar.resignFirstResponder();
-        this._owner._emit(common.SearchBar.submitEvent);
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
+        owner._emit(common.SearchBar.submitEvent);
     }
 }
 
@@ -101,7 +113,7 @@ export class SearchBar extends common.SearchBar {
 
         this._ios = new UISearchBar();
 
-        this._delegate = UISearchBarDelegateImpl.new().initWithOwner(this);
+        this._delegate = UISearchBarDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
     public onLoaded() {
@@ -121,7 +133,7 @@ export class SearchBar extends common.SearchBar {
 
     get ios(): UISearchBar {
         return this._ios;
-    }  
+    }
 
     private static findTextField(view: UIView) {
         for (let i = 0, l = view.subviews.count; i < l; i++) {

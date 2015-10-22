@@ -11,35 +11,30 @@ import observable = require("data/observable");
 global.moduleMerge(pageCommon, exports);
 
 class UIViewControllerImpl extends UIViewController {
-    static new(): UIViewControllerImpl {
-        return <UIViewControllerImpl>super.new();
-    }
 
-    private _owner: Page;
+    private _owner: WeakRef<Page>;
 
-    public initWithOwner(owner: Page): UIViewControllerImpl {
-        this._owner = owner;
-        this.automaticallyAdjustsScrollViewInsets = false;
-        return this;
-    }
-
-    public didRotateFromInterfaceOrientation(fromInterfaceOrientation: number) {
-        trace.write(this._owner + " didRotateFromInterfaceOrientation(" + fromInterfaceOrientation + ")", trace.categories.ViewHierarchy);
-    }
-
-    public viewDidLoad() {
-        trace.write(this._owner + " viewDidLoad", trace.categories.ViewHierarchy);
+    public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
+        let controller = <UIViewControllerImpl>UIViewControllerImpl.new();
+        controller._owner = owner;
+        controller.automaticallyAdjustsScrollViewInsets = false;
+        return controller;
     }
 
     public viewDidLayoutSubviews() {
-        trace.write(this._owner + " viewDidLayoutSubviews, isLoaded = " + this._owner.isLoaded, trace.categories.ViewHierarchy);
-        if (!this._owner.isLoaded) {
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+    }
+
+        trace.write(owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
+        if (!owner.isLoaded) {
             return;
         }
 
-        if (this._owner._isModal) {
+        if (owner._isModal) {
             let isTablet = device.deviceType === DeviceType.Tablet;
-            let isFullScreen = !this._owner._UIModalPresentationFormSheet || !isTablet;
+            let isFullScreen = !owner._UIModalPresentationFormSheet || !isTablet;
             let frame = isFullScreen ? UIScreen.mainScreen().bounds : this.view.frame;
             let origin = frame.origin;
             let size = frame.size;
@@ -62,7 +57,7 @@ class UIViewControllerImpl extends UIViewController {
             let bottom = height;
             let statusBarHeight = uiUtils.ios.getStatusBarHeight();
             let statusBarVisible = !UIApplication.sharedApplication().statusBarHidden;
-            let backgroundSpanUnderStatusBar = this._owner.backgroundSpanUnderStatusBar;
+            let backgroundSpanUnderStatusBar = owner.backgroundSpanUnderStatusBar;
             if (statusBarVisible && !backgroundSpanUnderStatusBar) {
                 height -= statusBarHeight;
             }
@@ -70,9 +65,9 @@ class UIViewControllerImpl extends UIViewController {
             let widthSpec = utils.layout.makeMeasureSpec(width, mode);
             let heightSpec = utils.layout.makeMeasureSpec(height, mode);
 
-            View.measureChild(null, this._owner, widthSpec, heightSpec);
+            View.measureChild(null, owner, widthSpec, heightSpec);
             let top = ((backgroundSpanUnderStatusBar && isFullScreen) || utils.ios.MajorVersion < 8 || !isFullScreen) ? 0 : statusBarHeight;
-            View.layoutChild(null, this._owner, 0, top, width, bottom);
+            View.layoutChild(null, owner, 0, top, width, bottom);
 
             if (utils.ios.MajorVersion < 8) {
                 if (!backgroundSpanUnderStatusBar && (!isTablet || isFullScreen)) {
@@ -88,31 +83,41 @@ class UIViewControllerImpl extends UIViewController {
             trace.write(this._owner + ", native frame = " + NSStringFromCGRect(this.view.frame), trace.categories.Layout);
         }
         else {
-            this._owner._updateLayout();
+            owner._updateLayout();
         }
     }
 
     public viewWillAppear() {
-        trace.write(this._owner + " viewWillAppear", trace.categories.Navigation);
-        this._owner._enableLoadedEvents = true;
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
+        trace.write(owner + " viewWillAppear", trace.categories.Navigation);
+        owner._enableLoadedEvents = true;
 
         // In iOS we intentionally delay the raising of the 'loaded' event so both platforms behave identically.
         // The loaded event must be raised AFTER the page is part of the windows hierarchy and 
         // frame.topmost().currentPage is set to the page instance.
         // https://github.com/NativeScript/NativeScript/issues/779
-        if (!this._owner._isModal) {
-            this._owner._delayLoadedEvent = true;
+        if (!owner._isModal) {
+            owner._delayLoadedEvent = true;
         }
 
-        this._owner.onLoaded();
-        this._owner._enableLoadedEvents = false;
+        owner.onLoaded();
+        owner._enableLoadedEvents = false;
     }
 
     public viewDidDisappear() {
-        trace.write(this._owner + " viewDidDisappear", trace.categories.Navigation);
-        this._owner._enableLoadedEvents = true;
-        this._owner.onUnloaded();
-        this._owner._enableLoadedEvents = false;
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
+        trace.write(owner + " viewDidDisappear", trace.categories.Navigation);
+        owner._enableLoadedEvents = true;
+        owner.onUnloaded();
+        owner._enableLoadedEvents = false;
     }
 }
 
@@ -125,7 +130,7 @@ export class Page extends pageCommon.Page {
 
     constructor(options?: definition.Options) {
         super(options);
-        this._ios = UIViewControllerImpl.new().initWithOwner(this);
+        this._ios = UIViewControllerImpl.initWithOwner(new WeakRef(this));
     }
 
     public requestLayout(): void {

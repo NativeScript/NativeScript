@@ -1,23 +1,24 @@
 ﻿import definition = require("fps-meter/fps-native");
 
 class FrameHandlerImpl extends NSObject {
-    static new(): FrameHandlerImpl {
-        return <FrameHandlerImpl>super.new();
-    }
 
-    private _owner: FPSCallback;
+    private _owner: WeakRef<FPSCallback>;
 
-    public initWithOwner(owner: FPSCallback): FrameHandlerImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<FPSCallback>): FrameHandlerImpl {
+        let handler = <FrameHandlerImpl>FrameHandlerImpl.new();
+        handler._owner = owner;
+        return handler;
     }
 
     public handleFrame(sender: CADisplayLink): void {
-        this._owner._handleFrame(sender);
+        let owner = this._owner.get();
+        if (owner) {
+            owner._handleFrame(sender);
+        }
     }
 
     public static ObjCExposedMethods = {
-        "handleFrame": { returns: interop.types.void, params: [ CADisplayLink ] }
+        "handleFrame": { returns: interop.types.void, params: [CADisplayLink] }
     };
 }
 
@@ -30,7 +31,7 @@ export class FPSCallback implements definition.FPSCallback {
     constructor(onFrame: (currentTimeMillis: number) => void) {
         this.onFrame = onFrame;
 
-        this.impl = FrameHandlerImpl.new().initWithOwner(this);
+        this.impl = FrameHandlerImpl.initWithOwner(new WeakRef(this));
 
         this.displayLink = CADisplayLink.displayLinkWithTargetSelector(this.impl, "handleFrame");
         this.displayLink.paused = true;

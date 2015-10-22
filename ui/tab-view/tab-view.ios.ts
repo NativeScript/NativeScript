@@ -13,22 +13,21 @@ import color = require("color");
 global.moduleMerge(common, exports);
 
 class UITabBarControllerImpl extends UITabBarController {
-    static new(): UITabBarControllerImpl {
-        return <UITabBarControllerImpl>super.new();
-    }
 
-    private _owner: TabView;
+    private _owner: WeakRef<TabView>;
 
-    public initWithOwner(owner: TabView): UITabBarControllerImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<TabView>): UITabBarControllerImpl {
+        let handler = <UITabBarControllerImpl>UITabBarControllerImpl.new();
+        handler._owner = owner;
+        return handler;
     }
 
     public viewDidLayoutSubviews(): void {
         trace.write("TabView.UITabBarControllerClass.viewDidLayoutSubviews();", trace.categories.Debug);
         super.viewDidLayoutSubviews();
-        if (this._owner.isLoaded) {
-            this._owner._updateLayout();
+        let owner = this._owner.get();
+        if (owner && owner.isLoaded) {
+            owner._updateLayout();
         }
     }
 }
@@ -36,42 +35,42 @@ class UITabBarControllerImpl extends UITabBarController {
 class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControllerDelegate {
     public static ObjCProtocols = [UITabBarControllerDelegate];
 
-    static new(): UITabBarControllerDelegateImpl {
-        return <UITabBarControllerDelegateImpl>super.new();
-    }
+    private _owner: WeakRef<TabView>;
 
-    private _owner: TabView;
-
-    public initWithOwner(owner: TabView): UITabBarControllerDelegateImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<TabView>): UITabBarControllerDelegateImpl {
+        let delegate = <UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
+        delegate._owner = owner;
+        return delegate;
     }
 
     public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
         trace.write("TabView.UITabBarControllerDelegateClass.tabBarControllerDidSelectViewController(" + tabBarController + ", " + viewController + ");", trace.categories.Debug);
-        this._owner._onViewControllerShown(viewController);
+        let owner = this._owner.get();
+        if (owner) {
+            owner._onViewControllerShown(viewController);
+        }
     }
 }
 
 class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
     public static ObjCProtocols = [UINavigationControllerDelegate];
 
-    static new(): UINavigationControllerDelegateImpl {
-        return <UINavigationControllerDelegateImpl>super.new();
-    }
+    private _owner: WeakRef<TabView>;
 
-    private _owner: TabView;
-
-    public initWithOwner(owner: TabView): UINavigationControllerDelegateImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<TabView>): UINavigationControllerDelegateImpl {
+        let delegate = <UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
+        delegate._owner = owner;
+        return delegate;
     }
 
     navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
         trace.write("TabView.UINavigationControllerDelegateClass.navigationControllerDidShowViewControllerAnimated(" + navigationController + ", " + viewController + ", " + animated + ");", trace.categories.Debug);
         // We don't need Edit button in More screen.
         navigationController.navigationBar.topItem.rightBarButtonItem = null;
-        this._owner._onViewControllerShown(viewController);
+        let owner = this._owner.get();
+        if (owner) {
+            owner._onViewControllerShown(viewController);
+        }
     }
 }
 
@@ -117,11 +116,9 @@ export class TabView extends common.TabView {
     constructor() {
         super();
 
-        this._ios = UITabBarControllerImpl.new().initWithOwner(this);
-
-        this._delegate = UITabBarControllerDelegateImpl.new().initWithOwner(this);
-
-        this._moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.new().initWithOwner(this);
+        this._ios = UITabBarControllerImpl.initWithOwner(new WeakRef(this));
+        this._delegate = UITabBarControllerDelegateImpl.initWithOwner(new WeakRef(this));
+        this._moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.initWithOwner(new WeakRef(this));
         //This delegate is set on the last line of _addTabs method.
     }
 
