@@ -442,12 +442,12 @@ export class ProgressStyler implements definition.stylers.Styler {
 export class SwitchStyler implements definition.stylers.Styler {
     private static setColorProperty(view: view.View, newValue: any) {
         var sw = <UISwitch>view.ios;
-        sw.thumbTintColor = UIColor.alloc().initWithCGColor((<UIColor>newValue).CGColor);
+        sw.thumbTintColor = newValue;
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
         var sw = <UISwitch>view.ios;
-        sw.thumbTintColor = UIColor.alloc().initWithCGColor((<UIColor>nativeValue).CGColor);
+        sw.thumbTintColor = nativeValue;
     }
 
     private static getNativeColorValue(view: view.View): any {
@@ -457,17 +457,17 @@ export class SwitchStyler implements definition.stylers.Styler {
 
     private static setBackgroundColorProperty(view: view.View, newValue: any) {
         var sw = <UISwitch>view.ios;
-        sw.tintColor = UIColor.alloc().initWithCGColor((<UIColor>newValue).CGColor);
+        sw.onTintColor = view.backgroundColor.ios;
     }
 
     private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
         var sw = <UISwitch>view.ios;
-        sw.tintColor = UIColor.alloc().initWithCGColor((<UIColor>nativeValue).CGColor);
+        sw.onTintColor = nativeValue;
     }
 
     private static getBackgroundColorProperty(view: view.View): any {
         var sw = <UISwitch>view.ios;
-        return sw.tintColor;
+        return sw.onTintColor;
     }
 
     public static registerHandlers() {

@@ -3,6 +3,8 @@ import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import bindable = require("ui/core/bindable");
 import observable = require("data/observable");
+import color = require("color");
+import platform = require("platform");
 // <snippet module="ui/switch" title="switch">
 // # Switch
 // Using a switch requires the Switch module.
@@ -49,6 +51,31 @@ export function test_default_native_values() {
     };
 
     helper.buildUIAndRunTest(mySwitch, testAction);
+}
+
+// Uncomment this when find way to check android Drawable color set by setColorFilter() method.
+if (platform.device.os === platform.platformNames.ios) {
+    exports.test_set_color = function () {
+        var mySwitch = new switchModule.Switch();
+        mySwitch.color = new color.Color("red");
+
+        function testAction(views: Array<viewModule.View>) {
+            TKUnit.assert(mySwitch.color.ios.isEqual(mySwitch.ios.thumbTintColor), "mySwitch.color");
+        };
+
+        helper.buildUIAndRunTest(mySwitch, testAction);
+    }
+
+    exports.test_set_backgroundColor = function () {
+        var mySwitch = new switchModule.Switch();
+        mySwitch.backgroundColor = new color.Color("red");
+
+        function testAction(views: Array<viewModule.View>) {
+            TKUnit.assert(CGColorEqualToColor(mySwitch.backgroundColor.ios.CGColor, mySwitch.ios.onTintColor.CGColor), "mySwitch.color");
+        };
+
+        helper.buildUIAndRunTest(mySwitch, testAction);
+    }
 }
 
 export function test_set_TNS_checked_updates_native_checked() {
