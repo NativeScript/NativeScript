@@ -1,0 +1,6 @@
+﻿<Page>
+  <StackLayout>
+    <Progress value="45" color="red" backgroundColor="green" />
+    <Switch color="red" backgroundColor="green" />
+  </StackLayout>
+</Page>
