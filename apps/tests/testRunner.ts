@@ -58,6 +58,7 @@ allTests["BUTTON"] = require("./ui/button/button-tests");
 allTests["BORDER"] = require("./ui/border/border-tests");
 allTests["LABEL"] = require("./ui/label/label-tests");
 allTests["TAB-VIEW"] = require("./ui/tab-view/tab-view-tests");
+allTests["TAB-VIEW-NAVIGATION"] = require("./ui/tab-view/tab-view-navigation-tests");
 allTests["IMAGE"] = require("./ui/image/image-tests");
 allTests["SLIDER"] = require("./ui/slider/slider-tests");
 allTests["SWITCH"] = require("./ui/switch/switch-tests");

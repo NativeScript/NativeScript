@@ -1,4 +1,5 @@
-﻿import TKUnit = require("../../TKUnit");
+﻿import testModule = require("../../ui-test");
+import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import labelModule = require("ui/label");
@@ -41,108 +42,100 @@ import tabViewModule = require("ui/tab-view");
 
 var ASYNC = 2;
 
-function _createTabView(): tabViewModule.TabView {
-    // <snippet module="ui/tab-view" title="TabView">
-    // ## Creating a TabView
-    // ``` JavaScript
-    var tabView = new tabViewModule.TabView();
-    // ```
-    // </snippet>
-    tabView.id = "TabView";
-    return tabView;
-}
+export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
 
-function _createItems(count: number): Array<tabViewModule.TabViewItem> {
-    var items = new Array<tabViewModule.TabViewItem>();
-    for (var i = 0; i < count; i++) {
-        var label = new labelModule.Label();
-        label.text = "Tab " + i;
-        var tabEntry = new tabViewModule.TabViewItem({
-            title: "Tab " + i,
-            view: label
-        });
-        items.push(tabEntry);
+    public create(): tabViewModule.TabView {
+        // <snippet module="ui/tab-view" title="TabView">
+        // ## Creating a TabView
+        // ``` JavaScript
+        var tabView = new tabViewModule.TabView();
+        // ```
+        // </snippet>
+        tabView.id = "TabView";
+        return tabView;
     }
-    return items;
-}
 
-function _createListView(): listViewModule.ListView {
-    var listView = new listViewModule.ListView();
-    listView.id = "ListView";
-    var items = Array.apply(null, Array(10)).map(function (_, i) { return i; });
-
-    listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
-        var button = <buttonModule.Button>args.view;
-        if (!button) {
-            button = new buttonModule.Button();
-            args.view = button;
+    private _createItems(count: number): Array<tabViewModule.TabViewItem> {
+        var items = new Array<tabViewModule.TabViewItem>();
+        for (var i = 0; i < count; i++) {
+            var label = new labelModule.Label();
+            label.text = "Tab " + i;
+            var tabEntry = new tabViewModule.TabViewItem({
+                title: "Tab " + i,
+                view: label
+            });
+            items.push(tabEntry);
         }
-
-        button.text = "Button" + args.index;
-        button.id = button.text;
-        button.on(buttonModule.Button.tapEvent, _clickHandlerFactory(args.index));
-    });
-
-    listView.items = items;
-
-    return listView;
-}
-
-var _clickHandlerFactory = function (index: number) {
-    return function () {
-        var pageFactory = function (): pageModule.Page {
-            var detailsLabel = new labelModule.Label();
-            detailsLabel.text = "Details Page " + index;
-            var detailsPage = new pageModule.Page();
-            detailsPage.content = detailsLabel;
-            return detailsPage;
-        };
-
-        helper.navigate(pageFactory);
+        return items;
     }
-}
 
-export var testWhenTabViewIsCreatedItemsAreUndefined = function () {
-    helper.buildUIAndRunTest(_createTabView(), function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
-        var expectedValue = undefined;
-        var actualValue = tabView.items;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    });
-}
+    private _createListView(): listViewModule.ListView {
+        var listView = new listViewModule.ListView();
+        listView.id = "ListView";
+        var items = Array.apply(null, Array(10)).map(function (_, i) { return i; });
 
-export var testWhenTabViewIsCreatedSelectedIndexIsUndefined = function () {
-    helper.buildUIAndRunTest(_createTabView(), function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
-        var expectedValue = undefined;
-        var actualValue = tabView.selectedIndex;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    });
-}
+        listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+            var button = <buttonModule.Button>args.view;
+            if (!button) {
+                button = new buttonModule.Button();
+                args.view = button;
+            }
 
-export var testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeTabsIsCreated = function () {
-    helper.buildUIAndRunTest(_createTabView(), function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
-        tabView.items = _createItems(10);
-        var expectedValue = tabView.items.length;
-        var actualValue = tabViewTestsNative.getNativeTabCount(tabView);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    });
-}
+            button.text = "Button" + args.index;
+            button.id = button.text;
+            button.on(buttonModule.Button.tapEvent, this._clickHandlerFactory(args.index));
+        });
 
-export var testWhenSettingItemsToEmptyArrayZeroNativeTabsAreCreated = function () {
-    helper.buildUIAndRunTest(_createTabView(), function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
+        listView.items = items;
+
+        return listView;
+    }
+
+    private _clickHandlerFactory = function (index: number) {
+        return function () {
+            var pageFactory = function (): pageModule.Page {
+                var detailsLabel = new labelModule.Label();
+                detailsLabel.text = "Details Page " + index;
+                var detailsPage = new pageModule.Page();
+                detailsPage.content = detailsLabel;
+                return detailsPage;
+            };
+
+            helper.navigate(pageFactory);
+        }
+    }
+
+    public testWhenTabViewIsCreatedItemsAreUndefined = function () {
+        TKUnit.assertEqual(this.testView.items, undefined, "Items should be undefined initally.");
+    }
+
+    public testWhenTabViewIsCreatedSelectedIndexIsUndefined = function () {
+        TKUnit.assertEqual(this.testView.selectedIndex, undefined, "selectedIndex should be undefined initally.");
+    }
+
+    public testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeTabsIsCreated = function () {
+        this.testView.items = this._createItems(10);
+        this.waitUntilTestElementIsLoaded();
+
+        let expectedValue = this.testView.items.length;
+        let actualValue = tabViewTestsNative.getNativeTabCount(this.testView);
+        
+        TKUnit.assertEqual(actualValue, expectedValue, "NativeItems not equal to JS items.");
+    }
+
+    public testWhenSettingItemsToEmptyArrayZeroNativeTabsAreCreated = function () {
+        var tabView = this.testView;
         tabView.items = [];
+        this.waitUntilTestElementIsLoaded();
+
         var expectedValue = tabView.items.length;
         var actualValue = tabViewTestsNative.getNativeTabCount(tabView);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    });
-}
 
-export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
-    helper.buildUIAndRunTest(_createTabView(), function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
+        TKUnit.assertEqual(actualValue, expectedValue, "Should have 0 native tabs.");
+    }
+
+    public testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
+        var tabView = this.testView;
         // <snippet module="ui/tab-view" title="TabView">
         // ### Binding TabView.items
         // ``` JavaScript
@@ -168,16 +161,20 @@ export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function 
         tabView.items = items;
         // ```
         // </snippet>
+
+        this.waitUntilTestElementIsLoaded();
+
         var expectedValue = 0;
         var actualValue = tabView.selectedIndex;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    });
-}
+        TKUnit.assertEqual(actualValue, expectedValue, "When bound selectedIndex should be 0.");
+    }
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
-    helper.buildUIAndRunTest(_createTabView(), function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
-        tabView.items = _createItems(10);
+    public testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = function () {
+
+        var tabView = this.testView;
+        tabView.items = this._createItems(10);
+        this.waitUntilTestElementIsLoaded();
+
         // <snippet module="ui/tab-view" title="TabView">
         // ### Selecting a tab programmatically
         // ``` JavaScript
@@ -185,276 +182,176 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = functio
         // ```
         // </snippet>
         tabView.items = [];
+
         var expectedValue = undefined;
         var actualValue = tabView.selectedIndex;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    });
-}
+        TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
+    }
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function () {
-    helper.buildUIAndRunTest(_createTabView(), function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
-        tabView.items = _createItems(10);
+    public testSelectedIndexBecomesUndefinedWhenItemsSetToUndefined = function () {
+        var tabView = this.testView;
+        tabView.items = this._createItems(10);
+        this.waitUntilTestElementIsLoaded();
+
         tabView.selectedIndex = 9;
         tabView.items = undefined;
         var expectedValue = undefined;
         var actualValue = tabView.selectedIndex;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    });
-}
+        TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
+    }
 
-export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
-    helper.buildUIAndRunTest(_createTabView(), function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
-        tabView.items = _createItems(10);
+    public testSelectedIndexBecomesUndefinedWhenItemsSetToNull = function () {
+        var tabView = this.testView;
+        tabView.items = this._createItems(10);
         tabView.selectedIndex = 9;
+        this.waitUntilTestElementIsLoaded();
+
         tabView.items = null;
         var expectedValue = undefined;
         var actualValue = tabView.selectedIndex;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    });
-}
+        TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
+    }
 
-export var testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
-    var tabView = _createTabView();
-    var expectedValue = 10;
-    tabView.items = _createItems(expectedValue);
-    tabView.selectedIndex = 9;
-    helper.buildUIAndRunTest(tabView, function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
+    public testItemsIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
+        var tabView = this.testView;
+        var expectedValue = 10;
+        tabView.items = this._createItems(expectedValue);
+        tabView.selectedIndex = 9;
+        this.waitUntilTestElementIsLoaded();
+
         var actualValue = tabView.items.length;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    });
-}
+        TKUnit.assertEqual(actualValue, expectedValue, "items.length should be 10");
+    }
 
-export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
-    var tabView = _createTabView();
-    tabView.items = _createItems(10);
-    var expectedValue = 9;
-    tabView.selectedIndex = expectedValue;
-    helper.buildUIAndRunTest(tabView, function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
+    public testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = function () {
+        var tabView = this.testView;
+        tabView.items = this._createItems(10);
+        var expectedValue = 9;
+        tabView.selectedIndex = expectedValue;
+        this.waitUntilTestElementIsLoaded();
+
         var actualValue = tabView.selectedIndex;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    });
-}
+        TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex");
+    }
 
-export var testSettingNegativeSelectedIndexShouldThrow = function () {
-    var tabView = _createTabView();
-    helper.buildUIAndRunTest(tabView, function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
-        tabView.items = _createItems(10);
+    public testSettingNegativeSelectedIndexShouldThrow = function () {
+        var tabView = this.testView;
+        this.waitUntilTestElementIsLoaded();
+        tabView.items = this._createItems(10);
 
         TKUnit.assertThrows(function () {
             tabView.selectedIndex = -1;
         }, "Setting selectedIndex to a negative number should throw.");
-    });
-}
+    }
 
-export var testSettingSelectedIndexLargerThanCountShouldThrow = function () {
-    var tabView = _createTabView();
-    helper.buildUIAndRunTest(tabView, function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
-        tabView.items = _createItems(10);
+    public testSettingSelectedIndexLargerThanCountShouldThrow = function () {
+        var tabView = this.testView;
+        this.waitUntilTestElementIsLoaded();
+        tabView.items = this._createItems(10);
         TKUnit.assertThrows(function () {
             tabView.selectedIndex = 10;
         }, "Setting selectedIndex to a negative number should throw.");
-    });
-}
+    }
 
-export var testBindingToTabEntryWithUndefinedViewShouldThrow = function () {
-    var tabView = _createTabView();
-    helper.buildUIAndRunTest(tabView, function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
+    public testBindingToTabEntryWithUndefinedViewShouldThrow = function () {
+        var tabView = this.testView;
+        this.waitUntilTestElementIsLoaded();
+
         TKUnit.assertThrows(function () {
             tabView.items = [new tabViewModule.TabViewItem({ title: "Tab 0", view: undefined })];
         }, "Binding TabView to a TabViewItem with undefined view should throw.");
-    });
-}
+    }
 
-export var testBindingToTabEntryWithNullViewShouldThrow = function () {
-    var tabView = _createTabView();
-    helper.buildUIAndRunTest(tabView, function (views: Array<viewModule.View>) {
-        var tabView = <tabViewModule.TabView>views[0];
+    public testBindingToTabEntryWithNullViewShouldThrow = function () {
+        var tabView = this.testView;
+        this.waitUntilTestElementIsLoaded();
+
         TKUnit.assertThrows(function () {
             tabView.items = [new tabViewModule.TabViewItem({ title: "Tab 0", view: null })];
         }, "Binding TabView to a TabViewItem with null view should throw.");
-    });
-}
-
-export var testWhenSelectingATabNativelySelectedIndexIsUpdatedProperly = function () {
-    var tabView: tabViewModule.TabView;
-    var mainPage: pageModule.Page;
-    var pageFactory = function (): pageModule.Page {
-        tabView = _createTabView();
-        tabView.items = _createItems(2);
-        mainPage = new pageModule.Page();
-        mainPage.content = tabView;
-        return mainPage;
-    };
-
-    helper.navigate(pageFactory);
-
-    var expectedValue = 1;
-    tabViewTestsNative.selectNativeTab(tabView, expectedValue);
-    TKUnit.wait(helper.ASYNC);
-
-    var actualValue = tabView.selectedIndex;
-    try {
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    }
-    finally {
-        helper.goBack();
-    }
-}
-
-export var testWhenSelectingATabNativelySelectedIndexChangedEventIsRaised = function () {
-    var tabView: tabViewModule.TabView;
-    var mainPage: pageModule.Page;
-    var pageFactory = function (): pageModule.Page {
-        tabView = _createTabView();
-        tabView.items = _createItems(10);
-        mainPage = new pageModule.Page();
-        mainPage.content = tabView;
-        return mainPage;
-    };
-
-    helper.navigate(pageFactory);
-
-    var expectedOldIndex = 3;
-    var expectedNewIndex = 5;
-    var actualOldIndex;
-    var actualNewIndex;
-
-    tabViewTestsNative.selectNativeTab(tabView, expectedOldIndex);
-    TKUnit.wait(helper.ASYNC);
-
-    tabView.on(tabViewModule.TabView.selectedIndexChangedEvent,(args: tabViewModule.SelectedIndexChangedEventData) => {
-        actualOldIndex = args.oldIndex;
-        actualNewIndex = args.newIndex;
-    });
-
-    tabViewTestsNative.selectNativeTab(tabView, expectedNewIndex);
-    TKUnit.wait(helper.ASYNC);
-
-    try {
-        TKUnit.assert(actualOldIndex === expectedOldIndex, "Actual: " + actualOldIndex + "; Expected: " + expectedOldIndex);
-        TKUnit.assert(actualNewIndex === expectedNewIndex, "Actual: " + actualNewIndex + "; Expected: " + expectedNewIndex);
-    }
-    finally {
-        helper.goBack();
-    }
-}
-
-export var testWhenSettingSelectedIndexProgramaticallySelectedIndexChangedEventIsRaised = function () {
-    var tabView: tabViewModule.TabView;
-    var mainPage: pageModule.Page;
-    var pageFactory = function (): pageModule.Page {
-        tabView = _createTabView();
-        tabView.items = _createItems(10);
-        mainPage = new pageModule.Page();
-        mainPage.content = tabView;
-        return mainPage;
-    };
-
-    helper.navigate(pageFactory);
-
-    var expectedOldIndex = 2;
-    var expectedNewIndex = 6;
-    var actualOldIndex;
-    var actualNewIndex;
-
-    tabView.selectedIndex = expectedOldIndex;
-    TKUnit.wait(helper.ASYNC);
-
-    tabView.on(tabViewModule.TabView.selectedIndexChangedEvent,(args: tabViewModule.SelectedIndexChangedEventData) => {
-        actualOldIndex = args.oldIndex;
-        actualNewIndex = args.newIndex;
-    });
-
-    tabView.selectedIndex = expectedNewIndex;
-    TKUnit.wait(helper.ASYNC);
-
-    try {
-        TKUnit.assert(actualOldIndex === expectedOldIndex, "Actual: " + actualOldIndex + "; Expected: " + expectedOldIndex);
-        TKUnit.assert(actualNewIndex === expectedNewIndex, "Actual: " + actualNewIndex + "; Expected: " + expectedNewIndex);
-    }
-    finally {
-        helper.goBack();
-    }
-}
-
-export var testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere = function () {
-    return;
-
-    var topFrame = frameModule.topmost();
-    var oldChache;
-
-    if (topFrame.android) {
-        oldChache = topFrame.android.cachePagesOnNavigate;
-        topFrame.android.cachePagesOnNavigate = true;
     }
 
-    try {
+    public testWhenSelectingATabNativelySelectedIndexIsUpdatedProperly = function () {
+        var tabView = this.testView;
+        tabView.items = this._createItems(2);
+        this.waitUntilTestElementIsLoaded();
 
-        var mainPage: pageModule.Page;
-        var pageFactory = function (): pageModule.Page {
-            var tabView = _createTabView();
-            var items = [];
-            items.push({
-                title: "List",
-                view: _createListView()
-            });
-            var label = new labelModule.Label();
-            label.text = "About";
-            var aboutLayout = new stackLayoutModule.StackLayout();
-            aboutLayout.id = "AboutLayout";
-            aboutLayout.addChild(label);
-            items.push({
-                title: "About",
-                view: aboutLayout
-            });
-            tabView.items = items;
+        var expectedValue = 1;
+        tabViewTestsNative.selectNativeTab(tabView, expectedValue);
+        TKUnit.waitUntilReady(function () {
+            return tabView.selectedIndex === expectedValue;
+        }, helper.ASYNC);
 
-            mainPage = new pageModule.Page();
-            mainPage.content = tabView;
-
-            return mainPage;
-        }
-
-        helper.navigate(pageFactory);
-
-        var tabView = mainPage.getViewById<tabViewModule.TabView>("TabView");
-
-        // This will navigate to a details page. The wait is inside the method.
-        _clickTheFirstButtonInTheListViewNatively(tabView);
-
-        // Go back to the main page containing the TabView.
-        helper.goBack();
-
-        // Go back to the root tests page.
-        helper.goBack();
-    }
-    finally {
-        if (topFrame.android) {
-            topFrame.android.cachePagesOnNavigate = oldChache;
-        }
+        var actualValue = tabView.selectedIndex;
+        TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex");
     }
 
-    var listView = mainPage.getViewById<listViewModule.ListView>("ListView");
+    public testWhenSelectingATabNativelySelectedIndexChangedEventIsRaised = function () {
+        var tabView = this.testView;
+        tabView.items = this._createItems(10);
+        this.waitUntilTestElementIsLoaded();
 
-    TKUnit.assert(listView !== undefined, "ListView should be created when navigating back to the main page.");
-}
+        var expectedOldIndex = 3;
+        var expectedNewIndex = 5;
+        var actualOldIndex;
+        var actualNewIndex;
 
-export function testBindingIsRefreshedWhenTabViewItemIsUnselectedAndThenSelectedAgain() {
-    helper.buildUIAndRunTest(_createTabView(), function (views: Array<viewModule.View>) {
+        tabViewTestsNative.selectNativeTab(tabView, expectedOldIndex);
+        TKUnit.waitUntilReady(function () {
+            return tabView.selectedIndex === expectedOldIndex;
+        }, helper.ASYNC);
+
+        tabView.on(tabViewModule.TabView.selectedIndexChangedEvent, (args: tabViewModule.SelectedIndexChangedEventData) => {
+            actualOldIndex = args.oldIndex;
+            actualNewIndex = args.newIndex;
+        });
+
+        tabViewTestsNative.selectNativeTab(tabView, expectedNewIndex);
+        TKUnit.waitUntilReady(function () {
+            return tabView.selectedIndex === expectedNewIndex;
+        }, helper.ASYNC);
+
+        TKUnit.assertEqual(actualOldIndex, expectedOldIndex, "expectedOldIndex");
+        TKUnit.assertEqual(actualNewIndex, expectedNewIndex, "expectedNewIndex");
+    }
+
+    public testWhenSettingSelectedIndexProgramaticallySelectedIndexChangedEventIsRaised = function () {
+        var tabView = this.testView;
+        tabView.items = this._createItems(10);
+        this.waitUntilTestElementIsLoaded();
+
+        var expectedOldIndex = 2;
+        var expectedNewIndex = 6;
+        var actualOldIndex;
+        var actualNewIndex;
+
+        tabView.selectedIndex = expectedOldIndex;
+        TKUnit.waitUntilReady(function () {
+            return tabViewTestsNative.getNativeSelectedIndex(tabView) === expectedOldIndex;
+        }, helper.ASYNC);
+
+        tabView.on(tabViewModule.TabView.selectedIndexChangedEvent, (args: tabViewModule.SelectedIndexChangedEventData) => {
+            actualOldIndex = args.oldIndex;
+            actualNewIndex = args.newIndex;
+        });
+
+        tabView.selectedIndex = expectedNewIndex;
+        TKUnit.waitUntilReady(function () {
+            return tabViewTestsNative.getNativeSelectedIndex(tabView) === expectedNewIndex;
+        }, helper.ASYNC);
+
+        TKUnit.assertEqual(actualOldIndex, expectedOldIndex, "expectedOldIndex");
+        TKUnit.assertEqual(actualNewIndex, expectedNewIndex, "expectedNewIndex");
+    }
+    
+    public testBindingIsRefreshedWhenTabViewItemIsUnselectedAndThenSelectedAgain() {
+
         var viewModel = new observable.Observable();
         viewModel.set("counter", 0);
-        frameModule.topmost().currentPage.bindingContext = viewModel;
+        this.testPage.bindingContext = viewModel;
 
-        var tabView = <tabViewModule.TabView>views[0];
-
-        var items = _createItems(10);
+        var tabView = this.testView;
+        var items = this._createItems(10);
 
         var StackLayout0 = new stackLayoutModule.StackLayout();
         var label0 = new labelModule.Label();
@@ -467,116 +364,31 @@ export function testBindingIsRefreshedWhenTabViewItemIsUnselectedAndThenSelected
             view: StackLayout0
         });
         items.push(tabEntry0);
-        tabView.items = items;
 
+        tabView.items = items;
         tabView.selectedIndex = 10;
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(function () {
+            return tabViewTestsNative.getNativeSelectedIndex(tabView) === tabView.selectedIndex;
+        }, helper.ASYNC);
+
+        TKUnit.assertEqual(label0.text, 0, "binding is not working!");
 
         tabView.selectedIndex = 0;
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(function () {
+            return tabViewTestsNative.getNativeSelectedIndex(tabView) === tabView.selectedIndex;
+        }, helper.ASYNC);
 
         tabView.selectedIndex = 10;
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(function () {
+            return tabViewTestsNative.getNativeSelectedIndex(tabView) === tabView.selectedIndex;
+        }, helper.ASYNC);
+
         var expectedValue = 5;
         viewModel.set("counter", expectedValue);
-        var testLabel = <labelModule.Label>(tabView.items[10].view.getViewById("testLabel"))
-        TKUnit.assertEqual(testLabel.text, expectedValue, "binding is not working!");
-    });
-}
-
-export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_NoPageCaching() {
-    testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(false);
-}
-export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_WithPageCaching() {
-    testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(true);
-}
-
-function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache: boolean) {
-    var i: number;
-    var itemCount = 3;
-    var loadedItems = [0, 0, 0];
-    var unloadedItems = [0, 0, 0];
-
-    var topFrame = frameModule.topmost();
-    var oldChache;
-
-    if (topFrame.android) {
-        oldChache = topFrame.android.cachePagesOnNavigate;
-        topFrame.android.cachePagesOnNavigate = enablePageCache;
-    }
-
-    try {
-        var tabView = _createTabView();
-        var items = _createItems(itemCount);
-        tabView.items = items;
-
-        function createLoadedFor(itemIndex: number) {
-            return function () {
-                loadedItems[itemIndex] = loadedItems[itemIndex] + 1;
-            }
-        }
-
-        function createUnloadedFor(itemIndex: number) {
-            return function () {
-                unloadedItems[itemIndex] = unloadedItems[itemIndex] + 1;
-            }
-        }
-
-        helper.buildUIAndRunTest(tabView, function () {
-            try {
-                TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
-
-                // Attach to loaded/unloaded events
-                for (i = 0; i < itemCount; i++) {
-                    items[i].view.on("loaded", createLoadedFor(i));
-                    items[i].view.on("unloaded", createUnloadedFor(i));
-                }
-
-                var detailsPageFactory = function (): pageModule.Page {
-                    var detailsPage = new pageModule.Page();
-                    detailsPage.content = new labelModule.Label();
-                    return detailsPage;
-                };
-
-                helper.navigate(detailsPageFactory);
-            }
-            finally {
-                // Go back to the test page.
-                helper.goBack();
-            }
-            
-            TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
-
-            //console.log(">>>>>>>>>>>>> loaded items: " + loadedItems.join(", "));
-            //console.log(">>>>>>>>>>>>> unloadedItems items: " + unloadedItems.join(", "));
-
-            // Check that at least the first item is loaded and unloaded
-            TKUnit.assert(items[0].view.isLoaded, "The content of the first tab should be loaded.");
-            TKUnit.assertEqual(loadedItems[0], 1, "loaded count for 1st item");
-            TKUnit.assertEqual(unloadedItems[0], 1, "unloaded count for 1st item");
-
-            // Check that loaded/unloaded coutns are equal for all tabs
-            for (i = 0; i < itemCount; i++) {
-                TKUnit.assert(loadedItems[i] === unloadedItems[i],
-                    "Loaded and unloaded calls are not equal for item " + i + " loaded: " + loadedItems[i] + " unloaded: " + unloadedItems[i]);
-            }
-        });
-    }
-    finally {
-        // Return original page cache value
-        if (topFrame.android) {
-            topFrame.android.cachePagesOnNavigate = oldChache;
-        }
+        TKUnit.assertEqual(label0.text, expectedValue, "binding is not working!");
     }
 }
 
-function _clickTheFirstButtonInTheListViewNatively(tabView: tabViewModule.TabView) {
-    if (tabView.android) {
-        var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
-        var androidListView = <android.widget.ListView>viewPager.getChildAt(0);
-        (<android.widget.Button>androidListView.getChildAt(0)).performClick();
-    }
-    else {
-        (<UIButton>(<UITableView>tabView.ios.viewControllers[0].view.subviews[0]).cellForRowAtIndexPath(NSIndexPath.indexPathForItemInSection(0, 0)).contentView.subviews[0]).sendActionsForControlEvents(UIControlEvents.UIControlEventTouchUpInside);
-    }
+export function createTestCase(): TabViewTest {
+    return new TabViewTest();
 }
