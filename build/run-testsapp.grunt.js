@@ -5,24 +5,37 @@ module.exports = {
 
         //Construct and validate the arguments
         var args = {
-            platform: grunt.option("platform")
-            tnsPath: grunt.option("tnsPath")
-            emulatorProcessIdentifier: grunt.option("emuPId")
-            emuAvdName: grunt.option("avdNameToStart")
-            outFile: grunt.option("logFilePath")
-            androidRuntimePath: grunt.option("androidRuntimePath")
+            platform: grunt.option("platform"),
+            tnsPath: grunt.option("tnsPath"),
+            emulatorProcessIdentifier: grunt.option("emuPId"),
+            emuAvdName: grunt.option("avd"),
+            outFile: grunt.option("logFilePath"),
+            androidRuntimePath: grunt.option("androidRuntimePath"),
+            showEmu: grunt.option("showEmu")
         };
 
         (function validateInput(){
-            if (!(/^(Android|iOS)$/).test(args.platform)) { throw new Error("Invalid target platform specified! Use --platform=Android|iOS"); }
+            if (!(/^(Android|iOS)$/).test(args.platform)) {
+                throw new Error("Invalid target platform specified! Use --platform=Android|iOS");
+            }
+
+            if (args.platform === "Android") {
+                if (!args.emulatorProcessIdentifier) {
+                    throw new Error("Please, specify an identifier of the emulator process so that it can be stopped (--emuPId=...). Too many emulators started might cause machine overload");
+                }
+                if (!args.emuAvdName) {
+                    throw new Error("Please, specify the name of the AVD to start (--avd=...).");
+                }
+            }
         }());
 
         var localCfg = {
-            tnsPath: "tns",
-            emulatorProcessIdentifier:".*emulator64-x86",
-            emuAvdName:"Api19",
-            outfile:"./TestRunResult.txt",
-            androidFrameworkArgument: " --frameworkPath=/Users/erjan/tns-android.tgz",
+            tnsPath: args.tnsPath || "tns",
+            emulatorProcessIdentifier: args.emulatorProcessIdentifier,
+            emuAvdName: args.emuAvdName,
+            outfile: args.outFile || "./TestRunResult.txt",
+            androidFrameworkArgument: args.androidRuntimePath ? " --frameworkPath=" + args.androidRuntimePath : "",
+            showEmu: args.showEmu || false,
 
             workingDir:".testsapprun",
             testsAppName:"TestsApp",
@@ -91,7 +104,7 @@ module.exports = {
                     exitCode: [0, 1]
                 },
                 startAndroidEmulator: {
-                    cmd: "emulator -avd " + localCfg.emuAvdName + " -no-audio -no-window &",
+                    cmd: "emulator -avd " + localCfg.emuAvdName + " -no-audio " + (args.showEmu ? "" : "-no-window") + "&",
                     stdout: true
                 },
                 createApp: {

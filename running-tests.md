@@ -22,8 +22,10 @@ the following steps:
 - Android/iOS setup
 - expect
 
+# Arguments:
+
 # Sample run:
 ```
 grunt testsapp --platform=Android [--tnsPath="tns"] --emuPId=".*emulator64-x86"
---emuAvdName="Api19" [--logFilePath="./TestRunResult.txt"] [--androidRuntimePath="./tns-android.tgz"]
+--avd="Api19" [--logFilePath="./TestRunResult.txt"] [--androidRuntimePath="./tns-android.tgz"] --showEmu=true
 ```
