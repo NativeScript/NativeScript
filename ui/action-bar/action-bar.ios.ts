@@ -38,7 +38,6 @@ export class ActionBar extends common.ActionBar {
         navigationItem.title = this.title;
 
         if (this.titleView && this.titleView.ios) {
-            console.log("setting center view: " + this.titleView.ios);
             navigationItem.titleView = this.titleView.ios;
         }
 
