@@ -12,3 +12,7 @@ export function selectNativeTab(tabView: tabViewModule.TabView, index: number): 
     tabView.ios.selectedIndex = index;
     tabView.ios.delegate.tabBarControllerDidSelectViewController(tabView.ios, tabView.ios.selectedViewController);
 }
+
+export function getNativeSelectedIndex(tabView: tabViewModule.TabView): number {
+    return tabView.ios.selectedIndex;
+}

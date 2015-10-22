@@ -84,6 +84,7 @@
       <DependentUpon>modal-page.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\ui\placeholder\placeholder-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\tab-view\tab-view-navigation-tests.ts" />
     <TypeScriptCompile Include="apps\tests\xml-declaration\custom-code-file.ts" />
     <TypeScriptCompile Include="apps\transforms\app.ts" />
     <TypeScriptCompile Include="apps\transforms\main-page.ts" />

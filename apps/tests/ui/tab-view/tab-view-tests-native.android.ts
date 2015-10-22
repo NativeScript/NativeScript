@@ -9,3 +9,8 @@ export function selectNativeTab(tabView: tabViewModule.TabView, index: number): 
     var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
     return viewPager.setCurrentItem(index);
 }
+
+export function getNativeSelectedIndex(tabView: tabViewModule.TabView): number {
+    var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+    return viewPager.getCurrentItem();
+}
