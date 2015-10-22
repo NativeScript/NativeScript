@@ -439,6 +439,53 @@ export class ProgressStyler implements definition.stylers.Styler {
     }
 }
 
+export class SwitchStyler implements definition.stylers.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var sw = <UISwitch>view.ios;
+        sw.thumbTintColor = newValue;
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var sw = <UISwitch>view.ios;
+        sw.thumbTintColor = nativeValue;
+    }
+
+    private static getNativeColorValue(view: view.View): any {
+        var sw = <UISwitch>view.ios;
+        return sw.thumbTintColor;
+    }
+
+    private static setBackgroundColorProperty(view: view.View, newValue: any) {
+        var sw = <UISwitch>view.ios;
+        sw.onTintColor = view.backgroundColor.ios;
+    }
+
+    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
+        var sw = <UISwitch>view.ios;
+        sw.onTintColor = nativeValue;
+    }
+
+    private static getBackgroundColorProperty(view: view.View): any {
+        var sw = <UISwitch>view.ios;
+        return sw.onTintColor;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SwitchStyler.setColorProperty,
+            SwitchStyler.resetColorProperty,
+            SwitchStyler.getNativeColorValue), "Switch");
+
+        var bkgHandler = new stylersCommon.StylePropertyChangedHandler(
+            SwitchStyler.setBackgroundColorProperty,
+            SwitchStyler.resetBackgroundColorProperty,
+            SwitchStyler.getBackgroundColorProperty);
+
+        style.registerHandler(style.backgroundColorProperty, bkgHandler, "Switch");
+        style.registerHandler(style.backgroundInternalProperty, bkgHandler, "Switch");
+    }
+}
+
 export class SearchBarStyler implements definition.stylers.Styler {
 
     private static setBackgroundColorProperty(view: view.View, newValue: any) {
@@ -593,4 +640,5 @@ export function _registerDefaultStylers() {
     ActionBarStyler.registerHandlers();
     TabViewStyler.registerHandlers();
     ProgressStyler.registerHandlers();
+    SwitchStyler.registerHandlers();
 }

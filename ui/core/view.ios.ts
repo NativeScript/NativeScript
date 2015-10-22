@@ -274,10 +274,7 @@ export class View extends viewCommon.View {
     }
 
     private _onBoundsChanged() {
-        var bgColor = background.ios.createBackgroundUIColor(this);
-        if (bgColor) {
-            this._nativeView.backgroundColor = bgColor;
-        }
+        this.style._boundsChanged();
     }
 }
 
