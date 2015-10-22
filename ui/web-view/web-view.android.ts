@@ -1,5 +1,6 @@
 ﻿import common = require("./web-view-common");
 import trace = require("trace");
+import fs = require("file-system");
 
 global.moduleMerge(common, exports);
 
@@ -99,7 +100,8 @@ export class WebView extends common.WebView {
             return;
         }
 
-        this._android.loadData(src, "text/html; charset=utf-8", "utf-8");
+        var baseUrl = `file:///${fs.knownFolders.currentApp().path}/`;
+        this._android.loadDataWithBaseURL(baseUrl, src, "text/html; charset=utf-8", "utf-8", null);
     }
 
     get canGoBack(): boolean {
