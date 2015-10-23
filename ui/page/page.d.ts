@@ -21,6 +21,11 @@ declare module "ui/page" {
          * The navigation context (optional, may be undefined) passed to the page navigation events method.
          */
         context: any;
+
+        /**
+         * Represents if a navigation is forward or backward.
+         */
+        isBackNavigation: boolean;
     }
 
     /**
@@ -187,18 +192,21 @@ declare module "ui/page" {
         /**
          * A method called before navigating to the page.
          * @param context - The data passed to the page through the NavigationEntry.context property.
+         * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
          */
-        onNavigatingTo(context: any): void;
+        onNavigatingTo(context: any, isBackNavigation: boolean): void;
 
         /**
          * A method called after navigated to the page.
+         * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
          */
-        onNavigatedTo(): void;
+        onNavigatedTo(isBackNavigation: boolean): void;
 
         /**
          * A method called before navigating from the page.
+         * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
          */
-        onNavigatingFrom(): void;
+        onNavigatingFrom(isBackNavigation: boolean): void;
 
         /**
          * A method called after navigated from the page.

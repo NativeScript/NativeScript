@@ -8,11 +8,11 @@ import fs = require("file-system");
 import frameCommon = require("../frame/frame-common");
 import {ActionBar} from "ui/action-bar";
 import {DependencyObservable, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData, Property, ValueSource} from "ui/core/dependency-observable";
-import platform = require("platform");
+
 import proxy = require("ui/core/proxy");
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-var AffectsLayout = platform.device.os === platform.platformNames.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
+var AffectsLayout = global.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
 var backgroundSpanUnderStatusBarProperty = new Property("backgroundSpanUnderStatusBar", "Page", new proxy.PropertyMetadata(false, AffectsLayout));
 
@@ -163,38 +163,30 @@ export class Page extends ContentView implements dts.Page {
         return <frame.Frame>this.parent;
     }
 
-    public onNavigatingTo(context: any) {
+    private createNavigatedData(eventName: string, isBackNavigation: boolean): dts.NavigatedData {
+        return {
+            eventName: eventName,
+            object: this,
+            context: this.navigationContext,
+            isBackNavigation: isBackNavigation
+        };
+    }
+
+    public onNavigatingTo(context: any, isBackNavigation: boolean) {
         this._navigationContext = context;
-
-        this.notify({
-            eventName: Page.navigatingToEvent,
-            object: this,
-            context: this.navigationContext
-        });
+        this.notify(this.createNavigatedData(Page.navigatingToEvent, isBackNavigation));
     }
 
-    public onNavigatedTo() {
-        this.notify({
-            eventName: Page.navigatedToEvent,
-            object: this,
-            context: this.navigationContext
-        });
+    public onNavigatedTo(isBackNavigation: boolean) {
+        this.notify(this.createNavigatedData(Page.navigatedToEvent, isBackNavigation));
     }
 
-    public onNavigatingFrom() {
-        this.notify({
-            eventName: Page.navigatingFromEvent,
-            object: this,
-            context: this.navigationContext
-        });
+    public onNavigatingFrom(isBackNavigation: boolean) {
+        this.notify(this.createNavigatedData(Page.navigatingFromEvent, isBackNavigation));
     }
 
     public onNavigatedFrom(isBackNavigation: boolean) {
-        this.notify({
-            eventName: Page.navigatedFromEvent,
-            object: this,
-            context: this.navigationContext
-        });
+        this.notify(this.createNavigatedData(Page.navigatedFromEvent, isBackNavigation));
 
         this._navigationContext = undefined;
     }

@@ -394,6 +394,46 @@ export function test_WhenPageIsLoadedFrameCurrentPageIsTheSameInstance() {
     }
 }
 
+export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
+    var page1;
+    var page2;
+    var forwardCounter = 0;
+    var backCounter = 0;
+    var loadedEventHandler = function (args: PageModule.NavigatedData) {
+        if (args.isBackNavigation) {
+            backCounter++;
+        }
+        else {
+            forwardCounter++;
+        }
+    }
+
+    var pageFactory1 = function (): PageModule.Page {
+        page1 = new PageModule.Page();
+        page1.on(PageModule.Page.navigatedToEvent, loadedEventHandler);
+        return page1;
+    };
+
+    var pageFactory2 = function (): PageModule.Page {
+        page2 = new PageModule.Page();
+        page2.on(PageModule.Page.navigatedToEvent, loadedEventHandler);
+        return page2;
+    };
+
+    try {
+        helper.navigate(pageFactory1);
+        helper.navigate(pageFactory2);
+        helper.goBack();
+        TKUnit.assertEqual(forwardCounter, 2, "Forward navigation counter should be 1");
+        TKUnit.assertEqual(backCounter, 1, "Backward navigation counter should be 1");
+        page1.off(PageModule.Page.navigatedToEvent, loadedEventHandler);
+        page2.off(PageModule.Page.navigatedToEvent, loadedEventHandler);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
 //export function test_ModalPage_Layout_is_Correct() {
 //    var testPage: PageModule.Page;
 //    var label: LabelModule.Label;

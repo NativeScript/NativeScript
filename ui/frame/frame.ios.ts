@@ -304,6 +304,18 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         // This code check if navigation happened through UI (e.g. back button or swipe gesture).
         // When calling goBack on frame isBack will be false.
         let isBack: boolean = currentEntry && newEntry === currentEntry;
+
+        let currentNavigationContext;
+        let navigationQueue = (<any>frame)._navigationQueue;
+        for (let i = 0; i < navigationQueue.length; i++) {
+            if (navigationQueue[i].entry === newEntry) {
+                currentNavigationContext = navigationQueue[i];
+                break;
+            }
+        }
+
+        var isBackNavigation = currentNavigationContext ? currentNavigationContext.isBackNavigation : false;
+
         if (isBack) {
             try {
                 frame._shouldSkipNativePop = true;
@@ -334,7 +346,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         frame._updateActionBar(newPage);
 
         // notify the page
-        newPage.onNavigatedTo();
+        newPage.onNavigatedTo(isBack || isBackNavigation);
         frame._processNavigationQueue(newPage);
     }
 
