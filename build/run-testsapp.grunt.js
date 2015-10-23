@@ -3,9 +3,12 @@ module.exports = {
     run: function(grunt) {
         var pathModule = require("path");
 
+        var modulesPackageConfig = grunt.file.readJSON('package.json');
+
         //Construct and validate the arguments
         var args = {
             platform: grunt.option("platform"),
+            modulesPath: grunt.option("modulespath"),
             tnsPath: grunt.option("tnsPath"),
             emulatorProcessIdentifier: grunt.option("emuPId"),
             emuAvdName: grunt.option("avd"),
@@ -32,6 +35,7 @@ module.exports = {
         var localCfg = {
             tnsPath: args.tnsPath || "tns",
             emulatorProcessIdentifier: args.emulatorProcessIdentifier,
+            modulesPath: args.modulesPath || "./bin/dist/tns-core-modules-" + modulesPackageConfig.version + ".tgz",
             emuAvdName: args.emuAvdName,
             outfile: args.outFile || "./TestRunResult.txt",
             androidFrameworkArgument: args.androidRuntimePath ? " --frameworkPath=" + args.androidRuntimePath : "",
@@ -168,6 +172,8 @@ module.exports = {
                 "exec:createApp",
                 "clean:originalAppDir",
                 "copy:testsAppToRunDir",
+                "untar:modules",
+                "copy:updateModules",
 
                 getPlatformSpecificTask("exec:add{platform}Platform"),
                 getPlatformSpecificTask("copy:add{platform}Permissions"),
