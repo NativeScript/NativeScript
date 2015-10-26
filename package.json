@@ -25,6 +25,7 @@
     "grunt-simple-mocha": "0.4.0",
     "grunt-ts": "5.0.0-beta.5",
     "grunt-tslint": "2.5.0",
+    "grunt-untar": "0.0.1",
     "mocha": "2.2.5",
     "typescript": "1.6.2"
   }

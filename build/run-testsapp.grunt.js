@@ -63,6 +63,12 @@ module.exports = {
                             localCfg.appDir + "/*",
                             "!" + pathModule.join(localCfg.appDir, "App_Resources") + ""
                          ]
+                },
+                modules: {
+                    src: pathModule.join(localCfg.applicationDir, "node_modules", "tns-core-modules")
+                },
+                tempExtractedModules: {
+                    src: pathModule.join(localCfg.applicationDir, "node_modules", "package")
                 }
             },
             mkdir: {
@@ -79,6 +85,12 @@ module.exports = {
                     dest: localCfg.appDir,
                     cwd: localCfg.pathToCompiledTests,
                     expand: true
+                },
+                modulesToDir: {
+                    expand: true,
+                    src:  "**/*.*",
+                    cwd: pathModule.join(localCfg.applicationDir, "node_modules", "package"),
+                    dest: pathModule.join(localCfg.applicationDir, "node_modules", "tns-core-modules")
                 },
                 addAndroidPermissions: {
                     src: "AndroidManifest.xml",
@@ -137,6 +149,12 @@ module.exports = {
                     cmd: "adb shell am start -n " + localCfg.deployedAppName + "/" + localCfg.mainActivityName
                 }
             },
+            untar: {
+                modules: {
+                    src: localCfg.modulesPath,
+                    dest: pathModule.join(localCfg.applicationDir, "node_modules")
+                }
+            },
             shell: {
                 collectAndroidLog: {
                     command: "./expect.exp " + localCfg.outfile,
@@ -154,6 +172,7 @@ module.exports = {
         grunt.loadNpmTasks("grunt-mkdir");
         grunt.loadNpmTasks("grunt-contrib-clean");
         grunt.loadNpmTasks("grunt-contrib-copy");
+        grunt.loadNpmTasks("grunt-untar");
 
         var getPlatformSpecificTask = function(templatedTaskName) {
             return templatedTaskName.replace(/\{platform\}/, localCfg.platform);
@@ -172,8 +191,10 @@ module.exports = {
                 "exec:createApp",
                 "clean:originalAppDir",
                 "copy:testsAppToRunDir",
+                "clean:modules",
                 "untar:modules",
-                "copy:updateModules",
+                "copy:modulesToDir",
+                "clean:tempExtractedModules",
 
                 getPlatformSpecificTask("exec:add{platform}Platform"),
                 getPlatformSpecificTask("copy:add{platform}Permissions"),
