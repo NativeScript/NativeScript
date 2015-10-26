@@ -13,7 +13,7 @@ module.exports = {
             emulatorProcessIdentifier: grunt.option("emuPId"),
             emuAvdName: grunt.option("avd"),
             outFile: grunt.option("logFilePath"),
-            androidRuntimePath: grunt.option("androidRuntimePath"),
+            runtimePath: grunt.option("runtimePath"),
             showEmu: grunt.option("showEmu")
         };
 
@@ -38,7 +38,7 @@ module.exports = {
             modulesPath: args.modulesPath || "./bin/dist/tns-core-modules-" + modulesPackageConfig.version + ".tgz",
             emuAvdName: args.emuAvdName,
             outfile: args.outFile || "./TestRunResult.txt",
-            androidFrameworkArgument: args.androidRuntimePath ? " --frameworkPath=" + args.androidRuntimePath : "",
+            frameworkArgument: args.runtimePath ? " --frameworkPath=" + args.runtimePath : "",
             showEmu: args.showEmu || false,
 
             workingDir:".testsapprun",
@@ -112,6 +112,27 @@ module.exports = {
                             return newContent;
                         }
                     }
+                },
+                addiOSPermissions: {
+                    src: localCfg.testsAppName + "-Info.plist",
+                    dest: pathModule.join(localCfg.applicationDir,"/platforms/ios/", localCfg.testsAppName) + "/",
+                    cwd: pathModule.join(localCfg.applicationDir,"/platforms/ios/", localCfg.testsAppName),
+                    expand: true,
+                    options: {
+                        process: function(content, srcPath) {
+                            var newContent = content;
+
+                            var lastDictLocator = /(<\/dict>\s*<\/plist>)$/gm;
+
+                            if (!/NSAppTransportSecurity/.test(content)) {
+                                newContent = newContent.replace(lastDictLocator, "<key>NSAppTransportSecurity</key>\n$1");
+                            }
+                            if (!/NSAllowsArbitraryLoads/.test(content)) {
+                                newContent = newContent.replace(lastDictLocator, "<dict>\n<key>NSAllowsArbitraryLoads</key>\n<true/>\n</dict>\n$1");
+                            }
+                            return newContent;
+                        }
+                    }
                 }
             },
             exec: {
@@ -127,12 +148,8 @@ module.exports = {
                     cmd: localCfg.tnsPath + " create " + localCfg.testsAppName,
                     cwd: localCfg.workingDir
                 },
-                addAndroidPlatform: {
-                    cmd: "tns platform add android " + localCfg.androidFrameworkArgument,
-                    cwd: localCfg.applicationDir
-                },
-                buildAndroidApp: {
-                    cmd: "tns build android",
+                addPlatform: {
+                    cmd: "tns platform add " + localCfg.platform.toLowerCase() + " " + localCfg.frameworkArgument,
                     cwd: localCfg.applicationDir
                 },
                 restartAdb: {
@@ -163,7 +180,16 @@ module.exports = {
                             maxBuffer: Infinity
                         }
                     }
-                }
+                },
+                buildApp: {
+                    command: "tns build " + localCfg.platform.toLowerCase(),
+                    options: {
+                        execOptions: {
+                            maxBuffer: Infinity,
+                            cwd: localCfg.applicationDir
+                        }
+                    }
+                },
             }
         });
 
@@ -178,15 +204,17 @@ module.exports = {
             return templatedTaskName.replace(/\{platform\}/, localCfg.platform);
         }
 
-        grunt.registerTask("doPostPlatformAdd", [
+        grunt.registerTask("doPostPlatformAddAndroid", [
                 "exec:restartAdb"
+                ]);
+        grunt.registerTask("doPostPlatformAddiOS", [
                 ]);
 
         grunt.registerTask("testsapp", [
                 "clean:workingDir",
                 "mkdir:workingDir",
-                getPlatformSpecificTask("exec:kill{platform}Emulator"),
-                getPlatformSpecificTask("exec:start{platform}Emulator"),
+//                getPlatformSpecificTask("exec:kill{platform}Emulator"),
+//                getPlatformSpecificTask("exec:start{platform}Emulator"),
 
                 "exec:createApp",
                 "clean:originalAppDir",
@@ -196,10 +224,10 @@ module.exports = {
                 "copy:modulesToDir",
                 "clean:tempExtractedModules",
 
-                getPlatformSpecificTask("exec:add{platform}Platform"),
+                "exec:addPlatform",
                 getPlatformSpecificTask("copy:add{platform}Permissions"),
-                getPlatformSpecificTask("exec:build{platform}App"),
-                "doPostPlatformAdd",
+                "shell:buildApp",
+                getPlatformSpecificTask("doPostPlatformAdd{platform}"),
 
                 getPlatformSpecificTask("exec:uninstallExisting{platform}App"),
                 getPlatformSpecificTask("exec:installNew{platform}App"),

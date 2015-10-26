@@ -46,9 +46,11 @@ emulator process, as the emulator sometimes hangs.
 tests.
 - `logFilePath`: [Optional] The path to the file, which the test app run
 log will get saved to. Defaults to "./TestRunResult.txt".
-- `androidRuntimePath`: [Optional] The path to a custom Android Runtime
+- `runtimePath`: [Optional] The path to a custom iOS or Android Runtime
 package to have the tests run onto. If not specified, the newest available
-build on [npmjs.com](http://npmjs.com).
+build on [npmjs.com](http://npmjs.com) -
+[tns-ios](https://www.npmjs.com/package/tns-ios) or
+[tns-android](https://www.npmjs.com/package/tns-android).
 
 # Sample run:
 ```
