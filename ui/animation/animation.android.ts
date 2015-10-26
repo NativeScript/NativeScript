@@ -10,6 +10,14 @@ global.moduleMerge(common, exports);
 var floatType = java.lang.Float.class.getField("TYPE").get(null);
 var argbEvaluator = new android.animation.ArgbEvaluator();
 
+var keyPrefix = "ui.animation.";
+var propertyKeys = {};
+propertyKeys[common.Properties.backgroundColor] = Symbol(keyPrefix + common.Properties.backgroundColor);
+propertyKeys[common.Properties.opacity] = Symbol(keyPrefix + common.Properties.opacity);
+propertyKeys[common.Properties.rotate] = Symbol(keyPrefix + common.Properties.rotate);
+propertyKeys[common.Properties.scale] = Symbol(keyPrefix + common.Properties.scale);
+propertyKeys[common.Properties.translate] = Symbol(keyPrefix + common.Properties.translate);
+
 export class Animation extends common.Animation implements definition.Animation {
     private _animatorListener: android.animation.Animator.AnimatorListener;
     private _nativeAnimatorsArray: any;
@@ -89,7 +97,7 @@ export class Animation extends common.Animation implements definition.Animation 
             // It has been cancelled
             return;
         }
-
+        
         var i = 0;
         var length = this._propertyUpdateCallbacks.length;
         for (; i < length; i++) {
@@ -131,14 +139,28 @@ export class Animation extends common.Animation implements definition.Animation 
         var density = utils.layout.getDisplayDensity();
         var xyObjectAnimators: any;
         var animatorSet: android.animation.AnimatorSet;
+        
+        var key = propertyKeys[propertyAnimation.property];
+        if (key) {
+            propertyAnimation.target[key] = propertyAnimation;
+        }
+        function checkAnimation(cb) {
+            return () => {
+                if (propertyAnimation.target[key] === propertyAnimation) {
+                    delete propertyAnimation.target[key];
+                    cb();
+                }
+            }
+        }
+        
         switch (propertyAnimation.property) {
 
             case common.Properties.opacity:
                 originalValue = nativeView.getAlpha();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value;
-                propertyUpdateCallbacks.push(() => { propertyAnimation.target.opacity = propertyAnimation.value });
-                propertyResetCallbacks.push(() => { nativeView.setAlpha(originalValue); });
+                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.opacity = propertyAnimation.value }));
+                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setAlpha(originalValue); }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
                 break;
 
@@ -155,8 +177,8 @@ export class Animation extends common.Animation implements definition.Animation 
                     }
                 }));
 
-                propertyUpdateCallbacks.push(() => { propertyAnimation.target.backgroundColor = propertyAnimation.value; });
-                propertyResetCallbacks.push(() => { nativeView.setBackground(originalValue); });
+                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.backgroundColor = propertyAnimation.value; }));
+                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setBackground(originalValue); }));
                 animators.push(animator);
                 break;
 
@@ -168,16 +190,16 @@ export class Animation extends common.Animation implements definition.Animation 
                 nativeArray[0] = propertyAnimation.value.x * density;
                 xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationX", nativeArray);
                 xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
-                propertyUpdateCallbacks.push(() => { propertyAnimation.target.translateX = propertyAnimation.value.x; });
-                propertyResetCallbacks.push(() => { nativeView.setTranslationX(originalValue); });
+                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.translateX = propertyAnimation.value.x; }));
+                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setTranslationX(originalValue); }));
 
                 originalValue = nativeView.getTranslationY();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value.y * density;
                 xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationY", nativeArray);
                 xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
-                propertyUpdateCallbacks.push(() => { propertyAnimation.target.translateY = propertyAnimation.value.y; });
-                propertyResetCallbacks.push(() => { nativeView.setTranslationY(originalValue); });
+                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.translateY = propertyAnimation.value.y; }));
+                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setTranslationY(originalValue); }));
 
                 animatorSet = new android.animation.AnimatorSet();
                 animatorSet.playTogether(xyObjectAnimators);
@@ -193,16 +215,16 @@ export class Animation extends common.Animation implements definition.Animation 
                 nativeArray[0] = propertyAnimation.value.x;
                 xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleX", nativeArray);
                 xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
-                propertyUpdateCallbacks.push(() => { propertyAnimation.target.scaleX = propertyAnimation.value.x; });
-                propertyResetCallbacks.push(() => { nativeView.setScaleX(originalValue); });
+                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.scaleX = propertyAnimation.value.x; }));
+                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setScaleX(originalValue); }));
 
                 originalValue = nativeView.getScaleY();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value.y;
                 xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleY", nativeArray);
                 xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
-                propertyUpdateCallbacks.push(() => { propertyAnimation.target.scaleY = propertyAnimation.value.y; });
-                propertyResetCallbacks.push(() => { nativeView.setScaleY(originalValue); });
+                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.scaleY = propertyAnimation.value.y; }));
+                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setScaleY(originalValue); }));
 
                 animatorSet = new android.animation.AnimatorSet();
                 animatorSet.playTogether(xyObjectAnimators);
@@ -214,8 +236,8 @@ export class Animation extends common.Animation implements definition.Animation 
                 originalValue = nativeView.getRotation();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value;
-                propertyUpdateCallbacks.push(() => { propertyAnimation.target.rotate = propertyAnimation.value; });
-                propertyResetCallbacks.push(() => { nativeView.setRotation(originalValue); });
+                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.rotate = propertyAnimation.value; }));
+                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setRotation(originalValue); }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
                 break;
 
