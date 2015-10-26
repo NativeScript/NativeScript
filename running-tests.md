@@ -35,6 +35,9 @@ split to a separate file for simplicity.
 - `platform`: The platform to run the tests application on: iOS or Android
 - `showEmu`: [Optional] Specifies whether the emulator should get launched
 in a window or headless mode. Defaults to `false`.
+- `modulesPath`: [Optional] The path to the tns-core-modules npm package
+to be tested. Defaults to the npm package, located in the current
+`bin/dist/` folder. The modules must have been built before that.
 - `tnsPath`: [Optional] The path to the NativeScript executable. If not
 found, the globally installed `tns` gets called.
 - `emuPId`: The ID of the emulator process. This one is used to refresh the

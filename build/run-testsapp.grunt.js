@@ -8,7 +8,7 @@ module.exports = {
         //Construct and validate the arguments
         var args = {
             platform: grunt.option("platform"),
-            modulesPath: grunt.option("modulespath"),
+            modulesPath: grunt.option("modulesPath"),
             tnsPath: grunt.option("tnsPath"),
             emulatorProcessIdentifier: grunt.option("emuPId"),
             emuAvdName: grunt.option("avd"),
