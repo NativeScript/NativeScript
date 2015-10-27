@@ -164,6 +164,9 @@ module.exports = {
                 },
                 startAndroidApp: {
                     cmd: "adb shell am start -n " + localCfg.deployedAppName + "/" + localCfg.mainActivityName
+                },
+                uninstallExistingiOSApp: {
+                    cmd: "bash -c 'exit 1'"
                 }
             },
             untar: {
