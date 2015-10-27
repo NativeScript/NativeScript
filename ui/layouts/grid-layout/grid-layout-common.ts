@@ -298,11 +298,11 @@ export class GridLayout extends layouts.LayoutBase implements definition.GridLay
 
     _applyXmlAttribute(attributeName: string, attributeValue: any): boolean {
         if (attributeName === "columns") {
-            this.setColumns(attributeValue);
+            this._setColumns(attributeValue);
             return true;
         }
         else if (attributeName === "rows") {
-            this.setRows(attributeValue);
+            this._setRows(attributeValue);
             return true;
         }
 
@@ -386,12 +386,12 @@ export class GridLayout extends layouts.LayoutBase implements definition.GridLay
         throw new Error("Element is not View or its descendant.");
     }
 
-    private setColumns(value: string) {
+    private _setColumns(value: string) {
         this._cols = GridLayout.parseItemSpecs(value);
         this.invalidate();
     }
 
-    private setRows(value: string) {
+    private _setRows(value: string) {
         this._rows = GridLayout.parseItemSpecs(value);
         this.invalidate();
     }
