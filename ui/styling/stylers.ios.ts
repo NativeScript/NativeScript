@@ -374,23 +374,84 @@ export class TextViewStyler implements definition.stylers.Styler {
 export class SegmentedBarStyler implements definition.stylers.Styler {
     //Text color methods
     private static setColorProperty(view: view.View, newValue: any) {
-        var bar = <UISegmentedControl>view.ios;
-        var attrs = NSMutableDictionary.new();
+        let bar = <UISegmentedControl>view.ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let attrs;
+        if (currentAttrs) {
+            attrs = currentAttrs.mutableCopy();
+        }
+        else {
+            attrs = NSMutableDictionary.new();
+        }
         attrs.setValueForKey(newValue, NSForegroundColorAttributeName);
         bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
-        var bar = <UISegmentedControl>view.ios;
-        var attrs = NSMutableDictionary.new();
+        let bar = <UISegmentedControl>view.ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let attrs;
+        if (currentAttrs) {
+            attrs = currentAttrs.mutableCopy();
+        }
+        else {
+            attrs = NSMutableDictionary.new();
+        }
         attrs.setValueForKey(nativeValue, NSForegroundColorAttributeName);
         bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+    }
+
+    //Text fonts methods
+    private static setFontInternalProperty(view: view.View, newValue: any) {
+        let bar = <UISegmentedControl>view.ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let attrs;
+        if (currentAttrs) {
+            attrs = currentAttrs.mutableCopy();
+        }
+        else {
+            attrs = NSMutableDictionary.new();
+        }
+        let newFont = (<font.Font>newValue).getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize()));
+        attrs.setValueForKey(newFont, NSFontAttributeName);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+    }
+
+    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
+        let bar = <UISegmentedControl>view.ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let attrs;
+        if (currentAttrs) {
+            attrs = currentAttrs.mutableCopy();
+        }
+        else {
+            attrs = NSMutableDictionary.new();
+        }
+        attrs.setValueForKey(nativeValue, NSFontAttributeName);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+    }
+
+    private static getNativeFontValue(view: view.View) {
+        let bar = <UISegmentedControl>view.ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let currentFont;
+        if (currentAttrs) {
+            currentFont = currentAttrs.objectForKey(NSFontAttributeName);
+        }
+        if (!currentFont) {
+            currentFont = UIFont.systemFontOfSize(UIFont.labelFontSize());
+        }
+        return currentFont;
     }
 
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             SegmentedBarStyler.setColorProperty,
             SegmentedBarStyler.resetColorProperty), "SegmentedBar");
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            SegmentedBarStyler.setFontInternalProperty,
+            SegmentedBarStyler.resetFontInternalProperty,
+            SegmentedBarStyler.getNativeFontValue), "SegmentedBar");
     }
 }
 
