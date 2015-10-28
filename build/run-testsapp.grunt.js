@@ -45,7 +45,8 @@ module.exports = {
             testsAppName:"TestsApp",
             applicationDir: pathModule.join(".testsapprun", "TestsApp"),
             appDir: pathModule.join(".testsapprun", "TestsApp", "app"),
-            pathToApk:"./platforms/android/build/outputs/apk/TestsApp-debug.apk",
+            pathToApk: "./platforms/android/build/outputs/apk/TestsApp-debug.apk",
+            pathToApp: "./platforms/ios/build/emulator/TestsApp.app",
             deployedAppName:"org.nativescript.TestsApp",
             mainActivityName:"com.tns.NativeScriptActivity",
             pathToCompiledTests: "bin/dist/apps/tests",
@@ -140,9 +141,9 @@ module.exports = {
                     cmd: "pkill '" + localCfg.emulatorProcessIdentifier + "'",
                     exitCode: [0, 1]
                 },
-                startAndroidEmulator: {
-                    cmd: "emulator -avd " + localCfg.emuAvdName + " -no-audio " + (args.showEmu ? "" : "-no-window") + "&",
-                    stdout: true
+                killiOSEmulator: {
+                    cmd: "pkill Simulator",
+                    exitCode: [0, 1]
                 },
                 createApp: {
                     cmd: localCfg.tnsPath + " create " + localCfg.testsAppName,
@@ -166,8 +167,16 @@ module.exports = {
                     cmd: "adb shell am start -n " + localCfg.deployedAppName + "/" + localCfg.mainActivityName
                 },
                 uninstallExistingiOSApp: {
-                    cmd: "bash -c 'exit 1'"
-                }
+                    cmd: "xcrun simctl uninstall " + localCfg.emuAvdName + " org.nativescript." + localCfg.testsAppName,
+                    cwd: localCfg.applicationDir
+                },
+                installNewiOSApp: {
+                    cmd: "xcrun simctl install " + localCfg.emuAvdName + " " + localCfg.pathToApp,
+                    cwd: localCfg.applicationDir
+                },
+                startiOSApp: {
+                    cmd: "xcrun simctl launch " + localCfg.emuAvdName + " org.nativescript." + localCfg.testsAppName
+                },
             },
             untar: {
                 modules: {
@@ -183,6 +192,15 @@ module.exports = {
                             maxBuffer: Infinity
                         }
                     }
+                },
+                startAndroidEmulator: {
+                    command: "emulator -avd " + localCfg.emuAvdName + " -no-audio " + (args.showEmu ? "" : "-no-window") + "&"
+                },
+                startiOSEmulator: {
+                    command: "xcrun instruments -w " + localCfg.emuAvdName,
+                    options: {
+                        failOnError: false
+                    },
                 },
                 buildApp: {
                     command: "tns build " + localCfg.platform.toLowerCase(),
@@ -213,32 +231,34 @@ module.exports = {
         grunt.registerTask("doPostPlatformAddiOS", [
                 ]);
 
+
+//xcrun instruments -s
         grunt.registerTask("testsapp", [
-                "clean:workingDir",
-                "mkdir:workingDir",
+//                "clean:workingDir",
+//                "mkdir:workingDir",
 //                getPlatformSpecificTask("exec:kill{platform}Emulator"),
-//                getPlatformSpecificTask("exec:start{platform}Emulator"),
-
-                "exec:createApp",
-                "clean:originalAppDir",
-                "copy:testsAppToRunDir",
-                "clean:modules",
-                "untar:modules",
-                "copy:modulesToDir",
-                "clean:tempExtractedModules",
-
-                "exec:addPlatform",
-                getPlatformSpecificTask("copy:add{platform}Permissions"),
-                "shell:buildApp",
-                getPlatformSpecificTask("doPostPlatformAdd{platform}"),
+//                getPlatformSpecificTask("shell:start{platform}Emulator"),
+//
+//                "exec:createApp",
+//                "clean:originalAppDir",
+//                "copy:testsAppToRunDir",
+//                "clean:modules",
+//                "untar:modules",
+//                "copy:modulesToDir",
+//                "clean:tempExtractedModules",
+//
+//                "exec:addPlatform",
+//                getPlatformSpecificTask("copy:add{platform}Permissions"),
+//                "shell:buildApp",
+//                getPlatformSpecificTask("doPostPlatformAdd{platform}"),
 
                 getPlatformSpecificTask("exec:uninstallExisting{platform}App"),
                 getPlatformSpecificTask("exec:installNew{platform}App"),
                 getPlatformSpecificTask("exec:start{platform}App"),
-                getPlatformSpecificTask("shell:collect{platform}Log"),
-
-                getPlatformSpecificTask("exec:kill{platform}Emulator"),
-                "clean:workingDir"
+//                getPlatformSpecificTask("shell:collect{platform}Log"),
+//
+//                getPlatformSpecificTask("exec:kill{platform}Emulator"),
+//                "clean:workingDir"
         ]);
     }
 }
