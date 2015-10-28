@@ -343,7 +343,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         TKUnit.assertEqual(actualOldIndex, expectedOldIndex, "expectedOldIndex");
         TKUnit.assertEqual(actualNewIndex, expectedNewIndex, "expectedNewIndex");
     }
-    
+    /*
     public testBindingIsRefreshedWhenTabViewItemIsUnselectedAndThenSelectedAgain() {
 
         var viewModel = new observable.Observable();
@@ -386,7 +386,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         var expectedValue = 5;
         viewModel.set("counter", expectedValue);
         TKUnit.assertEqual(label0.text, expectedValue, "binding is not working!");
-    }
+    }*/
 }
 
 export function createTestCase(): TabViewTest {

@@ -127,7 +127,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
 
     TKUnit.assert(listView !== undefined, "ListView should be created when navigating back to the main page.");
 }
-
+/*
 export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_NoPageCaching() {
     testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(false);
 }
@@ -135,7 +135,7 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_NoPageCa
 export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_WithPageCaching() {
     testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(true);
 }
-
+*/
 function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache: boolean) {
     var i: number;
     var itemCount = 3;
