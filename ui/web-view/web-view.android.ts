@@ -37,13 +37,33 @@ class WebViewClientClass extends android.webkit.WebViewClient {
         }
     }
 
-    public onReceivedError(view: android.webkit.WebView, errorCode: number, description: string, failingUrl: string) {
-        super.onReceivedError(view, errorCode, description, failingUrl);
+    public onReceivedError() {
+        var view: android.webkit.WebView = arguments[0];
 
-        if (this._view) {
-            trace.write("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", trace.categories.Debug);
-            this._view._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
-        }
+        if (arguments.length === 4) {
+
+            var errorCode: number = arguments[1];
+            var description: string = arguments[2];
+            var failingUrl: string = arguments[3];
+
+            super.onReceivedError(view, errorCode, description, failingUrl);
+
+            if (this._view) {
+                trace.write("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", trace.categories.Debug);
+                this._view._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
+            }
+        } else {
+
+            var request: any = arguments[1];
+            var error: any = arguments[2];
+
+            super.onReceivedError(view, request, error);
+
+            if (this._view) {
+                trace.write("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + error.getUrl() + ")", trace.categories.Debug);
+                this._view._onLoadFinished(error.getUrl(), error.getDescription() + "(" + error.getErrorCode() + ")");
+            }
+        }        
     }
 };
 
