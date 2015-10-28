@@ -1017,6 +1017,9 @@
     <Content Include="apps\ui-tests-app\web-view\test.html" />
     <Content Include="apps\ui-tests-app\web-view\webview.xml" />
     <Content Include="apps\ui-tests-app\web-view\webviewhtmlwithimages.xml" />
+    <Content Include="apps\ui-tests-app\web-view\wvlocal.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\web-view\webviewlocalfile.xml" />
     <Content Include="fetch\fetch.js" />
     <Content Include="css-value\reworkcss-value.js" />
