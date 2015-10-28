@@ -104,34 +104,33 @@ function getDialogResult(buttons: allertButtons, index: number) {
     return undefined;
 }
 
-function addButtonsToAlertController(alertController: UIAlertController, options: dialogs.ConfirmOptions,
-    okCallback?: Function, cancelCallback?: Function, neutralCallback?: Function): void {
+function addButtonsToAlertController(alertController: UIAlertController, options: dialogs.ConfirmOptions, callback?: Function): void {
     if (!options) {
         return;
     }
 
     if (types.isString(options.cancelButtonText)) {
         alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.UIAlertActionStyleDefault, (arg: UIAlertAction) => {
-            if (types.isFunction(cancelCallback)) {
-                cancelCallback();
-            }
+            raiseCallback(callback, false);
         }));
     }
 
     if (types.isString(options.neutralButtonText)) {
         alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.neutralButtonText, UIAlertActionStyle.UIAlertActionStyleDefault, (arg: UIAlertAction) => {
-            if (types.isFunction(cancelCallback)) {
-                neutralCallback();
-            }
+            raiseCallback(callback, undefined);
         }));
     }
 
     if (types.isString(options.okButtonText)) {
         alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.UIAlertActionStyleDefault, (arg: UIAlertAction) => {
-            if (types.isFunction(okCallback)) {
-                okCallback();
-            }
+            raiseCallback(callback, true);
         }));
+    }
+}
+
+function raiseCallback(callback, result) {
+    if (types.isFunction(callback)) {
+        callback(result);
     }
 }
 
@@ -194,7 +193,7 @@ export function confirm(arg: any): Promise<boolean> {
             } else {
                 var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.UIAlertControllerStyleAlert);
 
-                addButtonsToAlertController(alertController, options, () => { resolve(true); }, () => { resolve(false) }, () => { resolve(undefined) });
+                addButtonsToAlertController(alertController, options, (r) => { resolve(r); });
 
                 showUIAlertController(alertController);
             }
@@ -269,9 +268,7 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
                 textField = alertController.textFields.firstObject;
 
                 addButtonsToAlertController(alertController, options,
-                    () => { resolve({ result: true, text: textField.text }); },
-                    () => { resolve({ result: false, text: textField.text }) },
-                    () => { resolve({ result: undefined, text: textField.text }) });
+                    (r) => { resolve({ result: r, text: textField.text }); });
 
                 showUIAlertController(alertController);
             }
@@ -355,9 +352,16 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
                 passwordTextField = alertController.textFields.lastObject;
 
                 addButtonsToAlertController(alertController, options,
-                    () => { resolve({ result: true, userName: userNameTextField.text, password: passwordTextField.text }); },
-                    () => { resolve({ result: false, userName: userNameTextField.text, password: passwordTextField.text }); },
-                    () => { resolve({ result: undefined, userName: userNameTextField.text, password: passwordTextField.text }); });
+                    (r) => {
+
+                        resolve({
+                            result: r,
+                            userName:
+                            userNameTextField.text,
+                            password: passwordTextField.text
+                        });
+
+                    });
 
                 showUIAlertController(alertController);
             }
