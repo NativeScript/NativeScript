@@ -1,0 +1,13 @@
+<Page>
+  <Page.actionBar>
+    <ActionBar title="Page Title" style="background-color: green;">
+      <NavigationButton text="go back"/>
+      <ActionBar.actionItems>
+        <ActionItem text="ITEM" />
+      </ActionBar.actionItems>
+    </ActionBar>
+  </Page.actionBar>
+  <StackLayout>
+    <Button text="do nothing"/>
+  </StackLayout>
+</Page>

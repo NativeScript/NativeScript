@@ -105,6 +105,14 @@ function selectedColorPropertyChanged(data: dependencyObservable.PropertyChangeD
 }
 (<proxy.PropertyMetadata>common.TabView.selectedColorProperty.metadata).onSetNativeValue = selectedColorPropertyChanged;
 
+function tabsBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var tabView = <TabView>data.object;
+    if (data.newValue instanceof color.Color) {
+        tabView.ios.tabBar.barTintColor = data.newValue.ios;
+    }
+}
+(<proxy.PropertyMetadata>common.TabView.tabsBackgroundColorProperty.metadata).onSetNativeValue = tabsBackgroundColorPropertyChanged;
+
 export class TabView extends common.TabView {
     private _ios: UITabBarControllerImpl;
     private _delegate: UITabBarControllerDelegateImpl;
@@ -179,6 +187,8 @@ export class TabView extends common.TabView {
         var newControllers: NSMutableArray = NSMutableArray.alloc().initWithCapacity(length);
         var newController: UIViewController;
 
+        var states = getTitleAttributesForStates(this);
+
         for (i = 0; i < length; i++) {
             item = <TabViewItem>newItems[i];
 
@@ -205,6 +215,9 @@ export class TabView extends common.TabView {
                     (<any>tabBarItem).titlePositionAdjustment = { horizontal: 0, vertical: -20 };
                 }
             }
+            tabBarItem.setTitleTextAttributesForState(states.normalState, UIControlState.UIControlStateNormal);
+            tabBarItem.setTitleTextAttributesForState(states.selectedState, UIControlState.UIControlStateSelected);
+
             newController.tabBarItem = tabBarItem;
             newControllers.addObject(newController);
         }

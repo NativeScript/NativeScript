@@ -189,6 +189,30 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\tests\pages\tab-view.xml" />
+    <Content Include="apps\ui-tests-app\action-bar\all.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\tab-view\background.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\tab-view\all.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\tab-view\tabsBackground.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\tab-view\selected.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\tab-view\color.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\action-bar\background.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\action-bar\color.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\app.css" />
     <TypeScriptCompile Include="apps\ui-tests-app\nordic\nordic.ts">
       <DependentUpon>nordic.xml</DependentUpon>
@@ -995,6 +1019,9 @@
     <Content Include="apps\ui-tests-app\layouts\wrap.xml" />
     <Content Include="apps\ui-tests-app\css\background.xml" />
     <Content Include="apps\ui-tests-app\image-view\roundbtn.xml" />
+    <Content Include="apps\ui-tests-app\mainPage.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\nordic\nordic.xml" />
     <Content Include="apps\ui-tests-app\pages\handlers.xml" />
     <Content Include="apps\ui-tests-app\pages\htmlview.xml" />
@@ -2004,7 +2031,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
