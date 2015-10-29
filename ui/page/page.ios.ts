@@ -151,6 +151,7 @@ export class Page extends pageCommon.Page {
         if (this._enableLoadedEvents) {
             super.onLoaded();
         }
+        this._updateActionBar(false);
     }
 
     public notify<T extends observable.EventData>(data: T) {
@@ -260,7 +261,7 @@ export class Page extends pageCommon.Page {
         if (this._isModal && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
             statusBarHeight = 0;
         }
-
+        
         if (this.frame && this.frame._getNavBarVisible(this)) {
             // Measure ActionBar with the full height. 
             let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);

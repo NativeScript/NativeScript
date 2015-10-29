@@ -194,6 +194,12 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
             var navigationContext = this._navigationQueue[0];
             this._processNavigationContext(navigationContext);
         }
+
+        this._updateActionBar();
+    }
+
+    public navigationQueueIsEmpty() {
+        return this._navigationQueue.length === 0;
     }
 
     public _isEntryBackstackVisible(entry: definition.BackstackEntry): boolean {

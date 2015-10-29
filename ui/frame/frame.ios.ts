@@ -133,6 +133,9 @@ export class Frame extends frameCommon.Frame {
         var newValue = this._getNavBarVisible(page);
 
         this._ios.showNavigationBar = newValue;
+        if (this._ios.controller.navigationBar) {
+            this._ios.controller.navigationBar.userInteractionEnabled = this.navigationQueueIsEmpty();
+        }
     }
 
     public _getNavBarVisible(page: pages.Page): boolean {
@@ -314,7 +317,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             }
         }
 
-        var isBackNavigation = currentNavigationContext ? currentNavigationContext.isBackNavigation : false;
+        let isBackNavigation = currentNavigationContext ? currentNavigationContext.isBackNavigation : false;
 
         if (isBack) {
             try {
