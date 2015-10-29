@@ -325,7 +325,7 @@ export class TabView extends common.TabView {
 
         var tabBar = this.ios.tabBar;
 
-        tabBar.tintColor = this.color ? this.color.ios : null; 
+        tabBar.tintColor = this.selectedColor ? this.selectedColor.ios : null; 
         var states = getTitleAttributesForStates(this);
 
         for (var i = 0; i < this.items.length; i++) {
