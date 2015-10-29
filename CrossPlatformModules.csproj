@@ -192,6 +192,9 @@
     <Content Include="apps\ui-tests-app\action-bar\all.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\ui-tests-app\action-bar\clean.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\tab-view\background.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -214,6 +217,8 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\ui-tests-app\app.css" />
+    <TypeScriptCompile Include="apps\ui-tests-app\action-bar\all.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\action-bar\color.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\nordic\nordic.ts">
       <DependentUpon>nordic.xml</DependentUpon>
     </TypeScriptCompile>

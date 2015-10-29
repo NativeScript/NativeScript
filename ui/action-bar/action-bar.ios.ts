@@ -80,6 +80,9 @@ export class ActionBar extends common.ActionBar {
 
         // Populate action items
         this.populateMenuItems(navigationItem);
+
+        // update colors explicitly - they may have to be cleared form a previous page
+        this.updateColors(navigationBar);
     }
 
     private populateMenuItems(navigationItem: UINavigationItem) {
@@ -127,6 +130,21 @@ export class ActionBar extends common.ActionBar {
         }
 
         return barButtonItem;
+    }
+
+    private updateColors(navBar: UINavigationBar) {
+        var color = this.color;
+        if (color) {
+            navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
+            navBar.tintColor = color.ios;
+        }
+        else {
+            navBar.titleTextAttributes = null;
+            navBar.tintColor = null;
+        }
+
+        var bgColor = this.backgroundColor;
+        navBar.barTintColor = bgColor ? bgColor.ios : null;
     }
 
     public _onTitlePropertyChanged() {

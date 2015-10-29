@@ -16,6 +16,14 @@ interface TextUIView {
     textColor: UIColor;
 }
 
+var ignorePropertyHandler = new stylersCommon.StylePropertyChangedHandler(
+    (view, val) => {
+        // empty
+    },
+    (view, val) => {
+        // empty
+    });
+
 export class DefaultStyler implements definition.stylers.Styler {
     //Background methods
     private static setBackgroundInternalProperty(view: view.View, newValue: any) {
@@ -537,13 +545,13 @@ export class SwitchStyler implements definition.stylers.Styler {
             SwitchStyler.resetColorProperty,
             SwitchStyler.getNativeColorValue), "Switch");
 
-        var bkgHandler = new stylersCommon.StylePropertyChangedHandler(
+        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             SwitchStyler.setBackgroundColorProperty,
             SwitchStyler.resetBackgroundColorProperty,
-            SwitchStyler.getBackgroundColorProperty);
+            SwitchStyler.getBackgroundColorProperty), "Switch");
 
-        style.registerHandler(style.backgroundColorProperty, bkgHandler, "Switch");
-        style.registerHandler(style.backgroundInternalProperty, bkgHandler, "Switch");
+        // Ignore the default backgroundInternalProperty handler
+        style.registerHandler(style.backgroundInternalProperty, ignorePropertyHandler, "Switch");
     }
 }
 
@@ -634,16 +642,35 @@ export class ActionBarStyler implements definition.stylers.Styler {
     private static setColorProperty(view: view.View, newValue: any) {
         var topFrame = frame.topmost();
         if (topFrame) {
-            var bar = topFrame.ios.controller.navigationBar;
-            (<any>bar).titleTextAttributes = { [NSForegroundColorAttributeName]: newValue };
+            var navBar = topFrame.ios.controller.navigationBar;
+            navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: newValue };
+            navBar.tintColor = newValue;
         }
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
         var topFrame = frame.topmost();
         if (topFrame) {
-            var bar = topFrame.ios.controller.navigationBar;
-            (<any>bar).titleTextAttributes = null;
+            var navBar = topFrame.ios.controller.navigationBar;
+            navBar.titleTextAttributes = null;
+            navBar.tintColor = null;
+        }
+    }
+
+    // background-color
+    private static setBackgroundColorProperty(view: view.View, newValue: any) {
+        var topFrame = frame.topmost();
+        if (topFrame) {
+            var navBar = topFrame.ios.controller.navigationBar;
+            navBar.barTintColor = newValue;
+        }
+    }
+
+    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
+        var topFrame = frame.topmost();
+        if (topFrame) {
+            var navBar = topFrame.ios.controller.navigationBar;
+            navBar.barTintColor = null;
         }
     }
 
@@ -651,6 +678,12 @@ export class ActionBarStyler implements definition.stylers.Styler {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             ActionBarStyler.setColorProperty,
             ActionBarStyler.resetColorProperty), "ActionBar");
+
+        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
+            ActionBarStyler.setBackgroundColorProperty,
+            ActionBarStyler.resetBackgroundColorProperty), "ActionBar");
+
+        style.registerHandler(style.backgroundInternalProperty, ignorePropertyHandler, "ActionBar");
     }
 }
 

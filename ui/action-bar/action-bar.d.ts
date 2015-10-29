@@ -203,4 +203,9 @@ declare module "ui/action-bar" {
     export class NavigationButton extends ActionItemBase {
 
     }
+
+    //@private
+    export function _setNavBarColor(navBar: UINavigationBar, color: UIColor);
+    export function _setNavBarBackgroundColor(navBar: UINavigationBar, color: UIColor);
+    //@endprivate
 }
