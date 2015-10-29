@@ -37,7 +37,7 @@ module.exports = {
             emulatorProcessIdentifier: args.emulatorProcessIdentifier,
             modulesPath: args.modulesPath || "./bin/dist/tns-core-modules-" + modulesPackageConfig.version + ".tgz",
             emuAvdName: args.emuAvdName,
-            outfile: args.outFile || "./TestRunResult.txt",
+            outFile: args.outFile || "./TestRunResult.txt",
             frameworkArgument: args.runtimePath ? " --frameworkPath=" + args.runtimePath : "",
             showEmu: args.showEmu || false,
 
@@ -50,7 +50,7 @@ module.exports = {
             deployedAppName:"org.nativescript.TestsApp",
             mainActivityName:"com.tns.NativeScriptActivity",
             pathToCompiledTests: "bin/dist/apps/tests",
-
+            simulatorSysLog: pathModule.join(process.env.HOME, "Library/Logs/CoreSimulator", args.emuAvdName, "/system.log"),
             platform: args.platform
         }
 
@@ -70,6 +70,12 @@ module.exports = {
                 },
                 tempExtractedModules: {
                     src: pathModule.join(localCfg.applicationDir, "node_modules", "package")
+                },
+                simulatorLog: {
+                    src: localCfg.simulatorSysLog,
+                    options: {
+                        force: true
+                    }
                 }
             },
             mkdir: {
@@ -134,6 +140,10 @@ module.exports = {
                             return newContent;
                         }
                     }
+                },
+                simulatorLog: {
+                    src: localCfg.simulatorSysLog,
+                    dest: localCfg.outFile
                 }
             },
             exec: {
@@ -163,6 +173,9 @@ module.exports = {
                     cmd: "adb install " + localCfg.pathToApk,
                     cwd: localCfg.applicationDir
                 },
+                startAndroidEmulator: {
+                    cmd: "emulator -avd " + localCfg.emuAvdName + " -no-audio " + (args.showEmu ? "" : "-no-window") + "&"
+                },
                 startAndroidApp: {
                     cmd: "adb shell am start -n " + localCfg.deployedAppName + "/" + localCfg.mainActivityName
                 },
@@ -186,17 +199,22 @@ module.exports = {
             },
             shell: {
                 collectAndroidLog: {
-                    command: "./expect.exp " + localCfg.outfile,
+                    command: "./expect.exp " + "'adb logcat' " + localCfg.outFile,
                     options: {
                         execOptions: {
                             maxBuffer: Infinity
                         }
                     }
                 },
-                startAndroidEmulator: {
-                    command: "emulator -avd " + localCfg.emuAvdName + " -no-audio " + (args.showEmu ? "" : "-no-window") + "&"
+                waitiOSLogCompletion: {
+                    command: "./expect.exp " + "'tail -f " + localCfg.simulatorSysLog + "' " + localCfg.outFile,
+                    options: {
+                        execOptions: {
+                            maxBuffer: Infinity
+                        }
+                    }
                 },
-                startiOSEmulator: {
+                startiOSSimulator: {
                     command: "xcrun instruments -w " + localCfg.emuAvdName,
                     options: {
                         failOnError: false
@@ -225,38 +243,57 @@ module.exports = {
             return templatedTaskName.replace(/\{platform\}/, localCfg.platform);
         }
 
+        grunt.registerTask("startEmulatorAndroid", [
+            getPlatformSpecificTask("exec:startAndroidEmulator"),
+        ]);
+
+        grunt.registerTask("startEmulatoriOS", [
+            getPlatformSpecificTask("shell:startiOSSimulator"),
+        ]);
+
+        grunt.registerTask("collectLogAndroid", [
+            "shell:collectAndroidLog"
+        ]);
+
+        grunt.registerTask("collectLogiOS", [
+            "shell:waitiOSLogCompletion",
+            "copy:simulatorLog"
+        ]);
+
         grunt.registerTask("doPostPlatformAddAndroid", [
-                "exec:restartAdb"
-                ]);
+            "exec:restartAdb"
+        ]);
+
         grunt.registerTask("doPostPlatformAddiOS", [
-                ]);
+            "clean:simulatorLog"
+        ]);
 
 
 //xcrun instruments -s
         grunt.registerTask("testsapp", [
-//                "clean:workingDir",
-//                "mkdir:workingDir",
-//                getPlatformSpecificTask("exec:kill{platform}Emulator"),
-//                getPlatformSpecificTask("shell:start{platform}Emulator"),
-//
-//                "exec:createApp",
-//                "clean:originalAppDir",
-//                "copy:testsAppToRunDir",
-//                "clean:modules",
-//                "untar:modules",
-//                "copy:modulesToDir",
-//                "clean:tempExtractedModules",
-//
-//                "exec:addPlatform",
-//                getPlatformSpecificTask("copy:add{platform}Permissions"),
-//                "shell:buildApp",
-//                getPlatformSpecificTask("doPostPlatformAdd{platform}"),
+                "clean:workingDir",
+                "mkdir:workingDir",
+                getPlatformSpecificTask("exec:kill{platform}Emulator"),
+                getPlatformSpecificTask("startEmulator{platform}"),
+
+                "exec:createApp",
+                "clean:originalAppDir",
+                "copy:testsAppToRunDir",
+                "clean:modules",
+                "untar:modules",
+                "copy:modulesToDir",
+                "clean:tempExtractedModules",
+
+                "exec:addPlatform",
+                getPlatformSpecificTask("copy:add{platform}Permissions"),
+                "shell:buildApp",
+                getPlatformSpecificTask("doPostPlatformAdd{platform}"),
 
                 getPlatformSpecificTask("exec:uninstallExisting{platform}App"),
                 getPlatformSpecificTask("exec:installNew{platform}App"),
                 getPlatformSpecificTask("exec:start{platform}App"),
-//                getPlatformSpecificTask("shell:collect{platform}Log"),
-//
+                getPlatformSpecificTask("collectLog{platform}"),
+
 //                getPlatformSpecificTask("exec:kill{platform}Emulator"),
 //                "clean:workingDir"
         ]);

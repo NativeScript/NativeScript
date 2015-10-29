@@ -8,10 +8,13 @@
 #expect "TypeScript compilation complete"
 #send \003
 
-set outfile [lindex $argv 0];
+
+set cmd [lindex $argv 0];
+set outfile [lindex $argv 1];
+
 set timeout 600
 #spawn (adb logcat | tee ./__TESTRESULT__.txt)
 log_file -noappend $outfile
-spawn adb logcat
+eval spawn $cmd
 expect "=== ALL TESTS COMPLETE ==="
 send \003
