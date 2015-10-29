@@ -497,11 +497,59 @@ export class SegmentedBarStyler implements definition.stylers.Styler {
         return textView.getCurrentTextColor();
     }
 
+    //Font methods
+    private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
+        let tabHost = <android.widget.TabHost>view._nativeView;
+        let fontValue = <font.Font>newValue;
+
+        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            let tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+            let t = <android.widget.TextView>tab.getChildAt(1);
+            let typeface = fontValue.getAndroidTypeface();
+            if (typeface) {
+                t.setTypeface(typeface);
+            }
+            else {
+                t.setTypeface(nativeValue.typeface);
+            }
+
+            if (fontValue.fontSize) {
+                t.setTextSize(fontValue.fontSize);
+            }
+            else {
+                t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+            }
+        }
+    }
+
+    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
+        let tabHost = <android.widget.TabHost>view._nativeView;
+        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            let tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+            let t = <android.widget.TextView>tab.getChildAt(1);
+            t.setTypeface(nativeValue.typeface);
+            t.setTextSize(nativeValue.size);
+        }
+    }
+
+    private static getFontInternalProperty(view: view.View): any {
+        let tabHost = <android.widget.TabHost>view._nativeView;
+        var textView = new android.widget.TextView(tabHost.getContext());
+        return {
+            typeface: textView.getTypeface(),
+            size: textView.getTextSize()
+        };
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             SegmentedBarStyler.setColorProperty,
             SegmentedBarStyler.resetColorProperty,
             SegmentedBarStyler.getColorProperty), "SegmentedBar");
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            SegmentedBarStyler.setFontInternalProperty,
+            SegmentedBarStyler.resetFontInternalProperty,
+            SegmentedBarStyler.getFontInternalProperty), "SegmentedBar");
     }
 }
 
