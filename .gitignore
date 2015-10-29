@@ -15,6 +15,7 @@ dist/
 !css-value/**/*.*
 !fetch/**/*.*
 !apps/TelerikNEXT/lib/**/*.*
+!build/*.*
 CrossPlatformModules.sln.ide/
 *.suo
 CrossPlatformModules.suo
@@ -27,3 +28,6 @@ obj/
 .baseDir.ts
 .ctags-exclude
 tags
+
+TestRunResult.txt
+.testsapprun
