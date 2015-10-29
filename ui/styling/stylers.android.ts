@@ -766,6 +766,7 @@ export class ActionBarStyler implements definition.stylers.Styler {
     private static setColorProperty(view: view.View, newValue: any) {
         var toolbar = (<android.support.v7.widget.Toolbar>view._nativeView);
         toolbar.setTitleTextColor(newValue);
+        
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
