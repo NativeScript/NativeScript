@@ -1,5 +1,6 @@
 ﻿import common = require("./web-view-common");
 import trace = require("trace");
+import fs = require("file-system");
 
 global.moduleMerge(common, exports);
 
@@ -99,8 +100,8 @@ export class WebView extends common.WebView {
         this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
     }
 
-    public _loadData(src: string) {
-        this._ios.loadHTMLStringBaseURL(src, null);
+    public _loadData(content: string) {
+        this._ios.loadHTMLStringBaseURL(content, NSURL.alloc().initWithString(`file:///${fs.knownFolders.currentApp().path}/`));
     }
 
     get canGoBack(): boolean {
