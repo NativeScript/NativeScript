@@ -73,8 +73,13 @@ class CssTypeSelector extends CssSelector {
         return TYPE_SPECIFICITY;
     }
     public matches(view: view.View): boolean {
-        return this.expression.toLowerCase() === view.typeName.toLowerCase();
+        return matchesType(this.expression, view);
     }
+}
+
+function matchesType(expression: string, view: view.View): boolean {
+    return expression.toLowerCase() === view.typeName.toLowerCase() ||
+        expression.toLowerCase() === view.typeName.split(/(?=[A-Z])/).join("-").toLowerCase();
 }
 
 class CssIdSelector extends CssSelector {
@@ -150,7 +155,7 @@ export class CssVisualStateSelector extends CssSelector {
         }
 
         if (this._isByType) {
-            matches = this._match === view.cssType.toLowerCase();
+            matches = matchesType(this._match, view);
         }
 
         return matches;

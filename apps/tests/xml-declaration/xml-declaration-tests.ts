@@ -200,6 +200,23 @@ export function test_parse_ShouldResolveExportsFromCodeFileForTemplates() {
     }
 }
 
+export function test_parse_css_is_applied_by_type_to_lower_case_dashed_components() {
+    var newPage: Page;
+    var pageFactory = function (): Page {
+        newPage = <Page>builder.parse("<page cssFile='~/xml-declaration/custom-css-file.css'><stack-layout /></page>");
+        return newPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
+    try {
+        helper.assertViewBackgroundColor(newPage.content, "#008000");
+    }
+    finally {
+        helper.goBack();
+    }
+};
+
 export function test_parse_ShouldApplyCssFromCssFile() {
     var newPage: Page;
     var pageFactory = function (): Page {
