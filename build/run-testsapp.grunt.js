@@ -268,8 +268,6 @@ module.exports = {
             "clean:simulatorLog"
         ]);
 
-
-//xcrun instruments -s
         grunt.registerTask("testsapp", [
                 "clean:workingDir",
                 "mkdir:workingDir",
@@ -294,8 +292,8 @@ module.exports = {
                 getPlatformSpecificTask("exec:start{platform}App"),
                 getPlatformSpecificTask("collectLog{platform}"),
 
-//                getPlatformSpecificTask("exec:kill{platform}Emulator"),
-//                "clean:workingDir"
+                getPlatformSpecificTask("exec:kill{platform}Emulator"),
+                "clean:workingDir"
         ]);
     }
 }
