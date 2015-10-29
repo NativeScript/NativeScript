@@ -36,13 +36,16 @@ examples.set("basics", "bindings/basics");
 
 examples.set("actColor", "action-bar/color");
 examples.set("actBG",   "action-bar/background");
-examples.set("actAll", "action-bar/all");
+examples.set("actStyle", "action-bar/all");
 
 examples.set("tabColor", "tab-view/color");
 examples.set("tabBG", "tab-view/background");
 examples.set("tabTabsBG", "tab-view/tabsBackground");
 examples.set("tabSelected", "tab-view/selected");
-examples.set("tabAll", "tab-view/all");
+examples.set("tabStyle", "tab-view/all");
+
+examples.set("segmentedStyle", "segmented-bar/all");
+
 
 examples.set("basics", "bindings/basics");
 examples.set("xmlbasics", "bindings/xmlbasics");
