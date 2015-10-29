@@ -42,8 +42,8 @@ to be tested. Defaults to the npm package, located in the current
 found, the globally installed `tns` gets called.
 - `emuPId`: The ID of the emulator process. This one is used to refresh the
 emulator process, as the emulator sometimes hangs.
-- `avd`: The name of the Android Virtual Device to be started to run the
-tests.
+- `avd`: The name of the Android Virtual Device or the iOS simulator GUID
+to be started to run the tests.
 - `logFilePath`: [Optional] The path to the file, which the test app run
 log will get saved to. Defaults to "./TestRunResult.txt".
 - `runtimePath`: [Optional] The path to a custom iOS or Android Runtime
