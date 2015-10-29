@@ -1,11 +1,12 @@
 ﻿/* tslint:disable */
-import TKUnit = require("./TKUnit");
-import trace = require("trace");
-import frameModule = require("ui/frame");
-import platform = require("platform");
-import uiTestModule = require("./ui-test");
+import * as TKUnit from"./TKUnit";
+import {messageType} from "trace";
+import {topmost, Frame} from "ui/frame";
+import {TextView} from "ui/text-view";
+import * as platform from "platform";
+import "./ui-test";
 
-frameModule.Frame.defaultAnimatedNavigation = false;
+Frame.defaultAnimatedNavigation = false;
 
 export function isRunningOnEmulator(): boolean {
     // This checks are not good enough to be added to modules but keeps unittests green.
@@ -123,22 +124,29 @@ function printRunTestStats() {
             }
         }
     }
-    TKUnit.write("=== ALL TESTS COMPLETE === " + (testsCount - failedTestCount) + " OK, " + failedTestCount + " failed", trace.messageType.info);
+    let finalMessage = "=== ALL TESTS COMPLETE === \n" + (testsCount - failedTestCount) + " OK, " + failedTestCount + " failed" + "\n";
+    TKUnit.write(finalMessage, messageType.info);
     for (j = 0; j < failedTestInfo.length; j++) {
-        TKUnit.write(failedTestInfo[j], trace.messageType.error);
+        let failureMessage = failedTestInfo[j];
+        TKUnit.write(failureMessage, messageType.error);
+        finalMessage += "\n" + failureMessage;
     }
+
+    let messageContainer = new TextView();
+    messageContainer.text = finalMessage;
+    topmost().currentPage.content = messageContainer;
 }
 
 function startLog(): void {
     let testsName: string = this.name;
-    TKUnit.write("START " + testsName + " TESTS.", trace.messageType.info);
+    TKUnit.write("START " + testsName + " TESTS.", messageType.info);
     this.start = TKUnit.time();
 }
 
 function log(): void {
     let testsName: string = this.name;
     let duration = TKUnit.time() - this.start;
-    TKUnit.write(testsName + " COMPLETED for " + duration, trace.messageType.info);
+    TKUnit.write(testsName + " COMPLETED for " + duration, messageType.info);
 }
 
 export var runAll = function (moduleName?: string) {
