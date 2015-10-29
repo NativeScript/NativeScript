@@ -46,7 +46,6 @@ examples.set("tabStyle", "tab-view/all");
 
 examples.set("segmentedStyle", "segmented-bar/all");
 
-
 examples.set("basics", "bindings/basics");
 examples.set("xmlbasics", "bindings/xmlbasics");
 
