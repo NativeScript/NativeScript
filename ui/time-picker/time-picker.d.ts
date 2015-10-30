@@ -17,12 +17,12 @@ declare module "ui/time-picker" {
         /**
          * Gets the native [android.widget.TimePicker](http://developer.android.com/reference/android/widget/TimePicker.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.TimePicker;
+        android: any /* android.widget.TimePicker */;
 
         /**
          * Gets the native iOS [UIDatePicker](http://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UIDatePicker_Class/index.html) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UIDatePicker;
+        ios: any /* UIDatePicker */;
 
         /**
          * Gets or sets the time hour.

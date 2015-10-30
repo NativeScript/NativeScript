@@ -62,18 +62,6 @@ function onIsUserInteractionEnabledPropertyChanged(data: dependencyObservable.Pr
 }
 (<proxy.PropertyMetadata>viewCommon.View.isUserInteractionEnabledProperty.metadata).onSetNativeValue = onIsUserInteractionEnabledPropertyChanged;
 
-export var NativeViewGroup = (<any>android.view.ViewGroup).extend({
-    onMeasure: function (widthMeasureSpec, heightMeasureSpec) {
-        var owner: viewDefinition.View = this[OWNER];
-        owner.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        this.setMeasuredDimension(owner.getMeasuredWidth(), owner.getMeasuredHeight());
-    },
-    onLayout: function (changed: boolean, left: number, top: number, right: number, bottom: number): void {
-        var owner: viewDefinition.View = this[OWNER];
-        owner.onLayout(left, top, right, bottom);
-    }
-});
-
 export class View extends viewCommon.View {
     private _disableUserInteractionListener: android.view.View.OnTouchListener = new android.view.View.OnTouchListener({
         onTouch: function (view: android.view.View, event: android.view.MotionEvent) {

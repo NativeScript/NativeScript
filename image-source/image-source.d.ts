@@ -20,12 +20,12 @@ declare module "image-source" {
        /**
         * The iOS-specific [UIImage](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIImage_Class/) instance. Will be undefined when running on Android.
         */
-        ios: UIImage;
+        ios: any /* UIImage */;
 
        /**
         * The Android-specific [image](http://developer.android.com/reference/android/graphics/Bitmap.html) instance. Will be undefined when running on iOS.
         */
-        android: android.graphics.Bitmap;
+        android: any /* android.graphics.Bitmap */;
 
        /**
         * Loads this instance from the specified resource name.

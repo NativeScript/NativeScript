@@ -28,12 +28,12 @@ declare module "ui/web-view" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/webkit/WebView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.webkit.WebView;
+        android: any /* android.webkit.WebView */;
 
         /**
          * Gets the native [UIWebView](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIWebView_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UIWebView;
+        ios: any /* UIWebView */;
 
         /**
          * [Obsolete. Please use src instead!] Gets or sets the url displayed by this instance.

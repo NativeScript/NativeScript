@@ -18,12 +18,12 @@ declare module "ui/switch" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/Switch.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.Switch;
+        android: any /* android.widget.Switch */;
 
         /**
          * Gets the native iOS [UISwitch](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UISwitch_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UISwitch;
+        ios: any /* UISwitch */;
 
         /**
          * Gets or sets if a switch is checked or not.

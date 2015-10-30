@@ -54,7 +54,7 @@ declare module "color" {
         /**
          * Gets the iOS-specific UIColor value representation. This is a read-only property.
          */
-        ios: UIColor;
+        ios: any /* UIColor */;
 
         /**
          * Specifies whether this Color is equal to the Color parameter.

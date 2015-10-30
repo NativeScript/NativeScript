@@ -205,7 +205,7 @@ declare module "ui/action-bar" {
     }
 
     //@private
-    export function _setNavBarColor(navBar: UINavigationBar, color: UIColor);
-    export function _setNavBarBackgroundColor(navBar: UINavigationBar, color: UIColor);
+    export function _setNavBarColor(navBar: any /* UINavigationBar */, color: any /* UIColor */);
+    export function _setNavBarBackgroundColor(navBar: any /* UINavigationBar */, color: any /* UIColor */);
     //@endprivate
 }

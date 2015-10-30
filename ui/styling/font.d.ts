@@ -12,8 +12,8 @@
 
         constructor(family: string, size: number, style: string, weight: string);
 
-        public getAndroidTypeface(): android.graphics.Typeface;
-        public getUIFont(defaultFont: UIFont): UIFont;
+        public getAndroidTypeface(): any /* android.graphics.Typeface */;
+        public getUIFont(defaultFont: any /* UIFont */): any /* UIFont */;
 
         public withFontFamily(family: string): Font;
         public withFontStyle(style: string): Font;

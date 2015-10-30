@@ -18,12 +18,12 @@ declare module "ui/date-picker" {
         /**
          * Gets the native [android.widget.DatePicker](http://developer.android.com/reference/android/widget/DatePicker.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.DatePicker;
+        android: any /* android.widget.DatePicker */;
 
         /**
          * Gets the native iOS [UIDatePicker](http://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UIDatePicker_Class/index.html) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UIDatePicker;
+        ios: any /* UIDatePicker */;
 
         /**
          * Gets or sets the year.
