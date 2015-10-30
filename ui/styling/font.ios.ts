@@ -175,7 +175,11 @@ function registerCustomFonts() {
             if (fs.Folder.exists(fs.path.join(fontsFolderPath, fileEntity.name))) {
                 return true;
             }
-            ios.registerFont(fileEntity.name);
+
+            if (fileEntity instanceof fs.File &&
+                ((<fs.File>fileEntity).extension === "ttf" || (<fs.File>fileEntity).extension === "otf")) {
+                ios.registerFont(fileEntity.name);
+            }
             return true;
         }
 
