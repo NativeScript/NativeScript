@@ -447,8 +447,8 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\text\button.ts">
       <DependentUpon>button.xml</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\ui-tests-app\web-view\webview.ts">
-      <DependentUpon>webview.xml</DependentUpon>
+    <TypeScriptCompile Include="apps\ui-tests-app\web-view\web-view.ts">
+      <DependentUpon>web-view.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="connectivity\connectivity-common.ts">
       <DependentUpon>connectivity.d.ts</DependentUpon>
@@ -1050,12 +1050,10 @@
     <Content Include="apps\ui-tests-app\pages\text\button.xml" />
     <Content Include="apps\ui-tests-app\web-view\test.css" />
     <Content Include="apps\ui-tests-app\web-view\test.html" />
-    <Content Include="apps\ui-tests-app\web-view\webview.xml" />
-    <Content Include="apps\ui-tests-app\web-view\webviewhtmlwithimages.xml" />
-    <Content Include="apps\ui-tests-app\web-view\wvlocal.xml">
+    <Content Include="apps\ui-tests-app\web-view\web-view-test.xml" />
+    <Content Include="apps\ui-tests-app\web-view\web-view.xml">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="apps\ui-tests-app\web-view\webviewlocalfile.xml" />
     <Content Include="fetch\fetch.js" />
     <Content Include="css-value\reworkcss-value.js" />
     <Content Include="ui\layouts\stack-layout\package.json">

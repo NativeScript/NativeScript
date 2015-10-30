@@ -71,7 +71,11 @@ examples.set("modalview", "modal-view/modalview");
 
 examples.set("nordic", "nordic/nordic");
 
-examples.set("text", "pages/text");
+examples.set("text/button", "pages/text/button");
+examples.set("text/label", "pages/text/label");
+examples.set("text/text-field", "pages/text/text-field");
+examples.set("text/text-view", "pages/text/text-view");
+
 examples.set("background", "pages/background");
 examples.set("console", "pages/console");
 examples.set("gestures", "pages/gestures");
@@ -85,9 +89,7 @@ examples.set("listview_binding", "pages/listview_binding");
 examples.set("switch", "pages/switchandprogress");
 examples.set("textfield", "pages/textfield");
 
-examples.set("webview", "web-view/webview");
-examples.set("webviewhtmlwithimages", "web-view/webviewhtmlwithimages");
-examples.set("webviewlocalfile", "web-view/webviewlocalfile");
-examples.set("wvlocal", "web-view/wvlocal");
+examples.set("webview", "web-view/web-view");
+examples.set("webtest", "web-view/web-vew-test");
 
 //VM.set("selected", "tabAll");

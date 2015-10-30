@@ -1,0 +1,6 @@
+<Page>
+  <StackLayout orientation="vertical">
+    <WebView src="~/web-view/test.html" height="50" />
+    <WebView src="&lt;html&gt;&lt;body&gt;&lt;img src='./pages/test2.png'&gt;&lt;/img&gt;&lt;/body&gt;&lt;/html&gt;" height="75" />
+  </StackLayout>
+</Page>

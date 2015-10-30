@@ -1,6 +1,0 @@
-﻿<Page>
-  <GridLayout>
-    <WebView src="&lt;html&gt;&lt;body&gt;&lt;img src='./tests/logo.png'&gt;&lt;/img&gt;&lt;/body&gt;&lt;/html&gt;" />
-  </GridLayout>
-</Page>
-
