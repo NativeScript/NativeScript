@@ -243,7 +243,7 @@ declare module "application" {
         /**
          * The activity.
          */
-        activity: android.app.Activity;
+        activity: any /* android.app.Activity */;
 
         /**
          * The name of the event.
@@ -263,7 +263,7 @@ declare module "application" {
         /**
          * The bundle.
          */
-        bundle: android.os.Bundle;
+        bundle: any /* android.os.Bundle */;
     }
 
     /**
@@ -283,7 +283,7 @@ declare module "application" {
         /**
          * The intent.
          */
-        intent: android.content.Intent;
+        intent: any /* android.content.Intent */;
     }
 
     /**
@@ -303,27 +303,27 @@ declare module "application" {
         /**
          * The [android Application](http://developer.android.com/reference/android/app/Application.html) object instance provided to the init of the module.
          */
-        nativeApp: android.app.Application;
+        nativeApp: any /* android.app.Application */;
 
         /**
          * The application's [android Context](http://developer.android.com/reference/android/content/Context.html) object instance.
          */
-        context: android.content.Context;
+        context: any /* android.content.Context */;
 
         /**
          * The currently active (loaded) [android Activity](http://developer.android.com/reference/android/app/Activity.html). This property is automatically updated upon Activity events.
          */
-        foregroundActivity: android.app.Activity;
+        foregroundActivity: any /* android.app.Activity */;
 
         /**
          * The currently active (loaded) Context. This is typically the top-level Activity that is just created.
          */
-        currentContext: android.content.Context;
+        currentContext: any /* android.content.Context */;
 
         /**
          * The main (start) Activity for the application.
          */
-        startActivity: android.app.Activity;
+        startActivity: any /* android.app.Activity */;
 
         /**
          * The name of the application package.
@@ -335,47 +335,47 @@ declare module "application" {
          * @param intent - Native (android) intent used to create the activity.
          * Returns com.tns.NativeScriptActivity.extend implementation.
          */
-        getActivity(intent: android.content.Intent): any;
+        getActivity(intent: any /* android.content.Intent */): any;
 
         /**
          * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityCreated method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
-        onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
+        onActivityCreated: (activity: any /* android.app.Activity */, bundle: any /* android.os.Bundle */) => void;
 
         /**
          * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityDestroyed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
-        onActivityDestroyed: (activity: android.app.Activity) => void;
+        onActivityDestroyed: (activity: any /* android.app.Activity */) => void;
 
         /**
          * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityDestroyed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
-        onActivityStarted: (activity: android.app.Activity) => void;
+        onActivityStarted: (activity: any /* android.app.Activity */) => void;
 
         /**
          * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityPaused method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
-        onActivityPaused: (activity: android.app.Activity) => void;
+        onActivityPaused: (activity: any /* android.app.Activity */) => void;
 
         /**
          * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityResumed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
-        onActivityResumed: (activity: android.app.Activity) => void;
+        onActivityResumed: (activity: any /* android.app.Activity */) => void;
 
         /**
          * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityStopped method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
-        onActivityStopped: (activity: android.app.Activity) => void;
+        onActivityStopped: (activity: any /* android.app.Activity */) => void;
 
         /**
          * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivitySaveInstanceState method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
-        onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
+        onSaveActivityState: (activity: any /* android.app.Activity */, bundle: any /* android.os.Bundle */) => void;
 
         /**
          * [Deprecated. Please use the respective event instead.] Direct handler of the onActivityResult method.
          */
-        onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void;
+        onActivityResult: (requestCode: number, resultCode: number, data: any /* android.content.Intent */) => void;
             
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -481,7 +481,7 @@ declare module "application" {
          * @param intentFilter A string containing the intent filter.
          * @param onReceiveCallback A callback function that will be called each time the receiver receives a broadcast.
          */
-        registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void;
+        registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: any /* android.content.Context */, intent: any /* android.content.Intent */) => void): void;
 
         /**
          * Unregister a previously registered BroadcastReceiver. 
@@ -500,17 +500,17 @@ declare module "application" {
         /**
          * The root view controller for the application.
          */
-        rootController: UIViewController;
+        rootController: any /* UIViewController */;
 
         /**
          * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html).
          */
-        nativeApp: UIApplication;
+        nativeApp: any /* UIApplication */;
 
         /**
          * The [UIApplicationDelegate](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplicationDelegate_Protocol/index.html) class.
          */
-        delegate: typeof UIApplicationDelegate;
+        delegate: any /* typeof UIApplicationDelegate */;
 
         /**
          * Adds an observer to the default notification center for the specified notification.
@@ -518,7 +518,7 @@ declare module "application" {
          * @param notificationName A string containing the name of the notification.
          * @param onReceiveCallback A callback function that will be called each time the observer receives a notification.
          */
-        addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): any;
+        addNotificationObserver(notificationName: string, onReceiveCallback: (notification: any /* NSNotification */) => void): any;
 
         /**
          * Removes the observer for the specified notification from the default notification center.

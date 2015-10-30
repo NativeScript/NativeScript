@@ -57,12 +57,12 @@ declare module "location" {
        /**
         * The android-specific [location](http://developer.android.com/reference/android/location/Location.html) object.
         */
-        android: android.location.Location;
+        android: any /* android.location.Location */;
 
        /**
         * The ios-specific [CLLocation](https://developer.apple.com/library/ios/documentation/CoreLocation/Reference/CLLocation_Class/) object.
         */
-        ios: CLLocation;
+        ios: any /* CLLocation */;
     }
 
    /**
@@ -162,7 +162,7 @@ declare module "location" {
 		/**
 		 * The android-specific location manager [LocationManager](http://developer.android.com/reference/android/location/LocationManager.html)
 		 */
-		manager: android.location.LocationManager;
+		manager: any /* android.location.LocationManager */;
 
 		/**
 		 * The minimum time interval between subsequent location updates, in milliseconds.
@@ -186,6 +186,6 @@ declare module "location" {
 		/**
 		 * The ios-specific location manager [CLLocationManager](https://developer.apple.com/library/ios/documentation/CoreLocation/Reference/CLLocationManager_Class/)
 		 */
-		manager: CLLocationManager;
+		manager: any /* CLLocationManager */;
 	}
 }

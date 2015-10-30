@@ -21,12 +21,12 @@ declare module "ui/label" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/TextView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.TextView;
+        android: any /* android.widget.TextView */;
 
         /**
          * Gets the native [UILabel](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UILabel_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UILabel;
+        ios: any /* UILabel */;
 
         /**
          * Gets or sets whether the Label wraps text or not.

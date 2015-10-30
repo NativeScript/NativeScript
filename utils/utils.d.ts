@@ -59,27 +59,27 @@
         /**
          * Gets the native Android application instance.
          */
-        export function getApplication(): android.app.Application;
+        export function getApplication(): any /* android.app.Application */;
 
         /**
          * Gets the Android application context.
          */
-        export function getApplicationContext(): android.content.Context;
+        export function getApplicationContext(): any /* android.content.Context */;
 
         /**
          * Gets the native Android input method manager.
          */
-        export function getInputMethodManager(): android.view.inputmethod.InputMethodManager;
+        export function getInputMethodManager(): any /* android.view.inputmethod.InputMethodManager */;
 
         /**
          * Hides the soft input method, ususally a soft keyboard.
          */
-        export function dismissSoftInput(nativeView: android.view.View): void;
+        export function dismissSoftInput(nativeView: any /* android.view.View */): void;
 
         /**
          * Shows the soft input method, ususally a soft keyboard.
          */
-        export function showSoftInput(nativeView: android.view.View): void;
+        export function showSoftInput(nativeView: any /* android.view.View */): void;
 
         /**
          * Utility module dealing with some android collections.
@@ -122,7 +122,7 @@
              * Gets a color from the current theme.
              * @param name - Name of the color resource.
              */
-            export function getPalleteColor(name: string, context: android.content.Context): number;
+            export function getPalleteColor(name: string, context: any /* android.content.Context */): number;
         }
     }
     /**
@@ -149,7 +149,7 @@
          * Gets NativeScript color from [UIColor](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIColor_Class/).
          * @param uiColor - UIColor instance used to create a NativeScript color.
          */
-        export function getColor(uiColor: UIColor): colorModule.Color;
+        export function getColor(uiColor: any /* UIColor */): colorModule.Color;
         /**
          * Gets an information about if current mode is Landscape.
          */

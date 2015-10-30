@@ -18,12 +18,12 @@ declare module "ui/image" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/ImageView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.ImageView;
+        android: any /* android.widget.ImageView */;
 
         /**
          * Gets the native iOS [UIImageView](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIImageView_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UIImageView;
+        ios: any /* UIImageView */;
 
         /**
          * Gets or sets the image source of the image.

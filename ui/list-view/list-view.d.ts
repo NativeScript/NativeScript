@@ -52,12 +52,12 @@ declare module "ui/list-view" {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/ListView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
-        android: android.widget.ListView;
+        android: any /* android.widget.ListView */;
 
         /**
          * Gets the native [iOS view](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
-        ios: UITableView;
+        ios: any /* UITableView */;
 
         /**
          * Gets a value indicating whether the ListView is currently scrolling.
@@ -137,11 +137,11 @@ declare module "ui/list-view" {
         /**
          * Gets the native [iOS view](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableViewCell_Class/) that represents the user interface where the view is hosted. Valid only when running on iOS.
          */
-        ios: UITableViewCell;
+        ios: any /* UITableViewCell */;
 
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/view/ViewGroup.html) that represents the user interface where the view is hosted. Valid only when running on Android OS.
          */
-        android: android.view.ViewGroup;
+        android: any /* android.view.ViewGroup */;
     }
 }

@@ -9,6 +9,6 @@
          * @param control An instance of the UIControl which state will be watched.
          * @param callback A callback called when a visual state of the UIControl is changed.
          */
-        constructor(control: UIControl, callback: (state: string) => void);
+        constructor(control: any /* UIControl */, callback: (state: string) => void);
     }
 }
