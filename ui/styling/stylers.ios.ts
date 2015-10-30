@@ -499,6 +499,31 @@ export class SegmentedBarStyler implements definition.stylers.Styler {
     }
 }
 
+export class ActivityIndicatorStyler implements definition.stylers.Styler {
+    //Text color methods
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <UIActivityIndicatorView>view.ios;
+        bar.color = newValue;
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UIActivityIndicatorView>view.ios;
+        bar.color = nativeValue;
+    }
+
+    private static getNativeColorValue(view: view.View): any {
+        var bar = <UIActivityIndicatorView>view.ios;
+        return bar.color;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            ActivityIndicatorStyler.setColorProperty,
+            ActivityIndicatorStyler.resetColorProperty,
+            ActivityIndicatorStyler.getNativeColorValue), "ActivityIndicator");
+    }
+}
+
 export class ProgressStyler implements definition.stylers.Styler {
     //Text color methods
     private static setColorProperty(view: view.View, newValue: any) {
@@ -774,4 +799,5 @@ export function _registerDefaultStylers() {
     ProgressStyler.registerHandlers();
     SwitchStyler.registerHandlers();
     TextFieldStyler.registerHandlers();
+    ActivityIndicatorStyler.registerHandlers();
 }
