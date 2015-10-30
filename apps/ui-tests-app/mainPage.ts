@@ -87,5 +87,6 @@ examples.set("textfield", "pages/textfield");
 examples.set("webview", "web-view/webview");
 examples.set("webviewhtmlwithimages", "web-view/webviewhtmlwithimages");
 examples.set("webviewlocalfile", "web-view/webviewlocalfile");
+examples.set("wvlocal", "web-view/wvlocal");
 
 //VM.set("selected", "tabAll");
