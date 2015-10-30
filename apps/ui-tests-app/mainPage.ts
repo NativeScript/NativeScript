@@ -81,7 +81,8 @@ examples.set("i61", "pages/i61");
 examples.set("i73", "pages/i73");
 examples.set("i86", "pages/i86");
 examples.set("listview_binding", "pages/listview_binding");
-examples.set("switchandprogress", "pages/switchandprogress");
+
+examples.set("switch", "pages/switchandprogress");
 examples.set("textfield", "pages/textfield");
 
 examples.set("webview", "web-view/webview");
