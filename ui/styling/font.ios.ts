@@ -177,7 +177,7 @@ function registerCustomFonts() {
             }
 
             if (fileEntity instanceof fs.File &&
-                ((<fs.File>fileEntity).extension === "ttf" || (<fs.File>fileEntity).extension === "otf")) {
+                ((<fs.File>fileEntity).extension === ".ttf" || (<fs.File>fileEntity).extension === ".otf")) {
                 ios.registerFont(fileEntity.name);
             }
             return true;
