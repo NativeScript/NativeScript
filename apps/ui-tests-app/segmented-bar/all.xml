@@ -1,0 +1,10 @@
+<Page>
+  <GridLayout rows="auto, *">
+    <SegmentedBar style="color: green; background-color: yellow; font-weight: bold; font-size: 20; font-style: italic; font-family: monospace;">
+      <SegmentedBar.items>
+        <SegmentedBarItem title="Item 1" />
+        <SegmentedBarItem title="Item 2" />
+      </SegmentedBar.items>
+    </SegmentedBar>
+  </GridLayout>
+</Page>

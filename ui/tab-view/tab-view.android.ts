@@ -150,6 +150,14 @@ function selectedColorPropertyChanged(data: dependencyObservable.PropertyChangeD
 }
 (<proxy.PropertyMetadata>common.TabView.selectedColorProperty.metadata).onSetNativeValue = selectedColorPropertyChanged;
 
+function tabsBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var tabLayout = (<TabView>data.object)._getAndroidTabView();
+    if (tabLayout && data.newValue instanceof color.Color) {
+        tabLayout.setBackgroundColor(data.newValue.android);
+    }
+}
+(<proxy.PropertyMetadata>common.TabView.tabsBackgroundColorProperty.metadata).onSetNativeValue = tabsBackgroundColorPropertyChanged;
+
 export class TabView extends common.TabView {
     private _grid: org.nativescript.widgets.GridLayout;
     private _tabLayout: org.nativescript.widgets.TabLayout;

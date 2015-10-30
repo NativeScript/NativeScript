@@ -67,6 +67,11 @@ declare module "ui/tab-view" {
         selectedColor: color.Color;
 
         /**
+         * Gets or sets the color used for background of the tab items.
+         */
+        tabsBackgroundColor: color.Color;
+
+        /**
          * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
         android: android.view.View;//android.support.v4.view.ViewPager;

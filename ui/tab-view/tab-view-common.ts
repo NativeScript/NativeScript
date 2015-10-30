@@ -58,6 +58,7 @@ var TAB_VIEW = "TabView";
 var ITEMS = "items";
 var SELECTED_INDEX = "selectedIndex";
 var SELECTED_COLOR = "selectedColor";
+var TABS_BACKGROUND_COLOR = "tabsBackgroundColor";
 
 export module knownCollections {
     export var items = "items";
@@ -83,6 +84,13 @@ var selectedColorProperty = new dependencyObservable.Property(
         undefined,
         dependencyObservable.PropertyMetadataSettings.None));
 
+var tabsBackgroundColorProperty = new dependencyObservable.Property(
+    TABS_BACKGROUND_COLOR,
+    TAB_VIEW,
+    new proxy.PropertyMetadata(
+        undefined,
+        dependencyObservable.PropertyMetadataSettings.None));
+
 (<proxy.PropertyMetadata>selectedIndexProperty.metadata).onSetNativeValue = function (data: dependencyObservable.PropertyChangeData) {
     var tabView = <TabView>data.object;
     tabView._onSelectedIndexPropertyChangedSetNativeValue(data);
@@ -97,6 +105,7 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
     public static itemsProperty = itemsProperty;
     public static selectedIndexProperty = selectedIndexProperty;
     public static selectedColorProperty = selectedColorProperty;
+    public static tabsBackgroundColorProperty = tabsBackgroundColorProperty;
     public static selectedIndexChangedEvent = "selectedIndexChanged";
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
@@ -174,6 +183,14 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
     }
     set selectedColor(value: color.Color) {
         this._setValue(TabView.selectedColorProperty,
+            value instanceof color.Color ? value : new color.Color(<any>value));
+    }
+
+    get tabsBackgroundColor(): color.Color {
+        return this._getValue(TabView.tabsBackgroundColorProperty);
+    }
+    set tabsBackgroundColor(value: color.Color) {
+        this._setValue(TabView.tabsBackgroundColorProperty,
             value instanceof color.Color ? value : new color.Color(<any>value));
     }
 
