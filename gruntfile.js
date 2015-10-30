@@ -25,7 +25,7 @@ module.exports = function(grunt) {
             var contentAsObject = JSON.parse(content);
             update(contentAsObject);
             return JSON.stringify(contentAsObject, null, "\t");
-        }
+        };
 
         var updateModulesPackageDef = function(content, srcPath) {
             return updatePackageDef(content, function(contentAsObject) {
@@ -42,7 +42,7 @@ module.exports = function(grunt) {
                 contentAsObject.version = localCfg.packageVersion;
                 contentAsObject.author = "Telerik <support@telerik.com>";
                 var specificKeywords = ["telerik", "mobile", "nativescript", "{N}", "tns", "appbuilder"];
-                if (currentAppName.indexOf("template-") == 0) {
+                if (currentAppName.indexOf("template-") === 0) {
                     var templateName = currentAppName.substring("template-".length);
                     contentAsObject.name = "tns-" + currentAppName;
                     contentAsObject.description = "Nativescript " + templateName + " project template";
@@ -132,7 +132,7 @@ module.exports = function(grunt) {
                 }
             }
             return allDirs;
-        }
+        };
 
         var localCfg = {
             srcDir: ".",
@@ -150,7 +150,7 @@ module.exports = function(grunt) {
         };
 
         var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
-        nodeTestEnv['NODE_PATH'] = localCfg.outModulesDir;
+        nodeTestEnv.NODE_PATH = localCfg.outModulesDir;
 
         localCfg.nodeTestsDir = pathModule.join(localCfg.outModulesDir, 'node-tests');
 
@@ -176,6 +176,19 @@ module.exports = function(grunt) {
                 "!./android17.d.ts",
                 "!./libjs.d.ts"
         ]);
+
+        var tsOptions = {
+            fast: 'never',
+            module: "commonjs",
+            target: "es5",
+            sourceMap: false,
+            declaration: false,
+            removeComments: !grunt.option('leavecomments') || '',
+            compiler: "node_modules/typescript/bin/tsc",
+            noEmitOnError: true,
+            experimentalDecorators: true,
+            noEmitHelpers: true
+        };
 
         grunt.initConfig({
             localCfg : localCfg,
@@ -314,36 +327,31 @@ module.exports = function(grunt) {
                 build: {
                     src: localCfg.typeScriptSrc,
                     outDir: localCfg.outModulesDir,
-                    options: {
-                        fast: 'never',
-                        module: "commonjs",
-                        target: "es5",
-                        sourceMap: false,
-                        declaration: false,
-                        removeComments: "<%= !grunt.option('leavecomments') || '' %>",
-                        compiler: "node_modules/typescript/bin/tsc",
-                        noEmitOnError: true,
-                        experimentalDecorators: true,
-                        noEmitHelpers: true
-                    }
+                    options: tsOptions
                 },
                 buildNodeTests: {
                     src: [
                             'js-libs/easysax/**/*.ts',
                             'xml/**/*.ts',
                             'node-tests/**/*.ts',
+                            'es-collections.d.ts',
                         ],
                     outDir: localCfg.outModulesDir,
-                    options: {
-                        fast: 'never',
-                        module: "commonjs",
-                        target: "es5",
-                        sourceMap: false,
-                        declaration: false,
-                        removeComments: "<%= !grunt.option('leavecomments') || '' %>",
-                        compiler: "node_modules/typescript/bin/tsc",
-                        noEmitOnError: true
-                    }
+                    options: tsOptions
+                },
+                buildDts: {
+                    src: [
+                        '**/*.d.ts',
+                        '!org.nativescript.widgets.d.ts',
+                        '!**/*.android.d.ts',
+                        '!node_modules/**/*',
+                        '!bin/**/*',
+                        '!apps/**/*',
+                        '!android17.d.ts',
+                        '!ios.d.ts',
+                    ],
+                    outDir: localCfg.outModulesDir,
+                    options: tsOptions
                 }
             },
             tslint: {
@@ -431,7 +439,7 @@ module.exports = function(grunt) {
                 clonedTasks.push({name: taskName, cfg: taskCfg});
             }
             return clonedTasks;
-        }
+        };
 
         var enqueueTasks = function(tasks) {
             for (var i=0; i<tasks.length; i++) {
@@ -439,7 +447,7 @@ module.exports = function(grunt) {
                 grunt.config(task.name, task.cfg);
                 grunt.task.run(task.name.join(":"));
             }
-        }
+        };
 
         grunt.registerTask("processEachApp", function(outAppsDir, pkgAppNameSuffix){
             var allapps = getSubDirs(localCfg.srcAppsDir);
@@ -489,7 +497,10 @@ module.exports = function(grunt) {
                 "copy:license"
         ]);
 
+        grunt.registerTask("compile-dts", ["ts:buildDts"]);
+
         grunt.registerTask("compile-ts", [
+                "compile-dts",
                 "ts:build",
                 "clean:typeScriptLeftovers",
                 "copy:childPackageFiles"
