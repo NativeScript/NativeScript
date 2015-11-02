@@ -223,5 +223,7 @@ exports.start = function () {
         started = true;
         appModule.loadCss();
         UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(Responder));
+    } else {
+        throw new Error("iOS Application already started!");
     }
 }
