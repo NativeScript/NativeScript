@@ -66,7 +66,6 @@ examples.set("modalview", "modal-view/modalview");
 
 examples.set("nordic", "nordic/nordic");
 
-
 examples.set("background", "pages/background");
 examples.set("console", "pages/console");
 examples.set("gestures", "pages/gestures");
@@ -75,7 +74,6 @@ examples.set("i61", "pages/i61");
 examples.set("i73", "pages/i73");
 examples.set("i86", "pages/i86");
 examples.set("listview_binding", "pages/listview_binding");
-
 
 examples.set("switch", "pages/switchandprogress"); // TODO: Update this test page.
 
