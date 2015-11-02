@@ -14,7 +14,9 @@ module.exports = {
             emuAvdName: grunt.option("avd"),
             outFile: grunt.option("logFilePath"),
             runtimePath: grunt.option("runtimePath"),
-            showEmu: grunt.option("showEmu")
+            showEmu: grunt.option("showEmu"),
+            runAppOnly: grunt.option("runAppOnly"),
+            pathToApp: grunt.option("pathToApp")
         };
 
         (function validateInput(){
@@ -30,6 +32,10 @@ module.exports = {
                     throw new Error("Please, specify the name of the AVD to start (--avd=...).");
                 }
             }
+
+            if (args.runAppOnly && !args.pathToApp) {
+                throw new Error("runAppOnly called, but no path to application specified. Please, add the path via the (--pathToApp=...) parameter.");
+            }
         }());
 
         var localCfg = {
@@ -40,6 +46,7 @@ module.exports = {
             outFile: args.outFile || "./TestRunResult.txt",
             frameworkArgument: args.runtimePath ? " --frameworkPath=" + args.runtimePath : "",
             showEmu: args.showEmu || false,
+            runAppOnly: args.runAppOnly || false,
 
             workingDir:".testsapprun",
             testsAppName:"TestsApp",
@@ -52,6 +59,10 @@ module.exports = {
             pathToCompiledTests: "bin/dist/apps/tests",
             simulatorSysLog: pathModule.join(process.env.HOME, "Library/Logs/CoreSimulator", args.emuAvdName, "/system.log"),
             platform: args.platform
+        }
+
+        if (localCfg.runAppOnly) {
+            localCfg.pathToApp = localCfg.pathToApk = args.pathToApp;
         }
 
         grunt.initConfig({
@@ -260,40 +271,57 @@ module.exports = {
             "copy:simulatorLog"
         ]);
 
-        grunt.registerTask("doPostPlatformAddAndroid", [
+        grunt.registerTask("doPreUninstallAppAndroid", [
             "exec:restartAdb"
         ]);
 
-        grunt.registerTask("doPostPlatformAddiOS", [
+        grunt.registerTask("doPreUninstallAppiOS", [
             "clean:simulatorLog"
         ]);
 
-        grunt.registerTask("testsapp", [
-                "clean:workingDir",
-                "mkdir:workingDir",
-                getPlatformSpecificTask("exec:kill{platform}Emulator"),
-                getPlatformSpecificTask("startEmulator{platform}"),
+        grunt.registerTask("buildTestsApp", [
+            "clean:workingDir",
+            "mkdir:workingDir",
+            getPlatformSpecificTask("exec:kill{platform}Emulator"),
+            getPlatformSpecificTask("startEmulator{platform}"),
 
-                "exec:createApp",
-                "clean:originalAppDir",
-                "copy:testsAppToRunDir",
-                "clean:modules",
-                "untar:modules",
-                "copy:modulesToDir",
-                "clean:tempExtractedModules",
+            "exec:createApp",
+            "clean:originalAppDir",
+            "copy:testsAppToRunDir",
+            "clean:modules",
+            "untar:modules",
+            "copy:modulesToDir",
+            "clean:tempExtractedModules",
 
-                "exec:addPlatform",
-                getPlatformSpecificTask("copy:add{platform}Permissions"),
-                "shell:buildApp",
-                getPlatformSpecificTask("doPostPlatformAdd{platform}"),
-
-                getPlatformSpecificTask("exec:uninstallExisting{platform}App"),
-                getPlatformSpecificTask("exec:installNew{platform}App"),
-                getPlatformSpecificTask("exec:start{platform}App"),
-                getPlatformSpecificTask("collectLog{platform}"),
-
-                getPlatformSpecificTask("exec:kill{platform}Emulator"),
-                "clean:workingDir"
+            "exec:addPlatform",
+            getPlatformSpecificTask("copy:add{platform}Permissions"),
+            "shell:buildApp",
         ]);
+
+        grunt.registerTask("runApp", [
+            getPlatformSpecificTask("doPreUninstallApp{platform}"),
+
+            getPlatformSpecificTask("exec:uninstallExisting{platform}App"),
+            getPlatformSpecificTask("exec:installNew{platform}App"),
+            getPlatformSpecificTask("exec:start{platform}App"),
+            getPlatformSpecificTask("collectLog{platform}"),
+
+        ]);
+
+        grunt.registerTask("cleanup", [
+            getPlatformSpecificTask("exec:kill{platform}Emulator"),
+            "clean:workingDir"
+        ]);
+
+        var tasksToExecute = ["runApp"];
+        if (!localCfg.runAppOnly) {
+            tasksToExecute = [
+                "buildTestsApp",
+                "runApp",
+                "cleanup"
+            ];
+        }
+
+        grunt.registerTask("testsapp", tasksToExecute);
     }
 }
