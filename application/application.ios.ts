@@ -217,7 +217,11 @@ global.__onUncaughtError = function (error: Error) {
     definition.notify({ eventName: definition.uncaughtErrorEvent, object: <any>definition.ios, ios: error });
 }
 
+var started: boolean = false;
 exports.start = function () {
-    appModule.loadCss();
-    UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(Responder));
+    if (!started) {
+        appModule.loadCss();
+        UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(Responder));
+        started = true;
+    }
 }
