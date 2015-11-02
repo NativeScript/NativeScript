@@ -220,8 +220,8 @@ global.__onUncaughtError = function (error: Error) {
 var started: boolean = false;
 exports.start = function () {
     if (!started) {
+        started = true;
         appModule.loadCss();
         UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(Responder));
-        started = true;
     }
 }
