@@ -6,6 +6,7 @@ import pagesModule = require("ui/page");
 import textFieldTestsNative = require("./text-field-tests-native");
 import colorModule = require("color");
 import enums = require("ui/enums");
+import platform = require("platform");
 
 // <snippet module="ui/text-field" title="TextField">
 // # TextField
@@ -114,6 +115,17 @@ export var testBindTextDirectlyToModel = function () {
         // ```
         // </snippet>
     });
+}
+
+// Supported for ios only.
+if (platform.device.os === platform.platformNames.ios) {
+    exports.test_set_color = function () {
+        helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
+            var textField = <textFieldModule.TextField>views[0];
+            textField.color = new colorModule.Color("red");
+            TKUnit.assertEqual(textField.color.ios.CGColor, textField.ios.tintColor.CGColor, "textField.color");
+        });
+    }
 }
 
 export var testBindTextToBindingContext = function () {
