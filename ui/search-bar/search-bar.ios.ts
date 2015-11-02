@@ -106,7 +106,7 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 export class SearchBar extends common.SearchBar {
     private _ios: UISearchBar;
     private _delegate;
-    public _textField: UITextField;
+    private __textField: UITextField;
 
     constructor() {
         super();
@@ -119,7 +119,6 @@ export class SearchBar extends common.SearchBar {
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;
-        this._textField = SearchBar.findTextField(this.ios);
     }
 
     public onUnloaded() {
@@ -135,16 +134,11 @@ export class SearchBar extends common.SearchBar {
         return this._ios;
     }
 
-    private static findTextField(view: UIView) {
-        for (let i = 0, l = view.subviews.count; i < l; i++) {
-            let v: UIView = view.subviews[i];
-            if (v instanceof UITextField) {
-                return v;
-            } else if (v.subviews.count > 0) {
-                return SearchBar.findTextField(v);
-            }
+    get _textField(): UITextField {
+        if (!this.__textField) {
+            this.__textField = this.ios.valueForKey("searchField");
         }
 
-        return undefined;
+        return this.__textField;
     }
 }
