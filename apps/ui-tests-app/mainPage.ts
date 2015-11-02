@@ -32,32 +32,28 @@ export function selectExample() {
     }
 }
 
-examples.set("basics", "bindings/basics");
-
 examples.set("actColor", "action-bar/color");
-examples.set("actBG",   "action-bar/background");
+examples.set("actBG", "action-bar/background");
 examples.set("actStyle", "action-bar/all");
-
-examples.set("tabColor", "tab-view/color");
-examples.set("tabBG", "tab-view/background");
-examples.set("tabTabsBG", "tab-view/tabsBackground");
-examples.set("tabSelected", "tab-view/selected");
-examples.set("tabStyle", "tab-view/all");
-
-examples.set("segmentedStyle", "segmented-bar/all");
 
 examples.set("basics", "bindings/basics");
 examples.set("xmlbasics", "bindings/xmlbasics");
 
 examples.set("background", "css/background");
-examples.set("import", "css/import");
 examples.set("radius", "css/radius");
 examples.set("styles", "css/styles");
 
 examples.set("dialogs", "dialogs/dialogs");
-examples.set("view-model", "dialogs/view-model");
 
-examples.set("roundbtn", "image-view/roundbtn");
+examples.set("fontbtn", "font/button");
+examples.set("fontlbl", "font/label");
+examples.set("fontfield", "font/text-field");
+examples.set("fontview", "font/text-view");
+
+examples.set("htmlview", "html-view/html-view");
+
+examples.set("roundbtn", "image-view/rounded-buttons");
+examples.set("roundimg", "image-view/rounded-images");
 
 examples.set("absolute", "layouts/absolute");
 examples.set("dock", "layouts/dock");
@@ -66,28 +62,32 @@ examples.set("myview", "layouts/myview");
 examples.set("stack", "layouts/stack");
 examples.set("wrap", "layouts/wrap");
 
-examples.set("login-page", "modal-view/login-page");
 examples.set("modalview", "modal-view/modalview");
 
 examples.set("nordic", "nordic/nordic");
 
-examples.set("text/button", "pages/text/button");
-examples.set("text/label", "pages/text/label");
-examples.set("text/text-field", "pages/text/text-field");
-examples.set("text/text-view", "pages/text/text-view");
 
 examples.set("background", "pages/background");
 examples.set("console", "pages/console");
 examples.set("gestures", "pages/gestures");
 examples.set("handlers", "pages/handlers");
-examples.set("htmlview", "pages/htmlview");
 examples.set("i61", "pages/i61");
 examples.set("i73", "pages/i73");
 examples.set("i86", "pages/i86");
 examples.set("listview_binding", "pages/listview_binding");
 
-examples.set("switch", "pages/switchandprogress");
-examples.set("textfield", "pages/textfield");
+
+examples.set("switch", "pages/switchandprogress"); // TODO: Update this test page.
+
+examples.set("segmentedStyle", "segmented-bar/all");
+
+examples.set("tabColor", "tab-view/color");
+examples.set("tabBG", "tab-view/background");
+examples.set("tabTabsBG", "tab-view/tabsBackground");
+examples.set("tabSelected", "tab-view/selected");
+examples.set("tabStyle", "tab-view/all");
+
+examples.set("textfield", "text-field/text-field");
 
 examples.set("webview", "web-view/web-view");
 examples.set("webtest", "web-view/web-vew-test");

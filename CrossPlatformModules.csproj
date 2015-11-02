@@ -189,6 +189,9 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\tests\pages\tab-view.xml" />
+    <Content Include="apps\ui-tests-app\html-view\html-view.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\segmented-bar\all.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -222,11 +225,19 @@
     <Content Include="apps\ui-tests-app\app.css" />
     <TypeScriptCompile Include="apps\ui-tests-app\action-bar\all.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\action-bar\color.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\html-view\html-view.ts">
+      <DependentUpon>html-view.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\modal-view\login-page.ts">
+      <DependentUpon>login-page.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\modal-view\modal-view.ts">
+      <DependentUpon>modal-view.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\nordic\nordic.ts">
       <DependentUpon>nordic.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\pages\handlers.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\pages\htmlview.ts" />
     <TypeScriptCompile Include="color\known-colors.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation-common.ts">
@@ -420,12 +431,22 @@
       <DependentUpon>dialogs.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\dialogs\view-model.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\layouts\absolute.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\layouts\dock.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\layouts\grid.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\absolute.ts">
+      <DependentUpon>absolute.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\dock.ts">
+      <DependentUpon>dock.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\grid.ts">
+      <DependentUpon>grid.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\layouts\myview.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\layouts\stack.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\layouts\wrap.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\stack.ts">
+      <DependentUpon>stack.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts\wrap.ts">
+      <DependentUpon>wrap.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\css\background.ts">
       <DependentUpon>background.xml</DependentUpon>
     </TypeScriptCompile>
@@ -434,17 +455,19 @@
     <TypeScriptCompile Include="apps\ui-tests-app\pages\i73.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\gestures.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\listview_binding.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\modal-view\login-page.ts">
-      <DependentUpon>login-page.xml</DependentUpon>
+    <TypeScriptCompile Include="apps\ui-tests-app\text-field\text-field.ts">
+      <DependentUpon>text-field.xml</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\ui-tests-app\modal-view\modalview.ts">
-      <DependentUpon>modalview.xml</DependentUpon>
+    <TypeScriptCompile Include="apps\ui-tests-app\font\text-field.ts">
+      <DependentUpon>text-field.xml</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\ui-tests-app\pages\textfield.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-field.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\text-view.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\label.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\pages\text\button.ts">
+    <TypeScriptCompile Include="apps\ui-tests-app\font\text-view.ts">
+      <DependentUpon>text-view.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\font\label.ts">
+      <DependentUpon>label.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\font\button.ts">
       <DependentUpon>button.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\web-view\web-view.ts">
@@ -1018,36 +1041,49 @@
     <Content Include="apps\ui-tests-app\css\styles.xml" />
     <Content Include="apps\ui-tests-app\dialogs\dialogs.xml" />
     <Content Include="apps\ui-tests-app\image-view\gravatar.png" />
-    <Content Include="apps\ui-tests-app\image-view\roundimg.css" />
-    <Content Include="apps\ui-tests-app\image-view\roundimg.xml" />
-    <Content Include="apps\ui-tests-app\layouts\absolute.xml" />
-    <Content Include="apps\ui-tests-app\layouts\dock.xml" />
-    <Content Include="apps\ui-tests-app\layouts\grid.xml" />
-    <Content Include="apps\ui-tests-app\layouts\stack.xml" />
-    <Content Include="apps\ui-tests-app\layouts\wrap.xml" />
+    <Content Include="apps\ui-tests-app\image-view\rounded-images.css" />
+    <Content Include="apps\ui-tests-app\image-view\rounded-images.xml" />
+    <Content Include="apps\ui-tests-app\layouts\absolute.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\layouts\dock.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\layouts\grid.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\layouts\stack.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\layouts\wrap.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\css\background.xml" />
-    <Content Include="apps\ui-tests-app\image-view\roundbtn.xml" />
+    <Content Include="apps\ui-tests-app\image-view\rounded-buttons.xml" />
     <Content Include="apps\ui-tests-app\mainPage.xml">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\ui-tests-app\nordic\nordic.xml" />
     <Content Include="apps\ui-tests-app\pages\handlers.xml" />
-    <Content Include="apps\ui-tests-app\pages\htmlview.xml" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />
     <Content Include="apps\template-blank\app.css" />
     <Content Include="apps\template-hello-world\app.css" />
     <Content Include="apps\template-master-detail\app.css" />
     <Content Include="apps\template-tab-navigation\app.css" />
-    <Content Include="apps\ui-tests-app\modal-view\login-page.xml" />
-    <Content Include="apps\ui-tests-app\modal-view\modalview.xml" />
+    <Content Include="apps\ui-tests-app\modal-view\login-page.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\modal-view\modal-view.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\image-view\red.png" />
     <Content Include="apps\ui-tests-app\pages\test2.png" />
     <Content Include="apps\ui-tests-app\pages\switchandprogress.xml" />
-    <Content Include="apps\ui-tests-app\pages\textfield.xml" />
-    <Content Include="apps\ui-tests-app\pages\text\text-field.xml" />
-    <Content Include="apps\ui-tests-app\pages\text\text-view.xml" />
-    <Content Include="apps\ui-tests-app\pages\text\label.xml" />
-    <Content Include="apps\ui-tests-app\pages\text\button.xml" />
+    <Content Include="apps\ui-tests-app\text-field\text-field.xml" />
+    <Content Include="apps\ui-tests-app\font\text-field.xml" />
+    <Content Include="apps\ui-tests-app\font\text-view.xml" />
+    <Content Include="apps\ui-tests-app\font\label.xml" />
+    <Content Include="apps\ui-tests-app\font\button.xml" />
     <Content Include="apps\ui-tests-app\web-view\test.css" />
     <Content Include="apps\ui-tests-app\web-view\test.html" />
     <Content Include="apps\ui-tests-app\web-view\web-view-test.xml" />
