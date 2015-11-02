@@ -8,6 +8,6 @@
     </ActionBar>
   </Page.actionBar>
   <StackLayout>
-    <Button text="do nothing"/>
+    <Button text="go to cleared page" tap="navigate"/>
   </StackLayout>
 </Page>
