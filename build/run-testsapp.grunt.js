@@ -63,6 +63,7 @@ module.exports = {
 
         if (localCfg.runAppOnly) {
             localCfg.pathToApp = localCfg.pathToApk = args.pathToApp;
+            localCfg.applicationDir = "./";
         }
 
         grunt.initConfig({
@@ -200,7 +201,7 @@ module.exports = {
                 },
                 startiOSApp: {
                     cmd: "xcrun simctl launch " + localCfg.emuAvdName + " org.nativescript." + localCfg.testsAppName
-                },
+                }
             },
             untar: {
                 modules: {
@@ -305,13 +306,20 @@ module.exports = {
 
         ]);
 
-        grunt.registerTask("runApp", [
+        grunt.registerTask("runOnly", [
             getPlatformSpecificTask("doPreUninstallApp{platform}"),
 
             getPlatformSpecificTask("exec:uninstallExisting{platform}App"),
             getPlatformSpecificTask("exec:installNew{platform}App"),
             getPlatformSpecificTask("exec:start{platform}App"),
             getPlatformSpecificTask("collectLog{platform}"),
+        ]);
+
+        grunt.registerTask("runApp", [
+            "cleanup",
+            getPlatformSpecificTask("startEmulator{platform}"),
+            "runOnly",
+            "cleanup"
 
         ]);
 
@@ -323,7 +331,7 @@ module.exports = {
                 "mkdir:workingDir",
                 getPlatformSpecificTask("startEmulator{platform}"),
                 "buildOnly",
-                "runApp",
+                "runOnly",
                 "cleanup"
             ];
         }
