@@ -514,6 +514,7 @@ export class ActivityIndicatorStyler implements definition.stylers.Styler {
         var bar = <UIActivityIndicatorView>view.ios;
         return bar.color;
     }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             ActivityIndicatorStyler.setColorProperty,
@@ -554,9 +555,11 @@ export class SliderStyler implements definition.stylers.Styler {
     }
 
     public static registerHandlers() {
-        SliderStyler.setColorProperty,
-        SliderStyler.resetColorProperty,
-        SliderStyler.getNativeColorValue), "Slider");
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SliderStyler.setColorProperty,
+            SliderStyler.resetColorProperty,
+            SliderStyler.getNativeColorValue), "Slider");
+
 
         style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             SliderStyler.setBackgroundColorProperty,
