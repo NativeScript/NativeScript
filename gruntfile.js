@@ -1,6 +1,6 @@
 module.exports = function(grunt) {
 
-    if (grunt.cli.tasks.indexOf("testsapp") || grunt.cli.tasks.indexOf("buildtestsapp")>= 0) {
+    if (grunt.cli.tasks.indexOf("testsapp") >= 0 || grunt.cli.tasks.indexOf("buildtestsapp")>= 0) {
         var tsTester = require("./build/run-testsapp.grunt.js");
         tsTester.run(grunt);
     } else {
