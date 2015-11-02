@@ -279,12 +279,12 @@ module.exports = {
             "clean:simulatorLog"
         ]);
 
-        grunt.registerTask("buildTestsApp", [
-            "clean:workingDir",
-            "mkdir:workingDir",
+        grunt.registerTask("cleanup", [
             getPlatformSpecificTask("exec:kill{platform}Emulator"),
-            getPlatformSpecificTask("startEmulator{platform}"),
+            "clean:workingDir"
+        ]);
 
+        grunt.registerTask("buildOnly", [
             "exec:createApp",
             "clean:originalAppDir",
             "copy:testsAppToRunDir",
@@ -298,6 +298,13 @@ module.exports = {
             "shell:buildApp",
         ]);
 
+        grunt.registerTask("buildTestsApp", [
+            "cleanup",
+            "mkdir:workingDir",
+            "buildOnly"
+
+        ]);
+
         grunt.registerTask("runApp", [
             getPlatformSpecificTask("doPreUninstallApp{platform}"),
 
@@ -308,15 +315,14 @@ module.exports = {
 
         ]);
 
-        grunt.registerTask("cleanup", [
-            getPlatformSpecificTask("exec:kill{platform}Emulator"),
-            "clean:workingDir"
-        ]);
 
         var tasksToExecute = ["runApp"];
         if (!localCfg.runAppOnly) {
             tasksToExecute = [
-                "buildTestsApp",
+                "cleanup",
+                "mkdir:workingDir",
+                getPlatformSpecificTask("startEmulator{platform}"),
+                "buildOnly",
                 "runApp",
                 "cleanup"
             ];
