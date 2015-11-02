@@ -13,6 +13,14 @@ var btn;
 
 global.moduleMerge(stylersCommon, exports);
 
+var ignorePropertyHandler = new stylersCommon.StylePropertyChangedHandler(
+    (view, val) => {
+        // empty
+    },
+    (view, val) => {
+        // empty
+    });
+
 var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
 
 function onBackgroundOrBorderPropertyChanged(v: view.View) {
@@ -600,15 +608,51 @@ export class ProgressStyler implements definition.stylers.Styler {
             ProgressStyler.setColorProperty,
             ProgressStyler.resetColorProperty), "Progress");
 
-        var borderHandler = new stylersCommon.StylePropertyChangedHandler(
+        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             ProgressStyler.setBackgroundAndBorderProperty,
-            ProgressStyler.resetBackgroundAndBorderProperty);
+            ProgressStyler.resetBackgroundAndBorderProperty), "Progress");
 
-        style.registerHandler(style.backgroundColorProperty, borderHandler, "Progress");
-        style.registerHandler(style.borderWidthProperty, borderHandler, "Progress");
-        style.registerHandler(style.borderColorProperty, borderHandler, "Progress");
-        style.registerHandler(style.borderRadiusProperty, borderHandler, "Progress");
-        style.registerHandler(style.backgroundInternalProperty, borderHandler, "Progress");
+        style.registerHandler(style.borderWidthProperty, ignorePropertyHandler, "Progress");
+        style.registerHandler(style.borderColorProperty, ignorePropertyHandler, "Progress");
+        style.registerHandler(style.borderRadiusProperty, ignorePropertyHandler, "Progress");
+        style.registerHandler(style.backgroundInternalProperty, ignorePropertyHandler, "Progress");
+    }
+}
+
+export class SliderStyler implements definition.stylers.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        bar.getThumb().setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: number) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        bar.getThumb().clearColorFilter();
+    }
+
+    private static setBackgroundAndBorderProperty(view: view.View, newValue: any) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        bar.getProgressDrawable().setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+    }
+
+    private static resetBackgroundAndBorderProperty(view: view.View, nativeValue: number) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        // Do nothing.
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SliderStyler.setColorProperty,
+            SliderStyler.resetColorProperty), "Slider");
+
+        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SliderStyler.setBackgroundAndBorderProperty,
+            SliderStyler.resetBackgroundAndBorderProperty), "Slider");
+
+        style.registerHandler(style.borderWidthProperty, ignorePropertyHandler, "Slider");
+        style.registerHandler(style.borderColorProperty, ignorePropertyHandler, "Slider");
+        style.registerHandler(style.borderRadiusProperty, ignorePropertyHandler, "Slider");
+        style.registerHandler(style.backgroundInternalProperty, ignorePropertyHandler, "Slider");
     }
 }
 
@@ -646,15 +690,14 @@ export class SwitchStyler implements definition.stylers.Styler {
             SwitchStyler.setColorProperty,
             SwitchStyler.resetColorProperty), "Switch");
 
-        var borderHandler = new stylersCommon.StylePropertyChangedHandler(
+        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             SwitchStyler.setBackgroundAndBorderProperty,
-            SwitchStyler.resetBackgroundAndBorderProperty);
+            SwitchStyler.resetBackgroundAndBorderProperty), "Switch");
 
-        style.registerHandler(style.backgroundColorProperty, borderHandler, "Switch");
-        style.registerHandler(style.borderWidthProperty, borderHandler, "Switch");
-        style.registerHandler(style.borderColorProperty, borderHandler, "Switch");
-        style.registerHandler(style.borderRadiusProperty, borderHandler, "Switch");
-        style.registerHandler(style.backgroundInternalProperty, borderHandler, "Switch");
+        style.registerHandler(style.borderWidthProperty, ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderColorProperty, ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderRadiusProperty, ignorePropertyHandler, "Switch");
+        style.registerHandler(style.backgroundInternalProperty, ignorePropertyHandler, "Switch");
     }
 }
 
@@ -859,4 +902,5 @@ export function _registerDefaultStylers() {
     TabViewStyler.registerHandlers();
     ProgressStyler.registerHandlers();
     SwitchStyler.registerHandlers();
+    SliderStyler.registerHandlers();
 }

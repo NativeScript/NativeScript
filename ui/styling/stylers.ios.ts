@@ -500,7 +500,6 @@ export class SegmentedBarStyler implements definition.stylers.Styler {
 }
 
 export class ActivityIndicatorStyler implements definition.stylers.Styler {
-    //Text color methods
     private static setColorProperty(view: view.View, newValue: any) {
         var bar = <UIActivityIndicatorView>view.ios;
         bar.color = newValue;
@@ -521,6 +520,52 @@ export class ActivityIndicatorStyler implements definition.stylers.Styler {
             ActivityIndicatorStyler.setColorProperty,
             ActivityIndicatorStyler.resetColorProperty,
             ActivityIndicatorStyler.getNativeColorValue), "ActivityIndicator");
+    }
+}
+
+export class SliderStyler implements definition.stylers.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <UISlider>view.ios;
+        bar.thumbTintColor = newValue;
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UISlider>view.ios;
+        bar.thumbTintColor = nativeValue;
+    }
+
+    private static getNativeColorValue(view: view.View): any {
+        var bar = <UISlider>view.ios;
+        return bar.thumbTintColor;
+    }
+
+    private static setBackgroundColorProperty(view: view.View, newValue: any) {
+        var bar = <UISlider>view.ios;
+        bar.minimumTrackTintColor = newValue;
+    }
+
+    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UISlider>view.ios;
+        bar.minimumTrackTintColor = nativeValue;
+    }
+
+    private static getBackgroundColorProperty(view: view.View): any {
+        var bar = <UISlider>view.ios;
+        return bar.minimumTrackTintColor;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SliderStyler.setColorProperty,
+            SliderStyler.resetColorProperty,
+            SliderStyler.getNativeColorValue), "Slider");
+
+        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SliderStyler.setBackgroundColorProperty,
+            SliderStyler.resetBackgroundColorProperty,
+            SliderStyler.getBackgroundColorProperty), "Slider");
+
+        style.registerHandler(style.backgroundInternalProperty, ignorePropertyHandler, "Slider");
     }
 }
 
@@ -800,4 +845,5 @@ export function _registerDefaultStylers() {
     SwitchStyler.registerHandlers();
     TextFieldStyler.registerHandlers();
     ActivityIndicatorStyler.registerHandlers();
+    SliderStyler.registerHandlers();
 }

@@ -4,6 +4,9 @@ import viewModule = require("ui/core/view");
 import pagesModule = require("ui/page");
 import bindable = require("ui/core/bindable");
 import observable = require("data/observable");
+import color = require("color");
+import platform = require("platform");
+
 // <snippet module="ui/slider" title="slider">
 // # Slider
 // Using a slider requires the Slider module.
@@ -83,6 +86,31 @@ export function test_set_native_value_triggers_propertyChanged() {
 
     helper.buildUIAndRunTest(slider, testAction);
 };
+
+// Uncomment this when find way to check android Drawable color set by setColorFilter() method.
+if (platform.device.os === platform.platformNames.ios) {
+    exports.test_set_color = function () {
+        var slider = new sliderModule.Slider();
+        slider.color = new color.Color("red");
+
+        function testAction(views: Array<viewModule.View>) {
+            TKUnit.assertEqual(slider.color.ios.CGColor, slider.ios.thumbTintColor.CGColor, "slider.color");
+        };
+
+        helper.buildUIAndRunTest(slider, testAction);
+    }
+
+    exports.test_set_backgroundColor = function () {
+        var slider = new sliderModule.Slider();
+        slider.backgroundColor = new color.Color("red");
+
+        function testAction(views: Array<viewModule.View>) {
+            TKUnit.assertEqual(slider.backgroundColor.ios.CGColor, slider.ios.minimumTrackTintColor.CGColor, "slider.backgroundColor");
+        };
+
+        helper.buildUIAndRunTest(slider, testAction);
+    }
+}
 
 export function test_default_TNS_values() {
     var slider = new sliderModule.Slider();
