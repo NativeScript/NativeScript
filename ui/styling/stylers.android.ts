@@ -612,6 +612,44 @@ export class ProgressStyler implements definition.stylers.Styler {
     }
 }
 
+export class SliderStyler implements definition.stylers.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        bar.getThumb().setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: number) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        bar.getThumb().clearColorFilter();
+    }
+
+    private static setBackgroundAndBorderProperty(view: view.View, newValue: any) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        bar.getProgressDrawable().setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+    }
+
+    private static resetBackgroundAndBorderProperty(view: view.View, nativeValue: number) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        // Do nothing.
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            SliderStyler.setColorProperty,
+            SliderStyler.resetColorProperty), "Slider");
+
+        var borderHandler = new stylersCommon.StylePropertyChangedHandler(
+            SliderStyler.setBackgroundAndBorderProperty,
+            SliderStyler.resetBackgroundAndBorderProperty);
+
+        style.registerHandler(style.backgroundColorProperty, borderHandler, "Slider");
+        style.registerHandler(style.borderWidthProperty, borderHandler, "Slider");
+        style.registerHandler(style.borderColorProperty, borderHandler, "Slider");
+        style.registerHandler(style.borderRadiusProperty, borderHandler, "Slider");
+        style.registerHandler(style.backgroundInternalProperty, borderHandler, "Slider");
+    }
+}
+
 export class SwitchStyler implements definition.stylers.Styler {
     private static setColorProperty(view: view.View, newValue: any) {
         var sw = <android.widget.Switch>view._nativeView;
@@ -859,4 +897,5 @@ export function _registerDefaultStylers() {
     TabViewStyler.registerHandlers();
     ProgressStyler.registerHandlers();
     SwitchStyler.registerHandlers();
+    SliderStyler.registerHandlers();
 }
