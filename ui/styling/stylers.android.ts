@@ -444,6 +444,16 @@ export class TextViewStyler implements definition.stylers.Styler {
 }
 
 export class ActivityIndicatorStyler implements definition.stylers.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <android.widget.ProgressBar>view._nativeView;
+        bar.getIndeterminateDrawable().setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: number) {
+        var bar = <android.widget.ProgressBar>view._nativeView;
+        bar.getIndeterminateDrawable().clearColorFilter();
+    }
+
     //Visibility methods
     public static setActivityIndicatorVisibilityProperty(view: view.View, newValue: any) {
         ActivityIndicatorStyler.setIndicatorVisibility((<any>view).busy, newValue, view._nativeView);
@@ -463,6 +473,10 @@ export class ActivityIndicatorStyler implements definition.stylers.Styler {
     }
 
     public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            ActivityIndicatorStyler.setColorProperty,
+            ActivityIndicatorStyler.resetColorProperty), "ActivityIndicator");
+
         style.registerHandler(style.visibilityProperty, new stylersCommon.StylePropertyChangedHandler(
             ActivityIndicatorStyler.setActivityIndicatorVisibilityProperty,
             ActivityIndicatorStyler.resetActivityIndicatorVisibilityProperty), "ActivityIndicator");

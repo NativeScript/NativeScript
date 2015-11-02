@@ -2,6 +2,8 @@
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import imageModule = require("ui/image");
+import platform = require("platform");
+import color = require("color");
 
 // <snippet module="ui/activity-indicator" title="activity-indicator">
 // # ActivityIndicator
@@ -53,6 +55,20 @@ export function test_set_TNS_value_updates_native_value() {
     };
 
     helper.buildUIAndRunTest(indicator, testAction);
+}
+
+// Uncomment this when find way to check android Drawable color set by setColorFilter() method.
+if (platform.device.os === platform.platformNames.ios) {
+    exports.test_set_color = function () {
+        var ai = new activityIndicatorModule.ActivityIndicator();
+        ai.color = new color.Color("red");
+
+        function testAction(views: Array<viewModule.View>) {
+            TKUnit.assertEqual(ai.color.ios.CGColor, ai.ios.color.CGColor, "ai.color");
+        };
+
+        helper.buildUIAndRunTest(ai, testAction);
+    }
 }
 
 // This method is only for the code snippet
