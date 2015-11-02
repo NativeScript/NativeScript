@@ -814,6 +814,44 @@ export class TabViewStyler implements definition.stylers.Styler {
     }
 }
 
+export class DatePickerStyler implements definition.stylers.Styler {
+    // color
+    private static setColorProperty(view: view.View, newValue: any) {
+        var picker = <UIDatePicker>view._nativeView;
+        picker.setValueForKey(newValue, "textColor");
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var picker = <UIDatePicker>view._nativeView;
+        picker.setValueForKey(nativeValue, "textColor");
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            DatePickerStyler.setColorProperty,
+            DatePickerStyler.resetColorProperty), "DatePicker");
+    }
+}
+
+export class TimePickerStyler implements definition.stylers.Styler {
+    // color
+    private static setColorProperty(view: view.View, newValue: any) {
+        var picker = <UIDatePicker>view._nativeView;
+        picker.setValueForKey(newValue, "textColor");
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var picker = <UIDatePicker>view._nativeView;
+        picker.setValueForKey(nativeValue, "textColor");
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            TimePickerStyler.setColorProperty,
+            TimePickerStyler.resetColorProperty), "TimePicker");
+    }
+}
+
 function setTextAlignment(view: TextUIView, value: string) {
     switch (value) {
         case enums.TextAlignment.left:
@@ -846,4 +884,6 @@ export function _registerDefaultStylers() {
     TextFieldStyler.registerHandlers();
     ActivityIndicatorStyler.registerHandlers();
     SliderStyler.registerHandlers();
+    DatePickerStyler.registerHandlers();
+    TimePickerStyler.registerHandlers();
 }
