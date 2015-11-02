@@ -37,6 +37,12 @@ export class Button extends view.View implements definition.Button {
     public static textProperty = textProperty;
     public static formattedTextProperty = formattedTextProperty;
 
+    public static textWrapProperty = new dependencyObservable.Property(
+        "textWrap",
+        "Button",
+        new proxy.PropertyMetadata(false, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
+    );
+
     public _onBindingContextChanged(oldValue: any, newValue: any) {
         super._onBindingContextChanged(oldValue, newValue);
         if (this.formattedText) {
@@ -66,6 +72,13 @@ export class Button extends view.View implements definition.Button {
                 weakEvents.addWeakEventListener(value, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
             }
         }
+    }
+
+    get textWrap(): boolean {
+        return this._getValue(Button.textWrapProperty);
+    }
+    set textWrap(value: boolean) {
+        this._setValue(Button.textWrapProperty, value);
     }
 
     private onFormattedTextChanged(eventData: observable.PropertyChangeData) {
