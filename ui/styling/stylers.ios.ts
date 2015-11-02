@@ -358,6 +358,7 @@ export class TextViewStyler implements definition.stylers.Styler {
         }
         else {
             textView.textColor = color;
+            textView.tintColor = color;
         }
     }
 
@@ -376,6 +377,41 @@ export class TextViewStyler implements definition.stylers.Styler {
             TextViewStyler.setColorProperty,
             TextViewStyler.resetColorProperty,
             TextViewStyler.getNativeColorValue), "TextView");
+    }
+}
+
+export class TextFieldStyler implements definition.stylers.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var tf: UITextField = <UITextField>view._nativeView;
+        TextFieldStyler._setTextFieldColor(tf, newValue);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var tf: UITextField = <UITextField>view._nativeView;
+        TextFieldStyler._setTextFieldColor(tf, nativeValue);
+    }
+
+    private static _setTextFieldColor(tf: UITextField, newValue: any) {
+        var color: UIColor = <UIColor>newValue;
+        if ((<any>tf).isShowingHint && color) {
+            tf.textColor = (<UIColor>color).colorWithAlphaComponent(0.22);
+        }
+        else {
+            tf.textColor = color;
+            tf.tintColor = color;
+        }
+    }
+
+    private static getNativeColorValue(view: view.View): any {
+        var tf: UITextField = <UITextField>view._nativeView;
+        return tf.tintColor;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextFieldStyler.setColorProperty,
+            TextFieldStyler.resetColorProperty,
+            TextFieldStyler.getNativeColorValue), "TextField");
     }
 }
 
@@ -585,6 +621,7 @@ export class SearchBarStyler implements definition.stylers.Styler {
         var sf = <UITextField>(<any>view)._textField;
         if (sf) {
             sf.textColor = newValue;
+            sf.tintColor = newValue;
         }
     }
 
@@ -592,6 +629,7 @@ export class SearchBarStyler implements definition.stylers.Styler {
         var sf = <UITextField>(<any>view)._textField;
         if (sf) {
             sf.textColor = nativeValue;
+            sf.tintColor = nativeValue;
         }
     }
 
@@ -735,4 +773,5 @@ export function _registerDefaultStylers() {
     TabViewStyler.registerHandlers();
     ProgressStyler.registerHandlers();
     SwitchStyler.registerHandlers();
+    TextFieldStyler.registerHandlers();
 }
