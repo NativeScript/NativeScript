@@ -8,6 +8,10 @@ export function getNativeText(button: buttonModule.Button): string {
     return button.android.getText();
 }
 
+export function getNativeTextWrap(button: buttonModule.Button): boolean {
+    return (<android.widget.Button>button.android).isSingleLine();
+}
+
 export function getNativeFontSize(button: buttonModule.Button): number {
     var density = utilsModule.layout.getDisplayDensity();
     return button.android.getTextSize() / density;

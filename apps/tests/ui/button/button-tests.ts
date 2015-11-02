@@ -113,6 +113,21 @@ var _testSetText = function (views: Array<viewModule.View>) {
     TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
 }
 
+var _testSetTextWrap = function (views: Array<viewModule.View>) {
+    var button = <buttonModule.Button>views[0];
+    // <snippet module="ui/button" title="button">
+    // ### Setting the text of a button
+    // ``` JavaScript
+    button.textWrap = true;
+    // ```
+    // </snippet>
+
+    var expectedValue = button.textWrap;
+    var actualValue = buttonTestsNative.getNativeTextWrap(button);
+
+    TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+}
+
 var _testOnClick = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
 

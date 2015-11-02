@@ -37,6 +37,11 @@ declare module "ui/button" {
         text: string;
 
         /**
+         * Gets or sets whether the Button wraps text or not.
+         */
+        textWrap: boolean;
+
+        /**
          * Gets or sets the formatted text (label) displayed by this instance.
          */
         formattedText: formattedString.FormattedString;

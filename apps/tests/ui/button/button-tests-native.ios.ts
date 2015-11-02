@@ -7,6 +7,10 @@ export function getNativeText(button: buttonModule.Button): string {
     return button.ios.titleForState(UIControlState.UIControlStateNormal);
 }
 
+export function getNativeTextWrap(button: buttonModule.Button): boolean {
+    return (<UIButton>button.ios).titleLabel.lineBreakMode === NSLineBreakMode.NSLineBreakByWordWrapping;
+}
+
 export function getNativeFontSize(button: buttonModule.Button): number {
     return button.ios.titleLabel.font.pointSize;
 }
