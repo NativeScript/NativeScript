@@ -560,7 +560,6 @@ export class SliderStyler implements definition.stylers.Styler {
             SliderStyler.resetColorProperty,
             SliderStyler.getNativeColorValue), "Slider");
 
-
         style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
             SliderStyler.setBackgroundColorProperty,
             SliderStyler.resetBackgroundColorProperty,
