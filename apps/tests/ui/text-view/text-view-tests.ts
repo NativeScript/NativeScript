@@ -6,6 +6,7 @@ import pagesModule = require("ui/page");
 import textViewTestsNative = require("./text-view-tests-native");
 import colorModule = require("color");
 import enums = require("ui/enums");
+import platform = require("platform");
 
 // <snippet module="ui/text-view" title="TextView">
 // # TextView
@@ -67,6 +68,17 @@ export var testSetText = function () {
         var actualValue = textViewTestsNative.getNativeText(textView);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
+}
+
+// Supported for ios only.
+if (platform.device.os === platform.platformNames.ios) {
+    exports.test_set_color = function () {
+        helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
+            var textView = <textViewModule.TextView>views[0];
+            textView.color = new colorModule.Color("red");
+            TKUnit.assertEqual(textView.color.ios.CGColor, textView.ios.tintColor.CGColor, "textView.color");
+        });
+    }
 }
 
 export var testBindTextDirectlyToModel = function () {
