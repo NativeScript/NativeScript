@@ -2,6 +2,8 @@
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import timePickerTestsNative = require("./time-picker-tests-native");
+import color = require("color");
+import platform = require("platform");
 
 // <snippet module="ui/time-picker" title="TimePicker">
 // # TimePicker
@@ -42,6 +44,18 @@ export function test_DummyForCodeSnippet() {
         // ```
         // </snippet>
     });
+}
+
+// Supported in iOS only.
+if (platform.device.os === platform.platformNames.ios) {
+    exports.test_set_color = function () {
+        helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
+            var timePicker = <timePickerModule.TimePicker>views[0];
+            timePicker.color = new color.Color("red");
+            TKUnit.assertEqual(timePicker.color.ios.CGColor, timePicker.ios.valueForKey("textColor").CGColor, "timePicker.color");
+        });
+
+    }
 }
 
 export function test_WhenCreated_HourIsUndefined() {

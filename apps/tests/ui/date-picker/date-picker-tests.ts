@@ -2,6 +2,8 @@
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import datePickerTestsNative = require("./date-picker-tests-native");
+import color = require("color");
+import platform = require("platform");
 
 // <snippet module="ui/date-picker" title="DatePicker">
 // # DatePicker
@@ -49,6 +51,18 @@ export function test_DummyForCodeSnippet() {
         // ```
         // </snippet>
     });
+}
+
+// Supported in iOS only.
+if (platform.device.os === platform.platformNames.ios) {
+    exports.test_set_color = function () {
+        helper.buildUIAndRunTest(_createDatePicker(), function (views: Array<viewModule.View>) {
+            var datePicker = <datePickerModule.DatePicker>views[0];
+            datePicker.color = new color.Color("red");
+            TKUnit.assertEqual(datePicker.color.ios.CGColor, datePicker.ios.valueForKey("textColor").CGColor, "datePicker.color");
+        });
+
+    }
 }
 
 export function test_WhenCreated_YearIsUndefined() {
