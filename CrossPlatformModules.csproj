@@ -223,8 +223,18 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\ui-tests-app\app.css" />
-    <TypeScriptCompile Include="apps\ui-tests-app\action-bar\all.ts" />
-    <TypeScriptCompile Include="apps\ui-tests-app\action-bar\color.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\action-bar\all.ts">
+      <DependentUpon>all.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\action-bar\background.ts">
+      <DependentUpon>background.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\action-bar\clean.ts">
+      <DependentUpon>clean.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\action-bar\color.ts">
+      <DependentUpon>color.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\html-view\html-view.ts">
       <DependentUpon>html-view.xml</DependentUpon>
     </TypeScriptCompile>

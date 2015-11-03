@@ -1,5 +1,5 @@
 <Page>
-  <TabView style="color: yellow; background-color: green;" selectedColor="red" tabsBackgroundColor="blue">
+  <TabView selectedIndex="1" style="color: yellow; background-color: green;" selectedColor="red" tabsBackgroundColor="blue">
     <TabView.items>
       <TabViewItem title="First">
         <TabViewItem.view>
