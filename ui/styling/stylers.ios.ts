@@ -826,10 +826,16 @@ export class DatePickerStyler implements definition.stylers.Styler {
         picker.setValueForKey(nativeValue, "textColor");
     }
 
+    private static getColorProperty(view: view.View): any {
+        var picker = <UIDatePicker>view._nativeView;
+        return picker.valueForKey("textColor");
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             DatePickerStyler.setColorProperty,
-            DatePickerStyler.resetColorProperty), "DatePicker");
+            DatePickerStyler.resetColorProperty,
+            DatePickerStyler.getColorProperty), "DatePicker");
     }
 }
 
@@ -845,10 +851,16 @@ export class TimePickerStyler implements definition.stylers.Styler {
         picker.setValueForKey(nativeValue, "textColor");
     }
 
+    private static getColorProperty(view: view.View): any {
+        var picker = <UIDatePicker>view._nativeView;
+        return picker.valueForKey("textColor");
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             TimePickerStyler.setColorProperty,
-            TimePickerStyler.resetColorProperty), "TimePicker");
+            TimePickerStyler.resetColorProperty,
+            TimePickerStyler.getColorProperty), "TimePicker");
     }
 }
 
