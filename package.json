@@ -28,5 +28,6 @@
     "grunt-untar": "0.0.1",
     "mocha": "2.2.5",
     "typescript": "1.6.2"
-  }
+  },
+  "typings": "tns-core-modules.d.ts"
 }
