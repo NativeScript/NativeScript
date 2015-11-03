@@ -8,15 +8,6 @@
         "esvalidate": "./bin/esvalidate.js"
     },
     "version": "2.0.0-dev",
-    "files": [
-        "bin",
-        "test/run.js",
-        "test/runner.js",
-        "test/test.js",
-        "test/compat.js",
-        "test/reflect.js",
-        "esprima.js"
-    ],
     "engines": {
         "node": ">=0.4.0"
     },

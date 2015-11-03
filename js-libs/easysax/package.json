@@ -17,11 +17,6 @@
     "email": "flash.vkv@gmail.com",
     "url": "http://vflash.ru"
   },
-  "files": [
-    "easysax.js",
-    "LICENSE",
-    "README.md"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/vflash/easysax"
