@@ -77,7 +77,7 @@ examples.set("listview_binding", "pages/listview_binding");
 
 examples.set("switch", "pages/switchandprogress"); // TODO: Update this test page.
 
-examples.set("segmentedStyle", "segmented-bar/all");
+examples.set("segStyle", "segmented-bar/all");
 
 examples.set("tabColor", "tab-view/color");
 examples.set("tabBG", "tab-view/background");

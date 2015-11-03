@@ -201,6 +201,9 @@
     <Content Include="apps\ui-tests-app\action-bar\clean.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\ui-tests-app\segmented-bar\clean.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\tab-view\background.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -248,6 +251,12 @@
       <DependentUpon>nordic.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\pages\handlers.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\segmented-bar\all.ts">
+	  <DependentUpon>all.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\segmented-bar\clean.ts">
+      <DependentUpon>clean.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="color\known-colors.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation-common.ts">
