@@ -1112,4 +1112,12 @@ export class View extends proxy.ProxyObject implements definition.View {
         animation.target = that;
         return new animationModule.Animation([animation]);
     }
+
+    public toString(): string {
+        if (this.id) {
+            return this.typeName + `<${this.id}>`;
+        }
+
+        return this.typeName;
+    }
 }

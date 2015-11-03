@@ -156,23 +156,31 @@ export function test_PageNavigation_EventSequence() {
         addLabelToPage(testPage);
 
         testPage.on(PageModule.Page.navigatingToEvent, function (data: PageModule.NavigatedData) {
-            eventSequence.push("onNavigatingTo");
-            TKUnit.assertEqual(data.context, context, "onNavigatingTo: navigationContext");
+            eventSequence.push("navigatingTo");
+            TKUnit.assertEqual(data.context, context, "navigatingTo: navigationContext");
+        });
+
+        testPage.on(PageModule.Page.loadedEvent, function (data) {
+            eventSequence.push("loaded");
         });
 
         testPage.on(PageModule.Page.navigatedToEvent, function (data: PageModule.NavigatedData) {
-            eventSequence.push("onNavigatedTo");
-            TKUnit.assertEqual(data.context, context, "onNavigatedTo : navigationContext");
+            eventSequence.push("navigatedTo");
+            TKUnit.assertEqual(data.context, context, "navigatedTo : navigationContext");
         });
 
         testPage.on(PageModule.Page.navigatingFromEvent, function (data: PageModule.NavigatedData) {
-            eventSequence.push("onNavigatingFrom");
-            TKUnit.assertEqual(data.context, context, "onNavigatingFrom: navigationContext");
+            eventSequence.push("navigatingFrom");
+            TKUnit.assertEqual(data.context, context, "navigatingFrom: navigationContext");
         });
 
         testPage.on(PageModule.Page.navigatedFromEvent, function (data: PageModule.NavigatedData) {
-            eventSequence.push("onNavigatedFrom");
-            TKUnit.assertEqual(data.context, context, "onNavigatedFrom: navigationContext");
+            eventSequence.push("navigatedFrom");
+            TKUnit.assertEqual(data.context, context, "navigatedFrom: navigationContext");
+        });
+
+        testPage.on(PageModule.Page.unloadedEvent, function (data) {
+            eventSequence.push("unloaded");
         });
 
         return testPage;
@@ -181,8 +189,8 @@ export function test_PageNavigation_EventSequence() {
     helper.navigate(pageFactory, context);
     helper.goBack();
 
-    var expectedEventSequence = ["onNavigatingTo", "onNavigatedTo", "onNavigatingFrom", "onNavigatedFrom"];
-    TKUnit.arrayAssert(eventSequence, expectedEventSequence, "Actual event sequence is not equal to expected.");
+    var expectedEventSequence = ["navigatingTo", "loaded", "navigatedTo", "navigatingFrom", "navigatedFrom", "unloaded"];
+    TKUnit.arrayAssert(eventSequence, expectedEventSequence, "Actual event sequence is not equal to expected. Actual: " + eventSequence + "; Expected: " + expectedEventSequence);
 }
 
 export function test_NavigateTo_WithContext() {

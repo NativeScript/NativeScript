@@ -300,10 +300,18 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             return;
         }
 
+        let newEntry: definition.BackstackEntry = viewController[ENTRY];
+        let newPage = newEntry.resolvedPage;
+
+        // For some reason iOS calls navigationControllerDidShowViewControllerAnimated twice for the 
+        // main-page resulting in double 'loaded' and 'navigatedTo' events being fired.
+        if (!(<any>newPage)._delayLoadedEvent) {
+            return;
+        }
+
         let backStack = frame.backStack;
         let currentEntry = backStack.length > 0 ? backStack[backStack.length - 1] : null;
-        let newEntry: definition.BackstackEntry = viewController[ENTRY];
-
+        
         // This code check if navigation happened through UI (e.g. back button or swipe gesture).
         // When calling goBack on frame isBack will be false.
         let isBack: boolean = currentEntry && newEntry === currentEntry;
@@ -336,8 +344,6 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
 
         frame._navigateToEntry = null;
         frame._currentEntry = newEntry;
-
-        let newPage = newEntry.resolvedPage;
 
         // In iOS we intentionally delay the raising of the 'loaded' event so both platforms behave identically.
         // The loaded event must be raised AFTER the page is part of the windows hierarchy and 

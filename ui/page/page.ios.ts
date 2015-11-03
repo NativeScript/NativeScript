@@ -25,7 +25,7 @@ class UIViewControllerImpl extends UIViewController {
         let owner = this._owner.get();
         if (!owner) {
             return;
-    }
+        }
 
         trace.write(owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
         if (!owner.isLoaded) {
@@ -80,7 +80,7 @@ class UIViewControllerImpl extends UIViewController {
                 }
             }
 
-            trace.write(this._owner + ", native frame = " + NSStringFromCGRect(this.view.frame), trace.categories.Layout);
+            trace.write(owner + ", native frame = " + NSStringFromCGRect(this.view.frame), trace.categories.Layout);
         }
         else {
             owner._updateLayout();
@@ -115,6 +115,10 @@ class UIViewControllerImpl extends UIViewController {
         }
 
         trace.write(owner + " viewDidDisappear", trace.categories.Navigation);
+        if (owner.modal) {
+            // Don't emit unloaded if this page is disappearing because of a modal view being shown.
+            return;
+        }
         owner._enableLoadedEvents = true;
         owner.onUnloaded();
         owner._enableLoadedEvents = false;
