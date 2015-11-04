@@ -16,6 +16,29 @@ function createAlertDialog(options?: dialogs.DialogOptions): android.app.AlertDi
     return alert;
 }
 
+function showDialog(builder: android.app.AlertDialog.Builder) {
+    var dlg = builder.show();
+
+    var labelColor = dialogsCommon.getLabelColor();
+    if (labelColor) {
+        var textViewId = dlg.getContext().getResources().getIdentifier("android:id/alertTitle", null, null);
+        if (textViewId) {
+            var tv = <android.widget.TextView>dlg.findViewById(textViewId);
+            if (tv) {
+                tv.setTextColor(labelColor.android);
+            }
+        }
+
+        var messageTextViewId = dlg.getContext().getResources().getIdentifier("android:id/message", null, null);
+        if (messageTextViewId) {
+            var messageTextView = <android.widget.TextView>dlg.findViewById(messageTextViewId);
+            if (messageTextView) {
+                messageTextView.setTextColor(labelColor.android);
+            }
+        }
+    }
+}
+
 function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.ConfirmOptions,
     callback: Function): void {
 
@@ -65,7 +88,7 @@ export function alert(arg: any): Promise<void> {
                 }
             }));
 
-            alert.show();
+            showDialog(alert);
 
         } catch (ex) {
             reject(ex);
@@ -81,7 +104,7 @@ export function confirm(arg: any): Promise<boolean> {
 
             addButtonsToAlertDialog(alert, options, function (result) { resolve(result); });
 
-            alert.show();
+            showDialog(alert);
 
         } catch (ex) {
             reject(ex);
@@ -132,7 +155,7 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
 
             addButtonsToAlertDialog(alert, options, function (r) { resolve({ result: r, text: getText() }); });
 
-            alert.show();
+            showDialog(alert);
 
         } catch (ex) {
             reject(ex);
@@ -196,7 +219,7 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
                 });
             });
 
-            alert.show();
+            showDialog(alert);
 
         } catch (ex) {
             reject(ex);
@@ -239,7 +262,7 @@ export function action(arg: any): Promise<string> {
             var alert = new android.app.AlertDialog.Builder(activity);
             var message = options && types.isString(options.message) ? options.message : "";
             var title = options && types.isString(options.title) ? options.title : "";
-            
+
             if (title) {
                 alert.setTitle(title);
                 if (!options.actions) {
@@ -266,7 +289,7 @@ export function action(arg: any): Promise<string> {
                     }
                 }));
             }
-            alert.show();
+            showDialog(alert);
 
         } catch (ex) {
             reject(ex);

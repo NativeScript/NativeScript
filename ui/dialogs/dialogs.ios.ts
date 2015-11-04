@@ -6,7 +6,6 @@ import dialogs = require("ui/dialogs");
 import dialogsCommon = require("./dialogs-common");
 import types = require("utils/types");
 import utils = require("utils/utils");
-import frame = require("ui/frame");
 
 global.moduleMerge(dialogsCommon, exports);
 
@@ -51,7 +50,7 @@ class UIActionSheetDelegateImpl extends NSObject implements UIActionSheetDelegat
 function createUIAlertView(options: dialogs.DialogOptions): UIAlertView {
     var alert = new UIAlertView();
     alert.title = options && options.title ? options.title : "";
-    alert.message = options && options.message ? options.message : "";;
+    alert.message = options && options.message ? options.message : "";
     return alert;
 }
 
@@ -263,6 +262,11 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
                 alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                     arg.text = types.isString(options.defaultText) ? options.defaultText : "";
                     arg.secureTextEntry = options && options.inputType === dialogs.inputType.password;
+
+                    var color = dialogsCommon.getTextFieldColor();
+                    if (color) {
+                        arg.textColor = arg.tintColor = color.ios;
+                    }
                 });
 
                 textField = alertController.textFields.firstObject;
@@ -340,12 +344,22 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
                 alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                     arg.placeholder = "Login";
                     arg.text = types.isString(options.userName) ? options.userName : "";
+
+                    var color = dialogsCommon.getTextFieldColor();
+                    if (color) {
+                        arg.textColor = arg.tintColor = color.ios;
+                    }
                 });
 
                 alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                     arg.placeholder = "Password";
                     arg.secureTextEntry = true;
                     arg.text = types.isString(options.password) ? options.password : "";
+
+                    var color = dialogsCommon.getTextFieldColor();
+                    if (color) {
+                        arg.textColor = arg.tintColor = color.ios;
+                    }
                 });
 
                 userNameTextField = alertController.textFields.firstObject;
@@ -373,14 +387,27 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
 }
 
 function showUIAlertController(alertController: UIAlertController) {
-    var topMostFrame = frame.topmost();
-    if (topMostFrame) {
-        var viewController: UIViewController = topMostFrame.currentPage && topMostFrame.currentPage.ios;
+    var currentPage = dialogsCommon.getCurrentPage();
+    if (currentPage) {
+        var viewController: UIViewController = currentPage.ios;
         if (viewController) {
             if (alertController.popoverPresentationController) {
                 alertController.popoverPresentationController.sourceView = viewController.view;
                 alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
                 alertController.popoverPresentationController.permittedArrowDirections = 0;
+            }
+
+            var color = dialogsCommon.getButtonColor();
+            if (color) {
+                alertController.view.tintColor = color.ios;
+            }
+
+            var lblColor = dialogsCommon.getLabelColor();
+            if (lblColor) {
+                var title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+                alertController.setValueForKey(title, "attributedTitle");
+                var message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+                alertController.setValueForKey(message, "attributedMessage");
             }
 
             viewController.presentModalViewControllerAnimated(alertController, true);

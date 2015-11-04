@@ -11,3 +11,12 @@ ScrollView {
     font-size: 24;
     margin: 6 0;
 }
+/*
+ActionBar, TabView, ActivityIndicator, Label, Button, TextView, TextField, SearchBar, ListPicker, DatePicker, TimePicker {
+    color: mediumaquamarine;
+}
+
+Switch, Progress, Slider, SegmentedBar {
+    color: mediumaquamarine;
+    background-color: aquamarine;
+}*/
