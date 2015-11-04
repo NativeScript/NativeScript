@@ -172,8 +172,13 @@ function onFragmentShown(fragment: PageFragmentBody) {
 
     frame._currentEntry = entry;
 
-    // notify the page
     frame._addView(page);
+    // onFragmentShown is called before NativeActivity.start where we call frame.onLoaded
+    // We need to call frame.onLoaded() here so that the call to frame._addView(page) will emit the page.loaded event
+    // before the page.navigatedTo event making the two platforms identical.
+    if (!frame.isLoaded) {
+        frame.onLoaded();
+    }
     page.onNavigatedTo(isBack);
     frame._processNavigationQueue(page);
 }
@@ -501,7 +506,9 @@ var NativeActivity = {
     onStart: function () {
         this.super.onStart();
         trace.write("NativeScriptActivity.onStart();", trace.categories.NativeLifecycle);
-        this.frame.onLoaded();
+        if (!this.frame.isLoaded) {
+            this.frame.onLoaded();
+        }
     },
 
     onStop: function () {

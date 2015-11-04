@@ -66,3 +66,44 @@ export function test_WhenPageIsLoadedItCanShowAnotherPageAsModal() {
         helper.goBack();
     }
 }
+
+export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
+    var masterPage;
+    var masterPageUnloaded = false;
+    var modalClosed = false;
+    var modalCloseCallback = function (returnValue: any) {
+        TKUnit.wait(0.100);
+        modalClosed = true;
+    }
+
+    var loadedEventHandler = function (args) {
+        var basePath = "ui/page/";
+        args.object.showModal(basePath + "modal-page", null, modalCloseCallback, false);
+    };
+
+    var unloadedEventHandler = function (args) {
+        masterPageUnloaded = true;
+    };
+
+    var masterPageFactory = function (): PageModule.Page {
+        masterPage = new PageModule.Page();
+        masterPage.id = "master-page";
+        masterPage.on(view.View.loadedEvent, loadedEventHandler);
+        masterPage.on(view.View.unloadedEvent, unloadedEventHandler);
+        var label = new LabelModule.Label();
+        label.text = "Modal Page";
+        masterPage.content = label;
+        return masterPage;
+    };
+
+    try {
+        helper.navigate(masterPageFactory);
+        TKUnit.waitUntilReady(() => { return modalClosed; });
+        TKUnit.assert(!masterPageUnloaded, "Master page should not raise 'unloaded' when showing modal!");
+        masterPage.off(view.View.loadedEvent, loadedEventHandler);
+        masterPage.off(view.View.unloadedEvent, loadedEventHandler);
+    }
+    finally {
+        helper.goBack();
+    }
+}
