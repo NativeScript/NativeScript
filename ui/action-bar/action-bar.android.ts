@@ -9,6 +9,8 @@ import application = require("application");
 import dts = require("ui/action-bar");
 import view = require("ui/core/view");
 
+const R_ID_HOME = 0x0102002c;
+
 var ACTION_ITEM_ID_OFFSET = 1000;
 
 global.moduleMerge(common, exports);
@@ -126,7 +128,7 @@ export class ActionBar extends common.ActionBar {
             return true;
         }
 
-        if (this.navigationButton && itemId === (<any>android).R.id.home) {
+        if (this.navigationButton && itemId === R_ID_HOME) {
             this.navigationButton._raiseTap();
             return true;
         }

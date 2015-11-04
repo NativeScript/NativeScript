@@ -5,6 +5,10 @@ import proxy = require("ui/core/proxy");
 import types = require("utils/types");
 import observable = require("data/observable"); 
 
+const R_ID_TABS = 0x01020013;
+const R_ID_TABCONTENT = 0x01020011;
+const R_ATTR_STATE_SELECTED = 0x010100a1;
+
 global.moduleMerge(common, exports);
 
 function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -79,8 +83,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
                 var stateDrawable = new android.graphics.drawable.StateListDrawable();
 
                 var arr = java.lang.reflect.Array.newInstance(java.lang.Integer.class.getField("TYPE").get(null), 1);
-                arr[0] = (<any>android).R.attr.state_selected;
-
+                arr[0] = R_ATTR_STATE_SELECTED;
                 var colorDrawable = new SegmentedBarColorDrawable(view.selectedBackgroundColor.android)
                 stateDrawable.addState(arr, colorDrawable);
                 stateDrawable.setBounds(0, 15, vg.getRight(), vg.getBottom());
@@ -154,11 +157,11 @@ export class SegmentedBar extends common.SegmentedBar {
         tabHostLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
 
         var tabWidget = new android.widget.TabWidget(this._context);
-        tabWidget.setId((<any>android).R.id.tabs);
+        tabWidget.setId(R_ID_TABS);
         tabHostLayout.addView(tabWidget);
 
         var frame = new android.widget.FrameLayout(this._context);
-        frame.setId((<any>android).R.id.tabcontent);
+        frame.setId(R_ID_TABCONTENT);
         frame.setVisibility(android.view.View.GONE);
         tabHostLayout.addView(frame);
 
