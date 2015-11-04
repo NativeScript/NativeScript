@@ -205,6 +205,12 @@ class ListViewAdapter extends android.widget.BaseAdapter {
         }
 
         if (args.view) {
+            if (this._listView.rowHeight > -1) {
+                args.view.height = this._listView.rowHeight;
+            }
+            else {
+                args.view.height = Number.NaN;
+            }
             this._listView._prepareItem(args.view, index);
             if (!args.view.parent) {
                 if (args.view instanceof layoutBaseModule.LayoutBase) {
