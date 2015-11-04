@@ -396,6 +396,16 @@ module.exports = function(grunt) {
                 nodeTests: {
                     NODE_PATH: localCfg.outModulesDir,
                 }
+            },
+            bom: {
+                allTargetFiles: {
+                    src: [
+                        pathModule.join(localCfg.outDir, "**/*.ts"),
+                        pathModule.join(localCfg.outDir, "**/*.js"),
+                        pathModule.join(localCfg.outDir, "**/*.css"),
+                        pathModule.join(localCfg.outDir, "**/*.xml")
+                        ]
+                }
             }
         });
 
@@ -408,6 +418,7 @@ module.exports = function(grunt) {
         grunt.loadNpmTasks("grunt-shell");
         grunt.loadNpmTasks("grunt-env");
         grunt.loadNpmTasks("grunt-simple-mocha");
+        grunt.loadNpmTasks('grunt-bom-removal');
 
         var cloneTasks = function(originalTasks, taskNameSuffix) {
             var clonedTasks = [];
@@ -537,6 +548,8 @@ module.exports = function(grunt) {
                     "compile-ts",
                     "distribute-apps-files",
                     "distribute-ts-apps-files",
+
+                    "bom:allTargetFiles",
 
                     "pack-modules"
         ]));
