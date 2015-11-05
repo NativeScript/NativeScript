@@ -455,6 +455,17 @@ export function test_parse_ShouldParseSubProperties() {
     TKUnit.assert(sw.visibility === "collapsed", "Expected result: collapsed; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
 };
 
+export function test_parse_ShouldParseBindingToSpecialProperty() {
+    var classProp = "MyClass";
+    var p = <Page>builder.parse("<Page><Label class='{{ myProp }}' /></Page>");
+    var obj = new observable.Observable();
+    obj.set("myProp", classProp);
+    p.bindingContext = obj;
+
+    TKUnit.assertEqual(p.content.className, classProp);
+    TKUnit.assertEqual(p.content._cssClasses.length, 1);
+};
+
 export function test_parse_ShouldParseBindingsWithCommaInsideSingleQuote() {
     var expected = "Hi,test"
     var bindingString = "{{ 'Hi,' + myProp }}";
