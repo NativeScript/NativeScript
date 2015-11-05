@@ -232,7 +232,7 @@ export class View extends viewCommon.View {
         //
     }
 
-    public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
+    public _setNativeViewFrame(nativeView: any, frame: any) {
         if (!CGRectEqualToRect(nativeView.frame, frame)) {
             trace.write(this + ", Native setFrame: = " + NSStringFromCGRect(frame), trace.categories.Layout);
             nativeView.frame = frame;

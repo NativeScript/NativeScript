@@ -234,7 +234,7 @@ export class Frame extends frameCommon.Frame {
         return (navigationBar && !this._ios.controller.navigationBarHidden) ? navigationBar.frame.size.height : 0;
     }
 
-    public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
+    public _setNativeViewFrame(nativeView: any, frame: any) {
         // HACK: The plugin https://github.com/hackiftekhar/IQKeyboardManager offsets our Frame's 'nativeView.frame.origin.y'
         // to a negative value so the currently focused TextField/TextView is always on the screen while the soft keyboard is showing.
         // Our Frame always wants to have an origin of {0, 0}, so if someone else has been playing with origin.x or origin.y do not bring it back to {0, 0}.

@@ -1120,4 +1120,8 @@ export class View extends proxy.ProxyObject implements definition.View {
 
         return this.typeName;
     }
+
+    public _setNativeViewFrame(nativeView: any, frame: any) {
+        //
+    }
 }
