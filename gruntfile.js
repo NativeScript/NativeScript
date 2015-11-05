@@ -1,3 +1,5 @@
+var tsconfig = require('./tsconfig.json');
+
 module.exports = function(grunt) {
 
     if (grunt.cli.tasks.indexOf("testsapp") >= 0 || grunt.cli.tasks.indexOf("buildTestsApp")>= 0) {
@@ -127,7 +129,7 @@ module.exports = function(grunt) {
             srcAppsDir: "./apps",
             packageJsonFilePath: "./package.json",
             outDir: "./bin/dist",
-            outModulesDir: "./bin/dist/modules",
+            outModulesDir: tsconfig.compilerOptions.outDir,
             outAppsDir: "./bin/dist/apps",
             outTsAppsDir: "./bin/dist/ts-apps",
         };
@@ -141,37 +143,18 @@ module.exports = function(grunt) {
         localCfg.mainPackageContent = grunt.file.readJSON(localCfg.packageJsonFilePath);
         localCfg.packageVersion = getPackageVersion(localCfg.packageJsonFilePath);
         localCfg.commitSHA = getCommitSha();
-        localCfg.defaultExcludes = [
-            "!" + localCfg.outDir + "/**/*.*",
-            "!./node_modules/**/*.*",
-            "!./bin/**/*.*",
-            "!./build/**/*.*",
-            "!./Deploy/**/*.*",
-            "!./obj/**/*.*",
-            "!./out/**/*.*",
-            "!./.*/**/*.*"
-        ];
-        localCfg.typeScriptSrc = [
-            "./**/*.ts"
-        ].concat(localCfg.defaultExcludes);
+        localCfg.typeScriptSrc = tsconfig.filesGlob;
+        localCfg.defaultExcludes = localCfg.typeScriptSrc.filter(function(item) { return /^!/.test(item); });
         localCfg.typeScriptSrcForTsLint = localCfg.typeScriptSrc.concat([
-                "!./ios.d.ts",
-                "!./android17.d.ts",
-                "!./libjs.d.ts"
+                "!ios.d.ts",
+                "!android17.d.ts",
+                "!libjs.d.ts"
         ]);
 
-        var tsOptions = {
-            fast: 'never',
-            module: "commonjs",
-            target: "es5",
-            sourceMap: false,
-            declaration: false,
-            removeComments: !grunt.option('leavecomments') || '',
-            compiler: "node_modules/typescript/bin/tsc",
-            noEmitOnError: true,
-            experimentalDecorators: true,
-            noEmitHelpers: true
-        };
+        var tsOptions = tsconfig.compilerOptions;
+        tsOptions.fast = 'never';
+        tsOptions.removeComments = !grunt.option('leavecomments') || '';
+        tsOptions.compiler = "node_modules/typescript/bin/tsc";
 
         grunt.initConfig({
             localCfg : localCfg,
@@ -183,9 +166,9 @@ module.exports = function(grunt) {
                 typeScriptLeftovers: {
                     expand: true,
                     src: [
-                        "./.baseDir.*",
-                        "./_references.js",
-                        "./**/*.map"
+                        ".baseDir.*",
+                        "_references.js",
+                        "**/*.map"
                     ],
                     cwd: localCfg.outModulesDir
                 },
@@ -306,7 +289,7 @@ module.exports = function(grunt) {
             },
             ts: {
                 build: {
-                    src: localCfg.typeScriptSrc,
+                    tsconfig: 'tsconfig.json',
                     outDir: localCfg.outModulesDir,
                     options: tsOptions
                 },
@@ -503,8 +486,11 @@ module.exports = function(grunt) {
                 "copy:readyTsAppFiles"
         ]);
         grunt.registerTask("generate-tns-core-modules-dts", function() {
-            var dtsFiles = grunt.file.expand({cwd: localCfg.outModulesDir}, ['**/*.d.ts']);
-            dtsFiles.sort()
+            var dtsFiles = grunt.file.expand({cwd: localCfg.outModulesDir}, [
+                '**/*.d.ts',
+                '!tns-core-modules.d.ts'
+            ].concat(localCfg.defaultExcludes));
+            dtsFiles.sort();
 
             var dtsLines = dtsFiles.map(function(dtsFile) {
                 return '/// <reference path="' + dtsFile + '" />';
@@ -553,12 +539,6 @@ module.exports = function(grunt) {
 
                     "pack-modules"
         ]));
-
-        grunt.registerTask("testEnv", function() {
-            console.log('fafla', process.env.NODE_PATH);
-            //var x = require('xml')
-            //console.log(x);
-        });
 
         grunt.registerTask("node-tests", [
                 "clean:nodeTests",
