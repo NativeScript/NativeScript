@@ -7,6 +7,7 @@ import trace = require("trace");
 import polymerExpressions = require("js-libs/polymer-expressions");
 import bindingBuilder = require("../builder/binding-builder");
 import viewModule = require("ui/core/view");
+import {getSpecialPropertySetter} from "ui/builder/special-properties";
 
 //late import
 var _appModule = null;
@@ -22,7 +23,7 @@ var bindingContextProperty = new dependencyObservable.Property(
     "bindingContext",
     "Bindable",
     new dependencyObservable.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.Inheritable, onBindingContextChanged)
-    );
+);
 
 function onBindingContextChanged(data: dependencyObservable.PropertyChangeData) {
     var bindable = <Bindable>data.object;
@@ -211,8 +212,8 @@ export class Binding {
             // then split properties either on '.' or '['
             var parentsMatches = property.match(bindingBuilder.parentsRegex);
             result = property.replace(bindingBuilder.parentsRegex, "parentsMatch")
-                                    .replace(/\]/g, "")
-                                    .split(/\.|\[/);
+                .replace(/\]/g, "")
+                .split(/\.|\[/);
 
             var i;
             var resultLength = result.length;
@@ -591,10 +592,15 @@ export class Binding {
                 optionsInstance.off(options.property, null, optionsInstance.bindingContext);
                 optionsInstance.on(options.property, value, optionsInstance.bindingContext);
             } else {
-                if (optionsInstance instanceof observable.Observable) {
-                    optionsInstance.set(options.property, value);
+                let specialSetter = getSpecialPropertySetter(options.property);
+                if (specialSetter) {
+                    specialSetter(optionsInstance, value);
                 } else {
-                    optionsInstance[options.property] = value;
+                    if (optionsInstance instanceof observable.Observable) {
+                        optionsInstance.set(options.property, value);
+                    } else {
+                        optionsInstance[options.property] = value;
+                    }
                 }
             }
         }
