@@ -69,6 +69,9 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
         let owner = this._owner.get();
         if (owner) {
+
+            owner.style._updateTextDecoration();
+
             if (owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {
                 if (textField.secureTextEntry && this.firstEdit) {
                     owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, replacementString);

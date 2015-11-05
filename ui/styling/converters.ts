@@ -24,6 +24,20 @@ export function textAlignConverter(value: string): string {
     }
 }
 
+export function textDecorationConverter(value: string): string {
+    switch (value) {
+        case enums.TextDecoration.none:
+        case enums.TextDecoration.overline:
+        case enums.TextDecoration.underline:
+        case enums.TextDecoration.lineThrough:
+            return value;
+            break;
+        default:
+            throw new Error("CSS text-decoration \"" + value + "\" is not supported.");
+            break;
+    }
+}
+
 export var numberConverter = parseFloat;
 
 export function visibilityConverter(value: string): string {

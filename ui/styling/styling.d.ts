@@ -205,6 +205,7 @@
         public _syncNativeProperties(): void;
         public _inheritStyleProperty(property: dependencyObservable.Property): void;
         public _inheritStyleProperties(): void;
+        public _updateTextDecoration(): void;
         //@endprivate
     }
 

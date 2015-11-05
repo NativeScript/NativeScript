@@ -95,6 +95,7 @@ export class TextBase extends view.View implements definition.TextBase, formatte
         }
         else if (this.ios) {
             this.ios.text = data.newValue + "";
+            this.style._updateTextDecoration();
         }
     }
 
@@ -103,6 +104,7 @@ export class TextBase extends view.View implements definition.TextBase, formatte
             this.android.setText(value._formattedText);
         } else if (this.ios) {
             this.ios.attributedText = value._formattedText;
+            this.style._updateTextDecoration();
             this.requestLayout();
         }
     }

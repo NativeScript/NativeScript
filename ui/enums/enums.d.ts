@@ -417,6 +417,31 @@
          */
         export var italic: string;
     }
+
+    /**
+     * Specifies different text decorations.
+     */
+    export module TextDecoration {
+        /**
+         * No decoration.
+         */
+        export var none: string;
+        
+        /**
+         * Text decoration underline.
+         */
+        export var underline: string;
+
+        /**
+         * Text decoration overline.
+         */
+        export var overline: string;
+
+        /**
+         * Text decoration line-through.
+         */
+        export var lineThrough: string;
+    }
     
     
     /**

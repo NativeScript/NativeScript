@@ -44,6 +44,7 @@ declare module "ui/styling/style" {
         public fontWeight: string;
         public font: string;
         public textAlignment: string;
+        public textDecoration: string;
         public minWidth: number;
         public minHeight: number;
         public width: number;
@@ -72,6 +73,7 @@ declare module "ui/styling/style" {
         public _inheritStyleProperty(property: Property): void;
         public _inheritStyleProperties(): void;
         public _boundsChanged(): void;
+        public _updateTextDecoration(): void;
     }
 
     export function registerHandler(property: Property, handler: styling.stylers.StylePropertyChangedHandler, className?: string);

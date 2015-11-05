@@ -7,6 +7,7 @@ import font = require("ui/styling/font");
 import background = require("ui/styling/background");
 import frame = require("ui/frame");
 import tabView = require("ui/tab-view");
+import formattedString = require("text/formatted-string");
 
 global.moduleMerge(stylersCommon, exports);
 
@@ -14,6 +15,8 @@ interface TextUIView {
     font: UIFont;
     textAlignment: number;
     textColor: UIColor;
+    text : string;
+    attributedText : NSAttributedString;
 }
 
 var ignorePropertyHandler = new stylersCommon.StylePropertyChangedHandler(
@@ -305,6 +308,15 @@ export class TextBaseStyler implements definition.stylers.Styler {
         return ios.textAlignment;
     }
 
+    // text-decoration
+    private static setTextDecorationProperty(view: view.View, newValue: any) {
+        setTextDecoration(view._nativeView, newValue);
+    }
+
+    private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
+        setTextDecoration(view._nativeView, enums.TextDecoration.none);
+    }
+
     // color
     private static setColorProperty(view: view.View, newValue: any) {
         var ios: TextUIView = <TextUIView>view._nativeView;
@@ -336,6 +348,10 @@ export class TextBaseStyler implements definition.stylers.Styler {
             TextBaseStyler.setColorProperty,
             TextBaseStyler.resetColorProperty,
             TextBaseStyler.getNativeColorValue), "TextBase");
+
+        style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextBaseStyler.setTextDecorationProperty,
+            TextBaseStyler.resetTextDecorationProperty), "TextBase");
     }
 }
 
@@ -877,6 +893,36 @@ function setTextAlignment(view: TextUIView, value: string) {
             break;
         default:
             break;
+    }
+}
+
+function setTextDecoration(view: TextUIView, value: string) {
+    switch (value) {
+        case enums.TextDecoration.none:
+
+            break;
+        case enums.TextDecoration.overline:
+
+            break;
+        case enums.TextDecoration.underline:
+            setTextDecorationNative(view, view.text || view.attributedText, NSUnderlineStyleAttributeName);
+            break;
+        case enums.TextDecoration.lineThrough:
+            setTextDecorationNative(view, view.text || view.attributedText, NSStrikethroughStyleAttributeName);
+            break;
+        default:
+            break;
+    }
+}
+
+function setTextDecorationNative(view: TextUIView, value: string | NSAttributedString, attribute: string) {
+    var attributedString: NSMutableAttributedString;
+
+    if (value instanceof NSAttributedString) {
+        attributedString = NSMutableAttributedString.alloc().initWithAttributedString(value);
+        attributedString.addAttributesRange(<any>{ [attribute]: NSUnderlineStyle.NSUnderlineStyleSingle }, NSRangeFromString(attributedString.string));
+    } else {
+        view.attributedText = NSAttributedString.alloc().initWithStringAttributes(<string>value, <any>{ [attribute]: NSUnderlineStyle.NSUnderlineStyleSingle });
     }
 }
 

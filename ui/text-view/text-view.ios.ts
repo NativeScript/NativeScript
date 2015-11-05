@@ -20,11 +20,13 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     }
 
     public textViewShouldBeginEditing(textView: UITextView): boolean {
+        this._owner.style._updateTextDecoration();
         this._owner._hideHint();
         return true;
     }
 
     public textViewDidEndEditing(textView: UITextView) {
+        this._owner.style._updateTextDecoration();
         if (this._owner.updateTextTrigger === enums.UpdateTextTrigger.focusLost) {
             this._owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
         }
@@ -34,6 +36,8 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     }
 
     public textViewDidChange(textView: UITextView) {
+        this._owner.style._updateTextDecoration();
+
         if (this._owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {
             this._owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
         }
