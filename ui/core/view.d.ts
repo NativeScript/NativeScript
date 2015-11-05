@@ -502,6 +502,7 @@ declare module "ui/core/view" {
         _goToVisualState(state: string);
         _nativeView: any;
         _isVisible: boolean;
+        _setNativeViewFrame(nativeView: UIView, frame: CGRect): void;
         //@endprivate
     }
 
