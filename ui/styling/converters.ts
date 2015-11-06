@@ -17,10 +17,8 @@ export function textAlignConverter(value: string): string {
         case enums.TextAlignment.center:
         case enums.TextAlignment.right:
             return value;
-            break;
         default:
             throw new Error("CSS text-align \"" + value + "\" is not supported.");
-            break;
     }
 }
 
@@ -30,10 +28,8 @@ export function textDecorationConverter(value: string): string {
         case enums.TextDecoration.underline:
         case enums.TextDecoration.lineThrough:
             return value;
-            break;
         default:
             throw new Error("CSS text-decoration \"" + value + "\" is not supported.");
-            break;
     }
 }
 
