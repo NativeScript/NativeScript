@@ -416,6 +416,15 @@ export class TextViewStyler implements definition.stylers.Styler {
         return view._nativeView.getGravity();
     }
 
+    // text-decoration
+    private static setTextDecorationProperty(view: view.View, newValue: any) {
+        setTextDecoration(view._nativeView, newValue);
+    }
+
+    private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
+        setTextDecoration(view._nativeView, enums.TextDecoration.none);
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setColorProperty,
@@ -431,6 +440,10 @@ export class TextViewStyler implements definition.stylers.Styler {
             TextViewStyler.setTextAlignmentProperty,
             TextViewStyler.resetTextAlignmentProperty,
             TextViewStyler.getNativeTextAlignmentValue), "TextBase");
+
+        style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setTextDecorationProperty,
+            TextViewStyler.resetTextDecorationProperty), "TextBase");
 
         // Register the same stylers for Button.
         // It also derives from TextView but is not under TextBase in our View hierarchy.
@@ -448,6 +461,26 @@ export class TextViewStyler implements definition.stylers.Styler {
             TextViewStyler.setTextAlignmentProperty,
             TextViewStyler.resetTextAlignmentProperty,
             TextViewStyler.getNativeTextAlignmentValue), "Button");
+
+        style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setTextDecorationProperty,
+            TextViewStyler.resetTextDecorationProperty), "Button");
+    }
+}
+
+function setTextDecoration(view: android.widget.TextView, value: string) {
+    switch (value) {
+        case enums.TextDecoration.none:
+            view.setPaintFlags(view.getPaintFlags());
+            break;
+        case enums.TextDecoration.underline:
+            view.setPaintFlags(view.getPaintFlags() | android.graphics.Paint.UNDERLINE_TEXT_FLAG);
+            break;
+        case enums.TextDecoration.lineThrough:
+            view.setPaintFlags(view.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+            break;
+        default:
+            break;
     }
 }
 
@@ -823,7 +856,7 @@ export class ActionBarStyler implements definition.stylers.Styler {
     private static setColorProperty(view: view.View, newValue: any) {
         var toolbar = (<android.support.v7.widget.Toolbar>view._nativeView);
         toolbar.setTitleTextColor(newValue);
-        
+
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
