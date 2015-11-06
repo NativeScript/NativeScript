@@ -11,7 +11,7 @@ var CELLIDENTIFIER = "cell";
 var ITEMLOADING = common.ListView.itemLoadingEvent;
 var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
 var ITEMTAP = common.ListView.itemTapEvent;
-var DEFAULT_HEIGHT = 80;
+var DEFAULT_HEIGHT = 44;
 
 global.moduleMerge(common, exports);
 
@@ -69,7 +69,8 @@ class DataSource extends NSObject implements UITableViewDataSource {
                 // Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called 
                 // from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
                 let width = utils.layout.getMeasureSpecSize(owner.widthMeasureSpec);
-                let cellHeight = owner.getHeight(indexPath.row);
+                let rowHeight = owner._nativeView.rowHeight;
+                let cellHeight = rowHeight > 0 ? rowHeight : owner.getHeight(indexPath.row);
                 view.View.layoutChild(owner, cellView, 0, 0, width, cellHeight);
             }
         }
@@ -132,6 +133,35 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
     }
 }
 
+class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDelegate {
+    public static ObjCProtocols = [UITableViewDelegate];
+
+    private _owner: WeakRef<ListView>;
+
+    public static initWithOwner(owner: WeakRef<ListView>): UITableViewRowHeightDelegateImpl {
+        let delegate = <UITableViewRowHeightDelegateImpl>UITableViewRowHeightDelegateImpl.new();
+        delegate._owner = owner;
+        return delegate;
+    }
+
+    public tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath) {
+        let owner = this._owner.get();
+        if (owner && (indexPath.row === owner.items.length - 1)) {
+            owner.notify(<observable.EventData>{ eventName: LOADMOREITEMS, object: owner });
+        }
+    }
+
+    public tableViewWillSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
+        let cell = <ListViewCell>tableView.cellForRowAtIndexPath(indexPath);
+        let owner = this._owner.get();
+        if (owner) {
+            notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
+        }
+        cell.highlighted = false;
+        return indexPath;
+    }
+}
+
 function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var bar = <ListView>data.object;
     if (!bar.ios) {
@@ -163,7 +193,6 @@ export class ListView extends common.ListView {
         this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), CELLIDENTIFIER);
         this._ios.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
         this._ios.estimatedRowHeight = DEFAULT_HEIGHT;
-
         this._ios.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._heights = new Array<number>();
@@ -210,6 +239,23 @@ export class ListView extends common.ListView {
 
     public setHeight(index: number, value: number): void {
         this._heights[index] = value;
+    }
+
+    public _onRowHeightPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        if (data.newValue < 0) {
+            this._nativeView.rowHeight = UITableViewAutomaticDimension;
+            this._nativeView.estimatedRowHeight = DEFAULT_HEIGHT;
+            this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
+        }
+        else {
+            this._nativeView.rowHeight = data.newValue;
+            this._nativeView.estimatedRowHeight = data.newValue;
+            this._delegate = UITableViewRowHeightDelegateImpl.initWithOwner(new WeakRef(this));
+        }
+        if (this.isLoaded) {
+            this._nativeView.delegate = this._delegate;
+        }
+        super._onRowHeightPropertyChanged(data);
     }
 
     public requestLayout(): void {

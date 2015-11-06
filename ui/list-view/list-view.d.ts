@@ -50,6 +50,11 @@ declare module "ui/list-view" {
         public static isScrollingProperty: dependencyObservable.Property;
 
         /**
+         * Represents the observable property backing the rowHeight property of each ListView instance.
+         */
+        public static rowHeightProperty: dependencyObservable.Property;
+
+        /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/ListView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
         android: any /* android.widget.ListView */;
@@ -79,6 +84,11 @@ declare module "ui/list-view" {
          * Gets or set the items separator line color of the ListView. 
          */
         separatorColor: color.Color;
+
+        /**
+         * Gets or set row height of the ListView.
+         */
+        rowHeight: number;
 
         /**
          * Forces the ListView to reload all its items.

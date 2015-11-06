@@ -14,6 +14,7 @@ var ITEMTEMPLATE = "itemTemplate";
 var ISSCROLLING = "isScrolling";
 var LISTVIEW = "ListView";
 var SEPARATORCOLOR = "separatorColor";
+var ROWHEIGHT = "rowHeight";
 
 export module knownTemplates {
     export var itemTemplate = "itemTemplate";
@@ -27,6 +28,11 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 function onItemTemplatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var listView = <definition.ListView>data.object;
     listView.refresh();
+}
+
+function onRowHeightPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var listView = <ListView>data.object;
+    listView._onRowHeightPropertyChanged(data);
 }
 
 export class ListView extends view.View implements definition.ListView {
@@ -66,7 +72,17 @@ export class ListView extends view.View implements definition.ListView {
             false,
             dependencyObservable.PropertyMetadataSettings.None
             )
-        );
+    );
+
+    public static rowHeightProperty = new dependencyObservable.Property(
+        ROWHEIGHT,
+        LISTVIEW,
+        new proxy.PropertyMetadata(
+            -1,
+            dependencyObservable.PropertyMetadataSettings.AffectsLayout,
+            onRowHeightPropertyChanged
+            )
+    );
 
     get items(): any {
         return this._getValue(ListView.itemsProperty);
@@ -95,6 +111,13 @@ export class ListView extends view.View implements definition.ListView {
     set separatorColor(value: color.Color) {
         this._setValue(ListView.separatorColorProperty,
             value instanceof color.Color ? value : new color.Color(<any>value));
+    }
+
+    get rowHeight(): number {
+        return this._getValue(ListView.rowHeightProperty);
+    }
+    set rowHeight(value: number) {
+        this._setValue(ListView.rowHeightProperty, value);
     }
 
     public refresh() {
@@ -152,6 +175,10 @@ export class ListView extends view.View implements definition.ListView {
     }
 
     private _onItemsChanged(args: observable.EventData) {
+        this.refresh();
+    }
+
+    public _onRowHeightPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         this.refresh();
     }
 
