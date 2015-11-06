@@ -9,7 +9,9 @@
   "files": [
     "**/*.*",
     "**/*",
-    "!node-tests/"
+    "!.baseDir.*",
+    "!node-tests/",
+    "!apps/"
   ],
   "license": "Apache-2.0",
   "devDependencies": {
