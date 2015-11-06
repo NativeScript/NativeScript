@@ -469,7 +469,7 @@ export class TextViewStyler implements definition.stylers.Styler {
 }
 
 function setTextDecoration(view: android.widget.TextView, value: string) {
-    var flags = view.getPaintFlags();
+    var flags = 0;
 
     var values = (value + "").split(" ");
 
