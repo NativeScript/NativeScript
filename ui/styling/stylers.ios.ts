@@ -254,6 +254,15 @@ export class ButtonStyler implements definition.stylers.Styler {
         (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString("{0,0,0,0}");
     }
 
+    // text-decoration
+    private static setTextDecorationProperty(view: view.View, newValue: any) {
+        setTextDecoration((<UIButton>view.ios).titleLabel, newValue);
+    }
+
+    private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
+        setTextDecoration((<UIButton>view.ios).titleLabel, enums.TextDecoration.none);
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             ButtonStyler.setColorProperty,
@@ -273,6 +282,10 @@ export class ButtonStyler implements definition.stylers.Styler {
         style.registerHandler(style.nativePaddingsProperty, new stylersCommon.StylePropertyChangedHandler(
             ButtonStyler.setPaddingProperty,
             ButtonStyler.resetPaddingProperty), "Button");
+
+        style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
+            ButtonStyler.setTextDecorationProperty,
+            ButtonStyler.resetTextDecorationProperty), "Button");
     }
 }
 
