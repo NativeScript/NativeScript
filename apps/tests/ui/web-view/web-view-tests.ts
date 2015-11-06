@@ -75,7 +75,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             // <hide>
             let actual;
             let expectedTitle = 'MyTitle';
-            let expectedHtml = '<span style="color:red">Test</span>';
+            let expectedHtml = '<span style="color:red">TestÖ</span>';
 
             if (webView.ios) {
                 actual = webView.ios.stringByEvaluatingJavaScriptFromString("document.body.innerHTML").trim();
@@ -120,7 +120,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
             if (webView.ios) {
                 actual = webView.ios.stringByEvaluatingJavaScriptFromString("document.body.innerHTML").trim();
-                expected = '<span style="color:red">Test</span>';
+                expected = '<span style="color:red">TestÖ</span>';
             } else if (webView.android) {
                 actual = webView.android.getTitle();
                 expected = 'MyTitle';
@@ -144,7 +144,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
                 message = "Error loading " + args.url + ": " + args.error;
             }
         });
-        webView.src = '<!DOCTYPE html><html><head><title>MyTitle</title><meta charset="utf-8" /></head><body><span style="color:red">Test</span></body></html>';
+        webView.src = '<!DOCTYPE html><html><head><title>MyTitle</title><meta charset="utf-8" /></head><body><span style="color:red">TestÖ</span></body></html>';
         // ```
         // </snippet>
     }
