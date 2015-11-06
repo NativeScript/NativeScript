@@ -16,138 +16,59 @@ var ANDROID_FRAME = "android_frame";
 var BACKSTACK_TAG = "_backstackTag";
 var NAV_DEPTH = "_navDepth";
 var CLEARING_HISTORY = "_clearingHistory";
+var activityInitialized = false;
 
 var navDepth = -1;
 
-class PageFragmentBody extends android.app.Fragment {
-    public frame: Frame;
-    public entry: definition.BackstackEntry;
+var PageFragmentBody = (<any>android.app.Fragment).extend({
+        
+    onCreate: function (savedInstanceState: android.os.Bundle) {
+        this.super.onCreate(savedInstanceState);
+        this.super.setHasOptionsMenu(true);
+    },
 
-    constructor(frame: Frame, entry: definition.BackstackEntry) {
-        super();
-
-        this.frame = frame;
-        this.entry = entry;
-        return global.__native(this);
-    }
-
-    onAttach(activity: android.app.Activity) {
-        super.onAttach(activity);
-        trace.write(this.toString() + ".onAttach();", trace.categories.NativeLifecycle);
-    }
-
-    onCreate(savedInstanceState: android.os.Bundle) {
-        super.onCreate(savedInstanceState);
-        trace.write(this.toString() + ".onCreate(); savedInstanceState: " + savedInstanceState, trace.categories.NativeLifecycle);
-        super.setHasOptionsMenu(true);
-    }
-
-    onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-        trace.write(this.toString() + ".onCreateView(); container: " + container + "; savedInstanceState: " + savedInstanceState, trace.categories.NativeLifecycle);
-
-        if (this[CLEARING_HISTORY]) {
-            trace.write(`${this.toString() } wants to create a view, but we are currently clearing history. Returning null.`, trace.categories.NativeLifecycle);
-            return null;
-        }
-
-        var entry: definition.BackstackEntry = this.entry;
-        var page: pages.Page = entry.resolvedPage;
-
+    onCreateView: function (inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
+        var entry = this.entry;
+        var page = entry.resolvedPage;
         if (savedInstanceState && savedInstanceState.getBoolean(HIDDEN, false)) {
-            // Manually hide the fragment if it was hidden before as Android will not do this every time. 
-            super.getFragmentManager().beginTransaction().hide(this).commit();
-
-            // As the page will not be added to the frame it won't be attached
-            // We should attach it manually so that it creates its nativeView
+            this.super.getFragmentManager().beginTransaction().hide(this).commit();
             page._onAttached(this.getActivity());
         }
         else {
             onFragmentShown(this);
         }
-
-        trace.write(this.toString() + ".onCreateView(); nativeView: " + page._nativeView, trace.categories.NativeLifecycle);
         return page._nativeView;
-    }
+    },
 
-    onHiddenChanged(hidden: boolean) {
-        super.onHiddenChanged(hidden);
-        trace.write(this.toString() + ".onHiddenChanged(); hidden: " + hidden, trace.categories.NativeLifecycle);
-
+    onHiddenChanged: function (hidden: boolean) {
+        this.super.onHiddenChanged(hidden);
         if (hidden) {
             onFragmentHidden(this);
         }
         else {
             onFragmentShown(this);
         }
-    }
+    },
 
-    onActivityCreated(savedInstanceState: android.os.Bundle) {
-        super.onActivityCreated(savedInstanceState);
-        trace.write(this.toString() + ".onActivityCreated(); savedInstanceState: " + savedInstanceState, trace.categories.NativeLifecycle);
-    }
-
-    onSaveInstanceState(outState: android.os.Bundle) {
-        super.onSaveInstanceState(outState);
-        trace.write(this.toString() + ".onSaveInstanceState();", trace.categories.NativeLifecycle);
-
+    onSaveInstanceState: function (outState: android.os.Bundle) {
+        this.super.onSaveInstanceState(outState);
         if (this.isHidden()) {
             outState.putBoolean(HIDDEN, true);
         }
-    }
+    },
 
-    onViewStateRestored(savedInstanceState: android.os.Bundle) {
-        super.onViewStateRestored(savedInstanceState);
-        trace.write(this.toString() + ".onViewStateRestored(); savedInstanceState: " + savedInstanceState, trace.categories.NativeLifecycle);
-    }
-
-    onStart() {
-        super.onStart();
-        trace.write(this.toString() + ".onStart();", trace.categories.NativeLifecycle);
-    }
-
-    onResume() {
-        super.onResume();
-        trace.write(this.toString() + ".onResume();", trace.categories.NativeLifecycle);
-    }
-
-    onPause() {
-        super.onPause();
-        trace.write(this.toString() + ".onPause();", trace.categories.NativeLifecycle);
-    }
-
-    onStop() {
-        super.onStop();
-        trace.write(this.toString() + ".onStop();", trace.categories.NativeLifecycle);
-    }
-
-    onDestroyView() {
-        super.onDestroyView();
-        trace.write(this.toString() + ".onDestroyView();", trace.categories.NativeLifecycle);
-
+    onDestroyView: function () {
+        this.super.onDestroyView();
         onFragmentHidden(this);
-    }
+    },
 
-    onDestroy() {
-        super.onDestroy();
-        trace.write(this.toString() + ".onDestroy();", trace.categories.NativeLifecycle);
-
-        // Explicitly free resources to allow Java Garbage collector to release resources associated with JavaScript implementations - e.g. large image files.
-        // Although we hint the V8 with the externally allocated memory, synchronization between the two GCs is not deterministic without an explicit call.
-        // TODO: Revisit this explicit Garbage Collector call when possible.
+    onDestroy: function () {
+        this.super.onDestroy();
         utils.GC();
     }
+});
 
-    onDetach() {
-        super.onDetach();
-        trace.write(this.toString() + ".onDetach();", trace.categories.NativeLifecycle);
-    }
-
-    public toString() {
-        return `${this.getTag() }[${this.entry.resolvedPage.id}]`;
-    }
-}
-
-function onFragmentShown(fragment: PageFragmentBody) {
+function onFragmentShown(fragment) {
     if (fragment[CLEARING_HISTORY]) {
         trace.write(`${fragment.toString() } has been shown, but we are currently clearing history. Returning.`, trace.categories.NativeLifecycle);
         return null;
@@ -183,7 +104,7 @@ function onFragmentShown(fragment: PageFragmentBody) {
     frame._processNavigationQueue(page);
 }
 
-function onFragmentHidden(fragment: PageFragmentBody) {
+function onFragmentHidden(fragment) {
     if (fragment[CLEARING_HISTORY]) {
         trace.write(`${fragment.toString() } has been hidden, but we are currently clearing history. Returning.`, trace.categories.NativeLifecycle);
         return null;
@@ -282,7 +203,11 @@ export class Frame extends frameCommon.Frame {
         var fragmentTransaction = manager.beginTransaction();
 
         var newFragmentTag = "fragment" + navDepth;
-        var newFragment = new PageFragmentBody(this, backstackEntry);
+        var newFragment = new PageFragmentBody();
+
+        newFragment.frame = this;
+        newFragment.entry = backstackEntry;
+
         backstackEntry[BACKSTACK_TAG] = newFragmentTag;
         backstackEntry[NAV_DEPTH] = navDepth;
 
@@ -404,7 +329,7 @@ export class Frame extends frameCommon.Frame {
         console.log("---------------------------");
         console.log("Fragment Manager Back Stack (" + length + ")");
         while (i >= 0) {
-            var fragment = <PageFragmentBody>manager.findFragmentByTag(manager.getBackStackEntryAt(i--).getName());
+            var fragment = <any>manager.findFragmentByTag(manager.getBackStackEntryAt(i--).getName());
             console.log("[ " + fragment.toString() + " ]");
         }
     }
@@ -457,7 +382,11 @@ var NativeActivity = {
 
         // If there is savedInstanceState this call will recreate all fragments that were previously in the navigation.
         // We take care of associating them with a Page from our backstack in the onAttachFragment callback.
-        this.super.onCreate(savedInstanceState);
+        // If there is savedInstanceState and activityInitialized is false we are restarted but process was killed.
+        // For now we treat it like first run (e.g. we are not passing savedInstanceState so no fragments are being restored).
+        // When we add support for applicatioin save/load state - revise this logic.
+        var isRestart = !!savedInstanceState && activityInitialized;
+        this.super.onCreate(isRestart ? savedInstanceState : null);
 
         this.androidFrame.setActivity(this);
 
@@ -469,7 +398,8 @@ var NativeActivity = {
         this.setContentView(this.androidFrame.rootViewGroup, new org.nativescript.widgets.CommonLayoutParams());
 
         // If there is no instance state - we call navigateCore from here since Activity is created AFTER the navigate call and navigateCore will fail.
-        var isRestart = !!savedInstanceState;
+        
+        activityInitialized = true;
         this.frame._onActivityCreated(isRestart);
     },
 
@@ -496,7 +426,7 @@ var NativeActivity = {
         trace.write("NativeScriptActivity.onAttachFragment() : " + fragment.getTag(), trace.categories.NativeLifecycle);
         this.super.onAttachFragment(fragment);
 
-        if (!(<PageFragmentBody>fragment).entry) {
+        if (!(<any>fragment).entry) {
             // There is no entry set to the fragment, so this must be destroyed fragment that was recreated by Android.
             // We should find its corresponding page in our backstack and set it manually.
             findPageForFragment(fragment, this.frame);
@@ -738,8 +668,8 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
         }
     }
     if (page) {
-        (<PageFragmentBody>fragment).frame = frame;
-        (<PageFragmentBody>fragment).entry = entry;
+        (<any>fragment).frame = frame;
+        (<any>fragment).entry = entry;
 
         page[TAG] = fragmentTag;
     }
@@ -754,4 +684,3 @@ function startActivity(activity: android.app.Activity, entry: definition.Navigat
     // TODO: Put the navigation context (if any) in the intent
     activity.startActivity(intent);
 }
-

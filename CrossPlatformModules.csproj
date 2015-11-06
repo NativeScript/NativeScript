@@ -252,12 +252,13 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\pages\handlers.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\segmented-bar\all.ts">
-	  <DependentUpon>all.xml</DependentUpon>
+      <DependentUpon>all.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\segmented-bar\clean.ts">
       <DependentUpon>clean.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="color\known-colors.d.ts" />
+    <TypeScriptCompile Include="es6.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation-common.ts">
       <DependentUpon>animation.d.ts</DependentUpon>
@@ -662,6 +663,7 @@
     <TypeScriptCompile Include="ui\builder\binding-builder.d.ts" />
     <TypeScriptCompile Include="ui\builder\special-properties.d.ts" />
     <TypeScriptCompile Include="ui\builder\special-properties.ts" />
+    <TypeScriptCompile Include="ui\styling\background.android.d.ts" />
     <TypeScriptCompile Include="ui\styling\style-scope.d.ts" />
     <TypeScriptCompile Include="ui\styling\style.d.ts" />
     <TypeScriptCompile Include="ui\ui.d.ts" />

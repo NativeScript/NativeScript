@@ -28,6 +28,23 @@ function buildEntryFromArgs(arg: any): definition.NavigationEntry {
     return entry;
 }
 
+export function reloadPage(): void {
+    let frame = topmost();
+    if (frame) {
+        let currentEntry = frame._currentEntry.entry;
+        let newEntry: definition.NavigationEntry = {
+            animated: false,
+            clearHistory: true,
+            context: currentEntry.context,
+            create: currentEntry.create,
+            moduleName: currentEntry.moduleName,
+            backstackVisible: currentEntry.backstackVisible
+        }
+
+        frame.navigate(newEntry);
+    }
+}
+
 export function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
     var page: pages.Page;
 
@@ -230,6 +247,7 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         var navContext = navigationContext.entry;
         this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
 
+        // TODO: This should happen once navigation is completed.
         if (navigationContext.entry.entry.clearHistory) {
             this._backStack.length = 0;
         }
