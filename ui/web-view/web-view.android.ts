@@ -104,7 +104,7 @@ export class WebView extends common.WebView {
         }
 
         var baseUrl = `file:///${path.substring(0, path.lastIndexOf('/') + 1) }`;
-        this._android.loadDataWithBaseURL(baseUrl, content, "text/html;", "utf-8", null);
+        this._android.loadDataWithBaseURL(baseUrl, content, "text/html", "utf-8", null);
     }
 
     public _loadHttp(src: string) {
@@ -121,7 +121,7 @@ export class WebView extends common.WebView {
         }
 
         var baseUrl = `file:///${fs.knownFolders.currentApp().path}/`;
-        this._android.loadDataWithBaseURL(baseUrl, src, "text/html;", "utf-8", null);
+        this._android.loadDataWithBaseURL(baseUrl, src, "text/html", "utf-8", null);
     }
 
     get canGoBack(): boolean {
