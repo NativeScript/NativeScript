@@ -97,8 +97,8 @@ export class ActionBar extends common.ActionBar {
         if (!this._toolbar) {
             return;
         }
-
-        if (this.page.actionBarHidden) {
+        
+        if (!this.page.frame || !this.page.frame._getNavBarVisible(this.page)) {
             this._toolbar.setVisibility(android.view.View.GONE);
 
             // If action bar is hidden - no need to fill it with items.
