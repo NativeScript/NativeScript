@@ -245,4 +245,8 @@ declare module "ui/frame" {
          */
         navBarVisibility: string;
     }
+
+    //@private
+    export function reloadPage(): void;
+    //@endprivate
 }

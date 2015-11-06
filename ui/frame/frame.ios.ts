@@ -196,6 +196,10 @@ export class Frame extends frameCommon.Frame {
         this._heightMeasureSpec = heightMeasureSpec;
 
         let result = this.measurePage(this.currentPage);
+        if (this._navigateToEntry && this.currentPage) {
+            this.measurePage(this._navigateToEntry.resolvedPage);
+        }
+
         let widthAndState = view.View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
         let heightAndState = view.View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
 
@@ -220,6 +224,9 @@ export class Frame extends frameCommon.Frame {
         this._layoutWidth = right - left;
         this._layoutheight = bottom - top;
         this.layoutPage(this.currentPage);
+        if (this._navigateToEntry && this.currentPage) {
+            this.layoutPage(this._navigateToEntry.resolvedPage);
+        }
     }
 
     public layoutPage(page: pages.Page): void {
