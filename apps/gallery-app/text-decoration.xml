@@ -1,0 +1,16 @@
+﻿<Page>
+  <StackLayout>
+    <Label text="Label" style="text-decoration:none" />
+    <Label text="Label" style="text-decoration:underline" />
+    <Label text="Label" style="text-decoration:line-through" />
+    <TextField text="TextField" style="text-decoration:none" />
+    <TextField text="TextField" style="text-decoration:underline" />
+    <TextField text="TextField" style="text-decoration:line-through" />
+    <TextView text="TextView" style="text-decoration:none" />
+    <TextView text="TextView" style="text-decoration:underline" />
+    <TextView text="TextView" style="text-decoration:line-through" />
+    <Button text="Button" style="text-decoration:none" />
+    <Button text="Button" style="text-decoration:underline" />
+    <Button text="Button" style="text-decoration:line-through" />
+  </StackLayout>
+</Page>
