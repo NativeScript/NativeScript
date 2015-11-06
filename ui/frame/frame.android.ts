@@ -22,20 +22,12 @@ var navDepth = -1;
 
 var PageFragmentBody = (<any>android.app.Fragment).extend({
         
-    onAttach: function (activity: android.app.Activity) {
-        console.log("PageFragmentBody onAttach called");
-        this.super.onAttach(activity);
-        console.log("PageFragmentBody onAttach ended");
-    },
-
     onCreate: function (savedInstanceState: android.os.Bundle) {
-        console.log("PageFragmentBody onCreate called");
         this.super.onCreate(savedInstanceState);
         this.super.setHasOptionsMenu(true);
     },
 
     onCreateView: function (inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-        console.log("PageFragmentBody onCreateView called");
         var entry = this.entry;
         var page = entry.resolvedPage;
         if (savedInstanceState && savedInstanceState.getBoolean(HIDDEN, false)) {
@@ -45,12 +37,10 @@ var PageFragmentBody = (<any>android.app.Fragment).extend({
         else {
             onFragmentShown(this);
         }
-        console.log("PageFragmentBody onCreateView ended");
         return page._nativeView;
     },
 
     onHiddenChanged: function (hidden: boolean) {
-        console.log("PageFragmentBody onHiddenChanged called");
         this.super.onHiddenChanged(hidden);
         if (hidden) {
             onFragmentHidden(this);
@@ -58,73 +48,23 @@ var PageFragmentBody = (<any>android.app.Fragment).extend({
         else {
             onFragmentShown(this);
         }
-        console.log("PageFragmentBody onHiddenChanged ended");
-    },
-
-    onActivityCreated: function (savedInstanceState: android.os.Bundle) {
-        console.log("PageFragmentBody onActivityCreated called");
-        this.super.onActivityCreated(savedInstanceState);
-        console.log("PageFragmentBody onActivityCreated ended");
     },
 
     onSaveInstanceState: function (outState: android.os.Bundle) {
-        console.log("PageFragmentBody onSaveInstanceState called");
         this.super.onSaveInstanceState(outState);
         if (this.isHidden()) {
             outState.putBoolean(HIDDEN, true);
         }
-        console.log("PageFragmentBody onSaveInstanceState ended");
-    },
-
-    onViewStateRestored: function (savedInstanceState: android.os.Bundle) {
-        console.log("PageFragmentBody onViewStateRestored called");
-        this.super.onViewStateRestored(savedInstanceState);
-        trace.write(this.getTag() + ".onViewStateRestored(); savedInstanceState: " + savedInstanceState, trace.categories.NativeLifecycle);
-        console.log("PageFragmentBody onViewStateRestored ended");
-    },
-
-    onStart: function () {
-        console.log("PageFragmentBody onStart called");
-        this.super.onStart();
-        console.log("PageFragmentBody onStart ended");
-    },
-
-    onResume: function () {
-        console.log("PageFragmentBody onResume called");
-        this.super.onResume();
-        console.log("PageFragmentBody onResume ended");
-    },
-
-    onPause: function () {
-        console.log("PageFragmentBody onPause called");
-        this.super.onPause();
-        console.log("PageFragmentBody onPause ended");
-    },
-
-    onStop: function () {
-        console.log("PageFragmentBody onStop called");
-        this.super.onStop();
-        console.log("PageFragmentBody onStop ended");
     },
 
     onDestroyView: function () {
-        console.log("PageFragmentBody onDestroyView called");
         this.super.onDestroyView();
         onFragmentHidden(this);
-        console.log("PageFragmentBody onDestroyView ended");
     },
 
     onDestroy: function () {
-        console.log("PageFragmentBody onDestroy called");
         this.super.onDestroy();
         utils.GC();
-        console.log("PageFragmentBody onDestroy ended");
-    },
-
-    onDetach: function () {
-        console.log("PageFragmentBody onDetach called");
-        this.super.onDetach();
-        console.log("PageFragmentBody onDetach ended");
     }
 });
 
@@ -391,12 +331,7 @@ export class Frame extends frameCommon.Frame {
         var fragmentTransaction = manager.beginTransaction();
 
         var newFragmentTag = "fragment" + navDepth;
-        //var newFragment = new PageFragmentBody(this, backstackEntry);
         var newFragment = new PageFragmentBody();
-
-        var args = new android.os.Bundle();
-        args.putInt("num", num);
-        newFragment.setArguments(args);
 
         newFragment.frame = this;
         newFragment.entry = backstackEntry;
