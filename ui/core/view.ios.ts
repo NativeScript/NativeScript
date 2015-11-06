@@ -232,12 +232,19 @@ export class View extends viewCommon.View {
         //
     }
 
+    public _setNativeViewFrame(nativeView: any, frame: any) {
+        if (!CGRectEqualToRect(nativeView.frame, frame)) {
+            trace.write(this + ", Native setFrame: = " + NSStringFromCGRect(frame), trace.categories.Layout);
+            nativeView.frame = frame;
+            var boundsOrigin = nativeView.bounds.origin;
+            nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
+        }
+    }
+
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
         if (!this._nativeView) {
             return;
         }
-
-        var frame = CGRectMake(left, top, right - left, bottom - top);
 
         // This is done because when rotated in iOS7 there is rotation applied on the first subview on the Window which is our frame.nativeView.view.
         // If we set it it should be transformed so it is correct. 
@@ -252,12 +259,8 @@ export class View extends viewCommon.View {
             nativeView = this._nativeView;
         }
 
-        if (!CGRectEqualToRect(nativeView.frame, frame)) {
-            trace.write(this + ", Native setFrame: = " + NSStringFromCGRect(frame), trace.categories.Layout);
-            nativeView.frame = frame;
-            var boundsOrigin = nativeView.bounds.origin;
-            nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
-        }
+        var frame = CGRectMake(left, top, right - left, bottom - top);
+        this._setNativeViewFrame(nativeView, frame);
     }
 
     public _updateLayout() {
