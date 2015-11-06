@@ -23,8 +23,7 @@ export module TextAlignment {
 export module TextDecoration {
     export var none = "none";
     export var underline = "underline";
-    export var overline = "overline";
-    export var lineThrough = "lineThrough";
+    export var lineThrough = "line-through";
 }
 
 export module Orientation {

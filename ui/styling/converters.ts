@@ -27,7 +27,6 @@ export function textAlignConverter(value: string): string {
 export function textDecorationConverter(value: string): string {
     switch (value) {
         case enums.TextDecoration.none:
-        case enums.TextDecoration.overline:
         case enums.TextDecoration.underline:
         case enums.TextDecoration.lineThrough:
             return value;

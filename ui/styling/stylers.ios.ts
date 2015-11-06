@@ -899,10 +899,7 @@ function setTextAlignment(view: TextUIView, value: string) {
 function setTextDecoration(view: TextUIView, value: string) {
     switch (value) {
         case enums.TextDecoration.none:
-
-            break;
-        case enums.TextDecoration.overline:
-
+            view.text = view.attributedText ? view.attributedText.string : view.text;
             break;
         case enums.TextDecoration.underline:
             setTextDecorationNative(view, view.text || view.attributedText, NSUnderlineStyleAttributeName);

@@ -433,16 +433,10 @@
         export var underline: string;
 
         /**
-         * Text decoration overline.
-         */
-        export var overline: string;
-
-        /**
          * Text decoration line-through.
          */
         export var lineThrough: string;
     }
-    
     
     /**
      * Specifies different font weights.
