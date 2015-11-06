@@ -910,29 +910,32 @@ function setTextAlignment(view: TextUIView, value: string) {
 }
 
 function setTextDecoration(view: TextUIView, value: string) {
-    switch (value) {
-        case enums.TextDecoration.none:
-            view.text = view.attributedText ? view.attributedText.string : view.text;
-            break;
-        case enums.TextDecoration.underline:
-            setTextDecorationNative(view, view.text || view.attributedText, NSUnderlineStyleAttributeName);
-            break;
-        case enums.TextDecoration.lineThrough:
-            setTextDecorationNative(view, view.text || view.attributedText, NSStrikethroughStyleAttributeName);
-            break;
-        default:
-            break;
+    var attributes: NSMutableDictionary = NSMutableDictionary.alloc().init();
+    var values = (value + "").split(" ");
+
+    if (values.indexOf(enums.TextDecoration.underline) !== -1) {
+        attributes.setObjectForKey(NSUnderlineStyle.NSUnderlineStyleSingle, NSUnderlineStyleAttributeName);
+    }
+
+    if (values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+        attributes.setObjectForKey(NSUnderlineStyle.NSUnderlineStyleSingle, NSStrikethroughStyleAttributeName);
+    }
+
+    if (values.indexOf(enums.TextDecoration.none) === -1) {
+        setTextDecorationNative(view, view.text || view.attributedText, attributes);
+    } else {
+        setTextDecorationNative(view, view.text || view.attributedText, NSMutableDictionary.alloc().init());
     }
 }
 
-function setTextDecorationNative(view: TextUIView, value: string | NSAttributedString, attribute: string) {
+function setTextDecorationNative(view: TextUIView, value: string | NSAttributedString, attributes: NSMutableDictionary) {
     var attributedString: NSMutableAttributedString;
 
     if (value instanceof NSAttributedString) {
         attributedString = NSMutableAttributedString.alloc().initWithAttributedString(value);
-        attributedString.addAttributesRange(<any>{ [attribute]: NSUnderlineStyle.NSUnderlineStyleSingle }, NSRangeFromString(attributedString.string));
+        attributedString.addAttributesRange(attributes, NSRangeFromString(attributedString.string));
     } else {
-        view.attributedText = NSAttributedString.alloc().initWithStringAttributes(<string>value, <any>{ [attribute]: NSUnderlineStyle.NSUnderlineStyleSingle });
+        view.attributedText = NSAttributedString.alloc().initWithStringAttributes(<string>value, attributes);
     }
 }
 

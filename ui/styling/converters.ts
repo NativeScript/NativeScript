@@ -23,13 +23,12 @@ export function textAlignConverter(value: string): string {
 }
 
 export function textDecorationConverter(value: string): string {
-    switch (value) {
-        case enums.TextDecoration.none:
-        case enums.TextDecoration.underline:
-        case enums.TextDecoration.lineThrough:
-            return value;
-        default:
-            throw new Error("CSS text-decoration \"" + value + "\" is not supported.");
+    var values = (value + "").split(" ");
+
+    if (values.indexOf(enums.TextDecoration.underline) !== -1 || values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+        return value;
+    } else {
+        throw new Error("CSS text-decoration \"" + value + "\" is not supported.");
     }
 }
 

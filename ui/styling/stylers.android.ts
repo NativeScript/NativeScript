@@ -469,19 +469,23 @@ export class TextViewStyler implements definition.stylers.Styler {
 }
 
 function setTextDecoration(view: android.widget.TextView, value: string) {
-    switch (value) {
-        case enums.TextDecoration.none:
-            view.setPaintFlags(view.getPaintFlags());
-            break;
-        case enums.TextDecoration.underline:
-            view.setPaintFlags(view.getPaintFlags() | android.graphics.Paint.UNDERLINE_TEXT_FLAG);
-            break;
-        case enums.TextDecoration.lineThrough:
-            view.setPaintFlags(view.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
-            break;
-        default:
-            break;
+    var flags = view.getPaintFlags();
+
+    var values = (value + "").split(" ");
+
+    if (values.indexOf(enums.TextDecoration.underline) !== -1) {
+        flags = flags | android.graphics.Paint.UNDERLINE_TEXT_FLAG;
     }
+
+    if (values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+        flags = flags | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
+    }
+
+    if (values.indexOf(enums.TextDecoration.none) === -1) {
+        view.setPaintFlags(flags);
+    } else {
+        view.setPaintFlags(0);
+    }   
 }
 
 export class ActivityIndicatorStyler implements definition.stylers.Styler {

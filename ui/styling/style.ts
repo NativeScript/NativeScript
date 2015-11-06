@@ -240,7 +240,9 @@ function isVisibilityValid(value: string): boolean {
 }
 
 function isTextDecorationValid(value: string): boolean {
-    return value === enums.TextDecoration.none || value === enums.TextDecoration.underline || value === enums.TextDecoration.lineThrough;
+    var values = (value + "").split(" ");
+
+    return values.indexOf(enums.TextDecoration.none) !== -1 || values.indexOf(enums.TextDecoration.underline) !== -1 || values.indexOf(enums.TextDecoration.lineThrough) !== -1;
 }
 
 function onVisibilityChanged(data: PropertyChangeData) {
