@@ -25,7 +25,7 @@ export function textAlignConverter(value: string): string {
 export function textDecorationConverter(value: string): string {
     var values = (value + "").split(" ");
 
-    if (values.indexOf(enums.TextDecoration.underline) !== -1 || values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+    if (values.indexOf(enums.TextDecoration.none) !== -1 || values.indexOf(enums.TextDecoration.underline) !== -1 || values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
         return value;
     } else {
         throw new Error("CSS text-decoration \"" + value + "\" is not supported.");
