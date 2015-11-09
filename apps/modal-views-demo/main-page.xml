@@ -1,4 +1,4 @@
-<Page xmlns="http://www.nativescript.org/tns.xsd" id="_mainPage" backgroundColor="Red"
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" id="_mainPage" backgroundColor="Red"
       navigatingTo="onNavigatingTo"  
       loaded="onLoaded" 
       navigatedTo="onNavigatedTo" 

@@ -1,4 +1,4 @@
-<inherited:InheritedPage xmlns="http://www.nativescript.org/tns.xsd"
+<inherited:InheritedPage xmlns="http://schemas.nativescript.org/tns.xsd"
   xmlns:inherited="xml-declaration/inherited-base-page" loaded="pageLoaded">
   <Label text="Inherited" />
 </inherited:InheritedPage>

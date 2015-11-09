@@ -1,4 +1,4 @@
-<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded" id="mainPage">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" id="mainPage">
   <StackLayout orientation="vertical">
     <StackLayout orientation="vertical" backgroundColor="LightGray" paddingTop="5" paddingBottom="5">
       

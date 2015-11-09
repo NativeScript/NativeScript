@@ -1,4 +1,4 @@
-<Page xmlns="http://www.nativescript.org/tns.xsd" navigatedTo="onNavigatedTo">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatedTo="onNavigatedTo">
   <StackLayout>
     <TextField text="1" loaded="onTextFieldLoaded"/>
     <Button text="Bind" tap="onBind"/>
