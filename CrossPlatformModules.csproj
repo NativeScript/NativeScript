@@ -238,6 +238,7 @@
     <TypeScriptCompile Include="apps\ui-tests-app\action-bar\color.ts">
       <DependentUpon>color.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\css\text-decoration.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\html-view\html-view.ts">
       <DependentUpon>html-view.xml</DependentUpon>
     </TypeScriptCompile>

@@ -20,6 +20,12 @@ export module TextAlignment {
     export var right = "right";
 }
 
+export module TextDecoration {
+    export var none = "none";
+    export var underline = "underline";
+    export var lineThrough = "line-through";
+}
+
 export module Orientation {
     export var horizontal = "horizontal";
     export var vertical = "vertical";

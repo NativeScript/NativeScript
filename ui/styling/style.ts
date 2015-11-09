@@ -239,6 +239,12 @@ function isVisibilityValid(value: string): boolean {
     return value === enums.Visibility.visible || value === enums.Visibility.collapse || value === enums.Visibility.collapsed;
 }
 
+function isTextDecorationValid(value: string): boolean {
+    var values = (value + "").split(" ");
+
+    return values.indexOf(enums.TextDecoration.none) !== -1 || values.indexOf(enums.TextDecoration.underline) !== -1 || values.indexOf(enums.TextDecoration.lineThrough) !== -1;
+}
+
 function onVisibilityChanged(data: PropertyChangeData) {
     (<any>data.object)._view._isVisibleCache = data.newValue === enums.Visibility.visible;
 }
@@ -536,6 +542,19 @@ export class Style extends DependencyObservable implements styling.Style {
         this._setValue(opacityProperty, value);
     }
 
+    get textDecoration(): string {
+        return this._getValue(textDecorationProperty);
+    }
+    set textDecoration(value: string) {
+        this._setValue(textDecorationProperty, value);
+    }
+
+    public _updateTextDecoration() {
+        if (this._getValue(textDecorationProperty) !== enums.TextDecoration.none) {
+            this._applyProperty(textDecorationProperty, this._getValue(textDecorationProperty));
+        }
+    }
+
     constructor(parentView: View) {
         super();
         this._view = parentView;
@@ -787,6 +806,9 @@ export var visibilityProperty = new styleProperty.Property("visibility", "visibi
 
 export var opacityProperty = new styleProperty.Property("opacity", "opacity",
     new PropertyMetadata(1.0, PropertyMetadataSettings.None, undefined, isOpacityValid), converters.opacityConverter);
+
+export var textDecorationProperty = new styleProperty.Property("textDecoration", "text-decoration",
+    new PropertyMetadata(enums.TextDecoration.none, PropertyMetadataSettings.None, undefined, isTextDecorationValid), converters.textDecorationConverter);
 
 // Helper property holding most layout related properties available in CSS.
 // When layout related properties are set in CSS we chache them and send them to the native view in a single call.

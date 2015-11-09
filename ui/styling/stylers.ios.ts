@@ -7,6 +7,7 @@ import font = require("ui/styling/font");
 import background = require("ui/styling/background");
 import frame = require("ui/frame");
 import tabView = require("ui/tab-view");
+import formattedString = require("text/formatted-string");
 
 global.moduleMerge(stylersCommon, exports);
 
@@ -14,6 +15,8 @@ interface TextUIView {
     font: UIFont;
     textAlignment: number;
     textColor: UIColor;
+    text : string;
+    attributedText : NSAttributedString;
 }
 
 var ignorePropertyHandler = new stylersCommon.StylePropertyChangedHandler(
@@ -251,6 +254,15 @@ export class ButtonStyler implements definition.stylers.Styler {
         (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString("{0,0,0,0}");
     }
 
+    // text-decoration
+    private static setTextDecorationProperty(view: view.View, newValue: any) {
+        setTextDecoration((<UIButton>view.ios).titleLabel, newValue);
+    }
+
+    private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
+        setTextDecoration((<UIButton>view.ios).titleLabel, enums.TextDecoration.none);
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             ButtonStyler.setColorProperty,
@@ -270,6 +282,10 @@ export class ButtonStyler implements definition.stylers.Styler {
         style.registerHandler(style.nativePaddingsProperty, new stylersCommon.StylePropertyChangedHandler(
             ButtonStyler.setPaddingProperty,
             ButtonStyler.resetPaddingProperty), "Button");
+
+        style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
+            ButtonStyler.setTextDecorationProperty,
+            ButtonStyler.resetTextDecorationProperty), "Button");
     }
 }
 
@@ -305,6 +321,15 @@ export class TextBaseStyler implements definition.stylers.Styler {
         return ios.textAlignment;
     }
 
+    // text-decoration
+    private static setTextDecorationProperty(view: view.View, newValue: any) {
+        setTextDecoration(view._nativeView, newValue);
+    }
+
+    private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
+        setTextDecoration(view._nativeView, enums.TextDecoration.none);
+    }
+
     // color
     private static setColorProperty(view: view.View, newValue: any) {
         var ios: TextUIView = <TextUIView>view._nativeView;
@@ -336,6 +361,10 @@ export class TextBaseStyler implements definition.stylers.Styler {
             TextBaseStyler.setColorProperty,
             TextBaseStyler.resetColorProperty,
             TextBaseStyler.getNativeColorValue), "TextBase");
+
+        style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextBaseStyler.setTextDecorationProperty,
+            TextBaseStyler.resetTextDecorationProperty), "TextBase");
     }
 }
 
@@ -877,6 +906,36 @@ function setTextAlignment(view: TextUIView, value: string) {
             break;
         default:
             break;
+    }
+}
+
+function setTextDecoration(view: TextUIView, value: string) {
+    var attributes: NSMutableDictionary = NSMutableDictionary.alloc().init();
+    var values = (value + "").split(" ");
+
+    if (values.indexOf(enums.TextDecoration.underline) !== -1) {
+        attributes.setObjectForKey(NSUnderlineStyle.NSUnderlineStyleSingle, NSUnderlineStyleAttributeName);
+    }
+
+    if (values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+        attributes.setObjectForKey(NSUnderlineStyle.NSUnderlineStyleSingle, NSStrikethroughStyleAttributeName);
+    }
+
+    if (values.indexOf(enums.TextDecoration.none) === -1) {
+        setTextDecorationNative(view, view.text || view.attributedText, attributes);
+    } else {
+        setTextDecorationNative(view, view.text || view.attributedText, NSMutableDictionary.alloc().init());
+    }
+}
+
+function setTextDecorationNative(view: TextUIView, value: string | NSAttributedString, attributes: NSMutableDictionary) {
+    var attributedString: NSMutableAttributedString;
+
+    if (value instanceof NSAttributedString) {
+        attributedString = NSMutableAttributedString.alloc().initWithAttributedString(value);
+        attributedString.addAttributesRange(attributes, NSRangeFromString(attributedString.string));
+    } else {
+        view.attributedText = NSAttributedString.alloc().initWithStringAttributes(<string>value, attributes);
     }
 }
 

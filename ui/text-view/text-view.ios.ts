@@ -24,6 +24,10 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         return true;
     }
 
+    public textViewDidBeginEditing(textView: UITextView) {
+        this._owner.style._updateTextDecoration();
+    }
+
     public textViewDidEndEditing(textView: UITextView) {
         if (this._owner.updateTextTrigger === enums.UpdateTextTrigger.focusLost) {
             this._owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
@@ -34,6 +38,10 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     }
 
     public textViewDidChange(textView: UITextView) {
+        var range = textView.selectedRange;
+        this._owner.style._updateTextDecoration();
+        textView.selectedRange = range;
+
         if (this._owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {
             this._owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
         }

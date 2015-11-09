@@ -17,10 +17,18 @@ export function textAlignConverter(value: string): string {
         case enums.TextAlignment.center:
         case enums.TextAlignment.right:
             return value;
-            break;
         default:
             throw new Error("CSS text-align \"" + value + "\" is not supported.");
-            break;
+    }
+}
+
+export function textDecorationConverter(value: string): string {
+    var values = (value + "").split(" ");
+
+    if (values.indexOf(enums.TextDecoration.none) !== -1 || values.indexOf(enums.TextDecoration.underline) !== -1 || values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+        return value;
+    } else {
+        throw new Error("CSS text-decoration \"" + value + "\" is not supported.");
     }
 }
 

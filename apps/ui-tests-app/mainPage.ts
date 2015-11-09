@@ -90,4 +90,5 @@ examples.set("textfield", "text-field/text-field");
 examples.set("webview", "web-view/web-view");
 examples.set("webtest", "web-view/web-vew-test");
 
+examples.set("decoration", "css/text-decoration");
 //VM.set("selected", "tabAll");

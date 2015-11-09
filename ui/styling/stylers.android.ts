@@ -416,6 +416,15 @@ export class TextViewStyler implements definition.stylers.Styler {
         return view._nativeView.getGravity();
     }
 
+    // text-decoration
+    private static setTextDecorationProperty(view: view.View, newValue: any) {
+        setTextDecoration(view._nativeView, newValue);
+    }
+
+    private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
+        setTextDecoration(view._nativeView, enums.TextDecoration.none);
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setColorProperty,
@@ -431,6 +440,10 @@ export class TextViewStyler implements definition.stylers.Styler {
             TextViewStyler.setTextAlignmentProperty,
             TextViewStyler.resetTextAlignmentProperty,
             TextViewStyler.getNativeTextAlignmentValue), "TextBase");
+
+        style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setTextDecorationProperty,
+            TextViewStyler.resetTextDecorationProperty), "TextBase");
 
         // Register the same stylers for Button.
         // It also derives from TextView but is not under TextBase in our View hierarchy.
@@ -448,7 +461,31 @@ export class TextViewStyler implements definition.stylers.Styler {
             TextViewStyler.setTextAlignmentProperty,
             TextViewStyler.resetTextAlignmentProperty,
             TextViewStyler.getNativeTextAlignmentValue), "Button");
+
+        style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setTextDecorationProperty,
+            TextViewStyler.resetTextDecorationProperty), "Button");
     }
+}
+
+function setTextDecoration(view: android.widget.TextView, value: string) {
+    var flags = 0;
+
+    var values = (value + "").split(" ");
+
+    if (values.indexOf(enums.TextDecoration.underline) !== -1) {
+        flags = flags | android.graphics.Paint.UNDERLINE_TEXT_FLAG;
+    }
+
+    if (values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+        flags = flags | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
+    }
+
+    if (values.indexOf(enums.TextDecoration.none) === -1) {
+        view.setPaintFlags(flags);
+    } else {
+        view.setPaintFlags(0);
+    }   
 }
 
 export class ActivityIndicatorStyler implements definition.stylers.Styler {
@@ -823,7 +860,7 @@ export class ActionBarStyler implements definition.stylers.Styler {
     private static setColorProperty(view: view.View, newValue: any) {
         var toolbar = (<android.support.v7.widget.Toolbar>view._nativeView);
         toolbar.setTitleTextColor(newValue);
-        
+
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
