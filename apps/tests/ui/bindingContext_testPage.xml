@@ -1,4 +1,4 @@
-﻿<Page xmlns="http://www.nativescript.org/tns.xsd"
+﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd"
       xmlns:g="components/grid-view/grid-view"
       loaded="pageLoaded">
 	<StackLayout id="upperStack">

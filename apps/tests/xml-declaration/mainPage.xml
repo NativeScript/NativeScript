@@ -1,4 +1,4 @@
-<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="MyPageLoaded"
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="MyPageLoaded"
       xmlns:customControls="xml-declaration/mymodule"
       xmlns:customControls2="xml-declaration/mymodulewithxml">
   <TabView>

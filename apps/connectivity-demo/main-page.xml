@@ -1,4 +1,4 @@
-<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="onPageLoaded">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onPageLoaded">
   <StackLayout id="stackLayout">
     <Button text="Get Connection Type" tap="onGetConnectionType" style.fontSize="30" horizontalAlignment="stretch" textAlignment="center"/>
     <Button text="Start Monitoring" tap="onStartMonitoring" style.fontSize="30" horizontalAlignment="stretch" textAlignment="center"/>

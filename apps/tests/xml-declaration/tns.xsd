@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--SCHEMA VERSION: 1.4.0-2015.9.25.1-->
-<xs:schema id="tns" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.nativescript.org/tns.xsd" xmlns="http://www.nativescript.org/tns.xsd" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<xs:schema id="tns" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://schemas.nativescript.org/tns.xsd" xmlns="http://schemas.nativescript.org/tns.xsd" elementFormDefault="qualified" attributeFormDefault="unqualified">
     <xs:attributeGroup name="actionBarAttributes">
         <xs:attribute name="title" type="StringValidator"/>
         <xs:attribute name="navigationButton" type="StringValidator"/>

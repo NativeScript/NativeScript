@@ -1,4 +1,4 @@
-﻿<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded">
+﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
 	<Repeater id="repeater" items="{{ items }}">
 		<Repeater.itemTemplate>
 			<GridLayout width="94" height="94" >
