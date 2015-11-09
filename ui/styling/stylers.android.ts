@@ -13,6 +13,8 @@ var btn;
 
 global.moduleMerge(stylersCommon, exports);
 
+var SDK = android.os.Build.VERSION.SDK_INT;
+
 var ignorePropertyHandler = new stylersCommon.StylePropertyChangedHandler(
     (view, val) => {
         // empty
@@ -51,6 +53,12 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
         bkg.cornerRadius = v.borderRadius;
         bkg.borderColor = v.borderColor ? v.borderColor.android : android.graphics.Color.TRANSPARENT;
         bkg.background = backgroundValue;
+
+        if (SDK < 18) {
+            // Switch to software because of unsupported canvas methods if hardware acceleration is on:
+            // http://developer.android.com/guide/topics/graphics/hardware-accel.html
+            nativeView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+        }
     }
     else {
         // reset the value with the default native value
@@ -63,6 +71,11 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
             if (_defaultBackgrounds.has(viewClass)) {
                 nativeView.setBackground(_defaultBackgrounds.get(viewClass));
             }
+        }
+
+        if (SDK < 18) {
+            // Reset layer type to hardware
+            nativeView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
         }
     }
 
