@@ -227,6 +227,10 @@ export class TabView extends common.TabView {
 
         // When we set this._ios.viewControllers, someone is clearing the moreNavigationController.delegate, so we have to reassign it each time here.
         this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
+
+        if (this._ios.selectedIndex !== this.selectedIndex) {
+            this._ios.selectedIndex = this.selectedIndex;
+        }
     }
 
     public _getIcon(iconSource: string): UIImage {
