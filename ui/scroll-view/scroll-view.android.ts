@@ -101,6 +101,17 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
         }
 
         this._android.setId(this._androidViewId);
+
+        var that = new WeakRef(this);
+        this._android.getViewTreeObserver().addOnScrollChangedListener(new android.view.ViewTreeObserver.OnScrollChangedListener({
+            onScrollChanged: function () {
+                var rootScrollView = that.get();
+                if (rootScrollView && rootScrollView.android) {
+                    var scrollX = rootScrollView.android.getScrollX(); //for horizontalScrollView
+                    var scrollY = rootScrollView.android.getScrollY(); //for verticalScrollView
+                }
+            }
+        });
     }
 
     public _onOrientationChanged(oldValue: string, newValue: string) {

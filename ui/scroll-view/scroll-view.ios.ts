@@ -7,14 +7,46 @@ import utils = require("utils/utils");
 
 global.moduleMerge(common, exports);
 
+class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
+    public static ObjCProtocols = [UIScrollViewDelegate];
+
+    static new(): UIScrollViewDelegateImpl {
+        return <UIScrollViewDelegateImpl>super.new();
+    }
+
+    private _owner: ScrollView;
+
+    public initWithOwner(owner: ScrollView): UIScrollViewDelegateImpl {
+        this._owner = owner;
+        return this;
+    }
+
+    public scrollViewDidScroll(textView: UIScrollView): void {
+        
+    }
+}
+
 export class ScrollView extends contentView.ContentView implements definition.ScrollView {
     private _scroll: UIScrollView;
     private _contentMeasuredWidth: number = 0;
     private _contentMeasuredHeight: number = 0;
+    private _delegate: UIScrollViewDelegateImpl;
 
     constructor() {
         super();
         this._scroll = new UIScrollView();
+
+        this._delegate = UIScrollViewDelegateImpl.new().initWithOwner(this);
+    }
+
+    public onLoaded() {
+        super.onLoaded();
+        this._scroll.delegate = this._delegate;
+    }
+
+    public onUnloaded() {
+        this._scroll.delegate = null;
+        super.onUnloaded();
     }
 
     get orientation(): string {

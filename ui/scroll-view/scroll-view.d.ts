@@ -46,5 +46,18 @@ declare module "ui/scroll-view" {
          * Gets or sets direction in which the content can be scrolled.
          */
         orientation: string;
+
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+
+        /**
+         * Raised when a tap event occurs.
+         */
+        on(event: "scroll", callback: (args: observable.EventData) => void, thisArg?: any);
     }
 }
