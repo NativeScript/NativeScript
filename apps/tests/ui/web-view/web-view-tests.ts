@@ -50,8 +50,8 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
             // <hide>
             try {
+                TKUnit.assertNull(args.error, args.error);
                 TKUnit.assertEqual(args.url, "http://nsbuild01.telerik.com/docs/", "args.url");
-                TKUnit.assertNull(args.error, "args.error");
                 done(null);
             }
             catch (e) {
@@ -84,8 +84,8 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             }
 
             try {
+                TKUnit.assertNull(args.error, args.error);
                 TKUnit.assertEqual(actual, webView.ios ? expectedHtml : expectedTitle, "File ~/ui/web-view/test.html not loaded properly.");
-                TKUnit.assertNull(args.error, "args.error");
                 done(null);
             }
             catch (e) {
@@ -127,8 +127,8 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             }
 
             try {
+                TKUnit.assertNull(args.error, args.error);
                 TKUnit.assertEqual(actual, expected, "HTML string not loaded properly. Actual: ");
-                TKUnit.assertNull(args.error, "args.error");
                 done(null);
             }
             catch (e) {
@@ -176,8 +176,8 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
         webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
             try {
+                TKUnit.assertNull(args.error, args.error);
                 TKUnit.assertEqual(args.url, targetSrc.toLowerCase(), "args.url");
-                TKUnit.assertNull(args.error, "args.error");
                 done(null);
             }
             catch (e) {
