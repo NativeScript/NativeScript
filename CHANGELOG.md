@@ -1,5 +1,13 @@
 Cross Platform Modules Changelog
 ==============================
+##1.5.0 (2015, November ??)
+
+### Breaking changes
+- The XML namespace (xmlns) of the validator XSD schema changed from
+    `xmlns="http://www.nativescript.org/tns.xsd"` to
+    `xmlns="http://schemas.nativescript.org/tns.xsd"`.
+    For convenience, the file can now get downloaded via the [same URL](http://schemas.nativescript.org/tns.xsd).
+
 ##1.4.0 (2015, October 12)
 
 ### Fixed
