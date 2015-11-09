@@ -5,6 +5,7 @@ import trace = require("trace");
 import observable = require("data/observable");
 import utils = require("utils/utils");
 import application = require("application");
+import types = require("utils/types");
 
 global.moduleMerge(frameCommon, exports);
 
@@ -346,7 +347,15 @@ export class Frame extends frameCommon.Frame {
     }
 
     public _getNavBarVisible(page: pages.Page): boolean {
-        return this._android.showActionBar;
+        if (types.isDefined(page.actionBarHidden)) {
+            return !page.actionBarHidden;
+        }
+
+        if (this._android && types.isDefined(this._android.showActionBar)) {
+            return this._android.showActionBar;
+        }
+
+        return true;
     }
 }
 
@@ -520,9 +529,9 @@ var framesCache: Array<WeakRef<AndroidFrame>> = new Array<WeakRef<AndroidFrame>>
 class AndroidFrame extends observable.Observable implements definition.AndroidFrame {
     public rootViewGroup: android.view.ViewGroup;
     public hasOwnActivity = false;
-    public showActionBar = false;
     public frameId;
 
+    private _showActionBar = true;
     private _activity: android.app.Activity;
     private _owner: Frame;
     private _cachePagesOnNavigate: boolean;
@@ -532,6 +541,19 @@ class AndroidFrame extends observable.Observable implements definition.AndroidFr
         this._owner = owner;
         this.frameId = framesCounter++;
         framesCache.push(new WeakRef(this));
+    }
+
+    public get showActionBar(): boolean {
+        return this._showActionBar;
+    }
+
+    public set showActionBar(value: boolean) {
+        if (this._showActionBar !== value) {
+            this._showActionBar = value;
+            if (this.owner.currentPage) {
+                this.owner.currentPage.actionBar.update();
+            }
+        }
     }
 
     public get activity(): android.app.Activity {
