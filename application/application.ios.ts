@@ -217,6 +217,10 @@ global.__onUncaughtError = function (error: Error) {
     definition.notify({ eventName: definition.uncaughtErrorEvent, object: <any>definition.ios, ios: error });
 }
 
+global.__onLiveSync = function () {
+    frame.reloadPage();
+}
+
 var started: boolean = false;
 exports.start = function () {
     if (!started) {
