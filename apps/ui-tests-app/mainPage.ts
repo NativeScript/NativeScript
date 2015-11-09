@@ -62,11 +62,10 @@ examples.set("myview", "layouts/myview");
 examples.set("stack", "layouts/stack");
 examples.set("wrap", "layouts/wrap");
 
-examples.set("modalview", "modal-view/modalview");
+examples.set("modalview", "modal-view/modal-view");
 
 examples.set("nordic", "nordic/nordic");
 
-examples.set("background", "pages/background");
 examples.set("console", "pages/console");
 examples.set("gestures", "pages/gestures");
 examples.set("handlers", "pages/handlers");
