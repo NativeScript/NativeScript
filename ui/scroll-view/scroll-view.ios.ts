@@ -7,29 +7,31 @@ import utils = require("utils/utils");
 global.moduleMerge(common, exports);
 
 class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
-    public static ObjCProtocols = [UIScrollViewDelegate];
+    private _owner: WeakRef<ScrollView>;
 
-    static new(): UIScrollViewDelegateImpl {
-        return <UIScrollViewDelegateImpl>super.new();
+    public static initWithOwner(owner: WeakRef<ScrollView>): UIScrollViewDelegateImpl {
+        let impl = <UIScrollViewDelegateImpl>UIScrollViewDelegateImpl.new();
+        impl._owner = owner;
+        return impl;
     }
 
-    private _owner: ScrollView;
+    public scrollViewDidScroll(sv: UIScrollView): void {
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
 
-    public initWithOwner(owner: ScrollView): UIScrollViewDelegateImpl {
-        this._owner = owner;
-        return this;
-    }
-
-    public scrollViewDidScroll(textView: UIScrollView): void {
-        if (this._owner) {
-            this._owner.notify(<definition.ScrollEventData>{
-                object: this._owner,
+        if (owner) {
+            owner.notify(<definition.ScrollEventData>{
+                object: owner,
                 eventName: definition.ScrollView.scrollEvent,
-                scrollX: this._owner.horizontalOffset,
-                scrollY: this._owner.verticalOffset
+                scrollX: owner.horizontalOffset,
+                scrollY: owner.verticalOffset
             });
         }
     }
+
+    public static ObjCProtocols = [UIScrollViewDelegate];
 }
 
 export class ScrollView extends common.ScrollView implements definition.ScrollView {
@@ -44,7 +46,7 @@ export class ScrollView extends common.ScrollView implements definition.ScrollVi
     }
 
     protected attachNative() {
-        this._delegate = UIScrollViewDelegateImpl.new().initWithOwner(this);
+        this._delegate = UIScrollViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._scroll.delegate = this._delegate;
     }
 
