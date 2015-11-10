@@ -4,6 +4,7 @@ import fs = require("file-system");
 import styleScope = require("ui/styling/style-scope");
 import observable = require("data/observable");
 import frame = require("ui/frame");
+import fileResolverModule = require("file-system/file-name-resolver");
 
 var events = new observable.Observable();
 global.moduleMerge(events, exports);
@@ -53,5 +54,12 @@ export function loadCss() {
 }
 
 global.__onLiveSync = function () {
+    // Clear file resolver cache to respect newly added files.
+    fileResolverModule.clearCache();
+
+    // Reload app.css in case it was changed.
+    loadCss();
+
+    // Reload current page.
     frame.reloadPage();
 }
