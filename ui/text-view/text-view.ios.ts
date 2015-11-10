@@ -6,44 +6,59 @@ import enums = require("ui/enums");
 global.moduleMerge(common, exports);
 
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
-    public static ObjCProtocols = [UITextViewDelegate];
+    private _owner: WeakRef<TextView>;
 
-    static new(): UITextViewDelegateImpl {
-        return <UITextViewDelegateImpl>super.new();
-    }
-
-    private _owner: TextView;
-
-    public initWithOwner(owner: TextView): UITextViewDelegateImpl {
-        this._owner = owner;
-        return this;
+    public static initWithOwner(owner: WeakRef<TextView>): UITextViewDelegateImpl {
+        let impl = <UITextViewDelegateImpl>UITextViewDelegateImpl.new();
+        impl._owner = owner;
+        return impl;
     }
 
     public textViewShouldBeginEditing(textView: UITextView): boolean {
-        this._owner._hideHint();
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
+        owner._hideHint();
         return true;
     }
 
     public textViewDidBeginEditing(textView: UITextView) {
-        this._owner.style._updateTextDecoration();
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
+        owner.style._updateTextDecoration();
     }
 
     public textViewDidEndEditing(textView: UITextView) {
-        if (this._owner.updateTextTrigger === enums.UpdateTextTrigger.focusLost) {
-            this._owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
         }
 
-        this._owner.dismissSoftInput();
-        this._owner._refreshHintState(this._owner.hint, textView.text);
+        if (owner.updateTextTrigger === enums.UpdateTextTrigger.focusLost) {
+            owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
+        }
+
+        owner.dismissSoftInput();
+        owner._refreshHintState(owner.hint, textView.text);
     }
 
     public textViewDidChange(textView: UITextView) {
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
         var range = textView.selectedRange;
-        this._owner.style._updateTextDecoration();
+        owner.style._updateTextDecoration();
         textView.selectedRange = range;
 
-        if (this._owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {
-            this._owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
+        if (owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {
+            owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
         }
     }
 }
@@ -59,7 +74,7 @@ export class TextView extends common.TextView {
         if (!this._ios.font) {
             this._ios.font = UIFont.systemFontOfSize(12);
         }
-        this._delegate = UITextViewDelegateImpl.new().initWithOwner(this);
+        this._delegate = UITextViewDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
     public onLoaded() {
