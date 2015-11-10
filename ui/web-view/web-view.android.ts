@@ -60,8 +60,8 @@ class WebViewClientClass extends android.webkit.WebViewClient {
             super.onReceivedError(view, request, error);
 
             if (this._view) {
-                trace.write("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + error.getUrl() + ")", trace.categories.Debug);
-                this._view._onLoadFinished(error.getUrl(), error.getDescription() + "(" + error.getErrorCode() + ")");
+                trace.write("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", trace.categories.Debug);
+                this._view._onLoadFinished(error.getUrl && error.getUrl(), error.getDescription() + "(" + error.getErrorCode() + ")");
             }
         }        
     }
