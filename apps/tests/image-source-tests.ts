@@ -41,7 +41,7 @@ export function testFromUrl(done) {
     // <snippet module="image-source" title="image-source">
     // ### Load image from URL
     // ``` JavaScript
-    imageSource.fromUrl("http://www.google.com/images/errors/logo_sm_2.png")
+    imageSource.fromUrl("https://www.google.com/images/errors/logo_sm_2.png")
         .then(function (res: imageSource.ImageSource) {
         //console.log("Image successfully loaded");
         // <hide>
