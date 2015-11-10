@@ -6,6 +6,8 @@ import enums = require("ui/enums");
 global.moduleMerge(common, exports);
 
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
+    public static ObjCProtocols = [UITextViewDelegate];
+
     private _owner: WeakRef<TextView>;
 
     public static initWithOwner(owner: WeakRef<TextView>): UITextViewDelegateImpl {
@@ -16,50 +18,43 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 
     public textViewShouldBeginEditing(textView: UITextView): boolean {
         let owner = this._owner.get();
-        if (!owner) {
-            return;
+        if (owner) {
+            owner._hideHint();
         }
-
-        owner._hideHint();
+        
         return true;
     }
 
     public textViewDidBeginEditing(textView: UITextView) {
         let owner = this._owner.get();
-        if (!owner) {
-            return;
+        if (owner) {
+            owner.style._updateTextDecoration();
         }
-
-        owner.style._updateTextDecoration();
     }
 
     public textViewDidEndEditing(textView: UITextView) {
         let owner = this._owner.get();
-        if (!owner) {
-            return;
-        }
+        if (owner) {
+            if (owner.updateTextTrigger === enums.UpdateTextTrigger.focusLost) {
+                owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
+            }
 
-        if (owner.updateTextTrigger === enums.UpdateTextTrigger.focusLost) {
-            owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
+            owner.dismissSoftInput();
+            owner._refreshHintState(owner.hint, textView.text);
         }
-
-        owner.dismissSoftInput();
-        owner._refreshHintState(owner.hint, textView.text);
     }
 
     public textViewDidChange(textView: UITextView) {
         let owner = this._owner.get();
-        if (!owner) {
-            return;
-        }
+        if (owner) {
+            var range = textView.selectedRange;
+            owner.style._updateTextDecoration();
+            textView.selectedRange = range;
 
-        var range = textView.selectedRange;
-        owner.style._updateTextDecoration();
-        textView.selectedRange = range;
-
-        if (owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {
-            owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
-        }
+            if (owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {
+                owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
+            }
+        }        
     }
 }
 
