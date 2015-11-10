@@ -156,10 +156,6 @@ app.init({
 
     onCreate: function () {
         exports.android.init(this);
-    },
-
-    onLiveSync: function () {
-        frame.reloadPage();
     }
 });
 
