@@ -265,6 +265,50 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         // Check verticalOffset after navigation
         TKUnit.assertAreClose(this.testView.horizontalOffset, 100, 0.1, "this.testView.horizontalOffset after navigation");
     }
+
+    public test_scrollView_vertical_raised_scroll_event() {
+        this.testView.orientation = enums.Orientation.vertical;
+
+        var scrollY: number;
+        this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
+            scrollY = args.scrollY;
+        });
+
+        this.testView.width = 200;
+        this.testView.height = 300;
+
+        var btn = new button.Button();
+        btn.text = "test";
+        btn.height = 500;
+        this.testView.content = btn;
+        this.waitUntilTestElementLayoutIsValid();
+
+        this.testView.scrollToVerticalOffset(100, false);
+        TKUnit.waitUntilReady(function () { return scrollY > 0; });
+        TKUnit.assertEqual(this.testView.verticalOffset, scrollY);
+    }
+
+    public test_scrollView_horizontal_raised_scroll_event() {
+        this.testView.orientation = enums.Orientation.horizontal;
+
+        var scrollX: number;
+        this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
+            scrollX = args.scrollX;
+        });
+
+        this.testView.width = 200;
+        this.testView.height = 300;
+
+        var btn = new button.Button();
+        btn.text = "test";
+        btn.width = 500;
+        this.testView.content = btn;
+        this.waitUntilTestElementLayoutIsValid();
+
+        this.testView.scrollToHorizontalOffset(100, false);
+        TKUnit.waitUntilReady(function () { return scrollX > 0; });
+        TKUnit.assertEqual(this.testView.horizontalOffset, scrollX);
+    }
 }
 
 export function createTestCase(): ScrollLayoutTest {

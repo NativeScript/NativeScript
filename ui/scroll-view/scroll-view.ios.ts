@@ -1,6 +1,5 @@
 ﻿import view = require("ui/core/view");
 import definition = require("ui/scroll-view");
-import contentView = require("ui/content-view");
 import common = require("./scroll-view-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
@@ -22,11 +21,18 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
     }
 
     public scrollViewDidScroll(textView: UIScrollView): void {
-        
+        if (this._owner) {
+            this._owner.notify(<definition.ScrollEventData>{
+                object: this._owner,
+                eventName: definition.ScrollView.scrollEvent,
+                scrollX: this._owner.horizontalOffset,
+                scrollY: this._owner.verticalOffset
+            });
+        }
     }
 }
 
-export class ScrollView extends contentView.ContentView implements definition.ScrollView {
+export class ScrollView extends common.ScrollView implements definition.ScrollView {
     private _scroll: UIScrollView;
     private _contentMeasuredWidth: number = 0;
     private _contentMeasuredHeight: number = 0;
@@ -35,25 +41,15 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
     constructor() {
         super();
         this._scroll = new UIScrollView();
-
-        this._delegate = UIScrollViewDelegateImpl.new().initWithOwner(this);
     }
 
-    public onLoaded() {
-        super.onLoaded();
+    protected attachNative() {
+        this._delegate = UIScrollViewDelegateImpl.new().initWithOwner(this);
         this._scroll.delegate = this._delegate;
     }
 
-    public onUnloaded() {
+    protected dettachNative() {
         this._scroll.delegate = null;
-        super.onUnloaded();
-    }
-
-    get orientation(): string {
-        return this._getValue(common.orientationProperty);
-    }
-    set orientation(value: string) {
-        this._setValue(common.orientationProperty, value);
     }
 
     get horizontalOffset(): number {

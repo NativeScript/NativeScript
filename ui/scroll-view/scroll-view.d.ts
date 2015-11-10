@@ -3,11 +3,22 @@
  */
 declare module "ui/scroll-view" {
     import contentView = require("ui/content-view");
+    import observable = require("data/observable");
+    import dependencyObservable = require("ui/core/dependency-observable");
+
+    export var orientationProperty: dependencyObservable.Property;
 
     /**
      * Represents a scrollable area that can have content that is larger than its bounds.
      */
     class ScrollView extends contentView.ContentView {
+        public static orientationProperty: dependencyObservable.Property;
+
+        /**
+         * String value used when hooking to scroll event.
+         */
+        public static scrollEvent: string;
+
         /**
          * Gets a value that contains the vertical offset of the scrolled content.
          */
@@ -56,8 +67,13 @@ declare module "ui/scroll-view" {
         on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
 
         /**
-         * Raised when a tap event occurs.
+         * Raised when a scroll event occurs.
          */
-        on(event: "scroll", callback: (args: observable.EventData) => void, thisArg?: any);
+        on(event: "scroll", callback: (args: ScrollEventData) => void, thisArg?: any);
+    }
+
+    interface ScrollEventData extends observable.EventData {
+        scrollX: number;
+        scrollY: number;
     }
 }
