@@ -4,6 +4,7 @@ import frame = require("ui/frame");
 import types = require("utils/types");
 import observable = require("data/observable");
 import enums = require("ui/enums");
+import fileResolverModule = require("file-system/file-name-resolver");
 
 global.moduleMerge(appModule, exports);
 
@@ -71,6 +72,8 @@ var initEvents = function () {
                 return;
             }
 
+            (<any>androidApp).paused = true;
+
             if (activity === androidApp.foregroundActivity) {
                 if (exports.onSuspend) {
                     exports.onSuspend();
@@ -90,6 +93,8 @@ var initEvents = function () {
             if (!(activity instanceof (<any>com).tns.NativeScriptActivity)) {
                 return;
             }
+
+            (<any>androidApp).paused = false;
 
             if (activity === androidApp.foregroundActivity) {
                 if (exports.onResume) {
@@ -346,4 +351,19 @@ function onConfigurationChanged(context: android.content.Context, intent: androi
             object: exports.android,
         });
     }
+}
+
+global.__onLiveSync = function () {
+    if (exports.android && exports.android.paused) {
+        return;
+    }
+
+    // Clear file resolver cache to respect newly added files.
+    fileResolverModule.clearCache();
+
+    // Reload app.css in case it was changed.
+    appModule.loadCss();
+
+    // Reload current page.
+    frame.reloadPage();
 }
