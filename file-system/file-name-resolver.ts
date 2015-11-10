@@ -126,6 +126,10 @@ export class FileNameResolver implements definition.FileNameResolver {
         return result;
     }
 
+    public clearCache(): void {
+        this._cache = {};
+    }
+
     private resolveFileNameImpl(path: string, ext: string): string {
         var result: string = null;
         path = fs.path.normalize(path);
@@ -239,3 +243,8 @@ export function resolveFileName(path: string, ext: string): string {
     return resolverInstance.resolveFileName(path, ext);
 }
 
+export function clearCache(): void {
+    if (resolverInstance) {
+        resolverInstance.clearCache();
+    }
+}

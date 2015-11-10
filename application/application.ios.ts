@@ -5,6 +5,7 @@ import view = require("ui/core/view");
 import definition = require("application");
 import enums = require("ui/enums");
 import uiUtils = require("ui/utils");
+import fileResolverModule = require("file-system/file-name-resolver");
 
 global.moduleMerge(appModule, exports);
 
@@ -226,4 +227,19 @@ exports.start = function () {
     } else {
         throw new Error("iOS Application already started!");
     }
+}
+
+global.__onLiveSync = function () {
+    if (!started) {
+        return;
+    }
+
+    // Clear file resolver cache to respect newly added files.
+    fileResolverModule.clearCache();
+
+    // Reload app.css in case it was changed.
+    appModule.loadCss();
+
+    // Reload current page.
+    frame.reloadPage();
 }

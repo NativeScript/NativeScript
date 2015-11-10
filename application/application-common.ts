@@ -51,7 +51,3 @@ export function loadCss() {
         }
     }
 }
-
-global.__onLiveSync = function () {
-    frame.reloadPage();
-}
