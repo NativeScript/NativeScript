@@ -132,6 +132,7 @@ module.exports = function(grunt) {
         outModulesDir: tsconfig.compilerOptions.outDir,
         outAppsDir: "./bin/dist/apps",
         outTsAppsDir: "./bin/dist/ts-apps",
+        outApiRefDir: "./bin/dist/api-ref"
     };
 
     var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
@@ -150,6 +151,16 @@ module.exports = function(grunt) {
             "!android17.d.ts",
             "!libjs.d.ts"
     ]);
+    localCfg.srcTsdFiles = [
+        "**/*.d.ts",
+        "!apps/**",
+        "!node-tests/**",
+        "!org.nativescript.widgets.d.ts",
+        "!android17.d.ts",
+        "!**/*.android.d.ts",
+        "!ios.d.ts",
+        "!**/*.ios.d.ts"
+    ].concat(localCfg.defaultExcludes);
 
     var tsOptions = tsconfig.compilerOptions;
     tsOptions.fast = 'never';
@@ -412,6 +423,26 @@ module.exports = function(grunt) {
                     pathModule.join(localCfg.outDir, "**/*.xml")
                     ]
             }
+        },
+        typedoc: {
+            build: {
+                options: {
+                    // 'flag:undefined' will set flags without options.
+                    "module": 'commonjs',
+                    "target": 'es5',
+                    "out": localCfg.outApiRefDir,
+                    //"json": './dist/doc.json',
+                    "name": 'NativeScript',
+                    "includeDeclarations": undefined,
+                    //"excludeExternals": undefined,
+                    //"externalPattern": './declarations.d.ts',
+                    "mode": "file",
+                    //"readme": "source/README.md",
+                    //"entryPoint": '"a-module"'
+                    // verbose: undefined
+                },
+                src: localCfg.srcTsdFiles
+            }
         }
     });
 
@@ -425,6 +456,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-env");
     grunt.loadNpmTasks("grunt-simple-mocha");
     grunt.loadNpmTasks('grunt-bom-removal');
+    grunt.loadNpmTasks('grunt-typedoc');
 
     var cloneTasks = function(originalTasks, taskNameSuffix) {
         var clonedTasks = [];
