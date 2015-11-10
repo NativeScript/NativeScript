@@ -176,7 +176,7 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
         }, true);
 
     if (types.isString(value)) {
-        value = value.replace(/xmlns=("|')http:\/\/schemas.nativescript.org\/tns.xsd\1/, "");
+        value = value.replace(/xmlns=("|')http:\/\/(www)|(schemas).nativescript.org\/tns.xsd\1/, "");
         xmlParser.parse(value);
     }
 
