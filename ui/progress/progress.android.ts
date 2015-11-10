@@ -2,6 +2,8 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 
+const R_ATTR_PROGRESS_BAR_STYLE_HORIZONTAL = 0x01010078;
+
 function onValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var progress = <Progress>data.object;
     if (!progress.android) {
@@ -30,7 +32,7 @@ export class Progress extends common.Progress {
     private _android: android.widget.ProgressBar;
 
     public _createUI() {
-        this._android = new android.widget.ProgressBar(this._context, null, (<any>android).R.attr.progressBarStyleHorizontal);
+        this._android = new android.widget.ProgressBar(this._context, null, R_ATTR_PROGRESS_BAR_STYLE_HORIZONTAL);
     }
 
     get android(): android.widget.ProgressBar {
