@@ -133,7 +133,7 @@ export var test_getJSON_fail_when_result_is_not_JSON = function (done) {
 export var test_getJSONP = function (done) {
     var result;
 
-    http.getJSON("http://demos.telerik.com/kendo-ui/service/Products").then(function (r) {
+    http.getJSON("https://jsfiddle.net/echo/jsonp/").then(function (r) {
         result = r;
         try {
             TKUnit.assert(typeof (JSON.stringify(result)) === "string", "Result from getJSON() should be valid JSON object!");
@@ -246,7 +246,7 @@ export var test_request_shouldFailIfOptionsUrlIsNotDefined = function (done) {
 
 export var test_request_requestShouldTimeout = function (done) {
     var result;
-    http.request({ url: "http://10.255.255.1", method: "GET", timeout: 500 }).catch(function (e) {
+    http.request({ url: "https://10.255.255.1", method: "GET", timeout: 500 }).catch(function (e) {
         result = e;
         try {
             TKUnit.assert(result instanceof Error, "Result from request().catch() should be Error! Current type is " + typeof result);
@@ -532,8 +532,8 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
 
 export var test_getString_FromVariousUrls_ShouldWorkProperly = function (done) {
     var urls = [
-        "http://it-ebooks-api.info/v1/book/1615005640",
-        "http://www.telerik.com",
+        "https://it-ebooks-api.info/v1/book/1615005640",
+        "https://www.telerik.com",
         "https://spreadsheets.google.com/tq?key=1tJ64Y8hje0ui4ap9U33h3KWwpxT_-JuVMSZzxD2Er8k"
     ];
 

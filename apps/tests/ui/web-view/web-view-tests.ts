@@ -51,7 +51,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             // <hide>
             try {
                 TKUnit.assertNull(args.error, args.error);
-                TKUnit.assertEqual(args.url, "http://nsbuild01.telerik.com/docs/", "args.url");
+                TKUnit.assertEqual(args.url, "https://github.com/", "args.url");
                 done(null);
             }
             catch (e) {
@@ -60,7 +60,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
             // </hide>
         });
-        webView.url = "http://nsbuild01.telerik.com/docs/";
+        webView.url = "https://github.com/";
         // ```
         // </snippet>
     }
@@ -172,7 +172,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
     public testLoadUpperCaseSrc(done) {
         let webView = this.testView;
-        let targetSrc = "HTTP://nsbuild01.telerik.com/docs/";
+        let targetSrc = "HTTPS://github.com/";
 
         webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
             try {
