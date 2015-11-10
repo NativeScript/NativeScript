@@ -1,9 +1,9 @@
 ﻿import dependencyObservable = require("ui/core/dependency-observable");
 import definition = require("ui/scroll-view");
-import contentView = require("ui/content-view");
 import common = require("./scroll-view-common");
 import utils = require("utils/utils");
 import enums = require("ui/enums");
+import proxy = require("ui/core/proxy");
 
 global.moduleMerge(common, exports);
 
@@ -11,9 +11,10 @@ common.orientationProperty.metadata.onValueChanged = function scrollViewOrientat
     (<ScrollView>data.object)._onOrientationChanged(data.oldValue, data.newValue);
 }
 
-export class ScrollView extends contentView.ContentView implements definition.ScrollView {
+export class ScrollView extends common.ScrollView implements definition.ScrollView {
     private _android: org.nativescript.widgets.VerticalScrollView | org.nativescript.widgets.HorizontalScrollView;
     private _androidViewId: number;
+    private handler: android.view.ViewTreeObserver.OnScrollChangedListener;
 
     get android(): android.view.ViewGroup {
         return this._android;
@@ -21,13 +22,6 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
 
     get _nativeView(): android.view.ViewGroup {
         return this._android;
-    }
-
-    get orientation(): string {
-        return this._getValue(common.orientationProperty);
-    }
-    set orientation(value: string) {
-        this._setValue(common.orientationProperty, value);
     }
 
     get horizontalOffset(): number {
@@ -68,8 +62,7 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
 
             if (animated) {
                 this._android.smoothScrollTo(0, value);
-            }
-            else {
+            } else {
                 this._android.scrollTo(0, value);
             }
         }
@@ -81,8 +74,7 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
 
             if (animated) {
                 this._android.smoothScrollTo(value, 0);
-            }
-            else {
+            } else {
                 this._android.scrollTo(value, 0);
             }
         }
@@ -91,8 +83,7 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
     public _createUI() {
         if (this.orientation === enums.Orientation.horizontal) {
             this._android = new org.nativescript.widgets.HorizontalScrollView(this._context);
-        }
-        else {
+        } else {
             this._android = new org.nativescript.widgets.VerticalScrollView(this._context);
         }
 
@@ -115,5 +106,29 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
                 parent._addView(this);
             }
         }
+    }
+
+    protected attachNative() {
+        var that = new WeakRef(this);
+        this.handler = new android.view.ViewTreeObserver.OnScrollChangedListener({
+            onScrollChanged: function () {
+                var rootScrollView = that.get();
+                if (rootScrollView && rootScrollView.android) {
+                    rootScrollView.notify(<definition.ScrollEventData>{
+                        object: rootScrollView,
+                        eventName: definition.ScrollView.scrollEvent,
+                        scrollX: rootScrollView.android.getScrollX() / utils.layout.getDisplayDensity(),
+                        scrollY: rootScrollView.android.getScrollY() / utils.layout.getDisplayDensity()
+                    });
+                }
+            }
+        });
+
+        this._android.getViewTreeObserver().addOnScrollChangedListener(this.handler);
+    }
+
+    protected dettachNative() {
+        this._android.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
+        this.handler = null;
     }
 }

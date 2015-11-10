@@ -1,27 +1,57 @@
 ﻿import view = require("ui/core/view");
 import definition = require("ui/scroll-view");
-import contentView = require("ui/content-view");
 import common = require("./scroll-view-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 
 global.moduleMerge(common, exports);
 
-export class ScrollView extends contentView.ContentView implements definition.ScrollView {
+class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
+    private _owner: WeakRef<ScrollView>;
+
+    public static initWithOwner(owner: WeakRef<ScrollView>): UIScrollViewDelegateImpl {
+        let impl = <UIScrollViewDelegateImpl>UIScrollViewDelegateImpl.new();
+        impl._owner = owner;
+        return impl;
+    }
+
+    public scrollViewDidScroll(sv: UIScrollView): void {
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
+        if (owner) {
+            owner.notify(<definition.ScrollEventData>{
+                object: owner,
+                eventName: definition.ScrollView.scrollEvent,
+                scrollX: owner.horizontalOffset,
+                scrollY: owner.verticalOffset
+            });
+        }
+    }
+
+    public static ObjCProtocols = [UIScrollViewDelegate];
+}
+
+export class ScrollView extends common.ScrollView implements definition.ScrollView {
     private _scroll: UIScrollView;
     private _contentMeasuredWidth: number = 0;
     private _contentMeasuredHeight: number = 0;
+    private _delegate: UIScrollViewDelegateImpl;
 
     constructor() {
         super();
         this._scroll = new UIScrollView();
     }
 
-    get orientation(): string {
-        return this._getValue(common.orientationProperty);
+    protected attachNative() {
+        this._delegate = UIScrollViewDelegateImpl.initWithOwner(new WeakRef(this));
+        this._scroll.delegate = this._delegate;
     }
-    set orientation(value: string) {
-        this._setValue(common.orientationProperty, value);
+
+    protected dettachNative() {
+        this._scroll.delegate = null;
     }
 
     get horizontalOffset(): number {
