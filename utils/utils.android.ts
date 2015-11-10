@@ -28,6 +28,14 @@ export module layout {
         return (size & ~MODE_MASK) | (mode & MODE_MASK);
     }
 
+    export function getDisplayMetrics(): android.util.DisplayMetrics {
+        if (!metrics) {
+            metrics = ad.getApplicationContext().getResources().getDisplayMetrics();
+        }
+
+        return metrics;
+    }
+
     export function getDisplayDensity(): number {
         if (density === -1) {
             density = getDisplayMetrics().density;
@@ -36,12 +44,12 @@ export module layout {
         return density;
     }
 
-    function getDisplayMetrics(): android.util.DisplayMetrics {
-        if (!metrics) {
-            metrics = ad.getApplicationContext().getResources().getDisplayMetrics();
-        }
+    export function toDevicePixels(value: number): number {
+        return value * getDisplayDensity();
+    }
 
-        return metrics;
+    export function toDeviceIndependentPixels(value: number): number {
+        return value / getDisplayDensity();
     }
 }
 
@@ -74,8 +82,8 @@ export module ad {
     }
 
     export module collections {
-        export function stringArrayToStringSet(str: string[]): any {
-            var hashSet = new java.util.HashSet();
+        export function stringArrayToStringSet(str: string[]): java.util.HashSet<string> {
+            var hashSet = new java.util.HashSet<string>();
             if ("undefined" !== typeof str) {
                 for (var element in str) {
                     hashSet.add('' + str[element]);

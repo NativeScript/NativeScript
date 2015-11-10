@@ -155,28 +155,25 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
 }
 
 export function assertMeasure(btn: MyButton, width: number, height: number, name?: string) {
-    var density = utils.layout.getDisplayDensity();
-
-    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
     name = name ? "[" + name + "]" : "";
 
-    TKUnit.assertAreClose(Math.floor(btn.measureWidth / density), width, delta, name + "width");
-    TKUnit.assertAreClose(Math.floor(btn.measureHeight / density), height, delta, name + "height");
+    TKUnit.assertAreClose(btn.measureWidth, width, DELTA, name + "width");
+    TKUnit.assertAreClose(btn.measureHeight, height, DELTA, name + "height");
 }
 
 export function assertLayout(btn: MyButton, left: number, top: number, width: number, height: number, name?: string): void {
-    var density = utils.layout.getDisplayDensity();
-
-    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
     name = name ? "[" + name + "]" : "";
 
-    TKUnit.assertAreClose(Math.floor(btn.layoutLeft / density), left, delta, name + "left");
-    TKUnit.assertAreClose(Math.floor(btn.layoutTop / density), top, delta, name + "top");
-    TKUnit.assertAreClose(Math.floor(btn.layoutWidth / density), width, delta, name + "width");
-    TKUnit.assertAreClose(Math.floor(btn.layoutHeight / density), height, delta, name + "height");
+    TKUnit.assertAreClose(btn.layoutLeft, left, DELTA, name + "left");
+    TKUnit.assertAreClose(btn.layoutTop, top, DELTA, name + "top");
+    TKUnit.assertAreClose(btn.layoutWidth, width, DELTA, name + "width");
+    TKUnit.assertAreClose(btn.layoutHeight, height, DELTA, name + "height");
+}
+
+export function dp(value: number): number {
+    return utils.layout.toDevicePixels(value);
 }
 
 export function dip(value: number): number {
-    var density = utils.layout.getDisplayDensity();
-    return Math.floor(value * density);
+    return utils.layout.toDeviceIndependentPixels(value);
 }

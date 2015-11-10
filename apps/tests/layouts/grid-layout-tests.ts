@@ -9,6 +9,7 @@ import utils = require("utils/utils");
 import builder = require("ui/builder");
 import enums = require("ui/enums");
 import testModule = require("../ui-test");
+import layoutHelper = require("./layout-helper");
 
 var DELTA = 1;
 
@@ -61,12 +62,12 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
         this.testView.addRow(new layout.ItemSpec(1, layout.GridUnitType.star));
         this.testView.addRow(new layout.ItemSpec(2, layout.GridUnitType.star));
-        this.testView.addRow(new layout.ItemSpec(50, layout.GridUnitType.pixel));
+        this.testView.addRow(new layout.ItemSpec(layoutHelper.dp(50), layout.GridUnitType.pixel));
         this.testView.addRow(new layout.ItemSpec(50, layout.GridUnitType.auto));
 
         this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
         this.testView.addColumn(new layout.ItemSpec(2, layout.GridUnitType.star));
-        this.testView.addColumn(new layout.ItemSpec(50, layout.GridUnitType.pixel));
+        this.testView.addColumn(new layout.ItemSpec(layoutHelper.dp(50), layout.GridUnitType.pixel));
         this.testView.addColumn(new layout.ItemSpec(50, layout.GridUnitType.auto));
 
         for (var r = 0; r < 4; r++) {
@@ -76,19 +77,19 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
                 layout.GridLayout.setColumn(btn, c);
                 layout.GridLayout.setRow(btn, r);
                 if (c === 3) {
-                    btn.width = 100; // Auto column should take 100px for this test.
+                    btn.width = layoutHelper.dp(100); // Auto column should take 100px for this test.
                 }
 
                 if (r === 3) {
-                    btn.height = 100; // Auto row should take 100px for this test.
+                    btn.height = layoutHelper.dp(100); // Auto row should take 100px for this test.
                 }
 
                 this.testView.addChild(btn);
             }
         }
 
-        this.testView.width = 300;
-        this.testView.height = 300;
+        this.testView.width = layoutHelper.dp(300);
+        this.testView.height = layoutHelper.dp(300);
 
         if (wait) {
             this.waitUntilTestElementLayoutIsValid();
@@ -245,58 +246,55 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertTrue(btn.getMeasuredWidth() === this.testView.getMeasuredWidth());
+        TKUnit.assertTrue(this.testView.getMeasuredWidth() < 50);
     }
 
     public test_measuredWidth_when_not_stretched_two_columns() {
         this.testView.horizontalAlignment = enums.HorizontalAlignment.center;
-        this.testView.addColumn(new layout.ItemSpec(80, layout.GridUnitType.pixel));
+        this.testView.addColumn(new layout.ItemSpec(layoutHelper.dp(80), layout.GridUnitType.pixel));
         this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
 
         let btn = new Button();
         btn.text = "A";
-        btn.width = 100;
+        btn.width = layoutHelper.dp(100);
         MyGridLayout.setColumnSpan(btn, 2);
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
 
-        var density = utils.layout.getDisplayDensity();
-        var delta = Math.floor(density) !== density ? 2 : DELTA;
         var cols = this.testView.getColumns();
-        TKUnit.assertAreClose(cols[0].actualLength, 80, delta);
-        TKUnit.assertAreClose(cols[1].actualLength, 20, delta);
-        TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 100 * density, delta);
+        TKUnit.assertAreClose(cols[0].actualLength, 80, DELTA);
+        TKUnit.assertAreClose(cols[1].actualLength, 20, DELTA);
+        TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 100, DELTA);
     }
 
     public test_measuredWidth_when_not_stretched_three_columns() {
         this.testView.horizontalAlignment = enums.HorizontalAlignment.center;
-        this.testView.addColumn(new layout.ItemSpec(80, layout.GridUnitType.pixel));
+        this.testView.addColumn(new layout.ItemSpec(layoutHelper.dp(80), layout.GridUnitType.pixel));
         this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
         this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.auto));
 
         for (let i = 1; i < 4; i++) {
             let btn = new Button();
             btn.text = "A";
-            btn.width = i * 20;
+            btn.width = layoutHelper.dp(i * 20);
             MyGridLayout.setColumn(btn, i - 1);
             this.testView.addChild(btn);
         }
 
         let btn = new Button();
         btn.text = "B";
-        btn.width = 100;
+        btn.width = layoutHelper.dp(100);
         MyGridLayout.setColumnSpan(btn, 3);
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
 
-        var density = utils.layout.getDisplayDensity();
-        var delta = Math.floor(density) !== density ? 2 : DELTA;
         var cols = this.testView.getColumns();
-        TKUnit.assertAreClose(cols[0].actualLength, 80, delta);
-        TKUnit.assertAreClose(cols[1].actualLength, 40, delta);
-        TKUnit.assertAreClose(cols[2].actualLength, 60, delta);
-        TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 180 * density, delta);
+        TKUnit.assertAreClose(cols[0].actualLength, 80, DELTA);
+        TKUnit.assertAreClose(cols[1].actualLength, 40, DELTA);
+        TKUnit.assertAreClose(cols[2].actualLength, 60, DELTA);
+        TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 180, DELTA);
     }
 
     public test_getRows_shouldNotReturnNULL() {
@@ -405,12 +403,10 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
             }
         }
 
-        var delta = 1.1; // Set to an overly high value to avoid failing on some emulators.
-
         let measuredWidth = this.testView.getMeasuredWidth();
         let measuredHeight = this.testView.getMeasuredHeight();
-        TKUnit.assertAreClose(measuredWidth, maxWidth, delta, "GridLayout incorrect measured width");
-        TKUnit.assertAreClose(measuredHeight, maxHeight, delta, "GridLayout incorrect measured height");
+        TKUnit.assertAreClose(measuredWidth, maxWidth, DELTA, "GridLayout incorrect measured width");
+        TKUnit.assertAreClose(measuredHeight, maxHeight, DELTA, "GridLayout incorrect measured height");
     }
 
     public test_columnsActualWidth_isCorrect() {
@@ -427,10 +423,10 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         this.prepareGridLayout(true);
 
         var rows = this.testView.getRows();
-        TKUnit.assertEqual(rows[0].actualLength, 50, "Star row should be 50px width");
-        TKUnit.assertEqual(rows[1].actualLength, 100, "2*Star row should be 100px width");
-        TKUnit.assertEqual(rows[2].actualLength, 50, "Absolute row should be 50px width");
-        TKUnit.assertEqual(rows[3].actualLength, 100, "Auto row should be 100px width");
+        TKUnit.assertEqual(rows[0].actualLength, layoutHelper.dip(50), "Star row should be 50px width");
+        TKUnit.assertEqual(rows[1].actualLength, layoutHelper.dip(100), "2*Star row should be 100px width");
+        TKUnit.assertEqual(rows[2].actualLength, layoutHelper.dip(50), "Absolute row should be 50px width");
+        TKUnit.assertEqual(rows[3].actualLength, layoutHelper.dip(100), "Auto row should be 100px width");
     }
 
     public test_Measure_and_Layout_Children_withCorrect_size() {
@@ -440,8 +436,6 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         var rows = this.testView.getRows();
         var cols = this.testView.getColumns();
         var i = 0;
-        var density = utils.layout.getDisplayDensity();
-        var delta = Math.floor(density) !== density ? 1.1 : DELTA;
 
         for (var r = 0; r < 4; r++) {
 
@@ -453,31 +447,28 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
                 var h = r % 2 === 0 ? 50 : 100;
                 var w = c % 2 === 0 ? 50 : 100;
 
-                h = Math.round(h * density);
-                w = Math.round(w * density);
-
                 if (row.isAuto) {
-                    TKUnit.assertAreClose(btn.layoutHeight, btn.getMeasuredHeight(), delta, "Auto rows should layout with measured height");
+                    TKUnit.assertAreClose(btn.layoutHeight, btn.getMeasuredHeight(), DELTA, "Auto rows should layout with measured height");
                 }
                 else if (row.isAbsolute) {
-                    TKUnit.assertAreClose(btn.measureHeight, h, delta, "Absolute rows should measure with specific height");
-                    TKUnit.assertAreClose(btn.layoutHeight, h, delta, "Absolute rows should layout with specific height");
+                    TKUnit.assertAreClose(btn.measureHeight, h, DELTA, "Absolute rows should measure with specific height");
+                    TKUnit.assertAreClose(btn.layoutHeight, h, DELTA, "Absolute rows should layout with specific height");
                 }
                 else {
-                    TKUnit.assertAreClose(btn.measureHeight, h, delta, "Star rows should measure with specific height");
-                    TKUnit.assertAreClose(btn.layoutHeight, h, delta, "Star rows should layout with exact length");
+                    TKUnit.assertAreClose(btn.measureHeight, h, DELTA, "Star rows should measure with specific height");
+                    TKUnit.assertAreClose(btn.layoutHeight, h, DELTA, "Star rows should layout with exact length");
                 }
 
                 if (col.isAuto) {
-                    TKUnit.assertAreClose(btn.layoutWidth, btn.getMeasuredWidth(), delta, "Auto columns should layout with measured width");
+                    TKUnit.assertAreClose(btn.layoutWidth, btn.getMeasuredWidth(), DELTA, "Auto columns should layout with measured width");
                 }
                 else if (col.isAbsolute) {
-                    TKUnit.assertAreClose(btn.measureWidth, w, delta, "Absolute columns should measure with specific width");
-                    TKUnit.assertAreClose(btn.layoutWidth, w, delta, "Absolute columns should layout with specific width");
+                    TKUnit.assertAreClose(btn.measureWidth, w, DELTA, "Absolute columns should measure with specific width");
+                    TKUnit.assertAreClose(btn.layoutWidth, w, DELTA, "Absolute columns should layout with specific width");
                 }
                 else {
-                    TKUnit.assertAreClose(btn.measureWidth, w, delta, "Star columns should measure with specific width");
-                    TKUnit.assertAreClose(btn.layoutWidth, w, delta, "Star columns should layout with exact length");
+                    TKUnit.assertAreClose(btn.measureWidth, w, DELTA, "Star columns should measure with specific width");
+                    TKUnit.assertAreClose(btn.layoutWidth, w, DELTA, "Star columns should layout with exact length");
                 }
             }
         }
@@ -485,7 +476,7 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
     public test_ColumnWidth_when_4stars_and_width_110() {
 
-        this.testView.width = 110;
+        this.testView.width = layoutHelper.dp(110);
         this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
         this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
         this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
@@ -495,34 +486,28 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
         var cols = this.testView.getColumns();
 
-        var density = utils.layout.getDisplayDensity();
-        var delta = Math.floor(density) !== density ? 1.1 : DELTA;
-
-        TKUnit.assertAreClose(cols[0].actualLength, 28, delta, "Column[0] actual length should be 28");
-        TKUnit.assertAreClose(cols[1].actualLength, 27, delta, "Column[1] actual length should be 27");
-        TKUnit.assertAreClose(cols[2].actualLength, 28, delta, "Column[2] actual length should be 28");
-        TKUnit.assertAreClose(cols[3].actualLength, 27, delta, "Column[3] actual length should be 27");
+        TKUnit.assertAreClose(cols[0].actualLength, layoutHelper.dip(28), DELTA, "Column[0] actual length should be 28");
+        TKUnit.assertAreClose(cols[1].actualLength, layoutHelper.dip(27), DELTA, "Column[1] actual length should be 27");
+        TKUnit.assertAreClose(cols[2].actualLength, layoutHelper.dip(28), DELTA, "Column[2] actual length should be 28");
+        TKUnit.assertAreClose(cols[3].actualLength, layoutHelper.dip(27), DELTA, "Column[3] actual length should be 27");
     }
 
     public test_margins_and_verticalAlignment_center() {
 
-        this.testView.height = 200;
-        this.testView.width = 200;
+        this.testView.height = layoutHelper.dp(200);
+        this.testView.width = layoutHelper.dp(200);
         var btn = new helper.MyButton();
         btn.text = "btn";
-        btn.height = 100;
-        btn.width = 100;
-        btn.marginBottom = 50;
-        btn.marginRight = 50;
+        btn.height = layoutHelper.dp(100);
+        btn.width = layoutHelper.dp(100);
+        btn.marginBottom = layoutHelper.dp(50);
+        btn.marginRight = layoutHelper.dp(50);
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
 
-        var density = utils.layout.getDisplayDensity();
-        var delta = Math.floor(density) !== density ? 1.1 : DELTA;
-
-        TKUnit.assertAreClose(btn.layoutTop, 25 * density, delta, "vertical margins");
-        TKUnit.assertAreClose(btn.layoutLeft, 25 * density, delta, "horizontal margins");
+        TKUnit.assertAreClose(btn.layoutTop, 25, DELTA, "vertical margins");
+        TKUnit.assertAreClose(btn.layoutLeft, 25, DELTA, "horizontal margins");
     }
 
     public test_set_columns_in_XML() {
@@ -564,13 +549,13 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
     }
 
     public test_padding() {
-        this.testView.paddingLeft = 10;
-        this.testView.paddingTop = 20;
-        this.testView.paddingRight = 30;
-        this.testView.paddingBottom = 40;
+        this.testView.paddingLeft = layoutHelper.dp(10);
+        this.testView.paddingTop = layoutHelper.dp(20);
+        this.testView.paddingRight = layoutHelper.dp(30);
+        this.testView.paddingBottom = layoutHelper.dp(40);
 
-        this.testView.width = 300;
-        this.testView.height = 300;
+        this.testView.width = layoutHelper.dp(300);
+        this.testView.height = layoutHelper.dp(300);
 
         var btn = new helper.MyButton();
         this.testView.addChild(btn);

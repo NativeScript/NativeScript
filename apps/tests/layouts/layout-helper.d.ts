@@ -29,3 +29,4 @@ export class MyStackLayout extends StackLayout {
 export function assertMeasure(btn: MyButton, width: number, height: number, name?: string);
 export function assertLayout(btn: MyButton, left: number, top: number, width: number, height: number, name?: string): void;
 export function dip(value: number): number;
+export function dp(value: number): number;

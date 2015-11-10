@@ -18,24 +18,27 @@ export module layout {
     export function getDisplayDensity(): number {
         return 1;
     }
+
+    export function toDevicePixels(value: number): number {
+        return value * getDisplayDensity();
+    }
+
+    export function toDeviceIndependentPixels(value: number): number {
+        return value / getDisplayDensity();
+    }
 }
 
 export module ios {
     export module collections {
-        export function jsArrayToNSArray(str: string[]): any {
-            var arr = new NSMutableArray();
-            if ("undefined" !== typeof str) {
-                for (var element in str) {
-                    arr.addObject(str[element]);
-                }
-            }
-            return arr;
+        export function jsArrayToNSArray(str: string[]): NSArray {
+            return NSArray.arrayWithArray(<any>str);
         }
 
-        export function nsArrayToJSArray(a: any): string[] {
+        export function nsArrayToJSArray(a: NSArray): Array<Object> {
             var arr = [];
             if ("undefined" !== typeof a) {
-                for (var i = 0; i < a.count; i++) {
+                let count = a.count;
+                for (let i = 0; i < count; i++) {
                     arr.push(a.objectAtIndex(i));
                 }
             }
