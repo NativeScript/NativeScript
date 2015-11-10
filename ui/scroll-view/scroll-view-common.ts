@@ -18,7 +18,7 @@ export var orientationProperty = new dependencyObservable.Property(
 );
 
 export class ScrollView extends contentView.ContentView implements definition.ScrollView {
-    private _scrollEventAttached: boolean;
+    private _scrollChangeCount: number = 0;
     public static scrollEvent = "scroll";
 
     get orientation(): string {
@@ -32,6 +32,7 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
         super.addEventListener(arg, callback, thisArg);
 
         if (arg === definition.ScrollView.scrollEvent) {
+            this._scrollChangeCount++;
             this.attach();
         }
     }
@@ -40,6 +41,7 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
         super.addEventListener(arg, callback, thisArg);
 
         if (arg === definition.ScrollView.scrollEvent) {
+            this._scrollChangeCount--;
             this.dettach();
         }
     }
@@ -57,23 +59,19 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
     }
 
     private attach() {
-        if (!this._scrollEventAttached && this.isLoaded) {
-            this._scrollEventAttached = true;
-
+        if (this._scrollChangeCount > 0 && this.isLoaded) {
             this.attachNative();
         }
     }
 
     private dettach() {
-        if (this._scrollEventAttached && this.isLoaded) {
-            this._scrollEventAttached = false;
-
+        if (this._scrollChangeCount === 0 && this.isLoaded) {
             this.dettachNative();
         }
     }
 
     protected attachNative() {
-       //
+        //
     }
 
     protected dettachNative() {
