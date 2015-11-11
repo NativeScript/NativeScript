@@ -879,3 +879,33 @@ export function test_NullSourcePropertyShouldNotCrash() {
 
 	TKUnit.assertEqual(target.get("targetProp"), convFunc(expectedValue)); 
 }
+
+export var test_BindingContextOfAChildElementIsNotOverwrittenBySettingTheBindingContextOfPage = function (done) {
+    var testFinished = false;
+    var pageFactory = function () {
+        var page = new pageModule.Page();
+        var child = new stackLayoutModule.StackLayout();
+        page.content = child;
+        var childModel;
+        page.on(pageModule.Page.navigatingToEvent, (args) => {
+            childModel = new observable.Observable();
+            child.bindingContext = childModel;
+            TKUnit.assertEqual(child.bindingContext, childModel);
+            page.off(pageModule.Page.navigatingToEvent);
+        });
+        page.on(pageModule.Page.loadedEvent, (args) => {
+            TKUnit.assertEqual(child.bindingContext, childModel);
+            (<pageModule.Page>args.object).bindingContext = new observable.Observable();
+            TKUnit.assertEqual(child.bindingContext, childModel);
+            page.off(pageModule.Page.loadedEvent);
+            testFinished = true;
+        });
+
+        return page;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return testFinished });
+    helper.goBack();
+    done(null);
+}
