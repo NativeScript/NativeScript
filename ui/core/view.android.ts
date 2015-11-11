@@ -139,6 +139,10 @@ export class View extends viewCommon.View {
                         }
                     }
 
+                    if (!owner._nativeView || !owner._nativeView.onTouchEvent) {
+                        return false;
+                    }
+
                     return owner._nativeView.onTouchEvent(motionEvent);
                 }
             }));
