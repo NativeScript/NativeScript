@@ -245,18 +245,22 @@ export class File extends FileSystemEntity {
     public writeTextSync(content: string, onError?: (error: any) => any, encoding?: string): void {
         this.checkAccess();
 
-        this[fileLockedProperty] = true;
-
-        var that = this;
-        var localError = function (error) {
-            that[fileLockedProperty] = false;
-            if (onError) {
-                onError(error);
-            }
-        };
-
-        // TODO: Asyncronous
-        getFileAccess().writeText(this.path, content, localError, encoding);
+        try {
+            this[fileLockedProperty] = true;
+    
+            var that = this;
+            var localError = function (error) {
+                that[fileLockedProperty] = false;
+                if (onError) {
+                    onError(error);
+                }
+            };
+    
+            // TODO: Asyncronous
+            getFileAccess().writeText(this.path, content, localError, encoding);
+        } finally {
+            this[fileLockedProperty] = false;
+        }
     }
 
     private checkAccess() {
