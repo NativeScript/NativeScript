@@ -16,7 +16,9 @@ interface TextUIView {
     textAlignment: number;
     textColor: UIColor;
     text : string;
-    attributedText : NSAttributedString;
+    attributedText: NSAttributedString;
+    lineBreakMode: number;
+    numberOfLines: number;
 }
 
 var ignorePropertyHandler = new stylersCommon.StylePropertyChangedHandler(
@@ -263,6 +265,15 @@ export class ButtonStyler implements definition.stylers.Styler {
         setTextDecoration((<UIButton>view.ios).titleLabel, enums.TextDecoration.none);
     }
 
+    // white-space
+    private static setWhiteSpaceProperty(view: view.View, newValue: any) {
+        setWhiteSpace((<UIButton>view.ios).titleLabel, newValue, view.ios);
+    }
+
+    private static resetWhiteSpaceProperty(view: view.View, nativeValue: any) {
+        setWhiteSpace((<UIButton>view.ios).titleLabel, enums.WhiteSpace.normal, view.ios);
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             ButtonStyler.setColorProperty,
@@ -286,6 +297,10 @@ export class ButtonStyler implements definition.stylers.Styler {
         style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
             ButtonStyler.setTextDecorationProperty,
             ButtonStyler.resetTextDecorationProperty), "Button");
+
+        style.registerHandler(style.whiteSpaceProperty, new stylersCommon.StylePropertyChangedHandler(
+            ButtonStyler.setWhiteSpaceProperty,
+            ButtonStyler.resetWhiteSpaceProperty), "Button");
     }
 }
 
@@ -330,6 +345,15 @@ export class TextBaseStyler implements definition.stylers.Styler {
         setTextDecoration(view._nativeView, enums.TextDecoration.none);
     }
 
+    // white-space
+    private static setWhiteSpaceProperty(view: view.View, newValue: any) {
+        setWhiteSpace(view._nativeView, newValue);
+    }
+
+    private static resetWhiteSpaceProperty(view: view.View, nativeValue: any) {
+        setWhiteSpace(view._nativeView, enums.WhiteSpace.normal);
+    }
+
     // color
     private static setColorProperty(view: view.View, newValue: any) {
         var ios: TextUIView = <TextUIView>view._nativeView;
@@ -365,6 +389,10 @@ export class TextBaseStyler implements definition.stylers.Styler {
         style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
             TextBaseStyler.setTextDecorationProperty,
             TextBaseStyler.resetTextDecorationProperty), "TextBase");
+
+        style.registerHandler(style.whiteSpaceProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextBaseStyler.setWhiteSpaceProperty,
+            TextBaseStyler.resetWhiteSpaceProperty), "TextBase");
     }
 }
 
@@ -925,6 +953,21 @@ function setTextDecoration(view: TextUIView, value: string) {
         setTextDecorationNative(view, view.text || view.attributedText, attributes);
     } else {
         setTextDecorationNative(view, view.text || view.attributedText, NSMutableDictionary.alloc().init());
+    }
+}
+
+function setWhiteSpace(view: TextUIView, value: string, parentView?: UIView) {
+    if (value === enums.WhiteSpace.normal) {
+        view.lineBreakMode = NSLineBreakMode.NSLineBreakByWordWrapping;
+        view.numberOfLines = 0;
+    }
+    else {
+        if (parentView) {
+            view.lineBreakMode = NSLineBreakMode.NSLineBreakByTruncatingMiddle;
+        } else {
+            view.lineBreakMode = NSLineBreakMode.NSLineBreakByTruncatingTail;
+        }
+        view.numberOfLines = 1;
     }
 }
 

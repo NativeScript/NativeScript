@@ -26,6 +26,11 @@ export module TextDecoration {
     export var lineThrough = "line-through";
 }
 
+export module WhiteSpace {
+    export var normal = "normal";
+    export var nowrap = "nowrap";
+}
+
 export module Orientation {
     export var horizontal = "horizontal";
     export var vertical = "vertical";

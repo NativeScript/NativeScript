@@ -17,6 +17,11 @@ declare module "ui/button" {
         public static textProperty: dependencyObservable.Property;
 
         /**
+         * Dependency property used to support binding operations for the text wrapping of the current button instance.
+         */
+        public static textWrapProperty: dependencyObservable.Property;
+
+        /**
          * String value used when hooking to tap event.
          */
         public static tapEvent: string;

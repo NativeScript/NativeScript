@@ -26,18 +26,6 @@ class TapHandlerImpl extends NSObject {
 
 global.moduleMerge(common, exports);
 
-function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var btn = <Button>data.object;
-    if (!btn.ios) {
-        return;
-    }
-
-    btn.ios.titleLabel.lineBreakMode = data.newValue ? NSLineBreakMode.NSLineBreakByWordWrapping : 0;
-}
-
-// register the setNativeValue callback
-(<proxy.PropertyMetadata>common.Button.textWrapProperty.metadata).onSetNativeValue = onTextWrapPropertyChanged;
-
 export class Button extends common.Button {
     private _ios: UIButton;
     private _tapHandler: NSObject;

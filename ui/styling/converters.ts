@@ -32,6 +32,16 @@ export function textDecorationConverter(value: string): string {
     }
 }
 
+export function whiteSpaceConverter(value: string): string {
+    switch (value) {
+        case enums.WhiteSpace.normal:
+        case enums.WhiteSpace.nowrap:
+            return value;
+        default:
+            throw new Error("CSS white-space \"" + value + "\" is not supported.");
+    }
+}
+
 export var numberConverter = parseFloat;
 
 export function visibilityConverter(value: string): string {
