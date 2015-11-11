@@ -34,11 +34,11 @@ export function reloadPage(): void {
         let currentEntry = frame._currentEntry.entry;
         let newEntry: definition.NavigationEntry = {
             animated: false,
-            clearHistory: true,
+            clearHistory: false,
             context: currentEntry.context,
             create: currentEntry.create,
             moduleName: currentEntry.moduleName,
-            backstackVisible: currentEntry.backstackVisible
+            backstackVisible: true
         }
 
         frame.navigate(newEntry);
