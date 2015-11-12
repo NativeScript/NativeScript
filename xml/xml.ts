@@ -11,14 +11,16 @@ export class ParserEventType implements definition.ParserEventType {
 
 export class ParserEvent implements definition.ParserEvent {
     private _eventType: string;
+    private _position: definition.Position;
     private _prefix: string;
     private _namespace: string;
     private _elementName: string;
     private _attributes: Object;
     private _data: string;
 
-    constructor(eventType: string, prefix?: string, namespace?: string, elementName?: string, attributes?: Object, data?: string) {
+    constructor(eventType: string, position: definition.Position, prefix?: string, namespace?: string, elementName?: string, attributes?: Object, data?: string) {
         this._eventType = eventType;
+        this._position = position;
         this._prefix = prefix;
         this._namespace = namespace;
         this._elementName = elementName;
@@ -29,6 +31,7 @@ export class ParserEvent implements definition.ParserEvent {
     public toString(): string {
         return JSON.stringify({
             eventType: this.eventType,
+            position: this.position,
             prefix: this.prefix,
             namespace: this.namespace,
             elementName: this.elementName,
@@ -39,6 +42,10 @@ export class ParserEvent implements definition.ParserEvent {
 
     public get eventType(): string {
         return this._eventType;
+    }
+    
+    public get position(): definition.Position {
+        return this._position;
     }
 
     public get prefix(): string {
@@ -103,12 +110,12 @@ export class XmlParser implements definition.XmlParser {
     private _processNamespaces: boolean;
     private _namespaceStack: Array<any>;
 
-    constructor(onEvent: (event: definition.ParserEvent) => void, onError?: (error: Error) => void, processNamespaces?: boolean) {
+    constructor(onEvent: (event: definition.ParserEvent) => void, onError?: (error: Error, position: definition.Position) => void, processNamespaces?: boolean) {
         this._processNamespaces = processNamespaces;
         this._parser = new easysax.EasySAXParser();
 
         var that = this;
-        this._parser.on('startNode', function (elem, attr, uq, str, tagend) {
+        this._parser.on('startNode', function (elem, attr, uq, tagend, str, pos) {
             var attributes = attr();
 
             if (attributes === true) {//HACK: For some reason easysax returns the true literal when an element has no attributes.
@@ -139,15 +146,15 @@ export class XmlParser implements definition.XmlParser {
                 name = resolved.name;
             }
 
-            onEvent(new ParserEvent(ParserEventType.StartElement, prefix, namespace, name, attributes, undefined));
+            onEvent(new ParserEvent(ParserEventType.StartElement, pos(), prefix, namespace, name, attributes, undefined));
         });
 
-        this._parser.on('textNode', function (text, uq) {
+        this._parser.on('textNode', function (text, uq, pos) {
             var data = uq(XmlParser._dereferenceEntities(text));// Decode entity references such as &lt; and &gt;
-            onEvent(new ParserEvent(ParserEventType.Text, undefined, undefined, undefined, undefined, data));
+            onEvent(new ParserEvent(ParserEventType.Text, pos(), undefined, undefined, undefined, undefined, data));
         });
 
-        this._parser.on('endNode', function (elem, uq, tagstart, str) {
+        this._parser.on('endNode', function (elem, uq, tagstart, str, pos) {
 
             var prefix = undefined;
             var namespace = undefined;
@@ -160,24 +167,24 @@ export class XmlParser implements definition.XmlParser {
                 name = resolved.name;
             }
 
-            onEvent(new ParserEvent(ParserEventType.EndElement, prefix, namespace, name, undefined, undefined));
+            onEvent(new ParserEvent(ParserEventType.EndElement, pos(), prefix, namespace, name, undefined, undefined));
 
             if (that._processNamespaces) {
                 that._namespaceStack.pop();
             }
         });
 
-        this._parser.on('cdata', function (data) {
-            onEvent(new ParserEvent(ParserEventType.CDATA, undefined, undefined, undefined, undefined, data));
+        this._parser.on('cdata', function (data, res, pos) {
+            onEvent(new ParserEvent(ParserEventType.CDATA, pos(), undefined, undefined, undefined, undefined, data));
         });
 
-        this._parser.on('comment', function (text) {
-            onEvent(new ParserEvent(ParserEventType.Comment, undefined, undefined, undefined, undefined, text));
+        this._parser.on('comment', function (text, uq, pos) {
+            onEvent(new ParserEvent(ParserEventType.Comment, pos(), undefined, undefined, undefined, undefined, text));
         });
 
         if (onError) {
-            this._parser.on('error', function (msg) {
-                onError(new Error(msg));
+            this._parser.on('error', function (msg, pos) {
+                onError(new Error(msg), pos());
             });
         }
     }

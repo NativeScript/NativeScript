@@ -469,11 +469,24 @@ EasySAXParser.prototype.parse = function(xml) {
     , stop // используется при разборе "namespace" . если встретился неизвестное пространство то события не генерируются
     , _nsmatrix
     , ok
+    , pos = 0, ln = 0, lnStart = -2, lnEnd = -1
     ;
 
     function getStringNode() {
         return xml.substring(i, j+1)
     };
+    function findLineAndColumnFromPos() {
+        while (lnStart < lnEnd && lnEnd < pos) {
+            lnStart = lnEnd;
+            lnEnd = xml.indexOf("\n", lnEnd + 1);
+            ++ln;
+        }
+        return { line: ln, column: pos - lnStart };
+    }
+    function position(p) {
+        pos = p;
+        return findLineAndColumnFromPos;
+    }
 
     while(j !== -1) {
         stop = stopIndex > 0;
@@ -487,7 +500,7 @@ EasySAXParser.prototype.parse = function(xml) {
         if (i === -1) { // конец разбора
 
             if (nodestack.length) {
-                this.onError('end file');
+                this.onError('end file', position(j));
                 return;
             };
 
@@ -495,7 +508,7 @@ EasySAXParser.prototype.parse = function(xml) {
         };
 
         if (j !== i && !stop) {
-            ok = this.onTextNode(xml.substring(j, i), unEntities);
+            ok = this.onTextNode(xml.substring(j, i), unEntities, position(j));
             if (ok === false) return;
         };
 
@@ -506,13 +519,13 @@ EasySAXParser.prototype.parse = function(xml) {
             if (w === 91 && xml.substr(i+3, 6) === 'CDATA[') { // 91 == "["
                 j = xml.indexOf(']]>', i);
                 if (j === -1) {
-                    this.onError('cdata');
+                    this.onError('cdata', position(i));
                     return;
                 };
 
                 //x = xml.substring(i+9, j);
                 if (!stop) {
-                    ok = this.onCDATA(xml.substring(i+9, j), false);
+                    ok = this.onCDATA(xml.substring(i+9, j), false, position(i));
                     if (ok === false) return;
                 };
 
@@ -523,13 +536,13 @@ EasySAXParser.prototype.parse = function(xml) {
             if (w === 45 && xml.charCodeAt(i+3) === 45) { // 45 == "-"
                 j = xml.indexOf('-->', i);
                 if (j === -1) {
-                    this.onError('expected -->');
+                    this.onError('expected -->', position(i));
                     return;
                 };
 
 
                 if (this.is_onComment && !stop) {
-                    ok = this.onComment(xml.substring(i+4, j), unEntities);
+                    ok = this.onComment(xml.substring(i+4, j), unEntities, position(i));
                     if (ok === false) return;
                 };
 
@@ -539,12 +552,12 @@ EasySAXParser.prototype.parse = function(xml) {
 
             j = xml.indexOf('>', i+1);
             if (j === -1) {
-                this.onError('expected ">"');
+                this.onError('expected ">"', position(i + 1));
                 return;
             };
 
             if (this.is_onAttention && !stop) {
-                ok = this.onAttention(xml.substring(i, j+1), unEntities);
+                ok = this.onAttention(xml.substring(i, j+1), unEntities, position(i));
                 if (ok === false) return;
             };
 
@@ -555,12 +568,12 @@ EasySAXParser.prototype.parse = function(xml) {
             if (w === 63) { // "?"
                 j = xml.indexOf('?>', i);
                 if (j === -1) { // error
-                    this.onError('...?>');
+                    this.onError('...?>', position(i));
                     return;
                 };
 
                 if (this.is_onQuestion) {
-                    ok = this.onQuestion(xml.substring(i, j+2));
+                    ok = this.onQuestion(xml.substring(i, j+2), position(i));
                     if (ok === false) return;
                 };
 
@@ -572,7 +585,7 @@ EasySAXParser.prototype.parse = function(xml) {
         j = xml.indexOf('>', i+1);
 
         if (j == -1) { // error
-            this.onError('...>');
+            this.onError('...>', position(i + 1));
             return;
         };
 
@@ -589,7 +602,7 @@ EasySAXParser.prototype.parse = function(xml) {
 
             //console.log()
             if (xml.substring(i+2, q) !== x) {
-                this.onError('close tagname');
+                this.onError('close tagname', position(i + 2));
                 return;
             };
 
@@ -601,7 +614,7 @@ EasySAXParser.prototype.parse = function(xml) {
                     continue;
                 };
 
-                this.onError('close tag');
+                this.onError('close tag', position(i + 2));
                 return;
             };
 
@@ -619,7 +632,7 @@ EasySAXParser.prototype.parse = function(xml) {
             };
 
             if ( !(w > 96  && w < 123 || w > 64 && w <91) ) {
-                this.onError('first char nodeName');
+                this.onError('first char nodeName', position(i + 1));
                 return;
             };
 
@@ -636,7 +649,7 @@ EasySAXParser.prototype.parse = function(xml) {
                     break;
                 };
 
-                this.onError('invalid nodeName');
+                this.onError('invalid nodeName', position(i + 1));
                 return;
             };
 
@@ -718,7 +731,7 @@ EasySAXParser.prototype.parse = function(xml) {
 
             var that = this;
             ok = this.onStartNode(elem, function() { return that.getAttrs() }, unEntities, tagend
-                , getStringNode
+                , getStringNode, position(i)
             );
 
             if (ok === false) {
@@ -730,7 +743,7 @@ EasySAXParser.prototype.parse = function(xml) {
 
         if (tagend) {
             ok = this.onEndNode(elem, unEntities, tagstart
-                , getStringNode
+                , getStringNode, position(i)
             );
 
             if (ok === false) {

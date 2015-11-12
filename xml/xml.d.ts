@@ -33,6 +33,21 @@ declare module "xml" {
          */
         static Comment: string;
     }
+    
+    /**
+     * Defines a position within string, in line and column form.
+     */
+    interface Position {
+        /**
+         * The line number. The first line is at index 1.
+         */
+        line: number;
+        
+        /**
+         * The column number. The first character is at index 1.
+         */
+        column: number;
+    }
 
     /**
      * Provides information for a parser event.
@@ -43,6 +58,11 @@ declare module "xml" {
          * Returns the type of the parser event. This is one of the ParserEventType static members.
          */
         eventType: string;
+        
+        /**
+         * Get the position in the xml string where the event was generated.
+         */
+        position: Position;
 
         /**
          * If namespace processing is enabled, returns the prefix of the element in case the eventType is ParserEventType.StartElement or ParserEventType.EndElement.
