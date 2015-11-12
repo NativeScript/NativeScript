@@ -12,13 +12,10 @@ export enum GestureTypes {
 }
 
 export enum GestureStateTypes {
-    possible = 1 << 0,
-    recognized = 1 << 1,
-    failed = 1 << 2,
-    cancelled = 1 << 3,
-    began = 1 << 4,
-    changed = 1 << 5,
-    ended = 1 << 6
+    cancelled,
+    began,
+    changed,
+    ended
 }
 
 export enum SwipeDirection {
