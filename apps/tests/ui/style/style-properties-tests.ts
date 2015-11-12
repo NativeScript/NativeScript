@@ -1,12 +1,15 @@
 ﻿import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
 import buttonModule = require("ui/button");
+import labelModule = require("ui/label");
 import stackModule = require("ui/layouts/stack-layout");
 import page = require("ui/page");
 import color = require("color");
 import observable = require("data/observable");
 import enums = require("ui/enums");
 import fontModule = require("ui/styling/font");
+import platform = require("platform");
+import viewModule = require("ui/core/view");
 
 var testBtn: buttonModule.Button;
 var testPage: page.Page;
@@ -31,6 +34,14 @@ export function tearDownModule() {
 
 export function tearDown() {
     testPage.css = "";
+}
+
+export function test_setting_textDecoration_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("textDecoration", "text-decoration", "underline");
+}
+
+export function test_setting_whiteSpace_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("whiteSpace", "white-space", "nowrap");
 }
 
 export function test_CSS_properties_are_applied_to_Style() {
@@ -244,6 +255,58 @@ export function test_setting_different_color_triggers_property_change() {
     TKUnit.assert(changed, "Property changed not triggered.");
 }
 
+export function test_setting_same_textDecoration_does_not_trigger_property_change() {
+    var testView = new buttonModule.Button();
+    testView.style.textDecoration = "underline";
+
+    var changed = false;
+    testView.style.on(observable.Observable.propertyChangeEvent, (data) => {
+        changed = true;
+    });
+
+    testView.style.textDecoration = "underline";
+    TKUnit.assert(!changed, "Property changed triggered.");
+}
+
+export function test_setting_different_textDecoration_triggers_property_change() {
+    var testView = new buttonModule.Button();
+    testView.style.textDecoration = "underline";
+
+    var changed = false;
+    testView.style.on(observable.Observable.propertyChangeEvent, (data) => {
+        changed = true;
+    });
+
+    testView.style.textDecoration = "none";
+    TKUnit.assert(changed, "Property changed not triggered.");
+}
+
+export function test_setting_same_whiteSpace_does_not_trigger_property_change() {
+    var testView = new buttonModule.Button();
+    testView.style.whiteSpace = "normal";
+
+    var changed = false;
+    testView.style.on(observable.Observable.propertyChangeEvent, (data) => {
+        changed = true;
+    });
+
+    testView.style.whiteSpace = "normal";
+    TKUnit.assert(!changed, "Property changed triggered.");
+}
+
+export function test_setting_different_whiteSpace_triggers_property_change() {
+    var testView = new buttonModule.Button();
+    testView.style.whiteSpace = "normal";
+
+    var changed = false;
+    testView.style.on(observable.Observable.propertyChangeEvent, (data) => {
+        changed = true;
+    });
+
+    testView.style.whiteSpace = "nowrap";
+    TKUnit.assert(changed, "Property changed not triggered.");
+}
+
 export function test_setting_same_backgroundColor_does_not_trigger_property_change() {
     var testView = new buttonModule.Button();
     testView.style.backgroundColor = new color.Color("#FF0000");
@@ -365,4 +428,64 @@ function test_native_font(style: string, weight: string) {
         TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.font.fontName.toLowerCase(), (fontName + "-" + fontNameSuffix).toLowerCase(), "native font " + weight + " " + style);
     }
     //TODO: If needed add tests for other platforms
+}
+
+export var test_setting_button_whiteSpace_normal_sets_native = function () {
+    var testView = new buttonModule.Button();
+    testView.style.whiteSpace = "nowrap";
+
+    helper.buildUIAndRunTest(testView, function (views: Array<viewModule.View>) {
+
+        if (platform.device.os === platform.platformNames.android) {
+            TKUnit.assertEqual((<android.widget.Button>testView.android).getEllipsize(), android.text.TextUtils.TruncateAt.END);
+        } else if (platform.device.os === platform.platformNames.ios) {
+            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.lineBreakMode, NSLineBreakMode.NSLineBreakByTruncatingMiddle);
+            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 1);
+       }
+    });
+}
+
+export var test_setting_label_whiteSpace_normal_sets_native = function () {
+    var testView = new labelModule.Label();
+    testView.style.whiteSpace = "nowrap";
+
+    helper.buildUIAndRunTest(testView, function (views: Array<viewModule.View>) {
+
+        if (platform.device.os === platform.platformNames.android) {
+            TKUnit.assertEqual((<android.widget.TextView>testView.android).getEllipsize(), android.text.TextUtils.TruncateAt.END);
+        } else if (platform.device.os === platform.platformNames.ios) {
+            TKUnit.assertEqual((<UILabel>testView.ios).lineBreakMode, NSLineBreakMode.NSLineBreakByTruncatingTail);
+            TKUnit.assertEqual((<UILabel>testView.ios).numberOfLines, 1);
+        }
+    });
+}
+
+export var test_setting_button_whiteSpace_nowrap_sets_native = function () {
+    var testView = new buttonModule.Button();
+    testView.style.whiteSpace = "normal";
+
+    helper.buildUIAndRunTest(testView, function (views: Array<viewModule.View>) {
+
+        if (platform.device.os === platform.platformNames.android) {
+            TKUnit.assertNull((<android.widget.Button>testView.android).getEllipsize(), null);
+        } else if (platform.device.os === platform.platformNames.ios) {
+            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.lineBreakMode, NSLineBreakMode.NSLineBreakByWordWrapping);
+            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 0);
+        }
+    });
+}
+
+export var test_setting_label_whiteSpace_nowrap_sets_native = function () {
+    var testView = new labelModule.Label();
+    testView.style.whiteSpace = "normal";
+
+    helper.buildUIAndRunTest(testView, function (views: Array<viewModule.View>) {
+
+        if (platform.device.os === platform.platformNames.android) {
+            TKUnit.assertNull((<android.widget.TextView>testView.android).getEllipsize(), null);
+        } else if (platform.device.os === platform.platformNames.ios) {
+            TKUnit.assertEqual((<UILabel>testView.ios).lineBreakMode, NSLineBreakMode.NSLineBreakByWordWrapping);
+            TKUnit.assertEqual((<UILabel>testView.ios).numberOfLines, 0);
+        }
+    });
 }

@@ -437,6 +437,21 @@
          */
         export var lineThrough: string;
     }
+
+    /**
+     * Specifies different white spaces.
+     */
+    export module WhiteSpace {
+        /**
+         * Normal wrap.
+         */
+        export var normal: string;
+        
+        /**
+         * No wrap.
+         */
+        export var nowrap: string;
+    }
     
     /**
      * Specifies different font weights.

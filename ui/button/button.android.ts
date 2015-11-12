@@ -5,18 +5,6 @@ import proxy = require("ui/core/proxy");
 
 global.moduleMerge(common, exports);
 
-function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var btn = <Button>data.object;
-    if (!btn.android) {
-        return;
-    }
-
-    btn.android.setSingleLine(data.newValue);
-}
-
-// register the setNativeValue callback
-(<proxy.PropertyMetadata>common.Button.textWrapProperty.metadata).onSetNativeValue = onTextWrapPropertyChanged;
-
 export class Button extends common.Button {
     private _android: android.widget.Button;
     private _isPressed: boolean;

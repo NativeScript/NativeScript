@@ -63,6 +63,7 @@ declare module "ui/styling/style" {
         public verticalAlignment: string;
         public visibility: string;
         public opacity: number;
+        public whiteSpace: string;
 
         new(parentView: View);
 

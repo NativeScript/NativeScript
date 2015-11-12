@@ -5,6 +5,7 @@ import proxy = require("ui/core/proxy");
 import formattedString = require("text/formatted-string");
 import observable = require("data/observable");
 import weakEvents = require("ui/core/weak-event-listener");
+import enums = require("ui/enums");
 
 var textProperty = new dependencyObservable.Property(
     "text",
@@ -122,3 +123,10 @@ export class Button extends view.View implements definition.Button {
         formattedString.FormattedString.addFormattedStringToView(this, name, value);
     }
 }
+
+function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var v = <view.View>data.object;
+    v.style.whiteSpace = data.newValue ? enums.WhiteSpace.normal : enums.WhiteSpace.nowrap;
+}
+
+(<proxy.PropertyMetadata>Button.textWrapProperty.metadata).onSetNativeValue = onTextWrapPropertyChanged;

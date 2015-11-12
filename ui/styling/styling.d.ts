@@ -198,6 +198,9 @@
          */
         opacity: number;
 
+        textDecoration: string;
+        whiteSpace: string;
+
         //@private
         public _beginUpdate();
         public _endUpdate();

@@ -245,6 +245,10 @@ function isTextDecorationValid(value: string): boolean {
     return values.indexOf(enums.TextDecoration.none) !== -1 || values.indexOf(enums.TextDecoration.underline) !== -1 || values.indexOf(enums.TextDecoration.lineThrough) !== -1;
 }
 
+function isWhiteSpaceValid(value: string): boolean {
+    return value === enums.WhiteSpace.nowrap || value === enums.WhiteSpace.normal;
+}
+
 function onVisibilityChanged(data: PropertyChangeData) {
     (<any>data.object)._view._isVisibleCache = data.newValue === enums.Visibility.visible;
 }
@@ -549,6 +553,13 @@ export class Style extends DependencyObservable implements styling.Style {
         this._setValue(textDecorationProperty, value);
     }
 
+    get whiteSpace(): string {
+        return this._getValue(whiteSpaceProperty);
+    }
+    set whiteSpace(value: string) {
+        this._setValue(whiteSpaceProperty, value);
+    }
+
     public _updateTextDecoration() {
         if (this._getValue(textDecorationProperty) !== enums.TextDecoration.none) {
             this._applyProperty(textDecorationProperty, this._getValue(textDecorationProperty));
@@ -809,6 +820,9 @@ export var opacityProperty = new styleProperty.Property("opacity", "opacity",
 
 export var textDecorationProperty = new styleProperty.Property("textDecoration", "text-decoration",
     new PropertyMetadata(enums.TextDecoration.none, PropertyMetadataSettings.None, undefined, isTextDecorationValid), converters.textDecorationConverter);
+
+export var whiteSpaceProperty = new styleProperty.Property("whiteSpace", "white-space",
+    new PropertyMetadata(undefined, AffectsLayout, undefined, isWhiteSpaceValid), converters.whiteSpaceConverter);
 
 // Helper property holding most layout related properties available in CSS.
 // When layout related properties are set in CSS we chache them and send them to the native view in a single call.

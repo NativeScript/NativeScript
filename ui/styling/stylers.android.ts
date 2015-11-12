@@ -438,6 +438,15 @@ export class TextViewStyler implements definition.stylers.Styler {
         setTextDecoration(view._nativeView, enums.TextDecoration.none);
     }
 
+    // white-space
+    private static setWhiteSpaceProperty(view: view.View, newValue: any) {
+        setWhiteSpace(view._nativeView, newValue);
+    }
+
+    private static resetWhiteSpaceProperty(view: view.View, nativeValue: any) {
+        setWhiteSpace(view._nativeView, enums.WhiteSpace.normal);
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setColorProperty,
@@ -457,6 +466,10 @@ export class TextViewStyler implements definition.stylers.Styler {
         style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setTextDecorationProperty,
             TextViewStyler.resetTextDecorationProperty), "TextBase");
+
+        style.registerHandler(style.whiteSpaceProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setWhiteSpaceProperty,
+            TextViewStyler.resetWhiteSpaceProperty), "TextBase");
 
         // Register the same stylers for Button.
         // It also derives from TextView but is not under TextBase in our View hierarchy.
@@ -478,6 +491,10 @@ export class TextViewStyler implements definition.stylers.Styler {
         style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setTextDecorationProperty,
             TextViewStyler.resetTextDecorationProperty), "Button");
+
+        style.registerHandler(style.whiteSpaceProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setWhiteSpaceProperty,
+            TextViewStyler.resetWhiteSpaceProperty), "Button");
     }
 }
 
@@ -499,6 +516,11 @@ function setTextDecoration(view: android.widget.TextView, value: string) {
     } else {
         view.setPaintFlags(0);
     }   
+}
+
+function setWhiteSpace(view: android.widget.TextView, value: string) {
+    view.setSingleLine(value === enums.WhiteSpace.nowrap);
+    view.setEllipsize(value === enums.WhiteSpace.nowrap ? android.text.TextUtils.TruncateAt.END : null);
 }
 
 export class ActivityIndicatorStyler implements definition.stylers.Styler {

@@ -4,22 +4,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import utils = require("utils/utils");
 import viewModule = require("ui/core/view");
-
-function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var label = <Label>data.object;
-
-    if (data.newValue) {
-        label.ios.lineBreakMode = NSLineBreakMode.NSLineBreakByWordWrapping;
-        label.ios.numberOfLines = 0;
-    }
-    else {
-        label.ios.lineBreakMode = NSLineBreakMode.NSLineBreakByTruncatingTail;
-        label.ios.numberOfLines = 1;
-    }
-}
-
-// register the setNativeValue callback
-(<proxy.PropertyMetadata>common.Label.textWrapProperty.metadata).onSetNativeValue = onTextWrapPropertyChanged;
+import enums = require("ui/enums");
 
 global.moduleMerge(common, exports);
 
@@ -104,7 +89,7 @@ export class Label extends common.Label {
 
             var nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
             var labelWidth = nativeSize.width;
-            if (!this.textWrap) {
+            if (!this.textWrap && this.style.whiteSpace !== enums.WhiteSpace.nowrap) {
                 labelWidth = Math.min(labelWidth, width);
             }
 
