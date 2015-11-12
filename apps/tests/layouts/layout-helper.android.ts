@@ -171,9 +171,9 @@ export function assertLayout(btn: MyButton, left: number, top: number, width: nu
 }
 
 export function dp(value: number): number {
-    return utils.layout.toDevicePixels(value);
+    return utils.layout.toDeviceIndependentPixels(value);
 }
 
 export function dip(value: number): number {
-    return utils.layout.toDeviceIndependentPixels(value);
+    return utils.layout.toDevicePixels(value);
 }

@@ -6,6 +6,7 @@ import page = require("ui/page");
 import button = require("ui/button");
 import enums = require("ui/enums");
 import testModule = require("../../ui-test");
+import layoutHelper = require("../../layouts/layout-helper");
 
 // <snippet module="ui/scroll-view" title="scroll-view">
 // # ScrollView
@@ -143,8 +144,8 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.verticalOffset, 0, "this.testView.verticalOffset");
-        this.testView.scrollToVerticalOffset(100, false);
-        TKUnit.assertAreClose(this.testView.verticalOffset, 100, 0.1, "this.testView.verticalOffset");
+        this.testView.scrollToVerticalOffset(layoutHelper.dp(100), false);
+        TKUnit.assertAreClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1, "this.testView.verticalOffset");
     }
 
     public test_scrollToVerticalOffset_with_animation() {
@@ -160,15 +161,15 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.verticalOffset, 0, "this.testView.verticalOffset");
-        this.testView.scrollToVerticalOffset(100, true);
+        this.testView.scrollToVerticalOffset(layoutHelper.dp(100), true);
 
         // No synchronous change. 
         TKUnit.assertEqual(this.testView.verticalOffset, 0, "this.testView.verticalOffset");
 
-        TKUnit.waitUntilReady(() => { return TKUnit.areClose(this.testView.verticalOffset, 100, 0.9); });
+        TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.9); });
 
         // The scrolling animation should be finished by now
-        TKUnit.assertAreClose(this.testView.verticalOffset, 100, 0.9, "this.testView.verticalOffset");
+        TKUnit.assertAreClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.9, "this.testView.verticalOffset");
     }
 
     public test_scrollToHorizontalOffset_no_animation() {
@@ -184,8 +185,8 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
-        this.testView.scrollToHorizontalOffset(100, false);
-        TKUnit.assertAreClose(this.testView.horizontalOffset, 100, 0.1, "this.testView.horizontalOffset");
+        this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), false);
+        TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1, "this.testView.horizontalOffset");
     }
 
     public test_scrollToHorizontalOffset_with_animation() {
@@ -201,15 +202,15 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
-        this.testView.scrollToHorizontalOffset(100, true);
+        this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), true);
 
         // No synchronous change. 
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
 
-        TKUnit.waitUntilReady(() => { return TKUnit.areClose(this.testView.horizontalOffset, 100, 0.9); });
+        TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.9); });
 
         // The scrolling animation should be finished by now
-        TKUnit.assertAreClose(this.testView.horizontalOffset, 100, 0.9, "this.testView.horizontalOffset");
+        TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.9, "this.testView.horizontalOffset");
     }
 
     public test_scrollView_persistsState_vertical() {
@@ -224,19 +225,19 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.testView.content = btn;
         this.waitUntilTestElementLayoutIsValid();
 
-        this.testView.scrollToVerticalOffset(100, false);
+        this.testView.scrollToVerticalOffset(layoutHelper.dp(100), false);
 
-        TKUnit.assertAreClose(this.testView.verticalOffset, 100, 0.1, "this.testView.verticalOffset before navigation");
+        TKUnit.assertAreClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1, "this.testView.verticalOffset before navigation");
 
         helper.do_PageTest_WithButton((t) => {
             // Just navigate forward and back.
         });
 
         // Wait for the page to reload.
-        TKUnit.waitUntilReady(() => { return TKUnit.areClose(this.testView.verticalOffset, 100, 0.1); });
+        TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1); });
 
         // Check verticalOffset after navigation
-        TKUnit.assertAreClose(this.testView.verticalOffset, 100, 0.1, "this.testView.verticalOffset after navigation");
+        TKUnit.assertAreClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1, "this.testView.verticalOffset after navigation");
     }
 
     public test_scrollView_persistsState_horizontal() {
@@ -251,19 +252,19 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.testView.content = btn;
         this.waitUntilTestElementLayoutIsValid();
 
-        this.testView.scrollToHorizontalOffset(100, false);
+        this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), false);
 
-        TKUnit.assertAreClose(this.testView.horizontalOffset, 100, 0.1, "this.testView.horizontalOffset before navigation");
+        TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1, "this.testView.horizontalOffset before navigation");
 
         helper.do_PageTest_WithButton((t) => {
             // Just navigate forward and back.
         });
 
         // Wait for the page to reload.
-        TKUnit.waitUntilReady(() => { return TKUnit.areClose(this.testView.horizontalOffset, 100, 0.1); });
+        TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1); });
 
         // Check verticalOffset after navigation
-        TKUnit.assertAreClose(this.testView.horizontalOffset, 100, 0.1, "this.testView.horizontalOffset after navigation");
+        TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1, "this.testView.horizontalOffset after navigation");
     }
 
     public test_scrollView_vertical_raised_scroll_event() {

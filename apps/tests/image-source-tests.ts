@@ -19,8 +19,8 @@ import app = require("application");
 import TKUnit = require("./TKUnit");
 import platform = require("platform");
 
-var imagePath = __dirname + "/logo.png";
-var smallImagePath = __dirname + "/small-image.png";
+var imagePath = fs.path.join(__dirname, "/logo.png");
+var smallImagePath = fs.path.join(__dirname, "/small-image.png");
 
 /* TODO: We need a way to programmatically add an image to resources and then load it from, otherwise we do not know if there is such resource in the target native app.
 export function testFromResource() {
@@ -155,7 +155,7 @@ export function testLoadFromBase64Encode_JPEG() {
 
     TKUnit.assert(img !== null, "Actual: " + img);
     TKUnit.assertEqual(img.width, 4, "img.width");
-    TKUnit.assertEqual(img.height , 4, "img.width");
+    TKUnit.assertEqual(img.height, 4, "img.height");
 }
 
 export function testLoadFromBase64Encode_PNG() {
@@ -173,5 +173,5 @@ export function testLoadFromBase64Encode_PNG() {
 
     TKUnit.assert(img !== null, "Actual: " + img);
     TKUnit.assertEqual(img.width, 4, "img.width");
-    TKUnit.assertEqual(img.height, 4, "img.width");
+    TKUnit.assertEqual(img.height, 4, "img.height");
 }

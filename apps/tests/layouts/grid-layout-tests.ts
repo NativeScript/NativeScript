@@ -10,6 +10,7 @@ import builder = require("ui/builder");
 import enums = require("ui/enums");
 import testModule = require("../ui-test");
 import layoutHelper = require("./layout-helper");
+import platform = require("platform");
 
 var DELTA = 1;
 
@@ -246,7 +247,7 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertTrue(btn.getMeasuredWidth() === this.testView.getMeasuredWidth());
-        TKUnit.assertTrue(this.testView.getMeasuredWidth() < 50);
+        TKUnit.assertTrue(this.testView.getMeasuredWidth() < platform.screen.mainScreen.widthPixels);
     }
 
     public test_measuredWidth_when_not_stretched_two_columns() {
@@ -263,8 +264,8 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         this.waitUntilTestElementLayoutIsValid();
 
         var cols = this.testView.getColumns();
-        TKUnit.assertAreClose(cols[0].actualLength, 80, DELTA);
-        TKUnit.assertAreClose(cols[1].actualLength, 20, DELTA);
+        TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(80)), DELTA);
+        TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(20)), DELTA);
         TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 100, DELTA);
     }
 
@@ -291,9 +292,9 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         this.waitUntilTestElementLayoutIsValid();
 
         var cols = this.testView.getColumns();
-        TKUnit.assertAreClose(cols[0].actualLength, 80, DELTA);
-        TKUnit.assertAreClose(cols[1].actualLength, 40, DELTA);
-        TKUnit.assertAreClose(cols[2].actualLength, 60, DELTA);
+        TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(80)), DELTA);
+        TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(40)), DELTA);
+        TKUnit.assertAreClose(cols[2].actualLength, Math.round(layoutHelper.dp(60)), DELTA);
         TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 180, DELTA);
     }
 
@@ -413,20 +414,20 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         this.prepareGridLayout(true);
 
         var cols = this.testView.getColumns();
-        TKUnit.assertEqual(cols[0].actualLength, 50, "Star column should be 50px width");
-        TKUnit.assertEqual(cols[1].actualLength, 100, "2*Star column should be 100px width");
-        TKUnit.assertEqual(cols[2].actualLength, 50, "Absolute column should be 50px width");
-        TKUnit.assertEqual(cols[3].actualLength, 100, "Auto column should be 100px width");
+        TKUnit.assertEqual(cols[0].actualLength, Math.round(layoutHelper.dp(50)), "Star column should be 50px width");
+        TKUnit.assertEqual(cols[1].actualLength, Math.round(layoutHelper.dp(100)), "2*Star column should be 100px width");
+        TKUnit.assertEqual(cols[2].actualLength, Math.round(layoutHelper.dp(50)), "Absolute column should be 50px width");
+        TKUnit.assertEqual(cols[3].actualLength, Math.round(layoutHelper.dp(100)), "Auto column should be 100px width");
     }
 
     public test_rowsActualHeight_isCorrect() {
         this.prepareGridLayout(true);
 
         var rows = this.testView.getRows();
-        TKUnit.assertEqual(rows[0].actualLength, layoutHelper.dip(50), "Star row should be 50px width");
-        TKUnit.assertEqual(rows[1].actualLength, layoutHelper.dip(100), "2*Star row should be 100px width");
-        TKUnit.assertEqual(rows[2].actualLength, layoutHelper.dip(50), "Absolute row should be 50px width");
-        TKUnit.assertEqual(rows[3].actualLength, layoutHelper.dip(100), "Auto row should be 100px width");
+        TKUnit.assertEqual(rows[0].actualLength, Math.round(layoutHelper.dp(50)), "Star row should be 50px width");
+        TKUnit.assertEqual(rows[1].actualLength, Math.round(layoutHelper.dp(100)), "2*Star row should be 100px width");
+        TKUnit.assertEqual(rows[2].actualLength, Math.round(layoutHelper.dp(50)), "Absolute row should be 50px width");
+        TKUnit.assertEqual(rows[3].actualLength, Math.round(layoutHelper.dp(100)), "Auto row should be 100px width");
     }
 
     public test_Measure_and_Layout_Children_withCorrect_size() {
@@ -486,10 +487,10 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
         var cols = this.testView.getColumns();
 
-        TKUnit.assertAreClose(cols[0].actualLength, layoutHelper.dip(28), DELTA, "Column[0] actual length should be 28");
-        TKUnit.assertAreClose(cols[1].actualLength, layoutHelper.dip(27), DELTA, "Column[1] actual length should be 27");
-        TKUnit.assertAreClose(cols[2].actualLength, layoutHelper.dip(28), DELTA, "Column[2] actual length should be 28");
-        TKUnit.assertAreClose(cols[3].actualLength, layoutHelper.dip(27), DELTA, "Column[3] actual length should be 27");
+        TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(28)), DELTA, "Column[0] actual length should be 28");
+        TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(27)), DELTA, "Column[1] actual length should be 27");
+        TKUnit.assertAreClose(cols[2].actualLength, Math.round(layoutHelper.dp(28)), DELTA, "Column[2] actual length should be 28");
+        TKUnit.assertAreClose(cols[3].actualLength, Math.round(layoutHelper.dp(27)), DELTA, "Column[3] actual length should be 27");
     }
 
     public test_margins_and_verticalAlignment_center() {
