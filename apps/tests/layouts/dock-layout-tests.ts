@@ -5,6 +5,7 @@ import TKUnit = require("../TKUnit");
 import helper = require("./layout-helper");
 import navHelper = require("../ui/helper");
 import testModule = require("../ui-test");
+import layoutHelper = require("./layout-helper");
 
 // <snippet module="ui/layouts/dock-layout" title="dock-layout">
 // # DockLayout
@@ -37,8 +38,8 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public create(): DockLayout {
         let rootLayout = new DockLayout();
-        rootLayout.height = 300;
-        rootLayout.width = 300;
+        rootLayout.height = layoutHelper.dp(300);
+        rootLayout.width = layoutHelper.dp(300);
         return rootLayout;
     }
 
@@ -62,7 +63,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public test_dock_left() {
         var testBtn = new helper.MyButton();
-        testBtn.width = 20;
+        testBtn.width = layoutHelper.dp(20);
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
 
@@ -73,7 +74,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public test_dock_right() {
         var testBtn = new helper.MyButton();
-        testBtn.width = 20;
+        testBtn.width = layoutHelper.dp(20);
         dockModule.DockLayout.setDock(testBtn, enums.Dock.right);
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
@@ -85,7 +86,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public test_dock_top() {
         var testBtn = new helper.MyButton();
-        testBtn.height = 20;
+        testBtn.height = layoutHelper.dp(20);
         dockModule.DockLayout.setDock(testBtn, enums.Dock.top);
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
@@ -97,7 +98,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public test_dock_button() {
         var testBtn = new helper.MyButton();
-        testBtn.height = 20;
+        testBtn.height = layoutHelper.dp(20);
         dockModule.DockLayout.setDock(testBtn, enums.Dock.bottom);
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
@@ -118,21 +119,21 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public test_dock_left_top_righ_bottom_fill() {
         var testBtnLeft = new helper.MyButton();
-        testBtnLeft.width = 20;
+        testBtnLeft.width = layoutHelper.dp(20);
         this.testView.addChild(testBtnLeft);
 
         var testBtnTop = new helper.MyButton();
-        testBtnTop.height = 20;
+        testBtnTop.height = layoutHelper.dp(20);
         dockModule.DockLayout.setDock(testBtnTop, enums.Dock.top);
         this.testView.addChild(testBtnTop);
 
         var testBtnRight = new helper.MyButton();
-        testBtnRight.width = 20;
+        testBtnRight.width = layoutHelper.dp(20);
         dockModule.DockLayout.setDock(testBtnRight, enums.Dock.right);
         this.testView.addChild(testBtnRight);
 
         var testBtnBottom = new helper.MyButton();
-        testBtnBottom.height = 20;
+        testBtnBottom.height = layoutHelper.dp(20);
         dockModule.DockLayout.setDock(testBtnBottom, enums.Dock.bottom);
         this.testView.addChild(testBtnBottom);
 
@@ -152,10 +153,10 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
     public test_padding() {
         var testBtn = new helper.MyButton();
         this.testView.addChild(testBtn);
-        this.testView.paddingLeft = 10;
-        this.testView.paddingTop = 20;
-        this.testView.paddingRight = 30;
-        this.testView.paddingBottom = 40;
+        this.testView.paddingLeft = layoutHelper.dp(10);
+        this.testView.paddingTop = layoutHelper.dp(20);
+        this.testView.paddingRight = layoutHelper.dp(30);
+        this.testView.paddingBottom = layoutHelper.dp(40);
 
         this.waitUntilTestElementLayoutIsValid();
 

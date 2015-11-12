@@ -50,6 +50,16 @@
          * Gets display density for the current device.
          */
         export function getDisplayDensity(): number;
+        /**
+         * Convert value to device pixels.
+         * @param value - The pixel to convert.
+         */
+        export function toDevicePixels(value: number): number;
+        /**
+         * Convert value to device independent pixels.
+         * @param value - The pixel to convert.
+         */
+        export function toDeviceIndependentPixels(value: number): number;
     }
 
     /**

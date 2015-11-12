@@ -41,8 +41,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         //```
         // </snippet>
 
-        wrapLayout.width = 200;
-        wrapLayout.height = 200;
+        wrapLayout.width = layoutHelper.dp(200);
+        wrapLayout.height = layoutHelper.dp(200);
 
         var label;
         var i;
@@ -51,8 +51,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
             label.text = "" + i;
             label.id = "" + i;
 
-            label.width = 100;
-            label.height = 100;
+            label.width = layoutHelper.dp(100);
+            label.height = layoutHelper.dp(100);
             wrapLayout.addChild(label);
         }
 
@@ -67,14 +67,14 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         let actualValue = this.testView.getChildAt(0)._getCurrentLayoutBounds();
         TKUnit.assertEqual(actualValue.left, 0, "ActualLeft on Index 0");
         TKUnit.assertEqual(actualValue.top, 0, "ActualTop on Index 0");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight on Index 0");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom on Index 0");
+        TKUnit.assertEqual(actualValue.right, 100, "ActualRight on Index 0");
+        TKUnit.assertEqual(actualValue.bottom, 100, "ActualBottom on Index 0");
 
         actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds();
-        TKUnit.assertEqual(actualValue.left, layoutHelper.dip(100), "ActualLeft on Index 1");
+        TKUnit.assertEqual(actualValue.left, 100, "ActualLeft on Index 1");
         TKUnit.assertEqual(actualValue.top, 0, "ActualTop on Index 1");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(200), "ActualRight on Index 1");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom on Index 1");
+        TKUnit.assertEqual(actualValue.right, 200, "ActualRight on Index 1");
+        TKUnit.assertEqual(actualValue.bottom, 100, "ActualBottom on Index 1");
     }
 
     public testVerticalOrientation() {
@@ -90,14 +90,14 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         let actualValue = this.testView.getChildAt(0)._getCurrentLayoutBounds();
         TKUnit.assertEqual(actualValue.left, 0, "ActualLeft on Index 0");
         TKUnit.assertEqual(actualValue.top, 0, "ActualTop on Index 0");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight on Index 0");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom on Index 0");
+        TKUnit.assertEqual(actualValue.right, 100, "ActualRight on Index 0");
+        TKUnit.assertEqual(actualValue.bottom, 100, "ActualBottom on Index 0");
 
         actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds();
         TKUnit.assertEqual(actualValue.left, 0, "ActualLeft on Index 1");
-        TKUnit.assertEqual(actualValue.top, layoutHelper.dip(100), "ActualTop on Index 1");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight on Index 1");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(200), "ActualBottom on Index 1");
+        TKUnit.assertEqual(actualValue.top, 100, "ActualTop on Index 1");
+        TKUnit.assertEqual(actualValue.right, 100, "ActualRight on Index 1");
+        TKUnit.assertEqual(actualValue.bottom, 200, "ActualBottom on Index 1");
     }
 
     public testChangeOrientation() {
@@ -109,60 +109,60 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         let actualValue = this.testView.getChildAt(0)._getCurrentLayoutBounds();
         TKUnit.assertEqual(actualValue.left, 0, "ActualLeft on Index 0");
         TKUnit.assertEqual(actualValue.top, 0, "ActualTop on Index 0");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight on Index 0");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(100), "ActualBottom on Index 0");
+        TKUnit.assertEqual(actualValue.right, 100, "ActualRight on Index 0");
+        TKUnit.assertEqual(actualValue.bottom, 100, "ActualBottom on Index 0");
 
         actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds();
         TKUnit.assertEqual(actualValue.left, 0, "ActualLeft on Index 1");
-        TKUnit.assertEqual(actualValue.top, layoutHelper.dip(100), "ActualTop on Index 1");
-        TKUnit.assertEqual(actualValue.right, layoutHelper.dip(100), "ActualRight on Index 1");
-        TKUnit.assertEqual(actualValue.bottom, layoutHelper.dip(200), "ActualBottom on Index 1");
+        TKUnit.assertEqual(actualValue.top, 100, "ActualTop on Index 1");
+        TKUnit.assertEqual(actualValue.right, 100, "ActualRight on Index 1");
+        TKUnit.assertEqual(actualValue.bottom, 200, "ActualBottom on Index 1");
     }
 
     public testItemWidth() {
-        this.testView.itemWidth = 50;
+        this.testView.itemWidth = layoutHelper.dp(50);
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().left;
-        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualLeft on Index 1");
+        TKUnit.assertEqual(actualValue, 50, "ActualLeft on Index 1");
     }
 
     public testChangeItemWidth() {
         this.waitUntilTestElementLayoutIsValid();
-        this.testView.itemWidth = 50;
+        this.testView.itemWidth = layoutHelper.dp(50);
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().left;
-        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualLeft on Index 1");
+        TKUnit.assertEqual(actualValue, 50, "ActualLeft on Index 1");
     }
 
     public testItemHeight() {
-        this.testView.itemHeight = 50;
+        this.testView.itemHeight = layoutHelper.dp(50);
         this.testView.orientation = enums.Orientation.vertical;
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().top;
-        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualTop on Index 1");
+        TKUnit.assertEqual(actualValue, 50, "ActualTop on Index 1");
     }
 
     public testChangeItemHeight() {
         this.testView.orientation = enums.Orientation.vertical;
         this.waitUntilTestElementLayoutIsValid();
-        this.testView.itemHeight = 50;
+        this.testView.itemHeight = layoutHelper.dp(50);
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().top;
-        TKUnit.assertEqual(actualValue, layoutHelper.dip(50), "ActualTop on Index 1");
+        TKUnit.assertEqual(actualValue, 50, "ActualTop on Index 1");
     }
 
     public testPaddingLeftAndTop() {
         this.testView.removeChildren();
-        this.testView.paddingLeft = 20;
-        this.testView.paddingTop = 30;
+        this.testView.paddingLeft = layoutHelper.dp(20);
+        this.testView.paddingTop = layoutHelper.dp(30);
 
         var btn = new layoutHelper.MyButton();
-        btn.width = 50;
-        btn.height = 50;
+        btn.width = layoutHelper.dp(50);
+        btn.height = layoutHelper.dp(50);
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -172,17 +172,17 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testPaddingRight() {
         this.testView.removeChildren();
-        this.testView.paddingRight = 30;
-        this.testView.width = 200;
+        this.testView.paddingRight = layoutHelper.dp(30);
+        this.testView.width = layoutHelper.dp(200);
 
         var btn1 = new layoutHelper.MyButton();
         this.testView.addChild(btn1);
-        btn1.width = 100;
-        btn1.height = 50;
+        btn1.width = layoutHelper.dp(100);
+        btn1.height = layoutHelper.dp(50);
 
         var btn2 = new layoutHelper.MyButton();
-        btn2.width = 80;
-        btn2.height = 50;
+        btn2.width = layoutHelper.dp(80);
+        btn2.height = layoutHelper.dp(50);
         this.testView.addChild(btn2);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -198,18 +198,18 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testPaddingBottom() {
         this.testView.removeChildren();
-        this.testView.paddingBottom = 30;
-        this.testView.height = 200;
+        this.testView.paddingBottom = layoutHelper.dp(30);
+        this.testView.height = layoutHelper.dp(200);
         this.testView.orientation = enums.Orientation.vertical;
 
         var btn1 = new layoutHelper.MyButton();
         this.testView.addChild(btn1);
-        btn1.width = 50;
-        btn1.height = 100;
+        btn1.width = layoutHelper.dp(50);
+        btn1.height = layoutHelper.dp(100);
 
         var btn2 = new layoutHelper.MyButton();
-        btn2.width = 50;
-        btn2.height = 80;
+        btn2.width = layoutHelper.dp(50);
+        btn2.height = layoutHelper.dp(80);
         this.testView.addChild(btn2);
 
         this.waitUntilTestElementLayoutIsValid();

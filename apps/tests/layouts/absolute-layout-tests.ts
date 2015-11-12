@@ -56,15 +56,15 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
     public testAll() {
 
         let absoluteLayout = this.testView;
-        absoluteLayout.width = 230;
-        absoluteLayout.height = 230;
+        absoluteLayout.width = layoutHelper.dp(230);
+        absoluteLayout.height = layoutHelper.dp(230);
         absoluteLayout.style.backgroundColor = new colorModule.Color("LightGray");
         let label = new labelModule.Label();
-
-        absoluteLayoutModule.AbsoluteLayout.setLeft(label, 10);
-        absoluteLayoutModule.AbsoluteLayout.setTop(label, 10);
-        label.width = 100;
-        label.height = 100;
+        
+        absoluteLayoutModule.AbsoluteLayout.setLeft(label, layoutHelper.dp(10));
+        absoluteLayoutModule.AbsoluteLayout.setTop(label, layoutHelper.dp(10));
+        label.width = layoutHelper.dp(100);
+        label.height = layoutHelper.dp(100);
         label.text = "LT";
         label.style.backgroundColor = new colorModule.Color("Red");
         absoluteLayout.addChild(label);
@@ -74,25 +74,25 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
         let actualValue = label._getCurrentLayoutBounds();
         let width = actualValue.right - actualValue.left;
         let height = actualValue.bottom - actualValue.top;
-        TKUnit.assertEqual(actualValue.left, layoutHelper.dip(10), "ActualLeft");
-        TKUnit.assertEqual(actualValue.top, layoutHelper.dip(10), "ActualTop");
-        TKUnit.assertEqual(width, layoutHelper.dip(100), "ActualWidth");
-        TKUnit.assertEqual(height, layoutHelper.dip(100), "Actualheight");
+        TKUnit.assertEqual(actualValue.left, 10, "ActualLeft");
+        TKUnit.assertEqual(actualValue.top, 10, "ActualTop");
+        TKUnit.assertEqual(width, 100, "ActualWidth");
+        TKUnit.assertEqual(height, 100, "Actualheight");
     }
 
     public test_padding() {
         let absoluteLayout = this.testView;
-        absoluteLayout.width = 200;
-        absoluteLayout.height = 200;
-        absoluteLayout.paddingLeft = 5;
-        absoluteLayout.paddingTop = 15;
+        absoluteLayout.width = layoutHelper.dp(200);
+        absoluteLayout.height = layoutHelper.dp(200);
+        absoluteLayout.paddingLeft = layoutHelper.dp(5);
+        absoluteLayout.paddingTop = layoutHelper.dp(15);
 
         // Left Top
         let btn = new layoutHelper.MyButton();
-        btn.width = 100;
-        btn.height = 100;
-        absoluteLayoutModule.AbsoluteLayout.setLeft(btn, 20);
-        absoluteLayoutModule.AbsoluteLayout.setTop(btn, 20);
+        btn.width = layoutHelper.dp(100);
+        btn.height = layoutHelper.dp(100);
+        absoluteLayoutModule.AbsoluteLayout.setLeft(btn, layoutHelper.dp(20));
+        absoluteLayoutModule.AbsoluteLayout.setTop(btn, layoutHelper.dp(20));
         absoluteLayout.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();

@@ -119,7 +119,10 @@ export function assertLayout(btn: MyButton, left: number, top: number, width: nu
     TKUnit.assertAreClose(Math.floor(btn.layoutHeight / density), height, delta, name + "height");
 }
 
+export function dp(value: number): number {
+    return utils.layout.toDeviceIndependentPixels(value);
+}
+
 export function dip(value: number): number {
-    var density = utils.layout.getDisplayDensity();
-    return Math.floor(value * density);
+    return utils.layout.toDevicePixels(value);
 }

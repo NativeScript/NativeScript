@@ -7,6 +7,7 @@ import navHelper = require("../ui/helper");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 import testModule = require("../ui-test");
+import layoutHelper = require("./layout-helper");
 
 export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
@@ -38,7 +39,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         this.waitUntilTestElementLayoutIsValid();
 
         var arrangeCount = this.rootLayout.arrangeCount;
-        TKUnit.assert(this.rootLayout.orientation === enums.Orientation.vertical, "Default orientation should be Vertical.");
+        TKUnit.assertEqual(this.rootLayout.orientation, enums.Orientation.vertical, "Default orientation should be Vertical.");
 
         this.rootLayout.orientation = enums.Orientation.horizontal;
         this.waitUntilTestElementLayoutIsValid();
@@ -51,8 +52,8 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.rootLayout.orientation, enums.Orientation.vertical, "StackLayout should be vertical.");
-        TKUnit.assert(this.rootLayout.measured, "Layout should be measured.");
-        TKUnit.assert(this.rootLayout.arranged, "Layout should be arranged.");
+        TKUnit.assertTrue(this.rootLayout.measured, "Layout should be measured.");
+        TKUnit.assertTrue(this.rootLayout.arranged, "Layout should be arranged.");
 
         var specs = this.btn1._getCurrentMeasureSpecs();
 
@@ -97,16 +98,16 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     }
 
     public test_Padding_Vertical() {
-        this.rootLayout.width = 300;
-        this.rootLayout.height = 300;
+        this.rootLayout.width = layoutHelper.dp(300);
+        this.rootLayout.height = layoutHelper.dp(300);
 
-        this.rootLayout.paddingLeft = 10;
-        this.rootLayout.paddingTop = 20;
-        this.rootLayout.paddingRight = 30;
-        this.rootLayout.paddingBottom = 40;
+        this.rootLayout.paddingLeft = layoutHelper.dp(10);
+        this.rootLayout.paddingTop = layoutHelper.dp(20);
+        this.rootLayout.paddingRight = layoutHelper.dp(30);
+        this.rootLayout.paddingBottom = layoutHelper.dp(40);
 
-        this.btn1.height = 50;
-        this.btn2.height = 50;
+        this.btn1.height = layoutHelper.dp(50);
+        this.btn2.height = layoutHelper.dp(50);
 
         this.waitUntilTestElementLayoutIsValid();
 
@@ -118,17 +119,17 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     }
 
     public test_Padding_Horizontal() {
-        this.rootLayout.width = 300;
-        this.rootLayout.height = 300;
+        this.rootLayout.width = layoutHelper.dp(300);
+        this.rootLayout.height = layoutHelper.dp(300);
         this.rootLayout.orientation = enums.Orientation.horizontal;
 
-        this.rootLayout.paddingLeft = 10;
-        this.rootLayout.paddingTop = 20;
-        this.rootLayout.paddingRight = 30;
-        this.rootLayout.paddingBottom = 40;
+        this.rootLayout.paddingLeft = layoutHelper.dp(10);
+        this.rootLayout.paddingTop = layoutHelper.dp(20);
+        this.rootLayout.paddingRight = layoutHelper.dp(30);
+        this.rootLayout.paddingBottom = layoutHelper.dp(40);
 
-        this.btn1.width = 50;
-        this.btn2.width = 50;
+        this.btn1.width = layoutHelper.dp(50);
+        this.btn2.width = layoutHelper.dp(50);
 
         this.waitUntilTestElementLayoutIsValid();
 
