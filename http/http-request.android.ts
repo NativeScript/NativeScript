@@ -45,7 +45,13 @@ function onRequestComplete(requestId: number, result: com.tns.Async.Http.Request
     callbacks.resolveCallback({
         content: {
             raw: result.raw,
-            toString: () => { return result.responseAsString; },
+            toString: () => {
+                if (types.isString(result.responseAsString)) {
+                    return result.responseAsString;
+                } else {
+                    throw new Error("Response content may not be converted to string");
+                }
+            },
             toJSON: () => { return utils.parseJSON(result.responseAsString); },
             toImage: () => {
                 return new Promise<imageSource.ImageSource>((resolveImage, rejectImage) => {
