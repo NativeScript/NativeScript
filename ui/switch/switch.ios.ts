@@ -1,6 +1,8 @@
 ﻿import common = require("./switch-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import utils = require("utils/utils");
+import viewModule = require("ui/core/view");
 
 function onCheckedPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var swtch = <Switch>data.object;
@@ -48,5 +50,15 @@ export class Switch extends common.Switch {
 
     get ios(): UISwitch {
         return this._ios;
+    }
+
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        // It can't be anything different from 51x31
+        let nativeSize = this._nativeView.sizeThatFits(CGSizeMake(0, 0));
+        this.width = nativeSize.width;
+        this.height = nativeSize.height;
+        let widthAndState = utils.layout.makeMeasureSpec(nativeSize.width, utils.layout.EXACTLY);
+        let heightAndState = utils.layout.makeMeasureSpec(nativeSize.height, utils.layout.EXACTLY);
+        this.setMeasuredDimension(widthAndState, heightAndState);
     }
 } 
