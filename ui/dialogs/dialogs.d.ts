@@ -120,6 +120,12 @@ declare module "ui/dialogs" {
          * Gets or sets the dialog message.
          */
         message?: string;
+		
+		/**
+		 * Sets if the Android dialog can be canceled via clicking outside of it
+		 * defaults to true.
+		 */
+		cancelable?: boolean;
     }
 
     /**
