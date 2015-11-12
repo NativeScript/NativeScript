@@ -238,6 +238,18 @@ function _getUIGestureRecognizerType(type: definition.GestureTypes): any {
     return nativeType;
 }
 
+function getState(recognizer: UIGestureRecognizer) {
+    if (recognizer.state === UIGestureRecognizerState.UIGestureRecognizerStateBegan) {
+        return common.GestureStateTypes.began;
+    } else if (recognizer.state === UIGestureRecognizerState.UIGestureRecognizerStateCancelled) {
+        return common.GestureStateTypes.cancelled;
+    } else if (recognizer.state === UIGestureRecognizerState.UIGestureRecognizerStateChanged) {
+        return common.GestureStateTypes.changed;
+    } else if (recognizer.state === UIGestureRecognizerState.UIGestureRecognizerStateEnded) {
+        return common.GestureStateTypes.ended;
+    }
+}
+
 function _getSwipeDirection(direction: UISwipeGestureRecognizerDirection): definition.SwipeDirection {
     if (direction === UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionDown) {
         return definition.SwipeDirection.down;
@@ -259,7 +271,8 @@ function _getPinchData(args: definition.GestureEventData): definition.PinchGestu
         android: undefined,
         scale: recognizer.scale,
         object: args.view,
-        eventName: definition.toString(args.type)
+        eventName: definition.toString(args.type),
+        state: getState(recognizer)
     };
 }
 
@@ -272,7 +285,8 @@ function _getSwipeData(args: definition.GestureEventData): definition.SwipeGestu
         android: undefined,
         direction: _getSwipeDirection(recognizer.direction),
         object: args.view,
-        eventName: definition.toString(args.type)
+        eventName: definition.toString(args.type),
+        state: getState(recognizer)
     };
 }
 
@@ -286,7 +300,8 @@ function _getPanData(args: definition.GestureEventData, view: UIView): definitio
         deltaX: recognizer.translationInView(view).x,
         deltaY: recognizer.translationInView(view).y,
         object: args.view,
-        eventName: definition.toString(args.type)
+        eventName: definition.toString(args.type),
+        state: getState(recognizer)
     };
 }
 
@@ -299,6 +314,7 @@ function _getRotationData(args: definition.GestureEventData): definition.Rotatio
         android: undefined,
         rotation: recognizer.rotation * (180.0 / Math.PI),
         object: args.view,
-        eventName: definition.toString(args.type)
+        eventName: definition.toString(args.type),
+        state: getState(recognizer)
     };
 }

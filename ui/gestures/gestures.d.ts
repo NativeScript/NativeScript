@@ -40,6 +40,28 @@ declare module "ui/gestures" {
     }
 
     /**
+     * Defines an enum with supported gesture types.
+     */
+    export enum GestureStateTypes {
+        /**
+         * Gesture cancelled.
+         */
+        cancelled,
+        /**
+         * Gesture began.
+         */
+        began,
+        /**
+         * Gesture changed.
+         */
+        changed,
+        /**
+         * Gesture ended.
+         */
+        ended
+    }
+
+    /**
      * Defines an enum for swipe gesture direction.
      */
     export enum SwipeDirection {
@@ -86,21 +108,28 @@ declare module "ui/gestures" {
     /**
      * Provides gesture event data for pinch gesture.
      */
-    export interface PinchGestureEventData extends GestureEventData {
+    export interface GestureEventDataWithState extends GestureEventData {
+        state: number;
+    }
+
+    /**
+     * Provides gesture event data for pinch gesture.
+     */
+    export interface PinchGestureEventData extends GestureEventDataWithState {
         scale: number;
     }
 
     /**
      * Provides gesture event data for swipe gesture.
      */
-    export interface SwipeGestureEventData extends GestureEventData {
+    export interface SwipeGestureEventData extends GestureEventDataWithState {
         direction: SwipeDirection;
     }
 
     /**
      * Provides gesture event data for pan gesture.
      */
-    export interface PanGestureEventData extends GestureEventData {
+    export interface PanGestureEventData extends GestureEventDataWithState {
         deltaX: number;
         deltaY: number;
     }
@@ -108,7 +137,7 @@ declare module "ui/gestures" {
     /**
      * Provides gesture event data for rotation gesture.
      */
-    export interface RotationGestureEventData extends GestureEventData {
+    export interface RotationGestureEventData extends GestureEventDataWithState {
         rotation: number;
     }
 
