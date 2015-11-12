@@ -2,7 +2,7 @@
   <ScrollView>
     <StackLayout width="50">
       <Button text="Change" tap="butonTap" />
-      <Label text="Text Text" style.whiteSpace="normal" loaded="loaded"/>
+      <Label id="Label1" text="Text Text" style.whiteSpace="normal" />
 
       <Label text="Label Normal" style="white-space:normal" />
       <Label text="Label Nowrap" style="white-space:nowrap" />

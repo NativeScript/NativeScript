@@ -2,7 +2,7 @@
   <ScrollView>
     <StackLayout>
       <Button text="Change" tap="butonTap" />
-      <Label text="Text" style.textDecoration="underline" loaded="loaded"/>
+      <Label id="Label1" text="Text" style.textDecoration="underline" />
 
       <Label text="Label" style="text-decoration:none" />
       <Label text="Label" style="text-decoration:underline" />

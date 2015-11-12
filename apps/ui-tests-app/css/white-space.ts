@@ -1,13 +1,14 @@
-﻿var obj;
+﻿import view = require("ui/core/view");
+import observable = require("data/observable");
+import label = require("ui/label");
 
-export function loaded(args) {
-    obj = args.object;
-}
+export function butonTap(args: observable.EventData) {
+    var btn = <view.View>args.object;
+    var lbl = <label.Label>btn.parent.getViewById("Label1");
 
-export function butonTap(args) {
-    if (obj.style.whiteSpace === "normal") {
-        obj.style.whiteSpace = "nowrap";
-    } else if (obj.style.whiteSpace === "nowrap") {
-        obj.style.whiteSpace = "normal";
+    if (lbl.style.whiteSpace === "normal") {
+        lbl.style.whiteSpace = "nowrap";
+    } else if (lbl.style.whiteSpace === "nowrap") {
+        lbl.style.whiteSpace = "normal";
     }
 }
