@@ -160,6 +160,15 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
         cell.highlighted = false;
         return indexPath;
     }
+
+    public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
+        let owner = this._owner.get();
+        if (!owner) {
+            return DEFAULT_HEIGHT;
+        }
+
+        return owner.rowHeight;
+    }
 }
 
 function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {

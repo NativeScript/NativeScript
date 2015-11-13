@@ -265,7 +265,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         let owner = this._owner.get();
         if (owner) {
             owner.onLoaded();
-    }
+        }
     }
 
     public viewDidLayoutSubviews(): void {
@@ -273,7 +273,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         if (owner) {
             trace.write(this._owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
             owner._updateLayout();
-    }
+        }
     }
 
     public navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
