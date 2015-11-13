@@ -16,7 +16,7 @@ interface TextUIView {
     font: UIFont;
     textAlignment: number;
     textColor: UIColor;
-    text : string;
+    text: string;
     attributedText: NSAttributedString;
     lineBreakMode: number;
     numberOfLines: number;
@@ -266,6 +266,15 @@ export class ButtonStyler implements definition.stylers.Styler {
         setTextDecoration((<UIButton>view.ios).titleLabel, enums.TextDecoration.none);
     }
 
+    // text-transform
+    private static setTextTransformProperty(view: view.View, newValue: any) {
+        setTextTransform(view.ios, newValue);
+    }
+
+    private static resetTextTransformProperty(view: view.View, nativeValue: any) {
+        setTextTransform(view.ios, enums.TextTransform.none);
+    }
+
     // white-space
     private static setWhiteSpaceProperty(view: view.View, newValue: any) {
         setWhiteSpace((<UIButton>view.ios).titleLabel, newValue, view.ios);
@@ -298,6 +307,10 @@ export class ButtonStyler implements definition.stylers.Styler {
         style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
             ButtonStyler.setTextDecorationProperty,
             ButtonStyler.resetTextDecorationProperty), "Button");
+
+        style.registerHandler(style.textTransformProperty, new stylersCommon.StylePropertyChangedHandler(
+            ButtonStyler.setTextTransformProperty,
+            ButtonStyler.resetTextTransformProperty), "Button");
 
         style.registerHandler(style.whiteSpaceProperty, new stylersCommon.StylePropertyChangedHandler(
             ButtonStyler.setWhiteSpaceProperty,
@@ -346,6 +359,15 @@ export class TextBaseStyler implements definition.stylers.Styler {
         setTextDecoration(view._nativeView, enums.TextDecoration.none);
     }
 
+    // text-transform
+    private static setTextTransformProperty(view: view.View, newValue: any) {
+        setTextTransform(view._nativeView, newValue);
+    }
+
+    private static resetTextTransformProperty(view: view.View, nativeValue: any) {
+        setTextTransform(view._nativeView, enums.TextTransform.none);
+    }
+
     // white-space
     private static setWhiteSpaceProperty(view: view.View, newValue: any) {
         setWhiteSpace(view._nativeView, newValue);
@@ -390,6 +412,10 @@ export class TextBaseStyler implements definition.stylers.Styler {
         style.registerHandler(style.textDecorationProperty, new stylersCommon.StylePropertyChangedHandler(
             TextBaseStyler.setTextDecorationProperty,
             TextBaseStyler.resetTextDecorationProperty), "TextBase");
+
+        style.registerHandler(style.textTransformProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextBaseStyler.setTextTransformProperty,
+            TextBaseStyler.resetTextTransformProperty), "TextBase");
 
         style.registerHandler(style.whiteSpaceProperty, new stylersCommon.StylePropertyChangedHandler(
             TextBaseStyler.setWhiteSpaceProperty,
@@ -954,6 +980,91 @@ function setTextDecoration(view: TextUIView, value: string) {
         setTextDecorationNative(view, view.text || view.attributedText, attributes);
     } else {
         setTextDecorationNative(view, view.text || view.attributedText, NSMutableDictionary.alloc().init());
+    }
+}
+
+function setTextTransform(view: TextUIView, value: string) {
+    let str = getNSStringFromView(view);
+    let result: string;
+
+    switch (value) {
+        case enums.TextTransform.none:
+        default:
+            result = view["originalString"] || str;
+            break;
+        case enums.TextTransform.uppercase:
+            result = str.uppercaseString;
+            break;
+        case enums.TextTransform.lowercase:
+            result = str.lowercaseString;
+            break;
+        case enums.TextTransform.capitalize:
+            result = str.capitalizedString;
+            break;
+    }
+
+    if (!view["originalString"]) {
+        view["originalString"] = str;
+    }
+
+    let newStr = getAttributedStringFromView(view, result);
+
+    if (newStr) {
+        setAttributedStringToView(view, newStr);
+    } else {
+        setStringToView(view, result);
+    }
+}
+
+function getNSStringFromView(view: any): NSString {
+    let result: string;
+
+    if (view instanceof UIButton) {
+        let attrTitle = (<UIButton>view).titleLabel.attributedText;
+        result = attrTitle ? attrTitle.string : (<UIButton>view).titleLabel.text;
+    }
+    else {
+        let attrText = (<UITextView>view).attributedText;
+        result = attrText ? attrText.string : (<UITextView>view).text;
+    }
+
+    return NSString.alloc().initWithString(result || "");
+}
+
+function setStringToView(view: any, str: string) {
+    if (view instanceof UIButton) {
+        (<UIButton>view).setTitleForState(str, UIControlState.UIControlStateNormal);
+    }
+    else {
+        (<TextUIView>view).text = str;
+    }
+}
+
+function getAttributedStringFromView(view: any, value: string): NSMutableAttributedString {
+    let result: NSMutableAttributedString;
+
+    if (view instanceof UIButton) {
+        let attrTitle = (<UIButton>view).titleLabel.attributedText;
+        if (attrTitle) {
+            result = NSMutableAttributedString.alloc().initWithAttributedString(attrTitle);
+        }
+    } else if (view.attributedText) {
+        result = NSMutableAttributedString.alloc().initWithAttributedString(view.attributedText);
+    }
+
+    if (result) {
+        result.replaceCharactersInRangeWithString({ location: 0, length: result.length }, value);
+    }
+
+    return result;
+}
+
+function setAttributedStringToView(view: any, str: NSMutableAttributedString) {
+    if (view instanceof UIButton) {
+        (<UIButton>view).setAttributedTitleForState(str, UIControlState.UIControlStateNormal);
+    }
+    else {
+        (<TextUIView>view).attributedText = str;
     }
 }
 

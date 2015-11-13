@@ -29,6 +29,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         let owner = this._owner.get();
         if (owner) {
             owner.style._updateTextDecoration();
+            owner.style._updateTextTransform();
         }
     }
 
@@ -41,6 +42,9 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 
             owner.dismissSoftInput();
             owner._refreshHintState(owner.hint, textView.text);
+
+            owner.style._updateTextDecoration();
+            owner.style._updateTextTransform();
         }
     }
 
@@ -49,6 +53,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         if (owner) {
             var range = textView.selectedRange;
             owner.style._updateTextDecoration();
+            owner.style._updateTextTransform();
             textView.selectedRange = range;
 
             if (owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {

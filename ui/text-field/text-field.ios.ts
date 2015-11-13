@@ -72,6 +72,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 
             var r = textField.selectedTextRange;
             owner.style._updateTextDecoration();
+            owner.style._updateTextTransform();
             textField.selectedTextRange = r;
 
             if (owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {

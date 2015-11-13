@@ -245,6 +245,10 @@ function isTextDecorationValid(value: string): boolean {
     return values.indexOf(enums.TextDecoration.none) !== -1 || values.indexOf(enums.TextDecoration.underline) !== -1 || values.indexOf(enums.TextDecoration.lineThrough) !== -1;
 }
 
+function isTextTransformValid(value: string): boolean {
+    return value === enums.TextTransform.none || value === enums.TextTransform.uppercase || value === enums.TextTransform.lowercase || value === enums.TextTransform.capitalize;
+}
+
 function isWhiteSpaceValid(value: string): boolean {
     return value === enums.WhiteSpace.nowrap || value === enums.WhiteSpace.normal;
 }
@@ -553,6 +557,13 @@ export class Style extends DependencyObservable implements styling.Style {
         this._setValue(textDecorationProperty, value);
     }
 
+    get textTransform(): string {
+        return this._getValue(textTransformProperty);
+    }
+    set textTransform(value: string) {
+        this._setValue(textTransformProperty, value);
+    }
+
     get whiteSpace(): string {
         return this._getValue(whiteSpaceProperty);
     }
@@ -563,6 +574,12 @@ export class Style extends DependencyObservable implements styling.Style {
     public _updateTextDecoration() {
         if (this._getValue(textDecorationProperty) !== enums.TextDecoration.none) {
             this._applyProperty(textDecorationProperty, this._getValue(textDecorationProperty));
+        }
+    }
+
+    public _updateTextTransform() {
+        if (this._getValue(textTransformProperty) !== enums.TextTransform.none) {
+            this._applyProperty(textTransformProperty, this._getValue(textTransformProperty));
         }
     }
 
@@ -820,6 +837,9 @@ export var opacityProperty = new styleProperty.Property("opacity", "opacity",
 
 export var textDecorationProperty = new styleProperty.Property("textDecoration", "text-decoration",
     new PropertyMetadata(enums.TextDecoration.none, PropertyMetadataSettings.None, undefined, isTextDecorationValid), converters.textDecorationConverter);
+
+export var textTransformProperty = new styleProperty.Property("textTransform", "text-transform",
+    new PropertyMetadata(enums.TextTransform.none, PropertyMetadataSettings.None, undefined, isTextTransformValid), converters.textTransformConverter);
 
 export var whiteSpaceProperty = new styleProperty.Property("whiteSpace", "white-space",
     new PropertyMetadata(undefined, AffectsLayout, undefined, isWhiteSpaceValid), converters.whiteSpaceConverter);

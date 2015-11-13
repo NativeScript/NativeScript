@@ -202,8 +202,8 @@ export function assertNotEqual(actual: any, expected: any, message?: string) {
 }
 
 export function assertEqual(actual: any, expected: any, message?: string) {
-    if (!types.isUndefined(actual)
-        && !types.isUndefined(expected)
+    if (!types.isNullOrUndefined(actual)
+        && !types.isNullOrUndefined(expected)
         && types.getClass(actual) === types.getClass(expected)
         && types.isFunction(actual.equals)) {
 

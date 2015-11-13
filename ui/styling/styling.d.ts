@@ -199,6 +199,7 @@
         opacity: number;
 
         textDecoration: string;
+        textTransform: string;
         whiteSpace: string;
 
         //@private
@@ -209,6 +210,7 @@
         public _inheritStyleProperty(property: dependencyObservable.Property): void;
         public _inheritStyleProperties(): void;
         public _updateTextDecoration(): void;
+        public _updateTextTransform(): void;
         //@endprivate
     }
 

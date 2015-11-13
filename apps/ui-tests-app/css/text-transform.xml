@@ -1,0 +1,32 @@
+﻿<Page >
+  <ScrollView>
+    <StackLayout>
+      <Button text="Change" tap="butonTap" />
+      <Label id="Label1" text="text Text" style="text-transform:none" />
+
+      <Label text="label label" style="text-transform:none" />
+      <Label text="label label" style="text-transform:capitalize" />
+      <Label text="label label" style="text-transform:uppercase" />
+      <Label text="label label" style="text-transform:lowercase" />
+
+      <TextField text="textField textField" style="text-transform:none" />
+      <TextField text="textField textField" style="text-transform:capitalize" />
+      <TextField text="textField textField" style="text-transform:uppercase;" />
+      <TextField text="textField textField" style="text-transform:lowercase" />
+      <TextField text="textField textField" style="text-transform:uppercase; text-decoration:underline;" />
+
+      <TextView text="textView textView" style="text-transform:none" />
+      <TextView text="textView textView" style="text-transform:capitalize" />
+      <TextView text="textView textView" style="text-transform:uppercase" />
+      <TextView text="textView textView" style="text-transform:lowercase" />
+      <TextView text="textView textView" style="text-transform:uppercase; text-decoration:underline;" />
+
+      <Button text="button Button" style="text-transform:none" />
+      <Button text="button Button" style="text-transform:capitalize" />
+      <Button text="button Button" style="text-transform:uppercase" />
+      <Button text="button Button" style="text-transform:lowercase" />
+      <Button text="button Button" style="text-transform:uppercase; text-decoration:underline;" />
+
+    </StackLayout>
+  </ScrollView>
+</Page>
