@@ -264,6 +264,14 @@ var inheritanceTestProperty = new dependensyObservable.Property(
     new proxy.PropertyMetadata(inheritanceTestDefaultValue, dependensyObservable.PropertyMetadataSettings.Inheritable)
     );
 
+var booleanInheritanceTestDefaultValue = true;
+
+var booleanInheritanceTestProperty = new dependensyObservable.Property(
+    "booleanInheritanceTest",
+    "TestView",
+    new proxy.PropertyMetadata(booleanInheritanceTestDefaultValue, dependensyObservable.PropertyMetadataSettings.Inheritable)
+);
+
 var dummyProperty = new dependensyObservable.Property(
     "dummy",
     "TestView",
@@ -293,6 +301,13 @@ class TestView extends layoutModule.Layout {
         this._setValue(inheritanceTestProperty, value);
     }
 
+    get booleanInheritanceTest(): boolean {
+        return this._getValue(booleanInheritanceTestProperty);
+    }
+    set booleanInheritanceTest(value: boolean) {
+        this._setValue(booleanInheritanceTestProperty, value);
+    }
+
     get dummy(): number {
         return this._getValue(dummyProperty);
     }
@@ -319,6 +334,25 @@ export var test_InheritableProperties_getValuesFromParent = function () {
 
     var firstView = new TestView("firstView");
     firstView.inheritanceTest = testValue;
+    var secondView = new TestView("secondView");
+    var thirdView = new TestView("thirdView");
+
+    firstView.addChild(secondView);
+    secondView.addChild(thirdView);
+
+    helper.do_PageTest(test, firstView, secondView, thirdView);
+}
+
+export var test_BooleanInheritableProperties_getValuesFromParent = function () {
+    var testValue = false;
+    var test = function (views: Array<viewModule.View>) {
+        var bottomView = <TestView>views[3]
+
+        TKUnit.assert(bottomView.booleanInheritanceTest === testValue, "Expected: " + testValue + " Actual: " + bottomView.booleanInheritanceTest);
+    }
+
+    var firstView = new TestView("firstView");
+    firstView.booleanInheritanceTest = testValue;
     var secondView = new TestView("secondView");
     var thirdView = new TestView("thirdView");
 

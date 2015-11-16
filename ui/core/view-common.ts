@@ -977,9 +977,7 @@ export class View extends proxy.ProxyObject implements definition.View {
             }
             if (property.metadata && property.metadata.inheritable) {
                 var baseValue = parentView._getValue(property);
-                if (baseValue) {
-                    that._setValue(property, baseValue, dependencyObservable.ValueSource.Inherited);
-                }
+                that._setValue(property, baseValue, dependencyObservable.ValueSource.Inherited);
             }
             return true;
         };
