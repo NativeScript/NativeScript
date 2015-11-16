@@ -3,7 +3,14 @@ import colorModule = require("color");
 import types = require("utils/types");
 import enums = require("ui/enums");
 import dts = require("ui/styling/background");
-var cssValue = require("css-value");
+import cssValue = require("css-value");
+
+interface CSSValue {
+    type: string;
+    string: string;
+    unit?: string;
+    value?: number;
+}
 
 export class Background implements dts.Background {
     public static default = new Background(undefined, undefined, undefined, undefined, undefined);
@@ -99,25 +106,25 @@ export class Background implements dts.Background {
                     ((vx.unit === "px" && vy.unit === "px") || (vx.unit === "" && vy.unit === ""))) {
                     imageWidth = vx.value;
                     imageHeight = vy.value;
-                    
+
                     res.sizeX = imageWidth;
                     res.sizeY = imageHeight;
                 }
             }
             else if (values.length === 1 && values[0].type === "ident") {
                 let scale = 0;
-       
+
                 if (values[0].string === "cover") {
                     scale = Math.max(width / imageWidth, height / imageHeight);
                 }
                 else if (values[0].string === "contain") {
                     scale = Math.min(width / imageWidth, height / imageHeight);
                 }
-                
-                if(scale > 0){
+
+                if (scale > 0) {
                     imageWidth *= scale;
                     imageHeight *= scale;
-                    
+
                     res.sizeX = imageWidth;
                     res.sizeY = imageHeight;
                 }
@@ -126,35 +133,32 @@ export class Background implements dts.Background {
 
         // position
         if (this.position) {
-            let values = cssValue(this.position);
-            let spaceX = width - imageWidth;
-            let spaceY = height - imageHeight;
+            let v = Background.parsePosition(this.position);
+            if (v) {
+                let spaceX = width - imageWidth;
+                let spaceY = height - imageHeight;
 
-            if (values.length === 2) {
-                let vx = values[0];
-                let vy = values[1];
-
-                if (vx.unit === "%" && vy.unit === "%") {
-                    res.posX = spaceX * vx.value / 100;
-                    res.posY = spaceY * vy.value / 100;
+                if (v.x.unit === "%" && v.y.unit === "%") {
+                    res.posX = spaceX * v.x.value / 100;
+                    res.posY = spaceY * v.y.value / 100;
                 }
-                else if (vx.type === "number" && vy.type === "number" &&
-                    ((vx.unit === "px" && vy.unit === "px") || (vx.unit === "" && vy.unit === ""))) {
-                    res.posX = vx.value;
-                    res.posY = vy.value;
+                else if (v.x.type === "number" && v.y.type === "number" &&
+                    ((v.x.unit === "px" && v.y.unit === "px") || (v.x.unit === "" && v.y.unit === ""))) {
+                    res.posX = v.x.value;
+                    res.posY = v.y.value;
                 }
-                else if (vx.type === "ident" && vy.type === "ident") {
-                    if (vx.string.toLowerCase() === "center") {
+                else if (v.x.type === "ident" && v.y.type === "ident") {
+                    if (v.x.string.toLowerCase() === "center") {
                         res.posX = spaceX / 2;
                     }
-                    else if (vx.string.toLowerCase() === "right") {
+                    else if (v.x.string.toLowerCase() === "right") {
                         res.posX = spaceX;
                     }
 
-                    if (vy.string.toLowerCase() === "center") {
+                    if (v.y.string.toLowerCase() === "center") {
                         res.posY = spaceY / 2;
                     }
-                    else if (vy.string.toLowerCase() === "bottom") {
+                    else if (v.y.string.toLowerCase() === "bottom") {
                         res.posY = spaceY;
                     }
                 }
@@ -163,6 +167,50 @@ export class Background implements dts.Background {
 
         return res;
     }
+
+    private static parsePosition(pos: string): { x: CSSValue, y: CSSValue } {
+        var res = undefined
+        let values = cssValue(pos);
+
+        if (values.length === 2) {
+            return {
+                x: values[0],
+                y: values[1]
+            };
+        }
+
+        if (values.length === 1 && values[0].type === "ident") {
+            let val = values[0].string.toLocaleLowerCase();
+            let center = {
+                type: "ident",
+                string: "center"
+            };
+            
+            // If you only one keyword is specified, the other value is "center"
+            if (val === "left" || val === "right") {
+                return {
+                    x: values[0],
+                    y: center
+                };
+            }
+
+            else if (val === "top" || val === "bottom") {
+                return {
+                    x: center,
+                    y: values[0]
+                };
+            }
+
+            else if (val === "center") {
+                return {
+                    x: center,
+                    y: center
+                };
+            }
+        }
+
+        return null;
+    };
 
     public isEmpty(): boolean {
         return types.isNullOrUndefined(this.image) && types.isNullOrUndefined(this.color);
