@@ -2076,7 +2076,7 @@
       <GruntRunTSLint Condition=" '$(Configuration)' == 'Cross' ">--runtslint=true</GruntRunTSLint>
       <GruntRunTSLint Condition=" '$(Configuration)' != 'Cross' ">--runtslint=false</GruntRunTSLint>
     </PropertyGroup>
-    <Exec Command="grunt default $(GruntLeaveComments) $(GruntRunTSLint) --verbose" />
+    <Exec Command="grunt default $(GruntLeaveComments) $(GruntRunTSLint) --verbose --no-color" />
   </Target>
   <Import Project="../cross-platform-modules-dev/dev.proj" Condition=" Exists('../cross-platform-modules-dev/dev.proj') " />
   <PropertyGroup>
