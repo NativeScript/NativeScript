@@ -5,6 +5,7 @@ import abs = require("ui/layouts/absolute-layout");
 import animationModule = require("ui/animation");
 import colorModule = require("color");
 import model = require("./model");
+import enums = require("ui/enums");
 
 var vm = new model.ViewModel();
 
@@ -27,7 +28,7 @@ export function pageLoaded(args: observable.EventData) {
 
 export function onSlideOut(args: observable.EventData) {
     console.log("onSlideOut");
-    var curve = page.android ? new android.view.animation.AccelerateInterpolator(1) : UIViewAnimationCurve.UIViewAnimationCurveEaseIn;
+    var curve = enums.AnimationCurve.easeOut;
 
     var buttonAnimations = [
         { target: button1, translate: { x: -240, y: 0 }, scale: { x: 0.5, y: 0.5 }, opacity: 0, duration: vm.duration, delay: 0, iterations: vm.iterations, curve: curve },
@@ -36,7 +37,7 @@ export function onSlideOut(args: observable.EventData) {
     ]
     buttonAnimation = new animationModule.Animation(buttonAnimations, vm.playSequentially);
 
-    panelAnimation = panel.createAnimation({ opacity: 0, scale: { x: 0.5, y: 0.5 }, rotate: -360, backgroundColor: new colorModule.Color("red"), duration: vm.duration, iterations: vm.iterations });
+    panelAnimation = panel.createAnimation({ opacity: 0, scale: { x: 0.5, y: 0.5 }, rotate: -360, backgroundColor: new colorModule.Color("red"), duration: vm.duration, iterations: vm.iterations, curve: enums.AnimationCurve.easeInOut });
 
     buttonAnimation.play()
         .then(() => panelAnimation.play())
@@ -45,9 +46,9 @@ export function onSlideOut(args: observable.EventData) {
 
 export function onSlideIn(args: observable.EventData) {
     console.log("onSlideIn");
-    var curve = page.android ? new android.view.animation.DecelerateInterpolator(1) : UIViewAnimationCurve.UIViewAnimationCurveEaseOut;
+    var curve = enums.AnimationCurve.easeIn;
 
-    panelAnimation = panel.createAnimation({ opacity: 1, scale: { x: 1, y: 1 }, rotate: 0, backgroundColor: new colorModule.Color("yellow"), duration: vm.duration, iterations: vm.iterations });
+    panelAnimation = panel.createAnimation({ opacity: 1, scale: { x: 1, y: 1 }, rotate: 0, backgroundColor: new colorModule.Color("yellow"), duration: vm.duration, iterations: vm.iterations, curve: enums.AnimationCurve.easeInOut });
 
     var buttonAnimations = [
         { target: button3, translate: { x: 0, y: 0 }, scale: { x: 1, y: 1 }, opacity: 1, duration: vm.duration, delay: 0, iterations: vm.iterations, curve: curve },
@@ -86,7 +87,7 @@ export function onSingle(args: observable.EventData) {
         duration: vm.duration,
         delay: 0,
         iterations: vm.iterations,
-        curve: button1.ios ? UIViewAnimationCurve.UIViewAnimationCurveEaseIn : new android.view.animation.AccelerateInterpolator(1),
+        curve: enums.AnimationCurve.linear,
     })
         .then(() => console.log("Animation finished"))
         .catch((e) => console.log(e.message));

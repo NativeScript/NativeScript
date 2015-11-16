@@ -5,6 +5,7 @@ import viewModule = require("ui/core/view");
 import labelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import colorModule = require("color");
+import enums = require("ui/enums");
 
 // <snippet module="ui/animation" title="animation">
 // # Animation
@@ -42,7 +43,7 @@ export var test_AnimatingProperties = function (done) {
         duration: 1000,
         delay: 100,
         iterations: 3,
-        curve: label.ios ? UIViewAnimationCurve.UIViewAnimationCurveEaseIn : new android.view.animation.AccelerateInterpolator(1),
+        curve: enums.AnimationCurve.easeIn
     })
         .then(() => {
             ////console.log("Animation finished.");

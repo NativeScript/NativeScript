@@ -4,6 +4,7 @@ import utils = require("utils/utils");
 import color = require("color");
 import trace = require("trace");
 import types = require("utils/types");
+import enums = require("ui/enums");
 
 global.moduleMerge(common, exports);
 
@@ -275,6 +276,26 @@ export class Animation extends common.Animation implements definition.Animation 
         this._animators = this._animators.concat(animators);
         this._propertyUpdateCallbacks = this._propertyUpdateCallbacks.concat(propertyUpdateCallbacks);
         this._propertyResetCallbacks = this._propertyResetCallbacks.concat(propertyResetCallbacks);
+    }
+
+    _resolveAnimationCurve(curve: any): any {
+        switch (curve) {
+            case enums.AnimationCurve.easeIn:
+                trace.write("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", trace.categories.Animation);
+                return new android.view.animation.AccelerateInterpolator(1);
+            case enums.AnimationCurve.easeOut:
+                trace.write("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", trace.categories.Animation);
+                return new android.view.animation.DecelerateInterpolator(1);
+            case enums.AnimationCurve.easeInOut:
+                trace.write("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", trace.categories.Animation);
+                return new android.view.animation.AccelerateDecelerateInterpolator();
+            case enums.AnimationCurve.linear:
+                trace.write("Animation curve resolved to android.view.animation.LinearInterpolator().", trace.categories.Animation);
+                return new android.view.animation.LinearInterpolator();
+            default:
+                trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
+                return curve;
+        }
     }
 
     private static _getAndroidRepeatCount(iterations: number): number {
