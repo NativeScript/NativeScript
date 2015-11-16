@@ -492,4 +492,29 @@
          */
         export var right: string;
     }
+
+    /**
+     * Represents an animation curve type.
+     */
+    module AnimationCurve {
+        /**
+         * An ease-in curve causes the animation to begin slowly, and then speed up as it progresses.
+         */
+        export var easeIn: string;
+
+        /**
+         * An ease-out curve causes the animation to begin quickly, and then slow down as it completes.
+         */
+        export var easeOut: string;
+
+        /**
+         * An ease-in ease-out curve causes the animation to begin slowly, accelerate through the middle of its duration, and then slow again before completing.
+         */
+        export var easeInOut: string;
+        
+        /**
+         * A linear animation curve causes an animation to occur evenly over its duration.
+         */
+        export var linear: string;
+    }
 }

@@ -2,6 +2,7 @@
 import common = require("./animation-common");
 import viewModule = require("ui/core/view");
 import trace = require("trace");
+import enums = require("ui/enums");
 
 global.moduleMerge(common, exports);
 
@@ -141,6 +142,26 @@ export class Animation extends common.Animation implements definition.Animation 
         };
 
         this._iOSAnimationFunction = Animation._createiOSAnimationFunction(this._mergedPropertyAnimations, 0, this._playSequentially, animationFinishedCallback);
+    }
+
+    _resolveAnimationCurve(curve: any): any {
+        switch (curve) {
+            case enums.AnimationCurve.easeIn:
+                trace.write("Animation curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseIn.", trace.categories.Animation);
+                return UIViewAnimationCurve.UIViewAnimationCurveEaseIn;
+            case enums.AnimationCurve.easeOut:
+                trace.write("Animation curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseOut.", trace.categories.Animation);
+                return UIViewAnimationCurve.UIViewAnimationCurveEaseOut;
+            case enums.AnimationCurve.easeInOut:
+                trace.write("Animation curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseInOut.", trace.categories.Animation);
+                return UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;
+            case enums.AnimationCurve.linear:
+                trace.write("Animation curve resolved to UIViewAnimationCurve.UIViewAnimationCurveLinear.", trace.categories.Animation);
+                return UIViewAnimationCurve.UIViewAnimationCurveLinear;
+            default:
+                trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
+                return curve;
+        }
     }
 
     private static _createiOSAnimationFunction(propertyAnimations: Array<common.PropertyAnimation>, index: number, playSequentially: boolean, finishedCallback: (cancelled?: boolean) => void): Function {
