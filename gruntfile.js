@@ -265,11 +265,12 @@ module.exports = function(grunt) {
             childPackageFiles: {
                 expand: true,
                 src: [
-                    localCfg.srcDir + "/**/package.json",
-                    "!./package.json",
-                    "!./Deploy/**/*.*",
-                    "!./bin/**/*.*",
-                    "!./Tests/**/*.*",
+                    "**/package.json",
+                    "!package.json",
+                    "!Deploy/**/*.*",
+                    "!bin/**/*.*",
+                    "!Tests/**/*.*",
+                    "!node_modules/**/*.*",
                     "!" + localCfg.outDir + "/**/*.*"
                 ],
                 dest: localCfg.outModulesDir + "/"
