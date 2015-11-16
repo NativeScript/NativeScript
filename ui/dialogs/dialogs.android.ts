@@ -275,7 +275,7 @@ export function action(arg: any): Promise<string> {
             var alert = new android.app.AlertDialog.Builder(activity);
             var message = options && types.isString(options.message) ? options.message : "";
             var title = options && types.isString(options.title) ? options.title : "";
-            if (options && (options.cancelable === false || options.cancelable === 0)) {
+            if (options && options.cancelable === false) {
                 alert.setCancelable(false);
             }
 
