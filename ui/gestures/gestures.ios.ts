@@ -286,7 +286,6 @@ function _getSwipeData(args: definition.GestureEventData): definition.SwipeGestu
         direction: _getSwipeDirection(recognizer.direction),
         object: args.view,
         eventName: definition.toString(args.type),
-        state: getState(recognizer)
     };
 }
 

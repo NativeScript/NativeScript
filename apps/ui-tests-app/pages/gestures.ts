@@ -85,7 +85,7 @@ export function createPage() {
     var observer3 = longpressLabel.getGestureObservers(gestures.GestureTypes.longPress)[0];
 
     swipeLabel.on(gestures.GestureTypes.swipe, function (args: gestures.SwipeGestureEventData) {
-        swipeLabel.text = "Swipe Direction: " + args.direction + ", " + (args.object === swipeLabel) + getStateAsString(args.state);
+        swipeLabel.text = "Swipe Direction: " + args.direction + ", " + (args.object === swipeLabel);// + getStateAsString(args.state);
     });
 
     var observer4 = swipeLabel.getGestureObservers(gestures.GestureTypes.swipe)[0];

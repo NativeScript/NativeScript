@@ -122,7 +122,7 @@ declare module "ui/gestures" {
     /**
      * Provides gesture event data for swipe gesture.
      */
-    export interface SwipeGestureEventData extends GestureEventDataWithState {
+    export interface SwipeGestureEventData extends GestureEventData {
         direction: SwipeDirection;
     }
 

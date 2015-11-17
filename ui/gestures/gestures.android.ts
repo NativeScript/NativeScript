@@ -3,6 +3,7 @@ import definition = require("ui/gestures");
 import observable = require("data/observable");
 import view = require("ui/core/view");
 import trace = require("trace");
+import utils = require("utils/utils");
 
 global.moduleMerge(common, exports);
 
@@ -11,10 +12,11 @@ var SWIPE_VELOCITY_THRESHOLD = 100;
 
 export class GesturesObserver extends common.GesturesObserver {
     private _onTouchListener: android.view.View.OnTouchListener;
-    public _simpleGestureDetector: android.view.GestureDetector;
-    public _scaleGestureDetector: android.view.ScaleGestureDetector;
-    public _swipeGestureDetector: android.view.GestureDetector;
-    public _panGestureDetector: android.view.GestureDetector
+    private _simpleGestureDetector: android.view.GestureDetector;
+    private _scaleGestureDetector: android.view.ScaleGestureDetector;
+    private _swipeGestureDetector: android.view.GestureDetector;
+    private _panGestureDetector: android.view.GestureDetector
+    private _panGestureListener: PanGestureListener;
 
     private _onTargetLoaded: (data: observable.EventData) => void;
     private _onTargetUnloaded: (data: observable.EventData) => void;
@@ -62,6 +64,7 @@ export class GesturesObserver extends common.GesturesObserver {
         this._scaleGestureDetector = null;
         this._swipeGestureDetector = null;
         this._panGestureDetector = null;
+        this._panGestureListener = null;
     }
 
     private _attach(target: view.View, type: definition.GestureTypes) {
@@ -81,7 +84,8 @@ export class GesturesObserver extends common.GesturesObserver {
         }
 
         if (type & definition.GestureTypes.pan) {
-            this._panGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new PanGestureListener(this, this.target));
+            this._panGestureListener = new PanGestureListener(this, this.target);
+            this._panGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, this._panGestureListener);
         }
     }
 
@@ -100,6 +104,10 @@ export class GesturesObserver extends common.GesturesObserver {
 
         if (this._panGestureDetector) {
             this._panGestureDetector.onTouchEvent(motionEvent);
+
+            if (motionEvent.getActionMasked() === android.view.MotionEvent.ACTION_UP) {
+                this._panGestureListener.onTouchUpAction(motionEvent);
+            }
         }
 
         if (this.type & definition.GestureTypes.rotation && motionEvent.getPointerCount() === 2) {
@@ -129,7 +137,7 @@ export class GesturesObserver extends common.GesturesObserver {
     }
 }
 
-function getState(e: android.view.MotionEvent) {
+function getState(e: android.view.MotionEvent): common.GestureStateTypes {
     if (e.getAction() === android.view.MotionEvent.ACTION_DOWN) {
         return common.GestureStateTypes.began;
     } else if (e.getAction() === android.view.MotionEvent.ACTION_CANCEL) {
@@ -162,11 +170,10 @@ function _getSwipeArgs(direction: definition.SwipeDirection, view: view.View,
         ios: undefined,
         object: view,
         eventName: definition.toString(definition.GestureTypes.swipe),
-        state: getState(currentEvent)
     };
 }
 
-function _getPanArgs(deltaX: number, deltaY: number, view: view.View,
+function _getPanArgs(deltaX: number, deltaY: number, view: view.View, state: common.GestureStateTypes,
     initialEvent: android.view.MotionEvent, currentEvent: android.view.MotionEvent): definition.PanGestureEventData {
     return <definition.PanGestureEventData>{
         type: definition.GestureTypes.pan,
@@ -177,7 +184,7 @@ function _getPanArgs(deltaX: number, deltaY: number, view: view.View,
         ios: undefined,
         object: view,
         eventName: definition.toString(definition.GestureTypes.pan),
-        state: getState(currentEvent)
+        state: state
     };
 }
 
@@ -367,12 +374,18 @@ class SwipeGestureListener extends android.view.GestureDetector.SimpleOnGestureL
 class PanGestureListener extends android.view.GestureDetector.SimpleOnGestureListener {
     private _observer: GesturesObserver;
     private _target: view.View;
+    private _isScrolling: boolean;
+    private _deltaX: number;
+    private _deltaY: number;
+    private _density: number;
 
     constructor(observer: GesturesObserver, target: view.View) {
         super();
 
         this._observer = observer;
         this._target = target;
+        this._isScrolling = false;
+        this._density = utils.layout.getDisplayDensity();
 
         return global.__native(this);
     }
@@ -382,10 +395,29 @@ class PanGestureListener extends android.view.GestureDetector.SimpleOnGestureLis
     }
 
     public onScroll(initialEvent: android.view.MotionEvent, currentEvent: android.view.MotionEvent, lastDeltaX: number, lastDeltaY: number): boolean {
-        var deltaX = currentEvent.getX() - initialEvent.getX();
-        var deltaY = currentEvent.getY() - initialEvent.getY();
-        var args = _getPanArgs(deltaX, deltaY, this._target, initialEvent, currentEvent);
+        this._deltaX = (currentEvent.getX() - initialEvent.getX()) / this._density;
+        this._deltaY = (currentEvent.getY() - initialEvent.getY()) / this._density;
+
+        if (!this._isScrolling) {
+            let args = _getPanArgs(this._deltaX, this._deltaY, this._target, common.GestureStateTypes.began, initialEvent, currentEvent);
+            _executeCallback(this._observer, args);
+            this._isScrolling = true;
+        }
+
+        let args = _getPanArgs(this._deltaX, this._deltaY, this._target, common.GestureStateTypes.changed, initialEvent, currentEvent);
         _executeCallback(this._observer, args);
         return true;
+    }
+
+    public onTouchUpAction(currentEvent: android.view.MotionEvent) {
+        if (!this._isScrolling) {
+            return;
+        }
+
+        var args = _getPanArgs(this._deltaX, this._deltaY, this._target, common.GestureStateTypes.ended, null, currentEvent);
+        _executeCallback(this._observer, args);
+        this._isScrolling = false;
+        this._deltaX = undefined;
+        this._deltaY = undefined;
     }
 }
