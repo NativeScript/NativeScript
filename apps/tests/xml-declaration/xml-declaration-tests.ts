@@ -836,3 +836,23 @@ export function test_parse_template_property() {
     TKUnit.assert(button, "Expected the TemplateView's template to create a button child.");
     TKUnit.assertEqual(button.text, "Click!", "Expected child Button to have text 'Click!'");
 }
+
+export function test_ParserError() {
+    var basePath = "xml-declaration/";
+	var expectedErrorStart =
+		"Building UI from XML. @file:///app/" + basePath + "errors/non-existing-element.xml:11:5\n" +
+ 		" ↳Module 'ui/unicorn' not found for element 'Unicorn'.\n";
+	if (global.android) {
+		expectedErrorStart += "   ↳Module \"ui/unicorn\" not found";
+	} else {
+		expectedErrorStart += "   ↳Failed to find module 'ui/unicorn'";
+	}
+
+	var message;
+	try {
+		builder.load(__dirname + "/errors/non-existing-element.xml");
+	} catch(e) {
+		message = e.message;
+	}
+	TKUnit.assertEqual(message.substr(0, expectedErrorStart.length), expectedErrorStart, "Expected load to throw, and the message to start with specific string");
+}

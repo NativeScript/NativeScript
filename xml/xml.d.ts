@@ -100,18 +100,18 @@ declare module "xml" {
      */
     class XmlParser {
 
-       /**
-        * Creates a new instance of the XmlParser class.
-        * @param onEvent The callback to execute when a parser event occurs. The 'event' parameter contains information about the event.
-        * @param onError The callback to execute when a parser error occurs. The 'error' parameter contains the error.
-        * @param processNamespaces Specifies whether namespaces should be processed.
-        */
-        constructor(onEvent: (event: ParserEvent) => void, onError?: (error: Error) => void, processNamespaces?: boolean, angularSyntax?: boolean);
+        /**
+         * Creates a new instance of the XmlParser class.
+         * @param onEvent The callback to execute when a parser event occurs. The 'event' parameter contains information about the event.
+         * @param onError The callback to execute when a parser error occurs. The 'error' parameter contains the error.
+         * @param processNamespaces Specifies whether namespaces should be processed.
+         */
+        constructor(onEvent: (event: ParserEvent) => void, onError?: (error: Error, position: Position) => void, processNamespaces?: boolean, angularSyntax?: boolean);
         
-       /**
-        * Parses the supplied xml string.
-        * @param xmlString The string containing the xml to parse.
-        */
+        /**
+         * Parses the supplied xml string.
+         * @param xmlString The string containing the xml to parse.
+         */
         parse(xmlString: string): void;
     }
 }

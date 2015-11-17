@@ -9,6 +9,7 @@ import definition = require("ui/builder");
 import page = require("ui/page");
 import fileResolverModule = require("file-system/file-name-resolver");
 import trace = require("trace");
+import debug = require("utils/debug");
 
 var KNOWNCOLLECTIONS = "knownCollections";
 
@@ -41,7 +42,7 @@ export function parse(value: string | view.Template, context: any): view.View {
     }
 }
 
-function parseInternal(value: string, context: any): componentBuilder.ComponentModule {
+function parseInternal(value: string, context: any, uri?: string): componentBuilder.ComponentModule {
     var currentPage: page.Page;
     var rootComponentModule: componentBuilder.ComponentModule;
     // Temporary collection used for parent scope.
@@ -51,134 +52,148 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
     var templateBuilder: templateBuilderDef.TemplateBuilder;
 
     var currentPlatformContext: string;
+    
+    var wrapSource: (e: Error, p: xml.Position) => Error;
+    if (debug.debug && uri) {
+        wrapSource = (e: Error, p: xml.Position) => {
+            var source = new debug.Source(uri, p.line, p.column);
+            e = new debug.SourceError(e, source, "Building UI from XML.");
+            return e;
+        }
+    } else {
+        wrapSource = e => e; // no-op identity
+    }    
 
     // Parse the XML.
     var xmlParser = new xml.XmlParser((args: xml.ParserEvent) => {
-
-        if (args.eventType === xml.ParserEventType.StartElement) {
-            if (isPlatform(args.elementName)) {
-
-                if (currentPlatformContext) {
-                    throw new Error("Already in '" + currentPlatformContext + "' platform context and cannot switch to '" + args.elementName + "' platform! Platform tags cannot be nested.");
+        try {
+            if (args.eventType === xml.ParserEventType.StartElement) {
+                if (isPlatform(args.elementName)) {
+    
+                    if (currentPlatformContext) {
+                        throw new Error("Already in '" + currentPlatformContext + "' platform context and cannot switch to '" + args.elementName + "' platform! Platform tags cannot be nested.");
+                    }
+    
+                    currentPlatformContext = args.elementName;
+                    return;
                 }
-
-                currentPlatformContext = args.elementName;
+            }
+    
+            if (args.eventType === xml.ParserEventType.EndElement) {
+                if (isPlatform(args.elementName)) {
+                    currentPlatformContext = undefined;
+                    return;
+                }
+            }
+    
+            if (currentPlatformContext && !isCurentPlatform(currentPlatformContext)) {
                 return;
             }
-        }
-
-        if (args.eventType === xml.ParserEventType.EndElement) {
-            if (isPlatform(args.elementName)) {
-                currentPlatformContext = undefined;
-                return;
+    
+            if (templateBuilder) {
+                var finished = templateBuilder.handleElement(args);
+                if (finished) {
+                    // Clean-up and continnue
+                    templateBuilder = undefined;
+                }
+                else {
+                    // Skip processing untill the template builder finishes his job.
+                    return;
+                }
             }
-        }
-
-        if (currentPlatformContext && !isCurentPlatform(currentPlatformContext)) {
-            return;
-        }
-
-        if (templateBuilder) {
-            var finished = templateBuilder.handleElement(args);
-            if (finished) {
-                // Clean-up and continnue
-                templateBuilder = undefined;
-            }
-            else {
-                // Skip processing untill the template builder finishes his job.
-                return;
-            }
-        }
-
-        // Get the current parent.
-        var parent = parents[parents.length - 1];
-        var complexProperty = complexProperties[complexProperties.length - 1];
-
-        // Create component instance from every element declaration.
-        if (args.eventType === xml.ParserEventType.StartElement) {
-            if (isComplexProperty(args.elementName)) {
-
-                var name = getComplexProperty(args.elementName);
-
-                complexProperties.push({
-                    parent: parent,
-                    name: name,
-                    items: [],
-                });
-
-                if (templateBuilderDef.isKnownTemplate(name, parent.exports)) {
-                    templateBuilder = new templateBuilderDef.TemplateBuilder({
-                        context: parent ? getExports(parent.component) : null, // Passing 'context' won't work if you set "codeFile" on the page
+    
+            // Get the current parent.
+            var parent = parents[parents.length - 1];
+            var complexProperty = complexProperties[complexProperties.length - 1];
+    
+            // Create component instance from every element declaration.
+            if (args.eventType === xml.ParserEventType.StartElement) {
+                if (isComplexProperty(args.elementName)) {
+    
+                    var name = getComplexProperty(args.elementName);
+    
+                    complexProperties.push({
                         parent: parent,
                         name: name,
-                        elementName: args.elementName,
-                        templateItems: []
+                        items: [],
                     });
-                }
-
-            } else {
-
-                var componentModule: componentBuilder.ComponentModule;
-
-                if (args.prefix && args.namespace) {
-                    // Custom components
-                    componentModule = loadCustomComponent(args.namespace, args.elementName, args.attributes, context, currentPage);
+    
+                    if (templateBuilderDef.isKnownTemplate(name, parent.exports)) {
+                        templateBuilder = new templateBuilderDef.TemplateBuilder({
+                            context: parent ? getExports(parent.component) : null, // Passing 'context' won't work if you set "codeFile" on the page
+                            parent: parent,
+                            name: name,
+                            elementName: args.elementName,
+                            templateItems: []
+                        });
+                    }
+    
                 } else {
-                    // Default components
-                    componentModule = componentBuilder.getComponentModule(args.elementName, args.namespace, args.attributes, context);
-                }
-
-                if (componentModule) {
-                    if (parent) {
-                        if (componentModule.component instanceof view.View) {
-                            if (complexProperty) {
-                                // Add to complex property to component.
-                                addToComplexProperty(parent, complexProperty, componentModule)
+    
+                    var componentModule: componentBuilder.ComponentModule;
+    
+                    if (args.prefix && args.namespace) {
+                        // Custom components
+                        componentModule = loadCustomComponent(args.namespace, args.elementName, args.attributes, context, currentPage);
+                    } else {
+                        // Default components
+                        componentModule = componentBuilder.getComponentModule(args.elementName, args.namespace, args.attributes, context);
+                    }
+    
+                    if (componentModule) {
+                        if (parent) {
+                            if (componentModule.component instanceof view.View) {
+                                if (complexProperty) {
+                                    // Add to complex property to component.
+                                    addToComplexProperty(parent, complexProperty, componentModule)
+                                } else if ((<any>parent.component)._addChildFromBuilder) {
+                                    // Add component to visual tree
+                                    (<any>parent.component)._addChildFromBuilder(args.elementName, componentModule.component);
+                                }
+                            } else if (complexProperty) {
+                                // Add component to complex property of parent component.
+                                addToComplexProperty(parent, complexProperty, componentModule);
                             } else if ((<any>parent.component)._addChildFromBuilder) {
-                                // Add component to visual tree
                                 (<any>parent.component)._addChildFromBuilder(args.elementName, componentModule.component);
                             }
-                        } else if (complexProperty) {
-                            // Add component to complex property of parent component.
-                            addToComplexProperty(parent, complexProperty, componentModule);
-                        } else if ((<any>parent.component)._addChildFromBuilder) {
-                            (<any>parent.component)._addChildFromBuilder(args.elementName, componentModule.component);
+                        } else if (parents.length === 0) {
+                            // Set root component.
+                            rootComponentModule = componentModule;
+    
+                            if (rootComponentModule && rootComponentModule.component instanceof page.Page) {
+                                currentPage = <page.Page>rootComponentModule.component;
+                            }
                         }
-                    } else if (parents.length === 0) {
-                        // Set root component.
-                        rootComponentModule = componentModule;
-
-                        if (rootComponentModule && rootComponentModule.component instanceof page.Page) {
-                            currentPage = <page.Page>rootComponentModule.component;
-                        }
-                    }
-
-                    // Add the component instance to the parents scope collection.
-                    parents.push(componentModule);
-                }
-            }
-
-        } else if (args.eventType === xml.ParserEventType.EndElement) {
-            if (isComplexProperty(args.elementName)) {
-                if (complexProperty) {
-                    if (parent && (<any>parent.component)._addArrayFromBuilder) {
-                        // If parent is AddArrayFromBuilder call the interface method to populate the array property.
-                        (<any>parent.component)._addArrayFromBuilder(complexProperty.name, complexProperty.items);
-                        complexProperty.items = [];
+    
+                        // Add the component instance to the parents scope collection.
+                        parents.push(componentModule);
                     }
                 }
-                // Remove the last complexProperty from the complexProperties collection (move to the previous complexProperty scope).
-                complexProperties.pop();
-
-            } else {
-                // Remove the last parent from the parents collection (move to the previous parent scope).
-                parents.pop();
+    
+            } else if (args.eventType === xml.ParserEventType.EndElement) {
+                if (isComplexProperty(args.elementName)) {
+                    if (complexProperty) {
+                        if (parent && (<any>parent.component)._addArrayFromBuilder) {
+                            // If parent is AddArrayFromBuilder call the interface method to populate the array property.
+                            (<any>parent.component)._addArrayFromBuilder(complexProperty.name, complexProperty.items);
+                            complexProperty.items = [];
+                        }
+                    }
+                    // Remove the last complexProperty from the complexProperties collection (move to the previous complexProperty scope).
+                    complexProperties.pop();
+    
+                } else {
+                    // Remove the last parent from the parents collection (move to the previous parent scope).
+                    parents.pop();
+                }
             }
+    
+        } catch(e) {
+            throw wrapSource(e, args.position);
         }
-
-    }, (e) => {
-            throw new Error("XML parse error: " + e.message);
-        }, true);
+    }, (e, p) => {
+        throw wrapSource(new Error("XML parse error: " + e.message), p);
+    }, true);
 
     if (types.isString(value)) {
         value = value.replace(/xmlns=("|')http:\/\/((www)|(schemas))\.nativescript\.org\/tns\.xsd\1/, "");
@@ -271,7 +286,7 @@ function loadInternal(fileName: string, context?: any): componentBuilder.Compone
             throw new Error("Error loading file " + fileName + " :" + error.message);
         }
         var text = file.readTextSync(onError);
-        componentModule = parseInternal(text, context);
+        componentModule = parseInternal(text, context, fileName);
     }
 
     if (componentModule && componentModule.component) {

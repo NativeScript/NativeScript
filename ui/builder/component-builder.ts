@@ -5,6 +5,7 @@ import fs = require("file-system");
 import bindingBuilder = require("./binding-builder");
 import platform = require("platform");
 import pages = require("ui/page");
+import debug = require("utils/debug");
 
 //the imports below are needed for special property registration
 import "ui/layouts/dock-layout";
@@ -60,7 +61,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
         // Create instance of the component.
         instance = new instanceType();
     } catch (ex) {
-        throw new Error("Cannot create module " + moduleId + ". " + ex + ". StackTrace: " + ex.stack);
+        throw new debug.ScopeError(ex, "Module '" + moduleId + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
     }
 
     if (attributes) {
