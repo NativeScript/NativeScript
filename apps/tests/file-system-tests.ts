@@ -598,3 +598,14 @@ export function test_FSEntity_Properties() {
 
     file.remove();
 }
+
+export function test_UnlockAfterWrite(done) {
+    var file = fs.knownFolders.documents().getFile("Test_File_Lock.txt");
+    file.writeText("Hello World!").then(() => {
+        return file.readText();
+    }).then(value => {
+        TKUnit.assert(value === "Hello World!");
+        return file.remove();
+    }).then(() => done())
+    .catch(done);
+}
