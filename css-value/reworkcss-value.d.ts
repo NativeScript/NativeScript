@@ -2,12 +2,10 @@ declare module "css-value" {
     interface CSSValue {
         type: string;
         string: string;
-        unit: string;
-        value: number;
+        unit?: string;
+        value?: number;
     }
 
-    interface ParserFunction {
-        (cssValue: string): Array<CSSValue>;
-    }
-    export = ParserFunction;
+    function parse(cssValue: string): Array<CSSValue>;
+    export = parse;
 }

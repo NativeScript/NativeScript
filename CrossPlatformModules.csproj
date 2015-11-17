@@ -1116,8 +1116,10 @@
     <Content Include="apps\ui-tests-app\web-view\web-view.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="css-value\index.js" />
+    <Content Include="css\index.js" />
+    <Content Include="css\lib\parse\index.js" />
     <Content Include="fetch\fetch.js" />
-    <Content Include="css-value\reworkcss-value.js" />
     <Content Include="ui\layouts\stack-layout\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1354,9 +1356,6 @@
     <Content Include="js-libs\polymer-expressions\path-parser.js" />
     <Content Include="js-libs\polymer-expressions\polymer-expressions.js">
       <DependentUpon>polymer-expressions.d.ts</DependentUpon>
-    </Content>
-    <Content Include="css\reworkcss.js">
-      <DependentUpon>reworkcss.d.ts</DependentUpon>
     </Content>
     <TypeScriptCompile Include="apps\tests\xml-declaration\app.ts" />
     <TypeScriptCompile Include="apps\tests\xml-declaration\mainPage.ts">
@@ -2099,7 +2098,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
