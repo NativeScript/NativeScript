@@ -30,8 +30,9 @@ import ViewModule = require("ui/core/view");
 import helper = require("../helper");
 import ObservableModule = require("data/observable");
 import enumsModule = require("ui/enums");
+import fs = require("file-system");
 
-var imagePath = __dirname + "../../logo.png";
+var imagePath = fs.path.join(__dirname, "../../logo.png");
 
 export var test_Image_Members = function () {
     var image = new ImageModule.Image();
