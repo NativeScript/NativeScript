@@ -149,3 +149,10 @@ export module BackgroundRepeat {
     export var repeatY: string = "repeat-y";
     export var noRepeat: string = "no-repeat";
 }
+
+export module AnimationCurve {
+    export var easeIn = "easeIn";
+    export var easeOut = "easeOut";
+    export var easeInOut = "easeInOut";
+    export var linear = "linear";
+}
