@@ -13,6 +13,9 @@ function createAlertDialog(options?: dialogs.DialogOptions): android.app.AlertDi
     var alert = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
     alert.setTitle(options && types.isString(options.title) ? options.title : "");
     alert.setMessage(options && types.isString(options.message) ? options.message : "");
+    if (options && options.cancelable === false) {
+        alert.setCancelable(false);
+    }
     return alert;
 }
 
@@ -72,6 +75,11 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
             }
         }));
     }
+    alert.setOnDismissListener(new android.content.DialogInterface.OnDismissListener({
+        onDismiss: function() {
+            callback(false);
+        }
+    }));
 }
 
 export function alert(arg: any): Promise<void> {
@@ -84,6 +92,11 @@ export function alert(arg: any): Promise<void> {
             alert.setPositiveButton(options.okButtonText, new android.content.DialogInterface.OnClickListener({
                 onClick: function (dialog: android.content.DialogInterface, id: number) {
                     dialog.cancel();
+                    resolve();
+                }
+            }));
+            alert.setOnDismissListener(new android.content.DialogInterface.OnDismissListener({
+                onDismiss: function() {
                     resolve();
                 }
             }));
@@ -262,6 +275,9 @@ export function action(arg: any): Promise<string> {
             var alert = new android.app.AlertDialog.Builder(activity);
             var message = options && types.isString(options.message) ? options.message : "";
             var title = options && types.isString(options.title) ? options.title : "";
+            if (options && options.cancelable === false) {
+                alert.setCancelable(false);
+            }
 
             if (title) {
                 alert.setTitle(title);
@@ -289,6 +305,17 @@ export function action(arg: any): Promise<string> {
                     }
                 }));
             }
+
+            alert.setOnDismissListener(new android.content.DialogInterface.OnDismissListener({
+                onDismiss: function() {
+                    if (types.isString(options.cancelButtonText)) {
+                        resolve(options.cancelButtonText);
+                    } else {
+                        resolve("");
+                    }
+                }
+            }));
+
             showDialog(alert);
 
         } catch (ex) {

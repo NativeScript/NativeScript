@@ -81,11 +81,21 @@ declare module "ui/dialogs" {
      * @param options The options for the dialog box. 
      */
     export function action(options: ActionOptions): Promise<string>;
+    
+    /**
+     * Provides options for the dialog.
+     */
+    export interface CancelableOptions {
+        /**
+         * [Android only] Gets or sets if the dialog can be canceled by taping outside of the dialog.
+         */
+        cancelable?: boolean;
+    }
 
     /**
      * Provides options for the dialog.
      */
-    export interface ActionOptions {
+    export interface ActionOptions extends CancelableOptions {
         /**
          * Gets or sets the dialog title.
          */
@@ -110,7 +120,7 @@ declare module "ui/dialogs" {
     /**
      * Provides options for the dialog.
      */
-    export interface DialogOptions {
+    export interface DialogOptions extends CancelableOptions {
         /**
          * Gets or sets the dialog title.
          */
@@ -120,6 +130,7 @@ declare module "ui/dialogs" {
          * Gets or sets the dialog message.
          */
         message?: string;
+
     }
 
     /**
