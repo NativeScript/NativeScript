@@ -1,4 +1,5 @@
 var tsconfig = require('./tsconfig.json');
+var shelljs = require("shelljs");
 
 module.exports = function(grunt) {
 
@@ -10,6 +11,12 @@ module.exports = function(grunt) {
 
     var fs=require("fs");
     var pathModule=require("path");
+
+    var tsLintOption = grunt.option('runtslint');
+    var skipTsLint = tsLintOption == 'false' || tsLintOption == false;
+    if (tsLintOption == null) {
+        skipTsLint = false;
+    }
 
     var filterTypeScriptFiles = function(content, srcPath) {
         var matchRule = /^.*@private/ig;
@@ -109,19 +116,19 @@ module.exports = function(grunt) {
     };
 
     var getSubDirs = function(dir) {
-        var allObjects = fs.readdirSync(dir);
-        var allDirs = [];
-        for (var i=0; i<allObjects.length; i++)
-        {
-            var currentObjName = allObjects[i];
-            var currentObjPath = pathModule.join(dir, currentObjName);
-            var stats = fs.statSync(currentObjPath);
-            if (stats.isDirectory())
-            {
-                allDirs.push({name: currentObjName, path: currentObjPath});
-            }
+        return shelljs.ls(dir).filter(function (subDir) {
+            return shelljs.test('-d', pathModule.join(dir, subDir));
+        });
+    };
+
+    var getApps = function() {
+        var allApps = getSubDirs(localCfg.srcAppsDir);
+        if (grunt.option('test-app-only')) {
+            allApps = allApps.filter(function(appName) {
+                return appName === 'tests';
+            });
         }
-        return allDirs;
+        return allApps;
     };
 
     var localCfg = {
@@ -387,11 +394,11 @@ module.exports = function(grunt) {
             copyLicenseFiles: {
                 tasks: ["copy:appLicense"],
                 dest: function() {
-                    var apps = getSubDirs(localCfg.srcAppsDir);
+                    var apps = getApps();
                     var targetDirs = [];
                     apps.forEach(function(item){
-                        targetDirs.push(pathModule.join(localCfg.outAppsDir, item.name));
-                        targetDirs.push(pathModule.join(localCfg.outTsAppsDir, item.name));
+                        targetDirs.push(pathModule.join(localCfg.outAppsDir, item));
+                        targetDirs.push(pathModule.join(localCfg.outTsAppsDir, item));
                     });
                     return targetDirs;
                 }()
@@ -484,7 +491,12 @@ module.exports = function(grunt) {
     };
 
     grunt.registerTask("processEachApp", function(outAppsDir, pkgAppNameSuffix){
-        var allapps = getSubDirs(localCfg.srcAppsDir);
+        var allApps = getApps();
+        if (grunt.option('test-app-only')) {
+            allApps = allApps.filter(function(appName) {
+                return appName === 'tests';
+            });
+        }
         var tasks = [
             {
                 name: ["copy", "appPackageDef"],
@@ -493,7 +505,7 @@ module.exports = function(grunt) {
                     var pkgFilePath = pathModule.join(outAppDir, "package.json");
                     cfg.src = pkgFilePath;
                     cfg.dest = outAppDir;
-                    cfg.appName = currentApp.name + (pkgAppNameSuffix || "");
+                    cfg.appName = currentAppName + (pkgAppNameSuffix || "");
                 }
             },
             {
@@ -504,12 +516,10 @@ module.exports = function(grunt) {
             }
         ];
 
-        for (var j=0; j<allapps.length; j++) {
-            var currentApp = allapps[j];
-            var clonedTasks = cloneTasks(tasks, currentApp.name);
-
+        allApps.forEach(function (currentApp) {
+            var clonedTasks = cloneTasks(tasks, currentApp);
             enqueueTasks(clonedTasks);
-        }
+        });
     });
 
     grunt.registerTask("tests", [
@@ -585,7 +595,7 @@ module.exports = function(grunt) {
         "copy:readyPackages"
     ]);
 
-    grunt.registerTask("default", ((typeof(grunt.option('runtslint')) != "undefined" && !grunt.option('runtslint')) ? [] : ["tslint:build"]).concat([
+    grunt.registerTask("default", (skipTsLint ? [] : ["tslint:build"]).concat([
         "build-all",
 
         "pack-apps",
@@ -609,7 +619,7 @@ module.exports = function(grunt) {
     //alias just-build for backwards compatibility
     grunt.registerTask("just-build", ["build-all"]);
 
-    grunt.registerTask("build-all", ((typeof(grunt.option('runtslint')) != "undefined" && !grunt.option('runtslint')) ? [] : ["tslint:build"]).concat([
+    grunt.registerTask("build-all", (skipTsLint ? [] : ["tslint:build"]).concat([
         "pack-modules",
 
         "collect-apps-raw-files",

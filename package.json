@@ -15,6 +15,7 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
+    "shelljs": "0.5.3",
     "chai": "3.2.0",
     "grunt": "0.4.5",
     "grunt-bom-removal": "0.2.0",
