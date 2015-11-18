@@ -76,6 +76,58 @@ import actionBarModule = require("ui/action-bar");
 // </Page>
 //```
 // 
+// ## Displaying Platform-Specific System Icons on Action Items
+//```XML
+// <Page>
+//   <Page.actionBar>
+//     <ActionBar>
+//       <ActionBar.actionItems>
+//          <ActionItem ios.systemIcon="12" android.systemIcon = "ic_menu_search" />
+//          <ActionItem ios.systemIcon="15" android.systemIcon = "ic_menu_camera" />
+//          <ActionItem ios.systemIcon="16" android.systemIcon = "ic_menu_delete" />
+//       </ActionBar.actionItems>
+//     </ActionBar>
+//   </Page.actionBar>
+//   ...
+// </Page>
+//```
+//
+//### iOS
+//Set `ios.systemIcon` to a number representing the iOS system item to be displayed.
+//Use this property instead of `ActionItemBase.icon` if you want to diplsay a built-in iOS system icon.
+//The value should be a number from the `UIBarButtonSystemItem` enumeration
+//(https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIBarButtonItem_Class/#//apple_ref/c/tdef/UIBarButtonSystemItem)
+//0: Done
+//1: Cancel
+//2: Edit
+//3: Save
+//4: Add
+//5: FlexibleSpace
+//6: FixedSpace
+//7: Compose
+//8: Reply
+//9: Action
+//10: Organize
+//11: Bookmarks
+//12: Search
+//13: Refresh
+//14: Stop
+//15: Camera
+//16: Trash
+//17: Play
+//18: Pause
+//19: Rewind
+//20: FastForward
+//21: Undo
+//22: Redo
+//23: PageCurl
+//
+//### Android
+//Set `android.systemIcon` the name of the system drawable resource to be displayed.
+//Use this property instead of `ActionItemBase.icon` if you want to diplsay a built-in Android system icon.
+//The value should be a string such as 'ic_menu_search' if you want to display the built-in Android Menu Search icon for example.
+//For a full list of Android drawable names, please visit http://androiddrawables.com
+//
 // </snippet>
 
 export function test_actionItem_inherit_bindingContext() {
