@@ -5,6 +5,7 @@ import LabelModule = require("ui/label");
 import helper = require("../helper");
 import view = require("ui/core/view");
 import frame = require("ui/frame");
+import uiUtils = require("ui/utils");
 
 global.moduleMerge(PageTestCommon, exports);
 
@@ -18,7 +19,7 @@ export function test_NavigateToNewPage_InnerControl() {
 
     helper.navigate(pageFactory);
     helper.goBack();
-    
+
     var label = <LabelModule.Label>testPage.content;
 
     TKUnit.assert(label._context === undefined, "InnerControl._context should be undefined after navigate back.");
@@ -102,6 +103,50 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
         TKUnit.assert(!masterPageUnloaded, "Master page should not raise 'unloaded' when showing modal!");
         masterPage.off(view.View.loadedEvent, loadedEventHandler);
         masterPage.off(view.View.unloadedEvent, loadedEventHandler);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_page_no_anctionBar_measure_no_spanUnderBackground_measure_layout_size_isCorrect() {
+    let page = new PageModule.Page();
+    page.backgroundSpanUnderStatusBar = true;
+    page.actionBarHidden = true;
+    let lbl = new LabelModule.Label();
+    page.content = lbl;
+
+    try {
+        helper.navigate(() => { return page; });
+        TKUnit.waitUntilReady(() => { return page.isLayoutValid; });
+        TKUnit.assertTrue(page.isLoaded, "page NOT loaded!");
+
+        let bounds = page._getCurrentLayoutBounds();
+        let pageHeight = bounds.bottom - bounds.top;
+        let frameBounds = page.frame._getCurrentLayoutBounds();
+        let frameHeight = frameBounds.bottom - frameBounds.top;
+        TKUnit.assertEqual(pageHeight, frameHeight, "Page height should match Frame height.");
+
+        let contentHeight = lbl._getCurrentLayoutBounds().bottom - lbl._getCurrentLayoutBounds().top;
+        let statusBarHeight = uiUtils.ios.getStatusBarHeight();
+        TKUnit.assertEqual(contentHeight, frameHeight - statusBarHeight, "Page.content height should match Frame height - statusBar height.");
+
+        page.backgroundSpanUnderStatusBar = false;
+        TKUnit.waitUntilReady(() => { return page.isLayoutValid; });
+        pageHeight = page._getCurrentLayoutBounds().bottom - page._getCurrentLayoutBounds().top;
+        TKUnit.assertEqual(pageHeight, frameHeight - statusBarHeight, "Page should be given Frame height - statusBar height.");
+
+        contentHeight = lbl._getCurrentLayoutBounds().bottom - lbl._getCurrentLayoutBounds().top;
+        TKUnit.assertEqual(contentHeight, pageHeight, "Page.content height should match Page height.");
+
+        page.actionBarHidden = false;
+        TKUnit.waitUntilReady(() => { return page.isLayoutValid; });
+
+        pageHeight = page._getCurrentLayoutBounds().bottom - page._getCurrentLayoutBounds().top;
+        TKUnit.assertEqual(pageHeight, frameHeight - statusBarHeight, "Page should be given Frame height - statusBar height.");
+
+        contentHeight = lbl._getCurrentLayoutBounds().bottom - lbl._getCurrentLayoutBounds().top;
+        TKUnit.assertTrue(contentHeight < pageHeight, "Page.content be given less space than Page when ActionBar is shown.");
     }
     finally {
         helper.goBack();
