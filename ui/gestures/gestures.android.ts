@@ -443,52 +443,77 @@ class PanGestureListener extends android.view.GestureDetector.SimpleOnGestureLis
 class RotateGestureDetector {
     private observer: GesturesObserver;
     private target: view.View;
-    private ptrID1: number;
-    private ptrID2: number;
+    private trackedPtrId1: number;
+    private trackedPtrId2: number;
 
     private initalPointersAngle: number;
     private angle: number;
+
+    private get isTracking(): boolean {
+        return this.trackedPtrId1 !== INVALID_POINTER_ID && this.trackedPtrId2 !== INVALID_POINTER_ID;
+    }
 
     constructor(observer: GesturesObserver, target: view.View) {
         this.observer = observer;
         this.target = target;
 
-        this.ptrID1 = INVALID_POINTER_ID;
-        this.ptrID2 = INVALID_POINTER_ID;
+        this.trackedPtrId1 = INVALID_POINTER_ID;
+        this.trackedPtrId2 = INVALID_POINTER_ID;
     }
 
     public onTouchEvent(event: android.view.MotionEvent) {
+        let pointerID = event.getPointerId(event.getActionIndex());
+        let wasTracking = this.isTracking;
 
         switch (event.getActionMasked()) {
             case android.view.MotionEvent.ACTION_DOWN:
-                this.ptrID1 = event.getPointerId(event.getActionIndex());
-                break;
             case android.view.MotionEvent.ACTION_POINTER_DOWN:
-                this.ptrID2 = event.getPointerId(event.getActionIndex());
-                this.initalPointersAngle = this.getPointersAngle(event);
+                let assigned = false;
+                if (this.trackedPtrId1 === INVALID_POINTER_ID && pointerID !== this.trackedPtrId2) {
+                    this.trackedPtrId1 = pointerID;
+                    assigned = true;
+                }
+                else if (this.trackedPtrId2 === INVALID_POINTER_ID && pointerID !== this.trackedPtrId1) {
+                    this.trackedPtrId2 = pointerID;
+                    assigned = true;
+                }
 
-                this.executeCallback(event, common.GestureStateTypes.began);
+                if (assigned && this.isTracking) {
+                    // We have started tracking 2 pointers
+                    this.angle = 0;
+                    this.initalPointersAngle = this.getPointersAngle(event);
+                    this.executeCallback(event, common.GestureStateTypes.began);
+                }
                 break;
+
             case android.view.MotionEvent.ACTION_MOVE:
-                if (this.ptrID1 !== INVALID_POINTER_ID && this.ptrID2 !== INVALID_POINTER_ID) {
+                if (this.isTracking) {
                     this.updateAngle(event);
 
                     this.executeCallback(event, common.GestureStateTypes.changed);
                 }
                 break;
+
             case android.view.MotionEvent.ACTION_UP:
-                this.ptrID1 = INVALID_POINTER_ID;
-                break;
             case android.view.MotionEvent.ACTION_POINTER_UP:
-                this.ptrID2 = INVALID_POINTER_ID;
+                if (pointerID === this.trackedPtrId1) {
+                    this.trackedPtrId1 = INVALID_POINTER_ID;
+                }
+                else if (pointerID === this.trackedPtrId2) {
+                    this.trackedPtrId2 = INVALID_POINTER_ID;
+                }
 
-                this.executeCallback(event, common.GestureStateTypes.ended);
+                if (wasTracking && !this.isTracking) {
+                    this.executeCallback(event, common.GestureStateTypes.ended);
+                }
                 break;
-            case android.view.MotionEvent.ACTION_CANCEL:
-                this.ptrID1 = INVALID_POINTER_ID;
-                this.ptrID2 = INVALID_POINTER_ID;
 
-                this.executeCallback(event, common.GestureStateTypes.cancelled);
+            case android.view.MotionEvent.ACTION_CANCEL:
+                this.trackedPtrId1 = INVALID_POINTER_ID;
+                this.trackedPtrId2 = INVALID_POINTER_ID;
+                if (wasTracking) {
+                    this.executeCallback(event, common.GestureStateTypes.cancelled);
+                }
                 break;
         }
         return true;
@@ -524,10 +549,10 @@ class RotateGestureDetector {
     }
 
     private getPointersAngle(event: android.view.MotionEvent) {
-        let firstX = event.getX(event.findPointerIndex(this.ptrID1));
-        let firstY = event.getY(event.findPointerIndex(this.ptrID1));
-        let secondX = event.getX(event.findPointerIndex(this.ptrID2));
-        let secondY = event.getY(event.findPointerIndex(this.ptrID2));
+        let firstX = event.getX(event.findPointerIndex(this.trackedPtrId1));
+        let firstY = event.getY(event.findPointerIndex(this.trackedPtrId1));
+        let secondX = event.getX(event.findPointerIndex(this.trackedPtrId2));
+        let secondY = event.getY(event.findPointerIndex(this.trackedPtrId2));
 
         return Math.atan2((secondY - firstY), (secondX - firstX));
     }
