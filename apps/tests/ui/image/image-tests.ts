@@ -38,6 +38,7 @@ export var test_Image_Members = function () {
     var image = new ImageModule.Image();
     TKUnit.assert(types.isUndefined(image.src), "Image.src is defined");
     TKUnit.assert(types.isDefined(image.isLoading), "Image.isLoading is not defined");
+    TKUnit.assert(image.isLoading === false, "Image.isLoading is default value should be false.");
 }
 
 /* TODO: We need a way to programmatically add an image to resources and then load it from, otherwise we do not know if there is such resource in the target native app.
@@ -70,12 +71,29 @@ export var test_SettingImageSrc = function (done) {
     // ### How to create an image and set its src.
     // ``` JavaScript
     var image = new ImageModule.Image();
-    image.src = "https://www.google.bg/images/srpr/logo11w.png";
+    image.src = "https://www.google.com/images/errors/logo_sm_2.png";
     // ```
     // </snippet>
 
+    image.src = null;
+
     var testModel = new ObservableModule.Observable();
-    testModel.set("imageIsLoading", true);
+    testModel.set("imageIsLoading", false);
+
+    let handler = function (data: ObservableModule.PropertyChangeData) {
+        testModel.off(ObservableModule.Observable.propertyChangeEvent, handler);
+
+        try {
+            let imageIsLoaded = !!image.imageSource;
+            TKUnit.assertTrue(!image.isLoading, "Image.isLoading should be false.");
+            TKUnit.assertTrue(!testModel.get("imageIsLoading"), "imageIsLoading on viewModel should be false.");
+            TKUnit.assertTrue(imageIsLoaded, "imageIsLoading should be true.");
+            done(null);
+        }
+        catch (e) {
+            done(e);
+        }
+    };
 
     image.bind({
         sourceProperty: "imageIsLoading",
@@ -83,23 +101,10 @@ export var test_SettingImageSrc = function (done) {
         twoWay: true
     }, testModel);
 
-    var imageIsLoaded = false;
-
-    var testFunc = function (views: Array<ViewModule.View>) {
-        var testImage = <ImageModule.Image> views[0];
-        imageIsLoaded = !!testImage.imageSource;
-        try {
-            TKUnit.assert(testModel.get("imageIsLoading") === false, "Expected: false, Actual: " + testModel.get("imageIsLoading"));
-            TKUnit.assert(imageIsLoaded === true, "Expected: true, Actual: " + imageIsLoaded);
-            done(null);
-        }
-        catch (e) {
-            done(e);
-        }
-    }
-
-    // wait for a second in order to download the image.
-    setTimeout(() => { helper.buildUIAndRunTest(image, testFunc) }, 3000);
+    image.src = "http://www.google.com/images/errors/logo_sm_2.png";
+    testModel.on(ObservableModule.Observable.propertyChangeEvent, handler);
+    TKUnit.assertTrue(image.isLoading, "Image.isLoading should be true.");
+    TKUnit.assertTrue(testModel.get("imageIsLoading"), "model.isLoading should be true.");
 }
 
 export var test_SettingImageSrcToFileWithinApp = function (done) {
@@ -111,13 +116,11 @@ export var test_SettingImageSrcToFileWithinApp = function (done) {
     // ```
     // </snippet>
 
-    var imageIsLoaded = false;
-
     var testFunc = function (views: Array<ViewModule.View>) {
         var testImage = <ImageModule.Image> views[0];
-        imageIsLoaded = !!testImage.imageSource;
+        TKUnit.waitUntilReady(() => !testImage.isLoading, 3);
         try {
-            TKUnit.assert(imageIsLoaded === true, "Expected: true, Actual: " + imageIsLoaded);
+            TKUnit.assertTrue(!testImage.isLoading, "isLoading should be false.");
             done(null);
         }
         catch (e) {
@@ -125,8 +128,7 @@ export var test_SettingImageSrcToFileWithinApp = function (done) {
         }
     }
 
-    // wait for a second in order to download the image.
-    setTimeout(() => { helper.buildUIAndRunTest(image, testFunc) }, 3000);
+    helper.buildUIAndRunTest(image, testFunc);
 }
 
 export var test_SettingStretch_AspectFit = function () {
