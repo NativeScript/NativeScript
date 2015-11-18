@@ -35,6 +35,7 @@ export function selectExample() {
 examples.set("actColor", "action-bar/color");
 examples.set("actBG", "action-bar/background");
 examples.set("actStyle", "action-bar/all");
+examples.set("actSystemIcons", "action-bar/system-icons");
 
 examples.set("basics", "bindings/basics");
 examples.set("xmlbasics", "bindings/xmlbasics");
