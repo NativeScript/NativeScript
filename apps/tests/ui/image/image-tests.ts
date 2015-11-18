@@ -101,7 +101,7 @@ export var test_SettingImageSrc = function (done) {
         twoWay: true
     }, testModel);
 
-    image.src = "http://www.google.com/images/errors/logo_sm_2.png";
+    image.src = "https://www.google.com/images/errors/logo_sm_2.png";
     testModel.on(ObservableModule.Observable.propertyChangeEvent, handler);
     TKUnit.assertTrue(image.isLoading, "Image.isLoading should be true.");
     TKUnit.assertTrue(testModel.get("imageIsLoading"), "model.isLoading should be true.");
