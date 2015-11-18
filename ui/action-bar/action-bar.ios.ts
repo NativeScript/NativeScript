@@ -5,11 +5,15 @@ import frameModule = require("ui/frame");
 import enums = require("ui/enums");
 import view = require("ui/core/view");
 import utils = require("utils/utils");
+import types = require("utils/types");
 
 global.moduleMerge(common, exports);
 
 export class ActionItem extends common.ActionItemBase implements dts.ActionItem {
-    private _ios: dts.IOSActionItemSettings = { position: enums.IOSActionItemPosition.left };
+    private _ios: dts.IOSActionItemSettings = {
+        position: enums.IOSActionItemPosition.left,
+        systemIcon: undefined
+    };
     public get ios(): dts.IOSActionItemSettings {
         return this._ios;
     }
@@ -119,10 +123,17 @@ export class ActionBar extends common.ActionBar {
         (<any>item).handler = tapHandler;
 
         var barButtonItem: UIBarButtonItem;
-        if (item.icon) {
+
+        if (types.isNumber(item.ios.systemIcon)) {
+            barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(item.ios.systemIcon, tapHandler, "tap");
+        }
+        else if (item.icon) {
             var img = imageSource.fromFileOrResource(item.icon);
             if (img && img.ios) {
                 barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img.ios, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
+            }
+            else {
+                throw new Error("Error loading icon from " + item.icon);
             }
         }
         else {

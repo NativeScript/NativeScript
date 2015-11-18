@@ -16,7 +16,10 @@ var ACTION_ITEM_ID_OFFSET = 1000;
 global.moduleMerge(common, exports);
 
 export class ActionItem extends common.ActionItemBase implements dts.ActionItem {
-    private _androidPosition: dts.AndroidActionItemSettings = { position: enums.AndroidActionItemPosition.actionBar };
+    private _androidPosition: dts.AndroidActionItemSettings = {
+        position: enums.AndroidActionItemPosition.actionBar,
+        systemIcon: undefined
+    };
 
     public get android(): dts.AndroidActionItemSettings {
         return this._androidPosition;
@@ -200,10 +203,21 @@ export class ActionBar extends common.ActionBar {
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
             var menuItem = menu.add(android.view.Menu.NONE, i + ACTION_ITEM_ID_OFFSET, android.view.Menu.NONE, item.text + "");
-            if (item.icon) {
+
+            if (item.android.systemIcon) {
+                // Try to look in the system resources.
+                let systemResourceId = android.content.res.Resources.getSystem().getIdentifier(item.android.systemIcon, "drawable", "android");
+                if (systemResourceId) {
+                    menuItem.setIcon(systemResourceId);
+                }
+            }
+            else if (item.icon) {
                 var drawableOrId = getDrawableOrResourceId(item.icon, this._appResources);
                 if (drawableOrId) {
                     menuItem.setIcon(drawableOrId);
+                }
+                else {
+                    throw new Error("Error loading icon from " + item.icon);
                 }
             }
 
