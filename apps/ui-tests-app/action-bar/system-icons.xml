@@ -1,0 +1,14 @@
+<Page>
+  <Page.actionBar>
+    <ActionBar>
+      <ActionBar.actionItems>
+        <ActionItem ios.systemIcon="12" android.systemIcon="ic_menu_search"/>
+        <ActionItem ios.systemIcon="15" android.systemIcon="ic_menu_camera"/>
+        <ActionItem ios.systemIcon="16" android.systemIcon="ic_menu_delete"/>
+      </ActionBar.actionItems>
+    </ActionBar>
+  </Page.actionBar>
+  <StackLayout>
+    <Button text="go to cleared page" tap="navigate"/>
+  </StackLayout>
+</Page>

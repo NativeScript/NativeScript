@@ -189,6 +189,9 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\tests\pages\tab-view.xml" />
+    <Content Include="apps\ui-tests-app\action-bar\system-icons.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\css\white-space.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -229,6 +232,9 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\ui-tests-app\app.css" />
+    <TypeScriptCompile Include="apps\ui-tests-app\action-bar\system-icons.ts">
+      <DependentUpon>system-icons.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\action-bar\all.ts">
       <DependentUpon>all.xml</DependentUpon>
     </TypeScriptCompile>
