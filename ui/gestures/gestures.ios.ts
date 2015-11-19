@@ -6,6 +6,14 @@ import trace = require("trace");
 
 global.moduleMerge(common, exports);
 
+class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecognizerDelegate {
+    public static ObjCProtocols = [UIGestureRecognizerDelegate];
+    public gestureRecognizerShouldRecognizeSimultaneouslyWithGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean {
+        return true;
+    }
+}
+var recognizerDelegateInstance: UIGestureRecognizerDelegateImpl = <UIGestureRecognizerDelegateImpl>UIGestureRecognizerDelegateImpl.new();
+
 class UIGestureRecognizerImpl extends NSObject {
 
     private _owner: WeakRef<GesturesObserver>;
@@ -199,6 +207,7 @@ export class GesturesObserver extends common.GesturesObserver {
             }
 
             if (recognizer) {
+                recognizer.delegate = recognizerDelegateInstance;
                 this._recognizers[name] = <RecognizerCache>{ recognizer: recognizer, target: target };
             }
         }
