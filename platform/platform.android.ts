@@ -19,6 +19,7 @@ export class device implements definition.device {
     private static _deviceType: string;
     private static _uuid: string;
     private static _language: string;
+    private static _region: string;
 
     static get os(): string {
         return platformNames.android;
@@ -85,10 +86,18 @@ export class device implements definition.device {
 
     static get language(): string {
         if (!device._language) {
-            device._language = java.util.Locale.getDefault().toString();
+            device._language = java.util.Locale.getDefault().getLanguage();
         }
 
         return device._language;
+    }
+
+    static get region(): string {
+        if(!device._region) {
+            device._region = java.util.Locale.getDefault().getCountry();
+        }
+
+        return device._region;
     }
 }
 

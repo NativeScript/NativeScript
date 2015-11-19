@@ -15,6 +15,7 @@ export class device implements definition.device {
     private static _sdkVersion: string;
     private static _deviceType: string;
     private static _language: string;
+    private static _region: string;
 
     static get manufacturer(): string {
         return "Apple";
@@ -83,6 +84,14 @@ export class device implements definition.device {
         }
         
         return device._language;
+    }
+
+    static get region(): string {
+        if(!device._region) {
+            device._region = NSLocale.currentLocale().objectForKey(NSLocaleCountryCode);
+        }
+
+        return device._region;
     }
 }
 
