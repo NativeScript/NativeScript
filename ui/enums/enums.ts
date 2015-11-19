@@ -26,6 +26,13 @@ export module TextDecoration {
     export var lineThrough = "line-through";
 }
 
+export module TextTransform {
+    export var none = "none";
+    export var capitalize = "capitalize";
+    export var uppercase = "uppercase";
+    export var lowercase = "lowercase";
+}
+
 export module WhiteSpace {
     export var normal = "normal";
     export var nowrap = "nowrap";

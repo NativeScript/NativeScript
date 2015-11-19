@@ -439,6 +439,31 @@
     }
 
     /**
+     * Specifies different text transforms.
+     */
+    export module TextTransform {
+        /**
+         * No transform.
+         */
+        export var none: string;
+        
+        /**
+         * Text transform capitalize.
+         */
+        export var capitalize: string;
+
+        /**
+         * Text transform uppercase.
+         */
+        export var uppercase: string;
+        
+        /**
+         * Text transform lowercase.
+         */
+        export var lowercase: string;
+    }
+
+    /**
      * Specifies different white spaces.
      */
     export module WhiteSpace {

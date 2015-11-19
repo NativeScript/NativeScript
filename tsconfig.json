@@ -335,6 +335,7 @@
         "apps/ui-tests-app/css/background.ts",
         "apps/ui-tests-app/css/styles.ts",
         "apps/ui-tests-app/css/text-decoration.ts",
+        "apps/ui-tests-app/css/text-transform.ts",
         "apps/ui-tests-app/css/white-space.ts",
         "apps/ui-tests-app/dialogs/dialogs.ts",
         "apps/ui-tests-app/dialogs/view-model.ts",

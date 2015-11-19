@@ -2,6 +2,8 @@
 import helper = require("../helper");
 import buttonModule = require("ui/button");
 import labelModule = require("ui/label");
+import textFieldModule = require("ui/text-field");
+import textViewModule = require("ui/text-view");
 import stackModule = require("ui/layouts/stack-layout");
 import page = require("ui/page");
 import color = require("color");
@@ -38,6 +40,10 @@ export function tearDown() {
 
 export function test_setting_textDecoration_property_from_CSS_is_applied_to_Style() {
     test_property_from_CSS_is_applied_to_style("textDecoration", "text-decoration", "underline");
+}
+
+export function test_setting_textTransform_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("textTransform", "text-transform", "uppercase");
 }
 
 export function test_setting_whiteSpace_property_from_CSS_is_applied_to_Style() {
@@ -281,6 +287,32 @@ export function test_setting_different_textDecoration_triggers_property_change()
     TKUnit.assert(changed, "Property changed not triggered.");
 }
 
+export function test_setting_same_textTransform_does_not_trigger_property_change() {
+    var testView = new buttonModule.Button();
+    testView.style.textTransform = "uppercase";
+
+    var changed = false;
+    testView.style.on(observable.Observable.propertyChangeEvent, (data) => {
+        changed = true;
+    });
+
+    testView.style.textTransform = "uppercase";
+    TKUnit.assert(!changed, "Property changed triggered.");
+}
+
+export function test_setting_different_textTransform_triggers_property_change() {
+    var testView = new buttonModule.Button();
+    testView.style.textTransform = "uppercase";
+
+    var changed = false;
+    testView.style.on(observable.Observable.propertyChangeEvent, (data) => {
+        changed = true;
+    });
+
+    testView.style.textTransform = "none";
+    TKUnit.assert(changed, "Property changed not triggered.");
+}
+
 export function test_setting_same_whiteSpace_does_not_trigger_property_change() {
     var testView = new buttonModule.Button();
     testView.style.whiteSpace = "normal";
@@ -376,7 +408,7 @@ export function test_setting_font_shorthand_property() {
     test_font_shorthand_property("normal normal normal 15px/30px Arial", "Arial", 15, "normal", "normal");
 }
 
-function test_font_shorthand_property(short: string, family: string, size: number, style: string, weight:string) {
+function test_font_shorthand_property(short: string, family: string, size: number, style: string, weight: string) {
     var testView = new buttonModule.Button();
     (<any>testView.style)["font"] = short;
 
@@ -411,16 +443,13 @@ function test_native_font(style: string, weight: string) {
     testView.style.fontWeight = weight;
     testView.style.fontStyle = style;
 
-    if (style === enums.FontStyle.normal && weight === enums.FontWeight.normal)
-    {
+    if (style === enums.FontStyle.normal && weight === enums.FontWeight.normal) {
         fontNameSuffix += "Regular";
     }
-    if (weight === enums.FontWeight.bold)
-    {
+    if (weight === enums.FontWeight.bold) {
         fontNameSuffix += "Bold";
     }
-    if (style === enums.FontStyle.italic)
-    {
+    if (style === enums.FontStyle.italic) {
         fontNameSuffix += "Italic";
     }
 
@@ -435,13 +464,12 @@ export var test_setting_button_whiteSpace_normal_sets_native = function () {
     testView.style.whiteSpace = "nowrap";
 
     helper.buildUIAndRunTest(testView, function (views: Array<viewModule.View>) {
-
         if (platform.device.os === platform.platformNames.android) {
             TKUnit.assertEqual((<android.widget.Button>testView.android).getEllipsize(), android.text.TextUtils.TruncateAt.END);
         } else if (platform.device.os === platform.platformNames.ios) {
             TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.lineBreakMode, NSLineBreakMode.NSLineBreakByTruncatingMiddle);
             TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 1);
-       }
+        }
     });
 }
 
@@ -450,7 +478,6 @@ export var test_setting_label_whiteSpace_normal_sets_native = function () {
     testView.style.whiteSpace = "nowrap";
 
     helper.buildUIAndRunTest(testView, function (views: Array<viewModule.View>) {
-
         if (platform.device.os === platform.platformNames.android) {
             TKUnit.assertEqual((<android.widget.TextView>testView.android).getEllipsize(), android.text.TextUtils.TruncateAt.END);
         } else if (platform.device.os === platform.platformNames.ios) {
@@ -465,7 +492,6 @@ export var test_setting_button_whiteSpace_nowrap_sets_native = function () {
     testView.style.whiteSpace = "normal";
 
     helper.buildUIAndRunTest(testView, function (views: Array<viewModule.View>) {
-
         if (platform.device.os === platform.platformNames.android) {
             TKUnit.assertNull((<android.widget.Button>testView.android).getEllipsize(), null);
         } else if (platform.device.os === platform.platformNames.ios) {
@@ -480,7 +506,6 @@ export var test_setting_label_whiteSpace_nowrap_sets_native = function () {
     testView.style.whiteSpace = "normal";
 
     helper.buildUIAndRunTest(testView, function (views: Array<viewModule.View>) {
-
         if (platform.device.os === platform.platformNames.android) {
             TKUnit.assertNull((<android.widget.TextView>testView.android).getEllipsize(), null);
         } else if (platform.device.os === platform.platformNames.ios) {
@@ -488,4 +513,119 @@ export var test_setting_label_whiteSpace_nowrap_sets_native = function () {
             TKUnit.assertEqual((<UILabel>testView.ios).numberOfLines, 0);
         }
     });
+}
+
+var initial = "text Text";
+var capitalized = "Text Text";
+var upper = "TEXT TEXT";
+var lower = "text text";
+
+function executeTransformTest(testView: viewModule.View, androidTextFunc: (testView: viewModule.View) => string, iOSTextFunc: (testView: viewModule.View) => string) {
+    helper.buildUIAndRunTest(testView, function (views: Array<viewModule.View>) {
+        if (platform.device.os === platform.platformNames.android) {
+            TKUnit.assertEqual(androidTextFunc(testView) + "", capitalized);
+        } else if (platform.device.os === platform.platformNames.ios) {
+            TKUnit.assertEqual(iOSTextFunc(testView), capitalized);
+        }
+
+        testView.style.textTransform = enums.TextTransform.uppercase;
+
+        if (platform.device.os === platform.platformNames.android) {
+            TKUnit.assertEqual(androidTextFunc(testView) + "", upper);
+        } else if (platform.device.os === platform.platformNames.ios) {
+            TKUnit.assertEqual(iOSTextFunc(testView), upper);
+        }
+
+        testView.style.textTransform = enums.TextTransform.lowercase;
+
+        if (platform.device.os === platform.platformNames.android) {
+            TKUnit.assertEqual(androidTextFunc(testView) + "", lower);
+        } else if (platform.device.os === platform.platformNames.ios) {
+            TKUnit.assertEqual(iOSTextFunc(testView), lower);
+        }
+
+        testView.style.textTransform = enums.TextTransform.none;
+
+        if (platform.device.os === platform.platformNames.android) {
+            TKUnit.assertEqual(androidTextFunc(testView) + "", initial);
+        } else if (platform.device.os === platform.platformNames.ios) {
+            TKUnit.assertEqual(iOSTextFunc(testView), initial);
+        }
+    });
+}
+
+function androidText(testView: viewModule.View) {
+    return (<android.widget.TextView>testView.android).getText();;
+}
+
+function iOSText(testView: viewModule.View) {
+    return (<UITextView | UILabel | UITextField>testView.ios).attributedText.string;
+}
+
+export var test_setting_label_textTransform_sets_native = function () {
+    var testView = new labelModule.Label();
+    testView.text = initial;
+    testView.style.textTransform = enums.TextTransform.capitalize;
+
+    executeTransformTest(testView, androidText, iOSText);
+}
+
+export var test_setting_textField_textTransform_sets_native = function () {
+    var testView = new textFieldModule.TextField();
+    testView.text = initial;
+    testView.style.textTransform = enums.TextTransform.capitalize;
+
+    executeTransformTest(testView, androidText, iOSText);
+}
+
+export var test_setting_textView_textTransform_sets_native = function () {
+    var testView = new textViewModule.TextView();
+    testView.text = initial;
+    testView.style.textTransform = enums.TextTransform.capitalize;
+
+    executeTransformTest(testView, androidText, iOSText);
+}
+
+export var test_setting_button_textTransform_sets_native = function () {
+    var testView = new buttonModule.Button();
+    testView.text = initial;
+    testView.style.textTransform = enums.TextTransform.capitalize;
+
+    executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).attributedTitleForState(UIControlState.UIControlStateNormal).string; });
+}
+
+export var test_setting_label_textTransform_and_textDecoration_sets_native = function () {
+    var testView = new labelModule.Label();
+    testView.text = initial;
+    testView.style.textTransform = enums.TextTransform.capitalize;
+    testView.style.textDecoration = enums.TextDecoration.underline;
+
+    executeTransformTest(testView, androidText, iOSText);
+}
+
+export var test_setting_textField_textTransform_and_textDecoration_sets_native = function () {
+    var testView = new textFieldModule.TextField();
+    testView.text = initial;
+    testView.style.textTransform = enums.TextTransform.capitalize;
+    testView.style.textDecoration = enums.TextDecoration.underline;
+
+    executeTransformTest(testView, androidText, iOSText);
+}
+
+export var test_setting_textView_textTransform_and_textDecoration_sets_native = function () {
+    var testView = new textViewModule.TextView();
+    testView.text = initial;
+    testView.style.textTransform = enums.TextTransform.capitalize;
+    testView.style.textDecoration = enums.TextDecoration.underline;
+
+    executeTransformTest(testView, androidText, iOSText);
+}
+
+export var test_setting_button_textTransform_and_textDecoration_sets_native = function () {
+    var testView = new buttonModule.Button();
+    testView.text = initial;
+    testView.style.textTransform = enums.TextTransform.capitalize;
+    testView.style.textDecoration = enums.TextDecoration.underline;
+
+    executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).attributedTitleForState(UIControlState.UIControlStateNormal).string; });
 }

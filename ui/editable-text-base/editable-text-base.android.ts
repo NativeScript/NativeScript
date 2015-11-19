@@ -30,7 +30,15 @@ export class EditableTextBase extends common.EditableTextBase {
                 //
             },
             onTextChanged: function (text: string, start: number, before: number, count: number) {
-                //
+                var owner = that.get();
+                if (!owner) {
+                    return;
+                }
+                var selectionStart = owner.android.getSelectionStart();
+                owner.android.removeTextChangedListener(textWatcher);
+                owner.style._updateTextTransform();
+                owner.android.addTextChangedListener(textWatcher);
+                owner.android.setSelection(selectionStart);
             },
             afterTextChanged: function (editable: android.text.IEditable) {
                 var owner = that.get();

@@ -438,6 +438,15 @@ export class TextViewStyler implements definition.stylers.Styler {
         setTextDecoration(view._nativeView, enums.TextDecoration.none);
     }
 
+    // text-transform
+    private static setTextTransformProperty(view: view.View, newValue: any) {
+        setTextTransform(view._nativeView, newValue);
+    }
+
+    private static resetTextTransformProperty(view: view.View, nativeValue: any) {
+        setTextTransform(view._nativeView, enums.TextTransform.none);
+    }
+
     // white-space
     private static setWhiteSpaceProperty(view: view.View, newValue: any) {
         setWhiteSpace(view._nativeView, newValue);
@@ -467,6 +476,10 @@ export class TextViewStyler implements definition.stylers.Styler {
             TextViewStyler.setTextDecorationProperty,
             TextViewStyler.resetTextDecorationProperty), "TextBase");
 
+        style.registerHandler(style.textTransformProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setTextTransformProperty,
+            TextViewStyler.resetTextTransformProperty), "TextBase");
+
         style.registerHandler(style.whiteSpaceProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setWhiteSpaceProperty,
             TextViewStyler.resetWhiteSpaceProperty), "TextBase");
@@ -492,6 +505,10 @@ export class TextViewStyler implements definition.stylers.Styler {
             TextViewStyler.setTextDecorationProperty,
             TextViewStyler.resetTextDecorationProperty), "Button");
 
+        style.registerHandler(style.textTransformProperty, new stylersCommon.StylePropertyChangedHandler(
+            TextViewStyler.setTextTransformProperty,
+            TextViewStyler.resetTextTransformProperty), "Button");
+
         style.registerHandler(style.whiteSpaceProperty, new stylersCommon.StylePropertyChangedHandler(
             TextViewStyler.setWhiteSpaceProperty,
             TextViewStyler.resetWhiteSpaceProperty), "Button");
@@ -516,6 +533,51 @@ function setTextDecoration(view: android.widget.TextView, value: string) {
     } else {
         view.setPaintFlags(0);
     }   
+}
+
+function setTextTransform(view: android.widget.TextView, value: string) {
+    let str = view.getText() + "";
+    let result: string;
+
+    switch (value) {
+        case enums.TextTransform.none:
+        default:
+            result = view["originalString"] || str;
+            if (view["transformationMethod"]) {
+                view.setTransformationMethod(view["transformationMethod"]);
+            }
+            break;
+        case enums.TextTransform.uppercase:
+            view.setTransformationMethod(null);
+            result = str.toUpperCase();
+            break;
+        case enums.TextTransform.lowercase:
+            view.setTransformationMethod(null);
+            result = str.toLowerCase();
+            break;
+        case enums.TextTransform.capitalize:
+            view.setTransformationMethod(null);
+            result = getCapitalizedString(str);
+            break;
+    }
+
+    if (!view["originalString"]) {
+        view["originalString"] = str;
+        view["transformationMethod"] = view.getTransformationMethod();
+    }
+
+    view.setText(result);
+}
+
+function getCapitalizedString(str: string): string {
+    var words = str.split(" ");
+    var newWords = [];
+    for (let i = 0; i < words.length; i++) {
+        let word = words[i];
+        newWords.push(word.substr(0, 1).toUpperCase() + word.substring(1));
+    }
+
+    return newWords.join(" ");
 }
 
 function setWhiteSpace(view: android.widget.TextView, value: string) {

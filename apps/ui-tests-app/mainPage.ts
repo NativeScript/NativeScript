@@ -92,5 +92,6 @@ examples.set("webtest", "web-view/web-view-test");
 
 examples.set("decoration", "css/text-decoration");
 examples.set("whitespace", "css/white-space");
+examples.set("transform", "css/text-transform");
 
 //VM.set("selected", "tabAll");

@@ -42,6 +42,18 @@ export function whiteSpaceConverter(value: string): string {
     }
 }
 
+export function textTransformConverter(value: string): string {
+    switch (value) {
+        case enums.TextTransform.none:
+        case enums.TextTransform.uppercase:
+        case enums.TextTransform.lowercase:
+        case enums.TextTransform.capitalize:
+            return value;
+        default:
+            throw new Error("CSS text-transform \"" + value + "\" is not supported.");
+    }
+}
+
 export var numberConverter = parseFloat;
 
 export function visibilityConverter(value: string): string {
