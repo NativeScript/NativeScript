@@ -511,6 +511,18 @@ declare module "ui/core/view" {
      */
     export class CustomLayoutView extends View {
     }
+    
+    /**
+     * Defines an interface for a View factory function.
+     * Commonly used to specify the visualization of data objects.
+     */
+    interface Template {
+        /**
+         * Call signature of the factory function.
+         * Returns a new View instance.
+         */
+        (): View;
+    }
 
     /**
      * Defines an interface for adding arrays declared in xml.

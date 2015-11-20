@@ -21,20 +21,24 @@ function isCurentPlatform(value: string): boolean {
     return value && value.toLowerCase() === platform.device.os.toLowerCase();
 }
 
-export function parse(value: string, context: any): view.View {
-    var viewToReturn: view.View;
-
-    if (context instanceof view.View) {
-        context = getExports(context);
+export function parse(value: string | view.Template, context: any): view.View {
+    if (types.isString(value)) {
+        var viewToReturn: view.View;
+    
+        if (context instanceof view.View) {
+            context = getExports(context);
+        }
+    
+        var componentModule = parseInternal(<string>value, context);
+    
+        if (componentModule) {
+            viewToReturn = componentModule.component;
+        }
+    
+        return viewToReturn;
+    } else if (types.isFunction(value)) {
+        return (<view.Template>value)();
     }
-
-    var componentModule = parseInternal(value, context);
-
-    if (componentModule) {
-        viewToReturn = componentModule.component;
-    }
-
-    return viewToReturn;
 }
 
 function parseInternal(value: string, context: any): componentBuilder.ComponentModule {
@@ -104,6 +108,7 @@ function parseInternal(value: string, context: any): componentBuilder.ComponentM
 
                 if (templateBuilderDef.isKnownTemplate(name, parent.exports)) {
                     templateBuilder = new templateBuilderDef.TemplateBuilder({
+                        context: parent ? getExports(parent.component) : null, // Passing 'context' won't work if you set "codeFile" on the page
                         parent: parent,
                         name: name,
                         elementName: args.elementName,

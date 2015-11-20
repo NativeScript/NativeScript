@@ -32,9 +32,9 @@ declare module "ui/repeater" {
         items: any;
 
         /**
-         * Gets or set the item template of the Repeater. 
+         * Gets or set the item template of the Repeater.
          */
-        itemTemplate: string;
+        itemTemplate: string | view.Template;
         
         /**
          * Gets or set the items layout of the Repeater. Default value is StackLayout with orientation="vertical".

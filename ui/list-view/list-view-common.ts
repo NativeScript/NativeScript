@@ -8,6 +8,7 @@ import builder = require("ui/builder");
 import label = require("ui/label");
 import color = require("color");
 import weakEvents = require("ui/core/weak-event-listener");
+import types = require("utils/types");
 
 var ITEMS = "items";
 var ITEMTEMPLATE = "itemTemplate";
@@ -91,10 +92,10 @@ export class ListView extends view.View implements definition.ListView {
         this._setValue(ListView.itemsProperty, value);
     }
 
-    get itemTemplate(): string {
+    get itemTemplate(): string | view.Template {
         return this._getValue(ListView.itemTemplateProperty);
     }
-    set itemTemplate(value: string) {
+    set itemTemplate(value: string | view.Template) {
         this._setValue(ListView.itemTemplateProperty, value);
     }
 

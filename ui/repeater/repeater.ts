@@ -90,10 +90,10 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
         this._setValue(Repeater.itemsProperty, value);
     }
 
-    get itemTemplate(): string {
+    get itemTemplate(): string | viewModule.Template {
         return this._getValue(Repeater.itemTemplateProperty);
     }
-    set itemTemplate(value: string) {
+    set itemTemplate(value: string | viewModule.Template) {
         this._setValue(Repeater.itemTemplateProperty, value);
     }
 

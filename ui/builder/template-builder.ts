@@ -1,14 +1,19 @@
 ﻿import definition = require("ui/builder/template-builder");
+import builder = require("ui/builder");
+import view = require("ui/core/view");
+import page = require("ui/page");
 import xml = require("xml");
 
 var KNOWNTEMPLATES = "knownTemplates";
 
 export class TemplateBuilder {
+    private _context: any;
     private _items: Array<string>;
     private _templateProperty: definition.TemplateProperty;
     private _nestingLevel: number;
 
     constructor(templateProperty: definition.TemplateProperty) {
+        this._context = templateProperty.context;
         this._items = new Array<string>();
         this._templateProperty = templateProperty;
         this._nestingLevel = 0;
@@ -56,7 +61,10 @@ export class TemplateBuilder {
 
     private build() {
         if (this._templateProperty.name in this._templateProperty.parent.component) {
-            this._templateProperty.parent.component[this._templateProperty.name] = this._items.join("");
+            var xml = this._items.join("");
+            var context = this._context;
+            var template: view.Template = () => builder.parse(xml, context);
+            this._templateProperty.parent.component[this._templateProperty.name] = template;
         }
     }
 }
