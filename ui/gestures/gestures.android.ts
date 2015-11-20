@@ -17,9 +17,8 @@ export class GesturesObserver extends common.GesturesObserver {
     private _simpleGestureDetector: android.view.GestureDetector;
     private _scaleGestureDetector: android.view.ScaleGestureDetector;
     private _swipeGestureDetector: android.view.GestureDetector;
-    private _panGestureDetector: android.view.GestureDetector
-    private _panGestureListener: PanGestureListener;
-    private _rotateGestureDetector: RotateGestureDetector;
+    private _panGestureDetector: CustomPanGestureDetector;
+    private _rotateGestureDetector: CustomRotateGestureDetector;
 
     private _onTargetLoaded: (data: observable.EventData) => void;
     private _onTargetUnloaded: (data: observable.EventData) => void;
@@ -67,7 +66,6 @@ export class GesturesObserver extends common.GesturesObserver {
         this._scaleGestureDetector = null;
         this._swipeGestureDetector = null;
         this._panGestureDetector = null;
-        this._panGestureListener = null;
         this._rotateGestureDetector = null;
     }
 
@@ -88,12 +86,11 @@ export class GesturesObserver extends common.GesturesObserver {
         }
 
         if (type & definition.GestureTypes.pan) {
-            this._panGestureListener = new PanGestureListener(this, this.target);
-            this._panGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, this._panGestureListener);
+            this._panGestureDetector = new CustomPanGestureDetector(this, this.target);
         }
 
         if (type & definition.GestureTypes.rotation) {
-            this._rotateGestureDetector = new RotateGestureDetector(this, this.target);
+            this._rotateGestureDetector = new CustomRotateGestureDetector(this, this.target);
         }
     }
 
@@ -112,11 +109,6 @@ export class GesturesObserver extends common.GesturesObserver {
 
         if (this._panGestureDetector) {
             this._panGestureDetector.onTouchEvent(motionEvent);
-
-            if (motionEvent.getActionMasked() === android.view.MotionEvent.ACTION_UP ||
-                motionEvent.getActionMasked() === android.view.MotionEvent.ACTION_POINTER_UP) {
-                this._panGestureListener.onTouchUpAction(motionEvent);
-            }
         }
 
         if (this._rotateGestureDetector) {
@@ -233,7 +225,7 @@ class PinchGestureListener extends android.view.ScaleGestureDetector.SimpleOnSca
 
         this._observer = observer;
         this._target = target;
-
+        
         return global.__native(this);
     }
 
@@ -364,83 +356,108 @@ class SwipeGestureListener extends android.view.GestureDetector.SimpleOnGestureL
     }
 }
 
-class PanGestureListener extends android.view.GestureDetector.SimpleOnGestureListener {
-    private _observer: GesturesObserver;
-    private _target: view.View;
+class CustomPanGestureDetector {
+    private observer: GesturesObserver;
+    private target: view.View;
 
-    private _density: number;
-    private _deltaX: number;
-    private _deltaY: number;
+    private density: number;
 
-    private _trackedPointerID: number;
-    private _initialPointerX: number;
-    private _initialPointerY: number;
+    private isTracking: boolean;
+    private deltaX: number;
+    private deltaY: number;
+    private initialX: number;
+    private initialY: number;
+
+    private lastEventCache: android.view.MotionEvent;
 
     constructor(observer: GesturesObserver, target: view.View) {
-        super();
+        this.observer = observer;
+        this.target = target;
+        this.isTracking = false;
 
-        this._observer = observer;
-        this._target = target;
-        this._trackedPointerID = INVALID_POINTER_ID;
-        this._density = utils.layout.getDisplayDensity();
-
-        return global.__native(this);
+        this.density = utils.layout.getDisplayDensity();
     }
 
-    public onDown(motionEvent: android.view.MotionEvent): boolean {
-        return false;
-    }
+    public onTouchEvent(event: android.view.MotionEvent) {
+        let pointerID = event.getPointerId(event.getActionIndex());
+        let wasTracking = this.isTracking;
 
-    public onScroll(initialEvent: android.view.MotionEvent, currentEvent: android.view.MotionEvent, lastDeltaX: number, lastDeltaY: number): boolean {
-        let pointerID = currentEvent.getPointerId(currentEvent.getActionIndex());
+        switch (event.getActionMasked()) {
+            case android.view.MotionEvent.ACTION_UP:
+            case android.view.MotionEvent.ACTION_CANCEL:
+                this.trackStop(event, false);
+                break;
 
-        if (this._trackedPointerID !== INVALID_POINTER_ID && this._trackedPointerID !== pointerID) {
-            // New pointer - stop tracking the old one.
-            this.stopTrackingCurrentPointer(currentEvent);
-        }
+            case android.view.MotionEvent.ACTION_DOWN:
+            case android.view.MotionEvent.ACTION_POINTER_DOWN:
+            case android.view.MotionEvent.ACTION_POINTER_UP:
+                this.trackStop(event, true);
+                break;
 
-        if (this._trackedPointerID === INVALID_POINTER_ID) {
-            this._trackedPointerID = pointerID;
-            this._initialPointerX = currentEvent.getX();
-            this._initialPointerY = currentEvent.getY();
+            case android.view.MotionEvent.ACTION_MOVE:
+                if (!this.isTracking) {
+                    this.trackStart(event)
+                }
 
-            let args = _getPanArgs(0, 0, this._target, common.GestureStateTypes.began, initialEvent, currentEvent);
-            _executeCallback(this._observer, args);
-        }
-
-        if (pointerID === this._trackedPointerID) {
-            this._deltaX = (currentEvent.getX() - this._initialPointerX) / this._density;
-            this._deltaY = (currentEvent.getY() - this._initialPointerY) / this._density;
-
-            let args = _getPanArgs(this._deltaX, this._deltaY, this._target, common.GestureStateTypes.changed, initialEvent, currentEvent);
-            _executeCallback(this._observer, args);
+                this.trackChange(event);
+                break;
         }
         return true;
     }
 
-    public onTouchUpAction(currentEvent: android.view.MotionEvent) {
-        if (this._trackedPointerID !== INVALID_POINTER_ID) {
-            // Currently tracked pointer is up - emit end event.
-            let pointerID = currentEvent.getPointerId(currentEvent.getActionIndex());
-            if (pointerID === this._trackedPointerID) {
-                this.stopTrackingCurrentPointer(currentEvent);
-            }
+    private trackStop(currentEvent: android.view.MotionEvent, cahceEvent: boolean) {
+        if (this.isTracking) {
+            let args = _getPanArgs(this.deltaX, this.deltaY, this.target, common.GestureStateTypes.ended, null, currentEvent);
+            _executeCallback(this.observer, args);
+
+            this.deltaX = undefined;
+            this.deltaY = undefined;
+            this.isTracking = false;
+        }
+
+        if (cahceEvent) {
+            this.lastEventCache = currentEvent;
+        }
+        else {
+            this.lastEventCache = undefined;
         }
     }
 
-    private stopTrackingCurrentPointer(currentEvent: android.view.MotionEvent) {
-        if (this._trackedPointerID !== INVALID_POINTER_ID) {
-            this._deltaX = undefined;
-            this._deltaY = undefined;
-            this._trackedPointerID = INVALID_POINTER_ID;
+    private trackStart(currentEvent: android.view.MotionEvent) {
+        let inital = this.getMotionEventCenter(this.lastEventCache ? this.lastEventCache : currentEvent);
+        this.initialX = inital.x;
+        this.initialY = inital.y;
+        this.isTracking = true;
 
-            let args = _getPanArgs(this._deltaX, this._deltaY, this._target, common.GestureStateTypes.ended, null, currentEvent);
-            _executeCallback(this._observer, args);
+        let args = _getPanArgs(0, 0, this.target, common.GestureStateTypes.began, null, currentEvent);
+        _executeCallback(this.observer, args);
+    }
+
+    private trackChange(currentEvent: android.view.MotionEvent) {
+        let current = this.getMotionEventCenter(currentEvent);
+        this.deltaX = current.x - this.initialX;
+        this.deltaY = current.y - this.initialY;
+
+        let args = _getPanArgs(this.deltaX, this.deltaY, this.target, common.GestureStateTypes.changed, null, currentEvent);
+        _executeCallback(this.observer, args);
+    }
+
+    private getMotionEventCenter(event: android.view.MotionEvent): { x: number, y: number } {
+        let count = event.getPointerCount();
+        let res = { x: 0, y: 0 };
+        for (var i = 0; i < count; i++) {
+            res.x += event.getX(i);
+            res.y += event.getY(i);
         }
+
+        res.x /= (count * this.density);
+        res.y /= (count * this.density);
+
+        return res;
     }
 }
 
-class RotateGestureDetector {
+class CustomRotateGestureDetector {
     private observer: GesturesObserver;
     private target: view.View;
     private trackedPtrId1: number;
