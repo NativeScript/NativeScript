@@ -1116,7 +1116,7 @@ export class View extends proxy.ProxyObject implements definition.View {
             return this.typeName + `<${this.id}>`;
         }
 
-        return this.typeName;
+        return this.typeName + `(${this._domId})`;
     }
 
     public _setNativeViewFrame(nativeView: any, frame: any) {

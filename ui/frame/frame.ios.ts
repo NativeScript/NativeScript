@@ -23,8 +23,8 @@ export class Frame extends frameCommon.Frame {
     public _navigateToEntry: definition.BackstackEntry;
     public _widthMeasureSpec: number;
     public _heightMeasureSpec: number;
-    public _layoutWidth: number;
-    public _layoutheight: number;
+    public _right: number;
+    public _bottom: number;
 
     constructor() {
         super();
@@ -64,7 +64,6 @@ export class Frame extends frameCommon.Frame {
 
         backstackEntry[NAV_DEPTH] = navDepth;
         viewController[ENTRY] = backstackEntry;
-        this._navigateToEntry = backstackEntry;
 
         this._updateActionBar(backstackEntry.resolvedPage);
 
@@ -119,7 +118,6 @@ export class Frame extends frameCommon.Frame {
         if (!this._shouldSkipNativePop) {
             var controller = backstackEntry.resolvedPage.ios;
             var animated = this._getIsAnimatedNavigation(backstackEntry.entry);
-            this._navigateToEntry = backstackEntry;
 
             this._updateActionBar(backstackEntry.resolvedPage);
             this._ios.controller.popToViewControllerAnimated(controller, animated);
@@ -196,6 +194,11 @@ export class Frame extends frameCommon.Frame {
         this._heightMeasureSpec = heightMeasureSpec;
 
         let result = this.measurePage(this.currentPage);
+        if (this._navigateToEntry && this.currentPage) {
+            let newPageSize = this.measurePage(this._navigateToEntry.resolvedPage);
+            result.measuredWidth = Math.max(result.measuredWidth, newPageSize.measuredWidth);
+            result.measuredHeight = Math.max(result.measuredHeight, newPageSize.measuredHeight);
+        }
         let widthAndState = view.View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
         let heightAndState = view.View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
 
@@ -206,7 +209,7 @@ export class Frame extends frameCommon.Frame {
         
         // If background does not span under statusbar - reduce available height.
         let heightSpec: number = this._heightMeasureSpec;
-        if (page && !page.backgroundSpanUnderStatusBar) {
+        if (page && !page.backgroundSpanUnderStatusBar && !this.parent) {
             let height = utils.layout.getMeasureSpecSize(this._heightMeasureSpec);
             let heightMode = utils.layout.getMeasureSpecMode(this._heightMeasureSpec);
             let statusBarHeight = uiUtils.ios.getStatusBarHeight();
@@ -217,16 +220,19 @@ export class Frame extends frameCommon.Frame {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        this._layoutWidth = right - left;
-        this._layoutheight = bottom - top;
+        this._right = right;
+        this._bottom = bottom;
         this.layoutPage(this.currentPage);
+        if (this._navigateToEntry && this.currentPage) {
+            this.layoutPage(this._navigateToEntry.resolvedPage);
+        }
     }
 
     public layoutPage(page: pages.Page): void {
         // If background does not span under statusbar - reduce available height and adjust top offset.
-        let statusBarHeight = (page && !page.backgroundSpanUnderStatusBar) ? uiUtils.ios.getStatusBarHeight() : 0;
+        let statusBarHeight = (page && !page.backgroundSpanUnderStatusBar && !this.parent) ? uiUtils.ios.getStatusBarHeight() : 0;
 
-        view.View.layoutChild(this, page, 0, statusBarHeight, this._layoutWidth, this._layoutheight);
+        view.View.layoutChild(this, page, 0, statusBarHeight, this._right, this._bottom);
     }
 
     public get navigationBarHeight(): number {
@@ -243,6 +249,14 @@ export class Frame extends frameCommon.Frame {
         }
 
         super._setNativeViewFrame(nativeView, frame);
+    }
+
+    public remeasureFrame(): void {
+        this.requestLayout();
+        let window: UIWindow = this._nativeView.window;
+        if (window) {
+            window.layoutIfNeeded();
+        }
     }
 }
 
@@ -295,8 +309,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             }
 
             frame._addView(newPage);
-            frame.measurePage(newPage);
-            frame.layoutPage(newPage)
+            frame.remeasureFrame();
         }
         else if (newPage.parent !== frame) {
             throw new Error("Page is already shown on another frame.");
@@ -355,9 +368,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
 
         frame._navigateToEntry = null;
         frame._currentEntry = newEntry;
-
-        frame.measurePage(newPage);
-        frame.layoutPage(newPage);
+        frame.remeasureFrame();
 
         // In iOS we intentionally delay the raising of the 'loaded' event so both platforms behave identically.
         // The loaded event must be raised AFTER the page is part of the windows hierarchy and 
