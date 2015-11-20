@@ -260,6 +260,11 @@ export class Page extends pageCommon.Page {
 
         // If background span under statusbar reduce available height for page content.
         let statusBarHeight = this.backgroundSpanUnderStatusBar ? uiUtils.ios.getStatusBarHeight() : 0;
+
+        // If this page is inside nested frame - don't substract statusBarHeight again.
+        if (this.frame && this.frame.parent) {
+            statusBarHeight = 0;
+        }
         
         // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
         if (this._isModal && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
@@ -296,6 +301,12 @@ export class Page extends pageCommon.Page {
         }
 
         let statusBarHeight = this.backgroundSpanUnderStatusBar ? uiUtils.ios.getStatusBarHeight() : 0;
+        
+        // If this page is inside nested frame - don't substract statusBarHeight again.
+        if (this.frame && this.frame.parent) {
+            statusBarHeight = 0;
+        }
+
         // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
         if (this._isModal && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
             statusBarHeight = 0;
