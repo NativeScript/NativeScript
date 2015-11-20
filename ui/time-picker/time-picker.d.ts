@@ -33,5 +33,25 @@ declare module "ui/time-picker" {
          * Gets or sets the time minute.
          */
         minute: number;
+
+        /**
+         * Gets or sets the max time hour.
+         */
+        maxHour: number;
+
+        /**
+         * Gets or sets the max time minute.
+         */
+        maxMinute: number;
+
+        /**
+         * Gets or sets the min time hour.
+         */
+        minHour: number;
+
+        /**
+         * Gets or sets the min time minute.
+         */
+        minMinute: number;
     }
 } 
