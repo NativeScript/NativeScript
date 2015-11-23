@@ -76,11 +76,11 @@ export function test_WhenCreated_MinHourIs1() {
     });
 }
 
-export function test_WhenCreated_MaxHourIs23() {
+export function test_WhenCreated_MaxHourIs24() {
     helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var actualValue = timePicker.maxHour;
-        var expectedValue = 23;
+        var expectedValue = 24;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
 }
