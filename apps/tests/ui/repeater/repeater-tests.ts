@@ -8,6 +8,7 @@ import layoutBaseModule = require("ui/layouts/layout-base");
 import fs = require("file-system");
 import pageModule = require("ui/page");
 import gestureModule = require("ui/gestures");
+import { Label } from "ui/label";
 
 // <snippet module="ui/repeater" title="repeater">
 // # Repeater
@@ -355,6 +356,28 @@ export function test_BindingRepeaterToASimpleArray() {
 
     function testAction(views: Array<viewModule.View>) {
         repeater.itemTemplate = "<Label id=\"testLabel\" text=\"{{ $value }}\" />";
+        repeater.items = [1, 2, 3];
+
+        TKUnit.wait(ASYNC);
+
+        TKUnit.assertEqual(getChildAtText(repeater, 0), "1", "first element text");
+        TKUnit.assertEqual(getChildAtText(repeater, 1), "2", "second element text");
+        TKUnit.assertEqual(getChildAtText(repeater, 2), "3", "third element text");
+    }
+
+    helper.buildUIAndRunTest(repeater, testAction);
+}
+
+export function test_ItemTemplateFactoryFunction() {
+    var repeater = new repeaterModule.Repeater();
+
+    function testAction(views: Array<viewModule.View>) {
+        repeater.itemTemplate = () => {
+            var label = new Label();
+            label.id = "testLabel";
+            label.bind({ sourceProperty: "$value", targetProperty: "text", twoWay: false });
+            return label;
+        }
         repeater.items = [1, 2, 3];
 
         TKUnit.wait(ASYNC);

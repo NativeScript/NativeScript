@@ -14,6 +14,8 @@ import stackLayoutModule = require("ui/layouts/stack-layout");
 import {Label} from "ui/label";
 import {Page} from "ui/page";
 import {Button} from "ui/button";
+import {View} from "ui/core/view";
+import {TemplateView} from "./template-builder-tests/template-view";
 import myCustomControlWithoutXml = require("./mymodule/MyControl");
 import listViewModule = require("ui/list-view");
 import helper = require("../ui/helper");
@@ -819,3 +821,18 @@ export function test_searchbar_donotcrash_whentext_isspace() {
 
     TKUnit.assertEqual(sb.text, " ");
 };
+
+export function test_parse_template_property() {
+    var page = <Page>builder.load(fs.path.join(__dirname, "template-builder-tests/simple-template-test.xml"));
+    TKUnit.assert(page, "Expected root page.");
+    var templateView = <TemplateView>page.getViewById("template-view");
+    TKUnit.assert(templateView, "Expected TemplateView.");
+    TKUnit.assert(templateView.template, "Expected the template of the TemplateView to be defined");
+    
+    TKUnit.assertEqual(templateView.getChildrenCount(), 0, "Expected TemplateView initially to have no children.");
+    templateView.parseTemplate();
+    TKUnit.assertEqual(templateView.getChildrenCount(), 1, "Expected TemplateView initially to have 1 child.");
+    var button = <Button>templateView.getChildAt(0);
+    TKUnit.assert(button, "Expected the TemplateView's template to create a button child.");
+    TKUnit.assertEqual(button.text, "Click!", "Expected child Button to have text 'Click!'");
+}

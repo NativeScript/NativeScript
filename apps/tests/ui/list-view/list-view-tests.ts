@@ -8,6 +8,7 @@ import observable = require("data/observable");
 import types = require("utils/types");
 import platform = require("platform");
 import utils = require("utils/utils");
+import { Label } from "ui/label";
 
 // <snippet module="ui/list-view" title="list-view">
 // # ListView
@@ -469,6 +470,28 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var listView = this.testView;
 
         listView.itemTemplate = "<Label id=\"testLabel\" text=\"{{ $value }}\" />";
+        listView.items = [1, 2, 3];
+
+        TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
+
+        var firstNativeElementText = this.getTextFromNativeElementAt(listView, 0);
+        var secondNativeElementText = this.getTextFromNativeElementAt(listView, 1);
+        var thirdNativeElementText = this.getTextFromNativeElementAt(listView, 2);
+
+        TKUnit.assertEqual(firstNativeElementText, "1", "first element text");
+        TKUnit.assertEqual(secondNativeElementText, "2", "second element text");
+        TKUnit.assertEqual(thirdNativeElementText, "3", "third element text");
+    }
+    
+    public test_ItemTemplateFactoryFunction() {
+        var listView = this.testView;
+
+        listView.itemTemplate = () => {
+            var label = new Label();
+            label.id = "testLabel";
+            label.bind({ sourceProperty: "$value", targetProperty: "text", twoWay: false });
+            return label;
+        }
         listView.items = [1, 2, 3];
 
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);

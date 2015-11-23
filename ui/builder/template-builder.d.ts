@@ -1,6 +1,7 @@
 //@private
 declare module "ui/builder/template-builder" {
     import xml = require("xml");
+    import page = require("ui/page");
     import componentBuilder = require("ui/builder/component-builder");
 
     class TemplateBuilder {
@@ -18,6 +19,7 @@ declare module "ui/builder/template-builder" {
     export function isKnownTemplate(name: string, exports: any): boolean;
 
     interface TemplateProperty {
+        context?: any;
         parent: componentBuilder.ComponentModule;
         name: string;
         elementName: string;

@@ -78,7 +78,7 @@ declare module "ui/list-view" {
         /**
          * Gets or set the item template of the ListView. 
          */
-        itemTemplate: string;
+        itemTemplate: string | view.Template;
 
         /**
          * Gets or set the items separator line color of the ListView. 
