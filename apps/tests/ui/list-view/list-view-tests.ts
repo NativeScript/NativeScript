@@ -160,6 +160,23 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         }
     }
 
+    public test_cell_selection_style_ios() {
+        if (platform.device.os === platform.platformNames.ios) {
+            let listView = this.testView;
+            let items = ["Item 1"];
+            var cellSelectionStyle: UITableViewCellSelectionStyle;
+            listView.items = items;
+            listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+                var cell = <UITableViewCell>args.ios;
+                cellSelectionStyle = cell.selectionStyle;
+            });
+
+            TKUnit.waitUntilReady(() => { return cellSelectionStyle !== undefined; }, ASYNC);
+
+            TKUnit.assert(cellSelectionStyle === UITableViewCellSelectionStyle.UITableViewCellSelectionStyleNone, "cell selection style is incorrect.");
+        }
+    }
+
     public test_set_items_to_array_creates_native_views() {
         var listView = this.testView;
         listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);

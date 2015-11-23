@@ -103,7 +103,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
-        cell.highlighted = false;
+        cell.selectionStyle = UITableViewCellSelectionStyle.UITableViewCellSelectionStyleNone;
         return indexPath;
     }
 
@@ -157,7 +157,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
-        cell.highlighted = false;
+        cell.selectionStyle = UITableViewCellSelectionStyle.UITableViewCellSelectionStyleNone;
         return indexPath;
     }
 
