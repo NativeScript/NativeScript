@@ -5,7 +5,7 @@ import view = require("ui/core/view");
 import types = require("utils/types");
 
 function isHourValid(value: number): boolean {
-    return types.isNumber(value) && value >= 1 && value <= 23;
+    return types.isNumber(value) && value >= 1 && value <= 24;
 }
 
 function isMinuteValid(value: number): boolean {
@@ -48,7 +48,7 @@ export class TimePicker extends view.View implements definition.TimePicker {
         new proxy.PropertyMetadata(1, dependencyObservable.PropertyMetadataSettings.None, undefined, isHourValid));
 
     public static maxHourProperty = new dependencyObservable.Property("maxHour", "TimePicker",
-        new proxy.PropertyMetadata(23, dependencyObservable.PropertyMetadataSettings.None, undefined, isHourValid));
+        new proxy.PropertyMetadata(24, dependencyObservable.PropertyMetadataSettings.None, undefined, isHourValid));
 
     public static minuteProperty = new dependencyObservable.Property("minute", "TimePicker",
         new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, undefined, isMinuteValid));
