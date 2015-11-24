@@ -103,7 +103,12 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
-        cell.highlighted = false;
+        return indexPath;
+    }
+
+    public tableViewDidSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
+        tableView.deselectRowAtIndexPathAnimated(indexPath, true);
+   
         return indexPath;
     }
 
@@ -157,8 +162,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
-        cell.highlighted = false;
-        return indexPath;
+        return indexPath; 
     }
 
     public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {

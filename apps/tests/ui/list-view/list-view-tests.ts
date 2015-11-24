@@ -161,6 +161,26 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         }
     }
 
+    public test_cell_selection_ios() {
+        if (platform.device.os === platform.platformNames.ios) {
+            let listView = this.testView;
+
+            let colors = ["red", "green", "blue"];
+            listView.items = colors;
+
+            TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
+
+            var index = 1;
+            this.performNativeItemTap(listView, index);
+            var uiTableView = <UITableView>listView.ios;
+            var cellIndexPath = NSIndexPath.indexPathForItemInSection(index, 0);
+            var cell = uiTableView.cellForRowAtIndexPath(cellIndexPath);
+            uiTableView.selectRowAtIndexPathAnimatedScrollPosition(cellIndexPath, false, 0);
+
+            TKUnit.assertTrue(cell.selected, "cell is selected");
+        }
+    }
+
     public test_set_items_to_array_creates_native_views() {
         var listView = this.testView;
         listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
@@ -482,7 +502,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.assertEqual(secondNativeElementText, "2", "second element text");
         TKUnit.assertEqual(thirdNativeElementText, "3", "third element text");
     }
-    
+
     public test_ItemTemplateFactoryFunction() {
         var listView = this.testView;
 
