@@ -117,6 +117,9 @@ declare module "ui/gestures" {
      */
     export interface PinchGestureEventData extends GestureEventDataWithState {
         scale: number;
+
+        getFocusX(): number;
+        getFocusY(): number;
     }
 
     /**
