@@ -1,12 +1,124 @@
 Cross Platform Modules Changelog
 ==============================
-##1.5.0 (2015, November ??)
+##1.5.0 (2015, November 24)
 
 ### Breaking changes
 - The XML namespace (xmlns) of the validator XSD schema changed from
     `xmlns="http://www.nativescript.org/tns.xsd"` to
     `xmlns="http://schemas.nativescript.org/tns.xsd"`.
     For convenience, the file can now get downloaded via the [same URL](http://schemas.nativescript.org/tns.xsd).
+
+Fixed
+=========
+
+- [(#1089)](https://github.com/NativeScript/NativeScript/pull/1089) http toString will raise error if response cannot be converted to string
+
+- [(#1082)](https://github.com/NativeScript/NativeScript/issues/1082) Null reference exception in view.android.setOnTouchListener method
+
+- [(#1081)](https://github.com/NativeScript/NativeScript/pull/1081) file-system writeTextSync will now unlock the file when it is done writing
+
+- [(#1038)](https://github.com/NativeScript/NativeScript/issues/1038) WebView with HTML string source does not render on old Android
+
+- [(#1028)](https://github.com/NativeScript/NativeScript/issues/1028) [iOS] SelectedIndex property of the TabView widget does not work
+
+- [(#1021)](https://github.com/NativeScript/NativeScript/issues/1021) page.loaded and page.navigatedTo events are fired twice on iOS
+
+- [(#1019)](https://github.com/NativeScript/NativeScript/pull/1019) search-bar color not applied correctly
+
+- [(#1012)](https://github.com/NativeScript/NativeScript/issues/1012) TextField/TextView CSS color not applied to cursor
+
+- [(#1010)](https://github.com/NativeScript/NativeScript/issues/1010) Slider CSS color/background-color support
+
+- [(#1007)](https://github.com/NativeScript/NativeScript/issues/1007) When application.start() is called twice on iOS, a meaningful error should be thrown
+
+- [(#1004)](https://github.com/NativeScript/NativeScript/issues/1004) ActivityIndicator CSS color support
+
+- [(#1000)](https://github.com/NativeScript/NativeScript/issues/1000) Border radius is not working on Android API 17
+
+- [(#998)](https://github.com/NativeScript/NativeScript/pull/998) web-view images now will be loaded correctly with base url
+
+- [(#993)](https://github.com/NativeScript/NativeScript/issues/993) CSS does not support new lowercase element names
+
+- [(#990)](https://github.com/NativeScript/NativeScript/issues/990) Android 6 Webview onReceivedError
+
+- [(#986)](https://github.com/NativeScript/NativeScript/issues/986) [iOS] The switch widget does not show up on the page
+
+- [(#973)](https://github.com/NativeScript/NativeScript/pull/973) iOS owner pattern changed to use WeakRef in order to prevent memory leaks
+
+- [(#966)](https://github.com/NativeScript/NativeScript/issues/966) Observable emits two `propertyChange` events when created with JSON
+
+- [(#963)](https://github.com/NativeScript/NativeScript/issues/963) Always set base URL in WebView
+
+- [(#955)](https://github.com/NativeScript/NativeScript/pull/955) Gestures event arguments for Android fixed
+
+- [(#941)](https://github.com/NativeScript/NativeScript/issues/941) global.ios missing (consistency)
+
+- [(#940)](https://github.com/NativeScript/NativeScript/issues/940) ListView: Inconsistency retrieving bindingContext in tap handler
+
+- [(#936)](https://github.com/NativeScript/NativeScript/pull/936) Subsequent animation of transition and rotation or scale will appear jumpy in iOS
+
+- [(#889)](https://github.com/NativeScript/NativeScript/issues/889) vertical-align css inconsistency
+
+- [(#820)](https://github.com/NativeScript/NativeScript/issues/820) The x and y components of an Android translate or scale animation are not animated together when delay is specified
+
+- [(#801)](https://github.com/NativeScript/NativeScript/issues/801) Chained animations lose state on iOS
+
+- [(#789)](https://github.com/NativeScript/NativeScript/issues/789) Error in Page Navigating Events order
+
+- [(#781)](https://github.com/NativeScript/NativeScript/issues/781) ios page.showModal platform inconsistancies & bugs
+
+- [(#715)](https://github.com/NativeScript/NativeScript/issues/715) Frame crashes on app restore occasionally
+
+- [(#642)](https://github.com/NativeScript/NativeScript/issues/642) Ability to style other native widgets
+
+New
+=========
+
+- [(#1001)](https://github.com/NativeScript/NativeScript/pull/1001) Embed utility fonts: Awesome, Icons, etc
+
+- [(#1102)](https://github.com/NativeScript/NativeScript/issues/1102) Ability to specify an animation easing, i.e. curve in a platform-independent manner
+
+- [(#1086)](https://github.com/NativeScript/NativeScript/pull/1086) This will now allow the dialog to call the resolve function when cancelled by clicking outside
+
+- [(#1057)](https://github.com/NativeScript/NativeScript/issues/1057) Expose scroll event on ScrollView
+
+- [(#1048)](https://github.com/NativeScript/NativeScript/issues/1048) Event for start/end of an event
+
+- [(#1041)](https://github.com/NativeScript/NativeScript/issues/1041) Support binding for `class` property of views
+
+- [(#1034)](https://github.com/NativeScript/NativeScript/issues/1034) Support CSS white-space: nowrap and normal
+
+- [(#1020)](https://github.com/NativeScript/NativeScript/pull/1020) DatePicker and TimePicker stylers added
+
+- [(#1014)](https://github.com/NativeScript/NativeScript/issues/1014) Button wrapText property
+
+- [(#977)](https://github.com/NativeScript/NativeScript/issues/977) Smarter LiveSync
+
+- [(#954)](https://github.com/NativeScript/NativeScript/pull/954) added simple showModal() overload
+
+- [(#926)](https://github.com/NativeScript/NativeScript/issues/926) Context as to whether a navigation was back or not
+
+- [(#922)](https://github.com/NativeScript/NativeScript/issues/922) Feature request: Add loading wheel to Dialogs module
+
+- [(#875)](https://github.com/NativeScript/NativeScript/issues/875) CSS feature request: `text-decoration`
+
+- [(#856)](https://github.com/NativeScript/NativeScript/issues/856) Android 6 support
+
+- [(#849)](https://github.com/NativeScript/NativeScript/issues/849) Implement dismissSoftInput() for search-bar
+
+- [(#841)](https://github.com/NativeScript/NativeScript/issues/841) Distribute TypeScript definitions
+
+- [(#767)](https://github.com/NativeScript/NativeScript/issues/767) Change Android navigation and tabs title color
+
+- [(#727)](https://github.com/NativeScript/NativeScript/issues/727) Provide a way to get a reference to the currently showing modal page instance
+
+- [(#693)](https://github.com/NativeScript/NativeScript/issues/693) ListView - the position of the item after scroll down is not correct
+
+- [(#597)](https://github.com/NativeScript/NativeScript/issues/597) Some Complex Properties are Inconsistent with rest of API - Discussion
+
+- [(#551)](https://github.com/NativeScript/NativeScript/issues/551) Ship a verified image picker plugin
+
+- [(#364)](https://github.com/NativeScript/NativeScript/issues/364) Ability to use built-in system icons on ActionBarItems
 
 ##1.4.0 (2015, October 12)
 
