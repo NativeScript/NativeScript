@@ -85,6 +85,10 @@ export class ListView extends view.View implements definition.ListView {
             )
     );
 
+    public get iosSettings(): definition.IOSListViewSettings {
+        return undefined;
+    }
+
     get items(): any {
         return this._getValue(ListView.itemsProperty);
     }

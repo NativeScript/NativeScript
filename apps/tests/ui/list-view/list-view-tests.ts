@@ -181,6 +181,31 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         }
     }
 
+    public test_separator_inset_ios() {
+        if (platform.device.os === platform.platformNames.ios) {
+            let listView = this.testView;
+            var tableView = <UITableView>listView.ios;
+            var leftInset = 18;
+            var rightInset = 25;
+            listView.iosSettings.separatorInsetLeft = leftInset;
+            listView.iosSettings.separatorInsetRight = rightInset;
+
+            let colors = ["red", "green", "blue"];
+            listView.items = colors;
+
+            listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+                var cell = <UITableViewCell>args.ios;
+                TKUnit.assertEqual(cell.separatorInset.left, leftInset)
+                TKUnit.assertEqual(cell.separatorInset.right, rightInset)
+            });
+
+            TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
+
+            TKUnit.assertEqual(tableView.separatorInset.left, leftInset)
+            TKUnit.assertEqual(tableView.separatorInset.right, rightInset)
+        }
+    }
+
     public test_set_items_to_array_creates_native_views() {
         var listView = this.testView;
         listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);

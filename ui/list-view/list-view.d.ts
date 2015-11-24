@@ -18,6 +18,21 @@ declare module "ui/list-view" {
     }
 
     /**
+    * Represents iOS specific settings to configure a list view.
+    */
+    export interface IOSListViewSettings {
+        /**
+        * Number value used to specify the left separator inset.
+        */
+        separatorInsetLeft: number;
+
+        /**
+        * Number value used to specify the right separator inset.
+        */
+        separatorInsetRight: number;
+    }
+
+    /**
      * Represents a view that shows items in a vertically scrolling list.
      */
     export class ListView extends view.View {
@@ -63,6 +78,12 @@ declare module "ui/list-view" {
          * Gets the native [iOS view](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
         ios: any /* UITableView */;
+
+
+        /**
+        * Gets iOS specific settings of the ListView.
+        **/
+        iosSettings: IOSListViewSettings
 
         /**
          * Gets a value indicating whether the ListView is currently scrolling.

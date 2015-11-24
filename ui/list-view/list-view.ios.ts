@@ -7,6 +7,8 @@ import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import color = require("color");
 
+declare var UIEdgeInsetsMake: (top: number, left: number, bottom: number, right: number) => UIEdgeInsets;
+
 var CELLIDENTIFIER = "cell";
 var ITEMLOADING = common.ListView.itemLoadingEvent;
 var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
@@ -95,6 +97,16 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         if (owner && (indexPath.row === owner.items.length - 1)) {
             owner.notify(<observable.EventData>{ eventName: LOADMOREITEMS, object: owner });
         }
+
+        if (cell.separatorInset) {
+            cell.separatorInset = UIEdgeInsetsMake(cell.separatorInset.top, owner.iosSettings.separatorInsetLeft, cell.separatorInset.bottom, owner.iosSettings.separatorInsetRight);;
+        }
+
+        if (cell.preservesSuperviewLayoutMargins) {
+            cell.preservesSuperviewLayoutMargins = false;
+        }
+
+        cell.layoutMargins = UIEdgeInsetsZero;
     }
 
     public tableViewWillSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
@@ -108,7 +120,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 
     public tableViewDidSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
         tableView.deselectRowAtIndexPathAnimated(indexPath, true);
-   
+
         return indexPath;
     }
 
@@ -162,7 +174,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
-        return indexPath; 
+        return indexPath;
     }
 
     public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
@@ -197,6 +209,7 @@ export class ListView extends common.ListView {
     private _preparingCell: boolean = false;
     private _isDataDirty: boolean = false;
     private _map: Map<ListViewCell, view.View>;
+    private _iosSettings: definition.IOSListViewSettings;
     widthMeasureSpec: number = 0;
 
     constructor() {
@@ -210,6 +223,15 @@ export class ListView extends common.ListView {
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._heights = new Array<number>();
         this._map = new Map<ListViewCell, view.View>();
+
+        this._iosSettings = {
+            separatorInsetLeft: this._ios.separatorInset.left,
+            separatorInsetRight: this._ios.separatorInset.right
+        };
+    }
+
+    public get iosSettings(): definition.IOSListViewSettings {
+        return this._iosSettings;
     }
 
     public onLoaded() {
@@ -218,6 +240,10 @@ export class ListView extends common.ListView {
             this.refresh();
         }
         this._ios.delegate = this._delegate;
+
+        if (this._ios.separatorInset) {
+            this._ios.separatorInset = UIEdgeInsetsMake(this._ios.separatorInset.top, this._iosSettings.separatorInsetLeft, this._ios.separatorInset.bottom, this._iosSettings.separatorInsetRight);
+        }
     }
 
     public onUnloaded() {
