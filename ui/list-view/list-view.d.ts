@@ -18,17 +18,17 @@ declare module "ui/list-view" {
     }
 
     /**
-    * Represents iOS specific settings to configure a list view.
-    */
+     * Represents iOS specific settings to configure a list view.
+     */
     export interface IOSListViewSettings {
         /**
-        * Number value used to specify the left separator inset.
-        */
+         * Number value used to specify the left separator inset.
+         */
         separatorInsetLeft: number;
 
         /**
-        * Number value used to specify the right separator inset.
-        */
+         * Number value used to specify the right separator inset.
+         */
         separatorInsetRight: number;
     }
 
@@ -79,10 +79,9 @@ declare module "ui/list-view" {
          */
         ios: any /* UITableView */;
 
-
         /**
-        * Gets iOS specific settings of the ListView.
-        **/
+         * Gets iOS specific settings of the ListView.
+         **/
         iosSettings: IOSListViewSettings
 
         /**
