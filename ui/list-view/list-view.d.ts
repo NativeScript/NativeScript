@@ -81,7 +81,7 @@ declare module "ui/list-view" {
 
         /**
          * Gets iOS specific settings of the ListView.
-         **/
+         */
         iosSettings: IOSListViewSettings
 
         /**
