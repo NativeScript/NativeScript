@@ -66,6 +66,20 @@ function onScaleYPropertyChanged(data: dependencyObservable.PropertyChangeData) 
 }
 (<proxy.PropertyMetadata>viewCommon.View.scaleYProperty.metadata).onSetNativeValue = onScaleYPropertyChanged;
 
+function onPivotXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <View>data.object;
+    var current = view._nativeView.layer.anchorPoint;
+    view._nativeView.layer.anchorPoint = CGPointMake(data.newValue, current.y);
+}
+(<proxy.PropertyMetadata>viewCommon.View.pivotXProperty.metadata).onSetNativeValue = onPivotXPropertyChanged;
+
+function onPivotYPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <View>data.object;
+    var current = view._nativeView.layer.anchorPoint;
+    view._nativeView.layer.anchorPoint = CGPointMake(current.x, data.newValue);
+}
+(<proxy.PropertyMetadata>viewCommon.View.pivotYProperty.metadata).onSetNativeValue = onPivotYPropertyChanged;
+
 function onRotatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
     var newTransform = CGAffineTransformIdentity;
