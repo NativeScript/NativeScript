@@ -85,7 +85,7 @@ export class ListView extends view.View implements definition.ListView {
             )
     );
 
-    public get iosSettings(): definition.IOSListViewSettings {
+    public get settings(): definition.ListViewSettings {
         return undefined;
     }
 

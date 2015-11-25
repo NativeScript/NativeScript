@@ -18,7 +18,7 @@ declare module "ui/list-view" {
     }
 
     /**
-     * Represents iOS specific settings to configure a list view.
+     * Represents iOS specific settings to configure a ListView instance.
      */
     export interface IOSListViewSettings {
         /**
@@ -30,6 +30,16 @@ declare module "ui/list-view" {
          * Number value used to specify the right separator inset.
          */
         separatorInsetRight: number;
+    }
+
+    /**
+     * Represents settings to configure a ListView instance.
+     */
+    export interface ListViewSettings {
+        /**
+         * IOS specific settings.
+         */
+        ios: IOSListViewSettings;
     }
 
     /**
@@ -82,7 +92,7 @@ declare module "ui/list-view" {
         /**
          * Gets iOS specific settings of the ListView.
          */
-        iosSettings: IOSListViewSettings
+        settings: ListViewSettings;
 
         /**
          * Gets a value indicating whether the ListView is currently scrolling.

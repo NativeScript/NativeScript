@@ -7,8 +7,6 @@ import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import color = require("color");
 
-declare var UIEdgeInsetsMake: (top: number, left: number, bottom: number, right: number) => UIEdgeInsets;
-
 var CELLIDENTIFIER = "cell";
 var ITEMLOADING = common.ListView.itemLoadingEvent;
 var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
@@ -99,7 +97,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         }
 
         if (cell.separatorInset) {
-            cell.separatorInset = UIEdgeInsetsMake(cell.separatorInset.top, owner.iosSettings.separatorInsetLeft, cell.separatorInset.bottom, owner.iosSettings.separatorInsetRight);;
+            cell.separatorInset = UIEdgeInsetsMake(cell.separatorInset.top, owner.settings.ios.separatorInsetLeft, cell.separatorInset.bottom, owner.settings.ios.separatorInsetRight);;
         }
 
         if (cell.preservesSuperviewLayoutMargins) {
@@ -201,6 +199,54 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
 // register the setNativeValue callbacks
 (<proxy.PropertyMetadata>common.ListView.separatorColorProperty.metadata).onSetNativeValue = onSeparatorColorPropertyChanged;
 
+class IOSListViewSettings extends observable.Observable implements definition.IOSListViewSettings {
+    private _separatorInsetLeft: number;
+    private _separatorInsetRight: number
+
+    constructor(uiTable: UITableView) {
+        super();
+
+        this._separatorInsetLeft = uiTable.separatorInset.left;
+        this._separatorInsetRight = uiTable.separatorInset.right;
+    }
+
+    public get separatorInsetLeft(): number {
+        return this._separatorInsetLeft;
+    }
+
+    public set separatorInsetLeft(value: number) {
+        if (this._separatorInsetLeft !== value) {
+            this._separatorInsetLeft = value;
+            this.notifyPropertyChange("separatorInsetLeft", value);
+        }
+    }
+
+    public get separatorInsetRight(): number {
+        return this._separatorInsetRight;
+    }
+
+    public set separatorInsetRight(value: number) {
+        if (this._separatorInsetRight !== value) {
+            this._separatorInsetRight = value;
+            this.notifyPropertyChange("separatorInsetRight", value);
+        }
+    }
+}
+
+class ListViewSettings implements definition.ListViewSettings {
+    public static settingChangeEvent = "settingChange";
+
+    private _ios: IOSListViewSettings;
+
+    constructor(uiTable: UITableView) {
+        this._ios = new IOSListViewSettings(uiTable);
+    }
+
+    public get ios(): IOSListViewSettings {
+        return this._ios;
+    }
+}
+
 export class ListView extends common.ListView {
     private _ios: UITableView;
     private _dataSource;
@@ -209,7 +255,8 @@ export class ListView extends common.ListView {
     private _preparingCell: boolean = false;
     private _isDataDirty: boolean = false;
     private _map: Map<ListViewCell, view.View>;
-    private _iosSettings: definition.IOSListViewSettings;
+    private _settings: ListViewSettings;
+
     widthMeasureSpec: number = 0;
 
     constructor() {
@@ -224,14 +271,14 @@ export class ListView extends common.ListView {
         this._heights = new Array<number>();
         this._map = new Map<ListViewCell, view.View>();
 
-        this._iosSettings = {
-            separatorInsetLeft: this._ios.separatorInset.left,
-            separatorInsetRight: this._ios.separatorInset.right
-        };
+        this._settings = new ListViewSettings(this._ios);
+        this._settings.ios.on(observable.Observable.propertyChangeEvent, (args: observable.EventData) => {
+            this.refresh();
+        });
     }
 
-    public get iosSettings(): definition.IOSListViewSettings {
-        return this._iosSettings;
+    public get settings(): definition.ListViewSettings {
+        return this._settings;
     }
 
     public onLoaded() {
@@ -239,11 +286,8 @@ export class ListView extends common.ListView {
         if (this._isDataDirty) {
             this.refresh();
         }
-        this._ios.delegate = this._delegate;
 
-        if (this._ios.separatorInset) {
-            this._ios.separatorInset = UIEdgeInsetsMake(this._ios.separatorInset.top, this._iosSettings.separatorInsetLeft, this._ios.separatorInset.bottom, this._iosSettings.separatorInsetRight);
-        }
+        this._ios.delegate = this._delegate;
     }
 
     public onUnloaded() {
@@ -264,6 +308,10 @@ export class ListView extends common.ListView {
 
     public refresh() {
         if (this.isLoaded) {
+            if (this._ios.separatorInset) {
+                this._ios.separatorInset = UIEdgeInsetsMake(this._ios.separatorInset.top, this._settings.ios.separatorInsetLeft, this._ios.separatorInset.bottom, this._settings.ios.separatorInsetRight);
+            }
+
             this._ios.reloadData();
             this.requestLayout();
             this._isDataDirty = false;
