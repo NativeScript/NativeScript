@@ -33,6 +33,21 @@ declare module "xml" {
          */
         static Comment: string;
     }
+    
+    /**
+     * Defines a position within string, in line and column form.
+     */
+    interface Position {
+        /**
+         * The line number. The first line is at index 1.
+         */
+        line: number;
+        
+        /**
+         * The column number. The first character is at index 1.
+         */
+        column: number;
+    }
 
     /**
      * Provides information for a parser event.
@@ -43,6 +58,11 @@ declare module "xml" {
          * Returns the type of the parser event. This is one of the ParserEventType static members.
          */
         eventType: string;
+        
+        /**
+         * Get the position in the xml string where the event was generated.
+         */
+        position: Position;
 
         /**
          * If namespace processing is enabled, returns the prefix of the element in case the eventType is ParserEventType.StartElement or ParserEventType.EndElement.
@@ -80,18 +100,18 @@ declare module "xml" {
      */
     class XmlParser {
 
-       /**
-        * Creates a new instance of the XmlParser class.
-        * @param onEvent The callback to execute when a parser event occurs. The 'event' parameter contains information about the event.
-        * @param onError The callback to execute when a parser error occurs. The 'error' parameter contains the error.
-        * @param processNamespaces Specifies whether namespaces should be processed.
-        */
-        constructor(onEvent: (event: ParserEvent) => void, onError?: (error: Error) => void, processNamespaces?: boolean, angularSyntax?: boolean);
+        /**
+         * Creates a new instance of the XmlParser class.
+         * @param onEvent The callback to execute when a parser event occurs. The 'event' parameter contains information about the event.
+         * @param onError The callback to execute when a parser error occurs. The 'error' parameter contains the error.
+         * @param processNamespaces Specifies whether namespaces should be processed.
+         */
+        constructor(onEvent: (event: ParserEvent) => void, onError?: (error: Error, position: Position) => void, processNamespaces?: boolean, angularSyntax?: boolean);
         
-       /**
-        * Parses the supplied xml string.
-        * @param xmlString The string containing the xml to parse.
-        */
+        /**
+         * Parses the supplied xml string.
+         * @param xmlString The string containing the xml to parse.
+         */
         parse(xmlString: string): void;
     }
 }
