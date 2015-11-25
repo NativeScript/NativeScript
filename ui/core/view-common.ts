@@ -149,14 +149,14 @@ var scaleYProperty = new dependencyObservable.Property(
     new proxy.PropertyMetadata(1)
     );
     
-var pivotXProperty = new dependencyObservable.Property(
-    "pivotX",
+var originXProperty = new dependencyObservable.Property(
+    "originX",
     "View",
     new proxy.PropertyMetadata(0.5)
     );
 
-var pivotYProperty = new dependencyObservable.Property(
-    "pivotY",
+var originYProperty = new dependencyObservable.Property(
+    "originY",
     "View",
     new proxy.PropertyMetadata(0.5)
     );
@@ -190,8 +190,8 @@ export class View extends proxy.ProxyObject implements definition.View {
     public static translateYProperty = translateYProperty;
     public static scaleXProperty = scaleXProperty;
     public static scaleYProperty = scaleYProperty;
-    public static pivotXProperty = pivotXProperty;
-    public static pivotYProperty = pivotYProperty;
+    public static originXProperty = originXProperty;
+    public static originYProperty = originYProperty;
     public static rotateProperty = rotateProperty;
     public static isEnabledProperty = isEnabledProperty;
     public static isUserInteractionEnabledProperty = isUserInteractionEnabledProperty;
@@ -484,18 +484,18 @@ export class View extends proxy.ProxyObject implements definition.View {
         this._setValue(View.scaleYProperty, value);
     }
 
-    get pivotX(): number {
-        return this._getValue(View.pivotXProperty);
+    get originX(): number {
+        return this._getValue(View.originXProperty);
     }
-    set pivotX(value: number) {
-        this._setValue(View.pivotXProperty, value);
+    set originX(value: number) {
+        this._setValue(View.originXProperty, value);
     }
 
-    get pivotY(): number {
-        return this._getValue(View.pivotYProperty);
+    get originY(): number {
+        return this._getValue(View.originYProperty);
     }
-    set pivotY(value: number) {
-        this._setValue(View.pivotYProperty, value);
+    set originY(value: number) {
+        this._setValue(View.originYProperty, value);
     }
 
     get rotate(): number {

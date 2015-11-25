@@ -42,22 +42,22 @@ export class ViewModel extends observable.Observable {
         this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "scaleY", value: value });
     }
 
-    private _pivotX = 50;
-    get pivotX(): number {
-        return this._pivotX;
+    private _originX = 50;
+    get originX(): number {
+        return this._originX;
     }
-    set pivotX(value: number) {
-        this._pivotX = value;
-        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "pivotX", value: value });
+    set originX(value: number) {
+        this._originX = value;
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "originX", value: value });
     }
 
-    private _pivotY = 50;
-    get pivotY(): number {
-        return this._pivotY;
+    private _originY = 50;
+    get originY(): number {
+        return this._originY;
     }
-    set pivotY(value: number) {
-        this._pivotY = value;
-        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "pivotY", value: value });
+    set originY(value: number) {
+        this._originY = value;
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "originY", value: value });
     }
 
     private _rotate = 0;
@@ -70,8 +70,8 @@ export class ViewModel extends observable.Observable {
     }
 
     public reset() {
-        this.pivotX = 50;
-        this.pivotY = 50;
+        this.originX = 50;
+        this.originY = 50;
         this.scaleX = 100;
         this.scaleY = 100;
         this.translateX = 0;
