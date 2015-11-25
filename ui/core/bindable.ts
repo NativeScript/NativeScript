@@ -258,9 +258,9 @@ export class Binding {
             }
             result.push({ instance: currentObject, property: objProp });
             if (!currentObjectChanged) {
-                currentObject = currentObject[propsArray[i]];
-                currentObjectChanged = false;
+                currentObject = currentObject ? currentObject[propsArray[i]] : null;
             }
+            currentObjectChanged = false;
         }
         return result;
     }
@@ -273,7 +273,7 @@ export class Binding {
             for (i = 0; i < objectsAndPropertiesLength; i++) {
                 var prop = objectsAndProperties[i].property;
                 var currentObject = objectsAndProperties[i].instance;
-                if (!this.propertyChangeListeners[prop] && currentObject instanceof observable.Observable) {
+                if (currentObject && !this.propertyChangeListeners[prop] && currentObject instanceof observable.Observable) {
                     weakEvents.addWeakEventListener(
                         currentObject,
                         observable.Observable.propertyChangeEvent,
@@ -563,14 +563,14 @@ export class Binding {
         if (objectsAndProperties.length > 0) {
             var resolvedObj = objectsAndProperties[objectsAndProperties.length - 1].instance;
             var prop = objectsAndProperties[objectsAndProperties.length - 1].property;
-            return {
-                instance: new WeakRef(resolvedObj),
-                property: prop
+            if (resolvedObj) {
+                return {
+                    instance: new WeakRef(resolvedObj),
+                    property: prop
+                }
             }
         }
-        else {
-            return null;
-        }
+        return null;
     }
 
     private updateOptions(options: { instance: WeakRef<any>; property: any }, value: any) {
