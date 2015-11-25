@@ -89,7 +89,7 @@ export var test_ObservableArray_setItemShouldRaiseCorrectEvent = function () {
     // <snippet module="data/observable-array" title="observable-array">
     // ### Set item at specified index using setItem(index, item) method and observe change event data.
     // ``` JavaScript
-    var index : number;
+    var index: number;
     var action: string;
     var addedCount: number;
     var removed: Array<number>;
