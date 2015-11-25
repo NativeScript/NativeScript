@@ -177,6 +177,12 @@ export function assertTrue(test: boolean, message?: string) {
     }
 };
 
+export function assertFalse(test: boolean, message?: string) {
+    if (test !== false) {
+        throw new Error(message);
+    }
+};
+
 export function assertNotEqual(actual: any, expected: any, message?: string) {
 
     var equals = false;
@@ -220,6 +226,12 @@ export function assertEqual(actual: any, expected: any, message?: string) {
 export function assertNull(actual: any, message?: string) {
     if (actual !== null && actual !== undefined) {
         throw new Error(message + " Actual: " + actual + " is not null/undefined");
+    }
+};
+
+export function assertNotNull(actual: any, message?: string) {
+    if (actual === null || actual === undefined) {
+        throw new Error(message + " Actual: " + actual + " is null/undefined");
     }
 };
 

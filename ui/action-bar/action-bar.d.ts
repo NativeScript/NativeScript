@@ -104,6 +104,11 @@ declare module "ui/action-bar" {
         public static iconProperty: dependencyObservable.Property;
 
         /**
+         * Represents the observable property backing the visibility property.
+         */
+        public static visibilityProperty: dependencyObservable.Property;
+
+        /**
          * Gets or sets the text of the action item.
          */
         text: string;
@@ -112,6 +117,11 @@ declare module "ui/action-bar" {
          * Gets or sets the icon of the action item.
          */
         icon: string;
+
+        /**
+         * Gets or sets the visibility of the action item.
+         */
+        visibility: string;
         
         /**
          * Gets the action bar that contains the action item.

@@ -21,7 +21,7 @@ function onTitlePropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
 export class ActionBar extends view.View implements dts.ActionBar {
     public static titleProperty = new dependencyObservable.Property("title", "ActionBar", new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, onTitlePropertyChanged));
-    
+
     private _actionItems: ActionItems;
     private _navigationButton: dts.NavigationButton;
     private _page: pages.Page;
@@ -200,6 +200,17 @@ export class ActionItems implements dts.ActionItems {
         return this._items.slice();
     }
 
+    public getVisibleItems(): Array<dts.ActionItem> {
+        var visibleItems = [];
+        this._items.forEach((item) => {
+            if (isVisible(item)) {
+                visibleItems.push(item);
+            }
+        });
+
+        return visibleItems;
+    }
+
     public getItemAt(index: number): dts.ActionItem {
         if (index < 0 || index >= this._items.length) {
             return undefined;
@@ -238,16 +249,15 @@ export class ActionItem extends bindable.Bindable implements dts.ActionItem {
     public static iconProperty = new dependencyObservable.Property(
         "icon", "ActionItem", new dependencyObservable.PropertyMetadata(null, null, ActionItem.onItemChanged));
 
-    private static onItemChanged(data: dependencyObservable.PropertyChangeData) {
-        var menuItem = <ActionItem>data.object;
-        if (menuItem.actionBar) {
-            menuItem.actionBar.update();
-        }
-    }
+    public static visibilityProperty = new dependencyObservable.Property(
+        "visibility", "ActionItemBase", new dependencyObservable.PropertyMetadata(enums.Visibility.visible, null, ActionItem.onItemChanged));
+
+    private _actionBar: ActionBar;
 
     get text(): string {
         return this._getValue(ActionItem.textProperty);
     }
+
     set text(value: string) {
         this._setValue(ActionItem.textProperty, value);
     }
@@ -255,14 +265,23 @@ export class ActionItem extends bindable.Bindable implements dts.ActionItem {
     get icon(): string {
         return this._getValue(ActionItem.iconProperty);
     }
+
     set icon(value: string) {
         this._setValue(ActionItem.iconProperty, value);
     }
 
-    private _actionBar: ActionBar;
+    get visibility(): string {
+        return this._getValue(ActionItem.visibilityProperty);
+    }
+
+    set visibility(value: string) {
+        this._setValue(ActionItem.visibilityProperty, value);
+    }
+
     get actionBar(): ActionBar {
         return this._actionBar;
     }
+
     set actionBar(value: ActionBar) {
         if (value !== this._actionBar) {
             this._actionBar = value;
@@ -279,4 +298,14 @@ export class ActionItem extends bindable.Bindable implements dts.ActionItem {
     public ios: dts.IOSActionItemSettings;
 
     public android: dts.AndroidActionItemSettings;
+    private static onItemChanged(data: dependencyObservable.PropertyChangeData) {
+        var menuItem = <ActionItem>data.object;
+        if (menuItem.actionBar) {
+            menuItem.actionBar.update();
+        }
+    }
+}
+
+export function isVisible(item: dts.ActionItem) {
+    return item.visibility === enums.Visibility.visible;
 }
