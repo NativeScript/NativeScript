@@ -16,81 +16,25 @@ function onIdPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
     view._nativeView.accessibilityIdentifier = data.newValue;
 }
+
 (<proxy.PropertyMetadata>viewCommon.View.idProperty.metadata).onSetNativeValue = onIdPropertyChanged;
 
-function onTranslateXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onTransfromPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
-    var newTransform = CGAffineTransformIdentity;
-    newTransform = CGAffineTransformTranslate(newTransform, data.newValue, view.translateY);
-    newTransform = CGAffineTransformRotate(newTransform, view.rotate * Math.PI / 180);
-    newTransform = CGAffineTransformScale(newTransform, view.scaleX, view.scaleY);
-    if (!CGAffineTransformEqualToTransform(view._nativeView.transform, newTransform)) {
-        view._nativeView.transform = newTransform;
-    }
+    view._updateNativeTransform();
 }
-(<proxy.PropertyMetadata>viewCommon.View.translateXProperty.metadata).onSetNativeValue = onTranslateXPropertyChanged;
+(<proxy.PropertyMetadata>viewCommon.View.translateXProperty.metadata).onSetNativeValue = onTransfromPropertyChanged;
+(<proxy.PropertyMetadata>viewCommon.View.translateYProperty.metadata).onSetNativeValue = onTransfromPropertyChanged;
+(<proxy.PropertyMetadata>viewCommon.View.scaleXProperty.metadata).onSetNativeValue = onTransfromPropertyChanged;
+(<proxy.PropertyMetadata>viewCommon.View.scaleYProperty.metadata).onSetNativeValue = onTransfromPropertyChanged;
+(<proxy.PropertyMetadata>viewCommon.View.rotateProperty.metadata).onSetNativeValue = onTransfromPropertyChanged;
 
-function onTranslateYPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onOriginPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
-    var newTransform = CGAffineTransformIdentity;
-    newTransform = CGAffineTransformTranslate(newTransform, view.translateX, data.newValue);
-    newTransform = CGAffineTransformRotate(newTransform, view.rotate * Math.PI / 180);
-    newTransform = CGAffineTransformScale(newTransform, view.scaleX, view.scaleY);
-    if (!CGAffineTransformEqualToTransform(view._nativeView.transform, newTransform)) {
-        view._nativeView.transform = newTransform;
-    }
+    view._updateOriginPoint();
 }
-(<proxy.PropertyMetadata>viewCommon.View.translateYProperty.metadata).onSetNativeValue = onTranslateYPropertyChanged;
-
-function onScaleXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    var newTransform = CGAffineTransformIdentity;
-    newTransform = CGAffineTransformTranslate(newTransform, view.translateX, view.translateY);
-    newTransform = CGAffineTransformRotate(newTransform, view.rotate * Math.PI / 180);
-    newTransform = CGAffineTransformScale(newTransform, data.newValue, view.scaleY);
-    if (!CGAffineTransformEqualToTransform(view._nativeView.transform, newTransform)) {
-        view._nativeView.transform = newTransform;
-    }
-}
-(<proxy.PropertyMetadata>viewCommon.View.scaleXProperty.metadata).onSetNativeValue = onScaleXPropertyChanged;
-
-function onScaleYPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    var newTransform = CGAffineTransformIdentity;
-    newTransform = CGAffineTransformTranslate(newTransform, view.translateX, view.translateY);
-    newTransform = CGAffineTransformRotate(newTransform, view.rotate * Math.PI / 180);
-    newTransform = CGAffineTransformScale(newTransform, view.scaleX, data.newValue);
-    if (!CGAffineTransformEqualToTransform(view._nativeView.transform, newTransform)) {
-        view._nativeView.transform = newTransform;
-    }
-}
-(<proxy.PropertyMetadata>viewCommon.View.scaleYProperty.metadata).onSetNativeValue = onScaleYPropertyChanged;
-
-function onOriginXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    var current = view._nativeView.layer.anchorPoint;
-    view._nativeView.layer.anchorPoint = CGPointMake(data.newValue, current.y);
-}
-(<proxy.PropertyMetadata>viewCommon.View.originXProperty.metadata).onSetNativeValue = onOriginXPropertyChanged;
-
-function onOriginYPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    var current = view._nativeView.layer.anchorPoint;
-    view._nativeView.layer.anchorPoint = CGPointMake(current.x, data.newValue);
-}
-(<proxy.PropertyMetadata>viewCommon.View.originYProperty.metadata).onSetNativeValue = onOriginYPropertyChanged;
-
-function onRotatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    var newTransform = CGAffineTransformIdentity;
-    newTransform = CGAffineTransformTranslate(newTransform, view.translateX, view.translateY);
-    newTransform = CGAffineTransformRotate(newTransform, data.newValue * Math.PI / 180);
-    newTransform = CGAffineTransformScale(newTransform, view.scaleX, view.scaleY);
-    if (!CGAffineTransformEqualToTransform(view._nativeView.transform, newTransform)) {
-        view._nativeView.transform = newTransform;
-    }
-}
-(<proxy.PropertyMetadata>viewCommon.View.rotateProperty.metadata).onSetNativeValue = onRotatePropertyChanged;
+(<proxy.PropertyMetadata>viewCommon.View.originXProperty.metadata).onSetNativeValue = onOriginPropertyChanged;
+(<proxy.PropertyMetadata>viewCommon.View.originYProperty.metadata).onSetNativeValue = onOriginPropertyChanged;
 
 function onIsEnabledPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
@@ -119,7 +63,9 @@ var PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 var PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
 export class View extends viewCommon.View {
+    private _hasTransfrom = false;
     private _privateFlags: number;
+    private _cachedFrame: CGRect;
 
     constructor() {
         super();
@@ -249,7 +195,17 @@ export class View extends viewCommon.View {
     public _setNativeViewFrame(nativeView: any, frame: any) {
         if (!CGRectEqualToRect(nativeView.frame, frame)) {
             trace.write(this + ", Native setFrame: = " + NSStringFromCGRect(frame), trace.categories.Layout);
-            nativeView.frame = frame;
+            this._cachedFrame = frame;
+            if (this._hasTransfrom) {
+                // Always set identity transform before setting frame;
+                let transform = nativeView.transform;
+                nativeView.transform = CGAffineTransformIdentity;
+                nativeView.frame = frame;
+                nativeView.transform = transform;
+            }
+            else {
+                nativeView.frame = frame;
+            }
             var boundsOrigin = nativeView.bounds.origin;
             nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
         }
@@ -293,6 +249,25 @@ export class View extends viewCommon.View {
     private _onBoundsChanged() {
         this.style._boundsChanged();
     }
+
+    public _updateNativeTransform() {
+        var newTransform = CGAffineTransformIdentity;
+        newTransform = CGAffineTransformTranslate(newTransform, this.translateX, this.translateY);
+        newTransform = CGAffineTransformRotate(newTransform, this.rotate * Math.PI / 180);
+        newTransform = CGAffineTransformScale(newTransform, this.scaleX, this.scaleY);
+        if (!CGAffineTransformEqualToTransform(this._nativeView.transform, newTransform)) {
+            this._nativeView.transform = newTransform;
+            this._hasTransfrom = this._nativeView && !CGAffineTransformEqualToTransform(this._nativeView.transform, CGAffineTransformIdentity);
+        }
+    }
+
+    public _updateOriginPoint() {
+        let newPoint = CGPointMake(this.originX, this.originY);
+        this._nativeView.layer.anchorPoint = newPoint;
+        if (this._cachedFrame) {
+            this._setNativeViewFrame(this._nativeView, this._cachedFrame);
+        }
+    } 
 }
 
 export class CustomLayoutView extends View {
