@@ -318,6 +318,47 @@ export class ButtonStyler implements definition.stylers.Styler {
     }
 }
 
+export class LabelStyler implements definition.stylers.Styler {
+    //Background methods
+    private static setBackgroundInternalProperty(view: view.View, newValue: any) {
+        var uiLabel: UILabel = <UILabel>view._nativeView;
+        if (uiLabel && uiLabel.layer) {
+            var uiColor = <UIColor>background.ios.createBackgroundUIColor(view);
+            var cgColor = uiColor ? uiColor.CGColor : null;
+            uiLabel.layer.backgroundColor = cgColor;
+        }
+    }
+
+    private static resetBackgroundInternalProperty(view: view.View, nativeValue: any) {
+        var uiLabel: UILabel = <UILabel>view._nativeView;
+        if (uiLabel && uiLabel.layer) {
+            var uiColor = <UIColor>nativeValue;
+            var cgColor = uiColor ? uiColor.CGColor : null;
+            uiLabel.layer.backgroundColor = cgColor;
+        }
+    }
+
+    private static getNativeBackgroundInternalValue(view: view.View): any {
+        var uiLabel: UILabel = <UILabel>view._nativeView;
+        if (uiLabel && uiLabel.layer) {
+            var cgColor = uiLabel.layer.backgroundColor;
+            if (cgColor) {
+                return UIColor.colorWithCGColor(cgColor);
+                
+            }
+        }
+
+        return undefined;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.backgroundInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            LabelStyler.setBackgroundInternalProperty,
+            LabelStyler.resetBackgroundInternalProperty,
+            LabelStyler.getNativeBackgroundInternalValue), "Label");
+    }
+}
+
 export class TextBaseStyler implements definition.stylers.Styler {
     // font
     private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
@@ -1100,6 +1141,7 @@ export function _registerDefaultStylers() {
     DefaultStyler.registerHandlers();
     TextBaseStyler.registerHandlers();
     ButtonStyler.registerHandlers();
+    LabelStyler.registerHandlers();
     TextViewStyler.registerHandlers();
     SegmentedBarStyler.registerHandlers();
     SearchBarStyler.registerHandlers();

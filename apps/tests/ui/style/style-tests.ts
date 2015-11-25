@@ -495,7 +495,7 @@ var changeIdOrClassTestCss =
     "#myButton { background-color: #444444 } " +
     "#myButtonTwo { background-color: #555555 } ";
 
-export function test_styles_are_updated_when_cssCalss_is_set() {
+export function test_styles_are_updated_when_cssClass_is_set() {
     var testStack = new stackModule.StackLayout();
     var btn = new buttonModule.Button();
     var btn2 = new buttonModule.Button();
@@ -515,7 +515,7 @@ export function test_styles_are_updated_when_cssCalss_is_set() {
     helper.buildUIAndRunTest(testStack, testFunc, changeIdOrClassTestCss);
 }
 
-export function test_styles_are_updated_when_cssCalss_is_changed() {
+export function test_styles_are_updated_when_cssClass_is_changed() {
     var testStack = new stackModule.StackLayout();
     var btn = new buttonModule.Button();
     btn.className = "button-class";
@@ -536,7 +536,7 @@ export function test_styles_are_updated_when_cssCalss_is_changed() {
     helper.buildUIAndRunTest(testStack, testFunc, changeIdOrClassTestCss);
 }
 
-export function test_styles_are_updated_when_cssCalss_is_cleared() {
+export function test_styles_are_updated_when_cssClass_is_cleared() {
     var testStack = new stackModule.StackLayout();
     var btn = new buttonModule.Button();
     btn.className = "button-class";
