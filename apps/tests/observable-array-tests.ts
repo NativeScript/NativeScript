@@ -85,6 +85,31 @@ export var test_ObservableArray_setItemShouldSetCorrectItem = function () {
     TKUnit.assert(array.getItem(1) === 5, "ObservableArray setItem() should set correct item!");
 };
 
+export var test_ObservableArray_setItemShouldRaiseCorrectEvent = function () {
+    // <snippet module="data/observable-array" title="observable-array">
+    // ### Set item at specified index using setItem(index, item) method and observe change event data.
+    // ``` JavaScript
+    var index: number;
+    var action: string;
+    var addedCount: number;
+    var removed: Array<number>;
+
+    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    array.on("change", (args) => {
+        index = args.index; // Index of the changed item.
+        action = args.action; // Action. In this case Update.
+        addedCount = args.addedCount; // Number of added items. In this case 1.
+        removed = args.removed; // Array of removed items. In this case with single item (2).
+    });
+    array.setItem(1, 5);
+    // ```
+    // </snippet>
+    TKUnit.assertEqual(index, 1);
+    TKUnit.assertEqual(action, observableArrayModule.ChangeType.Update);
+    TKUnit.assertEqual(addedCount, 1);
+    TKUnit.assertEqual(removed[0], 2);
+};
+
 export var test_ObservableArray_concatShouldReturnNewArrayWithNewItemsAtTheEnd = function () {
     // <snippet module="data/observable-array" title="observable-array">
     // ### Use concat() method to combine ObservableArray with array.
@@ -567,7 +592,7 @@ export var test_ObservableArray_lastIndexOfShouldReturnCorrectIndex = function (
     var result = array.lastIndexOf("two");
     // ```
     // </snippet>
-   TKUnit.assert(result === 2, "ObservableArray lastIndexOf() should return correct index!");
+    TKUnit.assert(result === 2, "ObservableArray lastIndexOf() should return correct index!");
 };
 
 export var test_ObservableArray_lastIndexOfShouldReturnCorrectIndexStartingFrom = function () {

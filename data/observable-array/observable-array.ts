@@ -50,13 +50,14 @@ export class ObservableArray<T> extends observable.Observable implements observa
         return this._array[index];
     }
     setItem(index: number, value: T) {
+        let oldValue = this._array[index];
         this._array[index] = value;
 
         this.notify(<observableArrayDef.ChangedData<T>>{
             eventName: CHANGE, object: this,
             action: ChangeType.Update,
             index: index,
-            removed: new Array(1),
+            removed: [oldValue],
             addedCount: 1
         });
     }
