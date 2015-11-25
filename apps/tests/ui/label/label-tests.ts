@@ -1,5 +1,6 @@
 ﻿import TKUnit = require("../../TKUnit");
 import testModule = require("../../ui-test");
+import styling = require("ui/styling");
 
 // <snippet module="ui/label" title="Label">
 // # Label
@@ -86,6 +87,29 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         }
 
         TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");
+    }
+
+    public test_Set_BackgroundColor_TNS() {
+        var label = this.testView;
+        var expectedValue = new colorModule.Color("Red");
+        label.backgroundColor = expectedValue;
+
+        var actual = label.style._getValue(styling.properties.backgroundColorProperty);
+        TKUnit.assertEqual(actual, expectedValue, "BackgroundColor not equal");
+    }
+
+    public test_Set_BackgroundColor_Native() {
+        var testLabel = this.testView;
+        var expectedValue = new colorModule.Color("Red");
+
+        testLabel.backgroundColor = expectedValue;
+
+        if (testLabel.android) {
+            this.waitUntilTestElementIsLoaded();
+        }
+        var actualNative = labelTestsNative.getNativeBackgroundColor(testLabel);
+
+        TKUnit.assertEqual(actualNative, expectedValue);
     }
 
     public test_measuredWidth_is_not_clipped() {
@@ -238,7 +262,9 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             expColor = new colorModule.Color(color);
             TKUnit.assertEqual(normalColor.hex, expColor.hex);
 
-            actualBackgroundColor = utils.ios.getColor(testLabel.ios.backgroundColor);
+            var cgColor = (<UILabel>testLabel.ios).layer.backgroundColor;
+            var uiColor = UIColor.colorWithCGColor(cgColor);
+            actualBackgroundColor = utils.ios.getColor(uiColor);
             expBackgroundColor = new colorModule.Color(backgroundColor);
             TKUnit.assertEqual(actualBackgroundColor.hex, expBackgroundColor.hex);
         }
