@@ -193,13 +193,14 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             let colors = ["red", "green", "blue"];
             listView.items = colors;
 
-            listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
-                var cell = <UITableViewCell>args.ios;
+            TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
+
+            for (var i = 0; i < colors.length; i++) {
+                var cellIndexPath = NSIndexPath.indexPathForItemInSection(i, 0);
+                var cell = tableView.cellForRowAtIndexPath(cellIndexPath);
                 TKUnit.assertEqual(cell.separatorInset.left, leftInset, "Left inset is not set to the cell");
                 TKUnit.assertEqual(cell.separatorInset.right, rightInset, "Right inset is not set to the cell")
-            });
-
-            TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
+            }
 
             TKUnit.assertEqual(tableView.separatorInset.left, leftInset, "Left inset is not set to the ListView")
             TKUnit.assertEqual(tableView.separatorInset.right, rightInset, "Right inset is not set to the ListView");
