@@ -206,6 +206,7 @@ export class ListView extends common.ListView {
         this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), CELLIDENTIFIER);
         this._ios.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
         this._ios.estimatedRowHeight = DEFAULT_HEIGHT;
+        this._ios.rowHeight = UITableViewAutomaticDimension;
         this._ios.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._heights = new Array<number>();
