@@ -478,8 +478,6 @@
         "ui/builder/component-builder.ts",
         "ui/builder/special-properties.d.ts",
         "ui/builder/special-properties.ts",
-        "ui/builder/template-builder.d.ts",
-        "ui/builder/template-builder.ts",
         "ui/button/button-common.ts",
         "ui/button/button.android.ts",
         "ui/button/button.d.ts",
