@@ -260,6 +260,16 @@ declare module "ui/core/view" {
         scaleY: number;
 
         /**
+         * Gets or sets the X component of the origin point around which the view will be transformed. The deafault value is 0.5 representing the center of the view.
+         */
+        originX: number;
+
+        /**
+         * Gets or sets the Y component of the origin point around which the view will be transformed. The deafault value is 0.5 representing the center of the view.
+         */
+        originY: number;
+
+        /**
          * Gets or sets the rotate affine transform of the view.
          */
         rotate: number;

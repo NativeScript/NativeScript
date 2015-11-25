@@ -148,6 +148,18 @@ var scaleYProperty = new dependencyObservable.Property(
     "View",
     new proxy.PropertyMetadata(1)
     );
+    
+var originXProperty = new dependencyObservable.Property(
+    "originX",
+    "View",
+    new proxy.PropertyMetadata(0.5)
+    );
+
+var originYProperty = new dependencyObservable.Property(
+    "originY",
+    "View",
+    new proxy.PropertyMetadata(0.5)
+    );
 
 var rotateProperty = new dependencyObservable.Property(
     "rotate",
@@ -178,6 +190,8 @@ export class View extends proxy.ProxyObject implements definition.View {
     public static translateYProperty = translateYProperty;
     public static scaleXProperty = scaleXProperty;
     public static scaleYProperty = scaleYProperty;
+    public static originXProperty = originXProperty;
+    public static originYProperty = originYProperty;
     public static rotateProperty = rotateProperty;
     public static isEnabledProperty = isEnabledProperty;
     public static isUserInteractionEnabledProperty = isUserInteractionEnabledProperty;
@@ -468,6 +482,20 @@ export class View extends proxy.ProxyObject implements definition.View {
     }
     set scaleY(value: number) {
         this._setValue(View.scaleYProperty, value);
+    }
+
+    get originX(): number {
+        return this._getValue(View.originXProperty);
+    }
+    set originX(value: number) {
+        this._setValue(View.originXProperty, value);
+    }
+
+    get originY(): number {
+        return this._getValue(View.originYProperty);
+    }
+    set originY(value: number) {
+        this._setValue(View.originYProperty, value);
     }
 
     get rotate(): number {

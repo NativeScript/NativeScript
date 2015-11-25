@@ -44,6 +44,20 @@ function onScaleYPropertyChanged(data: dependencyObservable.PropertyChangeData) 
 }
 (<proxy.PropertyMetadata>viewCommon.View.scaleYProperty.metadata).onSetNativeValue = onScaleYPropertyChanged;
 
+function onOriginXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <View>data.object;
+    var width = view._nativeView.getWidth();
+    view._nativeView.setPivotX(data.newValue * width);
+}
+(<proxy.PropertyMetadata>viewCommon.View.originXProperty.metadata).onSetNativeValue = onOriginXPropertyChanged;
+
+function onOriginYPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <View>data.object;
+    var height = view._nativeView.getHeight();
+    view._nativeView.setPivotY(data.newValue * height);
+}
+(<proxy.PropertyMetadata>viewCommon.View.originYProperty.metadata).onSetNativeValue = onOriginYPropertyChanged;
+
 function onRotatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
     view._nativeView.setRotation(data.newValue);
