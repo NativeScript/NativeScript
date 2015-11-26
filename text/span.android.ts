@@ -2,15 +2,60 @@ import spanCommon = require("./span-common");
 import enums = require("ui/enums");
 import formattedString = require("text/formatted-string");
 import utils = require("utils/utils");
+import fontModule = require("ui/styling/font");
 
 global.moduleMerge(spanCommon, exports);
+
+export class CustomTypefaceSpan extends android.text.style.TypefaceSpan {
+    private typeface: any;
+
+    constructor(family: string, typeface: any) {
+        super(family);
+        this.typeface = typeface;
+        return global.__native(this);
+    }
+
+    public updateDrawState(ds: any): void {
+        CustomTypefaceSpan.applyCustomTypeFace(ds, this.typeface);
+    }
+
+    public updateMeasureState(paint: any): void {
+        CustomTypefaceSpan.applyCustomTypeFace(paint, this.typeface);
+    }
+
+    private static applyCustomTypeFace(paint: any, tf: any) {
+        let oldStyle;
+        let old = paint.getTypeface();
+        if (old === null) {
+            oldStyle = 0;
+        } else {
+            oldStyle = old.getStyle();
+        }
+
+        let fake = oldStyle & ~tf.getStyle();
+        if ((fake & android.graphics.Typeface.BOLD) !== 0) {
+            paint.setFakeBoldText(true);
+        }
+
+        if ((fake & android.graphics.Typeface.ITALIC) !== 0) {
+            paint.setTextSkewX(-0.25);
+        }
+
+        paint.setTypeface(tf);
+    }
+}
 
 export class Span extends spanCommon.Span {
     public updateSpanModifiers(parent: formattedString.FormattedString) {
         super.updateSpanModifiers(parent);
         var realFontFamily = this.fontFamily || (parent ? parent.fontFamily : undefined);
         if (realFontFamily) {
-            this.spanModifiers.push(new android.text.style.TypefaceSpan(realFontFamily));
+            let font = new fontModule.Font(realFontFamily,
+                0,
+                (realFontAttributes & enums.FontAttributes.Italic) ? enums.FontStyle.italic : enums.FontStyle.normal,
+                (realFontAttributes & enums.FontAttributes.Bold) ? enums.FontWeight.bold : enums.FontWeight.normal);
+            let typefaceSpan = new CustomTypefaceSpan(realFontFamily, font.getAndroidTypeface());
+            this.spanModifiers.push(typefaceSpan);
         }
         var realFontSize = this.fontSize ||
             (parent ? parent.fontSize : undefined) ||
