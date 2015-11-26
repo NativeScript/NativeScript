@@ -323,7 +323,8 @@ export class LabelStyler implements definition.stylers.Styler {
     private static setBackgroundInternalProperty(view: view.View, newValue: any) {
         var uiLabel: UILabel = <UILabel>view._nativeView;
         if (uiLabel && uiLabel.layer) {
-            var uiColor = <UIColor>background.ios.createBackgroundUIColor(view);
+            var flipImage = true;
+            var uiColor = <UIColor>background.ios.createBackgroundUIColor(view, flipImage);
             var cgColor = uiColor ? uiColor.CGColor : null;
             uiLabel.layer.backgroundColor = cgColor;
         }
@@ -340,12 +341,8 @@ export class LabelStyler implements definition.stylers.Styler {
 
     private static getNativeBackgroundInternalValue(view: view.View): any {
         var uiLabel: UILabel = <UILabel>view._nativeView;
-        if (uiLabel && uiLabel.layer) {
-            var cgColor = uiLabel.layer.backgroundColor;
-            if (cgColor) {
-                return UIColor.colorWithCGColor(cgColor);
-                
-            }
+        if (uiLabel && uiLabel.layer && uiLabel.layer.backgroundColor) {
+            return UIColor.colorWithCGColor(uiLabel.layer.backgroundColor);
         }
 
         return undefined;

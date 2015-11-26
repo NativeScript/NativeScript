@@ -5,7 +5,7 @@ import common = require("./background-common");
 global.moduleMerge(common, exports);
 
 export module ios {
-    export function createBackgroundUIColor(view: viewModule.View): UIColor {
+    export function createBackgroundUIColor(view: viewModule.View, flip?: boolean): UIColor {
         if(!view._nativeView){
             return undefined;
         }
@@ -64,9 +64,30 @@ export module ios {
 
             img.drawAsPatternInRect(patternRect);
         }
+
         var bkgImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
 
+        if (flip) {
+            var flippedImage = _flipImage(bkgImage);
+            return UIColor.alloc().initWithPatternImage(flippedImage);
+        }
+
         return UIColor.alloc().initWithPatternImage(bkgImage);
+    }
+
+    // Flipping the default coordinate system
+    // https://developer.apple.com/library/ios/documentation/2DDrawing/Conceptual/DrawingPrintingiOS/GraphicsDrawingOverview/GraphicsDrawingOverview.html
+    function _flipImage(originalImage: UIImage): UIImage {
+        UIGraphicsBeginImageContextWithOptions(originalImage.size, false, 0.0);
+        var context = UIGraphicsGetCurrentContext();
+        CGContextSaveGState(context);
+        CGContextTranslateCTM(context, 0.0, originalImage.size.width);
+        CGContextScaleCTM(context, 1.0, -1.0);
+        originalImage.drawInRect(CGRectMake(0, 0, originalImage.size.width, originalImage.size.height))
+        CGContextRestoreGState(context);
+        var flippedImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        return flippedImage;
     }
 }
