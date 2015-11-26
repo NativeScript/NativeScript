@@ -4,32 +4,6 @@ import proxy = require("ui/core/proxy");
 import utils = require("utils/utils")
 import types = require("utils/types")
 
-function onHourPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <TimePicker>data.object;
-
-    var validValue = common.getValidHour(data.newValue, picker.minHour, picker.maxHour);
-    if (validValue === data.newValue) {
-        picker._setNativeValueSilently(data.newValue, picker.minute);
-    } else {
-        throw new Error(`Hour property value (${data.newValue}) is not valid. Min value: (${picker.minHour} ), max value: (${picker.maxHour} ).`);
-    }
-}
-
-(<proxy.PropertyMetadata>common.TimePicker.hourProperty.metadata).onSetNativeValue = onHourPropertyChanged;
-
-function onMinutePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <TimePicker>data.object;
-
-    var validValue = common.getValidMinute(data.newValue, picker.minMinute, picker.maxMinute);
-    if (validValue === data.newValue) {
-        picker._setNativeValueSilently(picker.hour, data.newValue);
-    } else {
-        throw new Error(`Minute property value (${data.newValue}) is not valid. Min value: (${picker.minMinute} ), max value: (${picker.maxMinute} ).`);
-    }
-}
-
-(<proxy.PropertyMetadata>common.TimePicker.minuteProperty.metadata).onSetNativeValue = onMinutePropertyChanged;
-
 global.moduleMerge(common, exports);
 
 var SDK = android.os.Build.VERSION.SDK_INT;
@@ -55,45 +29,53 @@ export class TimePicker extends common.TimePicker {
 
                 onTimeChanged: function (picker: android.widget.TimePicker, hour: number, minute: number) {
                     if (this.owner) {
-
-                        this.owner._setNativeValueSilently(hour, minute);
-
-                        if (hour !== this.owner.hour) {
-                            this.owner._onPropertyChangedFromNative(common.TimePicker.hourProperty, hour);
-                        }
-
-                        if (minute !== this.owner.minute) {
-                            this.owner._onPropertyChangedFromNative(common.TimePicker.minuteProperty, minute);
-                        }
+                        var validTime = common.getValidTime(this.owner, hour, minute);
+                        this.owner._setNativeValueSilently(validTime.hour, validTime.minute);
                     }
                 }
             });
         this._android.setOnTimeChangedListener(this._listener);
+
+        var c = java.util.Calendar.getInstance();
+
+        if (this.hour === common.TimePicker.hourProperty.metadata.defaultValue) {
+            this.hour = c.get(java.util.Calendar.HOUR_OF_DAY);
+        }
+
+        if (this.minute === common.TimePicker.minuteProperty.metadata.defaultValue) {
+            this.minute = c.get(java.util.Calendar.MINUTE);
+        }
+
+        var validTime = common.getValidTime(this, this.hour, this.minute);
+        this._setNativeValueSilently(validTime.hour, validTime.minute);
     }
 
-    public _setNativeValueSilently(hour: number, minute: number) {
+    private _setNativeValueSilently(hour: number, minute: number) {
         if (this.android) {
             this.android.setOnTimeChangedListener(null);
 
-            if (types.isNumber(hour)) {
-                var h = new java.lang.Integer(common.getValidHour(hour, this.minHour, this.maxHour));
-                if (SDK >= 23) {
-                    (<any>this.android).setHour(h);
-                } else {
-                    this.android.setCurrentHour(h);
-                }
+            var h = new java.lang.Integer(hour);
+            if (SDK >= 23) {
+                (<any>this.android).setHour(h);
+            } else {
+                this.android.setCurrentHour(h);
             }
 
-            if (types.isNumber(minute)) {
-                var m = new java.lang.Integer(common.getValidMinute(minute, this.minMinute, this.maxMinute));
-                if (SDK >= 23) {
-                    (<any>this.android).setMinute(m);
-                } else {
-                    this.android.setCurrentMinute(m);
-                }
+            var m = new java.lang.Integer(minute);
+            if (SDK >= 23) {
+                (<any>this.android).setMinute(m);
+            } else {
+                this.android.setCurrentMinute(m);
             }
+
+            this.minute = minute;
+            this.hour = hour;
 
             this.android.setOnTimeChangedListener(this._listener);
         }
+    }
+
+    public _setNativeTime() {
+        this._setNativeValueSilently(this.hour, this.minute);
     }
 } 
