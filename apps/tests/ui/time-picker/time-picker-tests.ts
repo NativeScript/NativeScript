@@ -58,12 +58,21 @@ if (platform.device.os === platform.platformNames.ios) {
     }
 }
 
+export function test_WhenCreated_MinuteIntervalIs1() {
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
+        var timePicker = <timePickerModule.TimePicker>views[0];
+        var actualValue = timePicker.minuteInterval;
+        var expectedValue = 1;
+        TKUnit.assertEqual(actualValue, expectedValue);
+    });
+}
+
 export function test_WhenCreated_HourIsCurrentHour() {
     helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var actualValue = timePicker.hour;
         var expectedValue = timePickerTestsNative.getNativeHour(timePicker);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -72,7 +81,7 @@ export function test_WhenCreated_MinHourIs0() {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var actualValue = timePicker.minHour;
         var expectedValue = 0;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -81,7 +90,7 @@ export function test_WhenCreated_MaxHourIs23() {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var actualValue = timePicker.maxHour;
         var expectedValue = 23;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -90,7 +99,7 @@ export function test_WhenCreated_MinuteIsCurrentMinute() {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var actualValue = timePicker.minute;
         var expectedValue = timePickerTestsNative.getNativeMinute(timePicker);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -99,7 +108,7 @@ export function test_WhenCreated_MinMinuteIs0() {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var actualValue = timePicker.minMinute;
         var expectedValue = 0;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -108,7 +117,34 @@ export function test_WhenCreated_MaxMinuteIs59() {
         var timePicker = <timePickerModule.TimePicker>views[0];
         var actualValue = timePicker.maxMinute;
         var expectedValue = 59;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
+    });
+}
+
+export function testMinuteIntervalThrowExceptionWhenLessThan1() {
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
+        var timePicker = <timePickerModule.TimePicker>views[0];
+        TKUnit.assertThrows(function () {
+            timePicker.minuteInterval = 0;
+        }, "Setting minuteInterval property to a value less than 1 should throw.");
+    });
+}
+
+export function testMinuteIntervalThrowExceptionWhenGreaterThan30() {
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
+        var timePicker = <timePickerModule.TimePicker>views[0];
+        TKUnit.assertThrows(function () {
+            timePicker.minuteInterval = 31;
+        }, "Setting minuteInterval property to a value greater than 30 should throw.");
+    });
+}
+
+export function testMinuteIntervalThrowExceptionWhenNotFold60() {
+    helper.buildUIAndRunTest(_createTimePicker(), function (views: Array<viewModule.View>) {
+        var timePicker = <timePickerModule.TimePicker>views[0];
+        TKUnit.assertThrows(function () {
+            timePicker.minuteInterval = 7;
+        }, "Setting minuteInterval property to a value not fold 60 should throw.");
     });
 }
 
@@ -214,7 +250,7 @@ export function testHourFromLocalToNative() {
         var expectedValue = 13;
         timePicker.hour = expectedValue;
         var actualValue = timePickerTestsNative.getNativeHour(timePicker);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -224,7 +260,7 @@ export function testMinuteFromLocalToNative() {
         var expectedValue = 59;
         timePicker.minute = expectedValue;
         var actualValue = timePickerTestsNative.getNativeMinute(timePicker);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -234,7 +270,7 @@ export function testHourFromNativeToLocal() {
         var expectedValue = 14;
         timePickerTestsNative.setNativeHour(timePicker, expectedValue);
         var actualValue = timePicker.hour;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -244,7 +280,7 @@ export function testMinuteFromNativeToLocal() {
         var expectedValue = 33;
         timePickerTestsNative.setNativeMinute(timePicker, expectedValue);
         var actualValue = timePicker.minute;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
