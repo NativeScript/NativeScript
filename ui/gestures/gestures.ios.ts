@@ -273,12 +273,16 @@ function _getSwipeDirection(direction: UISwipeGestureRecognizerDirection): defin
 
 function _getPinchData(args: definition.GestureEventData): definition.PinchGestureEventData {
     var recognizer = <UIPinchGestureRecognizer>args.ios;
+    var center = recognizer.locationInView(args.view._nativeView);
+
     return <definition.PinchGestureEventData>{
         type: args.type,
         view: args.view,
         ios: args.ios,
         android: undefined,
         scale: recognizer.scale,
+        getFocusX: () => { return center.x; },
+        getFocusY: () => { return center.y; },
         object: args.view,
         eventName: definition.toString(args.type),
         state: getState(recognizer)
@@ -287,6 +291,7 @@ function _getPinchData(args: definition.GestureEventData): definition.PinchGestu
 
 function _getSwipeData(args: definition.GestureEventData): definition.SwipeGestureEventData {
     var recognizer = <UISwipeGestureRecognizer>args.ios;
+
     return <definition.SwipeGestureEventData>{
         type: args.type,
         view: args.view,

@@ -216,32 +216,53 @@ class TapAndDoubleTapGestureListener extends android.view.GestureDetector.Simple
     }
 }
 
+class PinchGestureEventData implements definition.PinchGestureEventData {
+    public type = definition.GestureTypes.pinch;
+    public eventName = definition.toString(definition.GestureTypes.pinch);
+    public ios;
+
+    constructor(
+        public view: view.View,
+        public android: android.view.ScaleGestureDetector,
+        public scale: number,
+        public object: any,
+        public state: common.GestureStateTypes) {
+
+    }
+
+    getFocusX(): number {
+        return this.android.getFocusX() / utils.layout.getDisplayDensity();
+    }
+    getFocusY(): number {
+        return this.android.getFocusY() / utils.layout.getDisplayDensity();
+    }
+}
+
 class PinchGestureListener extends android.view.ScaleGestureDetector.SimpleOnScaleGestureListener {
     private _observer: GesturesObserver;
     private _target: view.View;
     private _scale: number;
+    private _density: number;
+
     constructor(observer: GesturesObserver, target: view.View) {
         super();
 
         this._observer = observer;
         this._target = target;
-        
+        this._density = utils.layout.getDisplayDensity();
+
         return global.__native(this);
     }
 
     public onScaleBegin(detector: android.view.ScaleGestureDetector): boolean {
         this._scale = detector.getScaleFactor();
 
-        var args = <definition.PinchGestureEventData>{
-            type: definition.GestureTypes.pinch,
-            view: this._target,
-            android: detector,
-            scale: this._scale,
-            object: this._target,
-            eventName: definition.toString(definition.GestureTypes.pinch),
-            ios: undefined,
-            state: common.GestureStateTypes.began
-        };
+        var args = new PinchGestureEventData(
+            this._target,
+            detector,
+            this._scale,
+            this._target,
+            common.GestureStateTypes.began);
 
         _executeCallback(this._observer, args);
 
@@ -251,16 +272,12 @@ class PinchGestureListener extends android.view.ScaleGestureDetector.SimpleOnSca
     public onScale(detector: android.view.ScaleGestureDetector): boolean {
         this._scale *= detector.getScaleFactor();
 
-        var args = <definition.PinchGestureEventData>{
-            type: definition.GestureTypes.pinch,
-            view: this._target,
-            android: detector,
-            scale: this._scale,
-            object: this._target,
-            eventName: definition.toString(definition.GestureTypes.pinch),
-            ios: undefined,
-            state: common.GestureStateTypes.changed
-        };
+        var args = new PinchGestureEventData(
+            this._target,
+            detector,
+            this._scale,
+            this._target,
+            common.GestureStateTypes.changed);
 
         _executeCallback(this._observer, args);
         return true;
@@ -269,16 +286,12 @@ class PinchGestureListener extends android.view.ScaleGestureDetector.SimpleOnSca
     public onScaleEnd(detector: android.view.ScaleGestureDetector): void {
         this._scale *= detector.getScaleFactor();
 
-        var args = <definition.PinchGestureEventData>{
-            type: definition.GestureTypes.pinch,
-            view: this._target,
-            android: detector,
-            scale: this._scale,
-            object: this._target,
-            eventName: definition.toString(definition.GestureTypes.pinch),
-            ios: undefined,
-            state: common.GestureStateTypes.ended
-        };
+        var args = new PinchGestureEventData(
+            this._target,
+            detector,
+            this._scale,
+            this._target,
+            common.GestureStateTypes.ended);
 
         _executeCallback(this._observer, args);
     }
