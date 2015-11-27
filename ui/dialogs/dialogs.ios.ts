@@ -135,7 +135,7 @@ function raiseCallback(callback, result) {
 export function alert(arg: any): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         try {
-            var options = types.isString(arg) ? { title: dialogsCommon.ALERT, okButtonText: dialogsCommon.OK, message: arg } : arg;
+            var options = !dialogsCommon.isDialogOptions(arg) ? { title: dialogsCommon.ALERT, okButtonText: dialogsCommon.OK, message: arg + "" } : arg;
 
             if (utils.ios.MajorVersion < 8) {
                 var alert = createUIAlertView(options);
@@ -170,7 +170,7 @@ export function alert(arg: any): Promise<void> {
 export function confirm(arg: any): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
         try {
-            var options = types.isString(arg) ? { title: dialogsCommon.CONFIRM, okButtonText: dialogsCommon.OK, cancelButtonText: dialogsCommon.CANCEL, message: arg } : arg;
+            var options = !dialogsCommon.isDialogOptions(arg) ? { title: dialogsCommon.CONFIRM, okButtonText: dialogsCommon.OK, cancelButtonText: dialogsCommon.CANCEL, message: arg + "" } : arg;
 
             if (utils.ios.MajorVersion < 8) {
                 var alert = createUIAlertView(options);

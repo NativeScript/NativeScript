@@ -4,6 +4,7 @@ import page = require("ui/page");
 import button = require("ui/button");
 import textField = require("ui/text-field");
 import label = require("ui/label");
+import types = require("utils/types");
 
 export var STRING = "string",
     PROMPT = "Prompt",
@@ -78,4 +79,8 @@ export function getLabelColor(): color.Color {
     }
 
     return labelColor;
+}
+
+export function isDialogOptions(arg): boolean {
+    return !types.isNullOrUndefined(arg) && (arg.message || arg.title);
 }

@@ -4,6 +4,12 @@
     <StackLayout>
       <Button text="alert" tap="alertTapped"/>
       <Button text="alert with options" tap="alertWithOptionsTapped"/>
+      <Button text="alert with null" tap="alertWithNullTapped"/>
+      <Button text="alert with undefined" tap="alertWithUndefinedTapped"/>
+      <Button text="alert with number" tap="alertWithNumberTapped"/>
+      <Button text="alert with boolean" tap="alertWithBooleanTapped"/>
+      <Button text="alert with function" tap="alertWithFunctionTapped"/>
+      <Button text="alert with object" tap="alertWithObjectTapped"/>
       <Button text="confirm" tap="confirmTapped"/>
       <Button text="confirm with options" tap="confirmWithOptionsTapped"/>
       <Button text="prompt" tap="promptTapped"/>
