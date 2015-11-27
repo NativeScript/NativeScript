@@ -269,7 +269,7 @@ export var test_AnimateOpacity = function (done) {
 
     label.animate({ opacity: 0.75 })
         .then(() => {
-            TKUnit.assert(label.opacity === 0.75);
+            TKUnit.assertEqual(label.opacity, 0.75, "label.opacity");
             helper.goBack();
             done();
         })
@@ -326,8 +326,8 @@ export var test_AnimateTranslate = function (done) {
 
     label.animate({ translate: { x: 100, y: 200 } })
         .then(() => {
-            TKUnit.assert(label.translateX === 100);
-            TKUnit.assert(label.translateY === 200);
+            TKUnit.assertEqual(label.translateX, 100, "label.translateX");
+            TKUnit.assertEqual(label.translateY, 200, "label.translateY");
             assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
@@ -356,8 +356,8 @@ export var test_AnimateScale = function (done) {
 
     label.animate({ scale: { x: 2, y: 3 } })
         .then(() => {
-            TKUnit.assert(label.scaleX === 2);
-            TKUnit.assert(label.scaleY === 3);
+            TKUnit.assertEqual(label.scaleX, 2,"label.scaleX");
+            TKUnit.assertEqual(label.scaleY, 3,"label.scaleY");
             assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
@@ -386,7 +386,7 @@ export var test_AnimateRotate = function (done) {
 
     label.animate({ rotate: 123 })
         .then(() => {
-            TKUnit.assert(label.rotate === 123);
+            TKUnit.assertEqual(label.rotate, 123, "label.rotate");
             assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
@@ -419,11 +419,11 @@ export var test_AnimateTranslateScaleAndRotateSimultaneously = function (done) {
         rotate: 123
     })
         .then(() => {
-            TKUnit.assert(label.translateX === 100);
-            TKUnit.assert(label.translateY === 200);
-            TKUnit.assert(label.scaleX === 2);
-            TKUnit.assert(label.scaleY === 3);
-            TKUnit.assert(label.rotate === 123);
+            TKUnit.assertEqual(label.translateX, 100, "label.translateX");
+            TKUnit.assertEqual(label.translateY, 200, "label.translateY");
+            TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
+            TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
+            TKUnit.assertEqual(label.rotate, 123, "label.rotate");
             assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
@@ -450,35 +450,35 @@ export var test_AnimateTranslateScaleAndRotateSequentially = function (done) {
     helper.navigate(pageFactory);
     TKUnit.waitUntilReady(() => { return label.isLoaded });
 
-    label.animate({translate: { x: 100, y: 200 }})
-    .then(() => {
-        TKUnit.assert(label.translateX === 100);
-        TKUnit.assert(label.translateY === 200);
-        assertIOSNativeTransformIsCorrect(label);
-        return label.animate({ scale: { x: 2, y: 3 } });
-    })
-    .then(() => {
-        TKUnit.assert(label.translateX === 100);
-        TKUnit.assert(label.translateY === 200);
-        TKUnit.assert(label.scaleX === 2);
-        TKUnit.assert(label.scaleY === 3);
-        assertIOSNativeTransformIsCorrect(label);
-        return label.animate({ rotate: 123 });
-    })
-    .then(() => {
-        TKUnit.assert(label.translateX === 100);
-        TKUnit.assert(label.translateY === 200);
-        TKUnit.assert(label.scaleX === 2);
-        TKUnit.assert(label.scaleY === 3);
-        TKUnit.assert(label.rotate === 123);
-        assertIOSNativeTransformIsCorrect(label);
-        helper.goBack();
-        done();
-    })
-    .catch((e) => {
-        helper.goBack();
-        done(e);
-    });
+    label.animate({ translate: { x: 100, y: 200 } })
+        .then(() => {
+            TKUnit.assertEqual(label.translateX, 100, "label.translateX");
+            TKUnit.assertEqual(label.translateY, 200, "label.translateY");
+            assertIOSNativeTransformIsCorrect(label);
+            return label.animate({ scale: { x: 2, y: 3 } });
+        })
+        .then(() => {
+            TKUnit.assertEqual(label.translateX, 100, "label.translateX");
+            TKUnit.assertEqual(label.translateY, 200, "label.translateY");
+            TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
+            TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
+            assertIOSNativeTransformIsCorrect(label);
+            return label.animate({ rotate: 123 });
+        })
+        .then(() => {
+            TKUnit.assertEqual(label.translateX, 100, "label.translateX");
+            TKUnit.assertEqual(label.translateY, 200, "label.translateY");
+            TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
+            TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
+            TKUnit.assertEqual(label.rotate, 123, "label.rotate");
+            assertIOSNativeTransformIsCorrect(label);
+            helper.goBack();
+            done();
+        })
+        .catch((e) => {
+            helper.goBack();
+            done(e);
+        });
 }
 
 export var test_AnimationsAreAlwaysPlayed = function (done) {

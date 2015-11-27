@@ -136,7 +136,8 @@ export class Animation extends common.Animation implements definition.Animation 
         var animators = new Array<android.animation.Animator>();
         var propertyUpdateCallbacks = new Array<Function>();
         var propertyResetCallbacks = new Array<Function>();
-        var originalValue;
+        var originalValue1;
+        var originalValue2;
         var density = utils.layout.getDisplayDensity();
         var xyObjectAnimators: any;
         var animatorSet: android.animation.AnimatorSet;
@@ -157,16 +158,16 @@ export class Animation extends common.Animation implements definition.Animation 
         switch (propertyAnimation.property) {
 
             case common.Properties.opacity:
-                originalValue = nativeView.getAlpha();
+                originalValue1 = nativeView.getAlpha();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value;
                 propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.opacity = propertyAnimation.value }));
-                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setAlpha(originalValue); }));
+                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setAlpha(originalValue1); }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
                 break;
 
             case common.Properties.backgroundColor:
-                originalValue = nativeView.getBackground();
+                originalValue1 = nativeView.getBackground();
                 nativeArray = java.lang.reflect.Array.newInstance(java.lang.Object.class, 2);
                 nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<color.Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);
                 nativeArray[1] = java.lang.Integer.valueOf((<color.Color>propertyAnimation.value).argb);
@@ -179,28 +180,35 @@ export class Animation extends common.Animation implements definition.Animation 
                 }));
 
                 propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.backgroundColor = propertyAnimation.value; }));
-                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setBackground(originalValue); }));
+                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setBackground(originalValue1); }));
                 animators.push(animator);
                 break;
 
             case common.Properties.translate:
                 xyObjectAnimators = java.lang.reflect.Array.newInstance(android.animation.Animator.class, 2);
 
-                originalValue = nativeView.getTranslationX();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value.x * density;
                 xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationX", nativeArray);
                 xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
-                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.translateX = propertyAnimation.value.x; }));
-                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setTranslationX(originalValue); }));
 
-                originalValue = nativeView.getTranslationY();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value.y * density;
                 xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationY", nativeArray);
                 xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
-                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.translateY = propertyAnimation.value.y; }));
-                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setTranslationY(originalValue); }));
+
+                originalValue1 = nativeView.getTranslationX();
+                originalValue2 = nativeView.getTranslationY();
+
+                propertyUpdateCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.translateX = propertyAnimation.value.x;
+                    propertyAnimation.target.translateY = propertyAnimation.value.y;
+                }));
+
+                propertyResetCallbacks.push(checkAnimation(() => {
+                    nativeView.setTranslationX(originalValue1);
+                    nativeView.setTranslationY(originalValue2);
+                }));
 
                 animatorSet = new android.animation.AnimatorSet();
                 animatorSet.playTogether(xyObjectAnimators);
@@ -211,21 +219,28 @@ export class Animation extends common.Animation implements definition.Animation 
             case common.Properties.scale:
                 xyObjectAnimators = java.lang.reflect.Array.newInstance(android.animation.Animator.class, 2);
 
-                originalValue = nativeView.getScaleX();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value.x;
                 xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleX", nativeArray);
                 xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
-                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.scaleX = propertyAnimation.value.x; }));
-                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setScaleX(originalValue); }));
 
-                originalValue = nativeView.getScaleY();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value.y;
                 xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleY", nativeArray);
                 xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
-                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.scaleY = propertyAnimation.value.y; }));
-                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setScaleY(originalValue); }));
+
+                originalValue1 = nativeView.getScaleX();
+                originalValue2 = nativeView.getScaleY();
+
+                propertyUpdateCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.scaleX = propertyAnimation.value.x;
+                    propertyAnimation.target.scaleY = propertyAnimation.value.y;
+                }));
+
+                propertyResetCallbacks.push(checkAnimation(() => {
+                    nativeView.setScaleY(originalValue1);
+                    nativeView.setScaleY(originalValue2);
+                }));
 
                 animatorSet = new android.animation.AnimatorSet();
                 animatorSet.playTogether(xyObjectAnimators);
@@ -234,11 +249,11 @@ export class Animation extends common.Animation implements definition.Animation 
                 break;
 
             case common.Properties.rotate:
-                originalValue = nativeView.getRotation();
+                originalValue1 = nativeView.getRotation();
                 nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
                 nativeArray[0] = propertyAnimation.value;
                 propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.rotate = propertyAnimation.value; }));
-                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setRotation(originalValue); }));
+                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setRotation(originalValue1); }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
                 break;
 

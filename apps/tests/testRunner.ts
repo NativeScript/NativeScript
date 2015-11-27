@@ -83,9 +83,9 @@ allTests["REPEATER"] = require("./ui/repeater/repeater-tests");
 allTests["SEARCH-BAR"] = require('./ui/search-bar/search-bar-tests');
 allTests["CONNECTIVITY"] = require("./connectivity-tests");
 allTests["SEGMENTED-BAR"] = require("./ui/segmented-bar/segmented-bar-tests");
+allTests["ANIMATION"] = require("./ui/animation/animation-tests");
 
 if (!isRunningOnEmulator()) {
-    allTests["ANIMATION"] = require("./ui/animation/animation-tests");
     allTests["LOCATION"] = require("./location-tests");
 }
 
@@ -140,7 +140,7 @@ function startLog(): void {
 function log(): void {
     let testsName: string = this.name;
     let duration = TKUnit.time() - this.start;
-    TKUnit.write(testsName + " COMPLETED for " + duration, messageType.info);
+    TKUnit.write(testsName + " COMPLETED for " + duration + " BACKSTACK DEPTH: " + topmost().backStack.length, messageType.info);
 }
 
 export var runAll = function (moduleName?: string) {
@@ -161,7 +161,7 @@ export var runAll = function (moduleName?: string) {
 
         var test = testModule.createTestCase ? testModule.createTestCase() : testModule;
         test.name = name;
-        
+
 
         testsQueue.push(new TestInfo(startLog, test));
 
