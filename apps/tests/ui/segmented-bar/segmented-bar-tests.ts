@@ -95,8 +95,8 @@ export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function 
         var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
         // <snippet module="ui/segmented-bar" title="SegmentedBar">
         // ### Creating segmentedBar.items
-        // It is important that an items array must get created and filled with items first and
-        // then assigned to the segmented bar.
+        // It is important that an items array gets created and filled with
+        // items first and then assigned to the segmented bar.
         // ``` JavaScript
         var items = [];
         var item1 = new segmentedBarModule.SegmentedBarItem();
