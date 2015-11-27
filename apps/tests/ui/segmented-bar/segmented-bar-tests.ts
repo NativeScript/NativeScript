@@ -94,9 +94,21 @@ export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function 
     helper.buildUIAndRunTest(_createSegmentedBar(), function (views: Array<viewModule.View>) {
         var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
         // <snippet module="ui/segmented-bar" title="SegmentedBar">
-        // ### Binding segmentedBar.items
+        // ### Creating segmentedBar.items
+        // It is important that an items array must get created and filled with items first and
+        // then assigned to the segmented bar.
         // ``` JavaScript
-        segmentedBar.items = _createItems(3);
+        var items = [];
+        var item1 = new segmentedBarModule.SegmentedBarItem();
+        item1.title = "Item1";
+        items.push(item1);
+        var item2 = new segmentedBarModule.SegmentedBarItem();
+        item2.title = "Item2";
+        items.push(item2);
+        var item3 = new segmentedBarModule.SegmentedBarItem();
+        item3.title = "Item3";
+        items.push(item3);
+        segmentedBar.items = items;
         // ```
         // </snippet>
         var expectedValue = 0;
