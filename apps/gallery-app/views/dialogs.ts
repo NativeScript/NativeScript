@@ -12,6 +12,32 @@ export function alertWithOptionsTapped(args) {
     });
 }
 
+export function alertWithNullTapped(args) {
+    dialogs.alert(null);
+}
+
+export function alertWithUndefinedTapped(args) {
+    dialogs.alert(undefined);
+}
+
+export function alertWithNumberTapped(args) {
+    dialogs.alert(1);
+}
+
+export function alertWithBooleanTapped(args) {
+    dialogs.alert(false);
+}
+
+export function alertWithFunctionTapped(args) {
+    dialogs.alert(function () {
+        //
+    });
+}
+
+export function alertWithObjectTapped(args) {
+    dialogs.alert({});
+}
+
 export function confirmTapped(args) {
     dialogs.confirm("Are you sure?").then(r=> console.log(`Confirm result: ${r}`));
 }

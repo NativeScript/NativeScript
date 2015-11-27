@@ -85,7 +85,7 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
 export function alert(arg: any): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         try {
-            var options = types.isString(arg) ? { title: dialogsCommon.ALERT, okButtonText: dialogsCommon.OK, message: arg } : arg;
+            var options = !dialogsCommon.isDialogOptions(arg) ? { title: dialogsCommon.ALERT, okButtonText: dialogsCommon.OK, message: arg + "" } : arg;
 
             var alert = createAlertDialog(options);
 
@@ -112,7 +112,7 @@ export function alert(arg: any): Promise<void> {
 export function confirm(arg: any): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
         try {
-            var options = types.isString(arg) ? { title: dialogsCommon.CONFIRM, okButtonText: dialogsCommon.OK, cancelButtonText: dialogsCommon.CANCEL, message: arg } : arg;
+            var options = !dialogsCommon.isDialogOptions(arg) ? { title: dialogsCommon.CONFIRM, okButtonText: dialogsCommon.OK, cancelButtonText: dialogsCommon.CANCEL, message: arg + "" } : arg;
             var alert = createAlertDialog(options);
 
             addButtonsToAlertDialog(alert, options, function (result) { resolve(result); });
