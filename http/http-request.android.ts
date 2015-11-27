@@ -1,7 +1,6 @@
 ﻿/**
  * Android specific http request implementation.
  */
-
 import imageSource = require("image-source");
 import types = require("utils/types");
 import utils = require("utils/utils");

@@ -1,7 +1,6 @@
 ﻿/**
  * Android specific dialogs functions implementation.
  */
-
 import dialogs = require("ui/dialogs");
 import dialogsCommon = require("./dialogs-common");
 import appmodule = require("application");

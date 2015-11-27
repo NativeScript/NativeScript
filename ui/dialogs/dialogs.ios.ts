@@ -1,7 +1,6 @@
 ﻿/**
  * iOS specific dialogs functions implementation.
  */
-
 import dialogs = require("ui/dialogs");
 import dialogsCommon = require("./dialogs-common");
 import types = require("utils/types");

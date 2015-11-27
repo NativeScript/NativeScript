@@ -1,7 +1,6 @@
 ﻿/**
  * iOS specific http request implementation.
  */
-
 import http = require("http");
 import imageSource = require("image-source");
 import types = require("utils/types");
