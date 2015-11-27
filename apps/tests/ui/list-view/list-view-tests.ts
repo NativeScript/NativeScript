@@ -187,8 +187,8 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             var tableView = <UITableView>listView.ios;
             var leftInset = 18;
             var rightInset = 25;
-            listView.settings.ios.separatorInsetLeft = leftInset;
-            listView.settings.ios.separatorInsetRight = rightInset;
+            listView.ios.settings.separatorInsetLeft = leftInset;
+            listView.ios.settings.separatorInsetRight = rightInset;
 
             let colors = ["red", "green", "blue"];
             listView.items = colors;
@@ -213,8 +213,8 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             var tableView = <UITableView>listView.ios;
 
             var setInsetAndAssert = (leftInset: number, rightInset: number) => {
-                listView.settings.ios.separatorInsetLeft = leftInset;
-                listView.settings.ios.separatorInsetRight = rightInset;
+                listView.ios.settings.separatorInsetLeft = leftInset;
+                listView.ios.settings.separatorInsetRight = rightInset;
 
                 let colors = ["red", "green", "blue"];
                 TKUnit.waitUntilReady(() => { return listView.isLoaded; }, ASYNC);

@@ -33,16 +33,6 @@ declare module "ui/list-view" {
     }
 
     /**
-     * Represents settings to configure a ListView instance.
-     */
-    export interface ListViewSettings {
-        /**
-         * IOS specific settings.
-         */
-        ios: IOSListViewSettings;
-    }
-
-    /**
      * Represents a view that shows items in a vertically scrolling list.
      */
     export class ListView extends view.View {
@@ -88,11 +78,6 @@ declare module "ui/list-view" {
          * Gets the native [iOS view](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableView_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
         ios: any /* UITableView */;
-
-        /**
-         * Gets iOS specific settings of the ListView.
-         */
-        settings: ListViewSettings;
 
         /**
          * Gets a value indicating whether the ListView is currently scrolling.

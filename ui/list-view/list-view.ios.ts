@@ -97,7 +97,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         }
 
         if (cell.separatorInset) {
-            cell.separatorInset = UIEdgeInsetsMake(cell.separatorInset.top, owner.settings.ios.separatorInsetLeft, cell.separatorInset.bottom, owner.settings.ios.separatorInsetRight);;
+            cell.separatorInset = UIEdgeInsetsMake(cell.separatorInset.top, owner.ios.settings.separatorInsetLeft, cell.separatorInset.bottom, owner.ios.settings.separatorInsetRight);
         }
 
         if (cell.preservesSuperviewLayoutMargins) {
@@ -233,29 +233,14 @@ class IOSListViewSettings extends observable.Observable implements definition.IO
     }
 }
 
-class ListViewSettings implements definition.ListViewSettings {
-    public static settingChangeEvent = "settingChange";
-
-    private _ios: IOSListViewSettings;
-
-    constructor(uiTable: UITableView) {
-        this._ios = new IOSListViewSettings(uiTable);
-    }
-
-    public get ios(): IOSListViewSettings {
-        return this._ios;
-    }
-}
-
 export class ListView extends common.ListView {
-    private _ios: UITableView;
+    private _ios: any;
     private _dataSource;
     private _delegate;
     private _heights: Array<number>;
     private _preparingCell: boolean = false;
     private _isDataDirty: boolean = false;
     private _map: Map<ListViewCell, view.View>;
-    private _settings: ListViewSettings;
 
     widthMeasureSpec: number = 0;
 
@@ -263,6 +248,7 @@ export class ListView extends common.ListView {
         super();
 
         this._ios = new UITableView();
+
         this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), CELLIDENTIFIER);
         this._ios.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
         this._ios.estimatedRowHeight = DEFAULT_HEIGHT;
@@ -271,14 +257,10 @@ export class ListView extends common.ListView {
         this._heights = new Array<number>();
         this._map = new Map<ListViewCell, view.View>();
 
-        this._settings = new ListViewSettings(this._ios);
-        this._settings.ios.on(observable.Observable.propertyChangeEvent, (args: observable.EventData) => {
+        this._ios.settings = new IOSListViewSettings(this._ios);
+        this._ios.settings.on(observable.Observable.propertyChangeEvent, (args: observable.EventData) => {
             this.refresh();
         });
-    }
-
-    public get settings(): definition.ListViewSettings {
-        return this._settings;
     }
 
     public onLoaded() {
@@ -295,7 +277,7 @@ export class ListView extends common.ListView {
         super.onUnloaded();
     }
 
-    get ios(): UITableView {
+    get ios(): UITableView & { settings: IOSListViewSettings } {
         return this._ios;
     }
 
@@ -309,7 +291,7 @@ export class ListView extends common.ListView {
     public refresh() {
         if (this.isLoaded) {
             if (this._ios.separatorInset) {
-                this._ios.separatorInset = UIEdgeInsetsMake(this._ios.separatorInset.top, this._settings.ios.separatorInsetLeft, this._ios.separatorInset.bottom, this._settings.ios.separatorInsetRight);
+                this._ios.separatorInset = UIEdgeInsetsMake(this._ios.separatorInset.top, this._ios.settings.separatorInsetLeft, this._ios.separatorInset.bottom, this._ios.settings.separatorInsetRight);
             }
 
             this._ios.reloadData();
