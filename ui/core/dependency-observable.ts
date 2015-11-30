@@ -127,6 +127,7 @@ export class Property implements definition.Property {
         if (propertyFromKey[this._key]) {
             throw new Error("Property " + name + " already registered for type " + ownerType + ".");
         }
+
         propertyFromKey[this._key] = this;
 
         if (!metadata || !(metadata instanceof PropertyMetadata)) {
@@ -135,15 +136,10 @@ export class Property implements definition.Property {
 
         this._name = name;
         this._ownerType = ownerType;
-
         this._metadata = metadata;
-        if (!metadata.options) {
-            metadata.options = PropertyMetadataSettings.None;
-        }
 
         // generate a unique numeric id for each property (faster lookup than a string key)
         this._id = propertyIdCounter++;
-
         this._valueConverter = valueConverter;
     }
 
