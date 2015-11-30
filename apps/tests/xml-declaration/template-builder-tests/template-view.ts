@@ -18,6 +18,8 @@ export class TemplateView extends LayoutBase {
             null
             )
         );
+        
+    public static testEvent: string = "test";
 	
     get template(): string | Template {
         return this._getValue(TemplateView.templateProperty);

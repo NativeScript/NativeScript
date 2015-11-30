@@ -319,6 +319,7 @@
         "apps/tests/xml-declaration/mainPage.ts",
         "apps/tests/xml-declaration/mymodule/MyControl.ts",
         "apps/tests/xml-declaration/mymodulewithxml/MyControl.ts",
+        "apps/tests/xml-declaration/template-builder-tests/event-in-template.ts",
         "apps/tests/xml-declaration/template-builder-tests/template-view.ts",
         "apps/tests/xml-declaration/xml-declaration-tests.ts",
         "apps/tests/xml-parser-tests/xml-parser-tests.ts",

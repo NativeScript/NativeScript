@@ -438,7 +438,7 @@ namespace xml2ui {
     
                     if (ComponentParser.isKnownTemplate(name, parent.exports)) {
                         return new TemplateParser(this, {
-                            context: parent ? getExports(parent.component) : null, // Passing 'context' won't work if you set "codeFile" on the page
+                            context: (parent ? getExports(parent.component) : null) || this.context, // Passing 'context' won't work if you set "codeFile" on the page
                             parent: parent,
                             name: name,
                             elementName: args.elementName,
