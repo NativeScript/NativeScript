@@ -54,8 +54,16 @@ declare module "ui/time-picker" {
          */
         minMinute: number;
 
+        /**
+         * Gets or sets the minute interval.
+         */
+        minuteInterval: number;
+
+        //@private
         _setNativeTime(): void;
         _setNativeMinTime(): void;
         _setNativeMaxTime(): void;
+        _setNativeMinuteIntervalTime(): void;
+        //@endprivate
     }
 } 

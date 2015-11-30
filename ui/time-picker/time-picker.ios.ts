@@ -55,6 +55,12 @@ export class TimePicker extends common.TimePicker {
             this.ios.maximumDate = getDate(this.maxHour, this.maxMinute);
         }
     }
+
+    public _setNativeMinuteIntervalTime() {
+        if (this.ios) {
+            this.ios.minuteInterval = this.minuteInterval;
+        }
+    }
 }
 
 class UITimePickerChangeHandlerImpl extends NSObject {
