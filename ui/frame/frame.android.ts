@@ -290,7 +290,7 @@ export class Frame extends frameCommon.Frame {
     public _onActivityCreated(isRestart: boolean) {
         this._onAttached(this._android.activity);
 
-        var backstackEntry = this.currentEntry || this._delayedNavigationEntry;
+        var backstackEntry = this._currentEntry || this._delayedNavigationEntry;
 
         if (isRestart) {
             this._onNavigatingTo(backstackEntry, false);
@@ -672,7 +672,7 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
     trace.write("Attached fragment with no page: " + fragmentTag, trace.categories.NativeLifecycle);
     if (frame.currentPage && frame.currentPage[TAG] === fragmentTag) {
         page = frame.currentPage;
-        entry = frame.currentEntry;
+        entry = frame._currentEntry;
         trace.write("Current page matches fragment: " + fragmentTag, trace.categories.NativeLifecycle);
     }
     else {

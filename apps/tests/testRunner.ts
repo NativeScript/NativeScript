@@ -40,6 +40,7 @@ allTests["FILE SYSTEM"] = require("./file-system-tests");
 allTests["HTTP"] = require("./http-tests");
 allTests["XHR"] = require("./xhr-tests");
 allTests["FETCH"] = require("./fetch-tests");
+allTests["FRAME"] = require("./frame-tests");
 allTests["APPLICATION SETTINGS"] = require("./application-settings-tests");
 allTests["IMAGE SOURCE"] = require("./image-source-tests");
 allTests["TIMER"] = require("./timer-tests");
