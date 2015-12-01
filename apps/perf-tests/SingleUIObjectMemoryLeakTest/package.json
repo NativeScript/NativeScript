@@ -1,2 +1,2 @@
-﻿{ "name" : "SingleUIObjectMemoryLeakTest",
+{ "name" : "SingleUIObjectMemoryLeakTest",
   "main" : "app.js" }
