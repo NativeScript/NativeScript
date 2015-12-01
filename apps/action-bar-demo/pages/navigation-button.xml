@@ -1,7 +1,7 @@
 <Page>
   <Page.actionBar>
     <ActionBar title="Navigation Button">
-      <NavigationButton text="go back" icon="res://ic_test" tap="navTap"/>
+      <NavigationButton text="ios back" android.systemIcon = "ic_menu_back" tap="navTap"/>
     </ActionBar>
   </Page.actionBar>
   
