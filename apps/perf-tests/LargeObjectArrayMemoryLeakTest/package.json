@@ -1,2 +1,2 @@
-﻿{ "name" : "LargeObjectArrayMemoryLeakTest",
+{ "name" : "LargeObjectArrayMemoryLeakTest",
   "main" : "app.js" }

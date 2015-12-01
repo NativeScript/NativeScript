@@ -422,16 +422,6 @@ module.exports = function(grunt) {
                 NODE_PATH: localCfg.outModulesDir,
             }
         },
-        bom: {
-            allTargetFiles: {
-                src: [
-                    pathModule.join(localCfg.outDir, "**/*.ts"),
-                    pathModule.join(localCfg.outDir, "**/*.js"),
-                    pathModule.join(localCfg.outDir, "**/*.css"),
-                    pathModule.join(localCfg.outDir, "**/*.xml")
-                    ]
-            }
-        },
         typedoc: {
             build: {
                 options: {
@@ -463,7 +453,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-shell");
     grunt.loadNpmTasks("grunt-env");
     grunt.loadNpmTasks("grunt-simple-mocha");
-    grunt.loadNpmTasks('grunt-bom-removal');
     grunt.loadNpmTasks('grunt-typedoc');
 
     var cloneTasks = function(originalTasks, taskNameSuffix) {
@@ -564,6 +553,25 @@ module.exports = function(grunt) {
             "copy:readyAppFiles",
             "clean:readyAppFiles"
     ]);
+    grunt.registerTask("check-packagejson-boms", function() {
+        function hasBOM(filepath) {
+            var buf = grunt.file.read(filepath, { encoding: null });
+            return (buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF);
+        }
+        var packageDescriptors = grunt.file.expand({}, [
+            '**/package.json',
+            '!node_modules/**'
+        ]);
+        var errors = packageDescriptors.map(function(packagePath) {
+            if (hasBOM(packagePath)) {
+                return "File " + packagePath + " contains a UTF-8 BOM.";
+            } else {
+                return null;
+            }
+        }).filter(function(errorMessage) { return !!errorMessage; });
+        if (errors.length > 0)
+            grunt.fail.fatal("\n" + errors.join("\n"));
+    });
     grunt.registerTask("distribute-ts-apps-files", [
             "copy:readyTsAppFiles"
     ]);
@@ -606,8 +614,8 @@ module.exports = function(grunt) {
     grunt.registerTask("compile-modules", [
         "clean:build",
         "shell:getGitSHA",
+        "check-packagejson-boms",
         "compile-ts",
-        "bom:allTargetFiles",
         "collect-modules-raw-files",
         "copy:modulesPackageDef",
         "copy:definitionFiles",
