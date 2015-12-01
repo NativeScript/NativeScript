@@ -907,3 +907,29 @@ export function test_EventInTemplate() {
     
     TKUnit.assert(notified, "Expected the child to raise the test event.");
 }
+
+export function test_EventInCodelessFragment() {
+    var pageCode = require("./template-builder-tests/event-in-codeless-fragment");
+    
+    var notified = false;
+    pageCode.test = (args) => {
+        notified = true;
+    }
+    
+    var basePath = "xml-declaration/";
+	var message;
+	var page = builder.load(__dirname + "/template-builder-tests/event-in-codeless-fragment.xml", pageCode);
+    TKUnit.assert(view, "Expected the xml to generate a page");
+    var templateView = <TemplateView>page.getViewById("template-view");
+    TKUnit.assert(templateView, "Expected the page to have a TemplateView with 'temaplte-view' id.");
+    templateView.parseTemplate();
+    TKUnit.assertEqual(templateView.getChildrenCount(), 1, "Expected TemplateView initially to have 1 child.");
+    var childTemplateView = <TemplateView>templateView.getChildAt(0);
+    TKUnit.assert(childTemplateView, "Expected the TemplateView's template to create a child TemplateView.");
+    childTemplateView.notify({
+        eventName: "test",
+        object: childTemplateView
+    });
+    
+    TKUnit.assert(notified, "Expected the child to raise the test event.");
+}
