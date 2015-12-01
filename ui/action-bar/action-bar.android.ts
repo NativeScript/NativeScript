@@ -15,7 +15,7 @@ var ACTION_ITEM_ID_OFFSET = 1000;
 
 global.moduleMerge(common, exports);
 
-export class ActionItem extends common.ActionItemBase implements dts.ActionItem {
+export class ActionItem extends common.ActionItem {
     private _androidPosition: dts.AndroidActionItemSettings = {
         position: enums.AndroidActionItemPosition.actionBar,
         systemIcon: undefined
@@ -27,9 +27,6 @@ export class ActionItem extends common.ActionItemBase implements dts.ActionItem 
     public set android(value: dts.AndroidActionItemSettings) {
         throw new Error("ActionItem.android is read-only");
     }
-
-    // Not used in Android
-    public ios: dts.IOSActionItemSettings;
 }
 
 export class AndroidActionBarSettings implements dts.AndroidActionBarSettings {
@@ -60,6 +57,10 @@ export class AndroidActionBarSettings implements dts.AndroidActionBarSettings {
     constructor(actionBar: ActionBar) {
         this._actionBar = actionBar;
     }
+}
+
+export class NavigationButton extends ActionItem {
+
 }
 
 export class ActionBar extends common.ActionBar {
@@ -102,7 +103,7 @@ export class ActionBar extends common.ActionBar {
         if (!this._toolbar) {
             return;
         }
-        
+
         if (!this.page.frame || !this.page.frame._getNavBarVisible(this.page)) {
             this._toolbar.setVisibility(android.view.View.GONE);
 
@@ -142,8 +143,18 @@ export class ActionBar extends common.ActionBar {
     public _updateNavigationButton() {
         var navButton = this.navigationButton;
         if (navButton) {
-            var drawableOrId = getDrawableOrResourceId(navButton.icon, this._appResources);
-            this._toolbar.setNavigationIcon(drawableOrId);
+
+            if (navButton.android.systemIcon) {
+                // Try to look in the system resources.
+                let systemResourceId = getSystemResourceId(navButton.android.systemIcon);
+                if (systemResourceId) {
+                    this._toolbar.setNavigationIcon(systemResourceId);
+                }
+            }
+            else if (navButton.icon) {
+                let drawableOrId = getDrawableOrResourceId(navButton.icon, this._appResources);
+                this._toolbar.setNavigationIcon(drawableOrId);
+            }
 
             this._toolbar.setNavigationOnClickListener(new android.view.View.OnClickListener({
                 onClick: function (v) {
@@ -206,7 +217,7 @@ export class ActionBar extends common.ActionBar {
 
             if (item.android.systemIcon) {
                 // Try to look in the system resources.
-                let systemResourceId = android.content.res.Resources.getSystem().getIdentifier(item.android.systemIcon, "drawable", "android");
+                let systemResourceId = getSystemResourceId(item.android.systemIcon);
                 if (systemResourceId) {
                     menuItem.setIcon(systemResourceId);
                 }
@@ -320,4 +331,8 @@ function getIconVisibility(iconVisibility: string): boolean {
         default:
             return false;
     }
+}
+
+function getSystemResourceId(systemIcon: string): number {
+    return android.content.res.Resources.getSystem().getIdentifier(systemIcon, "drawable", "android");
 }

@@ -65,17 +65,6 @@ import actionBarModule = require("ui/action-bar");
 // * **Android** - `actionBar`, `actionBarIfRoom` and `popup`. The default is `actionBar`.
 // * **iOS** - `left` and `right`. The default is `left`.
 //
-// ## Setting Navigation Button
-//```XML
-// <Page>
-//   <Page.actionBar>
-//     <ActionBar title="Title">
-//       <NavigationButton text="go back"/>
-//     </ActionBar>
-//   ...
-// </Page>
-//```
-// 
 // ## Displaying Platform-Specific System Icons on Action Items
 //```XML
 // <Page>
@@ -94,7 +83,8 @@ import actionBarModule = require("ui/action-bar");
 //
 //### iOS
 //Set `ios.systemIcon` to a number representing the iOS system item to be displayed.
-//Use this property instead of `ActionItemBase.icon` if you want to diplsay a built-in iOS system icon.
+//Use this property instead of `ActionItem.icon` if you want to diplsay a built-in iOS system icon.
+//Note: systemIcon is not supported on NavigationButton in iOS
 //The value should be a number from the `UIBarButtonSystemItem` enumeration
 //(https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIBarButtonItem_Class/#//apple_ref/c/tdef/UIBarButtonSystemItem)
 //0: Done
@@ -124,9 +114,22 @@ import actionBarModule = require("ui/action-bar");
 //
 //### Android
 //Set `android.systemIcon` the name of the system drawable resource to be displayed.
-//Use this property instead of `ActionItemBase.icon` if you want to diplsay a built-in Android system icon.
+//Use this property instead of `ActionItem.icon` if you want to diplsay a built-in Android system icon.
 //The value should be a string such as 'ic_menu_search' if you want to display the built-in Android Menu Search icon for example.
 //For a full list of Android drawable names, please visit http://androiddrawables.com
+//
+// ## Setting Navigation Button
+//```XML
+// <Page>
+//   <Page.actionBar>
+//     <ActionBar title="Title">
+//       <NavigationButton text="go back" android.systemIcon = "ic_menu_back"/>
+//     </ActionBar>
+//   ...
+// </Page>
+//```
+//Setting `text` for the navigation button is not supproted in Android. You can use `icon` or `android.systemIcon` to set the image in Android.
+//Setting `ios.systemIcon` for the navigation button is not supported in iOS.
 //
 // </snippet>
 

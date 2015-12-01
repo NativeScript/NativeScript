@@ -9,7 +9,7 @@ import types = require("utils/types");
 
 global.moduleMerge(common, exports);
 
-export class ActionItem extends common.ActionItemBase implements dts.ActionItem {
+export class ActionItem extends common.ActionItem {
     private _ios: dts.IOSActionItemSettings = {
         position: enums.IOSActionItemPosition.left,
         systemIcon: undefined
@@ -20,9 +20,10 @@ export class ActionItem extends common.ActionItemBase implements dts.ActionItem 
     public set ios(value: dts.IOSActionItemSettings) {
         throw new Error("ActionItem.android is read-only");
     }
+}
 
-    // Not used in IOS
-    public android: dts.AndroidActionItemSettings;
+export class NavigationButton extends ActionItem {
+
 }
 
 export class ActionBar extends common.ActionBar {
@@ -214,9 +215,9 @@ export class ActionBar extends common.ActionBar {
 }
 
 class TapBarItemHandlerImpl extends NSObject {
-    private _owner: WeakRef<dts.ActionItemBase>;
+    private _owner: WeakRef<dts.ActionItem>;
 
-    public static initWithOwner(owner: WeakRef<dts.ActionItemBase>): TapBarItemHandlerImpl {
+    public static initWithOwner(owner: WeakRef<dts.ActionItem>): TapBarItemHandlerImpl {
         let handler = <TapBarItemHandlerImpl>TapBarItemHandlerImpl.new();
         handler._owner = owner;
         return handler;
