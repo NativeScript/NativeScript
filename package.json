@@ -18,7 +18,6 @@
     "shelljs": "0.5.3",
     "chai": "3.2.0",
     "grunt": "0.4.5",
-    "grunt-bom-removal": "0.2.0",
     "grunt-contrib-clean": "0.6.0",
     "grunt-contrib-copy": "git+https://github.com/ErjanGavalji/grunt-contrib-copy.git#1c976a133210be4ce8c96313f5daf14833f7f8f9",
     "grunt-env": "0.4.4",

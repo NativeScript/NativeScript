@@ -422,16 +422,6 @@ module.exports = function(grunt) {
                 NODE_PATH: localCfg.outModulesDir,
             }
         },
-        bom: {
-            allTargetFiles: {
-                src: [
-                    pathModule.join(localCfg.outDir, "**/*.ts"),
-                    pathModule.join(localCfg.outDir, "**/*.js"),
-                    pathModule.join(localCfg.outDir, "**/*.css"),
-                    pathModule.join(localCfg.outDir, "**/*.xml")
-                    ]
-            }
-        },
         typedoc: {
             build: {
                 options: {
@@ -463,7 +453,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-shell");
     grunt.loadNpmTasks("grunt-env");
     grunt.loadNpmTasks("grunt-simple-mocha");
-    grunt.loadNpmTasks('grunt-bom-removal');
     grunt.loadNpmTasks('grunt-typedoc');
 
     var cloneTasks = function(originalTasks, taskNameSuffix) {
@@ -627,7 +616,6 @@ module.exports = function(grunt) {
         "shell:getGitSHA",
         "check-packagejson-boms",
         "compile-ts",
-        "bom:allTargetFiles",
         "collect-modules-raw-files",
         "copy:modulesPackageDef",
         "copy:definitionFiles",
