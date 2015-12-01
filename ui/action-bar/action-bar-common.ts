@@ -23,7 +23,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
     public static titleProperty = new dependencyObservable.Property("title", "ActionBar", new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, onTitlePropertyChanged));
     
     private _actionItems: ActionItems;
-    private _navigationButton: NavigationButton;
+    private _navigationButton: dts.NavigationButton;
     private _page: pages.Page;
     private _titleView: view.View;
 
@@ -34,10 +34,10 @@ export class ActionBar extends view.View implements dts.ActionBar {
         this._setValue(ActionBar.titleProperty, value);
     }
 
-    get navigationButton(): NavigationButton {
+    get navigationButton(): dts.NavigationButton {
         return this._navigationButton;
     }
-    set navigationButton(value: NavigationButton) {
+    set navigationButton(value: dts.NavigationButton) {
         if (this._navigationButton !== value) {
             if (this._navigationButton) {
                 this._navigationButton.actionBar = undefined;
@@ -126,7 +126,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
     }
 
     public _addChildFromBuilder(name: string, value: any) {
-        if (value instanceof NavigationButton) {
+        if (value instanceof dts.NavigationButton) {
             this.navigationButton = value;
         }
 
@@ -229,34 +229,34 @@ export class ActionItems implements dts.ActionItems {
     }
 }
 
-export class ActionItemBase extends bindable.Bindable implements dts.ActionItemBase {
+export class ActionItem extends bindable.Bindable implements dts.ActionItem {
     public static tapEvent = "tap";
 
     public static textProperty = new dependencyObservable.Property(
-        "text", "ActionItemBase", new dependencyObservable.PropertyMetadata("", null, ActionItemBase.onItemChanged));
+        "text", "ActionItem", new dependencyObservable.PropertyMetadata("", null, ActionItem.onItemChanged));
 
     public static iconProperty = new dependencyObservable.Property(
-        "icon", "ActionItemBase", new dependencyObservable.PropertyMetadata(null, null, ActionItemBase.onItemChanged));
+        "icon", "ActionItem", new dependencyObservable.PropertyMetadata(null, null, ActionItem.onItemChanged));
 
     private static onItemChanged(data: dependencyObservable.PropertyChangeData) {
-        var menuItem = <ActionItemBase>data.object;
+        var menuItem = <ActionItem>data.object;
         if (menuItem.actionBar) {
             menuItem.actionBar.update();
         }
     }
 
     get text(): string {
-        return this._getValue(ActionItemBase.textProperty);
+        return this._getValue(ActionItem.textProperty);
     }
     set text(value: string) {
-        this._setValue(ActionItemBase.textProperty, value);
+        this._setValue(ActionItem.textProperty, value);
     }
 
     get icon(): string {
-        return this._getValue(ActionItemBase.iconProperty);
+        return this._getValue(ActionItem.iconProperty);
     }
     set icon(value: string) {
-        this._setValue(ActionItemBase.iconProperty, value);
+        this._setValue(ActionItem.iconProperty, value);
     }
 
     private _actionBar: ActionBar;
@@ -273,10 +273,10 @@ export class ActionItemBase extends bindable.Bindable implements dts.ActionItemB
     }
 
     public _raiseTap() {
-        this._emit(ActionItemBase.tapEvent);
+        this._emit(ActionItem.tapEvent);
     }
-}
 
-export class NavigationButton extends ActionItemBase {
+    public ios: dts.IOSActionItemSettings;
 
+    public android: dts.AndroidActionItemSettings;
 }

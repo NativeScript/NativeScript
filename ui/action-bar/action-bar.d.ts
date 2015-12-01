@@ -85,9 +85,9 @@ declare module "ui/action-bar" {
     }
 
     /**
-     * Base class for action items.
+     * Represents an action item in the action bar.
      */
-    export class ActionItemBase extends bindable.Bindable {
+    export class ActionItem extends bindable.Bindable {
         /**
          * String value used when hooking to tap event.
          */
@@ -134,12 +134,7 @@ declare module "ui/action-bar" {
         //@private
         _raiseTap(): void;
         //@endprivate
-    }
 
-    /**
-     * Represents an action item in the action bar.
-     */
-    export class ActionItem extends ActionItemBase {
         /**
          * Gets the iOS specific options of the action item.
          */
@@ -160,12 +155,13 @@ declare module "ui/action-bar" {
          *  1. actionBar - item is shown in the action bar.
          *  2. actionBarIfRoom - item is shown in the action bar if there is room for it. Otherwise it is put in the popup menu.
          *  3. popup - item is shown in the popup menu.
+         * Note: Property not applicable to NavigationButton
          */
         position: string;
         
         /**
          * Gets or sets the name of the system drawable resource to be displayed.
-         * Use this property instead of ActionItemBase.icon if you want to diplsay a built-in Android system icon.
+         * Use this property instead of ActionItem.icon if you want to diplsay a built-in Android system icon.
          * The value should be a string such as 'ic_menu_search' if you want to display the built-in Android Menu Search icon for example.
          * For a full list of Android drawable names, please visit http://androiddrawables.com
          */
@@ -180,12 +176,14 @@ declare module "ui/action-bar" {
          * Gets or sets the position of the action item in the action bar.
          *  1. left - items is shown at the left part of the navigation bar. This is the default value.
          *  2. right - items is shown at the right part of the navigation bar.
+         * Note: Property not applicable to NavigationButton
          */
         position: string;
 
         /**
          * Gets or sets a number representing the iOS system item to be displayed.
-         * Use this property instead of ActionItemBase.icon if you want to diplsay a built-in iOS system icon.
+         * Use this property instead of ActionItem.icon if you want to diplsay a built-in iOS system icon.
+         * Note: Property not applicable to NavigationButton
          * The value should be a number from the UIBarButtonSystemItem enumeration
          * (https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIBarButtonItem_Class/#//apple_ref/c/tdef/UIBarButtonSystemItem)
          *  0: Done
@@ -240,7 +238,7 @@ declare module "ui/action-bar" {
     /**
      * Represents the navigation (a.k.a. "back") button.
      */
-    export class NavigationButton extends ActionItemBase {
+    export class NavigationButton extends ActionItem {
 
     }
 
