@@ -6,8 +6,6 @@ import types = require("utils/types")
 
 global.moduleMerge(common, exports);
 
-var SDK = android.os.Build.VERSION.SDK_INT;
-
 export class TimePicker extends common.TimePicker {
     private _android: android.widget.TimePicker;
     private _listener: android.widget.TimePicker.OnTimeChangedListener;
@@ -54,19 +52,8 @@ export class TimePicker extends common.TimePicker {
         if (this.android) {
             this.android.setOnTimeChangedListener(null);
 
-            var h = new java.lang.Integer(hour);
-            if (SDK >= 23) {
-                (<any>this.android).setHour(h);
-            } else {
-                this.android.setCurrentHour(h);
-            }
-
-            var m = new java.lang.Integer(minute);
-            if (SDK >= 23) {
-                (<any>this.android).setMinute(m);
-            } else {
-                this.android.setCurrentMinute(m);
-            }
+            this.android.setCurrentHour(new java.lang.Integer(hour));
+            this.android.setCurrentMinute(new java.lang.Integer(minute));
 
             this.minute = minute;
             this.hour = hour;
