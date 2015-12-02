@@ -32,7 +32,7 @@
     "grunt-typedoc": "0.2.3",
     "grunt-untar": "0.0.1",
     "mocha": "2.2.5",
-    "typescript": "1.6.2"
+    "typescript": "1.7.3"
   },
   "typings": "tns-core-modules.d.ts"
 }
