@@ -35,8 +35,8 @@ export class ActionBar extends common.ActionBar {
 
         var viewController = (<UIViewController>this.page.ios);
         var navigationItem: UINavigationItem = viewController.navigationItem;
-        var navController = frameModule.topmost().ios.controller;
-        var navigationBar = navController.navigationBar;
+        var navController = frameModule.topmost().ios.controller; 
+        var navigationBar = <UINavigationBar>navController.navigationBar;
         var previousController: UIViewController;
 
         // Set Title
@@ -66,7 +66,7 @@ export class ActionBar extends common.ActionBar {
 
         // Set back button image
         var img: imageSource.ImageSource;
-        if (this.navigationButton && this.navigationButton.icon) {
+        if (this.navigationButton && common.isVisible(this.navigationButton) && this.navigationButton.icon) {
             img = imageSource.fromFileOrResource(this.navigationButton.icon);
         }
 
@@ -83,6 +83,11 @@ export class ActionBar extends common.ActionBar {
             navigationBar.backIndicatorTransitionMaskImage = null;
         }
 
+        // Set back button visibility 
+        if (this.navigationButton) {
+            navigationItem.setHidesBackButtonAnimated(!common.isVisible(this.navigationButton), true);
+        }
+
         // Populate action items
         this.populateMenuItems(navigationItem);
 
@@ -91,7 +96,7 @@ export class ActionBar extends common.ActionBar {
     }
 
     private populateMenuItems(navigationItem: UINavigationItem) {
-        var items = this.actionItems.getItems();
+        var items = this.actionItems.getVisibleItems();
         var leftBarItems = [];
         var rightBarItems = [];
 

@@ -314,3 +314,19 @@ export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
         helper.goBack();
     }
 }
+
+export function createPageAndNavigate() {
+    var page: PageModule.Page;
+    var pageFactory = function (): PageModule.Page {
+        page = new PageModule.Page();
+
+        var label = new LabelModule.Label();
+        label.text = "Text";
+        page.content = label;
+        return page;
+    };
+
+    helper.navigate(pageFactory);
+
+    return page;
+}

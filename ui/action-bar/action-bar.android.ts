@@ -142,8 +142,7 @@ export class ActionBar extends common.ActionBar {
 
     public _updateNavigationButton() {
         var navButton = this.navigationButton;
-        if (navButton) {
-
+        if (navButton && common.isVisible(navButton)) {
             if (navButton.android.systemIcon) {
                 // Try to look in the system resources.
                 let systemResourceId = getSystemResourceId(navButton.android.systemIcon);
@@ -208,7 +207,7 @@ export class ActionBar extends common.ActionBar {
 
     public _addActionItems() {
         var menu = this._toolbar.getMenu();
-        var items = this.actionItems.getItems();
+        var items = this.actionItems.getVisibleItems();
 
         menu.clear();
         for (var i = 0; i < items.length; i++) {
