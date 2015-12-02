@@ -393,7 +393,7 @@ application.ios.removeNotificationObserver(observer, UIDeviceBatteryLevelDidChan
 
 - [(#221)](https://github.com/NativeScript/NativeScript/pull/221) view parent exposed in itemLoading event
 
-- [(#214)](https://github.com/NativeScript/NativeScript/pull/214) Repeater component added. [Read more...](https://github.com/NativeScript/docs/blob/master/layouts.md#repeating-layout-children)
+- [(#214)](https://github.com/NativeScript/NativeScript/pull/214) Repeater component added. [Read more...](../ApiReference/ui/repeater/HOW-TO.md)
 
 - [(#207)](https://github.com/NativeScript/NativeScript/pull/207) Optimizations
 
