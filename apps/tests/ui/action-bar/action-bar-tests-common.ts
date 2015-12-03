@@ -19,12 +19,12 @@ import actionBarModule = require("ui/action-bar");
 //```XML
 // <Page>
 //   <Page.actionBar>
-//     {%raw%}<ActionBar title="{{ title }}" android.icon="res://ic_test"/>{%endraw%}
+//     {%raw%}<ActionBar title="{{ title }}" android.icon="res://is_custom_home_icon"/>{%endraw%}
 //   </Page.actionBar>
 //   ...
 // </Page>
 //```
-//The icon can only be set in Android platform. Following the design guides it is automatically hidden in Lollipop versions (API level >= 20). You explicitly control its visibility with the `android.iconVisibility' property.
+//The icon can only be set in Android platform. It is hidden by default, but you explicitly control its visibility with the `android.iconVisibility' property.
 //
 // 
 // ## Setting Custom Title View 
@@ -205,7 +205,7 @@ export function test_titleView_inherit_bindingContext_inXML() {
     p.bindingContext = { myProp: "success" };
 
     var centerBtn = <button.Button>p.actionBar.titleView;
-    TKUnit.assert(centerBtn instanceof button.Button, "cneterView not loaded correctly");
+    TKUnit.assert(centerBtn instanceof button.Button, "titleView not loaded correctly");
     TKUnit.assertEqual(centerBtn.text, "success", "actionItem.text");
 };
 
@@ -216,7 +216,7 @@ export function test_titleView_inXML() {
         "</ActionBar.titleView> </ActionBar> </Page.actionBar> </Page>");
 
     var centerBtn = <button.Button>p.actionBar.titleView;
-    TKUnit.assert(centerBtn instanceof button.Button, "cneterView not loaded correctly");
+    TKUnit.assert(centerBtn instanceof button.Button, "titleView not loaded correctly");
 };
 
 export function test_titleView_inXML_short_definition() {
@@ -226,7 +226,16 @@ export function test_titleView_inXML_short_definition() {
         "</ActionBar> </Page.actionBar> </Page>");
 
     var centerBtn = <button.Button>p.actionBar.titleView;
-    TKUnit.assert(centerBtn instanceof button.Button, "cneterView not loaded correctly");
+    TKUnit.assert(centerBtn instanceof button.Button, "titleView not loaded correctly");
+};
+
+export function test_ActionBar_is_not_empty_when_titleView_is_set() {
+    var p = <PageModule.Page>builder.parse(
+        "<Page> <Page.actionBar> <ActionBar> <ActionBar.titleView>" +
+        "<Button text=\"test\" />" +
+        "</ActionBar.titleView> </ActionBar> </Page.actionBar> </Page>");
+
+    TKUnit.assertFalse(p.actionBar._isEmpty(), "titleView is set but ActionBar reports empty");
 };
 
 export function test_ActionBarItemBindingToEvent() {
