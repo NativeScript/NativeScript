@@ -1,0 +1,4 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+      xmlns:fragment="xml-declaration/template-builder-tests">
+	<fragment:event-in-codeless-fragment-the-fragment />
+</Page>

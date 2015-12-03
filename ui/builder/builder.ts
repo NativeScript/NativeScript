@@ -63,7 +63,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         // Custom components with XML
         var jsFilePath = fileResolverModule.resolveFileName(fullComponentPathFilePathWithoutExt, "js");
 
-        var subExports;
+        var subExports = context;
         if (jsFilePath) {
             // Custom components with XML and code
             subExports = require(jsFilePath)

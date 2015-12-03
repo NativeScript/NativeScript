@@ -1,0 +1,5 @@
+<tc:TemplateView id="template-view" xmlns:tc="xml-declaration/template-builder-tests/template-view">
+	<tc:TemplateView.template>
+		<tc:TemplateView text="Click!" test="test" />
+	</tc:TemplateView.template>
+</tc:TemplateView>
