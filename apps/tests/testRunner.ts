@@ -144,17 +144,41 @@ function log(): void {
     TKUnit.write(testsName + " COMPLETED for " + duration + " BACKSTACK DEPTH: " + topmost().backStack.length, messageType.info);
 }
 
-export var runAll = function (moduleName?: string) {
+export var runAll = function (testSelector?: string) {
     if (running) {
         // TODO: We may schedule pending run requests
         return;
     }
+    
+    var singleModuleName, singleTestName;
+    if (testSelector) {
+        var pair = testSelector.split(".");
+        singleModuleName = pair[0];
+        if (singleModuleName) {
+            if (singleModuleName.length === 0) {
+                singleModuleName = undefined;
+            } else {
+                singleModuleName = singleModuleName.toLowerCase();
+            }
+        }
+        
+        singleTestName = pair[1];
+        if (singleTestName) {
+            if (singleTestName.length === 0) {
+                singleTestName = undefined;
+            } else {
+                singleTestName = singleTestName.toLowerCase();
+            }
+        }
+    }
+    
+    console.log("TESTS: " + singleModuleName + " " + singleTestName);
 
     var totalSuccess = 0;
     var totalFailed: Array<TKUnit.TestFailure> = [];
     testsQueue.push(new TestInfo(function () { running = true; }));
     for (var name in allTests) {
-        if (moduleName && (moduleName.toLowerCase() !== name.toLowerCase())) {
+        if (singleModuleName && (singleModuleName !== name.toLowerCase())) {
             continue;
         }
 
@@ -170,8 +194,11 @@ export var runAll = function (moduleName?: string) {
             testsQueue.push(new TestInfo(test.setUpModule, test));
         }
 
-
         for (var testName in test) {
+            if (singleTestName && (singleTestName !== testName.toLowerCase())) {
+                continue;
+            }
+            
             var testFunction = test[testName];
             if ((typeof (testFunction) === "function") && (testName.substring(0, 4) == "test")) {
                 if (test.setUp) {
