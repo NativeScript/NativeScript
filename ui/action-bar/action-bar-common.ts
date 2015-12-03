@@ -152,6 +152,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
 
     public _isEmpty(): boolean {
         if (this.title ||
+            this.titleView ||
             (this.android && this.android.icon) ||
             this.navigationButton ||
             this.actionItems.getItems().length > 0) {
