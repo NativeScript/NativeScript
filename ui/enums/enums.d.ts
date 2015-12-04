@@ -359,7 +359,7 @@
      */
     module NavigationBarVisibility {
         /**
-         * NavigationBar will be visible if there if frame backstack canGoBack is true or Page have optionsMenu with menuItems.
+         * NavigationBar will be visible if there if frame backstack canGoBack is true or if the page Action Bar is not empty.
          */
         export var auto: string;
 

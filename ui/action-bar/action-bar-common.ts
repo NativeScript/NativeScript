@@ -251,7 +251,7 @@ export class ActionItem extends bindable.Bindable implements dts.ActionItem {
         "icon", "ActionItem", new dependencyObservable.PropertyMetadata(null, null, ActionItem.onItemChanged));
 
     public static visibilityProperty = new dependencyObservable.Property(
-        "visibility", "ActionItemBase", new dependencyObservable.PropertyMetadata(enums.Visibility.visible, null, ActionItem.onItemChanged));
+        "visibility", "ActionItem", new dependencyObservable.PropertyMetadata(enums.Visibility.visible, null, ActionItem.onItemChanged));
 
     private _actionBar: ActionBar;
 
