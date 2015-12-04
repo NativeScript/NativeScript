@@ -4,7 +4,7 @@ import fs = require("file-system");
 
 global.moduleMerge(common, exports);
 
-class WebViewClientClass extends android.webkit.WebViewClient {
+export class WebViewClientClass extends android.webkit.WebViewClient {
     private _view: common.WebView;
 
     constructor(view: common.WebView) {
