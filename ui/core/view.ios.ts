@@ -138,13 +138,14 @@ export class View extends viewCommon.View {
     }
 
     public layout(left: number, top: number, right: number, bottom: number): void {
-        var changed: boolean = this._setCurrentLayoutBounds(left, top, right, bottom);
+        var { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
         this.layoutNativeView(left, top, right, bottom);
-
-        if (changed || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
+        if (boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
             this.onLayout(left, top, right, bottom);
             this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
-            this._onBoundsChanged();
+        }
+        if (sizeChanged) {
+            this._onSizeChanged();
         }
         this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
     }
@@ -246,8 +247,8 @@ export class View extends viewCommon.View {
         return false;
     }
 
-    private _onBoundsChanged() {
-        this.style._boundsChanged();
+    private _onSizeChanged() {
+        this.style._sizeChanged();
     }
 
     public _updateNativeTransform() {

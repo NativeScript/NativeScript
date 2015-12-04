@@ -647,7 +647,7 @@ export class Style extends DependencyObservable implements styling.Style {
         });
     }
 
-    public _boundsChanged() {
+    public _sizeChanged() {
         if (!(<background.Background>this._getValue(backgroundInternalProperty)).isEmpty()) {
             this._applyProperty(backgroundInternalProperty, this._getValue(backgroundInternalProperty));
         }
@@ -671,7 +671,7 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 
     private _applyStyleProperty(property: Property, newValue: any) {
-
+        
         if (!this._view._shouldApplyStyleHandlers()) {
             return;
         }

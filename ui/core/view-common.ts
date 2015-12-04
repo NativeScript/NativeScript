@@ -893,14 +893,18 @@ export class View extends proxy.ProxyObject implements definition.View {
         return { left: this._oldLeft, top: this._oldTop, right: this._oldRight, bottom: this._oldBottom }
     }
 
-    _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): boolean {
+    /**
+     * Returns two booleans - the first if "boundsChanged" the second is "sizeChanged".
+     */
+    _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): { boundsChanged: boolean, sizeChanged: boolean } {
         this._isLayoutValid = true;
-        var changed: boolean = this._oldLeft !== left || this._oldTop !== top || this._oldRight !== right || this._oldBottom !== bottom;
+        var boundsChanged: boolean = this._oldLeft !== left || this._oldTop !== top || this._oldRight !== right || this._oldBottom !== bottom;
+        var sizeChanged: boolean = (this._oldRight - this._oldLeft !== right - left) || (this._oldBottom - this._oldTop !== bottom - top);
         this._oldLeft = left;
         this._oldTop = top;
         this._oldRight = right;
         this._oldBottom = bottom;
-        return changed;
+        return { boundsChanged, sizeChanged };
     }
 
     private _applyStyleFromScope() {
