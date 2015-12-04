@@ -206,11 +206,6 @@ export class Frame extends frameCommon.Frame {
     }
 
     public measurePage(page: pages.Page): { measuredWidth: number; measuredHeight: number } {
-        if (page && (<any>page)._viewWillDisappear) {
-            //https://github.com/NativeScript/NativeScript/issues/1201
-            return { measuredWidth: undefined, measuredHeight: undefined };
-        }
-
         // If background does not span under statusbar - reduce available height.
         let heightSpec: number = this._heightMeasureSpec;
         if (page && !page.backgroundSpanUnderStatusBar && !this.parent) {
