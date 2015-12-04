@@ -10,22 +10,36 @@ import dts = require("ui/action-bar");
 import view = require("ui/core/view");
 
 const R_ID_HOME = 0x0102002c;
-
-var ACTION_ITEM_ID_OFFSET = 1000;
+const ACTION_ITEM_ID_OFFSET = 1000;
 
 global.moduleMerge(common, exports);
+
+var actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
+function generateItemId(): number {
+    actionItemIdGenerator++;
+    return actionItemIdGenerator;
+}
 
 export class ActionItem extends common.ActionItem {
     private _androidPosition: dts.AndroidActionItemSettings = {
         position: enums.AndroidActionItemPosition.actionBar,
         systemIcon: undefined
     };
+    private _itemId;
+    constructor() {
+        super();
+        this._itemId = generateItemId(); 
+    }
 
     public get android(): dts.AndroidActionItemSettings {
         return this._androidPosition;
     }
     public set android(value: dts.AndroidActionItemSettings) {
         throw new Error("ActionItem.android is read-only");
+    }
+
+    public _getItemId() {
+        return this._itemId;
     }
 }
 
@@ -126,14 +140,24 @@ export class ActionBar extends common.ActionBar {
     }
 
     public _onAndroidItemSelected(itemId: number): boolean {
-        var menuItem = this.actionItems.getItemAt(itemId - ACTION_ITEM_ID_OFFSET);
-        if (menuItem) {
-            menuItem._raiseTap();
-            return true;
-        }
-
+        // Handle home button
         if (this.navigationButton && itemId === R_ID_HOME) {
             this.navigationButton._raiseTap();
+            return true;
+        }
+        
+        // Find item with the right ID;
+        var menuItem: dts.ActionItem = undefined;
+        var items = this.actionItems.getItems();
+        for (let i = 0; i < items.length; i++) {
+            if ((<ActionItem>items[i])._getItemId() === itemId) {
+                menuItem = items[i];
+                break;
+            }
+        }
+
+        if (menuItem) {
+            menuItem._raiseTap();
             return true;
         }
 
@@ -211,8 +235,8 @@ export class ActionBar extends common.ActionBar {
 
         menu.clear();
         for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            var menuItem = menu.add(android.view.Menu.NONE, i + ACTION_ITEM_ID_OFFSET, android.view.Menu.NONE, item.text + "");
+            var item = <ActionItem>items[i];
+            var menuItem = menu.add(android.view.Menu.NONE, item._getItemId(), android.view.Menu.NONE, item.text + "");
 
             if (item.android.systemIcon) {
                 // Try to look in the system resources.
