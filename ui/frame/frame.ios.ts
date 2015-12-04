@@ -206,7 +206,6 @@ export class Frame extends frameCommon.Frame {
     }
 
     public measurePage(page: pages.Page): { measuredWidth: number; measuredHeight: number } {
-        
         // If background does not span under statusbar - reduce available height.
         let heightSpec: number = this._heightMeasureSpec;
         if (page && !page.backgroundSpanUnderStatusBar && !this.parent) {
@@ -229,6 +228,11 @@ export class Frame extends frameCommon.Frame {
     }
 
     public layoutPage(page: pages.Page): void {
+        if (page && (<any>page)._viewWillDisappear) {
+            //https://github.com/NativeScript/NativeScript/issues/1201
+            return;
+        }
+
         // If background does not span under statusbar - reduce available height and adjust top offset.
         let statusBarHeight = (page && !page.backgroundSpanUnderStatusBar && !this.parent) ? uiUtils.ios.getStatusBarHeight() : 0;
 
