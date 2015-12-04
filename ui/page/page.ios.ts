@@ -96,6 +96,9 @@ class UIViewControllerImpl extends UIViewController {
         trace.write(owner + " viewWillAppear", trace.categories.Navigation);
         owner._enableLoadedEvents = true;
 
+        //https://github.com/NativeScript/NativeScript/issues/1201
+        owner._viewWillDisappear = false;
+        
         // In iOS we intentionally delay the raising of the 'loaded' event so both platforms behave identically.
         // The loaded event must be raised AFTER the page is part of the windows hierarchy and 
         // frame.topmost().currentPage is set to the page instance.
@@ -106,6 +109,18 @@ class UIViewControllerImpl extends UIViewController {
 
         owner.onLoaded();
         owner._enableLoadedEvents = false;
+    }
+
+    public viewWillDisappear() {
+        let owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
+        trace.write(owner + " viewWillDisappear", trace.categories.Navigation);
+        
+        //https://github.com/NativeScript/NativeScript/issues/1201
+        owner._viewWillDisappear = true;
     }
 
     public viewDidDisappear() {
@@ -128,9 +143,10 @@ class UIViewControllerImpl extends UIViewController {
 export class Page extends pageCommon.Page {
     private _ios: UIViewController;
     public _enableLoadedEvents: boolean;
-    public _isModal: boolean = false;
-    public _UIModalPresentationFormSheet: boolean = false;
-    public _delayLoadedEvent;
+    public _isModal: boolean;
+    public _UIModalPresentationFormSheet: boolean;
+    public _delayLoadedEvent: boolean;
+    public _viewWillDisappear: boolean;
 
     constructor(options?: definition.Options) {
         super(options);
