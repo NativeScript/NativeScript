@@ -24,11 +24,13 @@ var navDepth = -1;
 var PageFragmentBody = (<any>android.app.Fragment).extend({
         
     onCreate: function (savedInstanceState: android.os.Bundle) {
+        trace.write(`PageFragmentBody.onCreate(${savedInstanceState})`, trace.categories.NativeLifecycle);
         this.super.onCreate(savedInstanceState);
         this.super.setHasOptionsMenu(true);
     },
 
     onCreateView: function (inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
+        trace.write(`PageFragmentBody.onCreateView(${inflater}, ${container}, ${savedInstanceState})`, trace.categories.NativeLifecycle);
         var entry = this.entry;
         var page = entry.resolvedPage;
         if (savedInstanceState && savedInstanceState.getBoolean(HIDDEN, false)) {
@@ -42,6 +44,7 @@ var PageFragmentBody = (<any>android.app.Fragment).extend({
     },
 
     onHiddenChanged: function (hidden: boolean) {
+        trace.write(`PageFragmentBody.onHiddenChanged(${hidden})`, trace.categories.NativeLifecycle);
         this.super.onHiddenChanged(hidden);
         if (hidden) {
             onFragmentHidden(this);
@@ -52,6 +55,7 @@ var PageFragmentBody = (<any>android.app.Fragment).extend({
     },
 
     onSaveInstanceState: function (outState: android.os.Bundle) {
+        trace.write(`PageFragmentBody.onSaveInstanceState(${outState})`, trace.categories.NativeLifecycle);
         this.super.onSaveInstanceState(outState);
         if (this.isHidden()) {
             outState.putBoolean(HIDDEN, true);
@@ -59,17 +63,20 @@ var PageFragmentBody = (<any>android.app.Fragment).extend({
     },
 
     onDestroyView: function () {
+        trace.write(`PageFragmentBody.onDestroyView()`, trace.categories.NativeLifecycle);
         this.super.onDestroyView();
         onFragmentHidden(this);
     },
 
     onDestroy: function () {
+        trace.write(`PageFragmentBody.onDestroy()`, trace.categories.NativeLifecycle);
         this.super.onDestroy();
         utils.GC();
     }
 });
 
 function onFragmentShown(fragment) {
+    trace.write(`onFragmentShown(${fragment.toString()})`, trace.categories.NativeLifecycle);
     if (fragment[CLEARING_HISTORY]) {
         trace.write(`${fragment.toString() } has been shown, but we are currently clearing history. Returning.`, trace.categories.NativeLifecycle);
         return null;
@@ -106,6 +113,7 @@ function onFragmentShown(fragment) {
 }
 
 function onFragmentHidden(fragment) {
+    trace.write(`onFragmentHidden(${fragment.toString()})`, trace.categories.NativeLifecycle);
     if (fragment[CLEARING_HISTORY]) {
         trace.write(`${fragment.toString() } has been hidden, but we are currently clearing history. Returning.`, trace.categories.NativeLifecycle);
         return null;

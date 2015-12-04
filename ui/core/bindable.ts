@@ -100,7 +100,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
     }
 
     public _onPropertyChanged(property: dependencyObservable.Property, oldValue: any, newValue: any) {
-        trace.write("Bindable._onPropertyChanged(" + this + ") " + property.name, trace.categories.Binding);
+        trace.write(`${this}._onPropertyChanged(${property.name}, ${oldValue}, ${newValue})`, trace.categories.Binding);
         super._onPropertyChanged(property, oldValue, newValue);
         if (this instanceof viewModule.View) {
             if (property.metadata.inheritable && (<viewModule.View>(<any>this))._isInheritedChange() === true) {
@@ -110,11 +110,11 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
         var binding = this.bindings[property.name];
         if (binding && !binding.updating) {
             if (binding.options.twoWay) {
-                trace.write("_updateTwoWayBinding(" + this + "): " + property.name, trace.categories.Binding);
+                trace.write(`${this}._updateTwoWayBinding(${property.name}, ${newValue});` + property.name, trace.categories.Binding);
                 this._updateTwoWayBinding(property.name, newValue);
             }
             else {
-                trace.write("_onPropertyChanged(" + this + ") removing binding for property: " + property.name, trace.categories.Binding);
+                trace.write(`${this}.unbind(${property.name});`, trace.categories.Binding);
                 this.unbind(property.name);
             }
         }
@@ -129,10 +129,7 @@ export class Bindable extends dependencyObservable.DependencyObservable implemen
                 continue;
             }
 
-            trace.write(
-                "Binding target: " + binding.target.get() +
-                " targetProperty: " + binding.options.targetProperty +
-                " to the changed context: " + newValue, trace.categories.Binding);
+            trace.write(`Binding ${binding.target.get()}.${binding.options.targetProperty} to new context ${newValue}`, trace.categories.Binding);
             binding.unbind();
             if (!types.isNullOrUndefined(newValue)) {
                 binding.bind(newValue);
