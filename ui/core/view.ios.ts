@@ -72,8 +72,8 @@ export class View extends viewCommon.View {
         this._privateFlags = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
     }
 
-    public _addViewCore(view: viewCommon.View) {
-        super._addViewCore(view);
+    public _addViewCore(view: viewCommon.View, atIndex?: number) {
+        super._addViewCore(view, atIndex);
         this.requestLayout();
     }
 
