@@ -86,32 +86,32 @@ function resolveFontDescriptor(fontFamilyValue: string, symbolicTraits: number):
 
     for (var i = 0; i < fonts.length; i++) {
         var fontFamily = getFontFamilyRespectingGenericFonts(fonts[i]);
-        if (systemFontFamilies.has(fontFamily)) {
+
+        if (systemFonts.has(fontFamily)) {
+            // This is an actual font - don't apply symbolic traits
+            result = UIFontDescriptor.fontDescriptorWithNameSize(fontFamily, 0);
+        } else if (systemFontFamilies.has(fontFamily)) {
             // This is a font family - we should apply symbolic traits if there are such
-            var fontFaceAttribute = "";
+            var fontFaceAttributes = [];
 
             if (!symbolicTraits) {
-                fontFaceAttribute = "Regular";
+                fontFaceAttributes.push("Regular");
             }
             else {
                 if (symbolicTraits & UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold) {
-                    fontFaceAttribute += " Bold";
+                    fontFaceAttributes.push("Bold");
                 }
                 if (symbolicTraits & UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic) {
-                    fontFaceAttribute += " Italic";
+                    fontFaceAttributes.push("Italic");
                 }
             }
 
             var fontAttributes = NSMutableDictionary.alloc().init();
             fontAttributes.setObjectForKey(fontFamily, "NSFontFamilyAttribute");
-            fontAttributes.setObjectForKey(fontFaceAttribute.trim(), "NSFontFaceAttribute");
+            fontAttributes.setObjectForKey(fontFaceAttributes.join(" "), "NSFontFaceAttribute");
 
             result = UIFontDescriptor.fontDescriptorWithFontAttributes(fontAttributes);
-        }
-        else if (systemFonts.has(fontFamily)) {
-            // This is an actual font - don't apply symbolic traits
-            result = UIFontDescriptor.fontDescriptorWithNameSize(fontFamily, 0);
-        }
+        } 
 
         if (result) {
             return result;
