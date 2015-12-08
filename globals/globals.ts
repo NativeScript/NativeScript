@@ -6,29 +6,7 @@ global.moduleMerge = function (sourceExports: any, destExports: any) {
     }
 }
 import platform = require("platform");
-import types = require("utils/types");
-import timer = require("timer");
 import consoleModule = require("console");
-import xhr = require("../xhr/xhr");
-import dialogs = require("ui/dialogs");
-
-global.setTimeout = timer.setTimeout;
-global.clearTimeout = timer.clearTimeout;
-global.setInterval = timer.setInterval;
-global.clearInterval = timer.clearInterval;
-
-if (typeof global.__decorate !== "function") {
-    global.__decorate = function (decorators, target, key, desc) {
-        if (typeof global.Reflect === "object" && typeof global.Reflect.decorate === "function") {
-            return global.Reflect.decorate(decorators, target, key, desc);
-        }
-        switch (arguments.length) {
-            case 2: return decorators.reduceRight(function(o, d) { return (d && d(o)) || o; }, target);
-            case 3: return decorators.reduceRight(function(o, d) { return (d && d(target, key)), void 0; }, void 0);
-            case 4: return decorators.reduceRight(function(o, d) { return (d && d(target, key, o)) || o; }, desc);
-        }
-    }
-};
 
 var c = new consoleModule.Console();
 
@@ -38,13 +16,50 @@ if (platform.device.os === platform.platformNames.android) {
     global.console.dump = function (args) { c.dump(args); };
 }
 
-global.XMLHttpRequest = xhr.XMLHttpRequest;
-global.FormData = xhr.FormData;
-global.alert = dialogs.alert;
+global.setTimeout = function (callback, milliseconds) {
+    let tm = require("timer");
+    return tm.setTimeout(callback, milliseconds);
+}
+
+global.clearTimeout = function (id) {
+    let tm = require("timer");
+    tm.clearTimeout(id);
+}
+
+global.setInterval = function (callback, milliseconds) {
+    let tm = require("timer");
+    return tm.setInterval(callback, milliseconds);
+}
+
+global.clearInterval = function (id) {
+    let tm = require("timer");
+    tm.clearInterval(id);
+}
+
+global.alert = function (args) {
+    let dm = require("ui/dialogs");
+    return dm.alert(args);
+}
+
+var xhr = require("../xhr/xhr");
+global.moduleMerge(xhr, global);
 
 // Fetch module should be after XMLHttpRequest/FormData! 
 var fetchModule = require("fetch");
 global.moduleMerge(fetchModule, global);
+
+if (typeof global.__decorate !== "function") {
+    global.__decorate = function (decorators, target, key, desc) {
+        if (typeof global.Reflect === "object" && typeof global.Reflect.decorate === "function") {
+            return global.Reflect.decorate(decorators, target, key, desc);
+        }
+        switch (arguments.length) {
+            case 2: return decorators.reduceRight(function (o, d) { return (d && d(o)) || o; }, target);
+            case 3: return decorators.reduceRight(function (o, d) { return (d && d(target, key)), void 0; }, void 0);
+            case 4: return decorators.reduceRight(function (o, d) { return (d && d(target, key, o)) || o; }, desc);
+        }
+    }
+}
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {
