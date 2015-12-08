@@ -121,16 +121,17 @@ export class Observable implements definition.Observable {
         return this[name];
     }
 
-    private disableNotifications = false;
+    //private disableNotifications = false;
+    private disableNotifications = {};
 
     public _setCore(data: definition.PropertyChangeData) {
-        this.disableNotifications = true;
+        this.disableNotifications[data.propertyName] = true;
         this[data.propertyName] = data.value;
-        this.disableNotifications = false;
+        delete this.disableNotifications[data.propertyName];
     }
 
     public notify<T extends definition.EventData>(data: T) {
-        if (this.disableNotifications) {
+        if (this.disableNotifications[(<any>data).propertyName]) {
             return;
         }
 
