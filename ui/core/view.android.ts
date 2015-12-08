@@ -163,12 +163,12 @@ export class View extends viewCommon.View {
         }
     }
 
-    public _addViewCore(view: viewCommon.View) {
+    public _addViewCore(view: viewCommon.View, atIndex?: number) {
         if (this._context) {
             view._onAttached(this._context);
         }
 
-        super._addViewCore(view);
+        super._addViewCore(view, atIndex);
     }
 
     public _removeViewCore(view: viewCommon.View) {
