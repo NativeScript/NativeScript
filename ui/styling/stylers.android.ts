@@ -26,6 +26,10 @@ var ignorePropertyHandler = new stylersCommon.StylePropertyChangedHandler(
 var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
 
 function onBackgroundOrBorderPropertyChanged(v: view.View) {
+    if (!btn) {
+        btn = require("ui/button");
+    }
+
     var nativeView = <android.view.View>v._nativeView;
     if (!nativeView) {
         return;
@@ -39,9 +43,6 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
         if (!(bkg instanceof background.ad.BorderDrawable)) {
             bkg = new background.ad.BorderDrawable();
             let viewClass = types.getClass(v);
-            if (!btn) {
-                btn = require("ui/button");
-            }
             if (!(v instanceof btn.Button) && !_defaultBackgrounds.has(viewClass)) {
                 _defaultBackgrounds.set(viewClass, nativeView.getBackground());
             }
@@ -81,10 +82,10 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
 
     var density = utils.layout.getDisplayDensity();
     nativeView.setPadding(
-        (borderWidth + v.style.paddingLeft) * density,
-        (borderWidth + v.style.paddingTop) * density,
-        (borderWidth + v.style.paddingRight) * density,
-        (borderWidth + v.style.paddingBottom) * density
+        Math.round((borderWidth + v.style.paddingLeft) * density),
+        Math.round((borderWidth + v.style.paddingTop) * density),
+        Math.round((borderWidth + v.style.paddingRight) * density),
+        Math.round((borderWidth + v.style.paddingBottom) * density)
     );
 }
 
@@ -119,7 +120,7 @@ export class DefaultStyler implements definition.stylers.Styler {
 
     //minWidth methods
     private static setMinWidthProperty(view: view.View, newValue: any) {
-        (<android.view.View>view._nativeView).setMinimumWidth(newValue * utils.layout.getDisplayDensity());
+        (<android.view.View>view._nativeView).setMinimumWidth(Math.round(newValue * utils.layout.getDisplayDensity()));
     }
 
     private static resetMinWidthProperty(view: view.View, nativeValue: any) {
@@ -128,7 +129,7 @@ export class DefaultStyler implements definition.stylers.Styler {
 
     //minHeight methods
     private static setMinHeightProperty(view: view.View, newValue: any) {
-        (<android.view.View>view._nativeView).setMinimumHeight(newValue * utils.layout.getDisplayDensity());
+        (<android.view.View>view._nativeView).setMinimumHeight(Math.round(newValue * utils.layout.getDisplayDensity()));
     }
 
     private static resetMinHeightProperty(view: view.View, nativeValue: any) {
@@ -148,10 +149,10 @@ export class DefaultStyler implements definition.stylers.Styler {
         var nativeView: android.view.View = view._nativeView;
         var lp = DefaultStyler.getNativeLayoutParams(nativeView);
 
-        lp.leftMargin = params.leftMargin * utils.layout.getDisplayDensity();
-        lp.topMargin = params.topMargin * utils.layout.getDisplayDensity();
-        lp.rightMargin = params.rightMargin * utils.layout.getDisplayDensity();
-        lp.bottomMargin = params.bottomMargin * utils.layout.getDisplayDensity();
+        lp.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
+        lp.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
+        lp.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
+        lp.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
 
         var width = params.width * utils.layout.getDisplayDensity();
         var height = params.height * utils.layout.getDisplayDensity();
@@ -218,8 +219,8 @@ export class DefaultStyler implements definition.stylers.Styler {
         }
 
         lp.gravity = gravity;
-        lp.width = width;
-        lp.height = height;
+        lp.width = Math.round(width);
+        lp.height = Math.round(height);
 
         nativeView.setLayoutParams(lp);
     }
@@ -240,19 +241,19 @@ export class DefaultStyler implements definition.stylers.Styler {
 
     private static setPaddingProperty(view: view.View, newValue: style.Thickness) {
         var density = utils.layout.getDisplayDensity();
-        var left = (newValue.left + view.borderWidth) * density;
-        var top = (newValue.top + view.borderWidth) * density;
-        var right = (newValue.right + view.borderWidth) * density;
-        var bottom = (newValue.bottom + view.borderWidth) * density;
+        var left = Math.round((newValue.left + view.borderWidth) * density);
+        var top = Math.round((newValue.top + view.borderWidth) * density);
+        var right = Math.round((newValue.right + view.borderWidth) * density);
+        var bottom = Math.round((newValue.bottom + view.borderWidth) * density);
         (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
     }
 
     private static resetPaddingProperty(view: view.View, nativeValue: style.Thickness) {
         var density = utils.layout.getDisplayDensity();
-        var left = (nativeValue.left + view.borderWidth) * density;
-        var top = (nativeValue.top + view.borderWidth) * density;
-        var right = (nativeValue.right + view.borderWidth) * density;
-        var bottom = (nativeValue.bottom + view.borderWidth) * density;
+        var left = Math.round((nativeValue.left + view.borderWidth) * density);
+        var top = Math.round((nativeValue.top + view.borderWidth) * density);
+        var right = Math.round((nativeValue.right + view.borderWidth) * density);
+        var bottom = Math.round((nativeValue.bottom + view.borderWidth) * density);
         (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
     }
 
@@ -308,7 +309,7 @@ export class ImageStyler implements definition.stylers.Styler {
         if (!view._nativeView) {
             return;
         }
-        var val = newValue * utils.layout.getDisplayDensity();
+        var val = Math.round(newValue * utils.layout.getDisplayDensity());
         (<org.nativescript.widgets.ImageView>view._nativeView).setCornerRadius(val);
         onBackgroundOrBorderPropertyChanged(view);
     }
@@ -327,7 +328,7 @@ export class ImageStyler implements definition.stylers.Styler {
             return;
         }
 
-        var val = newValue * utils.layout.getDisplayDensity();
+        var val = Math.round(newValue * utils.layout.getDisplayDensity());
         (<org.nativescript.widgets.ImageView>view._nativeView).setBorderWidth(val);
         onBackgroundOrBorderPropertyChanged(view);
     }

@@ -94,7 +94,7 @@ export function test_handlerIsCalled_WithTargetAsThis() {
     TKUnit.assert(callbackCalled, "Handler not called.");
 }
 
-export function test_listnerDoesNotRetainTarget() {
+export function test_listnerDoesNotRetainTarget(done) {
     var source = new observable.Observable();
     var target = new Target();
 
@@ -102,12 +102,22 @@ export function test_listnerDoesNotRetainTarget() {
 
     var targetRef = new WeakRef(target);
     target = undefined;
-    helper.forceGC();
 
-    TKUnit.assert(!targetRef.get(), "Target should be released after GC");
+    TKUnit.waitUntilReady(() => {
+        helper.forceGC();
+        return !targetRef.get();
+    });
+
+    try {
+        TKUnit.assert(!targetRef.get(), "Target should be released after GC");
+        done(null);
+    }
+    catch (e) {
+        done(e);
+    }
 }
 
-export function test_listnerDoesNotRetainSource() {
+export function test_listnerDoesNotRetainSource(done) {
     var source = new observable.Observable();
     var target = new Target();
 
@@ -115,9 +125,19 @@ export function test_listnerDoesNotRetainSource() {
 
     var sourceRef = new WeakRef(source);
     source = undefined;
-    helper.forceGC();
 
-    TKUnit.assert(!sourceRef.get(), "Source should be released after GC");
+    TKUnit.waitUntilReady(() => {
+        helper.forceGC();
+        return !sourceRef.get();
+    });
+    
+    try {
+        TKUnit.assert(!sourceRef.get(), "Source should be released after GC");
+        done(null);
+    }
+    catch (e) {
+        done(e);
+    }
 }
 
 export function test_handlerIsDetached_WhenAllListenersAreRemoved() {
