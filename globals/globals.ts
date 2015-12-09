@@ -16,29 +16,50 @@ if (platform.device.os === platform.platformNames.android) {
     global.console.dump = function (args) { c.dump(args); };
 }
 
+var tm;
+function getTimer() {
+    if (!tm) {
+        tm = require("timer");
+    }
+
+    return tm;
+}
+
 global.setTimeout = function (callback, milliseconds) {
-    let tm = require("timer");
-    return tm.setTimeout(callback, milliseconds);
+    return getTimer().setTimeout(callback, milliseconds);
 }
 
 global.clearTimeout = function (id) {
-    let tm = require("timer");
-    tm.clearTimeout(id);
+    getTimer().clearTimeout(id);
 }
 
 global.setInterval = function (callback, milliseconds) {
-    let tm = require("timer");
-    return tm.setInterval(callback, milliseconds);
+    return getTimer().setInterval(callback, milliseconds);
 }
 
 global.clearInterval = function (id) {
-    let tm = require("timer");
-    tm.clearInterval(id);
+    getTimer().clearInterval(id);
+}
+
+var dm;
+function getDialogs() {
+    if (!dm) {
+        dm = require("ui/dialogs");
+    }
+
+    return dm;
 }
 
 global.alert = function (args) {
-    let dm = require("ui/dialogs");
-    return dm.alert(args);
+    return getDialogs().alert(args);
+}
+
+global.confirm = function (args) {
+    return getDialogs().confirm(args);
+}
+
+global.prompt = function (args) {
+    return getDialogs().prompt(args);
 }
 
 var xhr = require("../xhr/xhr");
