@@ -159,11 +159,18 @@ export class Animation extends common.Animation implements definition.Animation 
 
             case common.Properties.opacity:
                 originalValue1 = nativeView.getAlpha();
-                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
-                nativeArray[0] = propertyAnimation.value;
-                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.opacity = propertyAnimation.value }));
-                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setAlpha(originalValue1); }));
-                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
+                nativeArray = java.lang.reflect.Array.newInstance(floatType, 2);
+                nativeArray[0] = originalValue1;
+                nativeArray[1] = propertyAnimation.value;
+                animator = android.animation.ValueAnimator.ofFloat(nativeArray);
+                animator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
+                    onAnimationUpdate(animator: android.animation.ValueAnimator) {
+                        propertyAnimation.target.opacity = (<java.lang.Float>animator.getAnimatedValue()).floatValue();
+                    }
+                }));
+                propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.opacity = propertyAnimation.value; }));
+                propertyResetCallbacks.push(checkAnimation(() => { propertyAnimation.target.opacity = originalValue1; }));
+                animators.push(animator);
                 break;
 
             case common.Properties.backgroundColor:
