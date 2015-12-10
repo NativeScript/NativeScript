@@ -171,10 +171,6 @@ module.exports = {
                     cmd: localCfg.tnsPath + " create " + localCfg.testsAppName,
                     cwd: localCfg.workingDir
                 },
-                addPlatform: {
-                    cmd: "tns platform add " + localCfg.platform.toLowerCase() + " " + localCfg.frameworkArgument,
-                    cwd: localCfg.applicationDir
-                },
                 restartAdb: {
                     cmd: "adb kill-server && adb start-server"
                 },
@@ -241,6 +237,15 @@ module.exports = {
                         }
                     }
                 },
+                addPlatform: {
+                    command: "tns platform add " + localCfg.platform.toLowerCase() + " " + localCfg.frameworkArgument,
+                    options: {
+                        execOptions: {
+                            maxBuffer: Infinity,
+                            cwd: localCfg.applicationDir
+                        }
+                    }
+                },
             }
         });
 
@@ -294,7 +299,7 @@ module.exports = {
             "copy:modulesToDir",
             "clean:tempExtractedModules",
 
-            "exec:addPlatform",
+            "shell:addPlatform",
             getPlatformSpecificTask("copy:add{platform}Permissions"),
             "shell:buildApp",
         ]);
