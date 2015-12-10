@@ -341,6 +341,25 @@ export class ImageStyler implements definition.stylers.Styler {
         onBackgroundOrBorderPropertyChanged(view);
     }
 
+    //Opacity methods
+    private static setOpacityProperty(view: view.View, newValue: any) {
+        ImageStyler._setOpacity(view, newValue);
+    }
+
+    private static resetOpacityProperty(view: view.View, nativeValue: any) {
+        ImageStyler._setOpacity(view, 1.0);
+    }
+
+    private static _setOpacity(view: view.View, value: any) {
+        let opacity = float(value);
+        let nativeView = <android.view.View>view._nativeView;
+        nativeView.setAlpha(opacity);
+        let background = nativeView.getBackground();
+        if (background) {
+            background.setAlpha(opacity);
+        }
+    }
+
     public static registerHandlers() {
         // Use the same handler for all background/border properties
         // Note: There is no default value getter - the default value is handled in onBackgroundOrBorderPropertyChanged
@@ -352,6 +371,10 @@ export class ImageStyler implements definition.stylers.Styler {
         style.registerHandler(style.borderWidthProperty, new stylersCommon.StylePropertyChangedHandler(
             ImageStyler.setBorderWidthProperty,
             ImageStyler.resetBorderWidthProperty), "Image");
+
+        style.registerHandler(style.opacityProperty, new stylersCommon.StylePropertyChangedHandler(
+            ImageStyler.setOpacityProperty,
+            ImageStyler.resetOpacityProperty), "Image");
     }
 }
 

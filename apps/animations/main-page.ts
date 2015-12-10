@@ -6,6 +6,7 @@ import animationModule = require("ui/animation");
 import colorModule = require("color");
 import model = require("./model");
 import enums = require("ui/enums");
+import frame = require("ui/frame");
 
 var vm = new model.ViewModel();
 
@@ -162,4 +163,8 @@ export function onInterrupted(args: observable.EventData) {
             duration: 1000
         })
     }, 700 * 3);
+}
+
+export function onOpacity(args: observable.EventData) {
+    frame.topmost().navigate("./opacity");
 }
