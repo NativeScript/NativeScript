@@ -534,7 +534,8 @@ export var test_getString_FromVariousUrls_ShouldWorkProperly = function (done) {
     var urls = [
         "https://it-ebooks-api.info/v1/book/1615005640",
         "https://www.telerik.com",
-        "https://spreadsheets.google.com/tq?key=1tJ64Y8hje0ui4ap9U33h3KWwpxT_-JuVMSZzxD2Er8k"
+        "https://spreadsheets.google.com/tq?key=1tJ64Y8hje0ui4ap9U33h3KWwpxT_-JuVMSZzxD2Er8k",
+        "https://chase.arborgoldcloud.net/mobilehandler/mobiledatahandler.ashx?ProcedureName=MEstimGetJobListSpeed&@prmSalesRep=%&@prmStartDate=11/1/2015&@prmEndDate=12/8/2015&@prmStatusFilter=2"
     ];
 
     var i: number;
