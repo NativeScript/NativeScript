@@ -5,6 +5,7 @@ import utils = require("utils/utils");
 
 global.moduleMerge(common, exports);
 
+@Deprecated
 export class LocationManager implements locationModule.LocationManager {
 	get android(): locationModule.AndroidLocationManager {
 		return this.androidLocationManager;
@@ -193,6 +194,7 @@ export class LocationManager implements locationModule.LocationManager {
     }
 }
 
+@Deprecated
 export class AndroidLocationManager implements locationModule.AndroidLocationManager {
 	private _manager: android.location.LocationManager;
 	private _minimumUpdateTime: number;

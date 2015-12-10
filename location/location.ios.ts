@@ -53,6 +53,7 @@ class LocationListenerImpl extends NSObject implements CLLocationManagerDelegate
     }
 }
 
+@Deprecated
 export class LocationManager implements locationModule.LocationManager {
 	get android(): locationModule.AndroidLocationManager {
 		return undefined;
@@ -165,6 +166,7 @@ export class LocationManager implements locationModule.LocationManager {
 }
 
 /* tslint:disable */
+@Deprecated
 export class iOSLocationManager implements locationModule.iOSLocationManager {
 	private _manager: CLLocationManager;
 
