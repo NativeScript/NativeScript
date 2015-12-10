@@ -533,7 +533,7 @@ function setTextDecoration(view: android.widget.TextView, value: string) {
         view.setPaintFlags(flags);
     } else {
         view.setPaintFlags(0);
-    }   
+    }
 }
 
 function setTextTransform(view: android.widget.TextView, value: string) {
@@ -1016,11 +1016,72 @@ export class TabViewStyler implements definition.stylers.Styler {
         }
     }
 
+    // font
+    private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
+        var tab = <tabView.TabView>view;
+        var fontValue = <font.Font>newValue;
+        var typeface = fontValue.getAndroidTypeface();
+
+        if (tab.items && tab.items.length > 0) {
+            var tabLayout = tab._getAndroidTabView();
+
+            for (var i = 0; i < tab.items.length; i++) {
+                let tv = tabLayout.getTextViewForItemAt(i);
+                if (typeface) {
+                    tv.setTypeface(typeface);
+                }
+                else {
+                    tv.setTypeface(nativeValue.typeface);
+                }
+
+                if (fontValue.fontSize) {
+                    tv.setTextSize(fontValue.fontSize);
+                }
+                else {
+                    tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+                }
+            }
+        }
+    }
+
+    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
+        var tab = <tabView.TabView>view;
+
+        if (tab.items && tab.items.length > 0) {
+            var tabLayout = tab._getAndroidTabView();
+
+            for (var i = 0; i < tab.items.length; i++) {
+                let tv = tabLayout.getTextViewForItemAt(i);
+                tv.setTypeface(nativeValue.typeface);
+                tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+            }
+        }
+    }
+
+    private static getNativeFontInternalValue(view: view.View): any {
+        var tab = <tabView.TabView>view;
+        var tv: android.widget.TextView = tab._getAndroidTabView().getTextViewForItemAt(0);
+        if (tv) {
+            return {
+                typeface: tv.getTypeface(),
+                size: tv.getTextSize()
+            }
+        }
+        else {
+            return null;
+        }
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             TabViewStyler.setColorProperty,
             TabViewStyler.resetColorProperty,
             TabViewStyler.getColorProperty), "TabView");
+
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            TabViewStyler.setFontInternalProperty,
+            TabViewStyler.resetFontInternalProperty,
+            TabViewStyler.getNativeFontInternalValue), "TabView");
     }
 }
 
