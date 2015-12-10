@@ -274,7 +274,7 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
         return undefined;
     }
 
-    public _updateIOSTabBarColors(): void {
+    public _updateIOSTabBarColorsAndFonts(): void {
         // iOS sepcific
     }
 } 

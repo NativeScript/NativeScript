@@ -921,18 +921,53 @@ export class TabViewStyler implements definition.stylers.Styler {
     // color
     private static setColorProperty(view: view.View, newValue: any) {
         var tab = <tabView.TabView>view;
-        tab._updateIOSTabBarColors();
+        tab._updateIOSTabBarColorsAndFonts();
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
         var tab = <tabView.TabView>view;
-        tab._updateIOSTabBarColors();
+        tab._updateIOSTabBarColorsAndFonts();
+    }
+
+    // font
+    private static setFontInternalProperty(view: view.View, newValue: any, nativeValue: any) {
+        var tab = <tabView.TabView>view;
+        tab._updateIOSTabBarColorsAndFonts();
+    }
+
+    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
+        var tab = <tabView.TabView>view;
+        tab._updateIOSTabBarColorsAndFonts();
+    }
+
+    private static getNativeFontValue(view: view.View) {
+        var tab = <tabView.TabView>view;
+
+        let currentFont;
+
+        if (tab.ios && tab.ios.items && tab.ios.items.length > 0) {
+            let currentAttrs = tab.ios.items[0].titleTextAttributesForState(UIControlState.UIControlStateNormal);
+            if (currentAttrs) {
+                currentFont = currentAttrs.objectForKey(NSFontAttributeName);
+            }
+        }
+
+        if (!currentFont) {
+            currentFont = UIFont.systemFontOfSize(UIFont.labelFontSize());
+        }
+
+        return currentFont;
     }
 
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new stylersCommon.StylePropertyChangedHandler(
             TabViewStyler.setColorProperty,
             TabViewStyler.resetColorProperty), "TabView");
+
+        style.registerHandler(style.fontInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            TabViewStyler.setFontInternalProperty,
+            TabViewStyler.resetFontInternalProperty,
+            TabViewStyler.getNativeFontValue), "TabView");
     }
 }
 

@@ -417,6 +417,13 @@ export class Style extends DependencyObservable implements styling.Style {
         this._setShorthandProperty("font", value);
     }
 
+    get _fontInternal(): font.Font {
+        return this._getValue(fontInternalProperty);
+    }
+    set _fontInternal(value: font.Font) {
+        this._setValue(fontInternalProperty, value);
+    }
+
     get textAlignment(): string {
         return this._getValue(textAlignmentProperty);
     }
