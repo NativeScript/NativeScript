@@ -4,6 +4,7 @@ import defModule = require("location");
 
 var defaultGetLocationTimeout = 20000;
 
+@Deprecated
 export class Location implements defModule.Location {
     public latitude: number;
     public longitude: number;
