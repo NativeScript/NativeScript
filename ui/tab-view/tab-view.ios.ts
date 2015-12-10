@@ -101,7 +101,7 @@ export class TabViewItem extends common.TabViewItem {
 
 function selectedColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var tabView = <TabView>data.object;
-    tabView._updateIOSTabBarColors();
+    tabView._updateIOSTabBarColorsAndFonts();
 }
 (<proxy.PropertyMetadata>common.TabView.selectedColorProperty.metadata).onSetNativeValue = selectedColorPropertyChanged;
 
@@ -322,14 +322,14 @@ export class TabView extends common.TabView {
             (heightMode === utils.layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
     }
 
-    public _updateIOSTabBarColors(): void {
+    public _updateIOSTabBarColorsAndFonts(): void {
         if (!this.items) {
             return;
         }
 
         var tabBar = this.ios.tabBar;
 
-        tabBar.tintColor = this.selectedColor ? this.selectedColor.ios : null; 
+        tabBar.tintColor = this.selectedColor ? this.selectedColor.ios : null;
         var states = getTitleAttributesForStates(this);
 
         for (var i = 0; i < this.items.length; i++) {
@@ -353,6 +353,11 @@ function getTitleAttributesForStates(tabView: TabView): { normalState: any, sele
     else {
         selectedState[UITextAttributeTextColor] = tabView.ios.tabBar.tintColor;
     }
+
+    var defaultFont = UIFont.systemFontOfSize(UIFont.labelFontSize());
+    var font = (<any>tabView.style)._fontInternal.getUIFont(defaultFont);
+    normalState[NSFontAttributeName] = font;
+    selectedState[NSFontAttributeName] = font;
 
     return {
         normalState: normalState,

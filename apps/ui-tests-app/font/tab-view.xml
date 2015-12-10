@@ -1,0 +1,16 @@
+﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+  <TabView style="font-family: FontAwesome;color: red;" selectedColor="green">
+    <TabView.items>
+      <TabViewItem ios:title="Tab 1 &#xf179;" android:title="Tab 1 &#xf17b;">
+        <TabViewItem.view>
+          <Label text="Tab 1" />
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem ios:title="Tab 2 &#xf179;" android:title="Tab 2 &#xf17b;">
+        <TabViewItem.view>
+          <Label text="Tab 2" />
+        </TabViewItem.view>
+      </TabViewItem>
+    </TabView.items>
+  </TabView>
+</Page>
