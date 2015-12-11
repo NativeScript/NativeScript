@@ -606,6 +606,46 @@ export var test_ObservableArray_lastIndexOfShouldReturnCorrectIndexStartingFrom 
     TKUnit.assert(result === 1, "ObservableArray lastIndexOf() should return correct index!");
 };
 
+export var test_ObservableArray_settingLengthToZeroPerformsSplice = function () {
+    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+
+    var changeRaised = false;
+    array.on("change", (args: observableArrayModule.ChangedData<number>) => {
+        changeRaised = true;
+        TKUnit.assertEqual(args.object, array);
+        TKUnit.assertEqual(args.eventName, "change");
+        TKUnit.assertEqual(args.action, observableArrayModule.ChangeType.Splice);
+        TKUnit.assertEqual(args.index, 0);
+        TKUnit.assertEqual(args.addedCount, 0);
+        TKUnit.arrayAssert(args.removed, [1, 2, 3]);
+    });
+
+    array.length = 0;
+
+    TKUnit.assertEqual(array.length, 0);
+    TKUnit.assertTrue(changeRaised);
+};
+
+export var test_ObservableArray_settingLengthToSomethingPerformsSplice = function () {
+    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+
+    var changeRaised = false;
+    array.on("change", (args: observableArrayModule.ChangedData<number>) => {
+        changeRaised = true;
+        TKUnit.assertEqual(args.object, array);
+        TKUnit.assertEqual(args.eventName, "change");
+        TKUnit.assertEqual(args.action, observableArrayModule.ChangeType.Splice);
+        TKUnit.assertEqual(args.index, 1);
+        TKUnit.assertEqual(args.addedCount, 0);
+        TKUnit.arrayAssert(args.removed, [2, 3]);
+    });
+
+    array.length = 1;
+
+    TKUnit.assertEqual(array.length, 1);
+    TKUnit.assertTrue(changeRaised);
+};
+
 var array = new observableArrayModule.ObservableArray();
 
 // We do not have indexer!
