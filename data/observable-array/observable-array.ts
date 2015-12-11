@@ -70,8 +70,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
     }
     set length(value: number) {
         if (types.isNumber(value) && this._array && this._array.length !== value) {
-            this._array = this._array.slice(0, value);
-            this._notifyLengthChange();
+            this.splice(value, this._array.length - value);
         }
     }
 
