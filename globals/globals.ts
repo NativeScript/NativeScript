@@ -5,6 +5,34 @@ global.moduleMerge = function (sourceExports: any, destExports: any) {
         destExports[key] = sourceExports[key];
     }
 }
+
+function registerOnGlobalContext(name, module) {
+    Object.defineProperty(global, name, {
+        get: function () {
+            // We do not need to cache require() call since it is already cached in the runtime.
+            let m = require(module);
+            global.moduleMerge(m, global);
+
+            // Redefine the property to make sure the above code is executed only once.
+            Object.defineProperty(this, name, { value: m[name], configurable: true, writable: true });
+
+            return m[name];
+        },
+        configurable: true
+    });
+}
+
+registerOnGlobalContext("setTimeout", "timer");
+registerOnGlobalContext("clearTimeout", "timer");
+registerOnGlobalContext("setInterval", "timer");
+registerOnGlobalContext("clearInterval", "timer");
+registerOnGlobalContext("alert", "ui/dialogs");
+registerOnGlobalContext("confirm", "ui/dialogs");
+registerOnGlobalContext("prompt", "ui/dialogs");
+registerOnGlobalContext("XMLHttpRequest", "../xhr/xhr");
+registerOnGlobalContext("FormData", "../xhr/xhr");
+registerOnGlobalContext("fetch", "fetch");
+
 import platform = require("platform");
 import consoleModule = require("console");
 
@@ -15,59 +43,6 @@ if (platform.device.os === platform.platformNames.android) {
 } else if (platform.device.os === platform.platformNames.ios) {
     global.console.dump = function (args) { c.dump(args); };
 }
-
-var tm;
-function getTimer() {
-    if (!tm) {
-        tm = require("timer");
-    }
-
-    return tm;
-}
-
-global.setTimeout = function (callback, milliseconds) {
-    return getTimer().setTimeout(callback, milliseconds);
-}
-
-global.clearTimeout = function (id) {
-    getTimer().clearTimeout(id);
-}
-
-global.setInterval = function (callback, milliseconds) {
-    return getTimer().setInterval(callback, milliseconds);
-}
-
-global.clearInterval = function (id) {
-    getTimer().clearInterval(id);
-}
-
-var dm;
-function getDialogs() {
-    if (!dm) {
-        dm = require("ui/dialogs");
-    }
-
-    return dm;
-}
-
-global.alert = function (args) {
-    return getDialogs().alert(args);
-}
-
-global.confirm = function (args) {
-    return getDialogs().confirm(args);
-}
-
-global.prompt = function (args) {
-    return getDialogs().prompt(args);
-}
-
-var xhr = require("../xhr/xhr");
-global.moduleMerge(xhr, global);
-
-// Fetch module should be after XMLHttpRequest/FormData! 
-var fetchModule = require("fetch");
-global.moduleMerge(fetchModule, global);
 
 if (typeof global.__decorate !== "function") {
     global.__decorate = function (decorators, target, key, desc) {
