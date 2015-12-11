@@ -354,7 +354,7 @@ function getTitleAttributesForStates(tabView: TabView): { normalState: any, sele
         selectedState[UITextAttributeTextColor] = tabView.ios.tabBar.tintColor;
     }
 
-    var defaultFont = UIFont.systemFontOfSize(UIFont.labelFontSize());
+    var defaultFont = UIFont.systemFontOfSize(10);
     var font = (<any>tabView.style)._fontInternal.getUIFont(defaultFont);
     normalState[NSFontAttributeName] = font;
     selectedState[NSFontAttributeName] = font;
