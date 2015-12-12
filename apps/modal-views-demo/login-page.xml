@@ -1,4 +1,5 @@
 ﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd" 
+      showingModally="onShowingModally"
       shownModally="onShownModally" 
       navigatingTo="onNavigatingTo"  
       loaded="onLoaded" 

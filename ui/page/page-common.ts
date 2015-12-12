@@ -35,6 +35,7 @@ export class Page extends ContentView implements dts.Page {
     public static navigatingFromEvent = "navigatingFrom";
     public static navigatedFromEvent = "navigatedFrom";
     public static shownModallyEvent = "shownModally";
+    public static showingModallyEvent = "showingModally";
 
     protected _closeModalCallback: Function;
 
@@ -248,6 +249,13 @@ export class Page extends ContentView implements dts.Page {
             object: this,
             context: context,
             closeCallback: this._closeModalCallback
+        });
+    }
+
+    protected _raiseShowingModallyEvent() {
+        this.notify({
+            eventName: Page.showingModallyEvent,
+            object: this
         });
     }
 

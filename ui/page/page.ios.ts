@@ -241,6 +241,7 @@ export class Page extends pageCommon.Page {
             this._UIModalPresentationFormSheet = true;
         }
 
+        super._raiseShowingModallyEvent();
         var that = this;
         parent.ios.presentViewControllerAnimatedCompletion(this._ios, false, function completion() {
             that._raiseShownModallyEvent(parent, context, closeCallback);
