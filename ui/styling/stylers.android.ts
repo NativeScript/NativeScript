@@ -60,6 +60,9 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
             // http://developer.android.com/guide/topics/graphics/hardware-accel.html
             nativeView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
         }
+        else {
+            nativeView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+        }
     }
     else {
         // reset the value with the default native value

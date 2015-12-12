@@ -26,9 +26,9 @@ export function pageLoaded(args: observable.EventData) {
 export function onSetOpacity(args: observable.EventData) {
     var newOpacity = opacitySlider.value / 100;
     container._eachChildView((view: view.View) => {
-        if (view.android) {
-            view.android.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
-        }
+        //if (view.android) {
+        //    view.android.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+        //}
         view.opacity = newOpacity;
         return true;
     });
@@ -39,9 +39,9 @@ export function onAnimateOpacity(args: observable.EventData) {
     var newOpacity = opacitySlider.value / 100;
     var animationDefinitions = new Array<animationModule.AnimationDefinition>();
     container._eachChildView((view: view.View) => {
-        if (view.android) {
-            view.android.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
-        }
+        //if (view.android) {
+        //    view.android.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+        //}
         animationDefinitions.push({
             target: view,
             opacity: newOpacity,
