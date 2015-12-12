@@ -62,6 +62,11 @@ declare module "ui/page" {
         public static actionBarHiddenProperty: dependencyObservable.Property;
 
         /**
+         * String value used when hooking to showingModally event.
+         */
+        public static showingModallyEvent: string;
+
+        /**
          * String value used when hooking to shownModally event.
          */
         public static shownModallyEvent: string;
@@ -159,7 +164,12 @@ declare module "ui/page" {
         on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any);
         
         /**
-         * Raised when the page is shown as a modal dialog.
+         * Raised before the page is shown as a modal dialog.
+         */
+        on(event: "showingModally", callback: (args: observable.EventData) => void, thisArg?: any);
+
+        /**
+         * Raised after the page is shown as a modal dialog.
          */
         on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
 

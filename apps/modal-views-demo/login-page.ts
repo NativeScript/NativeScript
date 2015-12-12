@@ -9,6 +9,15 @@ var page: pages.Page;
 var usernameTextField: textField.TextField;
 var passwordTextField: textField.TextField;
 
+export function onShowingModally(args: observable.EventData) {
+    console.log(">>> login-page.onShowingModally");
+    var modalPage = <pages.Page>args.object;
+    if (modalPage.ios && modalPage.ios.modalPresentationStyle === UIModalPresentationStyle.UIModalPresentationFullScreen) {
+        console.log(">>> Setting modalPage.ios.modalPresentationStyle to UIModalPresentationStyle.UIModalPresentationOverFullScreen");
+        modalPage.ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationOverFullScreen;
+    }
+}
+
 export function onShownModally(args: pages.ShownModallyData) {
     console.log(">>> login-page.onShownModally, context: " + args.context);
 

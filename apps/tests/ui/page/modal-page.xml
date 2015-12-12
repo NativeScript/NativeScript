@@ -1,4 +1,4 @@
-<Page shownModally="onShownModally">
+<Page showingModally="onShowingModally" shownModally="onShownModally">
   <StackLayout>
     <Label text="Modal Page" />
   </StackLayout>

@@ -125,8 +125,9 @@ export class Page extends pageCommon.Page {
         this._dialogFragment = new DialogFragmentClass(this, fullscreen, function () {
             that.closeModal();
         });
-        this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), "dialog");
 
+        super._raiseShowingModallyEvent();
+        this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), "dialog");
         super._raiseShownModallyEvent(parent, context, closeCallback);
     }
 
