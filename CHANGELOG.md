@@ -1,5 +1,49 @@
 Cross Platform Modules Changelog
 ==============================
+##1.5.1 (2015, November 14)
+
+### Fixed
+
+- [(#1235)](https://github.com/NativeScript/NativeScript/issues/1235) ObservableArray does not raise its `change` event when its `length' property is set.
+
+- [(#1228)](https://github.com/NativeScript/NativeScript/pull/1228) url with % fixed
+
+- [(#1213)](https://github.com/NativeScript/NativeScript/issues/1213) Android build error when space exists in the folder
+
+- [(#1186)](https://github.com/NativeScript/NativeScript/pull/1186) Fix currentEntry to return NavigationEntry instead of BackstackEntry
+
+- [(#1179)](https://github.com/NativeScript/NativeScript/issues/1179) Listview doesn't seem to clear\reset
+
+- [(#1168)](https://github.com/NativeScript/NativeScript/issues/1168) alert with null value is not displayed
+
+- [(#1160)](https://github.com/NativeScript/NativeScript/issues/1160) iOS: The image supplied to Label.backgroundImage is rendered upside down.
+
+- [(#1149)](https://github.com/NativeScript/NativeScript/pull/1149) Correct TabView icon rendering mode
+
+- [(#1142)](https://github.com/NativeScript/NativeScript/issues/1142) ObservableArray does not provide removed items through EventData when an UPDATE action occurs
+
+- [(#1139)](https://github.com/NativeScript/NativeScript/issues/1139) Missing attributes in the NativeScript XSD schema
+
+- [(#1018)](https://github.com/NativeScript/NativeScript/issues/1018) BackgroundPosition & negative values
+
+- [(#754)](https://github.com/NativeScript/NativeScript/issues/754) The backgroundColor of a Label is not animatable in iOS.
+
+### New
+
+- [(#1171)](https://github.com/NativeScript/NativeScript/issues/1171) Expose API to get the focus point of pinch gesture
+
+- [(#1140)](https://github.com/NativeScript/NativeScript/issues/1140) Expose API for setting origin (a.k.a. pivot or anchor) point for view transformations
+
+- [(#1136)](https://github.com/NativeScript/NativeScript/pull/1136) Add Template factory function and use it in the ui/builder, Repeater and ListView components
+
+- [(#1109)](https://github.com/NativeScript/NativeScript/issues/1109) min/max and intervals values on date / time pickers
+
+- [(#691)](https://github.com/NativeScript/NativeScript/issues/691) Visibility attribute on ActionItem element
+
+- [(#685)](https://github.com/NativeScript/NativeScript/issues/685) Support CSS text-transform
+
+- [(#501)](https://github.com/NativeScript/NativeScript/issues/501) Better XML declaration error reporting for non-existing element
+
 ##1.5.0 (2015, November 24)
 
 ### Breaking changes
