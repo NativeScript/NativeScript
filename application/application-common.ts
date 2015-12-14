@@ -1,9 +1,9 @@
 ﻿require("globals");
 import definition = require("application");
-import fs = require("file-system");
-import styleScope = require("ui/styling/style-scope");
 import observable = require("data/observable");
 import frame = require("ui/frame");
+import * as fileSystemModule from "file-system";
+import * as styleScopeModule from "ui/styling/style-scope";
 
 var events = new observable.Observable();
 global.moduleMerge(events, exports);
@@ -41,6 +41,9 @@ export var ios = undefined;
 
 export function loadCss() {
     if (definition.cssFile) {
+        var fs: typeof fileSystemModule = require("file-system");
+        var styleScope: typeof styleScopeModule = require("ui/styling/style-scope");
+
         var cssFileName = fs.path.join(fs.knownFolders.currentApp().path, definition.cssFile);
         if (fs.File.exists(cssFileName)) {
             var file = fs.File.fromPath(cssFileName);

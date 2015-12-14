@@ -1,16 +1,17 @@
 ﻿import dependencyObservable = require("ui/core/dependency-observable");
-import view = require("ui/core/view");
 import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
 import common = require("./dock-layout-common");
+import * as viewModule from "ui/core/view";
 
 global.moduleMerge(common, exports);
 
 function setNativeDockProperty(data: dependencyObservable.PropertyChangeData) {
+    var view: typeof viewModule = require("ui/core/view");
 
     var uiView = data.object;
     if (uiView instanceof view.View) {
-        var nativeView: android.view.View = uiView._nativeView;
+        var nativeView: android.view.View = (<any>uiView)._nativeView;
 
         var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
         if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {

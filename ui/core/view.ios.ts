@@ -3,8 +3,6 @@ import trace = require("trace");
 import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import background = require("ui/styling/background");
-import types = require("utils/types");
 
 global.moduleMerge(viewCommon, exports);
 
@@ -296,6 +294,8 @@ export class CustomLayoutView extends View {
         super._addViewToNativeVisualTree(child);
 
         if (this._nativeView && child._nativeView) {
+            var types = require("utils/types");
+
             if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.subviews.count) {
                 this._nativeView.addSubview(child._nativeView);
             }

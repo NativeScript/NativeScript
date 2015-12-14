@@ -3,10 +3,10 @@ import definition = require("ui/layouts/grid-layout");
 import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
 import bindable = require("ui/core/bindable");
-import types = require("utils/types");
 import numberUtils = require("../../../utils/number-utils");
 import proxy = require("ui/core/proxy");
 import {registerSpecialProperty} from "ui/builder/special-properties";
+import * as typesModule from "utils/types";
 
 function validateArgs(element: view.View): view.View {
     if (!element) {
@@ -48,6 +48,8 @@ export class ItemSpec extends bindable.Bindable implements definition.ItemSpec {
 
         }
         else if (arguments.length === 2) {
+            var types: typeof typesModule = require("utils/types");
+
             if (types.isNumber(arguments[0]) && types.isString(arguments[1])) {
                 if (arguments[0] < 0 || (arguments[1] !== GridUnitType.auto && arguments[1] !== GridUnitType.star && arguments[1] !== GridUnitType.pixel)) {
                     throw new Error("Invalid values.");

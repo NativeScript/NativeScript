@@ -1,4 +1,12 @@
-﻿import application = require("application");
+﻿var start;
+if (typeof NSDate !== "undefined") {
+    start = NSDate.date();
+}
+else {
+    start = java.lang.System.currentTimeMillis();
+}
+
+import application = require("application");
 
 // Specify custom UIApplicationDelegate.
 /*
@@ -128,5 +136,15 @@ if (application.android) {
         // Set args.cancel = true to cancel back navigation and do something custom.
     });
 }
+
+var time;
+if (typeof NSDate !== "undefined") {
+    time = NSDate.date().timeIntervalSinceDate(start) * 1000;
+}
+else {
+    time = java.lang.System.currentTimeMillis() - start;
+}
+
+console.log(`TIME TO LOAD APP: ${time} ms`);
 
 application.start();

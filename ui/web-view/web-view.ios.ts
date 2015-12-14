@@ -1,6 +1,5 @@
 ﻿import common = require("./web-view-common");
 import trace = require("trace");
-import fs = require("file-system");
 
 global.moduleMerge(common, exports);
 
@@ -101,6 +100,8 @@ export class WebView extends common.WebView {
     }
 
     public _loadData(content: string) {
+        var fs = require("file-system");
+
         this._ios.loadHTMLStringBaseURL(content, NSURL.alloc().initWithString(`file:///${fs.knownFolders.currentApp().path}/`));
     }
 

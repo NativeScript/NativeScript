@@ -3,8 +3,8 @@ import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import color = require("color");
-import types = require("utils/types");
 import bindable = require("ui/core/bindable");
+import * as typesModule from "utils/types";
 
 export module knownCollections {
     export var items = "items";
@@ -40,6 +40,8 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
     public _adjustSelectedIndex(items: Array<definition.SegmentedBarItem>) {
         if (this.items) {
             if (this.items.length > 0) {
+                var types: typeof typesModule = require("utils/types");
+
                 if (types.isUndefined(this.selectedIndex) || (this.selectedIndex > this.items.length - 1)) {
                     this._setValue(SegmentedBar.selectedIndexProperty, 0);
                 }

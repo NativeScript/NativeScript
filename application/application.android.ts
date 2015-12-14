@@ -1,10 +1,9 @@
 ﻿import appModule = require("./application-common");
 import dts = require("application");
 import frame = require("ui/frame");
-import types = require("utils/types");
 import observable = require("data/observable");
-import enums = require("ui/enums");
-import fileResolverModule = require("file-system/file-name-resolver");
+import * as typesModule from "utils/types";
+import * as fileResolverModule  from "file-system/file-name-resolver";
 
 global.moduleMerge(appModule, exports);
 
@@ -306,6 +305,8 @@ class BroadcastReceiver extends android.content.BroadcastReceiver {
 }
 
 global.__onUncaughtError = function (error: Error) {
+    var types: typeof typesModule = require("utils/types");
+
     // TODO: Obsolete this
     if (types.isFunction(exports.onUncaughtError)) {
         exports.onUncaughtError(error);
@@ -331,6 +332,8 @@ function onConfigurationChanged(context: android.content.Context, intent: androi
     if (currentOrientation !== orientation) {
         currentOrientation = orientation;
 
+        var enums = require("ui/enums");
+
         var newValue;
         switch (orientation) {
             case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
@@ -344,7 +347,7 @@ function onConfigurationChanged(context: android.content.Context, intent: androi
                 break;
         }
 
-        exports.notify(<dts.OrientationChangedEventData> {
+        exports.notify(<dts.OrientationChangedEventData>{
             eventName: dts.orientationChangedEvent,
             android: context,
             newValue: newValue,
@@ -358,8 +361,10 @@ global.__onLiveSync = function () {
         return;
     }
 
+    var fileResolver: typeof fileResolverModule = require("file-system/file-name-resolver");
+
     // Clear file resolver cache to respect newly added files.
-    fileResolverModule.clearCache();
+    fileResolver.clearCache();
 
     // Reload app.css in case it was changed.
     appModule.loadCss();

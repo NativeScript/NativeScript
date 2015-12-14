@@ -1,5 +1,5 @@
-﻿import utilsModule = require("utils/utils");
-import textModule = require("text");
+﻿import textModule = require("text");
+import * as utilsModule from "utils/utils";
 
 // TODO: Implement all the APIs receiving callback using async blocks
 // TODO: Check whether we need try/catch blocks for the iOS implementation
@@ -161,8 +161,10 @@ export class FileSystemAccess {
     }
 
     public concatPath(left: string, right: string): string {
+        var utils: typeof utilsModule = require("utils/utils");
+
         // TODO: This probably is not efficient, we may try concatenation with the "/" character
-        var nsArray = utilsModule.ios.collections.jsArrayToNSArray([left, right]);
+        var nsArray = utils.ios.collections.jsArrayToNSArray([left, right]);
         var nsString = NSString.pathWithComponents(nsArray);
 
         return nsString.toString();

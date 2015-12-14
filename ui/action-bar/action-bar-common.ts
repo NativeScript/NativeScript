@@ -5,8 +5,8 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
 import view = require("ui/core/view");
-import style = require("../styling/style");
-import observable = require("ui/core/dependency-observable");
+import * as styleModule from "../styling/style";
+import * as dependencyObservableModule from "ui/core/dependency-observable";
 
 var ACTION_ITEMS = "actionItems";
 
@@ -65,6 +65,9 @@ export class ActionBar extends view.View implements dts.ActionBar {
     }
     set titleView(value: view.View) {
         if (this._titleView !== value) {
+            var style: typeof styleModule = require("../styling/style");
+            var observable: typeof dependencyObservableModule = require("ui/core/dependency-observable");
+
             if (this._titleView) {
                 this._removeView(this._titleView);
                 this._titleView.style._resetValue(style.horizontalAlignmentProperty, observable.ValueSource.Inherited);

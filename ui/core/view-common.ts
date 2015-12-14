@@ -3,11 +3,9 @@ import definition = require("ui/core/view");
 import proxy = require("ui/core/proxy");
 import style = require("../styling/style");
 import styling = require("ui/styling");
-import visualStateConstants = require("ui/styling/visual-state-constants");
 import trace = require("trace");
 import dependencyObservable = require("ui/core/dependency-observable");
 import gestures = require("ui/gestures");
-import bindable = require("ui/core/bindable");
 import styleScope = require("../styling/style-scope");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
@@ -16,6 +14,9 @@ import animationModule = require("ui/animation");
 import observable = require("data/observable");
 import {registerSpecialProperty} from "ui/builder/special-properties";
 import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
+import * as visualStateConstantsModule from "ui/styling/visual-state-constants";
+import * as bindableModule from "ui/core/bindable";
+import * as visualStateModule from "../styling/visual-state";
 
 registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
     instance.className = propertyValue;
@@ -237,6 +238,9 @@ export class View extends proxy.ProxyObject implements definition.View {
 
         this._style = new style.Style(this);
         this._domId = viewIdCounter++;
+
+        var visualStateConstants: typeof visualStateConstantsModule = require("ui/styling/visual-state-constants");
+
         this._visualState = visualStateConstants.Normal;
     }
 
@@ -1055,6 +1059,8 @@ export class View extends proxy.ProxyObject implements definition.View {
             view.onUnloaded();
         }
 
+        var bindable: typeof bindableModule = require("ui/core/bindable");
+
         view._setValue(bindable.Bindable.bindingContextProperty, undefined, dependencyObservable.ValueSource.Inherited);
         var inheritablePropertiesSetCallback = function (property: dependencyObservable.Property) {
             if (property instanceof styling.Property) {
@@ -1100,7 +1106,7 @@ export class View extends proxy.ProxyObject implements definition.View {
             return;
         }
         // we use lazy require to prevent cyclic dependencies issues
-        var vsm = require("ui/styling/visual-state");
+        var vsm: typeof visualStateModule = require("ui/styling/visual-state");
         this._visualState = vsm.goToState(this, state);
 
         // TODO: What state should we set here - the requested or the actual one?

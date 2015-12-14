@@ -5,12 +5,14 @@ import definition = require("ui/styling");
 import stylersCommon = require("./stylers-common");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
-import styleModule = require("./style");
 import font = require("ui/styling/font");
-import background = require("ui/styling/background");
 import tabView = require("ui/tab-view");
 import {CommonLayoutParams, Thickness} from "ui/styling/style";
-var btn;
+import * as styleModule from "./style";
+import * as backgroundModule from "ui/styling/background";
+import * as buttonModule from "ui/button";
+
+var btn: typeof buttonModule;
 
 global.moduleMerge(stylersCommon, exports);
 
@@ -35,12 +37,15 @@ function onBackgroundOrBorderPropertyChanged(v: view.View) {
     if (!nativeView) {
         return;
     }
+    
+    var style: typeof styleModule = require("./style");
+    var background: typeof backgroundModule = require("ui/styling/background");
 
-    var backgroundValue = <background.Background>v.style._getValue(styleModule.backgroundInternalProperty);
+    var backgroundValue = v.style._getValue(style.backgroundInternalProperty);
     var borderWidth = v.borderWidth;
     if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
 
-        var bkg = <background.ad.BorderDrawable>nativeView.getBackground();
+        var bkg = <any>nativeView.getBackground();
         if (!(bkg instanceof background.ad.BorderDrawable)) {
             bkg = new background.ad.BorderDrawable();
             let viewClass = types.getClass(v);

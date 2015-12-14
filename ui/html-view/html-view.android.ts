@@ -1,7 +1,7 @@
 ﻿import common = require("./html-view-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import types = require("utils/types");
+import * as typesModule from "utils/types";
 
 function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <HtmlView>data.object;
@@ -9,6 +9,7 @@ function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         return;
     }
 
+    var types: typeof typesModule = require("utils/types");
     if (types.isString(data.newValue)) {
         // If the data.newValue actually has a <a...> in it; we need to disable autolink mask
         // it internally disables the coloring, but then the <a> links won't work..  So to support both

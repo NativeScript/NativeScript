@@ -1,7 +1,7 @@
 ﻿import viewModule = require("ui/core/view");
-import constants = require("ui/styling/visual-state-constants");
 import observable = require("ui/core/dependency-observable");
 import styleProperty = require("ui/styling/style-property");
+import * as visualStateConstantsModule from "ui/styling/visual-state-constants";
 
 export class VisualState {
     private _setters: {};
@@ -39,6 +39,8 @@ export function goToState(view: viewModule.View, state: string): string {
     // Step 1
     if (!(state in allStates)) {
         // TODO: Directly go to normal?
+        var constants: typeof visualStateConstantsModule = require("ui/styling/visual-state-constants");
+
         state = constants.Normal;
     }
 

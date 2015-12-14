@@ -1,7 +1,5 @@
 ﻿import common = require("./button-common");
 import stateChanged = require("ui/core/control-state-change");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
 
 class TapHandlerImpl extends NSObject {
     private _owner: WeakRef<Button>;

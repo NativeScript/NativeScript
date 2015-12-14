@@ -1,13 +1,12 @@
-﻿import appModule = require("./application-common");
+﻿import common = require("./application-common");
 import frame = require("ui/frame");
-import types = require("utils/types");
-import view = require("ui/core/view");
 import definition = require("application");
-import enums = require("ui/enums");
-import uiUtils = require("ui/utils");
-import fileResolverModule = require("file-system/file-name-resolver");
+import * as uiUtilsModule from "ui/utils";
+import * as typesModule from "utils/types";
+import * as fileResolverModule  from "file-system/file-name-resolver";
+import * as enumsModule from "ui/enums";
 
-global.moduleMerge(appModule, exports);
+global.moduleMerge(common, exports);
 
 class Responder extends UIResponder {
     //
@@ -15,7 +14,7 @@ class Responder extends UIResponder {
 
 class Window extends UIWindow {
 
-    private _content: view.View;
+    private _content;
 
     initWithFrame(frame: CGRect): UIWindow {
         var window = super.initWithFrame(frame);
@@ -25,14 +24,16 @@ class Window extends UIWindow {
         return window;
     }
 
-    public get content(): view.View {
+    public get content() {
         return this._content;
     }
-    public set content(value: view.View) {
+    public set content(value) {
         this._content = value;
     }
 
     public layoutSubviews(): void {
+        var uiUtils: typeof uiUtilsModule = require("ui/utils");
+
         uiUtils.ios._layoutRootView(this._content, UIScreen.mainScreen().bounds);
     }
 }
@@ -113,7 +114,7 @@ class IOSApplication implements definition.iOSApplication {
         }
 
         exports.notify({
-            eventName: definition.launchEvent,
+            eventName: exports.launchEvent,
             object: this,
             ios: notification.userInfo && notification.userInfo.objectForKey("UIApplicationLaunchOptionsLocalNotificationKey") || null
         });
@@ -121,9 +122,9 @@ class IOSApplication implements definition.iOSApplication {
         var topFrame = frame.topmost();
         if (!topFrame) {
             // try to navigate to the mainEntry/Module (if specified)
-            var navParam = definition.mainEntry;
+            var navParam = exports.mainEntry;
             if (!navParam) {
-                navParam = definition.mainModule;
+                navParam = exports.mainModule;
             }
 
             if (navParam) {
@@ -147,7 +148,7 @@ class IOSApplication implements definition.iOSApplication {
             exports.onResume();
         }
 
-        exports.notify({ eventName: definition.resumeEvent, object: this, ios: UIApplication.sharedApplication() });
+        exports.notify({ eventName: exports.resumeEvent, object: this, ios: UIApplication.sharedApplication() });
     }
 
     private didEnterBackground(notification: NSNotification) {
@@ -155,7 +156,7 @@ class IOSApplication implements definition.iOSApplication {
             exports.onSuspend();
         }
 
-        exports.notify({ eventName: definition.suspendEvent, object: this, ios: UIApplication.sharedApplication() });
+        exports.notify({ eventName: exports.suspendEvent, object: this, ios: UIApplication.sharedApplication() });
     }
 
     private willTerminate(notification: NSNotification) {
@@ -163,7 +164,7 @@ class IOSApplication implements definition.iOSApplication {
             exports.onExit();
         }
 
-        exports.notify({ eventName: definition.exitEvent, object: this, ios: UIApplication.sharedApplication() });
+        exports.notify({ eventName: exports.exitEvent, object: this, ios: UIApplication.sharedApplication() });
     }
 
     private didReceiveMemoryWarning(notification: NSNotification) {
@@ -171,7 +172,7 @@ class IOSApplication implements definition.iOSApplication {
             exports.onLowMemory();
         }
 
-        exports.notify({ eventName: definition.lowMemoryEvent, object: this, android: undefined, ios: UIApplication.sharedApplication() });
+        exports.notify({ eventName: exports.lowMemoryEvent, object: this, android: undefined, ios: UIApplication.sharedApplication() });
     }
 
     private orientationDidChange(notification: NSNotification) {
@@ -179,6 +180,8 @@ class IOSApplication implements definition.iOSApplication {
 
         if (this._currentOrientation !== orientation) {
             this._currentOrientation = orientation;
+
+            var enums: typeof enumsModule = require("ui/enums");
 
             var newValue;
             switch (orientation) {
@@ -196,7 +199,7 @@ class IOSApplication implements definition.iOSApplication {
             }
 
             exports.notify(<definition.OrientationChangedEventData>{
-                eventName: definition.orientationChangedEvent,
+                eventName: exports.orientationChangedEvent,
                 ios: this,
                 newValue: newValue,
                 object: this
@@ -210,19 +213,21 @@ var iosApp = new IOSApplication();
 exports.ios = iosApp;
 
 global.__onUncaughtError = function (error: Error) {
+    var types: typeof typesModule = require("utils/types");
+
     // TODO: This should be obsoleted
     if (types.isFunction(exports.onUncaughtError)) {
         exports.onUncaughtError(error);
     }
     
-    definition.notify({ eventName: definition.uncaughtErrorEvent, object: <any>definition.ios, ios: error });
+    exports.notify({ eventName: exports.uncaughtErrorEvent, object: <any>exports.ios, ios: error });
 }
 
 var started: boolean = false;
 exports.start = function () {
     if (!started) {
         started = true;
-        appModule.loadCss();
+        exports.loadCss();
         UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(Responder));
     } else {
         throw new Error("iOS Application already started!");
@@ -234,11 +239,13 @@ global.__onLiveSync = function () {
         return;
     }
 
+    var fileResolver: typeof fileResolverModule = require("file-system/file-name-resolver");
+
     // Clear file resolver cache to respect newly added files.
-    fileResolverModule.clearCache();
+    fileResolver.clearCache();
 
     // Reload app.css in case it was changed.
-    appModule.loadCss();
+    exports.loadCss();
 
     // Reload current page.
     frame.reloadPage();

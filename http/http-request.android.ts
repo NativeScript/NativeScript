@@ -1,13 +1,13 @@
 ﻿/**
  * Android specific http request implementation.
  */
-import imageSource = require("image-source");
 import types = require("utils/types");
-import utils = require("utils/utils");
+import * as utilsModule from "utils/utils";
+import * as imageSourceModule from "image-source";
+import * as platformModule from "platform";
 
 // this is imported for definition purposes only
 import http = require("http");
-import platform = require("platform");
 
 var requestIdCounter = 0;
 var pendingRequests = {};
@@ -51,9 +51,15 @@ function onRequestComplete(requestId: number, result: com.tns.Async.Http.Request
                     throw new Error("Response content may not be converted to string");
                 }
             },
-            toJSON: () => { return utils.parseJSON(result.responseAsString); },
+            toJSON: () => {
+                var utils: typeof utilsModule = require("utils/utils");
+
+                return utils.parseJSON(result.responseAsString);
+            },
             toImage: () => {
-                return new Promise<imageSource.ImageSource>((resolveImage, rejectImage) => {
+                var imageSource: typeof imageSourceModule = require("image-source");
+
+                return new Promise<any>((resolveImage, rejectImage) => {
                     if (result.responseAsImage != null) {
                         resolveImage(imageSource.fromNativeSource(result.responseAsImage));
                     }
@@ -97,6 +103,8 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
 
         javaOptions.headers = arrayList;
     }
+
+    var platform: typeof platformModule = require("platform");
 
     // pass the maximum available image size to the request options in case we need a bitmap conversion
     var screen = platform.screen.mainScreen;

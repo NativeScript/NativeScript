@@ -1,8 +1,7 @@
 ﻿import common = require("./search-bar-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import color = require("color");
-import types = require("utils/types");
+import * as typesModule from "utils/types";
 
 function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var bar = <SearchBar>data.object;
@@ -13,6 +12,7 @@ function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
 function onTextFieldBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var bar = <SearchBar>data.object;
+    var color = require("color");
     if (data.newValue instanceof color.Color) {
         var tf = (<any>bar)._textField;
         if (tf) {
@@ -44,6 +44,7 @@ function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     }
 
     var newValue = data.newValue;
+    var types: typeof typesModule = require("utils/types");
 
     if (types.isString(newValue)) {
         bar.ios.placeholder = newValue;

@@ -1,10 +1,8 @@
 ﻿import common = require("./label-common");
 import definition = require("ui/label");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import utils = require("utils/utils");
-import viewModule = require("ui/core/view");
-import enums = require("ui/enums");
+import * as enumsModule from "ui/enums";
+import * as viewModule from "ui/core/view";
+import * as utilsModule from "utils/utils";
 
 global.moduleMerge(common, exports);
 
@@ -72,6 +70,7 @@ export class Label extends common.Label {
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var nativeView = this._nativeView;
         if (nativeView) {
+            var utils: typeof utilsModule = require("utils/utils");
 
             var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
             var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
@@ -89,6 +88,9 @@ export class Label extends common.Label {
 
             var nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
             var labelWidth = nativeSize.width;
+
+            var enums: typeof enumsModule = require("ui/enums");
+
             if (!this.textWrap && this.style.whiteSpace !== enums.WhiteSpace.nowrap) {
                 labelWidth = Math.min(labelWidth, width);
             }
@@ -96,8 +98,10 @@ export class Label extends common.Label {
             var measureWidth = Math.max(labelWidth, this.minWidth);
             var measureHeight = Math.max(nativeSize.height, this.minHeight);
 
-            var widthAndState = viewModule.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-            var heightAndState = viewModule.View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+            var vm: typeof viewModule = require("ui/core/view");
+
+            var widthAndState = vm.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+            var heightAndState = vm.View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
             this.setMeasuredDimension(widthAndState, heightAndState);
         }

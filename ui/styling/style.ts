@@ -8,12 +8,12 @@ import stylers = require("ui/styling/stylers");
 import styleProperty = require("ui/styling/style-property");
 import converters = require("./converters");
 import enums = require("ui/enums");
-import imageSource = require("image-source");
 import utils = require("utils/utils");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
 import platform = require("platform");
 import definition = require("ui/styling/style");
+import * as imageSourceModule from "image-source";
 
 // key is the property id and value is Dictionary<string, StylePropertyChangedHandler>;
 var _registeredHandlers = Array<Object>();
@@ -278,6 +278,8 @@ function onBackgroundImagePropertyChanged(data: PropertyChangeData) {
         if (match && match[2]) {
             url = match[2];
         }
+
+        var imageSource: typeof imageSourceModule = require("image-source");
 
         if (utils.isDataURI(url)) {
             var base64Data = url.split(",")[1];

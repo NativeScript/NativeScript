@@ -1,16 +1,16 @@
 ﻿import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
-import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
 import common = require("./grid-layout-common");
 
 global.moduleMerge(common, exports);
 
 function setNativeProperty(data: dependencyObservable.PropertyChangeData, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
+    var view = require("ui/core/view");
 
     var uiView = data.object;
     if (uiView instanceof view.View) {
-        var nativeView: android.view.View = uiView._nativeView;
+        var nativeView: android.view.View = (<any>uiView)._nativeView;
 
         var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
         if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {

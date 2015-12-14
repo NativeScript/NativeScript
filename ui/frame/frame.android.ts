@@ -3,9 +3,9 @@ import definition = require("ui/frame");
 import pages = require("ui/page");
 import trace = require("trace");
 import observable = require("data/observable");
-import utils = require("utils/utils");
 import application = require("application");
-import types = require("utils/types");
+import * as typesModule from "utils/types";
+import * as utilsModule from "utils/utils";
 
 global.moduleMerge(frameCommon, exports);
 
@@ -71,6 +71,9 @@ var PageFragmentBody = (<any>android.app.Fragment).extend({
     onDestroy: function () {
         trace.write(`PageFragmentBody.onDestroy()`, trace.categories.NativeLifecycle);
         this.super.onDestroy();
+
+        var utils: typeof utilsModule = require("utils/utils");
+
         utils.GC();
     }
 });
@@ -355,6 +358,8 @@ export class Frame extends frameCommon.Frame {
     }
 
     public _getNavBarVisible(page: pages.Page): boolean {
+        var types : typeof typesModule = require("utils/types");
+
         if (types.isDefined(page.actionBarHidden)) {
             return !page.actionBarHidden;
         }

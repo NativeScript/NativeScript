@@ -1,6 +1,6 @@
 ﻿import common = require("./web-view-common");
 import trace = require("trace");
-import fs = require("file-system");
+import * as fileSystemModule from "file-system";
 
 global.moduleMerge(common, exports);
 
@@ -119,6 +119,8 @@ export class WebView extends common.WebView {
         if (!this._android) {
             return;
         }
+
+        var fs: typeof fileSystemModule = require("file-system");
 
         var baseUrl = `file:///${fs.knownFolders.currentApp().path}/`;
         this._android.loadDataWithBaseURL(baseUrl, src, "text/html", "utf-8", null);

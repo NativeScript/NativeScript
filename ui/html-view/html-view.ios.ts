@@ -2,15 +2,16 @@
 import definition = require("ui/html-view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import utils = require("utils/utils");
-import types = require("utils/types");
-import viewModule = require("ui/core/view");
+import * as utilsModule from "utils/utils";
+import * as viewModule from "ui/core/view";
 
 function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <HtmlView>data.object;
     if (!view.ios) {
         return;
     }
+
+    var types = require("utils/types");
 
     if (types.isString(data.newValue)) {
         var htmlString = NSString.stringWithString(data.newValue);
@@ -36,7 +37,7 @@ export class HtmlView extends common.HtmlView {
         this._ios.scrollEnabled = false;
         this._ios.editable = false;
         this._ios.selectable = true;
-        this._ios.userInteractionEnabled  = true;
+        this._ios.userInteractionEnabled = true;
         this._ios.dataDetectorTypes = UIDataDetectorTypes.UIDataDetectorTypeAll;
     }
 
@@ -51,6 +52,8 @@ export class HtmlView extends common.HtmlView {
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var nativeView = this._nativeView;
         if (nativeView) {
+
+            var utils: typeof utilsModule = require("utils/utils");
 
             var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
             var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
@@ -74,8 +77,10 @@ export class HtmlView extends common.HtmlView {
             var measureWidth = Math.max(labelWidth, this.minWidth);
             var measureHeight = Math.max(nativeSize.height, this.minHeight);
 
-            var widthAndState = viewModule.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-            var heightAndState = viewModule.View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+            var view: typeof viewModule = require("ui/core/view");
+
+            var widthAndState = view.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+            var heightAndState = view.View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
             this.setMeasuredDimension(widthAndState, heightAndState);
         }

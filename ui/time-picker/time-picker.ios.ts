@@ -1,7 +1,5 @@
 ﻿import common = require("./time-picker-common");
 import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import types = require("utils/types");
 
 function getDate(hour: number, minute: number): NSDate {
     var comps = NSDateComponents.alloc().init();

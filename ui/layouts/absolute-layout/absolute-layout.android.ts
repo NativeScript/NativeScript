@@ -1,16 +1,17 @@
 ﻿import utils = require("utils/utils");
-import view = require("ui/core/view");
 import common = require("./absolute-layout-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import * as viewModule from "ui/core/view";
 
 global.moduleMerge(common, exports);
 
 function setNativeProperty(data: dependencyObservable.PropertyChangeData, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
+    var view: typeof viewModule = require("ui/core/view");
 
     var uiView = data.object;
     if (uiView instanceof view.View) {
-        var nativeView: android.view.View = uiView._nativeView;
+        var nativeView: android.view.View = (<any>uiView)._nativeView;
 
         var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
         if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {

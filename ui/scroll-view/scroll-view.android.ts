@@ -3,7 +3,6 @@ import definition = require("ui/scroll-view");
 import common = require("./scroll-view-common");
 import utils = require("utils/utils");
 import enums = require("ui/enums");
-import proxy = require("ui/core/proxy");
 
 global.moduleMerge(common, exports);
 

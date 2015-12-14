@@ -1,7 +1,7 @@
 ﻿import imageCommon = require("./image-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import enums = require("ui/enums");
+import * as enumsModule from "ui/enums";
 
 global.moduleMerge(imageCommon, exports);
 
@@ -10,6 +10,8 @@ function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData)
     if (!image.android) {
         return;
     }
+
+    var enums: typeof enumsModule = require("ui/enums");
 
     switch (data.newValue) {
         case enums.Stretch.aspectFit:

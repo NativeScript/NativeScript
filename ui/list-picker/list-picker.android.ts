@@ -1,7 +1,7 @@
 ﻿import common = require("./list-picker-common");
 import dependencyObservable = require("ui/core/dependency-observable");
-import types = require("utils/types");
 import utils = require("utils/utils")
+import * as typesModule from "utils/types";
 
 global.moduleMerge(common, exports);
 
@@ -31,18 +31,18 @@ export class ListPicker extends common.ListPicker {
 
         this._formatter = new android.widget.NumberPicker.Formatter(
             <utils.Owned & android.widget.NumberPicker.IFormatter>{
-            get owner(): ListPicker {
-                return that.get();
-            },
+                get owner(): ListPicker {
+                    return that.get();
+                },
 
-            format: function (index: number) {
-                if (this.owner) {
-                    return this.owner._getItemAsString(index);
+                format: function (index: number) {
+                    if (this.owner) {
+                        return this.owner._getItemAsString(index);
+                    }
+
+                    return " ";
                 }
-
-                return " ";
-            }
-        });
+            });
         this._android.setFormatter(this._formatter);
 
         this._valueChangedListener = new android.widget.NumberPicker.OnValueChangeListener(<utils.Owned & android.widget.NumberPicker.IOnValueChangeListener>{
@@ -71,7 +71,8 @@ export class ListPicker extends common.ListPicker {
 
     public _onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         super._onSelectedIndexPropertyChanged(data);
-        
+        var types: typeof typesModule = require("utils/types");
+
         if (this.android && types.isNumber(data.newValue)) {
             this.android.setValue(data.newValue);
         }

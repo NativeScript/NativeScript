@@ -1,6 +1,5 @@
 ﻿/* tslint:disable:class-name */
 import definition = require("platform");
-import enums = require("ui/enums");
 
 export module platformNames {
     export var android = "Android";
@@ -51,6 +50,8 @@ export class device implements definition.device {
 
     static get deviceType(): string {
         if (!device._deviceType) {
+            var enums = require("ui/enums");
+
             if (UIDevice.currentDevice().userInterfaceIdiom === UIUserInterfaceIdiom.UIUserInterfaceIdiomPhone) {
                 device._deviceType = enums.DeviceType.Phone;
             }

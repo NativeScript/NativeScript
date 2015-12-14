@@ -2,7 +2,7 @@
 import view = require("ui/core/view");
 import layoutBase = require("ui/layouts/layout-base");
 import trace = require("trace");
-import utils = require("utils/utils");
+import * as utilsModule from "utils/utils";
 
 var OWNER = "_owner";
 
@@ -44,6 +44,8 @@ export class Layout extends layoutBase.LayoutBase implements definition.Layout {
 
         var view = this._nativeView;
         if (view) {
+            var utils: typeof utilsModule = require("utils/utils");
+
             var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
             var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 

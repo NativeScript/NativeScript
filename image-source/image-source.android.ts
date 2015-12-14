@@ -1,9 +1,9 @@
 ﻿import types = require("utils/types");
-import fs = require("file-system");
 import definition = require("image-source");
 import common = require("./image-source-common");
-import enums = require("ui/enums");
-import utils = require("utils/utils");
+import * as utilsModule from "utils/utils";
+import * as fileSystemModule from "file-system";
+import * as enumsModule from "ui/enums";
 
 global.moduleMerge(common, exports);
 
@@ -13,6 +13,8 @@ export class ImageSource implements definition.ImageSource {
 
     public loadFromResource(name: string): boolean {
         this.android = null;
+
+        var utils: typeof utilsModule = require("utils/utils");
 
         var res = utils.ad.getApplicationContext().getResources();
         if (res) {
@@ -30,6 +32,8 @@ export class ImageSource implements definition.ImageSource {
     }
 
     public loadFromFile(path: string): boolean {
+        var fs: typeof fileSystemModule = require("file-system");
+
         var fileName = types.isString(path) ? path.trim() : "";
         if (fileName.indexOf("~/") === 0) {
             fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
@@ -108,6 +112,8 @@ export class ImageSource implements definition.ImageSource {
 }
 
 function getTargetFromat(format: string): android.graphics.Bitmap.CompressFormat {
+    var enums: typeof enumsModule = require("ui/enums");
+
     switch (format) {
         case enums.ImageFormat.jpeg:
             return android.graphics.Bitmap.CompressFormat.JPEG;

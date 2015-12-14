@@ -1,6 +1,6 @@
 ﻿import common = require("./list-picker-common");
 import dependencyObservable = require("ui/core/dependency-observable");
-import types = require("utils/types");
+import * as typesModule from "utils/types";
 
 global.moduleMerge(common, exports);
 
@@ -33,6 +33,7 @@ export class ListPicker extends common.ListPicker {
 
     public _onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         super._onSelectedIndexPropertyChanged(data);
+        var types: typeof typesModule = require("utils/types");
 
         if (this.ios && types.isNumber(data.newValue)) {
             this.ios.selectRowInComponentAnimated(data.newValue, 0, false);

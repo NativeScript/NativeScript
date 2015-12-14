@@ -1,8 +1,7 @@
-﻿import imageSource = require("image-source");
-import frame = require("ui/frame");
-import definition = require("camera");
-import common = require("./camera-common");
-import types = require("utils/types");
+﻿var types = require("utils/types");
+import * as cameraCommonModule from "./camera-common";
+import * as imageSourceModule from "image-source";
+import * as frameModule from "ui/frame";
 
 class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePickerControllerDelegate {
     public static ObjCProtocols = [UIImagePickerControllerDelegate];
@@ -11,22 +10,23 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
         return <UIImagePickerControllerDelegateImpl>super.new();
     }
 
-    private _callback: (result?: imageSource.ImageSource) => void;
+    private _callback: (result?) => void;
 
     private _width: number;
     private _height: number;
     private _keepAspectRatio: boolean;
 
-    public initWithCallback(callback: (result?: imageSource.ImageSource) => void): UIImagePickerControllerDelegateImpl {
+    public initWithCallback(callback: (result?) => void): UIImagePickerControllerDelegateImpl {
         this._callback = callback;
         return this;
     }
 
-    public initWithCallbackAndOptions(callback: (result?: imageSource.ImageSource) => void, options?): UIImagePickerControllerDelegateImpl {
+    public initWithCallbackAndOptions(callback: (result?) => void, options?): UIImagePickerControllerDelegateImpl {
         this._callback = callback;
         if (options) {
             this._width = options.width;
             this._height = options.height;
+
             this._keepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
         }
         return this;
@@ -40,6 +40,8 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
                 if (this._width || this._height) {
                     var newSize = null;
                     if (this._keepAspectRatio) {
+                        var common: typeof cameraCommonModule = require("./camera-common");
+
                         var aspectSafeSize = common.getAspectSafeDimensions(source.size.width, source.size.height, this._width, this._height);
                         newSize = CGSizeMake(aspectSafeSize.width, aspectSafeSize.height);
                     }
@@ -51,6 +53,8 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
                     image = UIGraphicsGetImageFromCurrentImageContext();
                     UIGraphicsEndImageContext();
                 }
+
+                var imageSource: typeof imageSourceModule = require("image-source");
 
                 var imageSourceResult = image ? imageSource.fromNativeSource(image) : imageSource.fromNativeSource(source);
 
@@ -71,8 +75,8 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
 
 var listener;
 
-export var takePicture = function (options?: definition.CameraOptions): Promise<imageSource.ImageSource> {
-    return new Promise<imageSource.ImageSource>((resolve, reject) => {
+export var takePicture = function (options): Promise<any> {
+    return new Promise((resolve, reject) => {
         listener = null;
         var imagePickerController = new UIImagePickerController();
         var reqWidth = 0;
@@ -100,6 +104,8 @@ export var takePicture = function (options?: definition.CameraOptions): Promise<
         }
 
         imagePickerController.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationCurrentContext;
+
+        var frame: typeof frameModule = require("ui/frame");
 
         var topMostFrame = frame.topmost();
         if (topMostFrame) {
