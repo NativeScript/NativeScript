@@ -75,7 +75,7 @@ export class Font extends common.Font {
                     break;
 
                 default:
-                    result = this.loadFontFromAsset(fonts[i]);
+                    result = this.loadFontFromFile(fonts[i]);
                     break;
             }
 
@@ -87,7 +87,7 @@ export class Font extends common.Font {
         return null;
     }
 
-    private loadFontFromAsset(fontFamily: string): android.graphics.Typeface {
+    private loadFontFromFile(fontFamily: string): android.graphics.Typeface {
         var result = typefaceCache.get(fontFamily);
         // Check for undefined explicitly as null mean we tried to load the font, but failed.
         if (types.isUndefined(result)) {
