@@ -420,9 +420,9 @@ class iOSFrame implements definition.iOSFrame {
         this._showNavigationBar = value;
         this._controller.navigationBarHidden = !value;
 
-        let owner = this._controller.owner;
-        if (owner && change) {
-            owner.requestLayout();
+        let currentPage = this._controller.owner.currentPage;
+        if (currentPage && change) {
+            currentPage.requestLayout();
         }
     }
 
