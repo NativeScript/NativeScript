@@ -1,23 +1,23 @@
-﻿import definition = require("ui/frame");
-import view = require("ui/core/view");
-import pages = require("ui/page");
-import types = require("utils/types");
-import trace = require("trace");
-import builder = require("ui/builder");
-import fs = require("file-system");
-import fileResolverModule = require("file-system/file-name-resolver");
+﻿import * as definition from "ui/frame";
+import {View, CustomLayoutView} from "ui/core/view";
+import {Page} from "ui/page";
+import {isString, isFunction, isDefined} from "utils/types";
+import * as trace from "trace";
+import {load as buildModule} from "ui/builder";
+import {knownFolders, path} from "file-system";
+import {resolveFileName} from "file-system/file-name-resolver";
 
 var frameStack: Array<Frame> = [];
 
 function buildEntryFromArgs(arg: any): definition.NavigationEntry {
     var entry: definition.NavigationEntry;
-    if (arg instanceof pages.Page) {
+    if (arg instanceof Page) {
         throw new Error("Navigating to a Page instance is no longer supported. Please navigate by using either a module name or a page factory function.");
-    } else if (types.isString(arg)) {
+    } else if (isString(arg)) {
         entry = {
             moduleName: arg
         };
-    } else if (types.isFunction(arg)) {
+    } else if (isFunction(arg)) {
         entry = {
             create: arg
         }
@@ -45,30 +45,35 @@ export function reloadPage(): void {
     }
 }
 
-export function resolvePageFromEntry(entry: definition.NavigationEntry): pages.Page {
-    var page: pages.Page;
+export function resolvePageFromEntry(entry: definition.NavigationEntry): Page {
+    var page: Page;
 
     if (entry.create) {
         page = entry.create();
 
-        if (!(page && page instanceof pages.Page)) {
+        if (!(page && page instanceof Page)) {
             throw new Error("Failed to create Page with entry.create() function.");
         }
     }
     else if (entry.moduleName) {
         // Current app full path.
-        var currentAppPath = fs.knownFolders.currentApp().path;
+        var currentAppPath = knownFolders.currentApp().path;
         //Full path of the module = current app full path + module name.
-        var moduleNamePath = fs.path.join(currentAppPath, entry.moduleName);
+        var moduleNamePath = path.join(currentAppPath, entry.moduleName);
 
         var moduleExports;
-        var moduleExportsResolvedPath = fileResolverModule.resolveFileName(moduleNamePath, "js");
-        if (moduleExportsResolvedPath) {
-            trace.write("Loading JS file: " + moduleExportsResolvedPath, trace.categories.Navigation);
-            
-            // Exclude extension when doing require.
-            moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3)
-            moduleExports = require(moduleExportsResolvedPath);
+        if (global.moduleExists(entry.moduleName)) {
+            trace.write("Loading pre-registered JS module: " + entry.moduleName, trace.categories.Navigation);
+            moduleExports = global.loadModule(entry.moduleName);
+        } else {
+            var moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
+            if (moduleExportsResolvedPath) {
+                trace.write("Loading JS file: " + moduleExportsResolvedPath, trace.categories.Navigation);
+
+                // Exclude extension when doing require.
+                moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3)
+                moduleExports = global.loadModule(moduleExportsResolvedPath);
+            }
         }
 
         if (moduleExports && moduleExports.createPage) {
@@ -79,12 +84,12 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): pages.P
             page = pageFromBuilder(moduleNamePath, moduleExports);
         }
 
-        if (!(page && page instanceof pages.Page)) {
+        if (!(page && page instanceof Page)) {
             throw new Error("Failed to load Page from entry.moduleName: " + entry.moduleName);
         }
 
         // Possible CSS file path. Add it only if CSS not already specified and loaded from cssFile Page attribute in XML.
-        var cssFileName = fileResolverModule.resolveFileName(moduleNamePath, "css");
+        var cssFileName = resolveFileName(moduleNamePath, "css");
         if (cssFileName && !page["cssFile"]) {
             page.addCssFile(cssFileName);
         }
@@ -93,19 +98,19 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): pages.P
     return page;
 }
 
-function pageFromBuilder(moduleNamePath: string, moduleExports: any): pages.Page {
-    var page: pages.Page;
-    var element: view.View;
+function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
+    var page: Page;
+    var element: View;
 
     // Possible XML file path.
-    var fileName = fileResolverModule.resolveFileName(moduleNamePath, "xml");
+    var fileName = resolveFileName(moduleNamePath, "xml");
     if (fileName) {
         trace.write("Loading XML file: " + fileName, trace.categories.Navigation);
 
         // Or check if the file exists in the app modules and load the page from XML.
-        element = builder.load(fileName, moduleExports);
-        if (element instanceof pages.Page) {
-            page = <pages.Page>element;
+        element = buildModule(fileName, moduleExports);
+        if (element instanceof Page) {
+            page = <Page>element;
         }
     }
 
@@ -117,7 +122,7 @@ interface NavigationContext {
     isBackNavigation: boolean;
 }
 
-export class Frame extends view.CustomLayoutView implements definition.Frame {
+export class Frame extends CustomLayoutView implements definition.Frame {
     public static androidOptionSelectedEvent = "optionSelected";
 
     private _navigationQueue: Array<NavigationContext>;
@@ -192,7 +197,7 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         }
     }
 
-    public _processNavigationQueue(page: pages.Page) {
+    public _processNavigationQueue(page: Page) {
         if (this._navigationQueue.length === 0) {
             // This could happen when showing recreated page after activity has been destroyed.
             return;
@@ -225,12 +230,12 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         }
 
         var backstackVisibleValue = entry.entry.backstackVisible;
-        var backstackHidden = types.isDefined(backstackVisibleValue) && !backstackVisibleValue;
+        var backstackHidden = isDefined(backstackVisibleValue) && !backstackVisibleValue;
 
         return !backstackHidden;
     }
 
-    public _updateActionBar(page?: pages.Page) {
+    public _updateActionBar(page?: Page) {
         trace.write("calling _updateActionBar on Frame", trace.categories.Navigation);
     }
 
@@ -299,7 +304,7 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         return this._backStack.slice();
     }
 
-    get currentPage(): pages.Page {
+    get currentPage(): Page {
         if (this._currentEntry) {
             return this._currentEntry.resolvedPage;
         }
@@ -342,18 +347,18 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         return 0;
     }
 
-    public _eachChildView(callback: (child: view.View) => boolean) {
+    public _eachChildView(callback: (child: View) => boolean) {
         if (this.currentPage) {
             callback(this.currentPage);
         }
     }
 
     public _getIsAnimatedNavigation(entry: definition.NavigationEntry) {
-        if (entry && types.isDefined(entry.animated)) {
+        if (entry && isDefined(entry.animated)) {
             return entry.animated;
         }
 
-        if (types.isDefined(this.animated)) {
+        if (isDefined(this.animated)) {
             return this.animated;
         }
 
@@ -368,17 +373,17 @@ export class Frame extends view.CustomLayoutView implements definition.Frame {
         return 0;
     }
 
-    public _getNavBarVisible(page: pages.Page): boolean {
+    public _getNavBarVisible(page: Page): boolean {
         throw new Error();
     }
 
     // We don't need to put Page as visual child. Don't call super.
-    public _addViewToNativeVisualTree(child: view.View): boolean {
+    public _addViewToNativeVisualTree(child: View): boolean {
         return true;
     }
 
     // We don't need to put Page as visual child. Don't call super.
-    public _removeViewFromNativeVisualTree(child: view.View): void {
+    public _removeViewFromNativeVisualTree(child: View): void {
         child._isAddedToNativeVisualTree = false;
     }
 }
