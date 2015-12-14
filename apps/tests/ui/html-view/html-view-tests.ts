@@ -4,7 +4,7 @@ import page = require("ui/page");
 import types = require("utils/types");
 
 // <snippet module="ui/html-view" title="HtmlView">
-// # WebView
+// # HtmlView
 // Using a HtmlView requires the html-view module.
 // ``` JavaScript
 import htmlViewModule = require("ui/html-view");
