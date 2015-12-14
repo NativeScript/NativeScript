@@ -169,6 +169,10 @@ export class ActionBar extends common.ActionBar {
             return;
         }
 
+        if (this.page.frame) {
+            this.page.frame._updateActionBar();
+        }
+
         var navigationItem: UINavigationItem = (<UIViewController>this.page.ios).navigationItem;
         navigationItem.title = this.title;
     }
