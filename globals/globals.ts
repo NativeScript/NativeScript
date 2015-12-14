@@ -6,11 +6,36 @@ global.moduleMerge = function (sourceExports: any, destExports: any) {
     }
 }
 
+type ModuleLoader = () => any;
+const modules: Map<string, ModuleLoader> = new Map<string, ModuleLoader>();
+
+global.registerModule = function(name: string, loader: ModuleLoader): void {
+    modules.set(name, loader);
+}
+
+global.moduleExists = function(name: string): boolean {
+    return modules.has(name);
+}
+
+global.loadModule = function(name: string): any {
+    const loader = modules.get(name);
+    if (loader) {
+        return loader();
+    } else {
+        return require(name);
+    }
+}
+
+global.registerModule("timer", () => require("timer"));
+global.registerModule("ui/dialogs", () => require("ui/dialogs"));
+global.registerModule("../xhr/xhr", () => require("../xhr/xhr"));
+global.registerModule("fetch", () => require("fetch"));
+
 function registerOnGlobalContext(name, module) {
     Object.defineProperty(global, name, {
         get: function () {
             // We do not need to cache require() call since it is already cached in the runtime.
-            let m = require(module);
+            let m = global.loadModule(module);
             global.moduleMerge(m, global);
 
             // Redefine the property to make sure the above code is executed only once.

@@ -1,11 +1,11 @@
-﻿import view = require("ui/core/view");
-import types = require("utils/types");
-import definition = require("ui/builder/component-builder");
-import fs = require("file-system");
-import bindingBuilder = require("./binding-builder");
-import platform = require("platform");
-import pages = require("ui/page");
-import debug = require("utils/debug");
+﻿import {isString, isDefined, isFunction} from "utils/types";
+import {device} from "platform";
+import {Page} from "ui/page";
+import {View, isEventOrGesture} from "ui/core/view";
+import {ComponentModule} from "ui/builder/component-builder";
+import {File, Folder, path, knownFolders} from "file-system";
+import {getBindingOptions, bindingConstants} from "./binding-builder";
+import {ScopeError} from "utils/debug";
 
 //the imports below are needed for special property registration
 import "ui/layouts/dock-layout";
@@ -27,10 +27,10 @@ var MODULES = {
 var CODEFILE = "codeFile";
 var CSSFILE = "cssFile";
 
-export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object): definition.ComponentModule {
-    var instance: view.View;
+export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object): ComponentModule {
+    var instance: View;
     var instanceModule: Object;
-    var componentModule: definition.ComponentModule;
+    var componentModule: ComponentModule;
 
     // Support lower-case-dashed component declaration in the XML (https://github.com/NativeScript/NativeScript/issues/309).
     elementName = elementName.split("-").map(s => { return s[0].toUpperCase() + s.substring(1) }).join("");
@@ -41,19 +41,19 @@ export function getComponentModule(elementName: string, namespace: string, attri
         elementName.split(/(?=[A-Z])/).join("-").toLowerCase();
 
     try {
-        if (types.isString(namespace)) {
-            var pathInsideTNSModules = fs.path.join(fs.knownFolders.currentApp().path, "tns_modules", namespace);
+        if (isString(namespace)) {
+            var pathInsideTNSModules = path.join(knownFolders.currentApp().path, "tns_modules", namespace);
 
-            if (fs.Folder.exists(pathInsideTNSModules)) {
+            if (Folder.exists(pathInsideTNSModules)) {
                 moduleId = pathInsideTNSModules;
             } else {
                 // We expect module at root level in the app.
-                moduleId = fs.path.join(fs.knownFolders.currentApp().path, namespace);
+                moduleId = path.join(knownFolders.currentApp().path, namespace);
             }
         }
 
         // Require module by module id.
-        instanceModule = require(moduleId);
+        instanceModule = global.loadModule(moduleId);
 
         // Get the component type from module.
         var instanceType = instanceModule[elementName] || Object;
@@ -61,18 +61,18 @@ export function getComponentModule(elementName: string, namespace: string, attri
         // Create instance of the component.
         instance = new instanceType();
     } catch (ex) {
-        throw new debug.ScopeError(ex, "Module '" + moduleId + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
+        throw new ScopeError(ex, "Module '" + moduleId + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
     }
 
     if (attributes) {
         if (attributes[CODEFILE]) {
-            if (instance instanceof pages.Page) {
+            if (instance instanceof Page) {
                 var codeFilePath = attributes[CODEFILE].trim();
                 if (codeFilePath.indexOf("~/") === 0) {
-                    codeFilePath = fs.path.join(fs.knownFolders.currentApp().path, codeFilePath.replace("~/", ""));
+                    codeFilePath = path.join(knownFolders.currentApp().path, codeFilePath.replace("~/", ""));
                 }
                 try {
-                    exports = require(codeFilePath);
+                    exports = global.loadModule(codeFilePath);
                     (<any>instance).exports = exports;
                 } catch (ex) {
                     throw new Error(`Code file with path "${codeFilePath}" cannot be found!`);
@@ -83,13 +83,13 @@ export function getComponentModule(elementName: string, namespace: string, attri
         }
 
         if (attributes[CSSFILE]) {
-            if (instance instanceof pages.Page) {
+            if (instance instanceof Page) {
                 var cssFilePath = attributes[CSSFILE].trim();
                 if (cssFilePath.indexOf("~/") === 0) {
-                    cssFilePath = fs.path.join(fs.knownFolders.currentApp().path, cssFilePath.replace("~/", ""));
+                    cssFilePath = path.join(knownFolders.currentApp().path, cssFilePath.replace("~/", ""));
                 }
-                if (fs.File.exists(cssFilePath)) {
-                    (<pages.Page>instance).addCssFile(cssFilePath);
+                if (File.exists(cssFilePath)) {
+                    (<Page>instance).addCssFile(cssFilePath);
                     instance[CSSFILE] = true;
                 } else {
                     throw new Error(`Css file with path "${cssFilePath}" cannot be found!`);
@@ -107,7 +107,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
             if (attr.indexOf(":") !== -1) {
                 var platformName = attr.split(":")[0].trim();
-                if (platformName.toLowerCase() === platform.device.os.toLowerCase()) {
+                if (platformName.toLowerCase() === device.os.toLowerCase()) {
                     attr = attr.split(":")[1].trim();
                 } else {
                     continue;
@@ -121,12 +121,12 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
                 var i: number;
                 for (i = 0; i < properties.length - 1; i++) {
-                    if (types.isDefined(subObj)) {
+                    if (isDefined(subObj)) {
                         subObj = subObj[properties[i]];
                     }
                 }
 
-                if (types.isDefined(subObj)) {
+                if (isDefined(subObj)) {
                     setPropertyValue(subObj, instanceModule, exports, subPropName, attrValue);
                 }
             } else {
@@ -140,23 +140,23 @@ export function getComponentModule(elementName: string, namespace: string, attri
     return componentModule;
 }
 
-export function setPropertyValue(instance: view.View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
+export function setPropertyValue(instance: View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
     // Note: instanceModule can be null if we are loading custom compnenet with no code-behind.
 
     if (isBinding(propertyValue) && instance.bind) {
-        var bindOptions = bindingBuilder.getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
+        var bindOptions = getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
         instance.bind({
-            sourceProperty: bindOptions[bindingBuilder.bindingConstants.sourceProperty],
-            targetProperty: bindOptions[bindingBuilder.bindingConstants.targetProperty],
-            expression: bindOptions[bindingBuilder.bindingConstants.expression],
-            twoWay: bindOptions[bindingBuilder.bindingConstants.twoWay]
-        }, bindOptions[bindingBuilder.bindingConstants.source]);
-    } else if (view.isEventOrGesture(propertyName, instance)) {
+            sourceProperty: bindOptions[bindingConstants.sourceProperty],
+            targetProperty: bindOptions[bindingConstants.targetProperty],
+            expression: bindOptions[bindingConstants.expression],
+            twoWay: bindOptions[bindingConstants.twoWay]
+        }, bindOptions[bindingConstants.source]);
+    } else if (isEventOrGesture(propertyName, instance)) {
         // Get the event handler from page module exports.
         var handler = exports && exports[propertyValue];
 
         // Check if the handler is function and add it to the instance for specified event name.
-        if (types.isFunction(handler)) {
+        if (isFunction(handler)) {
             instance.on(propertyName, handler);
         }
     } else {
@@ -194,7 +194,7 @@ function getBindingExpressionFromAttribute(value: string): string {
 function isBinding(value: string): boolean {
     var isBinding;
 
-    if (types.isString(value)) {
+    if (isString(value)) {
         var str = value.trim();
         isBinding = str.indexOf("{{") === 0 && str.lastIndexOf("}}") === str.length - 2;
     }
