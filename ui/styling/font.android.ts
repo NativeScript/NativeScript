@@ -7,7 +7,7 @@ import fs = require("file-system");
 
 var typefaceCache = new Map<string, android.graphics.Typeface>();
 var appAssets: android.content.res.AssetManager;
-var FONTS_BASE_PATH = "app/fonts/";
+var FONTS_BASE_PATH = "/fonts/";
 
 export class Font extends common.Font {
     public static default = new Font(undefined, undefined, enums.FontStyle.normal, enums.FontWeight.normal);
@@ -88,11 +88,6 @@ export class Font extends common.Font {
     }
 
     private loadFontFromAsset(fontFamily: string): android.graphics.Typeface {
-        appAssets = appAssets || application.android.context.getAssets();
-        if (!appAssets) {
-            return null;
-        }
-
         var result = typefaceCache.get(fontFamily);
         // Check for undefined explicitly as null mean we tried to load the font, but failed.
         if (types.isUndefined(result)) {
@@ -111,7 +106,8 @@ export class Font extends common.Font {
 
             if (fontAssetPath) {
                 try {
-                    result = android.graphics.Typeface.createFromAsset(appAssets, fontAssetPath);
+                    fontAssetPath = fs.path.join(fs.knownFolders.currentApp().path, fontAssetPath);
+                    result = android.graphics.Typeface.createFromFile(fontAssetPath)
                 } catch (e) {
                     trace.write("Error loading font asset: " + fontAssetPath, trace.categories.Error, trace.messageType.error);
                 }
