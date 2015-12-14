@@ -9,6 +9,7 @@ import frame = require("ui/frame");
 import tabView = require("ui/tab-view");
 import formattedString = require("text/formatted-string");
 import types = require("utils/types");
+import uiUtils = require("ui/utils");
 
 global.moduleMerge(stylersCommon, exports);
 
@@ -888,18 +889,33 @@ export class ActionBarStyler implements definition.stylers.Styler {
     }
 
     // background-color
-    private static setBackgroundColorProperty(view: view.View, newValue: any) {
+    private static setBackgroundInternalProperty(view: view.View, newValue: any) {
         var topFrame = frame.topmost();
         if (topFrame) {
             var navBar = topFrame.ios.controller.navigationBar;
-            navBar.barTintColor = newValue;
+            if (!newValue.image && newValue.color && newValue.color.a < 1) {
+                navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.UIBarMetricsDefault);
+                navBar.barTintColor = null;
+            } else if (newValue.image || newValue.color && newValue.color.a < 254.1) {
+                var size = navBar.frame.size;
+                var w = size.width;
+                // Adding the status bar height here will span the background on the status bar.
+                var h = size.height + uiUtils.ios.getStatusBarHeight();
+                var uiImage = background.ios.createBackgroundUIImage(view.style, w, h);
+                navBar.setBackgroundImageForBarMetrics(uiImage, UIBarMetrics.UIBarMetricsDefault);
+                navBar.barTintColor = null;
+            } else if (newValue.color) {
+                navBar.setBackgroundImageForBarMetrics(null, UIBarMetrics.UIBarMetricsDefault);
+                navBar.barTintColor = newValue.color.ios;
+            }
         }
     }
 
-    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
+    private static resetBackgroundInternalProperty(view: view.View, nativeValue: any) {
         var topFrame = frame.topmost();
         if (topFrame) {
             var navBar = topFrame.ios.controller.navigationBar;
+            navBar.setBackgroundImageForBarMetrics(null, UIBarMetrics.UIBarMetricsDefault);
             navBar.barTintColor = null;
         }
     }
@@ -909,11 +925,9 @@ export class ActionBarStyler implements definition.stylers.Styler {
             ActionBarStyler.setColorProperty,
             ActionBarStyler.resetColorProperty), "ActionBar");
 
-        style.registerHandler(style.backgroundColorProperty, new stylersCommon.StylePropertyChangedHandler(
-            ActionBarStyler.setBackgroundColorProperty,
-            ActionBarStyler.resetBackgroundColorProperty), "ActionBar");
-
-        style.registerHandler(style.backgroundInternalProperty, ignorePropertyHandler, "ActionBar");
+        style.registerHandler(style.backgroundInternalProperty, new stylersCommon.StylePropertyChangedHandler(
+            ActionBarStyler.setBackgroundInternalProperty,
+            ActionBarStyler.resetBackgroundInternalProperty), "ActionBar");
     }
 }
 

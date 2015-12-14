@@ -1,46 +1,41 @@
 import viewModule = require("ui/core/view");
 import style = require("./style");
+import styling = require("ui/styling");
 import common = require("./background-common");
 
 global.moduleMerge(common, exports);
 
+var onePixelImage = { repeatX: false, repeatY: false, posX: 0, posY: 0, sizeX: 1, sizeY: 1 };
+
 export module ios {
-    export function createBackgroundUIColor(view: viewModule.View, flip?: boolean): UIColor {
-        if(!view._nativeView){
-            return undefined;
-        }
+    export function createBackgroundUIImage(viewStyle: styling.Style, width: number, height: number): any {
+        var background = <common.Background> viewStyle._getValue(style.backgroundInternalProperty);
         
-        var background = <common.Background> view.style._getValue(style.backgroundInternalProperty);
-
-        if (!background || background.isEmpty()) {
-            return undefined;
-        }
-
-        if (!background.image) {
-            return background.color.ios;
-        }
-
-        // We have an image for a background
-        var frame = (<UIView>view._nativeView).frame;
-        var boundsWidth = frame.size.width;
-        var boundsHeight = frame.size.height;
+        var boundsWidth = width;
+        var boundsHeight = height;
 
         if (!boundsWidth || !boundsHeight) {
             return undefined;
         }
-
-        var img = <UIImage>background.image.ios;
-        var params = background.getDrawParams(boundsWidth, boundsHeight);
+        
+        var img: UIImage;
+        if (background && background.image) {
+            img = background.image.ios;
+        }
+        
+        var params = background.getDrawParams(boundsWidth, boundsHeight) || onePixelImage;
 
         if (params.sizeX > 0 && params.sizeY > 0) {
             var resizeRect = CGRectMake(0, 0, params.sizeX, params.sizeY);
             UIGraphicsBeginImageContext(resizeRect.size);
-            img.drawInRect(resizeRect);
+            if (img) {
+                img.drawInRect(resizeRect);
+            }
             img = UIGraphicsGetImageFromCurrentImageContext();
             UIGraphicsEndImageContext();
         }
 
-        UIGraphicsBeginImageContextWithOptions(frame.size, false, 0.0);
+        UIGraphicsBeginImageContextWithOptions({ width: width, height: height }, false, 0.0);
         var context = UIGraphicsGetCurrentContext();
 
         if (background.color && background.color.ios) {
@@ -67,6 +62,31 @@ export module ios {
 
         var bkgImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
+        
+        return bkgImage
+    }
+    
+    export function createBackgroundUIColor(view: viewModule.View, flip?: boolean): UIColor {
+        if(!view._nativeView){
+            return undefined;
+        }
+        
+        var background = <common.Background> view.style._getValue(style.backgroundInternalProperty);
+
+        if (!background || background.isEmpty()) {
+            return undefined;
+        }
+
+        if (!background.image) {
+            return background.color.ios;
+        }
+
+        // We have an image for a background
+        var size = view._nativeView.frame.size;
+        var bkgImage = createBackgroundUIImage(view.style, size.width, size.height);
+        if (!bkgImage) {
+            return undefined;
+        }
 
         if (flip) {
             var flippedImage = _flipImage(bkgImage);
