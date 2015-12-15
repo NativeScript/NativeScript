@@ -65,7 +65,9 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
     
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    	// Don't call measure because it will measure content twice.
+        CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
+
+        // Don't call measure because it will measure content twice.
     	// ScrollView is expected to have single child so we measure only the first child.
         View child = this.getChildCount() > 0 ? this.getChildAt(0) : null;
         if (child == null) {
@@ -74,7 +76,6 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
             this.contentMeasuredHeight = 0;
         }
         else {
-        	CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
         	CommonLayoutParams.measureChild(child, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), heightMeasureSpec);
         	this.contentMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
         	this.contentMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
@@ -86,8 +87,8 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 	
 	    // Don't add in our paddings because they are already added as child margins. (we will include them twice if we add them).
         // Check the previous line - this.setPadding(lp.leftMargin, lp.topMargin, lp.rightMargin, lp.bottomMargin);
-//	    this.contentMeasuredWidth += this.getPaddingLeft() + this.getPaddingRight();
-//	    this.contentMeasuredHeight += this.getPaddingTop() + this.getPaddingBottom();
+        //this.contentMeasuredWidth += this.getPaddingLeft() + this.getPaddingRight();
+        //this.contentMeasuredHeight += this.getPaddingTop() + this.getPaddingBottom();
 
         // Check against our minimum height
         this.contentMeasuredWidth = Math.max(this.contentMeasuredWidth, this.getSuggestedMinimumWidth());
@@ -147,6 +148,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 
         // Calling this with the present values causes it to re-claim them
         this.scrollTo(scrollX, scrollY);
+        CommonLayoutParams.restoreOriginalParams(this);
     }
     
     @Override

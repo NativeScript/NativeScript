@@ -232,8 +232,9 @@ public class GridLayout extends LayoutBase {
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
 
-		int measureWidth = 0;
+        int measureWidth = 0;
 		int measureHeight = 0;
 
 		int width = View.MeasureSpec.getSize(widthMeasureSpec);
@@ -251,7 +252,7 @@ public class GridLayout extends LayoutBase {
 		this.helper.width = width - horizontalPadding;
 		this.helper.height = height - verticalPadding;
 
-		int gravity = getGravity(this);		
+		int gravity = LayoutBase.getGravity(this);
         int verticalGravity = gravity & Gravity.VERTICAL_GRAVITY_MASK;
         final int layoutDirection = this.getLayoutDirection();
         final int horizontalGravity = Gravity.getAbsoluteGravity(gravity, layoutDirection) & Gravity.HORIZONTAL_GRAVITY_MASK;
@@ -272,7 +273,6 @@ public class GridLayout extends LayoutBase {
 				continue;
 			}
 
-			CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
 			MeasureSpecs measureSpecs = this.map.get(child);
 			this.updateMeasureSpecs(child, measureSpecs);
 			this.helper.addMeasureSpec(measureSpecs);
@@ -296,7 +296,6 @@ public class GridLayout extends LayoutBase {
 	
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-	
 		int paddingLeft = this.getPaddingLeft();
 		int paddingTop = this.getPaddingTop();
 		
@@ -356,6 +355,8 @@ public class GridLayout extends LayoutBase {
 				CommonLayoutParams.layoutChild(measureSpec.child, childLeft, childTop, childRight, childBottom);
 			}
 		}
+
+		CommonLayoutParams.restoreOriginalParams(this);
 	}
 }
 
