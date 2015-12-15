@@ -1,6 +1,7 @@
 ﻿import utils = require("utils/utils");
 import view = require("ui/core/view");
 import common = require("./absolute-layout-common");
+import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
 
 global.moduleMerge(common, exports);
 
@@ -15,6 +16,7 @@ export class AbsoluteLayout extends common.AbsoluteLayout {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        AbsoluteLayout.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         var measureWidth = 0;
@@ -29,14 +31,13 @@ export class AbsoluteLayout extends common.AbsoluteLayout {
         var childMeasureSpec = utils.layout.makeMeasureSpec(0, utils.layout.UNSPECIFIED);
         var density = utils.layout.getDisplayDensity();
 
-        var count = this.getChildrenCount();
-        for (var i = 0; i < count; i++) {
-            var child = this.getChildAt(i);
-            if (!child || !child._isVisible) {
+        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
+            let child = this.getChildAt(i);
+            if (!child._isVisible) {
                 continue;
             }
 
-            var childSize = view.View.measureChild(this, child, childMeasureSpec, childMeasureSpec);
+            let childSize = view.View.measureChild(this, child, childMeasureSpec, childMeasureSpec);
             measureWidth = Math.max(measureWidth, AbsoluteLayout.getLeft(child) * density + childSize.measuredWidth);
             measureHeight = Math.max(measureHeight, AbsoluteLayout.getTop(child) * density + childSize.measuredHeight);
         }
@@ -57,22 +58,25 @@ export class AbsoluteLayout extends common.AbsoluteLayout {
         super.onLayout(left, top, right, bottom);
 
         var density = utils.layout.getDisplayDensity();
-        var count = this.getChildrenCount();
-        for (var i = 0; i < count; i++) {
-            var child = this.getChildAt(i);
-            if (!child || !child._isVisible) {
+        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
+            let child = this.getChildAt(i);
+            if (!child._isVisible) {
                 continue;
             }
 
-            var childWidth = child.getMeasuredWidth();
-            var childHeight = child.getMeasuredHeight();
+            let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
 
-            var childLeft = (this.paddingLeft + AbsoluteLayout.getLeft(child)) * density;
-            var childTop = (this.paddingTop + AbsoluteLayout.getTop(child)) * density;
-            var childRight = childLeft + childWidth + (child.marginLeft + child.marginRight) * density;
-            var childBottom = childTop + childHeight + (child.marginTop + child.marginBottom) * density;
+            let childWidth = child.getMeasuredWidth();
+            let childHeight = child.getMeasuredHeight();
+
+            let childLeft = (this.paddingLeft + AbsoluteLayout.getLeft(child)) * density;
+            let childTop = (this.paddingTop + AbsoluteLayout.getTop(child)) * density;
+            let childRight = childLeft + childWidth + (lp.leftMargin + lp.rightMargin) * density;
+            let childBottom = childTop + childHeight + (lp.topMargin + lp.bottomMargin) * density;
 
             view.View.layoutChild(this, child, childLeft, childTop, childRight, childBottom);
         }
+
+        AbsoluteLayout.restoreOriginalParams(this);
     }
 }

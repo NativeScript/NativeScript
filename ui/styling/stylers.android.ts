@@ -9,6 +9,7 @@ import styleModule = require("./style");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
 import tabView = require("ui/tab-view");
+import {CommonLayoutParams, Thickness} from "ui/styling/style";
 var btn;
 
 global.moduleMerge(stylersCommon, exports);
@@ -148,9 +149,17 @@ export class DefaultStyler implements definition.stylers.Styler {
         return lp;
     }
 
-    private static setNativeLayoutParamsProperty(view: view.View, params: style.CommonLayoutParams): void {
+    private static setNativeLayoutParamsProperty(view: view.View, params: CommonLayoutParams): void {
         var nativeView: android.view.View = view._nativeView;
         var lp = DefaultStyler.getNativeLayoutParams(nativeView);
+
+        lp.widthPercent = params.widthPercent;
+        lp.heightPercent = params.heightPercent;
+
+        lp.leftMarginPercent = params.leftMarginPercent;
+        lp.topMarginPercent = params.topMarginPercent;
+        lp.rightMarginPercent = params.rightMarginPercent;
+        lp.bottomMarginPercent = params.bottomMarginPercent;
 
         lp.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
         lp.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
@@ -242,7 +251,7 @@ export class DefaultStyler implements definition.stylers.Styler {
         nativeView.setLayoutParams(lp);
     }
 
-    private static setPaddingProperty(view: view.View, newValue: style.Thickness) {
+    private static setPaddingProperty(view: view.View, newValue: Thickness) {
         var density = utils.layout.getDisplayDensity();
         var left = Math.round((newValue.left + view.borderWidth) * density);
         var top = Math.round((newValue.top + view.borderWidth) * density);
@@ -251,7 +260,7 @@ export class DefaultStyler implements definition.stylers.Styler {
         (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
     }
 
-    private static resetPaddingProperty(view: view.View, nativeValue: style.Thickness) {
+    private static resetPaddingProperty(view: view.View, nativeValue: Thickness) {
         var density = utils.layout.getDisplayDensity();
         var left = Math.round((nativeValue.left + view.borderWidth) * density);
         var top = Math.round((nativeValue.top + view.borderWidth) * density);
@@ -395,8 +404,10 @@ export class TextViewStyler implements definition.stylers.Styler {
 
     private static resetFontInternalProperty(view: view.View, nativeValue: any) {
         var tv: android.widget.TextView = <android.widget.TextView>view._nativeView;
-        tv.setTypeface(nativeValue.typeface);
-        tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+        if (tv && nativeValue) {
+            tv.setTypeface(nativeValue.typeface);
+            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+        }
     }
 
     private static getNativeFontInternalValue(view: view.View): any {

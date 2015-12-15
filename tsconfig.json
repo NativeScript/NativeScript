@@ -169,6 +169,7 @@
         "apps/tests/http-tests.ts",
         "apps/tests/image-source-tests.ts",
         "apps/tests/layouts/absolute-layout-tests.ts",
+        "apps/tests/layouts/common-layout-tests.ts",
         "apps/tests/layouts/dock-layout-tests.ts",
         "apps/tests/layouts/grid-layout-tests.ts",
         "apps/tests/layouts/layout-helper.android.ts",

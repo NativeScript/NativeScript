@@ -8,6 +8,7 @@ import enums = require("ui/enums");
 import utils = require("utils/utils");
 import testModule = require("../ui-test");
 import layoutHelper = require("./layout-helper");
+import commonTests = require("./common-layout-tests");
 
 export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
@@ -203,6 +204,113 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         // ```
 
         // </snippet>
+    }
+
+    private setup_percent(): layoutHelper.MyButton {
+        let layout = this.testView;
+        layout.removeChildren();
+        layout.width = layoutHelper.dp(200);
+        layout.height = layoutHelper.dp(200);
+
+        let btn = new layoutHelper.MyButton();
+        btn.horizontalAlignment = enums.HorizontalAlignment.left;
+        btn.verticalAlignment = enums.VerticalAlignment.top;
+        (<any>btn).width = "50%";
+        (<any>btn).height = "50%";
+        btn.margin = "10%";
+        btn.text = "1";
+        layout.addChild(btn);
+        return btn;
+    }
+
+    public test_percent_support_vertical() {
+        let btn = this.setup_percent();
+
+        this.waitUntilTestElementLayoutIsValid();
+
+        TKUnit.assertEqual(btn.getMeasuredWidth(), 100, "Button MeasuredWidth incorrect");
+        TKUnit.assertEqual(btn.getMeasuredHeight(), 100, "Button MeasuredHeight incorrect");
+
+        let bounds = btn._getCurrentLayoutBounds();
+        TKUnit.assertEqual(bounds.left, 20, "TopLeft layout LEFT incorrect");
+        TKUnit.assertEqual(bounds.top, 20, "TopLeft layout TOP incorrect");
+        TKUnit.assertEqual(bounds.right, 120, "TopLeft layout RIGHT incorrect");
+        TKUnit.assertEqual(bounds.bottom, 120, "TopLeft layout BOTTOM incorrect");
+
+        btn.horizontalAlignment = enums.HorizontalAlignment.center;
+        btn.verticalAlignment = enums.VerticalAlignment.center;
+        this.waitUntilTestElementLayoutIsValid();
+
+        bounds = btn._getCurrentLayoutBounds();
+        TKUnit.assertEqual(bounds.left, 50, "Center layout LEFT incorrect");
+        TKUnit.assertEqual(bounds.top, 20, "Center layout TOP incorrect");
+        TKUnit.assertEqual(bounds.right, 150, "Center layout RIGHT incorrect");
+        TKUnit.assertEqual(bounds.bottom, 120, "Center layout BOTTOM incorrect");
+
+        btn.horizontalAlignment = enums.HorizontalAlignment.stretch;
+        btn.verticalAlignment = enums.VerticalAlignment.stretch;
+        this.waitUntilTestElementLayoutIsValid();
+
+        bounds = btn._getCurrentLayoutBounds();
+        TKUnit.assertEqual(bounds.left, 50, "Stretch layout LEFT incorrect");
+        TKUnit.assertEqual(bounds.top, 20, "Stretch layout TOP incorrect");
+        TKUnit.assertEqual(bounds.right, 150, "Stretch layout RIGHT incorrect");
+        TKUnit.assertEqual(bounds.bottom, 120, "Stretch layout BOTTOM incorrect");
+
+        btn.horizontalAlignment = enums.HorizontalAlignment.right;
+        btn.verticalAlignment = enums.VerticalAlignment.bottom;
+        this.waitUntilTestElementLayoutIsValid();
+
+        bounds = btn._getCurrentLayoutBounds();
+        TKUnit.assertEqual(bounds.left, 80, "BottomRight layout LEFT incorrect");
+        TKUnit.assertEqual(bounds.top, 20, "BottomRight layout TOP incorrect");
+        TKUnit.assertEqual(bounds.right, 180, "BottomRight layout RIGHT incorrect");
+        TKUnit.assertEqual(bounds.bottom, 120, "BottomRight layout BOTTOM incorrect");
+    }
+
+    public test_percent_support_horizontal() {
+        let btn = this.setup_percent();
+        this.testView.orientation = enums.Orientation.horizontal;
+        this.waitUntilTestElementLayoutIsValid();
+
+        TKUnit.assertEqual(btn.getMeasuredWidth(), 100, "Button MeasuredWidth incorrect");
+        TKUnit.assertEqual(btn.getMeasuredHeight(), 100, "Button MeasuredHeight incorrect");
+
+        let bounds = btn._getCurrentLayoutBounds();
+        TKUnit.assertEqual(bounds.left, 20, "TopLeft layout LEFT incorrect");
+        TKUnit.assertEqual(bounds.top, 20, "TopLeft layout TOP incorrect");
+        TKUnit.assertEqual(bounds.right, 120, "TopLeft layout RIGHT incorrect");
+        TKUnit.assertEqual(bounds.bottom, 120, "TopLeft layout BOTTOM incorrect");
+
+        btn.horizontalAlignment = enums.HorizontalAlignment.center;
+        btn.verticalAlignment = enums.VerticalAlignment.center;
+        this.waitUntilTestElementLayoutIsValid();
+
+        bounds = btn._getCurrentLayoutBounds();
+        TKUnit.assertEqual(bounds.left, 20, "Center layout LEFT incorrect");
+        TKUnit.assertEqual(bounds.top, 50, "Center layout TOP incorrect");
+        TKUnit.assertEqual(bounds.right, 120, "Center layout RIGHT incorrect");
+        TKUnit.assertEqual(bounds.bottom, 150, "Center layout BOTTOM incorrect");
+
+        btn.horizontalAlignment = enums.HorizontalAlignment.stretch;
+        btn.verticalAlignment = enums.VerticalAlignment.stretch;
+        this.waitUntilTestElementLayoutIsValid();
+
+        bounds = btn._getCurrentLayoutBounds();
+        TKUnit.assertEqual(bounds.left, 20, "Stretch layout LEFT incorrect");
+        TKUnit.assertEqual(bounds.top, 50, "Stretch layout TOP incorrect");
+        TKUnit.assertEqual(bounds.right, 120, "Stretch layout RIGHT incorrect");
+        TKUnit.assertEqual(bounds.bottom, 150, "Stretch layout BOTTOM incorrect");
+
+        btn.horizontalAlignment = enums.HorizontalAlignment.right;
+        btn.verticalAlignment = enums.VerticalAlignment.bottom;
+        this.waitUntilTestElementLayoutIsValid();
+
+        bounds = btn._getCurrentLayoutBounds();
+        TKUnit.assertEqual(bounds.left, 20, "BottomRight layout LEFT incorrect");
+        TKUnit.assertEqual(bounds.top, 80, "BottomRight layout TOP incorrect");
+        TKUnit.assertEqual(bounds.right, 120, "BottomRight layout RIGHT incorrect");
+        TKUnit.assertEqual(bounds.bottom, 180, "BottomRight layout BOTTOM incorrect");
     }
 }
 

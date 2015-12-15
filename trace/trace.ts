@@ -38,10 +38,7 @@ export function setCategories(categories: string) {
 
 export function addCategories(categories: string) {
     var split = categories.split(",");
-    _categories = {};
-
-    var i;
-    for (i = 0; i < split.length; i++) {
+    for (let i = 0; i < split.length; i++) {
         _categories[split[i].trim()] = true;
     }
 }

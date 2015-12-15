@@ -51,6 +51,20 @@
         removeChildren(): void;
 
         /**
+         * Iterates over children and changes their width and height to one calculated from percentage values.
+         *
+         * @param widthMeasureSpec  Width MeasureSpec of the parent layout.
+         * @param heightMeasureSpec Height MeasureSpec of the parent layout.
+         */
+        protected static adjustChildrenLayoutParams(layoutBase: LayoutBase, widthMeasureSpec: number, heightMeasureSpec: number): void;
+
+        /**
+         * Iterates over children and restores their original dimensions that were changed for
+         * percentage values.
+         */
+        protected static restoreOriginalParams(layoutBase: LayoutBase): void;
+
+        /**
          * Gets or sets padding style property.
          */
         padding: string;

@@ -2,6 +2,8 @@
 import view = require("ui/core/view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import utils = require("utils/utils");
+import style = require("ui/styling/style");
 
 export class LayoutBase extends view.CustomLayoutView implements definition.LayoutBase, view.AddChildFromBuilder {
 
@@ -129,4 +131,72 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         var layout = <LayoutBase>data.object;
         layout.onClipToBoundsChanged(data.oldValue, data.newValue);
     }
-} 
+
+    protected static adjustChildrenLayoutParams(layoutBase: LayoutBase, widthMeasureSpec: number, heightMeasureSpec: number): void {
+        let availableWidth = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthSpec = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+
+        let availableHeight = utils.layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightSpec = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+
+        for (let i = 0, count = layoutBase.getChildrenCount(); i < count; i++) {
+            let child = layoutBase.getChildAt(i);
+            let lp: style.CommonLayoutParams = child.style._getValue(style.nativeLayoutParamsProperty);
+
+            if (widthSpec !== utils.layout.UNSPECIFIED) {
+                if (lp.widthPercent > 0) {
+                    lp.width = Math.round(availableWidth * lp.widthPercent);
+                }
+
+                if (lp.leftMarginPercent > 0) {
+                    lp.leftMargin = Math.round(availableWidth * lp.leftMarginPercent);
+                }
+
+                if (lp.rightMarginPercent > 0) {
+                    lp.rightMargin = Math.round(availableWidth * lp.rightMarginPercent);
+                }
+            }
+
+            if (heightSpec !== utils.layout.UNSPECIFIED) {
+                if (lp.heightPercent > 0) {
+                    lp.height = Math.round(availableHeight * lp.heightPercent);
+                }
+
+                if (lp.topMarginPercent > 0) {
+                    lp.topMargin = Math.round(availableHeight * lp.topMarginPercent);
+                }
+
+                if (lp.bottomMarginPercent > 0) {
+                    lp.bottomMargin = Math.round(availableHeight * lp.bottomMarginPercent);
+                }
+            }
+        }
+    }
+
+    protected static restoreOriginalParams(layoutBase: LayoutBase): void {
+        for (let i = 0, count = layoutBase.getChildrenCount(); i < count; i++) {
+            let child = layoutBase.getChildAt(i);
+            let lp: style.CommonLayoutParams = child.style._getValue(style.nativeLayoutParamsProperty);
+
+            if (lp.widthPercent > 0) {
+                lp.width = -1;
+            }
+
+            if (lp.heightPercent > 0) {
+                lp.height = -1;
+            }
+            if (lp.leftMarginPercent > 0) {
+                lp.leftMargin = 0;
+            }
+            if (lp.topMarginPercent > 0) {
+                lp.topMargin = 0;
+            }
+            if (lp.rightMarginPercent > 0) {
+                lp.rightMargin = 0;
+            }
+            if (lp.bottomMarginPercent > 0) {
+                lp.bottomMargin = 0;
+            }
+        }
+    }
+}

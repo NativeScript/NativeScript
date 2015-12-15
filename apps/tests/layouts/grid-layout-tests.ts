@@ -11,6 +11,7 @@ import enums = require("ui/enums");
 import testModule = require("../ui-test");
 import layoutHelper = require("./layout-helper");
 import platform = require("platform");
+import commonTests = require("./common-layout-tests");
 
 var DELTA = 1;
 
@@ -640,6 +641,10 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         gridLayout.addRow(secondRow);
         // ```
         // </snippet>
+    }
+
+    public test_percent_support() {
+        commonTests.percent_support_test(this);
     }
 }
 
