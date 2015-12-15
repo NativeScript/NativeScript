@@ -18,7 +18,8 @@ public class ContentLayout extends LayoutBase {
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		
+        CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
+
         int measureWidth = 0;
         int measureHeight = 0;
 
@@ -29,7 +30,6 @@ public class ContentLayout extends LayoutBase {
                 continue;
             }
 
-            CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
         	CommonLayoutParams.measureChild(child, widthMeasureSpec, heightMeasureSpec);
             final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
             final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
@@ -54,7 +54,6 @@ public class ContentLayout extends LayoutBase {
 
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-		
 		int paddingLeft = this.getPaddingLeft();
 		int paddingRight = this.getPaddingRight();
 		int paddingTop = this.getPaddingTop();
@@ -75,5 +74,7 @@ public class ContentLayout extends LayoutBase {
 		
 		    CommonLayoutParams.layoutChild(child, childLeft, childTop, childRight, childBottom);
 		}
+
+		CommonLayoutParams.restoreOriginalParams(this);
 	}
 }

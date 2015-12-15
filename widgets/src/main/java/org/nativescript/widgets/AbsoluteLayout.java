@@ -18,7 +18,8 @@ public class AbsoluteLayout extends LayoutBase {
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-	
+		CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
+
         int measureWidth = 0;
         int measureHeight = 0;
         int childMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
@@ -29,8 +30,7 @@ public class AbsoluteLayout extends LayoutBase {
 			if (child.getVisibility() == View.GONE) {
 			    continue;
 			}
-			
-			CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
+
 			CommonLayoutParams.measureChild(child, childMeasureSpec, childMeasureSpec);		   	
 		    final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
 		    final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
@@ -56,7 +56,6 @@ public class AbsoluteLayout extends LayoutBase {
 
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-    
 		int leftPadding = this.getPaddingLeft();
 		int topPadding = this.getPaddingTop();
 		int count = this.getChildCount();
@@ -78,5 +77,7 @@ public class AbsoluteLayout extends LayoutBase {
 		
 		    CommonLayoutParams.layoutChild(child, childLeft, childTop, childRight, childBottom);
 		}
+
+		CommonLayoutParams.restoreOriginalParams(this);
     }
 }

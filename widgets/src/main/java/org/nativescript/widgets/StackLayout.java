@@ -31,7 +31,9 @@ public class StackLayout extends LayoutBase {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    	int childState = 0;
+        CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
+
+        int childState = 0;
         int measureWidth = 0;
         int measureHeight = 0;
 
@@ -77,7 +79,6 @@ public class StackLayout extends LayoutBase {
                 continue;
             }
 
-            CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
             if (isVertical) {
             	CommonLayoutParams.measureChild(child, childMeasureSpec, MeasureSpec.makeMeasureSpec(remainingLength, measureSpecMode));
                 final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
@@ -118,13 +119,14 @@ public class StackLayout extends LayoutBase {
 
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-
         if (this._orientation == Orientation.vertical) {
             this.layoutVertical(l, t, r, b);
         }
         else {
             this.layoutHorizontal(l, t, r, b);
         }
+
+        CommonLayoutParams.restoreOriginalParams(this);
     }
 
     private void layoutVertical(int left, int top, int right, int bottom) {
@@ -138,7 +140,7 @@ public class StackLayout extends LayoutBase {
         int childLeft = paddingLeft;
         int childRight = right - left - paddingRight;
         
-        int gravity = getGravity(this);
+        int gravity = LayoutBase.getGravity(this);
         final int verticalGravity = gravity & Gravity.VERTICAL_GRAVITY_MASK;
         
         switch (verticalGravity) {
@@ -164,8 +166,7 @@ public class StackLayout extends LayoutBase {
                 continue;
             }
 
-            CommonLayoutParams childLayoutParams = (CommonLayoutParams)child.getLayoutParams();
-            int childHeight = child.getMeasuredHeight() + childLayoutParams.topMargin + childLayoutParams.bottomMargin;
+            int childHeight = CommonLayoutParams.getDesiredHeight(child);
             CommonLayoutParams.layoutChild(child, childLeft, childTop, childRight, childTop + childHeight);
             childTop += childHeight;
         }
@@ -183,7 +184,7 @@ public class StackLayout extends LayoutBase {
         int childLeft = 0;
         int childBottom = bottom - top - paddingBottom;
         
-        int gravity = getGravity(this);
+        int gravity = LayoutBase.getGravity(this);
         final int horizontalGravity = Gravity.getAbsoluteGravity(gravity, this.getLayoutDirection()) & Gravity.HORIZONTAL_GRAVITY_MASK;
         
         switch (horizontalGravity) {
@@ -209,8 +210,7 @@ public class StackLayout extends LayoutBase {
                 continue;
             }
 
-            CommonLayoutParams childLayoutParams = (CommonLayoutParams)child.getLayoutParams();
-            int childWidth = child.getMeasuredWidth() + childLayoutParams.leftMargin + childLayoutParams.rightMargin;
+            int childWidth = CommonLayoutParams.getDesiredWidth(child);
             CommonLayoutParams.layoutChild(child, childLeft, childTop, childLeft + childWidth, childBottom);
             childLeft += childWidth;
         }

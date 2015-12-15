@@ -65,7 +65,9 @@ public class VerticalScrollView extends ScrollView {
 	    
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		// Don't call measure because it will measure content twice.
+        CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
+
+        // Don't call measure because it will measure content twice.
 		// ScrollView is expected to have single child so we measure only the first child.
 	    View child = this.getChildCount() > 0 ? this.getChildAt(0) : null;
 	    if (child == null) {
@@ -75,7 +77,6 @@ public class VerticalScrollView extends ScrollView {
 	        this.setPadding(0, 0, 0, 0);
 	    }
 	    else {
-	    	CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
 	    	CommonLayoutParams.measureChild(child, widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));	    	
 	    	this.contentMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
 	    	this.contentMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
@@ -144,6 +145,8 @@ public class VerticalScrollView extends ScrollView {
 	
 	    // Calling this with the present values causes it to re-claim them
 	    this.scrollTo(scrollX, scrollY);
+
+		CommonLayoutParams.restoreOriginalParams(this);
 	}
 
     @Override

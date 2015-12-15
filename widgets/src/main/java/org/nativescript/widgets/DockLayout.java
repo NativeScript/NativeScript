@@ -27,6 +27,7 @@ public class DockLayout extends LayoutBase {
     }
 	
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
 
         int measureWidth = 0;
         int measureHeight = 0;
@@ -64,7 +65,6 @@ public class DockLayout extends LayoutBase {
                 childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(remainingHeight, heightMode == MeasureSpec.EXACTLY ? MeasureSpec.AT_MOST : heightMode);
             }
 
-            CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
             CommonLayoutParams.measureChild(child, childWidthMeasureSpec, childHeightMeasureSpec);
             final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
             final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
@@ -107,7 +107,6 @@ public class DockLayout extends LayoutBase {
 
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-
         int childLeft = this.getPaddingLeft();
         int childTop = this.getPaddingTop();
 
@@ -173,5 +172,7 @@ public class DockLayout extends LayoutBase {
         if (childToStretch != null) {
         	CommonLayoutParams.layoutChild(childToStretch, x, y, x + remainingWidth, y + remainingHeight);
         }
+
+        CommonLayoutParams.restoreOriginalParams(this);
     }
 }

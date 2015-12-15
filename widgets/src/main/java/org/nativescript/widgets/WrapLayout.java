@@ -60,8 +60,9 @@ public class WrapLayout extends LayoutBase {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    	
-    	int measureWidth = 0;
+        CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
+
+        int measureWidth = 0;
     	int measureHeight = 0;
 
         int width = MeasureSpec.getSize(widthMeasureSpec);
@@ -91,8 +92,7 @@ public class WrapLayout extends LayoutBase {
             if (child.getVisibility() == View.GONE) {
                 continue;
             }
-            
-            CommonLayoutParams.updateChildLayoutParams(child, widthMeasureSpec, heightMeasureSpec);
+
         	CommonLayoutParams.measureChild(child, childWidthMeasureSpec, childHeightMeasureSpec);
             final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
             final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
@@ -162,7 +162,6 @@ public class WrapLayout extends LayoutBase {
 
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-
 		boolean isVertical = this._orientation == Orientation.vertical;
         int paddingLeft = this.getPaddingLeft();
         int paddingRight = this.getPaddingRight();
@@ -187,7 +186,6 @@ public class WrapLayout extends LayoutBase {
 
             int length = this._lengths.get(rowOrColumn);
             if (isVertical) {
-                
                 childWidth = length;
                 childHeight = this._itemHeight > 0 ? this._itemHeight : childHeight;
                 if (childTop + childHeight > childrenLength) {
@@ -233,5 +231,7 @@ public class WrapLayout extends LayoutBase {
                 childLeft += childWidth;
             }
         }
+
+        CommonLayoutParams.restoreOriginalParams(this);
     }
 }
