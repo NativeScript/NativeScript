@@ -909,3 +909,32 @@ export var test_BindingContextOfAChildElementIsNotOverwrittenBySettingTheBinding
     helper.goBack();
     done(null);
 }
+
+export var test_BindingHitsGetterTooManyTimes = function () {
+    var counter = 0;
+
+    class Dummy extends observable.Observable {
+        private _dummyProperty: string;
+
+        public get dummyProperty(): string {
+            counter++;
+            return this._dummyProperty;
+        }
+
+        public set dummyProperty(value: string) {
+            if (this._dummyProperty !== value) {
+                this._dummyProperty = value;
+                this.notifyPropertyChange("dummyProperty", value);
+            }
+        }
+    }
+
+    var model = new Dummy();
+    model.dummyProperty = "OPA";
+
+    var bindableObj = new bindable.Bindable();
+
+    bindableObj.bind({ sourceProperty: "dummyProperty", targetProperty: "dummyTarget" }, model);
+
+    TKUnit.assertEqual(counter, 1, "Property getter should be hit only once!");
+}

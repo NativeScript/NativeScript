@@ -255,7 +255,8 @@ export class Binding {
                 currentObjectChanged = true;
             }
             result.push({ instance: currentObject, property: objProp });
-            if (!currentObjectChanged) {
+            // do not need to dive into last object property getter on binding stage will handle it
+            if (!currentObjectChanged && (i < propsArrayLength - 1)) {
                 currentObject = currentObject ? currentObject[propsArray[i]] : null;
             }
             currentObjectChanged = false;
