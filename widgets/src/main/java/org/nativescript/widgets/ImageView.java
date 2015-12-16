@@ -158,7 +158,7 @@ public class ImageView extends android.widget.ImageView {
                     this.getHeight() - roundedBorderWidth);
 
             this.path.reset();
-            this.path.addRoundRect(rect, innerRadius, innerRadius, android.graphics.Path.Direction.CW);
+            this.path.addRoundRect(rect, innerRadius, innerRadius, Path.Direction.CW);
 
             canvas.clipPath(this.path);
         }

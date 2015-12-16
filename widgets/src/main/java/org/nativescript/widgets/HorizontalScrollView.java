@@ -237,8 +237,8 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
                     + " isLayoutRtl=" + isLayoutRtl + "}";
         }
 
-        public static final Parcelable.Creator<SavedState> CREATOR
-                = new Parcelable.Creator<SavedState>() {
+        public static final Creator<SavedState> CREATOR
+                = new Creator<SavedState>() {
             public SavedState createFromParcel(Parcel in) {
                 return new SavedState(in);
             }

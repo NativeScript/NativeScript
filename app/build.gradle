@@ -1,10 +1,11 @@
-apply plugin: 'com.android.library'
+apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
 
     defaultConfig {
+        applicationId "org.nativescript.android_widgets_app"
         minSdkVersion 17
         targetSdkVersion 23
         versionCode 1

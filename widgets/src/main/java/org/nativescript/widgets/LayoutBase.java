@@ -37,12 +37,12 @@ public abstract class LayoutBase extends ViewGroup {
      * {@inheritDoc}
      */
     @Override
-    protected boolean checkLayoutParams(ViewGroup.LayoutParams p) {
+    protected boolean checkLayoutParams(LayoutParams p) {
         return p instanceof CommonLayoutParams;
     }
 
     @Override
-    protected ViewGroup.LayoutParams generateLayoutParams(ViewGroup.LayoutParams p) {
+    protected LayoutParams generateLayoutParams(LayoutParams p) {
         return new CommonLayoutParams();
     }
 
@@ -53,7 +53,7 @@ public abstract class LayoutBase extends ViewGroup {
 	
 	protected static int getGravity(View view) {
 		int gravity = -1;
-		ViewGroup.LayoutParams params = view.getLayoutParams();
+		LayoutParams params = view.getLayoutParams();
 		if (params instanceof FrameLayout.LayoutParams) {
 			gravity = ((FrameLayout.LayoutParams)params).gravity;	
 		}

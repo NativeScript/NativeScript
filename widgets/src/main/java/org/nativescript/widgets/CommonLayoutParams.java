@@ -246,7 +246,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 
         for (int i = 0, count = viewGroup.getChildCount(); i < count; i++) {
             View child = viewGroup.getChildAt(i);
-            ViewGroup.LayoutParams params = child.getLayoutParams();
+            LayoutParams params = child.getLayoutParams();
 
             if (params instanceof CommonLayoutParams) {
                 CommonLayoutParams lp = (CommonLayoutParams) child.getLayoutParams();
@@ -312,7 +312,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
     protected static void restoreOriginalParams(ViewGroup viewGroup) {
         for (int i = 0, count = viewGroup.getChildCount(); i < count; i++) {
             View view = viewGroup.getChildAt(i);
-            ViewGroup.LayoutParams params = view.getLayoutParams();
+            LayoutParams params = view.getLayoutParams();
             if (params instanceof CommonLayoutParams) {
                 CommonLayoutParams lp = (CommonLayoutParams) params;
                 if (lp.widthPercent > 0) {

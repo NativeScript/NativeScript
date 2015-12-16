@@ -32,11 +32,11 @@ public class DockLayout extends LayoutBase {
         int measureWidth = 0;
         int measureHeight = 0;
 
-        int width = View.MeasureSpec.getSize(widthMeasureSpec);
-        int widthMode = View.MeasureSpec.getMode(widthMeasureSpec);
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
 
-        int height = View.MeasureSpec.getSize(heightMeasureSpec);
-        int heightMode = View.MeasureSpec.getMode(heightMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
 
         int verticalPadding = this.getPaddingTop() + this.getPaddingBottom();
         int horizontalPadding = this.getPaddingLeft() + this.getPaddingRight();
