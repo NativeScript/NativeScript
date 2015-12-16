@@ -6,6 +6,7 @@ import helper = require("./layout-helper");
 import navHelper = require("../ui/helper");
 import testModule = require("../ui-test");
 import layoutHelper = require("./layout-helper");
+import commonTests = require("./common-layout-tests");
 
 // <snippet module="ui/layouts/dock-layout" title="dock-layout">
 // # DockLayout
@@ -189,6 +190,10 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
         dockLayout.addChild(btnDockedToRight);
         // ```
         // </snippet>
+    }
+
+    public test_percent_support() {
+        commonTests.percent_support_test(this);
     }
 }
 

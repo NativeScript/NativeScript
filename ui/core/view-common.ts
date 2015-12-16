@@ -15,6 +15,7 @@ import color = require("color");
 import animationModule = require("ui/animation");
 import observable = require("data/observable");
 import {registerSpecialProperty} from "ui/builder/special-properties";
+import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
 
 registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
     instance.className = propertyValue;
@@ -727,6 +728,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         }
 
         var density = utils.layout.getDisplayDensity();
+        let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
 
         var childTop: number;
         var childLeft: number;
@@ -735,35 +737,40 @@ export class View extends proxy.ProxyObject implements definition.View {
         var childHeight = child.getMeasuredHeight();
 
         var vAlignment: string;
-        if (!isNaN(child.height) && child.verticalAlignment === enums.VerticalAlignment.stretch) {
+        if (lp.height >= 0 && child.verticalAlignment === enums.VerticalAlignment.stretch) {
             vAlignment = enums.VerticalAlignment.center;
         }
         else {
             vAlignment = child.verticalAlignment;
         }
 
+        let marginTop = lp.topMargin;
+        let marginBottom = lp.bottomMargin;
+        let marginLeft = lp.leftMargin;
+        let marginRight = lp.rightMargin;
+
         switch (vAlignment) {
             case enums.VerticalAlignment.top:
-                childTop = top + child.marginTop * density;
+                childTop = top + marginTop * density;
                 break;
 
             case enums.VerticalAlignment.center || enums.VerticalAlignment.middle:
-                childTop = top + (bottom - top - childHeight + (child.marginTop - child.marginBottom) * density) / 2;
+                childTop = top + (bottom - top - childHeight + (marginTop - marginBottom) * density) / 2;
                 break;
 
             case enums.VerticalAlignment.bottom:
-                childTop = bottom - childHeight - (child.marginBottom * density);
+                childTop = bottom - childHeight - (marginBottom * density);
                 break;
 
             case enums.VerticalAlignment.stretch:
             default:
-                childTop = top + child.marginTop * density;
-                childHeight = bottom - top - (child.marginTop + child.marginBottom) * density;
+                childTop = top + marginTop * density;
+                childHeight = bottom - top - (marginTop + marginBottom) * density;
                 break;
         }
 
         var hAlignment: string;
-        if (!isNaN(child.width) && child.horizontalAlignment === enums.HorizontalAlignment.stretch) {
+        if (lp.width >= 0 && child.horizontalAlignment === enums.HorizontalAlignment.stretch) {
             hAlignment = enums.HorizontalAlignment.center;
         }
         else {
@@ -772,21 +779,21 @@ export class View extends proxy.ProxyObject implements definition.View {
 
         switch (hAlignment) {
             case enums.HorizontalAlignment.left:
-                childLeft = left + child.marginLeft * density;
+                childLeft = left + marginLeft * density;
                 break;
 
             case enums.HorizontalAlignment.center:
-                childLeft = left + (right - left - childWidth + (child.marginLeft - child.marginRight) * density) / 2;
+                childLeft = left + (right - left - childWidth + (marginLeft - marginRight) * density) / 2;
                 break;
 
             case enums.HorizontalAlignment.right:
-                childLeft = right - childWidth - child.marginRight * density;
+                childLeft = right - childWidth - (marginRight * density);
                 break;
 
             case enums.HorizontalAlignment.stretch:
             default:
-                childLeft = left + child.marginLeft * density;
-                childWidth = right - left - (child.marginLeft + child.marginRight) * density;
+                childLeft = left + marginLeft * density;
+                childWidth = right - left - (marginLeft + marginRight) * density;
                 break;
         }
 
@@ -795,7 +802,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         childLeft = Math.round(childLeft);
         childTop = Math.round(childTop);
 
-        trace.write(parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, trace.categories.Layout);
+        trace.write(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, trace.categories.Layout);
         child.layout(childLeft, childTop, childRight, childBottom);
     }
 
@@ -810,19 +817,22 @@ export class View extends proxy.ProxyObject implements definition.View {
 
             var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
             var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-            trace.write(parent + " :measureChild: " + child + " " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
 
             var childWidthMeasureSpec = View.getMeasureSpec(child, width, widthMode, true);
             var childHeightMeasureSpec = View.getMeasureSpec(child, height, heightMode, false);
+
+            trace.write(child.parent + " :measureChild: " + child + " " + utils.layout.measureSpecToString(childWidthMeasureSpec) + ", " + utils.layout.measureSpecToString(childHeightMeasureSpec), trace.categories.Layout);
 
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
             measureWidth = child.getMeasuredWidth();
             measureHeight = child.getMeasuredHeight();
 
             var density = utils.layout.getDisplayDensity();
+            let lp: CommonLayoutParams = child.style._getValue(style.nativeLayoutParamsProperty);
+
             // Convert to pixels.
-            measureWidth = Math.round(measureWidth + (child.marginLeft + child.marginRight) * density);
-            measureHeight = Math.round(measureHeight + (child.marginTop + child.marginBottom) * density);
+            measureWidth = Math.round(measureWidth + (lp.leftMargin + lp.rightMargin) * density);
+            measureHeight = Math.round(measureHeight + (lp.topMargin + lp.bottomMargin) * density);
         }
 
         return { measuredWidth: measureWidth, measuredHeight: measureHeight };
@@ -830,9 +840,11 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     private static getMeasureSpec(view: View, parentLength: number, parentSpecMode: number, horizontal: boolean): number {
 
+        let lp: CommonLayoutParams = view.style._getValue(style.nativeLayoutParamsProperty);
+
         var density = utils.layout.getDisplayDensity();
-        var margins = horizontal ? view.marginLeft + view.marginRight : view.marginTop + view.marginBottom;
-        margins = Math.floor(margins * density);
+        var margins = horizontal ? lp.leftMargin + lp.rightMargin : lp.topMargin + lp.bottomMargin;
+        margins = Math.round(margins * density);
 
         var resultSize = 0;
         var resultMode = 0;
@@ -840,10 +852,10 @@ export class View extends proxy.ProxyObject implements definition.View {
         var measureLength = Math.max(0, parentLength - margins);
 
         // Convert to pixels.
-        var childLength = Math.floor((horizontal ? view.width : view.height) * density);
+        var childLength = Math.round((horizontal ? lp.width : lp.height) * density);
 
         // We want a specific size... let be it.
-        if (!isNaN(childLength)) {
+        if (childLength >= 0) {
             if (parentSpecMode !== utils.layout.UNSPECIFIED) {
                 resultSize = Math.min(parentLength, childLength);
             }

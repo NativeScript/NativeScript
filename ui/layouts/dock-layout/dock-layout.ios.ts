@@ -2,6 +2,7 @@
 import view = require("ui/core/view");
 import enums = require("ui/enums");
 import common = require("./dock-layout-common");
+import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
 
 global.moduleMerge(common, exports);
 
@@ -12,6 +13,7 @@ export class DockLayout extends common.DockLayout {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        DockLayout.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         var measureWidth = 0;
@@ -32,10 +34,10 @@ export class DockLayout extends common.DockLayout {
         var tempWidth: number = 0;
         var childWidthMeasureSpec: number;
         var childHeightMeasureSpec: number;
-        var count = this.getChildrenCount();
-        for (var i = 0; i < count; i++) {
-            var child = this.getChildAt(i);
-            if (!child || !child._isVisible) {
+
+        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
+            let child = this.getChildAt(i);
+            if (!child._isVisible) {
                 continue;
             }
 
@@ -49,9 +51,8 @@ export class DockLayout extends common.DockLayout {
                 childHeightMeasureSpec = utils.layout.makeMeasureSpec(remainingHeight, heightMode === utils.layout.EXACTLY ? utils.layout.AT_MOST : heightMode);
             }
 
-            var childSize = view.View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
-
-            var dock = DockLayout.getDock(child);
+            let childSize = view.View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
+            let dock = DockLayout.getDock(child);
 
             switch (dock) {
                 case enums.Dock.top:
@@ -106,16 +107,18 @@ export class DockLayout extends common.DockLayout {
             childToStretch = this.getChildAt(count);
         }
 
-        for (var i = 0; i < count; i++) {
-            var child = this.getChildAt(i);
-            if (!child || !child._isVisible) {
+        for (let i = 0; i < count; i++) {
+            let child = this.getChildAt(i);
+            if (!child._isVisible) {
                 continue;
             }
 
-            var childWidth = child.getMeasuredWidth() + (child.marginLeft + child.marginRight) * density;
-            var childHeight = child.getMeasuredHeight() + (child.marginTop + child.marginBottom) * density;
+            let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
 
-            var dock = DockLayout.getDock(child);
+            let childWidth = child.getMeasuredWidth() + (lp.leftMargin + lp.rightMargin) * density;
+            let childHeight = child.getMeasuredHeight() + (lp.topMargin + lp.bottomMargin) * density;
+
+            let dock = DockLayout.getDock(child);
             switch (dock) {
                 case enums.Dock.top:
                     childLeft = x;
@@ -148,11 +151,14 @@ export class DockLayout extends common.DockLayout {
                     remainingWidth = Math.max(0, remainingWidth - childWidth);
                     break;
             }
+
             view.View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
         }
 
         if (childToStretch) {
             view.View.layoutChild(this, childToStretch, x, y, x + remainingWidth, y + remainingHeight);
         }
+
+        DockLayout.restoreOriginalParams(this);
     }
 }

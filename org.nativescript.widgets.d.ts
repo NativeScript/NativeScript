@@ -4,6 +4,14 @@
             export class CommonLayoutParams extends android.widget.FrameLayout.LayoutParams {
                 constructor();
 
+                public widthPercent: number;
+                public heightPercent: number;
+
+                public topMarginPercent: number;
+                public leftMarginPercent: number;
+                public bottomMarginPercent: number;
+                public rightMarginPercent: number;
+
                 public left: number;
                 public top: number;
 

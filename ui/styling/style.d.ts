@@ -18,10 +18,18 @@ declare module "ui/styling/style" {
         width: number;
         height: number;
 
+        widthPercent: number;
+        heightPercent: number;
+
         leftMargin: number;
         topMargin: number;
         rightMargin: number;
         bottomMargin: number;
+
+        leftMarginPercent: number;
+        topMarginPercent: number;
+        rightMarginPercent: number;
+        bottomMarginPercent: number;
 
         horizontalAlignment: string;
         verticalAlignment: string;
@@ -66,7 +74,7 @@ declare module "ui/styling/style" {
         public opacity: number;
         public whiteSpace: string;
 
-        new(parentView: View);
+        constructor(parentView: View);
 
         public _beginUpdate();
         public _endUpdate();

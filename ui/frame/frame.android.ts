@@ -30,9 +30,9 @@ var PageFragmentBody = (<any>android.app.Fragment).extend({
     },
 
     onCreateView: function (inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-        trace.write(`PageFragmentBody.onCreateView(${inflater}, ${container}, ${savedInstanceState})`, trace.categories.NativeLifecycle);
         var entry = this.entry;
         var page = entry.resolvedPage;
+        trace.write(`PageFragmentBody.onCreateView(${inflater}, ${page}, ${savedInstanceState})`, trace.categories.NativeLifecycle);
         if (savedInstanceState && savedInstanceState.getBoolean(HIDDEN, false)) {
             this.super.getFragmentManager().beginTransaction().hide(this).commit();
             page._onAttached(this.getActivity());

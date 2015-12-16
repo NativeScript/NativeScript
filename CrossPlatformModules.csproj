@@ -80,6 +80,7 @@
       <DependentUpon>data-binding.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\animations\opacity.ts" />
+    <TypeScriptCompile Include="apps\tests\layouts\common-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.ts" />
     <TypeScriptCompile Include="apps\tests\ui\page\modal-page.ts">
       <DependentUpon>modal-page.xml</DependentUpon>

@@ -63,6 +63,29 @@ export module layout {
     export function getMeasureSpecSize(spec: number): number {
         return (spec & ~MODE_MASK);
     }
+
+    export function measureSpecToString(measureSpec: number): string {
+        let mode = getMeasureSpecMode(measureSpec);
+        let size = getMeasureSpecSize(measureSpec);
+
+        let text = "MeasureSpec: ";
+
+        if (mode === UNSPECIFIED) {
+            text += "UNSPECIFIED ";
+        }
+        else if (mode === EXACTLY) {
+            text += "EXACTLY ";
+        }
+        else if (mode === AT_MOST) {
+            text += "AT_MOST ";
+        }
+        else {
+            text += mode + " ";
+        }
+
+        text += size;
+        return text;
+    }
 }
 
 export function isFileOrResourcePath(path: string): boolean {

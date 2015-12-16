@@ -99,6 +99,27 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
         layoutHelper.assertMeasure(btn, 100, 100);
         layoutHelper.assertLayout(btn, 25, 35, 100, 100);
     }
+
+    public test_percent_support() {
+        let layout = this.testView;
+        layout.width = layoutHelper.dp(200);
+        layout.height = layoutHelper.dp(200);
+
+        let btn = new layoutHelper.MyButton();
+        (<any>btn).width = "50%";
+        (<any>btn).height = "50%";
+        btn.margin = "10%";
+        layout.addChild(btn);
+
+        this.waitUntilTestElementLayoutIsValid();
+
+        // AbsoluteLayout measures with 0/UNSPECIFIED so we cannot support percents in it.
+        layoutHelper.assertMeasure(btn, 100, 100);
+        layoutHelper.assertLayout(btn, 20, 20, btn.getMeasuredWidth(), btn.getMeasuredHeight());
+
+        TKUnit.assertEqual(btn.getMeasuredWidth(), 100, "Button MeasuredWidth incorrect");
+        TKUnit.assertEqual(btn.getMeasuredHeight(), 100, "Button MeasuredHeight incorrect");
+    }
 }
 
 export function createTestCase(): AbsoluteLayoutTest {

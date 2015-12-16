@@ -13,6 +13,7 @@ import utils = require("utils/utils");
 import font = require("ui/styling/font");
 import background = require("ui/styling/background");
 import platform = require("platform");
+import definition = require("ui/styling/style");
 
 // key is the property id and value is Dictionary<string, StylePropertyChangedHandler>;
 var _registeredHandlers = Array<Object>();
@@ -26,28 +27,67 @@ var noStylingClasses = {};
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
 var AffectsLayout = platform.device.os === platform.platformNames.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
-export interface Thickness {
-    left: number;
-    top: number;
-    right: number;
-    bottom: number;
+interface ThicknessValue {
+    left: Object;
+    top: Object;
+    right: Object;
+    bottom: Object;
 }
 
-export interface CommonLayoutParams {
-    width: number;
-    height: number;
-
-    leftMargin: number;
-    topMargin: number;
-    rightMargin: number;
-    bottomMargin: number;
-
-    horizontalAlignment: string;
-    verticalAlignment: string;
+interface PercentHelper {
+    value: number;
+    isPercent: boolean;
+    isError: boolean;
 }
 
-function parseThickness(value: any): Thickness {
-    var result: Thickness = { top: 0, right: 0, bottom: 0, left: 0 };
+function parseMargin(value: any): ThicknessValue {
+    if (types.isString(value)) {
+        let arr = (<string>value).split(/[ ,]+/);
+
+        let top: Object;
+        let right: Object;
+        let bottom: Object;
+        let left: Object;
+
+        if (arr.length === 1) {
+            top = right = bottom = left = arr[0];
+        }
+        else if (arr.length === 2) {
+            top = bottom = arr[0];
+            right = left = arr[1];
+        }
+        else if (arr.length === 4) {
+            top = arr[0];
+            right = arr[1];
+            bottom = arr[2];
+            left = arr[3];
+        }
+        else {
+            throw new Error("Invalid value for margin: " + value);
+        }
+
+        return {
+            top: top,
+            right: right,
+            bottom: bottom,
+            left: left
+        }
+    }
+    else if (types.isNumber(value)) {
+        return {
+            top: value,
+            right: value,
+            bottom: value,
+            left: value
+        }
+    }
+    else {
+        return value;
+    }
+}
+
+function parseThickness(value: any): definition.Thickness {
+    var result: definition.Thickness = { top: 0, right: 0, bottom: 0, left: 0 };
     if (types.isString(value)) {
         var arr = value.split(/[ ,]+/);
         var top = parseInt(arr[0]);
@@ -77,7 +117,7 @@ function parseThickness(value: any): Thickness {
     return result;
 }
 
-function layoutParamsComparer(x: CommonLayoutParams, y: CommonLayoutParams): boolean {
+function layoutParamsComparer(x: definition.CommonLayoutParams, y: definition.CommonLayoutParams): boolean {
     return x.width === y.width
         && x.height === y.height
         && x.leftMargin === y.leftMargin
@@ -86,17 +126,61 @@ function layoutParamsComparer(x: CommonLayoutParams, y: CommonLayoutParams): boo
         && x.bottomMargin === y.bottomMargin
         && x.horizontalAlignment === y.horizontalAlignment
         && x.verticalAlignment === y.verticalAlignment
+        && x.widthPercent === y.widthPercent
+        && x.heightPercent === y.heightPercent
+        && x.leftMarginPercent === y.leftMarginPercent
+        && x.topMarginPercent === y.topMarginPercent
+        && x.rightMarginPercent === y.rightMarginPercent
+        && x.bottomMarginPercent === y.bottomMarginPercent
 }
 
 function onLayoutParamsChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var layoutParams: CommonLayoutParams = {
-        width: isNaN(style.width) ? -1 : style.width,
-        height: isNaN(style.height) ? -1 : style.height,
-        leftMargin: style.marginLeft,
-        topMargin: style.marginTop,
-        rightMargin: style.marginRight,
-        bottomMargin: style.marginBottom,
+    let style = <Style>data.object;
+    let widthValue = convertToPercentHelper(style.width);
+
+    let width: number;
+    let widthPercent: number;
+    if (widthValue.isPercent) {
+        width = style.horizontalAlignment === enums.HorizontalAlignment.stretch ? -1 : -2;
+        widthPercent = widthValue.value / 100;
+    }
+    else {
+        width = isNaN(widthValue.value) ? -1 : widthValue.value;
+        widthPercent = -1;
+    }
+
+    let heightValue = convertToPercentHelper(style.height);
+    let height: number;
+    let heightPercent: number;
+    if (heightValue.isPercent) {
+        height = style.verticalAlignment === enums.VerticalAlignment.stretch ? -1 : -2;
+        heightPercent = heightValue.value / 100;
+    }
+    else {
+        height = isNaN(heightValue.value) ? -1 : heightValue.value;
+        heightPercent = -1;
+    }
+
+    let marginLeftValue = convertToPercentHelper(style.marginLeft);
+    let marginTopValue = convertToPercentHelper(style.marginTop);
+    let marginRightValue = convertToPercentHelper(style.marginRight);
+    let marginBottomValue = convertToPercentHelper(style.marginBottom);
+    
+    // Negative marginPercent means no marginPercent so native layout won't override margin with this % value.
+    var layoutParams: definition.CommonLayoutParams = 
+    {
+        width: width,
+        height: height,
+        widthPercent: widthPercent,
+        heightPercent: heightPercent,
+        leftMargin: marginLeftValue.isPercent ? 0 : marginLeftValue.value,
+        leftMarginPercent: marginLeftValue.isPercent ? marginLeftValue.value / 100 : -1,
+        topMargin: marginTopValue.isPercent ? 0 : marginTopValue.value,
+        topMarginPercent: marginTopValue.isPercent ? marginTopValue.value / 100 : -1,
+        rightMargin: marginRightValue.isPercent ? 0 : marginRightValue.value,
+        rightMarginPercent: marginRightValue.isPercent ? marginRightValue.value / 100 : -1,
+        bottomMargin: marginBottomValue.isPercent ? 0 : marginBottomValue.value,
+        bottomMarginPercent: marginBottomValue.isPercent ? marginBottomValue.value / 100 : -1,
         horizontalAlignment: style.horizontalAlignment,
         verticalAlignment: style.verticalAlignment
     };
@@ -106,7 +190,7 @@ function onLayoutParamsChanged(data: PropertyChangeData) {
 
 function onPaddingValueChanged(data: PropertyChangeData) {
     var style = <Style>data.object;
-    var thickness: Thickness = {
+    var thickness: definition.Thickness = {
         top: style.paddingTop,
         right: style.paddingRight,
         bottom: style.paddingBottom,
@@ -116,15 +200,66 @@ function onPaddingValueChanged(data: PropertyChangeData) {
     style._setValue(nativePaddingsProperty, thickness);
 }
 
-function thicknessComparer(x: Thickness, y: Thickness): boolean {
+function thicknessComparer(x: definition.Thickness, y: definition.Thickness): boolean {
     if (x && y) {
         return x.left === y.left && x.top === y.top && x.right === y.right && x.bottom === y.bottom;
     }
     return !x === !y;
 }
 
-function isWidthHeightValid(value: number): boolean {
-    return isNaN(value) || (value >= 0.0 && isFinite(value));
+function convertToPercentHelper(value: Object): PercentHelper {
+    let numberValue = 0;
+    let isPercent = false;
+    let isError = true;
+
+    if (types.isString(value)) {
+        var stringValue = (<string>value).trim();
+        var percentIndex = stringValue.indexOf("%");
+        if (percentIndex !== -1) {
+            // if only % or % is not last we treat it as invalid value.
+            if (percentIndex !== (stringValue.length - 1) || percentIndex === 0) {
+                numberValue = 0;
+            }
+            else {
+                isPercent = true;
+                numberValue = converters.numberConverter(stringValue.substring(0, stringValue.length - 1).trim());
+                isError = numberValue === 0;
+            }
+        }
+        else {
+            isError = false;
+            isPercent = false;
+            numberValue = converters.numberConverter(stringValue);
+        }
+    }
+    else if (types.isNumber(value)) {
+        isError = false;
+        isPercent = false;
+        numberValue = <number>value;
+    }
+
+    return {
+        isError: isError,
+        isPercent: isPercent,
+        value: numberValue
+    }
+}
+
+function numberOrPercentConverter(value: Object) {
+    let result = convertToPercentHelper(value);
+    if (result.isError) {
+        throw new Error("Invalid value: " + value);
+    }
+    return result.isPercent ? value : result.value;
+}
+
+function isWidthHeightValid(value: Object): boolean {
+    var result = convertToPercentHelper(value);
+    if (result.isError) {
+        return false;
+    }
+
+    return isNaN(result.value) || (result.value >= 0.0 && isFinite(result.value));
 }
 
 function isMinWidthHeightValid(value: number): boolean {
@@ -253,16 +388,17 @@ function isWhiteSpaceValid(value: string): boolean {
     return value === enums.WhiteSpace.nowrap || value === enums.WhiteSpace.normal;
 }
 
-function onVisibilityChanged(data: PropertyChangeData) {
-    (<any>data.object)._view._isVisibleCache = data.newValue === enums.Visibility.visible;
-}
-
 function isPaddingValid(value: number): boolean {
     return isFinite(value) && !isNaN(value) && value >= 0;
 }
 
 function isMarginValid(value: number): boolean {
-    return isFinite(value) && !isNaN(value);
+    var result = convertToPercentHelper(value);
+    if (result.isError) {
+        return false;
+    }
+
+    return isFinite(result.value) && !isNaN(result.value);
 }
 
 function isOpacityValid(value: string): boolean {
@@ -276,6 +412,10 @@ function isFontWeightValid(value: string): boolean {
 
 function isFontStyleValid(value: string): boolean {
     return value === enums.FontStyle.normal || value === enums.FontStyle.italic;
+}
+
+function onVisibilityChanged(data: PropertyChangeData) {
+    (<any>data.object)._view._isVisibleCache = data.newValue === enums.Visibility.visible;
 }
 
 function onFontFamilyChanged(data: PropertyChangeData) {
@@ -413,7 +553,7 @@ export class Style extends DependencyObservable implements styling.Style {
     get font(): string {
         return this.fontStyle + " " + this.fontWeight + " " + this.fontSize + " " + this.fontFamily;
     }
-    set font(value: string) {        
+    set font(value: string) {
         this._setShorthandProperty("font", value);
     }
 
@@ -678,7 +818,7 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 
     private _applyStyleProperty(property: Property, newValue: any) {
-        
+
         if (!this._view._shouldApplyStyleHandlers()) {
             return;
         }
@@ -856,38 +996,44 @@ export var whiteSpaceProperty = new styleProperty.Property("whiteSpace", "white-
 export var nativeLayoutParamsProperty = new styleProperty.Property("nativeLayoutParams", "nativeLayoutParams",
     new PropertyMetadata({
         width: -1,
+        widthPercent: -1,
         height: -1,
+        heightPercent: -1,
         leftMargin: 0,
+        leftMarginPercent: -1,
         topMargin: 0,
+        topMarginPercent: -1,
         rightMargin: 0,
+        rightMarginPercent: -1,
         bottomMargin: 0,
+        bottomMarginPercent: -1,
         horizontalAlignment: enums.HorizontalAlignment.stretch,
         verticalAlignment: enums.VerticalAlignment.stretch
     }, null, null, null, layoutParamsComparer));
 
 export var widthProperty = new styleProperty.Property("width", "width",
-    new PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), converters.numberConverter);
+    new PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), numberOrPercentConverter);
 
 export var heightProperty = new styleProperty.Property("height", "height",
-    new PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), converters.numberConverter);
+    new PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), numberOrPercentConverter);
+
+export var marginLeftProperty = new styleProperty.Property("marginLeft", "margin-left",
+    new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
+
+export var marginRightProperty = new styleProperty.Property("marginRight", "margin-right",
+    new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
+
+export var marginTopProperty = new styleProperty.Property("marginTop", "margin-top",
+    new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
+
+export var marginBottomProperty = new styleProperty.Property("marginBottom", "margin-bottom",
+    new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
 
 export var verticalAlignmentProperty = new styleProperty.Property("verticalAlignment", "vertical-align",
     new PropertyMetadata(enums.VerticalAlignment.stretch, AffectsLayout, onLayoutParamsChanged));
 
 export var horizontalAlignmentProperty = new styleProperty.Property("horizontalAlignment", "horizontal-align",
     new PropertyMetadata(enums.HorizontalAlignment.stretch, AffectsLayout, onLayoutParamsChanged));
-
-export var marginLeftProperty = new styleProperty.Property("marginLeft", "margin-left",
-    new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), converters.numberConverter);
-
-export var marginRightProperty = new styleProperty.Property("marginRight", "margin-right",
-    new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), converters.numberConverter);
-
-export var marginTopProperty = new styleProperty.Property("marginTop", "margin-top",
-    new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), converters.numberConverter);
-
-export var marginBottomProperty = new styleProperty.Property("marginBottom", "margin-bottom",
-    new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), converters.numberConverter);
 
 function getNativePadding(nativeView: android.view.View, callback: (view: android.view.View) => number): NativeValueResult {
     return {
@@ -954,7 +1100,7 @@ function onPaddingChanged(value: any): Array<styleProperty.KeyValuePair<stylePro
 }
 
 function onMarginChanged(value: any): Array<styleProperty.KeyValuePair<styleProperty.Property, any>> {
-    var thickness = parseThickness(value);
+    var thickness = parseMargin(value);
     var array = new Array<styleProperty.KeyValuePair<styleProperty.Property, any>>();
     array.push({ property: marginTopProperty, value: thickness.top });
     array.push({ property: marginRightProperty, value: thickness.right });

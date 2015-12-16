@@ -60,6 +60,8 @@
          * @param value - The pixel to convert.
          */
         export function toDeviceIndependentPixels(value: number): number;
+
+        export function measureSpecToString(measureSpec: number): string;
     }
 
     /**

@@ -1,7 +1,8 @@
 ﻿import utils = require("utils/utils");
-import enums = require("ui/enums");
-import view = require("ui/core/view");
+import {HorizontalAlignment, VerticalAlignment} from "ui/enums";
+import {View} from "ui/core/view";
 import common = require("./grid-layout-common");
+import {CommonLayoutParams} from "ui/styling/style";
 
 global.moduleMerge(common, exports);
 
@@ -26,19 +27,19 @@ export class GridLayout extends common.GridLayout {
         this.invalidate();
     }
 
-    protected onRowChanged(element: view.View, oldValue: number, newValue: number) {
+    protected onRowChanged(element: View, oldValue: number, newValue: number) {
         this.invalidate();
     }
 
-    protected onRowSpanChanged(element: view.View, oldValue: number, newValue: number) {
+    protected onRowSpanChanged(element: View, oldValue: number, newValue: number) {
         this.invalidate();
     }
 
-    protected onColumnChanged(element: view.View, oldValue: number, newValue: number) {
+    protected onColumnChanged(element: View, oldValue: number, newValue: number) {
         this.invalidate();
     }
 
-    protected onColumnSpanChanged(element: view.View, oldValue: number, newValue: number) {
+    protected onColumnSpanChanged(element: View, oldValue: number, newValue: number) {
         this.invalidate();
     }
 
@@ -48,6 +49,7 @@ export class GridLayout extends common.GridLayout {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        GridLayout.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
@@ -109,7 +111,7 @@ export class GridLayout extends common.GridLayout {
         let childrenCount = this.getChildrenCount();
         for (let i = 0; i < childrenCount; i++) {
             let child = this.getChildAt(i);
-            if (!child || !child._isVisible) {
+            if (!child._isVisible) {
                 continue;
             }
 
@@ -131,8 +133,8 @@ export class GridLayout extends common.GridLayout {
         measureWidth = Math.max(measureWidth, this.minWidth * density);
         measureHeight = Math.max(measureHeight, this.minHeight * density);
 
-        let widthAndState = view.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        let heightAndState = view.View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
@@ -189,9 +191,11 @@ export class GridLayout extends common.GridLayout {
                 let childBottom = rowOffsets[measureSpec.rowIndex + measureSpec.rowSpan];
 
                 // No need to include margins in the width, height
-                view.View.layoutChild(this, measureSpec.child, childLeft, childTop, childRight, childBottom);
+                View.layoutChild(this, measureSpec.child, childLeft, childTop, childRight, childBottom);
             }
         }
+
+        GridLayout.restoreOriginalParams(this);
     }
 }
 
@@ -212,7 +216,7 @@ class MeasureSpecs {
     public measured: boolean = false;
 
     constructor(
-        public child: view.View,
+        public child: View,
         public column: common.ItemSpec,
         public row: common.ItemSpec,
         columnSpan?: number,
@@ -351,11 +355,11 @@ class MeasureHelper {
     rowStarValue: number;
 
     get horizontalStretch(): boolean {
-        return this.grid.horizontalAlignment === enums.HorizontalAlignment.stretch && !this.infinityWidth;
+        return this.grid.horizontalAlignment === HorizontalAlignment.stretch && !this.infinityWidth;
     }
 
     get verticalStretch(): boolean {
-        return this.grid.verticalAlignment === enums.VerticalAlignment.stretch && !this.infinityHeight;
+        return this.grid.verticalAlignment === VerticalAlignment.stretch && !this.infinityHeight;
     }
 
     get columnsFixed(): boolean {
@@ -630,7 +634,7 @@ class MeasureHelper {
         let widthMeasureSpec: number = (measureSpec.autoColumnsCount > 0) ? this.infinity : utils.layout.makeMeasureSpec(measureSpec.pixelWidth, utils.layout.EXACTLY);
         let heightMeasureSpec: number = (isFakeMeasure || measureSpec.autoRowsCount > 0) ? this.infinity : utils.layout.makeMeasureSpec(measureSpec.pixelHeight, utils.layout.EXACTLY);
 
-        let childSize = view.View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
 
         let columnSpanEnd = measureSpec.columnIndex + measureSpec.columnSpan;
         let rowSpanEnd = measureSpec.rowIndex + measureSpec.rowSpan;
@@ -694,7 +698,7 @@ class MeasureHelper {
 
         let widthMeasureSpec = utils.layout.makeMeasureSpec(measureWidth, this.horizontalStretch ? utils.layout.EXACTLY : utils.layout.AT_MOST);
         let heightMeasureSpec: number = (measureSpec.autoRowsCount > 0) ? this.infinity : utils.layout.makeMeasureSpec(measureSpec.pixelHeight, utils.layout.EXACTLY);
-        let childSize = view.View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
 
         this.updateColumnGroupWidth(measureSpec, childSize.measuredWidth);
 
@@ -739,7 +743,7 @@ class MeasureHelper {
 
         let widthMeasureSpec: number = (measureSpec.autoColumnsCount > 0) ? this.infinity : utils.layout.makeMeasureSpec(measureSpec.pixelWidth, utils.layout.EXACTLY);
         let heightMeasureSpec = utils.layout.makeMeasureSpec(measureHeight, this.verticalStretch ? utils.layout.EXACTLY : utils.layout.AT_MOST);
-        let childSize = view.View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
         
         // Distribute width over auto columns
         if (measureSpec.autoColumnsCount > 0) {
@@ -798,7 +802,7 @@ class MeasureHelper {
         let widthMeasureSpec = utils.layout.makeMeasureSpec(measureWidth, (measureSpec.starColumnsCount > 0 && !this.horizontalStretch) ? utils.layout.AT_MOST : utils.layout.EXACTLY);
         let heightMeasureSpec = utils.layout.makeMeasureSpec(measureHeight, (measureSpec.starRowsCount > 0 && !this.verticalStretch) ? utils.layout.AT_MOST : utils.layout.EXACTLY);
 
-        let childSize = view.View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
 
         this.updateColumnGroupWidth(measureSpec, childSize.measuredWidth);
         this.updateRowGroupHeight(measureSpec, childSize.measuredHeight);
@@ -830,7 +834,6 @@ class MeasureHelper {
     }
 
     private updateColumnGroupWidth(measureSpec: MeasureSpecs, remainingSpace: number): void {
-
         // Distribute width over star columns
         if (!this.horizontalStretch) {
             let columnIndex = measureSpec.columnIndex;
