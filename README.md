@@ -1,13 +1,18 @@
 # Android-Widgets
 Contains the source code of the `org.nativescript.widgets` library used by the NativeScript cross-platform modules implementation for Android.
 
-# How to build
-
-* Clone repo.
-```Shell
-git clone https://github.com/NativeScript/android-widgets.git
+## How to Build
 ```
-* Open project in eclipse.
-* Build
+gradle build
+```
 
-The result file android-widgets.jar is located in the bin folder.
+This generates widgets-debug.aar and widgets-release.aar files located in the widgets/build/outputs/aar folder.
+
+## How to Make NPM Package
+Requires nodejs, npm, gradle and grunt.
+```
+npm install
+grunt
+```
+
+This generates tgz files in build folder.
