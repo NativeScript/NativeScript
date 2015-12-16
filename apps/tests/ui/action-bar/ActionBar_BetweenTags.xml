@@ -1,0 +1,15 @@
+﻿<Page>
+  <Page.actionBar>
+    <ActionBar>
+      <ActionItem text="i1" tap="onTapped"/>
+      <Label text="tv" tap="onTapped"/>
+      <ActionItem text="i2" tap="onTapped"/>
+      <NavigationButton text="nb" tap="onTapped"/>
+      <ActionItem text="i3" tap="onTapped"/>
+    </ActionBar>
+  </Page.actionBar>
+
+  <StackLayout>
+    <Label text="page content"/>
+  </StackLayout>
+</Page>

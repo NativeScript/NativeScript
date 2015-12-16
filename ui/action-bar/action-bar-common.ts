@@ -129,8 +129,10 @@ export class ActionBar extends view.View implements dts.ActionBar {
         if (value instanceof dts.NavigationButton) {
             this.navigationButton = value;
         }
-
-        if (value instanceof view.View) {
+        else if (value instanceof dts.ActionItem) {
+            this.actionItems.addItem(value);
+        }
+        else if (value instanceof view.View) {
             this.titleView = value;
         }
     }

@@ -39,6 +39,7 @@
         "apps/action-bar-demo/pages/action-bar-hidden.ts",
         "apps/action-bar-demo/pages/action-items-icon.ts",
         "apps/action-bar-demo/pages/action-items-text.ts",
+        "apps/action-bar-demo/pages/all-between-tags.ts",
         "apps/action-bar-demo/pages/center-view-segmented.ts",
         "apps/action-bar-demo/pages/center-view-stack.ts",
         "apps/action-bar-demo/pages/center-view.ts",
