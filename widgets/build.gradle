@@ -2,13 +2,40 @@ def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
 
 apply plugin: 'com.android.library'
 
+def computeCompuleSdkVersion () {
+	if(project.hasProperty("compileSdk")) {
+		return compileSdk
+	}
+	else {
+		return 23
+	}
+}
+
+def computeBuildToolsVersion() {
+	if(project.hasProperty("buildToolsVersion")) {
+		return buildToolsVersion
+	}
+	else {
+		return "22.0.1"
+	}
+}
+
+def computeTargetSdkVersion() {
+	if(project.hasProperty("targetSdk")) {
+		return targetSdk
+	}
+	else {
+		return 23
+	}
+}
+
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    compileSdkVersion computeCompuleSdkVersion()
+    buildToolsVersion computeBuildToolsVersion()
 
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 23
+        targetSdkVersion computeTargetSdkVersion()
         versionCode 1
         versionName "1.0"
     }
