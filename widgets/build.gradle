@@ -1,3 +1,5 @@
+def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
+
 apply plugin: 'com.android.library'
 
 android {
@@ -23,3 +25,33 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:support-v4:+'
 }
+
+task cleanDistDir (type: Delete) {
+	delete "../dist/"
+}
+
+task copyAar << {
+	copy {
+		from "../package.json"
+		into "../dist"
+	}	
+	copy {
+		from "build/outputs/aar/widgets-release.aar"
+		into "../dist/platforms/android/"
+	}
+}
+
+task packFramework (type: Exec) {
+	workingDir "../dist"
+	
+	if(isWinOs) {
+		commandLine "cmd", "/c", "npm", "pack"
+	}
+	else {
+		commandLine "npm", "pack"
+	}
+}
+
+assembleRelease.dependsOn(cleanDistDir)
+copyAar.dependsOn(assembleRelease)
+packFramework.dependsOn(copyAar)
