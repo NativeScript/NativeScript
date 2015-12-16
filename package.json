@@ -1,0 +1,26 @@
+{
+  "name": "tns-core-modules-widgets",
+  "version": "1.0.0",
+  "description": "Native widgets used in the NativeScript framework.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NativeScript/android-widgets.git"
+  },
+  "author": "NativeScript team",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/NativeScript/android-widgets/issues"
+  },
+  "homepage": "https://github.com/NativeScript/android-widgets#readme",
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-copy": "^0.8.0",
+    "grunt-exec": "^0.4.6",
+    "grunt-mkdir": "^0.1.2"
+  }
+}
