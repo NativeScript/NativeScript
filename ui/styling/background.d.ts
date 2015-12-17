@@ -2,6 +2,7 @@ declare module "ui/styling/background" {
     import imageSource = require("image-source");
     import colorModule = require("color");
     import viewModule = require("ui/core/view");
+    import style = require("ui/styling");
 
     export interface BackgroundDrawParams {
         repeatX: boolean;
@@ -44,6 +45,13 @@ declare module "ui/styling/background" {
     }
 
     export module ios {
+        /**
+         * Create an iOS specific background image. Returns an UIImage.
+         * @param style The Style to obtrain background properties from.
+         * @param width The width.
+         * @param height The height.
+         */
+        export function createBackgroundUIImage(style: style.Style, width: number, height: number): any;
         export function createBackgroundUIColor(view: viewModule.View, flip?: boolean): any /* UIColor */;
     }
 }
