@@ -44,5 +44,5 @@ export function visibilityTap(args: observable.EventData) {
 }
 
 export function navTap(args: observable.EventData) {
-    console.log("navigation button tapped");
+    console.log("(Android only) Navigation button tapped");
 }

@@ -19,6 +19,7 @@
       <Button tap="itemTap" text="center view" tag="center-view" />
       <Button tap="itemTap" text="center segmented" tag="center-view-segmented" />
       <Button tap="itemTap" text="center stack" tag="center-view-stack" />
+      <Button tap="itemTap" text="all between tags" tag="all-between-tags" />
     </StackLayout>
   </ScrollView>
 </Page>

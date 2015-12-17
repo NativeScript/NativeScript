@@ -67,6 +67,9 @@
     <TypeScriptCompile Include="apps\action-bar-demo\pages\action-items-text.ts">
       <DependentUpon>action-items-text.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\action-bar-demo\pages\all-between-tags.ts">
+      <DependentUpon>all-between-tags.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\action-bar-demo\pages\center-view-stack.ts">
       <DependentUpon>center-view-stack.xml</DependentUpon>
     </TypeScriptCompile>
@@ -119,12 +122,14 @@
     <Content Include="apps\action-bar-demo\pages\center-view-segmented.xml" />
     <Content Include="apps\action-bar-demo\pages\center-view.xml" />
     <Content Include="apps\action-bar-demo\pages\data-binding.xml" />
+    <Content Include="apps\action-bar-demo\pages\all-between-tags.xml" />
     <Content Include="apps\animations\opacity.css" />
     <Content Include="apps\animations\opacity.xml">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\animations\bkg.png" />
     <Content Include="apps\animations\test-icon.png" />
+    <Content Include="apps\tests\ui\action-bar\ActionBar_BetweenTags.xml" />
     <Content Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.xml" />
     <Content Include="apps\tests\ui\page\modal-page.xml">
       <SubType>Designer</SubType>
@@ -989,7 +994,9 @@
     <Content Include="apps\cuteness.unoptimized\res\reddit-logo.png" />
     <Content Include="apps\cuteness.unoptimized\res\telerik-logo.png" />
     <Content Include="apps\action-bar-demo\app.css" />
-    <Content Include="apps\action-bar-demo\main-page.xml" />
+    <Content Include="apps\action-bar-demo\main-page.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\action-bar-demo\pages\action-items-text.xml">
       <SubType>Designer</SubType>
     </Content>

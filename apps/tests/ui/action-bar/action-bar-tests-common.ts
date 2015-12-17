@@ -324,6 +324,28 @@ export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
     }
 }
 
+export function test_CanDefineEverythingAsContentBetweenTheTwoTags() {
+    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+    helper.navigateToModuleAndRunTest(moduleName + "/ActionBar_BetweenTags", undefined, (page: PageModule.Page) => {
+
+        TKUnit.assertNotNull(page.actionBar.navigationButton);
+        TKUnit.assertEqual(page.actionBar.navigationButton.text, "nb");
+
+        TKUnit.assertNull(page.actionBar.title);
+        TKUnit.assertNotNull(page.actionBar.titleView);
+        TKUnit.assertTrue(page.actionBar.titleView instanceof LabelModule.Label);
+        TKUnit.assertEqual((<LabelModule.Label>page.actionBar.titleView).text, "tv");
+
+        TKUnit.assertNotNull(page.actionBar.actionItems);
+        var items = page.actionBar.actionItems.getItems();
+        TKUnit.assertEqual(items.length, 3);
+
+        TKUnit.assertEqual(items[0].text, "i1");
+        TKUnit.assertEqual(items[1].text, "i2");
+        TKUnit.assertEqual(items[2].text, "i3");
+    });
+}
+
 export function createPageAndNavigate() {
     var page: PageModule.Page;
     var pageFactory = function (): PageModule.Page {
