@@ -35,7 +35,7 @@
     "typescript": "1.7.3"
   },
   "typings": "tns-core-modules.d.ts",
-  "dependencies": {
+  "devDependencies": {
     "tns-core-modules-widgets": "1.6.0"
   }
 }
