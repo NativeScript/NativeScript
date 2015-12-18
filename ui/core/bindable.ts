@@ -4,13 +4,14 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import weakEvents = require("ui/core/weak-event-listener");
 import types = require("utils/types");
 import trace = require("trace");
-import polymerExpressions = require("js-libs/polymer-expressions");
 import bindingBuilder = require("../builder/binding-builder");
 import viewModule = require("ui/core/view");
-import {getSpecialPropertySetter} from "ui/builder/special-properties";
+import * as applicationModule from "application";
+import * as polymerExpressionsModule from "js-libs/polymer-expressions";
+import * as specialPropertiesModule from "ui/builder/special-properties";
 
 //late import
-var _appModule = null;
+var _appModule: typeof applicationModule = null;
 
 function appModule() {
     if (!_appModule) {
@@ -362,6 +363,8 @@ export class Binding {
 
     private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
         try {
+            var polymerExpressions: typeof polymerExpressionsModule = require("js-libs/polymer-expressions");
+
             var exp = polymerExpressions.PolymerExpressions.getExpression(expression);
             if (exp) {
                 var context = this.source && this.source.get && this.source.get() || global;
@@ -589,7 +592,9 @@ export class Binding {
                 optionsInstance.off(options.property, null, optionsInstance.bindingContext);
                 optionsInstance.on(options.property, value, optionsInstance.bindingContext);
             } else {
-                let specialSetter = getSpecialPropertySetter(options.property);
+                var sp: typeof specialPropertiesModule = require("ui/builder/special-properties");
+
+                let specialSetter = sp.getSpecialPropertySetter(options.property);
                 if (specialSetter) {
                     specialSetter(optionsInstance, value);
                 } else {

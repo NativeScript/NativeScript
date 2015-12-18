@@ -4,8 +4,8 @@ import proxy = require("ui/core/proxy");
 import imageSource = require("image-source");
 import definition = require("ui/image");
 import enums = require("ui/enums");
-import types = require("utils/types");
 import platform = require("platform");
+import * as typesModule from "utils/types";
 
 var SRC = "src";
 var IMAGE_SOURCE = "imageSource";
@@ -20,6 +20,8 @@ var AffectsLayout = platform.device.os === platform.platformNames.android ? depe
 function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
     var value = data.newValue;
+
+    var types: typeof typesModule = require("utils/types");
 
     if (types.isString(value)) {
         value = value.trim();

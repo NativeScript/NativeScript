@@ -5,8 +5,8 @@ import pages = require("ui/page");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
-import types = require("utils/types");
 import uiUtils = require("ui/utils");
+import * as typesModule from "utils/types";
 
 global.moduleMerge(frameCommon, exports);
 
@@ -146,6 +146,9 @@ export class Frame extends frameCommon.Frame {
 
             case enums.NavigationBarVisibility.auto:
                 let newValue: boolean;
+
+                var types: typeof typesModule = require("utils/types");
+
                 if (page && types.isDefined(page.actionBarHidden)) {
                     newValue = !page.actionBarHidden;
                 }

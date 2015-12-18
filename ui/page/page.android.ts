@@ -1,11 +1,11 @@
 ﻿import pageCommon = require("./page-common");
 import definition = require("ui/page");
 import view = require("ui/core/view");
-import trace = require("trace");
-import color = require("color");
-import actionBarModule = require("ui/action-bar");
-import gridModule = require("ui/layouts/grid-layout");
 import enums = require("ui/enums");
+import * as actionBarModule from "ui/action-bar";
+import * as gridLayoutModule from "ui/layouts/grid-layout";
+import * as traceModule from "trace";
+import * as colorModule from "color";
 
 global.moduleMerge(pageCommon, exports);
 
@@ -78,13 +78,16 @@ export class Page extends pageCommon.Page {
     public _addViewToNativeVisualTree(child: view.View, atIndex?: number): boolean {
         // Set the row property for the child 
         if (this._nativeView && child._nativeView) {
-            if (child instanceof actionBarModule.ActionBar) {
-                gridModule.GridLayout.setRow(child, 0);
+            var actionBar: typeof actionBarModule = require("ui/action-bar");
+            var grid: typeof gridLayoutModule = require("ui/layouts/grid-layout");
+
+            if (child instanceof actionBar.ActionBar) {
+                grid.GridLayout.setRow(child, 0);
                 child.horizontalAlignment = enums.HorizontalAlignment.stretch;
                 child.verticalAlignment = enums.VerticalAlignment.top;
             }
             else {
-                gridModule.GridLayout.setRow(child, 1);
+                grid.GridLayout.setRow(child, 1);
             }
         }
 
@@ -95,6 +98,8 @@ export class Page extends pageCommon.Page {
         var skipDetached = !force && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
 
         if (skipDetached) {
+            var trace: typeof traceModule = require("trace");
+
             // Do not detach the context and android reference.
             trace.write("Caching Page " + this._domId, trace.categories.NativeLifecycle);
         }
@@ -114,6 +119,8 @@ export class Page extends pageCommon.Page {
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         super._showNativeModalView(parent, context, closeCallback, fullscreen);
         if (!this.backgroundColor) {
+            var color: typeof colorModule = require("color");
+
             this.backgroundColor = new color.Color("White");
         }
 

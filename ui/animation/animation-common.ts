@@ -1,6 +1,6 @@
 ﻿import definition = require("ui/animation");
 import viewModule = require("ui/core/view");
-import trace = require("trace");
+import * as traceModule from "trace";
 
 export module Properties {
     export var opacity = "opacity";
@@ -55,6 +55,8 @@ export class Animation implements definition.Animation {
         if (!animationDefinitions || animationDefinitions.length === 0) {
             throw new Error("No animation definitions specified");
         }
+
+        var trace : typeof traceModule = require("trace");
 
         trace.write("Analyzing " + animationDefinitions.length + " animation definitions...", trace.categories.Animation);
         this._propertyAnimations = new Array<PropertyAnimation>();

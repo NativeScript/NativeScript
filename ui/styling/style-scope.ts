@@ -2,11 +2,11 @@
 import trace = require("trace");
 import cssSelector = require("ui/styling/css-selector");
 import cssParser = require("css");
-import {VisualState} from "./visual-state";
 import application = require("application");
-import utils = require("utils/utils");
-import types = require("utils/types");
-import fs = require("file-system");
+import * as typesModule from "utils/types";
+import * as utilsModule from "utils/utils";
+import * as fileSystemModule from "file-system";
+import * as visualStateModule from "./visual-state";
 
 var pattern: RegExp = /('|")(.*?)\1/;
 
@@ -69,6 +69,7 @@ export class StyleScope {
 
     public static createSelectorsFromImports(tree: cssParser.SyntaxTree): cssSelector.CssSelector[] {
         var selectors = new Array<cssSelector.CssSelector>();
+        var types : typeof typesModule = require("utils/types");
 
         if (!types.isNullOrUndefined(tree)) {
             var imports = tree["stylesheet"]["rules"].filter(r=> r.type === "import");
@@ -80,7 +81,10 @@ export class StyleScope {
                 var url = match && match[2];
 
                 if (!types.isNullOrUndefined(url)) {
+                    var utils: typeof utilsModule = require("utils/utils");
+
                     if (utils.isFileOrResourcePath(url)) {
+                        var fs: typeof fileSystemModule = require("file-system");
 
                         var fileName = types.isString(url) ? url.trim() : "";
                         if (fileName.indexOf("~/") === 0) {
@@ -179,13 +183,14 @@ export class StyleScope {
             stateSelector: cssSelector.CssVisualStateSelector;
 
         this._statesByKey[key] = allStates;
+        var vs: typeof visualStateModule = require("./visual-state");
 
         for (i = 0; i < matchedStateSelectors.length; i++) {
             stateSelector = matchedStateSelectors[i];
 
-            var visualState: VisualState = allStates[stateSelector.state];
+            var visualState = allStates[stateSelector.state];
             if (!visualState) {
-                visualState = new VisualState();
+                visualState = new vs.VisualState();
                 allStates[stateSelector.state] = visualState;
             }
 

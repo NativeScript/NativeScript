@@ -1,5 +1,5 @@
 ﻿import observable = require("data/observable");
-import types = require("utils/types");
+import * as typesModule from "utils/types";
 
 var handlersForEventName = new Map<string,(eventData: observable.EventData) => void>();
 var sourcesMap = new WeakMap<observable.Observable, Map<string, Array<TargetHandlerPair>>>();
@@ -62,6 +62,8 @@ function getHandlerForEventName(eventName: string): (eventData: observable.Event
 }
 
 function validateArgs(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {
+    var types: typeof typesModule = require("utils/types");
+
     if (types.isNullOrUndefined(source)) {
         throw new Error("source is null or undefined");
     }

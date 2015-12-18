@@ -1,7 +1,7 @@
 ﻿import common = require("./image-cache-common");
-import httpRequest = require("http/http-request");
 import utils = require("utils/utils");
 import trace = require("trace");
+import * as httpRequestModule from "http/http-request";
 
 //class NSCacheDelegateImpl extends NSObject implements NSCacheDelegate {
 //    public static ObjCProtocols = [NSCacheDelegate];
@@ -24,10 +24,10 @@ class MemmoryWarningHandler extends NSObject {
 
     public initWithCache(cache: NSCache): MemmoryWarningHandler {
         this._cache = cache;
-        
+
         NSNotificationCenter.defaultCenter().addObserverSelectorNameObject(this, "clearCache", "UIApplicationDidReceiveMemoryWarningNotification", null);
         trace.write("[MemmoryWarningHandler] Added low memory observer.", trace.categories.Debug);
-        
+
         return this;
     }
 
@@ -65,6 +65,8 @@ export class Cache extends common.Cache {
     }
 
     public _downloadCore(request: common.DownloadRequest) {
+        var httpRequest: typeof httpRequestModule = require("http/http-request");
+
         var that = this;
         httpRequest.request({ url: request.url, method: "GET" })
             .then(response => {

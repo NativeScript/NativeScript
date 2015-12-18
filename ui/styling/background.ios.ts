@@ -1,6 +1,6 @@
 import viewModule = require("ui/core/view");
-import style = require("./style");
 import common = require("./background-common");
+import * as styleModule from "./style";
 
 global.moduleMerge(common, exports);
 
@@ -9,7 +9,9 @@ export module ios {
         if(!view._nativeView){
             return undefined;
         }
-        
+
+        var style: typeof styleModule = require("./style");
+
         var background = <common.Background> view.style._getValue(style.backgroundInternalProperty);
 
         if (!background || background.isEmpty()) {

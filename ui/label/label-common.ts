@@ -2,8 +2,8 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import textBase = require("ui/text-base");
-import enums = require("ui/enums");
 import view = require("ui/core/view");
+import * as enumsModule from "ui/enums";
 
 export class Label extends textBase.TextBase implements definition.Label {
     public static textWrapProperty = new dependencyObservable.Property(
@@ -26,6 +26,8 @@ export class Label extends textBase.TextBase implements definition.Label {
 
 function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var v = <view.View>data.object;
+    var enums: typeof enumsModule = require("ui/enums");
+
     v.style.whiteSpace = data.newValue ? enums.WhiteSpace.normal : enums.WhiteSpace.nowrap;
 }
 

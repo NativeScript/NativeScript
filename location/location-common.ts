@@ -1,6 +1,6 @@
-﻿import timer = require("timer");
-//import locationManagerModule = require("location/location-manager");
+﻿//import locationManagerModule = require("location/location-manager");
 import defModule = require("location");
+import * as timerModule from "timer";
 
 var defaultGetLocationTimeout = 20000;
 
@@ -54,6 +54,9 @@ export var getLocation = function (options?: defModule.Options): Promise<defModu
         if (!defModule.LocationManager.isEnabled()) {
             return reject(new Error("Location service is disabled"));
         }
+
+        var timer: typeof timerModule = require("timer");
+
         locationManager.startLocationMonitoring(function (location: defModule.Location) {
             if (options && ("number" === typeof options.maximumAge)) {
                 if (location.timestamp.valueOf() + options.maximumAge > new Date().valueOf()) {

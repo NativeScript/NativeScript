@@ -1,6 +1,6 @@
 ﻿import textModule = require("text");
-import types = require("utils/types");
 import utils = require("utils/utils");
+import * as typesModule from "utils/types";
 
 export class FileSystemAccess {
     private _pathSeparator = java.io.File.separator.toString();
@@ -194,6 +194,8 @@ export class FileSystemAccess {
 
     public readText(path: string, onError?: (error: any) => any, encoding?: any) {
         try {
+            var types: typeof typesModule = require("utils/types");
+
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileInputStream(javaFile);
 

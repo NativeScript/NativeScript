@@ -2,13 +2,12 @@
 import view = require("ui/core/view");
 import dts = require("ui/page");
 import frame = require("ui/frame");
-import styleModule = require("../styling/style");
 import styleScope = require("../styling/style-scope");
-import fs = require("file-system");
-import frameCommon = require("../frame/frame-common");
 import {ActionBar} from "ui/action-bar";
 import {DependencyObservable, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData, Property, ValueSource} from "ui/core/dependency-observable";
-
+import * as styleModule from "../styling/style";
+import * as fileSystemModule from "file-system";
+import * as frameCommonModule from "../frame/frame-common";
 import proxy = require("ui/core/proxy");
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
@@ -53,8 +52,10 @@ export class Page extends ContentView implements dts.Page {
     }
 
     public onLoaded() {
+        var sm: typeof styleModule = require("../styling/style");
+
         // The default style of the page should be white background
-        this.style._setValue(styleModule.backgroundColorProperty, "white", ValueSource.Inherited);
+        this.style._setValue(sm.backgroundColorProperty, "white", ValueSource.Inherited);
 
         this._applyCss();
         
@@ -145,6 +146,8 @@ export class Page extends ContentView implements dts.Page {
 
     private _cssFiles = {};
     public addCssFile(cssFileName: string) {
+        var fs: typeof fileSystemModule = require("file-system");
+
         if (cssFileName.indexOf("~/") === 0) {
             cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName.replace("~/", ""));
         }
@@ -200,6 +203,8 @@ export class Page extends ContentView implements dts.Page {
             var context: any = arguments[1];
             var closeCallback: Function = arguments[2];
             var fullscreen: boolean = arguments[3];
+
+            var frameCommon: typeof frameCommonModule = require("../frame/frame-common");
 
             var page = frameCommon.resolvePageFromEntry({ moduleName: moduleName });
             (<Page>page)._showNativeModalView(this, context, closeCallback, fullscreen);

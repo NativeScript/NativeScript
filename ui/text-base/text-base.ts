@@ -4,7 +4,7 @@ import observable = require("data/observable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import formattedString = require("text/formatted-string");
-import weakEvents = require("ui/core/weak-event-listener");
+import * as weakEventListenerModule from "ui/core/weak-event-listener";
 
 var textProperty = new dependencyObservable.Property(
     "text",
@@ -75,6 +75,8 @@ export class TextBase extends view.View implements definition.TextBase, formatte
 
     set formattedText(value: formattedString.FormattedString) {
         if (this.formattedText !== value) {
+            var weakEvents: typeof weakEventListenerModule = require("ui/core/weak-event-listener");
+
             if (this.formattedText) {
                 weakEvents.removeWeakEventListener(this.formattedText, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
             }

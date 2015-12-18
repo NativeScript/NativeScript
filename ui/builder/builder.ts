@@ -9,6 +9,7 @@ import {platformNames, device} from "platform";
 import {LoadOptions} from "ui/builder";
 import {Page} from "ui/page";
 import {resolveFileName} from "file-system/file-name-resolver";
+import * as traceModule from "trace";
 
 export function parse(value: string | Template, context: any): View {
     if (isString(value)) {
@@ -87,6 +88,8 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         if (parentPage) {
             parentPage.addCssFile(cssFilePath);
         } else {
+            var trace: typeof traceModule = require("trace");
+
             trace.write("CSS file found but no page specified. Please specify page in the options!", trace.categories.Error, trace.messageType.error);
         }
     }
@@ -185,7 +188,7 @@ namespace xml2ui {
             var xmlParser = new xml.XmlParser((args: xml.ParserEvent) => {
                 try {
                     this.next(args);
-                } catch(e) {
+                } catch (e) {
                     throw this.error(e, args.position);
                 }
             }, (e, p) => {
@@ -219,7 +222,7 @@ namespace xml2ui {
         private currentPlatformContext: string;
 
         public parse(args: xml.ParserEvent) {
-           if (args.eventType === xml.ParserEventType.StartElement) {
+            if (args.eventType === xml.ParserEventType.StartElement) {
                 if (PlatformFilter.isPlatform(args.elementName)) {
 
                     if (this.currentPlatformContext) {
@@ -269,7 +272,7 @@ namespace xml2ui {
             this.args.forEach((args: xml.ParserEvent) => {
                 try {
                     this.next(args);
-                } catch(e) {
+                } catch (e) {
                     throw this.error(e, args.position);
                 }
             });
@@ -293,7 +296,7 @@ namespace xml2ui {
         private state: XmlStateConsumer;
 
         constructor(state: XmlStateConsumer) {
-            this.state = state; 
+            this.state = state;
         }
 
         parse(args: xml.ParserEvent) {
@@ -542,5 +545,5 @@ namespace xml2ui {
             name: string;
             items?: Array<any>;
         }
-    } 
+    }
 }

@@ -1,11 +1,11 @@
 ﻿import {isString, isDefined, isFunction} from "utils/types";
-import {device} from "platform";
 import {Page} from "ui/page";
 import {View, isEventOrGesture} from "ui/core/view";
 import {ComponentModule} from "ui/builder/component-builder";
 import {File, Folder, path, knownFolders} from "file-system";
 import {getBindingOptions, bindingConstants} from "./binding-builder";
-import {ScopeError} from "utils/debug";
+import * as debugModule from "utils/debug";
+import * as platformModule from "platform";
 
 //the imports below are needed for special property registration
 import "ui/layouts/dock-layout";
@@ -61,7 +61,8 @@ export function getComponentModule(elementName: string, namespace: string, attri
         // Create instance of the component.
         instance = new instanceType();
     } catch (ex) {
-        throw new ScopeError(ex, "Module '" + moduleId + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
+        var debug: typeof debugModule = require("utils/debug");
+        throw new debug.ScopeError(ex, "Module '" + moduleId + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
     }
 
     if (attributes) {
@@ -107,7 +108,10 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
             if (attr.indexOf(":") !== -1) {
                 var platformName = attr.split(":")[0].trim();
-                if (platformName.toLowerCase() === device.os.toLowerCase()) {
+
+                var platform: typeof platformModule = require("platform");
+
+                if (platformName.toLowerCase() === platform.device.os.toLowerCase()) {
                     attr = attr.split(":")[1].trim();
                 } else {
                     continue;

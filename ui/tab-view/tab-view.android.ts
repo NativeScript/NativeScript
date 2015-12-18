@@ -5,9 +5,9 @@ import view = require("ui/core/view");
 import trace = require("trace");
 import types = require("utils/types");
 import utils = require("utils/utils");
-import imageSource = require("image-source");
 import proxy = require("ui/core/proxy");
 import color = require("color");
+import * as imageSourceModule from "image-source";
 
 var VIEWS_STATES = "_viewStates";
 var ACCENT_COLOR = "colorAccent";
@@ -287,6 +287,8 @@ export class TabView extends common.TabView {
                 result.iconId = utils.ad.resources.getDrawableId(item.iconSource.substr(utils.RESOURCE_PREFIX.length));
             }
             else {
+                var imageSource: typeof imageSourceModule = require("image-source");
+
                 var is = imageSource.fromFileOrResource(item.iconSource);
                 if (is) {
                     result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);

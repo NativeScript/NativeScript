@@ -2,8 +2,8 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import color = require("color");
-import types = require("utils/types");
 import utils = require("utils/utils")
+import * as typesModule from "utils/types";
 
 var SEARCHTEXT = "searchText";
 var QUERY = "query";
@@ -56,6 +56,7 @@ function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     }
 
     var newValue = data.newValue;
+    var types: typeof typesModule = require("utils/types");
 
     if (types.isString(newValue)) {
         bar.android.setQueryHint(newValue);

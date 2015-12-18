@@ -1,13 +1,13 @@
 ﻿import common = require("./action-bar-common");
-import trace = require("trace");
 import frame = require("ui/frame");
 import types = require("utils/types");
-import utils = require("utils/utils");
-import imageSource = require("image-source");
 import enums = require("ui/enums");
 import application = require("application");
 import dts = require("ui/action-bar");
 import view = require("ui/core/view");
+import * as traceModule from "trace";
+import * as utilsModule from "utils/utils";
+import * as imageSourceModule from "image-source";
 
 const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 1000;
@@ -301,6 +301,9 @@ export class ActionBar extends common.ActionBar {
 
         if (this._toolbar && child._nativeView) {
             this._toolbar.removeView(child._nativeView);
+
+            var trace: typeof traceModule = require("trace");
+
             trace.notifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
         }
     }
@@ -311,6 +314,8 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
         return undefined;
     }
 
+    var utils: typeof utilsModule = require("utils/utils");
+
     if (icon.indexOf(utils.RESOURCE_PREFIX) === 0) {
         var resourceId: number = resources.getIdentifier(icon.substr(utils.RESOURCE_PREFIX.length), 'drawable', application.android.packageName);
         if (resourceId > 0) {
@@ -319,6 +324,9 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
     }
     else {
         var drawable: android.graphics.drawable.BitmapDrawable;
+
+        var imageSource: typeof imageSourceModule = require("image-source");
+
         var is = imageSource.fromFileOrResource(icon);
         if (is) {
             drawable = new android.graphics.drawable.BitmapDrawable(is.android);

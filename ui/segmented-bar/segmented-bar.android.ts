@@ -3,7 +3,6 @@ import common = require("./segmented-bar-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
-import observable = require("data/observable"); 
 
 const R_ID_TABS = 0x01020013;
 const R_ID_TABCONTENT = 0x01020011;

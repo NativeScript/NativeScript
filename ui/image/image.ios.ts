@@ -3,9 +3,6 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import definition = require("ui/image");
 import enums = require("ui/enums");
-import utils = require("utils/utils");
-import trace = require("trace");
-import view = require("ui/core/view");
 
 global.moduleMerge(imageCommon, exports);
 
@@ -64,6 +61,7 @@ export class Image extends imageCommon.Image {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        var utils = require("utils/utils");
 
         // We don't call super because we measure native view with specific size.     
         var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
@@ -89,10 +87,14 @@ export class Image extends imageCommon.Image {
             measureWidth = finiteWidth ? Math.min(resultW, width) : resultW;
             measureHeight = finiteHeight ? Math.min(resultH, height) : resultH;
 
+            var trace = require("trace");
+
             trace.write("Image stretch: " + this.stretch +
                 ", nativeWidth: " + nativeWidth +
                 ", nativeHeight: " + nativeHeight, trace.categories.Layout);
         }
+
+        var view = require("ui/core/view");
 
         var widthAndState = view.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
         var heightAndState = view.View.resolveSizeAndState(measureHeight, height, heightMode, 0);

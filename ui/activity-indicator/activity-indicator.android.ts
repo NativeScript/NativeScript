@@ -1,13 +1,15 @@
 ﻿import aiCommon = require("./activity-indicator-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import enums = require("ui/enums");
+import * as enumsModule from "ui/enums";
 
 function onBusyPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var indicator = <ActivityIndicator>data.object;
     if (!indicator.android) {
         return;
     }
+
+    var enums: typeof enumsModule = require("ui/enums");
 
     if (indicator.visibility === enums.Visibility.visible) {
         indicator.android.setVisibility(data.newValue ? android.view.View.VISIBLE : android.view.View.INVISIBLE);

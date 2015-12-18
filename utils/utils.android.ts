@@ -1,5 +1,5 @@
 ﻿import common = require("./utils-common");
-import trace = require("trace");
+import * as traceModule from "trace";
 
 global.moduleMerge(common, exports);
 
@@ -60,14 +60,14 @@ export module ad {
     export function getApplicationContext() { return <android.content.Context>getApplication().getApplicationContext(); }
 
     var inputMethodManager: android.view.inputmethod.InputMethodManager;
-    export function getInputMethodManager() { 
+    export function getInputMethodManager() {
         if (!inputMethodManager) {
             inputMethodManager = <android.view.inputmethod.InputMethodManager>getApplicationContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
         }
         return inputMethodManager;
     }
 
-    export function showSoftInput(nativeView: android.view.View) : void {
+    export function showSoftInput(nativeView: android.view.View): void {
         var imm = getInputMethodManager();
         if (imm && nativeView instanceof android.view.View) {
             imm.showSoftInput(nativeView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
@@ -149,6 +149,8 @@ export module ad {
                 }
             }
             catch (ex) {
+                var trace: typeof traceModule = require("trace");
+
                 trace.write("Cannot get pallete color: " + name, trace.categories.Error, trace.messageType.error);
             }
 

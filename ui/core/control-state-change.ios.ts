@@ -1,6 +1,6 @@
 ﻿/* tslint:disable:no-unused-variable */
 import definition = require("ui/core/control-state-change");
-import visualStateConstants = require("ui/styling/visual-state-constants");
+import * as visualStateConstantsModule from "ui/styling/visual-state-constants";
 
 var ObserverClass = NSObject.extend(
     {
@@ -50,6 +50,8 @@ export class ControlStateChangeListener implements definition.ControlStateChange
     }
 
     private _updateState() {
+        var visualStateConstants: typeof visualStateConstantsModule = require("ui/styling/visual-state-constants");
+
         var state = visualStateConstants.Normal;
         if (this._control.highlighted) {
             state = visualStateConstants.Pressed;

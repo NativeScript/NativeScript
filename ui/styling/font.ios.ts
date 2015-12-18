@@ -1,7 +1,7 @@
 ﻿import enums = require("ui/enums");
 import common = require("./font-common");
 import fs = require("file-system");
-import trace = require("trace");
+import * as traceModule from "trace";
 
 var DEFAULT_SERIF = "Times New Roman";
 var DEFAULT_SANS_SERIF = "Helvetica";
@@ -160,6 +160,8 @@ export module ios {
 
         var error = new interop.Reference();
         if (!CTFontManagerRegisterGraphicsFont(font, error)) {
+            var trace: typeof traceModule = require("trace");
+
             trace.write("Error occur while registering font: " + CFErrorCopyDescription(<NSError>error.value), trace.categories.Error, trace.messageType.error);
         }
 

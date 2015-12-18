@@ -1,6 +1,6 @@
 ﻿import definition = require("ui/content-view");
 import view = require("ui/core/view");
-import utils = require("utils/utils");
+import * as utilsModule from "utils/utils";
 
 export class ContentView extends view.CustomLayoutView implements definition.ContentView, view.AddChildFromBuilder {
     private _content: view.View;
@@ -50,7 +50,8 @@ export class ContentView extends view.CustomLayoutView implements definition.Con
     // This method won't be called in Android because we use the native android layout.
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var result = view.View.measureChild(this, this.content, widthMeasureSpec, heightMeasureSpec);
-        
+        var utils: typeof utilsModule = require("utils/utils");
+
         var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
         var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 

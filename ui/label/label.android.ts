@@ -1,7 +1,4 @@
 ﻿import common = require("./label-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-
 global.moduleMerge(common, exports);
 
 export class Label extends common.Label {

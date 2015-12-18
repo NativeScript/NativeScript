@@ -1,9 +1,9 @@
 ﻿import enums = require("ui/enums");
 import common = require("./font-common");
-import application = require("application");
-import trace = require("trace");
-import types = require("utils/types");
-import fs = require("file-system");
+import * as applicationModule from "application";
+import * as typesModule from "utils/types";
+import * as traceModule from "trace";
+import * as fileSystemModule from "file-system";
 
 var typefaceCache = new Map<string, android.graphics.Typeface>();
 var appAssets: android.content.res.AssetManager;
@@ -88,10 +88,22 @@ export class Font extends common.Font {
     }
 
     private loadFontFromFile(fontFamily: string): android.graphics.Typeface {
+        var application: typeof applicationModule = require("application");
+
+        appAssets = appAssets || application.android.context.getAssets();
+        if (!appAssets) {
+            return null;
+        }
+
+        var types: typeof typesModule = require("utils/types");
+
         var result = typefaceCache.get(fontFamily);
         // Check for undefined explicitly as null mean we tried to load the font, but failed.
         if (types.isUndefined(result)) {
             result = null;
+            var trace: typeof traceModule = require("trace");
+            var fs: typeof fileSystemModule  = require("file-system");
+
             var fontAssetPath: string;
             var basePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFamily);
             if (fs.File.exists(basePath + ".ttf")) {

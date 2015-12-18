@@ -2,9 +2,9 @@
  * iOS specific http request implementation.
  */
 import http = require("http");
-import imageSource = require("image-source");
-import types = require("utils/types");
-import utils = require("utils/utils");
+import * as typesModule from "utils/types";
+import * as imageSourceModule from "image-source";
+import * as utilsModule from "utils/utils";
 
 var GET = "GET";
 var USER_AGENT_HEADER = "User-Agent";
@@ -14,6 +14,8 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
     return new Promise<http.HttpResponse>((resolve, reject) => {
 
         try {
+            var types: typeof typesModule = require("utils/types");
+
             var sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration();
             var queue = NSOperationQueue.mainQueue();
             var session = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(
@@ -61,9 +63,13 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                 raw: data,
                                 toString: () => { return NSDataToString(data); },
                                 toJSON: () => {
+                                    var utils: typeof utilsModule = require("utils/utils");
+
                                     return utils.parseJSON(NSDataToString(data));
                                 },
                                 toImage: () => {
+                                    var imageSource: typeof imageSourceModule = require("image-source");
+
                                     if (UIImage.imageWithData["async"]) {
                                         return UIImage.imageWithData["async"](UIImage, [data])
                                                       .then(image => {
@@ -77,7 +83,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                                       });
                                     }
    
-                                    return new Promise<imageSource.ImageSource>((resolveImage, rejectImage) => {
+                                    return new Promise<any>((resolveImage, rejectImage) => {
                                         var img = imageSource.fromData(data);
                                         if (img instanceof imageSource.ImageSource) {
                                             resolveImage(img);

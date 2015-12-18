@@ -1,9 +1,9 @@
 import imageSource = require("image-source");
 import colorModule = require("color");
-import types = require("utils/types");
 import enums = require("ui/enums");
 import dts = require("ui/styling/background");
 import cssValue = require("css-value");
+import * as typesModule from "utils/types";
 
 interface CSSValue {
     type: string;
@@ -213,6 +213,8 @@ export class Background implements dts.Background {
     };
 
     public isEmpty(): boolean {
+        var types: typeof typesModule = require("utils/types");
+
         return types.isNullOrUndefined(this.image) && types.isNullOrUndefined(this.color);
     }
 

@@ -7,8 +7,7 @@ import font = require("ui/styling/font");
 import background = require("ui/styling/background");
 import frame = require("ui/frame");
 import tabView = require("ui/tab-view");
-import formattedString = require("text/formatted-string");
-import types = require("utils/types");
+import * as typesModule from "utils/types";
 
 global.moduleMerge(stylersCommon, exports);
 
@@ -1163,6 +1162,8 @@ function setTextDecorationNative(view: TextUIView, value: string | NSAttributedS
         attributedString = NSMutableAttributedString.alloc().initWithAttributedString(value);
         attributedString.addAttributesRange(attributes, NSRangeFromString(attributedString.string));
     } else {
+        var types: typeof typesModule = require("utils/types");
+
         view.attributedText = NSAttributedString.alloc().initWithStringAttributes(types.isString(value) ? <string>value : "", attributes);
     }
 }

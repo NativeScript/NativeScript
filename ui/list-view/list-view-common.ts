@@ -1,14 +1,13 @@
 ﻿import observable = require("data/observable");
-import observableArray = require("data/observable-array");
 import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
 import definition = require("ui/list-view");
 import dependencyObservable = require("ui/core/dependency-observable");
-import builder = require("ui/builder");
-import label = require("ui/label");
 import color = require("color");
-import weakEvents = require("ui/core/weak-event-listener");
-import types = require("utils/types");
+import * as builderModule from "ui/builder";
+import * as labelModule from "ui/label";
+import * as observableArrayModule from "data/observable-array";
+import * as weakEventsModule from "ui/core/weak-event-listener";
 
 var ITEMS = "items";
 var ITEMTEMPLATE = "itemTemplate";
@@ -133,6 +132,8 @@ export class ListView extends view.View implements definition.ListView {
         var v;
 
         if (this.itemTemplate && this.items) {
+            var builder : typeof builderModule = require("ui/builder");
+
             v = builder.parse(this.itemTemplate, this);
         }
 
@@ -155,6 +156,8 @@ export class ListView extends view.View implements definition.ListView {
     }
 
     public _getDefaultItemContent(index: number): view.View {
+        var label: typeof labelModule = require("ui/label");
+
         var lbl = new label.Label();
         lbl.bind({
             targetProperty: "text",
@@ -164,6 +167,9 @@ export class ListView extends view.View implements definition.ListView {
     }
 
     public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        var observableArray: typeof observableArrayModule = require("data/observable-array");
+        var weakEvents: typeof weakEventsModule = require("ui/core/weak-event-listener");
+
         if (data.oldValue instanceof observable.Observable) {
             weakEvents.removeWeakEventListener(data.oldValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
         }

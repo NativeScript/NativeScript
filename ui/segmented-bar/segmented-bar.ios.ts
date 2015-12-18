@@ -3,7 +3,7 @@ import common = require("./segmented-bar-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
-import color = require("color");
+import * as colorModule from "color";
 
 global.moduleMerge(common, exports);
 
@@ -63,8 +63,10 @@ function onSelectedBackgroundColorPropertyChanged(data: dependencyObservable.Pro
         return;
     }
 
+    var color: typeof colorModule = require("color");
+
     if (data.newValue instanceof color.Color) {
-        view.ios.tintColor = (<color.Color>data.newValue).ios;
+        view.ios.tintColor = data.newValue.ios;
     }
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.selectedBackgroundColorProperty.metadata).onSetNativeValue = onSelectedBackgroundColorPropertyChanged;

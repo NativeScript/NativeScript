@@ -1,5 +1,4 @@
-﻿import enums = require("ui/enums");
-import locationModule = require("location");
+﻿import locationModule = require("location");
 import common = require("./location-common");
 
 global.moduleMerge(common, exports);
@@ -123,6 +122,8 @@ export class LocationManager implements locationModule.LocationManager {
 
     constructor() {
 		//super();
+        var enums = require("ui/enums");
+
         this.desiredAccuracy = enums.Accuracy.any;
         this.updateDistance = kCLDistanceFilterNone;
 		var iosLocManager = new CLLocationManager();

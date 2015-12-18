@@ -3,12 +3,11 @@ import definition = require("ui/tab-view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import trace = require("trace");
 import utils = require("utils/utils");
-import uiUtils = require("ui/utils");
 import view = require("ui/core/view");
-import imageSource = require("image-source");
 import types = require("utils/types");
 import proxy = require("ui/core/proxy");
 import color = require("color");
+import * as imageSourceModule from "image-source";
 
 global.moduleMerge(common, exports);
 
@@ -241,6 +240,8 @@ export class TabView extends common.TabView {
         var image: UIImage;
         image = this._iconsCache[iconSource];
         if (!image) {
+            var imageSource: typeof imageSourceModule = require("image-source");
+
             var is = imageSource.fromFileOrResource(iconSource);
             if (is && is.ios) {
                 var originalRenderedImage = is.ios.imageWithRenderingMode(UIImageRenderingMode.UIImageRenderingModeAlwaysOriginal);

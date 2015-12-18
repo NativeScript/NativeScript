@@ -6,6 +6,8 @@ import * as trace from "trace";
 import {load as buildModule} from "ui/builder";
 import {knownFolders, path} from "file-system";
 import {resolveFileName} from "file-system/file-name-resolver";
+import * as fileSystemModule from "file-system";
+import * as builderModule from "ui/builder";
 
 var frameStack: Array<Frame> = [];
 
@@ -56,6 +58,8 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): Page {
         }
     }
     else if (entry.moduleName) {
+        var fs: typeof fileSystemModule = require("file-system");
+
         // Current app full path.
         var currentAppPath = knownFolders.currentApp().path;
         //Full path of the module = current app full path + module name.
@@ -106,6 +110,8 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
     var fileName = resolveFileName(moduleNamePath, "xml");
     if (fileName) {
         trace.write("Loading XML file: " + fileName, trace.categories.Navigation);
+
+        var builder: typeof builderModule = require("ui/builder");
 
         // Or check if the file exists in the app modules and load the page from XML.
         element = buildModule(fileName, moduleExports);

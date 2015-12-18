@@ -5,7 +5,7 @@ import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import gestures = require("ui/gestures");
-import types = require("utils/types");
+import * as typesModule from "utils/types";
 
 global.moduleMerge(viewCommon, exports);
 
@@ -396,6 +396,8 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
         super._addViewToNativeVisualTree(child);
 
         if (this._nativeView && child._nativeView) {
+            var types : typeof typesModule = require("utils/types");
+
             if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.getChildCount()) {
                 this._nativeView.addView(child._nativeView);
             }

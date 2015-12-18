@@ -1,8 +1,8 @@
 ﻿import view = require("ui/core/view");
 import observable = require("ui/core/dependency-observable");
 import cssParser = require("css");
-import styleProperty = require("ui/styling/style-property");
-import trace = require("trace");
+import * as traceModule from "trace";
+import * as stylePropertyModule from "ui/styling/style-property";
 
 var ID_SPECIFICITY = 10000;
 var CLASS_SPECIFICITY = 100;
@@ -39,16 +39,21 @@ export class CssSelector {
                 view.style._setValue(property, value, observable.ValueSource.Css);
             }
             catch (ex) {
+                var trace : typeof traceModule = require("trace");
+
                 trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
             }
         });
     }
 
-    public eachSetter(callback: (property: styleProperty.Property, resolvedValue: any) => void) {
+    public eachSetter(callback: (property, resolvedValue: any) => void) {
         for (let i = 0; i < this._declarations.length; i++) {
             let declaration = this._declarations[i];
             let name = declaration.property;
             let resolvedValue = declaration.value;
+
+            var styleProperty: typeof stylePropertyModule = require("ui/styling/style-property");
+
             let property = styleProperty.getPropertyByCssName(name);
 
             if (property) {                

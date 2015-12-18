@@ -1,7 +1,7 @@
 ﻿/* tslint:disable:class-name */
 import definition = require("platform");
-import enums = require("ui/enums");
 import utils = require("utils/utils");
+import * as enumsModule from "ui/enums";
 
 export module platformNames {
     export var android = "Android";
@@ -60,6 +60,7 @@ export class device implements definition.device {
     static get deviceType(): string {
         if (!device._deviceType) {
             var dips = Math.min(screen.mainScreen.widthPixels, screen.mainScreen.heightPixels) / screen.mainScreen.scale;
+            var enums: typeof enumsModule = require("ui/enums");
 
             // If the device has more than 600 dips it is considered to be a tablet.
             if (dips >= device.MIN_TABLET_PIXELS) {
