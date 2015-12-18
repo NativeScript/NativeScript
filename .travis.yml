@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-    0.12.7
+    4.2.2
 before_script:
     - npm install -g grunt-cli
     - npm install
