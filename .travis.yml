@@ -3,6 +3,7 @@ node_js:
     0.12.7
 before_script:
     - npm install -g grunt-cli
+    - npm install
 script:
     grunt default
 
