@@ -87,7 +87,7 @@ export class device implements definition.device {
 
     static get language(): string {
         if (!device._language) {
-            device._language = java.util.Locale.getDefault().getLanguage();
+            device._language = java.util.Locale.getDefault().getLanguage().replace("_", "-");
         }
 
         return device._language;
