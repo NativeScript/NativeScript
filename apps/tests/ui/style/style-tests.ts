@@ -724,8 +724,8 @@ export function test_styling_visualStates_are_defined() {
 }
 
 export function test_styling_stylers_are_defined() {
-    TKUnit.assert(types.isFunction(styling.stylers.registerHandler), "registerHandler function is not defined");
-    TKUnit.assert(types.isFunction(styling.stylers.StylePropertyChangedHandler), "StylePropertyChangedHandler class is not defined");
+    TKUnit.assert(types.isFunction(styleModule.registerHandler), "registerHandler function is not defined");
+    TKUnit.assert(types.isFunction(styleModule.StylePropertyChangedHandler), "StylePropertyChangedHandler class is not defined");
 }
 
 export function test_styling_classes_are_defined() {

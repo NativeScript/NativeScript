@@ -1,10 +1,10 @@
-﻿import styling = require("ui/styling");
+﻿import application = require("application");
+import styling = require("ui/styling");
 import types = require("utils/types");
 import trace = require("trace");
 import {DependencyObservable, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData, Property, ValueSource, NativeValueResult} from "ui/core/dependency-observable";
 import {View} from "ui/core/view";
 import {Color} from "color";
-import stylers = require("ui/styling/stylers");
 import styleProperty = require("ui/styling/style-property");
 import converters = require("./converters");
 import enums = require("ui/enums");
@@ -341,7 +341,7 @@ function onBackgroundPositionPropertyChanged(data: PropertyChangeData) {
     }
 }
 
-function getHandlerInternal(propertyId: number, classInfo: types.ClassInfo): styling.stylers.StylePropertyChangedHandler {
+function getHandlerInternal(propertyId: number, classInfo: types.ClassInfo): definition.StylePropertyChangedHandler {
     var className = classInfo ? classInfo.name : "default";
     var handlerKey = className + propertyId;
 
@@ -831,7 +831,7 @@ export class Style extends DependencyObservable implements styling.Style {
         }
 
         try {
-            var handler: styling.stylers.StylePropertyChangedHandler = getHandler(property, this._view);
+            var handler: definition.StylePropertyChangedHandler = getHandler(property, this._view);
 
             if (!handler) {
                 trace.write("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, trace.categories.Style);
@@ -902,7 +902,7 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 }
 
-export function registerHandler(property: Property, handler: styling.stylers.StylePropertyChangedHandler, className?: string) {
+export function registerHandler(property: Property, handler: definition.StylePropertyChangedHandler, className?: string) {
     var realClassName = className ? className : "default";
 
     var handlerRecord = _registeredHandlers[property.id];
@@ -918,7 +918,7 @@ export function registerNoStylingClass(className) {
     noStylingClasses[className] = 1;
 }
 
-export function getHandler(property: Property, view: View): styling.stylers.StylePropertyChangedHandler {
+export function getHandler(property: Property, view: View): definition.StylePropertyChangedHandler {
     return getHandlerInternal(property.id, types.getClassInfo(view));
 }
 
@@ -1126,5 +1126,50 @@ styleProperty.registerShorthandCallback("font", onFontChanged);
 styleProperty.registerShorthandCallback("margin", onMarginChanged);
 styleProperty.registerShorthandCallback("padding", onPaddingChanged);
 
-// register default stylers once all properties are defined.
-stylers._registerDefaultStylers();
+var _defaultNativeValuesCache = {};
+
+export class StylePropertyChangedHandler {
+    private _applyProperty: (view: View, newValue: any, defaultValue?: any) => void;
+    private _resetProperty: (view: View, nativeValue: any) => void;
+    private _getNativeValue: (view: View) => any;
+
+    constructor(
+        applyCallback: (view: View, newValue: any, defaultValue?: any) => void,
+        resetCallback: (view: View, nativeValue: any) => void,
+        getNativeValue?: (view: View) => any) {
+
+        this._applyProperty = applyCallback;
+        this._resetProperty = resetCallback;
+        this._getNativeValue = getNativeValue;
+    }
+
+    public applyProperty(property: Property, view: View, newValue: any) {
+        var className = types.getClass(view);
+        if (!_defaultNativeValuesCache.hasOwnProperty(className + property.id) && this._getNativeValue) {
+            _defaultNativeValuesCache[className + property.id] = this._getNativeValue(view);
+        }
+
+        if (application.android) {
+            newValue = newValue.android ? newValue.android : newValue;
+        } else if (application.ios) {
+            newValue = newValue.ios ? newValue.ios : newValue;
+        }
+
+        this._applyProperty(view, newValue, _defaultNativeValuesCache[className + property.id]);
+    }
+
+    public resetProperty(property: Property, view: View) {
+        var className = types.getClass(view);
+        this._resetProperty(view, _defaultNativeValuesCache[className + property.id]);
+    }
+}
+
+export var ignorePropertyHandler = new StylePropertyChangedHandler(
+    (view, val) => {
+        // empty
+    },
+    (view, val) => {
+        // empty
+    });
+
+registerNoStylingClass("Frame");

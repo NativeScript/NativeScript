@@ -1,6 +1,5 @@
 ﻿import styleModule = require("./style");
 import stylePropertyModule = require("./style-property");
-import stylersCommonModule = require("./stylers-common");
 import visualStateConstatnsModule = require("./visual-state-constants");
 import convertersModule = require("./converters");
 
@@ -38,8 +37,3 @@ export module visualStates {
     export var Hovered = visualStateConstatnsModule.Hovered;
     export var Pressed = visualStateConstatnsModule.Pressed; 
 };
-
-export module stylers {
-    export var StylePropertyChangedHandler = stylersCommonModule.StylePropertyChangedHandler;
-    export var registerHandler = styleModule.registerHandler;
-}

@@ -317,42 +317,4 @@
          */
         export var Pressed: string;
     }
-
-    /**
-     * Encapsulates styler classes used for converting NativeScript properties to properties of the native views/widgets.
-     */
-    module stylers {
-        /**
-         * Represents an object that defines how style property should be applied on a native view/widget.
-         */
-        export class StylePropertyChangedHandler {
-            /**
-             * Creates a new StylePropertyChangedHandler object.
-             * @param applyCallback - called when a property value should be applied onto the native view/widget.
-             * @param resetCallback - called when the property value is cleared to restore the native view/widget in its original state. The callback
-             * also receives as a parameter the value stored by the getNativeValue callback.
-             * @param getNativeValue - called when a style property is set for the first time to get the default native value for this property
-             * in the native view/widget. This value will be passed to resetCallback in case the property value is cleared. Optional.
-             */
-            constructor(applyCallback: (view: view.View, newValue: any) => void,
-                resetCallback: (view: view.View, nativeValue: any) => void,
-                getNativeValue?: (view: view.View) => any);
-        }
-
-        /**
-         * Represents a sceleton for an object that holds all style related callbacks and registers handlers.
-         * Used for better code readability.
-         */
-        export class Styler {
-            public static registerHandlers();
-        }
-
-        /**
-         * A function that actually registers a property with a StylePropertyChangedHandler.
-         * @param property - Usually a style dependency property which should be registered for style changes.
-         * @param handler - The handler that reacts on property changes.
-         * @param className(optional) - This parameter (when set) registers handler only for the class with that name and all its inheritors.
-         */
-        export function registerHandler(property: dependencyObservable.Property, handler: StylePropertyChangedHandler, className?: string);
-    }
 }

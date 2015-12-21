@@ -1,4 +1,4 @@
-﻿import styles = require("ui/styling");
+﻿import style = require("ui/styling/style");
 import observable = require("ui/core/dependency-observable");
 import styleProperty = require("ui/styling/style-property");
 import view = require("ui/core/view");
@@ -9,7 +9,7 @@ import stackLayoutDef = require("ui/layouts/stack-layout");
 export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family",
     new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.AffectsLayout));
 
-export class MyTextViewStyler implements styles.stylers.Styler {
+export class MyTextViewStyler implements style.Styler {
     public static setFontFamilyProperty(view: view.View, newValue: any) {
         if (view.android) {
             (<android.widget.TextView>view.android).setTypeface(android.graphics.Typeface.create(newValue, android.graphics.Typeface.NORMAL));
@@ -41,7 +41,7 @@ export class MyTextViewStyler implements styles.stylers.Styler {
     }
 
     public static registerHandlers() {
-        styles.stylers.registerHandler(fontFamilyProperty, new styles.stylers.StylePropertyChangedHandler(
+        style.registerHandler(fontFamilyProperty, new style.StylePropertyChangedHandler(
             MyTextViewStyler.setFontFamilyProperty,
             MyTextViewStyler.resetFontFamilyProperty,
             MyTextViewStyler.getNativeFontFamilyValue), "MyButton");

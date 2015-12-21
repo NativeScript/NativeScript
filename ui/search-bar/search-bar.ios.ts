@@ -2,6 +2,10 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import * as typesModule from "utils/types";
+import styling = require("ui/styling");
+import style = require("ui/styling/style");
+import view = require("ui/core/view");
+import font = require("ui/styling/font");
 
 function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var bar = <SearchBar>data.object;
@@ -143,3 +147,89 @@ export class SearchBar extends common.SearchBar {
         return this.__textField;
     }
 }
+
+export class SearchBarStyler implements style.Styler {
+
+    private static setBackgroundColorProperty(v: view.View, newValue: any) {
+        var bar = <UISearchBar>v.ios;
+        bar.barTintColor = newValue;
+    }
+
+    private static getBackgroundColorProperty(v: view.View): any {
+        var bar = <UISearchBar>v.ios;
+        return bar.barTintColor;
+    }
+
+    private static resetBackgroundColorProperty(v: view.View, nativeValue: any) {
+        var bar = <UISearchBar>v.ios;
+        bar.barTintColor = nativeValue;
+    }
+
+    private static getColorProperty(v: view.View): any {
+        var sf = <UITextField>(<any>v)._textField;
+        if (sf) {
+            return sf.textColor;
+        }
+
+        return undefined;
+    }
+
+    private static setColorProperty(v: view.View, newValue: any) {
+        var sf = <UITextField>(<any>v)._textField;
+        if (sf) {
+            sf.textColor = newValue;
+            sf.tintColor = newValue;
+        }
+    }
+
+    private static resetColorProperty(v: view.View, nativeValue: any) {
+        var sf = <UITextField>(<any>v)._textField;
+        if (sf) {
+            sf.textColor = nativeValue;
+            sf.tintColor = nativeValue;
+        }
+    }
+
+    // font
+    private static setFontInternalProperty(v: view.View, newValue: any, nativeValue?: any) {
+        var sf = <UITextField>(<any>v)._textField;
+        if (sf) {
+            sf.font = (<font.Font>newValue).getUIFont(nativeValue);
+        }
+    }
+
+    private static resetFontInternalProperty(v: view.View, nativeValue: any) {
+        var sf = <UITextField>(<any>v)._textField;
+        if (sf) {
+            sf.font = nativeValue;
+        }
+    }
+
+    private static getNativeFontInternalValue(v: view.View): any {
+        var sf = <UITextField>(<any>v)._textField;
+        if (sf) {
+            return sf.font;
+        }
+
+        return undefined;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
+            SearchBarStyler.setBackgroundColorProperty,
+            SearchBarStyler.resetBackgroundColorProperty,
+            SearchBarStyler.getBackgroundColorProperty), "SearchBar");
+
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            SearchBarStyler.setColorProperty,
+            SearchBarStyler.resetColorProperty,
+            SearchBarStyler.getColorProperty), "SearchBar");
+
+        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
+            SearchBarStyler.setFontInternalProperty,
+            SearchBarStyler.resetFontInternalProperty,
+            SearchBarStyler.getNativeFontInternalValue), "SearchBar");
+    }
+}
+
+SearchBarStyler.registerHandlers();

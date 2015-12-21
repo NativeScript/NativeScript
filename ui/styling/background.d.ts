@@ -46,4 +46,8 @@ declare module "ui/styling/background" {
     export module ios {
         export function createBackgroundUIColor(view: viewModule.View, flip?: boolean): any /* UIColor */;
     }
+
+    export module ad {
+        export function onBackgroundOrBorderPropertyChanged(v: viewModule.View);
+    }
 }

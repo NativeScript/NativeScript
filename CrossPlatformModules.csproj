@@ -690,6 +690,9 @@
     <TypeScriptCompile Include="ui\styling\background.android.d.ts" />
     <TypeScriptCompile Include="ui\styling\style-scope.d.ts" />
     <TypeScriptCompile Include="ui\styling\style.d.ts" />
+    <TypeScriptCompile Include="ui\text-base\text-base-styler.android.ts" />
+    <TypeScriptCompile Include="ui\text-base\text-base-styler.d.ts" />
+    <TypeScriptCompile Include="ui\text-base\text-base-styler.ios.ts" />
     <TypeScriptCompile Include="ui\ui.d.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view-common.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view.android.ts" />
@@ -1519,16 +1522,6 @@
     <TypeScriptCompile Include="apps\perf-tests\NavigationTest\master-page.ts" />
     <TypeScriptCompile Include="apps\perf-tests\NavigationTest\page1.ts" />
     <TypeScriptCompile Include="apps\perf-tests\NavigationTest\page2.ts" />
-    <TypeScriptCompile Include="ui\styling\stylers.d.ts" />
-    <TypeScriptCompile Include="ui\styling\stylers-common.ts">
-      <DependentUpon>stylers.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\styling\stylers.android.ts">
-      <DependentUpon>stylers.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\styling\stylers.ios.ts">
-      <DependentUpon>stylers.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\styling\style-scope.ts" />
     <TypeScriptCompile Include="utils\utils-common.ts">
       <DependentUpon>utils.d.ts</DependentUpon>

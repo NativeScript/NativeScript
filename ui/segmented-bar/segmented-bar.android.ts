@@ -3,6 +3,10 @@ import common = require("./segmented-bar-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
+import style = require("ui/styling/style");
+import font = require("ui/styling/font");
+import styling = require("ui/styling");
+import view = require("ui/core/view");
 
 const R_ID_TABS = 0x01020013;
 const R_ID_TABCONTENT = 0x01020011;
@@ -184,3 +188,89 @@ class OurTabHost extends android.widget.TabHost {
         // overriden to remove the code that will steal the focus from edit fields.
     }
 }
+
+export class SegmentedBarStyler implements style.Styler {
+    //Text color methods
+    private static setColorProperty(v: view.View, newValue: any) {
+        var tabHost = <android.widget.TabHost>v._nativeView;
+
+        for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            var tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+            var t = <android.widget.TextView>tab.getChildAt(1);
+            t.setTextColor(newValue);
+        }
+    }
+
+    private static resetColorProperty(v: view.View, nativeValue: number) {
+        var tabHost = <android.widget.TabHost>v._nativeView;
+
+        for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            var tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+            var t = <android.widget.TextView>tab.getChildAt(1);
+            t.setTextColor(nativeValue);
+        }
+    }
+
+    private static getColorProperty(v: view.View): number {
+        var tabHost = <android.widget.TabHost>v._nativeView;
+        var textView = new android.widget.TextView(tabHost.getContext());
+        return textView.getCurrentTextColor();
+    }
+
+    //Font methods
+    private static setFontInternalProperty(v: view.View, newValue: any, nativeValue?: any) {
+        let tabHost = <android.widget.TabHost>v._nativeView;
+        let fontValue = <font.Font>newValue;
+
+        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            let tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+            let t = <android.widget.TextView>tab.getChildAt(1);
+            let typeface = fontValue.getAndroidTypeface();
+            if (typeface) {
+                t.setTypeface(typeface);
+            }
+            else {
+                t.setTypeface(nativeValue.typeface);
+            }
+
+            if (fontValue.fontSize) {
+                t.setTextSize(fontValue.fontSize);
+            }
+            else {
+                t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+            }
+        }
+    }
+
+    private static resetFontInternalProperty(v: view.View, nativeValue: any) {
+        let tabHost = <android.widget.TabHost>v._nativeView;
+        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            let tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+            let t = <android.widget.TextView>tab.getChildAt(1);
+            t.setTypeface(nativeValue.typeface);
+            t.setTextSize(nativeValue.size);
+        }
+    }
+
+    private static getFontInternalProperty(v: view.View): any {
+        let tabHost = <android.widget.TabHost>v._nativeView;
+        var textView = new android.widget.TextView(tabHost.getContext());
+        return {
+            typeface: textView.getTypeface(),
+            size: textView.getTextSize()
+        };
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            SegmentedBarStyler.setColorProperty,
+            SegmentedBarStyler.resetColorProperty,
+            SegmentedBarStyler.getColorProperty), "SegmentedBar");
+        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
+            SegmentedBarStyler.setFontInternalProperty,
+            SegmentedBarStyler.resetFontInternalProperty,
+            SegmentedBarStyler.getFontInternalProperty), "SegmentedBar");
+    }
+}
+
+SegmentedBarStyler.registerHandlers();

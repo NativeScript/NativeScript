@@ -1,6 +1,12 @@
 import utils = require("utils/utils");
 import common = require("./background-common");
 import dts = require("ui/styling/background");
+import view = require("ui/core/view");
+import types = require("utils/types");
+import * as styleModule from "./style";
+import * as buttonModule from "ui/button";
+
+var btn: typeof buttonModule;
 
 global.moduleMerge(common, exports);
 
@@ -127,5 +133,78 @@ export module ad {
                 canvas.drawRoundRect(boundsF, radius, radius, borderPaint)
             }
         }
+    }
+
+    var SDK = android.os.Build.VERSION.SDK_INT;
+
+    var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
+
+    export function onBackgroundOrBorderPropertyChanged(v: view.View) {
+        if (!btn) {
+            btn = require("ui/button");
+        }
+
+        var nativeView = <android.view.View>v._nativeView;
+        if (!nativeView) {
+            return;
+        }
+
+        var style: typeof styleModule = require("./style");
+
+        var backgroundValue = v.style._getValue(style.backgroundInternalProperty);
+        var borderWidth = v.borderWidth;
+        if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
+
+            var bkg = <any>nativeView.getBackground();
+            if (!(bkg instanceof dts.ad.BorderDrawable)) {
+                bkg = new dts.ad.BorderDrawable();
+                let viewClass = types.getClass(v);
+                if (!(v instanceof btn.Button) && !_defaultBackgrounds.has(viewClass)) {
+                    _defaultBackgrounds.set(viewClass, nativeView.getBackground());
+                }
+
+                nativeView.setBackground(bkg);
+            }
+
+            bkg.borderWidth = v.borderWidth;
+            bkg.cornerRadius = v.borderRadius;
+            bkg.borderColor = v.borderColor ? v.borderColor.android : android.graphics.Color.TRANSPARENT;
+            bkg.background = backgroundValue;
+
+            if (SDK < 18) {
+                // Switch to software because of unsupported canvas methods if hardware acceleration is on:
+                // http://developer.android.com/guide/topics/graphics/hardware-accel.html
+                nativeView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+            }
+            else {
+                nativeView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+            }
+        }
+        else {
+            // reset the value with the default native value
+            if (v instanceof btn.Button) {
+                var nativeButton = new android.widget.Button(nativeView.getContext());
+                nativeView.setBackground(nativeButton.getBackground());
+            }
+            else {
+                let viewClass = types.getClass(v);
+                if (_defaultBackgrounds.has(viewClass)) {
+                    nativeView.setBackground(_defaultBackgrounds.get(viewClass));
+                }
+            }
+
+            if (SDK < 18) {
+                // Reset layer type to hardware
+                nativeView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+            }
+        }
+
+        var density = utils.layout.getDisplayDensity();
+        nativeView.setPadding(
+            Math.round((borderWidth + v.style.paddingLeft) * density),
+            Math.round((borderWidth + v.style.paddingTop) * density),
+            Math.round((borderWidth + v.style.paddingRight) * density),
+            Math.round((borderWidth + v.style.paddingBottom) * density)
+        );
     }
 }

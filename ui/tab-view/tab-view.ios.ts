@@ -8,6 +8,9 @@ import types = require("utils/types");
 import proxy = require("ui/core/proxy");
 import color = require("color");
 import * as imageSourceModule from "image-source";
+import style = require("ui/styling/style");
+import font = require("ui/styling/font");
+import styling = require("ui/styling");
 
 global.moduleMerge(common, exports);
 
@@ -365,3 +368,59 @@ function getTitleAttributesForStates(tabView: TabView): { normalState: any, sele
         selectedState: selectedState
     };
 }
+
+export class TabViewStyler implements style.Styler {
+    // color
+    private static setColorProperty(v: view.View, newValue: any) {
+        var tab = <definition.TabView>v;
+        tab._updateIOSTabBarColorsAndFonts();
+    }
+
+    private static resetColorProperty(v: view.View, nativeValue: any) {
+        var tab = <definition.TabView>v;
+        tab._updateIOSTabBarColorsAndFonts();
+    }
+
+    // font
+    private static setFontInternalProperty(v: view.View, newValue: any, nativeValue?: any) {
+        var tab = <definition.TabView>v;
+        tab._updateIOSTabBarColorsAndFonts();
+    }
+
+    private static resetFontInternalProperty(v: view.View, nativeValue: any) {
+        var tab = <definition.TabView>v;
+        tab._updateIOSTabBarColorsAndFonts();
+    }
+
+    private static getNativeFontValue(v: view.View) {
+        var tab = <definition.TabView>v;
+
+        let currentFont;
+
+        if (tab.ios && tab.ios.items && tab.ios.items.length > 0) {
+            let currentAttrs = tab.ios.items[0].titleTextAttributesForState(UIControlState.UIControlStateNormal);
+            if (currentAttrs) {
+                currentFont = currentAttrs.objectForKey(NSFontAttributeName);
+            }
+        }
+
+        if (!currentFont) {
+            currentFont = UIFont.systemFontOfSize(UIFont.labelFontSize());
+        }
+
+        return currentFont;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            TabViewStyler.setColorProperty,
+            TabViewStyler.resetColorProperty), "TabView");
+
+        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
+            TabViewStyler.setFontInternalProperty,
+            TabViewStyler.resetFontInternalProperty,
+            TabViewStyler.getNativeFontValue), "TabView");
+    }
+}
+
+TabViewStyler.registerHandlers();

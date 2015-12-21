@@ -1,6 +1,9 @@
 ﻿import common = require("./slider-common");
 import dependencyObservable = require("ui/core/dependency-observable");
+import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
+import styling = require("ui/styling");
+import style = require("ui/styling/style");
 
 function onValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var slider = <Slider>data.object;
@@ -95,3 +98,42 @@ export class Slider extends common.Slider {
         }
     }
 }
+
+export class SliderStyler implements style.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        bar.getThumb().setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: number) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        bar.getThumb().clearColorFilter();
+    }
+
+    private static setBackgroundAndBorderProperty(view: view.View, newValue: any) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        bar.getProgressDrawable().setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+    }
+
+    private static resetBackgroundAndBorderProperty(view: view.View, nativeValue: number) {
+        var bar = <android.widget.SeekBar>view._nativeView;
+        // Do nothing.
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            SliderStyler.setColorProperty,
+            SliderStyler.resetColorProperty), "Slider");
+
+        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
+            SliderStyler.setBackgroundAndBorderProperty,
+            SliderStyler.resetBackgroundAndBorderProperty), "Slider");
+
+        style.registerHandler(style.borderWidthProperty, style.ignorePropertyHandler, "Slider");
+        style.registerHandler(style.borderColorProperty, style.ignorePropertyHandler, "Slider");
+        style.registerHandler(style.borderRadiusProperty, style.ignorePropertyHandler, "Slider");
+        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Slider");
+    }
+}
+
+SliderStyler.registerHandlers();

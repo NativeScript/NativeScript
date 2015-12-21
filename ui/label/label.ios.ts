@@ -1,8 +1,11 @@
 ﻿import common = require("./label-common");
 import definition = require("ui/label");
 import * as enumsModule from "ui/enums";
-import * as viewModule from "ui/core/view";
 import * as utilsModule from "utils/utils";
+import * as backgroundModule from "ui/styling/background";
+import view = require("ui/core/view");
+import style = require("ui/styling/style");
+import styling = require("ui/styling");
 
 global.moduleMerge(common, exports);
 
@@ -98,12 +101,51 @@ export class Label extends common.Label {
             var measureWidth = Math.max(labelWidth, this.minWidth);
             var measureHeight = Math.max(nativeSize.height, this.minHeight);
 
-            var vm: typeof viewModule = require("ui/core/view");
-
-            var widthAndState = vm.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-            var heightAndState = vm.View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+            var widthAndState = view.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+            var heightAndState = view.View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
             this.setMeasuredDimension(widthAndState, heightAndState);
         }
     }
 } 
+
+export class LabelStyler implements style.Styler {
+    //Background methods
+    private static setBackgroundInternalProperty(view: view.View, newValue: any) {
+        var uiLabel: UILabel = <UILabel>view._nativeView;
+        if (uiLabel && uiLabel.layer) {
+            var flipImage = true;
+            var background: typeof backgroundModule = require("ui/styling/background");
+            var uiColor = <UIColor>background.ios.createBackgroundUIColor(view, flipImage);
+            var cgColor = uiColor ? uiColor.CGColor : null;
+            uiLabel.layer.backgroundColor = cgColor;
+        }
+    }
+
+    private static resetBackgroundInternalProperty(view: view.View, nativeValue: any) {
+        var uiLabel: UILabel = <UILabel>view._nativeView;
+        if (uiLabel && uiLabel.layer) {
+            var uiColor = <UIColor>nativeValue;
+            var cgColor = uiColor ? uiColor.CGColor : null;
+            uiLabel.layer.backgroundColor = cgColor;
+        }
+    }
+
+    private static getNativeBackgroundInternalValue(view: view.View): any {
+        var uiLabel: UILabel = <UILabel>view._nativeView;
+        if (uiLabel && uiLabel.layer && uiLabel.layer.backgroundColor) {
+            return UIColor.colorWithCGColor(uiLabel.layer.backgroundColor);
+        }
+
+        return undefined;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.backgroundInternalProperty, new style.StylePropertyChangedHandler(
+            LabelStyler.setBackgroundInternalProperty,
+            LabelStyler.resetBackgroundInternalProperty,
+            LabelStyler.getNativeBackgroundInternalValue), "Label");
+    }
+}
+
+LabelStyler.registerHandlers();

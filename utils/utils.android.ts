@@ -1,5 +1,6 @@
 ﻿import common = require("./utils-common");
 import * as traceModule from "trace";
+import enums = require("ui/enums");
 
 global.moduleMerge(common, exports);
 
@@ -55,6 +56,76 @@ export module layout {
 
 // We are using "ad" here to avoid namespace collision with the global android object
 export module ad {
+
+    export function setTextDecoration(view: android.widget.TextView, value: string) {
+        var flags = 0;
+
+        var values = (value + "").split(" ");
+
+        if (values.indexOf(enums.TextDecoration.underline) !== -1) {
+            flags = flags | android.graphics.Paint.UNDERLINE_TEXT_FLAG;
+        }
+
+        if (values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+            flags = flags | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
+        }
+
+        if (values.indexOf(enums.TextDecoration.none) === -1) {
+            view.setPaintFlags(flags);
+        } else {
+            view.setPaintFlags(0);
+        }
+    }
+
+    export function setTextTransform(view: android.widget.TextView, value: string) {
+        let str = view.getText() + "";
+        let result: string;
+
+        switch (value) {
+            case enums.TextTransform.none:
+            default:
+                result = view["originalString"] || str;
+                if (view["transformationMethod"]) {
+                    view.setTransformationMethod(view["transformationMethod"]);
+                }
+                break;
+            case enums.TextTransform.uppercase:
+                view.setTransformationMethod(null);
+                result = str.toUpperCase();
+                break;
+            case enums.TextTransform.lowercase:
+                view.setTransformationMethod(null);
+                result = str.toLowerCase();
+                break;
+            case enums.TextTransform.capitalize:
+                view.setTransformationMethod(null);
+                result = getCapitalizedString(str);
+                break;
+        }
+
+        if (!view["originalString"]) {
+            view["originalString"] = str;
+            view["transformationMethod"] = view.getTransformationMethod();
+        }
+
+        view.setText(result);
+    }
+
+    function getCapitalizedString(str: string): string {
+        var words = str.split(" ");
+        var newWords = [];
+        for (let i = 0; i < words.length; i++) {
+            let word = words[i];
+            newWords.push(word.substr(0, 1).toUpperCase() + word.substring(1));
+        }
+
+        return newWords.join(" ");
+    }
+
+    export function setWhiteSpace(view: android.widget.TextView, value: string) {
+        view.setSingleLine(value === enums.WhiteSpace.nowrap);
+        view.setEllipsize(value === enums.WhiteSpace.nowrap ? android.text.TextUtils.TruncateAt.END : null);
+    }
 
     export function getApplication() { return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance(); }
     export function getApplicationContext() { return <android.content.Context>getApplication().getApplicationContext(); }

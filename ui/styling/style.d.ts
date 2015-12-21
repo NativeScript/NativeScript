@@ -4,7 +4,6 @@ declare module "ui/styling/style" {
     import {DependencyObservable, Property} from "ui/core/dependency-observable";
     import {View} from "ui/core/view";
     import {Color} from "color";
-    import stylers = require("ui/styling/stylers");
     import styleProperty = require("ui/styling/style-property");
 
     export interface Thickness {
@@ -87,10 +86,8 @@ declare module "ui/styling/style" {
         public _updateTextTransform(): void;
     }
 
-    export function registerHandler(property: Property, handler: styling.stylers.StylePropertyChangedHandler, className?: string);
-
     export function registerNoStylingClass(className);
-    export function getHandler(property: Property, view: View): styling.stylers.StylePropertyChangedHandler;
+    export function getHandler(property: Property, view: View): StylePropertyChangedHandler;
     // Property registration
     export var colorProperty: styleProperty.Property;
     export var backgroundImageProperty: styleProperty.Property;
@@ -112,6 +109,9 @@ declare module "ui/styling/style" {
     export var minHeightProperty: styleProperty.Property;
     export var visibilityProperty: styleProperty.Property;
     export var opacityProperty: styleProperty.Property;
+    export var textDecorationProperty: styleProperty.Property;
+    export var textTransformProperty: styleProperty.Property;
+    export var whiteSpaceProperty: styleProperty.Property;
 
     // Helper property holding most layout related properties available in CSS.
     // When layout related properties are set in CSS we chache them and send them to the native view in a single call.
@@ -131,4 +131,40 @@ declare module "ui/styling/style" {
     export var paddingRightProperty: styleProperty.Property;
     export var paddingTopProperty: styleProperty.Property;
     export var paddingBottomProperty: styleProperty.Property;
+
+    /**
+     * Represents an object that defines how style property should be applied on a native view/widget.
+     */
+    export class StylePropertyChangedHandler {
+        /**
+         * Creates a new StylePropertyChangedHandler object.
+         * @param applyCallback - called when a property value should be applied onto the native view/widget.
+         * @param resetCallback - called when the property value is cleared to restore the native view/widget in its original state. The callback
+         * also receives as a parameter the value stored by the getNativeValue callback.
+         * @param getNativeValue - called when a style property is set for the first time to get the default native value for this property
+         * in the native view/widget. This value will be passed to resetCallback in case the property value is cleared. Optional.
+         */
+        constructor(applyCallback: (view: View, newValue: any) => void,
+            resetCallback: (view: View, nativeValue: any) => void,
+            getNativeValue?: (view: View) => any);
+    }
+
+    /**
+     * Represents a sceleton for an object that holds all style related callbacks and registers handlers.
+     * Used for better code readability.
+     */
+    export class Styler {
+        public static registerHandlers();
+    }
+
+    /**
+     * A function that actually registers a property with a StylePropertyChangedHandler.
+     * @param property - Usually a style dependency property which should be registered for style changes.
+     * @param handler - The handler that reacts on property changes.
+     * @param className(optional) - This parameter (when set) registers handler only for the class with that name and all its inheritors.
+     */
+    export function registerHandler(property: Property, handler: StylePropertyChangedHandler, className?: string);
+
+    export var ignorePropertyHandler;
+
 }
