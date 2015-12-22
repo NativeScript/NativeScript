@@ -129,6 +129,11 @@ declare module "ui/action-bar" {
         actionBar: ActionBar;
 
         /**
+         * Gets the page that contains the action item.
+         */
+        page: pages.Page;
+
+        /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
          * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
          * @param callback - Callback function which will be executed when event is raised.

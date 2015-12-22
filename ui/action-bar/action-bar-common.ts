@@ -297,6 +297,10 @@ export class ActionItem extends bindable.Bindable implements dts.ActionItem {
         }
     }
 
+    get page(): pages.Page {
+        return this.actionBar ? this.actionBar.page : undefined;
+    }
+
     public _raiseTap() {
         this._emit(ActionItem.tapEvent);
     }

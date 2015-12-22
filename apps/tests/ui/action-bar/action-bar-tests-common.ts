@@ -186,6 +186,17 @@ export function test_actionItem_inherit_bindingContext_inXML() {
     TKUnit.assertEqual(actionItem.text, "success", "actionItem.text");
 };
 
+export function test_actionItem_page_property_inXML() {
+    var p = <PageModule.Page>builder.parse(
+        "<Page> <Page.actionBar> <ActionBar> <ActionBar.actionItems>" +
+        "<ActionItem text=\"test\" />" +
+        "</ActionBar.actionItems> </ActionBar> </Page.actionBar> </Page>");
+
+    var actionItem = p.actionBar.actionItems.getItemAt(0);
+
+    TKUnit.assertEqual(actionItem.page, p, "actionItem.page");
+};
+
 export function test_navigationButton_inherit_bindingContext_inXML() {
     var p = <PageModule.Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar>" +
