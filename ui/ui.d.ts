@@ -44,7 +44,6 @@ declare module "ui" {
     export * from "ui/styling/css-selector";
     export * from "ui/styling/font";
     export * from "ui/styling/style-property";
-    export * from "ui/styling/stylers";
     export * from "ui/styling/visual-state-constants";
     export * from "ui/switch";
     export * from "ui/tab-view";

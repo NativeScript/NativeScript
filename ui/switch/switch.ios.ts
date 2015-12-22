@@ -2,6 +2,9 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import * as utilsModule from "utils/utils";
+import styling = require("ui/styling");
+import style = require("ui/styling/style");
+import view = require("ui/core/view");
 
 function onCheckedPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var swtch = <Switch>data.object;
@@ -63,3 +66,52 @@ export class Switch extends common.Switch {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 } 
+
+export class SwitchStyler implements style.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var sw = <UISwitch>view.ios;
+        sw.thumbTintColor = newValue;
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var sw = <UISwitch>view.ios;
+        sw.thumbTintColor = nativeValue;
+    }
+
+    private static getNativeColorValue(view: view.View): any {
+        var sw = <UISwitch>view.ios;
+        return sw.thumbTintColor;
+    }
+
+    private static setBackgroundColorProperty(view: view.View, newValue: any) {
+        var sw = <UISwitch>view.ios;
+        sw.onTintColor = view.backgroundColor.ios;
+    }
+
+    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
+        var sw = <UISwitch>view.ios;
+        sw.onTintColor = nativeValue;
+    }
+
+    private static getBackgroundColorProperty(view: view.View): any {
+        var sw = <UISwitch>view.ios;
+        return sw.onTintColor;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            SwitchStyler.setColorProperty,
+            SwitchStyler.resetColorProperty,
+            SwitchStyler.getNativeColorValue), "Switch");
+
+        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
+            SwitchStyler.setBackgroundColorProperty,
+            SwitchStyler.resetBackgroundColorProperty,
+            SwitchStyler.getBackgroundColorProperty), "Switch");
+
+        // Ignore the default backgroundInternalProperty handler
+        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Switch");
+    }
+}
+
+SwitchStyler.registerHandlers();

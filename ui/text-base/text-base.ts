@@ -5,6 +5,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import formattedString = require("text/formatted-string");
 import * as weakEventListenerModule from "ui/core/weak-event-listener";
+import tbs = require("ui/text-base/text-base-styler");
 
 var textProperty = new dependencyObservable.Property(
     "text",
@@ -124,3 +125,5 @@ export class TextBase extends view.View implements definition.TextBase, formatte
         formattedString.FormattedString.addFormattedStringToView(this, name, value);
     }
 }
+
+tbs.TextBaseStyler.registerHandlers()

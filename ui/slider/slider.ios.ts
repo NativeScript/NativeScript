@@ -1,6 +1,9 @@
 ﻿import common = require("./slider-common");
 import dependencyObservable = require("ui/core/dependency-observable");
+import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
+import styling = require("ui/styling");
+import style = require("ui/styling/style");
 
 function onValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var slider = <Slider>data.object;
@@ -66,3 +69,51 @@ export class Slider extends common.Slider {
         return this._ios;
     }
 } 
+
+export class SliderStyler implements style.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <UISlider>view.ios;
+        bar.thumbTintColor = newValue;
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UISlider>view.ios;
+        bar.thumbTintColor = nativeValue;
+    }
+
+    private static getNativeColorValue(view: view.View): any {
+        var bar = <UISlider>view.ios;
+        return bar.thumbTintColor;
+    }
+
+    private static setBackgroundColorProperty(view: view.View, newValue: any) {
+        var bar = <UISlider>view.ios;
+        bar.minimumTrackTintColor = newValue;
+    }
+
+    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UISlider>view.ios;
+        bar.minimumTrackTintColor = nativeValue;
+    }
+
+    private static getBackgroundColorProperty(view: view.View): any {
+        var bar = <UISlider>view.ios;
+        return bar.minimumTrackTintColor;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            SliderStyler.setColorProperty,
+            SliderStyler.resetColorProperty,
+            SliderStyler.getNativeColorValue), "Slider");
+
+        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
+            SliderStyler.setBackgroundColorProperty,
+            SliderStyler.resetBackgroundColorProperty,
+            SliderStyler.getBackgroundColorProperty), "Slider");
+
+        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Slider");
+    }
+}
+
+SliderStyler.registerHandlers();

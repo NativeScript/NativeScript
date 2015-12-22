@@ -3,6 +3,10 @@ import trace = require("trace");
 import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import style = require("ui/styling/style");
+import styling = require("ui/styling");
+import enums = require("ui/enums");
+import * as backgroundModule from "ui/styling/background";
 
 global.moduleMerge(viewCommon, exports);
 
@@ -317,3 +321,152 @@ export class CustomLayoutView extends View {
         }
     }
 }
+
+export class ViewStyler implements style.Styler {
+    //Background methods
+    private static setBackgroundInternalProperty(view: View, newValue: any) {
+        var nativeView: UIView = <UIView>view._nativeView;
+        if (nativeView) {
+            var background: typeof backgroundModule = require("ui/styling/background");
+            nativeView.backgroundColor = background.ios.createBackgroundUIColor(view);
+        }
+    }
+
+    private static resetBackgroundInternalProperty(view: View, nativeValue: any) {
+        var nativeView: UIView = <UIView>view._nativeView;
+        if (nativeView) {
+            nativeView.backgroundColor = nativeValue;
+        }
+    }
+
+    private static getNativeBackgroundInternalValue(view: View): any {
+        var nativeView: UIView = <UIView>view._nativeView;
+        if (nativeView) {
+            return nativeView.backgroundColor;
+        }
+        return undefined;
+    }
+
+    //Visibility methods
+    private static setVisibilityProperty(view: View, newValue: any) {
+        var nativeView: UIView = <UIView>view._nativeView;
+        if (nativeView) {
+            return nativeView.hidden = (newValue !== enums.Visibility.visible);
+        }
+    }
+
+    private static resetVisibilityProperty(view: View, nativeValue: any) {
+        var nativeView: UIView = <UIView>view._nativeView;
+        if (nativeView) {
+            return nativeView.hidden = false;
+        }
+    }
+
+    //Opacity methods
+    private static setOpacityProperty(view: View, newValue: any) {
+        var nativeView: UIView = <UIView>view._nativeView;
+        if (nativeView) {
+            return nativeView.alpha = newValue;
+        }
+    }
+
+    private static resetOpacityProperty(view: View, nativeValue: any) {
+        var nativeView: UIView = <UIView>view._nativeView;
+        if (nativeView) {
+            return nativeView.alpha = 1.0;
+        }
+    }
+
+    //Border width methods
+    private static setBorderWidthProperty(view: View, newValue: any) {
+        if (view._nativeView instanceof UIView) {
+            (<UIView>view._nativeView).layer.borderWidth = newValue;
+        }
+    }
+
+    private static resetBorderWidthProperty(view: View, nativeValue: any) {
+        if (view._nativeView instanceof UIView) {
+            (<UIView>view._nativeView).layer.borderWidth = nativeValue;
+        }
+    }
+
+    private static getBorderWidthProperty(view: View): any {
+        if (view._nativeView instanceof UIView) {
+            return (<UIView>view._nativeView).layer.borderWidth;
+        }
+        return 0;
+    }
+
+    //Border color methods
+    private static setBorderColorProperty(view: View, newValue: any) {
+        if (view._nativeView instanceof UIView && newValue instanceof UIColor) {
+            (<UIView>view._nativeView).layer.borderColor = (<UIColor>newValue).CGColor;
+        }
+    }
+
+    private static resetBorderColorProperty(view: View, nativeValue: any) {
+        if (view._nativeView instanceof UIView && nativeValue instanceof UIColor) {
+            (<UIView>view._nativeView).layer.borderColor = nativeValue;
+        }
+    }
+
+    private static getBorderColorProperty(view: View): any {
+        if (view._nativeView instanceof UIView) {
+            return (<UIView>view._nativeView).layer.borderColor;
+        }
+        return undefined;
+    }
+
+    //Border radius methods
+    private static setBorderRadiusProperty(view: View, newValue: any) {
+        if (view._nativeView instanceof UIView) {
+            (<UIView>view._nativeView).layer.cornerRadius = newValue;
+            (<UIView>view._nativeView).clipsToBounds = true;
+        }
+    }
+
+    private static resetBorderRadiusProperty(view: View, nativeValue: any) {
+        if (view._nativeView instanceof UIView) {
+            (<UIView>view._nativeView).layer.cornerRadius = nativeValue;
+        }
+    }
+
+    private static getBorderRadiusProperty(view: View): any {
+        if (view._nativeView instanceof UIView) {
+            return (<UIView>view._nativeView).layer.cornerRadius;
+        }
+        return 0;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.backgroundInternalProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setBackgroundInternalProperty,
+            ViewStyler.resetBackgroundInternalProperty,
+            ViewStyler.getNativeBackgroundInternalValue));
+
+        style.registerHandler(style.visibilityProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setVisibilityProperty,
+            ViewStyler.resetVisibilityProperty));
+
+        style.registerHandler(style.opacityProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setOpacityProperty,
+            ViewStyler.resetOpacityProperty));
+
+        style.registerHandler(style.borderWidthProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setBorderWidthProperty,
+            ViewStyler.resetBorderWidthProperty,
+            ViewStyler.getBorderWidthProperty));
+
+        style.registerHandler(style.borderColorProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setBorderColorProperty,
+            ViewStyler.resetBorderColorProperty,
+            ViewStyler.getBorderColorProperty));
+
+        style.registerHandler(style.borderRadiusProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setBorderRadiusProperty,
+            ViewStyler.resetBorderRadiusProperty,
+            ViewStyler.getBorderRadiusProperty));
+    }
+}
+
+ViewStyler.registerHandlers();

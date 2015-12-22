@@ -68,6 +68,10 @@
      * Module with android specific utilities.
      */
     module ad {
+        export function setTextTransform(view, value: string);
+        export function setWhiteSpace(view, value: string);
+        export function setTextDecoration(view, value: string);
+
         /**
          * Gets the native Android application instance.
          */
@@ -141,6 +145,22 @@
      * Module with ios specific utilities.
      */
     module ios {
+
+        export function setWhiteSpace(view, value: string, parentView?: any);
+        export function setTextTransform(view, value: string);
+        export function setTextDecoration(view, value: string);
+        export function setTextAlignment(view, value: string);
+
+        export interface TextUIView {
+            font: any;
+            textAlignment: number;
+            textColor: any;
+            text: string;
+            attributedText: any;
+            lineBreakMode: number;
+            numberOfLines: number;
+        }
+
         /**
          * Utility module dealing with some iOS collections.
          */

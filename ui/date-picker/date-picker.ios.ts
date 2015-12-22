@@ -1,6 +1,9 @@
 ﻿import common = require("./date-picker-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import styling = require("ui/styling");
+import style = require("ui/styling/style");
+import view = require("ui/core/view");
 
 function onYearPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
@@ -115,3 +118,30 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
         'valueChanged': { returns: interop.types.void, params: [UIDatePicker] }
     };
 }
+
+export class DatePickerStyler implements style.Styler {
+    // color
+    private static setColorProperty(view: view.View, newValue: any) {
+        var picker = <UIDatePicker>view._nativeView;
+        picker.setValueForKey(newValue, "textColor");
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var picker = <UIDatePicker>view._nativeView;
+        picker.setValueForKey(nativeValue, "textColor");
+    }
+
+    private static getColorProperty(view: view.View): any {
+        var picker = <UIDatePicker>view._nativeView;
+        return picker.valueForKey("textColor");
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            DatePickerStyler.setColorProperty,
+            DatePickerStyler.resetColorProperty,
+            DatePickerStyler.getColorProperty), "DatePicker");
+    }
+}
+
+DatePickerStyler.registerHandlers();

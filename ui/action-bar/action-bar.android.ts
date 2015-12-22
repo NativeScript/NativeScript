@@ -8,6 +8,9 @@ import view = require("ui/core/view");
 import * as traceModule from "trace";
 import * as utilsModule from "utils/utils";
 import * as imageSourceModule from "image-source";
+import style = require("ui/styling/style");
+import font = require("ui/styling/font");
+import styling = require("ui/styling");
 
 const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 1000;
@@ -367,3 +370,28 @@ function getIconVisibility(iconVisibility: string): boolean {
 function getSystemResourceId(systemIcon: string): number {
     return android.content.res.Resources.getSystem().getIdentifier(systemIcon, "drawable", "android");
 }
+
+export class ActionBarStyler implements style.Styler {
+    // color
+    private static setColorProperty(v: view.View, newValue: any) {
+        var toolbar = (<android.support.v7.widget.Toolbar>v._nativeView);
+        toolbar.setTitleTextColor(newValue);
+
+    }
+
+    private static resetColorProperty(v: view.View, nativeValue: any) {
+        // there is no toolbar.getTitleTextColor - so default to black
+        if (types.isNullOrUndefined(nativeValue)) {
+            nativeValue = android.graphics.Color.BLACK;
+        }
+        (<android.support.v7.widget.Toolbar>v._nativeView).setTitleTextColor(nativeValue);
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            ActionBarStyler.setColorProperty,
+            ActionBarStyler.resetColorProperty), "ActionBar");
+    }
+}
+
+ActionBarStyler.registerHandlers();

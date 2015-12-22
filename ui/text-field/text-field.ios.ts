@@ -3,6 +3,9 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import textBase = require("ui/text-base");
 import enums = require("ui/enums");
+import styling = require("ui/styling");
+import style = require("ui/styling/style");
+import view = require("ui/core/view");
 
 function onSecurePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var textField = <TextField>data.object;
@@ -154,3 +157,40 @@ export class TextField extends common.TextField {
         textField.ios.placeholder = data.newValue + "";
     }
 } 
+
+export class TextFieldStyler implements style.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var tf: UITextField = <UITextField>view._nativeView;
+        TextFieldStyler._setTextFieldColor(tf, newValue);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var tf: UITextField = <UITextField>view._nativeView;
+        TextFieldStyler._setTextFieldColor(tf, nativeValue);
+    }
+
+    private static _setTextFieldColor(tf: UITextField, newValue: any) {
+        var color: UIColor = <UIColor>newValue;
+        if ((<any>tf).isShowingHint && color) {
+            tf.textColor = (<UIColor>color).colorWithAlphaComponent(0.22);
+        }
+        else {
+            tf.textColor = color;
+            tf.tintColor = color;
+        }
+    }
+
+    private static getNativeColorValue(view: view.View): any {
+        var tf: UITextField = <UITextField>view._nativeView;
+        return tf.tintColor;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            TextFieldStyler.setColorProperty,
+            TextFieldStyler.resetColorProperty,
+            TextFieldStyler.getNativeColorValue), "TextField");
+    }
+}
+
+TextFieldStyler.registerHandlers();

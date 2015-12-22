@@ -6,6 +6,10 @@ import enums = require("ui/enums");
 import view = require("ui/core/view");
 import utils = require("utils/utils");
 import types = require("utils/types");
+import style = require("ui/styling/style");
+import font = require("ui/styling/font");
+import styling = require("ui/styling");
+import frame = require("ui/frame");
 
 global.moduleMerge(common, exports);
 
@@ -243,3 +247,55 @@ class TapBarItemHandlerImpl extends NSObject {
         "tap": { returns: interop.types.void, params: [interop.types.id] }
     };
 }
+
+export class ActionBarStyler implements style.Styler {
+    // color
+    private static setColorProperty(v: view.View, newValue: any) {
+        var topFrame = frame.topmost();
+        if (topFrame) {
+            var navBar = topFrame.ios.controller.navigationBar;
+            navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: newValue };
+            navBar.tintColor = newValue;
+        }
+    }
+
+    private static resetColorProperty(v: view.View, nativeValue: any) {
+        var topFrame = frame.topmost();
+        if (topFrame) {
+            var navBar = topFrame.ios.controller.navigationBar;
+            navBar.titleTextAttributes = null;
+            navBar.tintColor = null;
+        }
+    }
+
+    // background-color
+    private static setBackgroundColorProperty(v: view.View, newValue: any) {
+        var topFrame = frame.topmost();
+        if (topFrame) {
+            var navBar = topFrame.ios.controller.navigationBar;
+            navBar.barTintColor = newValue;
+        }
+    }
+
+    private static resetBackgroundColorProperty(v: view.View, nativeValue: any) {
+        var topFrame = frame.topmost();
+        if (topFrame) {
+            var navBar = topFrame.ios.controller.navigationBar;
+            navBar.barTintColor = null;
+        }
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            ActionBarStyler.setColorProperty,
+            ActionBarStyler.resetColorProperty), "ActionBar");
+
+        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
+            ActionBarStyler.setBackgroundColorProperty,
+            ActionBarStyler.resetBackgroundColorProperty), "ActionBar");
+
+        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "ActionBar");
+    }
+}
+
+ActionBarStyler.registerHandlers();

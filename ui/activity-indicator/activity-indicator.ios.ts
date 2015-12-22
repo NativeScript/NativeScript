@@ -1,6 +1,9 @@
 ﻿import aiCommon = require("./activity-indicator-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
+import styling = require("ui/styling");
+import style = require("ui/styling/style");
+import view = require("ui/core/view");
 
 function onBusyPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var indicator = <ActivityIndicator>data.object;
@@ -32,3 +35,29 @@ export class ActivityIndicator extends aiCommon.ActivityIndicator  {
         return this._ios;
     }
 } 
+
+export class ActivityIndicatorStyler implements style.Styler {
+    private static setColorProperty(view: view.View, newValue: any) {
+        var bar = <UIActivityIndicatorView>view.ios;
+        bar.color = newValue;
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var bar = <UIActivityIndicatorView>view.ios;
+        bar.color = nativeValue;
+    }
+
+    private static getNativeColorValue(view: view.View): any {
+        var bar = <UIActivityIndicatorView>view.ios;
+        return bar.color;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            ActivityIndicatorStyler.setColorProperty,
+            ActivityIndicatorStyler.resetColorProperty,
+            ActivityIndicatorStyler.getNativeColorValue), "ActivityIndicator");
+    }
+}
+
+ActivityIndicatorStyler.registerHandlers();

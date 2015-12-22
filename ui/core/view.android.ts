@@ -6,6 +6,11 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import gestures = require("ui/gestures");
 import * as typesModule from "utils/types";
+import style = require("ui/styling/style");
+import styling = require("ui/styling");
+import enums = require("ui/enums");
+import background = require("ui/styling/background");
+import {CommonLayoutParams, Thickness} from "ui/styling/style";
 
 global.moduleMerge(viewCommon, exports);
 
@@ -419,3 +424,227 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
         }
     }
 }
+
+export class ViewStyler implements style.Styler {
+    //Background and borders methods
+    private static setBackgroundBorderProperty(view: View, newValue: any, defaultValue?: any) {
+        background.ad.onBackgroundOrBorderPropertyChanged(view);
+    }
+
+    private static resetBackgroundBorderProperty(view: View, nativeValue: any) {
+        background.ad.onBackgroundOrBorderPropertyChanged(view);
+    }
+
+    //Visibility methods
+    private static setVisibilityProperty(view: View, newValue: any) {
+        var androidValue = (newValue === enums.Visibility.visible) ? android.view.View.VISIBLE : android.view.View.GONE;
+        (<android.view.View>view._nativeView).setVisibility(androidValue);
+    }
+
+    private static resetVisibilityProperty(view: View, nativeValue: any) {
+        (<android.view.View>view._nativeView).setVisibility(android.view.View.VISIBLE);
+    }
+
+    //Opacity methods
+    private static setOpacityProperty(view: View, newValue: any) {
+        (<android.view.View>view._nativeView).setAlpha(float(newValue));
+    }
+
+    private static resetOpacityProperty(view: View, nativeValue: any) {
+        (<android.view.View>view._nativeView).setAlpha(float(1.0));
+    }
+
+    //minWidth methods
+    private static setMinWidthProperty(view: View, newValue: any) {
+        (<android.view.View>view._nativeView).setMinimumWidth(Math.round(newValue * utils.layout.getDisplayDensity()));
+    }
+
+    private static resetMinWidthProperty(view: View, nativeValue: any) {
+        (<android.view.View>view._nativeView).setMinimumWidth(0);
+    }
+
+    //minHeight methods
+    private static setMinHeightProperty(view: View, newValue: any) {
+        (<android.view.View>view._nativeView).setMinimumHeight(Math.round(newValue * utils.layout.getDisplayDensity()));
+    }
+
+    private static resetMinHeightProperty(view: View, nativeValue: any) {
+        (<android.view.View>view._nativeView).setMinimumHeight(0);
+    }
+
+    private static getNativeLayoutParams(nativeView: android.view.View): org.nativescript.widgets.CommonLayoutParams {
+        var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
+        if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
+            lp = new org.nativescript.widgets.CommonLayoutParams();
+        }
+
+        return lp;
+    }
+
+    private static setNativeLayoutParamsProperty(view: View, params: CommonLayoutParams): void {
+        var nativeView: android.view.View = view._nativeView;
+        var lp = ViewStyler.getNativeLayoutParams(nativeView);
+
+        lp.widthPercent = params.widthPercent;
+        lp.heightPercent = params.heightPercent;
+
+        lp.leftMarginPercent = params.leftMarginPercent;
+        lp.topMarginPercent = params.topMarginPercent;
+        lp.rightMarginPercent = params.rightMarginPercent;
+        lp.bottomMarginPercent = params.bottomMarginPercent;
+
+        lp.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
+        lp.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
+        lp.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
+        lp.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
+
+        var width = params.width * utils.layout.getDisplayDensity();
+        var height = params.height * utils.layout.getDisplayDensity();
+        
+        // If width is not specified set it as WRAP_CONTENT
+        if (width < 0) {
+            width = -2;
+        }
+
+        // If height is not specified set it as WRAP_CONTENT
+        if (height < 0) {
+            height = -2;
+        }
+
+        var gravity = 0;
+        switch (params.horizontalAlignment) {
+            case enums.HorizontalAlignment.left:
+               	gravity |= android.view.Gravity.LEFT;
+                break;
+
+            case enums.HorizontalAlignment.center:
+                gravity |= android.view.Gravity.CENTER_HORIZONTAL;
+                break;
+
+            case enums.HorizontalAlignment.right:
+                gravity |= android.view.Gravity.RIGHT;
+                break;
+
+            case enums.HorizontalAlignment.stretch:
+                gravity |= android.view.Gravity.FILL_HORIZONTAL;
+                // If width is not specified set it as MATCH_PARENT
+                if (width < 0) {
+                    width = -1;
+                }
+                break;
+
+            default:
+                throw new Error("Invalid horizontalAlignment value: " + params.horizontalAlignment);
+        }
+
+        switch (params.verticalAlignment) {
+            case enums.VerticalAlignment.top:
+                gravity |= android.view.Gravity.TOP;
+                break;
+
+            case enums.VerticalAlignment.center || enums.VerticalAlignment.middle:
+                gravity |= android.view.Gravity.CENTER_VERTICAL;
+                break;
+
+            case enums.VerticalAlignment.bottom:
+                gravity |= android.view.Gravity.BOTTOM;
+                break;
+
+            case enums.VerticalAlignment.stretch:
+                gravity |= android.view.Gravity.FILL_VERTICAL;
+                // If height is not specified set it as MATCH_PARENT
+                if (height < 0) {
+                    height = -1;
+                }
+                break;
+
+            default:
+                throw new Error("Invalid verticalAlignment value: " + params.verticalAlignment);
+        }
+
+        lp.gravity = gravity;
+        lp.width = Math.round(width);
+        lp.height = Math.round(height);
+
+        nativeView.setLayoutParams(lp);
+    }
+
+    private static resetNativeLayoutParamsProperty(view: View, nativeValue: any): void {
+        var nativeView: android.view.View = view._nativeView;
+        var lp = ViewStyler.getNativeLayoutParams(nativeView);
+
+        lp.width = -1;
+        lp.height = -1;
+        lp.leftMargin = 0;
+        lp.topMargin = 0;
+        lp.rightMargin = 0;
+        lp.bottomMargin = 0;
+        lp.gravity = android.view.Gravity.FILL_HORIZONTAL | android.view.Gravity.FILL_VERTICAL;
+        nativeView.setLayoutParams(lp);
+    }
+
+    private static setPaddingProperty(view: View, newValue: Thickness) {
+        var density = utils.layout.getDisplayDensity();
+        var left = Math.round((newValue.left + view.borderWidth) * density);
+        var top = Math.round((newValue.top + view.borderWidth) * density);
+        var right = Math.round((newValue.right + view.borderWidth) * density);
+        var bottom = Math.round((newValue.bottom + view.borderWidth) * density);
+        (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
+    }
+
+    private static resetPaddingProperty(view: View, nativeValue: Thickness) {
+        var density = utils.layout.getDisplayDensity();
+        var left = Math.round((nativeValue.left + view.borderWidth) * density);
+        var top = Math.round((nativeValue.top + view.borderWidth) * density);
+        var right = Math.round((nativeValue.right + view.borderWidth) * density);
+        var bottom = Math.round((nativeValue.bottom + view.borderWidth) * density);
+        (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.visibilityProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setVisibilityProperty,
+            ViewStyler.resetVisibilityProperty));
+
+        style.registerHandler(style.opacityProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setOpacityProperty,
+            ViewStyler.resetOpacityProperty));
+
+        style.registerHandler(style.minWidthProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setMinWidthProperty,
+            ViewStyler.resetMinWidthProperty));
+
+        style.registerHandler(style.minHeightProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setMinHeightProperty,
+            ViewStyler.resetMinHeightProperty))
+
+        // Use the same handler for all background/border properties
+        // Note: There is no default value getter - the default value is handled in background.ad.onBackgroundOrBorderPropertyChanged
+        var borderHandler = new style.StylePropertyChangedHandler(
+            ViewStyler.setBackgroundBorderProperty,
+            ViewStyler.resetBackgroundBorderProperty);
+
+        style.registerHandler(style.backgroundInternalProperty, borderHandler);
+        style.registerHandler(style.borderWidthProperty, borderHandler);
+        style.registerHandler(style.borderColorProperty, borderHandler);
+        style.registerHandler(style.borderRadiusProperty, borderHandler);
+
+        style.registerHandler(style.nativeLayoutParamsProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setNativeLayoutParamsProperty,
+            ViewStyler.resetNativeLayoutParamsProperty));
+
+        style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setPaddingProperty,
+            ViewStyler.resetPaddingProperty), "TextBase");
+
+        style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setPaddingProperty,
+            ViewStyler.resetPaddingProperty), "Button");
+
+        style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setPaddingProperty,
+            ViewStyler.resetPaddingProperty), "LayoutBase");
+    }
+}
+
+ViewStyler.registerHandlers();

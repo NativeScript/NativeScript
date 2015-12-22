@@ -4,6 +4,10 @@ import proxy = require("ui/core/proxy");
 import color = require("color");
 import utils = require("utils/utils")
 import * as typesModule from "utils/types";
+import styling = require("ui/styling");
+import style = require("ui/styling/style");
+import view = require("ui/core/view");
+import font = require("ui/styling/font");
 
 var SEARCHTEXT = "searchText";
 var QUERY = "query";
@@ -173,3 +177,122 @@ export class SearchBar extends common.SearchBar {
         return this._android;
     }
 } 
+
+export class SearchBarStyler implements style.Styler {
+
+    private static getBackgroundColorProperty(v: view.View): any {
+        var bar = <android.widget.SearchView>v._nativeView;
+        return bar.getDrawingCacheBackgroundColor();
+    }
+
+    private static setBackgroundColorProperty(v: view.View, newValue: any) {
+        var bar = <android.widget.SearchView>v._nativeView;
+        bar.setBackgroundColor(newValue);
+        SearchBarStyler._changeSearchViewPlateBackgroundColor(bar, newValue);
+    }
+
+    private static resetBackgroundColorProperty(v: view.View, nativeValue: any) {
+        var bar = <android.widget.SearchView>v._nativeView;
+        bar.setBackgroundColor(nativeValue);
+        SearchBarStyler._changeSearchViewPlateBackgroundColor(bar, nativeValue);
+    }
+
+    private static getColorProperty(v: view.View): any {
+        var bar = <android.widget.SearchView>v._nativeView;
+        var textView = SearchBarStyler._getSearchViewTextView(bar);
+
+        if (textView) {
+            return textView.getCurrentTextColor();
+        }
+
+        return undefined;
+    }
+
+    private static setColorProperty(v: view.View, newValue: any) {
+        var bar = <android.widget.SearchView>v._nativeView;
+        SearchBarStyler._changeSearchViewTextColor(bar, newValue);
+    }
+
+    private static resetColorProperty(v: view.View, nativeValue: any) {
+        var bar = <android.widget.SearchView>v._nativeView;
+        SearchBarStyler._changeSearchViewTextColor(bar, nativeValue);
+    }
+
+    // font
+    private static setFontInternalProperty(v: view.View, newValue: any, nativeValue?: any) {
+        var bar = <android.widget.SearchView>v.android;
+        var textView = SearchBarStyler._getSearchViewTextView(bar);
+
+        var fontValue = <font.Font>newValue;
+
+        var typeface = fontValue.getAndroidTypeface();
+        if (typeface) {
+            textView.setTypeface(typeface);
+        }
+        else {
+            textView.setTypeface(nativeValue.typeface);
+        }
+
+        if (fontValue.fontSize) {
+            textView.setTextSize(fontValue.fontSize);
+        }
+        else {
+            textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+        }
+    }
+
+    private static resetFontInternalProperty(v: view.View, nativeValue: any) {
+        var bar = <android.widget.SearchView>v.android;
+        var textView = SearchBarStyler._getSearchViewTextView(bar);
+        textView.setTypeface(nativeValue.typeface);
+        textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+    }
+
+    private static getNativeFontInternalValue(v: view.View): any {
+        var bar = <android.widget.SearchView>v.android;
+        var textView = SearchBarStyler._getSearchViewTextView(bar);
+        return {
+            typeface: textView.getTypeface(),
+            size: textView.getTextSize()
+        };
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
+            SearchBarStyler.setBackgroundColorProperty,
+            SearchBarStyler.resetBackgroundColorProperty,
+            SearchBarStyler.getBackgroundColorProperty), "SearchBar");
+
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            SearchBarStyler.setColorProperty,
+            SearchBarStyler.resetColorProperty,
+            SearchBarStyler.getColorProperty), "SearchBar");
+
+        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
+            SearchBarStyler.setFontInternalProperty,
+            SearchBarStyler.resetFontInternalProperty,
+            SearchBarStyler.getNativeFontInternalValue), "SearchBar");
+    }
+
+    private static _getSearchViewTextView(bar: android.widget.SearchView): android.widget.TextView {
+        var id = bar.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+        return <android.widget.TextView>bar.findViewById(id);
+    }
+
+    private static _changeSearchViewTextColor(bar: android.widget.SearchView, color: number) {
+        var textView = SearchBarStyler._getSearchViewTextView(bar);
+        if (textView) {
+            textView.setTextColor(color);
+        }
+    }
+
+    private static _changeSearchViewPlateBackgroundColor(bar: android.widget.SearchView, color: number) {
+        var id = bar.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
+        var textView = <android.view.View>bar.findViewById(id);
+        if (textView) {
+            textView.setBackgroundColor(color);
+        }
+    }
+}
+
+SearchBarStyler.registerHandlers();

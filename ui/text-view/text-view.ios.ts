@@ -2,6 +2,9 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import textBase = require("ui/text-base");
 import enums = require("ui/enums");
+import view = require("ui/core/view");
+import style = require("ui/styling/style");
+import styling = require("ui/styling");
 
 global.moduleMerge(common, exports);
 
@@ -125,3 +128,46 @@ export class TextView extends common.TextView {
         (<any>this.ios).isShowingHint = false;
     }
 } 
+
+export class TextViewStyler implements style.Styler {
+    // Color methods
+    private static setColorProperty(v: view.View, newValue: any) {
+        var textView: UITextView = <UITextView>v._nativeView;
+        TextViewStyler._setTextViewColor(textView, newValue);
+    }
+
+    private static resetColorProperty(v: view.View, nativeValue: any) {
+        var textView: UITextView = <UITextView>v._nativeView;
+        TextViewStyler._setTextViewColor(textView, nativeValue);
+    }
+
+    private static _setTextViewColor(textView: UITextView, newValue: any) {
+        var color: UIColor = <UIColor>newValue;
+        if ((<any>textView).isShowingHint && color) {
+            textView.textColor = (<UIColor>color).colorWithAlphaComponent(0.22);
+        }
+        else {
+            textView.textColor = color;
+            textView.tintColor = color;
+        }
+    }
+
+    private static getNativeColorValue(v: view.View): any {
+        var textView: UITextView = <UITextView>v._nativeView;
+        if ((<any>textView).isShowingHint && textView.textColor) {
+            return textView.textColor.colorWithAlphaComponent(1);
+        }
+        else {
+            return textView.textColor;
+        }
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            TextViewStyler.setColorProperty,
+            TextViewStyler.resetColorProperty,
+            TextViewStyler.getNativeColorValue), "TextView");
+    }
+}
+
+TextViewStyler.registerHandlers();

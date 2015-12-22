@@ -4,6 +4,10 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
 import * as colorModule from "color";
+import style = require("ui/styling/style");
+import font = require("ui/styling/font");
+import styling = require("ui/styling");
+import view = require("ui/core/view");
 
 global.moduleMerge(common, exports);
 
@@ -118,3 +122,89 @@ class SelectionHandlerImpl extends NSObject {
         "selected": { returns: interop.types.void, params: [UISegmentedControl] }
     };
 }
+
+export class SegmentedBarStyler implements style.Styler {
+    //Text color methods
+    private static setColorProperty(v: view.View, newValue: any) {
+        let bar = <UISegmentedControl>v.ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let attrs;
+        if (currentAttrs) {
+            attrs = currentAttrs.mutableCopy();
+        }
+        else {
+            attrs = NSMutableDictionary.new();
+        }
+        attrs.setValueForKey(newValue, NSForegroundColorAttributeName);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+    }
+
+    private static resetColorProperty(v: view.View, nativeValue: any) {
+        let bar = <UISegmentedControl>v.ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let attrs;
+        if (currentAttrs) {
+            attrs = currentAttrs.mutableCopy();
+        }
+        else {
+            attrs = NSMutableDictionary.new();
+        }
+        attrs.setValueForKey(nativeValue, NSForegroundColorAttributeName);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+    }
+
+    //Text fonts methods
+    private static setFontInternalProperty(v: view.View, newValue: any) {
+        let bar = <UISegmentedControl>v.ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let attrs;
+        if (currentAttrs) {
+            attrs = currentAttrs.mutableCopy();
+        }
+        else {
+            attrs = NSMutableDictionary.new();
+        }
+        let newFont = (<font.Font>newValue).getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize()));
+        attrs.setValueForKey(newFont, NSFontAttributeName);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+    }
+
+    private static resetFontInternalProperty(v: view.View, nativeValue: any) {
+        let bar = <UISegmentedControl>v.ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let attrs;
+        if (currentAttrs) {
+            attrs = currentAttrs.mutableCopy();
+        }
+        else {
+            attrs = NSMutableDictionary.new();
+        }
+        attrs.setValueForKey(nativeValue, NSFontAttributeName);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+    }
+
+    private static getNativeFontValue(v: view.View) {
+        let bar = <UISegmentedControl>v.ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let currentFont;
+        if (currentAttrs) {
+            currentFont = currentAttrs.objectForKey(NSFontAttributeName);
+        }
+        if (!currentFont) {
+            currentFont = UIFont.systemFontOfSize(UIFont.labelFontSize());
+        }
+        return currentFont;
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            SegmentedBarStyler.setColorProperty,
+            SegmentedBarStyler.resetColorProperty), "SegmentedBar");
+        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
+            SegmentedBarStyler.setFontInternalProperty,
+            SegmentedBarStyler.resetFontInternalProperty,
+            SegmentedBarStyler.getNativeFontValue), "SegmentedBar");
+    }
+}
+
+SegmentedBarStyler.registerHandlers();

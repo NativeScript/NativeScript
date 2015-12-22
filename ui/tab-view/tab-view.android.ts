@@ -8,6 +8,9 @@ import utils = require("utils/utils");
 import proxy = require("ui/core/proxy");
 import color = require("color");
 import * as imageSourceModule from "image-source";
+import style = require("ui/styling/style");
+import font = require("ui/styling/font");
+import styling = require("ui/styling");
 
 var VIEWS_STATES = "_viewStates";
 var ACCENT_COLOR = "colorAccent";
@@ -303,3 +306,114 @@ export class TabView extends common.TabView {
         return this._tabLayout;
     }
 }
+
+export class TabViewStyler implements style.Styler {
+    // color
+    private static setColorProperty(v: view.View, newValue: any) {
+        var tab = <definition.TabView>v;
+        if (tab.items && tab.items.length > 0) {
+            var tabLayout = tab._getAndroidTabView();
+
+            for (var i = 0; i < tab.items.length; i++) {
+                tabLayout.getTextViewForItemAt(i).setTextColor(newValue);
+            }
+        }
+    }
+
+    private static resetColorProperty(v: view.View, nativeValue: any) {
+        if (types.isNullOrUndefined(nativeValue)) {
+            return;
+        }
+
+        var tab = <definition.TabView>v;
+
+        if (tab.items && tab.items.length > 0) {
+            var tabLayout = tab._getAndroidTabView();
+
+            for (var i = 0; i < tab.items.length; i++) {
+                tabLayout.getTextViewForItemAt(i).setTextColor(nativeValue);
+            }
+        }
+    }
+
+    private static getColorProperty(v: view.View): any {
+        var tab = <definition.TabView>v;
+        var tv: android.widget.TextView = tab._getAndroidTabView().getTextViewForItemAt(0);
+        if (tv) {
+            return tv.getTextColors().getDefaultColor();
+        }
+        else {
+            return null;
+        }
+    }
+
+    // font
+    private static setFontInternalProperty(v: view.View, newValue: any, nativeValue?: any) {
+        var tab = <definition.TabView>v;
+        var fontValue = <font.Font>newValue;
+        var typeface = fontValue.getAndroidTypeface();
+
+        if (tab.items && tab.items.length > 0) {
+            var tabLayout = tab._getAndroidTabView();
+
+            for (var i = 0; i < tab.items.length; i++) {
+                let tv = tabLayout.getTextViewForItemAt(i);
+                if (typeface) {
+                    tv.setTypeface(typeface);
+                }
+                else {
+                    tv.setTypeface(nativeValue.typeface);
+                }
+
+                if (fontValue.fontSize) {
+                    tv.setTextSize(fontValue.fontSize);
+                }
+                else {
+                    tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+                }
+            }
+        }
+    }
+
+    private static resetFontInternalProperty(v: view.View, nativeValue: any) {
+        var tab = <definition.TabView>v;
+
+        if (tab.items && tab.items.length > 0) {
+            var tabLayout = tab._getAndroidTabView();
+
+            for (var i = 0; i < tab.items.length; i++) {
+                let tv = tabLayout.getTextViewForItemAt(i);
+                tv.setTypeface(nativeValue.typeface);
+                tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+            }
+        }
+    }
+
+    private static getNativeFontInternalValue(v: view.View): any {
+        var tab = <definition.TabView>v;
+        var tv: android.widget.TextView = tab._getAndroidTabView().getTextViewForItemAt(0);
+        if (tv) {
+            return {
+                typeface: tv.getTypeface(),
+                size: tv.getTextSize()
+            }
+        }
+        else {
+            return null;
+        }
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            TabViewStyler.setColorProperty,
+            TabViewStyler.resetColorProperty,
+            TabViewStyler.getColorProperty), "TabView");
+
+        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
+            TabViewStyler.setFontInternalProperty,
+            TabViewStyler.resetFontInternalProperty,
+            TabViewStyler.getNativeFontInternalValue), "TabView");
+    }
+}
+
+TabViewStyler.registerHandlers();
