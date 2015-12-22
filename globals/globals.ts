@@ -31,17 +31,24 @@ global.registerModule("ui/dialogs", () => require("ui/dialogs"));
 global.registerModule("../xhr/xhr", () => require("../xhr/xhr"));
 global.registerModule("fetch", () => require("fetch"));
 
-function registerOnGlobalContext(name, module) {
+const __tnsGlobalMergedModules = new Map<string, boolean>();
+
+function registerOnGlobalContext(name: string, module: string): void {
+
     Object.defineProperty(global, name, {
         get: function () {
             // We do not need to cache require() call since it is already cached in the runtime.
             let m = global.loadModule(module);
-            global.moduleMerge(m, global);
+            if (!__tnsGlobalMergedModules.has(module)) {
+                __tnsGlobalMergedModules.set(module, true);
+                global.moduleMerge(m, global);
+            }
 
             // Redefine the property to make sure the above code is executed only once.
-            Object.defineProperty(this, name, { value: m[name], configurable: true, writable: true });
+            let resolvedValue = m[name];
+            Object.defineProperty(this, name, { value: resolvedValue, configurable: true, writable: true });
 
-            return m[name];
+            return resolvedValue;
         },
         configurable: true
     });
