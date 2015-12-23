@@ -11,6 +11,8 @@ import {Page} from "ui/page";
 import {resolveFileName} from "file-system/file-name-resolver";
 import * as traceModule from "trace";
 
+const defaultNameSpaceMatcher = /tns\.xsd$/i;
+
 export function parse(value: string | Template, context: any): View {
     if (isString(value)) {
         var viewToReturn: View;
@@ -196,7 +198,6 @@ namespace xml2ui {
             }, true);
 
             if (isString(value)) {
-                value = value.replace(/xmlns=("|')http:\/\/((www)|(schemas))\.nativescript\.org\/tns\.xsd\1/, "");
                 xmlParser.parse(value);
             }
         }
@@ -456,7 +457,12 @@ namespace xml2ui {
                         componentModule = loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentPage);
                     } else {
                         // Default components
-                        componentModule = getComponentModule(args.elementName, args.namespace, args.attributes, this.context);
+                        let namespace = args.namespace;
+                        if (defaultNameSpaceMatcher.test(namespace || '')) {
+                            //Ignore the default ...tns.xsd namespace URL
+                            namespace = undefined;
+                        }
+                        componentModule = getComponentModule(args.elementName, namespace, args.attributes, this.context);
                     }
 
                     if (componentModule) {
