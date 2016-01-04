@@ -113,6 +113,10 @@ export class ActionBar extends common.ActionBar {
                 return owner._onAndroidItemSelected(itemId);
             }
         }));
+    }
+
+    public onLoaded() {
+        super.onLoaded();
         this.update();
     }
 
