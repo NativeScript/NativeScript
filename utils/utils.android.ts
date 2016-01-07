@@ -77,38 +77,52 @@ export module ad {
         }
     }
 
-    export function setTextTransform(view: android.widget.TextView, value: string) {
+    export function setTextTransform(v, value: string) {
+        let view = v._nativeView;
         let str = view.getText() + "";
+        let result = getTransformedString(value, view, str);
+
+        if (v.formattedText) {
+            for (var i = 0; i < v.formattedText.spans.length; i++) {
+                var span = v.formattedText.spans.getItem(i);
+                span.text = getTransformedString(value, view, span.text);
+            }
+        } else {
+            view.setText(result);
+        }
+    }
+
+    function getTransformedString(textTransform: string, view, stringToTransform: string): string {
         let result: string;
 
-        switch (value) {
+        switch (textTransform) {
             case enums.TextTransform.none:
             default:
-                result = view["originalString"] || str;
+                result = view["originalString"] || stringToTransform;
                 if (view["transformationMethod"]) {
                     view.setTransformationMethod(view["transformationMethod"]);
                 }
                 break;
             case enums.TextTransform.uppercase:
                 view.setTransformationMethod(null);
-                result = str.toUpperCase();
+                result = stringToTransform.toUpperCase();
                 break;
             case enums.TextTransform.lowercase:
                 view.setTransformationMethod(null);
-                result = str.toLowerCase();
+                result = stringToTransform.toLowerCase();
                 break;
             case enums.TextTransform.capitalize:
                 view.setTransformationMethod(null);
-                result = getCapitalizedString(str);
+                result = getCapitalizedString(stringToTransform);
                 break;
         }
 
         if (!view["originalString"]) {
-            view["originalString"] = str;
+            view["originalString"] = stringToTransform;
             view["transformationMethod"] = view.getTransformationMethod();
         }
 
-        view.setText(result);
+        return result;
     }
 
     function getCapitalizedString(str: string): string {

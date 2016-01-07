@@ -3,7 +3,7 @@
     <StackLayout>
       <Button text="Change" tap="butonTap" />
       <Label id="Label1" text="text Text" style="text-transform:none" />
-
+      
       <Label text="label label" style="text-transform:none" />
       <Label text="label label" style="text-transform:capitalize" />
       <Label text="label label" style="text-transform:uppercase" />
@@ -27,6 +27,28 @@
       <Button text="button Button" style="text-transform:lowercase" />
       <Button text="button Button" style="text-transform:uppercase; text-decoration:underline;" />
 
+      <Label style="text-transform: uppercase; text-decoration: underline line-through;">
+        <Label.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontAttributes="Bold" foregroundColor="#ff0000" />
+              <Span text="Text" fontAttributes="Italic" foregroundColor="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Label.formattedText>
+      </Label>
+
+      <Button style="text-transform: uppercase; text-decoration: underline line-through;">
+        <Button.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontAttributes="Bold" foregroundColor="#ff0000" />
+              <Span text="Text" fontAttributes="Italic" foregroundColor="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Button.formattedText>
+      </Button>
+      
     </StackLayout>
   </ScrollView>
 </Page>
