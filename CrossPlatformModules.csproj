@@ -211,6 +211,21 @@
     <Content Include="apps\ui-tests-app\html-view\html-view.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\ui-tests-app\layouts-percent\absolute.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\layouts-percent\dock.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\layouts-percent\grid.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\layouts-percent\stack.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\ui-tests-app\layouts-percent\wrap.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\segmented-bar\all.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -264,6 +279,22 @@
     <TypeScriptCompile Include="apps\ui-tests-app\css\white-space.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\html-view\html-view.ts">
       <DependentUpon>html-view.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts-percent\absolute.ts">
+      <DependentUpon>absolute.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts-percent\dock.ts">
+      <DependentUpon>dock.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts-percent\grid.ts">
+      <DependentUpon>grid.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts-percent\myview.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts-percent\stack.ts">
+      <DependentUpon>stack.xml</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\layouts-percent\wrap.ts">
+      <DependentUpon>wrap.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\modal-view\login-page.ts">
       <DependentUpon>login-page.xml</DependentUpon>

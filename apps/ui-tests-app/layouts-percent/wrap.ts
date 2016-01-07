@@ -18,6 +18,6 @@ export function onOrientation(args: { eventName: string, object: any }) {
 
 export function onItemWidthItemHeight(args: { eventName: string, object: any }) {
     var layout = args.object.parent;
-    layout.itemWidth = 40;
-    layout.itemHeight = 60;
+    layout.itemWidth = 100;
+    layout.itemHeight = 100;
 }
