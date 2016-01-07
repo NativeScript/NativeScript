@@ -195,6 +195,10 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
     public test_percent_support() {
         commonTests.percent_support_test(this);
     }
+
+    public test_percent_support_nativeLayoutParams_are_correct() {
+        commonTests.percent_support_nativeLayoutParams_are_correct(this);
+    }
 }
 
 export function createTestCase(): DockLayoutTest {

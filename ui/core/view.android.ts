@@ -570,17 +570,7 @@ export class ViewStyler implements style.Styler {
     }
 
     private static resetNativeLayoutParamsProperty(view: View, nativeValue: any): void {
-        var nativeView: android.view.View = view._nativeView;
-        var lp = ViewStyler.getNativeLayoutParams(nativeView);
-
-        lp.width = -1;
-        lp.height = -1;
-        lp.leftMargin = 0;
-        lp.topMargin = 0;
-        lp.rightMargin = 0;
-        lp.bottomMargin = 0;
-        lp.gravity = android.view.Gravity.FILL_HORIZONTAL | android.view.Gravity.FILL_VERTICAL;
-        nativeView.setLayoutParams(lp);
+        ViewStyler.setNativeLayoutParamsProperty(view, style.nativeLayoutParamsProperty.metadata.defaultValue)
     }
 
     private static setPaddingProperty(view: View, newValue: Thickness) {

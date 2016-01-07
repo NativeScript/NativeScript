@@ -5,6 +5,7 @@ import labelModule = require("ui/label");
 import helper = require("../ui/helper");
 import colorModule = require("color");
 import layoutHelper = require("./layout-helper");
+import commonTests = require("./common-layout-tests");
 
 // <snippet module="ui/layouts/absolute-layout" title="absolute-layout">
 // # AbsoluteLayout
@@ -119,6 +120,10 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
 
         TKUnit.assertEqual(btn.getMeasuredWidth(), 100, "Button MeasuredWidth incorrect");
         TKUnit.assertEqual(btn.getMeasuredHeight(), 100, "Button MeasuredHeight incorrect");
+    }
+
+    public test_percent_support_nativeLayoutParams_are_correct() {
+        commonTests.percent_support_nativeLayoutParams_are_correct(this);
     }
 }
 

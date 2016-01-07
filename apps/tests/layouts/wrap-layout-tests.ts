@@ -279,6 +279,10 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         TKUnit.assertEqual(bounds.right, 120, "BottomRight layout RIGHT incorrect");
         TKUnit.assertEqual(bounds.bottom, 120, "BottomRight layout BOTTOM incorrect");
     }
+
+    public test_percent_support_nativeLayoutParams_are_correct() {
+        commonTests.percent_support_nativeLayoutParams_are_correct(this);
+    }
 }
 
 export function createTestCase(): WrapLayoutTest {
