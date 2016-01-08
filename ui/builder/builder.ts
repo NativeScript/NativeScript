@@ -213,7 +213,7 @@ namespace xml2ui {
 
     export function SourceErrorFormat(uri): ErrorFormatter {
         return (e: Error, p: xml.Position) => {
-            var source = new Source(uri, p.line, p.column);
+            var source = p ? new Source(uri, p.line, p.column) : new Source(uri, -1, -1);
             e = new SourceError(e, source, "Building UI from XML.");
             return e;
         }
