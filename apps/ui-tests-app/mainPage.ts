@@ -19,7 +19,7 @@ var examples = new Map<string, string>();
 export function pageLoaded(args) {
     var page = <pages.Page>args.object;
     page.bindingContext = VM;
-
+    VM.set("selected", "");
 }
 
 export function selectExample() {
@@ -94,4 +94,17 @@ examples.set("decoration", "css/text-decoration");
 examples.set("whitespace", "css/white-space");
 examples.set("transform", "css/text-transform");
 
-//VM.set("selected", "tabAll");
+// Layouts
+examples.set("absolute", "layouts/absolute");
+examples.set("dock", "layouts/dock");
+examples.set("grid", "layouts/grid");
+examples.set("myview", "layouts/myview");
+examples.set("stack", "layouts/stack");
+examples.set("wrap", "layouts/wrap");
+
+examples.set("pabsolute", "layouts-percent/absolute");
+examples.set("pdock", "layouts-percent/dock");
+examples.set("pgrid", "layouts-percent/grid");
+examples.set("pmyview", "layouts-percent/myview");
+examples.set("pstack", "layouts-percent/stack");
+examples.set("pwrap", "layouts-percent/wrap");
