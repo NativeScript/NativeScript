@@ -52,7 +52,7 @@ export class Frame extends frameCommon.Frame {
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
         var viewController: UIViewController = backstackEntry.resolvedPage.ios;
         if (!viewController) {
-            throw new Error("Required page does have an viewController created.");
+            throw new Error("Required page does not have a viewController created.");
         }
 
         navDepth++;
