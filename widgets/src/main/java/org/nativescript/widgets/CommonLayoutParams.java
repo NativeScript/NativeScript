@@ -22,6 +22,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
 
     static final String TAG = "NSLayout";
     static int debuggable = -1;
+    private static final int NOT_SET = Integer.MIN_VALUE;
     private static final StringBuilder sb = new StringBuilder();
 
     public CommonLayoutParams() {
@@ -36,13 +37,13 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
     public float bottomMarginPercent = 0;
     public float rightMarginPercent = 0;
 
-    public int widthOriginal = -1;
-    public int heightOriginal = -1;
+    public int widthOriginal = NOT_SET;
+    public int heightOriginal = NOT_SET;
 
-    public int topMarginOriginal = -1;
-    public int leftMarginOriginal = -1;
-    public int bottomMarginOriginal = -1;
-    public int rightMarginOriginal = -1;
+    public int topMarginOriginal = NOT_SET;
+    public int leftMarginOriginal = NOT_SET;
+    public int bottomMarginOriginal = NOT_SET;
+    public int rightMarginOriginal = NOT_SET;
 
     public int left = 0;
     public int top = 0;
@@ -252,53 +253,67 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
                 CommonLayoutParams lp = (CommonLayoutParams) child.getLayoutParams();
                 if (widthSpec != MeasureSpec.UNSPECIFIED) {
                     if (lp.widthPercent > 0) {
-                        lp.widthOriginal = lp.width;
+                        // If we get measured twice we will override the original value with the one calculated from percentValue from the first measure.
+                        // So we set originalValue only the first time.
+                        if (lp.widthOriginal == NOT_SET) {
+                            lp.widthOriginal = lp.width;
+                        }
                         lp.width = (int) (availableWidth * lp.widthPercent);
                     }
                     else {
-                        lp.widthOriginal = -1;
+                        lp.widthOriginal = NOT_SET;
                     }
 
                     if (lp.leftMarginPercent > 0) {
-                        lp.leftMarginOriginal = lp.leftMargin;
+                        if (lp.leftMarginOriginal == NOT_SET) {
+                            lp.leftMarginOriginal = lp.leftMargin;
+                        }
                         lp.leftMargin = (int) (availableWidth * lp.leftMarginPercent);
                     }
                     else {
-                        lp.leftMarginOriginal = -1;
+                        lp.leftMarginOriginal = NOT_SET;
                     }
 
                     if (lp.rightMarginPercent > 0) {
-                        lp.rightMarginOriginal = lp.rightMargin;
+                        if (lp.rightMarginOriginal == NOT_SET) {
+                            lp.rightMarginOriginal = lp.rightMargin;
+                        }
                         lp.rightMargin = (int) (availableWidth * lp.rightMarginPercent);
                     }
                     else {
-                        lp.rightMarginOriginal = -1;
+                        lp.rightMarginOriginal = NOT_SET;
                     }
                 }
 
                 if (heightSpec != MeasureSpec.UNSPECIFIED) {
                     if (lp.heightPercent > 0) {
-                        lp.heightOriginal = lp.height;
+                        if (lp.heightOriginal == NOT_SET) {
+                            lp.heightOriginal = lp.height;
+                        }
                         lp.height = (int) (availableHeight * lp.heightPercent);
                     }
                     else {
-                        lp.heightOriginal = -1;
+                        lp.heightOriginal = NOT_SET;
                     }
 
                     if (lp.topMarginPercent > 0) {
-                        lp.topMarginOriginal = lp.topMargin;
+                        if (lp.topMarginOriginal == NOT_SET) {
+                            lp.topMarginOriginal = lp.topMargin;
+                        }
                         lp.topMargin = (int) (availableHeight * lp.topMarginPercent);
                     }
                     else {
-                        lp.topMarginOriginal = -1;
+                        lp.topMarginOriginal = NOT_SET;
                     }
 
                     if (lp.bottomMarginPercent > 0) {
-                        lp.bottomMarginOriginal = lp.bottomMargin;
+                        if (lp.bottomMarginOriginal == NOT_SET) {
+                            lp.bottomMarginOriginal = lp.bottomMargin;
+                        }
                         lp.bottomMargin = (int) (availableHeight * lp.bottomMarginPercent);
                     }
                     else {
-                        lp.bottomMarginOriginal = -1;
+                        lp.bottomMarginOriginal = NOT_SET;
                     }
                 }
             }
@@ -333,6 +348,13 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
                 if (lp.bottomMarginPercent > 0) {
                     lp.bottomMargin = lp.bottomMarginOriginal;
                 }
+
+                lp.widthOriginal = NOT_SET;
+                lp.heightOriginal = NOT_SET;
+                lp.leftMarginOriginal = NOT_SET;
+                lp.topMarginOriginal = NOT_SET;
+                lp.rightMarginOriginal = NOT_SET;
+                lp.bottomMarginOriginal = NOT_SET;
             }
         }
     }

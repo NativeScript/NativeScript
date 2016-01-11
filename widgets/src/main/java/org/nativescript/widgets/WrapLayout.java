@@ -15,7 +15,7 @@ public class WrapLayout extends LayoutBase {
 
 	private int _itemWidth = -1;
 	private int _itemHeight = -1;
-	private Orientation _orientation = Orientation.horzontal;
+	private Orientation _orientation = Orientation.horizontal;
     private ArrayList<Integer> _lengths = new ArrayList<Integer>();
     
 	public WrapLayout(Context context) {
@@ -58,6 +58,24 @@ public class WrapLayout extends LayoutBase {
         }
     }
 
+    private int getDesiredWidth(View child) {
+        if (this._itemWidth > 0) {
+            return this._itemWidth;
+        }
+
+        // Add margins because layoutChild will subtract them.
+        return CommonLayoutParams.getDesiredWidth(child);
+    }
+
+    private int getDesiredHeight(View child) {
+        if (this._itemHeight > 0) {
+            return this._itemHeight;
+        }
+
+        // Add margins because layoutChild will subtract them.
+        return CommonLayoutParams.getDesiredHeight(child);
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
@@ -65,44 +83,42 @@ public class WrapLayout extends LayoutBase {
         int measureWidth = 0;
     	int measureHeight = 0;
 
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-
         boolean isVertical = this._orientation == Orientation.vertical;
         int verticalPadding = this.getPaddingTop() + this.getPaddingBottom();
         int horizontalPadding = this.getPaddingLeft() + this.getPaddingRight();
 
-        int childWidthMeasureSpec = getViewMeasureSpec(widthMode, width, this._itemWidth);
-        int childHeightMeasureSpec = getViewMeasureSpec(heightMode, height, this._itemHeight);
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
 
-        int remainingWidth = widthMode == MeasureSpec.UNSPECIFIED ? Integer.MAX_VALUE : width - horizontalPadding;
-        int remainingHeight = heightMode == MeasureSpec.UNSPECIFIED ? Integer.MAX_VALUE : height - verticalPadding;
+        int availableWidth = widthMode == MeasureSpec.UNSPECIFIED ? Integer.MAX_VALUE : MeasureSpec.getSize(widthMeasureSpec) - horizontalPadding;
+        int availableHeight = heightMode == MeasureSpec.UNSPECIFIED ? Integer.MAX_VALUE : MeasureSpec.getSize(heightMeasureSpec) - verticalPadding;
 
-        int count = this.getChildCount();
-        
+        int childWidthMeasureSpec = getViewMeasureSpec(widthMode, availableWidth, this._itemWidth);
+        int childHeightMeasureSpec = getViewMeasureSpec(heightMode, availableHeight, this._itemHeight);
+
+        int remainingWidth = availableWidth;
+        int remainingHeight = availableHeight;
+
         this._lengths.clear();
         int rowOrColumn = 0;
         int maxLength = 0;
         
-        for (int i = 0; i < count; i++) {
+        for (int i = 0, count = this.getChildCount(); i < count; i++) {
             View child = this.getChildAt(i);
             if (child.getVisibility() == View.GONE) {
                 continue;
             }
 
         	CommonLayoutParams.measureChild(child, childWidthMeasureSpec, childHeightMeasureSpec);
-            final int childMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
-            final int childMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
+            final int childMeasuredWidth = this.getDesiredWidth(child);
+            final int childMeasuredHeight = this.getDesiredHeight(child);
             
             if (isVertical) {
                 if (childMeasuredHeight > remainingHeight) {
                     rowOrColumn++;
                     maxLength = Math.max(maxLength, measureHeight);
                     measureHeight = childMeasuredHeight;
-                    remainingWidth = height - childMeasuredHeight;
+                    remainingWidth = availableHeight - childMeasuredHeight;
                     this._lengths.add(rowOrColumn, childMeasuredWidth);
                 }
                 else {
@@ -115,7 +131,7 @@ public class WrapLayout extends LayoutBase {
                     rowOrColumn++;
                     maxLength = Math.max(maxLength, measureWidth);
                     measureWidth = childMeasuredWidth;
-                    remainingWidth = width - childMeasuredWidth;
+                    remainingWidth = availableWidth - childMeasuredWidth;
                     this._lengths.add(rowOrColumn, childMeasuredHeight);
                 }
                 else {
@@ -132,16 +148,15 @@ public class WrapLayout extends LayoutBase {
             }
         }
 
-        count = this._lengths.size();
         if (isVertical) {
             measureHeight = Math.max(maxLength, measureHeight);
-            for (int i = 0; i < count; i++) {
+            for (int i = 0, count = this._lengths.size(); i < count; i++) {
                 measureWidth += this._lengths.get(i);
             }
         }
         else {
             measureWidth = Math.max(maxLength, measureWidth);
-            for (int i = 0; i < count; i++) {
+            for (int i = 0, count = this._lengths.size(); i < count; i++) {
                 measureHeight += this._lengths.get(i);
             }
         }
@@ -173,21 +188,18 @@ public class WrapLayout extends LayoutBase {
         int childrenLength = isVertical ? bottom - top - paddingBottom : right - left - paddingRight;
 
         int rowOrColumn = 0;
-        int count = this.getChildCount();        
-        for (int i = 0; i < count; i++) {
+        for (int i = 0, count = this.getChildCount(); i < count; i++) {
             View child = this.getChildAt(i);
             if (child.getVisibility() == View.GONE) {
                 continue;
             }
 
-            // Add margins because layoutChild will subtract them.
-            int childWidth = CommonLayoutParams.getDesiredWidth(child);
-            int childHeight = CommonLayoutParams.getDesiredHeight(child);
+            int childWidth = this.getDesiredWidth(child);
+            int childHeight = this.getDesiredHeight(child);
 
             int length = this._lengths.get(rowOrColumn);
             if (isVertical) {
                 childWidth = length;
-                childHeight = this._itemHeight > 0 ? this._itemHeight : childHeight;
                 if (childTop + childHeight > childrenLength) {
                     // Move to top.
                     childTop = paddingTop;
@@ -203,7 +215,6 @@ public class WrapLayout extends LayoutBase {
                 }
             }
             else {
-                childWidth = this._itemWidth > 0 ? this._itemWidth : childWidth;
                 childHeight = length;
                 if (childLeft + childWidth > childrenLength) {
                     // Move to left.

@@ -159,8 +159,7 @@ public class StackLayout extends LayoutBase {
                 break;
         }
 
-        int count = this.getChildCount();
-        for (int i = 0; i < count; i++) {
+        for (int i = 0, count = this.getChildCount(); i < count; i++) {
             View child = this.getChildAt(i);
             if (child.getVisibility() == View.GONE) {
                 continue;
@@ -203,8 +202,7 @@ public class StackLayout extends LayoutBase {
                 break;
         }
 
-        int count = this.getChildCount();
-        for (int i = 0; i < count; i++) {
+        for (int i = 0, count = this.getChildCount(); i < count; i++) {
             View child = this.getChildAt(i);
             if (child.getVisibility() == View.GONE) {
                 continue;
