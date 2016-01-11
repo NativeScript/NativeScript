@@ -153,9 +153,17 @@ export module ad {
 
         var backgroundValue = v.style._getValue(style.backgroundInternalProperty);
         var borderWidth = v.borderWidth;
-        if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
 
-            var bkg = <any>nativeView.getBackground();
+        if (v.borderWidth === 0 && v.borderRadius === 0 &&
+            !v.style._getValue(style.backgroundImageProperty) &&
+            v.style._getValue(style.backgroundColorProperty)) {
+            let bkg = nativeView.getBackground();
+            if (bkg && bkg.setColorFilter) {
+                bkg.setColorFilter(v.style._getValue(style.backgroundColorProperty).android, android.graphics.PorterDuff.Mode.SRC_IN);
+            }
+        } else if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
+
+            let bkg = <any>nativeView.getBackground();
             if (!(bkg instanceof dts.ad.BorderDrawable)) {
                 bkg = new dts.ad.BorderDrawable();
                 let viewClass = types.getClass(v);
