@@ -10,7 +10,7 @@ export class StackLayout extends common.StackLayout {
     static setNativeOrientationProperty(data: dependencyObservable.PropertyChangeData): void {
         var stackLayout = <StackLayout>data.object;
         var nativeView = stackLayout._nativeView;
-        nativeView.setOrientation(data.newValue === enums.Orientation.vertical ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horzontal);
+        nativeView.setOrientation(data.newValue === enums.Orientation.vertical ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal);
     }
 
     private _layout: org.nativescript.widgets.StackLayout;
