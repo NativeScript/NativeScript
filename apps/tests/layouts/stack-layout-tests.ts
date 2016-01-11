@@ -312,6 +312,10 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         TKUnit.assertEqual(bounds.right, 120, "BottomRight layout RIGHT incorrect");
         TKUnit.assertEqual(bounds.bottom, 180, "BottomRight layout BOTTOM incorrect");
     }
+
+    public test_percent_support_nativeLayoutParams_are_correct() {
+        commonTests.percent_support_nativeLayoutParams_are_correct(this);
+    }
 }
 
 export function createTestCase(): StackLayoutTest {

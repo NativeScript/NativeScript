@@ -11,7 +11,7 @@ export class WrapLayout extends common.WrapLayout {
     static setNativeOrientationProperty(data: dependencyObservable.PropertyChangeData): void {
         var wrapLayout = <WrapLayout>data.object;
         var nativeView = wrapLayout._nativeView;
-        nativeView.setOrientation(data.newValue === enums.Orientation.vertical ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horzontal);
+        nativeView.setOrientation(data.newValue === enums.Orientation.vertical ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal);
     }
 
     static setNativeItemWidthProperty(data: dependencyObservable.PropertyChangeData): void {

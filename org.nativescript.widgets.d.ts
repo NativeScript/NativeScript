@@ -62,7 +62,7 @@
             }
 
             export enum Orientation {
-                horzontal,
+                horizontal,
                 vertical
             }
 

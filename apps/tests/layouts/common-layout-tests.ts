@@ -4,6 +4,75 @@ import enums = require("ui/enums");
 import testModule = require("../ui-test");
 import {LayoutBase} from "ui/layouts/layout-base";
 import {widthProperty} from "ui/styling/style"
+import platform = require("platform");
+
+function getNativeLayoutParams(nativeView: android.view.View): org.nativescript.widgets.CommonLayoutParams {
+    var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
+    if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
+        lp = new org.nativescript.widgets.CommonLayoutParams();
+    }
+
+    return lp;
+}
+
+export function percent_support_nativeLayoutParams_are_correct(test: testModule.UITest<LayoutBase>) {
+    if (platform.device.os !== platform.platformNames.android) {
+        return;
+    }
+
+    let layout = test.testView;
+    layout.width = layoutHelper.dp(200);
+    layout.height = layoutHelper.dp(200);
+
+    let btn = new layoutHelper.MyButton();
+    btn.width = layoutHelper.dp(100);
+    btn.height = layoutHelper.dp(100);
+    btn.margin = "10%";
+    layout.addChild(btn);
+
+    test.waitUntilTestElementLayoutIsValid();
+
+    let lp = getNativeLayoutParams(btn._nativeView);
+    TKUnit.assertEqual(lp.width, 100, "width");
+    TKUnit.assertEqual(lp.widthPercent, -1, "widthPercent");
+    TKUnit.assertEqual(lp.height, 100, "height");
+    TKUnit.assertEqual(lp.heightPercent, -1, "heightPercent");
+    TKUnit.assertEqual(lp.topMargin, 0, "topMargin");
+    TKUnit.assertTrue(lp.topMarginPercent > 0, "topMarginPercent");
+    TKUnit.assertEqual(lp.leftMargin, 0, "leftMargin");
+    TKUnit.assertTrue(lp.leftMarginPercent > 0, "leftMarginPercent");
+    TKUnit.assertEqual(lp.rightMargin, 0, "rightMargin");
+    TKUnit.assertTrue(lp.rightMarginPercent > 0, "rightMarginPercent");
+    TKUnit.assertEqual(lp.bottomMargin, 0, "bottomMargin");
+    TKUnit.assertTrue(lp.bottomMarginPercent > 0, "bottomMarginPercent");
+
+    (<any>btn).width = "50%";
+    (<any>btn).height = "50%";
+    test.waitUntilTestElementLayoutIsValid();
+
+    TKUnit.assertEqual(lp.width, -1, "width");
+    TKUnit.assertEqual(lp.widthPercent, 0.5, "widthPercent");
+    TKUnit.assertEqual(lp.height, -1, "height");
+    TKUnit.assertEqual(lp.heightPercent, 0.5, "heightPercent");
+
+    btn.margin = "0";
+    btn.height = Number.NaN;
+    (<any>btn.style)._resetValue(widthProperty);
+    test.waitUntilTestElementLayoutIsValid();
+
+    TKUnit.assertEqual(lp.width, -1, "width");
+    TKUnit.assertEqual(lp.widthPercent, -1, "widthPercent");
+    TKUnit.assertEqual(lp.height, -1, "height");
+    TKUnit.assertEqual(lp.heightPercent, -1, "heightPercent");
+    TKUnit.assertEqual(lp.topMargin, 0, "topMargin");
+    TKUnit.assertEqual(lp.topMarginPercent, -1, "topMarginPercent");
+    TKUnit.assertEqual(lp.leftMargin, 0, "leftMargin");
+    TKUnit.assertEqual(lp.leftMarginPercent, -1, "leftMarginPercent");
+    TKUnit.assertEqual(lp.rightMargin, 0, "rightMargin");
+    TKUnit.assertEqual(lp.rightMarginPercent, -1, "rightMarginPercent");
+    TKUnit.assertEqual(lp.bottomMargin, 0, "bottomMargin");
+    TKUnit.assertEqual(lp.bottomMarginPercent, -1, "bottomMarginPercent");
+}
 
 export function percent_support_test(test: testModule.UITest<LayoutBase>) {
     let layout: LayoutBase = test.testView;

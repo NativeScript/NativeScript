@@ -29,11 +29,11 @@ export var test_getString = function (done: (err: Error, res?: string) => void) 
         done(null);
         // </hide>
     }, function (e) {
-            //// Argument (e) is Error!
-            // <hide>
-            done(e);
-            // </hide>
-        });
+        //// Argument (e) is Error!
+        // <hide>
+        done(e);
+        // </hide>
+    });
     // ```
     // </snippet>
 };
@@ -90,12 +90,12 @@ export var test_getJSON = function (done) {
         done(null);
         // </hide>
     }, function (e) {
-            //// Argument (e) is Error!
-            //console.log(e);
-            // <hide>
-            done(e);
-            // </hide>
-        });
+        //// Argument (e) is Error!
+        //console.log(e);
+        // <hide>
+        done(e);
+        // </hide>
+    });
     // ```
     // </snippet>
 };
@@ -144,8 +144,8 @@ export var test_getJSONP = function (done) {
         }
         done(null);
     }, function (e) {
-            done(e);
-        });
+        done(e);
+    });
 };
 
 export var test_getJSON_fail_when_result_is_not_JSONP = function (done) {
@@ -186,11 +186,11 @@ export var test_getImage = function (done) {
         }
         // </hide>
     }, function (e) {
-            //// Argument (e) is Error!
-            // <hide>
-            done(e);
-            // </hide>
-        });
+        //// Argument (e) is Error!
+        // <hide>
+        done(e);
+        // </hide>
+    });
     // ```
     // </snippet>
 };
@@ -278,11 +278,11 @@ export var test_request_responseStatusCodeShouldBeDefined = function (done) {
         }
         // </hide>
     }, function (e) {
-            //// Argument (e) is Error!
-            // <hide>
-            done(e);
-            // </hide>
-        });
+        //// Argument (e) is Error!
+        // <hide>
+        done(e);
+        // </hide>
+    });
     // ```
     // </snippet>
 };
@@ -309,11 +309,11 @@ export var test_request_responseHeadersShouldBeDefined = function (done) {
         }
         // </hide>
     }, function (e) {
-            //// Argument (e) is Error!
-            // <hide>
-            done(e);
-            // </hide>
-        });
+        //// Argument (e) is Error!
+        // <hide>
+        done(e);
+        // </hide>
+    });
     // ```
     // </snippet>
 };
@@ -341,11 +341,11 @@ export var test_request_responseContentShouldBeDefined = function (done) {
         }
         // </hide>
     }, function (e) {
-            //// Argument (e) is Error!
-            // <hide>
-            done(e);
-            // </hide>
-        });
+        //// Argument (e) is Error!
+        // <hide>
+        done(e);
+        // </hide>
+    });
     // ```
     // </snippet>
 };
@@ -363,8 +363,8 @@ export var test_request_responseContentToStringShouldReturnString = function (do
             done(err);
         }
     }, function (e) {
-            done(e);
-        });
+        done(e);
+    });
 };
 
 export var test_request_responseContentToJSONShouldReturnJSON = function (done) {
@@ -380,8 +380,8 @@ export var test_request_responseContentToJSONShouldReturnJSON = function (done) 
             done(err);
         }
     }, function (e) {
-            done(e);
-        });
+        done(e);
+    });
 };
 
 export var test_request_responseContentToImageShouldReturnCorrectImage = function (done) {
@@ -399,8 +399,8 @@ export var test_request_responseContentToImageShouldReturnCorrectImage = functio
             }
         });
     }, function (e) {
-            done(e);
-        });
+        done(e);
+    });
 };
 
 export var test_request_headersSentAndReceivedProperly = function (done) {
@@ -420,8 +420,8 @@ export var test_request_headersSentAndReceivedProperly = function (done) {
             done(err);
         }
     }, function (e) {
-            done(e);
-        });
+        done(e);
+    });
 };
 
 export var test_request_contentSentAndReceivedProperly = function (done) {
@@ -442,8 +442,8 @@ export var test_request_contentSentAndReceivedProperly = function (done) {
             done(err);
         }
     }, function (e) {
-            done(e);
-        });
+        done(e);
+    });
 };
 
 export var test_request_FormDataContentSentAndReceivedProperly = function (done) {
@@ -468,8 +468,8 @@ export var test_request_FormDataContentSentAndReceivedProperly = function (done)
             done(err);
         }
     }, function (e) {
-            done(e);
-        });
+        done(e);
+    });
 };
 
 export var test_request_NonStringHeadersSentAndReceivedProperly = function (done) {
@@ -492,8 +492,8 @@ export var test_request_NonStringHeadersSentAndReceivedProperly = function (done
             done(err);
         }
     }, function (e) {
-            done(e);
-        });
+        done(e);
+    });
 };
 
 export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
@@ -521,27 +521,29 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
         // </hide>
         // console.log(result);
     }, function (e) {
-            // <hide>
-            done(e);
-            // </hide>
-            // console.log("Error occurred " + e);
-        });
+        // <hide>
+        done(e);
+        // </hide>
+        // console.log("Error occurred " + e);
+    });
     // ```
     // </snippet>
 };
 
-export var test_getString_FromVariousUrls_ShouldWorkProperly = function (done) {
-    var urls = [
-        "https://it-ebooks-api.info/v1/book/1615005640",
-        "https://www.telerik.com",
-        "https://spreadsheets.google.com/tq?key=1tJ64Y8hje0ui4ap9U33h3KWwpxT_-JuVMSZzxD2Er8k",
-        "https://chase.arborgoldcloud.net/mobilehandler/mobiledatahandler.ashx?ProcedureName=MEstimGetJobListSpeed&@prmSalesRep=%&@prmStartDate=11/1/2015&@prmEndDate=12/8/2015&@prmStatusFilter=2"
-    ];
+export var test_getString_1 = function (done) {
+    doRequest("https://it-ebooks-api.info/v1/book/1615005640", done);
+};
 
-    var i: number;
-    for (i = 0; i < urls.length; i++) {
-        doRequest(urls[i], done);
-    }
+export var test_getString_2 = function (done) {
+    doRequest("https://www.telerik.com", done);
+};
+
+export var test_getString_3 = function (done) {
+    doRequest("https://spreadsheets.google.com/tq?key=1tJ64Y8hje0ui4ap9U33h3KWwpxT_-JuVMSZzxD2Er8k", done);
+};
+
+export var test_getString_4 = function (done) {
+    doRequest("https://chase.arborgoldcloud.net/mobilehandler/mobiledatahandler.ashx?ProcedureName=MEstimGetJobListSpeed&@prmSalesRep=%&@prmStartDate=11/1/2015&@prmEndDate=12/8/2015&@prmStatusFilter=2", done);
 };
 
 function doRequest(url: string, done: Function) {
@@ -554,6 +556,6 @@ function doRequest(url: string, done: Function) {
             done(err);
         }
     }, function (e) {
-            done(e);
-        });
+        done(e);
+    });
 };
