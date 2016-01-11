@@ -77,7 +77,7 @@ public class VerticalScrollView extends ScrollView {
 	        this.setPadding(0, 0, 0, 0);
 	    }
 	    else {
-	    	CommonLayoutParams.measureChild(child, widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));	    	
+	    	CommonLayoutParams.measureChild(child, widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
 	    	this.contentMeasuredWidth = CommonLayoutParams.getDesiredWidth(child);
 	    	this.contentMeasuredHeight = CommonLayoutParams.getDesiredHeight(child);
 

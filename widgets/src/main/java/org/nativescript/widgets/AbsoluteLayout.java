@@ -23,9 +23,8 @@ public class AbsoluteLayout extends LayoutBase {
         int measureWidth = 0;
         int measureHeight = 0;
         int childMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
-        int count = this.getChildCount();
-        
-		for (int i = 0; i < count; i++) {
+
+		for (int i = 0, count = this.getChildCount(); i < count; i++) {
 			View child = this.getChildAt(i);
 			if (child.getVisibility() == View.GONE) {
 			    continue;
@@ -58,9 +57,8 @@ public class AbsoluteLayout extends LayoutBase {
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
 		int leftPadding = this.getPaddingLeft();
 		int topPadding = this.getPaddingTop();
-		int count = this.getChildCount();
 
-		for (int i = 0; i < count; i++) {
+		for (int i = 0, count = this.getChildCount(); i < count; i++) {
 			View child = this.getChildAt(i);
 			if (child.getVisibility() == View.GONE) {
 			    continue;

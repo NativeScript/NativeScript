@@ -23,8 +23,7 @@ public class ContentLayout extends LayoutBase {
         int measureWidth = 0;
         int measureHeight = 0;
 
-        int count = this.getChildCount();
-        for (int i = 0; i < count; i++) {
+        for (int i = 0, count = this.getChildCount(); i < count; i++) {
             View child = this.getChildAt(i);
             if (child.getVisibility() == View.GONE) {
                 continue;
@@ -64,9 +63,8 @@ public class ContentLayout extends LayoutBase {
 		
 		int childRight = right - left - (paddingLeft + paddingRight);
 		int childBottom = bottom - top - (paddingRight + paddingBottom);
-		
-		int count = this.getChildCount();        
-		for (int i = 0; i < count; i++) {
+
+		for (int i = 0, count = this.getChildCount(); i < count; i++) {
 		    View child = this.getChildAt(i);
 		    if (child.getVisibility() == View.GONE) {
 		        continue;

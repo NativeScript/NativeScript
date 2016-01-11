@@ -8,6 +8,6 @@ package org.nativescript.widgets;
  *
  */
 public enum Orientation {
-	horzontal,
+	horizontal,
 	vertical
 }

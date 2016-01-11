@@ -266,8 +266,7 @@ public class GridLayout extends LayoutBase {
 		this.helper.clearMeasureSpecs();
 		this.helper.init();
 		
-		int childrenCount = this.getChildCount();
-		for (int i = 0; i < childrenCount; i++) {
+		for (int i = 0, count = this.getChildCount(); i < count; i++) {
 			View child = this.getChildAt(i);
 			if (child.getVisibility() == View.GONE) {	
 				continue;
