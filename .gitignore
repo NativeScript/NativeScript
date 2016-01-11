@@ -35,6 +35,7 @@ local.properties
 
 # Gradle generated files
 .gradle/
+gradle/
 
 # Signing files
 .signing/
@@ -42,8 +43,3 @@ local.properties
 # OS-specific files
 .DS_Store
 .DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
