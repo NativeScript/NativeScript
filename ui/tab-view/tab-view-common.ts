@@ -168,6 +168,7 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
             if (!newItem.view) {
                 throw new Error("TabViewItem at index " + i + " does not have a view.");
             }
+            this._addView(newItem.view, i);
         }
     }
 
