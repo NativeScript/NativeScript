@@ -35,7 +35,6 @@ export function selectExample() {
 examples.set("basics", "bindings/basics");
 examples.set("xmlbasics", "bindings/xmlbasics");
 
-
 examples.set("radius", "css/radius");
 examples.set("styles", "css/styles");
 
@@ -45,8 +44,6 @@ examples.set("fontbtn", "font/button");
 examples.set("fontlbl", "font/label");
 examples.set("fontfield", "font/text-field");
 examples.set("fontview", "font/text-view");
-
-
 
 examples.set("console", "pages/console");
 examples.set("gestures", "pages/gestures");
