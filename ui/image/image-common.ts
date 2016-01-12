@@ -5,6 +5,8 @@ import imageSource = require("image-source");
 import definition = require("ui/image");
 import enums = require("ui/enums");
 import platform = require("platform");
+import utils = require("utils/utils");
+
 import * as typesModule from "utils/types";
 
 var SRC = "src";
@@ -30,7 +32,14 @@ function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
         image._setValue(Image.isLoadingProperty, true);
 
-        if (imageSource.isFileOrResourcePath(value)) {
+        if (utils.isDataURI(value)) {
+            var base64Data = value.split(",")[1];
+            if (types.isDefined(base64Data)) {
+                image.imageSource = imageSource.fromBase64(base64Data);
+                image._setValue(Image.isLoadingProperty, false);
+            }
+        }
+        else if (imageSource.isFileOrResourcePath(value)) {
             image.imageSource = imageSource.fromFileOrResource(value);
             image._setValue(Image.isLoadingProperty, false);
         } else {

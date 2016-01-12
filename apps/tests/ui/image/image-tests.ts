@@ -131,6 +131,31 @@ export var test_SettingImageSrcToFileWithinApp = function (done) {
     helper.buildUIAndRunTest(image, testFunc);
 }
 
+export var test_SettingImageSrcToDataURI = function (done) {
+    // <snippet module="ui/image" title="Image">
+    // ### How to create an image and set its src to Data URI.
+    // ``` JavaScript
+    var image = new ImageModule.Image();
+    image.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==";
+    // ```
+    // </snippet>
+
+    var testFunc = function (views: Array<ViewModule.View>) {
+        var testImage = <ImageModule.Image>views[0];
+        TKUnit.waitUntilReady(() => !testImage.isLoading, 3);
+        try {
+            TKUnit.assertTrue(!testImage.isLoading, "isLoading should be false.");
+            TKUnit.assertNotNull(testImage.imageSource);
+            done(null);
+        }
+        catch (e) {
+            done(e);
+        }
+    }
+
+    helper.buildUIAndRunTest(image, testFunc);
+}
+
 export var test_SettingStretch_AspectFit = function () {
     // <snippet module="ui/image" title="Image">
     // ### How to set image stretching.
