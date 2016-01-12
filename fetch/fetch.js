@@ -1,10 +1,13 @@
 ﻿(function () {
     'use strict';
 
-    var self = exports;
+    exports.XMLHttpRequest = global.XMLHttpRequest;
+    exports.FormData = global.FormData;
 
-    if (self.fetch) {
-        return
+    if (!exports.XMLHttpRequest) {
+        var xhr = require("xhr");
+        exports.XMLHttpRequest = xhr.XMLHttpRequest;
+        exports.FormData = xhr.FormData;
     }
 
     function normalizeName(name) {
@@ -110,7 +113,7 @@
     }
 
     var support = {
-        blob: 'FileReader' in global && 'Blob' in global && (function () {
+        blob: 'FileReader' in exports && 'Blob' in exports && (function () {
             try {
                 new Blob();
                 return true
@@ -118,7 +121,7 @@
                 return false
             }
         })(),
-        formData: 'FormData' in global
+        formData: 'FormData' in exports
     }
 
     function Body() {
@@ -131,7 +134,7 @@
                 this._bodyText = body
             } else if (support.blob && Blob.prototype.isPrototypeOf(body)) {
                 this._bodyBlob = body
-            } else if (support.formData && FormData.prototype.isPrototypeOf(body)) {
+            } else if (support.formData && exports.FormData.prototype.isPrototypeOf(body)) {
                 this._bodyFormData = body
             } else if (!body) {
                 this._bodyText = ''
@@ -219,7 +222,7 @@
     }
 
     function decode(body) {
-        var form = new FormData()
+        var form = new exports.FormData()
         body.trim().split('&').forEach(function (bytes) {
             if (bytes) {
                 var split = bytes.split('=')
@@ -262,11 +265,11 @@
 
     Body.call(Response.prototype)
 
-    self.Headers = Headers;
-    self.Request = Request;
-    self.Response = Response;
+    exports.Headers = Headers;
+    exports.Request = Request;
+    exports.Response = Response;
 
-    self.fetch = function (input, init) {
+    exports.fetch = function (input, init) {
         // TODO: Request constructor should accept input, init
         var request
         if (Request.prototype.isPrototypeOf(input) && !init) {
@@ -276,7 +279,7 @@
         }
 
         return new Promise(function (resolve, reject) {
-            var xhr = new XMLHttpRequest()
+            var xhr = new exports.XMLHttpRequest()
 
             function responseURL() {
                 if ('responseURL' in xhr) {
@@ -328,6 +331,6 @@
             xhr.send(typeof request._bodyInit === 'undefined' ? null : request._bodyInit)
         })
     }
-    self.fetch.polyfill = true
+    exports.fetch.polyfill = true
 
 })();
