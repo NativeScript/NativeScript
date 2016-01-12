@@ -19,8 +19,9 @@ declare module "ui/frame" {
 
         /**
          * Navigates to the previous entry (if any) in the back stack.
+         * @param to The backstack entry to navigate back to.
          */
-        goBack();
+        goBack(to?: BackstackEntry);
 
         /**
          * Checks whether the goBack operation is available.
