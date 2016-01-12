@@ -173,6 +173,7 @@ module.exports = function(grunt) {
     tsOptions.fast = 'never';
     tsOptions.removeComments = !grunt.option('leavecomments') || '';
     tsOptions.compiler = "node_modules/typescript/bin/tsc";
+    tsOptions.failOnTypeErrors = true;
 
     grunt.initConfig({
         localCfg : localCfg,
