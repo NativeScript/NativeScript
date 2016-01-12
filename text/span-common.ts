@@ -49,8 +49,8 @@ export class Span extends bindable.Bindable implements definition.Span, view.App
 
     private _getColorValue(value: any): colorModule.Color {
         var result;
-        if (types.isString(value) && (<any>value).indexOf("#") === 0) {
-            result = new colorModule.Color(<any>value);
+        if (types.isString(value) && colorModule.Color.isValid(value)) {
+            result = new colorModule.Color(value);
         }
         else {
             result = value;
