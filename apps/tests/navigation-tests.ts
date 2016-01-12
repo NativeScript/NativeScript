@@ -1,6 +1,7 @@
 ﻿import TKUnit = require("./TKUnit");
 import pageModule = require("ui/page");
 import frame = require("ui/frame");
+import { Page } from "ui/page";
 
 export var test_backstackVisible = function() {
     var pageFactory = function(): pageModule.Page {
@@ -29,6 +30,46 @@ export var test_backstackVisible = function() {
 
     frame.topmost().goBack();
     TKUnit.waitUntilReady(() => { return frame.topmost().currentPage === mainTestPage; });
+}
+
+export var test_backToEntry = function() {
+    let page = (tag) => () => {
+        var p = new Page();
+        p["tag"] = tag;
+        return p;
+    }
+    let topmost = frame.topmost();
+    let wait = tag => TKUnit.waitUntilReady(() => topmost.currentPage["tag"] === tag, 1);
+    let navigate = tag => {
+        topmost.navigate({ create: page(tag) });
+        wait(tag)
+    }
+    let back = pages => {
+        topmost.goBack(topmost.backStack[topmost.backStack.length - pages]);
+    }
+    let currentPageMustBe = tag => {
+        wait(tag); // TODO: Add a timeout...
+        TKUnit.assert(topmost.currentPage["tag"] === tag, "Expected current page to be " + tag + " it was " + topmost.currentPage["tag"] + " instead."); 
+    }
+
+    navigate("page1");
+    navigate("page2");
+    navigate("page3");
+    navigate("page4");
+
+    currentPageMustBe("page4");
+    back(2);
+    currentPageMustBe("page2");
+    back(1);
+    currentPageMustBe("page1");
+    navigate("page1.1");
+    navigate("page1.2");
+    currentPageMustBe("page1.2");
+    back(1);
+    currentPageMustBe("page1.1");
+    back(1);
+    currentPageMustBe("page1");
+    back(1);
 }
 
 // Clearing the history messes up the tests app.

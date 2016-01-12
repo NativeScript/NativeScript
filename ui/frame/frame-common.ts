@@ -152,14 +152,27 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         return this._backStack.length > 0;
     }
 
-    public goBack() {
+    /**
+     * Navigates to the previous entry (if any) in the back stack.
+     * @param to The backstack entry to navigate back to.
+     */
+    public goBack(backstackEntry?: definition.BackstackEntry) {
         trace.write(this._getTraceId() + ".goBack();", trace.categories.Navigation);
         if (!this.canGoBack()) {
             // TODO: Do we need to throw an error?
             return;
         }
 
-        var backstackEntry = this._backStack.pop();
+        if (!backstackEntry) {
+            backstackEntry = this._backStack.pop();
+        } else {
+            let backIndex = this._backStack.indexOf(backstackEntry);
+            if (backIndex < 0) {
+                return;
+            }
+            this._backStack.splice(backIndex);
+        }
+
         var navigationContext: NavigationContext = {
             entry: backstackEntry,
             isBackNavigation: true
