@@ -49,108 +49,102 @@ export module ios {
         }
     }
 
-    export function setTextDecoration(view: dts.ios.TextUIView, value: string) {
-        var attributes: NSMutableDictionary = NSMutableDictionary.alloc().init();
-        var values = (value + "").split(" ");
+    export function setTextDecorationAndTransform(v: any, decoration: string, transform: string) {
+        if (v.formattedText) {
+            if (v.style.textDecoration.indexOf(enums.TextDecoration.none) === -1) {
 
-        if (values.indexOf(enums.TextDecoration.underline) !== -1) {
-            attributes.setObjectForKey(NSUnderlineStyle.NSUnderlineStyleSingle, NSUnderlineStyleAttributeName);
-        }
+                if (v.style.textDecoration.indexOf(enums.TextDecoration.underline) !== -1) {
+                    (<any>v).formattedText.underline = NSUnderlineStyle.NSUnderlineStyleSingle;
+                }
 
-        if (values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
-            attributes.setObjectForKey(NSUnderlineStyle.NSUnderlineStyleSingle, NSStrikethroughStyleAttributeName);
-        }
+                if (v.style.textDecoration.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+                    (<any>v).formattedText.strikethrough = NSUnderlineStyle.NSUnderlineStyleSingle;
+                }
 
-        if (values.indexOf(enums.TextDecoration.none) === -1) {
-            setTextDecorationNative(view, view.text || view.attributedText, attributes);
+            } else {
+                (<any>v).formattedText.underline = NSUnderlineStyle.NSUnderlineStyleNone;
+            }
+
+            for (let i = 0; i < v.formattedText.spans.length; i++) {
+                let span = v.formattedText.spans.getItem(i);
+                span.text = getTransformedText(v, span.text, transform);
+            }
         } else {
-            setTextDecorationNative(view, view.text || view.attributedText, NSMutableDictionary.alloc().init());
+            let source = v.text;
+            let attributes = new Array();
+            let range = { location: 0, length: source.length };
+
+            var decorationValues = (decoration + "").split(" ");
+
+            if (decorationValues.indexOf(enums.TextDecoration.none) === -1) {
+                let dict = new Map<string, number>();
+
+                if (decorationValues.indexOf(enums.TextDecoration.underline) !== -1) {
+                    dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                }
+
+                if (decorationValues.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+                    dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                }
+
+                attributes.push({ attrs: dict, range: NSValue.valueWithRange(range) });
+            }
+
+            let view: dts.ios.TextUIView | UIButton = v._nativeView;
+
+            source = getTransformedText(v, source, transform);
+
+            if (attributes.length > 0) {
+                let result = NSMutableAttributedString.alloc().initWithString(<string>source);
+                for (let i = 0; i < attributes.length; i++) {
+                    result.setAttributesRange(attributes[i]["attrs"], attributes[i]["range"].rangeValue);
+                }
+
+                if (view instanceof UIButton) {
+                    (<UIButton>view).setAttributedTitleForState(result, UIControlState.UIControlStateNormal);
+                }
+                else {
+                    (<dts.ios.TextUIView>view).attributedText = result;
+                }
+            } else {
+                if (view instanceof UIButton) {
+                    (<UIButton>view).setTitleForState(<string>source, UIControlState.UIControlStateNormal);
+                }
+                else {
+                    (<dts.ios.TextUIView>view).text = <string>source;
+                }
+            }
         }
     }
 
-    export function setTextTransform(view: dts.ios.TextUIView, value: string) {
-        let str = getNSStringFromView(view);
-        let result: string;
+    function getTransformedText(view, source: string, transform: string): string {
+        let result = source;
 
-        switch (value) {
+        switch (transform) {
             case enums.TextTransform.none:
             default:
-                result = view["originalString"] || str;
+                result = view["originalString"] || NSStringFromNSAttributedString(source);
                 break;
             case enums.TextTransform.uppercase:
-                result = str.uppercaseString;
+                result = NSStringFromNSAttributedString(source).uppercaseString;
                 break;
             case enums.TextTransform.lowercase:
-                result = str.lowercaseString;
+                result = NSStringFromNSAttributedString(source).lowercaseString;
                 break;
             case enums.TextTransform.capitalize:
-                result = str.capitalizedString;
+                result = NSStringFromNSAttributedString(source).capitalizedString;
                 break;
         }
 
         if (!view["originalString"]) {
-            view["originalString"] = str;
-        }
-
-        let newStr = getAttributedStringFromView(view, result);
-
-        if (newStr) {
-            setAttributedStringToView(view, newStr);
-        } else {
-            setStringToView(view, result);
-        }
-    }
-
-    function getNSStringFromView(view: any): NSString {
-        let result: string;
-
-        if (view instanceof UIButton) {
-            let attrTitle = (<UIButton>view).titleLabel.attributedText;
-            result = attrTitle ? attrTitle.string : (<UIButton>view).titleLabel.text;
-        }
-        else {
-            let attrText = (<UITextView>view).attributedText;
-            result = attrText ? attrText.string : (<UITextView>view).text;
-        }
-
-        return NSString.alloc().initWithString(result || "");
-    }
-
-    function setStringToView(view: any, str: string) {
-        if (view instanceof UIButton) {
-            (<UIButton>view).setTitleForState(str, UIControlState.UIControlStateNormal);
-        }
-        else {
-            (<dts.ios.TextUIView>view).text = str;
-        }
-    }
-
-    function getAttributedStringFromView(view: any, value: string): NSMutableAttributedString {
-        let result: NSMutableAttributedString;
-
-        if (view instanceof UIButton) {
-            let attrTitle = (<UIButton>view).titleLabel.attributedText;
-            if (attrTitle) {
-                result = NSMutableAttributedString.alloc().initWithAttributedString(attrTitle);
-            }
-        } else if (view.attributedText) {
-            result = NSMutableAttributedString.alloc().initWithAttributedString(view.attributedText);
-        }
-
-        if (result) {
-            result.replaceCharactersInRangeWithString({ location: 0, length: result.length }, value);
+            view["originalString"] = NSStringFromNSAttributedString(source);
         }
 
         return result;
     }
 
-    function setAttributedStringToView(view: any, str: NSMutableAttributedString) {
-        if (view instanceof UIButton) {
-            (<UIButton>view).setAttributedTitleForState(str, UIControlState.UIControlStateNormal);
-        }
-        else {
-            (<dts.ios.TextUIView>view).attributedText = str;
-        }
+    function NSStringFromNSAttributedString(source: NSAttributedString | string): NSString {
+        return NSString.stringWithString(source instanceof NSAttributedString && source.string || <string>source);
     }
 
     export function setWhiteSpace(view: dts.ios.TextUIView, value: string, parentView?: UIView) {
@@ -165,19 +159,6 @@ export module ios {
                 view.lineBreakMode = NSLineBreakMode.NSLineBreakByTruncatingTail;
             }
             view.numberOfLines = 1;
-        }
-    }
-
-    function setTextDecorationNative(view: dts.ios.TextUIView, value: string | NSAttributedString, attributes: NSMutableDictionary) {
-        var attributedString: NSMutableAttributedString;
-
-        if (value instanceof NSAttributedString) {
-            attributedString = NSMutableAttributedString.alloc().initWithAttributedString(value);
-            attributedString.addAttributesRange(attributes, NSRangeFromString(attributedString.string));
-        } else {
-            var types: typeof typesModule = require("utils/types");
-
-            view.attributedText = NSAttributedString.alloc().initWithStringAttributes(types.isString(value) ? <string>value : "", attributes);
         }
     }
 

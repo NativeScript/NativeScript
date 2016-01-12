@@ -591,7 +591,7 @@ export var test_setting_button_textTransform_sets_native = function () {
     testView.text = initial;
     testView.style.textTransform = enums.TextTransform.capitalize;
 
-    executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).attributedTitleForState(UIControlState.UIControlStateNormal).string; });
+    executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).titleForState(UIControlState.UIControlStateNormal); });
 }
 
 export var test_setting_label_textTransform_and_textDecoration_sets_native = function () {

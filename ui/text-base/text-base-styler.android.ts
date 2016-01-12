@@ -94,11 +94,11 @@ export class TextBaseStyler implements style.Styler {
 
     // text-transform
     private static setTextTransformProperty(view: view.View, newValue: any) {
-        utils.ad.setTextTransform(view._nativeView, newValue);
+        utils.ad.setTextTransform(view, newValue);
     }
 
     private static resetTextTransformProperty(view: view.View, nativeValue: any) {
-        utils.ad.setTextTransform(view._nativeView, enums.TextTransform.none);
+        utils.ad.setTextTransform(view, enums.TextTransform.none);
     }
 
     // white-space

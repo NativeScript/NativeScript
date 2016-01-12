@@ -111,6 +111,7 @@ export class Button extends view.View implements definition.Button {
             // then the property defaults to a system value. Therefore, at a minimum, you should 
             // set the value for the normal state.
             this.ios.setAttributedTitleForState(value._formattedText, UIControlState.UIControlStateNormal);
+            this.style._updateTextDecoration();
         }
     }
 
