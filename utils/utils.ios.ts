@@ -68,36 +68,35 @@ export module ios {
             for (let i = 0; i < v.formattedText.spans.length; i++) {
                 let span = v.formattedText.spans.getItem(i);
                 span.text = getTransformedText(v, span.text, transform);
-                console.log("HERE: " + span.text);
             }
         } else {
             let source = v.text;
-            let attributes = NSMutableArray.array();
+            let attributes = new Array();
             let range = { location: 0, length: source.length };
 
             var decorationValues = (decoration + "").split(" ");
 
             if (decorationValues.indexOf(enums.TextDecoration.none) === -1) {
-                let dict = NSMutableDictionary.new();
+                let dict = new Map<string, number>();
 
                 if (decorationValues.indexOf(enums.TextDecoration.underline) !== -1) {
-                    dict.setValueForKey(NSUnderlineStyle.NSUnderlineStyleSingle, NSUnderlineStyleAttributeName);
+                    dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
                 }
 
                 if (decorationValues.indexOf(enums.TextDecoration.lineThrough) !== -1) {
-                    dict.setValueForKey(NSUnderlineStyle.NSUnderlineStyleSingle, NSStrikethroughStyleAttributeName);
+                    dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
                 }
 
-                attributes.addObject({ attrs: dict, range: NSValue.valueWithRange(range) });
+                attributes.push({ attrs: dict, range: NSValue.valueWithRange(range) });
             }
 
             let view: dts.ios.TextUIView | UIButton = v._nativeView;
 
             source = getTransformedText(v, source, transform);
 
-            if (attributes.count > 0) {
+            if (attributes.length > 0) {
                 let result = NSMutableAttributedString.alloc().initWithString(<string>source);
-                for (let i = 0; i < attributes.count; i++) {
+                for (let i = 0; i < attributes.length; i++) {
                     result.setAttributesRange(attributes[i]["attrs"], attributes[i]["range"].rangeValue);
                 }
 
