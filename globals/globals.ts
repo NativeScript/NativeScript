@@ -78,14 +78,20 @@ if (platform.device.os === platform.platformNames.android) {
 
 if (typeof global.__decorate !== "function") {
     global.__decorate = function (decorators, target, key, desc) {
+        var c = arguments.length
+        var r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+
         if (typeof global.Reflect === "object" && typeof global.Reflect.decorate === "function") {
-            return global.Reflect.decorate(decorators, target, key, desc);
+            r = global.Reflect.decorate(decorators, target, key, desc);
         }
-        switch (arguments.length) {
-            case 2: return decorators.reduceRight(function (o, d) { return (d && d(o)) || o; }, target);
-            case 3: return decorators.reduceRight(function (o, d) { return (d && d(target, key)), void 0; }, void 0);
-            case 4: return decorators.reduceRight(function (o, d) { return (d && d(target, key, o)) || o; }, desc);
+        else {
+            for (var i = decorators.length - 1; i >= 0; i--) {
+                if (d = decorators[i]) {
+                    r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+                }
+            }
         }
+        return c > 3 && r && Object.defineProperty(target, key, r), r;
     }
 }
 
