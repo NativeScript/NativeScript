@@ -1,27 +1,53 @@
 ﻿<Page>
     <StackLayout>
-      <Label text="textText" style="text-transform: uppercase; text-decoration: underline line-through;" />
+    
+      <Label text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through;" />
       <Label style="text-transform: uppercase; text-decoration: underline line-through;">
         <Label.formattedText>
           <FormattedString>
             <FormattedString.spans>
-              <Span text="text" fontAttributes="Bold" foregroundColor="#ff0000" />
-              <Span text="Text" fontAttributes="Italic" foregroundColor="#00ff00" />
+              <Span text="label" fontAttributes="Bold" foregroundColor="#0000ff" />
+              <Span text="Label" fontAttributes="Italic" foregroundColor="#00ff00" />
             </FormattedString.spans>
           </FormattedString>
         </Label.formattedText>
       </Label>
 
-      <Button text="textText" style="text-transform: uppercase; text-decoration: underline line-through;" />
+      <Button text="buttonButton" style="text-transform: uppercase; text-decoration: underline line-through;" />
       <Button style="text-transform: uppercase; text-decoration: underline line-through;">
         <Button.formattedText>
           <FormattedString>
             <FormattedString.spans>
-              <Span text="text" fontAttributes="Bold" foregroundColor="#ff0000" />
-              <Span text="Text" fontAttributes="Italic" foregroundColor="#00ff00" />
+              <Span text="button" fontAttributes="Bold" foregroundColor="#0000ff" />
+              <Span text="Button" fontAttributes="Italic" foregroundColor="#00ff00" />
             </FormattedString.spans>
           </FormattedString>
         </Button.formattedText>
       </Button>
+
+      <TextField text="textField" style="text-transform: uppercase; text-decoration: underline line-through;" />
+      <TextField style="text-transform: uppercase; text-decoration: underline line-through;">
+        <TextField.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontAttributes="Bold" foregroundColor="#0000ff" />
+              <Span text="Field" fontAttributes="Italic" foregroundColor="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </TextField.formattedText>
+      </TextField>
+
+      <TextView text="textView" style="text-transform: uppercase; text-decoration: underline line-through;" />
+      <TextView style="text-transform: uppercase; text-decoration: underline line-through;">
+        <TextView.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontAttributes="Bold" foregroundColor="#0000ff" />
+              <Span text="View" fontAttributes="Italic" foregroundColor="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </TextView.formattedText>
+      </TextView>
+
     </StackLayout>
 </Page>

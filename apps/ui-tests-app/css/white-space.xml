@@ -1,9 +1,13 @@
 ﻿<Page >
   <ScrollView>
     <StackLayout width="50">
-      <Button text="Change" tap="butonTap" />
-      <Label id="Label1" text="Text Text" style.whiteSpace="normal" />
+      <Button id="Change" text="Change" tap="butonTap" />
+      <Label id="Label" text="label Label" style.whiteSpace="normal" />
+      <Button id="Button" text="button Button" style.whiteSpace="normal" />
+      <TextField id="TextField" text="textField textField" style.whiteSpace="normal" />
+      <TextView id="TextView" text="textView textView" style.whiteSpace="normal" />
 
+      <!--
       <Label text="Label Normal" style="white-space:normal" />
       <Label text="Label Nowrap" style="white-space:nowrap" />
 
@@ -15,6 +19,7 @@
 
       <Button text="Button Normal" style="white-space:normal" />
       <Button text="Button Nowrap" style="white-space:nowrap" />
+      -->
     </StackLayout>
   </ScrollView>
 </Page>

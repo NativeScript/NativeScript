@@ -35,11 +35,6 @@ export function selectExample() {
 examples.set("basics", "bindings/basics");
 examples.set("xmlbasics", "bindings/xmlbasics");
 
-examples.set("fontbtn", "font/button");
-examples.set("fontlbl", "font/label");
-examples.set("fontfield", "font/text-field");
-examples.set("fontview", "font/text-view");
-
 examples.set("console", "pages/console");
 examples.set("gestures", "pages/gestures");
 examples.set("handlers", "pages/handlers");
@@ -52,10 +47,6 @@ examples.set("switch", "pages/switchandprogress"); // TODO: Update this test pag
 
 examples.set("textfield", "text-field/text-field");
 
-examples.set("decoration", "css/text-decoration");
-examples.set("whitespace", "css/white-space");
-examples.set("transform", "css/text-transform");
-
 // ---
 
 examples.set("actColor", "action-bar/color");
@@ -66,8 +57,17 @@ examples.set("actIcons", "action-bar/system-icons");
 examples.set("background", "css/background");
 examples.set("radius", "css/radius");
 examples.set("styles", "css/styles");
+examples.set("formatted", "css/decoration-transform-formattedtext");
+examples.set("decoration", "css/text-decoration");
+examples.set("transform", "css/text-transform");
+examples.set("whitespace", "css/white-space");
 
 examples.set("dialogs", "dialogs/dialogs");
+
+examples.set("fontbtn", "font/button");
+examples.set("fontlbl", "font/label");
+examples.set("fontfield", "font/text-field");
+examples.set("fontview", "font/text-view");
 
 examples.set("htmlview", "html-view/html-view");
 

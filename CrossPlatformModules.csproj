@@ -205,6 +205,9 @@
     <Content Include="apps\ui-tests-app\action-bar\system-icons.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\ui-tests-app\css\decoration-transform-formattedtext.xml" />
+    <Content Include="apps\ui-tests-app\css\text-decoration.xml" />
+    <Content Include="apps\ui-tests-app\css\text-transform.xml" />
     <Content Include="apps\ui-tests-app\css\white-space.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -276,6 +279,7 @@
       <DependentUpon>color.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\css\text-decoration.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\css\text-transform.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\css\white-space.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\html-view\html-view.ts">
       <DependentUpon>html-view.xml</DependentUpon>
