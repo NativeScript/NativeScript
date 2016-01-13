@@ -322,6 +322,7 @@
         "apps/tests/xml-declaration/mainPage.ts",
         "apps/tests/xml-declaration/mymodule/MyControl.ts",
         "apps/tests/xml-declaration/mymodulewithxml/MyControl.ts",
+        "apps/tests/xml-declaration/mymodulewithxml/TabViewParentChain.ts",
         "apps/tests/xml-declaration/template-builder-tests/event-in-codeless-fragment.ts",
         "apps/tests/xml-declaration/template-builder-tests/event-in-template.ts",
         "apps/tests/xml-declaration/template-builder-tests/template-view.ts",

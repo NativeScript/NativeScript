@@ -194,8 +194,6 @@ export class TabView extends common.TabView {
         for (i = 0; i < length; i++) {
             item = <TabViewItem>newItems[i];
 
-            this._addView(item.view);
-
             if (item.view.ios instanceof UIViewController) {
                 newController = <UIViewController>item.view.ios;
             } else {

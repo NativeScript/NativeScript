@@ -15,6 +15,8 @@ import {Label} from "ui/label";
 import {Page} from "ui/page";
 import {Button} from "ui/button";
 import {View} from "ui/core/view";
+import {TabView} from "ui/tab-view";
+import {Observable} from "data/observable";
 import {TemplateView} from "./template-builder-tests/template-view";
 import myCustomControlWithoutXml = require("./mymodule/MyControl");
 import listViewModule = require("ui/list-view");
@@ -920,4 +922,51 @@ export function test_EventInCodelessFragment() {
     });
     
     TKUnit.assert(notified, "Expected the child to raise the test event.");
+}
+
+export function test_tabview_selectedindex_will_work_from_xml() {
+    var p = <Page>builder.parse(
+        '<Page>' +
+          '<TabView selectedIndex= "1">' +
+            '<TabView.items>'+
+              '<TabViewItem title="First">' +
+                 '<TabViewItem.view>' +
+                    '<Label text="First View" />' +
+                 '</TabViewItem.view>' +
+              '</TabViewItem>' +
+              '<TabViewItem title= "Second">' +
+                '<TabViewItem.view>' +
+                  '<Label text="Second View" />' +
+                '</TabViewItem.view>' +
+              '</TabViewItem>' +
+            '</TabView.items>' +
+         '</TabView>' +
+        '</Page>');
+
+    function testAction(views: Array<viewModule.View>) {
+        var tab: TabView = <TabView>p.content;
+
+        TKUnit.wait(0.2);
+
+        TKUnit.assertEqual(tab.selectedIndex, 1);
+    };
+
+    helper.navigate(function () { return p; });
+
+    try {
+        testAction([p.content, p]);
+    }
+    finally {
+        helper.goBack();
+    }
+}
+
+export function test_TabViewHasCorrectParentChain() {
+    var testFunc = function(page: Page) {
+        TKUnit.assert(page.bindingContext.get("testPassed"));
+    }
+    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+    var model = new Observable();
+    model.set("testPassed", false);
+    helper.navigateToModuleAndRunTest(("." + moduleName + "/mymodulewithxml/TabViewParentChain"), model, testFunc);
 }
