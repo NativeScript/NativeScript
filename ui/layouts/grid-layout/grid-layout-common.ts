@@ -313,16 +313,18 @@ export class GridLayout extends layouts.LayoutBase implements definition.GridLay
 
     private static parseItemSpecs(value: string): Array<ItemSpec> {
         var result = new Array<ItemSpec>();
-        var arr = value.split(",");
+        var arr = value.split(/[\s,]+/);
         for (var i = 0; i < arr.length; i++) {
-            result.push(GridLayout.convertGridLength(arr[i].trim()));
+            let str = arr[i].trim();
+            if (str.length > 0) {
+                result.push(GridLayout.convertGridLength(arr[i].trim()));
+            }
         }
 
         return result;
     }
 
     private static convertGridLength(value: string): ItemSpec {
-
         if (value === "auto") {
             return <ItemSpec>new definition.ItemSpec(1, definition.GridUnitType.auto);
         }
