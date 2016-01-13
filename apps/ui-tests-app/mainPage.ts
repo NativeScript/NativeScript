@@ -35,11 +35,6 @@ export function selectExample() {
 examples.set("basics", "bindings/basics");
 examples.set("xmlbasics", "bindings/xmlbasics");
 
-examples.set("radius", "css/radius");
-examples.set("styles", "css/styles");
-
-examples.set("dialogs", "dialogs/dialogs");
-
 examples.set("fontbtn", "font/button");
 examples.set("fontlbl", "font/label");
 examples.set("fontfield", "font/text-field");
@@ -69,6 +64,10 @@ examples.set("actStyle", "action-bar/all");
 examples.set("actIcons", "action-bar/system-icons");
 
 examples.set("background", "css/background");
+examples.set("radius", "css/radius");
+examples.set("styles", "css/styles");
+
+examples.set("dialogs", "dialogs/dialogs");
 
 examples.set("htmlview", "html-view/html-view");
 

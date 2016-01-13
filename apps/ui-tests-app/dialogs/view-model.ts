@@ -23,6 +23,9 @@ export class SettingsViewModel extends observable.Observable {
             if (actionResult === "Yes") {
                 this.set("name", "John Reese");
             }
+            else {
+                this.set("name", "Harold Finch");
+            }
         });
     }
 
@@ -49,6 +52,9 @@ export class SettingsViewModel extends observable.Observable {
             if (confirmResult) {
                 this.set("name", "John Reese");
             }
+            else {
+                this.set("name", "Harold Finch");
+            }
         });
     }
 
@@ -66,6 +72,9 @@ export class SettingsViewModel extends observable.Observable {
             if (loginResult.result) {
                 this.set("name", loginResult.userName + " " + loginResult.password);
             }
+            else {
+                this.set("name", "Harold Finch");
+            }
         });
     }
 
@@ -82,6 +91,9 @@ export class SettingsViewModel extends observable.Observable {
             console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
             if (promptResult.result) {
                 this.set("name", promptResult.text);
+            }
+            else {
+                this.set("name", "Harold Finch");
             }
         });
     }
