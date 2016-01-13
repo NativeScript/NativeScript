@@ -93,8 +93,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
         let lbl1 = new layoutHelper.MyButton();
         lbl1.text = "1";
-        lbl1.minWidth = layoutHelper.dp(100);
-        lbl1.minHeight = layoutHelper.dp(100);
+        lbl1.minWidth = layoutHelper.dp(200);
+        lbl1.minHeight = layoutHelper.dp(200);
         wrap.addChild(lbl1);
 
         this.waitUntilTestElementLayoutIsValid();
