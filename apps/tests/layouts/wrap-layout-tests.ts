@@ -44,12 +44,9 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         wrapLayout.width = layoutHelper.dp(200);
         wrapLayout.height = layoutHelper.dp(200);
 
-        var label;
-        var i;
-        for (i = 0; i < 2; i++) {
-            label = new Label();
+        for (let i = 0; i < 2; i++) {
+            let label = new Label();
             label.text = "" + i;
-            label.id = "" + i;
 
             label.width = layoutHelper.dp(100);
             label.height = layoutHelper.dp(100);
@@ -57,6 +54,55 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         }
 
         return wrapLayout;
+    }
+
+    public testItemWidhtItemHeight() {
+        let wrap = this.testView;
+        wrap.removeChildren();
+
+        wrap.itemWidth = layoutHelper.dp(40);
+        wrap.itemHeight = layoutHelper.dp(40);
+
+        let lbl1 = new layoutHelper.MyButton();
+        lbl1.text = "1";
+        wrap.addChild(lbl1);
+
+        let lbl2 = new layoutHelper.MyButton();
+        lbl2.text = "2";
+        lbl2.width = layoutHelper.dp(80);
+        lbl2.height = layoutHelper.dp(80);
+        wrap.addChild(lbl2);
+
+        this.waitUntilTestElementLayoutIsValid();
+
+        TKUnit.assertEqual(lbl1.measureWidth, 40, "lbl1.measureWidth");
+        TKUnit.assertEqual(lbl1.measureHeight, 40, "lbl1.measureHeight");
+        TKUnit.assertEqual(lbl1.layoutWidth, 40, "lbl1.layoutWidth");
+        TKUnit.assertEqual(lbl1.layoutHeight, 40, "lbl1.layoutHeight");
+
+        TKUnit.assertEqual(lbl2.measureWidth, 40, "lbl2.measureWidth");
+        TKUnit.assertEqual(lbl2.measureHeight, 40, "lbl2.measureHeight");
+        TKUnit.assertEqual(lbl2.layoutWidth, 40, "lbl2.layoutWidth");
+        TKUnit.assertEqual(lbl2.layoutHeight, 40, "lbl2.layoutHeight");
+    }
+
+    public testPaddingReduceAvailableSize() {
+        let wrap = this.testView;
+        wrap.removeChildren();
+        wrap.paddingLeft = wrap.paddingTop = wrap.paddingRight = wrap.paddingBottom = layoutHelper.dp(10);
+
+        let lbl1 = new layoutHelper.MyButton();
+        lbl1.text = "1";
+        lbl1.minWidth = layoutHelper.dp(200);
+        lbl1.minHeight = layoutHelper.dp(200);
+        wrap.addChild(lbl1);
+
+        this.waitUntilTestElementLayoutIsValid();
+
+        TKUnit.assertEqual(lbl1.measureWidth, 180, "lbl1.measureWidth");
+        TKUnit.assertEqual(lbl1.measureHeight, 180, "lbl1.measureHeight");
+        TKUnit.assertEqual(lbl1.layoutWidth, 180, "lbl1.layoutWidth");
+        TKUnit.assertEqual(lbl1.layoutHeight, 180, "lbl1.layoutHeight");
     }
 
     public testHorizontalOrientation() {

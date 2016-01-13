@@ -29,24 +29,33 @@ export class WrapLayout extends common.WrapLayout {
         var measureWidth = 0;
         var measureHeight = 0;
 
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
         var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
         var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
         var density = utils.layout.getDisplayDensity();
-        var childWidthMeasureSpec: number = WrapLayout.getChildMeasureSpec(widthMode, width, this.itemWidth * density);
-        var childHeightMeasureSpec: number = WrapLayout.getChildMeasureSpec(heightMode, height, this.itemHeight * density);
 
-        var remainingWidth = widthMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : width - ((this.paddingLeft + this.paddingRight) * density);
-        var remainingHeight = heightMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : height - ((this.paddingTop + this.paddingBottom) * density);
+        var horizontalPadding = (this.paddingLeft + this.paddingRight) * density;
+        var verticalPadding = (this.paddingTop + this.paddingBottom) * density;
+
+        var availableWidth = widthMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : utils.layout.getMeasureSpecSize(widthMeasureSpec) - horizontalPadding;
+        var availableHeight = heightMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : utils.layout.getMeasureSpecSize(heightMeasureSpec) - verticalPadding;
+
+        var childWidthMeasureSpec: number = WrapLayout.getChildMeasureSpec(widthMode, availableWidth, this.itemWidth * density);
+        var childHeightMeasureSpec: number = WrapLayout.getChildMeasureSpec(heightMode, availableHeight, this.itemHeight * density);
+
+        var remainingWidth = availableWidth;
+        var remainingHeight = availableHeight;
 
         this._lengths.length = 0;
-
         var rowOrColumn = 0;
         var maxLength = 0;
+
         var isVertical = this.orientation === Orientation.vertical;
+
+        let useItemWidth: boolean = this.itemWidth > 0;
+        let useItemHeight: boolean = this.itemHeight > 0;
+        let itemWidth = this.itemWidth;
+        let itemHeight = this.itemHeight;
 
         for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
             let child = this.getChildAt(i);
@@ -54,39 +63,42 @@ export class WrapLayout extends common.WrapLayout {
                 continue;
             }
 
-            var childSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
+            var desiredSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
+            let childMeasuredWidth = useItemWidth ? itemWidth : desiredSize.measuredWidth;
+            let childMeasuredHeight = useItemHeight ? itemHeight : desiredSize.measuredHeight;
+
             if (isVertical) {
-                if (childSize.measuredHeight > remainingHeight) {
+                if (childMeasuredHeight > remainingHeight) {
                     rowOrColumn++;
                     maxLength = Math.max(maxLength, measureHeight);
-                    measureHeight = childSize.measuredHeight;
-                    remainingWidth = height - childSize.measuredHeight;
-                    this._lengths[rowOrColumn] = childSize.measuredWidth;
+                    measureHeight = childMeasuredHeight;
+                    remainingWidth = availableHeight - childMeasuredHeight;
+                    this._lengths[rowOrColumn] = childMeasuredWidth;
                 }
                 else {
-                    remainingHeight -= childSize.measuredHeight;
-                    measureHeight += childSize.measuredHeight;
+                    remainingHeight -= childMeasuredHeight;
+                    measureHeight += childMeasuredHeight;
                 }
             }
             else {
-                if (childSize.measuredWidth > remainingWidth) {
+                if (childMeasuredWidth > remainingWidth) {
                     rowOrColumn++;
                     maxLength = Math.max(maxLength, measureWidth);
-                    measureWidth = childSize.measuredWidth;
-                    remainingWidth = width - childSize.measuredWidth;
-                    this._lengths[rowOrColumn] = childSize.measuredHeight;
+                    measureWidth = childMeasuredWidth;
+                    remainingWidth = availableWidth - childMeasuredWidth;
+                    this._lengths[rowOrColumn] = childMeasuredHeight;
                 }
                 else {
-                    remainingWidth -= childSize.measuredWidth;
-                    measureWidth += childSize.measuredWidth;
+                    remainingWidth -= childMeasuredWidth;
+                    measureWidth += childMeasuredWidth;
                 }
             }
 
             if (this._lengths.length <= rowOrColumn) {
-                this._lengths[rowOrColumn] = isVertical ? childSize.measuredWidth: childSize.measuredHeight;
+                this._lengths[rowOrColumn] = isVertical ? childMeasuredWidth : childMeasuredHeight;
             }
             else {
-                this._lengths[rowOrColumn] = Math.max(this._lengths[rowOrColumn], isVertical ? childSize.measuredWidth : childSize.measuredHeight);
+                this._lengths[rowOrColumn] = Math.max(this._lengths[rowOrColumn], isVertical ? childMeasuredWidth : childMeasuredHeight);
             }
         }
 
@@ -103,14 +115,14 @@ export class WrapLayout extends common.WrapLayout {
             });
         }
 
-        measureWidth += (this.paddingLeft + this.paddingRight) * density;
-        measureHeight += (this.paddingTop + this.paddingBottom) * density;
+        measureWidth += horizontalPadding;
+        measureHeight += verticalPadding;
 
         measureWidth = Math.max(measureWidth, this.minWidth * density);
         measureHeight = Math.max(measureHeight, this.minHeight * density);
 
-        var widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        var heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        var widthAndState = View.resolveSizeAndState(measureWidth, utils.layout.getMeasureSpecSize(widthMeasureSpec), widthMode, 0);
+        var heightAndState = View.resolveSizeAndState(measureHeight, utils.layout.getMeasureSpecSize(heightMeasureSpec), heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
@@ -147,7 +159,7 @@ export class WrapLayout extends common.WrapLayout {
             let childHeight = child.getMeasuredHeight() + (lp.topMargin + lp.bottomMargin) * density;
 
             let length = this._lengths[rowOrColumn];
-            if (isVertical) {                
+            if (isVertical) {
                 childWidth = length;
                 childHeight = this.itemHeight > 0 ? this.itemHeight * density : childHeight;
                 if (childTop + childHeight > childrenLength) {
