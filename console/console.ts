@@ -249,7 +249,11 @@ export class Console implements definition.Console {
     public assert(test: boolean, message: string, ...formatParams: any[]): void {
         if (!test) {
             Array.prototype.shift.apply(arguments);
-            this.error(this.formatParams.apply(this, arguments));
+            let formatedMessage = this.formatParams.apply(this, arguments);
+            this.error(formatedMessage, trace.messageType.error);
+            if (global.__consoleMessage) {
+                global.__consoleMessage(formatedMessage, "error");
+            }
         }
     }
 
@@ -258,15 +262,27 @@ export class Console implements definition.Console {
     }
 
     public warn(message: any, ...formatParams: any[]): void {
-        this.logMessage(this.formatParams.apply(this, arguments), trace.messageType.warn);
+        let formatedMessage = this.formatParams.apply(this, arguments);
+        this.logMessage(formatedMessage, trace.messageType.warn);
+        if (global.__consoleMessage) {
+            global.__consoleMessage(formatedMessage, "warning");
+        }
     }
 
     public error(message: any, ...formatParams: any[]): void {
-        this.logMessage(this.formatParams.apply(this, arguments), trace.messageType.error);
+        let formatedMessage = this.formatParams.apply(this, arguments);
+        this.logMessage(formatedMessage, trace.messageType.error);
+        if (global.__consoleMessage) {
+            global.__consoleMessage(formatedMessage, "error")
+        }
     }
 
     public log(message: any, ...formatParams: any[]): void {
-        this.logMessage(this.formatParams.apply(this, arguments), trace.messageType.log);
+        let formatedMessage = this.formatParams.apply(this, arguments);
+        this.logMessage(formatedMessage, trace.messageType.log);
+        if (global.__consoleMessage) {
+            global.__consoleMessage(formatedMessage, "log")
+        }
     }
 
     private logMessage(message: string, messageType: number): void {
