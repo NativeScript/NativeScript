@@ -155,12 +155,11 @@ export module ad {
         var borderWidth = v.borderWidth;
         var bkg = <any>nativeView.getBackground();
 
-        if (!types.isNullOrUndefined(bkg) && v.borderWidth === 0 && v.borderRadius === 0 &&
-            !v.style._getValue(style.backgroundImageProperty) &&
-            v.style._getValue(style.backgroundColorProperty)) {
-            if (bkg && bkg.setColorFilter) {
-                bkg.setColorFilter(v.style._getValue(style.backgroundColorProperty).android, android.graphics.PorterDuff.Mode.SRC_IN);
-            }
+        if (v instanceof btn.Button && !types.isNullOrUndefined(bkg) && types.isFunction(bkg.setColorFilter) &&
+            v.borderWidth === 0 && v.borderRadius === 0 &&
+            types.isNullOrUndefined(v.style._getValue(style.backgroundImageProperty)) &&
+            !types.isNullOrUndefined(v.style._getValue(style.backgroundColorProperty))) {
+            bkg.setColorFilter(v.style._getValue(style.backgroundColorProperty).android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
 
             if (!(bkg instanceof dts.ad.BorderDrawable)) {
