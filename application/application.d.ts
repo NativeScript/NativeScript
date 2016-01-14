@@ -118,8 +118,9 @@ declare module "application" {
 
     /**
      * Loads css file and parses to a css syntax tree.
+     * @param cssFile Optional parameter to point to an arbitrary css file. If not specified, the cssFile property is used.
      */
-    export function loadCss(): void;
+    export function loadCss(cssFile?: string): Array<cssSelector.CssSelector>;
 
     /**
      * Call this method to start the application. Important: All code after this method call will not be executed!
@@ -329,6 +330,11 @@ declare module "application" {
          * The name of the application package.
          */
         packageName: string;
+
+        /**
+         * True if the application is not running (suspended), false otherwise.
+         */
+        paused: boolean;
 
         /**
          * This method is called by the JavaScript Bridge when navigation to a new activity is triggered.
