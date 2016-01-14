@@ -512,10 +512,19 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         TKUnit.assertAreClose(btn.layoutLeft, 25, DELTA, "horizontal margins");
     }
 
-    public test_set_columns_in_XML() {
+    public test_set_columns_in_XML_comma_separator() {
         var p = <page.Page>builder.parse("<Page><GridLayout columns=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
         var grid = <layout.GridLayout>p.content;
+        this.assertColumns(grid);
+    }
 
+    public test_set_columns_in_XML_space_separator() {
+        var p = <page.Page>builder.parse("<Page><GridLayout columns=\"auto * 10* 100 \"><Button/></GridLayout></Page>");
+        var grid = <layout.GridLayout>p.content;
+        this.assertColumns(grid);
+    }
+
+    private assertColumns(grid: layout.GridLayout) {
         var columns: Array<layout.ItemSpec> = grid.getColumns();
 
         TKUnit.assertEqual(columns.length, 4, "columns.length");
@@ -531,10 +540,19 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         TKUnit.assertEqual(columns[3].value, 100, "columns[3].value");
     }
 
-    public test_set_rows_in_XML() {
+    public test_set_rows_in_XML_comma_separator() {
         var p = <page.Page>builder.parse("<Page><GridLayout rows=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
         var grid = <layout.GridLayout>p.content;
+        this.assertRows(grid);
+    }
+    public test_set_rows_in_XML_space_separator() {
+        var p = <page.Page>builder.parse("<Page><GridLayout rows=\"auto * 10* 100 \"><Button/></GridLayout></Page>");
+        var grid = <layout.GridLayout>p.content;
+        this.assertRows(grid);
+    }
 
+    private assertRows(grid: layout.GridLayout) {
+        var columns: Array<layout.ItemSpec> = grid.getColumns();
         var rows: Array<layout.ItemSpec> = grid.getRows();
 
         TKUnit.assertEqual(rows.length, 4, "rows.length");
