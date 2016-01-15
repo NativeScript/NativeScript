@@ -1163,7 +1163,7 @@
     </Content>
     <Content Include="apps\ui-tests-app\image-view\red.png" />
     <Content Include="apps\ui-tests-app\pages\test2.png" />
-    <Content Include="apps\ui-tests-app\pages\switchandprogress.xml" />
+    <Content Include="apps\ui-tests-app\css\views.xml" />
     <Content Include="apps\ui-tests-app\text-field\text-field.xml" />
     <Content Include="apps\ui-tests-app\font\text-field.xml" />
     <Content Include="apps\ui-tests-app\font\text-view.xml" />

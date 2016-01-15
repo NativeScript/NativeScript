@@ -91,7 +91,7 @@ export function createPage() {
     var observer4 = swipeLabel.getGestureObservers(gestures.GestureTypes.swipe)[0];
 
     panLabel.on(gestures.GestureTypes.pan, function (args: gestures.PanGestureEventData) {
-        panLabel.text = "Pan deltaX:" + Math.round(args.deltaX) + "; deltaY:" + Math.round(args.deltaX) + ";" + ", " + (args.object === panLabel) + getStateAsString(args.state);
+        panLabel.text = "Pan deltaX:" + Math.round(args.deltaX) + "; deltaY:" + Math.round(args.deltaY) + ";" + ", " + (args.object === panLabel) + getStateAsString(args.state);
     });
 
     var observer5 = panLabel.getGestureObservers(gestures.GestureTypes.pan)[0];

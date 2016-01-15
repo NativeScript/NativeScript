@@ -43,9 +43,9 @@ export function butonTap(args) {
         textField.style.textTransform = "none";
         textView.style.textTransform = "none";
 
-        lbl.style.textDecoration = "none";
-        btn.style.textDecoration = "none";
-        textField.style.textDecoration = "none";
-        textView.style.textDecoration = "none";
+        //lbl.style.textDecoration = "none";
+        //btn.style.textDecoration = "none";
+        //textField.style.textDecoration = "none";
+        //textView.style.textDecoration = "none";
     }
 }
