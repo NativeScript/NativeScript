@@ -225,8 +225,11 @@ export class TabView extends common.TabView {
 
         if (data.oldValue) {
             var oldItems: Array<TabViewItem> = data.oldValue;
-            oldItems.forEach((oldItem) => { oldItem._parent = null; });
-
+            oldItems.forEach((oldItem) => {
+                // _removeView is called within destroyItem method 
+                oldItem._parent = null; 
+            });
+            
             this._viewPager.setAdapter(null);
             this._pagerAdapter = null;
             this._tabLayout.setItems(null, null);

@@ -150,7 +150,21 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
     }
 
     public _removeTabs(oldItems: Array<definition.TabViewItem>) {
-        //
+        var i: number;
+        var length = oldItems.length;
+        var oldItem: definition.TabViewItem;
+        for (i = 0; i < length; i++) {
+            oldItem = oldItems[i];
+
+            if (!oldItem) {
+                throw new Error("TabViewItem at index " + i + " is undefined.");
+            }
+
+            if (!oldItem.view) {
+                throw new Error("TabViewItem at index " + i + " does not have a view.");
+            }
+            this._removeView(oldItem.view);
+        }        
     }
 
     public _addTabs(newItems: Array<definition.TabViewItem>) {
