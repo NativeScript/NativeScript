@@ -3,6 +3,7 @@ import definition = require("ui/gestures");
 import view = require("ui/core/view");
 import observable = require("data/observable");
 import trace = require("trace");
+import types = require("utils/types");
 
 global.moduleMerge(common, exports);
 
@@ -151,6 +152,10 @@ export class GesturesObserver extends common.GesturesObserver {
             if (type & definition.GestureTypes.longPress) {
                 nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.longPress));
             }
+
+            if (type & definition.GestureTypes.touch) {
+                nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.touch));
+            }
         }
     }
 
@@ -184,7 +189,7 @@ export class GesturesObserver extends common.GesturesObserver {
         super.disconnect();
     }
 
-    private _executeCallback(args: definition.GestureEventData) {
+    public _executeCallback(args: definition.GestureEventData) {
         if (this.callback) {
             this.callback.call(this.context, args);
         }
@@ -197,13 +202,14 @@ export class GesturesObserver extends common.GesturesObserver {
         var recognizerType = _getUIGestureRecognizerType(type);
 
         if (recognizerType) {
+            recognizer = recognizerType.alloc().initWithTargetAction(target, "recognize");
+
             if (type === definition.GestureTypes.swipe && swipeDirection) {
                 name = name + swipeDirection.toString();
-                recognizer = recognizerType.alloc().initWithTargetAction(target, "recognize");
                 (<UISwipeGestureRecognizer>recognizer).direction = swipeDirection;
             }
-            else {
-                recognizer = recognizerType.alloc().initWithTargetAction(target, "recognize");
+            else if (type === definition.GestureTypes.touch) {
+                (<TouchGestureRecognizer>recognizer).observer = this;
             }
 
             if (recognizer) {
@@ -216,8 +222,8 @@ export class GesturesObserver extends common.GesturesObserver {
     }
 }
 
-function _createUIGestureRecognizerTarget(owner: GesturesObserver, type: definition.GestureTypes, callback?: (args: definition.GestureEventData) => void, thisArg?: any): any {
-    return UIGestureRecognizerImpl.initWithOwnerTypeCallback(new WeakRef(owner), type, callback, thisArg);
+function _createUIGestureRecognizerTarget(owner: GesturesObserver, type: definition.GestureTypes, callback?: (args: definition.GestureEventData) => void, context?: any): any {
+    return UIGestureRecognizerImpl.initWithOwnerTypeCallback(new WeakRef(owner), type, callback, context);
 }
 
 interface RecognizerCache {
@@ -242,6 +248,8 @@ function _getUIGestureRecognizerType(type: definition.GestureTypes): any {
         nativeType = UIRotationGestureRecognizer;
     } else if (type === definition.GestureTypes.longPress) {
         nativeType = UILongPressGestureRecognizer;
+    } else if (type === definition.GestureTypes.touch) {
+        nativeType = TouchGestureRecognizer;
     }
 
     return nativeType;
@@ -330,4 +338,126 @@ function _getRotationData(args: definition.GestureEventData): definition.Rotatio
         eventName: definition.toString(args.type),
         state: getState(recognizer)
     };
+}
+
+class TouchGestureRecognizer extends UIGestureRecognizer {
+    public observer: GesturesObserver;
+
+    touchesBeganWithEvent(touches: NSSet, event: any): void {
+        this.executeCallback(common.TouchAction.down, touches, event);
+    }
+
+    touchesMovedWithEvent(touches: NSSet, event: any): void {
+        this.executeCallback(common.TouchAction.move, touches, event);
+    }
+
+    touchesEndedWithEvent(touches: NSSet, event: any): void {
+        this.executeCallback(common.TouchAction.up, touches, event);
+    }
+
+    touchesCancelledWithEvent(touches: NSSet, event: any): void {
+        this.executeCallback(common.TouchAction.cancel, touches, event);
+    }
+
+    private executeCallback(action: string, touches: NSSet, event: any): void {
+        var args = new TouchGestureEventData(this.observer.target, action, touches, event);
+        this.observer._executeCallback(args);
+    }
+}
+
+class Pointer implements definition.Pointer {
+    public android: any = undefined;
+    public ios: UITouch = undefined;
+
+    private _view: view.View;
+
+    private _location: CGPoint;
+    private get location(): CGPoint {
+        if (!this._location) {
+            this._location = this.ios.locationInView(this._view._nativeView);
+        }
+
+        return this._location;
+    }
+
+    constructor(touch: UITouch, targetView: view.View) {
+        this.ios = touch;
+        this._view = targetView;
+    }
+
+    getX(): number {
+        return this.location.x;
+    }
+
+    getY(): number {
+        return this.location.x;
+    }
+}
+
+class TouchGestureEventData implements definition.TouchGestureEventData {
+    eventName: string = definition.toString(definition.GestureTypes.touch);
+    action: string;
+    type: definition.GestureTypes = definition.GestureTypes.touch;
+    view: view.View;
+    ios: { touches: NSSet, event: { allTouches: () => NSSet } };
+    android: any = undefined;
+    object: any;
+    private _allPinters: Array<Pointer>;
+    private _activePointers: Array<Pointer>;
+
+    private _mainPointer: UITouch;
+    private get mainPointer(): UITouch {
+        if (types.isUndefined(this._mainPointer)) {
+            this._mainPointer = this.ios.touches.anyObject();
+        }
+        return this._mainPointer;
+    }
+
+    constructor(view: view.View, action: string, touches: NSSet, event: any) {
+        this.view = view;
+        this.object = view;
+        this.action = action;
+        this.ios = {
+            touches: touches,
+            event: event
+        };
+    }
+
+    getPointerCount(): number {
+        return this.ios.event.allTouches().count;
+    }
+
+    getActivePointers(): Array<Pointer> {
+        if (!this._activePointers) {
+            this._activePointers = [];
+
+            let nsArr = this.ios.touches.allObjects;
+            for (var i = 0; i < nsArr.count; i++) {
+                this._activePointers.push(new Pointer(nsArr.objectAtIndex(i), this.view));
+            }
+        }
+
+        return this._activePointers;
+    }
+
+    getAllPointers(): Array<Pointer> {
+        if (!this._allPinters) {
+            this._allPinters = [];
+
+            let nsArr = this.ios.event.allTouches().allObjects;
+            for (var i = 0; i < nsArr.count; i++) {
+                this._allPinters.push(new Pointer(nsArr.objectAtIndex(i), this.view));
+            }
+        }
+
+        return this._allPinters;
+    }
+
+    getX(): number {
+        return this.mainPointer.locationInView(this.view._nativeView).x;
+    }
+
+    getY(): number {
+        return this.mainPointer.locationInView(this.view._nativeView).y
+    }
 }

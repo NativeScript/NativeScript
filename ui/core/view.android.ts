@@ -79,7 +79,7 @@ function onIsUserInteractionEnabledPropertyChanged(data: dependencyObservable.Pr
 
 export class View extends viewCommon.View {
     private _disableUserInteractionListener: android.view.View.OnTouchListener = new android.view.View.OnTouchListener({
-        onTouch: function (view: android.view.View, event: android.view.MotionEvent) {
+        onTouch: function(view: android.view.View, event: android.view.MotionEvent) {
             return true;
         }
     });
@@ -141,7 +141,7 @@ export class View extends viewCommon.View {
                 this._nativeView.setClickable(true);
             }
             this._nativeView.setOnTouchListener(new android.view.View.OnTouchListener({
-                onTouch: function (view: android.view.View, motionEvent: android.view.MotionEvent) {
+                onTouch: function(view: android.view.View, motionEvent: android.view.MotionEvent) {
                     var owner = that.get();
                     if (!owner) {
                         return false;
@@ -201,7 +201,7 @@ export class View extends viewCommon.View {
         if (this._childrenCount > 0) {
             // Notify each child for the _onAttached event
             var that = this;
-            var eachChild = function (child: View): boolean {
+            var eachChild = function(child: View): boolean {
                 child._onAttached(context);
                 if (!child._isAddedToNativeVisualTree) {
                     // since we have lazy loading of the android widgets, we need to add the native instances at this point.
@@ -217,7 +217,7 @@ export class View extends viewCommon.View {
         if (this._childrenCount > 0) {
             // Detach children first
             var that = this;
-            var eachChild = function (child: View): boolean {
+            var eachChild = function(child: View): boolean {
                 if (child._isAddedToNativeVisualTree) {
                     that._removeViewFromNativeVisualTree(child);
                 }
@@ -397,7 +397,7 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
         super._addViewToNativeVisualTree(child);
 
         if (this._nativeView && child._nativeView) {
-            var types : typeof typesModule = require("utils/types");
+            var types: typeof typesModule = require("utils/types");
 
             if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.getChildCount()) {
                 this._nativeView.addView(child._nativeView);
