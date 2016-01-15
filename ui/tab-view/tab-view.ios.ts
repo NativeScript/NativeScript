@@ -173,7 +173,6 @@ export class TabView extends common.TabView {
             oldItem = <TabViewItem>oldItems[i];
             oldItem._parent = null;
             oldItem._controller = null;
-            this._removeView(oldItem.view);
         }
 
         this._ios.viewControllers = null;
