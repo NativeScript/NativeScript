@@ -138,9 +138,11 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     private _backStack: Array<definition.BackstackEntry>;
     public _currentEntry: definition.BackstackEntry;
     private _animated: boolean;
+    private _navigationTransition: definition.NavigationTransition;
 
     public _isInFrameStack = false;
     public static defaultAnimatedNavigation = true;
+    public static defaultNavigationTransition: definition.NavigationTransition;
 
     // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
 
@@ -160,7 +162,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
      * @param to The backstack entry to navigate back to.
      */
     public goBack(backstackEntry?: definition.BackstackEntry) {
-        trace.write(this._getTraceId() + ".goBack();", trace.categories.Navigation);
+        trace.write(`GO BACK`, trace.categories.Navigation);
         if (!this.canGoBack()) {
             // TODO: Do we need to throw an error?
             return;
@@ -187,12 +189,12 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this._processNavigationContext(navigationContext);
         }
         else {
-            trace.write(this._getTraceId() + ".goBack scheduled;", trace.categories.Navigation);
+            trace.write(`Going back scheduled`, trace.categories.Navigation);
         }
     }
 
     public navigate(param: any) {
-        trace.write(this._getTraceId() + ".navigate();", trace.categories.Navigation);
+        trace.write(`NAVIGATE`, trace.categories.Navigation);
 
         var entry = buildEntryFromArgs(param);
         var page = resolvePageFromEntry(entry);
@@ -215,7 +217,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this._processNavigationContext(navigationContext);
         }
         else {
-            trace.write(this._getTraceId() + ".navigation scheduled;", trace.categories.Navigation);
+            trace.write(`Navigation scheduled`, trace.categories.Navigation);
         }
     }
 
@@ -258,7 +260,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     }
 
     public _updateActionBar(page?: Page) {
-        trace.write("calling _updateActionBar on Frame", trace.categories.Navigation);
+        //trace.write("calling _updateActionBar on Frame", trace.categories.Navigation);
     }
 
     private _processNavigationContext(navigationContext: NavigationContext) {
@@ -318,8 +320,17 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     public get animated(): boolean {
         return this._animated;
     }
+
     public set animated(value: boolean) {
         this._animated = value;
+    }
+
+    public get navigationTransition(): definition.NavigationTransition {
+        return this._navigationTransition;
+    }
+
+    public set navigationTransition(value: definition.NavigationTransition) {
+        this._navigationTransition = value;
     }
 
     get backStack(): Array<definition.BackstackEntry> {
@@ -375,7 +386,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         }
     }
 
-    public _getIsAnimatedNavigation(entry: definition.NavigationEntry) {
+    public _getIsAnimatedNavigation(entry: definition.NavigationEntry): boolean {
         if (entry && isDefined(entry.animated)) {
             return entry.animated;
         }
@@ -387,8 +398,16 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         return Frame.defaultAnimatedNavigation;
     }
 
-    private _getTraceId(): string {
-        return "Frame<" + this._domId + ">";
+    public _getNavigationTransition(entry: definition.NavigationEntry): definition.NavigationTransition {
+        if (entry && isDefined(entry.navigationTransition)) {
+            return entry.navigationTransition;
+        }
+
+        if (isDefined(this.navigationTransition)) {
+            return this.navigationTransition;
+        }
+
+        return Frame.defaultNavigationTransition;
     }
 
     public get navigationBarHeight(): number {

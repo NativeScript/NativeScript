@@ -70,7 +70,7 @@ export class Animation implements definition.Animation {
         var i = 0;
         var length = animationDefinitions.length;
         for (; i < length; i++) {
-            animationDefinitions[i].curve = this._resolveAnimationCurve(animationDefinitions[i].curve);
+            animationDefinitions[i].curve = definition._resolveAnimationCurve(animationDefinitions[i].curve);
             this._propertyAnimations = this._propertyAnimations.concat(Animation._createPropertyAnimations(animationDefinitions[i]));
         }
 
@@ -90,10 +90,6 @@ export class Animation implements definition.Animation {
     public _rejectAnimationFinishedPromise() {
         this._isPlaying = false;
         this._reject(new Error("Animation cancelled."));
-    }
-
-    _resolveAnimationCurve(curve: any): any {
-        //
     }
 
     private static _createPropertyAnimations(animationDefinition: definition.AnimationDefinition): Array<PropertyAnimation>  {

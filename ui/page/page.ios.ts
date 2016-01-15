@@ -98,15 +98,6 @@ class UIViewControllerImpl extends UIViewController {
 
         //https://github.com/NativeScript/NativeScript/issues/1201
         owner._viewWillDisappear = false;
-        
-        // In iOS we intentionally delay the raising of the 'loaded' event so both platforms behave identically.
-        // The loaded event must be raised AFTER the page is part of the windows hierarchy and 
-        // frame.topmost().currentPage is set to the page instance.
-        // https://github.com/NativeScript/NativeScript/issues/779
-        if (!owner._isModal) {
-            owner._delayLoadedEvent = true;
-        }
-
         owner.onLoaded();
         owner._enableLoadedEvents = false;
     }
@@ -145,7 +136,6 @@ export class Page extends pageCommon.Page {
     public _enableLoadedEvents: boolean;
     public _isModal: boolean;
     public _UIModalPresentationFormSheet: boolean;
-    public _delayLoadedEvent: boolean;
     public _viewWillDisappear: boolean;
 
     constructor(options?: definition.Options) {
@@ -172,18 +162,6 @@ export class Page extends pageCommon.Page {
             super.onLoaded();
         }
         this._updateActionBar(false);
-    }
-
-    public notify<T extends observable.EventData>(data: T) {
-        // In iOS we intentionally delay the raising of the 'loaded' event so both platforms behave identically.
-        // The loaded event must be raised AFTER the page is part of the windows hierarchy and 
-        // frame.topmost().currentPage is set to the page instance.
-        // https://github.com/NativeScript/NativeScript/issues/779
-        if (data.eventName === View.loadedEvent && this._delayLoadedEvent) {
-            return;
-        }
-
-        super.notify(data);
     }
 
     public onUnloaded() {

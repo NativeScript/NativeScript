@@ -83,7 +83,12 @@
       <DependentUpon>data-binding.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\animations\opacity.ts" />
+    <TypeScriptCompile Include="apps\perf-tests\NavigationTest\list-picker-page.ts" />
+    <TypeScriptCompile Include="apps\perf-tests\custom-transition.android.ts" />
+    <TypeScriptCompile Include="apps\perf-tests\custom-transition.ios.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\common-layout-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\navigation\custom-transition.android.ts" />
+    <TypeScriptCompile Include="apps\tests\navigation\custom-transition.ios.ts" />
     <TypeScriptCompile Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.ts" />
     <TypeScriptCompile Include="apps\tests\ui\page\modal-page.ts">
       <DependentUpon>modal-page.xml</DependentUpon>
@@ -130,6 +135,7 @@
     </Content>
     <Content Include="apps\animations\bkg.png" />
     <Content Include="apps\animations\test-icon.png" />
+    <Content Include="apps\perf-tests\NavigationTest\list-picker-page.xml" />
     <Content Include="apps\tests\ui\action-bar\ActionBar_BetweenTags.xml" />
     <Content Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.xml" />
     <Content Include="apps\tests\ui\page\modal-page.xml">
@@ -175,7 +181,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\animations\model.ts" />
     <TypeScriptCompile Include="apps\orientation-demo\main-page.ts" />
-    <TypeScriptCompile Include="apps\tests\navigation-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\navigation\navigation-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\page\page21.ts">
       <DependentUpon>page21.xml</DependentUpon>
     </TypeScriptCompile>
@@ -737,6 +743,14 @@
     <TypeScriptCompile Include="ui\text-base\text-base-styler.android.ts" />
     <TypeScriptCompile Include="ui\text-base\text-base-styler.d.ts" />
     <TypeScriptCompile Include="ui\text-base\text-base-styler.ios.ts" />
+    <TypeScriptCompile Include="ui\transition\flip-transition.android.ts" />
+    <TypeScriptCompile Include="ui\transition\fade-transition.android.ts" />
+    <TypeScriptCompile Include="ui\transition\slide-transition.ios.ts" />
+    <TypeScriptCompile Include="ui\transition\slide-transition.android.ts" />
+    <TypeScriptCompile Include="ui\transition\fade-transition.ios.ts" />
+    <TypeScriptCompile Include="ui\transition\transition.android.ts" />
+    <TypeScriptCompile Include="ui\transition\transition.d.ts" />
+    <TypeScriptCompile Include="ui\transition\transition.ios.ts" />
     <TypeScriptCompile Include="ui\ui.d.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view-common.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view.android.ts" />
@@ -2093,6 +2107,9 @@
     <Content Include="ui\package.json" />
     <Content Include="tsconfig.json" />
     <Content Include="ui\proxy-view-container\package.json" />
+    <Content Include="ui\transition\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />

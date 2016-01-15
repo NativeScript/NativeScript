@@ -74,9 +74,19 @@ declare module "ui/frame" {
         animated: boolean;
 
         /**
+         * Gets or sets the default navigation transition for this frame.
+         */
+        navigationTransition: NavigationTransition;
+
+        /**
          * Gets or sets if navigation transitions should be animated globally.
          */
         static defaultAnimatedNavigation: boolean;
+
+        /**
+         * Gets or sets the default NavigationTransition for all frames across the app.
+         */
+        static defaultNavigationTransition: NavigationTransition;
 
         /**
          * Gets the AndroidFrame object that represents the Android-specific APIs for this Frame. Valid when running on Android OS.
@@ -150,6 +160,11 @@ declare module "ui/frame" {
         animated?: boolean;
 
         /**
+         * Specifies an optional navigation transition. If not specified, the default platform transition will be used.
+         */
+        navigationTransition?: NavigationTransition;
+
+        /**
          * True to record the navigation in the backstack, false otherwise. 
          * If the parameter is set to false then the Page will be displayed but once navigated from it will not be able to be navigated back to.
          */
@@ -159,6 +174,27 @@ declare module "ui/frame" {
          * True to clear the navigation history, false otherwise. Very useful when navigating away from login pages.
          */
         clearHistory?: boolean;
+    }
+
+    /**
+     * Represents an object specifying a page navigation transition.
+     */
+    export interface NavigationTransition {
+        /**
+         * Either a string specifying one of the built-in transitions or an user-defined instance of the "ui/transition".Transition class.
+         */
+        transition: any;
+        
+        /**
+         * The length of the transition in milliseconds. If you do not specify this, the default platform transition duration will be used.
+         */
+        duration?: number;
+
+        /**
+         * An optional transition animation curve. Possible values are contained in the [AnimationCurve enumeration](../enums/AnimationCurve/README.md).
+         * Alternatively, you can pass an instance of type UIViewAnimationCurve for iOS or android.animation.TimeInterpolator for Android.
+         */
+        curve?: any;
     }
 
     /**

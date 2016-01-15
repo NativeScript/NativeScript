@@ -76,8 +76,9 @@
         public play: () => Promise<void>;
         public cancel: () => void;
         public isPlaying: boolean;
-        //@private
-        _resolveAnimationCurve(curve: any): any
-        //@endprivate
     }
+
+    //@private
+    export function _resolveAnimationCurve(curve: any): any;
+    //@endprivate
 }

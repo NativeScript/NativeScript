@@ -4,6 +4,7 @@
 declare module "ui" {
     export * from "ui/action-bar";
     export * from "ui/activity-indicator";
+    export * from "ui/animation";
     export * from "ui/builder";
     export * from "ui/button";
     export * from "ui/content-view";
