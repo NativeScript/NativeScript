@@ -50,16 +50,12 @@ function onScaleYPropertyChanged(data: dependencyObservable.PropertyChangeData) 
 (<proxy.PropertyMetadata>viewCommon.View.scaleYProperty.metadata).onSetNativeValue = onScaleYPropertyChanged;
 
 function onOriginXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    var width = view._nativeView.getWidth();
-    view._nativeView.setPivotX(data.newValue * width);
+    org.nativescript.widgets.OriginPoint.setX((<View>data.object)._nativeView, data.newValue);
 }
 (<proxy.PropertyMetadata>viewCommon.View.originXProperty.metadata).onSetNativeValue = onOriginXPropertyChanged;
 
 function onOriginYPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    var height = view._nativeView.getHeight();
-    view._nativeView.setPivotY(data.newValue * height);
+    org.nativescript.widgets.OriginPoint.setY((<View>data.object)._nativeView, data.newValue);
 }
 (<proxy.PropertyMetadata>viewCommon.View.originYProperty.metadata).onSetNativeValue = onOriginYPropertyChanged;
 
