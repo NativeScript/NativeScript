@@ -65,6 +65,11 @@
                 horizontal,
                 vertical
             }
+            
+            export class OriginPoint {
+                public static setX(view: android.view.View, value: number);
+                public static setY(view: android.view.View, value: number);
+            }
 
             export class LayoutBase extends android.view.ViewGroup {
                 constructor(context: android.content.Context);
