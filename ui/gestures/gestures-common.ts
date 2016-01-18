@@ -8,7 +8,8 @@ export enum GestureTypes {
     pan = 1 << 3,
     swipe = 1 << 4,
     rotation = 1 << 5,
-    longPress = 1 << 6
+    longPress = 1 << 6,
+    touch = 1 << 7
 }
 
 export enum GestureStateTypes {
@@ -25,8 +26,15 @@ export enum SwipeDirection {
     down = 1 << 3
 }
 
-export function observe(target: view.View, type: definition.GestureTypes, callback: (args: definition.GestureEventData) => void, thisArg?: any): definition.GesturesObserver {
-    var observer = new definition.GesturesObserver(target, callback, thisArg);
+export module TouchAction {
+    export var down = "down";
+    export var up = "up";
+    export var move = "move";
+    export var cancel = "cancel";
+}
+
+export function observe(target: view.View, type: definition.GestureTypes, callback: (args: definition.GestureEventData) => void, context?: any): definition.GesturesObserver {
+    var observer = new definition.GesturesObserver(target, callback, context);
     observer.observe(type);
     return observer;
 }
@@ -62,6 +70,10 @@ export function toString(type: GestureTypes, separator?: string): string {
         types.push("longPress");
     }
 
+    if (type & definition.GestureTypes.touch) {
+        types.push("touch");
+    }
+
     return types.join(separator);
 }
 
@@ -82,6 +94,8 @@ export function fromString(type: string): definition.GestureTypes {
         return definition.GestureTypes.rotation;
     } else if (t === "longpress") {
         return definition.GestureTypes.longPress;
+    } else if (t === "touch") {
+        return definition.GestureTypes.touch;
     }
 
     return undefined;

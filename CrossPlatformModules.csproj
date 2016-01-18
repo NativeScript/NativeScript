@@ -229,6 +229,10 @@
     <Content Include="apps\ui-tests-app\layouts-percent\wrap.xml">
       <SubType>Designer</SubType>
     </Content>
+    <TypeScriptCompile Include="apps\ui-tests-app\pages\touch-event.ts" />
+    <Content Include="apps\ui-tests-app\pages\touch-event.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\segmented-bar\all.xml">
       <SubType>Designer</SubType>
     </Content>

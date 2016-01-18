@@ -36,7 +36,11 @@ declare module "ui/gestures" {
         /**
          * Denotes long press gesture.
          */
-        longPress
+        longPress,
+        /**
+         * Denotes touch action.
+         */
+        touch
     }
 
     /**
@@ -44,7 +48,7 @@ declare module "ui/gestures" {
      */
     export enum GestureStateTypes {
         /**
-         * Gesture cancelled.
+         * Gesture canceled.
          */
         cancelled,
         /**
@@ -84,6 +88,31 @@ declare module "ui/gestures" {
     }
 
     /**
+     * Defines a touch action
+     */
+    export module TouchAction {
+        /**
+         * Down action.
+         */
+        export var down: string;
+
+        /**
+         * Up action.
+         */
+        export var up: string;
+        
+        /**
+         * Move action.
+         */
+        export var move: string;
+        
+        /**
+         * Cancel action.
+         */
+        export var cancel: string;
+    }
+
+    /**
      * Provides gesture event data.
      */
     export interface GestureEventData extends observable.EventData {
@@ -103,6 +132,67 @@ declare module "ui/gestures" {
          * Gets the underlying native android specific [gesture detector](http://developer.android.com/reference/android/view/GestureDetector.html).
          */
         android: any
+    }
+
+    /**
+     * Provides gesture event data.
+     */
+    export interface TouchGestureEventData extends GestureEventData {
+        /**
+         * Gets action of the touch. Possible values: 'up', 'move', 'down', 'cancel'
+         */
+        action: string;
+
+        /**
+         * Gets the X coordinate of this event inside the view that triggered the event.
+         */
+        getX(): number;
+
+        /**
+         * Gets the Y coordinate of this event inside the view that triggered the event.
+         */
+        getY(): number;
+        
+        /**
+         * Gets the number of pointers in the event.
+         */
+        getPointerCount(): number;
+
+        /**
+         * Gets the pointers that triggered the event.
+         * Note: In Android there is aways only one active pointer.
+         */
+        getActivePointers(): Array<Pointer>;
+
+        /**
+         * Gets all pointers.
+         */
+        getAllPointers(): Array<Pointer>;
+    }
+
+    /**
+     * Pointer is an object representing a finger (or other object) that is touching the screen.
+     */
+    export interface Pointer {
+        /**
+         * The id of the pointer.
+         */
+        android: any;
+
+        /**
+         * The UITouch object associated to the touch
+         */
+        ios: any;
+
+        /**
+         * Gets the X coordinate of the pointer inside the view that triggered the event.
+         */
+        getX(): number;
+
+        /**
+         * Gets the Y coordinate of the pointer inside the view that triggered the event.
+         */
+        getY(): number;
     }
 
     /**
@@ -150,7 +240,9 @@ declare module "ui/gestures" {
     export class GesturesObserver {
         /**
          * Creates an instance of GesturesObserver class.
+         * @param target - The view for which the observer is created.
          * @param callback - A function that will be executed when a gesture is received.
+         * @param context - default this argument for the callbacks.
          */
         constructor(target: view.View, callback: (args: GestureEventData) => void, context: any);
 
@@ -191,8 +283,9 @@ declare module "ui/gestures" {
      * @param target - View which will be watched for originating a specific gesture.
      * @param type - Type of the gesture.
      * @param callback - A function that will be executed when a gesture is received.
+     * @param context - this argument for the callback.
      */
-    export function observe(target: view.View, type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): GesturesObserver;
+    export function observe(target: view.View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver;
 
     /**
      * Returns a string representation of a gesture type.

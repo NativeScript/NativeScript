@@ -79,6 +79,7 @@ examples.set("modalview", "modal-view/modal-view");
 examples.set("nordic", "nordic/nordic");
 
 examples.set("gestures", "pages/gestures");
+examples.set("touch", "pages/touch-event");
 examples.set("handlers", "pages/handlers");
 //examples.set("listview_binding", "pages/listview_binding");
 examples.set("console", "pages/console");

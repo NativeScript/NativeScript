@@ -4,6 +4,7 @@ import observable = require("data/observable");
 import view = require("ui/core/view");
 import trace = require("trace");
 import utils = require("utils/utils");
+import types = require("utils/types");
 
 global.moduleMerge(common, exports);
 
@@ -13,12 +14,14 @@ const INVALID_POINTER_ID = -1;
 const TO_DEGREES = (180 / Math.PI);
 
 export class GesturesObserver extends common.GesturesObserver {
-    private _onTouchListener: android.view.View.OnTouchListener;
+    private _notifyTouch: boolean;
     private _simpleGestureDetector: android.view.GestureDetector;
     private _scaleGestureDetector: android.view.ScaleGestureDetector;
     private _swipeGestureDetector: android.view.GestureDetector;
     private _panGestureDetector: CustomPanGestureDetector;
     private _rotateGestureDetector: CustomRotateGestureDetector;
+
+    private _eventData: TouchGestureEventData;
 
     private _onTargetLoaded: (data: observable.EventData) => void;
     private _onTargetUnloaded: (data: observable.EventData) => void;
@@ -61,12 +64,13 @@ export class GesturesObserver extends common.GesturesObserver {
     private _detach() {
         trace.write(this.target + "._detach() android:" + this.target._nativeView, "gestures");
 
-        this._onTouchListener = null;
+        this._notifyTouch = false
         this._simpleGestureDetector = null;
         this._scaleGestureDetector = null;
         this._swipeGestureDetector = null;
         this._panGestureDetector = null;
         this._rotateGestureDetector = null;
+        this._eventData = null;
     }
 
     private _attach(target: view.View, type: definition.GestureTypes) {
@@ -92,9 +96,22 @@ export class GesturesObserver extends common.GesturesObserver {
         if (type & definition.GestureTypes.rotation) {
             this._rotateGestureDetector = new CustomRotateGestureDetector(this, this.target);
         }
+
+        if (type & definition.GestureTypes.touch) {
+            this._notifyTouch = true;
+        }
     }
 
     public androidOnTouchEvent(motionEvent: android.view.MotionEvent) {
+        if (this._notifyTouch) {
+            if (!this._eventData) {
+                this._eventData = new TouchGestureEventData();
+            }
+
+            this._eventData.prepare(this.target, motionEvent);          
+            _executeCallback(this, this._eventData);
+        }
+
         if (this._simpleGestureDetector) {
             this._simpleGestureDetector.onTouchEvent(motionEvent);
         }
@@ -114,18 +131,6 @@ export class GesturesObserver extends common.GesturesObserver {
         if (this._rotateGestureDetector) {
             this._rotateGestureDetector.onTouchEvent(motionEvent);
         }
-    }
-}
-
-function getState(e: android.view.MotionEvent): common.GestureStateTypes {
-    if (e.getActionMasked() === android.view.MotionEvent.ACTION_DOWN) {
-        return common.GestureStateTypes.began;
-    } else if (e.getActionMasked() === android.view.MotionEvent.ACTION_CANCEL) {
-        return common.GestureStateTypes.cancelled;
-    } else if (e.getActionMasked() === android.view.MotionEvent.ACTION_MOVE) {
-        return common.GestureStateTypes.changed;
-    } else if (e.getActionMasked() === android.view.MotionEvent.ACTION_UP) {
-        return common.GestureStateTypes.ended;
     }
 }
 
@@ -585,5 +590,96 @@ class CustomRotateGestureDetector {
         let secondY = event.getY(event.findPointerIndex(this.trackedPtrId2));
 
         return Math.atan2((secondY - firstY), (secondX - firstX));
+    }
+}
+
+class Pointer implements definition.Pointer {
+    public android: number;
+    public ios: any = undefined;
+
+    constructor(id: number, private event: android.view.MotionEvent) {
+        this.android = id;
+    }
+
+    getX(): number {
+        return this.event.getX(this.android) / utils.layout.getDisplayDensity();
+    }
+
+    getY(): number {
+        return this.event.getY(this.android) / utils.layout.getDisplayDensity();
+    }
+}
+
+class TouchGestureEventData implements definition.TouchGestureEventData {
+    eventName: string = definition.toString(definition.GestureTypes.touch);
+    type: definition.GestureTypes = definition.GestureTypes.touch;
+    ios: any = undefined;
+    action: string;
+    view: view.View;
+    android: android.view.MotionEvent;
+    object: any;
+
+    private _activePointers: Array<Pointer>;
+    private _allPointers: Array<Pointer>;
+
+    public prepare(view: view.View, e: android.view.MotionEvent) {
+        this.view = view;
+        this.object = view;
+        this.android = e;
+        this.action = this.getActionType(e);
+
+        this._activePointers = undefined;
+        this._allPointers = undefined;
+    }
+
+    getPointerCount(): number {
+        return this.android.getPointerCount();
+    }
+
+    getActivePointers(): Array<Pointer> {
+        // Only one active pointer in Android
+        if (!this._activePointers) {
+            this._activePointers = [new Pointer(this.android.getActionIndex(), this.android)];
+        }
+        return this._activePointers;
+    }
+
+    getAllPointers(): Array<Pointer> {
+        if (!this._allPointers) {
+            this._allPointers = [];
+            for (var i = 0; i < this.getPointerCount(); i++) {
+                this._allPointers.push(new Pointer(i, this.android));
+            }
+        }
+
+        return this._allPointers;
+    }
+
+    getX(): number {
+        return this.getActivePointers()[0].getX();
+    }
+
+    getY(): number {
+        return this.getActivePointers()[0].getY();
+    }
+
+    private getActionType(e: android.view.MotionEvent): string {
+        switch (e.getActionMasked()) {
+            case android.view.MotionEvent.ACTION_DOWN:
+            case android.view.MotionEvent.ACTION_POINTER_DOWN:
+                return common.TouchAction.down;
+
+            case android.view.MotionEvent.ACTION_MOVE:
+                return common.TouchAction.move;
+
+            case android.view.MotionEvent.ACTION_UP:
+            case android.view.MotionEvent.ACTION_POINTER_UP:
+                return common.TouchAction.up;
+
+            case android.view.MotionEvent.ACTION_CANCEL:
+                return common.TouchAction.cancel;
+        }
+
+        return "";
     }
 }
