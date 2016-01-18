@@ -159,7 +159,9 @@ export module ad {
             v.borderWidth === 0 && v.borderRadius === 0 &&
             types.isNullOrUndefined(v.style._getValue(style.backgroundImageProperty)) &&
             !types.isNullOrUndefined(v.style._getValue(style.backgroundColorProperty))) {
-            bkg.setColorFilter(v.style._getValue(style.backgroundColorProperty).android, android.graphics.PorterDuff.Mode.SRC_IN);
+            let backgroundColor = bkg.backgroundColor = v.style._getValue(style.backgroundColorProperty).android;
+            bkg.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
+            bkg.backgroundColor = backgroundColor;
         } else if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
 
             if (!(bkg instanceof dts.ad.BorderDrawable)) {
