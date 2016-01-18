@@ -21,6 +21,8 @@ export class GesturesObserver extends common.GesturesObserver {
     private _panGestureDetector: CustomPanGestureDetector;
     private _rotateGestureDetector: CustomRotateGestureDetector;
 
+    private _eventData: TouchGestureEventData;
+
     private _onTargetLoaded: (data: observable.EventData) => void;
     private _onTargetUnloaded: (data: observable.EventData) => void;
 
@@ -62,12 +64,13 @@ export class GesturesObserver extends common.GesturesObserver {
     private _detach() {
         trace.write(this.target + "._detach() android:" + this.target._nativeView, "gestures");
 
+        this._notifyTouch = false
         this._simpleGestureDetector = null;
         this._scaleGestureDetector = null;
         this._swipeGestureDetector = null;
         this._panGestureDetector = null;
         this._rotateGestureDetector = null;
-        this._notifyTouch = false
+        this._eventData = null;
     }
 
     private _attach(target: view.View, type: definition.GestureTypes) {
@@ -101,7 +104,12 @@ export class GesturesObserver extends common.GesturesObserver {
 
     public androidOnTouchEvent(motionEvent: android.view.MotionEvent) {
         if (this._notifyTouch) {
-            _executeCallback(this, new TouchGestureEventData(this.target, motionEvent));
+            if (!this._eventData) {
+                this._eventData = new TouchGestureEventData();
+            }
+
+            this._eventData.prepare(this.target, motionEvent);          
+            _executeCallback(this, this._eventData);
         }
 
         if (this._simpleGestureDetector) {
@@ -604,22 +612,24 @@ class Pointer implements definition.Pointer {
 
 class TouchGestureEventData implements definition.TouchGestureEventData {
     eventName: string = definition.toString(definition.GestureTypes.touch);
-    action: string;
     type: definition.GestureTypes = definition.GestureTypes.touch;
-    view: view.View;
     ios: any = undefined;
+    action: string;
+    view: view.View;
     android: android.view.MotionEvent;
     object: any;
 
     private _activePointers: Array<Pointer>;
     private _allPointers: Array<Pointer>;
 
-    constructor(view: view.View, e: android.view.MotionEvent) {
+    public prepare(view: view.View, e: android.view.MotionEvent) {
         this.view = view;
         this.object = view;
         this.android = e;
-
         this.action = this.getActionType(e);
+
+        this._activePointers = undefined;
+        this._allPointers = undefined;
     }
 
     getPointerCount(): number {

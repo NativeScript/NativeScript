@@ -240,9 +240,11 @@ declare module "ui/gestures" {
     export class GesturesObserver {
         /**
          * Creates an instance of GesturesObserver class.
+         * @param target - The view for which the observer is created.
          * @param callback - A function that will be executed when a gesture is received.
+         * @param context - default this argument for the callbacks.
          */
-        constructor(target: view.View, callback: (args: GestureEventData) => void, thisArg: any);
+        constructor(target: view.View, callback: (args: GestureEventData) => void, context: any);
 
         /**
          * Registers a gesture observer to a view and gesture.
@@ -281,8 +283,9 @@ declare module "ui/gestures" {
      * @param target - View which will be watched for originating a specific gesture.
      * @param type - Type of the gesture.
      * @param callback - A function that will be executed when a gesture is received.
+     * @param context - this argument for the callback.
      */
-    export function observe(target: view.View, type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): GesturesObserver;
+    export function observe(target: view.View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver;
 
     /**
      * Returns a string representation of a gesture type.
