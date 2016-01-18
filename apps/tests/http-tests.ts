@@ -529,33 +529,3 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
     // ```
     // </snippet>
 };
-
-export var test_getString_1 = function (done) {
-    doRequest("https://it-ebooks-api.info/v1/book/1615005640", done);
-};
-
-export var test_getString_2 = function (done) {
-    doRequest("https://www.telerik.com", done);
-};
-
-export var test_getString_3 = function (done) {
-    doRequest("https://spreadsheets.google.com/tq?key=1tJ64Y8hje0ui4ap9U33h3KWwpxT_-JuVMSZzxD2Er8k", done);
-};
-
-export var test_getString_4 = function (done) {
-    doRequest("https://chase.arborgoldcloud.net/mobilehandler/mobiledatahandler.ashx?ProcedureName=MEstimGetJobListSpeed&@prmSalesRep=%&@prmStartDate=11/1/2015&@prmEndDate=12/8/2015&@prmStatusFilter=2", done);
-};
-
-function doRequest(url: string, done: Function) {
-    http.request({ url: url, method: "GET" }).then(function (response) {
-        try {
-            TKUnit.assert(response.statusCode === 200, "Requesting " + url + " should work properly!");
-            done(null);
-        }
-        catch (err) {
-            done(err);
-        }
-    }, function (e) {
-        done(e);
-    });
-};
