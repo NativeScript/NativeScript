@@ -108,6 +108,7 @@ export module ios {
                 }
             } else {
                 if (view instanceof UIButton) {
+                    (<UIButton>view).setAttributedTitleForState(NSMutableAttributedString.alloc().initWithString(source), UIControlState.UIControlStateNormal);
                     (<UIButton>view).setTitleForState(<string>source, UIControlState.UIControlStateNormal);
                 }
                 else {
