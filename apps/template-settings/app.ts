@@ -3,5 +3,4 @@
 // Remove this in the AppBuilder templates
 application.cssFile = "./app.css"
 
-application.mainModule = "main-page";
-application.start();
+application.start({ moduleName: "main-page" });

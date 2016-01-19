@@ -1,3 +1,2 @@
 ﻿import application = require("application");
-application.mainModule = "xml-declaration/mainPage";
-application.start();
+application.start({ moduleName: "xml-declaration/mainPage" });

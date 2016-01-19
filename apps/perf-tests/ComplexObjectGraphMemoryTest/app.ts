@@ -1,2 +1,2 @@
 ﻿import application = require("application");
-application.mainModule = "ComplexObjectGraphMemoryTest/mainPage";
+application.start({ moduleName: "ComplexObjectGraphMemoryTest/mainPage" });

@@ -1,3 +1,2 @@
 ﻿import application = require("application");
-application.mainModule = "mainPage";
-application.start();
+application.start({ moduleName: "mainPage" });

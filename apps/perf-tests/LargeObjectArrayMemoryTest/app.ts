@@ -1,2 +1,2 @@
 ﻿import application = require("application");
-application.mainModule = "LargeObjectArrayMemoryTest/mainPage";
+application.start({ moduleName: "LargeObjectArrayMemoryTest/mainPage" });
