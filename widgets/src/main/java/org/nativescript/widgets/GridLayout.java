@@ -249,16 +249,16 @@ public class GridLayout extends LayoutBase {
 		boolean infinityWidth = widthMode == MeasureSpec.UNSPECIFIED;
 		boolean infinityHeight = heightMode == MeasureSpec.UNSPECIFIED;
 
-		this.helper.width = width - horizontalPadding;
-		this.helper.height = height - verticalPadding;
+		this.helper.width = Math.max(0, width - horizontalPadding);
+		this.helper.height = Math.max(0, height - verticalPadding);
 
 		int gravity = LayoutBase.getGravity(this);
         int verticalGravity = gravity & Gravity.VERTICAL_GRAVITY_MASK;
         final int layoutDirection = this.getLayoutDirection();
         final int horizontalGravity = Gravity.getAbsoluteGravity(gravity, layoutDirection) & Gravity.HORIZONTAL_GRAVITY_MASK;
 		
-		this.helper.stretchedHorizontally = horizontalGravity == Gravity.FILL_HORIZONTAL && !infinityWidth;
-		this.helper.stretchedVertically = verticalGravity == Gravity.FILL_VERTICAL && !infinityHeight;
+		this.helper.stretchedHorizontally = widthMode == MeasureSpec.EXACTLY || (horizontalGravity == Gravity.FILL_HORIZONTAL && !infinityWidth);
+		this.helper.stretchedVertically = heightMode == MeasureSpec.EXACTLY || (verticalGravity == Gravity.FILL_VERTICAL && !infinityHeight);
 		
 		this.helper.setInfinityWidth(infinityWidth);
 		this.helper.setInfinityHeight(infinityHeight);
@@ -527,8 +527,7 @@ class MeasureHelper {
 		if (this.infinityWidth != value) {
 			this.infinityWidth = value;
 			
-			int size = this.columns.size();
-			for(int i = 0; i < size; i++) {
+			for(int i = 0, size = this.columns.size(); i < size; i++) {
 				ItemGroup columnGroup = this.columns.get(i);
 				columnGroup.setIsLengthInfinity(value);
 			}
@@ -538,9 +537,8 @@ class MeasureHelper {
 	public void setInfinityHeight(boolean value) {
 		if (this.infinityHeight != value) {
 			this.infinityHeight = value;
-			
-			int size = this.rows.size();
-			for(int i = 0; i < size; i++) {
+
+			for(int i = 0, size = this.rows.size(); i < size; i++) {
 				ItemGroup rowGroup = this.rows.get(i);
 				rowGroup.setIsLengthInfinity(value);
 			}
@@ -603,20 +601,17 @@ class MeasureHelper {
 	}
 	
 	public void clearMeasureSpecs() {
-		int size = this.columns.size();
-		for (int i = 0; i < size; i++) {
+		for (int i = 0, size = this.columns.size(); i < size; i++) {
 			this.columns.get(i).children.clear();
 		}
-		
-		size = this.rows.size();
-		for (int i = 0; i < size; i++) {
+
+		for (int i = 0, size = this.rows.size(); i < size; i++) {
 			this.rows.get(i).children.clear();
 		}
 	}
 
 	private static void initList(ArrayList<ItemGroup> list) {
-		int size = list.size();
-		for(int i = 0; i < size; i++) {
+		for(int i = 0, size = list.size(); i < size; i++) {
 			ItemGroup item = list.get(i);
 			item.init();
 		}
@@ -739,15 +734,13 @@ class MeasureHelper {
 
 	private void fakeMeasure() {
 		// Fake measure - measure all elements that have star rows and auto columns - with infinity Width and infinity Height
-		int size = this.columns.size();
-		for (int i = 0; i < size; i++) {
+		for (int i = 0, size = this.columns.size(); i < size; i++) {
 			ItemGroup columnGroup = this.columns.get(i);
 			if (columnGroup.getAllMeasured()) {
 				continue;
 			}
 
-			int childrenCount = columnGroup.children.size();
-			for (int j = 0; j < childrenCount; j++) {
+			for (int j = 0, childrenCount = columnGroup.children.size(); j < childrenCount; j++) {
 				MeasureSpecs measureSpec = columnGroup.children.get(j);
 				if (measureSpec.starRowsCount > 0 && measureSpec.autoColumnsCount > 0 && measureSpec.starColumnsCount == 0) {
 					this.measureChild(measureSpec, true);
@@ -757,11 +750,9 @@ class MeasureHelper {
 	}
 
 	private void measureFixedColumnsNoStarRows() {
-		int size = this.columns.size();
-		for (int i = 0; i < size; i++) {
+		for (int i = 0, size = this.columns.size(); i < size; i++) {
 			ItemGroup columnGroup = this.columns.get(i);
-			int childrenCount = columnGroup.children.size();
-			for (int j = 0; j < childrenCount; j++) {
+			for (int j = 0, childrenCount = columnGroup.children.size(); j < childrenCount; j++) {
 				MeasureSpecs measureSpec = columnGroup.children.get(j);
 				if (measureSpec.starColumnsCount > 0 && measureSpec.starRowsCount == 0) {
 					this.measureChildFixedColumns(measureSpec);
@@ -771,11 +762,9 @@ class MeasureHelper {
 	}
 
 	private void measureNoStarColumnsFixedRows() {
-		int size = this.columns.size();
-		for (int i = 0; i < size; i++) {
+		for (int i = 0, size = this.columns.size(); i < size; i++) {
 			ItemGroup columnGroup = this.columns.get(i);
-			int childrenCount = columnGroup.children.size();
-			for (int j = 0; j < childrenCount ; j++) {
+			for (int j = 0, childrenCount = columnGroup.children.size(); j < childrenCount ; j++) {
 				MeasureSpecs measureSpec = columnGroup.children.get(j);
 				if (measureSpec.starRowsCount > 0 && measureSpec.starColumnsCount == 0) {
 					this.measureChildFixedRows(measureSpec);
@@ -785,8 +774,7 @@ class MeasureHelper {
 	}
 
 	private static boolean canFix(ArrayList<ItemGroup> list) {
-		int size = list.size();	        
-		for (int i = 0; i < size; i++) {
+		for (int i = 0, size = list.size(); i < size; i++) {
 			ItemGroup item = list.get(i);
 			if(!item.getCanBeFixed()) {
 				return false;
@@ -798,8 +786,7 @@ class MeasureHelper {
 
 	private static int getMeasureLength(ArrayList<ItemGroup> list) {	    	
 		int result = 0;
-		int size = list.size();	        
-		for (int i = 0; i < size; i++) {
+		for (int i = 0, size = list.size(); i < size; i++) {
 			ItemGroup item = list.get(i);
 			result += item.length;
 		}
@@ -813,8 +800,7 @@ class MeasureHelper {
 		int size = this.columns.size();
 		for (int i = 0; i < size; i++) {
 			ItemGroup columnGroup = this.columns.get(i);
-			int childrenCount = columnGroup.children.size();
-			for (int j = 0; j < childrenCount; j++) {
+			for (int j = 0, childrenCount = columnGroup.children.size(); j < childrenCount; j++) {
 				MeasureSpecs measureSpec = columnGroup.children.get(j);
 				if (measureSpec.getIsStar() || measureSpec.getSpanned()) {
 					continue;
@@ -827,8 +813,7 @@ class MeasureHelper {
 		// Measure auto & pixel columns and rows (with spans).
 		for (int i = 0; i < size; i++) {
 			ItemGroup columnGroup = this.columns.get(i);
-			int childrenCount = columnGroup.children.size();
-			for (int j = 0; j < childrenCount; j++) {
+			for (int j = 0, childrenCount = columnGroup.children.size(); j < childrenCount; j++) {
 				MeasureSpecs measureSpec = columnGroup.children.get(j);
 				if (measureSpec.getIsStar() || !measureSpec.getSpanned()) {
 					continue;
@@ -881,8 +866,7 @@ class MeasureHelper {
 		size = this.columns.size();
 		for (int i = 0; i < size; i++) {
 			ItemGroup columnGroup = this.columns.get(i);
-			int childCount = columnGroup.children.size();
-			for (int j = 0; j < childCount; j++) {
+			for (int j = 0, childCount = columnGroup.children.size(); j < childCount; j++) {
 				MeasureSpecs measureSpec = columnGroup.children.get(j);
 				if (!measureSpec.measured) {
 					this.measureChildFixedColumnsAndRows(measureSpec);
