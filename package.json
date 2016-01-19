@@ -1,6 +1,6 @@
 {
   "name": "tns-core-modules-widgets",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Native widgets used in the NativeScript framework.",
   "main": "index.js",
   "scripts": {
