@@ -1,13 +1,30 @@
-﻿import button = require("ui/button");
+﻿import {Button} from "ui/button";
+import {StackLayout} from "ui/layouts/stack-layout";
+import {GridLayout} from "ui/layouts/grid-layout";
 import utils = require("utils/utils");
 import TKUnit = require("../TKUnit");
-import {StackLayout} from "ui/layouts/stack-layout";
+import def = require("./layout-helper");
 
 var DELTA = 0.1;
 
-export class MyStackLayout extends StackLayout {
+export class MyGridLayout extends GridLayout implements def.MyGridLayout {
     public measureCount: number = 0;
     public arrangeCount: number = 0;
+
+    public widthMeasureSpec: number = Number.NaN;
+    public heightMeasureSpec: number = Number.NaN;
+
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        this.widthMeasureSpec = widthMeasureSpec;
+        this.heightMeasureSpec = heightMeasureSpec;
+        this.measureCount++;
+    }
+
+    public onLayout(left: number, top: number, right: number, bottom: number): void {
+        super.onLayout(left, top, right, bottom);
+        this.arrangeCount++;
+    }
 
     public get measured(): boolean {
         return this.measureCount > 0;
@@ -17,106 +34,161 @@ export class MyStackLayout extends StackLayout {
         return this.arrangeCount > 0;
     }
 
-    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        this.measureCount++;
+    public get measureWidth() {
+        return utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
     }
 
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
-        super.onLayout(left, top, right, bottom);
-        this.arrangeCount++;
-    }
-}
-
-export class MyButton extends button.Button {
-    public measureCount: number = 0;
-    public arrangeCount: number = 0;
-
-    private _layoutLeft;
-    private _layoutTop;
-    private _layoutWidth;
-    private _layoutHeight;
-
-    private _measureWidth;
-    private _measureHeight;
-
-    public get measured(): boolean {
-        return this.measureCount > 0;
-    }
-
-    public get arranged(): boolean {
-        return this.arrangeCount > 0;
-    }
-
-    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        this._measureWidth = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        this._measureHeight = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        this.measureCount++;
-    }
-
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
-        this._layoutLeft = left;
-        this._layoutTop = top;
-        this._layoutWidth = right - left;
-        this._layoutHeight = bottom - top;
-
-        super.onLayout(left, top, right, bottom);
-        this.arrangeCount++;
-    }
-
-    get measureHeight(): number {
-        return this._measureHeight;
-    }
-
-    get measureWidth(): number {
-        return this._measureWidth;
+    public get measureHeight() {
+        return utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
     }
 
     get layoutWidth(): number {
-        return this._layoutWidth;
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.right - bounds.left;
     }
 
     get layoutHeight(): number {
-        return this._layoutHeight;
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.bottom - bounds.top;
     }
-    
+
     get layoutLeft(): number {
-        return this._layoutLeft;
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.left;
     }
 
     get layoutTop(): number {
-        return this._layoutTop;
-    }
-
-    _getCurrentMeasureSpecs(): { widthMeasureSpec: number; heightMeasureSpec: number } {
-        return {
-            widthMeasureSpec: (<any>this)._oldWidthMeasureSpec,
-            heightMeasureSpec: (<any>this)._oldHeightMeasureSpec
-        };
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.top;
     }
 }
 
-export function assertMeasure(btn: MyButton, width: number, height: number, name?: string) {
-    var density = utils.layout.getDisplayDensity();
+export class MyStackLayout extends StackLayout implements def.MyStackLayout {
+    public measureCount: number = 0;
+    public arrangeCount: number = 0;
 
-    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
-    name = name ? "[" + name + "]" : "";
+    public widthMeasureSpec: number = Number.NaN;
+    public heightMeasureSpec: number = Number.NaN;
 
-    TKUnit.assertAreClose(Math.floor(btn.measureWidth / density), width, delta, name + "width");
-    TKUnit.assertAreClose(Math.floor(btn.measureHeight / density), height, delta, name + "height");
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        this.widthMeasureSpec = widthMeasureSpec;
+        this.heightMeasureSpec = heightMeasureSpec;
+        this.measureCount++;
+    }
+
+    public onLayout(left: number, top: number, right: number, bottom: number): void {
+        super.onLayout(left, top, right, bottom);
+        this.arrangeCount++;
+    }
+
+    public get measured(): boolean {
+        return this.measureCount > 0;
+    }
+
+    public get arranged(): boolean {
+        return this.arrangeCount > 0;
+    }
+
+    public get measureWidth() {
+        return utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
+    }
+
+    public get measureHeight() {
+        return utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
+    }
+
+    get layoutWidth(): number {
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.right - bounds.left;
+    }
+
+    get layoutHeight(): number {
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.bottom - bounds.top;
+    }
+
+    get layoutLeft(): number {
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.left;
+    }
+
+    get layoutTop(): number {
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.top;
+    }
 }
 
-export function assertLayout(btn: MyButton, left: number, top: number, width: number, height: number, name?: string): void {
-    var density = utils.layout.getDisplayDensity();
+export class MyButton extends Button implements def.MyButton {
+    public measureCount: number = 0;
+    public arrangeCount: number = 0;
 
-    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
+    public widthMeasureSpec: number = Number.NaN;
+    public heightMeasureSpec: number = Number.NaN;
+
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        this.widthMeasureSpec = widthMeasureSpec;
+        this.heightMeasureSpec = heightMeasureSpec;
+        this.measureCount++;
+    }
+
+    public onLayout(left: number, top: number, right: number, bottom: number): void {
+        super.onLayout(left, top, right, bottom);
+        this.arrangeCount++;
+    }
+
+    public get measured(): boolean {
+        return this.measureCount > 0;
+    }
+
+    public get arranged(): boolean {
+        return this.arrangeCount > 0;
+    }
+
+    public get measureWidth() {
+        return utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
+    }
+
+    public get measureHeight() {
+        return utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
+    }
+
+    get layoutWidth(): number {
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.right - bounds.left;
+    }
+
+    get layoutHeight(): number {
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.bottom - bounds.top;
+    }
+    
+    get layoutLeft(): number {
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.left;
+    }
+
+    get layoutTop(): number {
+        let bounds = this._getCurrentLayoutBounds();
+        return bounds.top;
+    }
+}
+
+export function assertMeasure(view: def.MeasuredView, width: number, height: number, name?: string) {
     name = name ? "[" + name + "]" : "";
 
-    TKUnit.assertAreClose(Math.floor(btn.layoutLeft / density), left, delta, name + "left");
-    TKUnit.assertAreClose(Math.floor(btn.layoutTop / density), top, delta, name + "top");
-    TKUnit.assertAreClose(Math.floor(btn.layoutWidth / density), width, delta, name + "width");
-    TKUnit.assertAreClose(Math.floor(btn.layoutHeight / density), height, delta, name + "height");
+    TKUnit.assertAreClose(view.measureWidth, width, DELTA, name + "width");
+    TKUnit.assertAreClose(view.measureHeight, height, DELTA, name + "height");
+}
+
+export function assertLayout(view: def.MeasuredView, left: number, top: number, width: number, height: number, name?: string): void {
+    name = name ? "[" + name + "]" : "";
+
+    TKUnit.assertAreClose(view.layoutLeft, left, DELTA, name + "left");
+    TKUnit.assertAreClose(view.layoutTop, top, DELTA, name + "top");
+    TKUnit.assertAreClose(view.layoutWidth, width, DELTA, name + "width");
+    TKUnit.assertAreClose(view.layoutHeight, height, DELTA, name + "height");
 }
 
 export function dp(value: number): number {

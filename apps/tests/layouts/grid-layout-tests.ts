@@ -1,8 +1,7 @@
-﻿import page = require("ui/page");
-import layout = require("ui/layouts/grid-layout");
+﻿import {Page} from "ui/page";
+import {GridLayout, ItemSpec, GridUnitType} from "ui/layouts/grid-layout";
 import {Button} from "ui/button";
 import TKUnit = require("../TKUnit");
-import helper = require("./layout-helper");
 import view = require("ui/core/view");
 import navHelper = require("../ui/helper");
 import utils = require("utils/utils");
@@ -15,69 +14,46 @@ import commonTests = require("./common-layout-tests");
 
 var DELTA = 1;
 
-export class MyGridLayout extends layout.GridLayout {
-    public measureCount: number = 0;
-    public layoutCount: number = 0;
+export class GridLayoutTest extends testModule.UITest<GridLayout> {
 
-    public get measured(): boolean {
-        return this.measureCount > 0;
-    }
-
-    public get layouted(): boolean {
-        return this.layoutCount > 0;
-    }
-
-    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        this.measureCount++;
-    }
-
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
-        super.onLayout(left, top, right, bottom);
-        this.layoutCount++;
-    }
-}
-
-export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
-
-    public create(): layout.GridLayout {
-        return new MyGridLayout();
+    public create(): GridLayout {
+        return new GridLayout();
     }
 
     private row(view: view.View): number {
-        return layout.GridLayout.getRow(view);
+        return GridLayout.getRow(view);
     }
 
     private rowSpan(view: view.View): number {
-        return layout.GridLayout.getRowSpan(view);
+        return GridLayout.getRowSpan(view);
     }
 
     private col(view: view.View): number {
-        return layout.GridLayout.getColumn(view);
+        return GridLayout.getColumn(view);
     }
 
     private colSpan(view: view.View): number {
-        return layout.GridLayout.getColumnSpan(view);
+        return GridLayout.getColumnSpan(view);
     }
 
     private prepareGridLayout(wait?: boolean) {
 
-        this.testView.addRow(new layout.ItemSpec(1, layout.GridUnitType.star));
-        this.testView.addRow(new layout.ItemSpec(2, layout.GridUnitType.star));
-        this.testView.addRow(new layout.ItemSpec(layoutHelper.dp(50), layout.GridUnitType.pixel));
-        this.testView.addRow(new layout.ItemSpec(50, layout.GridUnitType.auto));
+        this.testView.addRow(new ItemSpec(1, GridUnitType.star));
+        this.testView.addRow(new ItemSpec(2, GridUnitType.star));
+        this.testView.addRow(new ItemSpec(layoutHelper.dp(50), GridUnitType.pixel));
+        this.testView.addRow(new ItemSpec(50, GridUnitType.auto));
 
-        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
-        this.testView.addColumn(new layout.ItemSpec(2, layout.GridUnitType.star));
-        this.testView.addColumn(new layout.ItemSpec(layoutHelper.dp(50), layout.GridUnitType.pixel));
-        this.testView.addColumn(new layout.ItemSpec(50, layout.GridUnitType.auto));
+        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
+        this.testView.addColumn(new ItemSpec(2, GridUnitType.star));
+        this.testView.addColumn(new ItemSpec(layoutHelper.dp(50), GridUnitType.pixel));
+        this.testView.addColumn(new ItemSpec(50, GridUnitType.auto));
 
         for (var r = 0; r < 4; r++) {
             for (var c = 0; c < 4; c++) {
-                var btn = new helper.MyButton();
+                var btn = new layoutHelper.MyButton();
                 btn.text = "R" + r + "C" + c;
-                layout.GridLayout.setColumn(btn, c);
-                layout.GridLayout.setRow(btn, r);
+                GridLayout.setColumn(btn, c);
+                GridLayout.setRow(btn, r);
                 if (c === 3) {
                     btn.width = layoutHelper.dp(100); // Auto column should take 100px for this test.
                 }
@@ -124,73 +100,73 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
     public test_getRow_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.getRow(null);
+            GridLayout.getRow(null);
         }, "getRow called with null should throw exception");
     }
 
     public test_getRowSpan_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.getRowSpan(null);
+            GridLayout.getRowSpan(null);
         }, "getRowSpan called with null should throw exception");
     }
 
     public test_getColumn_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.getColumn(null);
+            GridLayout.getColumn(null);
         }, "getColumn called with null should throw exception");
     }
 
     public test_getColumnSpan_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.getColumnSpan(null);
+            GridLayout.getColumnSpan(null);
         }, "getColumnSpan called with null should throw exception");
     }
 
     public test_setRow_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.setRow(null, 1);
+            GridLayout.setRow(null, 1);
         }, "setRow called with null should throw exception");
     }
 
     public test_setRowSpan_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.setRowSpan(null, 1);
+            GridLayout.setRowSpan(null, 1);
         }, "setRowSpan called with null should throw exception");
     }
 
     public test_setColumn_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.setColumn(null, 1);
+            GridLayout.setColumn(null, 1);
         }, "setColumn called with null should throw exception")
     }
 
     public test_setColumnSpan_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.setColumnSpan(null, 1);
+            GridLayout.setColumnSpan(null, 1);
         }, "setColumnSpan called with null should throw exception");
     }
 
     public test_setRow_shouldThrow_onNegativeValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.setRow(new Button(), -1);
+            GridLayout.setRow(new Button(), -1);
         }, "setRow should throw when value < 0");
     }
 
     public test_setRowSpan_shouldThrow_onNotPositiveValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.setRowSpan(new Button(), 0);
+            GridLayout.setRowSpan(new Button(), 0);
         }, "setRowSpan should throw when value <= 0");
     }
 
     public test_setColumn_shouldThrow_onNegativeValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.setColumn(new Button(), -1);
+            GridLayout.setColumn(new Button(), -1);
         }, "setColumn should when value < 0");
     }
 
     public test_setColumnSpan_shouldThrow_onNotPositiveValues() {
         TKUnit.assertThrows(() => {
-            layout.GridLayout.setColumnSpan(new Button(), 0);
+            GridLayout.setColumnSpan(new Button(), 0);
         }, "setColumnSpan should throw when value <= 0");
     }
 
@@ -253,13 +229,13 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
     public test_measuredWidth_when_not_stretched_two_columns() {
         this.testView.horizontalAlignment = enums.HorizontalAlignment.center;
-        this.testView.addColumn(new layout.ItemSpec(layoutHelper.dp(80), layout.GridUnitType.pixel));
-        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
+        this.testView.addColumn(new ItemSpec(layoutHelper.dp(80), GridUnitType.pixel));
+        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
 
         let btn = new Button();
         btn.text = "A";
         btn.width = layoutHelper.dp(100);
-        MyGridLayout.setColumnSpan(btn, 2);
+        GridLayout.setColumnSpan(btn, 2);
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -272,22 +248,22 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
     public test_measuredWidth_when_not_stretched_three_columns() {
         this.testView.horizontalAlignment = enums.HorizontalAlignment.center;
-        this.testView.addColumn(new layout.ItemSpec(layoutHelper.dp(80), layout.GridUnitType.pixel));
-        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
-        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.auto));
+        this.testView.addColumn(new ItemSpec(layoutHelper.dp(80), GridUnitType.pixel));
+        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
+        this.testView.addColumn(new ItemSpec(1, GridUnitType.auto));
 
         for (let i = 1; i < 4; i++) {
             let btn = new Button();
             btn.text = "A";
             btn.width = layoutHelper.dp(i * 20);
-            MyGridLayout.setColumn(btn, i - 1);
+            GridLayout.setColumn(btn, i - 1);
             this.testView.addChild(btn);
         }
 
         let btn = new Button();
         btn.text = "B";
         btn.width = layoutHelper.dp(100);
-        MyGridLayout.setColumnSpan(btn, 3);
+        GridLayout.setColumnSpan(btn, 3);
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -310,21 +286,21 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
     }
 
     public test_ItemSpec_actualLength_defaultValue() {
-        var def = new layout.ItemSpec(1, layout.GridUnitType.auto);
+        var def = new ItemSpec(1, GridUnitType.auto);
         TKUnit.assertEqual(def.actualLength, 0, "'actualLength' property default value should be 0.");
     }
 
     public test_ItemSpec_constructor_throws_onNegativeValue() {
         TKUnit.assertThrows(() => {
-            new layout.ItemSpec(-1, layout.GridUnitType.auto);
+            new ItemSpec(-1, GridUnitType.auto);
         }, "'value' should be positive number.");
     }
 
     public test_ItemSpec_constructor_doesnt_throw_onCorrectType() {
         try {
-            new layout.ItemSpec(1, layout.GridUnitType.auto);
-            new layout.ItemSpec(1, layout.GridUnitType.star);
-            new layout.ItemSpec(1, layout.GridUnitType.pixel);
+            new ItemSpec(1, GridUnitType.auto);
+            new ItemSpec(1, GridUnitType.star);
+            new ItemSpec(1, GridUnitType.pixel);
         }
         catch (ex) {
             TKUnit.assert(false, "ItemSpec type should support auto, star and pixel.");
@@ -333,13 +309,13 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
     public test_ItemSpec_constructor_throws_onWrongType() {
         TKUnit.assertThrows(() => {
-            new layout.ItemSpec(1, "unsupported");
+            new ItemSpec(1, "unsupported");
         }, "'ItemSpec type' incorrect value.");
     }
 
     public test_ItemSpec_auto() {
-        var w = new layout.ItemSpec(1, layout.GridUnitType.auto);
-        TKUnit.assertEqual(w.gridUnitType, layout.GridUnitType.auto, "'gridUnitType' property default value should be 'auto'");
+        var w = new ItemSpec(1, GridUnitType.auto);
+        TKUnit.assertEqual(w.gridUnitType, GridUnitType.auto, "'gridUnitType' property default value should be 'auto'");
         TKUnit.assertEqual(w.isAbsolute, false, "'isAbsolute' property default value should be 'false'");
         TKUnit.assertEqual(w.isAuto, true, "'isAuto' property default value should be 'false'");
         TKUnit.assertEqual(w.isStar, false, "'isAuto' property default value should be 'true'");
@@ -347,8 +323,8 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
     }
 
     public test_ItemSpec_unitType_pixel() {
-        var w = new layout.ItemSpec(6, layout.GridUnitType.pixel);
-        TKUnit.assertEqual(w.gridUnitType, layout.GridUnitType.pixel, "'gridUnitType' property default value should be 'pixel'");
+        var w = new ItemSpec(6, GridUnitType.pixel);
+        TKUnit.assertEqual(w.gridUnitType, GridUnitType.pixel, "'gridUnitType' property default value should be 'pixel'");
         TKUnit.assertEqual(w.isAbsolute, true, "'isAbsolute' property default value should be 'false'");
         TKUnit.assertEqual(w.isAuto, false, "'isAuto' property default value should be 'false'");
         TKUnit.assertEqual(w.isStar, false, "'isAuto' property default value should be 'true'");
@@ -356,8 +332,8 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
     }
 
     public test_ItemSpec_unitType() {
-        var w = new layout.ItemSpec(2, layout.GridUnitType.star);
-        TKUnit.assertEqual(w.gridUnitType, layout.GridUnitType.star, "'gridUnitType' property default value should be 'star'");
+        var w = new ItemSpec(2, GridUnitType.star);
+        TKUnit.assertEqual(w.gridUnitType, GridUnitType.star, "'gridUnitType' property default value should be 'star'");
         TKUnit.assertEqual(w.isAbsolute, false, "'isAbsolute' property default value should be 'false'");
         TKUnit.assertEqual(w.isAuto, false, "'isAuto' property default value should be 'false'");
         TKUnit.assertEqual(w.isStar, true, "'isAuto' property default value should be 'true'");
@@ -384,9 +360,9 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
             width = 0;
             height = 0;
             for (var c = 0; c < 4; c++) {
-                var btn = <helper.MyButton>this.testView.getChildAt(i++);
+                var btn = <layoutHelper.MyButton>this.testView.getChildAt(i++);
                 if (cols[c].isAbsolute) {
-                    width += helper.dip(cols[c].actualLength);
+                    width += layoutHelper.dip(cols[c].actualLength);
                 }
                 else {
                     width += btn.getMeasuredWidth();
@@ -398,7 +374,7 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
             maxWidth = Math.max(maxWidth, width);
 
             if (rows[r].isAbsolute) {
-                maxHeight += helper.dip(rows[r].actualLength);
+                maxHeight += layoutHelper.dip(rows[r].actualLength);
             }
             else {
                 maxHeight += height;
@@ -442,7 +418,7 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         for (var r = 0; r < 4; r++) {
 
             for (var c = 0; c < 4; c++) {
-                var btn = <helper.MyButton>this.testView.getChildAt(i++);
+                var btn = <layoutHelper.MyButton>this.testView.getChildAt(i++);
                 var col = cols[c];
                 var row = rows[r];
 
@@ -479,10 +455,10 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
     public test_ColumnWidth_when_4stars_and_width_110() {
 
         this.testView.width = layoutHelper.dp(110);
-        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
-        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
-        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
-        this.testView.addColumn(new layout.ItemSpec(1, layout.GridUnitType.star));
+        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
+        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
+        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
+        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
 
         this.waitUntilTestElementLayoutIsValid();
 
@@ -498,7 +474,7 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
         this.testView.height = layoutHelper.dp(200);
         this.testView.width = layoutHelper.dp(200);
-        var btn = new helper.MyButton();
+        var btn = new layoutHelper.MyButton();
         btn.text = "btn";
         btn.height = layoutHelper.dp(100);
         btn.width = layoutHelper.dp(100);
@@ -513,19 +489,19 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
     }
 
     public test_set_columns_in_XML_comma_separator() {
-        var p = <page.Page>builder.parse("<Page><GridLayout columns=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
-        var grid = <layout.GridLayout>p.content;
+        var p = <Page>builder.parse("<Page><GridLayout columns=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
+        var grid = <GridLayout>p.content;
         this.assertColumns(grid);
     }
 
     public test_set_columns_in_XML_space_separator() {
-        var p = <page.Page>builder.parse("<Page><GridLayout columns=\"auto * 10* 100 \"><Button/></GridLayout></Page>");
-        var grid = <layout.GridLayout>p.content;
+        var p = <Page>builder.parse("<Page><GridLayout columns=\"auto * 10* 100 \"><Button/></GridLayout></Page>");
+        var grid = <GridLayout>p.content;
         this.assertColumns(grid);
     }
 
-    private assertColumns(grid: layout.GridLayout) {
-        var columns: Array<layout.ItemSpec> = grid.getColumns();
+    private assertColumns(grid: GridLayout) {
+        var columns: Array<ItemSpec> = grid.getColumns();
 
         TKUnit.assertEqual(columns.length, 4, "columns.length");
         TKUnit.assert(columns[0].isAuto, "columns[0].isAuto");
@@ -541,19 +517,20 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
     }
 
     public test_set_rows_in_XML_comma_separator() {
-        var p = <page.Page>builder.parse("<Page><GridLayout rows=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
-        var grid = <layout.GridLayout>p.content;
-        this.assertRows(grid);
-    }
-    public test_set_rows_in_XML_space_separator() {
-        var p = <page.Page>builder.parse("<Page><GridLayout rows=\"auto * 10* 100 \"><Button/></GridLayout></Page>");
-        var grid = <layout.GridLayout>p.content;
+        var p = <Page>builder.parse("<Page><GridLayout rows=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
+        var grid = <GridLayout>p.content;
         this.assertRows(grid);
     }
 
-    private assertRows(grid: layout.GridLayout) {
-        var columns: Array<layout.ItemSpec> = grid.getColumns();
-        var rows: Array<layout.ItemSpec> = grid.getRows();
+    public test_set_rows_in_XML_space_separator() {
+        var p = <Page>builder.parse("<Page><GridLayout rows=\"auto * 10* 100 \"><Button/></GridLayout></Page>");
+        var grid = <GridLayout>p.content;
+        this.assertRows(grid);
+    }
+
+    private assertRows(grid: GridLayout) {
+        var columns: Array<ItemSpec> = grid.getColumns();
+        var rows: Array<ItemSpec> = grid.getRows();
 
         TKUnit.assertEqual(rows.length, 4, "rows.length");
         TKUnit.assert(rows[0].isAuto, "rows[0].isAuto");
@@ -577,13 +554,13 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         this.testView.width = layoutHelper.dp(300);
         this.testView.height = layoutHelper.dp(300);
 
-        var btn = new helper.MyButton();
+        var btn = new layoutHelper.MyButton();
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
 
-        helper.assertMeasure(btn, 260, 240);
-        helper.assertLayout(btn, 10, 20, 260, 240);
+        layoutHelper.assertMeasure(btn, 260, 240);
+        layoutHelper.assertLayout(btn, 10, 20, 260, 240);
     }
 
     public test_codesnippets = function () {
@@ -592,7 +569,7 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
         // ### Creating Grid Layout via code.
         // ``` JavaScript
         //var layout = require("ui/layouts/grid-layout");
-        var gridLayout = new layout.GridLayout();
+        var gridLayout = new GridLayout();
         //  ```
 
         // ### Create grid layout with an xml declaration
@@ -620,34 +597,34 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
         // ### Set column property on views - btn1 in first column, btn2 is second and btn3 in third
         // ``` JavaScript
-        layout.GridLayout.setColumn(btn1, 0);
-        layout.GridLayout.setColumn(btn2, 1);
-        layout.GridLayout.setColumn(btn3, 2);
+        GridLayout.setColumn(btn1, 0);
+        GridLayout.setColumn(btn2, 1);
+        GridLayout.setColumn(btn3, 2);
         // ```
 
         // ### Set row property on btn4.
         // ``` JavaScript
-        layout.GridLayout.setRow(btn4, 1);
+        GridLayout.setRow(btn4, 1);
         // ```
 
         // ### Set columnSpan property on btn4 to stretch into all columns
         // ``` JavaScript
-        layout.GridLayout.setColumnSpan(btn4, 3);
+        GridLayout.setColumnSpan(btn4, 3);
         // ```
 
         // ### Create ItemSpec for columns and rows 3 columns - 80px, *, auto size and 2 rows - 100px and auto size
         // ``` JavaScript
         //// ItemSpec modes of the column refers to its width.
         //// Absolute size of the column
-        var firstColumn = new layout.ItemSpec(80, layout.GridUnitType.pixel);
+        var firstColumn = new ItemSpec(80, GridUnitType.pixel);
         //// Star width means that this column will expand to fill the gap left from other columns
-        var secondColumn = new layout.ItemSpec(1, layout.GridUnitType.star);
+        var secondColumn = new ItemSpec(1, GridUnitType.star);
         //// Auto size means that column will expand or shrink in order to give enough place for all child UI elements.
-        var thirdColumn = new layout.ItemSpec(1, layout.GridUnitType.auto);
+        var thirdColumn = new ItemSpec(1, GridUnitType.auto);
 
         //// Star and Auto modes for rows behave like corresponding setting for columns but refer to row height.
-        var firstRow = new layout.ItemSpec(1, layout.GridUnitType.auto);
-        var secondRow = new layout.ItemSpec(1, layout.GridUnitType.star);
+        var firstRow = new ItemSpec(1, GridUnitType.auto);
+        var secondRow = new ItemSpec(1, GridUnitType.star);
         // ```
 
         // ### Add columns and rows to GridLayout
@@ -667,6 +644,34 @@ export class GridLayoutTest extends testModule.UITest<layout.GridLayout> {
 
     public test_percent_support_nativeLayoutParams_are_correct() {
         commonTests.percent_support_nativeLayoutParams_are_correct(this);
+    }
+
+    public test_layout_correctnes() {
+        this.testView.width = layoutHelper.dp(300);
+        this.testView.height = layoutHelper.dp(300);
+
+        let grid = new layoutHelper.MyGridLayout();
+        grid.width = layoutHelper.dp(150);
+        grid.height = layoutHelper.dp(150);
+        grid.horizontalAlignment = enums.HorizontalAlignment.right;
+        grid.verticalAlignment = enums.VerticalAlignment.bottom;
+
+        this.testView.addChild(grid);
+
+        let btn = new layoutHelper.MyButton();
+        btn.width = layoutHelper.dp(75);
+        btn.height = layoutHelper.dp(75);
+        btn.horizontalAlignment = enums.HorizontalAlignment.left;
+        btn.verticalAlignment = enums.VerticalAlignment.bottom;
+        grid.addChild(btn);
+
+        this.waitUntilTestElementLayoutIsValid();
+
+        layoutHelper.assertMeasure(grid, 150, 150);
+        layoutHelper.assertLayout(grid, 150, 150, 150, 150);
+
+        layoutHelper.assertMeasure(btn, 75, 75);
+        layoutHelper.assertLayout(btn, 0, 75, 75, 75);
     }
 }
 

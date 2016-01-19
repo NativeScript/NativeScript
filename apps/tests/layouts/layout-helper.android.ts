@@ -1,16 +1,18 @@
-﻿import button = require("ui/button");
+﻿import {View} from "ui/core/view";
+import {Button} from "ui/button";
 import {StackLayout} from "ui/layouts/stack-layout";
+import {GridLayout} from "ui/layouts/grid-layout";
+
 import utils = require("utils/utils");
 import TKUnit = require("../TKUnit");
 import def = require("./layout-helper");
 
 var DELTA = 0.1;
 
-export class NativeButton extends android.widget.Button {
-    
-    private owner: MyButton;
+class NativeButton extends android.widget.Button {    
+    private owner: def.MeasuredView;
 
-    constructor(context: android.content.Context, owner: MyButton) {
+    constructor(context: android.content.Context, owner: def.MeasuredView) {
         super(context);
         this.owner = owner;
         return global.__native(this);
@@ -18,33 +20,69 @@ export class NativeButton extends android.widget.Button {
 
     protected onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        this.owner._oldWidthMeasureSpec = widthMeasureSpec;
-        this.owner._oldHeightMeasureSpec = heightMeasureSpec;
-
-        this.owner._measureWidth = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        this.owner._measureHeight = utils.layout.getMeasureSpecSize(heightMeasureSpec);
+        this.owner.widthMeasureSpec = widthMeasureSpec;
+        this.owner.heightMeasureSpec = heightMeasureSpec;
         this.owner.measureCount++;
     }
 
     protected onLayout(changed: boolean, left: number, top: number, right: number, bottom: number): void {
-        this.owner._layoutLeft = left;
-        this.owner._layoutTop = top;
-        this.owner._layoutWidth = right - left;
-        this.owner._layoutHeight = bottom - top;
-
         super.onLayout(changed, left, top, right, bottom);
         this.owner.arrangeCount++;
     }
 }
 
-export class MyButton extends button.Button implements def.MyButton {
-    private _layout: NativeButton;
+class NativeStackLayout extends org.nativescript.widgets.StackLayout {
+    private owner: def.MeasuredView;
 
-    get android(): NativeButton {
+    constructor(context: android.content.Context, owner: def.MeasuredView) {
+        super(context);
+        this.owner = owner;
+        return global.__native(this);
+    }
+
+    protected onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        this.owner.widthMeasureSpec = widthMeasureSpec;
+        this.owner.heightMeasureSpec = heightMeasureSpec;
+        this.owner.measureCount++;
+    }
+
+    protected onLayout(changed: boolean, left: number, top: number, right: number, bottom: number): void {
+        super.onLayout(changed, left, top, right, bottom);
+        this.owner.arrangeCount++;
+    }
+}
+
+class NativeGridLayout extends org.nativescript.widgets.GridLayout {
+    private owner: def.MeasuredView;
+
+    constructor(context: android.content.Context, owner: def.MeasuredView) {
+        super(context);
+        this.owner = owner;
+        return global.__native(this);
+    }
+
+    protected onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        this.owner.widthMeasureSpec = widthMeasureSpec;
+        this.owner.heightMeasureSpec = heightMeasureSpec;
+        this.owner.measureCount++;
+    }
+
+    protected onLayout(changed: boolean, left: number, top: number, right: number, bottom: number): void {
+        super.onLayout(changed, left, top, right, bottom);
+        this.owner.arrangeCount++;
+    }
+}
+
+export class MyButton extends Button implements def.MyButton {
+    private _layout: android.view.View;
+
+    get android(): android.view.View {
         return this._layout;
     }
 
-    get _nativeView(): NativeButton {
+    get _nativeView(): android.view.View {
         return this._layout;
     }
 
@@ -55,16 +93,15 @@ export class MyButton extends button.Button implements def.MyButton {
     public measureCount: number = 0;
     public arrangeCount: number = 0;
 
-    _oldWidthMeasureSpec: number = Number.NaN;
-    _oldHeightMeasureSpec: number = Number.NaN;
+    public widthMeasureSpec: number = Number.NaN;
+    public heightMeasureSpec: number = Number.NaN;
 
-    _layoutLeft;
-    _layoutTop;
-    _layoutWidth;
-    _layoutHeight;
-
-    _measureWidth;
-    _measureHeight;
+    public get measureWidth() {
+        return utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
+    }
+    public get measureHeight() {
+        return utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
+    }
 
     public get measured(): boolean {
         return this.measureCount > 0;
@@ -74,67 +111,31 @@ export class MyButton extends button.Button implements def.MyButton {
         return this.arrangeCount > 0;
     }
 
-    get measureHeight(): number {
-        return this._measureHeight;
-    }
-
-    get measureWidth(): number {
-        return this._measureWidth;
-    }
-
     get layoutWidth(): number {
-        return this._layoutWidth;
+        return this._layout.getWidth();
     }
 
     get layoutHeight(): number {
-        return this._layoutHeight;
+        return this._layout.getHeight();
     }
-    
+
     get layoutLeft(): number {
-        return this._layoutLeft;
+        return this._layout.getLeft();
     }
 
     get layoutTop(): number {
-        return this._layoutTop;
-    }
-
-    _getCurrentMeasureSpecs(): { widthMeasureSpec: number; heightMeasureSpec: number } {
-        return {
-            widthMeasureSpec: this._oldWidthMeasureSpec,
-            heightMeasureSpec: this._oldHeightMeasureSpec
-        };
-    }
-}
-
-export class NativeStackLayout extends org.nativescript.widgets.StackLayout {
- 
-    private owner: MyStackLayout;
-
-    constructor(context: android.content.Context, owner: MyStackLayout) {
-        super(context);
-        this.owner = owner;
-        return global.__native(this);
-    }
-
-    protected onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        this.owner.measureCount++;
-    }
-
-    protected onLayout(changed: boolean, left: number, top: number, right: number, bottom: number): void {
-        super.onLayout(changed, left, top, right, bottom);
-        this.owner.arrangeCount++;
+        return this._layout.getTop();
     }
 }
 
 export class MyStackLayout extends StackLayout implements def.MyStackLayout {
-    private _layout: NativeStackLayout;
+    private _layout: android.view.View;
 
-    get android(): NativeStackLayout {
+    get android(): android.view.View {
         return this._layout;
     }
 
-    get _nativeView(): NativeStackLayout {
+    get _nativeView(): android.view.View {
         return this._layout;
     }
 
@@ -145,6 +146,16 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
     public measureCount: number = 0;
     public arrangeCount: number = 0;
 
+    public widthMeasureSpec: number = Number.NaN;
+    public heightMeasureSpec: number = Number.NaN;
+
+    public get measureWidth() {
+        return utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
+    }
+    public get measureHeight() {
+        return utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
+    }
+
     public get measured(): boolean {
         return this.measureCount > 0;
     }
@@ -152,22 +163,91 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
     public get arranged(): boolean {
         return this.arrangeCount > 0;
     }
+
+    get layoutWidth(): number {
+        return this._layout.getWidth();
+    }
+
+    get layoutHeight(): number {
+        return this._layout.getHeight();
+    }
+
+    get layoutLeft(): number {
+        return this._layout.getLeft();
+    }
+
+    get layoutTop(): number {
+        return this._layout.getTop();
+    }
 }
 
-export function assertMeasure(btn: MyButton, width: number, height: number, name?: string) {
-    name = name ? "[" + name + "]" : "";
+export class MyGridLayout extends GridLayout implements def.MyGridLayout {
+    private _layout: android.view.View;
 
-    TKUnit.assertAreClose(btn.measureWidth, width, DELTA, name + "width");
-    TKUnit.assertAreClose(btn.measureHeight, height, DELTA, name + "height");
+    get android(): android.view.View {
+        return this._layout;
+    }
+
+    get _nativeView(): android.view.View {
+        return this._layout;
+    }
+
+    public _createUI() {
+        this._layout = new NativeGridLayout(this._context, this);
+    }
+
+    public measureCount: number = 0;
+    public arrangeCount: number = 0;
+
+    public widthMeasureSpec: number = Number.NaN;
+    public heightMeasureSpec: number = Number.NaN;
+
+    public get measureWidth() {
+        return utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
+    }
+    public get measureHeight() {
+        return utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
+    }
+
+    public get measured(): boolean {
+        return this.measureCount > 0;
+    }
+
+    public get arranged(): boolean {
+        return this.arrangeCount > 0;
+    }
+
+    get layoutWidth(): number {
+        return this._layout.getWidth();
+    }
+
+    get layoutHeight(): number {
+        return this._layout.getHeight();
+    }
+
+    get layoutLeft(): number {
+        return this._layout.getLeft();
+    }
+
+    get layoutTop(): number {
+        return this._layout.getTop();
+    }
 }
 
-export function assertLayout(btn: MyButton, left: number, top: number, width: number, height: number, name?: string): void {
+export function assertMeasure(view: def.MeasuredView, width: number, height: number, name?: string) {
     name = name ? "[" + name + "]" : "";
 
-    TKUnit.assertAreClose(btn.layoutLeft, left, DELTA, name + "left");
-    TKUnit.assertAreClose(btn.layoutTop, top, DELTA, name + "top");
-    TKUnit.assertAreClose(btn.layoutWidth, width, DELTA, name + "width");
-    TKUnit.assertAreClose(btn.layoutHeight, height, DELTA, name + "height");
+    TKUnit.assertAreClose(view.measureWidth, width, DELTA, name + "width");
+    TKUnit.assertAreClose(view.measureHeight, height, DELTA, name + "height");
+}
+
+export function assertLayout(view: def.MeasuredView, left: number, top: number, width: number, height: number, name?: string): void {
+    name = name ? "[" + name + "]" : "";
+
+    TKUnit.assertAreClose(view.layoutLeft, left, DELTA, name + "left");
+    TKUnit.assertAreClose(view.layoutTop, top, DELTA, name + "top");
+    TKUnit.assertAreClose(view.layoutWidth, width, DELTA, name + "width");
+    TKUnit.assertAreClose(view.layoutHeight, height, DELTA, name + "height");
 }
 
 export function dp(value: number): number {

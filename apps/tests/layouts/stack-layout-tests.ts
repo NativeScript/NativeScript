@@ -56,9 +56,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         TKUnit.assertTrue(this.rootLayout.measured, "Layout should be measured.");
         TKUnit.assertTrue(this.rootLayout.arranged, "Layout should be arranged.");
 
-        var specs = this.btn1._getCurrentMeasureSpecs();
-
-        TKUnit.assertEqual(utils.layout.getMeasureSpecMode(specs.heightMeasureSpec), utils.layout.AT_MOST, "Layout should measure child with AT_MOST Height in vertical orientation.");
+        TKUnit.assertEqual(utils.layout.getMeasureSpecMode(this.btn1.heightMeasureSpec), utils.layout.AT_MOST, "Layout should measure child with AT_MOST Height in vertical orientation.");
     }
 
     public test_ShouldMeasureWith_AtMost_OnHorizontal() {
@@ -70,9 +68,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         TKUnit.assert(this.rootLayout.measured, "Layout should be measured.");
         TKUnit.assert(this.rootLayout.arranged, "Layout should be arranged.");
 
-        var specs = this.btn1._getCurrentMeasureSpecs();
-
-        TKUnit.assertEqual(utils.layout.getMeasureSpecMode(specs.widthMeasureSpec), utils.layout.AT_MOST, "Layout should measure child with AT_MOST Width in horizontal orientation.");
+        TKUnit.assertEqual(utils.layout.getMeasureSpecMode(this.btn1.widthMeasureSpec), utils.layout.AT_MOST, "Layout should measure child with AT_MOST Width in horizontal orientation.");
     }
 
     public test_DesiredSize_Vertical() {
