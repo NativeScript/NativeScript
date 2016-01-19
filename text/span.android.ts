@@ -6,43 +6,52 @@ import fontModule = require("ui/styling/font");
 
 global.moduleMerge(spanCommon, exports);
 
-export class CustomTypefaceSpan extends android.text.style.TypefaceSpan {
-    private typeface: any;
-
-    constructor(family: string, typeface: any) {
-        super(family);
-        this.typeface = typeface;
-        return global.__native(this);
+var CustomTypefaceSpanClass;
+function ensureCustomTypefaceSpanClass() {
+    if (CustomTypefaceSpanClass) {
+        return;
     }
 
-    public updateDrawState(ds: any): void {
-        CustomTypefaceSpan.applyCustomTypeFace(ds, this.typeface);
-    }
+    class CustomTypefaceSpan extends android.text.style.TypefaceSpan {
+        private typeface: any;
 
-    public updateMeasureState(paint: any): void {
-        CustomTypefaceSpan.applyCustomTypeFace(paint, this.typeface);
-    }
-
-    private static applyCustomTypeFace(paint: any, tf: any) {
-        let oldStyle;
-        let old = paint.getTypeface();
-        if (old === null) {
-            oldStyle = 0;
-        } else {
-            oldStyle = old.getStyle();
+        constructor(family: string, typeface: any) {
+            super(family);
+            this.typeface = typeface;
+            return global.__native(this);
         }
 
-        let fake = oldStyle & ~tf.getStyle();
-        if ((fake & android.graphics.Typeface.BOLD) !== 0) {
-            paint.setFakeBoldText(true);
+        public updateDrawState(ds: any): void {
+            CustomTypefaceSpan.applyCustomTypeFace(ds, this.typeface);
         }
 
-        if ((fake & android.graphics.Typeface.ITALIC) !== 0) {
-            paint.setTextSkewX(-0.25);
+        public updateMeasureState(paint: any): void {
+            CustomTypefaceSpan.applyCustomTypeFace(paint, this.typeface);
         }
 
-        paint.setTypeface(tf);
+        private static applyCustomTypeFace(paint: any, tf: any) {
+            let oldStyle;
+            let old = paint.getTypeface();
+            if (old === null) {
+                oldStyle = 0;
+            } else {
+                oldStyle = old.getStyle();
+            }
+
+            let fake = oldStyle & ~tf.getStyle();
+            if ((fake & android.graphics.Typeface.BOLD) !== 0) {
+                paint.setFakeBoldText(true);
+            }
+
+            if ((fake & android.graphics.Typeface.ITALIC) !== 0) {
+                paint.setTextSkewX(-0.25);
+            }
+
+            paint.setTypeface(tf);
+        }
     }
+
+    CustomTypefaceSpanClass = CustomTypefaceSpan;
 }
 
 export class Span extends spanCommon.Span {
@@ -54,7 +63,8 @@ export class Span extends spanCommon.Span {
                 0,
                 (realFontAttributes & enums.FontAttributes.Italic) ? enums.FontStyle.italic : enums.FontStyle.normal,
                 (realFontAttributes & enums.FontAttributes.Bold) ? enums.FontWeight.bold : enums.FontWeight.normal);
-            let typefaceSpan = new CustomTypefaceSpan(realFontFamily, font.getAndroidTypeface());
+            ensureCustomTypefaceSpanClass();
+            let typefaceSpan = new CustomTypefaceSpanClass(realFontFamily, font.getAndroidTypeface());
             this.spanModifiers.push(typefaceSpan);
         }
         var realFontSize = this.fontSize ||

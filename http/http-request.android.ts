@@ -12,12 +12,19 @@ import http = require("http");
 var requestIdCounter = 0;
 var pendingRequests = {};
 
-var completeCallback = new com.tns.Async.CompleteCallback({
-    onComplete: function (result: any, context: any) {
-        // as a context we will receive the id of the request
-        onRequestComplete(context, result);
+var completeCallback;
+function ensureCompleteCallback() {
+    if (completeCallback) {
+        return;
     }
-});
+
+    completeCallback = new com.tns.Async.CompleteCallback({
+        onComplete: function (result: any, context: any) {
+            // as a context we will receive the id of the request
+            onRequestComplete(context, result);
+        }
+    });
+}
 
 function onRequestComplete(requestId: number, result: com.tns.Async.Http.RequestResult) {
     var callbacks = pendingRequests[requestId];
@@ -132,6 +139,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
             };
             pendingRequests[requestIdCounter] = callbacks;
 
+            ensureCompleteCallback();
             //make the actual async call
             com.tns.Async.Http.MakeRequest(javaOptions, completeCallback, new java.lang.Integer(requestIdCounter));
 

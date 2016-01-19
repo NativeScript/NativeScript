@@ -11,7 +11,7 @@ var typedExports: typeof definition = exports;
 // We are using the exports object for the common events since we merge the appModule with this module's exports, which is what users will receive when require("application") is called;
 // TODO: This is kind of hacky and is "pure JS in TypeScript"
 
-var initEvents = function () {
+function initEvents() {
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     var lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: function (activity: any, bundle: any) {
@@ -152,17 +152,6 @@ var initEvents = function () {
     return lifecycleCallbacks;
 }
 
-app.init({
-    getActivity: function (activity: android.app.Activity) {
-        var intent = activity.getIntent()
-        return androidApp.getActivity(intent);
-    },
-
-    onCreate: function () {
-        androidApp.init(this);
-    }
-});
-
 export class AndroidApplication extends observable.Observable implements definition.AndroidApplication {
     public static activityCreatedEvent = "activityCreated";
     public static activityDestroyedEvent = "activityDestroyed";
@@ -264,9 +253,10 @@ export class AndroidApplication extends observable.Observable implements definit
     }
 
     public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+        ensureBroadCastReceiverClass();
         var that = this;
         var registerFunc = function (context: android.content.Context) {
-            var receiver = new BroadcastReceiver(onReceiveCallback);
+            var receiver = new BroadcastReceiverClass(onReceiveCallback);
             context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
             that._registeredReceivers[intentFilter] = receiver;
         }
@@ -289,20 +279,29 @@ export class AndroidApplication extends observable.Observable implements definit
     }
 }
 
-class BroadcastReceiver extends android.content.BroadcastReceiver {
-    private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
-
-    constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
-        super();
-        this._onReceiveCallback = onReceiveCallback;
-        return global.__native(this);
+var BroadcastReceiverClass;
+function ensureBroadCastReceiverClass() {
+    if (BroadcastReceiverClass) {
+        return;
     }
 
-    public onReceive(context: android.content.Context, intent: android.content.Intent) {
-        if (this._onReceiveCallback) {
-            this._onReceiveCallback(context, intent);
+    class BroadcastReceiver extends android.content.BroadcastReceiver {
+        private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
+
+        constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+            super();
+            this._onReceiveCallback = onReceiveCallback;
+            return global.__native(this);
+        }
+
+        public onReceive(context: android.content.Context, intent: android.content.Intent) {
+            if (this._onReceiveCallback) {
+                this._onReceiveCallback(context, intent);
+            }
         }
     }
+
+    BroadcastReceiverClass = BroadcastReceiver;
 }
 
 global.__onUncaughtError = function (error: definition.NativeScriptError) {
@@ -320,10 +319,29 @@ function loadCss() {
     typedExports.cssSelectorsCache = typedExports.loadCss(typedExports.cssFile);
 }
 
-export function start(entry?: frame.NavigationEntry) {
-	if (entry) {
+var started = false;
+export function start (entry?: frame.NavigationEntry) {
+    if (started) {
+        throw new Error("Application is already started.");
+    }
+
+    started = true;
+
+    if (entry) {
         typedExports.mainEntry = entry;
     }
+
+    // this should be the first call, to avoid issues when someone accesses the Application singleton prior to extending its onCreate method
+    app.init({
+        getActivity: function (activity: android.app.Activity) {
+            var intent = activity.getIntent()
+            return androidApp.getActivity(intent);
+        },
+
+        onCreate: function () {
+            androidApp.init(this);
+        }
+    });
     loadCss();
 }
 

@@ -42,7 +42,5 @@ export class HtmlView extends common.HtmlView {
         // This makes the html <a href...> vwork
         this._android.setLinksClickable(true);
         this._android.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
-
     }
-
 }

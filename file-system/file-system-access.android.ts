@@ -3,7 +3,7 @@ import utils = require("utils/utils");
 import * as typesModule from "utils/types";
 
 export class FileSystemAccess {
-    private _pathSeparator = java.io.File.separator.toString();
+    private _pathSeparator = "/";
 
     public getLastModified(path: string): Date {
         var javaFile = new java.io.File(path);

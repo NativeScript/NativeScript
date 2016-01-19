@@ -9,48 +9,57 @@ import * as colorModule from "color";
 
 global.moduleMerge(pageCommon, exports);
 
-class DialogFragmentClass extends android.app.DialogFragment {
-    private _owner: Page;
-    private _fullscreen: boolean;
-    private _dismissCallback: Function;
-
-    constructor(owner: Page, fullscreen?: boolean, dismissCallback?: Function) {
-        super();
-
-        this._owner = owner;
-        this._fullscreen = fullscreen;
-        this._dismissCallback = dismissCallback;
-        return global.__native(this);
+var DialogFragmentClass;
+function ensureDialogFragmentClass() {
+    if (DialogFragmentClass) {
+        return;
     }
 
-    public onCreateDialog(savedInstanceState: android.os.Bundle): android.app.Dialog {
-        var dialog = new android.app.Dialog(this._owner._context);
-        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+    class DialogFragmentClassInner extends android.app.DialogFragment {
+        private _owner: Page;
+        private _fullscreen: boolean;
+        private _dismissCallback: Function;
 
-        // Hide actionBar and adjust alignment based on _fullscreen value.
-        this._owner.horizontalAlignment = this._fullscreen ? enums.HorizontalAlignment.stretch : enums.HorizontalAlignment.center;
-        this._owner.verticalAlignment = this._fullscreen ? enums.VerticalAlignment.stretch : enums.VerticalAlignment.center;
-        this._owner.actionBarHidden = true;
+        constructor(owner: Page, fullscreen?: boolean, dismissCallback?: Function) {
+            super();
 
-        dialog.setContentView(this._owner._nativeView, this._owner._nativeView.getLayoutParams());
-
-        var window = dialog.getWindow();
-        window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
-
-        if (this._fullscreen) {
-            window.setLayout(android.view.ViewGroup.LayoutParams.FILL_PARENT, android.view.ViewGroup.LayoutParams.FILL_PARENT);
+            this._owner = owner;
+            this._fullscreen = fullscreen;
+            this._dismissCallback = dismissCallback;
+            return global.__native(this);
         }
-        
-        return dialog;
-    }
 
-    public onDismiss() {
-        if (typeof this._dismissCallback === "function") {
-            this._dismissCallback();
+        public onCreateDialog(savedInstanceState: android.os.Bundle): android.app.Dialog {
+            var dialog = new android.app.Dialog(this._owner._context);
+            dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+
+            // Hide actionBar and adjust alignment based on _fullscreen value.
+            this._owner.horizontalAlignment = this._fullscreen ? enums.HorizontalAlignment.stretch : enums.HorizontalAlignment.center;
+            this._owner.verticalAlignment = this._fullscreen ? enums.VerticalAlignment.stretch : enums.VerticalAlignment.center;
+            this._owner.actionBarHidden = true;
+
+            dialog.setContentView(this._owner._nativeView, this._owner._nativeView.getLayoutParams());
+
+            var window = dialog.getWindow();
+            window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+
+            if (this._fullscreen) {
+                window.setLayout(android.view.ViewGroup.LayoutParams.FILL_PARENT, android.view.ViewGroup.LayoutParams.FILL_PARENT);
+            }
+
+            return dialog;
         }
-    }
 
-};
+        public onDismiss() {
+            if (typeof this._dismissCallback === "function") {
+                this._dismissCallback();
+            }
+        }
+
+    };
+
+    DialogFragmentClass = DialogFragmentClassInner;
+}
 
 export class Page extends pageCommon.Page {
     private _isBackNavigation = false;
@@ -114,7 +123,7 @@ export class Page extends pageCommon.Page {
     }
 
     /* tslint:disable */
-    private _dialogFragment: DialogFragmentClass;
+    private _dialogFragment;
     /* tslint:enable */
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         super._showNativeModalView(parent, context, closeCallback, fullscreen);
@@ -128,6 +137,7 @@ export class Page extends pageCommon.Page {
         this._isAddedToNativeVisualTree = true;
         this.onLoaded();
 
+        ensureDialogFragmentClass();
         var that = this;
         this._dialogFragment = new DialogFragmentClass(this, fullscreen, function () {
             that.closeModal();

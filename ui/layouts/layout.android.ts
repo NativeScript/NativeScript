@@ -6,17 +6,24 @@ import * as utilsModule from "utils/utils";
 
 var OWNER = "_owner";
 
-var NativeViewGroup = (<any>android.view.ViewGroup).extend({
-    onMeasure: function (widthMeasureSpec, heightMeasureSpec) {
-        var owner: view.View = this[OWNER];
-        owner.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        this.setMeasuredDimension(owner.getMeasuredWidth(), owner.getMeasuredHeight());
-    },
-    onLayout: function (changed: boolean, left: number, top: number, right: number, bottom: number): void {
-        var owner: view.View = this[OWNER];
-        owner.onLayout(left, top, right, bottom);
+var NativeViewGroupClass;
+function ensureNativeViewGroupClass() {
+    if (NativeViewGroupClass) {
+        return;
     }
-});
+
+    NativeViewGroupClass = (<any>android.view.ViewGroup).extend({
+        onMeasure: function (widthMeasureSpec, heightMeasureSpec) {
+            var owner: view.View = this[OWNER];
+            owner.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            this.setMeasuredDimension(owner.getMeasuredWidth(), owner.getMeasuredHeight());
+        },
+        onLayout: function (changed: boolean, left: number, top: number, right: number, bottom: number): void {
+            var owner: view.View = this[OWNER];
+            owner.onLayout(left, top, right, bottom);
+        }
+    });
+}
 
 export class Layout extends layoutBase.LayoutBase implements definition.Layout {
     private _viewGroup: android.view.ViewGroup;
@@ -30,7 +37,8 @@ export class Layout extends layoutBase.LayoutBase implements definition.Layout {
     }
 
     public _createUI() {
-        this._viewGroup = new NativeViewGroup(this._context);
+        ensureNativeViewGroupClass();
+        this._viewGroup = new NativeViewGroupClass(this._context);
         this._viewGroup[OWNER] = this;
     }
 

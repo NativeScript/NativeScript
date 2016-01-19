@@ -31,7 +31,7 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
     public addEventListener(arg: string, callback: any, thisArg?: any) {
         super.addEventListener(arg, callback, thisArg);
 
-        if (arg === definition.ScrollView.scrollEvent) {
+        if (arg === ScrollView.scrollEvent) {
             this._scrollChangeCount++;
             this.attach();
         }
@@ -40,7 +40,7 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
     public removeEventListener(arg: string, callback: any, thisArg?: any) {
         super.addEventListener(arg, callback, thisArg);
 
-        if (arg === definition.ScrollView.scrollEvent) {
+        if (arg === ScrollView.scrollEvent) {
             this._scrollChangeCount--;
             this.dettach();
         }

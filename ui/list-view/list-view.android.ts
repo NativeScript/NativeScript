@@ -48,7 +48,8 @@ export class ListView extends common.ListView {
         }
         this._android.setId(this._androidViewId);
 
-        this.android.setAdapter(new ListViewAdapter(this));
+        ensureListViewAdapterClass();
+        this.android.setAdapter(new ListViewAdapterClass(this));
 
         var that = new WeakRef(this);
 
@@ -102,7 +103,7 @@ export class ListView extends common.ListView {
             return;
         }
 
-        (<ListViewAdapter>this.android.getAdapter()).notifyDataSetChanged();
+        (<android.widget.BaseAdapter>this.android.getAdapter()).notifyDataSetChanged();
     }
 
     public scrollToIndex(index: number) {
@@ -158,83 +159,91 @@ export class ListView extends common.ListView {
     }
 }
 
-class ListViewAdapter extends android.widget.BaseAdapter {
-    private _listView: ListView;
-
-    constructor(listView: ListView) {
-        super();
-
-        this._listView = listView;
-
-        return global.__native(this);
+var ListViewAdapterClass;
+function ensureListViewAdapterClass() {
+    if (ListViewAdapterClass) {
+        return;
     }
 
-    public getCount() {
-        return this._listView && this._listView.items ? this._listView.items.length : 0;
-    }
+    class ListViewAdapter extends android.widget.BaseAdapter {
+        private _listView: ListView;
 
-    public getItem(i: number) {
-        if (this._listView && this._listView.items && i < this._listView.items.length) {
-            return this._listView.items.getItem ? this._listView.items.getItem(i) : this._listView.items[i];
+        constructor(listView: ListView) {
+            super();
+
+            this._listView = listView;
+
+            return global.__native(this);
         }
 
-        return null;
-    }
+        public getCount() {
+            return this._listView && this._listView.items ? this._listView.items.length : 0;
+        }
 
-    public getItemId(i: number) {
-        return long(i);
-    }
+        public getItem(i: number) {
+            if (this._listView && this._listView.items && i < this._listView.items.length) {
+                return this._listView.items.getItem ? this._listView.items.getItem(i) : this._listView.items[i];
+            }
 
-    public hasStableIds(): boolean {
-        return true;
-    }
-
-    public getView(index: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
-        if (!this._listView) {
             return null;
         }
 
-        var view = this._listView._getRealizedView(convertView, index);
-        var args = <definition.ItemEventData>{
-            eventName: ITEMLOADING, object: this._listView, index: index, view: view,
-            android: parent,
-            ios: undefined
-        };
-        this._listView.notify(args);
-
-        if (!args.view) {
-            args.view = this._listView._getDefaultItemContent(index);
+        public getItemId(i: number) {
+            return long(i);
         }
 
-        if (args.view) {
-            if (this._listView.rowHeight > -1) {
-                args.view.height = this._listView.rowHeight;
-            }
-            else {
-                args.view.height = Number.NaN;
-            }
-            this._listView._prepareItem(args.view, index);
-            if (!args.view.parent) {
-                var layoutBase: typeof layoutBaseModule = require("ui/layouts/layout-base");
+        public hasStableIds(): boolean {
+            return true;
+        }
 
-                if (args.view instanceof layoutBase.LayoutBase) {
-                    this._listView._addView(args.view);
-                    convertView = args.view.android;
-                } else {
-                    var sp = new stackLayout.StackLayout();
-                    sp.addChild(args.view);
-                    this._listView._addView(sp);
+        public getView(index: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
+            if (!this._listView) {
+                return null;
+            }
 
-                    convertView = sp.android;
+            var view = this._listView._getRealizedView(convertView, index);
+            var args = <definition.ItemEventData>{
+                eventName: ITEMLOADING, object: this._listView, index: index, view: view,
+                android: parent,
+                ios: undefined
+            };
+            this._listView.notify(args);
+
+            if (!args.view) {
+                args.view = this._listView._getDefaultItemContent(index);
+            }
+
+            if (args.view) {
+                if (this._listView.rowHeight > -1) {
+                    args.view.height = this._listView.rowHeight;
                 }
+                else {
+                    args.view.height = Number.NaN;
+                }
+                this._listView._prepareItem(args.view, index);
+                if (!args.view.parent) {
+                    var layoutBase: typeof layoutBaseModule = require("ui/layouts/layout-base");
+
+                    if (args.view instanceof layoutBase.LayoutBase) {
+                        this._listView._addView(args.view);
+                        convertView = args.view.android;
+                    } else {
+                        var sp = new stackLayout.StackLayout();
+                        sp.addChild(args.view);
+                        this._listView._addView(sp);
+
+                        convertView = sp.android;
+                    }
+                }
+
+                this._listView._realizedItems[convertView.hashCode()] = args.view;
+                // cache the realized index (used to raise the ItemLoading event upon scroll stop)
+                args.view[REALIZED_INDEX] = index;
             }
 
-            this._listView._realizedItems[convertView.hashCode()] = args.view;
-            // cache the realized index (used to raise the ItemLoading event upon scroll stop)
-            args.view[REALIZED_INDEX] = index;
+            return convertView;
         }
-
-        return convertView;
     }
-}
 
+    ListViewAdapterClass = ListViewAdapter;
+}

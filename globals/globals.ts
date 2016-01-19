@@ -28,7 +28,7 @@ global.loadModule = function(name: string): any {
 
 global.registerModule("timer", () => require("timer"));
 global.registerModule("ui/dialogs", () => require("ui/dialogs"));
-global.registerModule("../xhr/xhr", () => require("../xhr/xhr"));
+global.registerModule("xhr", () => require("xhr"));
 global.registerModule("fetch", () => require("fetch"));
 
 const __tnsGlobalMergedModules = new Map<string, boolean>();
@@ -61,8 +61,8 @@ registerOnGlobalContext("clearInterval", "timer");
 registerOnGlobalContext("alert", "ui/dialogs");
 registerOnGlobalContext("confirm", "ui/dialogs");
 registerOnGlobalContext("prompt", "ui/dialogs");
-registerOnGlobalContext("XMLHttpRequest", "../xhr/xhr");
-registerOnGlobalContext("FormData", "../xhr/xhr");
+registerOnGlobalContext("XMLHttpRequest", "xhr");
+registerOnGlobalContext("FormData", "xhr");
 registerOnGlobalContext("fetch", "fetch");
 
 import platform = require("platform");

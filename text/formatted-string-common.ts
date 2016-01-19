@@ -226,7 +226,7 @@ export class FormattedString extends observable.Observable implements definition
     public static addFormattedStringToView(view: definition.FormattedStringView, name: string, value: any): void {
         if(name === CHILD_SPAN) {
             if (!view.formattedText) {
-                view.formattedText = new definition.FormattedString();
+                view.formattedText = new FormattedString();
             }
             view.formattedText.spans.push(value);
         }
