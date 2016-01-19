@@ -36,7 +36,7 @@
   },
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
-    "tns-core-modules-widgets": "1.6.0"
+    "tns-core-modules-widgets": "1.6.1"
   },
   "nativescript": {
     "platforms": {
