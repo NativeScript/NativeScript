@@ -364,6 +364,17 @@ export class DependencyObservable extends observable.Observable {
             var changeData = super._createPropertyChangeData(property.name, newValue);
             this.notify(changeData);
         }
+
+        let eventName = property.name + "Change";
+        if (this.hasListeners(eventName)) {
+            var ngChangedData = {
+                eventName: eventName,
+                propertyName: property.name,
+                object: this,
+                value: newValue
+            }
+            this.notify(ngChangedData);
+        }
     }
 
     public _eachSetProperty(callback: (property: Property) => boolean) {
@@ -388,7 +399,7 @@ export class DependencyObservable extends observable.Observable {
     }
 
     private _setValueInternal(property: Property, value: any, source: number) {
-        
+
         // Convert the value to the real property type in case it is coming as a string from CSS or XML.
         if (types.isString(value) && property.valueConverter) {
             value = property.valueConverter(value);
