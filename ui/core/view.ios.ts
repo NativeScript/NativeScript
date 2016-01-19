@@ -10,16 +10,11 @@ import * as backgroundModule from "ui/styling/background";
 
 global.moduleMerge(viewCommon, exports);
 
-function onIdPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
-    if (!view._nativeView) {
-        return;
-    }
-
     view._nativeView.accessibilityIdentifier = data.newValue;
 }
-
-(<proxy.PropertyMetadata>viewCommon.View.idProperty.metadata).onSetNativeValue = onIdPropertyChanged;
+(<proxy.PropertyMetadata>viewCommon.View.automationTextProperty.metadata).onSetNativeValue = onAutomationTextPropertyChanged;
 
 function onTransfromPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;

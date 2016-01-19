@@ -1,10 +1,8 @@
 ﻿import types = require("utils/types");
 import definition = require("ui/core/view");
-import proxy = require("ui/core/proxy");
 import style = require("../styling/style");
 import styling = require("ui/styling");
 import trace = require("trace");
-import dependencyObservable = require("ui/core/dependency-observable");
 import gestures = require("ui/gestures");
 import styleScope = require("../styling/style-scope");
 import enums = require("ui/enums");
@@ -12,6 +10,8 @@ import utils = require("utils/utils");
 import color = require("color");
 import animationModule = require("ui/animation");
 import observable = require("data/observable");
+import {PropertyMetadata, ProxyObject} from "ui/core/proxy";
+import {PropertyMetadataSettings, PropertyChangeData, Property, ValueSource, PropertyMetadata as doPropertyMetadata} from "ui/core/dependency-observable";
 import {registerSpecialProperty} from "ui/builder/special-properties";
 import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
 import * as visualStateConstantsModule from "ui/styling/visual-state-constants";
@@ -98,7 +98,7 @@ export function getAncestor(view: View, criterion: string | Function): definitio
 
 var viewIdCounter = 0;
 
-function onCssClassPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onCssClassPropertyChanged(data: PropertyChangeData) {
     var view = <View>data.object;
 
     if (types.isString(data.newValue)) {
@@ -109,82 +109,25 @@ function onCssClassPropertyChanged(data: dependencyObservable.PropertyChangeData
     }
 }
 
-var idProperty = new dependencyObservable.Property(
-    "id",
-    "View",
-    new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle)
-    );
+var cssClassProperty = new Property("cssClass", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
+var classNameProperty = new Property("className", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
+var idProperty = new Property("id", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle));
+var automationTextProperty = new Property("automationText", "View", new PropertyMetadata(undefined));
+var translateXProperty = new Property("translateX", "View", new PropertyMetadata(0));
+var translateYProperty = new Property("translateY", "View", new PropertyMetadata(0));
+var scaleXProperty = new Property("scaleX", "View", new PropertyMetadata(1));
+var scaleYProperty = new Property("scaleY", "View", new PropertyMetadata(1));
+var originXProperty = new Property("originX", "View", new PropertyMetadata(0.5));
+var originYProperty = new Property("originY", "View", new PropertyMetadata(0.5));
+var rotateProperty = new Property("rotate", "View", new PropertyMetadata(0));
+var isEnabledProperty = new Property("isEnabled", "View", new PropertyMetadata(true));
+var isUserInteractionEnabledProperty = new Property("isUserInteractionEnabled", "View", new PropertyMetadata(true));
 
-var cssClassProperty = new dependencyObservable.Property(
-    "cssClass",
-    "View",
-    new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged)
-);
-
-var classNameProperty = new dependencyObservable.Property(
-    "className",
-    "View",
-    new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged)
-);
-
-var translateXProperty = new dependencyObservable.Property(
-    "translateX",
-    "View",
-    new proxy.PropertyMetadata(0)
-    );
-
-var translateYProperty = new dependencyObservable.Property(
-    "translateY",
-    "View",
-    new proxy.PropertyMetadata(0)
-    );
-
-var scaleXProperty = new dependencyObservable.Property(
-    "scaleX",
-    "View",
-    new proxy.PropertyMetadata(1)
-    );
-
-var scaleYProperty = new dependencyObservable.Property(
-    "scaleY",
-    "View",
-    new proxy.PropertyMetadata(1)
-    );
-    
-var originXProperty = new dependencyObservable.Property(
-    "originX",
-    "View",
-    new proxy.PropertyMetadata(0.5)
-    );
-
-var originYProperty = new dependencyObservable.Property(
-    "originY",
-    "View",
-    new proxy.PropertyMetadata(0.5)
-    );
-
-var rotateProperty = new dependencyObservable.Property(
-    "rotate",
-    "View",
-    new proxy.PropertyMetadata(0)
-    );
-
-var isEnabledProperty = new dependencyObservable.Property(
-    "isEnabled",
-    "View",
-    new proxy.PropertyMetadata(true)
-    );
-
-var isUserInteractionEnabledProperty = new dependencyObservable.Property(
-    "isUserInteractionEnabled",
-    "View",
-    new proxy.PropertyMetadata(true)
-    );
-
-export class View extends proxy.ProxyObject implements definition.View {
+export class View extends ProxyObject implements definition.View {
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
 
+    public static automationTextProperty = automationTextProperty;
     public static idProperty = idProperty;
     public static cssClassProperty = cssClassProperty;
     public static classNameProperty = classNameProperty;
@@ -323,6 +266,13 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     getViewById<T extends View>(id: string): T {
         return <T>getViewById(this, id);
+    }
+
+    get automationText(): string {
+        return this._getValue(View.automationTextProperty);
+    }
+    set automationText(value: string) {
+        this._setValue(View.automationTextProperty, value);
     }
 
     // START Style property shortcuts
@@ -619,7 +569,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         }
     }
 
-    public _onPropertyChanged(property: dependencyObservable.Property, oldValue: any, newValue: any) {
+    public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
         super._onPropertyChanged(property, oldValue, newValue);
 
         if (this._childrenCount > 0) {
@@ -628,7 +578,7 @@ export class View extends proxy.ProxyObject implements definition.View {
             var that = this;
             if (shouldUpdateInheritableProps) {
                 var notifyEachChild = function (child: View) {
-                    child._setValue(property, that._getValue(property), dependencyObservable.ValueSource.Inherited);
+                    child._setValue(property, that._getValue(property), ValueSource.Inherited);
                     return true;
                 };
                 this._updatingInheritedProperties = true;
@@ -655,7 +605,7 @@ export class View extends proxy.ProxyObject implements definition.View {
         return false;
     }
 
-    public _checkMetadataOnPropertyChanged(metadata: dependencyObservable.PropertyMetadata) {
+    public _checkMetadataOnPropertyChanged(metadata: doPropertyMetadata) {
         if (metadata.affectsLayout) {
             this.requestLayout();
         }
@@ -1019,13 +969,13 @@ export class View extends proxy.ProxyObject implements definition.View {
 
     public _inheritProperties(parentView: View) {
         var that = this;
-        var inheritablePropertySetCallback = function (property: dependencyObservable.Property) {
+        var inheritablePropertySetCallback = function (property: Property) {
             if (property instanceof styling.Property) {
                 return true;
             }
             if (property.metadata && property.metadata.inheritable) {
                 var baseValue = parentView._getValue(property);
-                that._setValue(property, baseValue, dependencyObservable.ValueSource.Inherited);
+                that._setValue(property, baseValue, ValueSource.Inherited);
             }
             return true;
         };
@@ -1061,13 +1011,13 @@ export class View extends proxy.ProxyObject implements definition.View {
 
         var bindable: typeof bindableModule = require("ui/core/bindable");
 
-        view._setValue(bindable.Bindable.bindingContextProperty, undefined, dependencyObservable.ValueSource.Inherited);
-        var inheritablePropertiesSetCallback = function (property: dependencyObservable.Property) {
+        view._setValue(bindable.Bindable.bindingContextProperty, undefined, ValueSource.Inherited);
+        var inheritablePropertiesSetCallback = function (property: Property) {
             if (property instanceof styling.Property) {
                 return true;
             }
             if (property.metadata && property.metadata.inheritable) {
-                view._resetValue(property, dependencyObservable.ValueSource.Inherited);
+                view._resetValue(property, ValueSource.Inherited);
             }
             return true;
         }

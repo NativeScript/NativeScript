@@ -19,6 +19,12 @@ var NATIVE_VIEW = "_nativeView";
 var VIEW_GROUP = "_viewGroup";
 var OWNER = "_owner";
 
+function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var view = <View>data.object;
+    view._nativeView.setContentDescription(data.newValue);
+}
+(<proxy.PropertyMetadata>viewCommon.View.automationTextProperty.metadata).onSetNativeValue = onAutomationTextPropertyChanged;
+
 function onIdPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
     view._nativeView.setTag(data.newValue);

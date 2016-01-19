@@ -706,3 +706,8 @@ export var testBackgroundImage = function () {
         TKUnit.assertEqual(definition.checkNativeBackgroundImage(lbl), true, "Style background-image not loaded correctly.");
     });
 }
+
+export function test_automation_text_default_value() {
+    let view = new button.Button();
+    TKUnit.assertTrue(view.automationText === undefined, "AutomationText default value should be UNDEFINED.");
+}

@@ -6,6 +6,7 @@ import color = require("color");
 import helper = require("../helper");
 import page = require("ui/page");
 import TKUnit = require("../../TKUnit");
+import button = require("ui/button");
 
 global.moduleMerge(commonTests, exports);
 
@@ -84,4 +85,10 @@ export function testBackgroundInternalChangedOnceOnResize() {
     finally {
         helper.goBack();
     }
+}
+
+export function test_automation_text_set_to_native() {
+    var newButton = new button.Button();
+    newButton.automationText = "Button1";
+    TKUnit.assertEqual((<UIView>newButton.ios).accessibilityIdentifier, "Button1", "accessibilityIdentifier not set to native view.");
 }
