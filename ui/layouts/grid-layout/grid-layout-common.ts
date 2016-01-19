@@ -107,8 +107,6 @@ export class ItemSpec extends bindable.Bindable implements definition.ItemSpec {
 export class GridLayout extends layouts.LayoutBase implements definition.GridLayout, view.ApplyXmlAttributes {
     private _rows: Array<ItemSpec> = new Array<ItemSpec>();
     private _cols: Array<ItemSpec> = new Array<ItemSpec>();
-    protected _singleRow: ItemSpec = new ItemSpec();
-    protected _singleColumn: ItemSpec = new ItemSpec();
 
     public static columnProperty = new dependencyObservable.Property("Column", "GridLayout",
         new proxy.PropertyMetadata(0, dependencyObservable.PropertyMetadataSettings.None, GridLayout.onColumnPropertyChanged, numberUtils.notNegative));
@@ -152,12 +150,6 @@ export class GridLayout extends layouts.LayoutBase implements definition.GridLay
 
     public static setRowSpan(element: view.View, value: number): void {
         validateArgs(element)._setValue(GridLayout.rowSpanProperty, value);
-    }
-
-    constructor() {
-        super();
-        this._singleRow.index = 0
-        this._singleColumn.index = 0;
     }
 
     public addRow(itemSpec: ItemSpec) {
@@ -260,40 +252,14 @@ export class GridLayout extends layouts.LayoutBase implements definition.GridLay
         return this._rows.slice();
     }
 
-    protected getColumn(view: view.View): ItemSpec {
-        if (this._cols.length === 0) {
-            return this._singleColumn;
-        }
-
-        var columnIndex = Math.min(GridLayout.getColumn(view), this._cols.length - 1);
-        return this._cols[columnIndex];
+    protected get columnsInternal(): Array<ItemSpec> {
+        return this._cols;
     }
 
-    protected getRow(view: view.View): ItemSpec {
-        if (this._rows.length === 0) {
-            return this._singleRow;
-        }
-
-        var columnIndex = Math.min(GridLayout.getRow(view), this._rows.length - 1);
-        return this._rows[columnIndex];
+    protected get rowsInternal(): Array<ItemSpec> {
+        return this._rows;
     }
-
-    protected getColumnSpan(view: view.View, columnIndex: number): number {
-        if (this._cols.length === 0) {
-            return 1;
-        }
-
-        return Math.min(GridLayout.getColumnSpan(view), this._cols.length - columnIndex);
-    }
-
-    protected getRowSpan(view: view.View, rowIndex: number): number {
-        if (this._rows.length === 0) {
-            return 1;
-        }
-
-        return Math.min(GridLayout.getRowSpan(view), this._rows.length - rowIndex);
-    }
-
+    
     protected invalidate(): void {
         //
     }

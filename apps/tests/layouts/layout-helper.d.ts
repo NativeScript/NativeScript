@@ -1,32 +1,85 @@
-﻿import button = require("ui/button");
+﻿import {View} from "ui/core/view";
+import {Button} from "ui/button";
 import {StackLayout} from "ui/layouts/stack-layout";
+import {GridLayout} from "ui/layouts/grid-layout";
 
-export class MyButton extends button.Button {
-    public measureCount: number;
-    public arrangeCount: number;
+export interface MeasuredView {
+    measureCount: number;
+    arrangeCount: number;
 
     measured: boolean;
     arranged: boolean;
 
     measureHeight: number;
     measureWidth: number;
+
+    widthMeasureSpec: number;
+    heightMeasureSpec: number;
+
     layoutWidth: number;
     layoutHeight: number;
     layoutLeft: number;
     layoutTop: number;
-
-    _getCurrentMeasureSpecs(): { widthMeasureSpec: number; heightMeasureSpec: number };
 }
 
-export class MyStackLayout extends StackLayout {
-    public measureCount: number;
-    public arrangeCount: number;
+export class MyButton extends Button implements MeasuredView {
+    measureCount: number;
+    arrangeCount: number;
 
-    public measured: boolean;
-    public arranged: boolean;
+    measured: boolean;
+    arranged: boolean;
+
+    measureHeight: number;
+    measureWidth: number;
+
+    widthMeasureSpec: number;
+    heightMeasureSpec: number;
+
+    layoutWidth: number;
+    layoutHeight: number;
+    layoutLeft: number;
+    layoutTop: number;
 }
 
-export function assertMeasure(btn: MyButton, width: number, height: number, name?: string);
-export function assertLayout(btn: MyButton, left: number, top: number, width: number, height: number, name?: string): void;
+export class MyStackLayout extends StackLayout implements MeasuredView {
+    measureCount: number;
+    arrangeCount: number;
+
+    measured: boolean;
+    arranged: boolean;
+
+    measureHeight: number;
+    measureWidth: number;
+
+    widthMeasureSpec: number;
+    heightMeasureSpec: number;
+
+    layoutWidth: number;
+    layoutHeight: number;
+    layoutLeft: number;
+    layoutTop: number;
+}
+
+export class MyGridLayout extends GridLayout implements MeasuredView {
+    measureCount: number;
+    arrangeCount: number;
+
+    measured: boolean;
+    arranged: boolean;
+
+    measureHeight: number;
+    measureWidth: number;
+
+    widthMeasureSpec: number;
+    heightMeasureSpec: number;
+
+    layoutWidth: number;
+    layoutHeight: number;
+    layoutLeft: number;
+    layoutTop: number;
+}
+
+export function assertMeasure(view: MeasuredView, width: number, height: number, name?: string);
+export function assertLayout(view: MeasuredView, left: number, top: number, width: number, height: number, name?: string): void;
 export function dip(value: number): number;
 export function dp(value: number): number;
