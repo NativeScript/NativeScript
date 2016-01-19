@@ -195,6 +195,17 @@ export var test_cachedProperties_Applied_WhenNativeWidged_IsCreated = function (
     helper.do_PageTest_WithStackLayout_AndButton(test);
 }
 
+export function test_automation_text_set_to_native() {
+    var test = function (views: Array<view.View>) {
+        var newButton = new button.Button();
+        newButton.automationText = "Button1";
+        (<stack.StackLayout>views[1]).addChild(newButton);
+        TKUnit.assertEqual((<android.widget.Button>newButton.android).getContentDescription(), "Button1", "contentDescription not set to native view.");
+    }
+
+    helper.do_PageTest_WithStackLayout_AndButton(test);
+}
+
 export var test_event_onContextChanged_IsNotRaised_WhenAttachedToSameContext = function () {
     var test = function (views: Array<view.View>) {
         var listener = new Listener("_onContextChanged");

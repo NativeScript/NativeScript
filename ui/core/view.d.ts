@@ -119,6 +119,11 @@ declare module "ui/core/view" {
         borderColor: color.Color;
 
         /**
+         * Gets or sets the automation text of the view.
+         */
+        automationText: string;
+
+        /**
          * String value used when hooking to loaded event.
          */
         public static loadedEvent: string;
@@ -127,6 +132,11 @@ declare module "ui/core/view" {
          * String value used when hooking to unloaded event.
          */
         public static unloadedEvent: string;
+
+        /**
+         * Represents the observable property backing the automationText property of each View.
+         */
+        public static automationTextProperty: dependencyObservable.Property;
 
         /**
          * Represents the observable property backing the id property of each View.
