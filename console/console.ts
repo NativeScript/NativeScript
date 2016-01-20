@@ -286,7 +286,7 @@ export class Console implements definition.Console {
     }
     
     private escapeConsoleMessage(str: string): string {
-        if (typeof (str) != "string") {
+        if (typeof (str) !== "string") {
             return str;
         }
 
