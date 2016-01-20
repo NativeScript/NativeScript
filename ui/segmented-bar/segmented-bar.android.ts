@@ -88,7 +88,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
                 var arr = java.lang.reflect.Array.newInstance(java.lang.Integer.class.getField("TYPE").get(null), 1);
                 arr[0] = R_ATTR_STATE_SELECTED;
-                var colorDrawable = new SegmentedBarColorDrawableClass(view.selectedBackgroundColor.android)
+                var colorDrawable: android.graphics.drawable.ColorDrawable = new SegmentedBarColorDrawableClass(view.selectedBackgroundColor.android)
                 stateDrawable.addState(arr, colorDrawable);
                 stateDrawable.setBounds(0, 15, vg.getRight(), vg.getBottom());
 
@@ -128,6 +128,8 @@ function ensureSegmentedBarColorDrawableClass() {
             canvas.drawRect(0, this.getBounds().height() - 15, this.getBounds().width(), this.getBounds().height(), p);
         }
     }
+
+    SegmentedBarColorDrawableClass = SegmentedBarColorDrawable;
 }
 
 export class SegmentedBarItem extends common.SegmentedBarItem {
@@ -144,7 +146,7 @@ export class SegmentedBarItem extends common.SegmentedBarItem {
 }
 
 export class SegmentedBar extends common.SegmentedBar {
-    private _android;
+    private _android: android.widget.TabHost;
     public _listener: android.widget.TabHost.OnTabChangeListener;
 
     public _createUI() {

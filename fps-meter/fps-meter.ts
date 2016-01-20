@@ -29,7 +29,7 @@ function doFrame(currentTimeMillis: number) {
     }
 }
 
-var native;
+var native: fpsNative.FPSCallback;
 function ensureNative() {
     if (!native) {
         native = new fpsNative.FPSCallback(doFrame);

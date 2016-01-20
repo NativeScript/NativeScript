@@ -15,7 +15,7 @@ function ensureFloatType() {
     }
 }
 
-var argbEvaluator;
+var argbEvaluator: android.animation.ArgbEvaluator;
 function ensureArgbEvaluator() {
     if (!argbEvaluator) {
         argbEvaluator = new android.animation.ArgbEvaluator();

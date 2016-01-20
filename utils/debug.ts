@@ -3,7 +3,7 @@ import { knownFolders } from "file-system"
 export var debug = true;
 
 // TODO: Get this from the runtimes...
-var applicationRootPath;
+var applicationRootPath: string;
 function ensureAppRootPath() {
     if (!applicationRootPath) {
         applicationRootPath = knownFolders.currentApp().path;

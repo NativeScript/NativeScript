@@ -256,7 +256,7 @@ export class AndroidApplication extends observable.Observable implements definit
         ensureBroadCastReceiverClass();
         var that = this;
         var registerFunc = function (context: android.content.Context) {
-            var receiver = new BroadcastReceiverClass(onReceiveCallback);
+            var receiver: android.content.BroadcastReceiver = new BroadcastReceiverClass(onReceiveCallback);
             context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
             that._registeredReceivers[intentFilter] = receiver;
         }

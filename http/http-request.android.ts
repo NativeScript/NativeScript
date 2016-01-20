@@ -12,7 +12,7 @@ import http = require("http");
 var requestIdCounter = 0;
 var pendingRequests = {};
 
-var completeCallback;
+var completeCallback: com.tns.Async.CompleteCallback;
 function ensureCompleteCallback() {
     if (completeCallback) {
         return;

@@ -64,7 +64,7 @@ export class Span extends spanCommon.Span {
                 (realFontAttributes & enums.FontAttributes.Italic) ? enums.FontStyle.italic : enums.FontStyle.normal,
                 (realFontAttributes & enums.FontAttributes.Bold) ? enums.FontWeight.bold : enums.FontWeight.normal);
             ensureCustomTypefaceSpanClass();
-            let typefaceSpan = new CustomTypefaceSpanClass(realFontFamily, font.getAndroidTypeface());
+            let typefaceSpan: android.text.style.TypefaceSpan = new CustomTypefaceSpanClass(realFontFamily, font.getAndroidTypeface());
             this.spanModifiers.push(typefaceSpan);
         }
         var realFontSize = this.fontSize ||

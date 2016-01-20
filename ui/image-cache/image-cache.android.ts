@@ -30,7 +30,7 @@ function ensureLruBitmapCacheClass() {
 
 export class Cache extends common.Cache {
     private _callback: any;
-    private _cache;
+    private _cache: android.util.LruCache<string, android.graphics.Bitmap>;
 
     constructor() {
         super();
@@ -38,7 +38,6 @@ export class Cache extends common.Cache {
         ensureLruBitmapCacheClass();
         var maxMemory = java.lang.Runtime.getRuntime().maxMemory() / 1024;
         var cacheSize = maxMemory / 8;
-        //console.log("cacheSize: " + cacheSize);
         this._cache = new LruBitmapCacheClass(cacheSize);
 
         var that = new WeakRef(this);

@@ -186,7 +186,7 @@ export class TabView extends common.TabView {
     private _pagerAdapter: android.support.v4.view.PagerAdapter;
     private _androidViewId: number;
 
-    private _pageChagedListener;
+    private _pageChagedListener: android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
 
     get android(): android.view.View {
         return this._grid;
