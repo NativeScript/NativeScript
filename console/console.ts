@@ -252,7 +252,7 @@ export class Console implements definition.Console {
             let formatedMessage = this.formatParams.apply(this, arguments);
             this.error(formatedMessage, trace.messageType.error);
             if (global.__consoleMessage) {
-                global.__consoleMessage(formatedMessage, "error");
+                global.__consoleMessage(this.escapeConsoleMessage(formatedMessage), "error");
             }
         }
     }
@@ -265,7 +265,7 @@ export class Console implements definition.Console {
         let formatedMessage = this.formatParams.apply(this, arguments);
         this.logMessage(formatedMessage, trace.messageType.warn);
         if (global.__consoleMessage) {
-            global.__consoleMessage(formatedMessage, "warning");
+            global.__consoleMessage(this.escapeConsoleMessage(formatedMessage), "warning");
         }
     }
 
@@ -273,7 +273,7 @@ export class Console implements definition.Console {
         let formatedMessage = this.formatParams.apply(this, arguments);
         this.logMessage(formatedMessage, trace.messageType.error);
         if (global.__consoleMessage) {
-            global.__consoleMessage(formatedMessage, "error")
+            global.__consoleMessage(this.escapeConsoleMessage(formatedMessage), "error")
         }
     }
 
@@ -281,8 +281,26 @@ export class Console implements definition.Console {
         let formatedMessage = this.formatParams.apply(this, arguments);
         this.logMessage(formatedMessage, trace.messageType.log);
         if (global.__consoleMessage) {
-            global.__consoleMessage(formatedMessage, "log")
+            global.__consoleMessage(this.escapeConsoleMessage(formatedMessage), "log")
         }
+    }
+    
+    private escapeConsoleMessage(str: string): string
+    {
+        if (typeof(str)!="string")	{
+    	   return str;
+        }
+    
+        return str      
+            .replace(/[\\]/g, '\\\\')
+            .replace(/[\/]/g, '\\/')
+            .replace(/[\b]/g, '\\b')
+            .replace(/[\f]/g, '\\f')
+            .replace(/[\n]/g, '\\n')
+            .replace(/[\r]/g, '\\r')
+            .replace(/[\t]/g, '\\t')
+            .replace(/[\"]/g, '\\"')
+            .replace(/\\'/g, "\\'"); 
     }
 
     private logMessage(message: string, messageType: number): void {
