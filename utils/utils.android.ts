@@ -129,7 +129,7 @@ export module ad {
         var words = str.split(" ");
         var newWords = [];
         for (let i = 0; i < words.length; i++) {
-            let word = words[i];
+            let word = words[i].toLowerCase();
             newWords.push(word.substr(0, 1).toUpperCase() + word.substring(1));
         }
 
