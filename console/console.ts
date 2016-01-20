@@ -285,13 +285,12 @@ export class Console implements definition.Console {
         }
     }
     
-    private escapeConsoleMessage(str: string): string
-    {
-        if (typeof(str)!="string")	{
-    	   return str;
+    private escapeConsoleMessage(str: string): string {
+        if (typeof (str) != "string") {
+            return str;
         }
-    
-        return str      
+
+        return str
             .replace(/[\\]/g, '\\\\')
             .replace(/[\/]/g, '\\/')
             .replace(/[\b]/g, '\\b')
@@ -300,7 +299,7 @@ export class Console implements definition.Console {
             .replace(/[\r]/g, '\\r')
             .replace(/[\t]/g, '\\t')
             .replace(/[\"]/g, '\\"')
-            .replace(/\\'/g, "\\'"); 
+            .replace(/\\'/g, "\\'");
     }
 
     private logMessage(message: string, messageType: number): void {
