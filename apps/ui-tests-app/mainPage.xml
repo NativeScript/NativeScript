@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Page loaded="pageLoaded">
   <GridLayout rows="auto, *">
-    <Button text="Run" tap="selectExample" />
-    <TextView row="1" text="{{ selected }}"/>
+    <Button automationText="btn" text="Run" tap="selectExample" />
+    <TextView automationText="tv" row="1" text="{{ selected }}"/>
   </GridLayout>
 </Page>
