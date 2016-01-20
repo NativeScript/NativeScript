@@ -6,6 +6,7 @@ import utils = require("utils/utils");
 
 export class EditableTextBase extends common.EditableTextBase {
     private _android: android.widget.EditText;
+    private _textWatcher: android.text.TextWatcher;
     /* tslint:disable */
     private _dirtyTextAccumulator: string;
     /* tslint:enable */
@@ -25,7 +26,7 @@ export class EditableTextBase extends common.EditableTextBase {
 
         var that = new WeakRef(this);
         
-        var textWatcher = new android.text.TextWatcher({
+        this._textWatcher = new android.text.TextWatcher({
             beforeTextChanged: function (text: string, start: number, count: number, after: number) {
                 //
             },
@@ -35,9 +36,9 @@ export class EditableTextBase extends common.EditableTextBase {
                     return;
                 }
                 var selectionStart = owner.android.getSelectionStart();
-                owner.android.removeTextChangedListener(textWatcher);
+                owner.android.removeTextChangedListener(owner._textWatcher);
                 owner.style._updateTextTransform();
-                owner.android.addTextChangedListener(textWatcher);
+                owner.android.addTextChangedListener(owner._textWatcher);
                 owner.android.setSelection(selectionStart);
             },
             afterTextChanged: function (editable: android.text.IEditable) {
@@ -59,7 +60,7 @@ export class EditableTextBase extends common.EditableTextBase {
                 }
             }
         });
-        this._android.addTextChangedListener(textWatcher);
+        this._android.addTextChangedListener(this._textWatcher);
 
         var focusChangeListener = new android.view.View.OnFocusChangeListener({
             onFocusChange: function (view: android.view.View, hasFocus: boolean) {
