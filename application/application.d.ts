@@ -124,7 +124,7 @@ declare module "application" {
     /**
      * Call this method to start the application. Important: All code after this method call will not be executed!
      */
-    export function start();
+    export function start(entry?: frame.NavigationEntry);
 
     /**
      * The main entry point event. This method is expected to use the root frame to navigate to the main application page.

@@ -1,5 +1,4 @@
 ﻿import application = require("application");
-application.mainModule = "mainPage";
 
 var countResume = 0;
 var countSuspend = 0;
@@ -71,4 +70,4 @@ application.on(application.uncaughtErrorEvent, function (args: application.Appli
     }
 });
 
-application.start();
+application.start({ moduleName: "mainPage" });

@@ -1,2 +1,2 @@
 ﻿import application = require("application");
-application.mainModule = "SingleUIObjectMemoryLeakTest/mainPage";
+application.start({ moduleName: "SingleUIObjectMemoryLeakTest/mainPage" });

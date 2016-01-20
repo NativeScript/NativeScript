@@ -1,5 +1,2 @@
 ﻿import application = require("application");
-
-application.mainModule = "apps/tests/pages/nnikolovTestPage";
-
-application.start();
+application.start({ moduleName: "apps/tests/pages/nnikolovTestPage" });

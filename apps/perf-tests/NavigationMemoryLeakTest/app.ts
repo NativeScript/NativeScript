@@ -1,2 +1,2 @@
 ﻿import application = require("application");
-application.mainModule = "NavigationMemoryLeakTest/mainPage";
+application.start({ moduleName: "NavigationMemoryLeakTest/mainPage" });

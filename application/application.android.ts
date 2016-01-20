@@ -315,7 +315,10 @@ global.__onUncaughtError = function (error: Error) {
     exports.notify({ eventName: dts.uncaughtErrorEvent, object: appModule.android, android: error });
 }
 
-exports.start = function () {
+exports.start = function (entry?: frame.NavigationEntry) {
+    if (entry) {
+        dts.mainEntry = entry;
+    }
     dts.loadCss();
 }
 

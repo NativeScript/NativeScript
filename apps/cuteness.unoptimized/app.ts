@@ -5,8 +5,5 @@ fps.addCallback(function (fps, minFps) {
 });
 fps.start();
 
-// Set the start module for the application
-application.mainModule = "main-page";
-
 // Start the application
-application.start();
+application.start({ moduleName: "main-page" });

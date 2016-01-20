@@ -33,8 +33,6 @@ if (application.ios) {
     });
 }
 
-application.mainModule = "app/mainPage";
-
 // Common events for both Android and iOS.
 application.on(application.launchEvent, function (args: application.ApplicationEventData) {
     if (args.android) {
@@ -147,4 +145,4 @@ else {
 
 console.log(`TIME TO LOAD APP: ${time} ms`);
 
-application.start();
+application.start({ moduleName: "app/mainPage" });

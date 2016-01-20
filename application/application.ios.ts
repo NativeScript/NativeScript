@@ -224,8 +224,11 @@ global.__onUncaughtError = function (error: Error) {
 }
 
 var started: boolean = false;
-exports.start = function () {
+exports.start = function (entry?: frame.NavigationEntry) {
     if (!started) {
+        if (entry) {
+            exports.mainEntry = entry;
+        }
         started = true;
         exports.loadCss();
         UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(Responder));

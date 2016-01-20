@@ -1,2 +1,2 @@
 ﻿import application = require("application");
-application.mainModule = "ControlCreationSpeedTest/mainPage";
+application.start({ moduleName: "ControlCreationSpeedTest/mainPage" });
