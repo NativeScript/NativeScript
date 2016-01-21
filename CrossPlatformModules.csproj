@@ -89,6 +89,7 @@
       <DependentUpon>modal-page.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\ui\placeholder\placeholder-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\proxy-view-container\proxy-view-container-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\tab-view\tab-view-navigation-tests.ts" />
     <TypeScriptCompile Include="apps\tests\xml-declaration\custom-code-file.ts" />
     <TypeScriptCompile Include="apps\transforms\app.ts" />
@@ -726,8 +727,8 @@
     <TypeScriptCompile Include="ui\builder\binding-builder.d.ts" />
     <TypeScriptCompile Include="ui\builder\special-properties.d.ts" />
     <TypeScriptCompile Include="ui\builder\special-properties.ts" />
-    <TypeScriptCompile Include="ui\view-container\view-container.ts" />
-    <TypeScriptCompile Include="ui\view-container\view-container.d.ts" />
+    <TypeScriptCompile Include="ui\proxy-view-container\proxy-view-container.d.ts" />
+    <TypeScriptCompile Include="ui\proxy-view-container\proxy-view-container.ts" />
     <TypeScriptCompile Include="ui\styling\background.android.d.ts" />
     <TypeScriptCompile Include="ui\styling\style-scope.d.ts" />
     <TypeScriptCompile Include="ui\styling\style.d.ts" />
@@ -2089,9 +2090,7 @@
     </Content>
     <Content Include="ui\package.json" />
     <Content Include="tsconfig.json" />
-    <Content Include="ui\view-container\package.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="ui\proxy-view-container\package.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />
@@ -2154,7 +2153,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
