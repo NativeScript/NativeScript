@@ -271,7 +271,7 @@ export class View extends viewCommon.View {
         if (superview && this._nativeView) {
             var types = require("utils/types");
 
-            if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.subviews.count) {
+            if (types.isNullOrUndefined(atIndex) || atIndex >= superview.subviews.count) {
                 superview.addSubview(this._nativeView);
             } else {
                 superview.insertSubviewAtIndex(this._nativeView, atIndex);

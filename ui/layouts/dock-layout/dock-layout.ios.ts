@@ -100,7 +100,13 @@ export class DockLayout extends common.DockLayout {
 
             let childWidth = child.getMeasuredWidth() + (lp.leftMargin + lp.rightMargin) * density;
             let childHeight = child.getMeasuredHeight() + (lp.topMargin + lp.bottomMargin) * density;
-
+            
+            if (last && this.stretchLastChild) {
+                // Last child with stretch - give it all the space and return;
+                View.layoutChild(this, child, x, y, x + remainingWidth, y + remainingHeight);
+                return;
+            }
+            
             let dock = DockLayout.getDock(child);
             switch (dock) {
                 case Dock.top:
@@ -135,11 +141,7 @@ export class DockLayout extends common.DockLayout {
                     break;
             }
 
-            if (!last) {
-                View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
-            } else {
-                View.layoutChild(this, child, x, y, x + remainingWidth, y + remainingHeight);
-            }
+            View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
         });
 
         DockLayout.restoreOriginalParams(this);
