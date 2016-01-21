@@ -1,13 +1,12 @@
-﻿import utils = require("utils/utils");
-import {Orientation, VerticalAlignment, HorizontalAlignment} from "ui/enums";
+﻿import common = require("./stack-layout-common");
+import utils = require("utils/utils");
 import {View} from "ui/core/view";
-import common = require("./stack-layout-common");
+import {Orientation, VerticalAlignment, HorizontalAlignment} from "ui/enums";
 import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
 
 global.moduleMerge(common, exports);
 
 export class StackLayout extends common.StackLayout {
-
     private _totalLength = 0;
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -104,7 +103,6 @@ export class StackLayout extends common.StackLayout {
     }
 
     private layoutVertical(left: number, top: number, right: number, bottom: number): void {
-
         var density = utils.layout.getDisplayDensity();
         var paddingLeft = this.paddingLeft * density;
         var paddingRight = this.paddingRight * density;
@@ -146,7 +144,6 @@ export class StackLayout extends common.StackLayout {
     }
 
     private layoutHorizontal(left: number, top: number, right: number, bottom: number): void {
-
         var density = utils.layout.getDisplayDensity();
         var paddingLeft = this.paddingLeft * density;
         var paddingRight = this.paddingRight * density;

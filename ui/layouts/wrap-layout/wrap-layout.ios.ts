@@ -7,7 +7,6 @@ import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
 global.moduleMerge(common, exports);
 
 export class WrapLayout extends common.WrapLayout {
-
     private _lengths: Array<number> = new Array<number>();
 
     private static getChildMeasureSpec(parentMode: number, parentLength: number, itemLength): number {

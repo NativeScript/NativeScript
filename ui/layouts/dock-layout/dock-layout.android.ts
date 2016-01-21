@@ -1,17 +1,15 @@
-﻿import dependencyObservable = require("ui/core/dependency-observable");
-import enums = require("ui/enums");
-import proxy = require("ui/core/proxy");
-import common = require("./dock-layout-common");
-import * as viewModule from "ui/core/view";
+﻿import common = require("./dock-layout-common");
+import {Dock} from "ui/enums";
+import {View} from "ui/core/view";
+import {PropertyMetadata} from "ui/core/proxy";
+import {PropertyChangeData} from "ui/core/dependency-observable";
 
 global.moduleMerge(common, exports);
 
-function setNativeDockProperty(data: dependencyObservable.PropertyChangeData) {
-    var view: typeof viewModule = require("ui/core/view");
-
-    var uiView = data.object;
-    if (uiView instanceof view.View) {
-        var nativeView: android.view.View = (<any>uiView)._nativeView;
+function setNativeDockProperty(data: PropertyChangeData) {
+    var view = data.object;
+    if (view instanceof View) {
+        var nativeView: android.view.View = view._nativeView;
 
         var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
         if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
@@ -19,35 +17,37 @@ function setNativeDockProperty(data: dependencyObservable.PropertyChangeData) {
         }
     
         switch (data.newValue) {
-            case enums.Dock.left:
+            case Dock.left:
                 lp.dock = org.nativescript.widgets.Dock.left;
                 break;
-            case enums.Dock.top:
+            case Dock.top:
                 lp.dock = org.nativescript.widgets.Dock.top;
                 break;
-            case enums.Dock.right:
+            case Dock.right:
                 lp.dock = org.nativescript.widgets.Dock.right;
                 break;
-            case enums.Dock.bottom:
+            case Dock.bottom:
                 lp.dock = org.nativescript.widgets.Dock.bottom;
                 break;
             default:
-                throw new Error("Invalid dock value: " + data.newValue + " on element: " + uiView);
+                throw new Error("Invalid dock value: " + data.newValue + " on element: " + view);
         }
 
         nativeView.setLayoutParams(lp);
     }
 }
 
-(<proxy.PropertyMetadata>common.DockLayout.dockProperty.metadata).onSetNativeValue = setNativeDockProperty;
+(<PropertyMetadata>common.DockLayout.dockProperty.metadata).onSetNativeValue = setNativeDockProperty;
+
+function setNativeStretchLastChildProperty(data: PropertyChangeData) {
+    let dockLayout = <DockLayout>data.object;
+    let nativeView = dockLayout._nativeView;
+    nativeView.setStretchLastChild(data.newValue);
+}
+
+(<PropertyMetadata>common.DockLayout.stretchLastChildProperty.metadata).onSetNativeValue = setNativeStretchLastChildProperty;
 
 export class DockLayout extends common.DockLayout {
-
-    static setNativeStretchLastChildProperty(data: dependencyObservable.PropertyChangeData) {
-        var dockLayout = <DockLayout>data.object;
-        var nativeView = dockLayout._nativeView;
-        nativeView.setStretchLastChild(data.newValue);
-    }
 
     private _layout: org.nativescript.widgets.DockLayout;
 
@@ -63,5 +63,3 @@ export class DockLayout extends common.DockLayout {
         this._layout = new org.nativescript.widgets.DockLayout(this._context);
     }
 }
-
-(<proxy.PropertyMetadata>common.DockLayout.stretchLastChildProperty.metadata).onSetNativeValue = DockLayout.setNativeStretchLastChildProperty;

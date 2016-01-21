@@ -1,11 +1,11 @@
-﻿import layouts = require("ui/layouts/layout-base");
-import definition = require("ui/layouts/absolute-layout");
-import dependencyObservable = require("ui/core/dependency-observable");
-import view = require("ui/core/view");
-import proxy = require("ui/core/proxy");
+﻿import definition = require("ui/layouts/absolute-layout");
+import {LayoutBase} from "ui/layouts/layout-base";
+import {View} from "ui/core/view";
+import {PropertyMetadata} from "ui/core/proxy";
+import {Property, PropertyChangeData} from "ui/core/dependency-observable";
 import {registerSpecialProperty} from "ui/builder/special-properties";
 
-function validateArgs(element: view.View): view.View {
+function validateArgs(element: View): View {
     if (!element) {
         throw new Error("element cannot be null or undefinied.");
     }
@@ -19,59 +19,58 @@ registerSpecialProperty("top", (instance, propertyValue) => {
     AbsoluteLayout.setTop(instance, !isNaN(+propertyValue) && +propertyValue);
 });
 
-export class AbsoluteLayout extends layouts.LayoutBase implements definition.AbsoluteLayout {
-
+export class AbsoluteLayout extends LayoutBase implements definition.AbsoluteLayout {
     private static isValid(value: number): boolean {
         return isFinite(value);
     }
 
-    private static onLeftPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var uiView = data.object;
-        if (uiView instanceof view.View) {
-            var layout = uiView.parent;
+    private static onLeftPropertyChanged(data: PropertyChangeData) {
+        var view = data.object;
+        if (view instanceof View) {
+            var layout = view.parent;
             if (layout instanceof AbsoluteLayout) {
-                layout.onLeftChanged(uiView, data.oldValue, data.newValue);
+                layout.onLeftChanged(view, data.oldValue, data.newValue);
             }
         }
     }
 
-    private static onTopPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var uiView = data.object;
-        if (uiView instanceof view.View) {
-            var layout = uiView.parent;
+    private static onTopPropertyChanged(data: PropertyChangeData) {
+        var view = data.object;
+        if (view instanceof View) {
+            var layout = view.parent;
             if (layout instanceof AbsoluteLayout) {
-                layout.onTopChanged(uiView, data.oldValue, data.newValue);
+                layout.onTopChanged(view, data.oldValue, data.newValue);
             }
         }
     }
 
-    public static leftProperty = new dependencyObservable.Property("left", "AbsoluteLayout",
-        new proxy.PropertyMetadata(0, undefined, AbsoluteLayout.onLeftPropertyChanged, AbsoluteLayout.isValid));
+    public static leftProperty = new Property("left", "AbsoluteLayout",
+        new PropertyMetadata(0, undefined, AbsoluteLayout.onLeftPropertyChanged, AbsoluteLayout.isValid));
 
-    public static topProperty = new dependencyObservable.Property("top", "AbsoluteLayout",
-        new proxy.PropertyMetadata(0, undefined, AbsoluteLayout.onTopPropertyChanged, AbsoluteLayout.isValid));
+    public static topProperty = new Property("top", "AbsoluteLayout",
+        new PropertyMetadata(0, undefined, AbsoluteLayout.onTopPropertyChanged, AbsoluteLayout.isValid));
 
-    public static getLeft(element: view.View): number {
+    public static getLeft(element: View): number {
         return validateArgs(element)._getValue(AbsoluteLayout.leftProperty);
     }
 
-    public static setLeft(element: view.View, value: number): void {
+    public static setLeft(element: View, value: number): void {
         validateArgs(element)._setValue(AbsoluteLayout.leftProperty, value);
     }
 
-    public static getTop(element: view.View): number {
+    public static getTop(element: View): number {
         return validateArgs(element)._getValue(AbsoluteLayout.topProperty);
     }
 
-    public static setTop(element: view.View, value: number): void {
+    public static setTop(element: View, value: number): void {
         validateArgs(element)._setValue(AbsoluteLayout.topProperty, value);
     }
 
-    protected onLeftChanged(view: view.View, oldValue: number, newValue: number) {
+    protected onLeftChanged(view: View, oldValue: number, newValue: number) {
         //
     }
 
-    protected onTopChanged(view: view.View, oldValue: number, newValue: number) {
+    protected onTopChanged(view: View, oldValue: number, newValue: number) {
         //
     }
 }

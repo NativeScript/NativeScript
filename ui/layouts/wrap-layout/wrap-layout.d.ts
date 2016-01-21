@@ -1,27 +1,27 @@
 ﻿declare module "ui/layouts/wrap-layout" {
-    import layout = require("ui/layouts/layout-base");
-    import dependencyObservable = require("ui/core/dependency-observable");
+    import {LayoutBase} from "ui/layouts/layout-base";
+    import {Property} from "ui/core/dependency-observable";
 
     /**
      * WrapLayout position children in rows or columns depending on orientation property
      * until space is filled and then wraps them on new row or column.
      */
-    class WrapLayout extends layout.LayoutBase {
+    class WrapLayout extends LayoutBase {
 
         /**
          * Represents the observable property backing the orientation property of each WrapLayout instance.
          */
-        public static orientationProperty: dependencyObservable.Property;
+        public static orientationProperty: Property;
 
         /**
          * Represents the observable property backing the itemWidth property of each WrapLayout instance.
          */
-        public static itemWidthProperty: dependencyObservable.Property;
+        public static itemWidthProperty: Property;
 
         /**
          * Represents the observable property backing the itemHeight property of each WrapLayout instance.
          */
-        public static itemHeightProperty: dependencyObservable.Property;
+        public static itemHeightProperty: Property;
 
         /**
          * Gets or sets the flow direction. Default value is horizontal.
