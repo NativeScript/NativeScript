@@ -22,7 +22,7 @@ registerSpecialProperty("class", (instance: definition.View, propertyValue: stri
     instance.className = propertyValue;
 });
 
-function getEventOrGestureName(name: string) : string {
+function getEventOrGestureName(name: string): string {
     return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
 }
 
@@ -190,7 +190,7 @@ export class View extends ProxyObject implements definition.View {
     observe(type: gestures.GestureTypes, callback: (args: gestures.GestureEventData) => void, thisArg?: any): void {
         if (!this._gestureObservers[type]) {
             this._gestureObservers[type] = [];
-        } 
+        }
 
         this._gestureObservers[type].push(gestures.observe(this, type, callback, thisArg));
     }
@@ -926,6 +926,26 @@ export class View extends ProxyObject implements definition.View {
         //
     }
 
+    _childIndexToNativeChildIndex(index?: number): number {
+        return index;
+    }
+
+    _getNativeViewsCount(): number {
+        return this._isAddedToNativeVisualTree ? 1 : 0;
+    }
+
+    _eachLayoutView(callback: (View) => void): void {
+        return callback(this);
+    }
+
+    _addToSuperview(superview: any, index?: number): boolean {
+        // IOS specific
+        return false;
+    }
+    _removeFromSuperview(): void {
+        // IOS specific
+    }
+
     /**
      * Core logic for adding a child view to this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
      * // TODO: Think whether we need the base Layout routine.
@@ -954,7 +974,8 @@ export class View extends ProxyObject implements definition.View {
         view.style._inheritStyleProperties();
 
         if (!view._isAddedToNativeVisualTree) {
-            view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view, atIndex);
+            var nativeIndex = this._childIndexToNativeChildIndex(atIndex);
+            view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view, nativeIndex);
         }
 
         // TODO: Discuss this.

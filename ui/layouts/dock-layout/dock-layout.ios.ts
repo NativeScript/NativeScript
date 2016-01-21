@@ -35,13 +35,8 @@ export class DockLayout extends common.DockLayout {
         var childWidthMeasureSpec: number;
         var childHeightMeasureSpec: number;
 
-        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
-            let child = this.getChildAt(i);
-            if (!child._isVisible) {
-                continue;
-            }
-
-            if (this.stretchLastChild && i === (count - 1)) {
+        this.eachLayoutChild((child, last) => {
+            if (this.stretchLastChild && last) {
                 childWidthMeasureSpec = utils.layout.makeMeasureSpec(remainingWidth, widthMode);
                 childHeightMeasureSpec = utils.layout.makeMeasureSpec(remainingHeight, heightMode);
             }
@@ -72,7 +67,7 @@ export class DockLayout extends common.DockLayout {
                     measureHeight = Math.max(measureHeight, tempHeight + childSize.measuredHeight);
                     break;
             }
-        }
+        });
 
         measureWidth += (this.paddingLeft + this.paddingRight) * density;
         measureHeight += (this.paddingTop + this.paddingBottom) * density;
@@ -100,19 +95,7 @@ export class DockLayout extends common.DockLayout {
         var remainingWidth = Math.max(0, right - left - ((this.paddingLeft + this.paddingRight) * density));
         var remainingHeight = Math.max(0, bottom - top - ((this.paddingTop + this.paddingBottom) * density));
 
-        var count = this.getChildrenCount();
-        var childToStretch = null;
-        if (count > 0 && this.stretchLastChild) {
-            count--;
-            childToStretch = this.getChildAt(count);
-        }
-
-        for (let i = 0; i < count; i++) {
-            let child = this.getChildAt(i);
-            if (!child._isVisible) {
-                continue;
-            }
-
+        this.eachLayoutChild((child, last) => {
             let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
 
             let childWidth = child.getMeasuredWidth() + (lp.leftMargin + lp.rightMargin) * density;
@@ -152,12 +135,12 @@ export class DockLayout extends common.DockLayout {
                     break;
             }
 
-            View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
-        }
-
-        if (childToStretch) {
-            View.layoutChild(this, childToStretch, x, y, x + remainingWidth, y + remainingHeight);
-        }
+            if (!last) {
+                View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
+            } else {
+                View.layoutChild(this, child, x, y, x + remainingWidth, y + remainingHeight);
+            }
+        });
 
         DockLayout.restoreOriginalParams(this);
     }

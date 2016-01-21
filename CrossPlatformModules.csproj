@@ -726,6 +726,8 @@
     <TypeScriptCompile Include="ui\builder\binding-builder.d.ts" />
     <TypeScriptCompile Include="ui\builder\special-properties.d.ts" />
     <TypeScriptCompile Include="ui\builder\special-properties.ts" />
+    <TypeScriptCompile Include="ui\view-container\view-container.ts" />
+    <TypeScriptCompile Include="ui\view-container\view-container.d.ts" />
     <TypeScriptCompile Include="ui\styling\background.android.d.ts" />
     <TypeScriptCompile Include="ui\styling\style-scope.d.ts" />
     <TypeScriptCompile Include="ui\styling\style.d.ts" />
@@ -2087,6 +2089,9 @@
     </Content>
     <Content Include="ui\package.json" />
     <Content Include="tsconfig.json" />
+    <Content Include="ui\view-container\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />

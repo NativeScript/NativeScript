@@ -664,6 +664,8 @@
         "ui/ui.ts",
         "ui/utils.d.ts",
         "ui/utils.ios.ts",
+        "ui/view-container/proxy-view-container.d.ts",
+        "ui/view-container/proxy-view-container.ts",
         "ui/web-view/web-view-common.ts",
         "ui/web-view/web-view.android.ts",
         "ui/web-view/web-view.d.ts",

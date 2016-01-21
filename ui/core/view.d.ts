@@ -445,7 +445,7 @@ declare module "ui/core/view" {
          * Sets in-line CSS string as style.
          * @param style - In-line CSS string. 
          */
-        public setInlineStyle(style: string) : void;
+        public setInlineStyle(style: string): void;
 
         public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver>;
 
@@ -496,6 +496,14 @@ declare module "ui/core/view" {
         _inheritProperties(parentView: View)
         _removeView(view: View);
         _context: any /* android.content.Context */;
+
+        _childIndexToNativeChildIndex(index?: number): number;
+        _getNativeViewsCount(): number;
+
+        _eachLayoutView(callback: (View) => void): void;
+
+        _addToSuperview(superview: any, index?: number): boolean;
+        _removeFromSuperview();
 
         public _applyXmlAttribute(attribute: string, value: any): boolean;
 

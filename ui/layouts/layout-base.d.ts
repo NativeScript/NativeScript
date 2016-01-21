@@ -51,6 +51,12 @@
         removeChildren(): void;
 
         /**
+         * Calls the callback for each child that should be laid out.
+         * @param callback The callback
+         */
+        eachLayoutChild(callback: (child: view.View, isLast: boolean) => void): void;
+
+        /**
          * Iterates over children and changes their width and height to one calculated from percentage values.
          *
          * @param widthMeasureSpec  Width MeasureSpec of the parent layout.

@@ -145,16 +145,11 @@ export class GridLayout extends common.GridLayout {
         this.helper.clearMeasureSpecs();
         this.helper.init();
 
-        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
-            let child = this.getChildAt(i);
-            if (!child._isVisible) {
-                continue;
-            }
-
+        this.eachLayoutChild((child, last) => {
             let measureSpecs = this.map.get(child);
             this.updateMeasureSpecs(child, measureSpecs);
             this.helper.addMeasureSpec(measureSpecs);
-        }
+        });
 
         this.helper.measure();
 

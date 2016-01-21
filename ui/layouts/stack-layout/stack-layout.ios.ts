@@ -54,12 +54,8 @@ export class StackLayout extends common.StackLayout {
         }
 
         var childSize: { measuredWidth: number; measuredHeight: number };
-        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
-            let child = this.getChildAt(i);
-            if (!child._isVisible) {
-                continue;
-            }
 
+        this.eachLayoutChild((child, last) => {
             if (isVertical) {
                 childSize = View.measureChild(this, child, childMeasureSpec, utils.layout.makeMeasureSpec(remainingLength, measureSpec));
                 measureWidth = Math.max(measureWidth, childSize.measuredWidth);
@@ -74,7 +70,7 @@ export class StackLayout extends common.StackLayout {
                 measureWidth += viewWidth;
                 remainingLength = Math.max(0, remainingLength - viewWidth);
             }
-        }
+        });
 
         measureWidth += horizontalPadding;
         measureHeight += verticalPadding;
@@ -129,18 +125,13 @@ export class StackLayout extends common.StackLayout {
                 break;
         }
 
-        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
-            let child = this.getChildAt(i);
-            if (!child._isVisible) {
-                continue;
-            }
-
+        this.eachLayoutChild((child, last) => {
             let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
             let childHeight = child.getMeasuredHeight() + (lp.topMargin + lp.bottomMargin) * density;
 
             View.layoutChild(this, child, childLeft, childTop, childRight, childTop + childHeight);
             childTop += childHeight;
-        }
+        })
     }
 
     private layoutHorizontal(left: number, top: number, right: number, bottom: number): void {
@@ -170,17 +161,12 @@ export class StackLayout extends common.StackLayout {
                 break;
         }
 
-        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
-            let child = this.getChildAt(i);
-            if (!child._isVisible) {
-                continue;
-            }
-
+        this.eachLayoutChild((child, last) => {
             let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
             let childWidth = child.getMeasuredWidth() + (lp.leftMargin + lp.rightMargin) * density;
 
             View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childBottom);
             childLeft += childWidth;
-        }
+        });
     }
 }
