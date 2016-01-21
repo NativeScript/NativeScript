@@ -1,18 +1,17 @@
 ﻿import utils = require("utils/utils");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
 import common = require("./grid-layout-common");
+import {View} from "ui/core/view";
+import {PropertyMetadata} from "ui/core/proxy";
+import {PropertyChangeData} from "ui/core/dependency-observable";
 
 global.moduleMerge(common, exports);
 
-function setNativeProperty(data: dependencyObservable.PropertyChangeData, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
-    var view = require("ui/core/view");
+function setNativeProperty(data: PropertyChangeData, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
+    let view = data.object;
+    if (view instanceof View) {
+        let nativeView: android.view.View = view._nativeView;
 
-    var uiView = data.object;
-    if (uiView instanceof view.View) {
-        var nativeView: android.view.View = (<any>uiView)._nativeView;
-
-        var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
+        let lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
         if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
             lp = new org.nativescript.widgets.CommonLayoutParams();
         }
@@ -21,26 +20,26 @@ function setNativeProperty(data: dependencyObservable.PropertyChangeData, setter
     }
 }
 
-function setNativeRowProperty(data: dependencyObservable.PropertyChangeData) {
+function setNativeRowProperty(data: PropertyChangeData) {
     setNativeProperty(data, (lp) => { lp.row = data.newValue; });
 }
 
-function setNativeRowSpanProperty(data: dependencyObservable.PropertyChangeData) {
+function setNativeRowSpanProperty(data: PropertyChangeData) {
     setNativeProperty(data, (lp) => { lp.rowSpan = data.newValue; });
 }
 
-function setNativeColumnProperty(data: dependencyObservable.PropertyChangeData) {
+function setNativeColumnProperty(data: PropertyChangeData) {
     setNativeProperty(data, (lp) => { lp.column = data.newValue; });
 }
 
-function setNativeColumnSpanProperty(data: dependencyObservable.PropertyChangeData) {
+function setNativeColumnSpanProperty(data: PropertyChangeData) {
     setNativeProperty(data, (lp) => { lp.columnSpan = data.newValue; });
 }
 
-(<proxy.PropertyMetadata>common.GridLayout.rowProperty.metadata).onSetNativeValue = setNativeRowProperty;
-(<proxy.PropertyMetadata>common.GridLayout.rowSpanProperty.metadata).onSetNativeValue = setNativeRowSpanProperty;
-(<proxy.PropertyMetadata>common.GridLayout.columnProperty.metadata).onSetNativeValue = setNativeColumnProperty;
-(<proxy.PropertyMetadata>common.GridLayout.columnSpanProperty.metadata).onSetNativeValue = setNativeColumnSpanProperty;
+(<PropertyMetadata>common.GridLayout.rowProperty.metadata).onSetNativeValue = setNativeRowProperty;
+(<PropertyMetadata>common.GridLayout.rowSpanProperty.metadata).onSetNativeValue = setNativeRowSpanProperty;
+(<PropertyMetadata>common.GridLayout.columnProperty.metadata).onSetNativeValue = setNativeColumnProperty;
+(<PropertyMetadata>common.GridLayout.columnSpanProperty.metadata).onSetNativeValue = setNativeColumnSpanProperty;
 
 function createNativeSpec(itemSpec: ItemSpec): org.nativescript.widgets.ItemSpec {
     switch (itemSpec.gridUnitType) {
@@ -118,5 +117,9 @@ export class GridLayout extends common.GridLayout {
         if (this._layout) {
             this._layout.removeColumnAt(index);
         }
+    }
+
+    protected invalidate(): void {
+        // No need to request layout for android because it will be done in the native call.
     }
 }

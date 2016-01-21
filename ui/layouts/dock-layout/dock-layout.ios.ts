@@ -1,14 +1,14 @@
 ﻿import utils = require("utils/utils");
-import view = require("ui/core/view");
-import enums = require("ui/enums");
 import common = require("./dock-layout-common");
 import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
+import {Dock} from "ui/enums";
+import {View} from "ui/core/view";
 
 global.moduleMerge(common, exports);
 
 export class DockLayout extends common.DockLayout {
 
-    protected onDockChanged(view: view.View, oldValue: number, newValue: number) {
+    protected onDockChanged(view: View, oldValue: number, newValue: number) {
         this.requestLayout();
     }
 
@@ -51,20 +51,20 @@ export class DockLayout extends common.DockLayout {
                 childHeightMeasureSpec = utils.layout.makeMeasureSpec(remainingHeight, heightMode === utils.layout.EXACTLY ? utils.layout.AT_MOST : heightMode);
             }
 
-            let childSize = view.View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
+            let childSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
             let dock = DockLayout.getDock(child);
 
             switch (dock) {
-                case enums.Dock.top:
-                case enums.Dock.bottom:
+                case Dock.top:
+                case Dock.bottom:
                     remainingHeight = Math.max(0, remainingHeight - childSize.measuredHeight);
                     tempHeight += childSize.measuredHeight;
                     measureWidth = Math.max(measureWidth, tempWidth + childSize.measuredWidth);
                     measureHeight = Math.max(measureHeight, tempHeight);
                     break;
 
-                case enums.Dock.left:
-                case enums.Dock.right:
+                case Dock.left:
+                case Dock.right:
                 default:
                     remainingWidth = Math.max(0, remainingWidth - childSize.measuredWidth);
                     tempWidth += childSize.measuredWidth;
@@ -80,8 +80,8 @@ export class DockLayout extends common.DockLayout {
         measureWidth = Math.max(measureWidth, this.minWidth * density);
         measureHeight = Math.max(measureHeight, this.minHeight * density);
 
-        var widthAndState = view.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        var heightAndState = view.View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        var widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        var heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
@@ -120,7 +120,7 @@ export class DockLayout extends common.DockLayout {
 
             let dock = DockLayout.getDock(child);
             switch (dock) {
-                case enums.Dock.top:
+                case Dock.top:
                     childLeft = x;
                     childTop = y;
                     childWidth = remainingWidth;
@@ -128,21 +128,21 @@ export class DockLayout extends common.DockLayout {
                     remainingHeight = Math.max(0, remainingHeight - childHeight);
                     break;
 
-                case enums.Dock.bottom:
+                case Dock.bottom:
                     childLeft = x;
                     childTop = y + remainingHeight - childHeight;
                     childWidth = remainingWidth;
                     remainingHeight = Math.max(0, remainingHeight - childHeight);
                     break;
 
-                case enums.Dock.right:
+                case Dock.right:
                     childLeft = x + remainingWidth - childWidth;
                     childTop = y;
                     childHeight = remainingHeight;
                     remainingWidth = Math.max(0, remainingWidth - childWidth);
                     break;
 
-                case enums.Dock.left:
+                case Dock.left:
                 default:
                     childLeft = x;
                     childTop = y;
@@ -152,11 +152,11 @@ export class DockLayout extends common.DockLayout {
                     break;
             }
 
-            view.View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
+            View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
         }
 
         if (childToStretch) {
-            view.View.layoutChild(this, childToStretch, x, y, x + remainingWidth, y + remainingHeight);
+            View.layoutChild(this, childToStretch, x, y, x + remainingWidth, y + remainingHeight);
         }
 
         DockLayout.restoreOriginalParams(this);

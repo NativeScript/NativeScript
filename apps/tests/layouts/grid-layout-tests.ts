@@ -673,6 +673,20 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
         layoutHelper.assertMeasure(btn, 75, 75);
         layoutHelper.assertLayout(btn, 0, 75, 75, 75);
     }
+
+    public test_parse_should_call_protected_methods() {
+        let grid = <GridLayout>builder.parse("<GridLayout rows='*, 100'/>");
+        TKUnit.assertNotNull(grid);
+
+        this.testView.addChild(grid);
+        this.waitUntilTestElementLayoutIsValid();
+
+        let rows = grid.getRows();
+        TKUnit.assertEqual(rows.length, 2, "Should have 2 rows.");
+
+        TKUnit.assertTrue(rows[0].isStar, "First row should be *");
+        TKUnit.assertTrue(rows[1].isAbsolute, "Second row should be Absolute");
+    }
 }
 
 export function createTestCase(): GridLayoutTest {

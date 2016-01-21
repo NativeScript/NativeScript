@@ -1,17 +1,15 @@
 ﻿import utils = require("utils/utils");
 import common = require("./absolute-layout-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import * as viewModule from "ui/core/view";
+import {View} from "ui/core/view";
+import {PropertyMetadata} from "ui/core/proxy";
+import {PropertyChangeData} from "ui/core/dependency-observable";
 
 global.moduleMerge(common, exports);
 
-function setNativeProperty(data: dependencyObservable.PropertyChangeData, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
-    var view: typeof viewModule = require("ui/core/view");
-
-    var uiView = data.object;
-    if (uiView instanceof view.View) {
-        var nativeView: android.view.View = (<any>uiView)._nativeView;
+function setNativeProperty(data: PropertyChangeData, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
+    var view = data.object;
+    if (view instanceof View) {
+        var nativeView: android.view.View = view._nativeView;
 
         var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
         if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
@@ -22,16 +20,16 @@ function setNativeProperty(data: dependencyObservable.PropertyChangeData, setter
     }
 }
 
-function setNativeLeftProperty(data: dependencyObservable.PropertyChangeData) {
+function setNativeLeftProperty(data: PropertyChangeData) {
     setNativeProperty(data, (lp) => { lp.left = data.newValue * utils.layout.getDisplayDensity(); });
 }
 
-function setNativeTopProperty(data: dependencyObservable.PropertyChangeData) {
+function setNativeTopProperty(data: PropertyChangeData) {
     setNativeProperty(data, (lp) => { lp.top = data.newValue * utils.layout.getDisplayDensity(); });
 }
 
-(<proxy.PropertyMetadata>common.AbsoluteLayout.leftProperty.metadata).onSetNativeValue = setNativeLeftProperty;
-(<proxy.PropertyMetadata>common.AbsoluteLayout.topProperty.metadata).onSetNativeValue = setNativeTopProperty;
+(<PropertyMetadata>common.AbsoluteLayout.leftProperty.metadata).onSetNativeValue = setNativeLeftProperty;
+(<PropertyMetadata>common.AbsoluteLayout.topProperty.metadata).onSetNativeValue = setNativeTopProperty;
 
 export class AbsoluteLayout extends common.AbsoluteLayout {
 

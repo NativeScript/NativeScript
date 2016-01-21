@@ -1,16 +1,15 @@
 ﻿declare module "ui/layouts/stack-layout" {
-    import layout = require("ui/layouts/layout-base");
-    import dependencyObservable = require("ui/core/dependency-observable");
+    import {LayoutBase} from "ui/layouts/layout-base";
+    import {Property} from "ui/core/dependency-observable";
 
     /**
      * A Layout that arranges its children horizontally or vertically. The direction can be set by orientation property.
      */
-    class StackLayout extends layout.LayoutBase {
-
+    class StackLayout extends LayoutBase {
         /**
          * Represents the observable property backing the orientation property of each StackLayout instance.
          */
-        public static orientationProperty: dependencyObservable.Property;
+        public static orientationProperty: Property;
 
         /**
          * Gets or sets if layout should be horizontal or vertical.

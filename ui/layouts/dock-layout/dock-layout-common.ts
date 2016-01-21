@@ -1,20 +1,20 @@
-﻿import layouts = require("ui/layouts/layout-base");
-import definition = require("ui/layouts/dock-layout");
-import dependencyObservable = require("ui/core/dependency-observable");
-import view = require("ui/core/view");
-import enums = require("ui/enums");
-import proxy = require("ui/core/proxy");
-import {registerSpecialProperty} from "ui/builder/special-properties";
+﻿import definition = require("ui/layouts/dock-layout");
 import platform = require("platform");
+import {Dock} from "ui/enums";
+import {LayoutBase} from "ui/layouts/layout-base";
+import {View} from "ui/core/view";
+import {PropertyMetadata} from "ui/core/proxy";
+import {Property, PropertyChangeData, PropertyMetadataSettings} from "ui/core/dependency-observable";
+import {registerSpecialProperty} from "ui/builder/special-properties";
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-var AffectsLayout = platform.device.os === platform.platformNames.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
+var AffectsLayout = platform.device.os === platform.platformNames.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
 function isDockValid(value: any): boolean {
-    return value === enums.Dock.left || value === enums.Dock.top || value === enums.Dock.right || value === enums.Dock.bottom;
+    return value === Dock.left || value === Dock.top || value === Dock.right || value === Dock.bottom;
 }
 
-function validateArgs(element: view.View): view.View {
+function validateArgs(element: View): View {
     if (!element) {
         throw new Error("element cannot be null or undefinied.");
     }
@@ -25,29 +25,29 @@ registerSpecialProperty("dock", (instance, propertyValue) => {
     DockLayout.setDock(instance, propertyValue);
 });
 
-export class DockLayout extends layouts.LayoutBase implements definition.DockLayout {
+export class DockLayout extends LayoutBase implements definition.DockLayout {
 
-    private static onDockPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var uiView = data.object;
-        if (uiView instanceof view.View) {
-            var layout = uiView.parent;
+    private static onDockPropertyChanged(data: PropertyChangeData) {
+        var view = data.object;
+        if (view instanceof View) {
+            var layout = view.parent;
             if (layout instanceof DockLayout) {
-                layout.onDockChanged(uiView, data.oldValue, data.newValue);
+                layout.onDockChanged(view, data.oldValue, data.newValue);
             }
         }
     }
 
-    public static dockProperty = new dependencyObservable.Property(
-        "dock", "DockLayout", new proxy.PropertyMetadata(enums.Dock.left, undefined, DockLayout.onDockPropertyChanged, isDockValid));
+    public static dockProperty = new Property(
+        "dock", "DockLayout", new PropertyMetadata(Dock.left, undefined, DockLayout.onDockPropertyChanged, isDockValid));
 
-    public static stretchLastChildProperty = new dependencyObservable.Property(
-        "stretchLastChild", "DockLayout", new proxy.PropertyMetadata(true, AffectsLayout));
+    public static stretchLastChildProperty = new Property(
+        "stretchLastChild", "DockLayout", new PropertyMetadata(true, AffectsLayout));
 
-    public static getDock(element: view.View): string {
+    public static getDock(element: View): string {
         return validateArgs(element)._getValue(DockLayout.dockProperty);
     }
 
-    public static setDock(element: view.View, value: string): void {
+    public static setDock(element: View, value: string): void {
         validateArgs(element)._setValue(DockLayout.dockProperty, value);
     }
 
@@ -58,7 +58,7 @@ export class DockLayout extends layouts.LayoutBase implements definition.DockLay
         this._setValue(DockLayout.stretchLastChildProperty, value);
     }
 
-    protected onDockChanged(view: view.View, oldValue: number, newValue: number) {
+    protected onDockChanged(view: View, oldValue: number, newValue: number) {
         //
     }
 }

@@ -1,8 +1,8 @@
 ﻿import utils = require("utils/utils");
-import {HorizontalAlignment, VerticalAlignment} from "ui/enums";
-import {View} from "ui/core/view";
 import common = require("./grid-layout-common");
+import {View} from "ui/core/view";
 import {CommonLayoutParams} from "ui/styling/style";
+import {HorizontalAlignment, VerticalAlignment} from "ui/enums";
 
 global.moduleMerge(common, exports);
 
@@ -19,44 +19,20 @@ export class GridLayout extends common.GridLayout {
 
     protected onRowAdded(itemSpec: common.ItemSpec) {
         this.helper.rows.push(new ItemGroup(itemSpec));
-        this.invalidate();
     }
 
     protected onColumnAdded(itemSpec: common.ItemSpec) {
         this.helper.columns.push(new ItemGroup(itemSpec));
-        this.invalidate();
     }
 
     protected onRowRemoved(itemSpec: common.ItemSpec, index: number) {
         this.helper.rows[index].children.length = 0;
         this.helper.rows.splice(index, 1);
-        this.invalidate();
     }
 
     protected onColumnRemoved(itemSpec: common.ItemSpec, index: number) {
         this.helper.columns[index].children.length = 0;
         this.helper.columns.splice(index, 1);
-        this.invalidate();
-    }
-
-    protected onRowChanged(element: View, oldValue: number, newValue: number) {
-        this.invalidate();
-    }
-
-    protected onRowSpanChanged(element: View, oldValue: number, newValue: number) {
-        this.invalidate();
-    }
-
-    protected onColumnChanged(element: View, oldValue: number, newValue: number) {
-        this.invalidate();
-    }
-
-    protected onColumnSpanChanged(element: View, oldValue: number, newValue: number) {
-        this.invalidate();
-    }
-
-    protected invalidate(): void {
-        this.requestLayout();
     }
 
     public addChild(child: View): void {
@@ -281,8 +257,8 @@ class MeasureSpecs {
     public child: View;
     private column: common.ItemSpec;
     private row: common.ItemSpec
-    private columnIndex: number;
-    private rowIndex: number;
+    private columnIndex: number = 0;
+    private rowIndex: number = 0;
 
     constructor(child: View) {
         this.child = child;
@@ -702,8 +678,7 @@ class MeasureHelper {
         return result;
     }
 
-    public measure(): void {
-		
+    public measure(): void {		
         // Measure auto & pixel columns and rows (no spans).
         let size = this.columns.length;
         for (let i = 0; i < size; i++) {

@@ -1,6 +1,7 @@
 ﻿declare module "ui/layouts/grid-layout" {
-    import layout = require("ui/layouts/layout-base");
-    import view = require("ui/core/view");
+    import {LayoutBase} from "ui/layouts/layout-base";
+    import {View} from "ui/core/view";
+    import {Property} from "ui/core/dependency-observable";
 
     /**
      * GridUnitType enum is used to indicate what kind of value the ItemSpec is holding.
@@ -68,7 +69,7 @@
     /**
      * Defines a rectangular layout area that consists of columns and rows.
      */
-    export class GridLayout extends layout.LayoutBase {
+    export class GridLayout extends LayoutBase {
 
         ///**
         // * Initializes a new instance of GridLayout.
@@ -77,44 +78,63 @@
         //constructor(options?: Options);
 
         /**
+         * Represents the observable property backing the column property.
+         */
+        public static columnProperty: Property;
+
+        /**
+         * Represents the observable property backing the columnSpan property.
+         */
+        public static columnSpanProperty: Property;
+
+        /**
+         * Represents the observable property backing the row property.
+         */
+        public static rowProperty: Property;
+
+        /**
+         * Represents the observable property backing the rowSpan property.
+         */
+        public static rowSpanProperty: Property;
+        /**
          * Gets the value of the Column attached property from a given View.
          */
-        static getColumn(view: view.View): number;
+        static getColumn(view: View): number;
 
         /**
          * Sets the value of the Column attached property to a given View. 
          */
-        static setColumn(view: view.View, value: number): void;
+        static setColumn(view: View, value: number): void;
 
         /**
          * Gets the value of the ColumnSpan attached property from a given View.
          */
-        static getColumnSpan(view: view.View): number;
+        static getColumnSpan(view: View): number;
 
         /**
          * Sets the value of the ColumnSpan attached property to a given View. 
          */
-        static setColumnSpan(view: view.View, value: number): void;
+        static setColumnSpan(view: View, value: number): void;
 
         /**
          * Gets the value of the Row attached property from a given View.
          */
-        static getRow(view: view.View): number;
+        static getRow(view: View): number;
 
         /**
          * Sets the value of the Row attached property to a given View. 
          */
-        static setRow(view: view.View, value: number): void;
+        static setRow(view: View, value: number): void;
 
         /**
          * Gets the value of the RowSpan attached property from a given View.
          */
-        static getRowSpan(view: view.View): number;
+        static getRowSpan(view: View): number;
 
         /**
          * Sets the value of the RowSpan attached property to a given View. 
          */
-        static setRowSpan(view: view.View, value: number): void;
+        static setRowSpan(view: View, value: number): void;
 
         /**
          * Adds a column specification to a GridLayout.
