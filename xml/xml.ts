@@ -83,6 +83,11 @@ function _generateAmpMap(): any {
     return ampCodes;
 }
 
+// android-specific implementation, which pre-populates the map to get it saved into the heap blob
+if (global.__snapshot) {
+    _ampCodes = _generateAmpMap();
+}
+
 function _HandleAmpEntities(found: string, decimalValue: string, hexValue: string, wordValue: string): string {
 
     if (wordValue) {
