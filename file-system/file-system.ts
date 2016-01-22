@@ -443,10 +443,9 @@ export module knownFolders {
 
     export var currentApp = function (): Folder {
         if (!_app) {
-            var utils: typeof utilsModule = require("utils/utils");
-            var filesDir = utils.ad.getApplicationContext().getFilesDir().getCanonicalPath();
+            var logicalRoot = getFileAccess().getLogicalRootPath();
             _app = new Folder();
-            _app[pathProperty] = filesDir + "/app/";
+            _app[pathProperty] = logicalRoot + "/app";
             _app[isKnownProperty] = true;
         }
 

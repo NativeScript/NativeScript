@@ -187,6 +187,11 @@ export class FileSystemAccess {
         return dir.getAbsolutePath();
     }
 
+    public getLogicalRootPath(): string {
+        var dir = utils.ad.getApplicationContext().getFilesDir();
+        return dir.getCanonicalPath();
+    }
+
     public getTempFolderPath(): string {
         var dir = utils.ad.getApplicationContext().getCacheDir();
         return dir.getAbsolutePath();

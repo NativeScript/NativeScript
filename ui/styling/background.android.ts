@@ -173,6 +173,8 @@ export module ad {
             return;
         }
 
+        ensureBorderDrawable();
+
         var style: typeof styleModule = require("./style");
 
         var backgroundValue = v.style._getValue(style.backgroundInternalProperty);

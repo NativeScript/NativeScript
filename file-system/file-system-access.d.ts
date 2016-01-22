@@ -100,6 +100,11 @@
         getTempFolderPath(): string;
 
         /**
+         * Gets the path to the logical root of the application - that is /path/to/appfiles/app.
+         */
+        getLogicalRootPath(): string;
+
+        /**
          * Reads a text from a file with a given path.
          * @param path The path to the source file.
          * @param onSuccess A callback function which is called when a text is red.
