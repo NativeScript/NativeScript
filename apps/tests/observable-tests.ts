@@ -491,3 +491,51 @@ export function test_ObservablesCreatedWithJSON_shouldNotEmitTwoTimesPropertyCha
 
     TKUnit.assertEqual(propertyChangeCounter, 1, "PropertyChange event should be fired only once for a single change.");
 }
+
+export function test_ObservableShouldEmitPropertyChangeWithSameObjectUsingWrappedValue() {
+    var testArray = [1];
+    var testObservable = new observable.Observable({ "property1": testArray});
+    var propertyChangeCounter = 0;
+    var propertyChangeHandler = function (args) {
+        propertyChangeCounter++;
+    }
+    testObservable.on(observable.Observable.propertyChangeEvent, propertyChangeHandler);
+    testArray.push(2);
+    
+    testObservable.set("property1", testArray);
+
+    TKUnit.assertEqual(propertyChangeCounter, 0, "PropertyChange event should not be fired when the same object instance is passed.");
+    
+    testObservable.set("property1", observable.WrappedValue.wrap(testArray));
+
+    TKUnit.assertEqual(propertyChangeCounter, 1, "PropertyChange event should be fired only once for a single change.");
+}
+
+export function test_CorrectEventArgsWhenWrappedValueIsUsed() {
+    let testArray = [1];
+    let testObservable = new observable.Observable({ "property1": testArray});
+    let actualArgsValue = 0;
+    let propertyChangeHandler = function (args) {
+        actualArgsValue = args.value;
+        
+    }
+    testObservable.on(observable.Observable.propertyChangeEvent, propertyChangeHandler);
+    testArray.push(2);
+    
+    let wrappedArray = observable.WrappedValue.wrap(testArray);
+    
+    testObservable.set("property1", wrappedArray);
+
+    TKUnit.assertEqual(actualArgsValue, wrappedArray, "PropertyChange event should be fired with correct value in arguments.");
+}
+
+export function test_CorrectPropertyValueAfterUsingWrappedValue() {
+    let testArray = [1];
+    let testObservable = new observable.Observable({ "property1": testArray});
+    
+    let wrappedArray = observable.WrappedValue.wrap(testArray);
+    
+    testObservable.set("property1", wrappedArray);
+
+    TKUnit.assertEqual(testObservable.get("property1"), testArray, "WrappedValue is used only to execute property change logic and unwrapped value should be used as proeprty value.");
+}
