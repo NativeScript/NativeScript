@@ -367,6 +367,7 @@ export class GridLayout extends LayoutBase implements definition.GridLayout, App
     }
 
     private _setColumns(value: string) {
+        this.removeColumns();
         let columns = GridLayout.parseItemSpecs(value);
         for (let i = 0, count = columns.length; i < count; i++) {
             this.addColumn(columns[i]);
@@ -374,6 +375,7 @@ export class GridLayout extends LayoutBase implements definition.GridLayout, App
     }
 
     private _setRows(value: string) {
+        this.removeRows();
         let rows = GridLayout.parseItemSpecs(value);
         for (let i = 0, count = rows.length; i < count; i++) {
             this.addRow(rows[i]);
