@@ -244,7 +244,9 @@ export class TabView extends common.TabView {
                 }
 
                 item._parent = this;
-                this._addView(item.view, idx);
+                if (item.view.parent !== this) {
+                    this._addView(item.view, idx);
+                }
                 tabItems.push(this.createTabItem(item));
             });
 
