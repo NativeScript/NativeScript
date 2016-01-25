@@ -1,5 +1,4 @@
-﻿import * as trace from "trace";
-import {debug, ScopeError, SourceError, Source} from "utils/debug";
+﻿import {debug, ScopeError, SourceError, Source} from "utils/debug";
 import * as xml from "xml";
 import {View, Template} from "ui/core/view";
 import {File, path, knownFolders} from "file-system";
@@ -12,6 +11,13 @@ import {resolveFileName} from "file-system/file-name-resolver";
 import * as traceModule from "trace";
 
 const defaultNameSpaceMatcher = /tns\.xsd$/i;
+
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
 
 export function parse(value: string | Template, context: any): View {
     if (isString(value)) {
@@ -90,7 +96,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         if (parentPage) {
             parentPage.addCssFile(cssFilePath);
         } else {
-            var trace: typeof traceModule = require("trace");
+            ensureTrace();
 
             trace.write("CSS file found but no page specified. Please specify page in the options!", trace.categories.Error, trace.messageType.error);
         }

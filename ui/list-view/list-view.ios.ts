@@ -7,6 +7,13 @@ import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import * as colorModule from "color";
 
+var color: typeof colorModule;
+function ensureColor() {
+    if (!color) {
+        color = require("color");
+    }
+}
+
 var CELLIDENTIFIER = "cell";
 var ITEMLOADING = common.ListView.itemLoadingEvent;
 var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
@@ -181,7 +188,7 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
         return;
     }
 
-    var color: typeof colorModule = require("color");
+    ensureColor();
 
     if (data.newValue instanceof color.Color) {
         bar.ios.separatorColor = data.newValue.ios;

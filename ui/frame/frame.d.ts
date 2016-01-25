@@ -248,6 +248,7 @@ declare module "ui/frame" {
     }
 
     //@private
-    export function reloadPage(): void;
+    function reloadPage(): void;
+    function resolvePageFromEntry(entry: NavigationEntry): pages.Page;
     //@endprivate
 }

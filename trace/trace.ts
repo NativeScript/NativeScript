@@ -1,5 +1,5 @@
 ﻿import definition = require("trace");
-import * as typesModule from "utils/types";
+import * as types from "utils/types";
 
 var _enabled = false;
 var _categories = {};
@@ -136,8 +136,6 @@ class ConsoleWriter implements definition.TraceWriter {
         if (!console) {
             return;
         }
-
-        var types: typeof typesModule = require("utils/types");
 
         var msgType;
         if (types.isUndefined(type)) {

@@ -7,6 +7,27 @@ import * as enumsModule from "ui/enums";
 
 global.moduleMerge(common, exports);
 
+var utils: typeof utilsModule;
+function ensureUtils() {
+    if (!utils) {
+        utils = require("utils/utils");
+    }
+}
+
+var fs: typeof fileSystemModule;
+function ensureFS() {
+    if (!fs) {
+        fs = require("file-system");
+    }
+}
+
+var enums: typeof enumsModule;
+function ensureEnums() {
+    if (!enums) {
+        enums = require("ui/enums");
+    }
+}
+
 export class ImageSource implements definition.ImageSource {
     public android: android.graphics.Bitmap;
     public ios: UIImage;
@@ -14,7 +35,7 @@ export class ImageSource implements definition.ImageSource {
     public loadFromResource(name: string): boolean {
         this.android = null;
 
-        var utils: typeof utilsModule = require("utils/utils");
+        ensureUtils();
 
         var res = utils.ad.getApplicationContext().getResources();
         if (res) {
@@ -32,7 +53,7 @@ export class ImageSource implements definition.ImageSource {
     }
 
     public loadFromFile(path: string): boolean {
-        var fs: typeof fileSystemModule = require("file-system");
+        ensureFS();
 
         var fileName = types.isString(path) ? path.trim() : "";
         if (fileName.indexOf("~/") === 0) {
@@ -112,7 +133,7 @@ export class ImageSource implements definition.ImageSource {
 }
 
 function getTargetFromat(format: string): android.graphics.Bitmap.CompressFormat {
-    var enums: typeof enumsModule = require("ui/enums");
+    ensureEnums();
 
     switch (format) {
         case enums.ImageFormat.jpeg:

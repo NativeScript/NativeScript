@@ -14,9 +14,23 @@ import {PropertyMetadata, ProxyObject} from "ui/core/proxy";
 import {PropertyMetadataSettings, PropertyChangeData, Property, ValueSource, PropertyMetadata as doPropertyMetadata} from "ui/core/dependency-observable";
 import {registerSpecialProperty} from "ui/builder/special-properties";
 import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
-import * as visualStateConstantsModule from "ui/styling/visual-state-constants";
+import * as visualStateConstants from "ui/styling/visual-state-constants";
 import * as bindableModule from "ui/core/bindable";
 import * as visualStateModule from "../styling/visual-state";
+
+var bindable: typeof bindableModule;
+function ensureBindable() {
+    if (!bindable) {
+        bindable = require("ui/core/bindable");
+    }
+}
+
+var visualState: typeof visualStateModule;
+function ensureVisualState() {
+    if (!visualState) {
+        visualState = require("../styling/visual-state");
+    }
+}
 
 registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
     instance.className = propertyValue;
@@ -181,9 +195,6 @@ export class View extends ProxyObject implements definition.View {
 
         this._style = new style.Style(this);
         this._domId = viewIdCounter++;
-
-        var visualStateConstants: typeof visualStateConstantsModule = require("ui/styling/visual-state-constants");
-
         this._visualState = visualStateConstants.Normal;
     }
 
@@ -1009,7 +1020,7 @@ export class View extends ProxyObject implements definition.View {
             view.onUnloaded();
         }
 
-        var bindable: typeof bindableModule = require("ui/core/bindable");
+        ensureBindable();
 
         view._setValue(bindable.Bindable.bindingContextProperty, undefined, ValueSource.Inherited);
         var inheritablePropertiesSetCallback = function (property: Property) {
@@ -1056,8 +1067,8 @@ export class View extends ProxyObject implements definition.View {
             return;
         }
         // we use lazy require to prevent cyclic dependencies issues
-        var vsm: typeof visualStateModule = require("ui/styling/visual-state");
-        this._visualState = vsm.goToState(this, state);
+        ensureVisualState();
+        this._visualState = visualState.goToState(this, state);
 
         // TODO: What state should we set here - the requested or the actual one?
         this._requestedVisualState = state;

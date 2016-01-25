@@ -17,6 +17,27 @@ const ACTION_ITEM_ID_OFFSET = 1000;
 
 global.moduleMerge(common, exports);
 
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
+
+var utils: typeof utilsModule;
+function ensureUtils() {
+    if (!utils) {
+        utils = require("utils/utils");
+    }
+}
+
+var imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
+}
+
 var actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
 function generateItemId(): number {
     actionItemIdGenerator++;
@@ -309,7 +330,7 @@ export class ActionBar extends common.ActionBar {
         if (this._toolbar && child._nativeView) {
             this._toolbar.removeView(child._nativeView);
 
-            var trace: typeof traceModule = require("trace");
+            ensureTrace();
 
             trace.notifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
         }
@@ -321,7 +342,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
         return undefined;
     }
 
-    var utils: typeof utilsModule = require("utils/utils");
+    ensureUtils();
 
     if (icon.indexOf(utils.RESOURCE_PREFIX) === 0) {
         var resourceId: number = resources.getIdentifier(icon.substr(utils.RESOURCE_PREFIX.length), 'drawable', application.android.packageName);
@@ -332,7 +353,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
     else {
         var drawable: android.graphics.drawable.BitmapDrawable;
 
-        var imageSource: typeof imageSourceModule = require("image-source");
+        ensureImageSource();
 
         var is = imageSource.fromFileOrResource(icon);
         if (is) {

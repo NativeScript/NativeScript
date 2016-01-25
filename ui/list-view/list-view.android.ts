@@ -6,8 +6,15 @@ import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import definition = require("ui/list-view");
 import utils = require("utils/utils")
-import * as layoutBaseModule from "ui/layouts/layout-base";
+import * as layoutBase from "ui/layouts/layout-base";
 import * as colorModule from "color";
+
+var color: typeof colorModule;
+function ensureColor() {
+    if (!color) {
+        color = require("color");
+    }
+}
 
 var ITEMLOADING = common.ListView.itemLoadingEvent;
 var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
@@ -22,7 +29,7 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
         return;
     }
 
-    var color: typeof colorModule = require("color");
+    ensureColor();
 
     if (data.newValue instanceof color.Color) {
         bar.android.setDivider(new android.graphics.drawable.ColorDrawable(data.newValue.android));
@@ -222,8 +229,6 @@ function ensureListViewAdapterClass() {
                 }
                 this._listView._prepareItem(args.view, index);
                 if (!args.view.parent) {
-                    var layoutBase: typeof layoutBaseModule = require("ui/layouts/layout-base");
-
                     if (args.view instanceof layoutBase.LayoutBase) {
                         this._listView._addView(args.view);
                         convertView = args.view.android;

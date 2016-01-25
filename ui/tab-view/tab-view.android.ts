@@ -7,10 +7,17 @@ import types = require("utils/types");
 import utils = require("utils/utils");
 import proxy = require("ui/core/proxy");
 import color = require("color");
-import * as imageSourceModule from "image-source";
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
 import styling = require("ui/styling");
+import * as imageSourceModule from "image-source";
+
+var imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
+}
 
 var VIEWS_STATES = "_viewStates";
 var ACCENT_COLOR = "colorAccent";
@@ -316,7 +323,7 @@ export class TabView extends common.TabView {
                 result.iconId = utils.ad.resources.getDrawableId(item.iconSource.substr(utils.RESOURCE_PREFIX.length));
             }
             else {
-                var imageSource: typeof imageSourceModule = require("image-source");
+                ensureImageSource();
 
                 var is = imageSource.fromFileOrResource(item.iconSource);
                 if (is) {

@@ -1,13 +1,15 @@
 ﻿import common = require("./application-common");
 import frame = require("ui/frame");
 import definition = require("application");
-import * as uiUtilsModule from "ui/utils";
+import * as uiUtils from "ui/utils";
 import * as typesModule from "utils/types";
 import * as fileResolverModule  from "file-system/file-name-resolver";
 import * as enumsModule from "ui/enums";
 
 global.moduleMerge(common, exports);
 var typedExports: typeof definition = exports;
+
+var enums: typeof enumsModule
 
 class Responder extends UIResponder {
     //
@@ -33,8 +35,6 @@ class Window extends UIWindow {
     }
 
     public layoutSubviews(): void {
-        var uiUtils: typeof uiUtilsModule = require("ui/utils");
-
         uiUtils.ios._layoutRootView(this._content, UIScreen.mainScreen().bounds);
     }
 }

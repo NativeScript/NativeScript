@@ -2,9 +2,16 @@
 import view = require("ui/core/view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import * as utilsModule from "utils/utils";
-import * as traceModule from "trace";
+import * as utils from "utils/utils";
+import * as trace from "trace";
 import * as fileSystemModule from "file-system";
+
+var fs: typeof fileSystemModule;
+function ensureFS() {
+    if (!fs) {
+        fs = require("file-system");
+    }
+}
 
 var urlProperty = new dependencyObservable.Property(
     "url",
@@ -38,15 +45,13 @@ function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         return;
     }
 
-    webView.stopLoading();
-    var trace: typeof traceModule = require("trace");
+    webView.stopLoading();    
 
     var src = <string>data.newValue;
     trace.write("WebView._loadSrc(" + src + ")", trace.categories.Debug);
-    var utils: typeof utilsModule = require("utils/utils");
 
     if (utils.isFileOrResourcePath(src)) {
-        var fs: typeof fileSystemModule = require("file-system");
+        ensureFS();
 
         if (src.indexOf("~/") === 0) {
             src = fs.path.join(fs.knownFolders.currentApp().path, src.replace("~/", ""));

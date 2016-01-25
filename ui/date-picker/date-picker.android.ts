@@ -2,7 +2,7 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import utils = require("utils/utils")
-import * as typesModule from "utils/types";
+import * as types from "utils/types";
 
 function onYearPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
@@ -35,8 +35,6 @@ function onDayPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 (<proxy.PropertyMetadata>common.DatePicker.dayProperty.metadata).onSetNativeValue = onDayPropertyChanged;
 
 function updateNativeDate(picker: DatePicker) {
-    var types: typeof typesModule = require("utils/types");
-
     var year = types.isNumber(picker.year) ? picker.year : picker.android.getYear();
     var month = types.isNumber(picker.month) ? (picker.month - 1) : picker.android.getMonth();
     var day = types.isNumber(picker.day) ? picker.day : picker.android.getDayOfMonth();

@@ -7,6 +7,13 @@ import formattedString = require("text/formatted-string");
 import * as weakEventListenerModule from "ui/core/weak-event-listener";
 import tbs = require("ui/text-base/text-base-styler");
 
+var weakEvents: typeof weakEventListenerModule;
+function ensureWeakEvents() {
+    if (!weakEvents) {
+        weakEvents = require("ui/core/weak-event-listener");
+    }
+}
+
 var textProperty = new dependencyObservable.Property(
     "text",
     "TextBase",
@@ -76,7 +83,7 @@ export class TextBase extends view.View implements definition.TextBase, formatte
 
     set formattedText(value: formattedString.FormattedString) {
         if (this.formattedText !== value) {
-            var weakEvents: typeof weakEventListenerModule = require("ui/core/weak-event-listener");
+            ensureWeakEvents();
 
             if (this.formattedText) {
                 weakEvents.removeWeakEventListener(this.formattedText, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);

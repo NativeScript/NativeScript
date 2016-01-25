@@ -11,13 +11,25 @@ import * as polymerExpressionsModule from "js-libs/polymer-expressions";
 import * as specialPropertiesModule from "ui/builder/special-properties";
 
 //late import
-var _appModule: typeof applicationModule = null;
-
-function appModule() {
-    if (!_appModule) {
-        _appModule = require("application");
+var application: typeof applicationModule;
+function ensureApplication() {
+    if (!application) {
+        application = require("application");
     }
-    return _appModule;
+}
+
+var expressions: typeof polymerExpressionsModule;
+function ensureExpressions() {
+    if (!expressions) {
+        expressions = require("js-libs/polymer-expressions");
+    }
+}
+
+var specialProperties: typeof specialPropertiesModule;
+function ensureSpecialProperties() {
+    if (!specialProperties) {
+        specialProperties = require("ui/builder/special-properties");
+    }
 }
 
 var bindingContextProperty = new dependencyObservable.Property(
@@ -364,15 +376,16 @@ export class Binding {
 
     private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
         try {
-            var polymerExpressions: typeof polymerExpressionsModule = require("js-libs/polymer-expressions");
+            ensureExpressions();
 
-            var exp = polymerExpressions.PolymerExpressions.getExpression(expression);
+            var exp = expressions.PolymerExpressions.getExpression(expression);
             if (exp) {
                 var context = this.source && this.source.get && this.source.get() || global;
                 var model = {};
-                for (var prop in appModule().resources) {
-                    if (appModule().resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
-                        context[prop] = appModule().resources[prop];
+                ensureApplication();
+                for (var prop in application.resources) {
+                    if (application.resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
+                        context[prop] = application.resources[prop];
                     }
                 }
 
@@ -593,9 +606,9 @@ export class Binding {
                 optionsInstance.off(options.property, null, optionsInstance.bindingContext);
                 optionsInstance.on(options.property, value, optionsInstance.bindingContext);
             } else {
-                var sp: typeof specialPropertiesModule = require("ui/builder/special-properties");
+                ensureSpecialProperties();
 
-                let specialSetter = sp.getSpecialPropertySetter(options.property);
+                let specialSetter = specialProperties.getSpecialPropertySetter(options.property);
                 if (specialSetter) {
                     specialSetter(optionsInstance, value);
                 } else {

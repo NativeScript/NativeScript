@@ -11,6 +11,13 @@ import view = require("ui/core/view");
 
 global.moduleMerge(common, exports);
 
+var color: typeof colorModule;
+function ensureColor() {
+    if (!color) {
+        color = require("color");
+    }
+}
+
 function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <SegmentedBar>data.object;
     if (!view.ios || !view.items) {
@@ -67,7 +74,7 @@ function onSelectedBackgroundColorPropertyChanged(data: dependencyObservable.Pro
         return;
     }
 
-    var color: typeof colorModule = require("color");
+    ensureColor();
 
     if (data.newValue instanceof color.Color) {
         view.ios.tintColor = data.newValue.ios;

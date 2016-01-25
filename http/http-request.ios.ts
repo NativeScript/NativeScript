@@ -2,7 +2,7 @@
  * iOS specific http request implementation.
  */
 import http = require("http");
-import * as typesModule from "utils/types";
+import * as types from "utils/types";
 import * as imageSourceModule from "image-source";
 import * as utilsModule from "utils/utils";
 
@@ -10,12 +10,24 @@ var GET = "GET";
 var USER_AGENT_HEADER = "User-Agent";
 var USER_AGENT = "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25";
 
+var utils: typeof utilsModule;
+function ensureUtils() {
+    if (!utils) {
+        utils = require("utils/utils");
+    }
+}
+
+var imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
+}
+
 export function request(options: http.HttpRequestOptions): Promise<http.HttpResponse> {
     return new Promise<http.HttpResponse>((resolve, reject) => {
 
         try {
-            var types: typeof typesModule = require("utils/types");
-
             var sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration();
             var queue = NSOperationQueue.mainQueue();
             var session = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(
@@ -63,13 +75,11 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                 raw: data,
                                 toString: () => { return NSDataToString(data); },
                                 toJSON: () => {
-                                    var utils: typeof utilsModule = require("utils/utils");
-
+                                    ensureUtils();
                                     return utils.parseJSON(NSDataToString(data));
                                 },
                                 toImage: () => {
-                                    var imageSource: typeof imageSourceModule = require("image-source");
-
+                                    ensureImageSource();
                                     if (UIImage.imageWithData["async"]) {
                                         return UIImage.imageWithData["async"](UIImage, [data])
                                                       .then(image => {

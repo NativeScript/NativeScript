@@ -14,6 +14,13 @@ import styling = require("ui/styling");
 
 global.moduleMerge(common, exports);
 
+var imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
+}
+
 class UITabBarControllerImpl extends UITabBarController {
 
     private _owner: WeakRef<TabView>;
@@ -240,7 +247,7 @@ export class TabView extends common.TabView {
         var image: UIImage;
         image = this._iconsCache[iconSource];
         if (!image) {
-            var imageSource: typeof imageSourceModule = require("image-source");
+            ensureImageSource();
 
             var is = imageSource.fromFileOrResource(iconSource);
             if (is && is.ios) {

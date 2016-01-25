@@ -6,6 +6,13 @@ import color = require("color");
 import bindable = require("ui/core/bindable");
 import * as typesModule from "utils/types";
 
+var types: typeof typesModule;
+function ensureTypes() {
+    if (!types) {
+        types = require("utils/types");
+    }
+}
+
 export module knownCollections {
     export var items = "items";
 }
@@ -40,7 +47,7 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
     public _adjustSelectedIndex(items: Array<definition.SegmentedBarItem>) {
         if (this.items) {
             if (this.items.length > 0) {
-                var types: typeof typesModule = require("utils/types");
+                ensureTypes();
 
                 if (types.isUndefined(this.selectedIndex) || (this.selectedIndex > this.items.length - 1)) {
                     this._setValue(SegmentedBar.selectedIndexProperty, 0);
