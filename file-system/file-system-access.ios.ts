@@ -214,6 +214,10 @@ export class FileSystemAccess {
         }
     }
 
+    public getLogicalRootPath(): string {
+        return NSBundle.mainBundle().bundlePath;
+    }
+
     public getDocumentsFolderPath(): string {
         return this.getKnownPath(this.documentDir);
     }

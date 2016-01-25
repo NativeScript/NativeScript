@@ -303,6 +303,11 @@ export class Console implements definition.Console {
     }
 
     private logMessage(message: string, messageType: number): void {
+        if (!global.android) {
+            // This case may be entered during heap snapshot where the global.android is not present
+            return;
+        }
+
         var arrayToLog = [];
         if (message.length > 4000) {
             var i;

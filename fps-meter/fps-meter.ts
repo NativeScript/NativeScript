@@ -29,7 +29,12 @@ function doFrame(currentTimeMillis: number) {
     }
 }
 
-var native = new fpsNative.FPSCallback(doFrame);
+var native: fpsNative.FPSCallback;
+function ensureNative() {
+    if (!native) {
+        native = new fpsNative.FPSCallback(doFrame);
+    }
+}
 
 export function reset() {
     _minFps = 1000;
@@ -38,6 +43,10 @@ export function reset() {
 }
 
 export function running(): boolean {
+    if (!native) {
+        return false;
+    }
+
     return native.running;
 }
 
@@ -46,10 +55,15 @@ export function minFps(): number {
 }
 
 export function start() {
+    ensureNative();
     native.start();
 }
 
 export function stop() {
+    if (!native) {
+        return;
+    }
+
     native.stop();
     reset();
 }

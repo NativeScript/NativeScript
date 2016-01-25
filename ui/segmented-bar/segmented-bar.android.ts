@@ -80,6 +80,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         var tabIndex: number;
 
         if (view.selectedBackgroundColor) {
+            ensureSegmentedBarColorDrawableClass();
             for (tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
                 var vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
 
@@ -87,7 +88,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
                 var arr = java.lang.reflect.Array.newInstance(java.lang.Integer.class.getField("TYPE").get(null), 1);
                 arr[0] = R_ATTR_STATE_SELECTED;
-                var colorDrawable = new SegmentedBarColorDrawable(view.selectedBackgroundColor.android)
+                var colorDrawable: android.graphics.drawable.ColorDrawable = new SegmentedBarColorDrawableClass(view.selectedBackgroundColor.android)
                 stateDrawable.addState(arr, colorDrawable);
                 stateDrawable.setBounds(0, 15, vg.getRight(), vg.getBottom());
 
@@ -107,19 +108,28 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;
 
-class SegmentedBarColorDrawable extends android.graphics.drawable.ColorDrawable {
-    constructor(arg: any) {
-        super(arg);
-
-        return global.__native(this);
+var SegmentedBarColorDrawableClass;
+function ensureSegmentedBarColorDrawableClass() {
+    if (SegmentedBarColorDrawableClass) {
+        return;
     }
 
-    public draw(canvas: android.graphics.Canvas): void {
-        var p = new android.graphics.Paint();
-        p.setColor(this.getColor());
-        p.setStyle(android.graphics.Paint.Style.FILL);
-        canvas.drawRect(0, this.getBounds().height() - 15, this.getBounds().width(), this.getBounds().height(), p);
+    class SegmentedBarColorDrawable extends android.graphics.drawable.ColorDrawable {
+        constructor(arg: any) {
+            super(arg);
+
+            return global.__native(this);
+        }
+
+        public draw(canvas: android.graphics.Canvas): void {
+            var p = new android.graphics.Paint();
+            p.setColor(this.getColor());
+            p.setStyle(android.graphics.Paint.Style.FILL);
+            canvas.drawRect(0, this.getBounds().height() - 15, this.getBounds().width(), this.getBounds().height(), p);
+        }
     }
+
+    SegmentedBarColorDrawableClass = SegmentedBarColorDrawable;
 }
 
 export class SegmentedBarItem extends common.SegmentedBarItem {
@@ -136,11 +146,12 @@ export class SegmentedBarItem extends common.SegmentedBarItem {
 }
 
 export class SegmentedBar extends common.SegmentedBar {
-    private _android: OurTabHost;
+    private _android: android.widget.TabHost;
     public _listener: android.widget.TabHost.OnTabChangeListener;
 
     public _createUI() {
-        this._android = new OurTabHost(this._context, null);
+        ensureTabHostClass();
+        this._android = new TabHostClass(this._context, null);
         if (types.isNumber(this.selectedIndex) && this._android.getCurrentTab() !== this.selectedIndex) {
             this._android.setCurrentTab(this.selectedIndex);
         }
@@ -177,16 +188,25 @@ export class SegmentedBar extends common.SegmentedBar {
     }
 }
 
-class OurTabHost extends android.widget.TabHost {
-    constructor(context: any, attrs: any) {
-        super(context, attrs);
-
-        return global.__native(this);
+var TabHostClass;
+function ensureTabHostClass() {
+    if (TabHostClass) {
+        return;
     }
 
-    protected onAttachedToWindow(): void {
-        // overriden to remove the code that will steal the focus from edit fields.
+    class OurTabHost extends android.widget.TabHost {
+        constructor(context: any, attrs: any) {
+            super(context, attrs);
+
+            return global.__native(this);
+        }
+
+        protected onAttachedToWindow(): void {
+            // overriden to remove the code that will steal the focus from edit fields.
+        }
     }
+
+    TabHostClass = OurTabHost;
 }
 
 export class SegmentedBarStyler implements style.Styler {

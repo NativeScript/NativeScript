@@ -3,8 +3,13 @@ import { knownFolders } from "file-system"
 export var debug = true;
 
 // TODO: Get this from the runtimes...
-var applicationRootPath = knownFolders.currentApp().path;
-applicationRootPath = applicationRootPath.substr(0, applicationRootPath.length - "app/".length);
+var applicationRootPath: string;
+function ensureAppRootPath() {
+    if (!applicationRootPath) {
+        applicationRootPath = knownFolders.currentApp().path;
+        applicationRootPath = applicationRootPath.substr(0, applicationRootPath.length - "app/".length);
+    }
+}
 
 export class Source {
 	private _uri: string;
@@ -14,7 +19,9 @@ export class Source {
 	private static _source: symbol = Symbol("source");
 	private static _appRoot: string;
 	
-	constructor(uri: string, line: number, column: number) {
+    constructor(uri: string, line: number, column: number) {
+        ensureAppRootPath();
+
 		if (uri.length > applicationRootPath.length && uri.substr(0, applicationRootPath.length) === applicationRootPath) {
 			this._uri = "file://" + uri.substr(applicationRootPath.length);
 		} else {

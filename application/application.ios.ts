@@ -7,6 +7,7 @@ import * as fileResolverModule  from "file-system/file-name-resolver";
 import * as enumsModule from "ui/enums";
 
 global.moduleMerge(common, exports);
+var typedExports: typeof definition = exports;
 
 class Responder extends UIResponder {
     //
@@ -109,12 +110,12 @@ class IOSApplication implements definition.iOSApplication {
         this._window = <Window>Window.alloc().initWithFrame(UIScreen.mainScreen().bounds);
         this._window.backgroundColor = UIColor.whiteColor();
 
-        if (exports.onLaunch) {
-            exports.onLaunch();
+        if (typedExports.onLaunch) {
+            typedExports.onLaunch(undefined);
         }
 
-        exports.notify({
-            eventName: exports.launchEvent,
+        typedExports.notify({
+            eventName: typedExports.launchEvent,
             object: this,
             ios: notification.userInfo && notification.userInfo.objectForKey("UIApplicationLaunchOptionsLocalNotificationKey") || null
         });
@@ -122,9 +123,9 @@ class IOSApplication implements definition.iOSApplication {
         var topFrame = frame.topmost();
         if (!topFrame) {
             // try to navigate to the mainEntry/Module (if specified)
-            var navParam = exports.mainEntry;
+            var navParam = typedExports.mainEntry;
             if (!navParam) {
-                navParam = exports.mainModule;
+                navParam = typedExports.mainModule;
             }
 
             if (navParam) {
@@ -144,35 +145,35 @@ class IOSApplication implements definition.iOSApplication {
     }
 
     private didBecomeActive(notification: NSNotification) {
-        if (exports.onResume) {
-            exports.onResume();
+        if (typedExports.onResume) {
+            typedExports.onResume();
         }
 
-        exports.notify({ eventName: exports.resumeEvent, object: this, ios: UIApplication.sharedApplication() });
+        typedExports.notify({ eventName: typedExports.resumeEvent, object: this, ios: UIApplication.sharedApplication() });
     }
 
     private didEnterBackground(notification: NSNotification) {
-        if (exports.onSuspend) {
-            exports.onSuspend();
+        if (typedExports.onSuspend) {
+            typedExports.onSuspend();
         }
 
-        exports.notify({ eventName: exports.suspendEvent, object: this, ios: UIApplication.sharedApplication() });
+        typedExports.notify({ eventName: typedExports.suspendEvent, object: this, ios: UIApplication.sharedApplication() });
     }
 
     private willTerminate(notification: NSNotification) {
-        if (exports.onExit) {
-            exports.onExit();
+        if (typedExports.onExit) {
+            typedExports.onExit();
         }
 
-        exports.notify({ eventName: exports.exitEvent, object: this, ios: UIApplication.sharedApplication() });
+        typedExports.notify({ eventName: typedExports.exitEvent, object: this, ios: UIApplication.sharedApplication() });
     }
 
     private didReceiveMemoryWarning(notification: NSNotification) {
-        if (exports.onLowMemory) {
-            exports.onLowMemory();
+        if (typedExports.onLowMemory) {
+            typedExports.onLowMemory();
         }
 
-        exports.notify({ eventName: exports.lowMemoryEvent, object: this, android: undefined, ios: UIApplication.sharedApplication() });
+        typedExports.notify({ eventName: typedExports.lowMemoryEvent, object: this, android: undefined, ios: UIApplication.sharedApplication() });
     }
 
     private orientationDidChange(notification: NSNotification) {
@@ -198,8 +199,8 @@ class IOSApplication implements definition.iOSApplication {
                     break;
             }
 
-            exports.notify(<definition.OrientationChangedEventData>{
-                eventName: exports.orientationChangedEvent,
+            typedExports.notify(<definition.OrientationChangedEventData>{
+                eventName: typedExports.orientationChangedEvent,
                 ios: this,
                 newValue: newValue,
                 object: this
@@ -210,28 +211,32 @@ class IOSApplication implements definition.iOSApplication {
 }
 
 var iosApp = new IOSApplication();
-exports.ios = iosApp;
+typedExports.ios = iosApp;
 
-global.__onUncaughtError = function (error: Error) {
+global.__onUncaughtError = function (error: definition.NativeScriptError) {
     var types: typeof typesModule = require("utils/types");
 
     // TODO: This should be obsoleted
-    if (types.isFunction(exports.onUncaughtError)) {
-        exports.onUncaughtError(error);
+    if (types.isFunction(typedExports.onUncaughtError)) {
+        typedExports.onUncaughtError(error);
     }
     
-    exports.notify({ eventName: exports.uncaughtErrorEvent, object: <any>exports.ios, ios: error });
+    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: typedExports.ios, ios: error });
+}
+
+function loadCss() {
+    typedExports.cssSelectorsCache = typedExports.loadCss(typedExports.cssFile);
 }
 
 var started: boolean = false;
-exports.start = function (entry?: frame.NavigationEntry) {
+typedExports.start = function (entry?: frame.NavigationEntry) {
     if (!started) {
         if (entry) {
             exports.mainEntry = entry;
         }
         started = true;
-        exports.loadCss();
-        UIApplicationMain(0, null, null, exports.ios && exports.ios.delegate ? NSStringFromClass(exports.ios.delegate) : NSStringFromClass(Responder));
+        loadCss();
+        UIApplicationMain(0, null, null, typedExports.ios && typedExports.ios.delegate ? NSStringFromClass(typedExports.ios.delegate) : NSStringFromClass(Responder));
     } else {
         throw new Error("iOS Application already started!");
     }
@@ -248,7 +253,7 @@ global.__onLiveSync = function () {
     fileResolver.clearCache();
 
     // Reload app.css in case it was changed.
-    exports.loadCss();
+    loadCss();
 
     // Reload current page.
     frame.reloadPage();

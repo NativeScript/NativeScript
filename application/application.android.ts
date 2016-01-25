@@ -1,17 +1,17 @@
 ﻿import appModule = require("./application-common");
-import dts = require("application");
+import definition = require("application");
 import frame = require("ui/frame");
 import observable = require("data/observable");
 import * as typesModule from "utils/types";
 import * as fileResolverModule  from "file-system/file-name-resolver";
 
 global.moduleMerge(appModule, exports);
+var typedExports: typeof definition = exports;
 
 // We are using the exports object for the common events since we merge the appModule with this module's exports, which is what users will receive when require("application") is called;
 // TODO: This is kind of hacky and is "pure JS in TypeScript"
 
-var initEvents = function () {
-    var androidApp: dts.AndroidApplication = exports.android;
+function initEvents() {
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     var lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: function (activity: any, bundle: any) {
@@ -22,7 +22,7 @@ var initEvents = function () {
             if (!androidApp.startActivity) {
                 androidApp.startActivity = activity;
 
-                androidApp.notify(<dts.AndroidActivityBundleEventData>{ eventName: "activityCreated", object: androidApp, activity: activity, bundle: bundle });
+                androidApp.notify(<definition.AndroidActivityBundleEventData>{ eventName: "activityCreated", object: androidApp, activity: activity, bundle: bundle });
 
                 if (androidApp.onActivityCreated) {
                     androidApp.onActivityCreated(activity, bundle);
@@ -47,16 +47,16 @@ var initEvents = function () {
             }
 
             if (activity === androidApp.startActivity) {
-                if (exports.onExit) {
-                    exports.onExit();
+                if (typedExports.onExit) {
+                    typedExports.onExit();
                 }
 
-                exports.notify(<dts.ApplicationEventData>{ eventName: dts.exitEvent, object: androidApp, android: activity });
+                typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.exitEvent, object: androidApp, android: activity });
 
                 androidApp.startActivity = undefined;
             }
 
-            androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityDestroyed", object: androidApp, activity: activity });
+            androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityDestroyed", object: androidApp, activity: activity });
 
             if (androidApp.onActivityDestroyed) {
                 androidApp.onActivityDestroyed(activity);
@@ -71,17 +71,17 @@ var initEvents = function () {
                 return;
             }
 
-            (<any>androidApp).paused = true;
+            androidApp.paused = true;
 
             if (activity === androidApp.foregroundActivity) {
-                if (exports.onSuspend) {
-                    exports.onSuspend();
+                if (typedExports.onSuspend) {
+                    typedExports.onSuspend();
                 }
 
-                exports.notify(<dts.ApplicationEventData>{ eventName: dts.suspendEvent, object: androidApp, android: activity });
+                typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.suspendEvent, object: androidApp, android: activity });
             }
 
-            androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityPaused", object: androidApp, activity: activity });
+            androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityPaused", object: androidApp, activity: activity });
 
             if (androidApp.onActivityPaused) {
                 androidApp.onActivityPaused(activity);
@@ -93,17 +93,17 @@ var initEvents = function () {
                 return;
             }
 
-            (<any>androidApp).paused = false;
+            androidApp.paused = false;
 
             if (activity === androidApp.foregroundActivity) {
-                if (exports.onResume) {
-                    exports.onResume();
+                if (typedExports.onResume) {
+                    typedExports.onResume();
                 }
 
-                exports.notify(<dts.ApplicationEventData>{ eventName: dts.resumeEvent, object: androidApp, android: activity });
+                typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.resumeEvent, object: androidApp, android: activity });
             }
 
-            androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityResumed", object: androidApp, activity: activity });
+            androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityResumed", object: androidApp, activity: activity });
 
             if (androidApp.onActivityResumed) {
                 androidApp.onActivityResumed(activity);
@@ -115,7 +115,7 @@ var initEvents = function () {
                 return;
             }
 
-            androidApp.notify(<dts.AndroidActivityBundleEventData>{ eventName: "saveActivityState", object: androidApp, activity: activity, bundle: bundle });
+            androidApp.notify(<definition.AndroidActivityBundleEventData>{ eventName: "saveActivityState", object: androidApp, activity: activity, bundle: bundle });
 
             if (androidApp.onSaveActivityState) {
                 androidApp.onSaveActivityState(activity, bundle);
@@ -129,7 +129,7 @@ var initEvents = function () {
 
             androidApp.foregroundActivity = activity;
 
-            androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityStarted", object: androidApp, activity: activity });
+            androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityStarted", object: androidApp, activity: activity });
 
             if (androidApp.onActivityStarted) {
                 androidApp.onActivityStarted(activity);
@@ -141,7 +141,7 @@ var initEvents = function () {
                 return;
             }
 
-            androidApp.notify(<dts.AndroidActivityEventData>{ eventName: "activityStopped", object: androidApp, activity: activity });
+            androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityStopped", object: androidApp, activity: activity });
 
             if (androidApp.onActivityStopped) {
                 androidApp.onActivityStopped(activity);
@@ -152,18 +152,7 @@ var initEvents = function () {
     return lifecycleCallbacks;
 }
 
-app.init({
-    getActivity: function (activity: android.app.Activity) {
-        var intent = activity.getIntent()
-        return exports.android.getActivity(intent);
-    },
-
-    onCreate: function () {
-        exports.android.init(this);
-    }
-});
-
-export class AndroidApplication extends observable.Observable implements dts.AndroidApplication {
+export class AndroidApplication extends observable.Observable implements definition.AndroidApplication {
     public static activityCreatedEvent = "activityCreated";
     public static activityDestroyedEvent = "activityDestroyed";
     public static activityStartedEvent = "activityStarted";
@@ -174,6 +163,7 @@ export class AndroidApplication extends observable.Observable implements dts.And
     public static activityResultEvent = "activityResult";
     public static activityBackPressedEvent = "activityBackPressed";
 
+    public paused: boolean;
     public nativeApp: android.app.Application;
     public context: android.content.Context;
     public currentContext: android.content.Context;
@@ -203,11 +193,11 @@ export class AndroidApplication extends observable.Observable implements dts.And
     public getActivity(intent: android.content.Intent): Object {
         if (intent && intent.getAction() === android.content.Intent.ACTION_MAIN) {
             // application's main activity
-            if (exports.onLaunch) {
-                exports.onLaunch(intent);
+            if (typedExports.onLaunch) {
+                typedExports.onLaunch(intent);
             }
 
-            exports.notify({ eventName: dts.launchEvent, object: this, android: intent });
+            typedExports.notify({ eventName: typedExports.launchEvent, object: this, android: intent });
 
             setupOrientationListener(this);
 
@@ -221,9 +211,9 @@ export class AndroidApplication extends observable.Observable implements dts.And
         var topFrame = frame.topmost();
         if (!topFrame) {
             // try to navigate to the mainEntry/Module (if specified)
-            var navParam = dts.mainEntry;
+            var navParam = typedExports.mainEntry;
             if (!navParam) {
-                navParam = dts.mainModule;
+                navParam = typedExports.mainModule;
             }
 
             if (navParam) {
@@ -263,9 +253,10 @@ export class AndroidApplication extends observable.Observable implements dts.And
     }
 
     public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+        ensureBroadCastReceiverClass();
         var that = this;
         var registerFunc = function (context: android.content.Context) {
-            var receiver = new BroadcastReceiver(onReceiveCallback);
+            var receiver: android.content.BroadcastReceiver = new BroadcastReceiverClass(onReceiveCallback);
             context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
             that._registeredReceivers[intentFilter] = receiver;
         }
@@ -288,41 +279,75 @@ export class AndroidApplication extends observable.Observable implements dts.And
     }
 }
 
-class BroadcastReceiver extends android.content.BroadcastReceiver {
-    private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
-
-    constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
-        super();
-        this._onReceiveCallback = onReceiveCallback;
-        return global.__native(this);
+var BroadcastReceiverClass;
+function ensureBroadCastReceiverClass() {
+    if (BroadcastReceiverClass) {
+        return;
     }
 
-    public onReceive(context: android.content.Context, intent: android.content.Intent) {
-        if (this._onReceiveCallback) {
-            this._onReceiveCallback(context, intent);
+    class BroadcastReceiver extends android.content.BroadcastReceiver {
+        private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
+
+        constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+            super();
+            this._onReceiveCallback = onReceiveCallback;
+            return global.__native(this);
+        }
+
+        public onReceive(context: android.content.Context, intent: android.content.Intent) {
+            if (this._onReceiveCallback) {
+                this._onReceiveCallback(context, intent);
+            }
         }
     }
+
+    BroadcastReceiverClass = BroadcastReceiver;
 }
 
-global.__onUncaughtError = function (error: Error) {
+global.__onUncaughtError = function (error: definition.NativeScriptError) {
     var types: typeof typesModule = require("utils/types");
 
     // TODO: Obsolete this
-    if (types.isFunction(exports.onUncaughtError)) {
-        exports.onUncaughtError(error);
+    if (types.isFunction(typedExports.onUncaughtError)) {
+        typedExports.onUncaughtError(error);
     }
 
-    exports.notify({ eventName: dts.uncaughtErrorEvent, object: appModule.android, android: error });
+    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: appModule.android, android: error });
 }
 
-exports.start = function (entry?: frame.NavigationEntry) {
+function loadCss() {
+    typedExports.cssSelectorsCache = typedExports.loadCss(typedExports.cssFile);
+}
+
+var started = false;
+export function start (entry?: frame.NavigationEntry) {
+    if (started) {
+        throw new Error("Application is already started.");
+    }
+
+    started = true;
+
     if (entry) {
-        dts.mainEntry = entry;
+        typedExports.mainEntry = entry;
     }
-    dts.loadCss();
+
+    // this should be the first call, to avoid issues when someone accesses the Application singleton prior to extending its onCreate method
+    app.init({
+        getActivity: function (activity: android.app.Activity) {
+            var intent = activity.getIntent()
+            return androidApp.getActivity(intent);
+        },
+
+        onCreate: function () {
+            androidApp.init(this);
+        }
+    });
+    loadCss();
 }
 
-exports.android = new AndroidApplication();
+var androidApp = new AndroidApplication();
+// use the exports object instead of 'export var' due to global namespace collision
+typedExports.android = androidApp;
 
 var currentOrientation: number;
 function setupOrientationListener(androidApp: AndroidApplication) {
@@ -350,17 +375,17 @@ function onConfigurationChanged(context: android.content.Context, intent: androi
                 break;
         }
 
-        exports.notify(<dts.OrientationChangedEventData>{
-            eventName: dts.orientationChangedEvent,
+        typedExports.notify(<definition.OrientationChangedEventData>{
+            eventName: typedExports.orientationChangedEvent,
             android: context,
             newValue: newValue,
-            object: exports.android,
+            object: typedExports.android,
         });
     }
 }
 
 global.__onLiveSync = function () {
-    if (exports.android && exports.android.paused) {
+    if (typedExports.android && typedExports.android.paused) {
         return;
     }
 
@@ -370,7 +395,7 @@ global.__onLiveSync = function () {
     fileResolver.clearCache();
 
     // Reload app.css in case it was changed.
-    appModule.loadCss();
+    loadCss();
 
     // Reload current page.
     frame.reloadPage();

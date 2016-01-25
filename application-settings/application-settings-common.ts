@@ -1,5 +1,4 @@
-﻿
-export var checkKey = function(key: string) : void {
+﻿export var checkKey = function(key: string) : void {
     if ("string" !== typeof key) {
         throw new Error("key: '" + key + "' must be a string");
     }    

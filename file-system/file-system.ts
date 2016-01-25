@@ -1,4 +1,5 @@
 ﻿import file_access_module = require("file-system/file-system-access");
+import * as utilsModule from "utils/utils";
 
 // The FileSystemAccess implementation, used through all the APIs.
 var fileAccess;
@@ -442,17 +443,9 @@ export module knownFolders {
 
     export var currentApp = function (): Folder {
         if (!_app) {
-            const currentDir = __dirname;
-            const tnsModulesIndex = currentDir.indexOf("/tns_modules");
-
-            // Module not hosted in ~/tns_modules when bundled. Use current dir.
-            let appPath = currentDir;
-            if (tnsModulesIndex !== -1) {
-                // Strip part after tns_modules to obtain app root
-                appPath = currentDir.substring(0, tnsModulesIndex);
-            }
+            var logicalRoot = getFileAccess().getLogicalRootPath();
             _app = new Folder();
-            _app[pathProperty] = appPath;
+            _app[pathProperty] = logicalRoot + "/app";
             _app[isKnownProperty] = true;
         }
 

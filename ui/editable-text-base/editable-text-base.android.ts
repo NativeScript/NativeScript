@@ -52,7 +52,7 @@ export class EditableTextBase extends common.EditableTextBase {
                         owner._dirtyTextAccumulator = editable.toString();
                         break;
                     case enums.UpdateTextTrigger.textChanged:
-                        owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, editable.toString());
+                        owner._onPropertyChangedFromNative(EditableTextBase.textProperty, editable.toString());
                         break;
                     default:
                         throw new Error("Invalid updateTextTrigger: " + owner.updateTextTrigger);
@@ -71,7 +71,7 @@ export class EditableTextBase extends common.EditableTextBase {
 
                 if (!hasFocus) {
                     if (owner._dirtyTextAccumulator) {
-                        owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, owner._dirtyTextAccumulator);
+                        owner._onPropertyChangedFromNative(EditableTextBase.textProperty, owner._dirtyTextAccumulator);
                         owner._dirtyTextAccumulator = undefined;
                     }
 

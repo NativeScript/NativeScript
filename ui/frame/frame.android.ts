@@ -21,62 +21,69 @@ var activityInitialized = false;
 
 var navDepth = -1;
 
-var PageFragmentBody = (<any>android.app.Fragment).extend({
-        
-    onCreate: function (savedInstanceState: android.os.Bundle) {
-        trace.write(`PageFragmentBody.onCreate(${savedInstanceState})`, trace.categories.NativeLifecycle);
-        this.super.onCreate(savedInstanceState);
-        this.super.setHasOptionsMenu(true);
-    },
-
-    onCreateView: function (inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-        var entry = this.entry;
-        var page = entry.resolvedPage;
-        trace.write(`PageFragmentBody.onCreateView(${inflater}, ${page}, ${savedInstanceState})`, trace.categories.NativeLifecycle);
-        if (savedInstanceState && savedInstanceState.getBoolean(HIDDEN, false)) {
-            this.super.getFragmentManager().beginTransaction().hide(this).commit();
-            page._onAttached(this.getActivity());
-        }
-        else {
-            onFragmentShown(this);
-        }
-        return page._nativeView;
-    },
-
-    onHiddenChanged: function (hidden: boolean) {
-        trace.write(`PageFragmentBody.onHiddenChanged(${hidden})`, trace.categories.NativeLifecycle);
-        this.super.onHiddenChanged(hidden);
-        if (hidden) {
-            onFragmentHidden(this);
-        }
-        else {
-            onFragmentShown(this);
-        }
-    },
-
-    onSaveInstanceState: function (outState: android.os.Bundle) {
-        trace.write(`PageFragmentBody.onSaveInstanceState(${outState})`, trace.categories.NativeLifecycle);
-        this.super.onSaveInstanceState(outState);
-        if (this.isHidden()) {
-            outState.putBoolean(HIDDEN, true);
-        }
-    },
-
-    onDestroyView: function () {
-        trace.write(`PageFragmentBody.onDestroyView()`, trace.categories.NativeLifecycle);
-        this.super.onDestroyView();
-        onFragmentHidden(this);
-    },
-
-    onDestroy: function () {
-        trace.write(`PageFragmentBody.onDestroy()`, trace.categories.NativeLifecycle);
-        this.super.onDestroy();
-
-        var utils: typeof utilsModule = require("utils/utils");
-
-        utils.GC();
+var FragmentClass;
+function ensureFragmentClass() {
+    if (FragmentClass) {
+        return;
     }
-});
+
+    FragmentClass = (<any>android.app.Fragment).extend({
+
+        onCreate: function (savedInstanceState: android.os.Bundle) {
+            trace.write(`PageFragmentBody.onCreate(${savedInstanceState})`, trace.categories.NativeLifecycle);
+            this.super.onCreate(savedInstanceState);
+            this.super.setHasOptionsMenu(true);
+        },
+
+        onCreateView: function (inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
+            var entry = this.entry;
+            var page = entry.resolvedPage;
+            trace.write(`PageFragmentBody.onCreateView(${inflater}, ${page}, ${savedInstanceState})`, trace.categories.NativeLifecycle);
+            if (savedInstanceState && savedInstanceState.getBoolean(HIDDEN, false)) {
+                this.super.getFragmentManager().beginTransaction().hide(this).commit();
+                page._onAttached(this.getActivity());
+            }
+            else {
+                onFragmentShown(this);
+            }
+            return page._nativeView;
+        },
+
+        onHiddenChanged: function (hidden: boolean) {
+            trace.write(`PageFragmentBody.onHiddenChanged(${hidden})`, trace.categories.NativeLifecycle);
+            this.super.onHiddenChanged(hidden);
+            if (hidden) {
+                onFragmentHidden(this);
+            }
+            else {
+                onFragmentShown(this);
+            }
+        },
+
+        onSaveInstanceState: function (outState: android.os.Bundle) {
+            trace.write(`PageFragmentBody.onSaveInstanceState(${outState})`, trace.categories.NativeLifecycle);
+            this.super.onSaveInstanceState(outState);
+            if (this.isHidden()) {
+                outState.putBoolean(HIDDEN, true);
+            }
+        },
+
+        onDestroyView: function () {
+            trace.write(`PageFragmentBody.onDestroyView()`, trace.categories.NativeLifecycle);
+            this.super.onDestroyView();
+            onFragmentHidden(this);
+        },
+
+        onDestroy: function () {
+            trace.write(`PageFragmentBody.onDestroy()`, trace.categories.NativeLifecycle);
+            this.super.onDestroy();
+
+            var utils: typeof utilsModule = require("utils/utils");
+
+            utils.GC();
+        }
+    });
+}
 
 function onFragmentShown(fragment) {
     trace.write(`onFragmentShown(${fragment.toString()})`, trace.categories.NativeLifecycle);
@@ -215,7 +222,8 @@ export class Frame extends frameCommon.Frame {
         var fragmentTransaction = manager.beginTransaction();
 
         var newFragmentTag = "fragment" + navDepth;
-        var newFragment = new PageFragmentBody();
+        ensureFragmentClass();
+        var newFragment = new FragmentClass();
 
         newFragment.frame = this;
         newFragment.entry = backstackEntry;

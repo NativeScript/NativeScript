@@ -1,7 +1,7 @@
 import imageSource = require("image-source");
 import colorModule = require("color");
 import enums = require("ui/enums");
-import dts = require("ui/styling/background");
+import definition = require("ui/styling/background");
 import cssValue = require("css-value");
 import * as typesModule from "utils/types";
 
@@ -12,7 +12,7 @@ interface CSSValue {
     value?: number;
 }
 
-export class Background implements dts.Background {
+export class Background implements definition.Background {
     public static default = new Background(undefined, undefined, undefined, undefined, undefined);
 
     color: colorModule.Color;
@@ -55,12 +55,12 @@ export class Background implements dts.Background {
         return new Background(this.color, this.image, this.repeat, this.position, value);
     }
 
-    public getDrawParams(width: number, height: number): dts.BackgroundDrawParams {
+    public getDrawParams(width: number, height: number): definition.BackgroundDrawParams {
         if (!this.image) {
             return null;
         }
 
-        var res: dts.BackgroundDrawParams = {
+        var res: definition.BackgroundDrawParams = {
             repeatX: true,
             repeatY: true,
             posX: 0,

@@ -60,7 +60,7 @@ export class LocationManager implements locationModule.LocationManager {
     }
 
     private static locationFromAndroidLocation(androidLocation: android.location.Location): locationModule.Location {
-        var location = new locationModule.Location();
+        var location = new common.Location();
         location.latitude = androidLocation.getLatitude();
         location.longitude = androidLocation.getLongitude();
         location.altitude = androidLocation.getAltitude();

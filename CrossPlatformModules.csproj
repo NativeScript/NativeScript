@@ -981,6 +981,8 @@
     <TypeScriptCompile Include="ui\utils.ios.ts">
       <DependentUpon>utils.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="utils\debug.d.ts" />
+    <TypeScriptCompile Include="utils\debug.ts" />
     <TypeScriptCompile Include="utils\module-merge.ts" />
     <TypeScriptCompile Include="utils\utils.android.ts">
       <DependentUpon>utils.d.ts</DependentUpon>
@@ -2139,7 +2141,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>0</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:3128/</IISUrl>
+          <IISUrl>http://localhost:60276/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

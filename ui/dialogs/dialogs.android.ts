@@ -131,7 +131,7 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
         title: dialogsCommon.PROMPT,
         okButtonText: dialogsCommon.OK,
         cancelButtonText: dialogsCommon.CANCEL,
-        inputType: dialogs.inputType.text,
+        inputType: dialogsCommon.inputType.text,
     };
 
     if (arguments.length === 1) {
@@ -155,7 +155,7 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
 
             var input = new android.widget.EditText(appmodule.android.currentContext);
 
-            if (options && options.inputType === dialogs.inputType.password) {
+            if (options && options.inputType === dialogsCommon.inputType.password) {
                 input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
             }
 

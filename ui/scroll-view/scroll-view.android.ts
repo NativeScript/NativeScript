@@ -115,7 +115,7 @@ export class ScrollView extends common.ScrollView implements definition.ScrollVi
                 if (rootScrollView && rootScrollView.android) {
                     rootScrollView.notify(<definition.ScrollEventData>{
                         object: rootScrollView,
-                        eventName: definition.ScrollView.scrollEvent,
+                        eventName: ScrollView.scrollEvent,
                         scrollX: rootScrollView.android.getScrollX() / utils.layout.getDisplayDensity(),
                         scrollY: rootScrollView.android.getScrollY() / utils.layout.getDisplayDensity()
                     });

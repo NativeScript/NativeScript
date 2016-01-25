@@ -8,8 +8,19 @@ import enums = require("ui/enums");
 
 global.moduleMerge(common, exports);
 
-var floatType = java.lang.Float.class.getField("TYPE").get(null);
-var argbEvaluator = new android.animation.ArgbEvaluator();
+var floatType;
+function ensureFloatType() {
+    if (!floatType) {
+        floatType = java.lang.Float.class.getField("TYPE").get(null);
+    }
+}
+
+var argbEvaluator: android.animation.ArgbEvaluator;
+function ensureArgbEvaluator() {
+    if (!argbEvaluator) {
+        argbEvaluator = new android.animation.ArgbEvaluator();
+    }
+}
 
 var keyPrefix = "ui.animation.";
 var propertyKeys = {};
@@ -154,6 +165,8 @@ export class Animation extends common.Animation implements definition.Animation 
                 }
             }
         }
+
+        ensureFloatType();
         
         switch (propertyAnimation.property) {
 
@@ -167,6 +180,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 break;
 
             case common.Properties.backgroundColor:
+                ensureArgbEvaluator();
                 originalValue1 = nativeView.getBackground();
                 nativeArray = java.lang.reflect.Array.newInstance(java.lang.Object.class, 2);
                 nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<color.Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);

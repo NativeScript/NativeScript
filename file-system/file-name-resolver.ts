@@ -3,7 +3,7 @@ import fs = require("file-system");
 import types = require("utils/types");
 import trace = require("trace");
 import platform = require("platform");
-import application = require("application");
+import * as appModule from "application";
 
 var MIN_WH: string = "minWH";
 var MIN_W: string = "minW";
@@ -225,7 +225,8 @@ var resolverInstance: FileNameResolver;
 
 export function resolveFileName(path: string, ext: string): string {
     if (!appEventAttached) {
-        application.on(application.orientationChangedEvent, (data) => {
+        var app: typeof appModule = require("application");
+        app.on(app.orientationChangedEvent, (data) => {
             resolverInstance = undefined;
         });
         appEventAttached = true;

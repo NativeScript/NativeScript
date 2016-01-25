@@ -1,35 +1,44 @@
 ﻿import common = require("./image-cache-common");
 
-class LruBitmapCache extends android.util.LruCache<string, android.graphics.Bitmap> {
-    constructor(cacheSize: number) {
-        super(cacheSize);
-        return global.__native(this);
+var LruBitmapCacheClass;
+function ensureLruBitmapCacheClass() {
+    if (LruBitmapCacheClass) {
+        return;
     }
 
-    protected sizeOf(key: string, bitmap: android.graphics.Bitmap): number {
-        // The cache size will be measured in kilobytes rather than
-        // number of items.
-        var result = Math.round(bitmap.getByteCount() / 1024);
-        //console.log("sizeOf key: " + result);
-        return result;
-    }
+    class LruBitmapCache extends android.util.LruCache<string, android.graphics.Bitmap> {
+        constructor(cacheSize: number) {
+            super(cacheSize);
+            return global.__native(this);
+        }
 
-    //protected entryRemoved(evicted: boolean, key: string, oldValue: android.graphics.Bitmap, newValue: android.graphics.Bitmap): void {
-    //    console.log("entryRemoved("+evicted+", "+key+", "+oldValue+", "+newValue+")");
-    //}
-};
+        protected sizeOf(key: string, bitmap: android.graphics.Bitmap): number {
+            // The cache size will be measured in kilobytes rather than
+            // number of items.
+            var result = Math.round(bitmap.getByteCount() / 1024);
+            //console.log("sizeOf key: " + result);
+            return result;
+        }
+
+        //protected entryRemoved(evicted: boolean, key: string, oldValue: android.graphics.Bitmap, newValue: android.graphics.Bitmap): void {
+        //    console.log("entryRemoved("+evicted+", "+key+", "+oldValue+", "+newValue+")");
+        //}
+    };
+
+    LruBitmapCacheClass = LruBitmapCache;
+}
 
 export class Cache extends common.Cache {
     private _callback: any;
-    private _cache: LruBitmapCache;
+    private _cache: android.util.LruCache<string, android.graphics.Bitmap>;
 
     constructor() {
         super();
 
+        ensureLruBitmapCacheClass();
         var maxMemory = java.lang.Runtime.getRuntime().maxMemory() / 1024;
         var cacheSize = maxMemory / 8;
-        //console.log("cacheSize: " + cacheSize);
-        this._cache = new LruBitmapCache(cacheSize);
+        this._cache = new LruBitmapCacheClass(cacheSize);
 
         var that = new WeakRef(this);
         this._callback = new (<any>com).tns.Async.CompleteCallback({
