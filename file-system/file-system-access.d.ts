@@ -109,6 +109,14 @@
         readText(path: string, onError?: (error: any) => any, encoding?: any): string;
 
         /**
+         * Reads a binary content from a file with a given path.
+         * @param path The path to the source file.
+         * @param onSuccess A callback function which is called when a text is red.
+         * @param onError (optional) A callback function to use if any error occurs.
+         */
+        read(path: string, onError?: (error: any) => any): any;
+
+        /**
          * Writes a text to a file with a given path.
          * @param path The path to the source file.
          * @param content The content which will be written to the file.
@@ -117,6 +125,15 @@
          * @param encoding (optional) If set writes the text with the specified encoding (default UTF-8).
          */
         writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any);
+
+        /**
+         * Writes a binary to a file with a given path.
+         * @param path The path to the source file.
+         * @param content The content which will be written to the file.
+         * @param onSuccess (optional) A callback function which is called when a text is written.
+         * @param onError (optional) A callback function to use if any error occurs.
+         */
+        write(path: string, content: any, onError?: (error: any) => any);
 
         /**
          * Gets extension of the file with a given path.

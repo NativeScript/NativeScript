@@ -3,9 +3,9 @@
  */
 declare module "file-system" {
 
-   /**
-    * Represents a single entity on the file system.
-    */
+    /**
+     * Represents a single entity on the file system.
+     */
     export class FileSystemEntity {
         /**
          * Gets the Date object specifying the last time this entity was modified.
@@ -52,9 +52,9 @@ declare module "file-system" {
         renameSync(newName: string, onError?: (error: any) => any): void;
     }
 
-   /**
-    * Represents a File entity on the file system.
-    */
+    /**
+     * Represents a File entity on the file system.
+     */
     export class File extends FileSystemEntity {
         /**
          * Checks whether a File with the specified path already exists.
@@ -92,6 +92,12 @@ declare module "file-system" {
         readTextSync(onError?: (error: any) => any, encoding?: string): string;
 
         /**
+         * Reads the binary content of the file synchronously.
+         * @param onError An optional function to be called if some IO-error occurs.
+         */
+        readSync(onError?: (error: any) => any): any;
+
+        /**
          * Writes the provided string to the file, using the specified encoding (defaults to UTF-8).
          * @param content The content to be saved to the file.
          * @param encoding An optional value specifying the preferred encoding (defaults to UTF-8).
@@ -105,6 +111,13 @@ declare module "file-system" {
          * @param encoding An optional value specifying the preferred encoding (defaults to UTF-8).
          */
         writeTextSync(content: string, onError?: (error: any) => any, encoding?: string): void;
+
+        /**
+         * Writes the provided binary content to the file synchronously.
+         * @param content The binary content to be saved to the file.
+         * @param onError An optional function to be called if some IO-error occurs.
+         */
+        writeSync(content: any, onError?: (error: any) => any): void;
     }
 
     /**
@@ -176,46 +189,46 @@ declare module "file-system" {
         eachEntity(onEntity: (entity: FileSystemEntity) => boolean);
     }
 
-   /**
-    * Provides access to the top-level Folders instances that are accessible from the application. Use these as entry points to access the FileSystem.
-    */
+    /**
+     * Provides access to the top-level Folders instances that are accessible from the application. Use these as entry points to access the FileSystem.
+     */
     module knownFolders {
-       /**
-        * Gets the Documents folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
-        */
+        /**
+         * Gets the Documents folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
+         */
         export function documents(): Folder;
 
-       /**
-        * Gets the Temporary (Caches) folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
-        */
+        /**
+         * Gets the Temporary (Caches) folder available for the current application. This Folder is private for the application and not accessible from Users/External apps.
+         */
         export function temp(): Folder;
 
-       /**
-        * Gets the root folder for the current application. This Folder is private for the application and not accessible from Users/External apps.
-        * iOS - this folder is read-only and contains the app and all its resources.
-        */
+        /**
+         * Gets the root folder for the current application. This Folder is private for the application and not accessible from Users/External apps.
+         * iOS - this folder is read-only and contains the app and all its resources.
+         */
         export function currentApp(): Folder;
     }
 
-   /**
-    * Enables path-specific operations like join, extension, etc.
-    */
+    /**
+     * Enables path-specific operations like join, extension, etc.
+     */
     export module path {
-       /**
-        * Normalizes a path, taking care of occurrances like ".." and "//".
-        * @param path The path to be normalized.
-        */
+        /**
+         * Normalizes a path, taking care of occurrances like ".." and "//".
+         * @param path The path to be normalized.
+         */
         export function normalize(path: string): string;
 
-       /**
-        * Joins all the provided string components, forming a valid and normalized path.
-        * @param paths An array of string components to be joined.
-        */
+        /**
+         * Joins all the provided string components, forming a valid and normalized path.
+         * @param paths An array of string components to be joined.
+         */
         export function join(...paths: string[]): string;
 
-       /**
-        * Gets the string used to separate file paths.
-        */
+        /**
+         * Gets the string used to separate file paths.
+         */
         export var separator: string;
     }
 }

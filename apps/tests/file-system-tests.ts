@@ -224,6 +224,24 @@ export var testFileRead = function () {
     // </snippet>
 };
 
+export var testFileReadWriteBinary = function () {
+    // <snippet module="file-system" title="file-system">
+    // ### Reading/writing binary data from/to a File
+    // ``` JavaScript
+    var fileName = "logo.png";
+
+    var sourceFile = fs.knownFolders.currentApp().getFile(fileName);
+    var destinationFile = fs.knownFolders.temp().getFile(fileName);
+
+    destinationFile.writeSync(sourceFile.readSync());
+
+    TKUnit.assertEqual(sourceFile.readSync(), destinationFile.readSync());
+
+    destinationFile.removeSync();
+    // ```
+    // </snippet>
+};
+
 export var testGetKnownFolders = function () {
     // <snippet module="file-system" title="file-system">
     // ### Getting the Known Folders

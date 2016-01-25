@@ -193,6 +193,47 @@ export class File extends FileSystemEntity {
         return !!this[fileLockedProperty];
     }
 
+    public readSync(onError?: (error: any) => any): any {
+        this.checkAccess();
+
+        this[fileLockedProperty] = true;
+
+        var that = this;
+        var localError = (error) => {
+            that[fileLockedProperty] = false;
+            if (onError) {
+                onError(error);
+            }
+        };
+
+        var content = getFileAccess().read(this.path, localError);
+
+        this[fileLockedProperty] = false;
+
+        return content;
+
+    }
+
+    public writeSync(content: any, onError?: (error: any) => any): void {
+        this.checkAccess();
+
+        try {
+            this[fileLockedProperty] = true;
+
+            var that = this;
+            var localError = function (error) {
+                that[fileLockedProperty] = false;
+                if (onError) {
+                    onError(error);
+                }
+            };
+    
+            getFileAccess().write(this.path, content, localError);
+        } finally {
+            this[fileLockedProperty] = false;
+        }
+    }
+
     public readText(encoding?: string): Promise<string> {
         return new Promise((resolve, reject) => {
             var hasError = false;

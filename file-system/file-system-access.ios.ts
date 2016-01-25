@@ -239,6 +239,17 @@ export class FileSystemAccess {
         }
     }
 
+    public read(path: string, onError?: (error: any) => any) : NSData {
+        try {
+            return NSData.dataWithContentsOfFile(path);
+        }
+        catch (ex) {
+            if (onError) {
+                onError(new Error("Failed to read file at path '" + path + "': " + ex));
+            }
+        }
+    }
+
     public writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
         var nsString = NSString.alloc().initWithString(content);
 
@@ -250,6 +261,17 @@ export class FileSystemAccess {
         // TODO: verify the useAuxiliaryFile parameter should be false
         try {
             nsString.writeToFileAtomicallyEncodingError(path, false, actualEncoding);
+        }
+        catch (ex) {
+            if (onError) {
+                onError(new Error("Failed to write to file '" + path + "': " + ex));
+            }
+        }
+    }
+
+    public write(path: string, content: NSData, onError?: (error: any) => any) {
+        try {
+            content.writeToFileAtomically(path, true);
         }
         catch (ex) {
             if (onError) {
