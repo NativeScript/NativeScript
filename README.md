@@ -54,7 +54,7 @@ Please follow this [article to get started with the NativeScript framework](http
 ## Documentation
 Comprehensive documentation is available at [docs.nativescript.org](http://docs.nativescript.org).
 
-## Documentation
+## Supported npm modules
 List of supported npm modules is available at [supported-npm-modules](https://github.com/NativeScript/NativeScript/wiki/supported-npm-modules).
 
 ## Helping us to improve the NativeScript framework
