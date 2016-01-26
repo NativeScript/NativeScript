@@ -10,6 +10,7 @@ import fs = require("file-system");
 
 import TKUnit = require("./TKUnit");
 import appModule = require("application");
+import platform = require("platform");
 
 // <snippet module="file-system" title="file-system">
 // ## Path
@@ -241,7 +242,11 @@ export var testFileReadWriteBinary = function () {
     // <hide>
     var destination = destinationFile.readSync(e=> { error = e; });
     TKUnit.assertNull(error);
-    TKUnit.assertEqual(source, destination);
+    if (platform.device.os === platform.platformNames.ios) {
+        TKUnit.assertTrue(source.isEqualToData(destination));
+    } else {
+        TKUnit.assertEqual(source, destination);
+    }
     destinationFile.removeSync();
     // </hide>
     // ```
