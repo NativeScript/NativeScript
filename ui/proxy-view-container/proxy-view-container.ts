@@ -4,18 +4,18 @@ import definition = require("ui/proxy-view-container");
 import trace = require("trace");
 import layout = require("ui/layouts/layout-base");
 /**
- * Proxy view container that adds all its native children dirctly to the parent. 
+ * Proxy view container that adds all its native children directly to the parent. 
  * To be used as a logical grouping container of views.
  */
 // Cases to cover:
 // * Child is added to the attached proxy. Handled in _addViewToNativeVisualTree.
 // * Proxy (with children) is added to the DOM.
 //   - IOS: Handled in _addToSuperview - when the proxy is added, it adds all its children to the new parent.
-//   - Android: _onAttached calls _addViewToNativeVisualTree recoursively when the proxy is added to the parent.
+//   - Android: _onAttached calls _addViewToNativeVisualTree recursively when the proxy is added to the parent.
 // * Child is removed from attached proxy. Handled in _removeViewFromNativeVisualTree.
 // * Proxy (with children) is removed form the DOM.
 //   - IOS: Handled in _removeFromSuperview - when the proxy is removed, it removes all its children from its parent.
-//   - Android: _onDetached calls _removeViewFromNativeVisualTree recoursively when the proxy is removed from its parent.
+//   - Android: _onDetached calls _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
 export class ProxyViewContainer extends layout.LayoutBase implements definition.ProxyViewContainer {
     // No native view for proxy container.
     get ios(): any { 
@@ -60,8 +60,8 @@ export class ProxyViewContainer extends layout.LayoutBase implements definition.
             let baseIndex = 0;
             let insideIndex = 0;
             if (parent instanceof layout.LayoutBase) {
-                baseIndex = parent.getChildIndex(this);
-                baseIndex = parent._childIndexToNativeChildIndex(baseIndex);
+                // Get my index in parent and convert it to native index.
+                baseIndex = parent._childIndexToNativeChildIndex(parent.getChildIndex(this));
             }
 
             if (types.isDefined(atIndex)) {

@@ -1,4 +1,5 @@
-﻿import viewCommon = require("./view-common");
+﻿import types = require("utils/types");
+import viewCommon = require("./view-common");
 import trace = require("trace");
 import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
@@ -269,8 +270,6 @@ export class View extends viewCommon.View {
 
     public _addToSuperview(superview: any, atIndex?: number): boolean {
         if (superview && this._nativeView) {
-            var types = require("utils/types");
-
             if (types.isNullOrUndefined(atIndex) || atIndex >= superview.subviews.count) {
                 superview.addSubview(this._nativeView);
             } else {
