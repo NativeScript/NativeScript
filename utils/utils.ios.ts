@@ -121,6 +121,10 @@ export module ios {
     function getTransformedText(view, source: string, transform: string): string {
         let result = source;
 
+        if (view["originalString"] && view["originalString"] !== NSStringFromNSAttributedString(source)) {
+            view["originalString"] = undefined;
+        }
+
         switch (transform) {
             case enums.TextTransform.none:
             default:
