@@ -231,7 +231,7 @@ export var testFileReadWriteBinary = function () {
     var fileName = "logo.png";
 
     var sourceFile = fs.knownFolders.currentApp().getFile(fileName);
-    var destinationFile = fs.knownFolders.temp().getFile(fileName);
+    var destinationFile = fs.knownFolders.documents().getFile(fileName);
 
     destinationFile.writeSync(sourceFile.readSync());
 
