@@ -3,7 +3,7 @@
  */
 declare module "http" {
     import image = require("image-source");
-    
+    import fs = require("file-system"); 
 
    /**
     * Downloads the content from the specified URL as a string.
@@ -40,6 +40,20 @@ declare module "http" {
     * @param options An object that specifies various request options.
     */
     export function getImage(options: HttpRequestOptions): Promise<image.ImageSource>
+
+    /**
+     * Downloads the content from the specified URL and attempts to save it as file.
+     * @param url The URL to request from.
+     * @param destinationFilePath Optional. The downloaded file path.
+     */
+    export function getFile(url: string, destinationFilePath?: string): Promise<fs.File>
+
+    /**
+     * Downloads the content from the specified URL and attempts to save it as file.
+     * @param options An object that specifies various request options.
+     * @param destinationFilePath Optional. The downloaded file path.
+     */
+    export function getFile(options: HttpRequestOptions, destinationFilePath?: string): Promise<fs.File>
 
    /**
     * Makes a generic http request using the provided options and returns a HttpResponse Object.
@@ -120,5 +134,10 @@ declare module "http" {
         * Gets the response body as ImageSource.
         */
         toImage: () => Promise<image.ImageSource>;
+
+        /**
+         * Gets the response body as file.
+         */
+        toFile: (destinationFilePath?: string) => fs.File;     
     }
 }

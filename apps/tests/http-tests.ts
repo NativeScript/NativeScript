@@ -2,6 +2,7 @@
 import TKUnit = require("./TKUnit");
 import http = require("http");
 import types = require("utils/types");
+import fs = require("file-system");
 require("globals");
 
 // <snippet module="http" title="http">
@@ -225,6 +226,82 @@ export var test_getImage_fail_when_result_is_not_image = function (done) {
     });
 };
 
+export var test_getFile_isDefined = function () {
+    TKUnit.assert(typeof (http.getFile) !== "undefined", "Method http.getFile() should be defined!");
+};
+
+export var test_getFile = function (done) {
+    var result;
+
+    // <snippet module="http" title="http">
+    // ### Get File from URL. By default the file will be saved in Documents folder.
+    // ``` JavaScript
+    http.getFile("https://raw.githubusercontent.com/NativeScript/NativeScript/master/apps/tests/logo.png").then(function (r) {
+        //// Argument (r) is File!
+        // <hide>
+        result = r;
+        try {
+            TKUnit.assert(result instanceof fs.File, "Result from getFile() should be valid File object!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+        // </hide>
+    }, function (e) {
+        //// Argument (e) is Error!
+        // <hide>
+        done(e);
+        // </hide>
+    });
+    // ```
+    // </snippet>
+};
+
+export var test_getContentAsFile = function (done) {
+    var result;
+
+    // <snippet module="http" title="http">
+    // ### Get content as File from URL. You can specify where the file should be saved.
+    // ``` JavaScript
+    var filePath = fs.path.join(fs.knownFolders.documents().path, "test.png");
+    http.getFile("https://httpbin.org/image/png", filePath).then(function (r) {
+        //// Argument (r) is File!
+        // <hide>
+        result = r;
+        try {
+            TKUnit.assert(result instanceof fs.File, "Result from getFile() should be valid File object!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+        // </hide>
+    }, function (e) {
+        //// Argument (e) is Error!
+        // <hide>
+        done(e);
+        // </hide>
+    });
+    // ```
+    // </snippet>
+};
+
+export var test_getFile_fail = function (done) {
+    var result;
+
+    http.getImage({ url: "hgfttp://raw.githubusercontent.com/NativeScript/NativeScript/master/apps/tests/logo.png", method: "GET", timeout: 2000 }).catch(function (e) {
+        result = e;
+        try {
+            TKUnit.assert(result instanceof Error, "Result from getFile().catch() should be Error! Current type is " + typeof result);
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    });
+};
+
 export var test_request_isDefined = function () {
     TKUnit.assert(typeof (http["request"]) !== "undefined", "Method http.request() should be defined!");
 };
@@ -398,6 +475,40 @@ export var test_request_responseContentToImageShouldReturnCorrectImage = functio
                 done(err);
             }
         });
+    }, function (e) {
+        done(e);
+    });
+};
+
+export var test_request_responseContentToFileFromUrlShouldReturnCorrectFile = function (done) {
+    var result;
+
+    http.request({ url: "https://raw.githubusercontent.com/NativeScript/NativeScript/master/apps/tests/logo.png", method: "GET" }).then(function (response) {
+        result = response.content.toFile();
+        try {
+            TKUnit.assert(result instanceof fs.File, "Result from toFile() should be valid File object!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
+    }, function (e) {
+        done(e);
+    });
+};
+
+export var test_request_responseContentToFileFromContentShouldReturnCorrectFile = function (done) {
+    var result;
+
+    http.request({ url: "https://httpbin.org/image/png", method: "GET" }).then(function (response) {
+        result = response.content.toFile();
+        try {
+            TKUnit.assert(result instanceof fs.File, "Result from toFile() should be valid File object!");
+            done(null);
+        }
+        catch (err) {
+            done(err);
+        }
     }, function (e) {
         done(e);
     });

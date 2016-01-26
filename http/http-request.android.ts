@@ -5,6 +5,7 @@ import types = require("utils/types");
 import * as utilsModule from "utils/utils";
 import * as imageSourceModule from "image-source";
 import * as platformModule from "platform";
+import * as fsModule from "file-system";
 
 // this is imported for definition purposes only
 import http = require("http");
@@ -74,6 +75,28 @@ function onRequestComplete(requestId: number, result: com.tns.Async.Http.Request
                         rejectImage(new Error("Response content may not be converted to an Image"));
                     }
                 });
+            },
+            toFile: (destinationFilePath?: string) => {
+                var fs: typeof fsModule = require("file-system");
+                var fileName = callbacks.url;
+                if (!destinationFilePath) {
+                    destinationFilePath = fs.path.join(fs.knownFolders.documents().path, fileName.substring(fileName.lastIndexOf('/') + 1));
+                }
+                var stream: java.io.FileOutputStream;
+                try {
+                    var javaFile = new java.io.File(destinationFilePath);
+                    stream = new java.io.FileOutputStream(javaFile);
+                    stream.write(result.raw.toByteArray());
+                    return fs.File.fromPath(destinationFilePath);
+                }
+                catch (exception) {
+                    throw new Error(`Cannot save file with path: ${destinationFilePath}.`);
+                }
+                finally {
+                    if (stream) {
+                        stream.close();
+                    }
+                }
             }
         },
         statusCode: result.statusCode,
@@ -134,6 +157,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
 
             // remember the callbacks so that we can use them when the CompleteCallback is called
             var callbacks = {
+                url: options.url,
                 resolveCallback: resolve,
                 rejectCallback: reject
             };

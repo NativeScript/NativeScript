@@ -39,3 +39,17 @@ export function getImage(arg: any): Promise<image.ImageSource> {
         }, e => reject(e));
     });
 }
+
+export function getFile(arg: any, destinationFilePath?: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+        httpRequest.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
+            .then(r => {
+                try {
+                    var file = r.content.toFile(destinationFilePath);
+                    resolve(file);
+                } catch (e) {
+                    reject(e);
+                }
+            }, e => reject(e));
+    });
+}
