@@ -42,7 +42,7 @@ export class ScrollView extends common.ScrollView implements definition.ScrollVi
 
     constructor() {
         super();
-        this._scroll = new UIScrollView();
+        this._scroll = UIScrollView.new();
     }
 
     protected attachNative() {
