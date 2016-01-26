@@ -197,6 +197,35 @@ export class FileSystemAccess {
         return dir.getAbsolutePath();
     }
 
+    public read(path: string, onError?: (error: any) => any) {
+        try {
+            var javaFile = new java.io.File(path);
+            var stream = new java.io.FileInputStream(javaFile);
+            var bytes = new byte[javaFile.length()];
+            var dataInputStream = new java.io.DataInputStream(stream);
+            dataInputStream.readFully(bytes);
+            return bytes;
+        } catch (exception) {
+            if (onError) {
+                onError(exception);
+            }
+        }
+    }
+
+    public write(path: string, content: java.io.ByteArrayOutputStream, onError?: (error: any) => any) {
+        try {
+            var javaFile = new java.io.File(path);
+            var stream = new java.io.FileOutputStream(javaFile);
+            var bytes = content.toByteArray();
+            stream.write(bytes, 0, bytes.length);
+            stream.close();
+        } catch (exception) {
+            if (onError) {
+                onError(exception);
+            }
+        }
+    }
+
     public readText(path: string, onError?: (error: any) => any, encoding?: any) {
         try {
             var types: typeof typesModule = require("utils/types");

@@ -10,6 +10,7 @@ import fs = require("file-system");
 
 import TKUnit = require("./TKUnit");
 import appModule = require("application");
+import platform = require("platform");
 
 // <snippet module="file-system" title="file-system">
 // ## Path
@@ -220,6 +221,34 @@ export var testFileRead = function () {
             //console.dump(error);
             // </hide>
         });
+    // ```
+    // </snippet>
+};
+
+export var testFileReadWriteBinary = function () {
+    // <snippet module="file-system" title="file-system">
+    // ### Reading/writing binary data from/to a File
+    // ``` JavaScript
+    var fileName = "logo.png";
+    var error;
+
+    var sourceFile = fs.knownFolders.currentApp().getFile(fileName);
+    var destinationFile = fs.knownFolders.documents().getFile(fileName);
+
+    var source = sourceFile.readSync(e=> { error = e; });
+
+    destinationFile.writeSync(source, e=> { error = e; });
+    
+    // <hide>
+    var destination = destinationFile.readSync(e=> { error = e; });
+    TKUnit.assertNull(error);
+    if (platform.device.os === platform.platformNames.ios) {
+        TKUnit.assertTrue(source.isEqualToData(destination));
+    } else {
+        TKUnit.assertEqual(source, destination);
+    }
+    destinationFile.removeSync();
+    // </hide>
     // ```
     // </snippet>
 };
