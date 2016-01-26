@@ -183,7 +183,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
         dockLayout.removeChild(btn);
         // ```
 
-        // ## Setting the dock proeprty
+        // ## Setting the dock property
         // ``` JavaScript
         var btnDockedToRight = new button.Button();
         dockModule.DockLayout.setDock(btnDockedToRight, enums.Dock.right);
