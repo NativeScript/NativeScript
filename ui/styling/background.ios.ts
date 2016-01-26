@@ -16,7 +16,7 @@ export module ios {
         if(!view._nativeView){
             return undefined;
         }
-
+        ensureStyle();
         var background = <common.Background> view.style._getValue(style.backgroundInternalProperty);
 
         if (!background || background.isEmpty()) {
