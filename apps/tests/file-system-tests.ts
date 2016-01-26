@@ -229,15 +229,21 @@ export var testFileReadWriteBinary = function () {
     // ### Reading/writing binary data from/to a File
     // ``` JavaScript
     var fileName = "logo.png";
+    var error;
 
     var sourceFile = fs.knownFolders.currentApp().getFile(fileName);
     var destinationFile = fs.knownFolders.documents().getFile(fileName);
 
-    destinationFile.writeSync(sourceFile.readSync());
+    var source = sourceFile.readSync(e=> { error = e; });
 
-    TKUnit.assertEqual(sourceFile.readSync(), destinationFile.readSync());
-
+    destinationFile.writeSync(source, e=> { error = e; });
+    
+    // <hide>
+    var destination = destinationFile.readSync(e=> { error = e; });
+    TKUnit.assertNull(error);
+    TKUnit.assertEqual(source, destination);
     destinationFile.removeSync();
+    // </hide>
     // ```
     // </snippet>
 };
