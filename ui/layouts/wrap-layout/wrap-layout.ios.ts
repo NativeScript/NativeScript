@@ -56,12 +56,7 @@ export class WrapLayout extends common.WrapLayout {
         let itemWidth = this.itemWidth;
         let itemHeight = this.itemHeight;
 
-        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
-            let child = this.getChildAt(i);
-            if (!child._isVisible) {
-                continue;
-            }
-
+        this.eachLayoutChild((child, last) => {
             var desiredSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
             let childMeasuredWidth = useItemWidth ? itemWidth : desiredSize.measuredWidth;
             let childMeasuredHeight = useItemHeight ? itemHeight : desiredSize.measuredHeight;
@@ -99,7 +94,7 @@ export class WrapLayout extends common.WrapLayout {
             else {
                 this._lengths[rowOrColumn] = Math.max(this._lengths[rowOrColumn], isVertical ? childMeasuredWidth : childMeasuredHeight);
             }
-        }
+        });
 
         if (isVertical) {
             measureHeight = Math.max(maxLength, measureHeight);
@@ -144,12 +139,7 @@ export class WrapLayout extends common.WrapLayout {
         }
 
         var rowOrColumn = 0;
-        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
-            let child = this.getChildAt(i);
-            if (!child._isVisible) {
-                continue;
-            }
-
+        this.eachLayoutChild((child, last) => {
             // Add margins because layoutChild will sustract them.
             // * density converts them to device pixels.
             let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
@@ -203,7 +193,7 @@ export class WrapLayout extends common.WrapLayout {
                 // Move next child Left position to right.
                 childLeft += childWidth;
             }
-        }
+        });
 
         WrapLayout.restoreOriginalParams(this);
     }

@@ -1,4 +1,5 @@
-﻿import viewCommon = require("./view-common");
+﻿import types = require("utils/types");
+import viewCommon = require("./view-common");
 import trace = require("trace");
 import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
@@ -265,6 +266,26 @@ export class View extends viewCommon.View {
         if (this._cachedFrame) {
             this._setNativeViewFrame(this._nativeView, this._cachedFrame);
         }
+    }
+
+    public _addToSuperview(superview: any, atIndex?: number): boolean {
+        if (superview && this._nativeView) {
+            if (types.isNullOrUndefined(atIndex) || atIndex >= superview.subviews.count) {
+                superview.addSubview(this._nativeView);
+            } else {
+                superview.insertSubviewAtIndex(this._nativeView, atIndex);
+            }
+
+            return true;
+        }
+        
+        return false;
+    }
+
+    public _removeFromSuperview() {
+        if (this._nativeView) {
+            this._nativeView.removeFromSuperview();
+        }
     } 
 }
 
@@ -290,30 +311,15 @@ export class CustomLayoutView extends View {
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
-        super._addViewToNativeVisualTree(child);
+        super._addViewToNativeVisualTree(child, atIndex);
 
-        if (this._nativeView && child._nativeView) {
-            var types = require("utils/types");
-
-            if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.subviews.count) {
-                this._nativeView.addSubview(child._nativeView);
-            }
-            else {
-                this._nativeView.insertSubviewAtIndex(child._nativeView, atIndex);
-            }
-
-            return true;
-        }
-
-        return false;
+        return child._addToSuperview(this._nativeView, atIndex);
     }
 
     public _removeViewFromNativeVisualTree(child: View): void {
         super._removeViewFromNativeVisualTree(child);
 
-        if (child._nativeView) {
-            child._nativeView.removeFromSuperview();
-        }
+        child._removeFromSuperview();
     }
 }
 

@@ -1,4 +1,5 @@
 ﻿import definition = require("ui/layouts/layout-base");
+import types = require("utils/types");
 import view = require("ui/core/view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
@@ -41,13 +42,13 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
 
     public addChild(child: view.View): void {
         // TODO: Do we need this method since we have the core logic in the View implementation?
-        this._addView(child);
         this._subViews.push(child);
+        this._addView(child);
     }
 
     public insertChild(child: view.View, atIndex: number): void {
-        this._addView(child, atIndex);
         this._subViews.splice(atIndex, 0, child);
+        this._addView(child, atIndex);
     }
 
     public removeChild(child: view.View): void {
@@ -61,19 +62,6 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
     public removeChildren(): void {
         while (this.getChildrenCount() !== 0) {
             this.removeChild(this._subViews[this.getChildrenCount() - 1]);
-        }
-    }
-
-    public _eachChildView(callback: (child: view.View) => boolean): void {
-        var i;
-        var length = this._subViews.length;
-        var retVal: boolean;
-
-        for (i = 0; i < length; i++) {
-            retVal = callback(this._subViews[i]);
-            if (retVal === false) {
-                break;
-            }
         }
     }
 
@@ -125,6 +113,52 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         else if (nativeView instanceof android.view.ViewGroup) {
             nativeView.setClipChildren(newValue);
         }
+    }
+
+    public _childIndexToNativeChildIndex(index?: number): number {
+        if (types.isUndefined(index)) {
+            return undefined;
+        }
+        var result = 0;
+        for (let i = 0; i < index && i < this._subViews.length; i++) {
+            result += this._subViews[i]._getNativeViewsCount();
+        }
+        return result;
+    }
+
+    public _eachChildView(callback: (child: view.View) => boolean): void {
+        var i;
+        var length = this._subViews.length;
+        var retVal: boolean;
+
+        for (i = 0; i < length; i++) {
+            retVal = callback(this._subViews[i]);
+            if (retVal === false) {
+                break;
+            }
+        }
+    }
+
+    public eachLayoutChild(callback: (child: view.View, isLast: boolean) => void): void {
+        var index = 0;
+        var lastChild: view.View = null;
+        
+        this._eachChildView((cv) => {
+            cv._eachLayoutView((lv) => {
+                if (lastChild && lastChild._isVisible) {
+                    callback(lastChild, false);
+                }
+
+                lastChild = lv;
+            });
+
+            return true;
+        });
+        
+        if (lastChild && lastChild._isVisible) {
+            callback(lastChild, true);
+        }
+
     }
 
     private static onClipToBoundsPropertyChanged(data: dependencyObservable.PropertyChangeData): void {

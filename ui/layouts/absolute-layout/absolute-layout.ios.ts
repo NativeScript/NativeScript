@@ -30,16 +30,11 @@ export class AbsoluteLayout extends common.AbsoluteLayout {
         let childMeasureSpec = utils.layout.makeMeasureSpec(0, utils.layout.UNSPECIFIED);
         let density = utils.layout.getDisplayDensity();
 
-        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
-            let child = this.getChildAt(i);
-            if (!child._isVisible) {
-                continue;
-            }
-
+        this.eachLayoutChild((child, last) => {
             let childSize = View.measureChild(this, child, childMeasureSpec, childMeasureSpec);
             measureWidth = Math.max(measureWidth, AbsoluteLayout.getLeft(child) * density + childSize.measuredWidth);
             measureHeight = Math.max(measureHeight, AbsoluteLayout.getTop(child) * density + childSize.measuredHeight);
-        }
+        });
 
         measureWidth += (this.paddingLeft + this.paddingRight) * density;
         measureHeight += (this.paddingTop + this.paddingBottom) * density;
@@ -57,12 +52,7 @@ export class AbsoluteLayout extends common.AbsoluteLayout {
         super.onLayout(left, top, right, bottom);
 
         let density = utils.layout.getDisplayDensity();
-        for (let i = 0, count = this.getChildrenCount(); i < count; i++) {
-            let child = this.getChildAt(i);
-            if (!child._isVisible) {
-                continue;
-            }
-
+        this.eachLayoutChild((child, last) => {
             let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
 
             let childWidth = child.getMeasuredWidth();
@@ -74,7 +64,7 @@ export class AbsoluteLayout extends common.AbsoluteLayout {
             let childBottom = childTop + childHeight + (lp.topMargin + lp.bottomMargin) * density;
 
             View.layoutChild(this, child, childLeft, childTop, childRight, childBottom);
-        }
+        });
 
         AbsoluteLayout.restoreOriginalParams(this);
     }
