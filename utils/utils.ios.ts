@@ -121,14 +121,10 @@ export module ios {
     function getTransformedText(view, source: string, transform: string): string {
         let result = source;
 
-        if (view["originalString"] && view["originalString"] !== NSStringFromNSAttributedString(source)) {
-            view["originalString"] = undefined;
-        }
-
         switch (transform) {
             case enums.TextTransform.none:
             default:
-                result = view["originalString"] || NSStringFromNSAttributedString(source);
+                result = view.text;
                 break;
             case enums.TextTransform.uppercase:
                 result = NSStringFromNSAttributedString(source).uppercaseString;
@@ -139,10 +135,6 @@ export module ios {
             case enums.TextTransform.capitalize:
                 result = NSStringFromNSAttributedString(source).capitalizedString;
                 break;
-        }
-
-        if (!view["originalString"]) {
-            view["originalString"] = NSStringFromNSAttributedString(source);
         }
 
         return result;
