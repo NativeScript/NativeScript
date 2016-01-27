@@ -1,5 +1,11 @@
 Cross Platform Modules Changelog
 ==============================
+##1.5.2 (2016, January 27)
+
+### Fixed
+
+- [(#1447)](https://github.com/NativeScript/NativeScript/issues/1447) Application fails with Segmentation fault on iOS when using ScrollView
+
 ##1.5.1 (2015, November 14)
 
 ### Fixed
