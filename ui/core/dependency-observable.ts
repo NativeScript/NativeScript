@@ -1,5 +1,5 @@
 ﻿import definition = require("ui/core/dependency-observable");
-import observable = require("data/observable");
+import {Observable, WrappedValue} from "data/observable";
 import types = require("utils/types");
 
 // use private variables in the scope of the module rather than static members of the class since a member is still accessible through JavaScript and may be changed.
@@ -263,7 +263,7 @@ export class PropertyEntry implements definition.PropertyEntry {
 
 var defaultValueForPropertyPerType: Map<string, any> = new Map<string, any>();
 
-export class DependencyObservable extends observable.Observable {
+export class DependencyObservable extends Observable {
     private _propertyEntries = {};
 
     public set(name: string, value: any) {
@@ -285,8 +285,9 @@ export class DependencyObservable extends observable.Observable {
     }
 
     public _setValue(property: Property, value: any, source?: number) {
-        if (!property.isValidValue(value)) {
-            throw new Error("Invalid value " + value + " for property " + property.name);
+        let realValue = WrappedValue.unwrap(value);
+        if (!property.isValidValue(realValue)) {
+            throw new Error("Invalid value " + realValue + " for property " + property.name);
         }
 
         if (types.isUndefined(source)) {
@@ -350,17 +351,18 @@ export class DependencyObservable extends observable.Observable {
     }
 
     public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
+        let realNewValue = WrappedValue.unwrap(newValue); 
         if (property.metadata.onValueChanged) {
             property.metadata.onValueChanged({
                 object: this,
                 property: property,
-                eventName: observable.Observable.propertyChangeEvent,
-                newValue: newValue,
+                eventName: Observable.propertyChangeEvent,
+                newValue: realNewValue,
                 oldValue: oldValue
             });
         }
 
-        if (this.hasListeners(observable.Observable.propertyChangeEvent)) {
+        if (this.hasListeners(Observable.propertyChangeEvent)) {
             var changeData = super._createPropertyChangeData(property.name, newValue);
             this.notify(changeData);
         }
@@ -371,7 +373,7 @@ export class DependencyObservable extends observable.Observable {
                 eventName: eventName,
                 propertyName: property.name,
                 object: this,
-                value: newValue
+                value: realNewValue
             }
             this.notify(ngChangedData);
         }
@@ -399,10 +401,10 @@ export class DependencyObservable extends observable.Observable {
     }
 
     private _setValueInternal(property: Property, value: any, source: number) {
-
+        let realValue = WrappedValue.unwrap(value);
         // Convert the value to the real property type in case it is coming as a string from CSS or XML.
-        if (types.isString(value) && property.valueConverter) {
-            value = property.valueConverter(value);
+        if (types.isString(realValue) && property.valueConverter) {
+            realValue = property.valueConverter(realValue);
         }
 
         var entry: PropertyEntry = this._propertyEntries[property.id];
@@ -415,21 +417,21 @@ export class DependencyObservable extends observable.Observable {
 
         switch (source) {
             case ValueSource.Css:
-                entry.cssValue = value;
+                entry.cssValue = realValue;
                 break;
             case ValueSource.Inherited:
-                entry.inheritedValue = value;
+                entry.inheritedValue = realValue;
                 break;
             case ValueSource.Local:
-                entry.localValue = value;
+                entry.localValue = realValue;
                 break;
             case ValueSource.VisualState:
-                entry.visualStateValue = value;
+                entry.visualStateValue = realValue;
                 break;
         }
 
         var comparer: (x: any, y: any) => boolean = property.metadata.equalityComparer || this._defaultComparer;
-        if (!comparer(currentValue, entry.effectiveValue)) {
+        if ((value && value.wrapped) || !comparer(currentValue, entry.effectiveValue)) {
             this._onPropertyChanged(property, currentValue, entry.effectiveValue);
         }
     }
