@@ -6,7 +6,7 @@ import color = require("color");
 import platform = require("platform");
 
 import {ProxyViewContainer} from "ui/proxy-view-container";
-import {View, Button, StackLayout} from "ui";
+import {View, Button, LayoutBase, StackLayout, GridLayout} from "ui";
 
 export function test_add_children_to_attached_proxy() {
     var outer = new StackLayout();
@@ -22,6 +22,34 @@ export function test_add_children_to_attached_proxy() {
         outer.addChild(createBtn("5"));
 
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
+    };
+
+    helper.buildUIAndRunTest(outer, testAction);
+}
+
+export function test_children_immediately_registered_in_parent_grid_layout() {
+    var outer = new GridLayout();
+    var proxy = new ProxyViewContainer();
+
+    function testAction(views: Array<viewModule.View>) {
+        outer.addChild(proxy);
+        proxy.addChild(createBtn("1"));
+
+        assertNativeChildren(outer, ["1"]);
+    };
+
+    helper.buildUIAndRunTest(outer, testAction);
+}
+
+export function test_children_registered_in_parent_grid_layout_on_attach() {
+    var outer = new GridLayout();
+    var proxy = new ProxyViewContainer();
+
+    function testAction(views: Array<viewModule.View>) {
+        proxy.addChild(createBtn("1"));
+        outer.addChild(proxy);
+
+        assertNativeChildren(outer, ["1"]);
     };
 
     helper.buildUIAndRunTest(outer, testAction);
@@ -139,16 +167,16 @@ function createBtn(text: string): Button {
     return b;
 }
 
-function assertNativeChildren(stack: StackLayout, arr: Array<string>) {
-    if (stack.android) {
-        let android: org.nativescript.widgets.StackLayout = stack.android;
+function assertNativeChildren(layout: LayoutBase, arr: Array<string>) {
+    if (layout.android) {
+        let android: org.nativescript.widgets.LayoutBase = layout.android;
         TKUnit.assertEqual(android.getChildCount(), arr.length, "Native children");
         for (let i = 0; i < arr.length; i++) {
             let nativeBtn = <android.widget.Button>android.getChildAt(i);
             TKUnit.assertEqual(nativeBtn.getText(), arr[i]);
         }
-    } else if (stack.ios) {
-        let ios: UIView = stack.ios;
+    } else if (layout.ios) {
+        let ios: UIView = layout.ios;
         TKUnit.assertEqual(ios.subviews.count, arr.length, "Native children");
         for (let i = 0; i < arr.length; i++) {
             let nativeBtn = <UIButton>ios.subviews[i];

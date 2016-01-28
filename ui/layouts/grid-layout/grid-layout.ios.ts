@@ -35,24 +35,12 @@ export class GridLayout extends common.GridLayout {
         this.helper.columns.splice(index, 1);
     }
 
-    public addChild(child: View): void {
-        super.addChild(child);
+    public _registerLayoutChild(child: View) {
         this.addToMap(child);
     }
 
-    public insertChild(child: View, atIndex: number): void {
-        super.insertChild(child, atIndex);
-        this.addToMap(child);
-    }
-
-    public removeChild(child: View): void {
+    public _unregisterLayoutChild(child: View) {
         this.removeFromMap(child);
-        super.removeChild(child);
-    }
-
-    public removeChildren(): void {
-        this.map.clear();
-        super.removeChildren();
     }
 
     private getColumnIndex(view: View): number {

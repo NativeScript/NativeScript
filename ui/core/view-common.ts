@@ -961,6 +961,7 @@ export class View extends ProxyObject implements definition.View {
 
         view._parent = this;
         this._addViewCore(view, atIndex);
+        view._parentChanged(null);
 
         trace.write("called _addView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
     }
@@ -1014,6 +1015,7 @@ export class View extends ProxyObject implements definition.View {
 
         this._removeViewCore(view);
         view._parent = undefined;
+        view._parentChanged(this);
 
         trace.write("called _removeView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
     }
@@ -1043,6 +1045,10 @@ export class View extends ProxyObject implements definition.View {
             return true;
         }
         view._eachSetProperty(inheritablePropertiesSetCallback);
+    }
+
+    public _parentChanged(oldParent: View): void {
+        //Overridden
     }
 
     /**
