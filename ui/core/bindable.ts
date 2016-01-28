@@ -379,7 +379,7 @@ export class Binding {
                 this.prepareContextForExpression(context, expression);
 
                 model[contextKey] = context;
-                return exp.getValue(model, isBackConvert, changedModel);
+                return exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
             }
             return new Error(expression + " is not a valid expression.");
         }

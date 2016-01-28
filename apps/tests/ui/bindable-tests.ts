@@ -938,3 +938,28 @@ export var test_BindingHitsGetterTooManyTimes = function () {
 
     TKUnit.assertEqual(counter, 1, "Property getter should be hit only once!");
 }
+
+export function test_SupportFunctionsInExpressions() {
+    var model = new observable.Observable({
+        "anyColor": "red",
+        "isVisible": function () {
+            return this.get("anyColor") === "red";
+        }
+    });
+    
+    var bindableObj = new bindable.Bindable();
+    
+    bindableObj.bind({
+        "sourceProperty": "$value",
+        "targetProperty": "test",
+        "expression": "isVisible() ? 'visible' : 'collapsed'"
+    }, model);
+    
+    model.set("anyColor", "blue");
+    
+    TKUnit.assertEqual(bindableObj.get("test"), "collapsed", "When anyColor is blue test property should be collapsed.");
+    
+    model.set("anyColor", "red");
+    
+    TKUnit.assertEqual(bindableObj.get("test"), "visible", "When anyColor is red test property should be visible.");
+}
