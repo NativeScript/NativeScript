@@ -1,6 +1,6 @@
 ﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
   <StackLayout>
-    <Label id="label" />
+    <Label id="label" automationText="label" />
     <Button text="æøå" />
   </StackLayout>
 </Page>

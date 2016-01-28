@@ -1,6 +1,6 @@
 <Page>
   <GridLayout rows="240, *">
-    <GridLayout width="290" id="test-element" />
+    <GridLayout width="290" id="test-element" automationText="test-element" />
     <WrapLayout row="1">
       <Button width="40" height="40" text="r" tap="resetTap"/>
 
