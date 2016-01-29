@@ -40,15 +40,25 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         return view.getViewById(this, id);
     }
 
+    public _registerLayoutChild(child: view.View) {
+        //Overridden
+    }
+
+    public _unregisterLayoutChild(child: view.View) {
+        //Overridden
+    }
+
     public addChild(child: view.View): void {
         // TODO: Do we need this method since we have the core logic in the View implementation?
         this._subViews.push(child);
         this._addView(child);
+        this._registerLayoutChild(child);
     }
 
     public insertChild(child: view.View, atIndex: number): void {
         this._subViews.splice(atIndex, 0, child);
         this._addView(child, atIndex);
+        this._registerLayoutChild(child);
     }
 
     public removeChild(child: view.View): void {
@@ -57,6 +67,7 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         // TODO: consider caching the index on the child.
         var index = this._subViews.indexOf(child);
         this._subViews.splice(index, 1);
+        this._unregisterLayoutChild(child);
     }
 
     public removeChildren(): void {

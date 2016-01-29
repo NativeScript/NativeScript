@@ -509,6 +509,7 @@ declare module "ui/core/view" {
 
         // TODO: Implement logic for stripping these lines out
         //@private
+        _parentChanged(oldParent: View): void;
         _gestureObservers: any;
         _isInheritedChange(): boolean;
         _domId: number;
