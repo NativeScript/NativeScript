@@ -201,7 +201,7 @@ export class FileSystemAccess {
         try {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileInputStream(javaFile);
-            var bytes = new byte[javaFile.length()];
+            var bytes = java.lang.reflect.Array.newInstance(java.lang.Byte.class.getField("TYPE").get(null), javaFile.length());
             var dataInputStream = new java.io.DataInputStream(stream);
             dataInputStream.readFully(bytes);
             return bytes;
@@ -212,11 +212,10 @@ export class FileSystemAccess {
         }
     }
 
-    public write(path: string, content: java.io.ByteArrayOutputStream, onError?: (error: any) => any) {
+    public write(path: string, bytes: native.Array<number>, onError?: (error: any) => any) {
         try {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileOutputStream(javaFile);
-            var bytes = content.toByteArray();
             stream.write(bytes, 0, bytes.length);
             stream.close();
         } catch (exception) {
