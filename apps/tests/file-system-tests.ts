@@ -245,8 +245,9 @@ export var testFileReadWriteBinary = function () {
     if (platform.device.os === platform.platformNames.ios) {
         TKUnit.assertTrue(source.isEqualToData(destination));
     } else {
-        TKUnit.assertEqual(source, destination);
+        TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
     }
+
     destinationFile.removeSync();
     // </hide>
     // ```
