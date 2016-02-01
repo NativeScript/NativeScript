@@ -23,7 +23,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                 sessionConfig, null, queue);
 
             var urlRequest = NSMutableURLRequest.requestWithURL(
-                NSURL.URLWithString(options.url.replace("%", "%25")));
+                NSURL.URLWithString(options.url));
 
             urlRequest.HTTPMethod = types.isDefined(options.method) ? options.method : GET;
 
