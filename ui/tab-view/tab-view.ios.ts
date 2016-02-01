@@ -333,7 +333,7 @@ export class TabView extends common.TabView {
         tabBar.tintColor = this.selectedColor ? this.selectedColor.ios : null;
         var states = getTitleAttributesForStates(this);
 
-        for (var i = 0; i < this.items.length; i++) {
+        for (var i = 0; i < tabBar.items.count; i++) {
             var item = <UITabBarItem>tabBar.items[i];
             item.setTitleTextAttributesForState(states.normalState, UIControlState.UIControlStateNormal);
             item.setTitleTextAttributesForState(states.selectedState, UIControlState.UIControlStateSelected);
