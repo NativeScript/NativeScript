@@ -1,3 +1,7 @@
+import groovy.json.JsonSlurper //used to parse package.json
+import groovy.json.JsonBuilder
+import groovy.json.JsonOutput
+
 def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
 
 apply plugin: 'com.android.library'
@@ -57,6 +61,16 @@ task cleanDistDir (type: Delete) {
 	delete "../dist/"
 }
 
+task fixVersion << {
+	if(project.hasProperty("PACKAGE_VERSION")) {
+		def inputFile = new File("./package.json")
+		def json = new JsonSlurper().parseText(inputFile.text)
+		json.version = json.version + "-" + PACKAGE_VERSION
+		def jb = new JsonBuilder(json);
+		inputFile.text = JsonOutput.prettyPrint(jb.toString())
+	}
+}
+
 task copyAar << {
 	copy {
 		from "../package.json"
@@ -65,6 +79,15 @@ task copyAar << {
 	copy {
 		from "build/outputs/aar/widgets-release.aar"
 		into "../dist/platforms/android/"
+	}
+}
+
+task revertPackageJson (type: Exec) {
+	if(isWinOs) {
+		commandLine "cmd", "/c", "git", "checkout", "--", "../package.json"
+	}
+	else {
+		commandLine "git", "checkout", "--", "../package.json"
 	}
 }
 
@@ -79,6 +102,9 @@ task packFramework (type: Exec) {
 	}
 }
 
+
 assembleRelease.dependsOn(cleanDistDir)
-copyAar.dependsOn(assembleRelease)
-packFramework.dependsOn(copyAar)
+fixVersion.dependsOn(assembleRelease)
+copyAar.dependsOn(fixVersion)
+revertPackageJson.dependsOn(copyAar)
+packFramework.dependsOn(revertPackageJson)
