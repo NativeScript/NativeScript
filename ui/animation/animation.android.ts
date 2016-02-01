@@ -8,13 +8,6 @@ import enums = require("ui/enums");
 
 global.moduleMerge(common, exports);
 
-var floatType;
-function ensureFloatType() {
-    if (!floatType) {
-        floatType = java.lang.Float.class.getField("TYPE").get(null);
-    }
-}
-
 var argbEvaluator: android.animation.ArgbEvaluator;
 function ensureArgbEvaluator() {
     if (!argbEvaluator) {
@@ -54,7 +47,7 @@ export class Animation extends common.Animation implements definition.Animation 
             this._createAnimators(this._propertyAnimations[i]);
         }
 
-        this._nativeAnimatorsArray = java.lang.reflect.Array.newInstance(android.animation.Animator.class, this._animators.length);
+        this._nativeAnimatorsArray = (<any>Array).create(android.animation.Animator, this._animators.length);
         i = 0;
         length = this._animators.length;
         for (; i < length; i++) {
@@ -165,14 +158,12 @@ export class Animation extends common.Animation implements definition.Animation 
                 }
             }
         }
-
-        ensureFloatType();
         
         switch (propertyAnimation.property) {
 
             case common.Properties.opacity:
                 originalValue1 = nativeView.getAlpha();
-                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray = (<any>Array).create("float", 1);
                 nativeArray[0] = propertyAnimation.value;
                 propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.opacity = propertyAnimation.value }));
                 propertyResetCallbacks.push(checkAnimation(() => { nativeView.setAlpha(originalValue1); }));
@@ -182,7 +173,7 @@ export class Animation extends common.Animation implements definition.Animation 
             case common.Properties.backgroundColor:
                 ensureArgbEvaluator();
                 originalValue1 = nativeView.getBackground();
-                nativeArray = java.lang.reflect.Array.newInstance(java.lang.Object.class, 2);
+                nativeArray = (<any>Array).create(java.lang.Object, 2);
                 nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<color.Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);
                 nativeArray[1] = java.lang.Integer.valueOf((<color.Color>propertyAnimation.value).argb);
                 var animator = android.animation.ValueAnimator.ofObject(argbEvaluator, nativeArray);
@@ -199,14 +190,14 @@ export class Animation extends common.Animation implements definition.Animation 
                 break;
 
             case common.Properties.translate:
-                xyObjectAnimators = java.lang.reflect.Array.newInstance(android.animation.Animator.class, 2);
+                xyObjectAnimators = (<any>Array).create(android.animation.Animator, 2);
 
-                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray = (<any>Array).create("float", 1);
                 nativeArray[0] = propertyAnimation.value.x * density;
                 xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationX", nativeArray);
                 xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
 
-                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray = (<any>Array).create("float", 1);
                 nativeArray[0] = propertyAnimation.value.y * density;
                 xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationY", nativeArray);
                 xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
@@ -231,14 +222,14 @@ export class Animation extends common.Animation implements definition.Animation 
                 break;
 
             case common.Properties.scale:
-                xyObjectAnimators = java.lang.reflect.Array.newInstance(android.animation.Animator.class, 2);
+                xyObjectAnimators = (<any>Array).create(android.animation.Animator, 2);
 
-                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray = (<any>Array).create("float", 1);
                 nativeArray[0] = propertyAnimation.value.x;
                 xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleX", nativeArray);
                 xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
 
-                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray = (<any>Array).create("float", 1);
                 nativeArray[0] = propertyAnimation.value.y;
                 xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleY", nativeArray);
                 xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
@@ -264,7 +255,7 @@ export class Animation extends common.Animation implements definition.Animation 
 
             case common.Properties.rotate:
                 originalValue1 = nativeView.getRotation();
-                nativeArray = java.lang.reflect.Array.newInstance(floatType, 1);
+                nativeArray = (<any>Array).create("float", 1);
                 nativeArray[0] = propertyAnimation.value;
                 propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.rotate = propertyAnimation.value; }));
                 propertyResetCallbacks.push(checkAnimation(() => { nativeView.setRotation(originalValue1); }));

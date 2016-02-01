@@ -86,7 +86,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
                 var stateDrawable = new android.graphics.drawable.StateListDrawable();
 
-                var arr = java.lang.reflect.Array.newInstance(java.lang.Integer.class.getField("TYPE").get(null), 1);
+                var arr = (<any>Array).create("int", 1);
                 arr[0] = R_ATTR_STATE_SELECTED;
                 var colorDrawable: android.graphics.drawable.ColorDrawable = new SegmentedBarColorDrawableClass(view.selectedBackgroundColor.android)
                 stateDrawable.addState(arr, colorDrawable);
