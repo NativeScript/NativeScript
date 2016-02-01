@@ -4,6 +4,13 @@ import enums = require("ui/enums");
 
 global.moduleMerge(common, exports);
 
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
+
 export module layout {
     var density = -1;
     var metrics: android.util.DisplayMetrics;
@@ -234,7 +241,7 @@ export module ad {
                 }
             }
             catch (ex) {
-                var trace: typeof traceModule = require("trace");
+                ensureTrace();
 
                 trace.write("Cannot get pallete color: " + name, trace.categories.Error, trace.messageType.error);
             }

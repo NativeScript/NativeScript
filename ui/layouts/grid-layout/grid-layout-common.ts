@@ -8,6 +8,13 @@ import {registerSpecialProperty} from "ui/builder/special-properties";
 import numberUtils = require("../../../utils/number-utils");
 import * as typesModule from "utils/types";
 
+var types: typeof typesModule;
+function ensureTypes() {
+    if (!types) {
+        types = require("utils/types");
+    }
+}
+
 function validateArgs(element: View): View {
     if (!element) {
         throw new Error("element cannot be null or undefinied.");
@@ -47,7 +54,7 @@ export class ItemSpec extends Bindable implements definition.ItemSpec {
 
         }
         else if (arguments.length === 2) {
-            var types: typeof typesModule = require("utils/types");
+            ensureTypes();
 
             if (types.isNumber(arguments[0]) && types.isString(arguments[1])) {
                 if (arguments[0] < 0 || (arguments[1] !== GridUnitType.auto && arguments[1] !== GridUnitType.star && arguments[1] !== GridUnitType.pixel)) {

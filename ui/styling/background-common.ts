@@ -5,6 +5,13 @@ import definition = require("ui/styling/background");
 import cssValue = require("css-value");
 import * as typesModule from "utils/types";
 
+var types: typeof typesModule;
+function ensureTypes() {
+    if (!types) {
+        types = require("utils/types");
+    }
+}
+
 interface CSSValue {
     type: string;
     string: string;
@@ -213,7 +220,7 @@ export class Background implements definition.Background {
     };
 
     public isEmpty(): boolean {
-        var types: typeof typesModule = require("utils/types");
+        ensureTypes();
 
         return types.isNullOrUndefined(this.image) && types.isNullOrUndefined(this.color);
     }

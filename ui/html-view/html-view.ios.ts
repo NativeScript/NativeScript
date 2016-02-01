@@ -2,8 +2,8 @@
 import definition = require("ui/html-view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import * as utilsModule from "utils/utils";
-import * as viewModule from "ui/core/view";
+import * as utils from "utils/utils";
+import * as view from "ui/core/view";
 
 function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <HtmlView>data.object;
@@ -53,8 +53,6 @@ export class HtmlView extends common.HtmlView {
         var nativeView = this._nativeView;
         if (nativeView) {
 
-            var utils: typeof utilsModule = require("utils/utils");
-
             var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
             var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -76,8 +74,6 @@ export class HtmlView extends common.HtmlView {
 
             var measureWidth = Math.max(labelWidth, this.minWidth);
             var measureHeight = Math.max(nativeSize.height, this.minHeight);
-
-            var view: typeof viewModule = require("ui/core/view");
 
             var widthAndState = view.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
             var heightAndState = view.View.resolveSizeAndState(measureHeight, height, heightMode, 0);

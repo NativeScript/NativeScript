@@ -4,7 +4,7 @@ import pages = require("ui/page");
 import trace = require("trace");
 import observable = require("data/observable");
 import application = require("application");
-import * as typesModule from "utils/types";
+import * as types from "utils/types";
 import * as utilsModule from "utils/utils";
 
 global.moduleMerge(frameCommon, exports);
@@ -366,8 +366,6 @@ export class Frame extends frameCommon.Frame {
     }
 
     public _getNavBarVisible(page: pages.Page): boolean {
-        var types : typeof typesModule = require("utils/types");
-
         if (types.isDefined(page.actionBarHidden)) {
             return !page.actionBarHidden;
         }

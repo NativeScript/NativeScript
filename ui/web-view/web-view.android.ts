@@ -4,6 +4,13 @@ import * as fileSystemModule from "file-system";
 
 global.moduleMerge(common, exports);
 
+var fs: typeof fileSystemModule;
+function ensureFS() {
+    if (!fs) {
+        fs = require("file-system");
+    }
+}
+
 var WebViewClientClass;
 function ensureWebViewClientClass() {
     if (WebViewClientClass) {
@@ -130,7 +137,7 @@ export class WebView extends common.WebView {
             return;
         }
 
-        var fs: typeof fileSystemModule = require("file-system");
+        ensureFS();
 
         var baseUrl = `file:///${fs.knownFolders.currentApp().path}/`;
         this._android.loadDataWithBaseURL(baseUrl, src, "text/html", "utf-8", null);

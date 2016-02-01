@@ -1,14 +1,27 @@
 ﻿import {ContentView} from "ui/content-view";
 import view = require("ui/core/view");
 import dts = require("ui/page");
-import frame = require("ui/frame");
 import styleScope = require("../styling/style-scope");
 import {ActionBar} from "ui/action-bar";
 import {DependencyObservable, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData, Property, ValueSource} from "ui/core/dependency-observable";
-import * as styleModule from "../styling/style";
+import * as style from "../styling/style";
 import * as fileSystemModule from "file-system";
-import * as frameCommonModule from "../frame/frame-common";
+import * as frameModule from "ui/frame";
 import proxy = require("ui/core/proxy");
+
+var fs: typeof fileSystemModule;
+function ensureFS() {
+    if (!fs) {
+        fs = require("file-system");
+    }
+}
+
+var frame: typeof frameModule;
+function ensureFrame() {
+    if (!frame) {
+        frame = require("ui/frame");
+    }
+}
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
 var AffectsLayout = global.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
@@ -52,10 +65,8 @@ export class Page extends ContentView implements dts.Page {
     }
 
     public onLoaded() {
-        var sm: typeof styleModule = require("../styling/style");
-
         // The default style of the page should be white background
-        this.style._setValue(sm.backgroundColorProperty, "white", ValueSource.Inherited);
+        this.style._setValue(style.backgroundColorProperty, "white", ValueSource.Inherited);
 
         this._applyCss();
         
@@ -146,7 +157,7 @@ export class Page extends ContentView implements dts.Page {
 
     private _cssFiles = {};
     public addCssFile(cssFileName: string) {
-        var fs: typeof fileSystemModule = require("file-system");
+        ensureFS();
 
         if (cssFileName.indexOf("~/") === 0) {
             cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName.replace("~/", ""));
@@ -163,8 +174,8 @@ export class Page extends ContentView implements dts.Page {
         }
     }
 
-    get frame(): frame.Frame {
-        return <frame.Frame>this.parent;
+    get frame(): frameModule.Frame {
+        return <frameModule.Frame>this.parent;
     }
 
     private createNavigatedData(eventName: string, isBackNavigation: boolean): dts.NavigatedData {
@@ -196,6 +207,7 @@ export class Page extends ContentView implements dts.Page {
     }
 
     public showModal() {
+        ensureFrame();
         if (arguments.length === 0) {
             this._showNativeModalView(<any>frame.topmost().currentPage, undefined, undefined, true);
         } else {
@@ -204,9 +216,7 @@ export class Page extends ContentView implements dts.Page {
             var closeCallback: Function = arguments[2];
             var fullscreen: boolean = arguments[3];
 
-            var frameCommon: typeof frameCommonModule = require("../frame/frame-common");
-
-            var page = frameCommon.resolvePageFromEntry({ moduleName: moduleName });
+            var page = frame.resolvePageFromEntry({ moduleName: moduleName });
             (<Page>page)._showNativeModalView(this, context, closeCallback, fullscreen);
         }
     }

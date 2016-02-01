@@ -7,6 +7,20 @@ import observable = require("data/observable");
 import * as weakEventListenerModule from "ui/core/weak-event-listener";
 import * as enumsModule from "ui/enums";
 
+var weakEvents: typeof weakEventListenerModule;
+function ensureWeakEvents() {
+    if (!weakEvents) {
+        weakEvents = require("ui/core/weak-event-listener");
+    }
+}
+
+var enums: typeof enumsModule;
+function ensureEnums() {
+    if (!enums) {
+        enums = require("ui/enums");
+    }
+}
+
 var textProperty = new dependencyObservable.Property(
     "text",
     "Button",
@@ -65,7 +79,7 @@ export class Button extends view.View implements definition.Button {
 
     set formattedText(value: formattedString.FormattedString) {
         if (this.formattedText !== value) {
-            var weakEvents: typeof weakEventListenerModule = require("ui/core/weak-event-listener");
+            ensureWeakEvents();
 
             if (this.formattedText) {
                 weakEvents.removeWeakEventListener(this.formattedText, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
@@ -129,7 +143,7 @@ export class Button extends view.View implements definition.Button {
 
 function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var v = <view.View>data.object;
-    var enums : typeof enumsModule = require("ui/enums");
+    ensureEnums();
 
     v.style.whiteSpace = data.newValue ? enums.WhiteSpace.normal : enums.WhiteSpace.nowrap;
 }

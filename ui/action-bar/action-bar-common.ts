@@ -6,9 +6,15 @@ import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
 import view = require("ui/core/view");
 import * as styleModule from "../styling/style";
-import * as dependencyObservableModule from "ui/core/dependency-observable";
 
 var ACTION_ITEMS = "actionItems";
+
+var style: typeof styleModule;
+function ensureStyle() {
+    if (!style) {
+        style = require("../styling/style");
+    }
+}
 
 export module knownCollections {
     export var actionItems = "actionItems";
@@ -65,20 +71,18 @@ export class ActionBar extends view.View implements dts.ActionBar {
     }
     set titleView(value: view.View) {
         if (this._titleView !== value) {
-            var style: typeof styleModule = require("../styling/style");
-            var observable: typeof dependencyObservableModule = require("ui/core/dependency-observable");
-
+            ensureStyle();
             if (this._titleView) {
                 this._removeView(this._titleView);
-                this._titleView.style._resetValue(style.horizontalAlignmentProperty, observable.ValueSource.Inherited);
-                this._titleView.style._resetValue(style.verticalAlignmentProperty, observable.ValueSource.Inherited);
+                this._titleView.style._resetValue(style.horizontalAlignmentProperty, dependencyObservable.ValueSource.Inherited);
+                this._titleView.style._resetValue(style.verticalAlignmentProperty, dependencyObservable.ValueSource.Inherited);
             }
 
             this._titleView = value;
 
             if (this._titleView) {
-                this._titleView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, observable.ValueSource.Inherited);
-                this._titleView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, observable.ValueSource.Inherited);
+                this._titleView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, dependencyObservable.ValueSource.Inherited);
+                this._titleView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, dependencyObservable.ValueSource.Inherited);
                 this._addView(this._titleView);
             }
 

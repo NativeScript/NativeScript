@@ -6,13 +6,20 @@ import observable = require("data/observable");
 import layoutBaseModule = require("ui/layouts/layout-base");
 import utils = require("utils/utils");
 import trace = require("trace");
-import * as platformModule from "platform";
-import * as stackLayoutModule from "ui/layouts/stack-layout";
-import * as typesModule from "utils/types";
-import * as builderModule from "ui/builder";
+import * as platform from "platform";
+import * as stackLayout from "ui/layouts/stack-layout";
+import * as types from "utils/types";
+import * as builder from "ui/builder";
 import * as labelModule from "ui/label";
-import * as observableArrayModule from "data/observable-array";
-import * as weakEventListenerModule from "ui/core/weak-event-listener";
+import * as observableArray from "data/observable-array";
+import * as weakEvents from "ui/core/weak-event-listener";
+
+var label: typeof labelModule;
+function ensureLabel() {
+    if (!label) {
+        label = require("ui/label");
+    }
+}
 
 var ITEMS = "items";
 var ITEMTEMPLATE = "itemTemplate";
@@ -46,13 +53,9 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     constructor() {
         super();
 
-        var platform: typeof platformModule = require("platform");
-
         if (platform.device.os === platform.platformNames.ios) {
             this._ios = UIView.new();
         }
-
-        var stackLayout: typeof stackLayoutModule = require("ui/layouts/stack-layout");
 
         this.itemsLayout = new stackLayout.StackLayout();
     }
@@ -131,13 +134,9 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
             this.itemsLayout.removeChildren();
         }
 
-        var types : typeof typesModule = require("utils/types");
-
         if (types.isNullOrUndefined(this.items) || !types.isNumber(this.items.length)) {
             return;
         }
-
-        var builder: typeof builderModule = require("ui/builder");
 
         var length = this.items.length;
         for (let i = 0; i < length; i++) {
@@ -153,9 +152,6 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var observableArray: typeof observableArrayModule = require("data/observable-array");
-        var weakEvents: typeof weakEventListenerModule = require("ui/core/weak-event-listener");
-
         trace.write(`Repeater._onItemsPropertyChanged(${data.oldValue} => ${data.newValue})`, "Repeater");
         if (data.oldValue instanceof observableArray.ObservableArray) {
             weakEvents.removeWeakEventListener(data.oldValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
@@ -192,7 +188,7 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     public _getDefaultItemContent(index: number): viewModule.View {
-        var label: typeof labelModule = require("ui/label");
+        ensureLabel();
 
         var lbl = new label.Label();
         lbl.bind({

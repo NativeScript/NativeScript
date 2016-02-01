@@ -5,6 +5,34 @@ import * as typesModule from "utils/types";
 import * as traceModule from "trace";
 import * as fileSystemModule from "file-system";
 
+var application: typeof applicationModule;
+function ensureApplication() {
+    if (!application) {
+        application = require("application");
+    }
+}
+
+var types: typeof typesModule;
+function ensureTypes() {
+    if (!types) {
+        types = require("utils/types");
+    }
+}
+
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
+
+var fs: typeof fileSystemModule;
+function ensureFS() {
+    if (!fs) {
+        fs = require("file-system");
+    }
+}
+
 var typefaceCache = new Map<string, android.graphics.Typeface>();
 var appAssets: android.content.res.AssetManager;
 var FONTS_BASE_PATH = "/fonts/";
@@ -88,21 +116,22 @@ export class Font extends common.Font {
     }
 
     private loadFontFromFile(fontFamily: string): android.graphics.Typeface {
-        var application: typeof applicationModule = require("application");
+        ensureApplication();
 
         appAssets = appAssets || application.android.context.getAssets();
         if (!appAssets) {
             return null;
         }
 
-        var types: typeof typesModule = require("utils/types");
+        ensureTypes();
 
         var result = typefaceCache.get(fontFamily);
         // Check for undefined explicitly as null mean we tried to load the font, but failed.
         if (types.isUndefined(result)) {
             result = null;
-            var trace: typeof traceModule = require("trace");
-            var fs: typeof fileSystemModule  = require("file-system");
+
+            ensureTrace();
+            ensureFS();
 
             var fontAssetPath: string;
             var basePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFamily);

@@ -11,13 +11,20 @@ import utils = require("utils/utils");
 
 global.moduleMerge(imageCommon, exports);
 
+var enums: typeof enumsModule;
+function ensureEnums() {
+    if (!enums) {
+        enums = require("ui/enums");
+    }
+}
+
 function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
     if (!image.android) {
         return;
     }
 
-    var enums: typeof enumsModule = require("ui/enums");
+    ensureEnums();
 
     switch (data.newValue) {
         case enums.Stretch.aspectFit:

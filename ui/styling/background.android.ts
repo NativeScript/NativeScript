@@ -6,7 +6,18 @@ import types = require("utils/types");
 import * as styleModule from "./style";
 import * as buttonModule from "ui/button";
 
-var btn: typeof buttonModule;
+var button: typeof buttonModule;
+var style: typeof styleModule;
+
+function ensureLazyRequires() {
+    if (!button) {
+        button = require("ui/button");
+    }
+
+    if (!style) {
+        style = require("./style");
+    }
+}
 
 global.moduleMerge(common, exports);
 
@@ -164,24 +175,19 @@ export module ad {
     var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
 
     export function onBackgroundOrBorderPropertyChanged(v: view.View) {
-        if (!btn) {
-            btn = require("ui/button");
-        }
-
         var nativeView = <android.view.View>v._nativeView;
         if (!nativeView) {
             return;
         }
 
         ensureBorderDrawable();
-
-        var style: typeof styleModule = require("./style");
+        ensureLazyRequires();
 
         var backgroundValue = v.style._getValue(style.backgroundInternalProperty);
         var borderWidth = v.borderWidth;
         var bkg = <any>nativeView.getBackground();
 
-        if (v instanceof btn.Button && !types.isNullOrUndefined(bkg) && types.isFunction(bkg.setColorFilter) &&
+        if (v instanceof button.Button && !types.isNullOrUndefined(bkg) && types.isFunction(bkg.setColorFilter) &&
             v.borderWidth === 0 && v.borderRadius === 0 &&
             types.isNullOrUndefined(v.style._getValue(style.backgroundImageProperty)) &&
             !types.isNullOrUndefined(v.style._getValue(style.backgroundColorProperty))) {
@@ -193,7 +199,7 @@ export module ad {
             if (!(bkg instanceof BorderDrawableClass)) {
                 bkg = new BorderDrawableClass();
                 let viewClass = types.getClass(v);
-                if (!(v instanceof btn.Button) && !_defaultBackgrounds.has(viewClass)) {
+                if (!(v instanceof button.Button) && !_defaultBackgrounds.has(viewClass)) {
                     _defaultBackgrounds.set(viewClass, nativeView.getBackground());
                 }
 
@@ -216,7 +222,7 @@ export module ad {
         }
         else {
             // reset the value with the default native value
-            if (v instanceof btn.Button) {
+            if (v instanceof button.Button) {
                 var nativeButton = new android.widget.Button(nativeView.getContext());
                 nativeView.setBackground(nativeButton.getBackground());
             }

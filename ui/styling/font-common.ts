@@ -1,6 +1,6 @@
 ﻿import enums = require("ui/enums");
 import definitios = require("ui/styling/font");
-import * as convertersModule from "./converters";
+import * as converters from "./converters";
 
 export class Font implements definitios.Font {
     public static default = undefined;
@@ -102,7 +102,6 @@ export class Font implements definitios.Font {
 
     public static parse(cssValue: string): Font {
         var parsed = parseFont(cssValue);
-        var converters: typeof convertersModule = require("./converters");
 
         var size = converters.fontSizeConverter(parsed.fontSize);
         size = !!size ? size : undefined;

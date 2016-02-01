@@ -27,6 +27,13 @@ var MODULES = {
 var CODEFILE = "codeFile";
 var CSSFILE = "cssFile";
 
+var platform: typeof platformModule;
+function ensurePlatform() {
+    if (!platform) {
+        platform = require("platform");
+    }
+}
+
 export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object): ComponentModule {
     var instance: View;
     var instanceModule: Object;
@@ -109,7 +116,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
             if (attr.indexOf(":") !== -1) {
                 var platformName = attr.split(":")[0].trim();
 
-                var platform: typeof platformModule = require("platform");
+                ensurePlatform();
 
                 if (platformName.toLowerCase() === platform.device.os.toLowerCase()) {
                     attr = attr.split(":")[1].trim();

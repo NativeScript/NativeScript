@@ -4,14 +4,19 @@ import * as styleModule from "./style";
 
 global.moduleMerge(common, exports);
 
+var style: typeof styleModule;
+function ensureStyle() {
+    if (!style) {
+        style = require("./style");
+    }
+}
+
 export module ios {
     export function createBackgroundUIColor(view: viewModule.View, flip?: boolean): UIColor {
         if(!view._nativeView){
             return undefined;
         }
-
-        var style: typeof styleModule = require("./style");
-
+        ensureStyle();
         var background = <common.Background> view.style._getValue(style.backgroundInternalProperty);
 
         if (!background || background.isEmpty()) {

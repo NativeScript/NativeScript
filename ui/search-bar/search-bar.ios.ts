@@ -7,6 +7,13 @@ import style = require("ui/styling/style");
 import view = require("ui/core/view");
 import font = require("ui/styling/font");
 
+var types: typeof typesModule;
+function ensureTypes() {
+    if (!types) {
+        types = require("utils/types");
+    }
+}
+
 function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var bar = <SearchBar>data.object;
     bar.ios.text = data.newValue;
@@ -48,7 +55,7 @@ function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     }
 
     var newValue = data.newValue;
-    var types: typeof typesModule = require("utils/types");
+    ensureTypes();
 
     if (types.isString(newValue)) {
         bar.ios.placeholder = newValue;

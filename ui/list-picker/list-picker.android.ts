@@ -1,7 +1,7 @@
 ﻿import common = require("./list-picker-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import utils = require("utils/utils")
-import * as typesModule from "utils/types";
+import * as types from "utils/types";
 
 global.moduleMerge(common, exports);
 
@@ -71,8 +71,6 @@ export class ListPicker extends common.ListPicker {
 
     public _onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         super._onSelectedIndexPropertyChanged(data);
-        var types: typeof typesModule = require("utils/types");
-
         if (this.android && types.isNumber(data.newValue)) {
             this.android.setValue(data.newValue);
         }

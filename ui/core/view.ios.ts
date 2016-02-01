@@ -9,6 +9,13 @@ import styling = require("ui/styling");
 import enums = require("ui/enums");
 import * as backgroundModule from "ui/styling/background";
 
+var background: typeof backgroundModule;
+function ensureBackground() {
+    if (!background) {
+        background = require("ui/styling/background");
+    }
+}
+
 global.moduleMerge(viewCommon, exports);
 
 function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -328,7 +335,7 @@ export class ViewStyler implements style.Styler {
     private static setBackgroundInternalProperty(view: View, newValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
-            var background: typeof backgroundModule = require("ui/styling/background");
+            ensureBackground();
             nativeView.backgroundColor = background.ios.createBackgroundUIColor(view);
         }
     }

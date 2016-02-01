@@ -8,6 +8,34 @@ import * as utilsModule from "utils/utils";
 import * as fileSystemModule from "file-system";
 import * as visualStateModule from "./visual-state";
 
+var types: typeof typesModule;
+function ensureTypes() {
+    if (!types) {
+        types = require("utils/types");
+    }
+}
+
+var utils: typeof utilsModule;
+function ensureUtils() {
+    if (!utils) {
+        utils = require("utils/utils");
+    }
+}
+
+var fs: typeof fileSystemModule;
+function ensureFS() {
+    if (!fs) {
+        fs = require("file-system");
+    }
+}
+
+var vs: typeof visualStateModule;
+function ensureVisualState() {
+    if (!vs) {
+        vs = require("./visual-state");
+    }
+}
+
 var pattern: RegExp = /('|")(.*?)\1/;
 
 export class StyleScope {
@@ -69,7 +97,7 @@ export class StyleScope {
 
     public static createSelectorsFromImports(tree: cssParser.SyntaxTree): cssSelector.CssSelector[] {
         var selectors = new Array<cssSelector.CssSelector>();
-        var types : typeof typesModule = require("utils/types");
+        ensureTypes();
 
         if (!types.isNullOrUndefined(tree)) {
             var imports = tree["stylesheet"]["rules"].filter(r=> r.type === "import");
@@ -81,10 +109,10 @@ export class StyleScope {
                 var url = match && match[2];
 
                 if (!types.isNullOrUndefined(url)) {
-                    var utils: typeof utilsModule = require("utils/utils");
+                    ensureUtils();
 
                     if (utils.isFileOrResourcePath(url)) {
-                        var fs: typeof fileSystemModule = require("file-system");
+                        ensureFS();
 
                         var fileName = types.isString(url) ? url.trim() : "";
                         if (fileName.indexOf("~/") === 0) {
@@ -183,7 +211,7 @@ export class StyleScope {
             stateSelector: cssSelector.CssVisualStateSelector;
 
         this._statesByKey[key] = allStates;
-        var vs: typeof visualStateModule = require("./visual-state");
+        ensureVisualState();
 
         for (i = 0; i < matchedStateSelectors.length; i++) {
             stateSelector = matchedStateSelectors[i];

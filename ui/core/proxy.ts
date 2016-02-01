@@ -1,9 +1,9 @@
 ﻿import bindable = require("ui/core/bindable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import definition = require("ui/core/proxy");
-import * as platformModule from "platform";
-import * as typesModule from "utils/types";
-import * as observableModule from "data/observable";
+import * as platform from "platform";
+import * as types from "utils/types";
+import * as observable from "data/observable";
 
 export class PropertyMetadata extends dependencyObservable.PropertyMetadata implements definition.PropertyMetadata {
     private _onSetNativeValue: dependencyObservable.PropertyChangedCallback;
@@ -77,8 +77,6 @@ export class ProxyObject extends bindable.Bindable implements definition.ProxyOb
             return;
         }
 
-        var platform: typeof platformModule = require("platform");
-
         if (platform.device.os === platform.platformNames.android && !this.android) {
             // in android we have lazy loading and we do not have a native widget created yet, do not call the onSetNativeValue callback
             // properties will be synced when the widget is created
@@ -92,13 +90,9 @@ export class ProxyObject extends bindable.Bindable implements definition.ProxyOb
 
         var proxyMetadata = <PropertyMetadata>metadata;
         if (proxyMetadata.onSetNativeValue) {
-            var types: typeof typesModule = require("utils/types");
-
             if (types.isUndefined(newValue)) {
                 newValue = this._getValue(property);
             }
-
-            var observable: typeof observableModule = require("data/observable"); 
 
             proxyMetadata.onSetNativeValue({
                 object: this,

@@ -15,6 +15,13 @@ import platform = require("platform");
 import definition = require("ui/styling/style");
 import * as imageSourceModule from "image-source";
 
+var imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
+}
+
 // key is the property id and value is Dictionary<string, StylePropertyChangedHandler>;
 var _registeredHandlers = Array<Object>();
 
@@ -279,7 +286,7 @@ function onBackgroundImagePropertyChanged(data: PropertyChangeData) {
             url = match[2];
         }
 
-        var imageSource: typeof imageSourceModule = require("image-source");
+        ensureImageSource();
 
         if (utils.isDataURI(url)) {
             var base64Data = url.split(",")[1];

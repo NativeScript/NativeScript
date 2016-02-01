@@ -2,6 +2,13 @@
 import viewModule = require("ui/core/view");
 import * as traceModule from "trace";
 
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
+
 export module Properties {
     export var opacity = "opacity";
     export var backgroundColor = "backgroundColor";
@@ -56,7 +63,7 @@ export class Animation implements definition.Animation {
             throw new Error("No animation definitions specified");
         }
 
-        var trace : typeof traceModule = require("trace");
+        ensureTrace();
 
         trace.write("Analyzing " + animationDefinitions.length + " animation definitions...", trace.categories.Animation);
         this._propertyAnimations = new Array<PropertyAnimation>();
