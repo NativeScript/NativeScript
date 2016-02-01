@@ -63,7 +63,7 @@ task cleanDistDir (type: Delete) {
 
 task fixVersion << {
 	if(project.hasProperty("PACKAGE_VERSION")) {
-		def inputFile = new File("./package.json")
+		def inputFile = new File("../package.json")
 		def json = new JsonSlurper().parseText(inputFile.text)
 		json.version = json.version + "-" + PACKAGE_VERSION
 		def jb = new JsonBuilder(json);
