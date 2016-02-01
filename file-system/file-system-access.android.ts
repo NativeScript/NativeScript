@@ -201,7 +201,7 @@ export class FileSystemAccess {
         try {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileInputStream(javaFile);
-            var bytes = java.lang.reflect.Array.newInstance(java.lang.Byte.class.getField("TYPE").get(null), javaFile.length());
+            var bytes = (<any>Array).create("byte", javaFile.length());
             var dataInputStream = new java.io.DataInputStream(stream);
             dataInputStream.readFully(bytes);
             return bytes;
