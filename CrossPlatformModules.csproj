@@ -209,11 +209,13 @@
     <Content Include="apps\ui-tests-app\css\decoration-transform-formattedtext.xml" />
     <Content Include="apps\ui-tests-app\css\text-decoration.xml" />
     <Content Include="apps\ui-tests-app\css\text-transform.xml" />
-    <Content Include="apps\ui-tests-app\css\tab-view.xml" />
-    <Content Include="apps\ui-tests-app\css\text.css" />
+    <Content Include="apps\ui-tests-app\css\tab-view-more.xml" />
+    <Content Include="apps\ui-tests-app\css\test.css" />
     <Content Include="apps\ui-tests-app\css\white-space.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\ui-tests-app\font\material-icons.xml" />
+    <Content Include="apps\ui-tests-app\font\tab-view.xml" />
     <Content Include="apps\ui-tests-app\html-view\html-view.xml">
       <SubType>Designer</SubType>
     </Content>

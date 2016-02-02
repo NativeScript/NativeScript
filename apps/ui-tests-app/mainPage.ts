@@ -48,11 +48,13 @@ examples.set("whitespace", "css/white-space");
 examples.set("radius", "css/radius");
 examples.set("styles", "css/styles");
 examples.set("switch", "css/views");
+examples.set("tabmore", "css/tab-view-more");
 
 examples.set("dialogs", "dialogs/dialogs");
 
 examples.set("fontbtn", "font/button");
 examples.set("fontlbl", "font/label");
+examples.set("tabfont", "font/tab-view");
 examples.set("fontfield", "font/text-field");
 examples.set("fontview", "font/text-view");
 

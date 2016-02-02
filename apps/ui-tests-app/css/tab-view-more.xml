@@ -1,4 +1,4 @@
-﻿<Page cssFile="~/css/text.css">
+﻿<Page cssFile="~/css/test.css">
   <TabView>
     <TabView.items>
 
