@@ -628,13 +628,13 @@ module.exports = function(grunt) {
     //alias just-build for backwards compatibility
     grunt.registerTask("just-build", ["build-all"]);
 
-    grunt.registerTask("build-all", (skipTsLint ? [] : ["tslint:build"]).concat([
+    grunt.registerTask("build-all", [
         "pack-modules",
 
         "collect-apps-raw-files",
         "distribute-apps-files",
         "distribute-ts-apps-files",
-    ]));
+    ]);
 
     grunt.registerTask("node-tests", [
         "clean:nodeTests",
