@@ -2,6 +2,10 @@ var tsconfig = require('./tsconfig.json');
 var shelljs = require("shelljs");
 
 module.exports = function(grunt) {
+    if (grunt.option('profile')) {
+        grunt.log.writeln('Profiling all grunt tasks...');
+        require('time-grunt')(grunt);
+    }
 
     if (grunt.cli.tasks.indexOf("testsapp") >= 0 || grunt.cli.tasks.indexOf("buildTestsApp")>= 0) {
         var tsTester = require("./build/run-testsapp.grunt.js");
