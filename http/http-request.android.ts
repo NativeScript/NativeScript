@@ -131,7 +131,7 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
 
     var javaOptions = new com.tns.Async.Http.RequestOptions();
 
-    javaOptions.url = options.url.replace("%", "%25");
+    javaOptions.url = options.url;
 
     if (types.isString(options.method)) {
         javaOptions.method = options.method;
