@@ -403,10 +403,14 @@ function showUIAlertController(alertController: UIAlertController) {
 
             var lblColor = dialogsCommon.getLabelColor();
             if (lblColor) {
-                var title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-                alertController.setValueForKey(title, "attributedTitle");
-                var message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-                alertController.setValueForKey(message, "attributedMessage");
+                if (alertController.title) {
+                    var title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+                    alertController.setValueForKey(title, "attributedTitle");
+                }
+                if (alertController.message) {
+                    var message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+                    alertController.setValueForKey(message, "attributedMessage");
+                }
             }
 
             viewController.presentModalViewControllerAnimated(alertController, true);
