@@ -170,7 +170,7 @@ export class Animation extends common.Animation implements definition.Animation 
                case common.Properties.backgroundColor:
                    (<any>animation)._originalValue = animation.target.backgroundColor;
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.backgroundColor = value };
-                   originalValue = nativeView.layer.backgroundColor.CGColor;
+                   originalValue = nativeView.layer.backgroundColor;
                    value = value.CGColor;
                    break;
                case common.Properties.opacity:
@@ -350,4 +350,20 @@ export class Animation extends common.Animation implements definition.Animation 
         }
         return result;
     }
+}
+
+export function _getTransformMismatchErrorMessage(view: viewModule.View): string {
+    // Order is important: translate, rotate, scale
+    var result: CGAffineTransform = CGAffineTransformIdentity;
+    result = CGAffineTransformTranslate(result, view.translateX, view.translateY);
+    result = CGAffineTransformRotate(result, view.rotate * Math.PI / 180);
+    result = CGAffineTransformScale(result, view.scaleX, view.scaleY);
+    var viewTransform = NSStringFromCGAffineTransform(result);
+    var nativeTransform = NSStringFromCGAffineTransform(view._nativeView.transform);
+
+    if (viewTransform !== nativeTransform) {
+        return "View and Native transforms do not match. View: " + viewTransform + "; Native: " + nativeTransform;
+    }
+
+    return undefined;
 }
