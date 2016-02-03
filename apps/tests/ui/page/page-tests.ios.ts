@@ -27,7 +27,7 @@ export function test_NavigateToNewPage_InnerControl() {
     TKUnit.assert(label.isLoaded === false, "InnerControl.isLoaded should become false after navigating back");
 }
 
-export function test_WhenPageIsLoadedItCanShowAnotherPageAsModal() {
+export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
     var masterPage;
     var ctx = {
         shownModally: false
@@ -42,7 +42,7 @@ export function test_WhenPageIsLoadedItCanShowAnotherPageAsModal() {
         modalClosed = true;
     }
 
-    var loadedEventHandler = function (args) {
+    var navigatedToEventHandler = function (args) {
         TKUnit.assert(!frame.topmost().currentPage.modal, "frame.topmost().currentPage.modal should be undefined when no modal page is shown!");
         var basePath = "ui/page/";
         args.object.showModal(basePath + "modal-page", ctx, modalCloseCallback, false);
@@ -51,7 +51,7 @@ export function test_WhenPageIsLoadedItCanShowAnotherPageAsModal() {
     var masterPageFactory = function (): PageModule.Page {
         masterPage = new PageModule.Page();
         masterPage.id = "newPage";
-        masterPage.on(view.View.loadedEvent, loadedEventHandler);
+        masterPage.on(PageModule.Page.navigatedToEvent, navigatedToEventHandler);
         var label = new LabelModule.Label();
         label.text = "Text";
         masterPage.content = label;
@@ -61,7 +61,7 @@ export function test_WhenPageIsLoadedItCanShowAnotherPageAsModal() {
     try {
         helper.navigate(masterPageFactory);
         TKUnit.waitUntilReady(() => { return modalClosed; });
-        masterPage.off(view.View.loadedEvent, loadedEventHandler);
+        masterPage.off(view.View.loadedEvent, navigatedToEventHandler);
     }
     finally {
         helper.goBack();
@@ -77,7 +77,7 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
         modalClosed = true;
     }
 
-    var loadedEventHandler = function (args) {
+    var navigatedToEventHandler = function (args) {
         var basePath = "ui/page/";
         args.object.showModal(basePath + "modal-page", null, modalCloseCallback, false);
     };
@@ -89,7 +89,7 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
     var masterPageFactory = function (): PageModule.Page {
         masterPage = new PageModule.Page();
         masterPage.id = "master-page";
-        masterPage.on(view.View.loadedEvent, loadedEventHandler);
+        masterPage.on(PageModule.Page.navigatedToEvent, navigatedToEventHandler);
         masterPage.on(view.View.unloadedEvent, unloadedEventHandler);
         var label = new LabelModule.Label();
         label.text = "Modal Page";
@@ -101,8 +101,8 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
         helper.navigate(masterPageFactory);
         TKUnit.waitUntilReady(() => { return modalClosed; });
         TKUnit.assert(!masterPageUnloaded, "Master page should not raise 'unloaded' when showing modal!");
-        masterPage.off(view.View.loadedEvent, loadedEventHandler);
-        masterPage.off(view.View.unloadedEvent, loadedEventHandler);
+        masterPage.off(view.View.loadedEvent, navigatedToEventHandler);
+        masterPage.off(view.View.unloadedEvent, unloadedEventHandler);
     }
     finally {
         helper.goBack();

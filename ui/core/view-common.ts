@@ -8,7 +8,6 @@ import styleScope = require("../styling/style-scope");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 import color = require("color");
-import animationModule = require("ui/animation");
 import observable = require("data/observable");
 import {PropertyMetadata, ProxyObject} from "ui/core/proxy";
 import {PropertyMetadataSettings, PropertyChangeData, Property, ValueSource, PropertyMetadata as doPropertyMetadata} from "ui/core/dependency-observable";
@@ -17,6 +16,7 @@ import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
 import * as visualStateConstants from "ui/styling/visual-state-constants";
 import * as bindableModule from "ui/core/bindable";
 import * as visualStateModule from "../styling/visual-state";
+import * as animModule from "ui/animation";
 
 var bindable: typeof bindableModule;
 function ensureBindable() {
@@ -1139,11 +1139,12 @@ export class View extends ProxyObject implements definition.View {
         return undefined;
     }
 
-    public animate(animation: animationModule.AnimationDefinition): Promise<void> {
+    public animate(animation: any): Promise<void> {
         return this.createAnimation(animation).play();
     }
 
-    public createAnimation(animation: animationModule.AnimationDefinition): animationModule.Animation {
+    public createAnimation(animation: any): any {
+        var animationModule: typeof animModule = require("ui/animation");
         var that = this;
         animation.target = that;
         return new animationModule.Animation([animation]);

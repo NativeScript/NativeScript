@@ -28,6 +28,7 @@ import stackLayoutModule = require("ui/layouts/stack-layout");
 import helper = require("../helper");
 import view = require("ui/core/view");
 import platform = require("platform");
+import observable = require("data/observable");
 
 export function addLabelToPage(page: PageModule.Page, text?: string) {
     var label = new LabelModule.Label();
@@ -59,13 +60,9 @@ export function test_AfterPageLoaded_is_called_NativeInstance_is_created() {
 
     helper.navigate(pageFactory);
 
-    try {
-        TKUnit.assert(nativeInstanceCreated, "Expected: true, Actual: " + nativeInstanceCreated);
-    }
-    finally {
-        page.off(view.View.loadedEvent, handler);
-        helper.goBack();
-    }
+    TKUnit.assert(nativeInstanceCreated, "Expected: true, Actual: " + nativeInstanceCreated);
+    page.off(view.View.loadedEvent, handler);
+    helper.goBack();
 }
 
 export function test_PageLoaded_is_called_once() {
@@ -96,14 +93,10 @@ export function test_PageLoaded_is_called_once() {
 
     helper.navigate(pageFactory2);
 
-    try {
-        TKUnit.assert(loaded === 1, "Expected: 1, Actual: " + loaded);
-    }
-    finally {
-        page2.off(view.View.loadedEvent, handler);
-        helper.goBack();
-        helper.goBack();
-    }
+    TKUnit.assert(loaded === 1, "Expected: 1, Actual: " + loaded);
+    page2.off(view.View.loadedEvent, handler);
+    helper.goBack();
+    helper.goBack();
 }
 
 export function test_NavigateToNewPage() {
@@ -147,7 +140,15 @@ export function test_NavigateToNewPage() {
     TKUnit.assert(testPage._isAddedToNativeVisualTree === false, "Page._isAddedToNativeVisualTree should become false after navigating back");
 }
 
-export function test_PageNavigation_EventSequence() {
+export function test_PageNavigation_EventSequence_WithTransition() {
+    _test_PageNavigation_EventSequence(true);
+}
+
+export function test_PageNavigation_EventSequence_WithoutTransition() {
+    _test_PageNavigation_EventSequence(false);
+}
+
+function _test_PageNavigation_EventSequence(withTransition: boolean) {
     var testPage: PageModule.Page;
     var context = { property: "this is the context" };
     var eventSequence = [];
@@ -160,13 +161,15 @@ export function test_PageNavigation_EventSequence() {
             TKUnit.assertEqual(data.context, context, "navigatingTo: navigationContext");
         });
 
-        testPage.on(PageModule.Page.loadedEvent, function (data) {
+        testPage.on(PageModule.Page.loadedEvent, function (data: observable.EventData) {
             eventSequence.push("loaded");
+            TKUnit.assertNotEqual(FrameModule.topmost().currentPage, data.object);
         });
 
         testPage.on(PageModule.Page.navigatedToEvent, function (data: PageModule.NavigatedData) {
             eventSequence.push("navigatedTo");
             TKUnit.assertEqual(data.context, context, "navigatedTo : navigationContext");
+            TKUnit.assertEqual(FrameModule.topmost().currentPage, data.object);
         });
 
         testPage.on(PageModule.Page.navigatingFromEvent, function (data: PageModule.NavigatedData) {
@@ -186,7 +189,23 @@ export function test_PageNavigation_EventSequence() {
         return testPage;
     };
 
-    helper.navigate(pageFactory, context);
+    if (withTransition) {
+        var navigationTransition: FrameModule.NavigationTransition = {
+            transition: "slide",
+            duration: 1000,
+        };
+        var navigationEntry: FrameModule.NavigationEntry = {
+            create: pageFactory,
+            context: context,
+            animated: true,
+            navigationTransition: navigationTransition
+        }
+        helper.navigateWithEntry(navigationEntry);
+    }
+    else {
+        helper.navigate(pageFactory, context);
+    }
+
     helper.goBack();
 
     var expectedEventSequence = ["navigatingTo", "loaded", "navigatedTo", "navigatingFrom", "navigatedFrom", "unloaded"];
@@ -218,13 +237,9 @@ export function test_NavigateTo_WithContext() {
     // </snippet>
     TKUnit.waitUntilReady(() => { return topFrame.currentPage !== currentPage });
 
-    try {
-        var actualContextValue = testPage.navigationContext;
-        TKUnit.assert(actualContextValue === "myContext", "Expected: myContext" + ", Actual: " + actualContextValue);
-    }
-    finally {
-        helper.goBack();
-    }
+    var actualContextValue = testPage.navigationContext;
+    TKUnit.assert(actualContextValue === "myContext", "Expected: myContext" + ", Actual: " + actualContextValue);
+    helper.goBack();
 
     TKUnit.assert(testPage.navigationContext === undefined, "Navigation context should be cleared on navigating back");
 }
@@ -239,13 +254,9 @@ export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
     helper.navigate(pageFactory);
 
     var topFrame = FrameModule.topmost();
-    try {
-        TKUnit.assert(topFrame.backStack.length === 1, "Expected: 1, Actual: " + topFrame.backStack.length);
-        TKUnit.assert(topFrame.canGoBack(), "We should can go back.");
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assert(topFrame.backStack.length === 1, "Expected: 1, Actual: " + topFrame.backStack.length);
+    TKUnit.assert(topFrame.canGoBack(), "We should can go back.");
+    helper.goBack();
 
     TKUnit.assert(topFrame.backStack.length === 0, "Expected: 0, Actual: " + topFrame.backStack.length);
     TKUnit.assert(topFrame.canGoBack() === false, "canGoBack should return false.");
@@ -253,44 +264,31 @@ export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
 
 export function test_LoadPageFromModule() {
     helper.navigateToModule("ui/page/test-page-module");
-    try {
-        var topFrame = FrameModule.topmost();
-        TKUnit.assert(topFrame.currentPage.content instanceof LabelModule.Label, "Content of the test page should be a Label created within test-page-module.");
-        var testLabel = <LabelModule.Label>topFrame.currentPage.content;
-        TKUnit.assert(testLabel.text === "Label created within a page module.");
-    }
-    finally {
-        helper.goBack();
-    }
+    var topFrame = FrameModule.topmost();
+    TKUnit.assert(topFrame.currentPage.content instanceof LabelModule.Label, "Content of the test page should be a Label created within test-page-module.");
+    var testLabel = <LabelModule.Label>topFrame.currentPage.content;
+    TKUnit.assert(testLabel.text === "Label created within a page module.");
+    helper.goBack();
 }
 
 export function test_LoadPageFromDeclarativeWithCSS() {
     helper.navigateToModule("ui/page/test-page-declarative-css");
-    try {
-        var topFrame = FrameModule.topmost();
-        TKUnit.assert(topFrame.currentPage.content instanceof LabelModule.Label, "Content of the test page should be a Label created within test-page-module-css.");
-        var testLabel = <LabelModule.Label>topFrame.currentPage.content;
-        TKUnit.assert(testLabel.text === "Label created within a page declarative file with css.");
-        TKUnit.assert(testLabel.style.backgroundColor.hex === "#ff00ff00", "Expected: #ff00ff00, Actual: " + testLabel.style.backgroundColor.hex);
-    }
-    finally {
-        helper.goBack();
-    }
-
+    var topFrame = FrameModule.topmost();
+    TKUnit.assert(topFrame.currentPage.content instanceof LabelModule.Label, "Content of the test page should be a Label created within test-page-module-css.");
+    var testLabel = <LabelModule.Label>topFrame.currentPage.content;
+    TKUnit.assert(testLabel.text === "Label created within a page declarative file with css.");
+    TKUnit.assert(testLabel.style.backgroundColor.hex === "#ff00ff00", "Expected: #ff00ff00, Actual: " + testLabel.style.backgroundColor.hex);
+    helper.goBack();
 }
 
 export function test_LoadPageFromModuleWithCSS() {
     helper.navigateToModule("ui/page/test-page-module-css");
-    try {
-        var topFrame = FrameModule.topmost();
-        TKUnit.assert(topFrame.currentPage.content instanceof LabelModule.Label, "Content of the test page should be a Label created within test-page-module-css.");
-        var testLabel = <LabelModule.Label>topFrame.currentPage.content;
-        TKUnit.assert(testLabel.text === "Label created within a page module css.");
-        TKUnit.assert(testLabel.style.backgroundColor.hex === "#ff00ff00", "Expected: #ff00ff00, Actual: " + testLabel.style.backgroundColor.hex);
-    }
-    finally {
-        helper.goBack();
-    }
+    var topFrame = FrameModule.topmost();
+    TKUnit.assert(topFrame.currentPage.content instanceof LabelModule.Label, "Content of the test page should be a Label created within test-page-module-css.");
+    var testLabel = <LabelModule.Label>topFrame.currentPage.content;
+    TKUnit.assert(testLabel.text === "Label created within a page module css.");
+    TKUnit.assert(testLabel.style.backgroundColor.hex === "#ff00ff00", "Expected: #ff00ff00, Actual: " + testLabel.style.backgroundColor.hex);
+    helper.goBack();
 }
 
 export function test_NavigateToPageCreatedWithNavigationEntry() {
@@ -305,12 +303,8 @@ export function test_NavigateToPageCreatedWithNavigationEntry() {
     helper.navigate(pageFactory);
 
     var actualContent = <LabelModule.Label>testPage.content;
-    try {
-        TKUnit.assert(actualContent.text === expectedText, "Expected: " + expectedText + ", Actual: " + actualContent.text);
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assert(actualContent.text === expectedText, "Expected: " + expectedText + ", Actual: " + actualContent.text);
+    helper.goBack();
 }
 
 export function test_cssShouldBeAppliedToAllNestedElements() {
@@ -330,13 +324,9 @@ export function test_cssShouldBeAppliedToAllNestedElements() {
     helper.navigate(pageFactory);
 
     var expectedText = "Some text";
-    try {
-        TKUnit.assert(label.style.backgroundColor.hex === "#ff00ff00", "Expected: #ff00ff00, Actual: " + label.style.backgroundColor.hex);
-        TKUnit.assert(StackLayout.style.backgroundColor.hex === "#ffff0000", "Expected: #ffff0000, Actual: " + StackLayout.style.backgroundColor.hex);
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assert(label.style.backgroundColor.hex === "#ff00ff00", "Expected: #ff00ff00, Actual: " + label.style.backgroundColor.hex);
+    TKUnit.assert(StackLayout.style.backgroundColor.hex === "#ffff0000", "Expected: #ffff0000, Actual: " + StackLayout.style.backgroundColor.hex);
+    helper.goBack();
 }
 
 export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
@@ -357,17 +347,13 @@ export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
     helper.navigate(pageFactory);
 
     var expectedText = "Some text";
-    try {
-        TKUnit.assert(label.style.backgroundColor.hex === "#ff00ff00", "Expected: #ff00ff00, Actual: " + label.style.backgroundColor.hex);
-        TKUnit.assert(StackLayout.style.backgroundColor.hex === "#ffff0000", "Expected: #ffff0000, Actual: " + StackLayout.style.backgroundColor.hex);
+    TKUnit.assert(label.style.backgroundColor.hex === "#ff00ff00", "Expected: #ff00ff00, Actual: " + label.style.backgroundColor.hex);
+    TKUnit.assert(StackLayout.style.backgroundColor.hex === "#ffff0000", "Expected: #ffff0000, Actual: " + StackLayout.style.backgroundColor.hex);
 
-        testPage.css = "stackLayout {background-color: #ff0000ff;} label {background-color: #ffff0000;}";
-        TKUnit.assert(label.style.backgroundColor.hex === "#ffff0000", "Expected: #ffff0000, Actual: " + label.style.backgroundColor.hex);
-        TKUnit.assert(StackLayout.style.backgroundColor.hex === "#ff0000ff", "Expected: #ff0000ff, Actual: " + StackLayout.style.backgroundColor.hex);
-    }
-    finally {
-        helper.goBack();
-    }
+    testPage.css = "stackLayout {background-color: #ff0000ff;} label {background-color: #ffff0000;}";
+    TKUnit.assert(label.style.backgroundColor.hex === "#ffff0000", "Expected: #ffff0000, Actual: " + label.style.backgroundColor.hex);
+    TKUnit.assert(StackLayout.style.backgroundColor.hex === "#ff0000ff", "Expected: #ff0000ff, Actual: " + StackLayout.style.backgroundColor.hex);
+    helper.goBack();
 }
 
 export function test_page_backgroundColor_is_white() {
@@ -377,10 +363,10 @@ export function test_page_backgroundColor_is_white() {
     });
 }
 
-export function test_WhenPageIsLoadedFrameCurrentPageIsTheSameInstance() {
+export function test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage() {
     var page;
     var loadedEventHandler = function (args) {
-        TKUnit.assert(FrameModule.topmost().currentPage === args.object, `frame.topmost().currentPage should be equal to args.object page instance in the page.loaded event handler. Expected: ${args.object.id}; Actual: ${FrameModule.topmost().currentPage.id};`);
+        TKUnit.assert(FrameModule.topmost().currentPage !== args.object, `When a page is loaded it should not yet be the current page. Loaded: ${args.object.id}; Current: ${FrameModule.topmost().currentPage.id};`);
     }
 
     var pageFactory = function (): PageModule.Page {
@@ -393,13 +379,30 @@ export function test_WhenPageIsLoadedFrameCurrentPageIsTheSameInstance() {
         return page;
     };
 
-    try {
-        helper.navigate(pageFactory);
-        page.off(view.View.loadedEvent, loadedEventHandler);
+    helper.navigate(pageFactory);
+    page.off(view.View.loadedEvent, loadedEventHandler);
+    helper.goBack();
+}
+
+export function test_WhenPageIsNavigatedToFrameCurrentPageIsNowTheSameAsThePage() {
+    var page;
+    var navigatedEventHandler = function (args) {
+        TKUnit.assert(FrameModule.topmost().currentPage === args.object, `frame.topmost().currentPage should be equal to args.object page instance in the page.navigatedTo event handler. Expected: ${args.object.id}; Actual: ${FrameModule.topmost().currentPage.id};`);
     }
-    finally {
-        helper.goBack();
-    }
+
+    var pageFactory = function (): PageModule.Page {
+        page = new PageModule.Page();
+        page.id = "newPage";
+        page.on(PageModule.Page.navigatedToEvent, navigatedEventHandler);
+        var label = new LabelModule.Label();
+        label.text = "Text";
+        page.content = label;
+        return page;
+    };
+
+    helper.navigate(pageFactory);
+    page.off(view.View.loadedEvent, navigatedEventHandler);
+    helper.goBack();
 }
 
 export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
@@ -407,7 +410,7 @@ export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
     var page2;
     var forwardCounter = 0;
     var backCounter = 0;
-    var loadedEventHandler = function (args: PageModule.NavigatedData) {
+    var navigatedEventHandler = function (args: PageModule.NavigatedData) {
         if (args.isBackNavigation) {
             backCounter++;
         }
@@ -418,28 +421,24 @@ export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
 
     var pageFactory1 = function (): PageModule.Page {
         page1 = new PageModule.Page();
-        page1.on(PageModule.Page.navigatedToEvent, loadedEventHandler);
+        page1.on(PageModule.Page.navigatedToEvent, navigatedEventHandler);
         return page1;
     };
 
     var pageFactory2 = function (): PageModule.Page {
         page2 = new PageModule.Page();
-        page2.on(PageModule.Page.navigatedToEvent, loadedEventHandler);
+        page2.on(PageModule.Page.navigatedToEvent, navigatedEventHandler);
         return page2;
     };
 
-    try {
-        helper.navigate(pageFactory1);
-        helper.navigate(pageFactory2);
-        helper.goBack();
-        TKUnit.assertEqual(forwardCounter, 2, "Forward navigation counter should be 1");
-        TKUnit.assertEqual(backCounter, 1, "Backward navigation counter should be 1");
-        page1.off(PageModule.Page.navigatedToEvent, loadedEventHandler);
-        page2.off(PageModule.Page.navigatedToEvent, loadedEventHandler);
-    }
-    finally {
-        helper.goBack();
-    }
+    helper.navigate(pageFactory1);
+    helper.navigate(pageFactory2);
+    helper.goBack();
+    TKUnit.assertEqual(forwardCounter, 2, "Forward navigation counter should be 1");
+    TKUnit.assertEqual(backCounter, 1, "Backward navigation counter should be 1");
+    page1.off(PageModule.Page.navigatedToEvent, navigatedEventHandler);
+    page2.off(PageModule.Page.navigatedToEvent, navigatedEventHandler);
+    helper.goBack();
 }
 
 //export function test_ModalPage_Layout_is_Correct() {
