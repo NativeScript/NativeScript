@@ -12,19 +12,17 @@ var _skip = "_skip";
 var FLT_MAX = 340282346638528859811704183484516925440.000000;
 
 class AnimationDelegateImpl extends NSObject {
-    static new(): AnimationDelegateImpl {
-        return <AnimationDelegateImpl>super.new();
-    }
 
     public nextAnimation: Function;
 
     private _finishedCallback: Function;
     private _propertyAnimation: common.PropertyAnimation;
 
-    public initWithFinishedCallback(finishedCallback: Function, propertyAnimation: common.PropertyAnimation): AnimationDelegateImpl {
-        this._finishedCallback = finishedCallback;
-        this._propertyAnimation = propertyAnimation;
-        return this;
+    public static initWithFinishedCallback(finishedCallback: Function, propertyAnimation: common.PropertyAnimation): AnimationDelegateImpl {
+        let delegate = <AnimationDelegateImpl>AnimationDelegateImpl.new();
+        delegate._finishedCallback = finishedCallback;
+        delegate._propertyAnimation = propertyAnimation;
+        return delegate;
     }
 
     animationDidStart(anim: CAAnimation): void {
@@ -242,7 +240,7 @@ export class Animation extends common.Animation implements definition.Animation 
                nativeAnimation.timingFunction = animation.curve;
            }
 
-           var animationDelegate: AnimationDelegateImpl = AnimationDelegateImpl.new().initWithFinishedCallback(finishedCallback, animation);
+           var animationDelegate: AnimationDelegateImpl = AnimationDelegateImpl.initWithFinishedCallback(finishedCallback, animation);
            nativeAnimation.setValueForKey(animationDelegate, "delegate");
 
            nativeView.layer.addAnimationForKey(nativeAnimation, null);
