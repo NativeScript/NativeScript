@@ -90,72 +90,85 @@ export module ad {
             }
 
             public draw(canvas: android.graphics.Canvas): void {
-                var bounds = this.getBounds();
-                var boundsF = new android.graphics.RectF(bounds);
-                var boundsWidth = bounds.width();
-                var boundsHeight = bounds.height();
+                let bounds = this.getBounds();
+                let borderWidth = this._borderWidth * this._density;
+                let halfBorderWidth = borderWidth / 2;
 
-                var radius = this._cornerRadius * this._density;
-                var stroke = this._borderWidth * this._density;
-           
-                // set clip first
-                if (radius > 0) {
-                    var path = new android.graphics.Path();
-                    path.addRoundRect(boundsF, radius, radius, android.graphics.Path.Direction.CW);
-                    canvas.clipPath(path);
-                }
+                // We will inset background colors and images so antialiasing will not color pixels outside the border.
+                // If the border is transparent we will backoff less, and we will not backoff more than half a pixel or half the border width.
+                let normalizedBorderAlpha = android.graphics.Color.alpha(this._borderColor) / 255;
+                let backoffAntialias = Math.min(0.5, halfBorderWidth) * normalizedBorderAlpha;
+                let outerBoundsF = new android.graphics.RectF(bounds.left + backoffAntialias, bounds.top + backoffAntialias, bounds.right - backoffAntialias, bounds.bottom - backoffAntialias);
+
+                let outerRadius = Math.max(0, this._cornerRadius * this._density - backoffAntialias);
 
                 // draw background
                 if (this.background.color && this.background.color.android) {
-                    let c = this.background.color;
-                    canvas.drawARGB(c.a, c.r, c.g, c.b);
+                    let backgroundColorPaint = new android.graphics.Paint();
+                    backgroundColorPaint.setStyle(android.graphics.Paint.Style.FILL);
+                    backgroundColorPaint.setColor(this.background.color.android);
+                    backgroundColorPaint.setAntiAlias(true);
+
+                    canvas.drawRoundRect(outerBoundsF, outerRadius, outerRadius, backgroundColorPaint);
                 }
 
-                // draw image 
+                // draw image
                 if (this.background.image) {
                     let bitmap = this.background.image.android;
-                    let params = this.background.getDrawParams(boundsWidth, boundsHeight);
+                    let params = this.background.getDrawParams(bounds.width(), bounds.height());
 
-                    var matrix = new android.graphics.Matrix();
+                    let transform = new android.graphics.Matrix();
                     if (params.sizeX > 0 && params.sizeY > 0) {
-                        var scaleX = params.sizeX / bitmap.getWidth();
-                        var scaleY = params.sizeY / bitmap.getHeight();
-                        matrix.setScale(scaleX, scaleY, 0, 0);
-                    }
-                    else {
+                        let scaleX = params.sizeX / bitmap.getWidth();
+                        let scaleY = params.sizeY / bitmap.getHeight();
+                        transform.setScale(scaleX, scaleY, 0, 0);
+                    } else {
                         params.sizeX = bitmap.getWidth();
                         params.sizeY = bitmap.getHeight();
                     }
-                    matrix.postTranslate(params.posX, params.posY);
+                    transform.postTranslate(params.posX - backoffAntialias, params.posY - backoffAntialias);
 
-                    if (!params.repeatX && !params.repeatY) {
-                        canvas.drawBitmap(bitmap, matrix, undefined);
-                    }
-                    else {
-                        var shader = new android.graphics.BitmapShader(bitmap, android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
-                        shader.setLocalMatrix(matrix);
-                        var paint = new android.graphics.Paint();
-                        paint.setShader(shader);
+                    let shader = new android.graphics.BitmapShader(bitmap, android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
+                    shader.setLocalMatrix(transform);
 
-                        var w = params.repeatX ? bounds.width() : params.sizeX;
-                        var h = params.repeatY ? bounds.height() : params.sizeY;
+                    let backgroundImagePaint = new android.graphics.Paint();
+                    backgroundImagePaint.setShader(shader);
 
-                        params.posX = params.repeatX ? 0 : params.posX;
-                        params.posY = params.repeatY ? 0 : params.posY;
+                    let imageWidth = params.repeatX ? bounds.width() : params.sizeX;
+                    let imageHeight = params.repeatY ? bounds.height() : params.sizeY;
+                    params.posX = params.repeatX ? 0 : params.posX;
+                    params.posY = params.repeatY ? 0 : params.posY;
 
-                        canvas.drawRect(params.posX, params.posY, params.posX + w, params.posY + h, paint);
+                    let supportsPathOp = android.os.Build.VERSION.SDK_INT >= 19;
+                    if (supportsPathOp) {
+                        // Path.Op can be used in API level 19+ to achieve the perfect geometry.
+                        let backgroundPath = new android.graphics.Path();
+                        backgroundPath.addRoundRect(outerBoundsF, outerRadius, outerRadius, android.graphics.Path.Direction.CCW);
+                        let backgroundNoRepeatPath = new android.graphics.Path();
+                        backgroundNoRepeatPath.addRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight, android.graphics.Path.Direction.CCW);
+                        (<any>backgroundPath).op(backgroundNoRepeatPath, (<any>android).graphics.Path.Op.INTERSECT);
+                        canvas.drawPath(backgroundPath, backgroundImagePaint);
+                    } else {
+                        // Clipping here will not be antialiased but at least it won't shine through the rounded corners.
+                        canvas.save();
+                        canvas.clipRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight);
+                        canvas.drawRoundRect(outerBoundsF, outerRadius, outerRadius, backgroundImagePaint);
+                        canvas.restore();
                     }
                 }
 
-                // draw border (topmost)
-                if (stroke > 0 && this._borderColor && this._borderColor) {
+                // draw border
+                if (borderWidth > 0 && this._borderColor) {
+                    let middleRadius = Math.max(0, outerRadius - halfBorderWidth);
+                    let middleBoundsF = new android.graphics.RectF(bounds.left + halfBorderWidth, bounds.top + halfBorderWidth, bounds.right - halfBorderWidth, bounds.bottom - halfBorderWidth);
+
                     let borderPaint = new android.graphics.Paint();
                     borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
                     borderPaint.setColor(this._borderColor);
+                    borderPaint.setAntiAlias(true);
+                    borderPaint.setStrokeWidth(borderWidth);
 
-                    // Note: Double the stroke as the outer part will be clipped.
-                    borderPaint.setStrokeWidth(stroke * 2);
-                    canvas.drawRoundRect(boundsF, radius, radius, borderPaint)
+                    canvas.drawRoundRect(middleBoundsF, middleRadius, middleRadius, borderPaint);
                 }
             }
         }
