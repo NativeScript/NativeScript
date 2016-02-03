@@ -46,7 +46,15 @@ export function createPage() {
             stackLayout.addChild(navigateToAnotherPageButton);
             navigateToAnotherPageButton.on(buttonModule.Button.tapEvent, function () {
                 var pageFactory = function () {
-                    return new navPageModule.NavPage(0);
+                    return new navPageModule.NavPage({
+                        index: 0,
+                        backStackVisible: true,
+                        clearHistory: false,
+                        animated: true,
+                        transition: 0,
+                        curve: 0,
+                        duration: 0,
+                    });
                 };
                 frameModule.topmost().navigate(pageFactory);
             });

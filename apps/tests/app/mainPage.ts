@@ -7,6 +7,7 @@ trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
 
 let started = false;
 let page = new Page();
+page.id = "mainPage";
 
 page.on(Page.navigatedToEvent, function () {
     if (!started) {

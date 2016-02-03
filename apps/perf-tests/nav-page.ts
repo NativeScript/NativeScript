@@ -1,82 +1,194 @@
 ﻿import definition = require("controls-page");
-import frameModule = require("ui/frame");
-import pagesModule = require("ui/page");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import labelModule = require("ui/label");
-import buttonModule = require("ui/button");
-import textFieldModule = require("ui/text-field");
-import enums = require("ui/enums");
-import switchModule = require("ui/switch");
+import {View, Page, topmost as topmostFrame, NavigationTransition, Orientation, AnimationCurve, StackLayout, Button, Label, TextField, Switch, ListPicker, Slider} from "ui";
+import {Color} from "color";
+import platform = require("platform");
 
-export class NavPage extends pagesModule.Page implements definition.ControlsPage {
-    constructor(id: number) {
+var availableTransitions = ["default", "custom", "flip", "flipRight", "flipLeft", "slide", "slideLeft", "slideRight", "slideTop", "slideBottom", "fade"];
+if (platform.device.os === platform.platformNames.ios) {
+    availableTransitions = availableTransitions.concat(["curl", "curlUp", "curlDown"]);
+}
+else {
+    availableTransitions = availableTransitions.concat(["explode"]);
+}
+
+var availableCurves = [AnimationCurve.easeInOut, AnimationCurve.easeIn, AnimationCurve.easeOut, AnimationCurve.linear];
+
+export interface Context {
+    index: number;
+    backStackVisible: boolean;
+    clearHistory: boolean;
+    animated: boolean;
+    transition: number;
+    curve: number;
+    duration: number;
+}
+
+export class NavPage extends Page implements definition.ControlsPage {
+    constructor(context: Context) {
         super();
 
-        this.id = "NavPage " + id;
+        var that = this;
+        that.on(View.loadedEvent, (args) => {
+            console.log(`${args.object}.loadedEvent`);
+            if (topmostFrame().android) {
+                topmostFrame().android.cachePagesOnNavigate = true;
+            }
+        });
+        that.on(View.unloadedEvent, (args) => {
+            console.log(`${args.object}.unloadedEvent`);
+        });
+        that.on(Page.navigatingFromEvent, (args) => {
+            console.log(`${args.object}.navigatingFromEvent`);
+        });
+        that.on(Page.navigatedFromEvent, (args) => {
+            console.log(`${args.object}.navigatedFromEvent`);
+        });
+        that.on(Page.navigatingToEvent, (args) => {
+            console.log(`${args.object}.navigatingToEvent`);
+        });
+        that.on(Page.navigatedToEvent, (args) => {
+            console.log(`${args.object}.navigatedToEvent`);
+        });
 
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.orientation = enums.Orientation.vertical;
+        this.id = "" + context.index;
 
-        var goBackButton = new buttonModule.Button();
-        goBackButton.text = "<-";
-        goBackButton.on(buttonModule.Button.tapEvent, function () {
-            frameModule.topmost().goBack();
+        var bg = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+        this.style.backgroundColor = bg;
+
+        var stackLayout = new StackLayout();
+        stackLayout.orientation = Orientation.vertical;
+
+        var goBackButton = new Button();
+        goBackButton.text = "<=";
+        goBackButton.style.fontSize = 18;
+        goBackButton.on(Button.tapEvent, () => {
+            topmostFrame().goBack();
         });
         stackLayout.addChild(goBackButton);
 
-        this.on(pagesModule.Page.navigatedToEvent, function () {
+        this.on(Page.navigatedToEvent, function () {
             //console.log("Navigated to NavPage " + id + "; backStack.length: " + frameModule.topmost().backStack.length);
-            goBackButton.isEnabled = frameModule.topmost().canGoBack();
+            goBackButton.isEnabled = topmostFrame().canGoBack();
         });
 
-        var stateLabel = new labelModule.Label();
-        stateLabel.text = "NavPage " + id;
+        var stateLabel = new Label();
+        stateLabel.text = `${this.id} (${(<any>bg)._hex})`;
         stackLayout.addChild(stateLabel);
 
-        var textField = new textFieldModule.TextField();
+        var textField = new TextField();
         textField.text = "";
         stackLayout.addChild(textField);
 
-        var changeStateButton = new buttonModule.Button();
+        var changeStateButton = new Button();
         changeStateButton.text = "Click me!"
         var clickCount = 0;
-        changeStateButton.on(buttonModule.Button.tapEvent, () => {
-            //stateLabel.text = "<<<CHANGED STATE>>>";
-            //textField.text = "<<<CHANGED STATE>>>";
+        changeStateButton.on(Button.tapEvent, () => {
             changeStateButton.text = (clickCount++).toString();
         });
         stackLayout.addChild(changeStateButton);
 
-        var optionsLayout = new stackLayoutModule.StackLayout();
+        var optionsLayout = new StackLayout();
 
-        var addToBackStackLabel = new labelModule.Label();
+        var addToBackStackLabel = new Label();
         addToBackStackLabel.text = "backStackVisible";
         optionsLayout.addChild(addToBackStackLabel);
 
-        var addToBackStackSwitch = new switchModule.Switch();
-        addToBackStackSwitch.checked = true;
+        var addToBackStackSwitch = new Switch();
+        addToBackStackSwitch.checked = context.backStackVisible;
         optionsLayout.addChild(addToBackStackSwitch);
 
-        var clearHistoryLabel = new labelModule.Label();
+        var clearHistoryLabel = new Label();
         clearHistoryLabel.text = "clearHistory";
         optionsLayout.addChild(clearHistoryLabel);
 
-        var clearHistorySwitch = new switchModule.Switch();
-        clearHistorySwitch.checked = false;
+        var clearHistorySwitch = new Switch();
+        clearHistorySwitch.checked = context.clearHistory;
         optionsLayout.addChild(clearHistorySwitch);
+
+        var animatedLabel = new Label();
+        animatedLabel.text = "animated";
+        optionsLayout.addChild(animatedLabel);
+
+        var animatedSwitch = new Switch();
+        animatedSwitch.checked = context.animated;
+        optionsLayout.addChild(animatedSwitch);
+
+        var transitionButton = new Button();
+        transitionButton.text = availableTransitions[context.transition];
+        transitionButton.on("tap", () => {
+            that.showModal("perf-tests/NavigationTest/list-picker-page", { items: availableTransitions, selectedIndex: context.transition }, (selectedIndex: number) => {
+                context.transition = selectedIndex;
+                transitionButton.text = availableTransitions[context.transition];
+            }, true);
+        });
+        optionsLayout.addChild(transitionButton);
+
+        var curveButton = new Button();
+        curveButton.text = availableCurves[context.curve];
+        curveButton.on(Button.tapEvent, () => {
+            that.showModal("perf-tests/NavigationTest/list-picker-page", { items: availableCurves, selectedIndex: context.curve }, (selectedIndex: number) => {
+                context.curve = selectedIndex;
+                curveButton.text = availableCurves[context.curve]
+            }, true);
+        });
+        optionsLayout.addChild(curveButton);
+
+        var durationLabel = new Label();
+        durationLabel.text = "Duration";
+        optionsLayout.addChild(durationLabel);
+
+        var durationSlider = new Slider();
+        durationSlider.minValue = 0;
+        durationSlider.maxValue = 10000;
+        durationSlider.value = context.duration;
+        optionsLayout.addChild(durationSlider);
 
         stackLayout.addChild(optionsLayout);
 
-        var forwardButton = new buttonModule.Button();
-        forwardButton.text = "->";
-        forwardButton.on(buttonModule.Button.tapEvent, function () {
+        var forwardButton = new Button();
+        forwardButton.text = "=>";
+        forwardButton.style.fontSize = 18;
+        forwardButton.on(Button.tapEvent, () => {
             var pageFactory = function () {
-                return new NavPage(id + 1);
+                return new NavPage({
+                    index: context.index + 1,
+                    backStackVisible: addToBackStackSwitch.checked,
+                    clearHistory: clearHistorySwitch.checked,
+                    animated: animatedSwitch.checked,
+                    transition: context.transition,
+                    curve: context.curve,
+                    duration: durationSlider.value,
+                });
             };
-            frameModule.topmost().navigate({
+
+            var navigationTransition: NavigationTransition;
+            if (context.transition) {// Different from default
+                var transitionName = availableTransitions[context.transition];
+                var duration = durationSlider.value !== 0 ? durationSlider.value : undefined;
+                var curve = context.curve ? availableCurves[context.curve] : undefined;
+
+                if (transitionName === "custom") {
+                    var customTransitionModule = require("./custom-transition");
+                    var customTransition = new customTransitionModule.CustomTransition(duration, curve);
+                    navigationTransition = {
+                        transition: customTransition
+                    };
+                }
+                else {
+                    navigationTransition = {
+                        transition: transitionName,
+                        duration: duration,
+                        curve: curve
+                    };
+                }
+            }
+
+            topmostFrame().navigate({
                 create: pageFactory,
                 backstackVisible: addToBackStackSwitch.checked,
-                clearHistory: clearHistorySwitch.checked
+                clearHistory: clearHistorySwitch.checked,
+                animated: animatedSwitch.checked,
+                navigationTransition: navigationTransition,
             });
         });
         stackLayout.addChild(forwardButton);

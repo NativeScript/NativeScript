@@ -23,6 +23,8 @@ function ensureColor() {
     }
 }
 
+export var DIALOG_FRAGMENT_TAG = "dialog";
+
 var DialogFragmentClass;
 function ensureDialogFragmentClass() {
     if (DialogFragmentClass) {
@@ -120,7 +122,7 @@ export class Page extends pageCommon.Page {
         if (skipDetached) {
             ensureTrace();
             // Do not detach the context and android reference.
-            trace.write("Caching Page " + this._domId, trace.categories.NativeLifecycle);
+            trace.write(`Caching ${this}`, trace.categories.NativeLifecycle);
         }
         else {
             super._onDetached();
@@ -153,7 +155,7 @@ export class Page extends pageCommon.Page {
         });
 
         super._raiseShowingModallyEvent();
-        this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), "dialog");
+        this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), DIALOG_FRAGMENT_TAG);
         super._raiseShownModallyEvent(parent, context, closeCallback);
     }
 

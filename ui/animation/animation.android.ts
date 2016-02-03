@@ -298,27 +298,31 @@ export class Animation extends common.Animation implements definition.Animation 
         this._propertyResetCallbacks = this._propertyResetCallbacks.concat(propertyResetCallbacks);
     }
 
-    _resolveAnimationCurve(curve: any): any {
-        switch (curve) {
-            case enums.AnimationCurve.easeIn:
-                trace.write("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", trace.categories.Animation);
-                return new android.view.animation.AccelerateInterpolator(1);
-            case enums.AnimationCurve.easeOut:
-                trace.write("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", trace.categories.Animation);
-                return new android.view.animation.DecelerateInterpolator(1);
-            case enums.AnimationCurve.easeInOut:
-                trace.write("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", trace.categories.Animation);
-                return new android.view.animation.AccelerateDecelerateInterpolator();
-            case enums.AnimationCurve.linear:
-                trace.write("Animation curve resolved to android.view.animation.LinearInterpolator().", trace.categories.Animation);
-                return new android.view.animation.LinearInterpolator();
-            default:
-                trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
-                return curve;
-        }
-    }
-
     private static _getAndroidRepeatCount(iterations: number): number {
         return (iterations === Number.POSITIVE_INFINITY) ? android.view.animation.Animation.INFINITE : iterations - 1;
+    }
+}
+
+var easeIn = new android.view.animation.AccelerateInterpolator(1);
+var easeOut = new android.view.animation.DecelerateInterpolator(1);
+var easeInOut = new android.view.animation.AccelerateDecelerateInterpolator();
+var linear = new android.view.animation.LinearInterpolator();
+export function _resolveAnimationCurve(curve: any): any {
+    switch (curve) {
+        case enums.AnimationCurve.easeIn:
+            trace.write("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", trace.categories.Animation);
+            return easeIn;
+        case enums.AnimationCurve.easeOut:
+            trace.write("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", trace.categories.Animation);
+            return easeOut;
+        case enums.AnimationCurve.easeInOut:
+            trace.write("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", trace.categories.Animation);
+            return easeInOut;
+        case enums.AnimationCurve.linear:
+            trace.write("Animation curve resolved to android.view.animation.LinearInterpolator().", trace.categories.Animation);
+            return linear;
+        default:
+            trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
+            return curve;
     }
 }

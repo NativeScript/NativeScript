@@ -207,22 +207,25 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
 export function navigate(pageFactory: () => page.Page, navigationContext?: any) {
     var currentPage = frame.topmost().currentPage;
     frame.topmost().navigate({ create: pageFactory, animated: false, context: navigationContext });
-    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
+    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage && frame.topmost().currentPage.isLoaded && !currentPage.isLoaded; });
 }
 
 export function navigateToModule(moduleName: string, context?: any) {
     var currentPage = frame.topmost().currentPage;
     frame.topmost().navigate({ moduleName: moduleName, context: context, animated: false });
-    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
-    TKUnit.assert(frame.topmost().currentPage.isLoaded, "Current page should be loaded!");
+    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage && frame.topmost().currentPage.isLoaded && !currentPage.isLoaded; });
+}
+
+export function navigateWithEntry(navigationEntry: frame.NavigationEntry) {
+    var currentPage = frame.topmost().currentPage;
+    frame.topmost().navigate(navigationEntry);
+    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage && frame.topmost().currentPage.isLoaded && !currentPage.isLoaded; });
 }
 
 export function goBack(): void {
     var currentPage = frame.topmost().currentPage;
     frame.topmost().goBack();
-    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
-    TKUnit.assert(frame.topmost().currentPage.isLoaded, "Current page should be loaded!");
-    TKUnit.assert(!currentPage.isLoaded, "Previous page should be unloaded!");
+    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage && frame.topmost().currentPage.isLoaded && !currentPage.isLoaded; });
 }
 
 export function assertAreClose(actual: number, expected: number, message: string): void {

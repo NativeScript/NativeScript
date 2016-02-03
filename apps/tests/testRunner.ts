@@ -92,15 +92,16 @@ if (!isRunningOnEmulator()) {
 }
 
 // Navigation tests should always be last.
-allTests["NAVIGATION"] = require("./navigation-tests");
+allTests["NAVIGATION"] = require("./navigation/navigation-tests");
 
 var testsWithLongDelay = {
+    test_Transitions: 3 * 60 * 1000,
     testLocation: 10000,
     testLocationOnce: 10000,
     testLocationOnceMaximumAge: 10000,
     //web-view-tests
     testLoadExistingUrl: 10000,
-    testLoadInvalidUrl: 10000,
+    testLoadInvalidUrl: 10000
 }
 
 var running = false;
