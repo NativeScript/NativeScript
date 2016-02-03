@@ -21,7 +21,13 @@ export function createPage() {
     buttonOneWay.id = "buttonOneWay";
     buttonTwoWay.id = "buttonTwoWay";
 
+    targetOneWay.automationText = "textFieldOneWay";
+    targetTwoWay.automationText = "textFieldTwoWay";
+    buttonOneWay.automationText = "buttonOneWay";
+    buttonTwoWay.automationText = "buttonTwoWay";
+
     buttonSetText.id = "buttonSetText";
+    buttonSetText.automationText = "buttonSetText";
     buttonSetText.text = "SetText";
     buttonSetText.on(buttonModule.Button.tapEvent, function () {
         targetOneWay.text = "Test";

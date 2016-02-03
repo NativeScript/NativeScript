@@ -54,6 +54,7 @@ examples.set("dialogs", "dialogs/dialogs");
 
 examples.set("fontbtn", "font/button");
 examples.set("fontlbl", "font/label");
+examples.set("material", "font/material-icons");
 examples.set("tabfont", "font/tab-view");
 examples.set("fontfield", "font/text-field");
 examples.set("fontview", "font/text-view");
