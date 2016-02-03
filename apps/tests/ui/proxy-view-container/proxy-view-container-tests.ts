@@ -161,6 +161,32 @@ export function test_insert_after_porxy() {
     helper.buildUIAndRunTest(outer, testAction);
 }
 
+export function test_proxy_does_not_stop_request_layout_bubble() {
+    var outer = new StackLayout();
+    var proxy = new ProxyViewContainer();
+
+    outer.addChild(createBtn("1"));
+    outer.addChild(proxy);
+    var btn = createBtn("2");
+    proxy.addChild(btn);
+
+    function testAction(views: Array<viewModule.View>) {
+        assertNativeChildren(outer, ["1", "2"]);
+        waitUntilElementLayoutIsValid(outer);
+        TKUnit.assert(outer.isLayoutValid, "outer container isLayoutValid should be true");
+        btn.requestLayout();
+        TKUnit.assertFalse(outer.isLayoutValid, "outer container isLayoutValid should be invalidated here");
+    };
+
+    helper.buildUIAndRunTest(outer, testAction);
+}
+
+function waitUntilElementLayoutIsValid(view: View, timeoutSec?: number): void {
+    TKUnit.waitUntilReady(() => {
+        return view.isLayoutValid;
+    }, timeoutSec || 1);
+}
+
 function createBtn(text: string): Button {
     var b = new Button();
     b.text = text;
