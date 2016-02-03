@@ -136,21 +136,6 @@ export class Animation extends common.Animation implements definition.Animation 
         this._iOSAnimationFunction = Animation._createiOSAnimationFunction(this._mergedPropertyAnimations, 0, this._playSequentially, animationFinishedCallback, this);
     }
 
-    _resolveAnimationCurve(curve: any): any {
-        switch (curve) {
-            case enums.AnimationCurve.easeIn:
-                return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseIn);
-            case enums.AnimationCurve.easeOut:
-                return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseOut);
-            case enums.AnimationCurve.easeInOut:
-                return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseInEaseOut);
-            case enums.AnimationCurve.linear:
-                return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionLinear);
-            default:
-                return undefined;
-        }
-    }
-
     private static _createiOSAnimationFunction(propertyAnimations: Array<common.PropertyAnimation>, index: number, playSequentially: boolean, finishedCallback: (cancelled?: boolean) => void, that:Animation): Function {
         return (cancelled?: boolean) => {
             if (cancelled && finishedCallback) {
@@ -347,6 +332,21 @@ export class Animation extends common.Animation implements definition.Animation 
             }
         }
         return result;
+    }
+}
+
+export function _resolveAnimationCurve(curve: any): any {
+    switch (curve) {
+        case enums.AnimationCurve.easeIn:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseIn);
+        case enums.AnimationCurve.easeOut:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseOut);
+        case enums.AnimationCurve.easeInOut:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseInEaseOut);
+        case enums.AnimationCurve.linear:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionLinear);
+        default:
+            return undefined;
     }
 }
 
