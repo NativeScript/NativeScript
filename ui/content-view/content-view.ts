@@ -23,6 +23,24 @@ export class ContentView extends view.CustomLayoutView implements definition.Con
         this._onContentChanged(oldView, value);
     }
 
+    get layoutView(): view.View {
+        var result: view.View;
+
+        if (this._content) {
+            let first = true;
+            this._content._eachLayoutView((child) => {
+                if (first) {
+                    first = false;
+                    result = child;
+                } else {
+                    throw new Error("More than one layout child inside a ContentView");
+                }
+            });
+        }
+
+        return result;
+    }
+
     get _childrenCount(): number {
         if (this._content) {
             return 1;
@@ -49,7 +67,7 @@ export class ContentView extends view.CustomLayoutView implements definition.Con
 
     // This method won't be called in Android because we use the native android layout.
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        var result = view.View.measureChild(this, this.content, widthMeasureSpec, heightMeasureSpec);
+        var result = view.View.measureChild(this, this.layoutView, widthMeasureSpec, heightMeasureSpec);
 
         var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
         var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
@@ -69,6 +87,6 @@ export class ContentView extends view.CustomLayoutView implements definition.Con
 
     // This method won't be called in Android because we use the native android layout.
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        view.View.layoutChild(this, this.content, 0, 0, right - left, bottom - top);
+        view.View.layoutChild(this, this.layoutView, 0, 0, right - left, bottom - top);
     }
 }

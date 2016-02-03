@@ -6,7 +6,7 @@ import color = require("color");
 import platform = require("platform");
 
 import {ProxyViewContainer} from "ui/proxy-view-container";
-import {View, Button, LayoutBase, StackLayout, GridLayout} from "ui";
+import {View, Button, LayoutBase, StackLayout, GridLayout, Page, ScrollView, TabView, TabViewItem} from "ui";
 
 export function test_add_children_to_attached_proxy() {
     var outer = new StackLayout();
@@ -180,6 +180,79 @@ export function test_proxy_does_not_stop_request_layout_bubble() {
 
     helper.buildUIAndRunTest(outer, testAction);
 }
+
+export function test_proxy_iniside_page() {
+    var proxy = new ProxyViewContainer();
+    proxy.addChild(createBtn("1"));
+
+    function testAction(views: Array<viewModule.View>) {
+        var page = <Page>views[1];
+        waitUntilElementLayoutIsValid(page);
+    };
+
+    helper.buildUIAndRunTest(proxy, testAction);
+}
+
+export function test_proxy_iniside_scroll_view() {
+    var scroll = new ScrollView();
+    scroll.content = proxy;
+
+    var proxy = new ProxyViewContainer();
+    proxy.addChild(createBtn("1"));
+
+    function testAction(views: Array<viewModule.View>) {
+        var page = <Page>views[1];
+        waitUntilElementLayoutIsValid(page);
+    };
+
+    helper.buildUIAndRunTest(scroll, testAction);
+}
+
+export function test_proxy_iniside_border() {
+    var scroll = new ScrollView();
+    scroll.content = proxy;
+
+    var proxy = new ProxyViewContainer();
+    proxy.addChild(createBtn("1"));
+
+    function testAction(views: Array<viewModule.View>) {
+        var page = <Page>views[1];
+        waitUntilElementLayoutIsValid(page);
+    };
+
+    helper.buildUIAndRunTest(scroll, testAction);
+}
+
+// TODO: Proxy as a direct child to of TabItem is not supported. Not sure if we want to support it.
+//export function test_proxy_iniside_tab() {
+//    var proxy = new ProxyViewContainer();
+//    proxy.addChild(createBtn("1"));
+
+//    var tab = new TabView();
+//    var items = new Array<TabViewItem>();
+//    items.push(new TabViewItem({ title: "tab with proxy", view: proxy }));
+//    tab.items = items;
+    
+//    function testAction(views: Array<viewModule.View>) {
+//        var page = <Page>views[1];
+//        waitUntilElementLayoutIsValid(page);
+//    };
+
+//    helper.buildUIAndRunTest(tab, tab);
+//}
+
+// TODO: Proxy as a direct child to of ActionBar is not supported. Not sure if we want to support it.
+//export function test_proxy_iniside_actionBar() {
+//    function testAction(views: Array<viewModule.View>) {
+//        var page = <Page>views[1];
+//        var proxy = new ProxyViewContainer();
+//        proxy.addChild(createBtn("1"));
+//        page.actionBar.titleView = proxy;
+//        waitUntilElementLayoutIsValid(page);
+//    };
+
+//    helper.buildUIAndRunTest(createBtn("hi"), testAction);
+//}
 
 function waitUntilElementLayoutIsValid(view: View, timeoutSec?: number): void {
     TKUnit.waitUntilReady(() => {

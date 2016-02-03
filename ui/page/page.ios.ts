@@ -276,7 +276,7 @@ export class Page extends pageCommon.Page {
         let heightSpec = utils.layout.makeMeasureSpec(height - actionBarHeight - statusBarHeight, heightMode);
 
         // Measure content with height - navigationBarHeight. Here we could use actionBarSize.measuredHeight probably.
-        let result = View.measureChild(this, this.content, widthMeasureSpec, heightSpec);
+        let result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightSpec);
 
         let measureWidth = Math.max(actionBarWidth, result.measuredWidth, this.minWidth);
         let measureHeight = Math.max(result.measuredHeight + actionBarHeight, this.minHeight);
@@ -307,7 +307,7 @@ export class Page extends pageCommon.Page {
             statusBarHeight = 0;
         }
 
-        View.layoutChild(this, this.content, 0, navigationBarHeight + statusBarHeight, right - left, bottom - top);
+        View.layoutChild(this, this.layoutView, 0, navigationBarHeight + statusBarHeight, right - left, bottom - top);
     }
 
     public _addViewToNativeVisualTree(view: View): boolean {
