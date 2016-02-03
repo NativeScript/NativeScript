@@ -394,7 +394,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
 
         let backStack = frame.backStack;
         let currentEntry = backStack.length > 0 ? backStack[backStack.length - 1] : null;
-        
+
         // This code check if navigation happened through UI (e.g. back button or swipe gesture).
         // When calling goBack on frame isBack will be false.
         let isBack: boolean = currentEntry && newEntry === currentEntry;
@@ -442,7 +442,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
     public pushViewControllerAnimated(viewController: UIViewController, animated: boolean): void {
         var navigationTransition = <definition.NavigationTransition>viewController[TRANSITION];
         trace.write(`UINavigationControllerImpl.pushViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
-        
+
         if (!animated || !navigationTransition) {
             super.pushViewControllerAnimated(viewController, animated);
             return;
@@ -483,7 +483,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             super.setViewControllersAnimated(viewControllers, animated);
             return;
         }
-        
+
         var duration = navigationTransition.duration ? navigationTransition.duration / 1000 : _defaultTransitionDuration;
         var curve = _getNativeCurve(navigationTransition);
         var id = _getTransitionId(nativeTransition, "set");
@@ -612,10 +612,25 @@ function _getNativeTransition(navigationTransition: definition.NavigationTransit
     return null;
 }
 
-function _getNativeCurve(transition: definition.NavigationTransition) : UIViewAnimationCurve{
+export function _getNativeCurve(transition: definition.NavigationTransition) : UIViewAnimationCurve{
     if (transition.curve) {
-        var animation: typeof animationModule = require("ui/animation");
-        return animation._resolveAnimationCurve(transition.curve);
+      switch (transition.curve) {
+          case enums.AnimationCurve.easeIn:
+              trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseIn.", trace.categories.Transition);
+              return UIViewAnimationCurve.UIViewAnimationCurveEaseIn;
+          case enums.AnimationCurve.easeOut:
+              trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseOut.", trace.categories.Transition);
+              return UIViewAnimationCurve.UIViewAnimationCurveEaseOut;
+          case enums.AnimationCurve.easeInOut:
+              trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseInOut.", trace.categories.Transition);
+              return UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;
+          case enums.AnimationCurve.linear:
+              trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveLinear.", trace.categories.Transition);
+              return UIViewAnimationCurve.UIViewAnimationCurveLinear;
+          default:
+              trace.write("Transition curve resolved to original: " + transition.curve, trace.categories.Transition);
+              return transition.curve;
+      }
     }
 
     return UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;

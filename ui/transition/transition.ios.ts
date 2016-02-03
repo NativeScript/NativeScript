@@ -1,6 +1,5 @@
 ﻿import definition = require("ui/transition");
 import frame = require("ui/frame");
-import * as animationModule from "ui/animation";
 import types = require("utils/types");
 import trace = require("trace");
 
@@ -30,7 +29,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
         switch (this._operation) {
             case UINavigationControllerOperation.UINavigationControllerOperationPush: this._transitionType = "push"; break;
             case UINavigationControllerOperation.UINavigationControllerOperationPop: this._transitionType = "pop"; break;
-            case UINavigationControllerOperation.UINavigationControllerOperationNone: this._transitionType = "none"; break; 
+            case UINavigationControllerOperation.UINavigationControllerOperationNone: this._transitionType = "none"; break;
         }
         trace.write(`START ${this._transition} ${this._transitionType}`, trace.categories.Transition);
         this._transition.animateIOSTransition(containerView, this._fromVC.view, this._toVC.view, this._operation, completion);
@@ -59,8 +58,7 @@ export class Transition implements definition.Transition {
     constructor(duration: number, curve: any) {
         this._duration = duration ? (duration / 1000) : 0.35;
         if (curve) {
-            var animation: typeof animationModule = require("ui/animation");
-            this._curve = animation._resolveAnimationCurve(curve);
+            this._curve = (<any>frame)._getNativeCurve(curve);
         }
         else {
             this._curve = UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;
