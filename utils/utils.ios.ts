@@ -3,6 +3,7 @@ import common = require("./utils-common");
 import colorModule = require("color");
 import enums = require("ui/enums");
 import * as typesModule from "utils/types";
+import * as fsModule from "file-system";
 
 global.moduleMerge(common, exports);
 
@@ -200,6 +201,21 @@ export module ios {
     }
 
     export var MajorVersion = NSString.stringWithString(UIDevice.currentDevice().systemVersion).intValue;
+
+    export function openFile(filePath: string): boolean {
+        try {
+            var fs: typeof fsModule = require("file-system");
+            var path = filePath.replace("~", fs.knownFolders.currentApp().path)
+
+            var controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
+            controller.delegate = new UIDocumentInteractionControllerDelegateImpl();
+            return controller.presentPreviewAnimated(true);
+        }
+        catch (e) {
+            console.error("Error in openFile", e);
+        }
+        return false;
+    }
 }
 
 export function GC() {
@@ -218,4 +234,25 @@ export function openUrl(location: string): boolean {
         console.error("Error in OpenURL", e);
     }
     return false;
+}
+
+class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
+    public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
+
+    public getViewController() : UIViewController {
+        var frame = require("ui/frame");
+        return frame.topmost().currentPage.ios;
+    }
+
+    public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
+        return this.getViewController();
+    }
+
+    public documentInteractionControllerViewForPreview(controller: UIDocumentInteractionController) {
+        return this.getViewController().view;
+    }
+
+    public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
+        return this.getViewController().view.frame;
+    }
 }
