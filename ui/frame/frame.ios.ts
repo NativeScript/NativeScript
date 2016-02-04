@@ -356,6 +356,7 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
     }
 
     public navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+        trace.write(`UINavigationControllerImpl.navigationControllerWillShowViewControllerAnimated(${navigationController}, ${viewController}, ${animated})`, trace.categories.NativeLifecycle);
         // In this method we need to layout the new page otherwise page will be shown empty and update after that which is bad UX.
         let frame = this._owner.get();
         if (!frame) {
@@ -381,9 +382,22 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         }
 
         newPage.actionBar.update();
+        
+        //HACK: https://github.com/NativeScript/NativeScript/issues/1021
+        viewController["willShowCalled"] = true;
     }
 
     public navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+        trace.write(`UINavigationControllerImpl.navigationControllerDidShowViewControllerAnimated(${navigationController}, ${viewController}, ${animated})`, trace.categories.NativeLifecycle);
+
+        //HACK: https://github.com/NativeScript/NativeScript/issues/1021
+        if (viewController["willShowCalled"] === undefined) {
+            return;
+        }
+        else {
+            viewController["willShowCalled"] = undefined;
+        }
+
         let frame = this._owner.get();
         if (!frame) {
             return;
