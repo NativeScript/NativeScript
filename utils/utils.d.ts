@@ -188,6 +188,12 @@
          * Gets the iOS device major version (for 8.1 will return 8).
          */
         export var MajorVersion: number;
+
+        /**
+         * Opens file with associated application.
+         * @param filePath The file path.
+         */
+        export function openFile(filePath: string): boolean
     }
     /**
      * An utility function that copies properties from source object to target object.
