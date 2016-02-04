@@ -18,18 +18,23 @@ import {LayoutBase} from "ui/layouts/layout-base";
 //   - Android: _onDetached calls _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
 export class ProxyViewContainer extends LayoutBase implements definition.ProxyViewContainer {
     // No native view for proxy container.
-    get ios(): any { 
-        return null; 
+    get ios(): any {
+        return null;
     }
-    
+
     get android(): any {
         return null;
     }
-    
+
     get _nativeView(): any {
         return null;
     }
-    
+
+    get isLayoutRequested(): boolean {
+        // Always return false so all layout requests from children bubble up.
+        return false;
+    }
+
     public _createUI() {
         // 
     }
@@ -70,7 +75,7 @@ export class ProxyViewContainer extends LayoutBase implements definition.ProxyVi
                 // Add last;
                 insideIndex = this._getNativeViewsCount();
             }
-            
+
             trace.write("ProxyViewContainer._addViewToNativeVisualTree at: " + atIndex + " base: " + baseIndex + " additional: " + insideIndex, trace.categories.ViewHierarchy);
             return parent._addViewToNativeVisualTree(child, baseIndex + insideIndex);
         }

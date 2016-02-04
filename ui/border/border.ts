@@ -22,7 +22,7 @@ export class Border extends contentView.ContentView implements definition.Border
         var density = utils.layout.getDisplayDensity();
         var borderSize = (2 * this.borderWidth) * density;
 
-        var result = viewModule.View.measureChild(this, this.content,
+        var result = viewModule.View.measureChild(this, this.layoutView,
             utils.layout.makeMeasureSpec(width - borderSize, widthMode),
             utils.layout.makeMeasureSpec(height - borderSize, heightMode));
 
@@ -35,6 +35,6 @@ export class Border extends contentView.ContentView implements definition.Border
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         var density = utils.layout.getDisplayDensity();
         var borderSize = this.borderWidth * density;
-        viewModule.View.layoutChild(this, this.content, borderSize, borderSize, right - left - borderSize, bottom - top - borderSize);
+        viewModule.View.layoutChild(this, this.layoutView, borderSize, borderSize, right - left - borderSize, bottom - top - borderSize);
     }
 }
