@@ -143,47 +143,54 @@ export class Animation extends common.Animation implements definition.Animation 
                 finishedCallback(cancelled);
                 return;
             }
-
            var animation = propertyAnimations[index];
            var nativeView = <UIView>animation.target._nativeView;
            var propertyNameToAnimate = animation.property;
            var value = animation.value;
            var originalValue;
+           var presentationLayer = nativeView.layer.presentationLayer();
+           var tempRotate = animation.target.rotate * Math.PI / 180;
+           var abs
+
            switch (animation.property) {
                case common.Properties.backgroundColor:
                    (<any>animation)._originalValue = animation.target.backgroundColor;
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.backgroundColor = value };
-                   originalValue = nativeView.layer.backgroundColor;
+                   originalValue = presentationLayer.backgroundColor;
                    value = value.CGColor;
                    break;
                case common.Properties.opacity:
                    (<any>animation)._originalValue = animation.target.opacity;
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.opacity = value };
-                   originalValue = nativeView.layer.opacity;
+                   originalValue = presentationLayer.opacity;
                    break;
                case common.Properties.rotate:
                    (<any>animation)._originalValue = animation.target.rotate;
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.rotate = value };
                    propertyNameToAnimate = "transform.rotation";
-                   originalValue = animation.target.rotate * Math.PI / 180;
+                   originalValue = presentationLayer.valueForKeyPath("transform.rotation");
                    value = value * Math.PI / 180;
+                   abs = fabs(originalValue - value);
+                   if (abs < 0.001 && originalValue !== tempRotate) {
+                       originalValue = tempRotate;
+                   }
                    break;
                case common.Properties.translate:
                    (<any>animation)._originalValue = { x:animation.target.translateX, y:animation.target.translateY };
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.translateX = value.x; animation.target.translateY = value.y; };
                    propertyNameToAnimate = "transform"
-                   originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
                    value = NSValue.valueWithCATransform3D(CATransform3DTranslate(nativeView.layer.transform, value.x, value.y, 0));
                    break;
                case common.Properties.scale:
                    (<any>animation)._originalValue = { x:animation.target.scaleX, y:animation.target.scaleY };
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.scaleX = value.x; animation.target.scaleY = value.y; };
                    propertyNameToAnimate = "transform"
-                   originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
                    value = NSValue.valueWithCATransform3D(CATransform3DScale(nativeView.layer.transform, value.x, value.y, 1));
                    break;
                case _transform:
-                   originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
                    (<any>animation)._originalValue = { xs:animation.target.scaleX, ys:animation.target.scaleY,
                                                        xt:animation.target.translateX, yt:animation.target.translateY };
                    (<any>animation)._propertyResetCallback = (value) => {
@@ -228,7 +235,7 @@ export class Animation extends common.Animation implements definition.Animation 
            var animationDelegate: AnimationDelegateImpl = AnimationDelegateImpl.initWithFinishedCallback(finishedCallback, animation);
            nativeAnimation.setValueForKey(animationDelegate, "delegate");
 
-           nativeView.layer.addAnimationForKey(nativeAnimation, null);
+           nativeView.layer.addAnimationForKey(nativeAnimation, propertyNameToAnimate);
 
            var callback = undefined;
            if (index+1 < propertyAnimations.length) {
