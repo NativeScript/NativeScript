@@ -215,7 +215,9 @@ export class FileSystemAccess {
     }
 
     public getLogicalRootPath(): string {
-        return NSBundle.mainBundle().bundlePath;
+        let mainBundlePath = NSBundle.mainBundle().bundlePath;
+        let resolvedPath = NSString.stringWithString(mainBundlePath).stringByResolvingSymlinksInPath;
+        return resolvedPath;
     }
 
     public getDocumentsFolderPath(): string {
