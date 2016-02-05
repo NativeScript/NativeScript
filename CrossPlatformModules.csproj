@@ -83,6 +83,10 @@
       <DependentUpon>data-binding.xml</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\animations\opacity.ts" />
+    <TypeScriptCompile Include="apps\custom-root-view\app.ts" />
+    <TypeScriptCompile Include="apps\custom-root-view\list-view.ts">
+      <DependentUpon>list-view.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\perf-tests\NavigationTest\list-picker-page.ts" />
     <TypeScriptCompile Include="apps\perf-tests\custom-transition.android.ts" />
     <TypeScriptCompile Include="apps\perf-tests\custom-transition.ios.ts" />
@@ -135,6 +139,15 @@
     </Content>
     <Content Include="apps\animations\bkg.png" />
     <Content Include="apps\animations\test-icon.png" />
+    <Content Include="apps\custom-root-view\list-view.xml">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="apps\custom-root-view\main-page.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="apps\custom-root-view\main-page.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\perf-tests\NavigationTest\list-picker-page.xml" />
     <Content Include="apps\tests\ui\action-bar\ActionBar_BetweenTags.xml" />
     <Content Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.xml" />
@@ -2077,6 +2090,9 @@
     <Content Include="apps\tests\fonts\Roboto-BoldItalic.ttf" />
     <Content Include="apps\tests\fonts\Roboto-Italic.ttf" />
     <Content Include="apps\tests\fonts\Roboto-Regular.ttf" />
+    <Content Include="apps\custom-root-view\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">

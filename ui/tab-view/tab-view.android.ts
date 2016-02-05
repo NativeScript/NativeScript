@@ -77,17 +77,17 @@ function ensurePagerAdapterClass() {
 
             if (this[VIEWS_STATES]) {
                 trace.write("TabView.PagerAdapter.instantiateItem; restoreHierarchyState: " + item.view, common.traceCategory);
-                item.view.android.restoreHierarchyState(this[VIEWS_STATES]);
+                item.view._nativeView.restoreHierarchyState(this[VIEWS_STATES]);
             }
 
-            container.addView(item.view.android);
-            return item.view.android;
+            container.addView(item.view._nativeView);
+            return item.view._nativeView;
         }
 
         destroyItem(container: android.view.ViewGroup, index: number, _object: any) {
             trace.write("TabView.PagerAdapter.destroyItem; container: " + container + "; index: " + index + "; _object: " + _object, common.traceCategory);
             var item = this.items[index];
-            var nativeView = item.view.android;
+            var nativeView = item.view._nativeView;
 
             if (nativeView.toString() !== _object.toString()) {
                 throw new Error("Expected " + nativeView.toString() + " to equal " + _object.toString());
@@ -100,7 +100,7 @@ function ensurePagerAdapterClass() {
 
             container.removeView(nativeView);
 
-            // Note: this.owner._removeView will clear item.view.android.
+            // Note: this.owner._removeView will clear item.view._nativeView.
             // So call this after the native instance is removed form the container. 
             if (item.view.parent === this.owner) {
                 this.owner._removeView(item.view);
@@ -124,7 +124,7 @@ function ensurePagerAdapterClass() {
             }
             var viewStates = this[VIEWS_STATES];
             var childCallback = function (view: view.View): boolean {
-                var nativeView: android.view.View = view.android;
+                var nativeView: android.view.View = view._nativeView;
                 if (nativeView && nativeView.isSaveFromParentEnabled && nativeView.isSaveFromParentEnabled()) {
                     nativeView.saveHierarchyState(viewStates);
                 }
@@ -173,7 +173,7 @@ function ensurePageChangedListenerClass() {
 function selectedColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var tabLayout = (<TabView>data.object)._getAndroidTabView();
     if (tabLayout && data.newValue instanceof color.Color) {
-        tabLayout.setSelectedIndicatorColors([data.newValue.android]);
+        tabLayout.setSelectedIndicatorColors([data.newValue._nativeView]);
     }
 }
 (<proxy.PropertyMetadata>common.TabView.selectedColorProperty.metadata).onSetNativeValue = selectedColorPropertyChanged;
@@ -181,7 +181,7 @@ function selectedColorPropertyChanged(data: dependencyObservable.PropertyChangeD
 function tabsBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var tabLayout = (<TabView>data.object)._getAndroidTabView();
     if (tabLayout && data.newValue instanceof color.Color) {
-        tabLayout.setBackgroundColor(data.newValue.android);
+        tabLayout.setBackgroundColor(data.newValue._nativeView);
     }
 }
 (<proxy.PropertyMetadata>common.TabView.tabsBackgroundColorProperty.metadata).onSetNativeValue = tabsBackgroundColorPropertyChanged;

@@ -5,7 +5,7 @@ declare module "application" {
     import cssSelector = require("ui/styling/css-selector");
     import observable = require("data/observable");
     import frame = require("ui/frame");
-
+    import {View} from "ui/core/view";
     /**
      * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
      */
@@ -77,6 +77,17 @@ declare module "application" {
     }
 
     /**
+     * Event data containing information for launch event.
+     */
+    export interface LaunchEventData extends ApplicationEventData {        
+        /**
+         * The root view for this Window on iOS or Activity for Android.
+         * If not set a new Frame will be created as a root view in order to maintain backwards compatibility.
+         */
+        root?: View;
+    }
+
+    /**
      * Event data containing information for orientation changed event.
      */
     export interface OrientationChangedEventData extends ApplicationEventData {
@@ -130,7 +141,7 @@ declare module "application" {
     /**
      * The main entry point event. This method is expected to use the root frame to navigate to the main application page.
      */
-    export function onLaunch(context: any): void;
+    export function onLaunch(context?: any): void;
 
     /**
      * A callback to be used when an uncaught error occurs while the application is running.
@@ -174,7 +185,7 @@ declare module "application" {
      * @param callback - Callback function which will be removed.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
-    export function off(eventNames: string, callback ?: any, thisArg ?: any);
+    export function off(eventNames: string, callback?: any, thisArg?: any);
 
     /**
      * Notifies all the registered listeners for the event provided in the data.eventName.
@@ -191,7 +202,7 @@ declare module "application" {
     /**
      * This event is raised on application launchEvent.
      */
-    export function on(event: "launch", callback: (args: ApplicationEventData) => void, thisArg?: any);
+    export function on(event: "launch", callback: (args: LaunchEventData) => void, thisArg?: any);
 
     /**
      * This event is raised when the Application is suspended.

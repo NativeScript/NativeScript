@@ -191,41 +191,7 @@ export class AndroidApplication extends observable.Observable implements definit
     private _eventsToken: any;
 
     public getActivity(intent: android.content.Intent): Object {
-        if (intent && intent.getAction() === android.content.Intent.ACTION_MAIN) {
-            // application's main activity
-            if (typedExports.onLaunch) {
-                typedExports.onLaunch(intent);
-            }
-
-            typedExports.notify({ eventName: typedExports.launchEvent, object: this, android: intent });
-
-            setupOrientationListener(this);
-
-            /* In the onLaunch event we expect the following setup, which ensures a root frame:
-            * var frame = require("ui/frame");
-            * var rootFrame = new frame.Frame();
-            * rootFrame.navigate({ pageModuleName: "mainPage" });
-            */
-        }
-
-        var topFrame = frame.topmost();
-        if (!topFrame) {
-            // try to navigate to the mainEntry/Module (if specified)
-            var navParam = typedExports.mainEntry;
-            if (!navParam) {
-                navParam = typedExports.mainModule;
-            }
-
-            if (navParam) {
-                topFrame = new frame.Frame();
-                topFrame.navigate(navParam);
-            } else {
-                // TODO: Throw an exception?
-                throw new Error("A Frame must be used to navigate to a Page.");
-            }
-        }
-
-        return topFrame.android.onActivityRequested(intent);
+        return frame.getActivity();
     }
 
     public init(nativeApp: any) {
@@ -320,7 +286,7 @@ function loadCss() {
 }
 
 var started = false;
-export function start (entry?: frame.NavigationEntry) {
+export function start(entry?: frame.NavigationEntry) {
     if (started) {
         throw new Error("Application is already started.");
     }
@@ -340,6 +306,7 @@ export function start (entry?: frame.NavigationEntry) {
 
         onCreate: function () {
             androidApp.init(this);
+            setupOrientationListener(androidApp);
         }
     });
     loadCss();
@@ -352,8 +319,9 @@ typedExports.android = androidApp;
 var currentOrientation: number;
 function setupOrientationListener(androidApp: AndroidApplication) {
     androidApp.registerBroadcastReceiver(android.content.Intent.ACTION_CONFIGURATION_CHANGED, onConfigurationChanged);
-    currentOrientation = androidApp.context.getResources().getConfiguration().orientation
+    currentOrientation = androidApp.context.getResources().getConfiguration().orientation;
 }
+
 function onConfigurationChanged(context: android.content.Context, intent: android.content.Intent) {
     var orientation = context.getResources().getConfiguration().orientation;
 

@@ -1,5 +1,5 @@
 ﻿import common = require("./application-common");
-import frame = require("ui/frame");
+import {Frame, NavigationEntry, reloadPage} from "ui/frame";
 import definition = require("application");
 import * as uiUtils from "ui/utils";
 import * as typesModule from "utils/types";
@@ -114,32 +114,51 @@ class IOSApplication implements definition.iOSApplication {
             typedExports.onLaunch(undefined);
         }
 
-        typedExports.notify({
+        let args: definition.LaunchEventData = {
             eventName: typedExports.launchEvent,
             object: this,
             ios: notification.userInfo && notification.userInfo.objectForKey("UIApplicationLaunchOptionsLocalNotificationKey") || null
-        });
+        };
 
-        var topFrame = frame.topmost();
-        if (!topFrame) {
+        typedExports.notify(args);
+
+        let rootView = args.root;
+        let frame: Frame;
+        let navParam: Object;
+        if (!rootView) {
             // try to navigate to the mainEntry/Module (if specified)
-            var navParam = typedExports.mainEntry;
+            navParam = typedExports.mainEntry;
             if (!navParam) {
                 navParam = typedExports.mainModule;
             }
 
             if (navParam) {
-                topFrame = new frame.Frame();
-                topFrame.navigate(navParam);
+                frame = new Frame();
+                frame.navigate(navParam);
             } else {
                 // TODO: Throw an exception?
                 throw new Error("A Frame must be used to navigate to a Page.");
             }
+
+            rootView = frame;
         }
+        
+        this._window.content = rootView;
 
-        this._window.content = topFrame;
-
-        this.rootController = this._window.rootViewController = topFrame.ios.controller;
+        if (rootView instanceof Frame) {
+            this.rootController = this._window.rootViewController = rootView.ios.controller;
+        }
+        else if (rootView.ios instanceof UIViewController) {
+            this.rootController = this._window.rootViewController = rootView.ios;
+        }
+        else if (rootView.ios instanceof UIView) {
+            let newController = new UIViewController();
+            newController.view.addSubview(rootView.ios);
+            this.rootController = newController;
+        }
+        else {
+            throw new Error("Root should be either UIViewController or UIView");
+        }
 
         this._window.makeKeyAndVisible();
     }
@@ -229,7 +248,7 @@ function loadCss() {
 }
 
 var started: boolean = false;
-typedExports.start = function (entry?: frame.NavigationEntry) {
+typedExports.start = function (entry?: NavigationEntry) {
     if (!started) {
         if (entry) {
             exports.mainEntry = entry;
@@ -256,5 +275,5 @@ global.__onLiveSync = function () {
     loadCss();
 
     // Reload current page.
-    frame.reloadPage();
+    reloadPage();
 }
