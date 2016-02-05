@@ -71,6 +71,7 @@ export class View extends viewCommon.View {
     private _hasTransfrom = false;
     private _privateFlags: number;
     private _cachedFrame: CGRect;
+    private _suspendCATransaction = false;
 
     constructor() {
         super();
@@ -92,7 +93,7 @@ export class View extends viewCommon.View {
     public onLoaded() {
         super.onLoaded();
 
-        // TODO: It is very late to work with options here in the onLoaded method. 
+        // TODO: It is very late to work with options here in the onLoaded method.
         // We should not do anything that affects UI AFTER the widget has been loaded.
         utils.copyFrom(this._options, this);
         delete this._options;
@@ -126,7 +127,7 @@ export class View extends viewCommon.View {
         var measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
         var forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
         if (forceLayout || measureSpecsChanged) {
-            
+
             // first clears the measured dimension flag
             this._privateFlags &= ~PFLAG_MEASURED_DIMENSION_SET;
 
@@ -223,7 +224,7 @@ export class View extends viewCommon.View {
         }
 
         // This is done because when rotated in iOS7 there is rotation applied on the first subview on the Window which is our frame.nativeView.view.
-        // If we set it it should be transformed so it is correct. 
+        // If we set it it should be transformed so it is correct.
         // When in landscape in iOS 7 there is transformation on the first subview of the window so we set frame to its subview.
         // in iOS 8 we set frame to subview again otherwise we get clipped.
         var nativeView: UIView;
@@ -285,7 +286,7 @@ export class View extends viewCommon.View {
 
             return true;
         }
-        
+
         return false;
     }
 
@@ -293,8 +294,23 @@ export class View extends viewCommon.View {
         if (this._nativeView) {
             this._nativeView.removeFromSuperview();
         }
-    } 
-}
+    }
+
+    // By default we update the view's presentation layer when setting backgroundColor and opacity properties.
+    // This is done by calling CATransaction begin and commit methods.
+    // This action should be disabled when updating those properties during an animation.
+    public _suspendPresentationLayerUpdates() {
+      this._suspendCATransaction = true;
+    }
+
+    public _resumePresentationLayerUpdates() {
+      this._suspendCATransaction = false;
+    }
+
+    public _isPresentationLayerUpdateSuspeneded() {
+      return this._suspendCATransaction;
+    }
+  }
 
 export class CustomLayoutView extends View {
 
@@ -336,7 +352,14 @@ export class ViewStyler implements style.Styler {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
             ensureBackground();
+            var updateSuspended = view._isPresentationLayerUpdateSuspeneded();
+            if (!updateSuspended) {
+              CATransaction.begin();
+            }
             nativeView.backgroundColor = background.ios.createBackgroundUIColor(view);
+            if (!updateSuspended) {
+              CATransaction.commit();
+            }
         }
     }
 
@@ -374,7 +397,15 @@ export class ViewStyler implements style.Styler {
     private static setOpacityProperty(view: View, newValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
-            return nativeView.alpha = newValue;
+            var updateSuspended = view._isPresentationLayerUpdateSuspeneded();
+            if (!updateSuspended) {
+              CATransaction.begin();
+            }
+            var alpha = nativeView.alpha = newValue;
+            if (!updateSuspended) {
+              CATransaction.commit();
+            }
+            return alpha;
         }
     }
 
