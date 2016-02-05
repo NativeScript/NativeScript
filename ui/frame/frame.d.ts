@@ -13,6 +13,7 @@ declare module "ui/frame" {
      */
     export class Frame extends view.View {
         /**
+         * Deprecated.
          * String value used when hooking to androidOptionSelected event (prefix `android` states that this event is available only in Android).
          */
         public static androidOptionSelectedEvent: string;
@@ -248,12 +249,6 @@ declare module "ui/frame" {
         actionBar: any /* android.app.ActionBar */;
 
         /**
-         * A function called by the Runtime whenever a new Activity is about to be opened.
-         * @param intent The native [android Intent](http://developer.android.com/reference/android/content/Intent.html) object passed to the Activity's onCreate method.
-         */
-        onActivityRequested(intent: any /* android.content.Intent */): Object;
-
-        /**
          * Determines whether the Activity associated with this Frame will display an action bar or not.
          */
         showActionBar: boolean;
@@ -286,5 +281,6 @@ declare module "ui/frame" {
     //@private
     function reloadPage(): void;
     function resolvePageFromEntry(entry: NavigationEntry): pages.Page;
+    function getActivity(): Object;
     //@endprivate
 }

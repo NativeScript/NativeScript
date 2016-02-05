@@ -196,7 +196,7 @@ export class View extends viewCommon.View {
         }
 
         if (this._context) {
-            this._onDetached();
+            this._onDetached(true);
         }
 
         this._context = context;
