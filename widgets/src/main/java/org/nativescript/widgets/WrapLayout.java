@@ -112,14 +112,15 @@ public class WrapLayout extends LayoutBase {
         	CommonLayoutParams.measureChild(child, childWidthMeasureSpec, childHeightMeasureSpec);
             final int childMeasuredWidth = this.getDesiredWidth(child);
             final int childMeasuredHeight = this.getDesiredHeight(child);
+            final boolean isFirst = this._lengths.size() <= rowOrColumn;
             
             if (isVertical) {
                 if (childMeasuredHeight > remainingHeight) {
                     rowOrColumn++;
                     maxLength = Math.max(maxLength, measureHeight);
                     measureHeight = childMeasuredHeight;
-                    remainingWidth = availableHeight - childMeasuredHeight;
-                    this._lengths.add(rowOrColumn, childMeasuredWidth);
+                    remainingHeight = availableHeight - childMeasuredHeight;
+                    this._lengths.add(isFirst ? rowOrColumn - 1 : rowOrColumn, childMeasuredWidth);
                 }
                 else {
                     remainingHeight -= childMeasuredHeight;
@@ -132,7 +133,7 @@ public class WrapLayout extends LayoutBase {
                     maxLength = Math.max(maxLength, measureWidth);
                     measureWidth = childMeasuredWidth;
                     remainingWidth = availableWidth - childMeasuredWidth;
-                    this._lengths.add(rowOrColumn, childMeasuredHeight);
+                    this._lengths.add(isFirst ? rowOrColumn - 1 : rowOrColumn, childMeasuredHeight);
                 }
                 else {
                     remainingWidth -= childMeasuredWidth;
@@ -140,7 +141,7 @@ public class WrapLayout extends LayoutBase {
                 }
             }
             
-            if(this._lengths.size() <= rowOrColumn) {
+            if(isFirst) {
             	this._lengths.add(rowOrColumn, isVertical ? childMeasuredWidth : childMeasuredHeight);
             }
             else {
@@ -200,34 +201,40 @@ public class WrapLayout extends LayoutBase {
             int length = this._lengths.get(rowOrColumn);
             if (isVertical) {
                 childWidth = length;
+                final boolean isFirst = childTop == paddingTop;
                 if (childTop + childHeight > childrenLength) {
                     // Move to top.
                     childTop = paddingTop;
 
-                    // Move to right with current column width.
-                    childLeft += length;
+                    if (!isFirst){
+                        // Move to right with current column width.
+                        childLeft += length;
+                    }
 
                     // Move to next column.
                     rowOrColumn++;
 
-                    // Take current column width.
-                    childWidth = length = this._lengths.get(rowOrColumn);
+                    // Take respective column width.
+                    childWidth = this._lengths.get(isFirst ? rowOrColumn - 1 : rowOrColumn);
                 }
             }
             else {
                 childHeight = length;
+                final boolean isFirst = childLeft == paddingLeft;
                 if (childLeft + childWidth > childrenLength) {
                     // Move to left.
                     childLeft = paddingLeft;
 
-                    // Move to bottom with current row height.
-                    childTop += length;
+                    if (!isFirst) {
+                        // Move to bottom with current row height.
+                        childTop += length;
+                    }
 
-                    // Move to next column.
+                    // Move to next row.
                     rowOrColumn++;
 
-                    // Take current row height.
-                    childHeight = length = this._lengths.get(rowOrColumn);
+                    // Take respective row height.
+                    childHeight = this._lengths.get(isFirst ? rowOrColumn - 1 : rowOrColumn);
                 }
             }
 
