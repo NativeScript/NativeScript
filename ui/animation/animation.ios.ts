@@ -156,19 +156,34 @@ export class Animation extends common.Animation implements definition.Animation 
                case common.Properties.backgroundColor:
                    (<any>animation)._originalValue = animation.target.backgroundColor;
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.backgroundColor = value };
-                   originalValue = presentationLayer.backgroundColor;
+                   if (presentationLayer != null) {
+                     originalValue = presentationLayer.backgroundColor;
+                   }
+                   else {
+                     originalValue = nativeView.layer.backgroundColor;
+                   }
                    value = value.CGColor;
                    break;
                case common.Properties.opacity:
                    (<any>animation)._originalValue = animation.target.opacity;
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.opacity = value };
-                   originalValue = presentationLayer.opacity;
+                   if (presentationLayer != null) {
+                     originalValue = presentationLayer.opacity;
+                   }
+                   else {
+                     originalValue = nativeView.layer.opacity;
+                   }
                    break;
                case common.Properties.rotate:
                    (<any>animation)._originalValue = animation.target.rotate;
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.rotate = value };
                    propertyNameToAnimate = "transform.rotation";
-                   originalValue = presentationLayer.valueForKeyPath("transform.rotation");
+                   if (presentationLayer != null) {
+                     originalValue = presentationLayer.valueForKeyPath("transform.rotation");
+                   }
+                   else {
+                     originalValue = nativeView.layer.valueForKeyPath("transform.rotation");
+                   }
                    value = value * Math.PI / 180;
                    abs = fabs(originalValue - value);
                    if (abs < 0.001 && originalValue !== tempRotate) {
@@ -179,18 +194,33 @@ export class Animation extends common.Animation implements definition.Animation 
                    (<any>animation)._originalValue = { x:animation.target.translateX, y:animation.target.translateY };
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.translateX = value.x; animation.target.translateY = value.y; };
                    propertyNameToAnimate = "transform"
-                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
+                   if (presentationLayer != null) {
+                     originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
+                   }
+                   else {
+                     originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+                   }
                    value = NSValue.valueWithCATransform3D(CATransform3DTranslate(nativeView.layer.transform, value.x, value.y, 0));
                    break;
                case common.Properties.scale:
                    (<any>animation)._originalValue = { x:animation.target.scaleX, y:animation.target.scaleY };
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.scaleX = value.x; animation.target.scaleY = value.y; };
                    propertyNameToAnimate = "transform"
-                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
+                   if (presentationLayer != null) {
+                     originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
+                   }
+                   else {
+                     originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+                   }
                    value = NSValue.valueWithCATransform3D(CATransform3DScale(nativeView.layer.transform, value.x, value.y, 1));
                    break;
                case _transform:
-                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
+                   if (presentationLayer != null) {
+                     originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
+                   }
+                   else {
+                     originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+                   }
                    (<any>animation)._originalValue = { xs:animation.target.scaleX, ys:animation.target.scaleY,
                                                        xt:animation.target.translateX, yt:animation.target.translateY };
                    (<any>animation)._propertyResetCallback = (value) => {
