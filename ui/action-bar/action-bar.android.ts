@@ -267,6 +267,9 @@ export class ActionBar extends common.ActionBar {
             var menuItem = menu.add(android.view.Menu.NONE, item._getItemId(), android.view.Menu.NONE, item.text + "");
 
             if (item.actionView && item.actionView.android) {
+                // With custom action view, the menuitem cannot be displayed in a popup menu. 
+                item.android.position = enums.AndroidActionItemPosition.actionBar;
+
                 menuItem.setActionView(item.actionView.android);
                 // Note: When using a custom action view the toolbar's MenuItemClickListener is not triggered!
                 menuItem.getActionView().setOnClickListener(new android.view.View.OnClickListener({
