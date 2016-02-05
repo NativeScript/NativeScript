@@ -29,6 +29,9 @@ class AnimationDelegateImpl extends NSObject {
        var nativeView = <UIView>this._propertyAnimation.target._nativeView;
        var propertyNameToAnimate = this._propertyAnimation.property;
        var value = this._propertyAnimation.value;
+
+       (<any>this._propertyAnimation.target)._suspendPresentationLayerUpdates();
+
        switch (this._propertyAnimation.property) {
            case common.Properties.backgroundColor:
                this._propertyAnimation.target.backgroundColor = value;
@@ -50,6 +53,9 @@ class AnimationDelegateImpl extends NSObject {
                }
                break;
         }
+
+        (<any>this._propertyAnimation.target)._resumePresentationLayerUpdates();
+
    }
 
     public animationDidStopFinished(anim: CAAnimation, flag: boolean): void {
