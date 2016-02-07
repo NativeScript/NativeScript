@@ -182,6 +182,14 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         TKUnit.assertEqual(actualValue, 50, "ActualLeft on Index 1");
     }
 
+    public testItemWidthLargerThanTheAvailableWidth() {
+        this.testView.itemWidth = layoutHelper.dp(1000);
+        this.waitUntilTestElementLayoutIsValid();
+
+        TKUnit.assertEqual(this.testView.getChildAt(0)._getCurrentLayoutBounds().top, 0, "ActualTop on Index 0");
+        TKUnit.assertEqual(this.testView.getChildAt(1)._getCurrentLayoutBounds().top, 100, "ActualTop on Index 1");
+    }
+
     public testItemHeight() {
         this.testView.itemHeight = layoutHelper.dp(50);
         this.testView.orientation = enums.Orientation.vertical;
@@ -199,6 +207,16 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().top;
         TKUnit.assertEqual(actualValue, 50, "ActualTop on Index 1");
+    }
+
+    public testItemHeightLargerThanTheAvailableHeight() {
+        this.testView.orientation = enums.Orientation.vertical;
+        this.waitUntilTestElementLayoutIsValid();
+        this.testView.itemHeight = layoutHelper.dp(1000);
+        this.waitUntilTestElementLayoutIsValid();
+
+        TKUnit.assertEqual(this.testView.getChildAt(0)._getCurrentLayoutBounds().left, 0, "ActualLeft on Index 0");
+        TKUnit.assertEqual(this.testView.getChildAt(1)._getCurrentLayoutBounds().left, 100, "ActualLeft on Index 1");
     }
 
     public testPaddingLeftAndTop() {
