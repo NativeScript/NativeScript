@@ -963,3 +963,28 @@ export function test_SupportFunctionsInExpressions() {
     
     TKUnit.assertEqual(bindableObj.get("test"), "visible", "When anyColor is red test property should be visible.");
 }
+
+export function test_$ValueSupportWithinExpression() {
+    var model = new observable.Observable({
+        "anyColor": "red",
+        "isVisible": function () {
+            return this.get("anyColor") === "red";
+        }
+    });
+    
+    var bindableObj = new bindable.Bindable();
+    
+    bindableObj.bind({
+        "sourceProperty": "$value",
+        "targetProperty": "test",
+        "expression": "$value.anyColor === 'red' ? 'red' : 'blue'"
+    }, model);
+    
+    model.set("anyColor", "blue");
+    
+    TKUnit.assertEqual(bindableObj.get("test"), "blue", "When anyColor is blue test property should be blue too.");
+    
+    model.set("anyColor", "red");
+    
+    TKUnit.assertEqual(bindableObj.get("test"), "red", "When anyColor is red test property should be red too.");
+}
