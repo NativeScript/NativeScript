@@ -458,6 +458,9 @@ export class Binding {
     private prepareContextForExpression(model, expression) {
         var parentViewAndIndex;
         var parentView;
+        if (expression.indexOf(bc.bindingValueKey) > -1) {
+            model[bc.bindingValueKey] = model;
+        }
         if (expression.indexOf(bc.parentValueKey) > -1) {
             parentView = this.getParentView(this.target.get(), bc.parentValueKey).view;
             if (parentView) {
