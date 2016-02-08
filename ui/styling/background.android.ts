@@ -98,10 +98,11 @@ export module ad {
                 // If the border is transparent we will backoff less, and we will not backoff more than half a pixel or half the border width.
                 let normalizedBorderAlpha = android.graphics.Color.alpha(this._borderColor) / 255;
                 let backoffAntialias = Math.min(0.5, halfBorderWidth) * normalizedBorderAlpha;
-                let outerBoundsF = new android.graphics.RectF(bounds.left + backoffAntialias, bounds.top + backoffAntialias, bounds.right - backoffAntialias, bounds.bottom - backoffAntialias);
+                let backgroundBoundsF = new android.graphics.RectF(bounds.left + backoffAntialias, bounds.top + backoffAntialias, bounds.right - backoffAntialias, bounds.bottom - backoffAntialias);
 
-                let outerRadius = Math.max(0, this._cornerRadius * this._density - backoffAntialias);
-
+                let outerRadius = this._cornerRadius * this._density;
+                let backgroundRadius = Math.max(0, outerRadius - backoffAntialias);
+                
                 // draw background
                 if (this.background.color && this.background.color.android) {
                     let backgroundColorPaint = new android.graphics.Paint();
@@ -109,7 +110,7 @@ export module ad {
                     backgroundColorPaint.setColor(this.background.color.android);
                     backgroundColorPaint.setAntiAlias(true);
 
-                    canvas.drawRoundRect(outerBoundsF, outerRadius, outerRadius, backgroundColorPaint);
+                    canvas.drawRoundRect(backgroundBoundsF, outerRadius, outerRadius, backgroundColorPaint);
                 }
 
                 // draw image
@@ -143,7 +144,7 @@ export module ad {
                     if (supportsPathOp) {
                         // Path.Op can be used in API level 19+ to achieve the perfect geometry.
                         let backgroundPath = new android.graphics.Path();
-                        backgroundPath.addRoundRect(outerBoundsF, outerRadius, outerRadius, android.graphics.Path.Direction.CCW);
+                        backgroundPath.addRoundRect(backgroundBoundsF, outerRadius, outerRadius, android.graphics.Path.Direction.CCW);
                         let backgroundNoRepeatPath = new android.graphics.Path();
                         backgroundNoRepeatPath.addRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight, android.graphics.Path.Direction.CCW);
                         (<any>backgroundPath).op(backgroundNoRepeatPath, (<any>android).graphics.Path.Op.INTERSECT);
@@ -152,23 +153,36 @@ export module ad {
                         // Clipping here will not be antialiased but at least it won't shine through the rounded corners.
                         canvas.save();
                         canvas.clipRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight);
-                        canvas.drawRoundRect(outerBoundsF, outerRadius, outerRadius, backgroundImagePaint);
+                        canvas.drawRoundRect(backgroundBoundsF, outerRadius, outerRadius, backgroundImagePaint);
                         canvas.restore();
                     }
                 }
 
                 // draw border
                 if (borderWidth > 0 && this._borderColor) {
-                    let middleRadius = Math.max(0, outerRadius - halfBorderWidth);
                     let middleBoundsF = new android.graphics.RectF(bounds.left + halfBorderWidth, bounds.top + halfBorderWidth, bounds.right - halfBorderWidth, bounds.bottom - halfBorderWidth);
-
                     let borderPaint = new android.graphics.Paint();
-                    borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
                     borderPaint.setColor(this._borderColor);
                     borderPaint.setAntiAlias(true);
-                    borderPaint.setStrokeWidth(borderWidth);
 
-                    canvas.drawRoundRect(middleBoundsF, middleRadius, middleRadius, borderPaint);
+                    if (outerRadius <= 0) {
+                        borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
+                        borderPaint.setStrokeWidth(borderWidth);
+                        canvas.drawRect(middleBoundsF, borderPaint);
+                    } else if (outerRadius >= borderWidth) {
+                        borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
+                        borderPaint.setStrokeWidth(borderWidth);
+                        let middleRadius = Math.max(0, outerRadius - halfBorderWidth);
+                        canvas.drawRoundRect(middleBoundsF, middleRadius, middleRadius, borderPaint);
+                    } else {
+                        let borderPath = new android.graphics.Path();
+                        let borderOuterBoundsF = new android.graphics.RectF(bounds.left, bounds.top, bounds.right, bounds.bottom);
+                        borderPath.addRoundRect(borderOuterBoundsF, outerRadius, outerRadius, android.graphics.Path.Direction.CCW);
+                        let borderInnerBoundsF = new android.graphics.RectF(bounds.left + borderWidth, bounds.top + borderWidth, bounds.right - borderWidth, bounds.bottom - borderWidth);
+                        borderPath.addRect(borderInnerBoundsF, android.graphics.Path.Direction.CW);
+                        borderPaint.setStyle(android.graphics.Paint.Style.FILL);
+                        canvas.drawPath(borderPath, borderPaint);
+                    }
                 }
             }
         }
