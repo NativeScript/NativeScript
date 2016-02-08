@@ -221,7 +221,7 @@ export class Page extends pageCommon.Page {
 
         super._raiseShowingModallyEvent();
         var that = this;
-        parent.ios.presentViewControllerAnimatedCompletion(this._ios, false, function completion() {
+        parent.ios.presentViewControllerAnimatedCompletion(this._ios, true, function completion() {
             that._raiseShownModallyEvent(parent, context, closeCallback);
         });
     }
@@ -230,7 +230,7 @@ export class Page extends pageCommon.Page {
         this._isModal = false;
         this._UIModalPresentationFormSheet = false;
         parent.requestLayout();
-        parent._ios.dismissModalViewControllerAnimated(false);
+        parent._ios.dismissModalViewControllerAnimated(true);
 
         super._hideNativeModalView(parent);
     }
