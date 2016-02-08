@@ -1,4 +1,4 @@
-﻿import {Page, ShownModallyData, ListPicker} from "ui";
+﻿import {Page, ListPicker} from "ui";
 
 var closeCallback: Function;
 var page: Page;
