@@ -225,6 +225,7 @@
     <Content Include="apps\ui-tests-app\action-bar\system-icons.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\ui-tests-app\animations\background.xml" />
     <Content Include="apps\ui-tests-app\css\decoration-transform-formattedtext.xml" />
     <Content Include="apps\ui-tests-app\css\text-decoration.xml" />
     <Content Include="apps\ui-tests-app\css\text-transform.xml" />
@@ -253,6 +254,7 @@
     <Content Include="apps\ui-tests-app\layouts-percent\wrap.xml">
       <SubType>Designer</SubType>
     </Content>
+    <TypeScriptCompile Include="apps\ui-tests-app\animations\background.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\pages\touch-event.ts" />
     <Content Include="apps\ui-tests-app\pages\touch-event.xml">
       <SubType>Designer</SubType>
@@ -344,6 +346,8 @@
     <TypeScriptCompile Include="apps\ui-tests-app\segmented-bar\clean.ts">
       <DependentUpon>clean.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\ui-tests-app\transitions\page1.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\transitions\page0.ts" />
     <TypeScriptCompile Include="color\known-colors.d.ts" />
     <TypeScriptCompile Include="es6.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation.d.ts" />
@@ -1209,6 +1213,8 @@
     <Content Include="apps\ui-tests-app\font\text-view.xml" />
     <Content Include="apps\ui-tests-app\font\label.xml" />
     <Content Include="apps\ui-tests-app\font\button.xml" />
+    <Content Include="apps\ui-tests-app\transitions\page1.xml" />
+    <Content Include="apps\ui-tests-app\transitions\page0.xml" />
     <Content Include="apps\ui-tests-app\web-view\test.css" />
     <Content Include="apps\ui-tests-app\web-view\test.html" />
     <Content Include="apps\ui-tests-app\web-view\web-view-test.xml" />
