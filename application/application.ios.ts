@@ -9,8 +9,6 @@ import * as enumsModule from "ui/enums";
 global.moduleMerge(common, exports);
 var typedExports: typeof definition = exports;
 
-var enums: typeof enumsModule
-
 class Responder extends UIResponder {
     //
 }
