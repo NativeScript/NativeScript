@@ -57,7 +57,6 @@ class AnimationDelegateImpl extends NSObject {
         }
 
         (<any>this._propertyAnimation.target)._resumePresentationLayerUpdates();
-
    }
 
     public animationDidStopFinished(anim: CAAnimation, flag: boolean): void {
@@ -76,26 +75,26 @@ class AnimationDelegateImpl extends NSObject {
         }
     }
 
-    public uiview_animationWillStart(animationID: string, context: any): void {
-        trace.write("AnimationDelegateImpl.animationWillStart, animationID: " + animationID, trace.categories.Animation);
-    }
-
-    public uiview_animationDidStop(animationID: string, finished: boolean, context: any): void {
-        trace.write("AnimationDelegateImpl.animationDidStop, animationID: " + animationID + ", finished: " + finished, trace.categories.Animation);
-        if (this._finishedCallback) {
-            var cancelled = !finished;
-            // This could either be the master finishedCallback or an nextAnimationCallback depending on the playSequentially argument values.
-            this._finishedCallback(cancelled);
-        }
-        if (!finished) {
-            if ((<any>this._propertyAnimation)._propertyResetCallback) {
-               (<any>this._propertyAnimation)._propertyResetCallback((<any>this._propertyAnimation)._originalValue);
-            }
-        }
-        if (finished && this.nextAnimation) {
-            this.nextAnimation();
-        }
-    }
+    // public uiview_animationWillStart(animationID: string, context: any): void {
+    //     trace.write("AnimationDelegateImpl.animationWillStart, animationID: " + animationID, trace.categories.Animation);
+    // }
+    //
+    // public uiview_animationDidStop(animationID: string, finished: boolean, context: any): void {
+    //     trace.write("AnimationDelegateImpl.animationDidStop, animationID: " + animationID + ", finished: " + finished, trace.categories.Animation);
+    //     if (this._finishedCallback) {
+    //         var cancelled = !finished;
+    //         // This could either be the master finishedCallback or an nextAnimationCallback depending on the playSequentially argument values.
+    //         this._finishedCallback(cancelled);
+    //     }
+    //     if (!finished) {
+    //         if ((<any>this._propertyAnimation)._propertyResetCallback) {
+    //            (<any>this._propertyAnimation)._propertyResetCallback((<any>this._propertyAnimation)._originalValue);
+    //         }
+    //     }
+    //     if (finished && this.nextAnimation) {
+    //         this.nextAnimation();
+    //     }
+    // }
 }
 
 export class Animation extends common.Animation implements definition.Animation {
@@ -291,30 +290,21 @@ export class Animation extends common.Animation implements definition.Animation 
                   delay = CACurrentMediaTime() + (animation.delay / 1000.0);
               }
 
-              var animationDelegate: AnimationDelegateImpl;
-              animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(finishedCallback, animation);
-
               var callback = undefined;
-              if (index+1 < propertyAnimations.length) {
-                 callback = Animation._createiOSAnimationFunction(propertyAnimations, index+1, playSequentially, finishedCallback, that);
-                 if (!playSequentially) {
+              var nextAnimation;
+              if (index + 1 < propertyAnimations.length) {
+                  callback = Animation._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially, finishedCallback, that);
+                  if (!playSequentially) {
                       callback();
-                 }
-                 else {
-                     animationDelegate.nextAnimation = callback;
-                 }
-               }
+                  }
+                  else {
+                      nextAnimation = callback;
+                  }
+              }
 
               UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(duration, delay, 0.2, 0,
                 UIViewKeyframeAnimationOptions.UIViewKeyframeAnimationOptionCalculationModeLinear,
                 () => {
-
-                  if (animationDelegate) {
-                     UIView.setAnimationDelegate(animationDelegate);
-                     UIView.setAnimationWillStartSelector("uiview_animationWillStart");
-                     UIView.setAnimationDidStopSelector("uiview_animationDidStop");
-                 }
-
                   if (animation.iterations !== undefined) {
                       if (animation.iterations === Number.POSITIVE_INFINITY) {
                           UIView.setAnimationRepeatCount(FLT_MAX);
@@ -335,7 +325,11 @@ export class Animation extends common.Animation implements definition.Animation 
                           nativeView.layer.setValueForKey(value, propertyNameToAnimate);
                           break;
                       case _transform:
+                          (<any>animation)._originalValue = nativeView.layer.transform;
                           nativeView.layer.setValueForKey(value, propertyNameToAnimate);
+                          (<any>animation)._propertyResetCallback = function (value) {
+                             nativeView.layer.transform = value;
+                          }
                           break;
                    }
 
@@ -351,6 +345,18 @@ export class Animation extends common.Animation implements definition.Animation 
                             animation.target.scaleY = animation.value[common.Properties.scale].y;
                         }
                       }
+                    }
+                    else {
+                        if ((<any>animation)._propertyResetCallback) {
+                            (<any>animation)._propertyResetCallback((<any>animation)._originalValue);
+                        }
+                    }
+                    if (finishedCallback) {
+                        var cancelled = !finished;
+                        finishedCallback(cancelled);
+                    }
+                    if (finished && nextAnimation) {
+                        nextAnimation();
                     }
                 });
 
