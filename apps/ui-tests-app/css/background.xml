@@ -45,6 +45,7 @@
       <Button width="40" height="40" text="75" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/pages/test2.png'); background-repeat:repeat; background-position: -15% -15%; background-size: 50% 50%; border-radius: 9; border-width: 3; border-color: black;"/>
       <Button width="40" height="40" text="76" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: -15% -15%; background-size: 50% 50%; border-radius: 9; border-width: 3; border-color: black;"/>
       <Button width="40" height="40" text="77" tap="applyTap" tag="margin: 20; background-color: #FF00FF00; background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: -15% -15%; background-size: 50% 50%; border-radius: 20; border-width: 10; border-color: #66FF0000;"/>
+      <Button width="40" height="40" text="78" tap="applyTap" tag="margin: 20; background-color: #FF00FF00; background-image: url('~/pages/test2.png'); background-repeat:no-repeat; background-position: -15% -15%; background-size: 50% 50%; border-width: 10; border-color: #66FF0000;"/>
     </WrapLayout>
   </GridLayout>
 </Page>

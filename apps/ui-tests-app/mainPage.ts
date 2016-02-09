@@ -84,6 +84,10 @@ examples.set("nordic", "nordic/nordic");
 examples.set("gestures", "pages/gestures");
 examples.set("touch", "pages/touch-event");
 examples.set("handlers", "pages/handlers");
+
+examples.set("animeBG", "animations/background");
+examples.set("transitions", "transitions/page0");
+
 //examples.set("listview_binding", "pages/listview_binding");
 examples.set("console", "pages/console");
 examples.set("i61", "pages/i61");
