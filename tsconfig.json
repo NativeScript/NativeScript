@@ -53,7 +53,6 @@
         "apps/connectivity-demo/app.ts",
         "apps/connectivity-demo/main-page.ts",
         "apps/custom-root-view/app.ts",
-        "apps/custom-root-view/list-view.ts",
         "apps/cuteness.io/app.ts",
         "apps/cuteness.io/details-page.ts",
         "apps/cuteness.io/main-page.ts",

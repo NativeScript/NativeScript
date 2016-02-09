@@ -162,4 +162,5 @@ export module AnimationCurve {
     export var easeOut = "easeOut";
     export var easeInOut = "easeInOut";
     export var linear = "linear";
+    export var spring = "spring";
 }

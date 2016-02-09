@@ -9,25 +9,25 @@
          * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
          */
         export var datetime: string;
-        
+
         /**
          * Android: [TYPE_CLASS_PHONE](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_PHONE)
          * iOS:  [UIKeyboardTypePhonePad](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
          */
         export var phone: string;
-        
+
         /**
          * Android: [TYPE_CLASS_NUMBER](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_NUMBER) | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | [TYPE_NUMBER_FLAG_SIGNED](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_SIGNED) | [TYPE_NUMBER_FLAG_DECIMAL](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_DECIMAL)
          * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
          */
         export var number: string;
-        
+
         /**
          * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_URI](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_URI)
          * iOS:  [UIKeyboardTypeURL](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
          */
         export var url: string;
-        
+
         /**
          * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_EMAIL_ADDRESS](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_EMAIL_ADDRESS)
          * iOS:  [UIKeyboardTypeEmailAddress](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
@@ -56,13 +56,13 @@
          * iOS: [UIReturnKeyGo](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
          */
         export var go: string;
-        
+
         /**
          * Android: [IME_ACTION_SEARCH](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_SEARCH)
          * iOS: [UIReturnKeySearch](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
          */
         export var search: string;
-        
+
         /**
          * Android: [IME_ACTION_SEND](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_SEND)
          * iOS: [UIReturnKeySend](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
@@ -324,17 +324,17 @@
         export var none: string;
 
         /**
-         * Capitalize the first letter of each word automatically. 
+         * Capitalize the first letter of each word automatically.
          */
         export var words: string;
 
         /**
-         * Capitalize the first letter of each sentence automatically. 
+         * Capitalize the first letter of each sentence automatically.
          */
         export var sentences: string;
-        
+
         /**
-         * Capitalize all characters automatically. 
+         * Capitalize all characters automatically.
          */
         export var allCharacters: string;
     }
@@ -402,7 +402,7 @@
          */
         export var popup: string;
     }
-    
+
     /**
      * Specifies different font styles.
      */
@@ -411,7 +411,7 @@
          * Normal font style.
          */
         export var normal: string;
-        
+
         /**
          * Italic font style.
          */
@@ -426,7 +426,7 @@
          * No decoration.
          */
         export var none: string;
-        
+
         /**
          * Text decoration underline.
          */
@@ -446,7 +446,7 @@
          * No transform.
          */
         export var none: string;
-        
+
         /**
          * Text transform capitalize.
          */
@@ -456,7 +456,7 @@
          * Text transform uppercase.
          */
         export var uppercase: string;
-        
+
         /**
          * Text transform lowercase.
          */
@@ -471,13 +471,13 @@
          * Normal wrap.
          */
         export var normal: string;
-        
+
         /**
          * No wrap.
          */
         export var nowrap: string;
     }
-    
+
     /**
      * Specifies different font weights.
      */
@@ -486,13 +486,13 @@
          * Normal font weight.
          */
         export var normal: string;
-        
+
         /**
          * Bold font weight.
          */
         export var bold: string;
     }
-    
+
     /**
      * Specifies background repeat.
      */
@@ -536,10 +536,15 @@
          * An ease-in ease-out curve causes the animation to begin slowly, accelerate through the middle of its duration, and then slow again before completing.
          */
         export var easeInOut: string;
-        
+
         /**
          * A linear animation curve causes an animation to occur evenly over its duration.
          */
         export var linear: string;
+
+        /**
+         * A spring animation curve causes an animation to produce a spring (bounce) effect.
+         */
+        export var spring: string;
     }
 }

@@ -26,7 +26,7 @@ propertyKeys[common.Properties.translate] = Symbol(keyPrefix + common.Properties
 export class Animation extends common.Animation implements definition.Animation {
     private _animatorListener: android.animation.Animator.AnimatorListener;
     private _nativeAnimatorsArray: any;
-    private _animatorSet: android.animation.AnimatorSet; 
+    private _animatorSet: android.animation.AnimatorSet;
     private _animators: Array<android.animation.Animator>;
     private _propertyUpdateCallbacks: Array<Function>;
     private _propertyResetCallbacks: Array<Function>;
@@ -102,7 +102,7 @@ export class Animation extends common.Animation implements definition.Animation 
             // It has been cancelled
             return;
         }
-        
+
         var i = 0;
         var length = this._propertyUpdateCallbacks.length;
         for (; i < length; i++) {
@@ -145,7 +145,7 @@ export class Animation extends common.Animation implements definition.Animation 
         var density = utils.layout.getDisplayDensity();
         var xyObjectAnimators: any;
         var animatorSet: android.animation.AnimatorSet;
-        
+
         var key = propertyKeys[propertyAnimation.property];
         if (key) {
             propertyAnimation.target[key] = propertyAnimation;
@@ -158,7 +158,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 }
             }
         }
-        
+
         switch (propertyAnimation.property) {
 
             case common.Properties.opacity:
@@ -270,7 +270,7 @@ export class Animation extends common.Animation implements definition.Animation 
         var i = 0;
         var length = animators.length;
         for (; i < length; i++) {
-            
+
             // Duration
             if (propertyAnimation.duration !== undefined) {
                 animators[i].setDuration(propertyAnimation.duration);
@@ -281,7 +281,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 animators[i].setStartDelay(propertyAnimation.delay);
             }
 
-            // Repeat Count 
+            // Repeat Count
             if (propertyAnimation.iterations !== undefined && animators[i] instanceof android.animation.ValueAnimator) {
                 (<android.animation.ValueAnimator>animators[i]).setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
             }
@@ -307,6 +307,7 @@ var easeIn = new android.view.animation.AccelerateInterpolator(1);
 var easeOut = new android.view.animation.DecelerateInterpolator(1);
 var easeInOut = new android.view.animation.AccelerateDecelerateInterpolator();
 var linear = new android.view.animation.LinearInterpolator();
+var bounce = new android.view.animation.BounceInterpolator();
 export function _resolveAnimationCurve(curve: any): any {
     switch (curve) {
         case enums.AnimationCurve.easeIn:
@@ -321,8 +322,16 @@ export function _resolveAnimationCurve(curve: any): any {
         case enums.AnimationCurve.linear:
             trace.write("Animation curve resolved to android.view.animation.LinearInterpolator().", trace.categories.Animation);
             return linear;
+        case enums.AnimationCurve.spring:
+            trace.write("Animation curve resolved to android.view.animation.BounceInterpolator().", trace.categories.Animation);
+            return bounce;
         default:
             trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
+            if (curve instanceof common.CustomAnimationCurve) {
+                var animationCurve = <common.CustomAnimationCurve>curve;
+                var interpolator = (<any>(<any>(<any>android.support.v4.view).animation).PathInterpolatorCompat).create(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
+                return interpolator;
+            }
             return curve;
     }
 }

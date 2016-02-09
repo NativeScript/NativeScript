@@ -11,6 +11,8 @@ var _skip = "_skip";
 
 var FLT_MAX = 340282346638528859811704183484516925440.000000;
 
+declare var CASpringAnimation:any;
+
 class AnimationDelegateImpl extends NSObject {
 
     public nextAnimation: Function;
@@ -70,6 +72,27 @@ class AnimationDelegateImpl extends NSObject {
             }
         }
         if (flag && this.nextAnimation) {
+            this.nextAnimation();
+        }
+    }
+
+    public uiview_animationWillStart(animationID: string, context: any): void {
+        trace.write("AnimationDelegateImpl.animationWillStart, animationID: " + animationID, trace.categories.Animation);
+    }
+
+    public uiview_animationDidStop(animationID: string, finished: boolean, context: any): void {
+        trace.write("AnimationDelegateImpl.animationDidStop, animationID: " + animationID + ", finished: " + finished, trace.categories.Animation);
+        if (this._finishedCallback) {
+            var cancelled = !finished;
+            // This could either be the master finishedCallback or an nextAnimationCallback depending on the playSequentially argument values.
+            this._finishedCallback(cancelled);
+        }
+        if (!finished) {
+            if ((<any>this._propertyAnimation)._propertyResetCallback) {
+               (<any>this._propertyAnimation)._propertyResetCallback((<any>this._propertyAnimation)._originalValue);
+            }
+        }
+        if (finished && this.nextAnimation) {
             this.nextAnimation();
         }
     }
@@ -149,6 +172,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 finishedCallback(cancelled);
                 return;
             }
+
            var animation = propertyAnimations[index];
            var nativeView = <UIView>animation.target._nativeView;
            var propertyNameToAnimate = animation.property;
@@ -163,10 +187,17 @@ export class Animation extends common.Animation implements definition.Animation 
                    (<any>animation)._originalValue = animation.target.backgroundColor;
                    (<any>animation)._propertyResetCallback = (value) => { animation.target.backgroundColor = value };
                    if (presentationLayer != null) {
+                     if (nativeView instanceof UILabel) {
+                        nativeView.backgroundColor = UIColor.clearColor();
+                     }
                      originalValue = presentationLayer.backgroundColor;
                    }
                    else {
                      originalValue = nativeView.layer.backgroundColor;
+                   }
+                   if (nativeView instanceof UILabel) {
+                       originalValue = nativeView.layer.backgroundColor;
+                       nativeView.setValueForKey(UIColor.clearColor(), "backgroundColor");
                    }
                    value = value.CGColor;
                    break;
@@ -242,15 +273,100 @@ export class Animation extends common.Animation implements definition.Animation 
                    throw new Error("Cannot animate " + animation.property);
            }
 
-           var nativeAnimation = CABasicAnimation.animationWithKeyPath(propertyNameToAnimate);
+           var nativeAnimation;
+           var isSpring = false;
+
+           if (animation.curve === enums.AnimationCurve.spring) {
+
+              // nativeAnimation = CASpringAnimation.animationWithKeyPath(propertyNameToAnimate);
+              // nativeAnimation.duration = nativeAnimation.settlingDuration;
+              // nativeAnimation.damping = 3;
+
+              var duration = 0.3;
+              if (animation.duration !== undefined) {
+                  duration = animation.duration / 1000.0;
+              }
+              var delay = 0;
+              if (animation.delay !== undefined) {
+                  delay = CACurrentMediaTime() + (animation.delay / 1000.0);
+              }
+
+              var animationDelegate: AnimationDelegateImpl;
+              animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(finishedCallback, animation);
+
+              var callback = undefined;
+              if (index+1 < propertyAnimations.length) {
+                 callback = Animation._createiOSAnimationFunction(propertyAnimations, index+1, playSequentially, finishedCallback, that);
+                 if (!playSequentially) {
+                      callback();
+                 }
+                 else {
+                     animationDelegate.nextAnimation = callback;
+                 }
+               }
+
+              UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(duration, delay, 0.2, 0,
+                UIViewKeyframeAnimationOptions.UIViewKeyframeAnimationOptionCalculationModeLinear,
+                () => {
+
+                  if (animationDelegate) {
+                     UIView.setAnimationDelegate(animationDelegate);
+                     UIView.setAnimationWillStartSelector("uiview_animationWillStart");
+                     UIView.setAnimationDidStopSelector("uiview_animationDidStop");
+                 }
+
+                  if (animation.iterations !== undefined) {
+                      if (animation.iterations === Number.POSITIVE_INFINITY) {
+                          UIView.setAnimationRepeatCount(FLT_MAX);
+                      }
+                      else {
+                          UIView.setAnimationRepeatCount(animation.iterations - 1);
+                      }
+                  }
+
+                  switch (animation.property) {
+                      case common.Properties.backgroundColor:
+                          animation.target.backgroundColor = value;
+                          break;
+                      case common.Properties.opacity:
+                          animation.target.opacity = value;
+                          break;
+                      case common.Properties.rotate:
+                          nativeView.layer.setValueForKey(value, propertyNameToAnimate);
+                          break;
+                      case _transform:
+                          nativeView.layer.setValueForKey(value, propertyNameToAnimate);
+                          break;
+                   }
+
+                }, function (finished:boolean) {
+                    if (finished) {
+                      if (animation.property === _transform) {
+                        if (animation.value[common.Properties.translate] !== undefined) {
+                            animation.target.translateX = animation.value[common.Properties.translate].x;
+                            animation.target.translateY = animation.value[common.Properties.translate].y;
+                        }
+                        if (animation.value[common.Properties.scale] !== undefined) {
+                            animation.target.scaleX = animation.value[common.Properties.scale].x;
+                            animation.target.scaleY = animation.value[common.Properties.scale].y;
+                        }
+                      }
+                    }
+                });
+
+              return;
+           }
+           else {
+              nativeAnimation = CABasicAnimation.animationWithKeyPath(propertyNameToAnimate);
+           }
            nativeAnimation.fromValue = originalValue;
-           nativeAnimation.toValue =  value;
+           nativeAnimation.toValue = value;
            if (animation.duration !== undefined) {
                nativeAnimation.duration = animation.duration / 1000.0;
            }
            else {
                nativeAnimation.duration = 0.3;
-           };
+           }
            if (animation.delay !== undefined) {
                nativeAnimation.beginTime = CACurrentMediaTime() + (animation.delay / 1000.0);
            }
@@ -263,7 +379,7 @@ export class Animation extends common.Animation implements definition.Animation 
                    nativeAnimation.repeatCount = animation.iterations - 1;
                }
            }
-           if (animation.curve !== undefined) {
+           if (!isSpring && animation.curve !== undefined) {
                trace.write("The animation curve is " + animation.curve, trace.categories.Animation);
                nativeAnimation.timingFunction = animation.curve;
            }
@@ -353,8 +469,10 @@ export class Animation extends common.Animation implements definition.Animation 
                     value: {},
                     duration: propertyAnimations[i].duration,
                     delay: propertyAnimations[i].delay,
-                    iterations: propertyAnimations[i].iterations
+                    iterations: propertyAnimations[i].iterations,
+                    curve: propertyAnimations[i].curve
                 };
+                trace.write("Curve: " + propertyAnimations[i].curve, trace.categories.Animation);
                 newTransformAnimation.value[propertyAnimations[i].property] = propertyAnimations[i].value;
                 trace.write("Created new transform animation: " + common.Animation._getAnimationInfo(newTransformAnimation), trace.categories.Animation);
 
@@ -388,7 +506,16 @@ export function _resolveAnimationCurve(curve: any): any {
             return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseInEaseOut);
         case enums.AnimationCurve.linear:
             return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionLinear);
+        case enums.AnimationCurve.spring:
+            return curve;
         default:
+            if (curve instanceof CAMediaTimingFunction) {
+                return curve;
+            }
+            else if (curve instanceof common.CustomAnimationCurve) {
+                var animationCurve = <common.CustomAnimationCurve>curve;
+                return CAMediaTimingFunction.functionWithControlPoints(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
+            }
             return undefined;
     }
 }
