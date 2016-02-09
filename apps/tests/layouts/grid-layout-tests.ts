@@ -687,6 +687,31 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
         TKUnit.assertTrue(rows[0].isStar, "First row should be *");
         TKUnit.assertTrue(rows[1].isAbsolute, "Second row should be Absolute");
     }
+
+    public test_columns_widths() {
+        this.testView.width = layoutHelper.dp(300);
+        this.testView.height = layoutHelper.dp(500);
+
+        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
+        this.testView.addColumn(new ItemSpec(layoutHelper.dp(100), GridUnitType.pixel));
+        this.testView.addColumn(new ItemSpec(2, GridUnitType.star));
+
+        this.testView.addRow(new ItemSpec(1, GridUnitType.star));
+        this.testView.addRow(new ItemSpec(layoutHelper.dp(100), GridUnitType.pixel));
+        this.testView.addRow(new ItemSpec(2, GridUnitType.star));
+
+        this.waitUntilTestElementLayoutIsValid();
+
+        var cols = this.testView.getColumns();
+        TKUnit.assertAreClose(cols[0].actualLength, layoutHelper.dp(67), DELTA, "Column[0] actual length should be 67");
+        TKUnit.assertAreClose(cols[1].actualLength, layoutHelper.dp(100), DELTA, "Column[1] actual length should be 100");
+        TKUnit.assertAreClose(cols[2].actualLength, layoutHelper.dp(133), DELTA, "Column[2] actual length should be 133");
+
+        var rows = this.testView.getRows();
+        TKUnit.assertAreClose(rows[0].actualLength, layoutHelper.dp(133), DELTA, "Row[0] actual length should be 133");
+        TKUnit.assertAreClose(rows[1].actualLength, layoutHelper.dp(100), DELTA, "Row[1] actual length should be 100");
+        TKUnit.assertAreClose(rows[2].actualLength, layoutHelper.dp(267), DELTA, "Row[2] actual length should be 267");
+    }
 }
 
 export function createTestCase(): GridLayoutTest {
