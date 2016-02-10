@@ -9,6 +9,7 @@ import uiUtils = require("ui/utils");
 import * as types from "utils/types";
 import * as animationModule from "ui/animation";
 import * as transitionModule from "ui/transition";
+import application = require("application");
 
 global.moduleMerge(frameCommon, exports);
 
@@ -31,6 +32,15 @@ export class Frame extends frameCommon.Frame {
     constructor() {
         super();
         this._ios = new iOSFrame(this);
+        
+        // When there is a 40px high "in-call" status bar, nobody moves the navigationBar top from 20 to 40 and it remains underneath the status bar.
+        var that = this;
+        application.ios.addNotificationObserver(UIApplicationDidChangeStatusBarFrameNotification, (notification: NSNotification) => {
+            that._handleHigherInCallStatusBarIfNeeded();
+            if (this._ios.controller.owner.currentPage) {
+                this._ios.controller.owner.currentPage.requestLayout();
+            }
+        });
     }
 
     public onLoaded() {
@@ -234,6 +244,7 @@ export class Frame extends frameCommon.Frame {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         this._right = right;
         this._bottom = bottom;
+        this._handleHigherInCallStatusBarIfNeeded();
         this.layoutPage(this.currentPage);
         if (this._navigateToEntry && this.currentPage) {
             this.layoutPage(this._navigateToEntry.resolvedPage);
@@ -274,6 +285,26 @@ export class Frame extends frameCommon.Frame {
         if (window) {
             window.layoutIfNeeded();
         }
+    }
+
+    _handleHigherInCallStatusBarIfNeeded() {
+        let statusBarHeight = uiUtils.ios.getStatusBarHeight();
+        if (!this._ios ||
+            !this._ios.controller ||
+            !this._ios.controller.navigationBar ||
+            this._ios.controller.navigationBar.hidden ||
+            this._ios.controller.navigationBar.frame.origin.y === statusBarHeight) {
+            return;
+        }
+
+        trace.write(`Forcing navigationBar.frame.origin.y to ${statusBarHeight} due to a higher in-call status-bar`, trace.categories.Layout);
+        this._ios.controller.navigationBar.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
+        this._ios.controller.navigationBar.removeConstraints((<any>this)._ios.controller.navigationBar.constraints);
+        this._ios.controller.navigationBar.frame = CGRectMake(
+            this._ios.controller.navigationBar.frame.origin.x,
+            statusBarHeight,
+            this._ios.controller.navigationBar.frame.size.width,
+            this._ios.controller.navigationBar.frame.size.height);
     }
 }
 
