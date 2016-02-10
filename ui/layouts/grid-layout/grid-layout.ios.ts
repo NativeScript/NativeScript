@@ -749,13 +749,13 @@ class MeasureHelper {
 
         // If we are not stretched and minColumnStarValue is less than maxColumnStarValue
         // we need to reduce the width of star columns.
-        if (!this.stretchedHorizontally && this.minColumnStarValue != -1 && this.minColumnStarValue < this.maxColumnStarValue) {
+        if (!this.stretchedHorizontally && this.minColumnStarValue !== -1 && this.minColumnStarValue < this.maxColumnStarValue) {
             MeasureHelper.updateStarLength(this.columns, this.minColumnStarValue);
         }
 
         // If we are not stretched and minRowStarValue is less than maxRowStarValue
         // we need to reduce the height of star maxRowStarValue.
-        if (!this.stretchedVertically && this.minRowStarValue != -1 && this.minRowStarValue < this.maxRowStarValue) {
+        if (!this.stretchedVertically && this.minRowStarValue !== -1 && this.minRowStarValue < this.maxRowStarValue) {
             MeasureHelper.updateStarLength(this.rows, this.minRowStarValue);
         }
 
