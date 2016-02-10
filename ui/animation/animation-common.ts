@@ -27,7 +27,7 @@ export interface PropertyAnimation {
     curve?: any;
 }
 
-export class CustomAnimationCurve implements definition.CustomAnimationCurve {
+export class CubicBezierAnimationCurve implements definition.CubicBezierAnimationCurve {
 
     public x1: number;
     public y1: number;

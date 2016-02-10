@@ -1,4 +1,6 @@
-﻿export module KeyboardType {
+import animationModule = require("ui/animation");
+
+export module KeyboardType {
     export var datetime = "datetime";
     export var phone = "phone";
     export var number = "number";
@@ -163,4 +165,7 @@ export module AnimationCurve {
     export var easeInOut = "easeInOut";
     export var linear = "linear";
     export var spring = "spring";
+    export function cubicBezier(x1: number, y1: number, x2: number, y2: number): animationModule.CubicBezierAnimationCurve {
+        return new animationModule.CubicBezierAnimationCurve(x1, y1 ,x2, y2);
+    }
 }

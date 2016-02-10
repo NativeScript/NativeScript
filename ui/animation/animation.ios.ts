@@ -517,8 +517,8 @@ export function _resolveAnimationCurve(curve: any): any {
             if (curve instanceof CAMediaTimingFunction) {
                 return curve;
             }
-            else if (curve instanceof common.CustomAnimationCurve) {
-                var animationCurve = <common.CustomAnimationCurve>curve;
+            else if (curve instanceof common.CubicBezierAnimationCurve) {
+                var animationCurve = <common.CubicBezierAnimationCurve>curve;
                 return CAMediaTimingFunction.functionWithControlPoints(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
             }
             return undefined;

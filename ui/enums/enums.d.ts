@@ -1,5 +1,7 @@
 ﻿declare module "ui/enums" {
 
+    import animationModule = require("ui/animation");
+
     /**
      * Represents a soft keyboard flavor.
      */
@@ -522,6 +524,7 @@
      * Represents an animation curve type.
      */
     module AnimationCurve {
+
         /**
          * An ease-in curve causes the animation to begin slowly, and then speed up as it progresses.
          */
@@ -546,5 +549,10 @@
          * A spring animation curve causes an animation to produce a spring (bounce) effect.
          */
         export var spring: string;
+
+        /**
+         * A custom cubic bezier function defined by its two control points. Possible values are numeric values from 0 to 1
+         */
+        export function cubicBezier(x1: number, y1: number, x2: number, y2: number): animationModule.CubicBezierAnimationCurve;
     }
 }

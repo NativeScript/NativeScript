@@ -327,9 +327,9 @@ export function _resolveAnimationCurve(curve: any): any {
             return bounce;
         default:
             trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
-            if (curve instanceof common.CustomAnimationCurve) {
-                var animationCurve = <common.CustomAnimationCurve>curve;
-                var interpolator = (<any>(<any>(<any>android.support.v4.view).animation).PathInterpolatorCompat).create(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
+            if (curve instanceof common.CubicBezierAnimationCurve) {
+                var animationCurve = <common.CubicBezierAnimationCurve>curve;
+                var interpolator = (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
                 return interpolator;
             }
             return curve;
