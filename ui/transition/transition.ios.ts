@@ -3,6 +3,18 @@ import frame = require("ui/frame");
 import types = require("utils/types");
 import trace = require("trace");
 
+module UIViewControllerAnimatedTransitioningMethods {
+    let methodSignature = NSMethodSignature.signatureWithObjCTypes("v@:c");
+    let invocation = NSInvocation.invocationWithMethodSignature(methodSignature);
+    invocation.selector = "completeTransition:";
+    
+    export function completeTransition(didComplete: boolean) {
+        let didCompleteReference = new interop.Reference(interop.types.bool, didComplete);
+        invocation.setArgumentAtIndex(didCompleteReference, 2);
+        invocation.invokeWithTarget(this);
+    }
+}
+
 class AnimatedTransitioning extends NSObject implements UIViewControllerAnimatedTransitioning {
     public static ObjCProtocols = [UIViewControllerAnimatedTransitioning];
 
@@ -22,10 +34,8 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
 }
 
     public animateTransition(transitionContext: any): void {
-        let containerView = transitionContext.performSelector("containerView");
-        var completion = (finished: boolean) => {
-            transitionContext.performSelectorWithObject("completeTransition:", finished);
-        }
+        let containerView = transitionContext.valueForKey("containerView");
+        var completion = UIViewControllerAnimatedTransitioningMethods.completeTransition.bind(transitionContext);
         switch (this._operation) {
             case UINavigationControllerOperation.UINavigationControllerOperationPush: this._transitionType = "push"; break;
             case UINavigationControllerOperation.UINavigationControllerOperationPop: this._transitionType = "pop"; break;
