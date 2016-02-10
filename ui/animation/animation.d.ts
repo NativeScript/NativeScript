@@ -61,9 +61,9 @@
     }
 
     /**
-    * Defines a custom animation timing curve by using the cubic-bezier function.
-    * Possible values are numeric values from 0 to 1
-    */
+     * Defines a custom animation timing curve by using the cubic-bezier function.
+     * Possible values are numeric values from 0 to 1
+     */
     export class CubicBezierAnimationCurve {
 
         public x1: number;
