@@ -191,14 +191,14 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
 
     if (withTransition) {
         var navigationTransition: FrameModule.NavigationTransition = {
-            transition: "slide",
+            name: "slide",
             duration: 1000,
         };
         var navigationEntry: FrameModule.NavigationEntry = {
             create: pageFactory,
             context: context,
             animated: true,
-            navigationTransition: navigationTransition
+            transition: navigationTransition
         }
         helper.navigateWithEntry(navigationEntry);
     }
