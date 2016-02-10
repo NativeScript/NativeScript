@@ -38,12 +38,12 @@
   },
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
-    "tns-core-modules-widgets": "1.6.1"
+    "tns-core-modules-widgets": "1.6.0"
   },
   "nativescript": {
     "platforms": {
-      "ios": "1.6.0",
-      "android": "1.6.0"
+      "ios": "1.3.0",
+      "android": "1.3.0"
     }
   }
 }
