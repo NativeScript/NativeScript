@@ -189,11 +189,11 @@ export class Frame extends frameCommon.Frame {
         frameCommon.Frame.defaultAnimatedNavigation = value;
     }
 
-    public static get defaultNavigationTransition(): definition.NavigationTransition {
-        return frameCommon.Frame.defaultNavigationTransition;
+    public static get defaultTransition(): definition.NavigationTransition {
+        return frameCommon.Frame.defaultTransition;
     }
-    public static set defaultNavigationTransition(value: definition.NavigationTransition) {
-        frameCommon.Frame.defaultNavigationTransition = value;
+    public static set defaultTransition(value: definition.NavigationTransition) {
+        frameCommon.Frame.defaultTransition = value;
     }
 
     public requestLayout(): void {
@@ -640,8 +640,8 @@ function _getTransitionId(nativeTransition: UIViewAnimationTransition, transitio
 }
 
 function _getNativeTransition(navigationTransition: definition.NavigationTransition, push: boolean): UIViewAnimationTransition {
-    if (types.isString(navigationTransition.transition)) {
-        switch (navigationTransition.transition.toLowerCase()) {
+    if (navigationTransition.name) {
+        switch (navigationTransition.name.toLowerCase()) {
             case "flip":
             case "flipright":
                 return push ? UIViewAnimationTransition.UIViewAnimationTransitionFlipFromRight : UIViewAnimationTransition.UIViewAnimationTransitionFlipFromLeft;

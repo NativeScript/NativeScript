@@ -47,8 +47,8 @@ export function _clearForwardTransitions(fragment: any): void {
 
 export function _setAndroidFragmentTransitions(navigationTransition: frameModule.NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): void {
     var name;
-    if (types.isString(navigationTransition.transition)) {
-        name = navigationTransition.transition.toLowerCase();
+    if (navigationTransition.name) {
+        name = navigationTransition.name.toLowerCase();
     }
     
     var useLollipopTransition = name && (name.indexOf("slide") === 0 || name === "fade" || name === "explode") && _sdkVersion >= 21;
@@ -153,7 +153,7 @@ export function _setAndroidFragmentTransitions(navigationTransition: frameModule
         return;
     }
 
-    var transition: Transition;
+    var transition: definition.Transition;
     if (name) {
         if (name.indexOf("slide") === 0) {
             var slideTransitionModule = require("./slide-transition");
@@ -171,7 +171,7 @@ export function _setAndroidFragmentTransitions(navigationTransition: frameModule
         }
     }
     else {
-        transition = navigationTransition.transition; // User-defined instance of Transition
+        transition = navigationTransition.instance; // User-defined instance of Transition
     }
 
     if (transition) {

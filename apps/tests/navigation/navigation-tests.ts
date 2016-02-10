@@ -25,7 +25,7 @@ function _testTransition(navigationTransition: NavigationTransition) {
             return page;
         },
         animated: true,
-        navigationTransition: navigationTransition
+        transition: navigationTransition
     }
 
     helper.navigateWithEntry(navigationEntry);
@@ -65,7 +65,7 @@ export var test_Transitions = function () {
         for (d = 0; d < dlen; d++) {
             for (c = 0; c < clen; c++) {
                 _testTransition({
-                    transition: transitions[t],
+                    name: transitions[t],
                     duration: durations[d],
                     curve: curves[c]
                 });
@@ -76,7 +76,7 @@ export var test_Transitions = function () {
     // Custom transition
     var customTransitionModule = require("./custom-transition");
     var customTransition = new customTransitionModule.CustomTransition();
-    _testTransition({transition: customTransition});
+    _testTransition({ instance: customTransition });
 
     helper.goBack();
 }

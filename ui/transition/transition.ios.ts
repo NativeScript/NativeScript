@@ -6,13 +6,13 @@ import trace = require("trace");
 class AnimatedTransitioning extends NSObject implements UIViewControllerAnimatedTransitioning {
     public static ObjCProtocols = [UIViewControllerAnimatedTransitioning];
 
-    private _transition: Transition;
+    private _transition: definition.Transition;
     private _operation: UINavigationControllerOperation;
     private _fromVC: UIViewController;
     private _toVC: UIViewController;
     private _transitionType: string;
 
-    public static init(transition: Transition, operation: UINavigationControllerOperation, fromVC: UIViewController, toVC: UIViewController): AnimatedTransitioning {
+    public static init(transition: definition.Transition, operation: UINavigationControllerOperation, fromVC: UIViewController, toVC: UIViewController): AnimatedTransitioning {
         var impl = <AnimatedTransitioning>AnimatedTransitioning.new();
         impl._transition = transition;
         impl._operation = operation;
@@ -31,6 +31,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
             case UINavigationControllerOperation.UINavigationControllerOperationPop: this._transitionType = "pop"; break;
             case UINavigationControllerOperation.UINavigationControllerOperationNone: this._transitionType = "none"; break;
         }
+
         trace.write(`START ${this._transition} ${this._transitionType}`, trace.categories.Transition);
         this._transition.animateIOSTransition(containerView, this._fromVC.view, this._toVC.view, this._operation, completion);
     }
@@ -87,10 +88,10 @@ export class Transition implements definition.Transition {
 }
 
 export function _createIOSAnimatedTransitioning(navigationTransition: frame.NavigationTransition, operation: UINavigationControllerOperation, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
-    var transition: Transition;
+    var transition: definition.Transition;
 
-    if (types.isString(navigationTransition.transition)) {
-        var name = navigationTransition.transition.toLowerCase();
+    if (navigationTransition.name) {
+        var name = navigationTransition.name.toLowerCase();
         if (name.indexOf("slide") === 0) {
             var slideTransitionModule = require("./slide-transition");
             var direction = name.substr("slide".length) || "left"; //Extract the direction from the string
@@ -102,7 +103,7 @@ export function _createIOSAnimatedTransitioning(navigationTransition: frame.Navi
         }
     }
     else {
-        transition = navigationTransition.transition;
+        transition = navigationTransition.instance;
     }
 
     if (transition) {

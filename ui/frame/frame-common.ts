@@ -6,6 +6,7 @@ import * as trace from "trace";
 import {resolveFileName} from "file-system/file-name-resolver";
 import * as fs from "file-system";
 import * as builderModule from "ui/builder";
+import * as platform from "platform";
 
 var builder: typeof builderModule;
 function ensureBuilder() {
@@ -138,11 +139,11 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     private _backStack: Array<definition.BackstackEntry>;
     public _currentEntry: definition.BackstackEntry;
     private _animated: boolean;
-    private _navigationTransition: definition.NavigationTransition;
+    private _transition: definition.NavigationTransition;
 
     public _isInFrameStack = false;
     public static defaultAnimatedNavigation = true;
-    public static defaultNavigationTransition: definition.NavigationTransition;
+    public static defaultTransition: definition.NavigationTransition;
 
     // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
 
@@ -325,12 +326,12 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         this._animated = value;
     }
 
-    public get navigationTransition(): definition.NavigationTransition {
-        return this._navigationTransition;
+    public get transition(): definition.NavigationTransition {
+        return this._transition;
     }
 
-    public set navigationTransition(value: definition.NavigationTransition) {
-        this._navigationTransition = value;
+    public set transition(value: definition.NavigationTransition) {
+        this._transition = value;
     }
 
     get backStack(): Array<definition.BackstackEntry> {
@@ -399,15 +400,25 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     }
 
     public _getNavigationTransition(entry: definition.NavigationEntry): definition.NavigationTransition {
-        if (entry && isDefined(entry.navigationTransition)) {
-            return entry.navigationTransition;
+        if (entry) {
+            if (platform.device.os === platform.platformNames.ios && isDefined(entry.transitioniOS)) {
+                return entry.transitioniOS;
+            }
+
+            if (platform.device.os === platform.platformNames.android && isDefined(entry.transitionAndroid)) {
+                return entry.transitioniOS;
+            }
+
+            if (entry && isDefined(entry.transition)) {
+                return entry.transition;
+            }
         }
 
-        if (isDefined(this.navigationTransition)) {
-            return this.navigationTransition;
+        if (isDefined(this.transition)) {
+            return this.transition;
         }
 
-        return Frame.defaultNavigationTransition;
+        return Frame.defaultTransition;
     }
 
     public get navigationBarHeight(): number {
