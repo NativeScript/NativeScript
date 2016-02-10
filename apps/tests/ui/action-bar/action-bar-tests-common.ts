@@ -128,7 +128,7 @@ import actionBarModule = require("ui/action-bar");
 //   ...
 // </Page>
 //```
-//Setting `text` for the navigation button is not supproted in Android. You can use `icon` or `android.systemIcon` to set the image in Android.
+//Setting `text` for the navigation button is not supported in Android. You can use `icon` or `android.systemIcon` to set the image in Android.
 //Setting `ios.systemIcon` for the navigation button is not supported in iOS.
 //
 // </snippet>

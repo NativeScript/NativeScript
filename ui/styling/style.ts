@@ -174,23 +174,23 @@ function onLayoutParamsChanged(data: PropertyChangeData) {
     let marginBottomValue = convertToPercentHelper(style.marginBottom);
     
     // Negative marginPercent means no marginPercent so native layout won't override margin with this % value.
-    var layoutParams: definition.CommonLayoutParams = 
-    {
-        width: width,
-        height: height,
-        widthPercent: widthPercent,
-        heightPercent: heightPercent,
-        leftMargin: marginLeftValue.isPercent ? 0 : marginLeftValue.value,
-        leftMarginPercent: marginLeftValue.isPercent ? marginLeftValue.value / 100 : -1,
-        topMargin: marginTopValue.isPercent ? 0 : marginTopValue.value,
-        topMarginPercent: marginTopValue.isPercent ? marginTopValue.value / 100 : -1,
-        rightMargin: marginRightValue.isPercent ? 0 : marginRightValue.value,
-        rightMarginPercent: marginRightValue.isPercent ? marginRightValue.value / 100 : -1,
-        bottomMargin: marginBottomValue.isPercent ? 0 : marginBottomValue.value,
-        bottomMarginPercent: marginBottomValue.isPercent ? marginBottomValue.value / 100 : -1,
-        horizontalAlignment: style.horizontalAlignment,
-        verticalAlignment: style.verticalAlignment
-    };
+    var layoutParams: definition.CommonLayoutParams =
+        {
+            width: width,
+            height: height,
+            widthPercent: widthPercent,
+            heightPercent: heightPercent,
+            leftMargin: marginLeftValue.isPercent ? 0 : marginLeftValue.value,
+            leftMarginPercent: marginLeftValue.isPercent ? marginLeftValue.value / 100 : -1,
+            topMargin: marginTopValue.isPercent ? 0 : marginTopValue.value,
+            topMarginPercent: marginTopValue.isPercent ? marginTopValue.value / 100 : -1,
+            rightMargin: marginRightValue.isPercent ? 0 : marginRightValue.value,
+            rightMarginPercent: marginRightValue.isPercent ? marginRightValue.value / 100 : -1,
+            bottomMargin: marginBottomValue.isPercent ? 0 : marginBottomValue.value,
+            bottomMarginPercent: marginBottomValue.isPercent ? marginBottomValue.value / 100 : -1,
+            horizontalAlignment: style.horizontalAlignment,
+            verticalAlignment: style.verticalAlignment
+        };
 
     style._setValue(nativeLayoutParamsProperty, layoutParams);
 }
@@ -304,6 +304,8 @@ function onBackgroundImagePropertyChanged(data: PropertyChangeData) {
             style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
             imageSource.fromUrl(url).then((r) => {
                 if (style && style["_url"] === url) {
+                    // Get the current background again, as it might have changed while doing the request.
+                    currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
                     style._setValue(backgroundInternalProperty, currentBackground.withImage(r));
                 }
             });

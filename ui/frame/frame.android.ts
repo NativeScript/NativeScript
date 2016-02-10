@@ -512,7 +512,7 @@ var NativeActivity = {
         // We take care of associating them with a Page from our backstack in the onAttachFragment callback.
         // If there is savedInstanceState and activityInitialized is false we are restarted but process was killed.
         // For now we treat it like first run (e.g. we are not passing savedInstanceState so no fragments are being restored).
-        // When we add support for applicatioin save/load state - revise this logic.
+        // When we add support for application save/load state - revise this logic.
         var isRestart = !!savedInstanceState && activityInitialized;
         this.super.onCreate(isRestart ? savedInstanceState : null);
 
