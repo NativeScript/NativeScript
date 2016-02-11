@@ -1,5 +1,6 @@
 ﻿import definition = require("ui/text-base");
 import view = require("ui/core/view");
+import types = require("utils/types");
 import observable = require("data/observable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
@@ -100,11 +101,12 @@ export class TextBase extends view.View implements definition.TextBase, formatte
     }
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        var newValue = types.isNullOrUndefined(data.newValue) ? "" : data.newValue + "";
         if (this.android) {
-            this.android.setText(data.newValue + "");
+            this.android.setText(newValue);
         }
         else if (this.ios) {
-            this.ios.text = data.newValue + "";
+            this.ios.text = newValue;
             this.style._updateTextDecoration();
             this.style._updateTextTransform();
         }
