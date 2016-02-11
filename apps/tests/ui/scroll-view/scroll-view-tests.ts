@@ -81,32 +81,36 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         }
     }
 
-    public test_scrollabeHeight_vertical_orientation_when_content_is_small() {
-        this.testView.content.height = 100;
+    public test_scrollableHeight_vertical_orientation_when_content_is_small() {
+        this.testView.content.width = layoutHelper.dp(100);
+        this.testView.content.height = layoutHelper.dp(100);
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.scrollableHeight, 0, "this.testView.scrollableHeight");
         TKUnit.assertEqual(this.testView.scrollableWidth, 0, "this.testView.scrollableWidth");
     }
 
-    public test_scrollabeHeight_vertical_orientation_when_content_is_big() {
+    public test_scrollableHeight_vertical_orientation_when_content_is_big() {
+        this.testView.content.width = layoutHelper.dp(100);
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.scrollableHeight), 200, 0.4, "this.testView.scrollableHeight");
         TKUnit.assertEqual(this.testView.scrollableWidth, 0, "this.testView.scrollableWidth");
     }
 
-    public test_scrollabeWidth_horizontal_orientation_when_content_is_small() {
+    public test_scrollableWidth_horizontal_orientation_when_content_is_small() {
         this.testView.orientation = enums.Orientation.horizontal;
-        this.testView.content.width = 100;
+        this.testView.content.width = layoutHelper.dp(100);
+        this.testView.content.height = layoutHelper.dp(100);
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.scrollableHeight, 0, "this.testView.scrollableHeight");
         TKUnit.assertEqual(this.testView.scrollableWidth, 0, "this.testView.scrollableWidth");
     }
 
-    public test_scrollabeWidth_horizontal_orientation_when_content_is_big() {
+    public test_scrollableWidth_horizontal_orientation_when_content_is_big() {
         this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.content.height = layoutHelper.dp(100);
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.scrollableHeight, 0, "this.testView.scrollableHeight");
@@ -226,7 +230,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollView_vertical_raised_scroll_event_after_loaded() {
-        this.waitUntilTestElementIsLoaded();
+        this.waitUntilTestElementLayoutIsValid();
 
         var scrollY: number;
         this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
@@ -241,7 +245,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
     public test_scrollView_horizontal_raised_scroll_event_after_loaded() {
         this.testView.orientation = enums.Orientation.horizontal;
-        this.waitUntilTestElementIsLoaded();
+        this.waitUntilTestElementLayoutIsValid();
 
         var scrollX: number;
         this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
