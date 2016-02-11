@@ -171,12 +171,12 @@ export class NavPage extends Page implements definition.ControlsPage {
                     var customTransitionModule = require("./custom-transition");
                     var customTransition = new customTransitionModule.CustomTransition(duration, curve);
                     navigationTransition = {
-                        transition: customTransition
+                        instance: customTransition
                     };
                 }
                 else {
                     navigationTransition = {
-                        transition: transitionName,
+                        name: transitionName,
                         duration: duration,
                         curve: curve
                     };
@@ -188,7 +188,7 @@ export class NavPage extends Page implements definition.ControlsPage {
                 backstackVisible: addToBackStackSwitch.checked,
                 clearHistory: clearHistorySwitch.checked,
                 animated: animatedSwitch.checked,
-                navigationTransition: navigationTransition,
+                transition: navigationTransition,
             });
         });
         stackLayout.addChild(forwardButton);

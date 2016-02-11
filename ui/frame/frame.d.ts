@@ -5,6 +5,7 @@ declare module "ui/frame" {
     import view = require("ui/core/view");
     import observable = require("data/observable");
     import pages = require("ui/page");
+    import transition = require("ui/transition");
 
     /**
      * Represents the logical View unit that is responsible for navigation withing an application.
@@ -77,7 +78,7 @@ declare module "ui/frame" {
         /**
          * Gets or sets the default navigation transition for this frame.
          */
-        navigationTransition: NavigationTransition;
+        transition: NavigationTransition;
 
         /**
          * Gets or sets if navigation transitions should be animated globally.
@@ -87,7 +88,7 @@ declare module "ui/frame" {
         /**
          * Gets or sets the default NavigationTransition for all frames across the app.
          */
-        static defaultNavigationTransition: NavigationTransition;
+        static defaultTransition: NavigationTransition;
 
         /**
          * Gets the AndroidFrame object that represents the Android-specific APIs for this Frame. Valid when running on Android OS.
@@ -161,9 +162,19 @@ declare module "ui/frame" {
         animated?: boolean;
 
         /**
-         * Specifies an optional navigation transition. If not specified, the default platform transition will be used.
+         * Specifies an optional navigation transition for all platforms. If not specified, the default platform transition will be used.
          */
-        navigationTransition?: NavigationTransition;
+        transition?: NavigationTransition;
+
+        /**
+         * Specifies an optional navigation transition for iOS. If not specified, the default platform transition will be used.
+         */
+        transitioniOS?: NavigationTransition;
+
+        /**
+         * Specifies an optional navigation transition for iOS. If not specified, the default platform transition will be used.
+         */
+        transitionAndroid?: NavigationTransition;
 
         /**
          * True to record the navigation in the backstack, false otherwise. 
@@ -182,10 +193,28 @@ declare module "ui/frame" {
      */
     export interface NavigationTransition {
         /**
-         * Either a string specifying one of the built-in transitions or an user-defined instance of the "ui/transition".Transition class.
+         * Can be one of the built-in transitions:
+         * - curl (same as curlUp) (iOS only)
+         * - curlUp (iOS only)
+         * - curlDown (iOS only)
+         * - explode (Android Lollipop an up only)
+         * - fade
+         * - flip (same as flipRight)
+         * - flipRight
+         * - flipLeft
+         * - slide (same as slideLeft)
+         * - slideLeft
+         * - slideRight
+         * - slideTop
+         * - slideBottom
          */
-        transition: any;
+        name?: string;
         
+        /**
+         * An user-defined instance of the "ui/transition".Transition class.
+         */
+        instance?: transition.Transition;
+
         /**
          * The length of the transition in milliseconds. If you do not specify this, the default platform transition duration will be used.
          */

@@ -687,6 +687,42 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
         TKUnit.assertTrue(rows[0].isStar, "First row should be *");
         TKUnit.assertTrue(rows[1].isAbsolute, "Second row should be Absolute");
     }
+
+    public test_columns_widths() {
+        this.testView.width = layoutHelper.dp(400);
+        this.testView.height = layoutHelper.dp(600);
+
+        let grid = new GridLayout();
+        this.testView.addChild(grid);
+        grid.horizontalAlignment = enums.HorizontalAlignment.left;
+        grid.verticalAlignment = enums.VerticalAlignment.top;
+        
+        grid.addColumn(new ItemSpec(1, GridUnitType.star));
+        grid.addColumn(new ItemSpec(layoutHelper.dp(100), GridUnitType.pixel));
+        grid.addColumn(new ItemSpec(2, GridUnitType.star));
+        
+        grid.addRow(new ItemSpec(1, GridUnitType.star));
+        grid.addRow(new ItemSpec(layoutHelper.dp(100), GridUnitType.pixel));
+        grid.addRow(new ItemSpec(2, GridUnitType.star));
+
+        let btn = new Button();
+        btn.width = layoutHelper.dp(300);
+        btn.height = layoutHelper.dp(500);
+        grid.addChild(btn);
+        GridLayout.setColumnSpan(btn, 3);
+        GridLayout.setRowSpan(btn, 3);
+        this.waitUntilTestElementLayoutIsValid();
+
+        var cols = grid.getColumns();
+        TKUnit.assertAreClose(cols[0].actualLength, layoutHelper.dp(67), DELTA, "Column[0] actual length should be 67");
+        TKUnit.assertAreClose(cols[1].actualLength, layoutHelper.dp(100), DELTA, "Column[1] actual length should be 100");
+        TKUnit.assertAreClose(cols[2].actualLength, layoutHelper.dp(133), DELTA, "Column[2] actual length should be 133");
+
+        var rows = grid.getRows();
+        TKUnit.assertAreClose(rows[0].actualLength, layoutHelper.dp(133), DELTA, "Row[0] actual length should be 133");
+        TKUnit.assertAreClose(rows[1].actualLength, layoutHelper.dp(100), DELTA, "Row[1] actual length should be 100");
+        TKUnit.assertAreClose(rows[2].actualLength, layoutHelper.dp(267), DELTA, "Row[2] actual length should be 267");
+    }
 }
 
 export function createTestCase(): GridLayoutTest {
