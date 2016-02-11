@@ -228,18 +228,23 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             completed = args.index === (listView.items.length - 1);
         });
 
+        // iOS7 needs to know the size of the cell before it is generated so we first measure them using fake cell
+        // then we generate the real cells. This cause itemLoading to be called twice per index.
+        let expected = (platform.device.os === platform.platformNames.ios && utils.ios.MajorVersion === 7) ? 2 : 1;
         TKUnit.waitUntilReady(() => { return completed; }, ASYNC);
-        TKUnit.assertEqual(indexes[0], 1, "itemLoading called more than once");
-        TKUnit.assertEqual(indexes[1], 1, "itemLoading called more than once");
-        TKUnit.assertEqual(indexes[2], 1, "itemLoading called more than once");
+        TKUnit.assertEqual(indexes[0], expected, "itemLoading called more than once");
+        TKUnit.assertEqual(indexes[1], expected, "itemLoading called more than once");
+        TKUnit.assertEqual(indexes[2], expected, "itemLoading called more than once");
 
         completed = false;
         listView.refresh();
 
+        // again calling refresh will generate itemLoading twice per item.
+        expected += expected;
         TKUnit.waitUntilReady(() => { return completed; }, ASYNC);
-        TKUnit.assertEqual(indexes[0], 2, "itemLoading not called for index 0");
-        TKUnit.assertEqual(indexes[1], 2, "itemLoading not called for index 1");
-        TKUnit.assertEqual(indexes[2], 2, "itemLoading not called for index 2");
+        TKUnit.assertEqual(indexes[0], expected, "itemLoading not called for index 0");
+        TKUnit.assertEqual(indexes[1], expected, "itemLoading not called for index 1");
+        TKUnit.assertEqual(indexes[2], expected, "itemLoading not called for index 2");
     }
 
     public test_set_itmes_to_null_clears_native_items() {
