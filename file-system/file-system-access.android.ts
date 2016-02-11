@@ -75,16 +75,12 @@ export class FileSystemAccess {
 
     public fileExists(path: string): boolean {
         var file = new java.io.File(path);
-        return file.exists();
+        return file.exists() && !file.isDirectory();
     }
 
     public folderExists(path: string): boolean {
         var file = new java.io.File(path);
-        var exists = file.exists();
-        var dir = file.isDirectory();
-
-        // return file.exists() && file.getCanonicalFile().isDirectory();
-        return exists && dir;
+        return file.exists() && file.isDirectory();
     }
 
     public deleteFile(path: string, onError?: (error: any) => any) {
