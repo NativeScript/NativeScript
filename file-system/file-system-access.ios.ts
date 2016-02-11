@@ -148,7 +148,7 @@ export class FileSystemAccess {
 
     public fileExists(path: string): boolean {
         var fileManager = NSFileManager.defaultManager();
-        return fileManager.fileExistsAtPath(path);
+        return fileManager.fileExistsAtPath(path) && !this.folderExists(path);
     }
 
     public folderExists(path: string): boolean {
