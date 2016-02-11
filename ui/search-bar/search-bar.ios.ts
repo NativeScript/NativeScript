@@ -70,7 +70,6 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
     public static ObjCProtocols = [UISearchBarDelegate];
 
     private _owner: WeakRef<SearchBar>;
-    private _searchText: string;
 
     public static initWithOwner(owner: WeakRef<SearchBar>): UISearchBarDelegateImpl {
         let delegate = <UISearchBarDelegateImpl>UISearchBarDelegateImpl.new();
@@ -87,11 +86,9 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
         owner._onPropertyChangedFromNative(common.SearchBar.textProperty, searchText);
 
         // This code is needed since sometimes searchBarCancelButtonClicked is not called!
-        if (searchText === "" && this._searchText !== searchText) {
+        if (searchText === "") {
             owner._emit(common.SearchBar.clearEvent);
         }
-
-        this._searchText = searchText;
     }
 
     public searchBarCancelButtonClicked(searchBar: UISearchBar) {
