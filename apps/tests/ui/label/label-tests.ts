@@ -89,6 +89,40 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");
     }
 
+    public test_Set_Text_Native_Null() {
+        var testLabel = this.testView;
+        var expectedValue = "";
+
+        testLabel.text = null;
+        var actualNative;
+        if (testLabel.ios) {
+            actualNative = testLabel.ios.text;
+        }
+        else {
+            this.waitUntilTestElementIsLoaded();
+            actualNative = testLabel.android.getText();
+        }
+
+        TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");
+    }
+
+    public test_Set_Text_Native_Undefined() {
+        var testLabel = this.testView;
+        var expectedValue = "";
+
+        testLabel.text = undefined;
+        var actualNative;
+        if (testLabel.ios) {
+            actualNative = testLabel.ios.text;
+        }
+        else {
+            this.waitUntilTestElementIsLoaded();
+            actualNative = testLabel.android.getText();
+        }
+
+        TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");
+    }
+
     public test_Set_BackgroundColor_TNS() {
         var label = this.testView;
         var expectedValue = new colorModule.Color("Red");
