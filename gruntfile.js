@@ -580,18 +580,38 @@ module.exports = function(grunt) {
     grunt.registerTask("distribute-ts-apps-files", [
             "copy:readyTsAppFiles"
     ]);
-    grunt.registerTask("generate-tns-core-modules-dts", function() {
-        var dtsFiles = grunt.file.expand({cwd: localCfg.outModulesDir}, [
-            '**/*.d.ts',
-            '!tns-core-modules.d.ts'
-        ].concat(localCfg.defaultExcludes));
-        dtsFiles.sort();
-
+    function writeDtsFile(dtsFiles, outFile) {
         var dtsLines = dtsFiles.map(function(dtsFile) {
             return '/// <reference path="' + dtsFile + '" />';
         });
-        var combinedDtsPath = pathModule.join(localCfg.outModulesDir, 'tns-core-modules.d.ts');
+        var combinedDtsPath = pathModule.join(localCfg.outModulesDir, outFile);
         grunt.file.write(combinedDtsPath, dtsLines.join('\n'));
+    }
+    grunt.registerTask("generate-tns-core-modules-dts", function() {
+        var angularConflicts = ['module.d.ts']
+        var angularExcludes = angularConflicts.map(function(file) {
+            return '!' + file;
+        })
+        var nonES6Files = [
+            'es-collections.d.ts',
+            'es6-promise.d.ts',
+            'es6.d.ts',
+            'weakmap.d.ts',
+        ];
+        var es6Excludes = nonES6Files.map(function(file) {
+            return '!' + file;
+        })
+        var dtsFiles = grunt.file.expand({cwd: localCfg.outModulesDir}, [
+            '**/*.d.ts',
+            '!tns-core-modules.d.ts'
+        ].concat(localCfg.defaultExcludes).concat(es6Excludes).concat(angularExcludes));
+        dtsFiles.sort();
+
+        writeDtsFile(dtsFiles, 'tns-core-modules.base.d.ts');
+        var es6Files = angularConflicts.concat(['tns-core-modules.base.d.ts']);
+        writeDtsFile(es6Files, 'tns-core-modules.es6.d.ts');
+        var allFiles = angularConflicts.concat(nonES6Files).concat(['tns-core-modules.base.d.ts']);
+        writeDtsFile(allFiles, 'tns-core-modules.d.ts');
     });
     //aliasing pack-modules for backwards compatibility
     grunt.registerTask("pack-modules", [
