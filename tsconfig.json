@@ -455,6 +455,7 @@
         "location/location.android.ts",
         "location/location.d.ts",
         "location/location.ios.ts",
+        "module.d.ts",
         "node-tests/definitions/chai.d.ts",
         "node-tests/definitions/mocha.d.ts",
         "node-tests/test-angular-xml.ts",
