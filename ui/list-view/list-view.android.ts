@@ -151,17 +151,17 @@ export class ListView extends common.ListView {
         var length = keys.length;
         var view: viewModule.View;
         var key;
-
         for (i = 0; i < length; i++) {
             key = keys[i];
             view = this._realizedItems[key];
-
-            this.notify({
-                eventName: ITEMLOADING,
-                object: this,
-                index: view[REALIZED_INDEX],
-                view: view
-            });
+            if (view[REALIZED_INDEX] < this.items.length) {
+                this.notify({
+                    eventName: ITEMLOADING,
+                    object: this,
+                    index: view[REALIZED_INDEX],
+                    view: view
+                });
+            }
         }
     }
 }
