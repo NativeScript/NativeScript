@@ -230,7 +230,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollView_vertical_raised_scroll_event_after_loaded() {
-        this.waitUntilTestElementIsLoaded();
+        this.waitUntilTestElementLayoutIsValid();
 
         var scrollY: number;
         this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
@@ -245,7 +245,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
     public test_scrollView_horizontal_raised_scroll_event_after_loaded() {
         this.testView.orientation = enums.Orientation.horizontal;
-        this.waitUntilTestElementIsLoaded();
+        this.waitUntilTestElementLayoutIsValid();
 
         var scrollX: number;
         this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
