@@ -147,17 +147,21 @@ export class FileSystemAccess {
     }
 
     public fileExists(path: string): boolean {
-        var fileManager = NSFileManager.defaultManager();
-        return fileManager.fileExistsAtPath(path) && !this.folderExists(path);
+        var result = this.exists(path);
+        return result.exists && !result.isDirectory;
     }
 
     public folderExists(path: string): boolean {
+        var result = this.exists(path);
+        return result.exists && result.isDirectory;
+    }
+
+    private exists(path: string): { exists: boolean, isDirectory: boolean } {
         var fileManager = NSFileManager.defaultManager();
+        var isDirectory = new interop.Reference(interop.types.bool, false);
+        var exists = fileManager.fileExistsAtPathIsDirectory(path, isDirectory);
 
-        var outVal = new interop.Reference();
-        var exists = fileManager.fileExistsAtPathIsDirectory(path, outVal);
-
-        return exists && outVal.value > 0;
+        return { exists: exists, isDirectory: isDirectory.value };
     }
 
     public concatPath(left: string, right: string): string {
@@ -245,7 +249,7 @@ export class FileSystemAccess {
         }
     }
 
-    public read(path: string, onError?: (error: any) => any) : NSData {
+    public read(path: string, onError?: (error: any) => any): NSData {
         try {
             return NSData.dataWithContentsOfFile(path);
         }
