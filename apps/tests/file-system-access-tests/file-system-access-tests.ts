@@ -22,4 +22,15 @@ export var test_UTF8_BOM_is_not_returned = function () {
         TKUnit.assert(actualCharCode === expectedCharCode, "Actual character code: " + actualCharCode + "; Expected character code: " + expectedCharCode);
     }
 };
+
+export var test_file_exists_on_folder = function () {
+    var path = fs.path.join(__dirname, "folder");
+
+    if (!fs.Folder.exists(path)) {
+        TKUnit.assert(false, `Could not read path ${path}`);
+        return;
+    }
+
+    TKUnit.assertFalse(fs.File.exists(path), "File.exists() returned true for folder!");
+};
  
