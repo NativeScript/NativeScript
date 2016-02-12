@@ -99,8 +99,7 @@ interface Console {
 }
 
 declare var console: Console;
-declare var global;
-declare var require;
+declare var require: NativeScriptRequire;
 
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
@@ -146,10 +145,6 @@ declare class WeakRef<T> {
     clear(): void;
 }
 
-declare module module {
-    var id: string;
-    var filename: string;
-    var exports: any;
-}
+declare var module: NativeScriptModule;
 // Same as module.exports
 declare var exports: any;
