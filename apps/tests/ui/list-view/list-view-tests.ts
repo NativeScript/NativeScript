@@ -181,6 +181,53 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         }
     }
 
+    public test_separator_inset_ios() {
+        if (platform.device.os === platform.platformNames.ios) {
+            let listView = this.testView;
+            var tableView = <UITableView>listView.ios;
+            var leftInset = 18;
+            var rightInset = 25;
+            listView.ios.settings.separatorInsetLeft = leftInset;
+            listView.ios.settings.separatorInsetRight = rightInset;
+
+            let colors = ["red", "green", "blue"];
+            listView.items = colors;
+
+            TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
+
+            for (var i = 0; i < colors.length; i++) {
+                var cellIndexPath = NSIndexPath.indexPathForItemInSection(i, 0);
+                var cell = tableView.cellForRowAtIndexPath(cellIndexPath);
+                TKUnit.assertEqual(cell.separatorInset.left, leftInset, "Left inset is not set to the cell");
+                TKUnit.assertEqual(cell.separatorInset.right, rightInset, "Right inset is not set to the cell")
+            }
+
+            TKUnit.assertEqual(tableView.separatorInset.left, leftInset, "Left inset is not set to the ListView")
+            TKUnit.assertEqual(tableView.separatorInset.right, rightInset, "Right inset is not set to the ListView");
+        }
+    }
+
+    public test_change_separator_inset_dynamically_ios() {
+        if (platform.device.os === platform.platformNames.ios) {
+            let listView = this.testView;
+            var tableView = <UITableView>listView.ios;
+
+            var setInsetAndAssert = (leftInset: number, rightInset: number) => {
+                listView.ios.settings.separatorInsetLeft = leftInset;
+                listView.ios.settings.separatorInsetRight = rightInset;
+
+                let colors = ["red", "green", "blue"];
+                TKUnit.waitUntilReady(() => { return listView.isLoaded; }, ASYNC);
+
+                TKUnit.assertEqual(tableView.separatorInset.left, leftInset, "Left inset is not set to the ListView")
+                TKUnit.assertEqual(tableView.separatorInset.right, rightInset, "Right inset is not set to the ListView");
+            }
+
+            setInsetAndAssert(11, 21);
+            setInsetAndAssert(13, 9);
+        }
+    }
+
     public test_set_items_to_array_creates_native_views() {
         var listView = this.testView;
         listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);

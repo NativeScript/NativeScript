@@ -18,6 +18,21 @@ declare module "ui/list-view" {
     }
 
     /**
+     * Represents iOS specific settings to configure a ListView instance.
+     */
+    export interface IOSListViewSettings {
+        /**
+         * Number value used to specify the left separator inset.
+         */
+        separatorInsetLeft: number;
+
+        /**
+         * Number value used to specify the right separator inset.
+         */
+        separatorInsetRight: number;
+    }
+
+    /**
      * Represents a view that shows items in a vertically scrolling list.
      */
     export class ListView extends view.View {

@@ -3,6 +3,7 @@
 declare function CGRectMake(x: number, y: number, width: number, height: number): CGRect;
 declare function CGPointMake(x: number, y: number): CGPoint;
 declare function CGSizeMake(width: number, height: number): CGSize;
+declare function UIEdgeInsetsMake(top: number, left: number, bottom: number, right: number): UIEdgeInsets;
 
 declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLocking {
 	persistentStoreCoordinator: any;

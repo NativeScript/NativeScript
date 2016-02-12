@@ -102,6 +102,16 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         if (owner && (indexPath.row === owner.items.length - 1)) {
             owner.notify(<observable.EventData>{ eventName: LOADMOREITEMS, object: owner });
         }
+
+        if (cell.separatorInset) {
+            cell.separatorInset = UIEdgeInsetsMake(cell.separatorInset.top, owner.ios.settings.separatorInsetLeft, cell.separatorInset.bottom, owner.ios.settings.separatorInsetRight);
+        }
+
+        if (cell.preservesSuperviewLayoutMargins) {
+            cell.preservesSuperviewLayoutMargins = false;
+        }
+
+        cell.layoutMargins = UIEdgeInsetsZero;
     }
 
     public tableViewWillSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
@@ -115,7 +125,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 
     public tableViewDidSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
         tableView.deselectRowAtIndexPathAnimated(indexPath, true);
-   
+
         return indexPath;
     }
 
@@ -169,7 +179,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
-        return indexPath; 
+        return indexPath;
     }
 
     public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
@@ -198,20 +208,56 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
 // register the setNativeValue callbacks
 (<proxy.PropertyMetadata>common.ListView.separatorColorProperty.metadata).onSetNativeValue = onSeparatorColorPropertyChanged;
 
+class IOSListViewSettings extends observable.Observable implements definition.IOSListViewSettings {
+    private _separatorInsetLeft: number;
+    private _separatorInsetRight: number
+
+    constructor(uiTable: UITableView) {
+        super();
+
+        this._separatorInsetLeft = uiTable.separatorInset.left;
+        this._separatorInsetRight = uiTable.separatorInset.right;
+    }
+
+    public get separatorInsetLeft(): number {
+        return this._separatorInsetLeft;
+    }
+
+    public set separatorInsetLeft(value: number) {
+        if (this._separatorInsetLeft !== value) {
+            this._separatorInsetLeft = value;
+            this.notifyPropertyChange("separatorInsetLeft", value);
+        }
+    }
+
+    public get separatorInsetRight(): number {
+        return this._separatorInsetRight;
+    }
+
+    public set separatorInsetRight(value: number) {
+        if (this._separatorInsetRight !== value) {
+            this._separatorInsetRight = value;
+            this.notifyPropertyChange("separatorInsetRight", value);
+        }
+    }
+}
+
 export class ListView extends common.ListView {
-    private _ios: UITableView;
+    private _ios: any;
     private _dataSource;
     private _delegate;
     private _heights: Array<number>;
     private _preparingCell: boolean = false;
     private _isDataDirty: boolean = false;
     private _map: Map<ListViewCell, view.View>;
+
     widthMeasureSpec: number = 0;
 
     constructor() {
         super();
 
         this._ios = new UITableView();
+
         this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), CELLIDENTIFIER);
         this._ios.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
         this._ios.estimatedRowHeight = DEFAULT_HEIGHT;
@@ -220,6 +266,11 @@ export class ListView extends common.ListView {
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._heights = new Array<number>();
         this._map = new Map<ListViewCell, view.View>();
+
+        this._ios.settings = new IOSListViewSettings(this._ios);
+        this._ios.settings.on(observable.Observable.propertyChangeEvent, (args: observable.EventData) => {
+            this.refresh();
+        });
     }
 
     public onLoaded() {
@@ -227,6 +278,7 @@ export class ListView extends common.ListView {
         if (this._isDataDirty) {
             this.refresh();
         }
+
         this._ios.delegate = this._delegate;
     }
 
@@ -235,7 +287,7 @@ export class ListView extends common.ListView {
         super.onUnloaded();
     }
 
-    get ios(): UITableView {
+    get ios(): UITableView & { settings: IOSListViewSettings } {
         return this._ios;
     }
 
@@ -248,6 +300,10 @@ export class ListView extends common.ListView {
 
     public refresh() {
         if (this.isLoaded) {
+            if (this._ios.separatorInset) {
+                this._ios.separatorInset = UIEdgeInsetsMake(this._ios.separatorInset.top, this._ios.settings.separatorInsetLeft, this._ios.separatorInset.bottom, this._ios.settings.separatorInsetRight);
+            }
+
             this._ios.reloadData();
             this.requestLayout();
             this._isDataDirty = false;
