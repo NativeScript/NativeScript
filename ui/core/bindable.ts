@@ -9,6 +9,7 @@ import viewModule = require("ui/core/view");
 import * as applicationModule from "application";
 import * as polymerExpressionsModule from "js-libs/polymer-expressions";
 import * as specialPropertiesModule from "ui/builder/special-properties";
+import * as utils from "utils/utils";
 
 //late import
 var application: typeof applicationModule;
@@ -332,8 +333,7 @@ export class Binding {
         // text="{{ sourceProperty = $parents['ListView'].test, expression = $parents['ListView'].test + 2}}"
         // update expression will be '$newPropertyValue + 2'
         // then on expression execution the new value will be taken and target property will be updated with the value of the expression.
-        var escapeRegex = /[-\/\\^$*+?.()|[\]{}]/g;
-        var escapedSourceProperty = this.options.sourceProperty.replace(escapeRegex, '\\$&');
+        var escapedSourceProperty = utils.escapeRegexSymbols(this.options.sourceProperty);
         var expRegex = new RegExp(escapedSourceProperty, 'g');
         var resultExp = this.options.expression.replace(expRegex, bc.newPropertyValueKey);
         return resultExp;

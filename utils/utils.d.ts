@@ -229,4 +229,10 @@
      * @param url The url.
      */
     export function openUrl(url: string): boolean
+    
+    /**
+     * Escapes special regex symbols (., *, ^, $ and so on) in string in order to create a valid regex from it.
+     * @param source The original value. 
+     */
+    export function escapeRegexSymbols(source: string): string
 }

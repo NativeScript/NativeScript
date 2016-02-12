@@ -7,6 +7,7 @@
         constructor(expression: string, declarations: cssParser.Declaration[]);
 
         expression: string;
+        attrExpression: string;
 
         declarations(): Array<{ property: string; value: any }>;
 
