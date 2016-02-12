@@ -6,7 +6,7 @@ interface NativeScriptRequire {
     (id: string): any;
 }
 
-declare interface NativeScriptModule {
+interface NativeScriptModule {
     id: string;
     filename: string;
     exports: any;
