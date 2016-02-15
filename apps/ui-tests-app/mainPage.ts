@@ -36,6 +36,7 @@ examples.set("actColor", "action-bar/color");
 examples.set("actBG", "action-bar/background");
 examples.set("actStyle", "action-bar/all");
 examples.set("actIcons", "action-bar/system-icons");
+examples.set("actView", "action-bar/action-view");
 
 examples.set("basics", "bindings/basics");
 examples.set("xmlbasics", "bindings/xmlbasics");

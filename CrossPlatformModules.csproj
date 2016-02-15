@@ -222,6 +222,9 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\tests\pages\tab-view.xml" />
+    <Content Include="apps\ui-tests-app\action-bar\action-view.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\ui-tests-app\action-bar\system-icons.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -255,6 +258,9 @@
       <SubType>Designer</SubType>
     </Content>
     <TypeScriptCompile Include="apps\ui-tests-app\animations\background.ts" />
+    <TypeScriptCompile Include="apps\ui-tests-app\action-bar\action-view.ts">
+      <DependentUpon>action-view.xml</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\ui-tests-app\pages\touch-event.ts" />
     <Content Include="apps\ui-tests-app\pages\touch-event.xml">
       <SubType>Designer</SubType>

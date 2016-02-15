@@ -118,6 +118,27 @@ import actionBarModule = require("ui/action-bar");
 //The value should be a string such as 'ic_menu_search' if you want to display the built-in Android Menu Search icon for example.
 //For a full list of Android drawable names, please visit http://androiddrawables.com
 //
+// ## Displaying Custom View in Action Items
+//```XML
+// <Page>
+//   <Page.actionBar>
+//     <ActionBar>
+//       <ActionBar.actionItems>
+//			<ActionItem>
+//			  <ActionItem.actionView>
+//				  <StackLayout orientation="horizontal">
+//				    <Label text="Green" color="green"/>
+//				    <Label text="Red" color="red"/>
+//				  </StackLayout>
+//			  </ActionItem.actionView>
+//			</ActionItem>
+//       </ActionBar.actionItems>
+//     </ActionBar>
+//   </Page.actionBar>
+//   ...
+// </Page>
+//```
+//
 // ## Setting Navigation Button
 //```XML
 // <Page>
@@ -195,6 +216,37 @@ export function test_actionItem_page_property_inXML() {
     var actionItem = p.actionBar.actionItems.getItemAt(0);
 
     TKUnit.assertEqual(actionItem.page, p, "actionItem.page");
+};
+
+export function test_actionItem_actionView_inXML() {
+    var p = <PageModule.Page>builder.parse(
+        "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
+        "<Label/>" +
+        "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
+
+    var label = <LabelModule.Label>p.actionBar.actionItems.getItemAt(0).actionView;
+    TKUnit.assert(label instanceof LabelModule.Label, "ActionItem.actionView not loaded correctly");
+};
+
+export function test_actionItem_actionView_inherit_bindingContext_inXML() {
+    var p = <PageModule.Page>builder.parse(
+        "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
+        "<Label text=\"{{ myProp }} \" />" +
+        "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
+    p.bindingContext = { myProp: "success" };
+
+    var label = <LabelModule.Label>p.actionBar.actionItems.getItemAt(0).actionView;
+    TKUnit.assert(label instanceof LabelModule.Label, "ActionItem.actionView not loaded correctly");
+    TKUnit.assertEqual(label.text, "success", "ActionItem.actionView");
+};
+
+export function test_ActionBar_is_not_empty_when_actionItem_actionView_is_set() {
+    var p = <PageModule.Page>builder.parse(
+        "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
+        "<Label text=\"test\" />" +
+        "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
+
+    TKUnit.assertFalse(p.actionBar._isEmpty(), "ActionItem.actionView is set but ActionBar reports empty");
 };
 
 export function test_navigationButton_inherit_bindingContext_inXML() {

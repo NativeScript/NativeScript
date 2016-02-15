@@ -343,6 +343,7 @@
         "apps/ui-tests-app/action-bar/clean.ts",
         "apps/ui-tests-app/action-bar/color.ts",
         "apps/ui-tests-app/action-bar/system-icons.ts",
+        "apps/ui-tests-app/action-bar/action-view.ts",
         "apps/ui-tests-app/animations/background.ts",
         "apps/ui-tests-app/app.ts",
         "apps/ui-tests-app/bindings/basics.ts",
