@@ -29,6 +29,11 @@ export function parseJSON(source: string): any {
     return JSON.parse(src);
 }
 
+export function escapeRegexSymbols(source: string): string {
+    let escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
+    return source.replace(escapeRegex, "\\$&");
+}
+
 export module layout {
 
     var MODE_SHIFT = 30;
