@@ -103,6 +103,7 @@ declare var require: NativeScriptRequire;
 
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
+declare function Experimental(target: Object, key?: string | symbol, value?: any): void;
 
 declare function Log(data: any): void;
 declare function log(data: any): void;
