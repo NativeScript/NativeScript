@@ -22,8 +22,8 @@ Our [Getting Started Guide](http://docs.nativescript.org/start/getting-started) 
 
 - [NativeScript’s home page](http://nativescript.org)
 - [NativeScript’s documentation](http://docs.nativescript.org/)
-- [@NativeScript on Twitter](http://twitter.com/NativeScript) 
-- [NativeScript’s blog](http://nativescript.org/blog)
+- [NativeScript’s blog](http://www.nativescript.org/blog)
+- [@NativeScript on Twitter](http://twitter.com/NativeScript)
 - [NativeScript’s community forum](https://groups.google.com/forum/#!forum/nativescript)
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
 
