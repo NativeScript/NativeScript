@@ -91,6 +91,11 @@ if (!isRunningOnEmulator()) {
     allTests["LOCATION"] = require("./location-tests");
 }
 
+// Skip transitions on android emulators with API 23
+if (!(platform.device.os === platform.platformNames.android && parseInt(platform.device.sdkVersion) === 23 && isRunningOnEmulator())) {
+    allTests["TANSITIONS"] = require("./navigation/transition-tests");
+}
+
 // Navigation tests should always be last.
 allTests["NAVIGATION"] = require("./navigation/navigation-tests");
 

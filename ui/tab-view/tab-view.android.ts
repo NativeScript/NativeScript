@@ -173,7 +173,7 @@ function ensurePageChangedListenerClass() {
 function selectedColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var tabLayout = (<TabView>data.object)._getAndroidTabView();
     if (tabLayout && data.newValue instanceof color.Color) {
-        tabLayout.setSelectedIndicatorColors([data.newValue._nativeView]);
+        tabLayout.setSelectedIndicatorColors([data.newValue.android]);
     }
 }
 (<proxy.PropertyMetadata>common.TabView.selectedColorProperty.metadata).onSetNativeValue = selectedColorPropertyChanged;
@@ -181,7 +181,7 @@ function selectedColorPropertyChanged(data: dependencyObservable.PropertyChangeD
 function tabsBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var tabLayout = (<TabView>data.object)._getAndroidTabView();
     if (tabLayout && data.newValue instanceof color.Color) {
-        tabLayout.setBackgroundColor(data.newValue._nativeView);
+        tabLayout.setBackgroundColor(data.newValue.android);
     }
 }
 (<proxy.PropertyMetadata>common.TabView.tabsBackgroundColorProperty.metadata).onSetNativeValue = tabsBackgroundColorPropertyChanged;
