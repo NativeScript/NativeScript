@@ -84,15 +84,13 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\animations\opacity.ts" />
     <TypeScriptCompile Include="apps\custom-root-view\app.ts" />
-    <TypeScriptCompile Include="apps\custom-root-view\list-view.ts">
-      <DependentUpon>list-view.xml</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\perf-tests\NavigationTest\list-picker-page.ts" />
     <TypeScriptCompile Include="apps\perf-tests\custom-transition.android.ts" />
     <TypeScriptCompile Include="apps\perf-tests\custom-transition.ios.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\common-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\navigation\custom-transition.android.ts" />
     <TypeScriptCompile Include="apps\tests\navigation\custom-transition.ios.ts" />
+    <TypeScriptCompile Include="apps\tests\navigation\transition-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.ts" />
     <TypeScriptCompile Include="apps\tests\ui\page\modal-page.ts">
       <DependentUpon>modal-page.xml</DependentUpon>

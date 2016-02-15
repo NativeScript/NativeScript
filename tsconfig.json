@@ -186,6 +186,7 @@
         "apps/tests/navigation/custom-transition.android.ts",
         "apps/tests/navigation/custom-transition.ios.ts",
         "apps/tests/navigation/navigation-tests.ts",
+        "apps/tests/navigation/transition-tests.ts",
         "apps/tests/observable-array-tests.ts",
         "apps/tests/observable-tests.ts",
         "apps/tests/pages/app.ts",
