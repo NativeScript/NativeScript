@@ -5,8 +5,8 @@ export function onTap(args) {
     var navigationEntry = {
         moduleName: "transitions/page0",
         animated: true,
-        navigationTransition: {
-            transition: args.object.tag,
+        transition: {
+            name: args.object.tag,
             duration: 380,
             curve: "easeIn"
         }
