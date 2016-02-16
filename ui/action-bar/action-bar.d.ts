@@ -117,6 +117,11 @@ declare module "ui/action-bar" {
          * Gets or sets the icon of the action item.
          */
         icon: string;
+        
+        /**
+         * Gets or sets the custom action view of the action item.
+         */
+        actionView: view.View;
 
         /**
          * Gets or sets the visibility of the action item.
