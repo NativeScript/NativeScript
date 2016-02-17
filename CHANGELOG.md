@@ -2,6 +2,10 @@ Cross Platform Modules Changelog
 ==============================
 ##1.6.0 (2016, February 17)
 
+### Breaking changes
+
+- Up to v 1.6.0 the background drawable attribute of the buttons in android was always replaced. To keep the consistency with the default platform-specific background the attribute is not changed now and the button is only styled.
+
 ### Fixed
 
 - [(#1534)](https://github.com/NativeScript/NativeScript/issues/1534) FileSystemAccess.fileExists returns true for directory as well
