@@ -1,22 +1,29 @@
 ﻿import viewModule = require("ui/core/view");
 import observable = require("ui/core/dependency-observable");
 import styleProperty = require("ui/styling/style-property");
+import cssSelector = require("ui/styling/css-selector");
 import * as visualStateConstants from "ui/styling/visual-state-constants";
 
 export class VisualState {
-    private _setters: {};
+    private _setters: {}; // use css selector instead
+    private _animations: cssSelector.CssVisualStateSelector[];
 
     constructor() {
         this._setters = {};
+        this._animations = [];
     }
 
     get setters(): {} {
         return this._setters;
     }
+
+    get animations(): cssSelector.CssVisualStateSelector[] {
+        return this._animations;
+    }
 }
 
 /**
- * 
+ *
  */
 export function goToState(view: viewModule.View, state: string): string {
     var root = <any>view.page;
@@ -75,6 +82,12 @@ function resetProperties(view: viewModule.View, oldState: VisualState, newState:
             view.style._resetValue(property, observable.ValueSource.VisualState);
         }
     }
+
+    for (var animation of oldState.animations) {
+        animation.eachSetter((property, value) => {
+            view.style._resetValue(property, observable.ValueSource.Local);
+        });
+    }
 }
 
 function applyProperties(view: viewModule.View, state: VisualState) {
@@ -82,12 +95,16 @@ function applyProperties(view: viewModule.View, state: VisualState) {
         return;
     }
 
-    var property: styleProperty.Property;
+    let property: styleProperty.Property;
 
-    for (var name in state.setters) {
+    for (let name in state.setters) {
         property = styleProperty.getPropertyByName(name);
         if (property) {
             view.style._setValue(property, state.setters[name], observable.ValueSource.VisualState);
         }
+    }
+
+    for (let animation of state.animations) {
+        animation.apply(view);;
     }
 }

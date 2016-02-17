@@ -37,6 +37,14 @@ export class ControlStateChangeListener implements definition.ControlStateChange
         this._callback = callback;
     }
 
+    public start() {
+        this._control.addObserverForKeyPathOptionsContext(this._observer, "highlighted", NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
+    }
+
+    public stop() {
+        this._control.removeObserverForKeyPath(this._observer, "highlighted");
+    }
+
     private _onEnabledChanged() {
         this._updateState();
     }
@@ -52,11 +60,8 @@ export class ControlStateChangeListener implements definition.ControlStateChange
     private _updateState() {
         var state = visualStateConstants.Normal;
         if (this._control.highlighted) {
-            state = visualStateConstants.Pressed;
-        } else if (this._control.highlighted) {
-            // TODO:
+            state = "highlighted";
         }
-
         this._callback(state);
     }
 }

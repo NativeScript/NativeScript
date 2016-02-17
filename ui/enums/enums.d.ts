@@ -523,7 +523,7 @@
     /**
      * Represents an animation curve type.
      */
-    module AnimationCurve {
+    export module AnimationCurve {
 
         /**
          * An ease-in curve causes the animation to begin slowly, and then speed up as it progresses.

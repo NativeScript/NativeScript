@@ -47,10 +47,20 @@ export class Button extends common.Button {
         });
     }
 
+    public onLoaded() {
+        super.onLoaded();
+        this._stateChangedHandler.start();
+    }
+
+    public onUnloaded() {
+        super.onUnloaded();
+        this._stateChangedHandler.stop();
+    }
+
     get ios(): UIButton {
         return this._ios;
     }
-} 
+}
 
 export class ButtonStyler implements style.Styler {
     // color

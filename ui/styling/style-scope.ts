@@ -222,9 +222,15 @@ export class StyleScope {
                 allStates[stateSelector.state] = visualState;
             }
 
-            stateSelector.eachSetter((property, value) => {
-                visualState.setters[property.name] = value;
-            });
+            // add all stateSelectors instead of adding setters
+            if (stateSelector.isAnimated) {
+                visualState.animations.push(stateSelector);
+            }
+            else {
+                stateSelector.eachSetter((property, value) => {
+                    visualState.setters[property.name] = value;
+                });
+            }
         }
     }
 

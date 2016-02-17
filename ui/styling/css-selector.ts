@@ -1,6 +1,7 @@
 ﻿import view = require("ui/core/view");
 import observable = require("ui/core/dependency-observable");
 import cssParser = require("css");
+import converters = require("./converters");
 import * as trace from "trace";
 import * as styleProperty from "ui/styling/style-property";
 import * as types from "utils/types";
@@ -15,8 +16,12 @@ export class CssSelector {
     private _expression: string;
     private _declarations: cssParser.Declaration[];
     private _attrExpression: string;
+    protected _animationInfo: Object;
 
     constructor(expression: string, declarations: cssParser.Declaration[]) {
+
+        this.createAnimations(declarations);
+
         if (expression) {
             let leftSquareBracketIndex = expression.indexOf(LSBRACKET);
             if (leftSquareBracketIndex > 0) {
@@ -51,19 +56,47 @@ export class CssSelector {
         throw "Specificity property is abstract";
     }
 
+    get isAnimated(): boolean {
+        return this._animationInfo !== undefined;
+    }
+
+    protected get valueSourceModifier(): number {
+        return observable.ValueSource.Css;
+    }
+
     public matches(view: view.View): boolean {
         return false;
     }
 
     public apply(view: view.View) {
-        this.eachSetter((property, value) => {
-            try {
-                view.style._setValue(property, value, observable.ValueSource.Css);
+        if (this._animationInfo !== undefined) {
+            var animation = {};
+            for (var prop in this._animationInfo) {
+                animation[prop] = this._animationInfo[prop];
             }
-            catch (ex) {
-                trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+            for (let i = 0; i < this._declarations.length; i++) {
+                let declaration = this._declarations[i];
+                let name = declaration.property;
+                if (this.propertyIsAnimatable(name)) {
+                    let property = styleProperty.getPropertyByCssName(name);
+                    if (property) {
+                        animation[property.name] = declaration.value;
+                    }
+                }
             }
-        });
+            view.animate(animation);
+        }
+        else {
+            var modifier = this.valueSourceModifier;
+            this.eachSetter((property, value) => {
+                try {
+                    view.style._setValue(property, value, modifier);
+                }
+                catch (ex) {
+                    trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+                }
+            });
+        }
     }
 
     public eachSetter(callback: (property, resolvedValue: any) => void) {
@@ -74,7 +107,7 @@ export class CssSelector {
 
             let property = styleProperty.getPropertyByCssName(name);
 
-            if (property) {                
+            if (property) {
                 // The property.valueConverter is now used to convert the value later on in DependencyObservable._setValueInternal.
                 callback(property, resolvedValue);
             }
@@ -88,6 +121,38 @@ export class CssSelector {
                 }
             }
         }
+    }
+
+    private createAnimations(declarations: cssParser.Declaration[]) {
+        for (var declaration of declarations) {
+            if (declaration.property.indexOf("animation") != -1) {
+                if (this._animationInfo === undefined) {
+                    this._animationInfo = {};
+                }
+                switch (declaration.property) {
+                    case "animation-duration":
+                        this._animationInfo["duration"] = converters.timeConverter(declaration.value);
+                        break;
+                    case "animation-delay":
+                        this._animationInfo["delay"] = converters.timeConverter(declaration.value);
+                        break;
+                    case "animation-timing-function":
+                        this._animationInfo["curve"] = converters.animationTimingFunctionConverter(declaration.value);
+                        break;
+                    case "animation-iteration-count":
+                        this._animationInfo["iterations"] = converters.numberConverter(declaration.value);
+                        break;
+                    case "animation":
+                        this._animationInfo = converters.animationConverter(declaration.value);
+                        break;
+                }
+            }
+        }
+    }
+
+    private propertyIsAnimatable(propertyName: string) {
+        return propertyName === "background-color" || 
+               propertyName === "opacity";
     }
 }
 
@@ -311,6 +376,10 @@ export class CssVisualStateSelector extends CssSelector {
 
     get state(): string {
         return this._state;
+    }
+
+    protected get valueSourceModifier(): number {
+        return observable.ValueSource.VisualState;
     }
 
     constructor(expression: string, declarations: cssParser.Declaration[]) {

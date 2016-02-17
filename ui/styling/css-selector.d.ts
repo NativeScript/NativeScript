@@ -13,11 +13,14 @@
 
         specificity: number;
 
+        isAnimated: boolean;
+        
         matches(view: view.View): boolean;
 
         apply(view: view.View);
 
         eachSetter(callback: (property: styleProperty.Property, resolvedValue: any) => void);
+
     }
 
     class CssTypeSelector extends CssSelector {

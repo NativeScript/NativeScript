@@ -89,6 +89,7 @@ declare module "ui/styling/style" {
     export function registerNoStylingClass(className);
     export function getHandler(property: Property, view: View): StylePropertyChangedHandler;
     // Property registration
+
     export var colorProperty: styleProperty.Property;
     export var backgroundImageProperty: styleProperty.Property;
     export var backgroundColorProperty: styleProperty.Property;

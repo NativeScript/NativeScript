@@ -172,7 +172,7 @@ function onLayoutParamsChanged(data: PropertyChangeData) {
     let marginTopValue = convertToPercentHelper(style.marginTop);
     let marginRightValue = convertToPercentHelper(style.marginRight);
     let marginBottomValue = convertToPercentHelper(style.marginBottom);
-    
+
     // Negative marginPercent means no marginPercent so native layout won't override margin with this % value.
     var layoutParams: definition.CommonLayoutParams =
         {
@@ -814,7 +814,7 @@ export class Style extends DependencyObservable implements styling.Style {
     private _applyProperty(property: Property, newValue: any) {
         this._applyStyleProperty(property, newValue);
 
-        // The effective value of an inheritable property has changed 
+        // The effective value of an inheritable property has changed
         // propagate the change down to the descendants to update their inherited properties.
         if (this._view._childrenCount === 0 || !property.metadata.inheritable) {
             return;
