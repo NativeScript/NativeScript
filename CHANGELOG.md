@@ -1,5 +1,107 @@
 Cross Platform Modules Changelog
 ==============================
+##1.6.0 (2016, February 17)
+
+### Fixed
+
+- [(#1534)](https://github.com/NativeScript/NativeScript/issues/1534) FileSystemAccess.fileExists returns true for directory as well
+
+- [(#1524)](https://github.com/NativeScript/NativeScript/issues/1524) Label text="{{ anyField }}" should not print out "null" if the field is "null"
+
+- [(#1520)](https://github.com/NativeScript/NativeScript/issues/1520) When using remote background images, positioning css properties ignored
+
+- [(#1467)](https://github.com/NativeScript/NativeScript/pull/1467) Detect JSON response in XHR and auto-parse the response.
+
+- [(#1463)](https://github.com/NativeScript/NativeScript/issues/1463) fetch/XMLHttpRequest re-URL-encodes first % character in query string
+
+- [(#1443)](https://github.com/NativeScript/NativeScript/issues/1443) Impossible to rotate 360degrees on iOS
+
+- [(#1426)](https://github.com/NativeScript/NativeScript/issues/1426) App crash when TabView has more than 5 items and different font-style
+
+- [(#1415)](https://github.com/NativeScript/NativeScript/issues/1415) TabView crashes the app when Don't keep activities option is turned on
+
+- [(#1405)](https://github.com/NativeScript/NativeScript/issues/1405) Complete app crash when tapping around a Textfield at times
+
+- [(#1396)](https://github.com/NativeScript/NativeScript/pull/1396) Fixed bug in GridLayout
+
+- [(#1381)](https://github.com/NativeScript/NativeScript/pull/1381) Fix originX/Y not applied when set before layout in android
+
+- [(#1371)](https://github.com/NativeScript/NativeScript/issues/1371) listview android bug and fix
+
+- [(#1359)](https://github.com/NativeScript/NativeScript/issues/1359) Getting error when restore/opening minimized app first time after installation.
+
+- [(#1349)](https://github.com/NativeScript/NativeScript/issues/1349) FormattedText Span foregroundColor and backgroundColor cannot be set using known color
+
+- [(#1340)](https://github.com/NativeScript/NativeScript/issues/1340) Remove global dependency from fetch library
+
+- [(#1326)](https://github.com/NativeScript/NativeScript/pull/1326) Fix action-bar when app is put to background and restored (and Do not…
+
+- [(#1296)](https://github.com/NativeScript/NativeScript/issues/1296) Change Android button background method
+
+- [(#1290)](https://github.com/NativeScript/NativeScript/issues/1290) ListView with rounded items can not show the background of Page
+
+- [(#1280)](https://github.com/NativeScript/NativeScript/issues/1280) text-transform breaks child colors
+
+- [(#1275)](https://github.com/NativeScript/NativeScript/issues/1275) ActionBar disappears when app closes with back button
+
+- [(#1240)](https://github.com/NativeScript/NativeScript/issues/1240) Android 5.x: Setting View.opacity (setAlpha) removes its background. 
+
+- [(#1232)](https://github.com/NativeScript/NativeScript/issues/1232) WrapLayout crashes when itemWidth value is too high
+
+- [(#1223)](https://github.com/NativeScript/NativeScript/issues/1223) Android Image that has a complex background (i.e. with rounded corners) cannot animate opacity correctly.
+
+- [(#1218)](https://github.com/NativeScript/NativeScript/issues/1218) Setting and instantly animating a property fails for iOS
+
+- [(#1177)](https://github.com/NativeScript/NativeScript/issues/1177) Alert Dialog in SegmentedBar selectedIndexChanged event blocks navigation
+
+- [(#1127)](https://github.com/NativeScript/NativeScript/issues/1127) Changing ActionBar title after page is loaded does not show the ActionBar
+
+- [(#1123)](https://github.com/NativeScript/NativeScript/issues/1123) iOS: ActionBar covers the page.
+
+- [(#830)](https://github.com/NativeScript/NativeScript/issues/830) border-radius on Android 4.4.4 (Samsung Tab) not applied to <Button>
+
+- [(#758)](https://github.com/NativeScript/NativeScript/issues/758) platformModule.device.language results are different in iOS and Android for the same language
+
+- [(#659)](https://github.com/NativeScript/NativeScript/issues/659) Problem with iOS resizing when there is an activity running in background (active call, hotspot, etc.)
+
+- [(#518)](https://github.com/NativeScript/NativeScript/issues/518) Allow ActionItems to be directly specified between the ActionBar opening and closing tags.
+
+### New
+
+- [(#1433)](https://github.com/NativeScript/NativeScript/pull/1433) binary sync read/write added
+
+- [(#1429)](https://github.com/NativeScript/NativeScript/pull/1429) file download implemented
+
+- [(#1366)](https://github.com/NativeScript/NativeScript/issues/1366) Export listeners/events for GestureStateType "began" and "ended"
+
+- [(#1363)](https://github.com/NativeScript/NativeScript/issues/1363) Cross platform animation-timing-function / easing
+
+- [(#1357)](https://github.com/NativeScript/NativeScript/pull/1357) Frame.goBack can now accept an entry to navigate back to
+
+- [(#1352)](https://github.com/NativeScript/NativeScript/issues/1352) Data URL:s supported for Image object??
+
+- [(#1283)](https://github.com/NativeScript/NativeScript/issues/1283) Can't access args.object.page from ActionBar ActionItem tap event
+
+- [(#1242)](https://github.com/NativeScript/NativeScript/issues/1242) Add Page `showingModally` event.
+
+- [(#1129)](https://github.com/NativeScript/NativeScript/issues/1129) Why are iOS modal animations disabled by default? Can we pass an option to enable it?
+
+- [(#811)](https://github.com/NativeScript/NativeScript/issues/811) Page Navigation Transitions
+
+- [(#773)](https://github.com/NativeScript/NativeScript/issues/773) Move the API reference to typedoc
+
+- [(#733)](https://github.com/NativeScript/NativeScript/issues/733) Add API to open a file at a given path with the default application.
+
+- [(#714)](https://github.com/NativeScript/NativeScript/issues/714) Automation ids
+
+- [(#709)](https://github.com/NativeScript/NativeScript/issues/709) API Stability Index (Proposal)
+
+- [(#520)](https://github.com/NativeScript/NativeScript/issues/520) XML declaration better error reporting for malformed attribute content
+
+- [(#412)](https://github.com/NativeScript/NativeScript/issues/412) Feature request: support percentages for width and height
+
+- [(#98)](https://github.com/NativeScript/NativeScript/issues/98) Support for advanced CSS selectors
+
 ##1.5.2 (2016, January 27)
 
 ### Fixed
