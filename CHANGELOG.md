@@ -82,7 +82,7 @@ Cross Platform Modules Changelog
 
 - [(#1357)](https://github.com/NativeScript/NativeScript/pull/1357) Frame.goBack can now accept an entry to navigate back to
 
-- [(#1352)](https://github.com/NativeScript/NativeScript/issues/1352) Data URL:s supported for Image object??
+- [(#1352)](https://github.com/NativeScript/NativeScript/issues/1352) Data URLs supported for Image object
 
 - [(#1283)](https://github.com/NativeScript/NativeScript/issues/1283) Can't access args.object.page from ActionBar ActionItem tap event
 
@@ -91,8 +91,6 @@ Cross Platform Modules Changelog
 - [(#1129)](https://github.com/NativeScript/NativeScript/issues/1129) Why are iOS modal animations disabled by default? Can we pass an option to enable it?
 
 - [(#811)](https://github.com/NativeScript/NativeScript/issues/811) Page Navigation Transitions
-
-- [(#773)](https://github.com/NativeScript/NativeScript/issues/773) Move the API reference to typedoc
 
 - [(#733)](https://github.com/NativeScript/NativeScript/issues/733) Add API to open a file at a given path with the default application.
 
