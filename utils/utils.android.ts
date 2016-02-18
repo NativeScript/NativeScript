@@ -148,7 +148,13 @@ export module ad {
         view.setEllipsize(value === enums.WhiteSpace.nowrap ? android.text.TextUtils.TruncateAt.END : null);
     }
 
-    export function getApplication() { return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance(); }
+    export function getApplication() {
+        if (global.androidAppInitialized) {
+            return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance();
+        } else {
+            throw new Error("Triyng to access application context however the application is not yet initialized. Please use application 'launch' event! Stack trace: " + (<any>new Error()).stack);
+        }
+    }
     export function getApplicationContext() { return <android.content.Context>getApplication().getApplicationContext(); }
 
     var inputMethodManager: android.view.inputmethod.InputMethodManager;
