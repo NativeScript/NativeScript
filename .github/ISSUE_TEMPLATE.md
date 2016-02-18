@@ -11,6 +11,10 @@ get closed.
 ### Did you verify this is a real problem with a search in [StackOverflow](http://stackoverflow.com/questions/tagged/nativescript)?
 
 ### Tell us about the problem
+Please, ensure your title is less than 50 characters and starts with a capital
+letter. We strive to follow the guidelines in the
+[How to Write a Git Commit Message] (http://chris.beams.io/posts/git-commit/)
+article for PR titles.
 
 ### Which version of NativeScript did you use (check the 'version' atrribute in the node_modules/tns-core-modules/package.json file)
 
