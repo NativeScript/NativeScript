@@ -280,8 +280,11 @@ export class Page extends ContentView implements dts.Page {
 
     public _eachChildView(callback: (child: view.View) => boolean) {
         super._eachChildView(callback);
-
         callback(this.actionBar);
+    }
+
+    get _childrenCount(): number {
+        return (this.content ? 1 : 0) + (this.actionBar ? 1 : 0);
     }
 
     private _applyCss() {
