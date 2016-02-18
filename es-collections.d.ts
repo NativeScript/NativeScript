@@ -13,6 +13,8 @@ interface Map<K, V> {
     has(key: K): boolean;
     set(key: K, value: V): Map<K, V>;
     size: number;
+    keys(): Array<K>;
+    values(): Array<V>;
 }
 declare var Map: {
     new <K, V>(): Map<K, V>;
@@ -23,6 +25,10 @@ declare var Map: {
     new<K, V>(l: List<any>): Map<K, V>;
     prototype: Map<any, any>;
 }
+
+//For compatibility - some libs insist on the Map/Set types being named that way
+declare type MapConstructor = typeof Map;
+declare type SetConstructor = typeof Set;
 
 interface Set<T> {
     add(value: T): Set<T>;
