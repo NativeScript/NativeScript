@@ -31,6 +31,5 @@ export var test_file_exists_on_folder = function () {
         return;
     }
 
-    TKUnit.assertFalse(fs.File.exists(path), "File.exists() returned true for folder!");
+    TKUnit.assertTrue(fs.File.exists(path), "File.exists() returned false for folder!");
 };
- 
