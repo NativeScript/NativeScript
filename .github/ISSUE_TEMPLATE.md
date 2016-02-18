@@ -3,8 +3,8 @@ appreciate your feedback! While we are doing all we can to take care of every
 issue, sometimes we get overwhelmed. Because of that, we will consider issues
 that are not constructive or report problems that cannot be reproduced "dead".
 In accordance, we will treat feature requests or bug reports with unanswered
-questions regarding the behavior/reproduction "dead". All "dead" issues will
-get closed.
+questions regarding the behavior/reproduction for more than 20 days "dead". All
+"dead" issues will get closed.
 
 ## Please, help the others with the details below:
 
