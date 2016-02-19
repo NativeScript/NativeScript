@@ -55,10 +55,12 @@ examples.set("dialogs", "dialogs/dialogs");
 
 examples.set("fontbtn", "font/button");
 examples.set("fontlbl", "font/label");
-examples.set("material", "font/material-icons");
-examples.set("tabfont", "font/tab-view");
 examples.set("fontfield", "font/text-field");
 examples.set("fontview", "font/text-view");
+
+examples.set("customfonts", "font/custom-fonts");
+examples.set("material", "font/material-icons");
+examples.set("tabfont", "font/tab-view");
 
 examples.set("htmlview", "html-view/html-view");
 
