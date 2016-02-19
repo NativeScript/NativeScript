@@ -70,6 +70,30 @@ export var testSetText = function () {
     });
 }
 
+export var testSetTextNull = function () {
+    helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
+        var textView = <textViewModule.TextView>views[0];
+        
+        textView.text = null;
+
+        var expectedValue = "";
+        var actualValue = textViewTestsNative.getNativeText(textView);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testSetTextUndefined = function () {
+    helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
+        var textView = <textViewModule.TextView>views[0];
+
+        textView.text = undefined;
+
+        var expectedValue = "";
+        var actualValue = textViewTestsNative.getNativeText(textView);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
 // Supported for ios only.
 if (platform.device.os === platform.platformNames.ios) {
     exports.test_set_color = function () {
