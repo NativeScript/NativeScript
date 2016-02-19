@@ -118,9 +118,9 @@ export class XMLHttpRequest {
     private _setResponseType() {
         const contentType = this.getResponseHeader('Content-Type').toLowerCase();
 
-        if (contentType === 'application/json') {
+        if (contentType.indexOf('application/json') >= 0) {
             this.responseType = XMLHttpRequestResponseType.json;
-        } else if (contentType === 'text/plain') {
+        } else if (contentType.indexOf('text/plain') >= 0) {
             this.responseType = XMLHttpRequestResponseType.text;
         }
     }
