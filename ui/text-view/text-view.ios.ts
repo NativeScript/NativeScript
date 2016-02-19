@@ -5,6 +5,7 @@ import enums = require("ui/enums");
 import view = require("ui/core/view");
 import style = require("ui/styling/style");
 import styling = require("ui/styling");
+import types = require("utils/types");
 
 global.moduleMerge(common, exports);
 
@@ -118,13 +119,13 @@ export class TextView extends common.TextView {
 
     public _showHint(hint: string) {
         this.ios.textColor = this.ios.textColor ? this.ios.textColor.colorWithAlphaComponent(0.22) : UIColor.blackColor().colorWithAlphaComponent(0.22);
-        this.ios.text = hint + "";
+        this.ios.text = types.isNullOrUndefined(hint) ? "" : hint + "";
         (<any>this.ios).isShowingHint = true;
     }
 
     public _hideHint() {
         this.ios.textColor = this.color ? this.color.ios : null;
-        this.ios.text = this.text + "";
+        this.ios.text = types.isNullOrUndefined(this.text) ? "" : this.text + "";
         (<any>this.ios).isShowingHint = false;
     }
 } 

@@ -3,6 +3,7 @@ import textBase = require("ui/text-base");
 import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
+import types = require("utils/types");
 
 export class EditableTextBase extends common.EditableTextBase {
     private _android: android.widget.EditText;
@@ -131,7 +132,8 @@ export class EditableTextBase extends common.EditableTextBase {
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (this._android) {
-            this.android.setText(data.newValue + "", android.widget.TextView.BufferType.EDITABLE);
+            var newValue = types.isNullOrUndefined(data.newValue) ? "" : data.newValue + "";
+            this.android.setText(newValue, android.widget.TextView.BufferType.EDITABLE);
         }
     }
 
