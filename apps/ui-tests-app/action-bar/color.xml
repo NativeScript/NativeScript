@@ -3,7 +3,7 @@
     <ActionBar title="Page Title" style="color: green;">
       <NavigationButton text="go back"/>
       <ActionBar.actionItems>
-        <ActionItem text="ITEM" />
+        <ActionItem text="ITEM" tap="navigate"/>
       </ActionBar.actionItems>
     </ActionBar>
   </Page.actionBar>
