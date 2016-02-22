@@ -27,12 +27,6 @@ export class ControlStateChangeListener implements definition.ControlStateChange
     constructor(control: UIControl, callback: (state: string) => void) {
         this._observer = ObserverClass.alloc();
         this._observer["_owner"] = this;
-
-        // TODO: Commenting for now, needs revision later since we must detach the observers upon control deallocation
-        //control.addObserverForKeyPathOptionsContext(this._observer, "selected", NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
-        //control.addObserverForKeyPathOptionsContext(this._observer, "enabled", NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
-        //control.addObserverForKeyPathOptionsContext(this._observer, "highlighted", NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
-
         this._control = control;
         this._callback = callback;
     }

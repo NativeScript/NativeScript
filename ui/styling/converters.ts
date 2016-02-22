@@ -134,9 +134,7 @@ export function animationTimingFunctionConverter(value: string): Object {
 
 export function animationConverter(value: any): Object {
     if (types.isString(value)) {
-        
         var animationInfo = {};
-
         let arr = (<string>value).split(/[ ]+/);
 
         if (arr.length > 0) {
@@ -158,6 +156,36 @@ export function animationConverter(value: any): Object {
             throw new Error("Invalid value for animation: " + value);
         }
         return animationInfo;
+    }
+    else {
+        return undefined;
+    }
+}
+
+export function transformConverter(value: any): Object {
+    if (types.isString(value)) {
+        var operations = {};
+        var operator = "";
+        var pos = 0;
+        while (pos < value.length) {
+            if (value[pos] === " " || value[pos] === ",") {
+                pos ++;
+            }
+            else if (value[pos] === "(") {
+                var start = pos+1;
+                while (pos < value.length && value[pos] !== ")") {
+                    pos ++;
+                }
+                var operand = value.substring(start, pos);
+                operations[operator] = operand.trim();
+                operator = "";
+                pos ++;
+            }
+            else {
+                operator += value[pos ++];
+            }
+        }
+        return operations;
     }
     else {
         return undefined;

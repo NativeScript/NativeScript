@@ -241,6 +241,7 @@ export class StyleScope {
         var rule: cssParser.Rule;
         var i;
         var j;
+        var keyframes = new Object();
 
         // Create selectors form AST
         for (i = 0; i < rules.length; i++) {
@@ -261,11 +262,18 @@ export class StyleScope {
                         }
                     }
                 }
+                for (j = 0; j < rule.selectors.length; j++) {
+                    result.push(cssSelector.createSelector(rule.selectors[j], filteredDeclarations));
+                }
+            }
+            else if (rule.type === "keyframes") {
+                keyframes[(<any>rule).name] = rule;
+            }
+        }
 
-                    for (j = 0; j < rule.selectors.length; j++) {
-                        result.push(cssSelector.createSelector(rule.selectors[j], filteredDeclarations));
-                    }
-                //}
+        for (var selector of result) {
+            if (selector.isAnimated && keyframes[selector.animation["name"]] !== undefined) {
+                selector.keyframes = keyframes[selector.animation["name"]];
             }
         }
 

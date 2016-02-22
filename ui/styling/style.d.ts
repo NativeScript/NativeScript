@@ -35,6 +35,11 @@ declare module "ui/styling/style" {
     }
 
     export class Style extends DependencyObservable implements styling.Style {
+        public rotate: number;
+        public translateX: number;
+        public translateY: number;
+        public scaleX: number;
+        public scaleY: number;
         public color: Color;
         public backgroundColor: Color;
         public backgroundImage: string;
@@ -90,6 +95,11 @@ declare module "ui/styling/style" {
     export function getHandler(property: Property, view: View): StylePropertyChangedHandler;
     // Property registration
 
+    export var rotateProperty: styleProperty.Property;
+    export var translateXProperty: styleProperty.Property;
+    export var translateYProperty: styleProperty.Property;
+    export var scaleXProperty: styleProperty.Property;
+    export var scaleYProperty: styleProperty.Property;
     export var colorProperty: styleProperty.Property;
     export var backgroundImageProperty: styleProperty.Property;
     export var backgroundColorProperty: styleProperty.Property;

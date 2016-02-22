@@ -16,12 +16,10 @@ export class CssSelector {
     private _expression: string;
     private _declarations: cssParser.Declaration[];
     private _attrExpression: string;
+    private _keyframes: Object;;
     protected _animationInfo: Object;
 
     constructor(expression: string, declarations: cssParser.Declaration[]) {
-
-        this.createAnimations(declarations);
-
         if (expression) {
             let leftSquareBracketIndex = expression.indexOf(LSBRACKET);
             if (leftSquareBracketIndex > 0) {
@@ -38,6 +36,7 @@ export class CssSelector {
             }
         }
         this._declarations = declarations;
+        this.createAnimation(this._declarations);
     }
 
     get expression(): string {
@@ -60,6 +59,18 @@ export class CssSelector {
         return this._animationInfo !== undefined;
     }
 
+    get animation(): Object {
+        return this._animationInfo;
+    }
+
+    get keyframes(): Object {
+        return this._keyframes;
+    }
+
+    set keyframes(value: Object) {
+        this._keyframes = value;
+    }
+
     protected get valueSourceModifier(): number {
         return observable.ValueSource.Css;
     }
@@ -68,23 +79,134 @@ export class CssSelector {
         return false;
     }
 
-    public apply(view: view.View) {
-        if (this._animationInfo !== undefined) {
-            var animation = {};
-            for (var prop in this._animationInfo) {
-                animation[prop] = this._animationInfo[prop];
-            }
-            for (let i = 0; i < this._declarations.length; i++) {
-                let declaration = this._declarations[i];
+    private applyKeyframeAnimation(view: view.View, index: number, prevDuration: number) {
+        var keyframe = (<any>this._keyframes).keyframes[index];
+        var duration = (<any>this._animationInfo).duration;
+        var modifier = this.valueSourceModifier;
+
+        if (keyframe.values[0] === "from" || parseFloat(keyframe.values[0]) === 0) {
+            let animation = {}
+            let modifier = this.valueSourceModifier;
+            for (let i = 0; i < keyframe.declarations.length; i++) {
+                let declaration = keyframe.declarations[i];
                 let name = declaration.property;
                 if (this.propertyIsAnimatable(name)) {
                     let property = styleProperty.getPropertyByCssName(name);
                     if (property) {
                         animation[property.name] = declaration.value;
                     }
+                    else {
+                        let pairs = styleProperty.getShorthandPairs(name, declaration.value);
+                        if (pairs) {
+                            for (let j = 0; j < pairs.length; j++) {
+                                let pair = pairs[j];
+                                animation[pair.property.name] = pair.value;
+                            }
+                        }
+                    }
                 }
             }
-            view.animate(animation);
+
+            animation["duration"] = 0.01;
+
+            view.animate(animation).then(() => {
+                if (index < (<any>this._keyframes).keyframes.length - 1) {
+                    this.applyKeyframeAnimation(view, index + 1, 0);
+                }
+            });
+            return;
+        }
+
+        if (keyframe.values[0] === "to") {
+            duration *= 1;
+        }
+        else {
+            duration *= parseFloat(keyframe.values[0]) / 100;
+        }
+        if (duration < 0) {
+            duration = 0;
+        }
+        if (duration > (<any>this._animationInfo).duration) {
+            duration = (<any>this._animationInfo).duration;
+        }
+        duration -= prevDuration;
+        
+        var animation = {};
+        for (let prop in this._animationInfo) {
+            if (prop === "delay") {
+                if (index == 0) {
+                    animation[prop] = this._animationInfo[prop];
+                }
+            }
+            else if (prop == "duration") {
+                animation["duration"] = duration;
+            }
+            else {
+                animation[prop] = this._animationInfo[prop];
+            }
+        }
+
+        for (let i = 0; i < keyframe.declarations.length; i++) {
+            let declaration = keyframe.declarations[i];
+            let name = declaration.property;
+            if (this.propertyIsAnimatable(name)) {
+                let property = styleProperty.getPropertyByCssName(name);
+                if (property) {
+                    animation[property.name] = declaration.value;
+                }
+                else {
+                    let pairs = styleProperty.getShorthandPairs(name, declaration.value);
+                    if (pairs) {
+                        for (let j = 0; j < pairs.length; j++) {
+                            let pair = pairs[j];
+                            animation[pair.property.name] = pair.value;
+                        }
+                    }
+                }
+            }
+        }
+        
+        view.animate(animation).then(() => {
+            if (index < (<any>this._keyframes).keyframes.length - 1) {
+                this.applyKeyframeAnimation(view, index + 1, prevDuration + duration);
+            }
+        });
+    }
+
+    public apply(view: view.View) {
+        if (this._animationInfo !== undefined) {
+
+            if (this.keyframes !== undefined) {
+                if ((<any>this.keyframes).keyframes.length > 0) {
+                    this.applyKeyframeAnimation(view, 0, 0);
+                }
+            }
+            else {
+                var animation = {};
+                for (var prop in this._animationInfo) {
+                    animation[prop] = this._animationInfo[prop];
+                }
+                for (let i = 0; i < this._declarations.length; i++) {
+                    let declaration = this._declarations[i];
+                    let name = declaration.property;
+                    if (this.propertyIsAnimatable(name)) {
+                        let property = styleProperty.getPropertyByCssName(name);
+                        if (property) {
+                            animation[property.name] = declaration.value;
+                        }
+                        else {
+                            var pairs = styleProperty.getShorthandPairs(name, declaration.value);
+                            if (pairs) {
+                                for (let j = 0; j < pairs.length; j++) {
+                                    let pair = pairs[j];
+                                    animation[pair.property.name] = pair.value;
+                                }
+                            }
+                        }
+                    }
+                }
+                view.animate(animation);
+            }
         }
         else {
             var modifier = this.valueSourceModifier;
@@ -123,13 +245,16 @@ export class CssSelector {
         }
     }
 
-    private createAnimations(declarations: cssParser.Declaration[]) {
+    private createAnimation(declarations: cssParser.Declaration[]) {
         for (var declaration of declarations) {
             if (declaration.property.indexOf("animation") != -1) {
                 if (this._animationInfo === undefined) {
                     this._animationInfo = {};
                 }
                 switch (declaration.property) {
+                    case "animation-name":
+                        this._animationInfo["name"] = declaration.value;
+                        break;
                     case "animation-duration":
                         this._animationInfo["duration"] = converters.timeConverter(declaration.value);
                         break;
@@ -152,7 +277,8 @@ export class CssSelector {
 
     private propertyIsAnimatable(propertyName: string) {
         return propertyName === "background-color" || 
-               propertyName === "opacity";
+               propertyName === "opacity" ||
+               propertyName === "transform";
     }
 }
 

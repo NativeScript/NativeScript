@@ -470,6 +470,46 @@ export class Style extends DependencyObservable implements styling.Style {
     private _updateCounter = 0;
     private _nativeSetters = new Map<Property, any>();
 
+    get rotate(): number {
+        return this._getValue(rotateProperty);
+    }
+
+    set rotate(value: number) {
+        this._setValue(rotateProperty, value);
+    }
+    
+    get scaleX(): number {
+        return this._getValue(scaleXProperty);
+    }
+    
+    set scaleX(value: number) {
+        this._setValue(scaleXProperty, value);
+    }
+    
+    get scaleY(): number {
+        return this._getValue(scaleYProperty);
+    }
+    
+    set scaleY(value: number) {
+        this._setValue(scaleYProperty, value);
+    }
+
+    get translateX(): number {
+        return this._getValue(translateXProperty);
+    }
+    
+    set translateX(value: number) {
+        this._setValue(translateXProperty, value);
+    }
+
+    get translateY(): number {
+        return this._getValue(translateYProperty);
+    }
+    
+    set translateY(value: number) {
+        this._setValue(translateYProperty, value);
+    }
+    
     get color(): Color {
         return this._getValue(colorProperty);
     }
@@ -932,6 +972,22 @@ export function getHandler(property: Property, view: View): definition.StyleProp
 }
 
 // Property registration
+
+export var rotateProperty = new styleProperty.Property("rotate", "rotate",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var scaleXProperty = new styleProperty.Property("scaleX", "scaleX",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var scaleYProperty = new styleProperty.Property("scaleY", "scaleY",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var translateXProperty = new styleProperty.Property("translateX", "translateX",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var translateYProperty = new styleProperty.Property("translateY", "translateY",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
 export var colorProperty = new styleProperty.Property("color", "color",
     new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, undefined, Color.isValid, Color.equals),
     converters.colorConverter);
@@ -1130,10 +1186,51 @@ function onFontChanged(value: any): Array<styleProperty.KeyValuePair<styleProper
     return array;
 }
 
+function onTransformChanged(value: any): Array<styleProperty.KeyValuePair<styleProperty.Property, any>> {
+    var newTransform = converters.transformConverter(value);
+    var array = new Array<styleProperty.KeyValuePair<styleProperty.Property, any>>();
+    var values = undefined;
+    for (var transform in newTransform) {
+        switch (transform) {
+            case "scaleX":
+                array.push({ property: scaleXProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "scaleY":
+                array.push({ property: scaleYProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "scale":
+                values = newTransform[transform].split(",");
+                if (values.length == 2) {
+                    array.push({ property: scaleXProperty, value: parseFloat(values[0]) });
+                    array.push({ property: scaleYProperty, value: parseFloat(values[1]) });
+                }
+                break;
+            case "translateX":
+                array.push({ property: translateXProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "translateY":
+                array.push({ property: translateYProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "translate":
+                values = newTransform[transform].split(",");
+                if (values.length == 2) {
+                    array.push({ property: translateXProperty, value: parseFloat(values[0]) });
+                    array.push({ property: translateYProperty, value: parseFloat(values[1]) });
+                }
+                break;
+            case "rotate":
+                array.push({ property: rotateProperty, value: parseFloat(newTransform[transform]) });
+                break;
+        }
+    }
+    return array;
+}
+
 // register default shorthand callbacks.
 styleProperty.registerShorthandCallback("font", onFontChanged);
 styleProperty.registerShorthandCallback("margin", onMarginChanged);
 styleProperty.registerShorthandCallback("padding", onPaddingChanged);
+styleProperty.registerShorthandCallback("transform", onTransformChanged);
 
 var _defaultNativeValuesCache = {};
 

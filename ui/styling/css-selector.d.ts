@@ -15,6 +15,10 @@
 
         isAnimated: boolean;
         
+        animation: Object;
+
+        keyframes: Object;
+        
         matches(view: view.View): boolean;
 
         apply(view: view.View);
