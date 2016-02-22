@@ -180,8 +180,9 @@ export class View extends viewCommon.View {
 
     public _removeViewCore(view: viewCommon.View) {
         super._removeViewCore(view);
-        // TODO: Detach from the context?
-        view._onDetached();
+        if (view._context) {
+            view._onDetached();
+        }
     }
 
     public _onAttached(context: android.content.Context) {
@@ -227,7 +228,9 @@ export class View extends viewCommon.View {
                 if (child._isAddedToNativeVisualTree) {
                     that._removeViewFromNativeVisualTree(child);
                 }
-                child._onDetached(force);
+                if (child._context) {
+                    child._onDetached(force);
+                }
                 return true;
             }
             this._eachChildView(eachChild);

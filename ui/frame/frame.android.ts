@@ -579,7 +579,7 @@ var NativeActivity = {
 
     onDestroy: function () {
         let rootView: View = this.rootView
-        if (rootView) {
+        if (rootView && rootView._context) {
             rootView._onDetached(true);
         }
 
