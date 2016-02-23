@@ -123,6 +123,18 @@ export var testRemove = function () {
     TKUnit.assert(!appSettings.hasKey(numberKey), "Failed to remove key: " + numberKey);
 };
 
+export var testClear = function () {
+    // <snippet module="application-settings" title="application-settings">
+    // ### Removing all values
+    // ``` JavaScript
+    appSettings.clear();
+    // ```
+    // </snippet>
+    TKUnit.assert(!appSettings.hasKey(boolKey), "Failed to remove key: " + boolKey);
+    TKUnit.assert(!appSettings.hasKey(stringKey), "Failed to remove key: " + stringKey);
+    TKUnit.assert(!appSettings.hasKey(numberKey), "Failed to remove key: " + numberKey);
+};
+
 export var testInvalidKey = function () {
     try {
         appSettings.hasKey(undefined);
