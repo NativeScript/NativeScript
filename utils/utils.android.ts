@@ -149,11 +149,7 @@ export module ad {
     }
 
     export function getApplication() {
-        if (global.androidAppInitialized) {
-            return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance();
-        } else {
-            throw new Error("Triyng to access application context however the application is not yet initialized. Please use application 'launch' event! Stack trace: " + (<any>new Error()).stack);
-        }
+        return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance();
     }
     export function getApplicationContext() { return <android.content.Context>getApplication().getApplicationContext(); }
 
