@@ -6,17 +6,24 @@ import * as trace from "trace";
 import * as styleProperty from "ui/styling/style-property";
 import * as types from "utils/types";
 import * as utils from "utils/utils";
+import animationModule = require("ui/animation");
 
 var ID_SPECIFICITY = 1000000;
 var ATTR_SPECIFITY = 10000;
 var CLASS_SPECIFICITY = 100;
 var TYPE_SPECIFICITY = 1;
 
+interface TransformInfo
+{
+    scale: animationModule.Pair;
+    translate: animationModule.Pair;
+}
+
 export class CssSelector {
     private _expression: string;
     private _declarations: cssParser.Declaration[];
     private _attrExpression: string;
-    private _keyframes: Object;;
+    private _keyframes = [];
     protected _animationInfo: Object;
 
     constructor(expression: string, declarations: cssParser.Declaration[]) {
@@ -42,7 +49,7 @@ export class CssSelector {
     get expression(): string {
         return this._expression;
     }
-    
+
     get attrExpression(): string {
         return this._attrExpression;
     }
@@ -68,7 +75,7 @@ export class CssSelector {
     }
 
     set keyframes(value: Object) {
-        this._keyframes = value;
+        this._keyframes = this.parseKeyframes(value);
     }
 
     protected get valueSourceModifier(): number {
@@ -79,134 +86,144 @@ export class CssSelector {
         return false;
     }
 
-    private applyKeyframeAnimation(view: view.View, index: number, prevDuration: number) {
-        var keyframe = (<any>this._keyframes).keyframes[index];
-        var duration = (<any>this._animationInfo).duration;
-        var modifier = this.valueSourceModifier;
-
-        if (keyframe.values[0] === "from" || parseFloat(keyframe.values[0]) === 0) {
-            let animation = {}
-            let modifier = this.valueSourceModifier;
-            for (let i = 0; i < keyframe.declarations.length; i++) {
-                let declaration = keyframe.declarations[i];
-                let name = declaration.property;
-                if (this.propertyIsAnimatable(name)) {
-                    let property = styleProperty.getPropertyByCssName(name);
-                    if (property) {
-                        animation[property.name] = declaration.value;
-                    }
-                    else {
-                        let pairs = styleProperty.getShorthandPairs(name, declaration.value);
-                        if (pairs) {
-                            for (let j = 0; j < pairs.length; j++) {
-                                let pair = pairs[j];
-                                animation[pair.property.name] = pair.value;
-                            }
-                        }
-                    }
-                }
+    private preprocessAnimationValues(pair: styleProperty.KeyValuePair<styleProperty.Property, any>, transforms: TransformInfo) {
+        if (pair.property.name == "scaleX") {
+            if (transforms.scale === undefined) {
+                transforms.scale = { x:1, y:1 };
             }
+            transforms.scale.x = pair.value;
+            return true;
+        }
+        if (pair.property.name == "scaleY") {
+            if (transforms.scale === undefined) {
+                transforms.scale = { x:1, y:1 };
+            }
+            transforms.scale.y = pair.value;
+            return true;
+        }
+        if (pair.property.name == "translateX") {
+            if (transforms.translate === undefined) {
+                transforms.translate = { x:0, y:0 };
+            }
+            transforms.translate.x = pair.value;
+            return true;
+        }
+        if (pair.property.name == "translateY") {
+            if (transforms.translate === undefined) {
+                transforms.translate = { x: 0, y: 0 };
+            }
+            transforms.translate.y = pair.value;
+            return true;
+        }
+        return false;
+    }
 
-            animation["duration"] = 0.01;
+    private parseKeyframes(value: Object): Array<Object> {
+        let parsedKeyframes = {};
+        for (let keyframe of (<any>value).keyframes) {
+	       let declarations = {};
+           let transforms = { scale:undefined, translate:undefined };
+	       for (let declaration of keyframe.declarations) {
+		      if (this.propertyIsAnimatable(declaration.property)) {
+                 let property = styleProperty.getPropertyByCssName(declaration.property);
+                 if (property) {
+                     let val = declaration.value;
+                     if (property.name === "opacity") {
+                         val = parseFloat(val);
+                     }
+                     declarations[property.name] = val;
+                 }
+                 else {
+                     let pairs = styleProperty.getShorthandPairs(declaration.property, declaration.value);
+                     if (pairs) {
+                         for (let j = 0; j < pairs.length; j++) {
+                             let pair = pairs[j];
+                             if (!this.preprocessAnimationValues(pair, transforms)) {
+                                declarations[pair.property.name] = pair.value;
+                             }
+                         }
+                     }
+                 }
+		      }
+	       }
+           if (transforms.scale !== undefined) {
+               declarations["scale"] = transforms.scale;
+           }
+           if (transforms.translate !== undefined) {
+               declarations["translate"] = transforms.translate;
+           }
+	       for(let time of keyframe.values) {
+               if (time === "from") {
+                   time = 0;
+               }
+               if (time === "to") {
+                   time = 1;
+               }
+               else {
+                   time = parseFloat(time)/100;
+                   if (time < 0) {
+                       time = 0;
+                   }
+                   if (time > 100) {
+                       time = 100;
+                   }
+               }
+    		   var current = parsedKeyframes[time];
+	       	   if (current === undefined) {
+		         current = {};
+			     current.time = time;
+			     parsedKeyframes[time] = current;
+		       }
+		       current.declarations = declarations;
+	       }
+        }
+        let array = new Array();
+        for (var parsedKeyframe in parsedKeyframes) {
+            array.push(parsedKeyframes[parsedKeyframe]);
+        }
+        array.sort(function (a, b) { return a.time - b.time; });
+        return array;
+    }
 
-            view.animate(animation).then(() => {
-                if (index < (<any>this._keyframes).keyframes.length - 1) {
-                    this.applyKeyframeAnimation(view, index + 1, 0);
-                }
-            });
-            return;
-        }
-
-        if (keyframe.values[0] === "to") {
-            duration *= 1;
-        }
-        else {
-            duration *= parseFloat(keyframe.values[0]) / 100;
-        }
-        if (duration < 0) {
-            duration = 0;
-        }
-        if (duration > (<any>this._animationInfo).duration) {
-            duration = (<any>this._animationInfo).duration;
-        }
-        duration -= prevDuration;
-        
-        var animation = {};
+    private applyKeyframeAnimation(view: view.View, index: number, startDuration: number) {
+        let keyframe = this._keyframes[index];
+        let animation = {};
         for (let prop in this._animationInfo) {
             if (prop === "delay") {
-                if (index == 0) {
+                if ((<any>keyframe).time === 0) {
                     animation[prop] = this._animationInfo[prop];
                 }
-            }
-            else if (prop == "duration") {
-                animation["duration"] = duration;
             }
             else {
                 animation[prop] = this._animationInfo[prop];
             }
         }
-
-        for (let i = 0; i < keyframe.declarations.length; i++) {
-            let declaration = keyframe.declarations[i];
-            let name = declaration.property;
-            if (this.propertyIsAnimatable(name)) {
-                let property = styleProperty.getPropertyByCssName(name);
-                if (property) {
-                    animation[property.name] = declaration.value;
-                }
-                else {
-                    let pairs = styleProperty.getShorthandPairs(name, declaration.value);
-                    if (pairs) {
-                        for (let j = 0; j < pairs.length; j++) {
-                            let pair = pairs[j];
-                            animation[pair.property.name] = pair.value;
-                        }
-                    }
-                }
-            }
+        for (let declaration in keyframe.declarations) {
+            animation[declaration] = keyframe.declarations[declaration];
         }
-        
+        let duration = 0;
+        if ((<any>keyframe).time === 0) {
+            animation["duration"] = 0.01;
+        }
+        else {
+            let animationDuration = animation["duration"];
+            if (animationDuration == undefined) {
+                animationDuration = 0.3;
+            }
+            duration = (animationDuration * (<any>keyframe).time) - startDuration;
+            animation["duration"] = duration;
+        }
+
         view.animate(animation).then(() => {
-            if (index < (<any>this._keyframes).keyframes.length - 1) {
-                this.applyKeyframeAnimation(view, index + 1, prevDuration + duration);
+            if (index < this._keyframes.length - 1) {
+                this.applyKeyframeAnimation(view, index + 1, startDuration + duration);
             }
         });
     }
 
     public apply(view: view.View) {
-        if (this._animationInfo !== undefined) {
-
-            if (this.keyframes !== undefined) {
-                if ((<any>this.keyframes).keyframes.length > 0) {
-                    this.applyKeyframeAnimation(view, 0, 0);
-                }
-            }
-            else {
-                var animation = {};
-                for (var prop in this._animationInfo) {
-                    animation[prop] = this._animationInfo[prop];
-                }
-                for (let i = 0; i < this._declarations.length; i++) {
-                    let declaration = this._declarations[i];
-                    let name = declaration.property;
-                    if (this.propertyIsAnimatable(name)) {
-                        let property = styleProperty.getPropertyByCssName(name);
-                        if (property) {
-                            animation[property.name] = declaration.value;
-                        }
-                        else {
-                            var pairs = styleProperty.getShorthandPairs(name, declaration.value);
-                            if (pairs) {
-                                for (let j = 0; j < pairs.length; j++) {
-                                    let pair = pairs[j];
-                                    animation[pair.property.name] = pair.value;
-                                }
-                            }
-                        }
-                    }
-                }
-                view.animate(animation);
-            }
+        if (this.isAnimated) {
+            this.applyKeyframeAnimation(view, 0, 0);
         }
         else {
             var modifier = this.valueSourceModifier;
@@ -247,7 +264,7 @@ export class CssSelector {
 
     private createAnimation(declarations: cssParser.Declaration[]) {
         for (var declaration of declarations) {
-            if (declaration.property.indexOf("animation") != -1) {
+            if (declaration.property.indexOf("animation") == 0) {
                 if (this._animationInfo === undefined) {
                     this._animationInfo = {};
                 }
@@ -276,9 +293,10 @@ export class CssSelector {
     }
 
     private propertyIsAnimatable(propertyName: string) {
-        return propertyName === "background-color" || 
+        return propertyName === "background-color" ||
                propertyName === "opacity" ||
-               propertyName === "transform";
+               propertyName === "transform" ||
+               propertyName.indexOf("animation") == 0;
     }
 }
 
@@ -299,10 +317,10 @@ function matchesType(expression: string, view: view.View): boolean {
     let exprArr = expression.split(".");
     let exprTypeName = exprArr[0];
     let exprClassName = exprArr[1];
-       
+
     let typeCheck = exprTypeName.toLowerCase() === view.typeName.toLowerCase() || 
         exprTypeName.toLowerCase() === view.typeName.split(/(?=[A-Z])/).join("-").toLowerCase();
-          
+
     if (typeCheck) {
         if (exprClassName) {
             return view._cssClasses.some((cssClass, i, arr) => { return cssClass === exprClassName });
@@ -351,9 +369,9 @@ class CssCompositeSelector extends CssSelector {
         }
         return result;
     }
-    
+
     private parentCssSelectors: [{ selector: CssSelector, onlyDirectParent: boolean}];
-    
+
     private splitExpression(expression) {
         let result = [];
         let tempArr = [];
@@ -382,7 +400,7 @@ class CssCompositeSelector extends CssSelector {
         }
         return result;
     }
-    
+
     constructor(expr: string, declarations: cssParser.Declaration[]) {
         super(expr, declarations);
         let expressions = this.splitExpression(expr);
@@ -397,7 +415,7 @@ class CssCompositeSelector extends CssSelector {
             onlyParent = false;
         }
     }
-    
+
     public matches(view: view.View): boolean {
         let result = this.parentCssSelectors[0].selector.matches(view);
         if (!result) {
@@ -430,7 +448,7 @@ class CssAttrSelector extends CssSelector {
     get specificity(): number {
         return ATTR_SPECIFITY;
     }
-    
+
     public matches(view: view.View): boolean {
         return matchesAttr(this.attrExpression, view);
     }
@@ -545,7 +563,7 @@ export class CssVisualStateSelector extends CssSelector {
         if (this._isByType) {
             matches = matchesType(this._match, view);
         }
-        
+
         if (this._isByAttr) {
             matches = matchesAttr(this._key, view);
         }
@@ -569,12 +587,12 @@ export function createSelector(expression: string, declarations: cssParser.Decla
     if (spaceIndex >= 0) {
         return new CssCompositeSelector(goodExpr, declarations);
     }
-    
+
     let leftSquareBracketIndex = goodExpr.indexOf(LSBRACKET);
     if (leftSquareBracketIndex === 0) {
         return new CssAttrSelector(goodExpr, declarations);
-    } 
-    
+    }
+
     var colonIndex = goodExpr.indexOf(COLON);
     if (colonIndex >= 0) {
         return new CssVisualStateSelector(goodExpr, declarations);

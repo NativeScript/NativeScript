@@ -1199,8 +1199,9 @@ function onTransformChanged(value: any): Array<styleProperty.KeyValuePair<styleP
                 array.push({ property: scaleYProperty, value: parseFloat(newTransform[transform]) });
                 break;
             case "scale":
+            case "scale3d":
                 values = newTransform[transform].split(",");
-                if (values.length == 2) {
+                if (values.length == 2 || values.length == 3) {
                     array.push({ property: scaleXProperty, value: parseFloat(values[0]) });
                     array.push({ property: scaleYProperty, value: parseFloat(values[1]) });
                 }
@@ -1212,14 +1213,22 @@ function onTransformChanged(value: any): Array<styleProperty.KeyValuePair<styleP
                 array.push({ property: translateYProperty, value: parseFloat(newTransform[transform]) });
                 break;
             case "translate":
+            case "translate3d":
                 values = newTransform[transform].split(",");
-                if (values.length == 2) {
+                if (values.length == 2 || values.length == 3) {
                     array.push({ property: translateXProperty, value: parseFloat(values[0]) });
                     array.push({ property: translateYProperty, value: parseFloat(values[1]) });
                 }
                 break;
             case "rotate":
                 array.push({ property: rotateProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "none":
+                array.push({ property: scaleXProperty, value: 1 });
+                array.push({ property: scaleYProperty, value: 1 });
+                array.push({ property: translateXProperty, value: 0 });
+                array.push({ property: translateYProperty, value: 0 });
+                array.push({ property: rotateProperty, value: 0 });
                 break;
         }
     }

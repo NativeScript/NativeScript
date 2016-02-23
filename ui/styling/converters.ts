@@ -118,8 +118,8 @@ export function animationTimingFunctionConverter(value: string): Object {
                 if (bezierArr.length != 4) {
                     throw new Error("Invalid value for animation: " + value);
                 }
-                result = enums.AnimationCurve.cubicBezier(bezieArgumentConverter(bezierArr[0]), 
-                    bezieArgumentConverter(bezierArr[1]), 
+                result = enums.AnimationCurve.cubicBezier(bezieArgumentConverter(bezierArr[0]),
+                    bezieArgumentConverter(bezierArr[1]),
                     bezieArgumentConverter(bezierArr[2]),
                     bezieArgumentConverter(bezierArr[3]));
             }
@@ -163,7 +163,12 @@ export function animationConverter(value: any): Object {
 }
 
 export function transformConverter(value: any): Object {
-    if (types.isString(value)) {
+    if (value === "none") {
+        var operations = {};
+        operations[value] = value;
+        return operations;
+    }
+    else if (types.isString(value)) {
         var operations = {};
         var operator = "";
         var pos = 0;
