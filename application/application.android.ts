@@ -310,8 +310,6 @@ export function start(entry?: frame.NavigationEntry) {
         }
     });
 
-    global.androidAppInitialized = true;
-
     loadCss();
 }
 
