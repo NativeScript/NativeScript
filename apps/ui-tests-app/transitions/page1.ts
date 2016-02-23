@@ -1,5 +1,4 @@
 import frame = require("ui/frame");
-import pages = require("ui/page");
 
 export function onTap(args) {
     var navigationEntry = {

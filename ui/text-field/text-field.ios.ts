@@ -1,18 +1,17 @@
 ﻿import common = require("./text-field-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import textBase = require("ui/text-base");
-import enums = require("ui/enums");
-import styling = require("ui/styling");
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
+import {PropertyChangeData} from "ui/core/dependency-observable";
+import {PropertyMetadata} from "ui/core/proxy";
+import {TextBase} from "ui/text-base";
+import {UpdateTextTrigger} from "ui/enums";
+import * as style from "ui/styling/style";
+import {View} from "ui/core/view";
 
-function onSecurePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onSecurePropertyChanged(data: PropertyChangeData) {
     var textField = <TextField>data.object;
     textField.ios.secureTextEntry = data.newValue;
 }
 
-(<proxy.PropertyMetadata>common.secureProperty.metadata).onSetNativeValue = onSecurePropertyChanged;
+(<PropertyMetadata>common.secureProperty.metadata).onSetNativeValue = onSecurePropertyChanged;
 
 global.moduleMerge(common, exports);
 
@@ -41,8 +40,8 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldDidEndEditing(textField: UITextField) {
         let owner = this._owner.get();
         if (owner) {
-            if (owner.updateTextTrigger === enums.UpdateTextTrigger.focusLost) {
-                owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textField.text);
+            if (owner.updateTextTrigger === UpdateTextTrigger.focusLost) {
+                owner._onPropertyChangedFromNative(TextBase.textProperty, textField.text);
             }
 
             owner.dismissSoftInput();
@@ -53,7 +52,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
         this.firstEdit = false;
         let owner = this._owner.get();
         if (owner) {
-            owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, "");
+            owner._onPropertyChangedFromNative(TextBase.textProperty, "");
         }
 
         return true;
@@ -78,13 +77,13 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
             owner.style._updateTextTransform();
             textField.selectedTextRange = r;
 
-            if (owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {
+            if (owner.updateTextTrigger === UpdateTextTrigger.textChanged) {
                 if (textField.secureTextEntry && this.firstEdit) {
-                    owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, replacementString);
+                    owner._onPropertyChangedFromNative(TextBase.textProperty, replacementString);
                 }
                 else {
                     let newText = NSString.alloc().initWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
-                    owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, newText);
+                    owner._onPropertyChangedFromNative(TextBase.textProperty, newText);
                 }
             }
         }
@@ -152,19 +151,19 @@ export class TextField extends common.TextField {
         return this._ios;
     }
 
-    public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    public _onHintPropertyChanged(data: PropertyChangeData) {
         var textField = <TextField>data.object;
         textField.ios.placeholder = data.newValue + "";
     }
 } 
 
 export class TextFieldStyler implements style.Styler {
-    private static setColorProperty(view: view.View, newValue: any) {
+    private static setColorProperty(view: View, newValue: any) {
         var tf: UITextField = <UITextField>view._nativeView;
         TextFieldStyler._setTextFieldColor(tf, newValue);
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: any) {
+    private static resetColorProperty(view: View, nativeValue: any) {
         var tf: UITextField = <UITextField>view._nativeView;
         TextFieldStyler._setTextFieldColor(tf, nativeValue);
     }
@@ -180,7 +179,7 @@ export class TextFieldStyler implements style.Styler {
         }
     }
 
-    private static getNativeColorValue(view: view.View): any {
+    private static getNativeColorValue(view: View): any {
         var tf: UITextField = <UITextField>view._nativeView;
         return tf.tintColor;
     }

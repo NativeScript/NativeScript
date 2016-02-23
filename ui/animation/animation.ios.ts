@@ -38,8 +38,6 @@ class AnimationDelegateImpl extends NSObject {
     }
 
     animationDidStart(anim: CAAnimation): void {
-       var nativeView = <UIView>this._propertyAnimation.target._nativeView;
-       var propertyNameToAnimate = this._propertyAnimation.property;
        var value = this._propertyAnimation.value;
 
        (<any>this._propertyAnimation.target)._suspendPresentationLayerUpdates();
@@ -409,7 +407,6 @@ export class Animation extends common.Animation implements definition.Animation 
 
     private static _createNativeAffineTransform(animation: common.PropertyAnimation): CATransform3D {
         var value = animation.value;
-        var nativeView = <UIView>animation.target._nativeView;
         var result:CATransform3D = CATransform3DIdentity;
 
         if (value[common.Properties.translate] !== undefined) {

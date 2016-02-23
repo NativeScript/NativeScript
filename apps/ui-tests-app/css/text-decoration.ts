@@ -1,5 +1,4 @@
 ﻿import view = require("ui/core/view");
-import observable = require("data/observable");
 import label = require("ui/label");
 import button = require("ui/button");
 import textField = require("ui/text-field");

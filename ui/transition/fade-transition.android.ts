@@ -1,19 +1,18 @@
-﻿import transition = require("ui/transition");
-import platform = require("platform");
+﻿import {Transition, AndroidTransitionType} from "ui/transition";
 
 var floatType = java.lang.Float.class.getField("TYPE").get(null);
 
-export class FadeTransition extends transition.Transition {
+export class FadeTransition extends Transition {
     public createAndroidAnimator(transitionType: string): android.animation.Animator {
         var alphaValues = java.lang.reflect.Array.newInstance(floatType, 2);
         switch (transitionType) {
-            case transition.AndroidTransitionType.enter:
-            case transition.AndroidTransitionType.popEnter:
+            case AndroidTransitionType.enter:
+            case AndroidTransitionType.popEnter:
                 alphaValues[0] = 0;
                 alphaValues[1] = 1;
                 break;
-            case transition.AndroidTransitionType.exit:
-            case transition.AndroidTransitionType.popExit:
+            case AndroidTransitionType.exit:
+            case AndroidTransitionType.popExit:
                 alphaValues[0] = 1;
                 alphaValues[1] = 0;
                 break;

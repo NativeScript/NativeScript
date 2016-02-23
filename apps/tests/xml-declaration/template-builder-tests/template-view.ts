@@ -1,5 +1,5 @@
-import { View, Template } from "ui/core/view"
-import { PropertyChangeData, Property, PropertyMetadataSettings } from "ui/core/dependency-observable"
+import {Template} from "ui/core/view"
+import {Property, PropertyMetadataSettings} from "ui/core/dependency-observable"
 import * as proxy from "ui/core/proxy"
 import { LayoutBase } from "ui/layouts/layout-base"
 import { parse } from "ui/builder"

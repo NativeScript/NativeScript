@@ -1,8 +1,6 @@
 ﻿import TKUnit = require("../../TKUnit");
 import app = require("application");
 import helper = require("../helper");
-import buttonModule = require("ui/button");
-import page = require("ui/page");
 import button = require("ui/button");
 import enums = require("ui/enums");
 import testModule = require("../../ui-test");
@@ -45,6 +43,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_snippets() {
+        /* tslint:disable:no-unused-variable */
         // <snippet module="ui/scroll-view" title="scroll-view">
         // ### Creating a ScrollView
         // ``` JavaScript

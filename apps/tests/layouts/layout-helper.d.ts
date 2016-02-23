@@ -1,5 +1,4 @@
-﻿import {View} from "ui/core/view";
-import {Button} from "ui/button";
+﻿import {Button} from "ui/button";
 import {StackLayout} from "ui/layouts/stack-layout";
 import {GridLayout} from "ui/layouts/grid-layout";
 

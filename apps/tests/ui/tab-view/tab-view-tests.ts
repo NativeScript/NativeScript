@@ -1,16 +1,9 @@
 ﻿import testModule = require("../../ui-test");
 import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
-import viewModule = require("ui/core/view");
 import labelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import tabViewTestsNative = require("./tab-view-tests-native");
-import frameModule = require("ui/frame");
-import pageModule = require("ui/page");
-import listViewModule = require("ui/list-view");
-import buttonModule = require("ui/button");
-import observable = require("data/observable");
-import builder = require("ui/builder");
 
 // <snippet module="ui/tab-view" title="TabView">
 // # TabView
@@ -41,8 +34,6 @@ import tabViewModule = require("ui/tab-view");
 // ```
 // </snippet>
 
-var ASYNC = 2;
-
 export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
 
     public create(): tabViewModule.TabView {
@@ -56,7 +47,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         return tabView;
     }
 
-    private _createItems(count: number): Array<tabViewModule.TabViewItem> {
+    _createItems(count: number): Array<tabViewModule.TabViewItem> {
         var items = new Array<tabViewModule.TabViewItem>();
         for (var i = 0; i < count; i++) {
             var label = new labelModule.Label();
@@ -68,42 +59,6 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
             items.push(tabEntry);
         }
         return items;
-    }
-
-    private _createListView(): listViewModule.ListView {
-        var listView = new listViewModule.ListView();
-        listView.id = "ListView";
-        var items = Array.apply(null, Array(10)).map(function (_, i) { return i; });
-
-        listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
-            var button = <buttonModule.Button>args.view;
-            if (!button) {
-                button = new buttonModule.Button();
-                args.view = button;
-            }
-
-            button.text = "Button" + args.index;
-            button.id = button.text;
-            button.on(buttonModule.Button.tapEvent, this._clickHandlerFactory(args.index));
-        });
-
-        listView.items = items;
-
-        return listView;
-    }
-
-    private _clickHandlerFactory = function (index: number) {
-        return function () {
-            var pageFactory = function (): pageModule.Page {
-                var detailsLabel = new labelModule.Label();
-                detailsLabel.text = "Details Page " + index;
-                var detailsPage = new pageModule.Page();
-                detailsPage.content = detailsLabel;
-                return detailsPage;
-            };
-
-            helper.navigate(pageFactory);
-        }
     }
 
     public testWhenTabViewIsCreatedItemsAreUndefined = function () {

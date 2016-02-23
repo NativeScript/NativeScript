@@ -4,7 +4,6 @@ import proxy = require("ui/core/proxy");
 import color = require("color");
 import utils = require("utils/utils")
 import * as typesModule from "utils/types";
-import styling = require("ui/styling");
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 import font = require("ui/styling/font");

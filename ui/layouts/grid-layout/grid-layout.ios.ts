@@ -1,7 +1,6 @@
 ﻿import utils = require("utils/utils");
 import common = require("./grid-layout-common");
 import {View} from "ui/core/view";
-import {CommonLayoutParams} from "ui/styling/style";
 import {HorizontalAlignment, VerticalAlignment} from "ui/enums";
 
 global.moduleMerge(common, exports);

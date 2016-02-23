@@ -4,7 +4,6 @@ import {View} from "ui/core/view";
 import {Button} from "ui/button";
 import {Page} from "ui/page";
 import {ScrollView} from "ui/scroll-view";
-import {TabView, TabViewItem} from "ui/tab-view";
 import {LayoutBase} from "ui/layouts/layout-base"
 import {StackLayout} from "ui/layouts/stack-layout"
 import {GridLayout} from "ui/layouts/grid-layout"

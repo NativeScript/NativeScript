@@ -6,7 +6,6 @@ import types = require("utils/types");
 import * as colorModule from "color";
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
-import styling = require("ui/styling");
 import view = require("ui/core/view");
 
 global.moduleMerge(common, exports);

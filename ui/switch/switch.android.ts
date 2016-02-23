@@ -2,7 +2,6 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import utils = require("utils/utils")
-import styling = require("ui/styling");
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 
@@ -57,7 +56,6 @@ export class SwitchStyler implements style.Styler {
     }
 
     private static resetColorProperty(view: view.View, nativeValue: number) {
-        var sw = <android.widget.Switch>view._nativeView;
         // Do nothing.
     }
 
@@ -71,7 +69,6 @@ export class SwitchStyler implements style.Styler {
     }
 
     private static resetBackgroundAndBorderProperty(view: view.View, nativeValue: number) {
-        var sw = <android.widget.Switch>view._nativeView;
         // Do nothing.
     }
 

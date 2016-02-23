@@ -1,70 +1,58 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import {Label} from "ui/label";
-import {StackLayout} from "ui/layouts/stack-layout";
-import frameModule = require("ui/frame");
-import {Page} from "ui/page";
-import {ListView, ItemEventData} from "ui/list-view";
-import {TabView, TabViewItem} from "ui/tab-view";
-import {Button} from "ui/button";
+﻿//function _createTabView(): TabView {
+    //var tabView = new TabView();
+    //tabView.id = "TabView";
+    //return tabView;
+//}
 
-var ASYNC = 2;
+//function _createItems(count: number): Array<TabViewItem> {
+    //var items = new Array<TabViewItem>();
+    //for (var i = 0; i < count; i++) {
+        //var label = new Label();
+        //label.text = "Tab " + i;
+        //var tabEntry = new TabViewItem({
+            //title: "Tab " + i,
+            //view: label
+        //});
+        //items.push(tabEntry);
+    //}
+    //return items;
+//}
 
-function _createTabView(): TabView {
-    var tabView = new TabView();
-    tabView.id = "TabView";
-    return tabView;
-}
+//function _createListView(): ListView {
+    //var listView = new ListView();
+    //listView.id = "ListView";
+    //var items = Array.apply(null, Array(10)).map(function (_, i) { return i; });
 
-function _createItems(count: number): Array<TabViewItem> {
-    var items = new Array<TabViewItem>();
-    for (var i = 0; i < count; i++) {
-        var label = new Label();
-        label.text = "Tab " + i;
-        var tabEntry = new TabViewItem({
-            title: "Tab " + i,
-            view: label
-        });
-        items.push(tabEntry);
-    }
-    return items;
-}
+    //listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
+        //var button = <Button>args.view;
+        //if (!button) {
+            //button = new Button();
+            //args.view = button;
+        //}
 
-function _createListView(): ListView {
-    var listView = new ListView();
-    listView.id = "ListView";
-    var items = Array.apply(null, Array(10)).map(function (_, i) { return i; });
+        //button.text = "Button" + args.index;
+        //button.id = button.text;
+        //button.on(Button.tapEvent, _clickHandlerFactory(args.index));
+    //});
 
-    listView.on(ListView.itemLoadingEvent, function (args: ItemEventData) {
-        var button = <Button>args.view;
-        if (!button) {
-            button = new Button();
-            args.view = button;
-        }
+    //listView.items = items;
 
-        button.text = "Button" + args.index;
-        button.id = button.text;
-        button.on(Button.tapEvent, _clickHandlerFactory(args.index));
-    });
+    //return listView;
+//}
 
-    listView.items = items;
+//var _clickHandlerFactory = function (index: number) {
+    //return function () {
+        //var pageFactory = function (): Page {
+            //var detailsLabel = new Label();
+            //detailsLabel.text = "Details Page " + index;
+            //var detailsPage = new Page();
+            //detailsPage.content = detailsLabel;
+            //return detailsPage;
+        //};
 
-    return listView;
-}
-
-var _clickHandlerFactory = function (index: number) {
-    return function () {
-        var pageFactory = function (): Page {
-            var detailsLabel = new Label();
-            detailsLabel.text = "Details Page " + index;
-            var detailsPage = new Page();
-            detailsPage.content = detailsLabel;
-            return detailsPage;
-        };
-
-        helper.navigate(pageFactory);
-    }
-}
+        //helper.navigate(pageFactory);
+    //}
+//}
 
 export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere() {
     /*
@@ -136,92 +124,92 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_WithPage
     testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(true);
 }
 */
-function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache: boolean) {
-    var i: number;
-    var itemCount = 3;
-    var loadedItems = [0, 0, 0];
-    var unloadedItems = [0, 0, 0];
+//function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache: boolean) {
+    //var i: number;
+    //var itemCount = 3;
+    //var loadedItems = [0, 0, 0];
+    //var unloadedItems = [0, 0, 0];
 
-    var topFrame = frameModule.topmost();
-    var oldChache;
+    //var topFrame = frameModule.topmost();
+    //var oldChache;
 
-    if (topFrame.android) {
-        oldChache = topFrame.android.cachePagesOnNavigate;
-        topFrame.android.cachePagesOnNavigate = enablePageCache;
-    }
+    //if (topFrame.android) {
+        //oldChache = topFrame.android.cachePagesOnNavigate;
+        //topFrame.android.cachePagesOnNavigate = enablePageCache;
+    //}
 
-    try {
-        var tabView = _createTabView();
-        var items = _createItems(itemCount);
-        tabView.items = items;
+    //try {
+        //var tabView = _createTabView();
+        //var items = _createItems(itemCount);
+        //tabView.items = items;
 
-        function createLoadedFor(itemIndex: number) {
-            return function () {
-                loadedItems[itemIndex] = loadedItems[itemIndex] + 1;
-            }
-        }
+        //function createLoadedFor(itemIndex: number) {
+            //return function () {
+                //loadedItems[itemIndex] = loadedItems[itemIndex] + 1;
+            //}
+        //}
 
-        function createUnloadedFor(itemIndex: number) {
-            return function () {
-                unloadedItems[itemIndex] = unloadedItems[itemIndex] + 1;
-            }
-        }
+        //function createUnloadedFor(itemIndex: number) {
+            //return function () {
+                //unloadedItems[itemIndex] = unloadedItems[itemIndex] + 1;
+            //}
+        //}
 
-        helper.buildUIAndRunTest(tabView, function () {
-            try {
-                TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
+        //helper.buildUIAndRunTest(tabView, function () {
+            //try {
+                //TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
 
-                // Attach to loaded/unloaded events
-                for (i = 0; i < itemCount; i++) {
-                    items[i].view.on("loaded", createLoadedFor(i));
-                    items[i].view.on("unloaded", createUnloadedFor(i));
-                }
+                //// Attach to loaded/unloaded events
+                //for (i = 0; i < itemCount; i++) {
+                    //items[i].view.on("loaded", createLoadedFor(i));
+                    //items[i].view.on("unloaded", createUnloadedFor(i));
+                //}
 
-                var detailsPageFactory = function (): Page {
-                    var detailsPage = new Page();
-                    detailsPage.content = new Label();
-                    return detailsPage;
-                };
+                //var detailsPageFactory = function (): Page {
+                    //var detailsPage = new Page();
+                    //detailsPage.content = new Label();
+                    //return detailsPage;
+                //};
 
-                helper.navigate(detailsPageFactory);
-            }
-            finally {
-                // Go back to the test page.
-                helper.goBack();
-            }
+                //helper.navigate(detailsPageFactory);
+            //}
+            //finally {
+                //// Go back to the test page.
+                //helper.goBack();
+            //}
 
-            TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
+            //TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
 
-            //console.log(">>>>>>>>>>>>> loaded items: " + loadedItems.join(", "));
-            //console.log(">>>>>>>>>>>>> unloadedItems items: " + unloadedItems.join(", "));
+            ////console.log(">>>>>>>>>>>>> loaded items: " + loadedItems.join(", "));
+            ////console.log(">>>>>>>>>>>>> unloadedItems items: " + unloadedItems.join(", "));
 
-            // Check that at least the first item is loaded and unloaded
-            TKUnit.assert(items[0].view.isLoaded, "The content of the first tab should be loaded.");
-            TKUnit.assertEqual(loadedItems[0], 1, "loaded count for 1st item");
-            TKUnit.assertEqual(unloadedItems[0], 1, "unloaded count for 1st item");
+            //// Check that at least the first item is loaded and unloaded
+            //TKUnit.assert(items[0].view.isLoaded, "The content of the first tab should be loaded.");
+            //TKUnit.assertEqual(loadedItems[0], 1, "loaded count for 1st item");
+            //TKUnit.assertEqual(unloadedItems[0], 1, "unloaded count for 1st item");
 
-            // Check that loaded/unloaded coutns are equal for all tabs
-            for (i = 0; i < itemCount; i++) {
-                TKUnit.assert(loadedItems[i] === unloadedItems[i],
-                    "Loaded and unloaded calls are not equal for item " + i + " loaded: " + loadedItems[i] + " unloaded: " + unloadedItems[i]);
-            }
-        });
-    }
-    finally {
-        // Return original page cache value
-        if (topFrame.android) {
-            topFrame.android.cachePagesOnNavigate = oldChache;
-        }
-    }
-}
+            //// Check that loaded/unloaded coutns are equal for all tabs
+            //for (i = 0; i < itemCount; i++) {
+                //TKUnit.assert(loadedItems[i] === unloadedItems[i],
+                    //"Loaded and unloaded calls are not equal for item " + i + " loaded: " + loadedItems[i] + " unloaded: " + unloadedItems[i]);
+            //}
+        //});
+    //}
+    //finally {
+        //// Return original page cache value
+        //if (topFrame.android) {
+            //topFrame.android.cachePagesOnNavigate = oldChache;
+        //}
+    //}
+//}
 
-function _clickTheFirstButtonInTheListViewNatively(tabView: TabView) {
-    if (tabView.android) {
-        var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
-        var androidListView = <android.widget.ListView>viewPager.getChildAt(0);
-        (<android.widget.Button>androidListView.getChildAt(0)).performClick();
-    }
-    else {
-        (<UIButton>(<UITableView>tabView.ios.viewControllers[0].view.subviews[0]).cellForRowAtIndexPath(NSIndexPath.indexPathForItemInSection(0, 0)).contentView.subviews[0]).sendActionsForControlEvents(UIControlEvents.UIControlEventTouchUpInside);
-    }
-}
+//function _clickTheFirstButtonInTheListViewNatively(tabView: TabView) {
+    //if (tabView.android) {
+        //var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+        //var androidListView = <android.widget.ListView>viewPager.getChildAt(0);
+        //(<android.widget.Button>androidListView.getChildAt(0)).performClick();
+    //}
+    //else {
+        //(<UIButton>(<UITableView>tabView.ios.viewControllers[0].view.subviews[0]).cellForRowAtIndexPath(NSIndexPath.indexPathForItemInSection(0, 0)).contentView.subviews[0]).sendActionsForControlEvents(UIControlEvents.UIControlEventTouchUpInside);
+    //}
+//}

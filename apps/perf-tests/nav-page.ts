@@ -8,7 +8,6 @@ import {Button} from "ui/button";
 import {Label} from "ui/label";
 import {TextField} from "ui/text-field";
 import {Switch} from "ui/switch";
-import {ListPicker} from "ui/list-picker";
 import {Slider} from "ui/slider";
 import {Color} from "color";
 import * as platform from "platform";

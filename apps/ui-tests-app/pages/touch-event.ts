@@ -1,6 +1,4 @@
-﻿import {View} from "ui/core/view";
-import {Page} from "ui/page";
-import {TextView} from "ui/text-view";
+﻿import {TextView} from "ui/text-view";
 import gestures = require("ui/gestures");
 
 export function onTouch(args: gestures.TouchGestureEventData) {

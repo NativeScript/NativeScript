@@ -1,8 +1,6 @@
 ﻿import * as application from "application";
 import {NavPage} from "../nav-page";
-import {Page} from "ui/page";
 import * as trace from "trace";
-
 trace.enable();
 trace.setCategories(trace.categories.concat(
     trace.categories.NativeLifecycle,

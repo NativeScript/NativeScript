@@ -9,8 +9,6 @@ import { Visibility } from "ui/enums";
 
 global.moduleMerge(actionTestsCommon, exports);
 
-var ASYNC = 0.2;
-
 export function test_NavBar_isVisible_when_MenuItems_areSet() {
 
     var page: PageModule.Page;

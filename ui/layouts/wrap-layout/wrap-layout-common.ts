@@ -1,7 +1,6 @@
 ﻿import definition = require("ui/layouts/wrap-layout");
 import platform = require("platform");
 import {LayoutBase} from "ui/layouts/layout-base";
-import {View} from "ui/core/view";
 import {Orientation} from "ui/enums";
 import {PropertyMetadata} from "ui/core/proxy";
 import {Property, PropertyMetadataSettings} from "ui/core/dependency-observable";

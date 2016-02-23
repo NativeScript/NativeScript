@@ -5,7 +5,6 @@ import * as utils from "utils/utils";
 import * as backgroundModule from "ui/styling/background";
 import view = require("ui/core/view");
 import style = require("ui/styling/style");
-import styling = require("ui/styling");
 
 global.moduleMerge(common, exports);
 

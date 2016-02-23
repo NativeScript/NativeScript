@@ -1,8 +1,7 @@
 ﻿import dts = require("utils/utils");
 import common = require("./utils-common");
-import colorModule = require("color");
+import {Color} from "color";
 import enums = require("ui/enums");
-import * as typesModule from "utils/types";
 import * as fsModule from "file-system";
 
 global.moduleMerge(common, exports);
@@ -178,7 +177,7 @@ export module ios {
         }
     }
 
-    export function getColor(uiColor: UIColor): colorModule.Color {
+    export function getColor(uiColor: UIColor): Color {
         var redRef = new interop.Reference<number>();
         var greenRef = new interop.Reference<number>();
         var blueRef = new interop.Reference<number>();
@@ -190,7 +189,7 @@ export module ios {
         var blue = blueRef.value * 255;
         var alpha = alphaRef.value * 255;
 
-        return new colorModule.Color(alpha, red, green, blue);
+        return new Color(alpha, red, green, blue);
     }
 
     export function isLandscape(): boolean {

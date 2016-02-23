@@ -14,7 +14,6 @@ import stackLayoutModule = require("ui/layouts/stack-layout");
 import {Label} from "ui/label";
 import {Page} from "ui/page";
 import {Button} from "ui/button";
-import {View} from "ui/core/view";
 import {TabView} from "ui/tab-view";
 import {Observable} from "data/observable";
 import {TemplateView} from "./template-builder-tests/template-view";
@@ -882,8 +881,6 @@ export function test_EventInTemplate() {
         notified = true;
     }
     
-    var basePath = "xml-declaration/";
-	var message;
 	var page = builder.load(__dirname + "/template-builder-tests/event-in-template.xml", pageCode);
     TKUnit.assert(view, "Expected the xml to generate a page");
     var templateView = <TemplateView>page.getViewById("template-view");
@@ -908,8 +905,6 @@ export function test_EventInCodelessFragment() {
         notified = true;
     }
     
-    var basePath = "xml-declaration/";
-	var message;
 	var page = builder.load(__dirname + "/template-builder-tests/event-in-codeless-fragment.xml", pageCode);
     TKUnit.assert(view, "Expected the xml to generate a page");
     var templateView = <TemplateView>page.getViewById("template-view");
