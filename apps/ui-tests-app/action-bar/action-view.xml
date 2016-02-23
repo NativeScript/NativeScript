@@ -5,8 +5,8 @@
         <ActionItem>
           <ActionItem.actionView>
             <StackLayout orientation="horizontal">
-              <Label text="Green" color="green"/>
-              <Label text="Red" color="red"/>
+              <Label text="Green" color="green" tap="navigate"/>
+              <Label text="Red" color="red" tap="navigate"/>
             </StackLayout>
           </ActionItem.actionView>
         </ActionItem>
