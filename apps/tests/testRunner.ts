@@ -127,6 +127,7 @@ function printRunTestStats() {
 
     for (j = 0; j < allTests.length; j++) {
         let testName = allTests[j].testName;
+        let duration = allTests[j].duration;
 
         if (!allTests[j].isPassed) {
             failedTestCount++;
@@ -135,10 +136,10 @@ function printRunTestStats() {
 
             failedTestInfo.push(allTests[j].testName + " FAILED: " + allTests[j].errorMessage);
 
-            testFileContent.push(`<testcase classname="classname" name="${testName}" time="0"><failure type="exceptions.AssertionError">${errorMessage}</failure></testcase>`);
+            testFileContent.push(`<testcase classname="classname" name="${testName}" time="${duration}"><failure type="exceptions.AssertionError">${errorMessage}</failure></testcase>`);
 
         } else {
-            testFileContent.push(`<testcase classname="classname" name="${testName}" time="0"></testcase>`);
+            testFileContent.push(`<testcase classname="classname" name="${testName}" time="${duration}"></testcase>`);
         }
     }
 
@@ -151,7 +152,7 @@ function printRunTestStats() {
         finalMessage += "\n" + failureMessage;
     }
 
-    testFileContent.push("</testsuite");
+    testFileContent.push("</testsuite>");
     testFileContent.push("</testsuites>");
 
     let testFile = fs.File.fromPath(fs.path.join(fs.knownFolders.documents().path, "test-results.xml"));
@@ -263,8 +264,9 @@ class TestInfo implements TKUnit.TestInfoEntry {
     isPassed: boolean;
     errorMessage: string;
     testTimeout: number;
+    duration: number;
 
-    constructor(testFunc, testInstance?: any, isTest?, testName?, isPassed?, errorMessage?, testTimeout?) {
+    constructor(testFunc, testInstance?: any, isTest?, testName?, isPassed?, errorMessage?, testTimeout?, duration?) {
         this.testFunc = testFunc;
         this.instance = testInstance || null;
         this.isTest = isTest || false;
@@ -272,5 +274,6 @@ class TestInfo implements TKUnit.TestInfoEntry {
         this.isPassed = isPassed || false;
         this.errorMessage = errorMessage || "";
         this.testTimeout = testTimeout;
+        this.duration = duration;
     }
 }
