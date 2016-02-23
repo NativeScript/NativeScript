@@ -127,7 +127,7 @@ function printRunTestStats() {
 
     for (j = 0; j < allTests.length; j++) {
         let testName = allTests[j].testName;
-        let duration = allTests[j].duration;
+        let duration = allTests[j].duration / 1000;
 
         if (!allTests[j].isPassed) {
             failedTestCount++;
