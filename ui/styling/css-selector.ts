@@ -7,6 +7,7 @@ import * as styleProperty from "ui/styling/style-property";
 import * as types from "utils/types";
 import * as utils from "utils/utils";
 import animationModule = require("ui/animation");
+import colorModule = require("color");
 
 var ID_SPECIFICITY = 1000000;
 var ATTR_SPECIFITY = 10000;
@@ -200,6 +201,11 @@ export class CssSelector {
         }
         for (let declaration in keyframe.declarations) {
             animation[declaration] = keyframe.declarations[declaration];
+        }
+        for (let declaration in animation) {
+            if (declaration === "backgroundColor") {
+                animation[declaration] = new colorModule.Color(animation[declaration]);
+            }
         }
         let duration = 0;
         if ((<any>keyframe).time === 0) {
