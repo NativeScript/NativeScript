@@ -74,3 +74,8 @@ export var remove = function (key: string): void {
     editor.remove(key);
     editor.commit();
 }
+
+export var clear = function (): void {
+    ensureSharedPreferences();
+    sharedPreferences.edit().clear().commit();
+}

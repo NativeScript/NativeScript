@@ -55,4 +55,9 @@ declare module "application-settings" {
     * @param key The key to check for.
     */
     export function remove(key: string): void;
+
+    /**
+     * Removes all values.
+     */
+    export function clear(): void;
 }
