@@ -136,10 +136,10 @@ function printRunTestStats() {
 
             failedTestInfo.push(allTests[j].testName + " FAILED: " + allTests[j].errorMessage);
 
-            testFileContent.push(`<testcase classname="classname" name="${testName}" time="${duration}"><failure type="exceptions.AssertionError">${errorMessage}</failure></testcase>`);
+            testFileContent.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"><failure type="exceptions.AssertionError">${errorMessage}</failure></testcase>`);
 
         } else {
-            testFileContent.push(`<testcase classname="classname" name="${testName}" time="${duration}"></testcase>`);
+            testFileContent.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"></testcase>`);
         }
     }
 
@@ -155,8 +155,11 @@ function printRunTestStats() {
     testFileContent.push("</testsuite>");
     testFileContent.push("</testsuites>");
 
-    let testFile = fs.File.fromPath(fs.path.join(fs.knownFolders.documents().path, "test-results.xml"));
+    let testFilePath = fs.path.join(fs.knownFolders.documents().path, "test-results.xml");
+    let testFile = fs.File.fromPath(testFilePath);
     testFile.writeTextSync(testFileContent.join(""));
+
+    finalMessage += "\n" + "Test results: " + testFilePath;
 
     let messageContainer = new TextView();
     messageContainer.text = finalMessage;
