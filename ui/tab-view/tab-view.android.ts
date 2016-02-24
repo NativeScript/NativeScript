@@ -191,7 +191,7 @@ export class TabView extends common.TabView {
     private _tabLayout: org.nativescript.widgets.TabLayout;
     private _viewPager: android.support.v4.view.ViewPager;
     private _pagerAdapter: android.support.v4.view.PagerAdapter;
-    private _androidViewId: number;
+    private _androidViewId: number = -1;
 
     private _pageChagedListener: android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
 
@@ -227,7 +227,7 @@ export class TabView extends common.TabView {
         this._viewPager.setLayoutParams(lp);
         this._grid.addView(this._viewPager);
 
-        if (!this._androidViewId) {
+        if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
         }
         this._grid.setId(this._androidViewId);
