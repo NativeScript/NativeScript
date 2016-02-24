@@ -1,6 +1,5 @@
 ﻿import definition = require("ui/text-base");
 import view = require("ui/core/view");
-import types = require("utils/types");
 import observable = require("data/observable");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
@@ -97,37 +96,22 @@ export class TextBase extends view.View implements definition.TextBase, formatte
     }
 
     private onFormattedTextChanged(eventData: observable.PropertyChangeData) {
-        this.setFormattedTextPropertyToNative(eventData.value);
+        this._setFormattedTextPropertyToNative(eventData.value);
     }
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var newValue = types.isNullOrUndefined(data.newValue) ? "" : data.newValue + "";
-        if (this.android) {
-            this.android.setText(newValue);
-        }
-        else if (this.ios) {
-            this.ios.text = newValue;
-            this.style._updateTextDecoration();
-            this.style._updateTextTransform();
-        }
+        //
     }
 
-    private setFormattedTextPropertyToNative(value) {
-        if (this.android) {
-            this.android.setText(value._formattedText);
-        } else if (this.ios) {
-            this.ios.attributedText = value._formattedText;
-            this.style._updateTextDecoration();
-            this.style._updateTextTransform();
-            this.requestLayout();
-        }
+    public _setFormattedTextPropertyToNative(value) {
+        //
     }
 
     public _onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (data.newValue) {
             (<formattedString.FormattedString>data.newValue).parent = this;
         }
-        this.setFormattedTextPropertyToNative(data.newValue);
+        this._setFormattedTextPropertyToNative(data.newValue);
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
