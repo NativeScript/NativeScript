@@ -7,6 +7,7 @@ import {Page} from "ui/page";
 import {ListView, ItemEventData} from "ui/list-view";
 import {TabView, TabViewItem} from "ui/tab-view";
 import {Button} from "ui/button";
+import types = require("utils/types");
 
 var ASYNC = 2;
 
@@ -25,6 +26,7 @@ function _createItems(count: number): Array<TabViewItem> {
             title: "Tab " + i,
             view: label
         });
+        tabEntry["index"] = i;
         items.push(tabEntry);
     }
     return items;
@@ -58,6 +60,7 @@ var _clickHandlerFactory = function (index: number) {
             var detailsLabel = new Label();
             detailsLabel.text = "Details Page " + index;
             var detailsPage = new Page();
+            detailsPage.id = "details-page";
             detailsPage.content = detailsLabel;
             return detailsPage;
         };
@@ -68,62 +71,59 @@ var _clickHandlerFactory = function (index: number) {
 
 export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere() {
     var topFrame = frameModule.topmost();
-    var oldChache;
 
+    var oldChache;
     if (topFrame.android) {
         oldChache = topFrame.android.cachePagesOnNavigate;
         topFrame.android.cachePagesOnNavigate = true;
     }
 
-    try {
+    var tabView;
+    var pageFactory = function (): Page {
+        tabView = _createTabView();
+        var items = [];
+        items.push({
+            title: "List",
+            view: _createListView()
+        });
+        var label = new Label();
+        label.text = "About";
+        var aboutLayout = new StackLayout();
+        aboutLayout.id = "AboutLayout";
+        aboutLayout.addChild(label);
+        items.push({
+            title: "About",
+            view: aboutLayout
+        });
+        tabView.items = items;
 
-        var mainPage: Page;
-        var pageFactory = function (): Page {
-            var tabView = _createTabView();
-            var items = [];
-            items.push({
-                title: "List",
-                view: _createListView()
-            });
-            var label = new Label();
-            label.text = "About";
-            var aboutLayout = new StackLayout();
-            aboutLayout.id = "AboutLayout";
-            aboutLayout.addChild(label);
-            items.push({
-                title: "About",
-                view: aboutLayout
-            });
-            tabView.items = items;
+        var tabViewPage = new Page();
+        tabViewPage.id = "tab-view-page";
+        tabViewPage.content = tabView;
 
-            mainPage = new Page();
-            mainPage.content = tabView;
-
-            return mainPage;
-        }
-
-        helper.navigate(pageFactory);
-
-        var tabView = mainPage.getViewById<TabView>("TabView");
-
-        // This will navigate to a details page. The wait is inside the method.
-        _clickTheFirstButtonInTheListViewNatively(tabView);
-
-        // Go back to the main page containing the TabView.
-        helper.goBack();
-
-        // Go back to the root tests page.
-        helper.goBack();
-    }
-    finally {
-        if (topFrame.android) {
-            topFrame.android.cachePagesOnNavigate = oldChache;
-        }
+        return tabViewPage;
     }
 
-    var listView = mainPage.getViewById<ListView>("ListView");
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "tab-view-page" }, ASYNC);
+    TKUnit.waitUntilReady(() => { return tabViewIsFullyLoaded(tabView) }, ASYNC);
 
-    TKUnit.assert(listView !== undefined, "ListView should be created when navigating back to the main page.");
+    // This will navigate to a details page. The wait is inside the method.
+    _clickTheFirstButtonInTheListViewNatively(tabView);
+    TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "details-page" }, ASYNC);
+
+    helper.goBack();
+    TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "tab-view-page" }, ASYNC);
+    TKUnit.waitUntilReady(() => { return tabViewIsFullyLoaded(tabView) }, ASYNC);
+
+    helper.goBack();
+    TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "mainPage" }, ASYNC);
+
+    if (topFrame.android) {
+        topFrame.android.cachePagesOnNavigate = oldChache;
+    }
+
+    TKUnit.assert(tabView.items[0].view instanceof ListView, "ListView should be created when navigating back to the main page.");
 }
 
 export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_NoPageCaching() {
@@ -134,90 +134,105 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_WithPage
     testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(true);
 }
 
+function tabViewIsFullyLoaded(tabView: TabView): boolean {
+    if (!tabView.isLoaded) {
+        return false;
+    }
+
+    for (var i = 0; i < tabView.items.length; i++) {
+        if (!tabView.items[i].view.isLoaded) {
+            return false;
+        }
+    }
+
+    if (tabView.android) {
+        var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+        if (viewPager.getChildCount() === 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache: boolean) {
-    var i: number;
-    var itemCount = 3;
-    var loadedItems = [0, 0, 0];
-    var unloadedItems = [0, 0, 0];
-
     var topFrame = frameModule.topmost();
-    var oldChache;
 
+    var oldChache;
     if (topFrame.android) {
         oldChache = topFrame.android.cachePagesOnNavigate;
         topFrame.android.cachePagesOnNavigate = enablePageCache;
     }
 
-    try {
-        var tabView = _createTabView();
-        var items = _createItems(itemCount);
-        tabView.items = items;
+    var i: number;
+    var itemCount = 2;
+    var loadedEventsCount = [0, 0];
+    var unloadedEventsCount = [0, 0];
 
-        function createLoadedFor(itemIndex: number) {
-            return function () {
-                loadedItems[itemIndex] = loadedItems[itemIndex] + 1;
-            }
-        }
+    var tabView = _createTabView();
+    tabView.items = _createItems(itemCount);
 
-        function createUnloadedFor(itemIndex: number) {
-            return function () {
-                unloadedItems[itemIndex] = unloadedItems[itemIndex] + 1;
-            }
-        }
+    helper.navigate(() => {
+        var tabViewPage = new Page();
+        tabViewPage.id = "tab-view-page";
+        tabViewPage.content = tabView;
+        return tabViewPage;
+    });
+    TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "tab-view-page" }, ASYNC);
+    TKUnit.waitUntilReady(() => { return tabViewIsFullyLoaded(tabView) }, ASYNC);
 
-        helper.buildUIAndRunTest(tabView, function () {
-            try {
-                TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
-
-                // Attach to loaded/unloaded events
-                for (i = 0; i < itemCount; i++) {
-                    items[i].view.on("loaded", createLoadedFor(i));
-                    items[i].view.on("unloaded", createUnloadedFor(i));
-                }
-
-                var detailsPageFactory = function (): Page {
-                    var detailsPage = new Page();
-                    detailsPage.content = new Label();
-                    return detailsPage;
-                };
-
-                helper.navigate(detailsPageFactory);
-            }
-            finally {
-                // Go back to the test page.
-                helper.goBack();
-            }
-
-            TKUnit.waitUntilReady(() => { return items[0].view.isLoaded; }, ASYNC);
-
-            //console.log(">>>>>>>>>>>>> loaded items: " + loadedItems.join(", "));
-            //console.log(">>>>>>>>>>>>> unloadedItems items: " + unloadedItems.join(", "));
-
-            // Check that at least the first item is loaded and unloaded
-            TKUnit.assert(items[0].view.isLoaded, "The content of the first tab should be loaded.");
-            TKUnit.assertEqual(loadedItems[0], 1, "loaded count for 1st item");
-            TKUnit.assertEqual(unloadedItems[0], 1, "unloaded count for 1st item");
-
-            // Check that loaded/unloaded coutns are equal for all tabs
-            for (i = 0; i < itemCount; i++) {
-                TKUnit.assert(loadedItems[i] === unloadedItems[i],
-                    "Loaded and unloaded calls are not equal for item " + i + " loaded: " + loadedItems[i] + " unloaded: " + unloadedItems[i]);
-            }
-        });
-    }
-    finally {
-        // Return original page cache value
-        if (topFrame.android) {
-            topFrame.android.cachePagesOnNavigate = oldChache;
+    function createLoadedFor(tabIndex: number) {
+        return function () {
+            loadedEventsCount[tabIndex] = loadedEventsCount[tabIndex] + 1;
         }
     }
+
+    function createUnloadedFor(tabIndex: number) {
+        return function () {
+            unloadedEventsCount[tabIndex] = unloadedEventsCount[tabIndex] + 1;
+        }
+    }
+
+    for (i = 0; i < itemCount; i++) {
+        tabView.items[i].view.on("loaded", createLoadedFor(i));
+        tabView.items[i].view.on("unloaded", createUnloadedFor(i));
+    }
+
+    helper.navigate(() => {
+        var detailsPage = new Page();
+        detailsPage.id = "details-page";
+        detailsPage.content = new Label();
+        return detailsPage;
+    });
+    TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "details-page" }, ASYNC);
+                
+    helper.goBack();
+    TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "tab-view-page" }, ASYNC);
+    TKUnit.waitUntilReady(() => { return tabViewIsFullyLoaded(tabView) }, ASYNC);
+
+    for (i = 0; i < itemCount; i++) {
+        tabView.items[i].view.off("loaded");
+        tabView.items[i].view.off("unloaded");
+    }
+
+    helper.goBack();
+    TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "mainPage" }, ASYNC);
+
+    if (topFrame.android) {
+        topFrame.android.cachePagesOnNavigate = oldChache;
+    }
+
+    TKUnit.arrayAssert(loadedEventsCount, [1, 1]);
+    TKUnit.arrayAssert(unloadedEventsCount, [1, 1]);
 }
 
 function _clickTheFirstButtonInTheListViewNatively(tabView: TabView) {
     if (tabView.android) {
         var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
         var androidListView = <android.widget.ListView>viewPager.getChildAt(0);
-        (<android.widget.Button>androidListView.getChildAt(0)).performClick();
+        var stackLayout = <org.nativescript.widgets.StackLayout>androidListView.getChildAt(0);
+        var button = <android.widget.Button>stackLayout.getChildAt(0);
+        button.performClick();
     }
     else {
         (<UIButton>(<UITableView>tabView.ios.viewControllers[0].view.subviews[0]).cellForRowAtIndexPath(NSIndexPath.indexPathForItemInSection(0, 0)).contentView.subviews[0]).sendActionsForControlEvents(UIControlEvents.UIControlEventTouchUpInside);
