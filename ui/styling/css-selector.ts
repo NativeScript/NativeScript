@@ -228,11 +228,19 @@ export class CssSelector {
     }
 
     public apply(view: view.View) {
+        var modifier = this.valueSourceModifier;
         if (this.isAnimated) {
+            this.eachSetter((property, value) => {
+                try {
+                    view.style._setValue(property, value, modifier);
+                }
+                catch (ex) {
+                    trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+                }
+            });
             this.applyKeyframeAnimation(view, 0, 0);
         }
         else {
-            var modifier = this.valueSourceModifier;
             this.eachSetter((property, value) => {
                 try {
                     view.style._setValue(property, value, modifier);
