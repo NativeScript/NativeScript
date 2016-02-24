@@ -36,16 +36,12 @@ export function getNativeTextAlignment(textView: textViewModule.TextView): strin
     switch (textView.ios.textAlignment) {
         case NSTextAlignment.NSTextAlignmentLeft:
             return enums.TextAlignment.left;
-            break;
         case NSTextAlignment.NSTextAlignmentCenter:
             return enums.TextAlignment.center;
-            break;
         case NSTextAlignment.NSTextAlignmentRight:
             return enums.TextAlignment.right;
-            break;
         default:
             return "unexpected value";
-            break;
     }
 }
 

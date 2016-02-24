@@ -9,7 +9,6 @@ import proxy = require("ui/core/proxy");
 import color = require("color");
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
-import styling = require("ui/styling");
 import * as imageSourceModule from "image-source";
 
 var imageSource: typeof imageSourceModule;

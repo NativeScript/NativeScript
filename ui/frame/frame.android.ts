@@ -12,7 +12,6 @@ import transitionModule = require("ui/transition");
 global.moduleMerge(frameCommon, exports);
 
 var TAG = "_fragmentTag";
-var OWNER = "_owner";
 var HIDDEN = "_hidden";
 var INTENT_EXTRA = "com.tns.activity";
 var ROOT_VIEW = "_rootView";

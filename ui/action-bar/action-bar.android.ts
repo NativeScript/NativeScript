@@ -9,8 +9,6 @@ import * as traceModule from "trace";
 import * as utilsModule from "utils/utils";
 import * as imageSourceModule from "image-source";
 import style = require("ui/styling/style");
-import font = require("ui/styling/font");
-import styling = require("ui/styling");
 
 const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 1000;

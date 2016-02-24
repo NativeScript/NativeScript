@@ -176,7 +176,6 @@ export class Background implements definition.Background {
     }
 
     private static parsePosition(pos: string): { x: CSSValue, y: CSSValue } {
-        var res = undefined
         let values = cssValue(pos);
 
         if (values.length === 2) {

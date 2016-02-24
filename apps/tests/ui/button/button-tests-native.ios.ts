@@ -27,16 +27,12 @@ export function getNativeTextAlignment(button: buttonModule.Button): string {
     switch (button.ios.titleLabel.textAlignment) {
         case NSTextAlignment.NSTextAlignmentLeft:
             return enums.TextAlignment.left;
-            break;
         case NSTextAlignment.NSTextAlignmentCenter:
             return enums.TextAlignment.center;
-            break;
         case NSTextAlignment.NSTextAlignmentRight:
             return enums.TextAlignment.right;
-            break;
         default:
             return "unexpected value";
-            break;
     }
 }
 

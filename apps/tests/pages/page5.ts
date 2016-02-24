@@ -10,7 +10,6 @@ function printDeviceInfoAndroid() {
     console.log("android.os.Build.VERSION.SDK_INT = " + android.os.Build.VERSION.SDK_INT);   //android.os.Build.VERSION.SDK_INT = 19
     console.log("android.os.Build.VERSION.CODENAME = " + android.os.Build.VERSION.CODENAME); //android.os.Build.VERSION.CODENAME = REL
     console.log("android.os.Build.VERSION.RELEASE = " + android.os.Build.VERSION.RELEASE);   //android.os.Build.VERSION.RELEASE = 4.4.4
-    android.os.Build.MANUFACTURER
     var metrics: android.util.DisplayMetrics = app.android.context.getResources().getDisplayMetrics();
     console.log("metrics.density = " + metrics.density);             //metrics.density = 3
     console.log("metrics.scaledDensity = " + metrics.scaledDensity); //metrics.scaledDensity = 3

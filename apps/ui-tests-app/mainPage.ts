@@ -1,12 +1,7 @@
-﻿import button = require("ui/button");
-import frame = require("ui/frame");
-import gridModule = require("ui/layouts/grid-layout");
+﻿import frame = require("ui/frame");
 import pages = require("ui/page");
-import text = require("ui/text-view");
-import fs = require("file-system");
 import trace = require("trace");
 import observable = require("data/observable");
-import view = require("ui/core/view");
 import dialogs = require("ui/dialogs");
 
 trace.enable();

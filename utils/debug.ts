@@ -1,4 +1,4 @@
-import { knownFolders } from "file-system"
+import {knownFolders} from "file-system"
 
 export var debug = true;
 
@@ -17,7 +17,6 @@ export class Source {
 	private _column: number;
 	
 	private static _source: symbol = Symbol("source");
-	private static _appRoot: string;
 	
     constructor(uri: string, line: number, column: number) {
         ensureAppRootPath();

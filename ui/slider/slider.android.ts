@@ -2,7 +2,6 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
-import styling = require("ui/styling");
 import style = require("ui/styling/style");
 
 function onValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -116,7 +115,6 @@ export class SliderStyler implements style.Styler {
     }
 
     private static resetBackgroundAndBorderProperty(view: view.View, nativeValue: number) {
-        var bar = <android.widget.SeekBar>view._nativeView;
         // Do nothing.
     }
 

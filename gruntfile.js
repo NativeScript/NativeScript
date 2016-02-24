@@ -336,7 +336,10 @@ module.exports = function(grunt) {
         },
         ts: {
             build: {
-                tsconfig: 'tsconfig.json',
+                tsconfig: {
+                    tsconfig: 'tsconfig.json',
+                    passThrough: true,
+                },
                 outDir: localCfg.outModulesDir,
                 options: tsOptions
             },

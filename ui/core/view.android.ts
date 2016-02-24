@@ -7,7 +7,6 @@ import proxy = require("ui/core/proxy");
 import gestures = require("ui/gestures");
 import * as types from "utils/types";
 import style = require("ui/styling/style");
-import styling = require("ui/styling");
 import enums = require("ui/enums");
 import background = require("ui/styling/background");
 import {CommonLayoutParams, Thickness} from "ui/styling/style";
@@ -17,7 +16,6 @@ global.moduleMerge(viewCommon, exports);
 var ANDROID = "_android";
 var NATIVE_VIEW = "_nativeView";
 var VIEW_GROUP = "_viewGroup";
-var OWNER = "_owner";
 
 function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;

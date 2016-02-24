@@ -7,7 +7,6 @@ import utils = require("utils/utils");
 import view = require("ui/core/view");
 import uiUtils = require("ui/utils");
 import * as types from "utils/types";
-import * as animationModule from "ui/animation";
 import * as transitionModule from "ui/transition";
 import application = require("application");
 

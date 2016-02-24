@@ -1,5 +1,4 @@
 ﻿import transition = require("ui/transition");
-import platform = require("platform");
 
 export class CustomTransition extends transition.Transition {
     constructor(duration: number, curve: any) {

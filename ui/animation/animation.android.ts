@@ -264,7 +264,6 @@ export class Animation extends common.Animation implements definition.Animation 
 
             default:
                 throw new Error("Cannot animate " + propertyAnimation.property);
-                break;
         }
 
         var i = 0;

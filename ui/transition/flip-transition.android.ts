@@ -1,10 +1,9 @@
-﻿import transition = require("ui/transition");
-import platform = require("platform");
+﻿import {Transition, AndroidTransitionType} from "ui/transition";
 
 var floatType = java.lang.Float.class.getField("TYPE").get(null);
 
 //http://developer.android.com/training/animation/cardflip.html
-export class FlipTransition extends transition.Transition {
+export class FlipTransition extends Transition {
     private _direction: string;
 
     constructor(direction: string, duration: number, curve: any) {
@@ -22,7 +21,7 @@ export class FlipTransition extends transition.Transition {
         var rotationY = this._direction === "right" ? 180 : -180;
 
         switch (transitionType) {
-            case transition.AndroidTransitionType.enter: // card_flip_right_in
+            case AndroidTransitionType.enter: // card_flip_right_in
                 objectAnimators = java.lang.reflect.Array.newInstance(android.animation.Animator.class, 3);
 
                 values = java.lang.reflect.Array.newInstance(floatType, 2);
@@ -48,7 +47,7 @@ export class FlipTransition extends transition.Transition {
                 animator.setDuration(1);
                 objectAnimators[2] = animator;
                 break;
-            case transition.AndroidTransitionType.exit: // card_flip_right_out
+            case AndroidTransitionType.exit: // card_flip_right_out
                 objectAnimators = java.lang.reflect.Array.newInstance(android.animation.Animator.class, 2);
 
                 values = java.lang.reflect.Array.newInstance(floatType, 2);
@@ -67,7 +66,7 @@ export class FlipTransition extends transition.Transition {
                 animator.setDuration(1);
                 objectAnimators[1] = animator;
                 break;
-            case transition.AndroidTransitionType.popEnter: // card_flip_left_in
+            case AndroidTransitionType.popEnter: // card_flip_left_in
                 objectAnimators = java.lang.reflect.Array.newInstance(android.animation.Animator.class, 3);
 
                 values = java.lang.reflect.Array.newInstance(floatType, 2);
@@ -93,7 +92,7 @@ export class FlipTransition extends transition.Transition {
                 animator.setDuration(1);
                 objectAnimators[2] = animator;
                 break;
-            case transition.AndroidTransitionType.popExit: // card_flip_left_out
+            case AndroidTransitionType.popExit: // card_flip_left_out
                 objectAnimators = java.lang.reflect.Array.newInstance(android.animation.Animator.class, 2);
 
                 values = java.lang.reflect.Array.newInstance(floatType, 2);

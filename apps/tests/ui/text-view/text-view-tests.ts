@@ -1,5 +1,4 @@
 ﻿import TKUnit = require("../../TKUnit");
-import testRunner = require("../../testRunner");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import pagesModule = require("ui/page");

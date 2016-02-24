@@ -3,7 +3,7 @@ import view = require("ui/core/view");
 import dts = require("ui/page");
 import styleScope = require("../styling/style-scope");
 import {ActionBar} from "ui/action-bar";
-import {DependencyObservable, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData, Property, ValueSource} from "ui/core/dependency-observable";
+import {PropertyMetadataSettings, PropertyChangeData, Property, ValueSource} from "ui/core/dependency-observable";
 import * as style from "../styling/style";
 import * as fileSystemModule from "file-system";
 import * as frameModule from "ui/frame";

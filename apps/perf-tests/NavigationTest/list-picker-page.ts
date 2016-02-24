@@ -1,4 +1,5 @@
-﻿import {Page, ListPicker} from "ui";
+﻿import {Page} from "ui/page";
+import {ListPicker} from "ui/list-picker";
 
 var closeCallback: Function;
 var page: Page;

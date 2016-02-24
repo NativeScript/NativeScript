@@ -1,6 +1,5 @@
 ﻿import common = require("./time-picker-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import utils = require("utils/utils")
+import {Owned} from "utils/utils";
 
 global.moduleMerge(common, exports);
 
@@ -18,7 +17,7 @@ export class TimePicker extends common.TimePicker {
         var that = new WeakRef(this);
 
         this._listener = new android.widget.TimePicker.OnTimeChangedListener(
-            <utils.Owned & android.widget.TimePicker.IOnTimeChangedListener>{
+            <Owned & android.widget.TimePicker.IOnTimeChangedListener>{
                 get owner() {
                     return that.get();
                 },

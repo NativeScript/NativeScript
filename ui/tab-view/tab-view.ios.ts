@@ -9,8 +9,6 @@ import proxy = require("ui/core/proxy");
 import color = require("color");
 import * as imageSourceModule from "image-source";
 import style = require("ui/styling/style");
-import font = require("ui/styling/font");
-import styling = require("ui/styling");
 
 global.moduleMerge(common, exports);
 

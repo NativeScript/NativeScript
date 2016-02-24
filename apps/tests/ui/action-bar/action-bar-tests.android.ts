@@ -3,7 +3,6 @@ import helper = require("../helper");
 import TKUnit = require("../../TKUnit");
 import { ActionItem } from "ui/action-bar";
 import { Visibility } from "ui/enums";
-import fs = require("file-system");
 
 global.moduleMerge(actionTestsCommon, exports);
 
@@ -33,7 +32,6 @@ export function test_navigationButton_visibility() {
         page.actionBar.navigationButton = actionItem;
 
         var toolbar = <android.support.v7.widget.Toolbar>(<any>page.actionBar)._toolbar;
-        var menu = toolbar.getMenu();
 
         TKUnit.assertNotNull(toolbar.getNavigationIcon(), "Visibility does not work");
         actionItem.visibility = Visibility.collapse;

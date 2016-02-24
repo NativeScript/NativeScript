@@ -1,8 +1,6 @@
 ﻿import common = require("./time-picker-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import styling = require("ui/styling");
 import style = require("ui/styling/style");
-import view = require("ui/core/view");
+import {View} from "ui/core/view";
 
 function getDate(hour: number, minute: number): NSDate {
     var comps = NSDateComponents.alloc().init();
@@ -98,17 +96,17 @@ class UITimePickerChangeHandlerImpl extends NSObject {
 
 export class TimePickerStyler implements style.Styler {
     // color
-    private static setColorProperty(view: view.View, newValue: any) {
+    private static setColorProperty(view: View, newValue: any) {
         var picker = <UIDatePicker>view._nativeView;
         picker.setValueForKey(newValue, "textColor");
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: any) {
+    private static resetColorProperty(view: View, nativeValue: any) {
         var picker = <UIDatePicker>view._nativeView;
         picker.setValueForKey(nativeValue, "textColor");
     }
 
-    private static getColorProperty(view: view.View): any {
+    private static getColorProperty(view: View): any {
         var picker = <UIDatePicker>view._nativeView;
         return picker.valueForKey("textColor");
     }
