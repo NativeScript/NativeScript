@@ -136,7 +136,7 @@ function printRunTestStats() {
 
             failedTestInfo.push(allTests[j].testName + " FAILED: " + allTests[j].errorMessage);
 
-            testFileContent.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"><failure type="exceptions.AssertionError">${errorMessage}</failure></testcase>`);
+            testFileContent.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"><failure type="exceptions.AssertionError"><![CDATA[${errorMessage}]]></failure></testcase>`);
 
         } else {
             testFileContent.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"></testcase>`);
