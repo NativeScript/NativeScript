@@ -40,9 +40,8 @@ export class SlideTransition extends transition.Transition {
                 break;
         }
 
-        var originalToViewTransform = toView.transform;
         toView.transform = toViewBeginTransform;
-        //fromView.transform = CGAffineTransformIdentity;
+        fromView.transform = CGAffineTransformIdentity;
 
         switch (operation) {
             case UINavigationControllerOperation.UINavigationControllerOperationPush:
@@ -57,7 +56,7 @@ export class SlideTransition extends transition.Transition {
         var curve = this.getCurve();
         UIView.animateWithDurationAnimationsCompletion(duration, () => {
             UIView.setAnimationCurve(curve);
-            toView.transform = originalToViewTransform;
+            toView.transform = CGAffineTransformIdentity;
             fromView.transform = fromViewEndTransform;
         }, completion);
     }

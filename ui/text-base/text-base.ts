@@ -75,7 +75,7 @@ export class TextBase extends view.View implements definition.TextBase, formatte
         return this.style.textAlignment;
     }
     set textAlignment(value: string) {
-        this.style.textAlignment;
+        this.style.textAlignment = value;
     }
 
     get formattedText(): formattedString.FormattedString {

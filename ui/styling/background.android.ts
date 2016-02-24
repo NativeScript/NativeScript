@@ -101,7 +101,6 @@ export module ad {
                 let backgroundBoundsF = new android.graphics.RectF(bounds.left + backoffAntialias, bounds.top + backoffAntialias, bounds.right - backoffAntialias, bounds.bottom - backoffAntialias);
 
                 let outerRadius = this._cornerRadius * this._density;
-                let backgroundRadius = Math.max(0, outerRadius - backoffAntialias);
                 
                 // draw background
                 if (this.background.color && this.background.color.android) {

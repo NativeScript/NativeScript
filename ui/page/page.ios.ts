@@ -6,7 +6,6 @@ import uiUtils = require("ui/utils");
 import utils = require("utils/utils");
 import {device} from "platform";
 import {DeviceType} from "ui/enums";
-import observable = require("data/observable");
 
 global.moduleMerge(pageCommon, exports);
 
@@ -36,7 +35,6 @@ class UIViewControllerImpl extends UIViewController {
             let isTablet = device.deviceType === DeviceType.Tablet;
             let isFullScreen = !owner._UIModalPresentationFormSheet || !isTablet;
             let frame = isFullScreen ? UIScreen.mainScreen().bounds : this.view.frame;
-            let origin = frame.origin;
             let size = frame.size;
             let width = size.width;
             let height = size.height;

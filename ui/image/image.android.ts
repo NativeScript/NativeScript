@@ -3,8 +3,6 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import * as enumsModule from "ui/enums";
 import style = require("ui/styling/style");
-import font = require("ui/styling/font");
-import styling = require("ui/styling");
 import view = require("ui/core/view");
 import background = require("ui/styling/background");
 import utils = require("utils/utils");

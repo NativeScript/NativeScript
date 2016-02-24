@@ -309,6 +309,7 @@ export function start(entry?: frame.NavigationEntry) {
             setupOrientationListener(androidApp);
         }
     });
+
     loadCss();
 }
 

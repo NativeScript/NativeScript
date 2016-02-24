@@ -1,6 +1,5 @@
 ﻿import TKUnit = require("../TKUnit");
 import {Label} from "ui/label";
-import helper = require("../ui/helper");
 import layoutHelper = require("./layout-helper");
 import testModule = require("../ui-test");
 import commonTests = require("./common-layout-tests");

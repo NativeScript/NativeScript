@@ -5,7 +5,6 @@ import proxy = require("ui/core/proxy");
 import types = require("utils/types");
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
-import styling = require("ui/styling");
 import view = require("ui/core/view");
 
 const R_ID_TABS = 0x01020013;

@@ -1,5 +1,4 @@
 ﻿import TKUnit = require("../../TKUnit");
-import testRunner = require("../../testRunner");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import pagesModule = require("ui/page");
@@ -69,6 +68,31 @@ export var testSetText = function () {
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });    
 }
+
+export var testSetTextNull = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
+        var textField = <textFieldModule.TextField>views[0];
+        
+        textField.text = null;
+
+        var expectedValue = "";
+        var actualValue = textFieldTestsNative.getNativeText(textField);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testSetTextUndefined = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
+        var textField = <textFieldModule.TextField>views[0];
+
+        textField.text = undefined;
+
+        var expectedValue = "";
+        var actualValue = textFieldTestsNative.getNativeText(textField);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
 /* tslint:disable */
 export var testSetHintToNumber = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {

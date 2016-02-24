@@ -148,7 +148,7 @@ export class FileSystemAccess {
 
     public fileExists(path: string): boolean {
         var result = this.exists(path);
-        return result.exists && !result.isDirectory;
+        return result.exists;
     }
 
     public folderExists(path: string): boolean {

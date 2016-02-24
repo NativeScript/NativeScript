@@ -7,7 +7,6 @@ import proxy = require("ui/core/proxy");
 import gestures = require("ui/gestures");
 import * as types from "utils/types";
 import style = require("ui/styling/style");
-import styling = require("ui/styling");
 import enums = require("ui/enums");
 import background = require("ui/styling/background");
 import {CommonLayoutParams, Thickness} from "ui/styling/style";
@@ -17,7 +16,6 @@ global.moduleMerge(viewCommon, exports);
 var ANDROID = "_android";
 var NATIVE_VIEW = "_nativeView";
 var VIEW_GROUP = "_viewGroup";
-var OWNER = "_owner";
 
 function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
@@ -180,8 +178,9 @@ export class View extends viewCommon.View {
 
     public _removeViewCore(view: viewCommon.View) {
         super._removeViewCore(view);
-        // TODO: Detach from the context?
-        view._onDetached();
+        if (view._context) {
+            view._onDetached();
+        }
     }
 
     public _onAttached(context: android.content.Context) {
@@ -227,7 +226,9 @@ export class View extends viewCommon.View {
                 if (child._isAddedToNativeVisualTree) {
                     that._removeViewFromNativeVisualTree(child);
                 }
-                child._onDetached(force);
+                if (child._context) {
+                    child._onDetached(force);
+                }
                 return true;
             }
             this._eachChildView(eachChild);

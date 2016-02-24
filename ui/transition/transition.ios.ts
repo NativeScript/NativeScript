@@ -60,7 +60,6 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
     }
 }
 
-var transitionId = 0;
 export class Transition implements definition.Transition {
     private _duration: number;
     private _curve: UIViewAnimationCurve;

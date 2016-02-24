@@ -1,5 +1,4 @@
 ﻿import transition = require("ui/transition");
-import platform = require("platform");
 
 var floatType = java.lang.Float.class.getField("TYPE").get(null);
 

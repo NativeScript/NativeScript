@@ -1,11 +1,12 @@
-﻿import TKUnit = require("../TKUnit");
-import platform = require("platform");
-import transitionModule = require("ui/transition");
-import color = require("color");
-import helper = require("../ui/helper");
-import utils = require("utils/utils");
-import trace = require("trace");
-import {Frame, Page, topmost as topmostFrame, NavigationEntry, NavigationTransition, AnimationCurve, WrapLayout, Button} from "ui";
+﻿import * as TKUnit from "../TKUnit";
+import * as helper from "../ui/helper";
+import * as platform from "platform";
+import * as trace from "trace";
+import {Color} from "color";
+import {GC} from "utils/utils";
+import {NavigationEntry, NavigationTransition} from "ui/frame";
+import {Page} from "ui/page";
+import {AnimationCurve} from "ui/enums"
 
 function _testTransition(navigationTransition: NavigationTransition) {
     var testId = `Transition[${JSON.stringify(navigationTransition)}]`;
@@ -14,7 +15,7 @@ function _testTransition(navigationTransition: NavigationTransition) {
         create: function (): Page {
             var page = new Page();
             page.id = testId;
-            page.style.backgroundColor = new color.Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+            page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
             return page;
         },
         animated: true,
@@ -25,7 +26,7 @@ function _testTransition(navigationTransition: NavigationTransition) {
     TKUnit.wait(0.100);
     helper.goBack();
     TKUnit.wait(0.100);
-    utils.GC();
+    GC();
 }
 
 // Extremely slow. Run only if needed.
@@ -33,7 +34,7 @@ export var test_Transitions = function () {
     helper.navigate(() => {
         var page = new Page();
         page.id = "TransitionsTestPage_MAIN"
-        page.style.backgroundColor = new color.Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+        page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
         return page;
     });
 

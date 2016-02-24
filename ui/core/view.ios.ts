@@ -5,7 +5,6 @@ import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import style = require("ui/styling/style");
-import styling = require("ui/styling");
 import enums = require("ui/enums");
 import * as backgroundModule from "ui/styling/background";
 

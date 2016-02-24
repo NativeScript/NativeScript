@@ -1,15 +1,12 @@
-﻿import TKUnit = require("../TKUnit");
-import platform = require("platform");
-import {Frame, Page, topmost as topmostFrame, NavigationEntry, NavigationTransition, AnimationCurve, WrapLayout, Button} from "ui";
-import color = require("color");
-import helper = require("../ui/helper");
-import utils = require("utils/utils");
-import trace = require("trace");
+﻿import * as TKUnit from "../TKUnit";
+import {Page} from "ui/page";
+import {topmost as topmostFrame} from "ui/frame";
+import {Color} from "color";
 
 // Creates a random colorful page full of meaningless stuff.
 var pageFactory = function(): Page {
     var page = new Page();
-    page.style.backgroundColor = new color.Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+    page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
     return page;
 };
 

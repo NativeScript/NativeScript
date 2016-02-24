@@ -5,6 +5,7 @@ import {topmost, Frame} from "ui/frame";
 import {TextView} from "ui/text-view";
 import * as platform from "platform";
 import "./ui-test";
+import fs = require("file-system");
 
 Frame.defaultAnimatedNavigation = false;
 
@@ -113,26 +114,52 @@ var running = false;
 var testsQueue = new Array<TestInfo>();
 
 function printRunTestStats() {
+    let testFileContent = new Array<string>();
+
     var j;
-    var testsCount = 0;
     var failedTestCount = 0;
     var failedTestInfo = [];
-    for (j = 0; j < testsQueue.length; j++) {
-        if (testsQueue[j].isTest) {
-            testsCount++;
-            if (!testsQueue[j].isPassed) {
-                failedTestCount++;
-                failedTestInfo.push(testsQueue[j].testName + " FAILED: " + testsQueue[j].errorMessage);
-            }
+
+    let allTests = testsQueue.filter(t=> t.isTest);
+
+    testFileContent.push("<testsuites>");
+    testFileContent.push(`<testsuite name="NativeScript Tests" timestamp="${new Date()}" hostname="hostname" time="0" errors="0" tests="${allTests.length}" skipped="0" failures="${failedTestCount}">`);
+
+    for (j = 0; j < allTests.length; j++) {
+        let testName = allTests[j].testName;
+        let duration = allTests[j].duration / 1000;
+
+        if (!allTests[j].isPassed) {
+            failedTestCount++;
+
+            let errorMessage = allTests[j].errorMessage;
+
+            failedTestInfo.push(allTests[j].testName + " FAILED: " + allTests[j].errorMessage);
+
+            testFileContent.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"><failure type="exceptions.AssertionError"><![CDATA[${errorMessage}]]></failure></testcase>`);
+
+        } else {
+            testFileContent.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"></testcase>`);
         }
     }
-    let finalMessage = "=== ALL TESTS COMPLETE === \n" + (testsCount - failedTestCount) + " OK, " + failedTestCount + " failed" + "\n";
+
+
+    let finalMessage = "=== ALL TESTS COMPLETE === \n" + (allTests.length - failedTestCount) + " OK, " + failedTestCount + " failed" + "\n";
     TKUnit.write(finalMessage, messageType.info);
     for (j = 0; j < failedTestInfo.length; j++) {
         let failureMessage = failedTestInfo[j];
         TKUnit.write(failureMessage, messageType.error);
         finalMessage += "\n" + failureMessage;
     }
+
+    testFileContent.push("</testsuite>");
+    testFileContent.push("</testsuites>");
+
+    let testFilePath = fs.path.join(fs.knownFolders.documents().path, "test-results.xml");
+    let testFile = fs.File.fromPath(testFilePath);
+    testFile.writeTextSync(testFileContent.join(""));
+
+    finalMessage += "\n" + "Test results: " + testFilePath;
 
     let messageContainer = new TextView();
     messageContainer.text = finalMessage;
@@ -156,7 +183,7 @@ export var runAll = function (testSelector?: string) {
         // TODO: We may schedule pending run requests
         return;
     }
-    
+
     var singleModuleName, singleTestName;
     if (testSelector) {
         var pair = testSelector.split(".");
@@ -168,7 +195,7 @@ export var runAll = function (testSelector?: string) {
                 singleModuleName = singleModuleName.toLowerCase();
             }
         }
-        
+
         singleTestName = pair[1];
         if (singleTestName) {
             if (singleTestName.length === 0) {
@@ -178,7 +205,7 @@ export var runAll = function (testSelector?: string) {
             }
         }
     }
-    
+
     console.log("TESTS: " + singleModuleName + " " + singleTestName);
 
     var totalSuccess = 0;
@@ -205,7 +232,7 @@ export var runAll = function (testSelector?: string) {
             if (singleTestName && (singleTestName !== testName.toLowerCase())) {
                 continue;
             }
-            
+
             var testFunction = test[testName];
             if ((typeof (testFunction) === "function") && (testName.substring(0, 4) == "test")) {
                 if (test.setUp) {
@@ -240,8 +267,9 @@ class TestInfo implements TKUnit.TestInfoEntry {
     isPassed: boolean;
     errorMessage: string;
     testTimeout: number;
+    duration: number;
 
-    constructor(testFunc, testInstance?: any, isTest?, testName?, isPassed?, errorMessage?, testTimeout?) {
+    constructor(testFunc, testInstance?: any, isTest?, testName?, isPassed?, errorMessage?, testTimeout?, duration?) {
         this.testFunc = testFunc;
         this.instance = testInstance || null;
         this.isTest = isTest || false;
@@ -249,5 +277,6 @@ class TestInfo implements TKUnit.TestInfoEntry {
         this.isPassed = isPassed || false;
         this.errorMessage = errorMessage || "";
         this.testTimeout = testTimeout;
+        this.duration = duration;
     }
 }

@@ -31,16 +31,12 @@ export function getNativeTextAlignment(textField: textFieldModule.TextField): st
     switch (textField.ios.textAlignment) {
         case NSTextAlignment.NSTextAlignmentLeft:
             return enums.TextAlignment.left;
-            break;
         case NSTextAlignment.NSTextAlignmentCenter:
             return enums.TextAlignment.center;
-            break;
         case NSTextAlignment.NSTextAlignmentRight:
             return enums.TextAlignment.right;
-            break;
         default:
             return "unexpected value";
-            break;
     }
 }
 

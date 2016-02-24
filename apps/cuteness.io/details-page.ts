@@ -1,4 +1,4 @@
-﻿import {Page} from "ui";
+﻿import {Page} from "ui/page";
 import {EventData as ObservableEventData} from "data/observable";
 
 // Event handler for Page "navigatedTo" event attached in details-page.xml

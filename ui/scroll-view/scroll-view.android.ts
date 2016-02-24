@@ -12,7 +12,7 @@ common.orientationProperty.metadata.onValueChanged = function scrollViewOrientat
 
 export class ScrollView extends common.ScrollView implements definition.ScrollView {
     private _android: org.nativescript.widgets.VerticalScrollView | org.nativescript.widgets.HorizontalScrollView;
-    private _androidViewId: number;
+    private _androidViewId: number = -1;
     private handler: android.view.ViewTreeObserver.OnScrollChangedListener;
 
     get android(): android.view.ViewGroup {
@@ -86,7 +86,7 @@ export class ScrollView extends common.ScrollView implements definition.ScrollVi
             this._android = new org.nativescript.widgets.VerticalScrollView(this._context);
         }
 
-        if (!this._androidViewId) {
+        if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
         }
 

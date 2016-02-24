@@ -451,7 +451,6 @@ class CssCompositeSelector extends CssSelector {
             }
             if (!result) {
                 break;
-                return result;
             }
         }
         return result;
@@ -505,11 +504,9 @@ function matchesAttr(attrExpression: string, view: view.View): boolean {
                 break;
         }
         return !types.isNullOrUndefined(view[attrName]) && attrCheckRegex.test(view[attrName]+"");
-    }
-    else {
+    } else {
         return !types.isNullOrUndefined(view[attrExpression]);
     }
-    return false;
 }
 
 export class CssVisualStateSelector extends CssSelector {

@@ -3,8 +3,6 @@ import {GridLayout, ItemSpec, GridUnitType} from "ui/layouts/grid-layout";
 import {Button} from "ui/button";
 import TKUnit = require("../TKUnit");
 import view = require("ui/core/view");
-import navHelper = require("../ui/helper");
-import utils = require("utils/utils");
 import builder = require("ui/builder");
 import enums = require("ui/enums");
 import testModule = require("../ui-test");
@@ -292,15 +290,15 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
 
     public test_ItemSpec_constructor_throws_onNegativeValue() {
         TKUnit.assertThrows(() => {
-            new ItemSpec(-1, GridUnitType.auto);
+            return new ItemSpec(-1, GridUnitType.auto);
         }, "'value' should be positive number.");
     }
 
     public test_ItemSpec_constructor_doesnt_throw_onCorrectType() {
         try {
-            new ItemSpec(1, GridUnitType.auto);
-            new ItemSpec(1, GridUnitType.star);
-            new ItemSpec(1, GridUnitType.pixel);
+            var dummy = new ItemSpec(1, GridUnitType.auto);
+            dummy = new ItemSpec(1, GridUnitType.star);
+            dummy = new ItemSpec(1, GridUnitType.pixel);
         }
         catch (ex) {
             TKUnit.assert(false, "ItemSpec type should support auto, star and pixel.");
@@ -309,7 +307,7 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
 
     public test_ItemSpec_constructor_throws_onWrongType() {
         TKUnit.assertThrows(() => {
-            new ItemSpec(1, "unsupported");
+            return new ItemSpec(1, "unsupported");
         }, "'ItemSpec type' incorrect value.");
     }
 
@@ -529,7 +527,6 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
     }
 
     private assertRows(grid: GridLayout) {
-        var columns: Array<ItemSpec> = grid.getColumns();
         var rows: Array<ItemSpec> = grid.getRows();
 
         TKUnit.assertEqual(rows.length, 4, "rows.length");

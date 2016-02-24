@@ -1,12 +1,7 @@
-﻿import button = require("ui/button");
-import frame = require("ui/frame");
-import gridModule = require("ui/layouts/grid-layout");
+﻿import frame = require("ui/frame");
 import pages = require("ui/page");
-import text = require("ui/text-view");
-import fs = require("file-system");
 import trace = require("trace");
 import observable = require("data/observable");
-import view = require("ui/core/view");
 import dialogs = require("ui/dialogs");
 
 trace.enable();
@@ -55,10 +50,12 @@ examples.set("dialogs", "dialogs/dialogs");
 
 examples.set("fontbtn", "font/button");
 examples.set("fontlbl", "font/label");
-examples.set("material", "font/material-icons");
-examples.set("tabfont", "font/tab-view");
 examples.set("fontfield", "font/text-field");
 examples.set("fontview", "font/text-view");
+
+examples.set("customfonts", "font/custom-fonts");
+examples.set("material", "font/material-icons");
+examples.set("tabfont", "font/tab-view");
 
 examples.set("htmlview", "html-view/html-view");
 

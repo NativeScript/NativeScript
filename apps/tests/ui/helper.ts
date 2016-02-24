@@ -176,6 +176,7 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
 
                 sp.removeChild(weakRef.get());
                 if (newPage.ios) {
+                    /* tslint:disable:no-unused-expression */
                     // Could cause GC on the next call.
                     // NOTE: Don't replace this with forceGC();
                     new ArrayBuffer(4 * 1024 * 1024);
@@ -237,6 +238,7 @@ export function assertAreClose(actual: number, expected: number, message: string
 
 export function forceGC() {
     if (platform.device.os === platform.platformNames.ios) {
+        /* tslint:disable:no-unused-expression */
         // Could cause GC on the next call.
         new ArrayBuffer(4 * 1024 * 1024);
         TKUnit.wait(ASYNC);

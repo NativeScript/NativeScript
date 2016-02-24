@@ -2,7 +2,6 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import * as typesModule from "utils/types";
-import styling = require("ui/styling");
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 import font = require("ui/styling/font");

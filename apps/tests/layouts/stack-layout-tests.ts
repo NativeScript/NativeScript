@@ -1,9 +1,7 @@
-﻿import {Page} from "ui/page";
-import {StackLayout} from "ui/layouts/stack-layout";
+﻿import {StackLayout} from "ui/layouts/stack-layout";
 import {Button} from "ui/button";
 import TKUnit = require("../TKUnit");
 import helper = require("./layout-helper");
-import navHelper = require("../ui/helper");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 import testModule = require("../ui-test");
@@ -39,7 +37,6 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     public test_Orientation_Change() {
         this.waitUntilTestElementLayoutIsValid();
 
-        var arrangeCount = this.rootLayout.arrangeCount;
         TKUnit.assertEqual(this.rootLayout.orientation, enums.Orientation.vertical, "Default orientation should be Vertical.");
 
         this.rootLayout.orientation = enums.Orientation.horizontal;

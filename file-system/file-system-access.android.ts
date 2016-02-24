@@ -75,7 +75,7 @@ export class FileSystemAccess {
 
     public fileExists(path: string): boolean {
         var file = new java.io.File(path);
-        return file.exists() && !file.isDirectory();
+        return file.exists();
     }
 
     public folderExists(path: string): boolean {

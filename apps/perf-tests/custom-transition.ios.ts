@@ -1,5 +1,4 @@
 ﻿import transition = require("ui/transition");
-import platform = require("platform");
 
 export class CustomTransition extends transition.Transition {
     public animateIOSTransition(containerView: UIView, fromView: UIView, toView: UIView, operation: UINavigationControllerOperation, completion: (finished: boolean) => void): void {

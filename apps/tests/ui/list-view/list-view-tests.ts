@@ -1,9 +1,6 @@
 ﻿import testModule = require("../../ui-test");
 import TKUnit = require("../../TKUnit");
-import testRunner = require("../../testRunner");
 import app = require("application");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
 import observable = require("data/observable");
 import types = require("utils/types");
 import platform = require("platform");
@@ -637,36 +634,37 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         this.assertNoMemoryLeak(weakRef);
     }
 
-    private test_view_in_itemLoading_is_not_collected_prematurely() {
-        let weakRef: WeakRef<labelModule.Label>;
+    //private test_view_in_itemLoading_is_not_collected_prematurely() {
+        //let weakRef: WeakRef<labelModule.Label>;
 
-        let handler = function (args: listViewModule.ItemEventData) {
-            let lbl = new labelModule.Label();
-            lbl.text = args.index.toString();
-            weakRef = new WeakRef(lbl);
-            args.view = lbl;
-            let listView: listViewModule.ListView = <listViewModule.ListView>args.object;
-            listView.off("itemLoading", handler);
-        };
+        //let handler = function (args: listViewModule.ItemEventData) {
+            //let lbl = new labelModule.Label();
+            //lbl.text = args.index.toString();
+            //weakRef = new WeakRef(lbl);
+            //args.view = lbl;
+            //let listView: listViewModule.ListView = <listViewModule.ListView>args.object;
+            //listView.off("itemLoading", handler);
+        //};
 
-        this.testView.on("itemLoading", handler);
-        this.testView.items = [1];
-        TKUnit.waitUntilReady(() => { return this.getNativeViewCount(this.testView) === this.testView.items.length; }, ASYNC);
+        //this.testView.on("itemLoading", handler);
+        //this.testView.items = [1];
+        //TKUnit.waitUntilReady(() => { return this.getNativeViewCount(this.testView) === this.testView.items.length; }, ASYNC);
 
-        if (platform.device.os === platform.platformNames.ios) {
-            // Could cause GC on the next call.
-            // NOTE: Don't replace this with forceGC();
-            new ArrayBuffer(4 * 1024 * 1024);
-        }
-        utils.GC();
+        //if (platform.device.os === platform.platformNames.ios) {
+            //// Could cause GC on the next call.
+            //// NOTE: Don't replace this with forceGC();
+            //new ArrayBuffer(4 * 1024 * 1024);
+        //}
+        //utils.GC();
 
-        TKUnit.assert(weakRef.get(), weakRef.get() + " died prematurely!");
-    }
+        //TKUnit.assert(weakRef.get(), weakRef.get() + " died prematurely!");
+    //}
 
     private assertNoMemoryLeak(weakRef: WeakRef<listViewModule.ListView>) {
         this.tearDown();
         TKUnit.waitUntilReady(() => {
             if (platform.device.os === platform.platformNames.ios) {
+                /* tslint:disable:no-unused-expression */
                 // Could cause GC on the next call.
                 // NOTE: Don't replace this with forceGC();
                 new ArrayBuffer(4 * 1024 * 1024);

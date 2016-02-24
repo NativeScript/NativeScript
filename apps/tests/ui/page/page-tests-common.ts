@@ -27,7 +27,6 @@ import LabelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import helper = require("../helper");
 import view = require("ui/core/view");
-import platform = require("platform");
 import observable = require("data/observable");
 
 export function addLabelToPage(page: PageModule.Page, text?: string) {

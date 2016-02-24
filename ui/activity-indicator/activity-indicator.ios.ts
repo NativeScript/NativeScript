@@ -1,7 +1,6 @@
 ﻿import aiCommon = require("./activity-indicator-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import styling = require("ui/styling");
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 

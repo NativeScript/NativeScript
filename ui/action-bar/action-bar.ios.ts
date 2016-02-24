@@ -7,8 +7,6 @@ import view = require("ui/core/view");
 import utils = require("utils/utils");
 import types = require("utils/types");
 import style = require("ui/styling/style");
-import font = require("ui/styling/font");
-import styling = require("ui/styling");
 import frame = require("ui/frame");
 
 global.moduleMerge(common, exports);

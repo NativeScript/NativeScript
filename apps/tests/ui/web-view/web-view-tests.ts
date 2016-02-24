@@ -1,6 +1,4 @@
 ﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import page = require("ui/page");
 import testModule = require("../../ui-test");
 
 // <snippet module="ui/web-view" title="WebView">

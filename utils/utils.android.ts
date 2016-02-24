@@ -148,7 +148,9 @@ export module ad {
         view.setEllipsize(value === enums.WhiteSpace.nowrap ? android.text.TextUtils.TruncateAt.END : null);
     }
 
-    export function getApplication() { return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance(); }
+    export function getApplication() {
+        return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance();
+    }
     export function getApplicationContext() { return <android.content.Context>getApplication().getApplicationContext(); }
 
     var inputMethodManager: android.view.inputmethod.InputMethodManager;

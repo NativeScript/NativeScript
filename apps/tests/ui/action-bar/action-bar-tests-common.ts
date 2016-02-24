@@ -409,6 +409,62 @@ export function test_CanDefineEverythingAsContentBetweenTheTwoTags() {
     });
 }
 
+export function test_LoadedEventsOrder() {
+    var loadedEvents = new Array<string>();
+    var pageFactory = function (): PageModule.Page {
+        var page = new PageModule.Page();
+        page.on(viewModule.View.loadedEvent, () => {
+            loadedEvents.push("page");
+        });
+
+        page.actionBar.on(viewModule.View.loadedEvent, () => {
+            loadedEvents.push("action-bar");
+        });
+
+        var content = new LabelModule.Label();
+        content.on(viewModule.View.loadedEvent, () => {
+            loadedEvents.push("content");
+        });
+        page.content = content;
+
+        return page;
+    };
+
+    helper.navigate(pageFactory);
+
+    try {
+        TKUnit.arrayAssert(loadedEvents, new Array<string>("content", "action-bar", "page"));
+    }
+    finally {
+        helper.goBack();
+    }
+};
+
+export function test_LoadedEventsOrder_WithoutPageContent() {
+    var loadedEvents = new Array<string>();
+    var pageFactory = function (): PageModule.Page {
+        var page = new PageModule.Page();
+        page.on(viewModule.View.loadedEvent, () => {
+            loadedEvents.push("page");
+        });
+
+        page.actionBar.on(viewModule.View.loadedEvent, () => {
+            loadedEvents.push("action-bar");
+        });
+
+        return page;
+    };
+
+    helper.navigate(pageFactory);
+
+    try {
+        TKUnit.arrayAssert(loadedEvents, new Array<string>("action-bar", "page"));
+    }
+    finally {
+        helper.goBack();
+    }
+};
+
 export function createPageAndNavigate() {
     var page: PageModule.Page;
     var pageFactory = function (): PageModule.Page {

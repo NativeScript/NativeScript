@@ -151,7 +151,6 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
     }
 
     public eachLayoutChild(callback: (child: view.View, isLast: boolean) => void): void {
-        var index = 0;
         var lastChild: view.View = null;
         
         this._eachChildView((cv) => {

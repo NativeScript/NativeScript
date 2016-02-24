@@ -119,6 +119,14 @@ if (typeof global.__decorate !== "function") {
     }
 }
 
+if (typeof global.__metadata !== "function") {
+    global.__metadata = function (k, v) {
+        if (typeof global.Reflect === "object" && typeof global.Reflect.metadata === "function") {
+            return global.Reflect.metadata(k, v);
+        }
+    };
+}
+
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {
         var originalMethod = descriptor.value;

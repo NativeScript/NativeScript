@@ -1,5 +1,4 @@
 ﻿import TKUnit = require("../../TKUnit");
-import testRunner = require("../../testRunner");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import pagesModule = require("ui/page");
@@ -65,6 +64,30 @@ export var testSetText = function () {
         // </snippet>
 
         var expectedValue = "Hello, world!";
+        var actualValue = textViewTestsNative.getNativeText(textView);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testSetTextNull = function () {
+    helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
+        var textView = <textViewModule.TextView>views[0];
+        
+        textView.text = null;
+
+        var expectedValue = "";
+        var actualValue = textViewTestsNative.getNativeText(textView);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+}
+
+export var testSetTextUndefined = function () {
+    helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
+        var textView = <textViewModule.TextView>views[0];
+
+        textView.text = undefined;
+
+        var expectedValue = "";
         var actualValue = textViewTestsNative.getNativeText(textView);
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
