@@ -184,7 +184,7 @@ function onFragmentHidden(fragment) {
 export class Frame extends frameCommon.Frame {
     private _android: AndroidFrame;
     private _delayedNavigationEntry: definition.BackstackEntry;
-    private _containerViewId: number;
+    private _containerViewId: number = -1;
     private _listener: android.view.View.OnAttachStateChangeListener;
     constructor() {
         super();
@@ -379,7 +379,10 @@ export class Frame extends frameCommon.Frame {
 
     public _createUI() {
         let root = new org.nativescript.widgets.ContentLayout(this._context);
-        this._containerViewId = android.view.View.generateViewId();
+        if (this._containerViewId < 0) {
+            this._containerViewId = android.view.View.generateViewId();
+        }
+
         this._android.rootViewGroup = root;
         this._android.rootViewGroup.setId(this._containerViewId);
         this._android.rootViewGroup.addOnAttachStateChangeListener(this._listener);

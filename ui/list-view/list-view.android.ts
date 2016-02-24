@@ -43,14 +43,14 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
 export class ListView extends common.ListView {
     private _android: android.widget.ListView;
     public _realizedItems = {};
-    private _androidViewId: number;
+    private _androidViewId: number = -1;
 
     public _createUI() {
         this._android = new android.widget.ListView(this._context);
 
         // Fixes issue with black random black items when scrolling
         this._android.setCacheColorHint(android.graphics.Color.TRANSPARENT);
-        if (!this._androidViewId) {
+        if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
         }
         this._android.setId(this._androidViewId);

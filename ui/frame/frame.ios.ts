@@ -166,7 +166,7 @@ export class Frame extends frameCommon.Frame {
                     newValue = !page.actionBarHidden;
                 }
                 else {
-                    newValue = this.backStack.length > 0 || (page && page.actionBar && !page.actionBar._isEmpty());
+                    newValue = this.ios.controller.viewControllers.count > 1 || (page && page.actionBar && !page.actionBar._isEmpty());
                 }
 
                 newValue = !!newValue; // Make sure it is boolean
@@ -174,7 +174,7 @@ export class Frame extends frameCommon.Frame {
         }
     }
 
-    public get ios(): definition.iOSFrame {
+    public get ios(): iOSFrame {
         return this._ios;
     }
 
@@ -706,7 +706,7 @@ class iOSFrame implements definition.iOSFrame {
     public set showNavigationBar(value: boolean) {
         var change = this._showNavigationBar !== value;
         this._showNavigationBar = value;
-        this._controller.navigationBarHidden = !value;
+        this._controller.setNavigationBarHiddenAnimated(!value, true);
 
         let currentPage = this._controller.owner.currentPage;
         if (currentPage && change) {
