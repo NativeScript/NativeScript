@@ -57,7 +57,6 @@ export class EditableTextBase extends common.EditableTextBase {
                         break;
                     default:
                         throw new Error("Invalid updateTextTrigger: " + owner.updateTextTrigger);
-                        break;
                 }
             }
         });

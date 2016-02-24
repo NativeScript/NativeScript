@@ -67,8 +67,7 @@ var _clickHandlerFactory = function (index: number) {
 }
 
 export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere() {
-    return;
-
+    /*
     var topFrame = frameModule.topmost();
     var oldChache;
 
@@ -126,6 +125,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
     var listView = mainPage.getViewById<ListView>("ListView");
 
     TKUnit.assert(listView !== undefined, "ListView should be created when navigating back to the main page.");
+    */
 }
 /*
 export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack_NoPageCaching() {

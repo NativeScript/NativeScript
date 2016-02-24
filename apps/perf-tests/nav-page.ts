@@ -1,7 +1,17 @@
 ﻿import definition = require("controls-page");
-import {View, Page, topmost as topmostFrame, NavigationTransition, Orientation, AnimationCurve, StackLayout, Button, Label, TextField, Switch, ListPicker, Slider} from "ui";
+import {View} from "ui/core/view";
+import {Page} from "ui/page";
+import {topmost as topmostFrame, NavigationTransition} from "ui/frame";
+import {Orientation, AnimationCurve} from "ui/enums";
+import {StackLayout} from "ui/layouts/stack-layout";
+import {Button} from "ui/button";
+import {Label} from "ui/label";
+import {TextField} from "ui/text-field";
+import {Switch} from "ui/switch";
+import {ListPicker} from "ui/list-picker";
+import {Slider} from "ui/slider";
 import {Color} from "color";
-import platform = require("platform");
+import * as platform from "platform";
 
 var availableTransitions = ["default", "custom", "flip", "flipRight", "flipLeft", "slide", "slideLeft", "slideRight", "slideTop", "slideBottom", "fade"];
 if (platform.device.os === platform.platformNames.ios) {
