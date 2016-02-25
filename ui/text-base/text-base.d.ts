@@ -40,8 +40,6 @@
          */
         formattedText: formattedString.FormattedString;
 
-        _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData);
-
         /**
          * Called for every child element declared in xml.
          * This method will add a child element (value) to current element.
@@ -49,6 +47,11 @@
          * @param value - Value of the element.
          */
         _addChildFromBuilder(name: string, value: any): void;
+
+        //@private
+        _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData): void;
+        _setFormattedTextPropertyToNative(value: any): void;
+        //@endprivate
     }
 
     /**

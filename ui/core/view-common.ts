@@ -1161,4 +1161,8 @@ export class View extends ProxyObject implements definition.View {
     public _setNativeViewFrame(nativeView: any, frame: any) {
         //
     }
+
+    public _onStylePropertyChanged(property: Property): void {
+        //
+    }
 }

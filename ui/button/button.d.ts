@@ -71,5 +71,10 @@ declare module "ui/button" {
          * @param value - Value of the element.
          */
         _addChildFromBuilder(name: string, value: any): void;
+
+        //@private
+        _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData): void;
+        _setFormattedTextPropertyToNative(value: any): void;
+        //@endprivate
     }
 }
