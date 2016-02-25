@@ -7,7 +7,6 @@ import {Page} from "ui/page";
 import {ListView, ItemEventData} from "ui/list-view";
 import {TabView, TabViewItem} from "ui/tab-view";
 import {Button} from "ui/button";
-import types = require("utils/types");
 
 var ASYNC = 2;
 
