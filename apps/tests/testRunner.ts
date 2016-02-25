@@ -1,4 +1,4 @@
-﻿/* tslint:disable */
+/* tslint:disable */
 import * as TKUnit from"./TKUnit";
 import {messageType} from "trace";
 import {topmost, Frame} from "ui/frame";

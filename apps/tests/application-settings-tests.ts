@@ -32,7 +32,7 @@ export var testBoolean = function () {
     // </snippet>
     TKUnit.assert(true === boolValue, "Cannot set boolean to true");
 
-    TKUnit.assert(true === appSettings.getBoolean(boolKey), "Cannot set boolean to true (no default)");
+    TKUnit.assert(true !== appSettings.getBoolean(boolKey), "Cannot set boolean to true (no default)");
 };
 
 export var testString = function () {
