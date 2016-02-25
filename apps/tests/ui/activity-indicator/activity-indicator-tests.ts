@@ -12,7 +12,7 @@ import color = require("color");
 import activityIndicatorModule = require("ui/activity-indicator");
 // ```
 // ### Binding the activity indicator busy property to a view-model property.
-//```XML
+//``` XML
 // <Page>
 //   {%raw%}<ActivityIndicator busy="{{ isLoading }}" />{%endraw%}
 // </Page>

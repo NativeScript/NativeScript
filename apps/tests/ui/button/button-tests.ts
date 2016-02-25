@@ -21,7 +21,7 @@ import observable = require("data/observable");
 // ```
 
 // ### Attaching event handler for the button tap event.
-//```XML
+//``` XML
 // <Page>
 //   <Button tap="buttonTap" />
 // </Page>

@@ -14,7 +14,7 @@ import dockModule = require("ui/layouts/dock-layout");
 // ```
 
 // ### Declaring a DockLayout.
-//```XML
+//``` XML
 //<Page>
 //  <DockLayout stretchLastChild="true" >
 //    <Button dock="left" text="left" style="background-color: red; margin: 5;"/ >/ >

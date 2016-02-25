@@ -13,7 +13,7 @@ import searchBarModule = require("ui/search-bar");
 // </snippet>
 
 // ### Declaring a SearchBar.
-//```XML
+//``` XML
 //  <Page>
 //      <SearchBar text="{{ search }}" />
 //  </Page>

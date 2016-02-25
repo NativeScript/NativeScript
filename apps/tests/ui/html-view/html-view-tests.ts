@@ -13,7 +13,7 @@ import htmlViewModule = require("ui/html-view");
 
 // <snippet module="ui/html-view" title="HtmlView">
 // ### Declaring a HtmlView.
-//```XML
+//``` XML
 //  <Page>
 //       {%raw%}<HtmlView html="{{ htmlString }}" />{%endraw%}
 //  </Page>

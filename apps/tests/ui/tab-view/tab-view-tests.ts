@@ -9,7 +9,7 @@ import tabViewTestsNative = require("./tab-view-tests-native");
 // # TabView
 
 // ### Declaring the TabView in xml.
-//```XML
+//``` XML
 // <Page>
 //  <TabView>
 //    <TabView.items>

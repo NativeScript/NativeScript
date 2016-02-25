@@ -10,7 +10,7 @@ import LabelModule = require("ui/label");
 // ```
 
 // ### Binding the Label text property to a view-model property.
-//```XML
+//``` XML
 // <Page>
 //   {%raw%}<Label text="{{ title }}" />{%endraw%}
 // </Page>
