@@ -32,7 +32,7 @@ import labelModule = require("ui/label");
 //   {%raw%}<ListView items="{{ myItems }}" itemTap="listViewItemTap" />{%endraw%}
 // </Page>
 //```
-//```JS
+//``` JavaScript
 // function listViewItemTap(args) {
 //   var itemIndex = args.index;
 // }
