@@ -623,7 +623,7 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
         // <hide>
         result = response.content.toJSON();
         try {
-            TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
+            TKUnit.assert(result["json"]["MyVariableOne"] === "YOU_SHALL_FAIL_ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
             done(null);
         }
         catch (err) {
