@@ -301,14 +301,14 @@ export class ActionBar extends common.ActionBar {
 
     public _onTitlePropertyChanged() {
         var topFrame = frame.topmost();
-        if (topFrame && topFrame.currentPage === this.page) {
+        if (this._toolbar && topFrame && topFrame.currentPage === this.page) {
             this._updateTitleAndTitleView();
         }
     }
 
     public _onIconPropertyChanged() {
         var topFrame = frame.topmost();
-        if (topFrame && topFrame.currentPage === this.page) {
+        if (this._toolbar && topFrame && topFrame.currentPage === this.page) {
             this._updateIcon();
         }
     }
