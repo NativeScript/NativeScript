@@ -1201,7 +1201,7 @@ function onTransformChanged(value: any): Array<styleProperty.KeyValuePair<styleP
             case "scale":
             case "scale3d":
                 values = newTransform[transform].split(",");
-                if (values.length == 2 || values.length == 3) {
+                if (values.length === 2 || values.length === 3) {
                     array.push({ property: scaleXProperty, value: parseFloat(values[0]) });
                     array.push({ property: scaleYProperty, value: parseFloat(values[1]) });
                 }
@@ -1215,7 +1215,7 @@ function onTransformChanged(value: any): Array<styleProperty.KeyValuePair<styleP
             case "translate":
             case "translate3d":
                 values = newTransform[transform].split(",");
-                if (values.length == 2 || values.length == 3) {
+                if (values.length === 2 || values.length === 3) {
                     array.push({ property: translateXProperty, value: parseFloat(values[0]) });
                     array.push({ property: translateYProperty, value: parseFloat(values[1]) });
                 }

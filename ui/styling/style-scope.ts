@@ -59,9 +59,11 @@ export class StyleScope {
 
     public addCss(cssString: string, cssFileName: string): void {
         this._css = this._css ? this._css + cssString : cssString;
-        this._cssFileName = cssFileName
+        this._cssFileName = cssFileName;
 
         this._reset();
+
+        let keyframes = new Array<Object>();
 
         if (!this._cssSelectors) {
             // Always add app.css when initializing selectors
@@ -73,21 +75,24 @@ export class StyleScope {
             }
         }
 
-        var selectorsFromFile = StyleScope.createSelectorsFromCss(cssString, cssFileName);
+        let selectorsFromFile = StyleScope.createSelectorsFromCss(cssString, cssFileName, keyframes);
         this._cssSelectors = StyleScope._joinCssSelectorsArrays([this._cssSelectors, selectorsFromFile]);
+
+        for (let selector of this._cssSelectors) {
+            if (selector.isAnimated && keyframes[selector.animation["name"]] !== undefined) {
+                selector.keyframes = keyframes[selector.animation["name"]];
+            }
+        }
     }
 
-    public static createSelectorsFromCss(css: string, cssFileName: string): cssSelector.CssSelector[] {
+    public static createSelectorsFromCss(css: string, cssFileName: string, keyframes: Array<Object>): cssSelector.CssSelector[] {
         try {
-            var pageCssSyntaxTree = css ? cssParser.parse(css, { source: cssFileName }) : null;
-
-            var pageCssSelectors = new Array<cssSelector.CssSelector>();
-
+            let pageCssSyntaxTree = css ? cssParser.parse(css, { source: cssFileName }) : null;
+            let pageCssSelectors = new Array<cssSelector.CssSelector>();
             if (pageCssSyntaxTree) {
-                pageCssSelectors = StyleScope._joinCssSelectorsArrays([pageCssSelectors, StyleScope.createSelectorsFromImports(pageCssSyntaxTree)]);
-                pageCssSelectors = StyleScope._joinCssSelectorsArrays([pageCssSelectors, StyleScope.createSelectorsFromSyntaxTree(pageCssSyntaxTree)]);
+                pageCssSelectors = StyleScope._joinCssSelectorsArrays([pageCssSelectors, StyleScope.createSelectorsFromImports(pageCssSyntaxTree, keyframes)]);
+                pageCssSelectors = StyleScope._joinCssSelectorsArrays([pageCssSelectors, StyleScope.createSelectorsFromSyntaxTree(pageCssSyntaxTree, keyframes)]);
             }
-
             return pageCssSelectors;
         }
         catch (e) {
@@ -95,18 +100,18 @@ export class StyleScope {
         }
     }
 
-    public static createSelectorsFromImports(tree: cssParser.SyntaxTree): cssSelector.CssSelector[] {
-        var selectors = new Array<cssSelector.CssSelector>();
+    public static createSelectorsFromImports(tree: cssParser.SyntaxTree, keyframes: Array<Object>): cssSelector.CssSelector[] {
+        let selectors = new Array<cssSelector.CssSelector>();
         ensureTypes();
 
         if (!types.isNullOrUndefined(tree)) {
-            var imports = tree["stylesheet"]["rules"].filter(r=> r.type === "import");
+            let imports = tree["stylesheet"]["rules"].filter(r=> r.type === "import");
 
-            for (var i = 0; i < imports.length; i++) {
-                var importItem = imports[i]["import"];
+            for (let i = 0; i < imports.length; i++) {
+                let importItem = imports[i]["import"];
 
-                var match = importItem && (<string>importItem).match(pattern);
-                var url = match && match[2];
+                let match = importItem && (<string>importItem).match(pattern);
+                let url = match && match[2];
 
                 if (!types.isNullOrUndefined(url)) {
                     ensureUtils();
@@ -114,16 +119,16 @@ export class StyleScope {
                     if (utils.isFileOrResourcePath(url)) {
                         ensureFS();
 
-                        var fileName = types.isString(url) ? url.trim() : "";
+                        let fileName = types.isString(url) ? url.trim() : "";
                         if (fileName.indexOf("~/") === 0) {
                             fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
                         }
 
                         if (fs.File.exists(fileName)) {
-                            var file = fs.File.fromPath(fileName);
-                            var text = file.readTextSync();
+                            let file = fs.File.fromPath(fileName);
+                            let text = file.readTextSync();
                             if (text) {
-                                selectors = StyleScope._joinCssSelectorsArrays([selectors, StyleScope.createSelectorsFromCss(text, fileName)]);
+                                selectors = StyleScope._joinCssSelectorsArrays([selectors, StyleScope.createSelectorsFromCss(text, fileName, keyframes)]);
                             }
                         }
                     }
@@ -136,16 +141,22 @@ export class StyleScope {
 
     public ensureSelectors() {
         if (!this._cssSelectors && (this._css || application.cssSelectorsCache)) {
-            var applicationCssSelectors = application.cssSelectorsCache ? application.cssSelectorsCache : null;
-            var pageCssSelectors = StyleScope.createSelectorsFromCss(this._css, this._cssFileName);
-
+            let applicationCssSelectors = application.cssSelectorsCache ? application.cssSelectorsCache : null;
+            let keyframes = new Array<Object>();
+            let pageCssSelectors = StyleScope.createSelectorsFromCss(this._css, this._cssFileName, keyframes);
             this._cssSelectors = StyleScope._joinCssSelectorsArrays([applicationCssSelectors, pageCssSelectors]);
+
+            for (let selector of this._cssSelectors) {
+                if (selector.isAnimated && keyframes[selector.animation["name"]] !== undefined) {
+                    selector.keyframes = keyframes[selector.animation["name"]];
+                }
+            }
         }
     }
 
     private static _joinCssSelectorsArrays(arrays: Array<Array<cssSelector.CssSelector>>): Array<cssSelector.CssSelector> {
-        var mergedResult = [];
-        var i;
+        let mergedResult = [];
+        let i;
         for (i = 0; i < arrays.length; i++) {
             if (arrays[i]) {
                 mergedResult.push.apply(mergedResult, arrays[i]);
@@ -162,7 +173,7 @@ export class StyleScope {
         }
 
         view.style._beginUpdate();
-        var i,
+        let i,
             selector: cssSelector.CssSelector,
             matchedStateSelectors = new Array<cssSelector.CssVisualStateSelector>()
 
@@ -180,9 +191,8 @@ export class StyleScope {
 
         if (matchedStateSelectors.length > 0) {
             // Create a key for all matched selectors for this element
-            var key: string = "";
+            let key: string = "";
             matchedStateSelectors.forEach((s) => key += s.key + "|");
-            //console.log("Created key: " + key + " for " + matchedStateSelectors.length + " state selectors");
 
             // Associate the view to the created key
             this._viewIdToKey[view._domId] = key;
@@ -197,7 +207,7 @@ export class StyleScope {
     }
 
     public getVisualStates(view: view.View): Object {
-        var key = this._viewIdToKey[view._domId];
+        let key = this._viewIdToKey[view._domId];
         if (key === undefined) {
             return undefined;
         }
@@ -206,7 +216,7 @@ export class StyleScope {
     }
 
     private _createVisualsStatesForSelectors(key: string, matchedStateSelectors: Array<cssSelector.CssVisualStateSelector>) {
-        var i,
+        let i,
             allStates = {},
             stateSelector: cssSelector.CssVisualStateSelector;
 
@@ -234,14 +244,12 @@ export class StyleScope {
         }
     }
 
-    private static createSelectorsFromSyntaxTree(ast: cssParser.SyntaxTree): Array<cssSelector.CssSelector> {
-        var result: Array<cssSelector.CssSelector> = [];
-
-        var rules = ast.stylesheet.rules;
-        var rule: cssParser.Rule;
-        var i;
-        var j;
-        var keyframes = new Object();
+    private static createSelectorsFromSyntaxTree(ast: cssParser.SyntaxTree, keyframes: Array<Object>): Array<cssSelector.CssSelector> {
+        let result: Array<cssSelector.CssSelector> = [];
+        let rules = ast.stylesheet.rules;
+        let rule: cssParser.Rule;
+        let i;
+        let j;
 
         // Create selectors form AST
         for (i = 0; i < rules.length; i++) {
@@ -250,10 +258,10 @@ export class StyleScope {
             if (rule.type === "rule") {
 
                 // Filter comment nodes.
-                var filteredDeclarations = [];
+                let filteredDeclarations = [];
                 if (rule.declarations) {
                     for (j = 0; j < rule.declarations.length; j++) {
-                        var declaration = rule.declarations[j];
+                        let declaration = rule.declarations[j];
                         if (declaration.type === "declaration") {
                             filteredDeclarations.push({
                                 property: declaration.property.toLowerCase(),
@@ -271,12 +279,6 @@ export class StyleScope {
             }
         }
 
-        for (var selector of result) {
-            if (selector.isAnimated && keyframes[selector.animation["name"]] !== undefined) {
-                selector.keyframes = keyframes[selector.animation["name"]];
-            }
-        }
-
         return result;
     }
 
@@ -288,8 +290,8 @@ export class StyleScope {
 
 export function applyInlineSyle(view: view.View, style: string) {
     try {
-        var syntaxTree = cssParser.parse("local { " + style + " }", undefined);
-        var filteredDeclarations = syntaxTree.stylesheet.rules[0].declarations.filter((val, i, arr) => { return val.type === "declaration" });
+        let syntaxTree = cssParser.parse("local { " + style + " }", undefined);
+        let filteredDeclarations = syntaxTree.stylesheet.rules[0].declarations.filter((val, i, arr) => { return val.type === "declaration" });
         cssSelector.applyInlineSyle(view, filteredDeclarations);
     } catch (ex) {
         trace.write("Applying local style failed: " + ex, trace.categories.Error, trace.messageType.error);

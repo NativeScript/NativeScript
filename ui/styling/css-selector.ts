@@ -88,28 +88,28 @@ export class CssSelector {
     }
 
     private preprocessAnimationValues(pair: styleProperty.KeyValuePair<styleProperty.Property, any>, transforms: TransformInfo) {
-        if (pair.property.name == "scaleX") {
+        if (pair.property.name === "scaleX") {
             if (transforms.scale === undefined) {
                 transforms.scale = { x:1, y:1 };
             }
             transforms.scale.x = pair.value;
             return true;
         }
-        if (pair.property.name == "scaleY") {
+        if (pair.property.name === "scaleY") {
             if (transforms.scale === undefined) {
                 transforms.scale = { x:1, y:1 };
             }
             transforms.scale.y = pair.value;
             return true;
         }
-        if (pair.property.name == "translateX") {
+        if (pair.property.name === "translateX") {
             if (transforms.translate === undefined) {
                 transforms.translate = { x:0, y:0 };
             }
             transforms.translate.x = pair.value;
             return true;
         }
-        if (pair.property.name == "translateY") {
+        if (pair.property.name === "translateY") {
             if (transforms.translate === undefined) {
                 transforms.translate = { x: 0, y: 0 };
             }
@@ -213,7 +213,7 @@ export class CssSelector {
         }
         else {
             let animationDuration = animation["duration"];
-            if (animationDuration == undefined) {
+            if (animationDuration === undefined) {
                 animationDuration = 0.3;
             }
             duration = (animationDuration * (<any>keyframe).time) - startDuration;
@@ -278,7 +278,7 @@ export class CssSelector {
 
     private createAnimation(declarations: cssParser.Declaration[]) {
         for (var declaration of declarations) {
-            if (declaration.property.indexOf("animation") == 0) {
+            if (declaration.property.indexOf("animation") === 0) {
                 if (this._animationInfo === undefined) {
                     this._animationInfo = {};
                 }
@@ -310,7 +310,7 @@ export class CssSelector {
         return propertyName === "background-color" ||
                propertyName === "opacity" ||
                propertyName === "transform" ||
-               propertyName.indexOf("animation") == 0;
+               propertyName.indexOf("animation") === 0;
     }
 }
 

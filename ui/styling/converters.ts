@@ -1,7 +1,6 @@
 ﻿import enums = require("ui/enums");
 import color = require("color");
 import types = require("utils/types");
-import animation = require("ui/animation");
 
 export function colorConverter(value: string): color.Color {
     return new color.Color(value);
@@ -77,7 +76,7 @@ export function opacityConverter(value: string): number {
 
 export function timeConverter(value: string): number {
     var result = parseFloat(value);
-    if (value.indexOf("ms") == -1) {
+    if (value.indexOf("ms") === -1) {
         result = result*1000;
     }
     result = Math.max(0.0, result);
@@ -115,7 +114,7 @@ export function animationTimingFunctionConverter(value: string): Object {
         default:
             if (value.indexOf("cubic-bezier(") === 0) {
                 let bezierArr = value.substring(13, value.length-14).split(/[,]+/);
-                if (bezierArr.length != 4) {
+                if (bezierArr.length !== 4) {
                     throw new Error("Invalid value for animation: " + value);
                 }
                 result = enums.AnimationCurve.cubicBezier(bezieArgumentConverter(bezierArr[0]),
