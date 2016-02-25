@@ -555,6 +555,7 @@ declare module "ui/core/view" {
         _nativeView: any;
         _isVisible: boolean;
         _setNativeViewFrame(nativeView: any, frame: any): void;
+        _onStylePropertyChanged(property: dependencyObservable.Property): void;
         //@endprivate
     }
 

@@ -861,6 +861,8 @@ export class Style extends DependencyObservable implements styling.Style {
                 } else {
                     (<any>handler).applyProperty(property, this._view, newValue);
                 }
+
+                this._view._onStylePropertyChanged(property);
             }
         }
         catch (ex) {

@@ -5,6 +5,7 @@ import font = require("ui/styling/font");
 import view = require("ui/core/view");
 import utils = require("utils/utils");
 import enums = require("ui/enums");
+import dependencyObservable = require("ui/core/dependency-observable");
 
 class TapHandlerImpl extends NSObject {
     private _owner: WeakRef<Button>;
@@ -48,6 +49,23 @@ export class Button extends common.Button {
 
     get ios(): UIButton {
         return this._ios;
+    }
+
+    public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        // In general, if a property is not specified for a state, the default is to use 
+        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set, 
+        // then the property defaults to a system value. Therefore, at a minimum, you should 
+        // set the value for the normal state.
+        this.ios.setTitleForState(data.newValue + "", UIControlState.UIControlStateNormal);
+    }
+
+    public _setFormattedTextPropertyToNative(value) {
+        // In general, if a property is not specified for a state, the default is to use 
+        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set, 
+        // then the property defaults to a system value. Therefore, at a minimum, you should 
+        // set the value for the normal state.
+        this.ios.setAttributedTitleForState(value._formattedText, UIControlState.UIControlStateNormal);
+        this.style._updateTextDecoration();
     }
 } 
 

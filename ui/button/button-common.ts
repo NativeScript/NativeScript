@@ -99,41 +99,22 @@ export class Button extends view.View implements definition.Button {
     }
 
     private onFormattedTextChanged(eventData: observable.PropertyChangeData) {
-        this.setFormattedTextPropertyToNative(eventData.value);
+        this._setFormattedTextPropertyToNative(eventData.value);
     }
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (this.android) {
-            this.android.setText(data.newValue + "");
-        }
-        if (this.ios) {
-            // In general, if a property is not specified for a state, the default is to use 
-            // the UIControlStateNormal value. If the value for UIControlStateNormal is not set, 
-            // then the property defaults to a system value. Therefore, at a minimum, you should 
-            // set the value for the normal state.
-            this.ios.setTitleForState(data.newValue + "", UIControlState.UIControlStateNormal);
-        }
+        //
     }
 
-    private setFormattedTextPropertyToNative(value) {
-        if (this.android) {
-            this.android.setText(value._formattedText);
-        }
-        if (this.ios) {
-            // In general, if a property is not specified for a state, the default is to use 
-            // the UIControlStateNormal value. If the value for UIControlStateNormal is not set, 
-            // then the property defaults to a system value. Therefore, at a minimum, you should 
-            // set the value for the normal state.
-            this.ios.setAttributedTitleForState(value._formattedText, UIControlState.UIControlStateNormal);
-            this.style._updateTextDecoration();
-        }
+    public _setFormattedTextPropertyToNative(value) {
+        //
     }
 
     public _onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (data.newValue) {
             (<formattedString.FormattedString>data.newValue).parent = this;
         }
-        this.setFormattedTextPropertyToNative(data.newValue);
+        this._setFormattedTextPropertyToNative(data.newValue);
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
