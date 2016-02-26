@@ -48,6 +48,14 @@ export function addCategories(categories: string) {
 }
 
 export function write(message: any, category: string, type?: number) {
+    // print error no matter what
+    var i;
+    if (type === messageType.error) {
+        for (i = 0; i < _writers.length; i++) {
+            _writers[i].write(message, category, type);
+        }
+    }
+    
     if (!_enabled) {
         return;
     }
@@ -56,7 +64,7 @@ export function write(message: any, category: string, type?: number) {
         return;
     }
 
-    var i;
+    
     for (i = 0; i < _writers.length; i++) {
         _writers[i].write(message, category, type);
     }
@@ -113,6 +121,7 @@ export module categories {
     export var Navigation = "Navigation";
     export var Test = "Test";
     export var Binding = "Binding";
+    export var BindingError = "BindingError";
     export var Error = "Error";
     export var Animation = "Animation";
     export var Transition = "Transition";

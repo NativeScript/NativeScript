@@ -252,22 +252,25 @@ export class Binding {
         var currentObjectChanged = false;
         for (i = 0; i < propsArrayLength; i++) {
             objProp = propsArray[i];
-            if (propsArray[i] === bc.bindingValueKey) {
+            if (objProp === bc.bindingValueKey) {
                 currentObjectChanged = true;
             }
-            if (propsArray[i] === bc.parentValueKey || propsArray[i].indexOf(bc.parentsValueKey) === 0) {
-                var parentView = this.getParentView(this.target.get(), propsArray[i]).view;
+            if (objProp === bc.parentValueKey || objProp.indexOf(bc.parentsValueKey) === 0) {
+                var parentView = this.getParentView(this.target.get(), objProp).view;
                 if (parentView) {
                     currentObject = parentView.bindingContext;
-                }
-                else {
+                } else {
                     var targetInstance = this.target.get();
                     targetInstance.off(viewModule.View.loadedEvent, this.loadedHandlerVisualTreeBinding, this);
                     targetInstance.on(viewModule.View.loadedEvent, this.loadedHandlerVisualTreeBinding, this);
                 }
                 currentObjectChanged = true;
             }
-            result.push({ instance: currentObject, property: objProp });
+            if (currentObject) {
+                result.push({ instance: currentObject, property: objProp });
+            } else {
+                break;
+            }
             // do not need to dive into last object property getter on binding stage will handle it
             if (!currentObjectChanged && (i < propsArrayLength - 1)) {
                 currentObject = currentObject ? currentObject[propsArray[i]] : null;
@@ -285,7 +288,7 @@ export class Binding {
             for (i = 0; i < objectsAndPropertiesLength; i++) {
                 var prop = objectsAndProperties[i].property;
                 var currentObject = objectsAndProperties[i].instance;
-                if (currentObject && !this.propertyChangeListeners[prop] && currentObject instanceof observable.Observable) {
+                  if (!this.propertyChangeListeners[prop] && currentObject instanceof observable.Observable) {
                     weakEvents.addWeakEventListener(
                         currentObject,
                         observable.Observable.propertyChangeEvent,
@@ -504,13 +507,13 @@ export class Binding {
             var sourceOptionsInstance = this.sourceOptions.instance.get();
             if (this.sourceOptions.property === bc.bindingValueKey) {
                 value = sourceOptionsInstance;
-            }
-            else if (sourceOptionsInstance instanceof observable.Observable) {
+            } else if ((sourceOptionsInstance instanceof observable.Observable) && (this.sourceOptions.property && this.sourceOptions.property !== "")) {
                 value = sourceOptionsInstance.get(this.sourceOptions.property);
-            }
-            else if (sourceOptionsInstance && this.sourceOptions.property &&
+            } else if (sourceOptionsInstance && this.sourceOptions.property && this.sourceOptions.property !== "" &&
                 this.sourceOptions.property in sourceOptionsInstance) {
                 value = sourceOptionsInstance[this.sourceOptions.property];
+            } else {
+                trace.write("Property: '" + this.sourceOptions.property + "' is invalid or does not exist. SourceProperty: '" + this.options.sourceProperty + "'", trace.categories.Binding, trace.messageType.error);
             }
         }
         return value;
@@ -564,8 +567,7 @@ export class Binding {
                     result = result.parent;
                     indexAsInt--;
                 }
-            }
-            else if (types.isString(index)) {
+            } else if (types.isString(index)) {
                 while (result && result.typeName !== index) {
                     result = result.parent;
                 }
@@ -580,11 +582,9 @@ export class Binding {
         if (objectsAndProperties.length > 0) {
             var resolvedObj = objectsAndProperties[objectsAndProperties.length - 1].instance;
             var prop = objectsAndProperties[objectsAndProperties.length - 1].property;
-            if (resolvedObj) {
                 return {
                     instance: new WeakRef(resolvedObj),
                     property: prop
-                }
             }
         }
         return null;

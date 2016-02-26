@@ -266,8 +266,9 @@ export function openUrl(location: string): boolean {
 
         context.startActivity(intent);
     } catch (e) {
+        ensureTrace();
         // We Don't do anything with an error.  We just output it
-        console.error("Error in OpenURL", e);
+        trace.write("Error in OpenURL", trace.categories.Error, trace.messageType.error);
         return false;
     }
     return true;

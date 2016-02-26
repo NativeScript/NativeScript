@@ -47,7 +47,6 @@ export class UITest<T extends View> implements trace.TraceWriter {
         };
 
         trace.addWriter(this);
-        trace.enable();
         navHelper.navigate(pageFactory);
     }
 

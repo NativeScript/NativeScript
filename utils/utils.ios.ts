@@ -4,8 +4,16 @@ import common = require("./utils-common");
 import {Color} from "color";
 import enums = require("ui/enums");
 import * as fsModule from "file-system";
+import * as traceModule from "trace";
 
 global.moduleMerge(common, exports);
+
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
 
 function isOrientationLandscape(orientation: number) {
     return orientation === UIDeviceOrientation.UIDeviceOrientationLandscapeLeft || orientation === UIDeviceOrientation.UIDeviceOrientationLandscapeRight;
@@ -234,7 +242,8 @@ export module ios {
             return controller.presentPreviewAnimated(true);
         }
         catch (e) {
-            console.error("Error in openFile", e);
+            ensureTrace();
+            trace.write("Error in openFile", trace.categories.Error, trace.messageType.error);
         }
         return false;
     }
@@ -252,8 +261,9 @@ export function openUrl(location: string): boolean {
         }
     }
     catch (e) {
+        ensureTrace();
         // We Don't do anything with an error.  We just output it
-        console.error("Error in OpenURL", e);
+        trace.write("Error in OpenURL", trace.categories.Error, trace.messageType.error);
     }
     return false;
 }
