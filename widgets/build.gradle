@@ -52,9 +52,11 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:support-v4:+'
+	compile fileTree(include: ['*.jar'], dir: 'libs')
+	testCompile 'junit:junit:4.12'
+	compile 'com.android.support:support-v4:+'
+	compile files('libs/android-runtime.jar')
+	compile files('libs/android-binding-generator.jar')
 }
 
 task cleanDistDir (type: Delete) {
