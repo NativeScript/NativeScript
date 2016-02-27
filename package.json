@@ -8,11 +8,18 @@
     "url": "https://github.com/NativeScript/NativeScript"
   },
   "files": [
-    "**/*.*",
-    "**/*",
-    "!.baseDir.*",
+    "**/*.d.ts",
+    "**/*.js",
+    "!android17.d.ts",
+    "!ios.d.ts",
+    "!bin/",
+    "!apps/",
+    "!build/",
     "!node-tests/",
-    "!apps/"
+    "!declarations.android.d.ts",
+    "!declarations.ios.d.ts",
+    "!gruntfile.js",
+    "!org.nativescript.widgets.d.ts"
   ],
   "license": "Apache-2.0",
   "devDependencies": {
