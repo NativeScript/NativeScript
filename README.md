@@ -20,23 +20,28 @@ Our [Getting Started Guide](http://docs.nativescript.org/start/getting-started) 
 
 ## Quick Links
 
-- [NativeScript’s home page](http://nativescript.org)
-- [NativeScript’s documentation](http://docs.nativescript.org/)
-- [NativeScript’s blog](http://www.nativescript.org/blog)
+- [NativeScript home page](http://nativescript.org)
+- [NativeScript documentation](http://docs.nativescript.org/)
+- [NativeScript blog](http://www.nativescript.org/blog)
 - [@NativeScript on Twitter](http://twitter.com/NativeScript)
 - [NativeScript community Slack channel](http://developer.telerik.com/wp-login.php?action=slack-invitation)
-- [NativeScript’s community forum](https://groups.google.com/forum/#!forum/nativescript)
+- [NativeScript community forum](https://groups.google.com/forum/#!forum/nativescript)
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
 
 ## Repositories
 
 The NativeScript framework is made up a number of components, all of which are open source and on GitHub. Here are the major ones:
 
-- [The current repo](//github.com/NativeScript/NativeScript/) contains the code of the [NativeScript cross-platform modules](http://docs.nativescript.org/core-concepts/modules), which abstract iOS and Android APIs into JavaScript APIs—e.g. `camera.takePicture()`. The modules are written in TypeScript.
-- The [iOS Runtime repo](//github.com/NativeScript/ios-runtime/) contains the code that hosts the iOS app, and allows the JavaScript code of your application to be executed on an iOS device. The iOS runtime is written in a fun mix of C++, Objective-C, and more.
-- The [Android Runtime repo](//github.com/NativeScript/android-runtime) contains the code that hosts the Android app, and allows that JavaScript code of your application to be executed on an Android device. The Android runtime is written an even more fun mix of C++ and Java.
-- The [NativeScript CLI repo](//github.com/NativeScript/nativescript-cli) contains the command-line interface for creating an application using the NativeScript framework. The CLI is written in TypeScript.
-- The [NativeScript Docs repo](//github.com/NativeScript/docs) contain the NativeScript framework documentation which is available on <http://docs.nativescript.org/>. The docs are written in Markdown.
+- **[Cross-platform modules](//github.com/NativeScript/NativeScript/)**
+    - This repo contains the [NativeScript cross-platform modules](http://docs.nativescript.org/core-concepts/modules), which abstract iOS and Android APIs into JavaScript APIs—e.g. `camera.takePicture()`. The modules are written in TypeScript.
+- **[iOS runtime](//github.com/NativeScript/ios-runtime/)**
+    - This repo contains the NativeScript iOS runtime—the code that hosts NativeScript iOS apps, and allows the JavaScript code to be executed on iOS devices. The iOS runtime is written in a fun mix of C++, Objective-C, and more.
+- **[Android runtime](//github.com/NativeScript/android-runtime)**
+    - This repo contains the NativeScript Android runtime. Much like the NativeScript iOS runtime, the NativeScript Android runtime hosts NativeScript Android apps, and allows JavaScript code to be executed on Android devices. The Android runtime is written in a fun mix of C++ and Java.
+- **[CLI](//github.com/NativeScript/nativescript-cli)**
+    - This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using the NativeScript framework. The CLI is written in TypeScript.
+- **[Docs](//github.com/NativeScript/docs)**
+    - This repo contains the NativeScript framework documentation, which is available on <http://docs.nativescript.org/>. The docs are written in Markdown.
 
 In addition to the code that makes up the NativeScript framework itself, we also provide a number of [open-source sample apps](https://www.nativescript.org/app-samples-with-code) that you can reference while building your NativeScript application.
 
