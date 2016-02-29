@@ -6,7 +6,7 @@
 // ```
 
 // ### Declaring a Border.
-//```XML
+//``` XML
 //  <Page>
 //      <Border borderRadius="10" borderWidth="1" borderColor="#FF0000">
 //          <Button text="OK"/>

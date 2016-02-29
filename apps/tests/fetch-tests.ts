@@ -107,7 +107,7 @@ export var test_fetch_response_status = function (done) {
 
     // <snippet module="fetch" title="fetch">
     // ### Get Response status
-    // ``` fetch
+    // ``` JavaScript
     fetch("https://httpbin.org/get").then(function (response) {
         //// Argument (response) is Response!
         var statusCode = response.status;

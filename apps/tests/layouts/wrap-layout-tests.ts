@@ -28,7 +28,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         // </snippet>
 
         // ### Declaring a WrapLayout.
-        //```XML
+        //``` XML
         // <Page>
         //   <WrapLayout>
         //     <Label text="This is Label 1" />

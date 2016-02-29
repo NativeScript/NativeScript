@@ -14,7 +14,7 @@ import absoluteLayoutModule = require("ui/layouts/absolute-layout");
 // </snippet> 
 
 // ### Declaring a AbsoluteLayout.
-//```XML
+//``` XML
 // <Page>
 //   <AbsoluteLayout>
 //     <Label text="This is Label 1" left="30" top="70" />

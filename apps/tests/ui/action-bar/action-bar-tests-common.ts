@@ -16,7 +16,7 @@ import actionBarModule = require("ui/action-bar");
 // ```
 // 
 // ## Setting Title and Icon
-//```XML
+//``` XML
 // <Page>
 //   <Page.actionBar>
 //     {%raw%}<ActionBar title="{{ title }}" android.icon="res://is_custom_home_icon"/>{%endraw%}
@@ -28,7 +28,7 @@ import actionBarModule = require("ui/action-bar");
 //
 // 
 // ## Setting Custom Title View 
-//```XML
+//``` XML
 // <Page loaded="pageLoaded">
 //   <Page.actionBar>
 //     <ActionBar title="Title">
@@ -46,7 +46,7 @@ import actionBarModule = require("ui/action-bar");
 //```
 //
 // ## Setting Action Items
-//```XML
+//``` XML
 // <Page>
 //   <Page.actionBar>
 //     <ActionBar title="Title">
@@ -66,7 +66,7 @@ import actionBarModule = require("ui/action-bar");
 // * **iOS** - `left` and `right`. The default is `left`.
 //
 // ## Displaying Platform-Specific System Icons on Action Items
-//```XML
+//``` XML
 // <Page>
 //   <Page.actionBar>
 //     <ActionBar>
@@ -119,7 +119,7 @@ import actionBarModule = require("ui/action-bar");
 //For a full list of Android drawable names, please visit http://androiddrawables.com
 //
 // ## Displaying Custom View in Action Items
-//```XML
+//``` XML
 // <Page>
 //   <Page.actionBar>
 //     <ActionBar>
@@ -140,7 +140,7 @@ import actionBarModule = require("ui/action-bar");
 //```
 //
 // ## Setting Navigation Button
-//```XML
+//``` XML
 // <Page>
 //   <Page.actionBar>
 //     <ActionBar title="Title">
