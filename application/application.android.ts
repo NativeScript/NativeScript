@@ -152,7 +152,7 @@ function initEvents() {
     return lifecycleCallbacks;
 }
 
-class AndroidApplication extends observable.Observable implements definition.AndroidApplication {
+export class AndroidApplication extends observable.Observable implements definition.AndroidApplication {
     public static activityCreatedEvent = "activityCreated";
     public static activityDestroyedEvent = "activityDestroyed";
     public static activityStartedEvent = "activityStarted";
