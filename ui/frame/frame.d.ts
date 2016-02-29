@@ -310,6 +310,5 @@ declare module "ui/frame" {
     //@private
     function reloadPage(): void;
     function resolvePageFromEntry(entry: NavigationEntry): pages.Page;
-    function getActivity(): Object;
     //@endprivate
 }
