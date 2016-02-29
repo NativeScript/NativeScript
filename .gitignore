@@ -1,5 +1,6 @@
 # generated files
 *.map
+*.tgz
 .baseDir.ts
 .sublime-grunt.cache
 tscommand*.tmp.txt
@@ -7,6 +8,7 @@ tscommand*.tmp.txt
 
 node_modules/
 dist/
+package/
 
 *.js
 !gruntfile.js
@@ -31,3 +33,7 @@ tags
 
 TestRunResult.txt
 .testsapprun
+
+tns-core-modules.base.d.ts
+tns-core-modules.d.ts
+tns-core-modules.es6.d.ts

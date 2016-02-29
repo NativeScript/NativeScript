@@ -238,6 +238,7 @@ export class Frame extends frameCommon.Frame {
         }
 
         let manager = activity.getFragmentManager();
+        let isFirstNavigation = types.isNullOrUndefined(this._currentEntry);
 
         // Clear history
         if (backstackEntry.entry.clearHistory) {
@@ -307,7 +308,6 @@ export class Frame extends frameCommon.Frame {
         // remember the fragment tag at page level so that we can retrieve the fragment associated with a Page instance
         backstackEntry.resolvedPage[TAG] = newFragmentTag;
 
-        let isFirstNavigation = types.isNullOrUndefined(this._currentEntry);
         if (isFirstNavigation) {
             fragmentTransaction.add(this.containerViewId, newFragment, newFragmentTag);
             trace.write(`fragmentTransaction.add(${newFragmentTag});`, trace.categories.NativeLifecycle);

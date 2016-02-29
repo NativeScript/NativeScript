@@ -8,11 +8,18 @@
     "url": "https://github.com/NativeScript/NativeScript"
   },
   "files": [
-    "**/*.*",
-    "**/*",
-    "!.baseDir.*",
+    "**/*.d.ts",
+    "**/*.js",
+    "!android17.d.ts",
+    "!ios.d.ts",
+    "!bin/",
+    "!apps/",
+    "!build/",
     "!node-tests/",
-    "!apps/"
+    "!declarations.android.d.ts",
+    "!declarations.ios.d.ts",
+    "!gruntfile.js",
+    "!org.nativescript.widgets.d.ts"
   ],
   "license": "Apache-2.0",
   "devDependencies": {
@@ -38,12 +45,12 @@
   },
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
-    "tns-core-modules-widgets": "1.6.0"
+    "tns-core-modules-widgets": "1.6.1"
   },
   "nativescript": {
     "platforms": {
-      "ios": "1.3.0",
-      "android": "1.3.0"
+      "ios": "1.6.0",
+      "android": "1.6.2"
     }
   }
 }
