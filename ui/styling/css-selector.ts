@@ -24,7 +24,7 @@ export class CssSelector {
     private _expression: string;
     private _declarations: cssParser.Declaration[];
     private _attrExpression: string;
-    private _keyframes = [];
+    private _keyframes: Array<Object>;
     protected _animationInfo: Object;
 
     constructor(expression: string, declarations: cssParser.Declaration[]) {
@@ -32,7 +32,7 @@ export class CssSelector {
             let leftSquareBracketIndex = expression.indexOf(LSBRACKET);
             if (leftSquareBracketIndex > 0) {
                 // extracts what is inside square brackets ([target = 'test'] will extract "target = 'test'")
-                var paramsRegex = /\[\s*(.*)\s*\]/;
+                let paramsRegex = /\[\s*(.*)\s*\]/;
                 let attrParams = paramsRegex.exec(expression);
                 if (attrParams && attrParams.length > 1) {
                     this._attrExpression = attrParams[1].trim();
@@ -44,7 +44,7 @@ export class CssSelector {
             }
         }
         this._declarations = declarations;
-        this.createAnimation(this._declarations);
+        this._animationInfo = this.parseAnimationDeclarations(this._declarations);
     }
 
     get expression(): string {
@@ -64,7 +64,7 @@ export class CssSelector {
     }
 
     get isAnimated(): boolean {
-        return this._animationInfo !== undefined;
+        return this._animationInfo !== undefined && this._keyframes !== undefined && this._keyframes.length > 0;
     }
 
     get animation(): Object {
@@ -76,7 +76,9 @@ export class CssSelector {
     }
 
     set keyframes(value: Object) {
-        this._keyframes = this.parseKeyframes(value);
+        if (this._animationInfo) {
+            this._keyframes = this.parseKeyframes(value);
+        }
     }
 
     protected get valueSourceModifier(): number {
@@ -87,24 +89,146 @@ export class CssSelector {
         return false;
     }
 
+    private parseAnimationDeclarations(declarations: cssParser.Declaration[]): Object {
+        let animationInfo = undefined;
+        for (let declaration of declarations) {
+            if (declaration.property.indexOf("animation") === 0) {
+                if (animationInfo === undefined) {
+                    animationInfo = {};
+                    animationInfo.reverse = false;
+                    animationInfo.forwards = false;
+                }
+                switch (declaration.property) {
+                    case "animation-name":
+                        animationInfo["name"] = declaration.value;
+                        break;
+                    case "animation-duration":
+                        animationInfo["duration"] = converters.timeConverter(declaration.value);
+                        break;
+                    case "animation-delay":
+                        animationInfo["delay"] = converters.timeConverter(declaration.value);
+                        break;
+                    case "animation-timing-function":
+                        animationInfo["curve"] = converters.animationTimingFunctionConverter(declaration.value);
+                        break;
+                    case "animation-iteration-count":
+                        if (declaration.value === "infinite") {
+                            animationInfo["iterations"] = Number.MAX_VALUE;
+                        }
+                        else {
+                            animationInfo["iterations"] = converters.numberConverter(declaration.value);
+                        }
+                        break;
+                    case "animation":
+                        animationInfo = converters.animationConverter(declaration.value);
+                        break;
+                    case "animation-direction":
+                        if (declaration.value === "reverse") {
+                            animationInfo.reverse = true;
+                        }
+                        break;
+                    case "animation-fill-mode":
+                        if (declaration.value === "forwards") {
+                            animationInfo.forwards = true;
+                        }
+                        break;
+                }
+            }
+        }
+        return animationInfo;
+    }
+
+    private parseKeyframes(value: Object): Array<Object> {
+        let parsedKeyframes = new Array();
+        for (let keyframe of (<any>value).keyframes) {
+            let declarations = this.parseKeyframeDefinitions(keyframe);
+            for (let time of keyframe.values) {
+                if (time === "from") {
+                    time = 0;
+                }
+                if (time === "to") {
+                    time = 1;
+                }
+                else {
+                    time = parseFloat(time) / 100;
+                    if (time < 0) {
+                        time = 0;
+                    }
+                    if (time > 100) {
+                        time = 100;
+                    }
+                }
+                let current = parsedKeyframes[time];
+                if (current === undefined) {
+                    current = {};
+                    current.duration = time;
+                    parsedKeyframes[time] = current;
+                }
+                current.declarations = declarations;
+            }
+        }
+        let array = new Array();
+        for (let parsedKeyframe in parsedKeyframes) {
+            array.push(parsedKeyframes[parsedKeyframe]);
+        }
+        array.sort(function (a, b) { return a.duration - b.duration; });
+        return array;
+    }
+
+    private parseKeyframeDefinitions(keyframe: Object): Object {
+        let declarations = {};
+        let transforms = { scale: undefined, translate: undefined };
+        for (let declaration of (<any>keyframe).declarations) {
+            let property = styleProperty.getPropertyByCssName(declaration.property);
+            if (property) {
+                let val = declaration.value;
+                if (property.name === "opacity") {
+                    val = parseFloat(val);
+                }
+                else if (property.name === "backgroundColor") {
+                    val = new colorModule.Color(val);
+                }
+                declarations[property.name] = val;
+            }
+            else {
+                let pairs = styleProperty.getShorthandPairs(declaration.property, declaration.value);
+                if (pairs) {
+                    for (let j = 0; j < pairs.length; j++) {
+                        let pair = pairs[j];
+                        if (!this.preprocessAnimationValues(pair, transforms)) {
+                            declarations[pair.property.name] = pair.value;
+                        }
+                    }
+                }
+            }
+        }
+        if (transforms.scale !== undefined) {
+            declarations["scale"] = transforms.scale;
+        }
+        if (transforms.translate !== undefined) {
+            declarations["translate"] = transforms.translate;
+        }
+        return declarations;
+    }
+
     private preprocessAnimationValues(pair: styleProperty.KeyValuePair<styleProperty.Property, any>, transforms: TransformInfo) {
         if (pair.property.name === "scaleX") {
             if (transforms.scale === undefined) {
-                transforms.scale = { x:1, y:1 };
+                transforms.scale = { x: 1, y: 1 };
             }
             transforms.scale.x = pair.value;
             return true;
         }
         if (pair.property.name === "scaleY") {
             if (transforms.scale === undefined) {
-                transforms.scale = { x:1, y:1 };
+                transforms.scale = { x: 1, y: 1 };
             }
             transforms.scale.y = pair.value;
             return true;
         }
         if (pair.property.name === "translateX") {
             if (transforms.translate === undefined) {
-                transforms.translate = { x:0, y:0 };
+                transforms.translate = { x: 0, y: 0 };
             }
             transforms.translate.x = pair.value;
             return true;
@@ -119,137 +243,101 @@ export class CssSelector {
         return false;
     }
 
-    private parseKeyframes(value: Object): Array<Object> {
-        let parsedKeyframes = {};
-        for (let keyframe of (<any>value).keyframes) {
-	       let declarations = {};
-           let transforms = { scale:undefined, translate:undefined };
-	       for (let declaration of keyframe.declarations) {
-		      if (this.propertyIsAnimatable(declaration.property)) {
-                 let property = styleProperty.getPropertyByCssName(declaration.property);
-                 if (property) {
-                     let val = declaration.value;
-                     if (property.name === "opacity") {
-                         val = parseFloat(val);
-                     }
-                     declarations[property.name] = val;
-                 }
-                 else {
-                     let pairs = styleProperty.getShorthandPairs(declaration.property, declaration.value);
-                     if (pairs) {
-                         for (let j = 0; j < pairs.length; j++) {
-                             let pair = pairs[j];
-                             if (!this.preprocessAnimationValues(pair, transforms)) {
-                                declarations[pair.property.name] = pair.value;
-                             }
-                         }
-                     }
-                 }
-		      }
-	       }
-           if (transforms.scale !== undefined) {
-               declarations["scale"] = transforms.scale;
-           }
-           if (transforms.translate !== undefined) {
-               declarations["translate"] = transforms.translate;
-           }
-	       for(let time of keyframe.values) {
-               if (time === "from") {
-                   time = 0;
-               }
-               if (time === "to") {
-                   time = 1;
-               }
-               else {
-                   time = parseFloat(time)/100;
-                   if (time < 0) {
-                       time = 0;
-                   }
-                   if (time > 100) {
-                       time = 100;
-                   }
-               }
-    		   var current = parsedKeyframes[time];
-	       	   if (current === undefined) {
-		         current = {};
-			     current.time = time;
-			     parsedKeyframes[time] = current;
-		       }
-		       current.declarations = declarations;
-	       }
-        }
-        let array = new Array();
-        for (var parsedKeyframe in parsedKeyframes) {
-            array.push(parsedKeyframes[parsedKeyframe]);
-        }
-        array.sort(function (a, b) { return a.time - b.time; });
-        return array;
-    }
-
-    private applyKeyframeAnimation(view: view.View, index: number, startDuration: number) {
-        let keyframe = this._keyframes[index];
-        let animation = {};
-        for (let prop in this._animationInfo) {
-            if (prop === "delay") {
-                if ((<any>keyframe).time === 0) {
-                    animation[prop] = this._animationInfo[prop];
-                }
+    private buildAnimationsFromKeyframes(): Array<Object> {
+        let animations = new Array();
+        let reverse = (<any>this._animationInfo).reverse;
+        let length = this._keyframes.length;
+        let startDuration = 0;
+        for (let index = reverse ? length - 1 : 0; reverse ? index >= 0 : index < this._keyframes.length; reverse ? index-- : index++) {
+            let keyframe = this._keyframes[index];
+            let animation = {};
+            let curve = this._animationInfo["curve"];
+            if (curve !== undefined) {
+                animation["curve"] = curve;
+            }
+            for (let definition in (<any>keyframe).declarations) {
+                animation[definition] = (<any>keyframe).declarations[definition];
+            }
+            let duration = (<any>keyframe).duration;
+            if (duration === 0) {
+                duration = 0.01;
             }
             else {
-                animation[prop] = this._animationInfo[prop];
+                let animationDuration = (<any>this._animationInfo).duration;
+                if (animationDuration === undefined) {
+                    animationDuration = 0.3;
+                }
+                duration = (animationDuration * duration) - startDuration;
+                startDuration += duration;
             }
+            animation["duration"] = reverse ? 1 - duration : duration;
+            animation["target"] = view;
+            animations.push(animation);
         }
-        for (let declaration in keyframe.declarations) {
-            animation[declaration] = keyframe.declarations[declaration];
-        }
-        for (let declaration in animation) {
-            if (declaration === "backgroundColor") {
-                animation[declaration] = new colorModule.Color(animation[declaration]);
-            }
-        }
-        let duration = 0;
-        if ((<any>keyframe).time === 0) {
-            animation["duration"] = 0.01;
-        }
-        else {
-            let animationDuration = animation["duration"];
-            if (animationDuration === undefined) {
-                animationDuration = 0.3;
-            }
-            duration = (animationDuration * (<any>keyframe).time) - startDuration;
-            animation["duration"] = duration;
-        }
-
-        view.animate(animation).then(() => {
-            if (index < this._keyframes.length - 1) {
-                this.applyKeyframeAnimation(view, index + 1, startDuration + duration);
-            }
-        });
+        return animations;
     }
 
     public apply(view: view.View) {
-        var modifier = this.valueSourceModifier;
+        let modifier = this.valueSourceModifier;
+        this.eachSetter((property, value) => {
+            try {
+                view.style._setValue(property, value, modifier);
+            }
+            catch (ex) {
+                trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+            }
+        });
         if (this.isAnimated) {
-            this.eachSetter((property, value) => {
-                try {
-                    view.style._setValue(property, value, modifier);
-                }
-                catch (ex) {
-                    trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
-                }
-            });
-            this.applyKeyframeAnimation(view, 0, 0);
+            let animations = this.buildAnimationsFromKeyframes();
+            let forwards = (<any>this._animationInfo).forwards;
+            let iterations = 1;
+            if ((<any>this._animationInfo).iterations !== undefined) {
+                iterations = (<any>this._animationInfo).iterations;
+            }
+            if ((<any>this._animationInfo).delay !== undefined) {
+                let that = this;
+                setTimeout(function (){ that.animate(animations, 0, view, iterations, forwards, undefined); }, (<any>this._animationInfo).delay, this);
+            }
+            else {
+                this.animate(animations, 0, view, iterations, forwards, undefined);
+            }
         }
-        else {
-            this.eachSetter((property, value) => {
-                try {
-                    view.style._setValue(property, value, modifier);
+    }
+
+    private animate(animations: Array<Object>, index: number, view: view.View, iterations: number, forwards: boolean, backup: Object) {
+        if (index === 0 && iterations === 1 && !forwards) {
+            backup = {};
+            for (let animation of animations) {
+                for (let property in animation) {
+                    if (this.propertyIsAnimatable(property)) {
+                        backup[property] = view[property];
+                    }
                 }
-                catch (ex) {
-                    trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
-                }
-            });
+            }
         }
+        if (index < 0 || index >= animations.length) {
+            if (-- iterations > 0) {
+                this.animate(animations, 0, view, iterations, forwards, backup);
+            }
+            else if (!forwards && backup) {
+                for (let property in backup) {
+                    view[property] = backup[property];
+                }
+            }
+            return;
+        }
+        view.animate(animations[index]).then(() => {
+            this.animate(animations, index + 1, view, iterations, forwards, backup);
+        });
+    }
+
+    private propertyIsAnimatable(property: string): boolean {
+        return property === "backgroundColor" ||
+               property === "opacity" ||
+               property === "scaleX" ||
+               property === "scaleY" ||
+               property === "translateX" ||
+               property === "translateY";
     }
 
     public eachSetter(callback: (property, resolvedValue: any) => void) {
@@ -265,7 +353,7 @@ export class CssSelector {
                 callback(property, resolvedValue);
             }
             else {
-                var pairs = styleProperty.getShorthandPairs(name, resolvedValue);
+                let pairs = styleProperty.getShorthandPairs(name, resolvedValue);
                 if (pairs) {
                     for (let j = 0; j < pairs.length; j++) {
                         let pair = pairs[j];
@@ -274,43 +362,6 @@ export class CssSelector {
                 }
             }
         }
-    }
-
-    private createAnimation(declarations: cssParser.Declaration[]) {
-        for (var declaration of declarations) {
-            if (declaration.property.indexOf("animation") === 0) {
-                if (this._animationInfo === undefined) {
-                    this._animationInfo = {};
-                }
-                switch (declaration.property) {
-                    case "animation-name":
-                        this._animationInfo["name"] = declaration.value;
-                        break;
-                    case "animation-duration":
-                        this._animationInfo["duration"] = converters.timeConverter(declaration.value);
-                        break;
-                    case "animation-delay":
-                        this._animationInfo["delay"] = converters.timeConverter(declaration.value);
-                        break;
-                    case "animation-timing-function":
-                        this._animationInfo["curve"] = converters.animationTimingFunctionConverter(declaration.value);
-                        break;
-                    case "animation-iteration-count":
-                        this._animationInfo["iterations"] = converters.numberConverter(declaration.value);
-                        break;
-                    case "animation":
-                        this._animationInfo = converters.animationConverter(declaration.value);
-                        break;
-                }
-            }
-        }
-    }
-
-    private propertyIsAnimatable(propertyName: string) {
-        return propertyName === "background-color" ||
-               propertyName === "opacity" ||
-               propertyName === "transform" ||
-               propertyName.indexOf("animation") === 0;
     }
 }
 

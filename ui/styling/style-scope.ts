@@ -78,9 +78,16 @@ export class StyleScope {
         let selectorsFromFile = StyleScope.createSelectorsFromCss(cssString, cssFileName, keyframes);
         this._cssSelectors = StyleScope._joinCssSelectorsArrays([this._cssSelectors, selectorsFromFile]);
 
-        for (let selector of this._cssSelectors) {
-            if (selector.isAnimated && keyframes[selector.animation["name"]] !== undefined) {
-                selector.keyframes = keyframes[selector.animation["name"]];
+        let appliedOnSelectors = {};
+        for (let i = this._cssSelectors.length - 1; i >= 0; i --) {
+            let selector = this._cssSelectors[i];
+            if (selector.animation !== undefined) {
+                let animationName = selector.animation["name"];
+                let keyframe = keyframes[animationName];
+                if (keyframe !== undefined && appliedOnSelectors[selector.expression] === undefined) {
+                    selector.keyframes = keyframe;
+                    appliedOnSelectors[selector.expression] = true;
+                }
             }
         }
     }

@@ -109,9 +109,14 @@ export class Animation extends common.Animation implements definition.Animation 
     constructor(animationDefinitions: Array<definition.AnimationDefinition>, playSequentially?: boolean) {
         super(animationDefinitions, playSequentially);
 
-        trace.write("Non-merged Property Animations: " + this._propertyAnimations.length, trace.categories.Animation);
-        this._mergedPropertyAnimations = Animation._mergeAffineTransformAnimations(this._propertyAnimations);
-        trace.write("Merged Property Animations: " + this._mergedPropertyAnimations.length, trace.categories.Animation);
+        if (!playSequentially) {
+            trace.write("Non-merged Property Animations: " + this._propertyAnimations.length, trace.categories.Animation);
+            this._mergedPropertyAnimations = Animation._mergeAffineTransformAnimations(this._propertyAnimations);
+            trace.write("Merged Property Animations: " + this._mergedPropertyAnimations.length, trace.categories.Animation);
+        }
+        else {
+            this._mergedPropertyAnimations = this._propertyAnimations;
+        }
 
         var that = this;
         var animationFinishedCallback = (cancelled: boolean) => {
