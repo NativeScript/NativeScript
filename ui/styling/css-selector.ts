@@ -272,6 +272,7 @@ export class CssSelector {
             }
             animation["duration"] = reverse ? 1 - duration : duration;
             animation["target"] = view;
+            animation["valueSource"] = observable.ValueSource.Css;
             animations.push(animation);
         }
         return animations;
