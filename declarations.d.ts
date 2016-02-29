@@ -105,6 +105,12 @@ declare var require: NativeScriptRequire;
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
 declare function Experimental(target: Object, key?: string | symbol, value?: any): void;
 
+/**
+ * Decorates class that extends native Java class
+ * @param nativeClassName The name of the newly generated class. Must be unique in the application.
+ */
+declare function JavaProxy(nativeClassName: string): ClassDecorator;
+
 declare function Log(data: any): void;
 declare function log(data: any): void;
 declare function float(num: number): any;

@@ -102,7 +102,7 @@ if (platform.device.os === platform.platformNames.android) {
 
 if (typeof global.__decorate !== "function") {
     global.__decorate = function (decorators, target, key, desc) {
-        var c = arguments.length
+        var c = arguments.length;
         var r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 
         if (typeof global.Reflect === "object" && typeof global.Reflect.decorate === "function") {
