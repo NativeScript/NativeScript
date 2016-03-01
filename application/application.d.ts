@@ -348,13 +348,6 @@ declare module "application" {
         paused: boolean;
 
         /**
-         * This method is called by the JavaScript Bridge when navigation to a new activity is triggered.
-         * @param intent - Native (android) intent used to create the activity.
-         * Returns com.tns.NativeScriptActivity.extend implementation.
-         */
-        getActivity(intent: any /* android.content.Intent */): any;
-
-        /**
          * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityCreated method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
          */
         onActivityCreated: (activity: any /* android.app.Activity */, bundle: any /* android.os.Bundle */) => void;

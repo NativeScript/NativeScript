@@ -21,7 +21,7 @@ function _createSegmentedBar(): segmentedBarModule.SegmentedBar {
     // ``` JavaScript
     var segmentedBar = new segmentedBarModule.SegmentedBar();
     // ```
-    // ``` xml
+    // ``` XML
     // <SegmentedBar>
     //   <SegmentedBar.items>
     //     <SegmentedBarItem title="Item 1" />

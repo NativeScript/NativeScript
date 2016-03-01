@@ -171,7 +171,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         //  ```
 
         // ### Declaring a StackLayout.
-        //```XML
+        //``` XML
         // <Page>
         //   <StackLayout orientation="horizontal">
         //     <Label text="This is Label 1" />
