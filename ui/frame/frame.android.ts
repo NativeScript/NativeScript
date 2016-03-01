@@ -14,7 +14,6 @@ global.moduleMerge(frameCommon, exports);
 var TAG = "_fragmentTag";
 var HIDDEN = "_hidden";
 var INTENT_EXTRA = "com.tns.activity";
-var ROOT_VIEW = "_rootView";
 var BACKSTACK_TAG = "_backstackTag";
 var IS_BACK = "_isBack";
 var NAV_DEPTH = "_navDepth";
@@ -696,7 +695,7 @@ class NativeScriptActivity extends android.app.Activity {
         var isRestart = !!savedInstanceState && activityInitialized;
         super.onCreate(isRestart ? savedInstanceState : null);
 
-        this[ROOT_VIEW] = rootView;
+        this.rootView = rootView;
 
         // Initialize native visual tree;
         rootView._onAttached(this);
