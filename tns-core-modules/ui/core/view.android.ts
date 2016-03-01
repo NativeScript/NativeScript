@@ -53,7 +53,7 @@ function onIsUserInteractionEnabledPropertyChanged(data: dependencyObservable.Pr
 
 export class View extends viewCommon.View {
     private _disableUserInteractionListener: android.view.View.OnTouchListener = new android.view.View.OnTouchListener({
-        onTouch: function(view: android.view.View, event: android.view.MotionEvent) {
+        onTouch: function (view: android.view.View, event: android.view.MotionEvent) {
             return true;
         }
     });
@@ -116,7 +116,7 @@ export class View extends viewCommon.View {
                 this._nativeView.setClickable(true);
             }
             this._nativeView.setOnTouchListener(new android.view.View.OnTouchListener({
-                onTouch: function(view: android.view.View, motionEvent: android.view.MotionEvent) {
+                onTouch: function (view: android.view.View, motionEvent: android.view.MotionEvent) {
                     var owner = that.get();
                     if (!owner) {
                         return false;
@@ -178,7 +178,7 @@ export class View extends viewCommon.View {
         if (this._childrenCount > 0) {
             // Notify each child for the _onAttached event
             var that = this;
-            var eachChild = function(child: View): boolean {
+            var eachChild = function (child: View): boolean {
                 child._onAttached(context);
                 if (!child._isAddedToNativeVisualTree) {
                     // since we have lazy loading of the android widgets, we need to add the native instances at this point.
@@ -197,7 +197,7 @@ export class View extends viewCommon.View {
         if (this._childrenCount > 0) {
             // Detach children first
             var that = this;
-            var eachChild = function(child: View): boolean {
+            var eachChild = function (child: View): boolean {
                 if (child._isAddedToNativeVisualTree) {
                     that._removeViewFromNativeVisualTree(child);
                 }
@@ -238,7 +238,7 @@ export class View extends viewCommon.View {
         }
         this._createUI();
         // Ensure layout params
-        if (this._nativeView && !(this._nativeView.getLayoutParams() instanceof org.nativescript.widgets.CommonLayoutParams)) {
+        if (this._nativeView && !this._nativeView.getLayoutParams()) {
             this._nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
         }
 
@@ -500,35 +500,12 @@ export class ViewStyler implements style.Styler {
         (<android.view.View>view._nativeView).setMinimumHeight(0);
     }
 
-    private static getNativeLayoutParams(nativeView: android.view.View): org.nativescript.widgets.CommonLayoutParams {
-        var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
-        if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
-            lp = new org.nativescript.widgets.CommonLayoutParams();
-        }
-
-        return lp;
-    }
-
     private static setNativeLayoutParamsProperty(view: View, params: CommonLayoutParams): void {
         var nativeView: android.view.View = view._nativeView;
-        var lp = ViewStyler.getNativeLayoutParams(nativeView);
-
-        lp.widthPercent = params.widthPercent;
-        lp.heightPercent = params.heightPercent;
-
-        lp.leftMarginPercent = params.leftMarginPercent;
-        lp.topMarginPercent = params.topMarginPercent;
-        lp.rightMarginPercent = params.rightMarginPercent;
-        lp.bottomMarginPercent = params.bottomMarginPercent;
-
-        lp.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
-        lp.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
-        lp.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
-        lp.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
 
         var width = params.width * utils.layout.getDisplayDensity();
         var height = params.height * utils.layout.getDisplayDensity();
-        
+
         // If width is not specified set it as WRAP_CONTENT
         if (width < 0) {
             width = -2;
@@ -591,9 +568,68 @@ export class ViewStyler implements style.Styler {
                 throw new Error("Invalid verticalAlignment value: " + params.verticalAlignment);
         }
 
-        lp.gravity = gravity;
+        var lp: any = nativeView.getLayoutParams();
         lp.width = Math.round(width);
         lp.height = Math.round(height);
+
+        if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
+            lp.widthPercent = params.widthPercent;
+            lp.heightPercent = params.heightPercent;
+            lp.leftMarginPercent = params.leftMarginPercent;
+            lp.topMarginPercent = params.topMarginPercent;
+            lp.rightMarginPercent = params.rightMarginPercent;
+            lp.bottomMarginPercent = params.bottomMarginPercent;
+            lp.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
+            lp.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
+            lp.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
+            lp.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
+            lp.gravity = gravity;
+        }
+        else {
+            if (types.isDefined(lp.widthPercent)) {
+                lp.widthPercent = params.widthPercent;
+            }
+
+            if (types.isDefined(lp.heightPercent)) {
+                lp.heightPercent = params.heightPercent;
+            }
+
+            if (types.isDefined(lp.leftMarginPercent)) {
+                lp.leftMarginPercent = params.leftMarginPercent;
+            }
+
+            if (types.isDefined(lp.topMarginPercent)) {
+                lp.topMarginPercent = params.topMarginPercent;
+            }
+
+            if (types.isDefined(lp.rightMarginPercent)) {
+                lp.rightMarginPercent = params.rightMarginPercent;
+            }
+
+            if (types.isDefined(lp.bottomMarginPercent)) {
+                lp.bottomMarginPercent = params.bottomMarginPercent;
+            }
+
+            if (types.isDefined(lp.leftMargin)) {
+                lp.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
+            }
+
+            if (types.isDefined(lp.topMargin)) {
+                lp.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
+            }
+
+            if (types.isDefined(lp.rightMargin)) {
+                lp.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
+            }
+
+            if (types.isDefined(lp.bottomMargin)) {
+                lp.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
+            }
+
+            if (types.isDefined(lp.gravity)) {
+                lp.gravity = gravity;
+            }
+        }
 
         nativeView.setLayoutParams(lp);
     }
