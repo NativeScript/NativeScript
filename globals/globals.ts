@@ -127,6 +127,12 @@ if (typeof global.__metadata !== "function") {
     };
 }
 
+if (typeof global.__param !== "function") {
+    global.__param = (global && global.__param) || function (paramIndex, decorator) {
+        return function (target, key) { decorator(target, key, paramIndex); }
+    };
+}
+
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {
         var originalMethod = descriptor.value;
