@@ -4,6 +4,10 @@ declare var app;
 declare var telerik;
 declare var gc: () => void;
 
+interface ArrayConstructor {
+    create(type: any, count: number): any;
+}
+
 declare module android {
     module support {
         module v4 {
