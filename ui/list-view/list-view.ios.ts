@@ -4,6 +4,8 @@ import common = require("./list-view-common");
 import utils = require("utils/utils");
 import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
+import {StackLayout} from "ui/layouts/stack-layout";
+import {ProxyViewContainer} from "ui/proxy-view-container";
 import dependencyObservable = require("ui/core/dependency-observable");
 import * as colorModule from "color";
 
@@ -322,11 +324,18 @@ export class ListView extends common.ListView {
             let args = notifyForItemAtIndex(this, cell, view, ITEMLOADING, indexPath);
             view = args.view || this._getDefaultItemContent(indexPath.row);
 
+            // Proxy containers should not get treated as layouts.
+            // Wrap them in a real layout as well.
+            if (view instanceof ProxyViewContainer) {
+                var sp = new StackLayout();
+                sp.addChild(view);
+                view = sp;
+            }
+
             // If cell is reused be have old content - remove it first.
             if (!cell.view) {
                 cell.owner = new WeakRef(view);
-            }
-            else if (cell.view !== view) {
+            } else if (cell.view !== view) {
                 this._removeContainer(cell);
                 (<UIView>cell.view._nativeView).removeFromSuperview();
                 cell.owner = new WeakRef(view);
@@ -341,8 +350,7 @@ export class ListView extends common.ListView {
             }
 
             cellHeight = this._layoutCell(view, indexPath);
-        }
-        finally {
+        } finally {
             this._preparingCell = false;
         }
         return cellHeight;

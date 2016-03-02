@@ -6,6 +6,7 @@ import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import definition = require("ui/list-view");
 import utils = require("utils/utils")
+import {ProxyViewContainer} from "ui/proxy-view-container";
 import * as layoutBase from "ui/layouts/layout-base";
 import * as colorModule from "color";
 
@@ -229,7 +230,10 @@ function ensureListViewAdapterClass() {
                 }
                 this._listView._prepareItem(args.view, index);
                 if (!args.view.parent) {
-                    if (args.view instanceof layoutBase.LayoutBase) {
+                    // Proxy containers should not get treated as layouts.
+                    // Wrap them in a real layout as well.
+                    if (args.view instanceof layoutBase.LayoutBase &&
+                        !(args.view instanceof ProxyViewContainer)) {
                         this._listView._addView(args.view);
                         convertView = args.view.android;
                     } else {
