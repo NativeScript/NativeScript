@@ -127,7 +127,7 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
     return page;
 }
 
-interface NavigationContext {
+export interface NavigationContext {
     entry: definition.BackstackEntry;
     isBackNavigation: boolean;
 }
@@ -264,7 +264,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         //trace.write("calling _updateActionBar on Frame", trace.categories.Navigation);
     }
 
-    private _processNavigationContext(navigationContext: NavigationContext) {
+    protected _processNavigationContext(navigationContext: NavigationContext) {
         if (navigationContext.isBackNavigation) {
             this.performGoBack(navigationContext);
         }

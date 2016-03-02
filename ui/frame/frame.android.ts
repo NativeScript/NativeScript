@@ -1,20 +1,19 @@
 ﻿import definition = require("ui/frame");
 import frameCommon = require("./frame-common");
 import pages = require("ui/page");
+import transitionModule = require("ui/transition");
+import trace = require("trace");
 import {View} from "ui/core/view";
 import {Observable} from "data/observable";
-import trace = require("trace");
-import application = require("application");
+import * as application from "application";
 import * as types from "utils/types";
 import * as utils from "utils/utils";
-import transitionModule = require("ui/transition");
 
 global.moduleMerge(frameCommon, exports);
 
 var TAG = "_fragmentTag";
 var HIDDEN = "_hidden";
 var INTENT_EXTRA = "com.tns.activity";
-var ROOT_VIEW = "_rootView";
 var BACKSTACK_TAG = "_backstackTag";
 var IS_BACK = "_isBack";
 var NAV_DEPTH = "_navDepth";
@@ -348,6 +347,45 @@ export class Frame extends frameCommon.Frame {
 
         return true;
     }
+    
+    protected _processNavigationContext(navigationContext: frameCommon.NavigationContext) {
+        let activity = this._android.activity;
+        if (activity) {
+            let isForegroundActivity = activity === application.android.foregroundActivity;
+            let isPaused = application.android.paused;
+
+            if (activity && !isForegroundActivity || (isForegroundActivity && isPaused)) {
+                let weakActivity = new WeakRef(activity);
+                let resume = (args: application.AndroidActivityEventData) => {
+                    let weakActivityInstance = weakActivity.get();
+                    let isCurrent = args.activity === weakActivityInstance;
+                    if (!weakActivityInstance) {
+                        trace.write(`Frame _processNavigationContext: Drop For Activity GC-ed`, trace.categories.Navigation);
+                        unsubscribe();
+                        return
+                    }
+                    if (isCurrent) {
+                        trace.write(`Frame _processNavigationContext: Activity.Resumed, Continue`, trace.categories.Navigation);
+                        super._processNavigationContext(navigationContext);
+                        unsubscribe();
+                    }
+                }
+                let unsubscribe = () => {
+                    trace.write(`Frame _processNavigationContext: Unsubscribe from Activity.Resumed`, trace.categories.Navigation);
+                    application.android.off(application.AndroidApplication.activityResumedEvent, resume);
+                    application.android.off(application.AndroidApplication.activityStoppedEvent, unsubscribe);
+                    application.android.off(application.AndroidApplication.activityDestroyedEvent, unsubscribe);
+                }
+
+                trace.write(`Frame._processNavigationContext: Subscribe for Activity.Resumed`, trace.categories.Navigation);
+                application.android.on(application.AndroidApplication.activityResumedEvent, resume);
+                application.android.on(application.AndroidApplication.activityStoppedEvent, unsubscribe);
+                application.android.on(application.AndroidApplication.activityDestroyedEvent, unsubscribe);
+                return;
+            }
+        }
+        super._processNavigationContext(navigationContext);
+    }
 }
 
 var framesCounter = 0;
@@ -433,7 +471,7 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
                 return activity;
             }
         }
-
+        
         return undefined;
     }
 
@@ -696,7 +734,7 @@ class NativeScriptActivity extends android.app.Activity {
         var isRestart = !!savedInstanceState && activityInitialized;
         super.onCreate(isRestart ? savedInstanceState : null);
 
-        this[ROOT_VIEW] = rootView;
+        this.rootView = rootView;
 
         // Initialize native visual tree;
         rootView._onAttached(this);

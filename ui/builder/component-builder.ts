@@ -79,11 +79,13 @@ export function getComponentModule(elementName: string, namespace: string, attri
                 if (codeFilePath.indexOf("~/") === 0) {
                     codeFilePath = path.join(knownFolders.currentApp().path, codeFilePath.replace("~/", ""));
                 }
-                try {
+
+                let codeFilePathWithExt = codeFilePath.indexOf(".js") !== -1 ? codeFilePath : `${codeFilePath}.js`;
+                if (File.exists(codeFilePathWithExt)) {
                     exports = global.loadModule(codeFilePath);
                     (<any>instance).exports = exports;
-                } catch (ex) {
-                    throw new Error(`Code file with path "${codeFilePath}" cannot be found!`);
+                } else {
+                    throw new Error(`Code file with path "${codeFilePathWithExt}" cannot be found!`);
                 }
             } else {
                 throw new Error("Code file atribute is valid only for pages!");
@@ -145,7 +147,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
             }
         }
 
-        componentModule = {component: instance, exports: instanceModule};
+        componentModule = { component: instance, exports: instanceModule };
     }
 
     return componentModule;
