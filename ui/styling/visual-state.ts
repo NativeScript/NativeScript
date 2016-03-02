@@ -83,8 +83,8 @@ function resetProperties(view: viewModule.View, oldState: VisualState, newState:
         }
     }
 
-    for (var animation of oldState.animations) {
-        animation.eachSetter((property, value) => {
+    for (let selector of oldState.animations) {
+        selector.eachSetter((property, value) => {
             view.style._resetValue(property, observable.ValueSource.Local);
         });
     }

@@ -3,7 +3,6 @@ import common = require("./animation-common");
 import viewModule = require("ui/core/view");
 import trace = require("trace");
 import enums = require("ui/enums");
-import observable = require("ui/core/dependency-observable");
 import style = require("ui/styling/style");
 global.moduleMerge(common, exports);
 

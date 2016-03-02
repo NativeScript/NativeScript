@@ -9,7 +9,6 @@ import styleModule = require("ui/styling/style");
 
 global.moduleMerge(common, exports);
 
-
 let argbEvaluator: android.animation.ArgbEvaluator;
 function ensureArgbEvaluator() {
     if (!argbEvaluator) {

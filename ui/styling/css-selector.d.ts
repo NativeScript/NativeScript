@@ -2,6 +2,7 @@
     import view = require("ui/core/view");
     import cssParser = require("css");
     import styleProperty = require("ui/styling/style-property");
+    import animationGroupModule = require("ui/animation/animationgroup");
 
     export class CssSelector {
         constructor(expression: string, declarations: cssParser.Declaration[]);
@@ -15,7 +16,7 @@
 
         isAnimated: boolean;
 
-        animation: Object;
+        animation: animationGroupModule.AnimationGroup;
 
         keyframes: Object;
 

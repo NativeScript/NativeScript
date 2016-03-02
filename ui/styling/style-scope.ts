@@ -7,6 +7,7 @@ import * as typesModule from "utils/types";
 import * as utilsModule from "utils/utils";
 import * as fileSystemModule from "file-system";
 import * as visualStateModule from "./visual-state";
+import animationGroupModule = require("ui/animation/animationgroup");
 
 var types: typeof typesModule;
 function ensureTypes() {
@@ -46,10 +47,12 @@ export class StyleScope {
     private _css: string;
     private _cssFileName: string;
     private _cssSelectors: Array<cssSelector.CssSelector>;
+    private _keyframes = new Array<Object>();
 
     get css(): string {
         return this._css;
     }
+
     set css(value: string) {
         this._css = value;
         this._cssFileName = undefined;
@@ -63,8 +66,6 @@ export class StyleScope {
 
         this._reset();
 
-        let keyframes = new Array<Object>();
-
         if (!this._cssSelectors) {
             // Always add app.css when initializing selectors
             if (application.cssSelectorsCache) {
@@ -75,7 +76,7 @@ export class StyleScope {
             }
         }
 
-        let selectorsFromFile = StyleScope.createSelectorsFromCss(cssString, cssFileName, keyframes);
+        let selectorsFromFile = StyleScope.createSelectorsFromCss(cssString, cssFileName, this._keyframes);
         this._cssSelectors = StyleScope._joinCssSelectorsArrays([this._cssSelectors, selectorsFromFile]);
 
         let appliedOnSelectors = {};
@@ -83,13 +84,32 @@ export class StyleScope {
             let selector = this._cssSelectors[i];
             if (selector.animation !== undefined) {
                 let animationName = selector.animation["name"];
-                let keyframe = keyframes[animationName];
+                let keyframe = this._keyframes[animationName];
                 if (keyframe !== undefined && appliedOnSelectors[selector.expression] === undefined) {
                     selector.keyframes = keyframe;
                     appliedOnSelectors[selector.expression] = true;
                 }
             }
         }
+    }
+
+    public removeSelectors(selectorExpression: string) {
+        for (let i = this._cssSelectors.length - 1; i >= 0; i--) {
+            let selector = this._cssSelectors[i];
+            if (selector.expression === selectorExpression) {
+                this._cssSelectors.splice(i, 1);
+            }
+        }
+    }
+
+    public getKeyframesAnimation(animationName: string): animationGroupModule.AnimationGroup {
+        let keyframes = this._keyframes[animationName];
+        if (keyframes !== undefined) {
+            let animationGroup = new animationGroupModule.AnimationGroup();
+            animationGroup.keyframes = animationGroupModule.AnimationGroup.keyframesFromCSS(keyframes);
+            return animationGroup;
+        }
+        return undefined;
     }
 
     public static createSelectorsFromCss(css: string, cssFileName: string, keyframes: Array<Object>): cssSelector.CssSelector[] {
