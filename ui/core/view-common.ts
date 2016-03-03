@@ -1165,4 +1165,9 @@ export class View extends ProxyObject implements definition.View {
     public _onStylePropertyChanged(property: Property): void {
         //
     }
+
+    protected _canApplyNativeProperty(): boolean {
+        // Check for a valid _nativeView instance
+        return !!this._nativeView;
+    }
 }

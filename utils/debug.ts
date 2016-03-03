@@ -47,11 +47,12 @@ export class Source {
 	}
 }
 
-export class ScopeError implements Error {
+export class ScopeError extends Error {
 	private _child: Error;
 	private _message: string;
 	
-	constructor(child: Error, message?: string) {
+    constructor(child: Error, message?: string) {
+        super(message);
 		if (!child) {
 			throw new Error("Required child error!");
 		}
