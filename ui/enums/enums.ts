@@ -171,10 +171,10 @@ export module AnimationCurve {
 }
 
 export module WebViewNavigationType {
-	export var linkClicked = "linkClicked";
-	export var formSubmitted = "formSubmitted";
-	export var backForward = "backForward";
-	export var reload = "reload";
-	export var formResubmitted = "formResubmitted";
-	export var other = "other";
+    export var linkClicked = "linkClicked";
+    export var formSubmitted = "formSubmitted";
+    export var backForward = "backForward";
+    export var reload = "reload";
+    export var formResubmitted = "formResubmitted";
+    export var other = "other";
 }
