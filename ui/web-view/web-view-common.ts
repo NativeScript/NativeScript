@@ -111,6 +111,7 @@ export abstract class WebView extends view.View implements definition.WebView {
             eventName: WebView.loadFinishedEvent,
             object: this,
             url: url,
+            navigationType: undefined,
             error: error
         };
 
