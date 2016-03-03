@@ -51,18 +51,10 @@ android {
     }
 }
 
-android.libraryVariants.all { variant ->
-	variant.outputs.each { output ->
-		output.packageLibrary.exclude('libs/android-runtime.jar')
-		output.packageLibrary.exclude('libs/android-binding-generator.jar')
-	}
-}
 dependencies {
 	compile fileTree(include: ['*.jar'], dir: 'libs')
 	testCompile 'junit:junit:4.12'
 	compile 'com.android.support:support-v4:+'
-	compile files('extlibs/android-binding-generator.jar')
-	compile files('extlibs/android-runtime.jar')
 }
 
 task cleanDistDir (type: Delete) {
