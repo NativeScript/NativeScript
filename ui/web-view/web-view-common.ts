@@ -117,11 +117,12 @@ export abstract class WebView extends view.View implements definition.WebView {
         this.notify(args);
     }
 
-    public _onLoadStarted(url: string) {
+    public _onLoadStarted(url: string, navigationType: string) {
         var args = <definition.LoadEventData>{
             eventName: WebView.loadStartedEvent,
             object: this,
             url: url,
+            navigationType: navigationType,
             error: undefined
         };
 
