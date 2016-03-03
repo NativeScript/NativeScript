@@ -169,3 +169,12 @@ export module AnimationCurve {
         return new animationModule.CubicBezierAnimationCurve(x1, y1 ,x2, y2);
     }
 }
+
+export module WebViewNavigationType {
+	export var linkClicked = "linkClicked";
+	export var formSubmitted = "formSubmitted";
+	export var backForward = "backForward";
+	export var reload = "reload";
+	export var formResubmitted = "formResubmitted";
+	export var other = "other";
+}
