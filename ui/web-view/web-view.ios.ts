@@ -22,22 +22,22 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
             var _navigationType = "";
 
             switch (navigationType) {
-                case UIWebViewNavigationTypeLinkClicked:
+                case UIWebViewNavigationType.LinkClicked:
                     _navigationType = enums.WebViewNavigationType.linkClicked;
                     break;
-                case UIWebViewNavigationTypeFormSubmitted:
+                case UIWebViewNavigationType.FormSubmitted:
                     _navigationType = enums.WebViewNavigationType.formSubmitted;
                     break;
-                case UIWebViewNavigationTypeBackForward:
+                case UIWebViewNavigationType.BackForward:
                     _navigationType = enums.WebViewNavigationType.backForward;
                     break;
-                case UIWebViewNavigationTypeReload:
+                case UIWebViewNavigationType.Reload:
                     _navigationType = enums.WebViewNavigationType.reload;
                     break;
-                case UIWebViewNavigationTypeFormResubmitted:
+                case UIWebViewNavigationType.FormResubmitted:
                     _navigationType = enums.WebViewNavigationType.formResubmitted;
                     break;
-                case UIWebViewNavigationTypeOther:
+                case UIWebViewNavigationType.Other:
                     _navigationType = enums.WebViewNavigationType.other;
                     break;
             }
