@@ -1,5 +1,6 @@
-﻿import TKUnit = require("../../TKUnit");
+import TKUnit = require("../../TKUnit");
 import testModule = require("../../ui-test");
+import enumsModule = require("ui/enums");
 
 // <snippet module="ui/web-view" title="WebView">
 // # WebView
@@ -176,6 +177,24 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             try {
                 TKUnit.assertNull(args.error, args.error);
                 TKUnit.assertEqual(args.url, targetSrc.toLowerCase(), "args.url");
+                done(null);
+            }
+            catch (e) {
+                done(e);
+            }
+        });
+
+        webView.src = targetSrc;
+    }
+
+    public testLoadStartedNavigationType() {
+        let webView = this.testView;
+        let targetSrc = "https://github.com/";
+
+        webView.on(webViewModule.WebView.loadStartedEvent, function (args: webViewModule.LoadEventData) {
+            try {
+                TKUnit.assertNull(args.error, args.error);
+                TKUnit.assertEqual(args.navigationType, enumsModule.WebViewNavigationType.linkClicked, "args.navigationType");
                 done(null);
             }
             catch (e) {

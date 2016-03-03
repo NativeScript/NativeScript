@@ -1,4 +1,5 @@
-﻿import common = require("./web-view-common");
+import common = require("./web-view-common");
+import enums = require("ui/enums");
 import trace = require("trace");
 
 global.moduleMerge(common, exports);
@@ -16,9 +17,33 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
 
     public webViewShouldStartLoadWithRequestNavigationType(webView: UIWebView, request: NSURLRequest, navigationType: number) {
         let owner = this._owner.get();
+
         if (owner && request.URL) {
+            var _navigationType = "";
+
+            switch (navigationType) {
+                case UIWebViewNavigationType.LinkClicked:
+                    _navigationType = enums.WebViewNavigationType.linkClicked;
+                    break;
+                case UIWebViewNavigationType.FormSubmitted:
+                    _navigationType = enums.WebViewNavigationType.formSubmitted;
+                    break;
+                case UIWebViewNavigationType.BackForward:
+                    _navigationType = enums.WebViewNavigationType.backForward;
+                    break;
+                case UIWebViewNavigationType.Reload:
+                    _navigationType = enums.WebViewNavigationType.reload;
+                    break;
+                case UIWebViewNavigationType.FormResubmitted:
+                    _navigationType = enums.WebViewNavigationType.formResubmitted;
+                    break;
+                case UIWebViewNavigationType.Other:
+                    _navigationType = enums.WebViewNavigationType.other;
+                    break;
+            }
+
             trace.write("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", trace.categories.Debug);
-            owner._onLoadStarted(request.URL.absoluteString);
+            owner._onLoadStarted(request.URL.absoluteString, _navigationType);
         }
 
         return true;

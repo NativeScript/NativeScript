@@ -555,4 +555,39 @@
          */
         export function cubicBezier(x1: number, y1: number, x2: number, y2: number): animationModule.CubicBezierAnimationCurve;
     }
+
+    /**
+     * Represents a webview navigation type.
+     */
+    module WebViewNavigationType {
+        /**
+         * iOS:  [UIWebViewNavigationType](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIWebView_Class/#//apple_ref/c/tdef/UIWebViewNavigationType)
+         */
+        export var linkClicked: string;
+
+        /**
+         * iOS:  [UIWebViewNavigationType](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIWebView_Class/#//apple_ref/c/tdef/UIWebViewNavigationType)
+         */
+        export var formSubmitted: string;
+
+        /**
+         * iOS:  [UIWebViewNavigationType](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIWebView_Class/#//apple_ref/c/tdef/UIWebViewNavigationType)
+         */
+        export var backForward: string;
+
+        /**
+         * iOS:  [UIWebViewNavigationType](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIWebView_Class/#//apple_ref/c/tdef/UIWebViewNavigationType)
+         */
+        export var reload: string;
+
+        /**
+         * iOS:  [UIWebViewNavigationType](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIWebView_Class/#//apple_ref/c/tdef/UIWebViewNavigationType)
+         */
+        export var formResubmitted: string;
+
+        /**
+         * iOS:  [UIWebViewNavigationType](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIWebView_Class/#//apple_ref/c/tdef/UIWebViewNavigationType)
+         */
+        export var other: string;
+    }
 }

@@ -103,6 +103,10 @@ declare module "ui/web-view" {
          */
         url: string;
         /**
+         * Gets the navigation type of the web-view.
+         */
+        navigationType: string;
+        /**
          * Gets the error (if any). 
          */
         error: string;
