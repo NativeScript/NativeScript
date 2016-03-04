@@ -8,7 +8,7 @@ module.exports = function(grunt) {
         require('time-grunt')(grunt);
     }
 
-    if (grunt.cli.tasks.indexOf("testsapp") >= 0 || grunt.cli.tasks.indexOf("buildTestsApp")>= 0) {
+    if (grunt.cli.tasks.indexOf("testsapp") >= 0 || grunt.cli.tasks.indexOf("buildOnlyTestsApp")>= 0 || grunt.cli.tasks.indexOf("runOnlyTestsApp")>= 0) {
         var tsTester = require("./build/run-testsapp.grunt.js");
         tsTester.run(grunt);
         return;
