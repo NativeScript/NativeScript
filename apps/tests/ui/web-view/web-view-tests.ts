@@ -49,7 +49,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             // <hide>
             try {
                 TKUnit.assertNull(args.error, args.error);
-                TKUnit.assertEqual(args.url, "https://github.com/", "args.url");
+                TKUnit.assertEqual(args.url, "https://www.yahoo.com/", "args.url");
                 done(null);
             }
             catch (e) {
@@ -58,7 +58,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
             // </hide>
         });
-        webView.url = "https://github.com/";
+        webView.url = "https://www.yahoo.com/";
         // ```
         // </snippet>
     }
