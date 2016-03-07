@@ -39,7 +39,7 @@ function updateNativeDate(picker: DatePicker) {
     var month = types.isNumber(picker.month) ? (picker.month - 1) : picker.android.getMonth();
     var day = types.isNumber(picker.day) ? picker.day : picker.android.getDayOfMonth();
 
-    picker.android.updateDate(year, month, day);
+    picker.date = new Date(year, month, day);
 }
 
 function onMaxDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -63,6 +63,19 @@ function onMinDatePropertyChanged(data: dependencyObservable.PropertyChangeData)
 }
 
 (<proxy.PropertyMetadata>common.DatePicker.minDateProperty.metadata).onSetNativeValue = onMinDatePropertyChanged;
+
+function onDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var picker = <DatePicker>data.object;
+
+    var newValue = <Date>data.newValue;
+    if (picker.android && (picker.android.getDayOfMonth() !== newValue.getDay() 
+                            || picker.android.getMonth() !== newValue.getMonth() 
+                            || picker.android.getYear() !== newValue.getFullYear())) {
+        picker.android.updateDate(newValue.getFullYear(), newValue.getMonth(), newValue.getDate());
+    }
+}
+
+(<proxy.PropertyMetadata>common.DatePicker.dateProperty.metadata).onSetNativeValue = onDatePropertyChanged;
 
 global.moduleMerge(common, exports);
 
@@ -90,14 +103,17 @@ export class DatePicker extends common.DatePicker {
 
                     if (year !== this.owner.year) {
                         this.owner._onPropertyChangedFromNative(common.DatePicker.yearProperty, year);
+                        this.owner._onPropertyChangedFromNative(common.DatePicker.dateProperty, new Date(year, this.owner.month - 1, this.owner.day));
                     }
 
                     if ((month + 1) !== this.owner.month) {
                         this.owner._onPropertyChangedFromNative(common.DatePicker.monthProperty, month + 1);
+                        this.owner._onPropertyChangedFromNative(common.DatePicker.dateProperty, new Date(this.owner.year, month, this.owner.day));
                     }
 
                     if (day !== this.owner.day) {
                         this.owner._onPropertyChangedFromNative(common.DatePicker.dayProperty, day);
+                        this.owner._onPropertyChangedFromNative(common.DatePicker.dateProperty, new Date(this.owner.year, this.owner.month - 1, day));
                     }
                 }
             }
