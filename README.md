@@ -2,7 +2,7 @@
 
 ![NativeScript logo](http://i.imgur.com/YmNIMqS.png)
 
-[NativeScript](http://www.nativescript.org) is a framework for building native iOS and Android apps using JavaScript and CSS. NativeScript renders UIs with the native platform’s rendering engine—no [WebViews](http://developer.telerik.com/featured/what-is-a-webview/)—resulting in native-like performance and UX.
+[NativeScript](http://www.nativescript.org) is a framework for building native iOS and Android apps using JavaScript and CSS. NativeScript renders UIs with the native platform’s rendering engine, no [WebViews](http://developer.telerik.com/featured/what-is-a-webview/), resulting in native-like performance and UX.
 
 NativeScript provides a best-of-both-worlds development experience. Our cross-platform JavaScript modules give you the convenience of writing iOS and Android apps from a single JavaScript codebase, while our runtimes give you the power of accessing native APIs, SDKs, and frameworks when you need them—all without needing to open Xcode or Android Studio. NativeScript was created and is supported by [Telerik](http://www.telerik.com/).
 
@@ -30,7 +30,7 @@ Our [Getting Started Guide](http://docs.nativescript.org/start/getting-started) 
 
 ## Repositories
 
-The NativeScript framework is made up a number of components, all of which are open source and on GitHub. Here are the major ones:
+The NativeScript framework consists of a number of components, all of which are open source and on GitHub. Here are the major ones:
 
 - **[Cross-platform modules](//github.com/NativeScript/NativeScript/)**
     - This repo contains the [NativeScript cross-platform modules](http://docs.nativescript.org/core-concepts/modules), which abstract iOS and Android APIs into JavaScript APIs—e.g. `camera.takePicture()`. The modules are written in TypeScript.
@@ -41,7 +41,7 @@ The NativeScript framework is made up a number of components, all of which are o
 - **[CLI](//github.com/NativeScript/nativescript-cli)**
     - This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using the NativeScript framework. The CLI is written in TypeScript.
 - **[Docs](//github.com/NativeScript/docs)**
-    - This repo contains the NativeScript framework documentation, which is available on <http://docs.nativescript.org/>. The docs are written in Markdown.
+    - This repo contains the NativeScript framework documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
 
 In addition to the code that makes up the NativeScript framework itself, we also provide a number of [open-source sample apps](https://www.nativescript.org/app-samples-with-code) that you can reference while building your NativeScript application.
 
@@ -51,7 +51,7 @@ We love PRs, and accept them for all of our repositories—even docs! Please fol
 
 ## Angular 2
 
-We are [working together with the Google Angular JS team](http://angularjs.blogspot.com/2015/12/building-mobile-apps-with-angular-2-and.html) to make Angular 2.0 work on top of NativeScript. To check our progress please see the following links:
+We are [working together with the Google Angular JS team](http://angularjs.blogspot.com/2015/12/building-mobile-apps-with-angular-2-and.html) to make Angular 2.0 work on top of NativeScript. To follow our progress, check out the following links:
 
 - [NativeScript Angular 2.0 plugin](https://www.npmjs.com/package/nativescript-angular) - This plugin is the only thing you need to install in order to enable Angular 2.0 in NativeScript.
 - [TodoMVC sample](//github.com/NativeScript/sample-ng-todomvc) - The classic TodoMVC sample implemented with NativeScript and Angular 2.0.
