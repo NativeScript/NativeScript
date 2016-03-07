@@ -103,13 +103,15 @@ declare module "http" {
        /**
         * Gets the response headers.
         */
-        headers: any;
+        headers: Headers;
 
        /**
         * Gets the response content.
         */
         content?: HttpContent;
     }
+    
+    export type Headers = { [key: string]: string | string[] };
 
    /**
     * Encapsulates the content of an HttpResponse.

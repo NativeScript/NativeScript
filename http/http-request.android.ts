@@ -58,7 +58,7 @@ function onRequestComplete(requestId: number, result: com.tns.Async.Http.Request
     }
 
     // read the headers
-    var headers = {};
+    var headers: http.Headers = {};
     if (result.headers) {
         var jHeaders = result.headers;
         var length = jHeaders.size();
@@ -66,7 +66,8 @@ function onRequestComplete(requestId: number, result: com.tns.Async.Http.Request
         var pair: com.tns.Async.Http.KeyValuePair;
         for (i = 0; i < length; i++) {
             pair = jHeaders.get(i);
-            headers[pair.key] = pair.value;
+            
+            (<any>http).addHeader(headers, pair.key, pair.value);
         }
     }
 

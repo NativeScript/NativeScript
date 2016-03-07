@@ -535,6 +535,27 @@ export var test_request_headersSentAndReceivedProperly = function (done) {
     });
 };
 
+export var test_request_headersWithSameKeyAddedProperly = function (done) {
+    var keyName = "key";
+    var value1 = "value1";
+    var value2 = "value2";
+    
+    var headers = {};
+    
+    (<any>http).addHeader(headers, keyName, value1);
+    (<any>http).addHeader(headers, keyName, value2);
+    
+    try {
+        TKUnit.assertTrue(Array.isArray(headers[keyName]));
+        TKUnit.assertEqual(headers[keyName][0], value1);
+        TKUnit.assertEqual(headers[keyName][1], value2);
+        done(null);
+    }
+    catch (err) {
+        done(err);
+    }
+};
+
 export var test_request_contentSentAndReceivedProperly = function (done) {
     var result;
 
