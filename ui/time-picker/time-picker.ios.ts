@@ -79,13 +79,20 @@ class UITimePickerChangeHandlerImpl extends NSObject {
         }
 
         var comps = getComponents(sender.date);
-
+        
+        let timeChanged = false;
         if (comps.hour !== owner.hour) {
             owner._onPropertyChangedFromNative(common.TimePicker.hourProperty, comps.hour);
+            timeChanged = true;
         }
 
         if (comps.minute !== owner.minute) {
             owner._onPropertyChangedFromNative(common.TimePicker.minuteProperty, comps.minute);
+            timeChanged = true;
+        }
+        
+        if (timeChanged) {
+            owner._onPropertyChangedFromNative(common.TimePicker.timeProperty, new Date(0, 0, 0, comps.hour, comps.minute));
         }
     }
 

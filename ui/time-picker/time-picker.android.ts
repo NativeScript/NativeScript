@@ -54,7 +54,7 @@ export class TimePicker extends common.TimePicker {
 
             this.minute = minute;
             this.hour = hour;
-
+            
             this.android.setOnTimeChangedListener(this._listener);
         }
     }
