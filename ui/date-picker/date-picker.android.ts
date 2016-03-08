@@ -100,20 +100,22 @@ export class DatePicker extends common.DatePicker {
 
             onDateChanged: function (picker: android.widget.DatePicker, year: number, month: number, day: number) {
                 if (this.owner) {
-
+                    let dateIsChanged = false;
                     if (year !== this.owner.year) {
                         this.owner._onPropertyChangedFromNative(common.DatePicker.yearProperty, year);
-                        this.owner._onPropertyChangedFromNative(common.DatePicker.dateProperty, new Date(year, this.owner.month - 1, this.owner.day));
+                        dateIsChanged = true;
                     }
-
                     if ((month + 1) !== this.owner.month) {
                         this.owner._onPropertyChangedFromNative(common.DatePicker.monthProperty, month + 1);
-                        this.owner._onPropertyChangedFromNative(common.DatePicker.dateProperty, new Date(this.owner.year, month, this.owner.day));
+                        dateIsChanged = true;
                     }
-
                     if (day !== this.owner.day) {
                         this.owner._onPropertyChangedFromNative(common.DatePicker.dayProperty, day);
-                        this.owner._onPropertyChangedFromNative(common.DatePicker.dateProperty, new Date(this.owner.year, this.owner.month - 1, day));
+                        dateIsChanged = true;
+                    }
+                    
+                    if (dateIsChanged) {
+                        this.owner._onPropertyChangedFromNative(common.DatePicker.dateProperty, new Date(year, month, day));
                     }
                 }
             }
