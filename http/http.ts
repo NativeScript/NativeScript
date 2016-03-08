@@ -1,5 +1,6 @@
 import image = require("image-source");
 import httpRequest = require("http/http-request");
+import dts = require("http");
 
 global.moduleMerge(httpRequest, exports);
 
@@ -52,4 +53,16 @@ export function getFile(arg: any, destinationFilePath?: string): Promise<any> {
                 }
             }, e => reject(e));
     });
+}
+
+export function addHeader(headers: dts.Headers, key: string, value: string): void{
+    if(!headers[key]) {
+        headers[key] = value;
+    } else if (Array.isArray(headers[key])){
+        (<string[]>headers[key]).push(value);
+    } else {
+        let values: string[] = [<string>headers[key]];
+        values.push(value);
+        headers[key] = values;
+    }
 }
