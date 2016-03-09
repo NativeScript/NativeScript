@@ -485,6 +485,10 @@ namespace xml2ui {
 
                             if (this.rootComponentModule && this.rootComponentModule.component instanceof Page) {
                                 this.currentPage = <Page>this.rootComponentModule.component;
+                                
+                                if((<any>this.currentPage).exports){
+                                    this.context = (<any>this.currentPage).exports;
+                                }
                             }
                         }
 
