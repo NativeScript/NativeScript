@@ -348,7 +348,10 @@ module.exports = function(grunt) {
                 options: tsOptions
             },
             "build-inplace": {
-                tsconfig: 'tsconfig.json'
+                tsconfig: {
+                    tsconfig: 'tsconfig.json',
+                    passThrough: true,
+                }
             },
             buildNodeTests: {
                 src: [
@@ -528,7 +531,8 @@ module.exports = function(grunt) {
             "!**/*.android.d.ts",
             "!ios.d.ts",
             "!**/*.ios.d.ts",
-            "!tns-core-modules.d.ts"
+            "!tns-core-modules.d.ts",
+            "!tns-core-modules.base.d.ts"
         ].concat(localCfg.defaultExcludes).concat(es6Excludes).concat(angularExcludes));
         dtsFiles.sort();
 
