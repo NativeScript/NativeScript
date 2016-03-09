@@ -84,7 +84,12 @@ function onHourPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
     if (isValidTime(picker)) {
         picker._setNativeTime();
-        picker.time = new Date(0, 0, 0, picker.hour, picker.minute);
+        if (picker.time) {
+            picker.time.setHours(picker.hour);
+        }
+        else {
+            picker.time = new Date(0, 0, 0, picker.hour, picker.minute);
+        }
     } else {
         throw new Error(getErrorMessage(picker, "Hour", data.newValue));
     }
@@ -95,7 +100,12 @@ function onMinutePropertyChanged(data: dependencyObservable.PropertyChangeData) 
 
     if (isValidTime(picker)) {
         picker._setNativeTime();
-        picker.time = new Date(0, 0, 0, picker.hour, picker.minute);
+        if (picker.time) {
+            picker.time.setMinutes(picker.minute);
+        }
+        else {
+            picker.time = new Date(0, 0, 0, picker.hour, picker.minute);
+        }
     } else {
         throw new Error(getErrorMessage(picker, "Minute", data.newValue));
     }
