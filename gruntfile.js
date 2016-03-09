@@ -532,7 +532,8 @@ module.exports = function(grunt) {
             "!ios.d.ts",
             "!**/*.ios.d.ts",
             "!tns-core-modules.d.ts",
-            "!tns-core-modules.base.d.ts"
+            "!tns-core-modules.es6.d.ts",
+            "!tns-core-modules.base.d.ts",
         ].concat(localCfg.defaultExcludes).concat(es6Excludes).concat(angularExcludes));
         dtsFiles.sort();
 
