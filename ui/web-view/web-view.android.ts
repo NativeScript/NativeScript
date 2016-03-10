@@ -1,4 +1,4 @@
-﻿import common = require("./web-view-common");
+import common = require("./web-view-common");
 import trace = require("trace");
 import * as fileSystemModule from "file-system";
 
@@ -37,7 +37,7 @@ function ensureWebViewClientClass() {
 
             if (this._view) {
                 trace.write("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", trace.categories.Debug);
-                this._view._onLoadStarted(url);
+                this._view._onLoadStarted(url, common.WebView.navigationTypes[common.WebView.navigationTypes.indexOf("linkClicked")]);
             }
         }
 

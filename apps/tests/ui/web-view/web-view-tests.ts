@@ -1,4 +1,4 @@
-﻿import TKUnit = require("../../TKUnit");
+import TKUnit = require("../../TKUnit");
 import testModule = require("../../ui-test");
 
 // <snippet module="ui/web-view" title="WebView">
@@ -176,6 +176,24 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             try {
                 TKUnit.assertNull(args.error, args.error);
                 TKUnit.assertEqual(args.url, targetSrc.toLowerCase(), "args.url");
+                done(null);
+            }
+            catch (e) {
+                done(e);
+            }
+        });
+
+        webView.src = targetSrc;
+    }
+
+    public testLoadStartedNavigationTypeExists(done) {
+        let webView = this.testView;
+        let targetSrc = "https://github.com/";
+
+        webView.on(webViewModule.WebView.loadStartedEvent, function (args: webViewModule.LoadEventData) {
+            try {
+                TKUnit.assertNull(args.error, args.error);
+                TKUnit.assertTrue(webViewModule.WebView.navigationTypes.indexOf(args.navigationType) > -1, "navigationTypeExists");
                 done(null);
             }
             catch (e) {
