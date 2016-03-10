@@ -1,4 +1,4 @@
-﻿import common = require("./web-view-common");
+import common = require("./web-view-common");
 import trace = require("trace");
 
 global.moduleMerge(common, exports);
@@ -16,9 +16,30 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
 
     public webViewShouldStartLoadWithRequestNavigationType(webView: UIWebView, request: NSURLRequest, navigationType: number) {
         let owner = this._owner.get();
+
         if (owner && request.URL) {
+            var navTypeIndex = common.WebView.navigationTypes.indexOf("other");
+
+            switch (navigationType) {
+                case UIWebViewNavigationType.LinkClicked:
+                    navTypeIndex = common.WebView.navigationTypes.indexOf("linkClicked");
+                    break;
+                case UIWebViewNavigationType.FormSubmitted:
+                    navTypeIndex = common.WebView.navigationTypes.indexOf("formSubmitted");
+                    break;
+                case UIWebViewNavigationType.BackForward:
+                    navTypeIndex = common.WebView.navigationTypes.indexOf("backForward");
+                    break;
+                case UIWebViewNavigationType.Reload:
+                    navTypeIndex = common.WebView.navigationTypes.indexOf("reload");
+                    break;
+                case UIWebViewNavigationType.FormResubmitted:
+                    navTypeIndex = common.WebView.navigationTypes.indexOf("formResubmitted");
+                    break;
+            }
+
             trace.write("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", trace.categories.Debug);
-            owner._onLoadStarted(request.URL.absoluteString);
+            owner._onLoadStarted(request.URL.absoluteString, common.WebView.navigationTypes[navTypeIndex]);
         }
 
         return true;
