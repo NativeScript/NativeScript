@@ -21,6 +21,11 @@ declare module "ui/web-view" {
         public static loadFinishedEvent: string;
 
         /**
+         * Array of string values used when passing navigation types.
+         */
+        public static navigationTypes: string[];
+
+        /**
          * Represents the observable property backing the Url property of each WebView instance.
          */
         public static urlProperty: dependencyObservable.Property;
@@ -102,6 +107,10 @@ declare module "ui/web-view" {
          * Gets the url of the web-view.
          */
         url: string;
+        /**
+         * Gets the navigation type of the web-view.
+         */
+        navigationType: string;
         /**
          * Gets the error (if any). 
          */
