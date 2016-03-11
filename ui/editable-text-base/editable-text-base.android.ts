@@ -84,12 +84,16 @@ export class EditableTextBase extends common.EditableTextBase {
         var editorActionListener = new android.widget.TextView.OnEditorActionListener({
             onEditorAction: function(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
                 var owner = that.get();
-                if (owner) {
-                    if (!event) {
+                if (owner) {                   
+                    if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
+                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
+                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
+                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
                         owner.dismissSoftInput();
                     }
-                    else if (event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER) {
-                        owner.dismissSoftInput();
+                    
+                    if (event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER) {
                         owner._onReturnPress();
                     }
                 }
