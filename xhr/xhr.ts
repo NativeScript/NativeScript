@@ -116,11 +116,16 @@ export class XMLHttpRequest {
     }
 
     private _setResponseType() {
-        const contentType = this.getResponseHeader('Content-Type').toLowerCase();
+        const header = this.getResponseHeader('Content-Type');
+        const contentType = header && header.toLowerCase();
 
-        if (contentType.indexOf('application/json') >= 0) {
-            this.responseType = XMLHttpRequestResponseType.json;
-        } else if (contentType.indexOf('text/plain') >= 0) {
+        if (contentType) {
+            if (contentType.indexOf('application/json') >= 0) {
+                this.responseType = XMLHttpRequestResponseType.json;
+            } else if (contentType.indexOf('text/plain') >= 0) {
+                this.responseType = XMLHttpRequestResponseType.text;
+            }
+        } else {
             this.responseType = XMLHttpRequestResponseType.text;
         }
     }
@@ -177,7 +182,7 @@ export class XMLHttpRequest {
             && this._headers
             && this._headers[header]
             && !this._errorFlag
-            ) {
+        ) {
             return this._headers[header];
         }
 
@@ -309,8 +314,8 @@ export class FormData {
     toString(): string {
         var arr = new Array<string>();
 
-        this._data.forEach(function (value, name, map) {
-            arr.push(`${encodeURIComponent(name) }=${encodeURIComponent(value) }`);
+        this._data.forEach(function(value, name, map) {
+            arr.push(`${encodeURIComponent(name)}=${encodeURIComponent(value)}`);
         });
 
         return arr.join("&");

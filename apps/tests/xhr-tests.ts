@@ -110,6 +110,17 @@ export var test_XMLHttpRequest_headersSentAndReceivedProperly = function (done) 
     // </snippet>
 };
 
+export var test_XMLHttpRequest_setResponseTypeShouldNotThrow = function (done) {
+    try {
+        var xhr = new XMLHttpRequest();
+        (<any>xhr)._setResponseType();
+        done(null);
+    }
+    catch (err) {
+        done(err);
+    }
+};
+
 export var test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) {
     // <snippet module="xhr" title="xhr">
     // ### Send/receive JSON
