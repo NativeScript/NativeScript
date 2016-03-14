@@ -137,7 +137,7 @@ export class View extends viewCommon.View {
             // flag not set, setMeasuredDimension() was not invoked, we raise
             // an exception to warn the developer
             if ((this._privateFlags & PFLAG_MEASURED_DIMENSION_SET) !== PFLAG_MEASURED_DIMENSION_SET) {
-                throw new Error("onMeasure() did not set the measured dimension by calling setMeasuredDimension()");
+                throw new Error("onMeasure() did not set the measured dimension by calling setMeasuredDimension() " + this);
             }
         }
     }
