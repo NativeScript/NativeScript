@@ -1,15 +1,22 @@
 ﻿/**
  * iOS specific http request implementation.
  */
+
 import http = require("http");
+
 import * as types from "utils/types";
 import * as imageSourceModule from "image-source";
 import * as utilsModule from "utils/utils";
 import * as fsModule from "file-system";
 
+import domainDebugger = require("./../debugger/debugger");
+
 var GET = "GET";
 var USER_AGENT_HEADER = "User-Agent";
 var USER_AGENT = "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25";
+var sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration();
+var queue = NSOperationQueue.mainQueue();
+var session = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, null, queue);
 
 var utils: typeof utilsModule;
 function ensureUtils() {
@@ -29,10 +36,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
     return new Promise<http.HttpResponse>((resolve, reject) => {
 
         try {
-            var sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration();
-            var queue = NSOperationQueue.mainQueue();
-            var session = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(
-                sessionConfig, null, queue);
+            var debugRequest = domainDebugger.network && domainDebugger.network.create();
 
             var urlRequest = NSMutableURLRequest.requestWithURL(
                 NSURL.URLWithString(options.url));
@@ -71,6 +75,21 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                 
                                 (<any>http).addHeader(headers, key, value);
                             }
+                        }
+                        
+                        if (debugRequest) {
+                            debugRequest.mimeType = response.MIMEType;
+                            debugRequest.data = data;
+                            var debugResponse = {
+                                url: options.url,
+                                status: response.statusCode,
+                                statusText: NSHTTPURLResponse.localizedStringForStatusCode(response.statusCode),
+                                headers: headers,
+                                mimeType: response.MIMEType,
+                                fromDiskCache: false
+                            }
+                            debugRequest.responseReceived(debugResponse);
+                            debugRequest.loadingFinished();
                         }
 
                         resolve({
@@ -125,6 +144,15 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                         });
                     }
                 });
+
+            if(options.url && debugRequest) {
+                var request = {
+                    url: options.url,
+                    method: "GET",
+                    headers: options.headers
+                };
+                debugRequest.requestWillBeSent(request);
+            }
 
             dataTask.resume();
         } catch (ex) {
