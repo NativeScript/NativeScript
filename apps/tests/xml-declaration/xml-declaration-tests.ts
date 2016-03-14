@@ -24,6 +24,7 @@ import viewModule = require("ui/core/view");
 import platform = require("platform");
 import gesturesModule = require("ui/gestures");
 import segmentedBar = require("ui/segmented-bar");
+import { Source } from "utils/debug";
 
 export function test_load_IsDefined() {
     TKUnit.assert(types.isFunction(builder.load), "ui/builder should have load method!");
@@ -973,4 +974,15 @@ export function test_TabViewHasCorrectParentChain() {
     var model = new Observable();
     model.set("testPassed", false);
     helper.navigateToModuleAndRunTest(("." + moduleName + "/mymodulewithxml/TabViewParentChain"), model, testFunc);
+}
+
+export function test_hasSourceCodeLocations() {
+    var basePath = "xml-declaration/";
+    var page = <Page>builder.load(__dirname + "/examples/test-page.xml");
+    var grid = page.getViewById("grid");
+    var gridSource = Source.get(grid);
+    TKUnit.assertEqual(gridSource.toString(), "file:///app/" + basePath + "examples/test-page.xml:2:3");
+    var label = page.getViewById("label");
+    var labelSource = Source.get(label);
+    TKUnit.assertEqual(labelSource.toString(), "file:///app/" + basePath + "examples/test-page.xml:3:5");
 }
