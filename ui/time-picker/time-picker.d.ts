@@ -11,6 +11,7 @@ declare module "ui/time-picker" {
     export class TimePicker extends view.View {
         public static hourProperty: dependencyObservable.Property;
         public static minuteProperty: dependencyObservable.Property;
+        public static timeProperty: dependencyObservable.Property;
 
         constructor();
 
@@ -33,6 +34,11 @@ declare module "ui/time-picker" {
          * Gets or sets the time minute.
          */
         minute: number;
+        
+        /**
+         * Gets or sets the time.
+         */
+        time: Date;
 
         /**
          * Gets or sets the max time hour.

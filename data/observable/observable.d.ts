@@ -71,7 +71,7 @@ declare module "data/observable" {
         public static propertyChangeEvent: string;
 
         /**
-         * Creates an Observable instance and sets its properties accroding to the supplied JSON object.
+         * Creates an Observable instance and sets its properties according to the supplied JSON object.
          */
         constructor(json?: any);
 

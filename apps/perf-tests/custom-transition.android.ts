@@ -1,10 +1,8 @@
 ﻿import transition = require("ui/transition");
 
-var floatType = java.lang.Float.class.getField("TYPE").get(null);
-
 export class CustomTransition extends transition.Transition {
     public createAndroidAnimator(transitionType: string): android.animation.Animator {
-        var scaleValues = java.lang.reflect.Array.newInstance(floatType, 2);
+        var scaleValues = Array.create("float", 2);
         switch (transitionType) {
             case transition.AndroidTransitionType.enter:
             case transition.AndroidTransitionType.popEnter:
@@ -17,7 +15,7 @@ export class CustomTransition extends transition.Transition {
                 scaleValues[1] = 0;
                 break;
         }
-        var objectAnimators = java.lang.reflect.Array.newInstance(android.animation.Animator.class, 2);
+        var objectAnimators = Array.create(android.animation.Animator, 2);
         objectAnimators[0] = android.animation.ObjectAnimator.ofFloat(null, "scaleX", scaleValues);
         objectAnimators[1] = android.animation.ObjectAnimator.ofFloat(null, "scaleY", scaleValues);
         var animatorSet = new android.animation.AnimatorSet();

@@ -166,6 +166,13 @@ export function test_parse_ShouldResolveExportsFromCodeFile() {
     TKUnit.assert((<any>page).customCodeLoaded, "Parse should resolve exports from custom code file.");
 }
 
+export function test_parse_ShouldResolveExportsFromCodeFileForPageContent() {
+    var page = builder.parse("<Page codeFile='~/xml-declaration/custom-code-file' loaded='loaded'><Button loaded='loaded' /></Page>");
+    (<any>page).content._emit("loaded");
+
+    TKUnit.assert((<any>page).content.customCodeLoaded, "Parse should resolve exports from custom code file for page content.");
+}
+
 export function test_parse_ShouldThrowErrorWhenInvalidCodeFileIsSpecified() {
     var e: Error;
     try {

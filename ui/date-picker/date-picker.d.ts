@@ -12,6 +12,7 @@ declare module "ui/date-picker" {
         public static yearProperty: dependencyObservable.Property;
         public static monthProperty: dependencyObservable.Property;
         public static dayProperty: dependencyObservable.Property;
+        public static dateProperty: dependencyObservable.Property;
 
         constructor();
 
@@ -39,6 +40,11 @@ declare module "ui/date-picker" {
          * Gets or sets the day. The days start from 1.
          */
         day: number;
+        
+        /**
+         * Gets or sets the entire date.
+         */
+        date: Date;
 
         /**
          * Gets or sets the max date.

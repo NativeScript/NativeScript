@@ -20,18 +20,18 @@ export class EditableTextBase extends common.EditableTextBase {
         return this._android;
     }
 
-    public _createUI() {      
+    public _createUI() {
         this._android = new android.widget.EditText(this._context);
         this._configureEditText();
         this.android.setTag(this.android.getKeyListener());
 
         var that = new WeakRef(this);
-        
+
         this._textWatcher = new android.text.TextWatcher({
-            beforeTextChanged: function (text: string, start: number, count: number, after: number) {
+            beforeTextChanged: function(text: string, start: number, count: number, after: number) {
                 //
             },
-            onTextChanged: function (text: string, start: number, before: number, count: number) {
+            onTextChanged: function(text: string, start: number, before: number, count: number) {
                 var owner = that.get();
                 if (!owner) {
                     return;
@@ -42,7 +42,7 @@ export class EditableTextBase extends common.EditableTextBase {
                 owner.android.addTextChangedListener(owner._textWatcher);
                 owner.android.setSelection(selectionStart);
             },
-            afterTextChanged: function (editable: android.text.IEditable) {
+            afterTextChanged: function(editable: android.text.IEditable) {
                 var owner = that.get();
                 if (!owner) {
                     return;
@@ -63,7 +63,7 @@ export class EditableTextBase extends common.EditableTextBase {
         this._android.addTextChangedListener(this._textWatcher);
 
         var focusChangeListener = new android.view.View.OnFocusChangeListener({
-            onFocusChange: function (view: android.view.View, hasFocus: boolean) {
+            onFocusChange: function(view: android.view.View, hasFocus: boolean) {
                 var owner = that.get();
                 if (!owner) {
                     return;
@@ -82,15 +82,18 @@ export class EditableTextBase extends common.EditableTextBase {
         this._android.setOnFocusChangeListener(focusChangeListener);
 
         var editorActionListener = new android.widget.TextView.OnEditorActionListener({
-            onEditorAction: function (textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
+            onEditorAction: function(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
                 var owner = that.get();
-                if (owner) {
+                if (owner) {                   
                     if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
                         actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
                         actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
                         actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
                         actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
                         owner.dismissSoftInput();
+                    }
+                    
+                    if (event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER) {
                         owner._onReturnPress();
                     }
                 }
@@ -121,11 +124,11 @@ export class EditableTextBase extends common.EditableTextBase {
 
     public focus(): boolean {
         var result = super.focus();
-        
+
         if (result) {
             utils.ad.showSoftInput(this._nativeView);
         }
-        
+
         return result;
     }
 
@@ -165,7 +168,7 @@ export class EditableTextBase extends common.EditableTextBase {
 
         this._android.setInputType(newInputType);
     }
-    
+
     public _onReturnKeyTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (!this._android) {
             return;

@@ -693,11 +693,6 @@
     <TypeScriptCompile Include="apps\tests\pages\page7.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\grid-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\stack-layout-tests.ts" />
-    <TypeScriptCompile Include="apps\template-hello-world\app.ts" />
-    <TypeScriptCompile Include="apps\template-hello-world\main-page.ts">
-      <DependentUpon>main-page.xml</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\template-hello-world\main-view-model.ts" />
     <TypeScriptCompile Include="apps\tests\testRunner.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\app.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\mainPage.ts" />
@@ -774,7 +769,6 @@
     <TypeScriptCompile Include="ui\transition\transition.android.ts" />
     <TypeScriptCompile Include="ui\transition\transition.d.ts" />
     <TypeScriptCompile Include="ui\transition\transition.ios.ts" />
-    <TypeScriptCompile Include="ui\ui.d.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view-common.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view.android.ts" />
     <TypeScriptCompile Include="ui\html-view\html-view.d.ts" />
@@ -1018,7 +1012,6 @@
       <DependentUpon>text-field.d.ts</DependentUpon>
     </TypeScriptCompile>
     <TypeScriptCompile Include="ui\text-view\text-view.d.ts" />
-    <TypeScriptCompile Include="ui\ui.ts" />
     <TypeScriptCompile Include="ui\utils.d.ts" />
     <TypeScriptCompile Include="ui\utils.ios.ts">
       <DependentUpon>utils.d.ts</DependentUpon>
@@ -1200,7 +1193,6 @@
     <Content Include="apps\ui-tests-app\pages\handlers.xml" />
     <Content Include="apps\ui-tests-app\pages\i86.xml" />
     <Content Include="apps\template-blank\app.css" />
-    <Content Include="apps\template-hello-world\app.css" />
     <Content Include="apps\template-master-detail\app.css" />
     <Content Include="apps\template-tab-navigation\app.css" />
     <Content Include="apps\ui-tests-app\modal-view\login-page.xml">
@@ -1328,7 +1320,6 @@
     </Content>
     <Content Include=".gitignore" />
     <Content Include="apps\template-blank\main-page.xml" />
-    <Content Include="apps\template-hello-world\main-page.xml" />
     <Content Include="apps\tests\small-image.png" />
     <Content Include="apps\tests\pages\page14.xml">
       <SubType>Designer</SubType>
@@ -2017,11 +2008,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ui\image-cache\package.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="apps\template-hello-world\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

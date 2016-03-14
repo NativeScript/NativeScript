@@ -60,14 +60,16 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                     if (error) {
                         reject(new Error(error.localizedDescription));
                     } else {
-                        var headers = {};
+                        var headers: http.Headers = {};
                         if (response && response.allHeaderFields) {
                             var headerFields = response.allHeaderFields;
                             var keys = headerFields.allKeys;
 
                             for (var i = 0, l = keys.count; i < l; i++) {
-                                var key = keys.objectAtIndex(i);
-                                headers[key] = headerFields.valueForKey(key);
+                                let key = keys.objectAtIndex(i);
+                                let value = headerFields.valueForKey(key);
+                                
+                                (<any>http).addHeader(headers, key, value);
                             }
                         }
 

@@ -465,6 +465,25 @@ export function test_LoadedEventsOrder_WithoutPageContent() {
     }
 };
 
+export function test_setId() {
+    var pageFactory = function (): PageModule.Page {
+        var page = new PageModule.Page();
+        page.actionBar.id = "myId";
+
+        return page;
+    };
+
+    try {
+        helper.navigate(pageFactory);
+    }
+    catch (e) {
+        TKUnit.assert(false, "Failed to apply property 'id' to actionBar before its nativeView is ready.");
+    }
+    finally {
+        helper.goBack();
+    }
+};
+
 export function createPageAndNavigate() {
     var page: PageModule.Page;
     var pageFactory = function (): PageModule.Page {

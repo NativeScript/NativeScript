@@ -5,6 +5,7 @@
 .sublime-grunt.cache
 tscommand*.tmp.txt
 .tscache
+.vscode
 
 node_modules/
 dist/

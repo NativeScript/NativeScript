@@ -406,7 +406,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             }
 
             if (platform.device.os === platform.platformNames.android && isDefined(entry.transitionAndroid)) {
-                return entry.transitioniOS;
+                return entry.transitionAndroid;
             }
 
             if (entry && isDefined(entry.transition)) {

@@ -1,4 +1,4 @@
-﻿import definition = require("ui/web-view");
+import definition = require("ui/web-view");
 import view = require("ui/core/view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
@@ -76,6 +76,15 @@ export abstract class WebView extends view.View implements definition.WebView {
     public static loadStartedEvent = "loadStarted";
     public static loadFinishedEvent = "loadFinished";
 
+    public static navigationTypes = [
+        "linkClicked",
+        "formSubmitted",
+        "backForward",
+        "reload",
+        "formResubmitted",
+        "other"
+    ];
+
     public static urlProperty = urlProperty;
     public static srcProperty = srcProperty;
 
@@ -111,17 +120,19 @@ export abstract class WebView extends view.View implements definition.WebView {
             eventName: WebView.loadFinishedEvent,
             object: this,
             url: url,
+            navigationType: undefined,
             error: error
         };
 
         this.notify(args);
     }
 
-    public _onLoadStarted(url: string) {
+    public _onLoadStarted(url: string, navigationType: string) {
         var args = <definition.LoadEventData>{
             eventName: WebView.loadStartedEvent,
             object: this,
             url: url,
+            navigationType: navigationType,
             error: undefined
         };
 
