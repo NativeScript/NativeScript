@@ -1140,6 +1140,39 @@ export class View extends ProxyObject implements definition.View {
         return undefined;
     }
 
+    public getLocationInWindow(): definition.Point {
+        return undefined;
+    }
+
+    public getLocationOnScreen(): definition.Point {
+        return undefined;
+    }
+
+    public getLocationRelativeTo(otherView: definition.View): definition.Point {
+        var my = this.getLocationInWindow();
+        var other = otherView.getLocationInWindow();
+        if (!my || !other) {
+            return undefined;
+        }
+
+        return {
+            x: my.x - other.x,
+            y: my.y - other.y
+        } 
+    }
+
+    public getActualSize(): definition.Size {
+        var currentBounds = this._getCurrentLayoutBounds();
+        if (!currentBounds) {
+            return undefined;
+        }
+
+        return {
+            width: utils.layout.toDeviceIndependentPixels(currentBounds.right - currentBounds.left),
+            height: utils.layout.toDeviceIndependentPixels(currentBounds.bottom - currentBounds.top),
+        }
+    }
+
     public animate(animation: any): Promise<void> {
         return this.createAnimation(animation).play();
     }

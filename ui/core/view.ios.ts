@@ -1,5 +1,6 @@
 ﻿import types = require("utils/types");
 import viewCommon = require("./view-common");
+import viewDefinition = require("ui/core/view");
 import trace = require("trace");
 import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
@@ -250,6 +251,31 @@ export class View extends viewCommon.View {
         }
 
         return false;
+    }
+
+    public getLocationInWindow(): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.window) {
+            return undefined;
+        }
+
+        var pointInWindow = this._nativeView.convertPointToView(this._nativeView.bounds.origin, null);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(pointInWindow.x),
+            y: utils.layout.toDeviceIndependentPixels(pointInWindow.y),
+        } 
+    }
+
+    public getLocationOnScreen(): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.window) {
+            return undefined;
+        }
+
+        var pointInWindow = this._nativeView.convertPointToView(this._nativeView.bounds.origin, null);
+        var pointOnScreen = this._nativeView.window.convertPointToWindow(pointInWindow, null);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(pointOnScreen.x),
+            y: utils.layout.toDeviceIndependentPixels(pointOnScreen.y),
+        } 
     }
 
     private _onSizeChanged() {

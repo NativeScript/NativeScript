@@ -363,6 +363,32 @@ export class View extends viewCommon.View {
         return false;
     }
 
+    public getLocationInWindow(): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.getWindowToken()) {
+            return undefined;
+        }
+
+        var nativeArray = (<any>Array).create("int", 2);
+        this._nativeView.getLocationInWindow(nativeArray);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
+            y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
+        } 
+    }
+
+    public getLocationOnScreen(): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.getWindowToken()) {
+            return undefined;
+        }
+
+        var nativeArray = (<any>Array).create("int", 2);
+        this._nativeView.getLocationOnScreen(nativeArray);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
+            y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
+        } 
+    }
+
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
         var result = size;
         switch (specMode) {
