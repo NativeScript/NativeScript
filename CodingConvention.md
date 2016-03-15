@@ -72,7 +72,7 @@ Your opening braces go on the same line as the statement.
 
 ~~~ {.javascript}
 if (true) {
-  console.log('winning');
+    console.log('winning');
 }
 ~~~
 
@@ -81,7 +81,7 @@ if (true) {
 ~~~ {.javascript}
 if (true)
 {
-  console.log('losing');
+    console.log('losing');
 }
 ~~~
 
@@ -267,7 +267,7 @@ Use the [strict comaprison operators][comparisonoperators]. The triple equality 
 ~~~ {.javascript}
 var a = 0;
 if (a === '') {
-  console.log('winning');
+    console.log('winning');
 }
 
 ~~~
@@ -277,7 +277,7 @@ if (a === '') {
 ~~~ {.javascript}
 var a = 0;
 if (a == '') {
-  console.log('losing');
+    console.log('losing');
 }
 ~~~
 
@@ -309,7 +309,7 @@ Always use curly braces even in the cases of one line conditional operations.
 
 ~~~ {.javascript}
 if (a) {
-  return 'winning';
+    return 'winning';
 }
 
 ~~~
@@ -318,8 +318,8 @@ if (a) {
 
 ~~~ {.javascript}
 
-if (a) 
-  return 'winning';
+if (a)
+    return 'winning';
 
 if (a) return 'winning';
 ~~~
@@ -332,11 +332,11 @@ if (a) return 'winning';
 ~~~ {.javascript}
 
 if(condition) {
-  console.log('winning');
+    console.log('winning');
 }
 
 if (!condition) {
-  console.log('winning');
+    console.log('winning');
 }
 
 ~~~
@@ -346,15 +346,15 @@ if (!condition) {
 ~~~ {.javascript}
 
 if(condition === true) {
-  console.log('losing');
+    console.log('losing');
 }
 
 if(condition !== true) {
-  console.log('losing');
+    console.log('losing');
 }
 
 if(condition !== false) {
-  console.log('losing');
+    console.log('losing');
 }
 
 ~~~
@@ -372,7 +372,7 @@ Do not use the **Yoda Conditions** when writing boolean expressions:
 ~~~ {.javascript}
 var num;
 if(num >= 0) {
-  console.log('winning');
+    console.log('winning');
 }
 ~~~
 
@@ -381,14 +381,14 @@ if(num >= 0) {
 ~~~ {.javascript}
 var num;
 if(0 <= num) {
-  console.log('losing');
+    console.log('losing');
 }
 ~~~
 
 **NOTE** It is OK to use constants on the left when comparing for a range.
 ~~~ {.javascript}
 if(0 <= num && num <= 100) {
-  console.log('winning');
+    console.log('winning');
 }
 ~~~
 
@@ -408,22 +408,22 @@ as possible. In certain routines, once you know the answer, you want to return i
 
 ~~~ {.javascript}
 function getSomething(val) {
-  if (val < 0) {
-    return false;
-  }
-  
-  if (val > 100) {
-    return false;
-  }
-  
-  var res1 = doOne();
-  var res2 = doTwo();
-  var options = {
-    a: 1,
-    b: 2
-  };
-  var result = doThree(res1, res2, options);
-  return result;
+    if (val < 0) {
+        return false;
+    }
+
+    if (val > 100) {
+        return false;
+    }
+
+    var res1 = doOne();
+    var res2 = doTwo();
+    var options = {
+        a: 1,
+        b: 2
+    };
+    var result = doThree(res1, res2, options);
+    return result;
 }
 ~~~
 
