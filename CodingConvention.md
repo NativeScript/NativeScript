@@ -87,6 +87,29 @@ if (true)
 
 Also, notice the use of whitespace before and after the condition statement.
 
+Follow the JavaScript convention of stacking `else/catch` clauses on the same line as the previous closing brace.
+
+*Right:*
+
+~~~ {.javascript}
+if (i % 2 === 0) {
+    console.log('even');
+} else {
+    console.log('odd');
+}
+~~~
+
+*Wrong:*
+
+~~~ {.javascript}
+if (i % 2 === 0) {
+    console.log('even');
+}
+else {
+    console.log('odd');
+}
+~~~
+
 ## Variable declarations
 
 Declare one variable per var statement. Try to put those declarations at the beginning of each scope.
