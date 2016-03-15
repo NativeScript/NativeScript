@@ -24644,24 +24644,24 @@ declare enum CGColorRenderingIntent {
 	kCGRenderingIntentSaturation
 }
 declare enum CGColorSpaceModel {
-	kCGColorSpaceModelUnknown,
-	kCGColorSpaceModelMonochrome,
-	kCGColorSpaceModelRGB,
-	kCGColorSpaceModelCMYK,
-	kCGColorSpaceModelLab,
-	kCGColorSpaceModelDeviceN,
-	kCGColorSpaceModelIndexed,
-	kCGColorSpaceModelPattern
+	Unknown,
+	Monochrome,
+	RGB,
+	CMYK,
+	Lab,
+	DeviceN,
+	Indexed,
+	Pattern
 }
 declare enum CGPatternTiling {
-	kCGPatternTilingNoDistortion,
-	kCGPatternTilingConstantSpacingMinimalDistortion,
-	kCGPatternTilingConstantSpacing
+	NoDistortion,
+	ConstantSpacingMinimalDistortion,
+	ConstantSpacing
 }
 declare enum CGFontPostScriptFormat {
-	kCGFontPostScriptFormatType1,
-	kCGFontPostScriptFormatType3,
-	kCGFontPostScriptFormatType42
+	Type1,
+	Type3,
+	Type42
 }
 declare enum CGImageAlphaInfo {
 	kCGImageAlphaNone,
@@ -24684,14 +24684,14 @@ declare enum CGBitmapInfo {
 	kCGBitmapByteOrder32Big
 }
 declare enum CGLineJoin {
-	kCGLineJoinMiter,
-	kCGLineJoinRound,
-	kCGLineJoinBevel
+	Miter,
+	Round,
+	Bevel
 }
 declare enum CGLineCap {
-	kCGLineCapButt,
-	kCGLineCapRound,
-	kCGLineCapSquare
+	Butt,
+	Round,
+	Square
 }
 declare enum CGPathElementType {
 	kCGPathElementMoveToPoint,
@@ -24701,20 +24701,20 @@ declare enum CGPathElementType {
 	kCGPathElementCloseSubpath
 }
 declare enum CGPDFObjectType {
-	kCGPDFObjectTypeNull,
-	kCGPDFObjectTypeBoolean,
-	kCGPDFObjectTypeInteger,
-	kCGPDFObjectTypeReal,
-	kCGPDFObjectTypeName,
-	kCGPDFObjectTypeString,
-	kCGPDFObjectTypeArray,
-	kCGPDFObjectTypeDictionary,
-	kCGPDFObjectTypeStream
+	Null,
+	Boolean,
+	Integer,
+	Real,
+	Name,
+	String,
+	Array,
+	Dictionary,
+	Stream
 }
 declare enum CGPDFDataFormat {
-	CGPDFDataFormatRaw,
-	CGPDFDataFormatJPEGEncoded,
-	CGPDFDataFormatJPEG2000
+	Raw,
+	JPEGEncoded,
+	JPEG2000
 }
 declare enum CGPDFBox {
 	kCGPDFMediaBox,
@@ -24752,34 +24752,34 @@ declare enum CGInterpolationQuality {
 	kCGInterpolationHigh
 }
 declare enum CGBlendMode {
-	kCGBlendModeNormal,
-	kCGBlendModeMultiply,
-	kCGBlendModeScreen,
-	kCGBlendModeOverlay,
-	kCGBlendModeDarken,
-	kCGBlendModeLighten,
-	kCGBlendModeColorDodge,
-	kCGBlendModeColorBurn,
-	kCGBlendModeSoftLight,
-	kCGBlendModeHardLight,
-	kCGBlendModeDifference,
-	kCGBlendModeExclusion,
-	kCGBlendModeHue,
-	kCGBlendModeSaturation,
-	kCGBlendModeColor,
-	kCGBlendModeLuminosity,
-	kCGBlendModeClear,
-	kCGBlendModeCopy,
-	kCGBlendModeSourceIn,
-	kCGBlendModeSourceOut,
-	kCGBlendModeSourceAtop,
-	kCGBlendModeDestinationOver,
-	kCGBlendModeDestinationIn,
-	kCGBlendModeDestinationOut,
-	kCGBlendModeDestinationAtop,
-	kCGBlendModeXOR,
-	kCGBlendModePlusDarker,
-	kCGBlendModePlusLighter
+	Normal,
+	Multiply,
+	Screen,
+	Overlay,
+	Darken,
+	Lighten,
+	ColorDodge,
+	ColorBurn,
+	SoftLight,
+	HardLight,
+	Difference,
+	Exclusion,
+	Hue,
+	Saturation,
+	Color,
+	Luminosity,
+	Clear,
+	Copy,
+	SourceIn,
+	SourceOut,
+	SourceAtop,
+	DestinationOver,
+	DestinationIn,
+	DestinationOut,
+	DestinationAtop,
+	XOR,
+	PlusDarker,
+	PlusLighter
 }
 declare enum _CGError {
 	kCGErrorSuccess,
@@ -24821,11 +24821,11 @@ declare enum CFCharacterSetPredefinedSet {
 	kCFCharacterSetIllegal
 }
 declare enum CFLocaleLanguageDirection {
-	kCFLocaleLanguageDirectionUnknown,
-	kCFLocaleLanguageDirectionLeftToRight,
-	kCFLocaleLanguageDirectionRightToLeft,
-	kCFLocaleLanguageDirectionTopToBottom,
-	kCFLocaleLanguageDirectionBottomToTop
+	Unknown,
+	LeftToRight,
+	RightToLeft,
+	TopToBottom,
+	BottomToTop
 }
 declare enum CFStringBuiltInEncodings {
 	kCFStringEncodingMacRoman,
@@ -24855,10 +24855,10 @@ declare enum CFStringCompareFlags {
 	kCFCompareForcedOrdering
 }
 declare enum CFStringNormalizationForm {
-	kCFStringNormalizationFormD,
-	kCFStringNormalizationFormKD,
-	kCFStringNormalizationFormC,
-	kCFStringNormalizationFormKC
+	D,
+	KD,
+	C,
+	KC
 }
 declare enum CFURLPathStyle {
 	kCFURLPOSIXPathStyle,
@@ -24905,28 +24905,28 @@ declare enum __CFByteOrder {
 	CFByteOrderBigEndian
 }
 declare enum CFTimeZoneNameStyle {
-	kCFTimeZoneNameStyleStandard,
-	kCFTimeZoneNameStyleShortStandard,
-	kCFTimeZoneNameStyleDaylightSaving,
-	kCFTimeZoneNameStyleShortDaylightSaving,
-	kCFTimeZoneNameStyleGeneric,
-	kCFTimeZoneNameStyleShortGeneric
+	Standard,
+	ShortStandard,
+	DaylightSaving,
+	ShortDaylightSaving,
+	Generic,
+	ShortGeneric
 }
 declare enum CFCalendarUnit {
-	kCFCalendarUnitEra,
-	kCFCalendarUnitYear,
-	kCFCalendarUnitMonth,
-	kCFCalendarUnitDay,
-	kCFCalendarUnitHour,
-	kCFCalendarUnitMinute,
-	kCFCalendarUnitSecond,
-	kCFCalendarUnitWeek,
-	kCFCalendarUnitWeekday,
-	kCFCalendarUnitWeekdayOrdinal,
-	kCFCalendarUnitQuarter,
-	kCFCalendarUnitWeekOfMonth,
-	kCFCalendarUnitWeekOfYear,
-	kCFCalendarUnitYearForWeekOfYear
+	Era,
+	Year,
+	Month,
+	Day,
+	Hour,
+	Minute,
+	Second,
+	Week,
+	Weekday,
+	WeekdayOrdinal,
+	Quarter,
+	WeekOfMonth,
+	WeekOfYear,
+	YearForWeekOfYear
 }
 declare enum CFDateFormatterStyle {
 	kCFDateFormatterNoStyle,
@@ -25003,14 +25003,14 @@ declare enum CFSocketCallBackType {
 	kCFSocketWriteCallBack
 }
 declare enum CFStreamStatus {
-	kCFStreamStatusNotOpen,
-	kCFStreamStatusOpening,
-	kCFStreamStatusOpen,
-	kCFStreamStatusReading,
-	kCFStreamStatusWriting,
-	kCFStreamStatusAtEnd,
-	kCFStreamStatusClosed,
-	kCFStreamStatusError
+	NotOpen,
+	Opening,
+	Open,
+	Reading,
+	Writing,
+	AtEnd,
+	Closed,
+	Error
 }
 declare enum CFStreamEventType {
 	kCFStreamEventNone,
@@ -25021,9 +25021,9 @@ declare enum CFStreamEventType {
 	kCFStreamEventEndEncountered
 }
 declare enum CFStreamErrorDomain {
-	kCFStreamErrorDomainCustom,
-	kCFStreamErrorDomainPOSIX,
-	kCFStreamErrorDomainMacOSStatus
+	Custom,
+	POSIX,
+	MacOSStatus
 }
 declare enum CFPropertyListMutabilityOptions {
 	kCFPropertyListImmutable,
@@ -25178,10 +25178,10 @@ declare enum CFURLError {
 	kCFURLTimeoutError
 }
 declare enum CFNotificationSuspensionBehavior {
-	CFNotificationSuspensionBehaviorDrop,
-	CFNotificationSuspensionBehaviorCoalesce,
-	CFNotificationSuspensionBehaviorHold,
-	CFNotificationSuspensionBehaviorDeliverImmediately
+	Drop,
+	Coalesce,
+	Hold,
+	DeliverImmediately
 }
 declare enum CFURLEnumeratorOptions {
 	kCFURLEnumeratorDefaultBehavior,
@@ -25252,11 +25252,11 @@ declare enum NSSortOptions {
 	NSSortStable
 }
 declare enum NSQualityOfService {
-	NSQualityOfServiceUserInteractive,
-	NSQualityOfServiceUserInitiated,
-	NSQualityOfServiceUtility,
-	NSQualityOfServiceBackground,
-	NSQualityOfServiceDefault
+	UserInteractive,
+	UserInitiated,
+	Utility,
+	Background,
+	Default
 }
 declare enum NSBinarySearchingOptions {
 	NSBinarySearchingFirstEqual,
@@ -25264,22 +25264,22 @@ declare enum NSBinarySearchingOptions {
 	NSBinarySearchingInsertionIndex
 }
 declare enum NSCalendarUnit {
-	NSCalendarUnitEra,
-	NSCalendarUnitYear,
-	NSCalendarUnitMonth,
-	NSCalendarUnitDay,
-	NSCalendarUnitHour,
-	NSCalendarUnitMinute,
-	NSCalendarUnitSecond,
-	NSCalendarUnitWeekday,
-	NSCalendarUnitWeekdayOrdinal,
-	NSCalendarUnitQuarter,
-	NSCalendarUnitWeekOfMonth,
-	NSCalendarUnitWeekOfYear,
-	NSCalendarUnitYearForWeekOfYear,
-	NSCalendarUnitNanosecond,
-	NSCalendarUnitCalendar,
-	NSCalendarUnitTimeZone,
+	Era,
+	Year,
+	Month,
+	Day,
+	Hour,
+	Minute,
+	Second,
+	Weekday,
+	WeekdayOrdinal,
+	Quarter,
+	WeekOfMonth,
+	WeekOfYear,
+	YearForWeekOfYear,
+	Nanosecond,
+	Calendar,
+	TimeZone,
 	NSEraCalendarUnit,
 	NSYearCalendarUnit,
 	NSMonthCalendarUnit,
@@ -25364,17 +25364,17 @@ declare enum NSDataBase64DecodingOptions {
 	NSDataBase64DecodingIgnoreUnknownCharacters
 }
 declare enum NSFormattingContext {
-	NSFormattingContextUnknown,
-	NSFormattingContextDynamic,
-	NSFormattingContextStandalone,
-	NSFormattingContextListItem,
-	NSFormattingContextBeginningOfSentence,
-	NSFormattingContextMiddleOfSentence
+	Unknown,
+	Dynamic,
+	Standalone,
+	ListItem,
+	BeginningOfSentence,
+	MiddleOfSentence
 }
 declare enum NSFormattingUnitStyle {
-	NSFormattingUnitStyleShort,
-	NSFormattingUnitStyleMedium,
-	NSFormattingUnitStyleLong
+	Short,
+	Medium,
+	Long
 }
 declare enum NSDateFormatterStyle {
 	NSDateFormatterNoStyle,
@@ -25384,8 +25384,8 @@ declare enum NSDateFormatterStyle {
 	NSDateFormatterFullStyle
 }
 declare enum NSDateFormatterBehavior {
-	NSDateFormatterBehaviorDefault,
-	NSDateFormatterBehavior10_4
+	Default,
+	t10_4
 }
 declare enum NSDateIntervalFormatterStyle {
 	NSDateIntervalFormatterNoStyle,
@@ -25395,27 +25395,27 @@ declare enum NSDateIntervalFormatterStyle {
 	NSDateIntervalFormatterFullStyle
 }
 declare enum NSMassFormatterUnit {
-	NSMassFormatterUnitGram,
-	NSMassFormatterUnitKilogram,
-	NSMassFormatterUnitOunce,
-	NSMassFormatterUnitPound,
-	NSMassFormatterUnitStone
+	Gram,
+	Kilogram,
+	Ounce,
+	Pound,
+	Stone
 }
 declare enum NSLengthFormatterUnit {
-	NSLengthFormatterUnitMillimeter,
-	NSLengthFormatterUnitCentimeter,
-	NSLengthFormatterUnitMeter,
-	NSLengthFormatterUnitKilometer,
-	NSLengthFormatterUnitInch,
-	NSLengthFormatterUnitFoot,
-	NSLengthFormatterUnitYard,
-	NSLengthFormatterUnitMile
+	Millimeter,
+	Centimeter,
+	Meter,
+	Kilometer,
+	Inch,
+	Foot,
+	Yard,
+	Mile
 }
 declare enum NSEnergyFormatterUnit {
-	NSEnergyFormatterUnitJoule,
-	NSEnergyFormatterUnitKilojoule,
-	NSEnergyFormatterUnitCalorie,
-	NSEnergyFormatterUnitKilocalorie
+	Joule,
+	Kilojoule,
+	Calorie,
+	Kilocalorie
 }
 declare enum NSRoundingMode {
 	NSRoundPlain,
@@ -25478,14 +25478,14 @@ declare enum NSFileManagerItemReplacementOptions {
 	NSFileManagerItemReplacementWithoutDeletingBackupItem
 }
 declare enum NSURLRelationship {
-	NSURLRelationshipContains,
-	NSURLRelationshipSame,
-	NSURLRelationshipOther
+	Contains,
+	Same,
+	Other
 }
 declare enum NSHTTPCookieAcceptPolicy {
-	NSHTTPCookieAcceptPolicyAlways,
-	NSHTTPCookieAcceptPolicyNever,
-	NSHTTPCookieAcceptPolicyOnlyFromMainDocumentDomain
+	Always,
+	Never,
+	OnlyFromMainDocumentDomain
 }
 declare enum NSJSONReadingOptions {
 	NSJSONReadingMutableContainers,
@@ -25502,10 +25502,10 @@ declare enum NSKeyValueObservingOptions {
 	NSKeyValueObservingOptionPrior
 }
 declare enum NSKeyValueChange {
-	NSKeyValueChangeSetting,
-	NSKeyValueChangeInsertion,
-	NSKeyValueChangeRemoval,
-	NSKeyValueChangeReplacement
+	Setting,
+	Insertion,
+	Removal,
+	Replacement
 }
 declare enum NSKeyValueSetMutationKind {
 	NSKeyValueUnionSetMutation,
@@ -25524,11 +25524,11 @@ declare enum NSPropertyListFormat {
 	NSPropertyListBinaryFormat_v1_0
 }
 declare enum NSLocaleLanguageDirection {
-	NSLocaleLanguageDirectionUnknown,
-	NSLocaleLanguageDirectionLeftToRight,
-	NSLocaleLanguageDirectionRightToLeft,
-	NSLocaleLanguageDirectionTopToBottom,
-	NSLocaleLanguageDirectionBottomToTop
+	Unknown,
+	LeftToRight,
+	RightToLeft,
+	TopToBottom,
+	BottomToTop
 }
 declare enum NSPostingStyle {
 	NSPostWhenIdle,
@@ -25537,12 +25537,12 @@ declare enum NSPostingStyle {
 }
 declare enum NSNotificationCoalescing {
 	NSNotificationNoCoalescing,
-	NSNotificationCoalescingOnName,
-	NSNotificationCoalescingOnSender
+	OnName,
+	OnSender
 }
 declare enum NSNumberFormatterBehavior {
-	NSNumberFormatterBehaviorDefault,
-	NSNumberFormatterBehavior10_4
+	Default,
+	t10_4
 }
 declare enum NSNumberFormatterStyle {
 	NSNumberFormatterNoStyle,
@@ -25568,11 +25568,11 @@ declare enum NSNumberFormatterRoundingMode {
 	NSNumberFormatterRoundHalfUp
 }
 declare enum NSOperationQueuePriority {
-	NSOperationQueuePriorityVeryLow,
-	NSOperationQueuePriorityLow,
-	NSOperationQueuePriorityNormal,
-	NSOperationQueuePriorityHigh,
-	NSOperationQueuePriorityVeryHigh
+	VeryLow,
+	Low,
+	Normal,
+	High,
+	VeryHigh
 }
 declare enum NSActivityOptions {
 	NSActivityIdleDisplaySleepDisabled,
@@ -25585,19 +25585,19 @@ declare enum NSActivityOptions {
 	NSActivityLatencyCritical
 }
 declare enum NSTextCheckingType {
-	NSTextCheckingTypeOrthography,
-	NSTextCheckingTypeSpelling,
-	NSTextCheckingTypeGrammar,
-	NSTextCheckingTypeDate,
-	NSTextCheckingTypeAddress,
-	NSTextCheckingTypeLink,
-	NSTextCheckingTypeQuote,
-	NSTextCheckingTypeDash,
-	NSTextCheckingTypeReplacement,
-	NSTextCheckingTypeCorrection,
-	NSTextCheckingTypeRegularExpression,
-	NSTextCheckingTypePhoneNumber,
-	NSTextCheckingTypeTransitInformation
+	Orthography,
+	Spelling,
+	Grammar,
+	Date,
+	Address,
+	Link,
+	Quote,
+	Dash,
+	Replacement,
+	Correction,
+	RegularExpression,
+	PhoneNumber,
+	TransitInformation
 }
 declare enum NSRegularExpressionOptions {
 	NSRegularExpressionCaseInsensitive,
@@ -25623,30 +25623,30 @@ declare enum NSMatchingFlags {
 	NSMatchingInternalError
 }
 declare enum NSStreamStatus {
-	NSStreamStatusNotOpen,
-	NSStreamStatusOpening,
-	NSStreamStatusOpen,
-	NSStreamStatusReading,
-	NSStreamStatusWriting,
-	NSStreamStatusAtEnd,
-	NSStreamStatusClosed,
-	NSStreamStatusError
+	NotOpen,
+	Opening,
+	Open,
+	Reading,
+	Writing,
+	AtEnd,
+	Closed,
+	Error
 }
 declare enum NSStreamEvent {
-	NSStreamEventNone,
-	NSStreamEventOpenCompleted,
-	NSStreamEventHasBytesAvailable,
-	NSStreamEventHasSpaceAvailable,
-	NSStreamEventErrorOccurred,
-	NSStreamEventEndEncountered
+	None,
+	OpenCompleted,
+	HasBytesAvailable,
+	HasSpaceAvailable,
+	ErrorOccurred,
+	EndEncountered
 }
 declare enum NSTimeZoneNameStyle {
-	NSTimeZoneNameStyleStandard,
-	NSTimeZoneNameStyleShortStandard,
-	NSTimeZoneNameStyleDaylightSaving,
-	NSTimeZoneNameStyleShortDaylightSaving,
-	NSTimeZoneNameStyleGeneric,
-	NSTimeZoneNameStyleShortGeneric
+	Standard,
+	ShortStandard,
+	DaylightSaving,
+	ShortDaylightSaving,
+	Generic,
+	ShortGeneric
 }
 declare enum NSURLBookmarkCreationOptions {
 	NSURLBookmarkCreationPreferFileIDResolution,
@@ -25663,10 +25663,10 @@ declare enum NSURLCacheStoragePolicy {
 	NSURLCacheStorageNotAllowed
 }
 declare enum NSURLCredentialPersistence {
-	NSURLCredentialPersistenceNone,
-	NSURLCredentialPersistenceForSession,
-	NSURLCredentialPersistencePermanent,
-	NSURLCredentialPersistenceSynchronizable
+	None,
+	ForSession,
+	Permanent,
+	Synchronizable
 }
 declare enum NSURLRequestCachePolicy {
 	NSURLRequestUseProtocolCachePolicy,
@@ -25803,10 +25803,10 @@ declare enum NSByteCountFormatterUnits {
 	NSByteCountFormatterUseAll
 }
 declare enum NSByteCountFormatterCountStyle {
-	NSByteCountFormatterCountStyleFile,
-	NSByteCountFormatterCountStyleMemory,
-	NSByteCountFormatterCountStyleDecimal,
-	NSByteCountFormatterCountStyleBinary
+	File,
+	Memory,
+	Decimal,
+	Binary
 }
 declare enum NSComparisonPredicateOptions {
 	NSCaseInsensitivePredicateOption,
@@ -25840,20 +25840,20 @@ declare enum NSCompoundPredicateType {
 	NSOrPredicateType
 }
 declare enum NSDateComponentsFormatterUnitsStyle {
-	NSDateComponentsFormatterUnitsStylePositional,
-	NSDateComponentsFormatterUnitsStyleAbbreviated,
-	NSDateComponentsFormatterUnitsStyleShort,
-	NSDateComponentsFormatterUnitsStyleFull,
-	NSDateComponentsFormatterUnitsStyleSpellOut
+	Positional,
+	Abbreviated,
+	Short,
+	Full,
+	SpellOut
 }
 declare enum NSDateComponentsFormatterZeroFormattingBehavior {
-	NSDateComponentsFormatterZeroFormattingBehaviorNone,
-	NSDateComponentsFormatterZeroFormattingBehaviorDefault,
-	NSDateComponentsFormatterZeroFormattingBehaviorDropLeading,
-	NSDateComponentsFormatterZeroFormattingBehaviorDropMiddle,
-	NSDateComponentsFormatterZeroFormattingBehaviorDropTrailing,
-	NSDateComponentsFormatterZeroFormattingBehaviorDropAll,
-	NSDateComponentsFormatterZeroFormattingBehaviorPad
+	None,
+	Default,
+	DropLeading,
+	DropMiddle,
+	DropTrailing,
+	DropAll,
+	Pad
 }
 declare enum NSExpressionType {
 	NSConstantValueExpressionType,
@@ -25923,10 +25923,10 @@ declare enum NSNetServiceOptions {
 	NSNetServiceListenForConnections
 }
 declare enum NSURLSessionTaskState {
-	NSURLSessionTaskStateRunning,
-	NSURLSessionTaskStateSuspended,
-	NSURLSessionTaskStateCanceling,
-	NSURLSessionTaskStateCompleted
+	Running,
+	Suspended,
+	Canceling,
+	Completed
 }
 declare enum NSURLSessionAuthChallengeDisposition {
 	NSURLSessionAuthChallengeUseCredential,
@@ -25943,23 +25943,23 @@ declare enum SecAccessControlCreateFlags {
 	kSecAccessControlUserPresence
 }
 declare enum SSLProtocol {
-	kSSLProtocolUnknown,
-	kSSLProtocol3,
+	Unknown,
+	t3,
 	kTLSProtocol1,
 	kTLSProtocol11,
 	kTLSProtocol12,
 	kDTLSProtocol1,
-	kSSLProtocol2,
-	kSSLProtocol3Only,
+	t2,
+	t3Only,
 	kTLSProtocol1Only,
-	kSSLProtocolAll
+	All
 }
 declare enum SSLSessionOption {
-	kSSLSessionOptionBreakOnServerAuth,
-	kSSLSessionOptionBreakOnCertRequested,
-	kSSLSessionOptionBreakOnClientAuth,
-	kSSLSessionOptionFalseStart,
-	kSSLSessionOptionSendOneByteRecord
+	BreakOnServerAuth,
+	BreakOnCertRequested,
+	BreakOnClientAuth,
+	FalseStart,
+	SendOneByteRecord
 }
 declare enum SSLSessionState {
 	kSSLIdle,
@@ -26013,53 +26013,53 @@ declare enum CFNetworkErrors {
 	kCFErrorPACFileError,
 	kCFErrorPACFileAuth,
 	kCFErrorHTTPSProxyConnectionFailure,
-	kCFStreamErrorHTTPSProxyFailureUnexpectedResponseToCONNECTMethod,
-	kCFURLErrorBackgroundSessionInUseByAnotherProcess,
-	kCFURLErrorBackgroundSessionWasDisconnected,
-	kCFURLErrorUnknown,
-	kCFURLErrorCancelled,
-	kCFURLErrorBadURL,
-	kCFURLErrorTimedOut,
-	kCFURLErrorUnsupportedURL,
-	kCFURLErrorCannotFindHost,
-	kCFURLErrorCannotConnectToHost,
-	kCFURLErrorNetworkConnectionLost,
-	kCFURLErrorDNSLookupFailed,
-	kCFURLErrorHTTPTooManyRedirects,
-	kCFURLErrorResourceUnavailable,
-	kCFURLErrorNotConnectedToInternet,
-	kCFURLErrorRedirectToNonExistentLocation,
-	kCFURLErrorBadServerResponse,
-	kCFURLErrorUserCancelledAuthentication,
-	kCFURLErrorUserAuthenticationRequired,
-	kCFURLErrorZeroByteResource,
-	kCFURLErrorCannotDecodeRawData,
-	kCFURLErrorCannotDecodeContentData,
-	kCFURLErrorCannotParseResponse,
-	kCFURLErrorInternationalRoamingOff,
-	kCFURLErrorCallIsActive,
-	kCFURLErrorDataNotAllowed,
-	kCFURLErrorRequestBodyStreamExhausted,
-	kCFURLErrorFileDoesNotExist,
-	kCFURLErrorFileIsDirectory,
-	kCFURLErrorNoPermissionsToReadFile,
-	kCFURLErrorDataLengthExceedsMaximum,
-	kCFURLErrorSecureConnectionFailed,
-	kCFURLErrorServerCertificateHasBadDate,
-	kCFURLErrorServerCertificateUntrusted,
-	kCFURLErrorServerCertificateHasUnknownRoot,
-	kCFURLErrorServerCertificateNotYetValid,
-	kCFURLErrorClientCertificateRejected,
-	kCFURLErrorClientCertificateRequired,
-	kCFURLErrorCannotLoadFromNetwork,
-	kCFURLErrorCannotCreateFile,
-	kCFURLErrorCannotOpenFile,
-	kCFURLErrorCannotCloseFile,
-	kCFURLErrorCannotWriteToFile,
-	kCFURLErrorCannotRemoveFile,
-	kCFURLErrorCannotMoveFile,
-	kCFURLErrorDownloadDecodingFailedMidStream,
-	kCFURLErrorDownloadDecodingFailedToComplete,
+	SProxyFailureUnexpectedResponseToCONNECTMethod,
+	BackgroundSessionInUseByAnotherProcess,
+	BackgroundSessionWasDisconnected,
+	Unknown,
+	Cancelled,
+	BadURL,
+	TimedOut,
+	UnsupportedURL,
+	CannotFindHost,
+	CannotConnectToHost,
+	NetworkConnectionLost,
+	DNSLookupFailed,
+	HTTPTooManyRedirects,
+	ResourceUnavailable,
+	NotConnectedToInternet,
+	RedirectToNonExistentLocation,
+	BadServerResponse,
+	UserCancelledAuthentication,
+	UserAuthenticationRequired,
+	ZeroByteResource,
+	CannotDecodeRawData,
+	CannotDecodeContentData,
+	CannotParseResponse,
+	InternationalRoamingOff,
+	CallIsActive,
+	DataNotAllowed,
+	RequestBodyStreamExhausted,
+	FileDoesNotExist,
+	FileIsDirectory,
+	NoPermissionsToReadFile,
+	DataLengthExceedsMaximum,
+	SecureConnectionFailed,
+	ServerCertificateHasBadDate,
+	ServerCertificateUntrusted,
+	ServerCertificateHasUnknownRoot,
+	ServerCertificateNotYetValid,
+	ClientCertificateRejected,
+	ClientCertificateRequired,
+	CannotLoadFromNetwork,
+	CannotCreateFile,
+	CannotOpenFile,
+	CannotCloseFile,
+	CannotWriteToFile,
+	CannotRemoveFile,
+	CannotMoveFile,
+	DownloadDecodingFailedMidStream,
+	DownloadDecodingFailedToComplete,
 	kCFHTTPCookieCannotParseCookieFile,
 	kCFNetServiceErrorUnknown,
 	kCFNetServiceErrorCollision,
@@ -26077,14 +26077,14 @@ declare enum CFHostInfoType {
 	kCFHostReachability
 }
 declare enum CFNetServicesError {
-	kCFNetServicesErrorUnknown,
-	kCFNetServicesErrorCollision,
-	kCFNetServicesErrorNotFound,
-	kCFNetServicesErrorInProgress,
-	kCFNetServicesErrorBadArgument,
-	kCFNetServicesErrorCancel,
-	kCFNetServicesErrorInvalid,
-	kCFNetServicesErrorTimeout
+	Unknown,
+	Collision,
+	NotFound,
+	InProgress,
+	BadArgument,
+	Cancel,
+	Invalid,
+	Timeout
 }
 declare enum CFNetServiceMonitorType {
 	kCFNetServiceMonitorTXT
@@ -26100,14 +26100,14 @@ declare enum CFNetServiceBrowserFlags {
 	kCFNetServiceFlagRemove
 }
 declare enum CFStreamErrorHTTP {
-	kCFStreamErrorHTTPParseFailure,
-	kCFStreamErrorHTTPRedirectionLoop,
-	kCFStreamErrorHTTPBadURL
+	ParseFailure,
+	RedirectionLoop,
+	BadURL
 }
 declare enum CFStreamErrorHTTPAuthentication {
-	kCFStreamErrorHTTPAuthenticationTypeUnsupported,
-	kCFStreamErrorHTTPAuthenticationBadUserName,
-	kCFStreamErrorHTTPAuthenticationBadPassword
+	AuthenticationTypeUnsupported,
+	AuthenticationBadUserName,
+	AuthenticationBadPassword
 }
 declare enum CFNetDiagnosticStatusValues {
 	kCFNetDiagnosticNoErr,
@@ -26117,9 +26117,9 @@ declare enum CFNetDiagnosticStatusValues {
 	kCFNetDiagnosticConnectionDown
 }
 declare enum ACAccountCredentialRenewResult {
-	ACAccountCredentialRenewResultRenewed,
-	ACAccountCredentialRenewResultRejected,
-	ACAccountCredentialRenewResultFailed
+	Renewed,
+	Rejected,
+	Failed
 }
 declare enum ACErrorCode {
 	ACErrorUnknown,
@@ -26145,33 +26145,33 @@ declare enum ACErrorCode {
 	ACErrorMissingMessageID
 }
 declare enum ABAuthorizationStatus {
-	kABAuthorizationStatusNotDetermined,
-	kABAuthorizationStatusRestricted,
-	kABAuthorizationStatusDenied,
-	kABAuthorizationStatusAuthorized
+	NotDetermined,
+	Restricted,
+	Denied,
+	Authorized
 }
 declare enum ABPersonImageFormat {
-	kABPersonImageFormatThumbnail,
-	kABPersonImageFormatOriginalSize
+	Thumbnail,
+	OriginalSize
 }
 declare enum UIEventType {
-	UIEventTypeTouches,
-	UIEventTypeMotion,
-	UIEventTypeRemoteControl
+	Touches,
+	Motion,
+	RemoteControl
 }
 declare enum UIEventSubtype {
-	UIEventSubtypeNone,
-	UIEventSubtypeMotionShake,
-	UIEventSubtypeRemoteControlPlay,
-	UIEventSubtypeRemoteControlPause,
-	UIEventSubtypeRemoteControlStop,
-	UIEventSubtypeRemoteControlTogglePlayPause,
-	UIEventSubtypeRemoteControlNextTrack,
-	UIEventSubtypeRemoteControlPreviousTrack,
-	UIEventSubtypeRemoteControlBeginSeekingBackward,
-	UIEventSubtypeRemoteControlEndSeekingBackward,
-	UIEventSubtypeRemoteControlBeginSeekingForward,
-	UIEventSubtypeRemoteControlEndSeekingForward
+	None,
+	MotionShake,
+	RemoteControlPlay,
+	RemoteControlPause,
+	RemoteControlStop,
+	RemoteControlTogglePlayPause,
+	RemoteControlNextTrack,
+	RemoteControlPreviousTrack,
+	RemoteControlBeginSeekingBackward,
+	RemoteControlEndSeekingBackward,
+	RemoteControlBeginSeekingForward,
+	RemoteControlEndSeekingForward
 }
 declare enum UIKeyModifierFlags {
 	UIKeyModifierAlphaShift,
@@ -26205,72 +26205,72 @@ declare enum UIFontDescriptorSymbolicTraits {
 	UIFontDescriptorClassSymbolic
 }
 declare enum UIBarStyle {
-	UIBarStyleDefault,
-	UIBarStyleBlack,
-	UIBarStyleBlackOpaque,
-	UIBarStyleBlackTranslucent
+	Default,
+	Black,
+	BlackOpaque,
+	BlackTranslucent
 }
 declare enum UIUserInterfaceSizeClass {
-	UIUserInterfaceSizeClassUnspecified,
-	UIUserInterfaceSizeClassCompact,
-	UIUserInterfaceSizeClassRegular
+	Unspecified,
+	Compact,
+	Regular
 }
 declare enum UIDeviceOrientation {
-	UIDeviceOrientationUnknown,
-	UIDeviceOrientationPortrait,
-	UIDeviceOrientationPortraitUpsideDown,
-	UIDeviceOrientationLandscapeLeft,
-	UIDeviceOrientationLandscapeRight,
-	UIDeviceOrientationFaceUp,
-	UIDeviceOrientationFaceDown
+	Unknown,
+	Portrait,
+	PortraitUpsideDown,
+	LandscapeLeft,
+	LandscapeRight,
+	FaceUp,
+	FaceDown
 }
 declare enum UIDeviceBatteryState {
-	UIDeviceBatteryStateUnknown,
-	UIDeviceBatteryStateUnplugged,
-	UIDeviceBatteryStateCharging,
-	UIDeviceBatteryStateFull
+	Unknown,
+	Unplugged,
+	Charging,
+	Full
 }
 declare enum UIUserInterfaceIdiom {
-	UIUserInterfaceIdiomUnspecified,
-	UIUserInterfaceIdiomPhone,
-	UIUserInterfaceIdiomPad
+	Unspecified,
+	Phone,
+	Pad
 }
 declare enum UIRectEdge {
-	UIRectEdgeNone,
-	UIRectEdgeTop,
-	UIRectEdgeLeft,
-	UIRectEdgeBottom,
-	UIRectEdgeRight,
-	UIRectEdgeAll
+	None,
+	Top,
+	Left,
+	Bottom,
+	Right,
+	All
 }
 declare enum NSLayoutRelation {
-	NSLayoutRelationLessThanOrEqual,
-	NSLayoutRelationEqual,
-	NSLayoutRelationGreaterThanOrEqual
+	LessThanOrEqual,
+	Equal,
+	GreaterThanOrEqual
 }
 declare enum NSLayoutAttribute {
-	NSLayoutAttributeLeft,
-	NSLayoutAttributeRight,
-	NSLayoutAttributeTop,
-	NSLayoutAttributeBottom,
-	NSLayoutAttributeLeading,
-	NSLayoutAttributeTrailing,
-	NSLayoutAttributeWidth,
-	NSLayoutAttributeHeight,
-	NSLayoutAttributeCenterX,
-	NSLayoutAttributeCenterY,
-	NSLayoutAttributeBaseline,
-	NSLayoutAttributeLastBaseline,
-	NSLayoutAttributeFirstBaseline,
-	NSLayoutAttributeLeftMargin,
-	NSLayoutAttributeRightMargin,
-	NSLayoutAttributeTopMargin,
-	NSLayoutAttributeBottomMargin,
-	NSLayoutAttributeLeadingMargin,
-	NSLayoutAttributeTrailingMargin,
-	NSLayoutAttributeCenterXWithinMargins,
-	NSLayoutAttributeCenterYWithinMargins,
-	NSLayoutAttributeNotAnAttribute
+	Left,
+	Right,
+	Top,
+	Bottom,
+	Leading,
+	Trailing,
+	Width,
+	Height,
+	CenterX,
+	CenterY,
+	Baseline,
+	LastBaseline,
+	FirstBaseline,
+	LeftMargin,
+	RightMargin,
+	TopMargin,
+	BottomMargin,
+	LeadingMargin,
+	TrailingMargin,
+	CenterXWithinMargins,
+	CenterYWithinMargins,
+	NotAnAttribute
 }
 declare enum NSLayoutFormatOptions {
 	NSLayoutFormatAlignAllLeft,
@@ -26291,41 +26291,41 @@ declare enum NSLayoutFormatOptions {
 	NSLayoutFormatDirectionMask
 }
 declare enum UIViewAnimationCurve {
-	UIViewAnimationCurveEaseInOut,
-	UIViewAnimationCurveEaseIn,
-	UIViewAnimationCurveEaseOut,
-	UIViewAnimationCurveLinear
+	EaseInOut,
+	EaseIn,
+	EaseOut,
+	Linear
 }
 declare enum UIViewContentMode {
-	UIViewContentModeScaleToFill,
-	UIViewContentModeScaleAspectFit,
-	UIViewContentModeScaleAspectFill,
-	UIViewContentModeRedraw,
-	UIViewContentModeCenter,
-	UIViewContentModeTop,
-	UIViewContentModeBottom,
-	UIViewContentModeLeft,
-	UIViewContentModeRight,
-	UIViewContentModeTopLeft,
-	UIViewContentModeTopRight,
-	UIViewContentModeBottomLeft,
-	UIViewContentModeBottomRight
+	ScaleToFill,
+	ScaleAspectFit,
+	ScaleAspectFill,
+	Redraw,
+	Center,
+	Top,
+	Bottom,
+	Left,
+	Right,
+	TopLeft,
+	TopRight,
+	BottomLeft,
+	BottomRight
 }
 declare enum UIViewAnimationTransition {
-	UIViewAnimationTransitionNone,
-	UIViewAnimationTransitionFlipFromLeft,
-	UIViewAnimationTransitionFlipFromRight,
-	UIViewAnimationTransitionCurlUp,
-	UIViewAnimationTransitionCurlDown
+	None,
+	FlipFromLeft,
+	FlipFromRight,
+	CurlUp,
+	CurlDown
 }
 declare enum UIViewAutoresizing {
-	UIViewAutoresizingNone,
-	UIViewAutoresizingFlexibleLeftMargin,
-	UIViewAutoresizingFlexibleWidth,
-	UIViewAutoresizingFlexibleRightMargin,
-	UIViewAutoresizingFlexibleTopMargin,
-	UIViewAutoresizingFlexibleHeight,
-	UIViewAutoresizingFlexibleBottomMargin
+	None,
+	FlexibleLeftMargin,
+	FlexibleWidth,
+	FlexibleRightMargin,
+	FlexibleTopMargin,
+	FlexibleHeight,
+	FlexibleBottomMargin
 }
 declare enum UIViewAnimationOptions {
 	UIViewAnimationOptionLayoutSubviews,
@@ -26366,16 +26366,16 @@ declare enum UIViewKeyframeAnimationOptions {
 	UIViewKeyframeAnimationOptionCalculationModeCubicPaced
 }
 declare enum UISystemAnimation {
-	UISystemAnimationDelete
+	Delete
 }
 declare enum UIViewTintAdjustmentMode {
-	UIViewTintAdjustmentModeAutomatic,
-	UIViewTintAdjustmentModeNormal,
-	UIViewTintAdjustmentModeDimmed
+	Automatic,
+	Normal,
+	Dimmed
 }
 declare enum UILayoutConstraintAxis {
-	UILayoutConstraintAxisHorizontal,
-	UILayoutConstraintAxisVertical
+	Horizontal,
+	Vertical
 }
 declare enum UIControlEvents {
 	UIControlEventTouchDown,
@@ -26399,36 +26399,36 @@ declare enum UIControlEvents {
 	UIControlEventAllEvents
 }
 declare enum UIControlContentVerticalAlignment {
-	UIControlContentVerticalAlignmentCenter,
-	UIControlContentVerticalAlignmentTop,
-	UIControlContentVerticalAlignmentBottom,
-	UIControlContentVerticalAlignmentFill
+	Center,
+	Top,
+	Bottom,
+	Fill
 }
 declare enum UIControlContentHorizontalAlignment {
-	UIControlContentHorizontalAlignmentCenter,
-	UIControlContentHorizontalAlignmentLeft,
-	UIControlContentHorizontalAlignmentRight,
-	UIControlContentHorizontalAlignmentFill
+	Center,
+	Left,
+	Right,
+	Fill
 }
 declare enum UIControlState {
-	UIControlStateNormal,
-	UIControlStateHighlighted,
-	UIControlStateDisabled,
-	UIControlStateSelected,
-	UIControlStateApplication,
-	UIControlStateReserved
+	Normal,
+	Highlighted,
+	Disabled,
+	Selected,
+	Application,
+	Reserved
 }
 declare enum NSTextAlignment {
-	NSTextAlignmentLeft,
-	NSTextAlignmentCenter,
-	NSTextAlignmentRight,
-	NSTextAlignmentJustified,
-	NSTextAlignmentNatural
+	Left,
+	Center,
+	Right,
+	Justified,
+	Natural
 }
 declare enum NSWritingDirection {
-	NSWritingDirectionNatural,
-	NSWritingDirectionLeftToRight,
-	NSWritingDirectionRightToLeft
+	Natural,
+	LeftToRight,
+	RightToLeft
 }
 declare enum NSLineBreakMode {
 	NSLineBreakByWordWrapping,
@@ -26439,58 +26439,58 @@ declare enum NSLineBreakMode {
 	NSLineBreakByTruncatingMiddle
 }
 declare enum UILineBreakMode {
-	UILineBreakModeWordWrap,
-	UILineBreakModeCharacterWrap,
-	UILineBreakModeClip,
-	UILineBreakModeHeadTruncation,
-	UILineBreakModeTailTruncation,
-	UILineBreakModeMiddleTruncation
+	WordWrap,
+	CharacterWrap,
+	Clip,
+	HeadTruncation,
+	TailTruncation,
+	MiddleTruncation
 }
 declare enum UITextAlignment {
-	UITextAlignmentLeft,
-	UITextAlignmentCenter,
-	UITextAlignmentRight
+	Left,
+	Center,
+	Right
 }
 declare enum UIBaselineAdjustment {
-	UIBaselineAdjustmentAlignBaselines,
-	UIBaselineAdjustmentAlignCenters,
-	UIBaselineAdjustmentNone
+	AlignBaselines,
+	AlignCenters,
+	None
 }
 declare enum UITextAutocapitalizationType {
-	UITextAutocapitalizationTypeNone,
-	UITextAutocapitalizationTypeWords,
-	UITextAutocapitalizationTypeSentences,
-	UITextAutocapitalizationTypeAllCharacters
+	None,
+	Words,
+	Sentences,
+	AllCharacters
 }
 declare enum UITextAutocorrectionType {
-	UITextAutocorrectionTypeDefault,
-	UITextAutocorrectionTypeNo,
-	UITextAutocorrectionTypeYes
+	Default,
+	No,
+	Yes
 }
 declare enum UITextSpellCheckingType {
-	UITextSpellCheckingTypeDefault,
-	UITextSpellCheckingTypeNo,
-	UITextSpellCheckingTypeYes
+	Default,
+	No,
+	Yes
 }
 declare enum UIKeyboardType {
-	UIKeyboardTypeDefault,
-	UIKeyboardTypeASCIICapable,
-	UIKeyboardTypeNumbersAndPunctuation,
-	UIKeyboardTypeURL,
-	UIKeyboardTypeNumberPad,
-	UIKeyboardTypePhonePad,
-	UIKeyboardTypeNamePhonePad,
-	UIKeyboardTypeEmailAddress,
-	UIKeyboardTypeDecimalPad,
-	UIKeyboardTypeTwitter,
-	UIKeyboardTypeWebSearch,
-	UIKeyboardTypeAlphabet
+	Default,
+	ASCIICapable,
+	NumbersAndPunctuation,
+	URL,
+	NumberPad,
+	PhonePad,
+	NamePhonePad,
+	EmailAddress,
+	DecimalPad,
+	Twitter,
+	WebSearch,
+	Alphabet
 }
 declare enum UIKeyboardAppearance {
-	UIKeyboardAppearanceDefault,
-	UIKeyboardAppearanceDark,
-	UIKeyboardAppearanceLight,
-	UIKeyboardAppearanceAlert
+	Default,
+	Dark,
+	Light,
+	Alert
 }
 declare enum UIReturnKeyType {
 	UIReturnKeyDefault,
@@ -26506,110 +26506,110 @@ declare enum UIReturnKeyType {
 	UIReturnKeyEmergencyCall
 }
 declare enum UITextStorageDirection {
-	UITextStorageDirectionForward,
-	UITextStorageDirectionBackward
+	Forward,
+	Backward
 }
 declare enum UITextLayoutDirection {
-	UITextLayoutDirectionRight,
-	UITextLayoutDirectionLeft,
-	UITextLayoutDirectionUp,
-	UITextLayoutDirectionDown
+	Right,
+	Left,
+	Up,
+	Down
 }
 declare enum UITextWritingDirection {
-	UITextWritingDirectionNatural,
-	UITextWritingDirectionLeftToRight,
-	UITextWritingDirectionRightToLeft
+	Natural,
+	LeftToRight,
+	RightToLeft
 }
 declare enum UITextGranularity {
-	UITextGranularityCharacter,
-	UITextGranularityWord,
-	UITextGranularitySentence,
-	UITextGranularityParagraph,
-	UITextGranularityLine,
-	UITextGranularityDocument
+	Character,
+	Word,
+	Sentence,
+	Paragraph,
+	Line,
+	Document
 }
 declare enum UITextBorderStyle {
-	UITextBorderStyleNone,
-	UITextBorderStyleLine,
-	UITextBorderStyleBezel,
-	UITextBorderStyleRoundedRect
+	None,
+	Line,
+	Bezel,
+	RoundedRect
 }
 declare enum UITextFieldViewMode {
-	UITextFieldViewModeNever,
-	UITextFieldViewModeWhileEditing,
-	UITextFieldViewModeUnlessEditing,
-	UITextFieldViewModeAlways
+	Never,
+	WhileEditing,
+	UnlessEditing,
+	Always
 }
 declare enum UIActionSheetStyle {
-	UIActionSheetStyleAutomatic,
-	UIActionSheetStyleDefault,
-	UIActionSheetStyleBlackTranslucent,
-	UIActionSheetStyleBlackOpaque
+	Automatic,
+	Default,
+	BlackTranslucent,
+	BlackOpaque
 }
 declare enum UIAlertViewStyle {
-	UIAlertViewStyleDefault,
-	UIAlertViewStyleSecureTextInput,
-	UIAlertViewStylePlainTextInput,
-	UIAlertViewStyleLoginAndPasswordInput
+	Default,
+	SecureTextInput,
+	PlainTextInput,
+	LoginAndPasswordInput
 }
 declare enum UIStatusBarStyle {
-	UIStatusBarStyleDefault,
-	UIStatusBarStyleLightContent,
-	UIStatusBarStyleBlackTranslucent,
-	UIStatusBarStyleBlackOpaque
+	Default,
+	LightContent,
+	BlackTranslucent,
+	BlackOpaque
 }
 declare enum UIStatusBarAnimation {
-	UIStatusBarAnimationNone,
-	UIStatusBarAnimationFade,
-	UIStatusBarAnimationSlide
+	None,
+	Fade,
+	Slide
 }
 declare enum UIInterfaceOrientation {
-	UIInterfaceOrientationUnknown,
-	UIInterfaceOrientationPortrait,
-	UIInterfaceOrientationPortraitUpsideDown,
-	UIInterfaceOrientationLandscapeLeft,
-	UIInterfaceOrientationLandscapeRight
+	Unknown,
+	Portrait,
+	PortraitUpsideDown,
+	LandscapeLeft,
+	LandscapeRight
 }
 declare enum UIInterfaceOrientationMask {
-	UIInterfaceOrientationMaskPortrait,
-	UIInterfaceOrientationMaskLandscapeLeft,
-	UIInterfaceOrientationMaskLandscapeRight,
-	UIInterfaceOrientationMaskPortraitUpsideDown,
-	UIInterfaceOrientationMaskLandscape,
-	UIInterfaceOrientationMaskAll,
-	UIInterfaceOrientationMaskAllButUpsideDown
+	MaskPortrait,
+	MaskLandscapeLeft,
+	MaskLandscapeRight,
+	MaskPortraitUpsideDown,
+	MaskLandscape,
+	MaskAll,
+	MaskAllButUpsideDown
 }
 declare enum UIRemoteNotificationType {
-	UIRemoteNotificationTypeNone,
-	UIRemoteNotificationTypeBadge,
-	UIRemoteNotificationTypeSound,
-	UIRemoteNotificationTypeAlert,
-	UIRemoteNotificationTypeNewsstandContentAvailability
+	None,
+	Badge,
+	Sound,
+	Alert,
+	NewsstandContentAvailability
 }
 declare enum UIBackgroundFetchResult {
-	UIBackgroundFetchResultNewData,
-	UIBackgroundFetchResultNoData,
-	UIBackgroundFetchResultFailed
+	NewData,
+	NoData,
+	Failed
 }
 declare enum UIBackgroundRefreshStatus {
-	UIBackgroundRefreshStatusRestricted,
-	UIBackgroundRefreshStatusDenied,
-	UIBackgroundRefreshStatusAvailable
+	Restricted,
+	Denied,
+	Available
 }
 declare enum UIApplicationState {
-	UIApplicationStateActive,
-	UIApplicationStateInactive,
-	UIApplicationStateBackground
+	Active,
+	Inactive,
+	Background
 }
 declare enum UIUserInterfaceLayoutDirection {
-	UIUserInterfaceLayoutDirectionLeftToRight,
-	UIUserInterfaceLayoutDirectionRightToLeft
+	LeftToRight,
+	RightToLeft
 }
 declare enum UIModalTransitionStyle {
-	UIModalTransitionStyleCoverVertical,
-	UIModalTransitionStyleFlipHorizontal,
-	UIModalTransitionStyleCrossDissolve,
-	UIModalTransitionStylePartialCurl
+	CoverVertical,
+	FlipHorizontal,
+	CrossDissolve,
+	PartialCurl
 }
 declare enum UIModalPresentationStyle {
 	UIModalPresentationFullScreen,
@@ -26623,63 +26623,63 @@ declare enum UIModalPresentationStyle {
 	UIModalPresentationNone
 }
 declare enum UIGestureRecognizerState {
-	UIGestureRecognizerStatePossible,
-	UIGestureRecognizerStateBegan,
-	UIGestureRecognizerStateChanged,
-	UIGestureRecognizerStateEnded,
-	UIGestureRecognizerStateCancelled,
-	UIGestureRecognizerStateFailed,
-	UIGestureRecognizerStateRecognized
+	Possible,
+	Began,
+	Changed,
+	Ended,
+	Cancelled,
+	Failed,
+	Recognized
 }
 declare enum UINavigationControllerOperation {
-	UINavigationControllerOperationNone,
-	UINavigationControllerOperationPush,
-	UINavigationControllerOperationPop
+	None,
+	Push,
+	Pop
 }
 declare enum UIRectCorner {
-	UIRectCornerTopLeft,
-	UIRectCornerTopRight,
-	UIRectCornerBottomLeft,
-	UIRectCornerBottomRight,
-	UIRectCornerAllCorners
+	TopLeft,
+	TopRight,
+	BottomLeft,
+	BottomRight,
+	AllCorners
 }
 declare enum UIScrollViewIndicatorStyle {
-	UIScrollViewIndicatorStyleDefault,
-	UIScrollViewIndicatorStyleBlack,
-	UIScrollViewIndicatorStyleWhite
+	Default,
+	Black,
+	White
 }
 declare enum UIScrollViewKeyboardDismissMode {
-	UIScrollViewKeyboardDismissModeNone,
-	UIScrollViewKeyboardDismissModeOnDrag,
-	UIScrollViewKeyboardDismissModeInteractive
+	None,
+	OnDrag,
+	Interactive
 }
 declare enum UISwipeGestureRecognizerDirection {
-	UISwipeGestureRecognizerDirectionRight,
-	UISwipeGestureRecognizerDirectionLeft,
-	UISwipeGestureRecognizerDirectionUp,
-	UISwipeGestureRecognizerDirectionDown
+	Right,
+	Left,
+	Up,
+	Down
 }
 declare enum UITableViewCellStyle {
-	UITableViewCellStyleDefault,
-	UITableViewCellStyleValue1,
-	UITableViewCellStyleValue2,
-	UITableViewCellStyleSubtitle
+	Default,
+	Value1,
+	Value2,
+	Subtitle
 }
 declare enum UITableViewCellSeparatorStyle {
-	UITableViewCellSeparatorStyleNone,
-	UITableViewCellSeparatorStyleSingleLine,
-	UITableViewCellSeparatorStyleSingleLineEtched
+	None,
+	SingleLine,
+	SingleLineEtched
 }
 declare enum UITableViewCellSelectionStyle {
-	UITableViewCellSelectionStyleNone,
-	UITableViewCellSelectionStyleBlue,
-	UITableViewCellSelectionStyleGray,
-	UITableViewCellSelectionStyleDefault
+	None,
+	Blue,
+	Gray,
+	Default
 }
 declare enum UITableViewCellEditingStyle {
-	UITableViewCellEditingStyleNone,
-	UITableViewCellEditingStyleDelete,
-	UITableViewCellEditingStyleInsert
+	None,
+	Delete,
+	Insert
 }
 declare enum UITableViewCellAccessoryType {
 	UITableViewCellAccessoryNone,
@@ -26694,165 +26694,165 @@ declare enum UITableViewCellStateMask {
 	UITableViewCellStateShowingDeleteConfirmationMask
 }
 declare enum UITableViewStyle {
-	UITableViewStylePlain,
-	UITableViewStyleGrouped
+	Plain,
+	Grouped
 }
 declare enum UITableViewScrollPosition {
-	UITableViewScrollPositionNone,
-	UITableViewScrollPositionTop,
-	UITableViewScrollPositionMiddle,
-	UITableViewScrollPositionBottom
+	None,
+	Top,
+	Middle,
+	Bottom
 }
 declare enum UITableViewRowAnimation {
-	UITableViewRowAnimationFade,
-	UITableViewRowAnimationRight,
-	UITableViewRowAnimationLeft,
-	UITableViewRowAnimationTop,
-	UITableViewRowAnimationBottom,
-	UITableViewRowAnimationNone,
-	UITableViewRowAnimationMiddle,
-	UITableViewRowAnimationAutomatic
+	Fade,
+	Right,
+	Left,
+	Top,
+	Bottom,
+	None,
+	Middle,
+	Automatic
 }
 declare enum UITableViewRowActionStyle {
-	UITableViewRowActionStyleDefault,
-	UITableViewRowActionStyleDestructive,
-	UITableViewRowActionStyleNormal
+	Default,
+	Destructive,
+	Normal
 }
 declare enum UIAccessibilityNavigationStyle {
-	UIAccessibilityNavigationStyleAutomatic,
-	UIAccessibilityNavigationStyleSeparate,
-	UIAccessibilityNavigationStyleCombined
+	Automatic,
+	Separate,
+	Combined
 }
 declare enum UIImageOrientation {
-	UIImageOrientationUp,
-	UIImageOrientationDown,
-	UIImageOrientationLeft,
-	UIImageOrientationRight,
-	UIImageOrientationUpMirrored,
-	UIImageOrientationDownMirrored,
-	UIImageOrientationLeftMirrored,
-	UIImageOrientationRightMirrored
+	Up,
+	Down,
+	Left,
+	Right,
+	UpMirrored,
+	DownMirrored,
+	LeftMirrored,
+	RightMirrored
 }
 declare enum UIImageResizingMode {
-	UIImageResizingModeTile,
-	UIImageResizingModeStretch
+	Tile,
+	Stretch
 }
 declare enum UIImageRenderingMode {
-	UIImageRenderingModeAutomatic,
-	UIImageRenderingModeAlwaysOriginal,
-	UIImageRenderingModeAlwaysTemplate
+	Automatic,
+	AlwaysOriginal,
+	AlwaysTemplate
 }
 declare enum UIAccessibilityZoomType {
-	UIAccessibilityZoomTypeInsertionPoint
+	InsertionPoint
 }
 declare enum UIGuidedAccessRestrictionState {
-	UIGuidedAccessRestrictionStateAllow,
-	UIGuidedAccessRestrictionStateDeny
+	Allow,
+	Deny
 }
 declare enum UIAccessibilityScrollDirection {
-	UIAccessibilityScrollDirectionRight,
-	UIAccessibilityScrollDirectionLeft,
-	UIAccessibilityScrollDirectionUp,
-	UIAccessibilityScrollDirectionDown,
-	UIAccessibilityScrollDirectionNext,
-	UIAccessibilityScrollDirectionPrevious
+	Right,
+	Left,
+	Up,
+	Down,
+	Next,
+	Previous
 }
 declare enum UIActivityIndicatorViewStyle {
-	UIActivityIndicatorViewStyleWhiteLarge,
-	UIActivityIndicatorViewStyleWhite,
-	UIActivityIndicatorViewStyleGray
+	WhiteLarge,
+	White,
+	Gray
 }
 declare enum UIActivityCategory {
-	UIActivityCategoryAction,
-	UIActivityCategoryShare
+	Action,
+	Share
 }
 declare enum UIAlertActionStyle {
-	UIAlertActionStyleDefault,
-	UIAlertActionStyleCancel,
-	UIAlertActionStyleDestructive
+	Default,
+	Cancel,
+	Destructive
 }
 declare enum UIAlertControllerStyle {
-	UIAlertControllerStyleActionSheet,
-	UIAlertControllerStyleAlert
+	ActionSheet,
+	Alert
 }
 declare enum UIBarMetrics {
-	UIBarMetricsDefault,
-	UIBarMetricsCompact,
-	UIBarMetricsDefaultPrompt,
-	UIBarMetricsCompactPrompt,
-	UIBarMetricsLandscapePhone,
-	UIBarMetricsLandscapePhonePrompt
+	Default,
+	Compact,
+	DefaultPrompt,
+	CompactPrompt,
+	LandscapePhone,
+	LandscapePhonePrompt
 }
 declare enum UIBarPosition {
-	UIBarPositionAny,
-	UIBarPositionBottom,
-	UIBarPositionTop,
-	UIBarPositionTopAttached
+	Any,
+	Bottom,
+	Top,
+	TopAttached
 }
 declare enum UIBarButtonItemStyle {
-	UIBarButtonItemStylePlain,
-	UIBarButtonItemStyleBordered,
-	UIBarButtonItemStyleDone
+	Plain,
+	Bordered,
+	Done
 }
 declare enum UIBarButtonSystemItem {
-	UIBarButtonSystemItemDone,
-	UIBarButtonSystemItemCancel,
-	UIBarButtonSystemItemEdit,
-	UIBarButtonSystemItemSave,
-	UIBarButtonSystemItemAdd,
-	UIBarButtonSystemItemFlexibleSpace,
-	UIBarButtonSystemItemFixedSpace,
-	UIBarButtonSystemItemCompose,
-	UIBarButtonSystemItemReply,
-	UIBarButtonSystemItemAction,
-	UIBarButtonSystemItemOrganize,
-	UIBarButtonSystemItemBookmarks,
-	UIBarButtonSystemItemSearch,
-	UIBarButtonSystemItemRefresh,
-	UIBarButtonSystemItemStop,
-	UIBarButtonSystemItemCamera,
-	UIBarButtonSystemItemTrash,
-	UIBarButtonSystemItemPlay,
-	UIBarButtonSystemItemPause,
-	UIBarButtonSystemItemRewind,
-	UIBarButtonSystemItemFastForward,
-	UIBarButtonSystemItemUndo,
-	UIBarButtonSystemItemRedo,
-	UIBarButtonSystemItemPageCurl
+	Done,
+	Cancel,
+	Edit,
+	Save,
+	Add,
+	FlexibleSpace,
+	FixedSpace,
+	Compose,
+	Reply,
+	Action,
+	Organize,
+	Bookmarks,
+	Search,
+	Refresh,
+	Stop,
+	Camera,
+	Trash,
+	Play,
+	Pause,
+	Rewind,
+	FastForward,
+	Undo,
+	Redo,
+	PageCurl
 }
 declare enum UIButtonType {
-	UIButtonTypeCustom,
-	UIButtonTypeSystem,
-	UIButtonTypeDetailDisclosure,
-	UIButtonTypeInfoLight,
-	UIButtonTypeInfoDark,
-	UIButtonTypeContactAdd,
-	UIButtonTypeRoundedRect
+	Custom,
+	System,
+	DetailDisclosure,
+	InfoLight,
+	InfoDark,
+	ContactAdd,
+	RoundedRect
 }
 declare enum UICollectionViewScrollPosition {
-	UICollectionViewScrollPositionNone,
-	UICollectionViewScrollPositionTop,
-	UICollectionViewScrollPositionCenteredVertically,
-	UICollectionViewScrollPositionBottom,
-	UICollectionViewScrollPositionLeft,
-	UICollectionViewScrollPositionCenteredHorizontally,
-	UICollectionViewScrollPositionRight
+	None,
+	Top,
+	CenteredVertically,
+	Bottom,
+	Left,
+	CenteredHorizontally,
+	Right
 }
 declare enum UICollectionElementCategory {
-	UICollectionElementCategoryCell,
-	UICollectionElementCategorySupplementaryView,
-	UICollectionElementCategoryDecorationView
+	Cell,
+	SupplementaryView,
+	DecorationView
 }
 declare enum UICollectionUpdateAction {
-	UICollectionUpdateActionInsert,
-	UICollectionUpdateActionDelete,
-	UICollectionUpdateActionReload,
-	UICollectionUpdateActionMove,
-	UICollectionUpdateActionNone
+	Insert,
+	Delete,
+	Reload,
+	Move,
+	None
 }
 declare enum UICollectionViewScrollDirection {
-	UICollectionViewScrollDirectionVertical,
-	UICollectionViewScrollDirectionHorizontal
+	Vertical,
+	Horizontal
 }
 declare enum UIDataDetectorTypes {
 	UIDataDetectorTypePhoneNumber,
@@ -26863,10 +26863,10 @@ declare enum UIDataDetectorTypes {
 	UIDataDetectorTypeAll
 }
 declare enum UIDatePickerMode {
-	UIDatePickerModeTime,
-	UIDatePickerModeDate,
-	UIDatePickerModeDateAndTime,
-	UIDatePickerModeCountDownTimer
+	Time,
+	Date,
+	DateAndTime,
+	CountDownTimer
 }
 declare enum UIDocumentChangeKind {
 	UIDocumentChangeDone,
@@ -26879,70 +26879,70 @@ declare enum UIDocumentSaveOperation {
 	UIDocumentSaveForOverwriting
 }
 declare enum UIDocumentState {
-	UIDocumentStateNormal,
-	UIDocumentStateClosed,
-	UIDocumentStateInConflict,
-	UIDocumentStateSavingError,
-	UIDocumentStateEditingDisabled
+	Normal,
+	Closed,
+	InConflict,
+	SavingError,
+	EditingDisabled
 }
 declare enum UIDocumentPickerMode {
-	UIDocumentPickerModeImport,
-	UIDocumentPickerModeOpen,
-	UIDocumentPickerModeExportToService,
-	UIDocumentPickerModeMoveToService
+	Import,
+	Open,
+	ExportToService,
+	MoveToService
 }
 declare enum UIDocumentMenuOrder {
-	UIDocumentMenuOrderFirst,
-	UIDocumentMenuOrderLast
+	First,
+	Last
 }
 declare enum UIBlurEffectStyle {
-	UIBlurEffectStyleExtraLight,
-	UIBlurEffectStyleLight,
-	UIBlurEffectStyleDark
+	ExtraLight,
+	Light,
+	Dark
 }
 declare enum UIImagePickerControllerSourceType {
-	UIImagePickerControllerSourceTypePhotoLibrary,
-	UIImagePickerControllerSourceTypeCamera,
-	UIImagePickerControllerSourceTypeSavedPhotosAlbum
+	PhotoLibrary,
+	Camera,
+	SavedPhotosAlbum
 }
 declare enum UIImagePickerControllerQualityType {
-	UIImagePickerControllerQualityTypeHigh,
-	UIImagePickerControllerQualityTypeMedium,
-	UIImagePickerControllerQualityTypeLow,
-	UIImagePickerControllerQualityType640x480,
-	UIImagePickerControllerQualityTypeIFrame1280x720,
-	UIImagePickerControllerQualityTypeIFrame960x540
+	High,
+	Medium,
+	Low,
+	t640x480,
+	IFrame1280x720,
+	IFrame960x540
 }
 declare enum UIImagePickerControllerCameraCaptureMode {
-	UIImagePickerControllerCameraCaptureModePhoto,
-	UIImagePickerControllerCameraCaptureModeVideo
+	Photo,
+	Video
 }
 declare enum UIImagePickerControllerCameraDevice {
-	UIImagePickerControllerCameraDeviceRear,
-	UIImagePickerControllerCameraDeviceFront
+	Rear,
+	Front
 }
 declare enum UIImagePickerControllerCameraFlashMode {
-	UIImagePickerControllerCameraFlashModeOff,
-	UIImagePickerControllerCameraFlashModeAuto,
-	UIImagePickerControllerCameraFlashModeOn
+	Off,
+	Auto,
+	On
 }
 declare enum UIInputViewStyle {
-	UIInputViewStyleDefault,
-	UIInputViewStyleKeyboard
+	Default,
+	Keyboard
 }
 declare enum UIUserNotificationType {
-	UIUserNotificationTypeNone,
-	UIUserNotificationTypeBadge,
-	UIUserNotificationTypeSound,
-	UIUserNotificationTypeAlert
+	None,
+	Badge,
+	Sound,
+	Alert
 }
 declare enum UIUserNotificationActivationMode {
-	UIUserNotificationActivationModeForeground,
-	UIUserNotificationActivationModeBackground
+	Foreground,
+	Background
 }
 declare enum UIUserNotificationActionContext {
-	UIUserNotificationActionContextDefault,
-	UIUserNotificationActionContextMinimal
+	Default,
+	Minimal
 }
 declare enum UIMenuControllerArrowDirection {
 	UIMenuControllerArrowDefault,
@@ -26952,34 +26952,34 @@ declare enum UIMenuControllerArrowDirection {
 	UIMenuControllerArrowRight
 }
 declare enum UIInterpolatingMotionEffectType {
-	UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis,
-	UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis
+	TiltAlongHorizontalAxis,
+	TiltAlongVerticalAxis
 }
 declare enum UIPageViewControllerNavigationOrientation {
-	UIPageViewControllerNavigationOrientationHorizontal,
-	UIPageViewControllerNavigationOrientationVertical
+	Horizontal,
+	Vertical
 }
 declare enum UIPageViewControllerSpineLocation {
-	UIPageViewControllerSpineLocationNone,
-	UIPageViewControllerSpineLocationMin,
-	UIPageViewControllerSpineLocationMid,
-	UIPageViewControllerSpineLocationMax
+	None,
+	Min,
+	Mid,
+	Max
 }
 declare enum UIPageViewControllerNavigationDirection {
-	UIPageViewControllerNavigationDirectionForward,
-	UIPageViewControllerNavigationDirectionReverse
+	Forward,
+	Reverse
 }
 declare enum UIPageViewControllerTransitionStyle {
-	UIPageViewControllerTransitionStylePageCurl,
-	UIPageViewControllerTransitionStyleScroll
+	PageCurl,
+	Scroll
 }
 declare enum UIPopoverArrowDirection {
-	UIPopoverArrowDirectionUp,
-	UIPopoverArrowDirectionDown,
-	UIPopoverArrowDirectionLeft,
-	UIPopoverArrowDirectionRight,
-	UIPopoverArrowDirectionAny,
-	UIPopoverArrowDirectionUnknown
+	Up,
+	Down,
+	Left,
+	Right,
+	Any,
+	Unknown
 }
 declare enum UIPrinterJobTypes {
 	UIPrinterJobTypeUnknown,
@@ -26999,78 +26999,78 @@ declare enum UIPrintInfoOutputType {
 	UIPrintInfoOutputPhotoGrayscale
 }
 declare enum UIPrintInfoOrientation {
-	UIPrintInfoOrientationPortrait,
-	UIPrintInfoOrientationLandscape
+	Portrait,
+	Landscape
 }
 declare enum UIPrintInfoDuplex {
-	UIPrintInfoDuplexNone,
-	UIPrintInfoDuplexLongEdge,
-	UIPrintInfoDuplexShortEdge
+	None,
+	LongEdge,
+	ShortEdge
 }
 declare enum UIProgressViewStyle {
-	UIProgressViewStyleDefault,
-	UIProgressViewStyleBar
+	Default,
+	Bar
 }
 declare enum UIScreenOverscanCompensation {
-	UIScreenOverscanCompensationScale,
-	UIScreenOverscanCompensationInsetBounds,
-	UIScreenOverscanCompensationInsetApplicationFrame
+	Scale,
+	InsetBounds,
+	InsetApplicationFrame
 }
 declare enum UISearchBarIcon {
-	UISearchBarIconSearch,
-	UISearchBarIconClear,
-	UISearchBarIconBookmark,
-	UISearchBarIconResultsList
+	Search,
+	Clear,
+	Bookmark,
+	ResultsList
 }
 declare enum UISearchBarStyle {
-	UISearchBarStyleDefault,
-	UISearchBarStyleProminent,
-	UISearchBarStyleMinimal
+	Default,
+	Prominent,
+	Minimal
 }
 declare enum UISegmentedControlStyle {
-	UISegmentedControlStylePlain,
-	UISegmentedControlStyleBordered,
-	UISegmentedControlStyleBar,
-	UISegmentedControlStyleBezeled
+	Plain,
+	Bordered,
+	Bar,
+	Bezeled
 }
 declare enum UISegmentedControlSegment {
-	UISegmentedControlSegmentAny,
-	UISegmentedControlSegmentLeft,
-	UISegmentedControlSegmentCenter,
-	UISegmentedControlSegmentRight,
-	UISegmentedControlSegmentAlone
+	Any,
+	Left,
+	Center,
+	Right,
+	Alone
 }
 declare enum UISplitViewControllerDisplayMode {
-	UISplitViewControllerDisplayModeAutomatic,
-	UISplitViewControllerDisplayModePrimaryHidden,
-	UISplitViewControllerDisplayModeAllVisible,
-	UISplitViewControllerDisplayModePrimaryOverlay
+	Automatic,
+	PrimaryHidden,
+	AllVisible,
+	PrimaryOverlay
 }
 declare enum UITabBarItemPositioning {
-	UITabBarItemPositioningAutomatic,
-	UITabBarItemPositioningFill,
-	UITabBarItemPositioningCentered
+	Automatic,
+	Fill,
+	Centered
 }
 declare enum UITabBarSystemItem {
-	UITabBarSystemItemMore,
-	UITabBarSystemItemFavorites,
-	UITabBarSystemItemFeatured,
-	UITabBarSystemItemTopRated,
-	UITabBarSystemItemRecents,
-	UITabBarSystemItemContacts,
-	UITabBarSystemItemHistory,
-	UITabBarSystemItemBookmarks,
-	UITabBarSystemItemSearch,
-	UITabBarSystemItemDownloads,
-	UITabBarSystemItemMostRecent,
-	UITabBarSystemItemMostViewed
+	More,
+	Favorites,
+	Featured,
+	TopRated,
+	Recents,
+	Contacts,
+	History,
+	Bookmarks,
+	Search,
+	Downloads,
+	MostRecent,
+	MostViewed
 }
 declare enum UITouchPhase {
-	UITouchPhaseBegan,
-	UITouchPhaseMoved,
-	UITouchPhaseStationary,
-	UITouchPhaseEnded,
-	UITouchPhaseCancelled
+	Began,
+	Moved,
+	Stationary,
+	Ended,
+	Cancelled
 }
 declare enum UIWebViewNavigationType {
 	LinkClicked,
@@ -27081,21 +27081,21 @@ declare enum UIWebViewNavigationType {
 	Other
 }
 declare enum UIWebPaginationMode {
-	UIWebPaginationModeUnpaginated,
-	UIWebPaginationModeLeftToRight,
-	UIWebPaginationModeTopToBottom,
-	UIWebPaginationModeBottomToTop,
-	UIWebPaginationModeRightToLeft
+	Unpaginated,
+	LeftToRight,
+	TopToBottom,
+	BottomToTop,
+	RightToLeft
 }
 declare enum UIWebPaginationBreakingMode {
-	UIWebPaginationBreakingModePage,
-	UIWebPaginationBreakingModeColumn
+	Page,
+	Column
 }
 declare enum NSUnderlineStyle {
-	NSUnderlineStyleNone,
-	NSUnderlineStyleSingle,
-	NSUnderlineStyleThick,
-	NSUnderlineStyleDouble,
+	None,
+	Single,
+	Thick,
+	Double,
 	NSUnderlinePatternSolid,
 	NSUnderlinePatternDot,
 	NSUnderlinePatternDash,
@@ -27104,22 +27104,22 @@ declare enum NSUnderlineStyle {
 	NSUnderlineByWord
 }
 declare enum NSTextWritingDirection {
-	NSTextWritingDirectionEmbedding,
-	NSTextWritingDirectionOverride
+	Embedding,
+	Override
 }
 declare enum NSTextStorageEditActions {
 	NSTextStorageEditedAttributes,
 	NSTextStorageEditedCharacters
 }
 declare enum NSTextLayoutOrientation {
-	NSTextLayoutOrientationHorizontal,
-	NSTextLayoutOrientationVertical
+	Horizontal,
+	Vertical
 }
 declare enum NSGlyphProperty {
-	NSGlyphPropertyNull,
-	NSGlyphPropertyControlCharacter,
-	NSGlyphPropertyElastic,
-	NSGlyphPropertyNonBaseCharacter
+	Null,
+	ControlCharacter,
+	Elastic,
+	NonBaseCharacter
 }
 declare enum NSControlCharacterAction {
 	NSControlCharacterZeroAdvancementAction,
@@ -27136,421 +27136,421 @@ declare enum NSStringDrawingOptions {
 	NSStringDrawingUsesDeviceMetrics
 }
 declare enum UIPushBehaviorMode {
-	UIPushBehaviorModeContinuous,
-	UIPushBehaviorModeInstantaneous
+	Continuous,
+	Instantaneous
 }
 declare enum UIAttachmentBehaviorType {
-	UIAttachmentBehaviorTypeItems,
-	UIAttachmentBehaviorTypeAnchor
+	Items,
+	Anchor
 }
 declare enum UICollisionBehaviorMode {
-	UICollisionBehaviorModeItems,
-	UICollisionBehaviorModeBoundaries,
-	UICollisionBehaviorModeEverything
+	Items,
+	Boundaries,
+	Everything
 }
 declare enum EAGLRenderingAPI {
-	kEAGLRenderingAPIOpenGLES1,
-	kEAGLRenderingAPIOpenGLES2,
-	kEAGLRenderingAPIOpenGLES3
+	OpenGLES1,
+	OpenGLES2,
+	OpenGLES3
 }
 declare enum MTLPixelFormat {
-	MTLPixelFormatInvalid,
-	MTLPixelFormatA8Unorm,
-	MTLPixelFormatR8Unorm,
-	MTLPixelFormatR8Unorm_sRGB,
-	MTLPixelFormatR8Snorm,
-	MTLPixelFormatR8Uint,
-	MTLPixelFormatR8Sint,
-	MTLPixelFormatR16Unorm,
-	MTLPixelFormatR16Snorm,
-	MTLPixelFormatR16Uint,
-	MTLPixelFormatR16Sint,
-	MTLPixelFormatR16Float,
-	MTLPixelFormatRG8Unorm,
-	MTLPixelFormatRG8Unorm_sRGB,
-	MTLPixelFormatRG8Snorm,
-	MTLPixelFormatRG8Uint,
-	MTLPixelFormatRG8Sint,
-	MTLPixelFormatB5G6R5Unorm,
-	MTLPixelFormatA1BGR5Unorm,
-	MTLPixelFormatABGR4Unorm,
-	MTLPixelFormatR32Uint,
-	MTLPixelFormatR32Sint,
-	MTLPixelFormatR32Float,
-	MTLPixelFormatRG16Unorm,
-	MTLPixelFormatRG16Snorm,
-	MTLPixelFormatRG16Uint,
-	MTLPixelFormatRG16Sint,
-	MTLPixelFormatRG16Float,
-	MTLPixelFormatRGBA8Unorm,
-	MTLPixelFormatRGBA8Unorm_sRGB,
-	MTLPixelFormatRGBA8Snorm,
-	MTLPixelFormatRGBA8Uint,
-	MTLPixelFormatRGBA8Sint,
-	MTLPixelFormatBGRA8Unorm,
-	MTLPixelFormatBGRA8Unorm_sRGB,
-	MTLPixelFormatRGB10A2Unorm,
-	MTLPixelFormatRGB10A2Uint,
-	MTLPixelFormatRG11B10Float,
-	MTLPixelFormatRGB9E5Float,
-	MTLPixelFormatRG32Uint,
-	MTLPixelFormatRG32Sint,
-	MTLPixelFormatRG32Float,
-	MTLPixelFormatRGBA16Unorm,
-	MTLPixelFormatRGBA16Snorm,
-	MTLPixelFormatRGBA16Uint,
-	MTLPixelFormatRGBA16Sint,
-	MTLPixelFormatRGBA16Float,
-	MTLPixelFormatRGBA32Uint,
-	MTLPixelFormatRGBA32Sint,
-	MTLPixelFormatRGBA32Float,
-	MTLPixelFormatPVRTC_RGB_2BPP,
-	MTLPixelFormatPVRTC_RGB_2BPP_sRGB,
-	MTLPixelFormatPVRTC_RGB_4BPP,
-	MTLPixelFormatPVRTC_RGB_4BPP_sRGB,
-	MTLPixelFormatPVRTC_RGBA_2BPP,
-	MTLPixelFormatPVRTC_RGBA_2BPP_sRGB,
-	MTLPixelFormatPVRTC_RGBA_4BPP,
-	MTLPixelFormatPVRTC_RGBA_4BPP_sRGB,
-	MTLPixelFormatEAC_R11Unorm,
-	MTLPixelFormatEAC_R11Snorm,
-	MTLPixelFormatEAC_RG11Unorm,
-	MTLPixelFormatEAC_RG11Snorm,
-	MTLPixelFormatEAC_RGBA8,
-	MTLPixelFormatEAC_RGBA8_sRGB,
-	MTLPixelFormatETC2_RGB8,
-	MTLPixelFormatETC2_RGB8_sRGB,
-	MTLPixelFormatETC2_RGB8A1,
-	MTLPixelFormatETC2_RGB8A1_sRGB,
-	MTLPixelFormatASTC_4x4_sRGB,
-	MTLPixelFormatASTC_5x4_sRGB,
-	MTLPixelFormatASTC_5x5_sRGB,
-	MTLPixelFormatASTC_6x5_sRGB,
-	MTLPixelFormatASTC_6x6_sRGB,
-	MTLPixelFormatASTC_8x5_sRGB,
-	MTLPixelFormatASTC_8x6_sRGB,
-	MTLPixelFormatASTC_8x8_sRGB,
-	MTLPixelFormatASTC_10x5_sRGB,
-	MTLPixelFormatASTC_10x6_sRGB,
-	MTLPixelFormatASTC_10x8_sRGB,
-	MTLPixelFormatASTC_10x10_sRGB,
-	MTLPixelFormatASTC_12x10_sRGB,
-	MTLPixelFormatASTC_12x12_sRGB,
-	MTLPixelFormatASTC_4x4_LDR,
-	MTLPixelFormatASTC_5x4_LDR,
-	MTLPixelFormatASTC_5x5_LDR,
-	MTLPixelFormatASTC_6x5_LDR,
-	MTLPixelFormatASTC_6x6_LDR,
-	MTLPixelFormatASTC_8x5_LDR,
-	MTLPixelFormatASTC_8x6_LDR,
-	MTLPixelFormatASTC_8x8_LDR,
-	MTLPixelFormatASTC_10x5_LDR,
-	MTLPixelFormatASTC_10x6_LDR,
-	MTLPixelFormatASTC_10x8_LDR,
-	MTLPixelFormatASTC_10x10_LDR,
-	MTLPixelFormatASTC_12x10_LDR,
-	MTLPixelFormatASTC_12x12_LDR,
-	MTLPixelFormatGBGR422,
-	MTLPixelFormatBGRG422,
-	MTLPixelFormatDepth32Float,
-	MTLPixelFormatStencil8
+	Invalid,
+	A8Unorm,
+	R8Unorm,
+	R8Unorm_sRGB,
+	R8Snorm,
+	R8Uint,
+	R8Sint,
+	R16Unorm,
+	R16Snorm,
+	R16Uint,
+	R16Sint,
+	R16Float,
+	RG8Unorm,
+	RG8Unorm_sRGB,
+	RG8Snorm,
+	RG8Uint,
+	RG8Sint,
+	B5G6R5Unorm,
+	A1BGR5Unorm,
+	ABGR4Unorm,
+	R32Uint,
+	R32Sint,
+	R32Float,
+	RG16Unorm,
+	RG16Snorm,
+	RG16Uint,
+	RG16Sint,
+	RG16Float,
+	RGBA8Unorm,
+	RGBA8Unorm_sRGB,
+	RGBA8Snorm,
+	RGBA8Uint,
+	RGBA8Sint,
+	BGRA8Unorm,
+	BGRA8Unorm_sRGB,
+	RGB10A2Unorm,
+	RGB10A2Uint,
+	RG11B10Float,
+	RGB9E5Float,
+	RG32Uint,
+	RG32Sint,
+	RG32Float,
+	RGBA16Unorm,
+	RGBA16Snorm,
+	RGBA16Uint,
+	RGBA16Sint,
+	RGBA16Float,
+	RGBA32Uint,
+	RGBA32Sint,
+	RGBA32Float,
+	PVRTC_RGB_2BPP,
+	PVRTC_RGB_2BPP_sRGB,
+	PVRTC_RGB_4BPP,
+	PVRTC_RGB_4BPP_sRGB,
+	PVRTC_RGBA_2BPP,
+	PVRTC_RGBA_2BPP_sRGB,
+	PVRTC_RGBA_4BPP,
+	PVRTC_RGBA_4BPP_sRGB,
+	EAC_R11Unorm,
+	EAC_R11Snorm,
+	EAC_RG11Unorm,
+	EAC_RG11Snorm,
+	EAC_RGBA8,
+	EAC_RGBA8_sRGB,
+	ETC2_RGB8,
+	ETC2_RGB8_sRGB,
+	ETC2_RGB8A1,
+	ETC2_RGB8A1_sRGB,
+	ASTC_4x4_sRGB,
+	ASTC_5x4_sRGB,
+	ASTC_5x5_sRGB,
+	ASTC_6x5_sRGB,
+	ASTC_6x6_sRGB,
+	ASTC_8x5_sRGB,
+	ASTC_8x6_sRGB,
+	ASTC_8x8_sRGB,
+	ASTC_10x5_sRGB,
+	ASTC_10x6_sRGB,
+	ASTC_10x8_sRGB,
+	ASTC_10x10_sRGB,
+	ASTC_12x10_sRGB,
+	ASTC_12x12_sRGB,
+	ASTC_4x4_LDR,
+	ASTC_5x4_LDR,
+	ASTC_5x5_LDR,
+	ASTC_6x5_LDR,
+	ASTC_6x6_LDR,
+	ASTC_8x5_LDR,
+	ASTC_8x6_LDR,
+	ASTC_8x8_LDR,
+	ASTC_10x5_LDR,
+	ASTC_10x6_LDR,
+	ASTC_10x8_LDR,
+	ASTC_10x10_LDR,
+	ASTC_12x10_LDR,
+	ASTC_12x12_LDR,
+	GBGR422,
+	BGRG422,
+	Depth32Float,
+	Stencil8
 }
 declare enum MTLPurgeableState {
-	MTLPurgeableStateKeepCurrent,
-	MTLPurgeableStateNonVolatile,
-	MTLPurgeableStateVolatile,
-	MTLPurgeableStateEmpty
+	KeepCurrent,
+	NonVolatile,
+	Volatile,
+	Empty
 }
 declare enum MTLCPUCacheMode {
-	MTLCPUCacheModeDefaultCache,
-	MTLCPUCacheModeWriteCombined
+	DefaultCache,
+	WriteCombined
 }
 declare enum MTLResourceOptions {
 	MTLResourceOptionCPUCacheModeDefault,
 	MTLResourceOptionCPUCacheModeWriteCombined
 }
 declare enum MTLFunctionType {
-	MTLFunctionTypeVertex,
-	MTLFunctionTypeFragment,
-	MTLFunctionTypeKernel
+	Vertex,
+	Fragment,
+	Kernel
 }
 declare enum MTLLibraryError {
-	MTLLibraryErrorUnsupported,
-	MTLLibraryErrorInternal,
-	MTLLibraryErrorCompileFailure,
-	MTLLibraryErrorCompileWarning
+	Unsupported,
+	Internal,
+	CompileFailure,
+	CompileWarning
 }
 declare enum MTLRenderPipelineError {
-	MTLRenderPipelineErrorInternal,
-	MTLRenderPipelineErrorUnsupported,
-	MTLRenderPipelineErrorInvalidInput
+	Internal,
+	Unsupported,
+	InvalidInput
 }
 declare enum MTLFeatureSet {
-	MTLFeatureSet_iOS_GPUFamily1_v1,
-	MTLFeatureSet_iOS_GPUFamily2_v1
+	_iOS_GPUFamily1_v1,
+	_iOS_GPUFamily2_v1
 }
 declare enum MTLPipelineOption {
-	MTLPipelineOptionNone,
-	MTLPipelineOptionArgumentInfo,
-	MTLPipelineOptionBufferTypeInfo
+	None,
+	ArgumentInfo,
+	BufferTypeInfo
 }
 declare enum MTLTextureType {
-	MTLTextureType1D,
-	MTLTextureType1DArray,
-	MTLTextureType2D,
-	MTLTextureType2DArray,
-	MTLTextureType2DMultisample,
-	MTLTextureTypeCube,
-	MTLTextureType3D
+	t1D,
+	t1DArray,
+	t2D,
+	t2DArray,
+	t2DMultisample,
+	Cube,
+	t3D
 }
 declare enum MTLCommandBufferStatus {
-	MTLCommandBufferStatusNotEnqueued,
-	MTLCommandBufferStatusEnqueued,
-	MTLCommandBufferStatusCommitted,
-	MTLCommandBufferStatusScheduled,
-	MTLCommandBufferStatusCompleted,
-	MTLCommandBufferStatusError
+	NotEnqueued,
+	Enqueued,
+	Committed,
+	Scheduled,
+	Completed,
+	Error
 }
 declare enum MTLCommandBufferError {
-	MTLCommandBufferErrorNone,
-	MTLCommandBufferErrorInternal,
-	MTLCommandBufferErrorTimeout,
-	MTLCommandBufferErrorPageFault,
-	MTLCommandBufferErrorBlacklisted,
-	MTLCommandBufferErrorNotPermitted,
-	MTLCommandBufferErrorOutOfMemory,
-	MTLCommandBufferErrorInvalidResource
+	None,
+	Internal,
+	Timeout,
+	PageFault,
+	Blacklisted,
+	NotPermitted,
+	OutOfMemory,
+	InvalidResource
 }
 declare enum MTLCompareFunction {
-	MTLCompareFunctionNever,
-	MTLCompareFunctionLess,
-	MTLCompareFunctionEqual,
-	MTLCompareFunctionLessEqual,
-	MTLCompareFunctionGreater,
-	MTLCompareFunctionNotEqual,
-	MTLCompareFunctionGreaterEqual,
-	MTLCompareFunctionAlways
+	Never,
+	Less,
+	Equal,
+	LessEqual,
+	Greater,
+	NotEqual,
+	GreaterEqual,
+	Always
 }
 declare enum MTLStencilOperation {
-	MTLStencilOperationKeep,
-	MTLStencilOperationZero,
-	MTLStencilOperationReplace,
-	MTLStencilOperationIncrementClamp,
-	MTLStencilOperationDecrementClamp,
-	MTLStencilOperationInvert,
-	MTLStencilOperationIncrementWrap,
-	MTLStencilOperationDecrementWrap
+	Keep,
+	Zero,
+	Replace,
+	IncrementClamp,
+	DecrementClamp,
+	Invert,
+	IncrementWrap,
+	DecrementWrap
 }
 declare enum MTLLoadAction {
-	MTLLoadActionDontCare,
-	MTLLoadActionLoad,
-	MTLLoadActionClear
+	DontCare,
+	Load,
+	Clear
 }
 declare enum MTLStoreAction {
-	MTLStoreActionDontCare,
-	MTLStoreActionStore,
-	MTLStoreActionMultisampleResolve
+	DontCare,
+	Store,
+	MultisampleResolve
 }
 declare enum MTLDataType {
-	MTLDataTypeNone,
-	MTLDataTypeStruct,
-	MTLDataTypeArray,
-	MTLDataTypeFloat,
-	MTLDataTypeFloat2,
-	MTLDataTypeFloat3,
-	MTLDataTypeFloat4,
-	MTLDataTypeFloat2x2,
-	MTLDataTypeFloat2x3,
-	MTLDataTypeFloat2x4,
-	MTLDataTypeFloat3x2,
-	MTLDataTypeFloat3x3,
-	MTLDataTypeFloat3x4,
-	MTLDataTypeFloat4x2,
-	MTLDataTypeFloat4x3,
-	MTLDataTypeFloat4x4,
-	MTLDataTypeHalf,
-	MTLDataTypeHalf2,
-	MTLDataTypeHalf3,
-	MTLDataTypeHalf4,
-	MTLDataTypeHalf2x2,
-	MTLDataTypeHalf2x3,
-	MTLDataTypeHalf2x4,
-	MTLDataTypeHalf3x2,
-	MTLDataTypeHalf3x3,
-	MTLDataTypeHalf3x4,
-	MTLDataTypeHalf4x2,
-	MTLDataTypeHalf4x3,
-	MTLDataTypeHalf4x4,
-	MTLDataTypeInt,
-	MTLDataTypeInt2,
-	MTLDataTypeInt3,
-	MTLDataTypeInt4,
-	MTLDataTypeUInt,
-	MTLDataTypeUInt2,
-	MTLDataTypeUInt3,
-	MTLDataTypeUInt4,
-	MTLDataTypeShort,
-	MTLDataTypeShort2,
-	MTLDataTypeShort3,
-	MTLDataTypeShort4,
-	MTLDataTypeUShort,
-	MTLDataTypeUShort2,
-	MTLDataTypeUShort3,
-	MTLDataTypeUShort4,
-	MTLDataTypeChar,
-	MTLDataTypeChar2,
-	MTLDataTypeChar3,
-	MTLDataTypeChar4,
-	MTLDataTypeUChar,
-	MTLDataTypeUChar2,
-	MTLDataTypeUChar3,
-	MTLDataTypeUChar4,
-	MTLDataTypeBool,
-	MTLDataTypeBool2,
-	MTLDataTypeBool3,
-	MTLDataTypeBool4
+	None,
+	Struct,
+	Array,
+	Float,
+	Float2,
+	Float3,
+	Float4,
+	Float2x2,
+	Float2x3,
+	Float2x4,
+	Float3x2,
+	Float3x3,
+	Float3x4,
+	Float4x2,
+	Float4x3,
+	Float4x4,
+	Half,
+	Half2,
+	Half3,
+	Half4,
+	Half2x2,
+	Half2x3,
+	Half2x4,
+	Half3x2,
+	Half3x3,
+	Half3x4,
+	Half4x2,
+	Half4x3,
+	Half4x4,
+	Int,
+	Int2,
+	Int3,
+	Int4,
+	UInt,
+	UInt2,
+	UInt3,
+	UInt4,
+	Short,
+	Short2,
+	Short3,
+	Short4,
+	UShort,
+	UShort2,
+	UShort3,
+	UShort4,
+	Char,
+	Char2,
+	Char3,
+	Char4,
+	UChar,
+	UChar2,
+	UChar3,
+	UChar4,
+	Bool,
+	Bool2,
+	Bool3,
+	Bool4
 }
 declare enum MTLArgumentType {
-	MTLArgumentTypeBuffer,
-	MTLArgumentTypeThreadgroupMemory,
-	MTLArgumentTypeTexture,
-	MTLArgumentTypeSampler
+	Buffer,
+	ThreadgroupMemory,
+	Texture,
+	Sampler
 }
 declare enum MTLArgumentAccess {
-	MTLArgumentAccessReadOnly,
-	MTLArgumentAccessReadWrite,
-	MTLArgumentAccessWriteOnly
+	ReadOnly,
+	ReadWrite,
+	WriteOnly
 }
 declare enum MTLBlendFactor {
-	MTLBlendFactorZero,
-	MTLBlendFactorOne,
-	MTLBlendFactorSourceColor,
-	MTLBlendFactorOneMinusSourceColor,
-	MTLBlendFactorSourceAlpha,
-	MTLBlendFactorOneMinusSourceAlpha,
-	MTLBlendFactorDestinationColor,
-	MTLBlendFactorOneMinusDestinationColor,
-	MTLBlendFactorDestinationAlpha,
-	MTLBlendFactorOneMinusDestinationAlpha,
-	MTLBlendFactorSourceAlphaSaturated,
-	MTLBlendFactorBlendColor,
-	MTLBlendFactorOneMinusBlendColor,
-	MTLBlendFactorBlendAlpha,
-	MTLBlendFactorOneMinusBlendAlpha
+	Zero,
+	One,
+	SourceColor,
+	OneMinusSourceColor,
+	SourceAlpha,
+	OneMinusSourceAlpha,
+	DestinationColor,
+	OneMinusDestinationColor,
+	DestinationAlpha,
+	OneMinusDestinationAlpha,
+	SourceAlphaSaturated,
+	BlendColor,
+	OneMinusBlendColor,
+	BlendAlpha,
+	OneMinusBlendAlpha
 }
 declare enum MTLBlendOperation {
-	MTLBlendOperationAdd,
-	MTLBlendOperationSubtract,
-	MTLBlendOperationReverseSubtract,
-	MTLBlendOperationMin,
-	MTLBlendOperationMax
+	Add,
+	Subtract,
+	ReverseSubtract,
+	Min,
+	Max
 }
 declare enum MTLColorWriteMask {
-	MTLColorWriteMaskNone,
-	MTLColorWriteMaskRed,
-	MTLColorWriteMaskGreen,
-	MTLColorWriteMaskBlue,
-	MTLColorWriteMaskAlpha,
-	MTLColorWriteMaskAll
+	None,
+	Red,
+	Green,
+	Blue,
+	Alpha,
+	All
 }
 declare enum MTLVertexFormat {
-	MTLVertexFormatInvalid,
-	MTLVertexFormatUChar2,
-	MTLVertexFormatUChar3,
-	MTLVertexFormatUChar4,
-	MTLVertexFormatChar2,
-	MTLVertexFormatChar3,
-	MTLVertexFormatChar4,
-	MTLVertexFormatUChar2Normalized,
-	MTLVertexFormatUChar3Normalized,
-	MTLVertexFormatUChar4Normalized,
-	MTLVertexFormatChar2Normalized,
-	MTLVertexFormatChar3Normalized,
-	MTLVertexFormatChar4Normalized,
-	MTLVertexFormatUShort2,
-	MTLVertexFormatUShort3,
-	MTLVertexFormatUShort4,
-	MTLVertexFormatShort2,
-	MTLVertexFormatShort3,
-	MTLVertexFormatShort4,
-	MTLVertexFormatUShort2Normalized,
-	MTLVertexFormatUShort3Normalized,
-	MTLVertexFormatUShort4Normalized,
-	MTLVertexFormatShort2Normalized,
-	MTLVertexFormatShort3Normalized,
-	MTLVertexFormatShort4Normalized,
-	MTLVertexFormatHalf2,
-	MTLVertexFormatHalf3,
-	MTLVertexFormatHalf4,
-	MTLVertexFormatFloat,
-	MTLVertexFormatFloat2,
-	MTLVertexFormatFloat3,
-	MTLVertexFormatFloat4,
-	MTLVertexFormatInt,
-	MTLVertexFormatInt2,
-	MTLVertexFormatInt3,
-	MTLVertexFormatInt4,
-	MTLVertexFormatUInt,
-	MTLVertexFormatUInt2,
-	MTLVertexFormatUInt3,
-	MTLVertexFormatUInt4,
-	MTLVertexFormatInt1010102Normalized,
-	MTLVertexFormatUInt1010102Normalized
+	Invalid,
+	UChar2,
+	UChar3,
+	UChar4,
+	Char2,
+	Char3,
+	Char4,
+	UChar2Normalized,
+	UChar3Normalized,
+	UChar4Normalized,
+	Char2Normalized,
+	Char3Normalized,
+	Char4Normalized,
+	UShort2,
+	UShort3,
+	UShort4,
+	Short2,
+	Short3,
+	Short4,
+	UShort2Normalized,
+	UShort3Normalized,
+	UShort4Normalized,
+	Short2Normalized,
+	Short3Normalized,
+	Short4Normalized,
+	Half2,
+	Half3,
+	Half4,
+	Float,
+	Float2,
+	Float3,
+	Float4,
+	Int,
+	Int2,
+	Int3,
+	Int4,
+	UInt,
+	UInt2,
+	UInt3,
+	UInt4,
+	Int1010102Normalized,
+	UInt1010102Normalized
 }
 declare enum MTLVertexStepFunction {
-	MTLVertexStepFunctionConstant,
-	MTLVertexStepFunctionPerVertex,
-	MTLVertexStepFunctionPerInstance
+	Constant,
+	PerVertex,
+	PerInstance
 }
 declare enum MTLPrimitiveType {
-	MTLPrimitiveTypePoint,
-	MTLPrimitiveTypeLine,
-	MTLPrimitiveTypeLineStrip,
-	MTLPrimitiveTypeTriangle,
-	MTLPrimitiveTypeTriangleStrip
+	Point,
+	Line,
+	LineStrip,
+	Triangle,
+	TriangleStrip
 }
 declare enum MTLIndexType {
-	MTLIndexTypeUInt16,
-	MTLIndexTypeUInt32
+	UInt16,
+	UInt32
 }
 declare enum MTLVisibilityResultMode {
-	MTLVisibilityResultModeDisabled,
-	MTLVisibilityResultModeBoolean
+	Disabled,
+	Boolean
 }
 declare enum MTLCullMode {
-	MTLCullModeNone,
-	MTLCullModeFront,
-	MTLCullModeBack
+	None,
+	Front,
+	Back
 }
 declare enum MTLWinding {
-	MTLWindingClockwise,
-	MTLWindingCounterClockwise
+	Clockwise,
+	CounterClockwise
 }
 declare enum MTLTriangleFillMode {
-	MTLTriangleFillModeFill,
-	MTLTriangleFillModeLines
+	Fill,
+	Lines
 }
 declare enum MTLSamplerMinMagFilter {
-	MTLSamplerMinMagFilterNearest,
-	MTLSamplerMinMagFilterLinear
+	Nearest,
+	Linear
 }
 declare enum MTLSamplerMipFilter {
-	MTLSamplerMipFilterNotMipmapped,
-	MTLSamplerMipFilterNearest,
-	MTLSamplerMipFilterLinear
+	NotMipmapped,
+	Nearest,
+	Linear
 }
 declare enum MTLSamplerAddressMode {
-	MTLSamplerAddressModeClampToEdge,
-	MTLSamplerAddressModeRepeat,
-	MTLSamplerAddressModeMirrorRepeat,
-	MTLSamplerAddressModeClampToZero
+	ClampToEdge,
+	Repeat,
+	MirrorRepeat,
+	ClampToZero
 }
 declare enum CTTextAlignment {
-	kCTTextAlignmentLeft,
-	kCTTextAlignmentRight,
-	kCTTextAlignmentCenter,
-	kCTTextAlignmentJustified,
-	kCTTextAlignmentNatural,
+	Left,
+	Right,
+	Center,
+	Justified,
+	Natural,
 	kCTLeftTextAlignment,
 	kCTRightTextAlignment,
 	kCTCenterTextAlignment,
@@ -27566,30 +27566,30 @@ declare enum CTLineBreakMode {
 	kCTLineBreakByTruncatingMiddle
 }
 declare enum CTWritingDirection {
-	kCTWritingDirectionNatural,
-	kCTWritingDirectionLeftToRight,
-	kCTWritingDirectionRightToLeft
+	Natural,
+	LeftToRight,
+	RightToLeft
 }
 declare enum CTParagraphStyleSpecifier {
-	kCTParagraphStyleSpecifierAlignment,
-	kCTParagraphStyleSpecifierFirstLineHeadIndent,
-	kCTParagraphStyleSpecifierHeadIndent,
-	kCTParagraphStyleSpecifierTailIndent,
-	kCTParagraphStyleSpecifierTabStops,
-	kCTParagraphStyleSpecifierDefaultTabInterval,
-	kCTParagraphStyleSpecifierLineBreakMode,
-	kCTParagraphStyleSpecifierLineHeightMultiple,
-	kCTParagraphStyleSpecifierMaximumLineHeight,
-	kCTParagraphStyleSpecifierMinimumLineHeight,
-	kCTParagraphStyleSpecifierLineSpacing,
-	kCTParagraphStyleSpecifierParagraphSpacing,
-	kCTParagraphStyleSpecifierParagraphSpacingBefore,
-	kCTParagraphStyleSpecifierBaseWritingDirection,
-	kCTParagraphStyleSpecifierMaximumLineSpacing,
-	kCTParagraphStyleSpecifierMinimumLineSpacing,
-	kCTParagraphStyleSpecifierLineSpacingAdjustment,
-	kCTParagraphStyleSpecifierLineBoundsOptions,
-	kCTParagraphStyleSpecifierCount
+	Alignment,
+	FirstLineHeadIndent,
+	HeadIndent,
+	TailIndent,
+	TabStops,
+	DefaultTabInterval,
+	LineBreakMode,
+	LineHeightMultiple,
+	MaximumLineHeight,
+	MinimumLineHeight,
+	LineSpacing,
+	ParagraphSpacing,
+	ParagraphSpacingBefore,
+	BaseWritingDirection,
+	MaximumLineSpacing,
+	MinimumLineSpacing,
+	LineSpacingAdjustment,
+	LineBoundsOptions,
+	Count
 }
 declare enum CTFontSymbolicTraits {
 	kCTFontTraitItalic,
@@ -27638,20 +27638,20 @@ declare enum CTFontStylisticClass {
 	kCTFontSymbolicClass
 }
 declare enum CTFontOrientation {
-	kCTFontOrientationDefault,
-	kCTFontOrientationHorizontal,
-	kCTFontOrientationVertical,
+	Default,
+	Horizontal,
+	Vertical,
 	kCTFontDefaultOrientation,
 	kCTFontHorizontalOrientation,
 	kCTFontVerticalOrientation
 }
 declare enum CTFontFormat {
-	kCTFontFormatUnrecognized,
-	kCTFontFormatOpenTypePostScript,
-	kCTFontFormatOpenTypeTrueType,
-	kCTFontFormatTrueType,
-	kCTFontFormatPostScript,
-	kCTFontFormatBitmap
+	Unrecognized,
+	OpenTypePostScript,
+	OpenTypeTrueType,
+	TrueType,
+	PostScript,
+	Bitmap
 }
 declare enum CTFontDescriptorMatchingState {
 	kCTFontDescriptorMatchingDidBegin,
@@ -27665,9 +27665,9 @@ declare enum CTFontDescriptorMatchingState {
 	kCTFontDescriptorMatchingDidFailWithError
 }
 declare enum CTFontOptions {
-	kCTFontOptionsDefault,
-	kCTFontOptionsPreventAutoActivation,
-	kCTFontOptionsPreferSystemFont
+	Default,
+	PreventAutoActivation,
+	PreferSystemFont
 }
 declare enum CTFontUIFontType {
 	kCTFontUIFontNone,
@@ -27732,20 +27732,20 @@ declare enum CTFontTableOptions {
 	kCTFontTableOptionExcludeSynthetic
 }
 declare enum CTFontManagerError {
-	kCTFontManagerErrorFileNotFound,
-	kCTFontManagerErrorInsufficientPermissions,
-	kCTFontManagerErrorUnrecognizedFormat,
-	kCTFontManagerErrorInvalidFontData,
-	kCTFontManagerErrorAlreadyRegistered,
-	kCTFontManagerErrorNotRegistered,
-	kCTFontManagerErrorInUse,
-	kCTFontManagerErrorSystemRequired
+	FileNotFound,
+	InsufficientPermissions,
+	UnrecognizedFormat,
+	InvalidFontData,
+	AlreadyRegistered,
+	NotRegistered,
+	InUse,
+	SystemRequired
 }
 declare enum CTFontManagerScope {
-	kCTFontManagerScopeNone,
-	kCTFontManagerScopeProcess,
-	kCTFontManagerScopeUser,
-	kCTFontManagerScopeSession
+	None,
+	Process,
+	User,
+	Session
 }
 declare enum CTFontManagerAutoActivationSetting {
 	kCTFontManagerAutoActivationDefault,
@@ -27754,9 +27754,9 @@ declare enum CTFontManagerAutoActivationSetting {
 	kCTFontManagerAutoActivationPromptUser
 }
 declare enum CTFrameProgression {
-	kCTFrameProgressionTopToBottom,
-	kCTFrameProgressionRightToLeft,
-	kCTFrameProgressionLeftToRight
+	TopToBottom,
+	RightToLeft,
+	LeftToRight
 }
 declare enum CTFramePathFillRule {
 	kCTFramePathFillEvenOdd,
@@ -27776,12 +27776,12 @@ declare enum CTLineTruncationType {
 	kCTLineTruncationMiddle
 }
 declare enum CTCharacterCollection {
-	kCTCharacterCollectionIdentityMapping,
-	kCTCharacterCollectionAdobeCNS1,
-	kCTCharacterCollectionAdobeGB1,
-	kCTCharacterCollectionAdobeJapan1,
-	kCTCharacterCollectionAdobeJapan2,
-	kCTCharacterCollectionAdobeKorea1,
+	IdentityMapping,
+	AdobeCNS1,
+	AdobeGB1,
+	AdobeJapan1,
+	AdobeJapan2,
+	AdobeKorea1,
 	kCTIdentityMappingCharacterCollection,
 	kCTAdobeCNS1CharacterCollection,
 	kCTAdobeGB1CharacterCollection,
@@ -27790,40 +27790,40 @@ declare enum CTCharacterCollection {
 	kCTAdobeKorea1CharacterCollection
 }
 declare enum CTRubyAlignment {
-	kCTRubyAlignmentInvalid,
-	kCTRubyAlignmentAuto,
-	kCTRubyAlignmentStart,
-	kCTRubyAlignmentCenter,
-	kCTRubyAlignmentEnd,
-	kCTRubyAlignmentDistributeLetter,
-	kCTRubyAlignmentDistributeSpace,
-	kCTRubyAlignmentLineEdge
+	Invalid,
+	Auto,
+	Start,
+	Center,
+	End,
+	DistributeLetter,
+	DistributeSpace,
+	LineEdge
 }
 declare enum CTRubyOverhang {
-	kCTRubyOverhangInvalid,
-	kCTRubyOverhangAuto,
-	kCTRubyOverhangStart,
-	kCTRubyOverhangEnd,
-	kCTRubyOverhangNone
+	Invalid,
+	Auto,
+	Start,
+	End,
+	None
 }
 declare enum CTRubyPosition {
-	kCTRubyPositionBefore,
-	kCTRubyPositionAfter,
-	kCTRubyPositionInterCharacter,
-	kCTRubyPositionInline,
-	kCTRubyPositionCount
+	Before,
+	After,
+	InterCharacter,
+	Inline,
+	Count
 }
 declare enum CTRunStatus {
-	kCTRunStatusNoStatus,
-	kCTRunStatusRightToLeft,
-	kCTRunStatusNonMonotonic,
-	kCTRunStatusHasNonIdentityMatrix
+	NoStatus,
+	RightToLeft,
+	NonMonotonic,
+	HasNonIdentityMatrix
 }
 declare enum CTUnderlineStyle {
-	kCTUnderlineStyleNone,
-	kCTUnderlineStyleSingle,
-	kCTUnderlineStyleThick,
-	kCTUnderlineStyleDouble
+	None,
+	Single,
+	Thick,
+	Double
 }
 declare enum CTUnderlineStyleModifiers {
 	kCTUnderlinePatternSolid,
@@ -27839,60 +27839,60 @@ declare enum CAEdgeAntialiasingMask {
 	kCALayerTopEdge
 }
 declare enum ALAssetOrientation {
-	ALAssetOrientationUp,
-	ALAssetOrientationDown,
-	ALAssetOrientationLeft,
-	ALAssetOrientationRight,
-	ALAssetOrientationUpMirrored,
-	ALAssetOrientationDownMirrored,
-	ALAssetOrientationLeftMirrored,
-	ALAssetOrientationRightMirrored
+	Up,
+	Down,
+	Left,
+	Right,
+	UpMirrored,
+	DownMirrored,
+	LeftMirrored,
+	RightMirrored
 }
 declare enum ALAuthorizationStatus {
-	ALAuthorizationStatusNotDetermined,
-	ALAuthorizationStatusRestricted,
-	ALAuthorizationStatusDenied,
-	ALAuthorizationStatusAuthorized
+	NotDetermined,
+	Restricted,
+	Denied,
+	Authorized
 }
 declare enum AVAudioUnitReverbPreset {
-	AVAudioUnitReverbPresetSmallRoom,
-	AVAudioUnitReverbPresetMediumRoom,
-	AVAudioUnitReverbPresetLargeRoom,
-	AVAudioUnitReverbPresetMediumHall,
-	AVAudioUnitReverbPresetLargeHall,
-	AVAudioUnitReverbPresetPlate,
-	AVAudioUnitReverbPresetMediumChamber,
-	AVAudioUnitReverbPresetLargeChamber,
-	AVAudioUnitReverbPresetCathedral,
-	AVAudioUnitReverbPresetLargeRoom2,
-	AVAudioUnitReverbPresetMediumHall2,
-	AVAudioUnitReverbPresetMediumHall3,
-	AVAudioUnitReverbPresetLargeHall2
+	SmallRoom,
+	MediumRoom,
+	LargeRoom,
+	MediumHall,
+	LargeHall,
+	Plate,
+	MediumChamber,
+	LargeChamber,
+	Cathedral,
+	LargeRoom2,
+	MediumHall2,
+	MediumHall3,
+	LargeHall2
 }
 declare enum AVAudioUnitEQFilterType {
-	AVAudioUnitEQFilterTypeParametric,
-	AVAudioUnitEQFilterTypeLowPass,
-	AVAudioUnitEQFilterTypeHighPass,
-	AVAudioUnitEQFilterTypeResonantLowPass,
-	AVAudioUnitEQFilterTypeResonantHighPass,
-	AVAudioUnitEQFilterTypeBandPass,
-	AVAudioUnitEQFilterTypeBandStop,
-	AVAudioUnitEQFilterTypeLowShelf,
-	AVAudioUnitEQFilterTypeHighShelf,
-	AVAudioUnitEQFilterTypeResonantLowShelf,
-	AVAudioUnitEQFilterTypeResonantHighShelf
+	Parametric,
+	LowPass,
+	HighPass,
+	ResonantLowPass,
+	ResonantHighPass,
+	BandPass,
+	BandStop,
+	LowShelf,
+	HighShelf,
+	ResonantLowShelf,
+	ResonantHighShelf
 }
 declare enum AVAudio3DMixingRenderingAlgorithm {
-	AVAudio3DMixingRenderingAlgorithmEqualPowerPanning,
-	AVAudio3DMixingRenderingAlgorithmSphericalHead,
-	AVAudio3DMixingRenderingAlgorithmHRTF,
-	AVAudio3DMixingRenderingAlgorithmSoundField,
-	AVAudio3DMixingRenderingAlgorithmStereoPassThrough
+	EqualPowerPanning,
+	SphericalHead,
+	HRTF,
+	SoundField,
+	StereoPassThrough
 }
 declare enum AVAudioEnvironmentDistanceAttenuationModel {
-	AVAudioEnvironmentDistanceAttenuationModelExponential,
-	AVAudioEnvironmentDistanceAttenuationModelInverse,
-	AVAudioEnvironmentDistanceAttenuationModelLinear
+	Exponential,
+	Inverse,
+	Linear
 }
 declare enum AVAudioCommonFormat {
 	AVAudioOtherFormat,
@@ -27902,11 +27902,11 @@ declare enum AVAudioCommonFormat {
 	AVAudioPCMFormatInt32
 }
 declare enum AVAudioQuality {
-	AVAudioQualityMin,
-	AVAudioQualityLow,
-	AVAudioQualityMedium,
-	AVAudioQualityHigh,
-	AVAudioQualityMax
+	Min,
+	Low,
+	Medium,
+	High,
+	Max
 }
 declare enum AVAudioPlayerNodeBufferOptions {
 	AVAudioPlayerNodeBufferLoops,
@@ -27920,18 +27920,18 @@ declare enum AVAudioSessionSetActiveOptions {
 	AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
 }
 declare enum AVAudioSessionPortOverride {
-	AVAudioSessionPortOverrideNone,
-	AVAudioSessionPortOverrideSpeaker
+	None,
+	Speaker
 }
 declare enum AVAudioSessionRouteChangeReason {
-	AVAudioSessionRouteChangeReasonUnknown,
-	AVAudioSessionRouteChangeReasonNewDeviceAvailable,
-	AVAudioSessionRouteChangeReasonOldDeviceUnavailable,
-	AVAudioSessionRouteChangeReasonCategoryChange,
-	AVAudioSessionRouteChangeReasonOverride,
-	AVAudioSessionRouteChangeReasonWakeFromSleep,
-	AVAudioSessionRouteChangeReasonNoSuitableRouteForCategory,
-	AVAudioSessionRouteChangeReasonRouteConfigurationChange
+	Unknown,
+	NewDeviceAvailable,
+	OldDeviceUnavailable,
+	CategoryChange,
+	Override,
+	WakeFromSleep,
+	NoSuitableRouteForCategory,
+	RouteConfigurationChange
 }
 declare enum AVAudioSessionCategoryOptions {
 	AVAudioSessionCategoryOptionMixWithOthers,
@@ -27940,62 +27940,62 @@ declare enum AVAudioSessionCategoryOptions {
 	AVAudioSessionCategoryOptionDefaultToSpeaker
 }
 declare enum AVAudioSessionInterruptionType {
-	AVAudioSessionInterruptionTypeBegan,
-	AVAudioSessionInterruptionTypeEnded
+	Began,
+	Ended
 }
 declare enum AVAudioSessionSilenceSecondaryAudioHintType {
-	AVAudioSessionSilenceSecondaryAudioHintTypeBegin,
-	AVAudioSessionSilenceSecondaryAudioHintTypeEnd
+	Begin,
+	End
 }
 declare enum AVAudioSessionRecordPermission {
-	AVAudioSessionRecordPermissionUndetermined,
-	AVAudioSessionRecordPermissionDenied,
-	AVAudioSessionRecordPermissionGranted
+	Undetermined,
+	Denied,
+	Granted
 }
 declare enum AVAudioSessionErrorCode {
-	AVAudioSessionErrorCodeNone,
-	AVAudioSessionErrorCodeMediaServicesFailed,
-	AVAudioSessionErrorCodeIsBusy,
-	AVAudioSessionErrorCodeIncompatibleCategory,
-	AVAudioSessionErrorCodeCannotInterruptOthers,
-	AVAudioSessionErrorCodeMissingEntitlement,
-	AVAudioSessionErrorCodeSiriIsRecording,
-	AVAudioSessionErrorCodeCannotStartPlaying,
-	AVAudioSessionErrorCodeCannotStartRecording,
-	AVAudioSessionErrorCodeBadParam,
+	None,
+	MediaServicesFailed,
+	IsBusy,
+	IncompatibleCategory,
+	CannotInterruptOthers,
+	MissingEntitlement,
+	SiriIsRecording,
+	CannotStartPlaying,
+	CannotStartRecording,
+	BadParam,
 	AVAudioSessionErrorInsufficientPriority,
-	AVAudioSessionErrorCodeUnspecified
+	Unspecified
 }
 declare enum AVAudioUnitDistortionPreset {
-	AVAudioUnitDistortionPresetDrumsBitBrush,
-	AVAudioUnitDistortionPresetDrumsBufferBeats,
-	AVAudioUnitDistortionPresetDrumsLoFi,
-	AVAudioUnitDistortionPresetMultiBrokenSpeaker,
-	AVAudioUnitDistortionPresetMultiCellphoneConcert,
-	AVAudioUnitDistortionPresetMultiDecimated1,
-	AVAudioUnitDistortionPresetMultiDecimated2,
-	AVAudioUnitDistortionPresetMultiDecimated3,
-	AVAudioUnitDistortionPresetMultiDecimated4,
-	AVAudioUnitDistortionPresetMultiDistortedFunk,
-	AVAudioUnitDistortionPresetMultiDistortedCubed,
-	AVAudioUnitDistortionPresetMultiDistortedSquared,
-	AVAudioUnitDistortionPresetMultiEcho1,
-	AVAudioUnitDistortionPresetMultiEcho2,
-	AVAudioUnitDistortionPresetMultiEchoTight1,
-	AVAudioUnitDistortionPresetMultiEchoTight2,
-	AVAudioUnitDistortionPresetMultiEverythingIsBroken,
-	AVAudioUnitDistortionPresetSpeechAlienChatter,
-	AVAudioUnitDistortionPresetSpeechCosmicInterference,
-	AVAudioUnitDistortionPresetSpeechGoldenPi,
-	AVAudioUnitDistortionPresetSpeechRadioTower,
-	AVAudioUnitDistortionPresetSpeechWaves
+	DrumsBitBrush,
+	DrumsBufferBeats,
+	DrumsLoFi,
+	MultiBrokenSpeaker,
+	MultiCellphoneConcert,
+	MultiDecimated1,
+	MultiDecimated2,
+	MultiDecimated3,
+	MultiDecimated4,
+	MultiDistortedFunk,
+	MultiDistortedCubed,
+	MultiDistortedSquared,
+	MultiEcho1,
+	MultiEcho2,
+	MultiEchoTight1,
+	MultiEchoTight2,
+	MultiEverythingIsBroken,
+	SpeechAlienChatter,
+	SpeechCosmicInterference,
+	SpeechGoldenPi,
+	SpeechRadioTower,
+	SpeechWaves
 }
 declare enum AVKeyValueStatus {
-	AVKeyValueStatusUnknown,
-	AVKeyValueStatusLoading,
-	AVKeyValueStatusLoaded,
-	AVKeyValueStatusFailed,
-	AVKeyValueStatusCancelled
+	Unknown,
+	Loading,
+	Loaded,
+	Failed,
+	Cancelled
 }
 declare enum AVAssetReferenceRestrictions {
 	AVAssetReferenceRestrictionForbidNone,
@@ -28006,12 +28006,12 @@ declare enum AVAssetReferenceRestrictions {
 	AVAssetReferenceRestrictionForbidAll
 }
 declare enum AVAssetExportSessionStatus {
-	AVAssetExportSessionStatusUnknown,
-	AVAssetExportSessionStatusWaiting,
-	AVAssetExportSessionStatusExporting,
-	AVAssetExportSessionStatusCompleted,
-	AVAssetExportSessionStatusFailed,
-	AVAssetExportSessionStatusCancelled
+	Unknown,
+	Waiting,
+	Exporting,
+	Completed,
+	Failed,
+	Cancelled
 }
 declare enum AVAssetImageGeneratorResult {
 	AVAssetImageGeneratorSucceeded,
@@ -28019,188 +28019,188 @@ declare enum AVAssetImageGeneratorResult {
 	AVAssetImageGeneratorCancelled
 }
 declare enum AVAssetReaderStatus {
-	AVAssetReaderStatusUnknown,
-	AVAssetReaderStatusReading,
-	AVAssetReaderStatusCompleted,
-	AVAssetReaderStatusFailed,
-	AVAssetReaderStatusCancelled
+	Unknown,
+	Reading,
+	Completed,
+	Failed,
+	Cancelled
 }
 declare enum AVAssetWriterStatus {
-	AVAssetWriterStatusUnknown,
-	AVAssetWriterStatusWriting,
-	AVAssetWriterStatusCompleted,
-	AVAssetWriterStatusFailed,
-	AVAssetWriterStatusCancelled
+	Unknown,
+	Writing,
+	Completed,
+	Failed,
+	Cancelled
 }
 declare enum AVCaptureDevicePosition {
-	AVCaptureDevicePositionUnspecified,
-	AVCaptureDevicePositionBack,
-	AVCaptureDevicePositionFront
+	Unspecified,
+	Back,
+	Front
 }
 declare enum AVCaptureFlashMode {
-	AVCaptureFlashModeOff,
-	AVCaptureFlashModeOn,
-	AVCaptureFlashModeAuto
+	Off,
+	On,
+	Auto
 }
 declare enum AVCaptureTorchMode {
-	AVCaptureTorchModeOff,
-	AVCaptureTorchModeOn,
-	AVCaptureTorchModeAuto
+	Off,
+	On,
+	Auto
 }
 declare enum AVCaptureFocusMode {
-	AVCaptureFocusModeLocked,
-	AVCaptureFocusModeAutoFocus,
-	AVCaptureFocusModeContinuousAutoFocus
+	Locked,
+	AutoFocus,
+	ContinuousAutoFocus
 }
 declare enum AVCaptureAutoFocusRangeRestriction {
-	AVCaptureAutoFocusRangeRestrictionNone,
-	AVCaptureAutoFocusRangeRestrictionNear,
-	AVCaptureAutoFocusRangeRestrictionFar
+	None,
+	Near,
+	Far
 }
 declare enum AVCaptureExposureMode {
-	AVCaptureExposureModeLocked,
-	AVCaptureExposureModeAutoExpose,
-	AVCaptureExposureModeContinuousAutoExposure,
-	AVCaptureExposureModeCustom
+	Locked,
+	AutoExpose,
+	ContinuousAutoExposure,
+	Custom
 }
 declare enum AVCaptureWhiteBalanceMode {
-	AVCaptureWhiteBalanceModeLocked,
-	AVCaptureWhiteBalanceModeAutoWhiteBalance,
-	AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance
+	Locked,
+	AutoWhiteBalance,
+	ContinuousAutoWhiteBalance
 }
 declare enum AVAuthorizationStatus {
-	AVAuthorizationStatusNotDetermined,
-	AVAuthorizationStatusRestricted,
-	AVAuthorizationStatusDenied,
-	AVAuthorizationStatusAuthorized
+	NotDetermined,
+	Restricted,
+	Denied,
+	Authorized
 }
 declare enum AVCaptureVideoStabilizationMode {
-	AVCaptureVideoStabilizationModeOff,
-	AVCaptureVideoStabilizationModeStandard,
-	AVCaptureVideoStabilizationModeCinematic,
-	AVCaptureVideoStabilizationModeAuto
+	Off,
+	Standard,
+	Cinematic,
+	Auto
 }
 declare enum AVCaptureAutoFocusSystem {
-	AVCaptureAutoFocusSystemNone,
-	AVCaptureAutoFocusSystemContrastDetection,
-	AVCaptureAutoFocusSystemPhaseDetection
+	None,
+	ContrastDetection,
+	PhaseDetection
 }
 declare enum AVCaptureVideoOrientation {
-	AVCaptureVideoOrientationPortrait,
-	AVCaptureVideoOrientationPortraitUpsideDown,
-	AVCaptureVideoOrientationLandscapeRight,
-	AVCaptureVideoOrientationLandscapeLeft
+	Portrait,
+	PortraitUpsideDown,
+	LandscapeRight,
+	LandscapeLeft
 }
 declare enum AVError {
-	AVErrorUnknown,
-	AVErrorOutOfMemory,
-	AVErrorSessionNotRunning,
-	AVErrorDeviceAlreadyUsedByAnotherSession,
-	AVErrorNoDataCaptured,
-	AVErrorSessionConfigurationChanged,
-	AVErrorDiskFull,
-	AVErrorDeviceWasDisconnected,
-	AVErrorMediaChanged,
-	AVErrorMaximumDurationReached,
-	AVErrorMaximumFileSizeReached,
-	AVErrorMediaDiscontinuity,
-	AVErrorMaximumNumberOfSamplesForFileFormatReached,
-	AVErrorDeviceNotConnected,
-	AVErrorDeviceInUseByAnotherApplication,
-	AVErrorDeviceLockedForConfigurationByAnotherProcess,
-	AVErrorSessionWasInterrupted,
-	AVErrorMediaServicesWereReset,
-	AVErrorExportFailed,
-	AVErrorDecodeFailed,
-	AVErrorInvalidSourceMedia,
-	AVErrorFileAlreadyExists,
-	AVErrorCompositionTrackSegmentsNotContiguous,
-	AVErrorInvalidCompositionTrackSegmentDuration,
-	AVErrorInvalidCompositionTrackSegmentSourceStartTime,
-	AVErrorInvalidCompositionTrackSegmentSourceDuration,
-	AVErrorFileFormatNotRecognized,
-	AVErrorFileFailedToParse,
-	AVErrorMaximumStillImageCaptureRequestsExceeded,
-	AVErrorContentIsProtected,
-	AVErrorNoImageAtTime,
-	AVErrorDecoderNotFound,
-	AVErrorEncoderNotFound,
-	AVErrorContentIsNotAuthorized,
-	AVErrorApplicationIsNotAuthorized,
-	AVErrorDeviceIsNotAvailableInBackground,
-	AVErrorOperationNotSupportedForAsset,
-	AVErrorDecoderTemporarilyUnavailable,
-	AVErrorEncoderTemporarilyUnavailable,
-	AVErrorInvalidVideoComposition,
-	AVErrorReferenceForbiddenByReferencePolicy,
-	AVErrorInvalidOutputURLPathExtension,
-	AVErrorScreenCaptureFailed,
-	AVErrorDisplayWasDisabled,
-	AVErrorTorchLevelUnavailable,
-	AVErrorOperationInterrupted,
-	AVErrorIncompatibleAsset,
-	AVErrorFailedToLoadMediaData,
-	AVErrorServerIncorrectlyConfigured,
-	AVErrorApplicationIsNotAuthorizedToUseDevice,
-	AVErrorFailedToParse,
-	AVErrorFileTypeDoesNotSupportSampleReferences,
-	AVErrorUndecodableMediaData
+	Unknown,
+	OutOfMemory,
+	SessionNotRunning,
+	DeviceAlreadyUsedByAnotherSession,
+	NoDataCaptured,
+	SessionConfigurationChanged,
+	DiskFull,
+	DeviceWasDisconnected,
+	MediaChanged,
+	MaximumDurationReached,
+	MaximumFileSizeReached,
+	MediaDiscontinuity,
+	MaximumNumberOfSamplesForFileFormatReached,
+	DeviceNotConnected,
+	DeviceInUseByAnotherApplication,
+	DeviceLockedForConfigurationByAnotherProcess,
+	SessionWasInterrupted,
+	MediaServicesWereReset,
+	ExportFailed,
+	DecodeFailed,
+	InvalidSourceMedia,
+	FileAlreadyExists,
+	CompositionTrackSegmentsNotContiguous,
+	InvalidCompositionTrackSegmentDuration,
+	InvalidCompositionTrackSegmentSourceStartTime,
+	InvalidCompositionTrackSegmentSourceDuration,
+	FileFormatNotRecognized,
+	FileFailedToParse,
+	MaximumStillImageCaptureRequestsExceeded,
+	ContentIsProtected,
+	NoImageAtTime,
+	DecoderNotFound,
+	EncoderNotFound,
+	ContentIsNotAuthorized,
+	ApplicationIsNotAuthorized,
+	DeviceIsNotAvailableInBackground,
+	OperationNotSupportedForAsset,
+	DecoderTemporarilyUnavailable,
+	EncoderTemporarilyUnavailable,
+	InvalidVideoComposition,
+	ReferenceForbiddenByReferencePolicy,
+	InvalidOutputURLPathExtension,
+	ScreenCaptureFailed,
+	DisplayWasDisabled,
+	TorchLevelUnavailable,
+	OperationInterrupted,
+	IncompatibleAsset,
+	FailedToLoadMediaData,
+	ServerIncorrectlyConfigured,
+	ApplicationIsNotAuthorizedToUseDevice,
+	FailedToParse,
+	FileTypeDoesNotSupportSampleReferences,
+	UndecodableMediaData
 }
 declare enum AVPlayerStatus {
-	AVPlayerStatusUnknown,
-	AVPlayerStatusReadyToPlay,
-	AVPlayerStatusFailed
+	Unknown,
+	ReadyToPlay,
+	Failed
 }
 declare enum AVPlayerActionAtItemEnd {
-	AVPlayerActionAtItemEndAdvance,
-	AVPlayerActionAtItemEndPause,
-	AVPlayerActionAtItemEndNone
+	Advance,
+	Pause,
+	None
 }
 declare enum AVPlayerItemStatus {
-	AVPlayerItemStatusUnknown,
-	AVPlayerItemStatusReadyToPlay,
-	AVPlayerItemStatusFailed
+	Unknown,
+	ReadyToPlay,
+	Failed
 }
 declare enum AVQueuedSampleBufferRenderingStatus {
-	AVQueuedSampleBufferRenderingStatusUnknown,
-	AVQueuedSampleBufferRenderingStatusRendering,
-	AVQueuedSampleBufferRenderingStatusFailed
+	Unknown,
+	Rendering,
+	Failed
 }
 declare enum AVSpeechBoundary {
-	AVSpeechBoundaryImmediate,
-	AVSpeechBoundaryWord
+	Immediate,
+	Word
 }
 declare enum CMTimeFlags {
-	kCMTimeFlags_Valid,
-	kCMTimeFlags_HasBeenRounded,
-	kCMTimeFlags_PositiveInfinity,
-	kCMTimeFlags_NegativeInfinity,
-	kCMTimeFlags_Indefinite,
-	kCMTimeFlags_ImpliedValueFlagsMask
+	_Valid,
+	_HasBeenRounded,
+	_PositiveInfinity,
+	_NegativeInfinity,
+	_Indefinite,
+	_ImpliedValueFlagsMask
 }
 declare enum CMTimeRoundingMethod {
-	kCMTimeRoundingMethod_RoundHalfAwayFromZero,
-	kCMTimeRoundingMethod_RoundTowardZero,
-	kCMTimeRoundingMethod_RoundAwayFromZero,
-	kCMTimeRoundingMethod_QuickTime,
-	kCMTimeRoundingMethod_RoundTowardPositiveInfinity,
-	kCMTimeRoundingMethod_RoundTowardNegativeInfinity,
-	kCMTimeRoundingMethod_Default
+	_RoundHalfAwayFromZero,
+	_RoundTowardZero,
+	_RoundAwayFromZero,
+	_QuickTime,
+	_RoundTowardPositiveInfinity,
+	_RoundTowardNegativeInfinity,
+	_Default
 }
 declare enum CKAccountStatus {
-	CKAccountStatusCouldNotDetermine,
-	CKAccountStatusAvailable,
-	CKAccountStatusRestricted,
-	CKAccountStatusNoAccount
+	CouldNotDetermine,
+	Available,
+	Restricted,
+	NoAccount
 }
 declare enum CKApplicationPermissions {
 	CKApplicationPermissionUserDiscoverability
 }
 declare enum CKApplicationPermissionStatus {
-	CKApplicationPermissionStatusInitialState,
-	CKApplicationPermissionStatusCouldNotComplete,
-	CKApplicationPermissionStatusDenied,
-	CKApplicationPermissionStatusGranted
+	InitialState,
+	CouldNotComplete,
+	Denied,
+	Granted
 }
 declare enum CKErrorCode {
 	CKErrorInternalError,
@@ -28233,32 +28233,32 @@ declare enum CKErrorCode {
 	CKErrorUserDeletedZone
 }
 declare enum CKNotificationType {
-	CKNotificationTypeQuery,
-	CKNotificationTypeRecordZone,
-	CKNotificationTypeReadNotification
+	Query,
+	RecordZone,
+	ReadNotification
 }
 declare enum CKQueryNotificationReason {
-	CKQueryNotificationReasonRecordCreated,
-	CKQueryNotificationReasonRecordUpdated,
-	CKQueryNotificationReasonRecordDeleted
+	RecordCreated,
+	RecordUpdated,
+	RecordDeleted
 }
 declare enum CKRecordZoneCapabilities {
 	CKRecordZoneCapabilityFetchChanges,
 	CKRecordZoneCapabilityAtomic
 }
 declare enum CKReferenceAction {
-	CKReferenceActionNone,
-	CKReferenceActionDeleteSelf
+	None,
+	DeleteSelf
 }
 declare enum CKSubscriptionType {
-	CKSubscriptionTypeQuery,
-	CKSubscriptionTypeRecordZone
+	Query,
+	RecordZone
 }
 declare enum CKSubscriptionOptions {
-	CKSubscriptionOptionsFiresOnRecordCreation,
-	CKSubscriptionOptionsFiresOnRecordUpdate,
-	CKSubscriptionOptionsFiresOnRecordDeletion,
-	CKSubscriptionOptionsFiresOnce
+	FiresOnRecordCreation,
+	FiresOnRecordUpdate,
+	FiresOnRecordDeletion,
+	FiresOnce
 }
 declare enum CKRecordSavePolicy {
 	CKRecordSaveIfServerRecordUnchanged,
@@ -28266,123 +28266,123 @@ declare enum CKRecordSavePolicy {
 	CKRecordSaveAllKeys
 }
 declare enum CLError {
-	kCLErrorLocationUnknown,
-	kCLErrorDenied,
-	kCLErrorNetwork,
-	kCLErrorHeadingFailure,
-	kCLErrorRegionMonitoringDenied,
-	kCLErrorRegionMonitoringFailure,
-	kCLErrorRegionMonitoringSetupDelayed,
-	kCLErrorRegionMonitoringResponseDelayed,
-	kCLErrorGeocodeFoundNoResult,
-	kCLErrorGeocodeFoundPartialResult,
-	kCLErrorGeocodeCanceled,
-	kCLErrorDeferredFailed,
-	kCLErrorDeferredNotUpdatingLocation,
-	kCLErrorDeferredAccuracyTooLow,
-	kCLErrorDeferredDistanceFiltered,
-	kCLErrorDeferredCanceled,
-	kCLErrorRangingUnavailable,
-	kCLErrorRangingFailure
+	LocationUnknown,
+	Denied,
+	Network,
+	HeadingFailure,
+	RegionMonitoringDenied,
+	RegionMonitoringFailure,
+	RegionMonitoringSetupDelayed,
+	RegionMonitoringResponseDelayed,
+	GeocodeFoundNoResult,
+	GeocodeFoundPartialResult,
+	GeocodeCanceled,
+	DeferredFailed,
+	DeferredNotUpdatingLocation,
+	DeferredAccuracyTooLow,
+	DeferredDistanceFiltered,
+	DeferredCanceled,
+	RangingUnavailable,
+	RangingFailure
 }
 declare enum CLRegionState {
-	CLRegionStateUnknown,
-	CLRegionStateInside,
-	CLRegionStateOutside
+	Unknown,
+	Inside,
+	Outside
 }
 declare enum CLProximity {
-	CLProximityUnknown,
-	CLProximityImmediate,
-	CLProximityNear,
-	CLProximityFar
+	Unknown,
+	Immediate,
+	Near,
+	Far
 }
 declare enum CLDeviceOrientation {
-	CLDeviceOrientationUnknown,
-	CLDeviceOrientationPortrait,
-	CLDeviceOrientationPortraitUpsideDown,
-	CLDeviceOrientationLandscapeLeft,
-	CLDeviceOrientationLandscapeRight,
-	CLDeviceOrientationFaceUp,
-	CLDeviceOrientationFaceDown
+	Unknown,
+	Portrait,
+	PortraitUpsideDown,
+	LandscapeLeft,
+	LandscapeRight,
+	FaceUp,
+	FaceDown
 }
 declare enum CLAuthorizationStatus {
-	kCLAuthorizationStatusNotDetermined,
-	kCLAuthorizationStatusRestricted,
-	kCLAuthorizationStatusDenied,
-	kCLAuthorizationStatusAuthorized,
-	kCLAuthorizationStatusAuthorizedAlways,
-	kCLAuthorizationStatusAuthorizedWhenInUse
+	NotDetermined,
+	Restricted,
+	Denied,
+	Authorized,
+	AuthorizedAlways,
+	AuthorizedWhenInUse
 }
 declare enum CLActivityType {
-	CLActivityTypeOther,
-	CLActivityTypeAutomotiveNavigation,
-	CLActivityTypeFitness,
-	CLActivityTypeOtherNavigation
+	Other,
+	AutomotiveNavigation,
+	Fitness,
+	OtherNavigation
 }
 declare enum CBCentralManagerState {
-	CBCentralManagerStateUnknown,
-	CBCentralManagerStateResetting,
-	CBCentralManagerStateUnsupported,
-	CBCentralManagerStateUnauthorized,
-	CBCentralManagerStatePoweredOff,
-	CBCentralManagerStatePoweredOn
+	Unknown,
+	Resetting,
+	Unsupported,
+	Unauthorized,
+	PoweredOff,
+	PoweredOn
 }
 declare enum CBError {
-	CBErrorUnknown,
-	CBErrorInvalidParameters,
-	CBErrorInvalidHandle,
-	CBErrorNotConnected,
-	CBErrorOutOfSpace,
-	CBErrorOperationCancelled,
-	CBErrorConnectionTimeout,
-	CBErrorPeripheralDisconnected,
-	CBErrorUUIDNotAllowed,
-	CBErrorAlreadyAdvertising,
-	CBErrorConnectionFailed
+	Unknown,
+	InvalidParameters,
+	InvalidHandle,
+	NotConnected,
+	OutOfSpace,
+	OperationCancelled,
+	ConnectionTimeout,
+	PeripheralDisconnected,
+	UUIDNotAllowed,
+	AlreadyAdvertising,
+	ConnectionFailed
 }
 declare enum CBATTError {
-	CBATTErrorSuccess,
-	CBATTErrorInvalidHandle,
-	CBATTErrorReadNotPermitted,
-	CBATTErrorWriteNotPermitted,
-	CBATTErrorInvalidPdu,
-	CBATTErrorInsufficientAuthentication,
-	CBATTErrorRequestNotSupported,
-	CBATTErrorInvalidOffset,
-	CBATTErrorInsufficientAuthorization,
-	CBATTErrorPrepareQueueFull,
-	CBATTErrorAttributeNotFound,
-	CBATTErrorAttributeNotLong,
-	CBATTErrorInsufficientEncryptionKeySize,
-	CBATTErrorInvalidAttributeValueLength,
-	CBATTErrorUnlikelyError,
-	CBATTErrorInsufficientEncryption,
-	CBATTErrorUnsupportedGroupType,
-	CBATTErrorInsufficientResources
+	Success,
+	InvalidHandle,
+	ReadNotPermitted,
+	WriteNotPermitted,
+	InvalidPdu,
+	InsufficientAuthentication,
+	RequestNotSupported,
+	InvalidOffset,
+	InsufficientAuthorization,
+	PrepareQueueFull,
+	AttributeNotFound,
+	AttributeNotLong,
+	InsufficientEncryptionKeySize,
+	InvalidAttributeValueLength,
+	UnlikelyError,
+	InsufficientEncryption,
+	UnsupportedGroupType,
+	InsufficientResources
 }
 declare enum CBPeripheralManagerAuthorizationStatus {
-	CBPeripheralManagerAuthorizationStatusNotDetermined,
-	CBPeripheralManagerAuthorizationStatusRestricted,
-	CBPeripheralManagerAuthorizationStatusDenied,
-	CBPeripheralManagerAuthorizationStatusAuthorized
+	NotDetermined,
+	Restricted,
+	Denied,
+	Authorized
 }
 declare enum CBPeripheralManagerState {
-	CBPeripheralManagerStateUnknown,
-	CBPeripheralManagerStateResetting,
-	CBPeripheralManagerStateUnsupported,
-	CBPeripheralManagerStateUnauthorized,
-	CBPeripheralManagerStatePoweredOff,
-	CBPeripheralManagerStatePoweredOn
+	Unknown,
+	Resetting,
+	Unsupported,
+	Unauthorized,
+	PoweredOff,
+	PoweredOn
 }
 declare enum CBPeripheralManagerConnectionLatency {
-	CBPeripheralManagerConnectionLatencyLow,
-	CBPeripheralManagerConnectionLatencyMedium,
-	CBPeripheralManagerConnectionLatencyHigh
+	Low,
+	Medium,
+	High
 }
 declare enum CBPeripheralState {
-	CBPeripheralStateDisconnected,
-	CBPeripheralStateConnecting,
-	CBPeripheralStateConnected
+	Disconnected,
+	Connecting,
+	Connected
 }
 declare enum CBCharacteristicWriteType {
 	CBCharacteristicWriteWithResponse,
@@ -28401,92 +28401,92 @@ declare enum CBCharacteristicProperties {
 	CBCharacteristicPropertyIndicateEncryptionRequired
 }
 declare enum CBAttributePermissions {
-	CBAttributePermissionsReadable,
-	CBAttributePermissionsWriteable,
-	CBAttributePermissionsReadEncryptionRequired,
-	CBAttributePermissionsWriteEncryptionRequired
+	Readable,
+	Writeable,
+	ReadEncryptionRequired,
+	WriteEncryptionRequired
 }
 declare enum CMAttitudeReferenceFrame {
-	CMAttitudeReferenceFrameXArbitraryZVertical,
-	CMAttitudeReferenceFrameXArbitraryCorrectedZVertical,
-	CMAttitudeReferenceFrameXMagneticNorthZVertical,
-	CMAttitudeReferenceFrameXTrueNorthZVertical
+	XArbitraryZVertical,
+	XArbitraryCorrectedZVertical,
+	XMagneticNorthZVertical,
+	XTrueNorthZVertical
 }
 declare enum CMMagneticFieldCalibrationAccuracy {
-	CMMagneticFieldCalibrationAccuracyUncalibrated,
-	CMMagneticFieldCalibrationAccuracyLow,
-	CMMagneticFieldCalibrationAccuracyMedium,
-	CMMagneticFieldCalibrationAccuracyHigh
+	Uncalibrated,
+	Low,
+	Medium,
+	High
 }
 declare enum CMError {
-	CMErrorNULL,
-	CMErrorDeviceRequiresMovement,
-	CMErrorTrueNorthNotAvailable,
-	CMErrorUnknown,
-	CMErrorMotionActivityNotAvailable,
-	CMErrorMotionActivityNotAuthorized,
-	CMErrorMotionActivityNotEntitled,
-	CMErrorInvalidParameter
+	NULL,
+	DeviceRequiresMovement,
+	TrueNorthNotAvailable,
+	Unknown,
+	MotionActivityNotAvailable,
+	MotionActivityNotAuthorized,
+	MotionActivityNotEntitled,
+	InvalidParameter
 }
 declare enum CMMotionActivityConfidence {
-	CMMotionActivityConfidenceLow,
-	CMMotionActivityConfidenceMedium,
-	CMMotionActivityConfidenceHigh
+	Low,
+	Medium,
+	High
 }
 declare enum EKAuthorizationStatus {
-	EKAuthorizationStatusNotDetermined,
-	EKAuthorizationStatusRestricted,
-	EKAuthorizationStatusDenied,
-	EKAuthorizationStatusAuthorized
+	NotDetermined,
+	Restricted,
+	Denied,
+	Authorized
 }
 declare enum EKRecurrenceFrequency {
-	EKRecurrenceFrequencyDaily,
-	EKRecurrenceFrequencyWeekly,
-	EKRecurrenceFrequencyMonthly,
-	EKRecurrenceFrequencyYearly
+	Daily,
+	Weekly,
+	Monthly,
+	Yearly
 }
 declare enum EKParticipantType {
-	EKParticipantTypeUnknown,
-	EKParticipantTypePerson,
-	EKParticipantTypeRoom,
-	EKParticipantTypeResource,
-	EKParticipantTypeGroup
+	Unknown,
+	Person,
+	Room,
+	Resource,
+	Group
 }
 declare enum EKParticipantRole {
-	EKParticipantRoleUnknown,
-	EKParticipantRoleRequired,
-	EKParticipantRoleOptional,
-	EKParticipantRoleChair,
-	EKParticipantRoleNonParticipant
+	Unknown,
+	Required,
+	Optional,
+	Chair,
+	NonParticipant
 }
 declare enum EKParticipantStatus {
-	EKParticipantStatusUnknown,
-	EKParticipantStatusPending,
-	EKParticipantStatusAccepted,
-	EKParticipantStatusDeclined,
-	EKParticipantStatusTentative,
-	EKParticipantStatusDelegated,
-	EKParticipantStatusCompleted,
-	EKParticipantStatusInProcess
+	Unknown,
+	Pending,
+	Accepted,
+	Declined,
+	Tentative,
+	Delegated,
+	Completed,
+	InProcess
 }
 declare enum EKCalendarType {
-	EKCalendarTypeLocal,
-	EKCalendarTypeCalDAV,
-	EKCalendarTypeExchange,
-	EKCalendarTypeSubscription,
-	EKCalendarTypeBirthday
+	Local,
+	CalDAV,
+	Exchange,
+	Subscription,
+	Birthday
 }
 declare enum EKSourceType {
-	EKSourceTypeLocal,
-	EKSourceTypeExchange,
-	EKSourceTypeCalDAV,
-	EKSourceTypeMobileMe,
-	EKSourceTypeSubscribed,
-	EKSourceTypeBirthdays
+	Local,
+	Exchange,
+	CalDAV,
+	MobileMe,
+	Subscribed,
+	Birthdays
 }
 declare enum EKSpan {
-	EKSpanThisEvent,
-	EKSpanFutureEvents
+	ThisEvent,
+	FutureEvents
 }
 declare enum EKErrorCode {
 	EKErrorEventNotMutable,
@@ -28519,57 +28519,57 @@ declare enum EKErrorCode {
 	EKErrorLast
 }
 declare enum EKEventAvailability {
-	EKEventAvailabilityNotSupported,
-	EKEventAvailabilityBusy,
-	EKEventAvailabilityFree,
-	EKEventAvailabilityTentative,
-	EKEventAvailabilityUnavailable
+	NotSupported,
+	Busy,
+	Free,
+	Tentative,
+	Unavailable
 }
 declare enum EKEventStatus {
-	EKEventStatusNone,
-	EKEventStatusConfirmed,
-	EKEventStatusTentative,
-	EKEventStatusCanceled
+	None,
+	Confirmed,
+	Tentative,
+	Canceled
 }
 declare enum EKEventEditViewAction {
-	EKEventEditViewActionCanceled,
-	EKEventEditViewActionSaved,
-	EKEventEditViewActionDeleted,
-	EKEventEditViewActionCancelled
+	Canceled,
+	Saved,
+	Deleted,
+	Cancelled
 }
 declare enum EKEventViewAction {
-	EKEventViewActionDone,
-	EKEventViewActionResponded,
-	EKEventViewActionDeleted
+	Done,
+	Responded,
+	Deleted
 }
 declare enum EKCalendarChooserSelectionStyle {
-	EKCalendarChooserSelectionStyleSingle,
-	EKCalendarChooserSelectionStyleMultiple
+	Single,
+	Multiple
 }
 declare enum EKCalendarChooserDisplayStyle {
 	EKCalendarChooserDisplayAllCalendars,
 	EKCalendarChooserDisplayWritableCalendarsOnly
 }
 declare enum GKLeaderboardTimeScope {
-	GKLeaderboardTimeScopeToday,
-	GKLeaderboardTimeScopeWeek,
-	GKLeaderboardTimeScopeAllTime
+	Today,
+	Week,
+	AllTime
 }
 declare enum GKLeaderboardPlayerScope {
-	GKLeaderboardPlayerScopeGlobal,
-	GKLeaderboardPlayerScopeFriendsOnly
+	Global,
+	FriendsOnly
 }
 declare enum GKGameCenterViewControllerState {
-	GKGameCenterViewControllerStateDefault,
-	GKGameCenterViewControllerStateLeaderboards,
-	GKGameCenterViewControllerStateAchievements,
-	GKGameCenterViewControllerStateChallenges
+	Default,
+	Leaderboards,
+	Achievements,
+	Challenges
 }
 declare enum GKChallengeState {
-	GKChallengeStateInvalid,
-	GKChallengeStatePending,
-	GKChallengeStateCompleted,
-	GKChallengeStateDeclined
+	Invalid,
+	Pending,
+	Completed,
+	Declined
 }
 declare enum GKErrorCode {
 	GKErrorUnknown,
@@ -28601,46 +28601,46 @@ declare enum GKErrorCode {
 	GKErrorUbiquityContainerUnavailable
 }
 declare enum GKTurnBasedMatchStatus {
-	GKTurnBasedMatchStatusUnknown,
-	GKTurnBasedMatchStatusOpen,
-	GKTurnBasedMatchStatusEnded,
-	GKTurnBasedMatchStatusMatching
+	Unknown,
+	Open,
+	Ended,
+	Matching
 }
 declare enum GKTurnBasedParticipantStatus {
-	GKTurnBasedParticipantStatusUnknown,
-	GKTurnBasedParticipantStatusInvited,
-	GKTurnBasedParticipantStatusDeclined,
-	GKTurnBasedParticipantStatusMatching,
-	GKTurnBasedParticipantStatusActive,
-	GKTurnBasedParticipantStatusDone
+	Unknown,
+	Invited,
+	Declined,
+	Matching,
+	Active,
+	Done
 }
 declare enum GKTurnBasedMatchOutcome {
-	GKTurnBasedMatchOutcomeNone,
-	GKTurnBasedMatchOutcomeQuit,
-	GKTurnBasedMatchOutcomeWon,
-	GKTurnBasedMatchOutcomeLost,
-	GKTurnBasedMatchOutcomeTied,
-	GKTurnBasedMatchOutcomeTimeExpired,
-	GKTurnBasedMatchOutcomeFirst,
-	GKTurnBasedMatchOutcomeSecond,
-	GKTurnBasedMatchOutcomeThird,
-	GKTurnBasedMatchOutcomeFourth,
-	GKTurnBasedMatchOutcomeCustomRange
+	None,
+	Quit,
+	Won,
+	Lost,
+	Tied,
+	TimeExpired,
+	First,
+	Second,
+	Third,
+	Fourth,
+	CustomRange
 }
 declare enum GKTurnBasedExchangeStatus {
-	GKTurnBasedExchangeStatusUnknown,
-	GKTurnBasedExchangeStatusActive,
-	GKTurnBasedExchangeStatusComplete,
-	GKTurnBasedExchangeStatusResolved,
-	GKTurnBasedExchangeStatusCanceled
+	Unknown,
+	Active,
+	Complete,
+	Resolved,
+	Canceled
 }
 declare enum GKInviteRecipientResponse {
-	GKInviteRecipientResponseAccepted,
-	GKInviteRecipientResponseDeclined,
-	GKInviteRecipientResponseFailed,
-	GKInviteRecipientResponseIncompatible,
-	GKInviteRecipientResponseUnableToConnect,
-	GKInviteRecipientResponseNoAnswer,
+	Accepted,
+	Declined,
+	Failed,
+	Incompatible,
+	UnableToConnect,
+	NoAnswer,
 	GKInviteeResponseAccepted,
 	GKInviteeResponseDeclined,
 	GKInviteeResponseFailed,
@@ -28649,9 +28649,9 @@ declare enum GKInviteRecipientResponse {
 	GKInviteeResponseNoAnswer
 }
 declare enum GKMatchType {
-	GKMatchTypePeerToPeer,
-	GKMatchTypeHosted,
-	GKMatchTypeTurnBased
+	PeerToPeer,
+	Hosted,
+	TurnBased
 }
 declare enum GKMatchSendDataMode {
 	GKMatchSendDataReliable,
@@ -28667,9 +28667,9 @@ declare enum GKSendDataMode {
 	GKSendDataUnreliable
 }
 declare enum GKSessionMode {
-	GKSessionModeServer,
-	GKSessionModeClient,
-	GKSessionModePeer
+	Server,
+	Client,
+	Peer
 }
 declare enum GKPeerConnectionState {
 	GKPeerStateAvailable,
@@ -28723,79 +28723,79 @@ declare enum GKVoiceChatPlayerState {
 	GKVoiceChatPlayerConnecting
 }
 declare enum GLKViewDrawableColorFormat {
-	GLKViewDrawableColorFormatRGBA8888,
-	GLKViewDrawableColorFormatRGB565,
-	GLKViewDrawableColorFormatSRGBA8888
+	RGBA8888,
+	RGB565,
+	SRGBA8888
 }
 declare enum GLKViewDrawableDepthFormat {
-	GLKViewDrawableDepthFormatNone,
-	GLKViewDrawableDepthFormat16,
-	GLKViewDrawableDepthFormat24
+	None,
+	t16,
+	t24
 }
 declare enum GLKViewDrawableStencilFormat {
-	GLKViewDrawableStencilFormatNone,
-	GLKViewDrawableStencilFormat8
+	None,
+	t8
 }
 declare enum GLKViewDrawableMultisample {
-	GLKViewDrawableMultisampleNone,
-	GLKViewDrawableMultisample4X
+	None,
+	t4X
 }
 declare enum GLKLightingType {
-	GLKLightingTypePerVertex,
-	GLKLightingTypePerPixel
+	PerVertex,
+	PerPixel
 }
 declare enum GLKTextureTarget {
-	GLKTextureTarget2D,
-	GLKTextureTargetCubeMap,
-	GLKTextureTargetCt
+	t2D,
+	CubeMap,
+	Ct
 }
 declare enum GLKTextureEnvMode {
-	GLKTextureEnvModeReplace,
-	GLKTextureEnvModeModulate,
-	GLKTextureEnvModeDecal
+	Replace,
+	Modulate,
+	Decal
 }
 declare enum GLKFogMode {
-	GLKFogModeExp,
-	GLKFogModeExp2,
-	GLKFogModeLinear
+	Exp,
+	Exp2,
+	Linear
 }
 declare enum GLKVertexAttrib {
-	GLKVertexAttribPosition,
-	GLKVertexAttribNormal,
-	GLKVertexAttribColor,
-	GLKVertexAttribTexCoord0,
-	GLKVertexAttribTexCoord1
+	Position,
+	Normal,
+	Color,
+	TexCoord0,
+	TexCoord1
 }
 declare enum GLKTextureLoaderError {
-	GLKTextureLoaderErrorFileOrURLNotFound,
-	GLKTextureLoaderErrorInvalidNSData,
-	GLKTextureLoaderErrorInvalidCGImage,
-	GLKTextureLoaderErrorUnknownPathType,
-	GLKTextureLoaderErrorUnknownFileType,
-	GLKTextureLoaderErrorPVRAtlasUnsupported,
-	GLKTextureLoaderErrorCubeMapInvalidNumFiles,
-	GLKTextureLoaderErrorCompressedTextureUpload,
-	GLKTextureLoaderErrorUncompressedTextureUpload,
-	GLKTextureLoaderErrorUnsupportedCubeMapDimensions,
-	GLKTextureLoaderErrorUnsupportedBitDepth,
-	GLKTextureLoaderErrorUnsupportedPVRFormat,
-	GLKTextureLoaderErrorDataPreprocessingFailure,
-	GLKTextureLoaderErrorMipmapUnsupported,
-	GLKTextureLoaderErrorUnsupportedOrientation,
-	GLKTextureLoaderErrorReorientationFailure,
-	GLKTextureLoaderErrorAlphaPremultiplicationFailure,
-	GLKTextureLoaderErrorInvalidEAGLContext,
-	GLKTextureLoaderErrorIncompatibleFormatSRGB
+	FileOrURLNotFound,
+	InvalidNSData,
+	InvalidCGImage,
+	UnknownPathType,
+	UnknownFileType,
+	PVRAtlasUnsupported,
+	CubeMapInvalidNumFiles,
+	CompressedTextureUpload,
+	UncompressedTextureUpload,
+	UnsupportedCubeMapDimensions,
+	UnsupportedBitDepth,
+	UnsupportedPVRFormat,
+	DataPreprocessingFailure,
+	MipmapUnsupported,
+	UnsupportedOrientation,
+	ReorientationFailure,
+	AlphaPremultiplicationFailure,
+	InvalidEAGLContext,
+	IncompatibleFormatSRGB
 }
 declare enum GLKTextureInfoAlphaState {
-	GLKTextureInfoAlphaStateNone,
-	GLKTextureInfoAlphaStateNonPremultiplied,
-	GLKTextureInfoAlphaStatePremultiplied
+	None,
+	NonPremultiplied,
+	Premultiplied
 }
 declare enum GLKTextureInfoOrigin {
-	GLKTextureInfoOriginUnknown,
-	GLKTextureInfoOriginTopLeft,
-	GLKTextureInfoOriginBottomLeft
+	Unknown,
+	TopLeft,
+	BottomLeft
 }
 declare enum HKErrorCode {
 	HKNoError,
@@ -28808,98 +28808,98 @@ declare enum HKErrorCode {
 	HKErrorUserCanceled
 }
 declare enum HKUpdateFrequency {
-	HKUpdateFrequencyImmediate,
-	HKUpdateFrequencyHourly,
-	HKUpdateFrequencyDaily,
-	HKUpdateFrequencyWeekly
+	Immediate,
+	Hourly,
+	Daily,
+	Weekly
 }
 declare enum HKAuthorizationStatus {
-	HKAuthorizationStatusNotDetermined,
-	HKAuthorizationStatusSharingDenied,
-	HKAuthorizationStatusSharingAuthorized
+	NotDetermined,
+	SharingDenied,
+	SharingAuthorized
 }
 declare enum HKBiologicalSex {
-	HKBiologicalSexNotSet,
-	HKBiologicalSexFemale,
-	HKBiologicalSexMale
+	NotSet,
+	Female,
+	Male
 }
 declare enum HKBloodType {
-	HKBloodTypeNotSet,
-	HKBloodTypeAPositive,
-	HKBloodTypeANegative,
-	HKBloodTypeBPositive,
-	HKBloodTypeBNegative,
-	HKBloodTypeABPositive,
-	HKBloodTypeABNegative,
-	HKBloodTypeOPositive,
-	HKBloodTypeONegative
+	NotSet,
+	APositive,
+	ANegative,
+	BPositive,
+	BNegative,
+	ABPositive,
+	ABNegative,
+	OPositive,
+	ONegative
 }
 declare enum HKCategoryValueSleepAnalysis {
-	HKCategoryValueSleepAnalysisInBed,
-	HKCategoryValueSleepAnalysisAsleep
+	InBed,
+	Asleep
 }
 declare enum HKWorkoutActivityType {
-	HKWorkoutActivityTypeAmericanFootball,
-	HKWorkoutActivityTypeArchery,
-	HKWorkoutActivityTypeAustralianFootball,
-	HKWorkoutActivityTypeBadminton,
-	HKWorkoutActivityTypeBaseball,
-	HKWorkoutActivityTypeBasketball,
-	HKWorkoutActivityTypeBowling,
-	HKWorkoutActivityTypeBoxing,
-	HKWorkoutActivityTypeClimbing,
-	HKWorkoutActivityTypeCricket,
-	HKWorkoutActivityTypeCrossTraining,
-	HKWorkoutActivityTypeCurling,
-	HKWorkoutActivityTypeCycling,
-	HKWorkoutActivityTypeDance,
-	HKWorkoutActivityTypeDanceInspiredTraining,
-	HKWorkoutActivityTypeElliptical,
-	HKWorkoutActivityTypeEquestrianSports,
-	HKWorkoutActivityTypeFencing,
-	HKWorkoutActivityTypeFishing,
-	HKWorkoutActivityTypeFunctionalStrengthTraining,
-	HKWorkoutActivityTypeGolf,
-	HKWorkoutActivityTypeGymnastics,
-	HKWorkoutActivityTypeHandball,
-	HKWorkoutActivityTypeHiking,
-	HKWorkoutActivityTypeHockey,
-	HKWorkoutActivityTypeHunting,
-	HKWorkoutActivityTypeLacrosse,
-	HKWorkoutActivityTypeMartialArts,
-	HKWorkoutActivityTypeMindAndBody,
-	HKWorkoutActivityTypeMixedMetabolicCardioTraining,
-	HKWorkoutActivityTypePaddleSports,
-	HKWorkoutActivityTypePlay,
-	HKWorkoutActivityTypePreparationAndRecovery,
-	HKWorkoutActivityTypeRacquetball,
-	HKWorkoutActivityTypeRowing,
-	HKWorkoutActivityTypeRugby,
-	HKWorkoutActivityTypeRunning,
-	HKWorkoutActivityTypeSailing,
-	HKWorkoutActivityTypeSkatingSports,
-	HKWorkoutActivityTypeSnowSports,
-	HKWorkoutActivityTypeSoccer,
-	HKWorkoutActivityTypeSoftball,
-	HKWorkoutActivityTypeSquash,
-	HKWorkoutActivityTypeStairClimbing,
-	HKWorkoutActivityTypeSurfingSports,
-	HKWorkoutActivityTypeSwimming,
-	HKWorkoutActivityTypeTableTennis,
-	HKWorkoutActivityTypeTennis,
-	HKWorkoutActivityTypeTrackAndField,
-	HKWorkoutActivityTypeTraditionalStrengthTraining,
-	HKWorkoutActivityTypeVolleyball,
-	HKWorkoutActivityTypeWalking,
-	HKWorkoutActivityTypeWaterFitness,
-	HKWorkoutActivityTypeWaterPolo,
-	HKWorkoutActivityTypeWaterSports,
-	HKWorkoutActivityTypeWrestling,
-	HKWorkoutActivityTypeYoga
+	AmericanFootball,
+	Archery,
+	AustralianFootball,
+	Badminton,
+	Baseball,
+	Basketball,
+	Bowling,
+	Boxing,
+	Climbing,
+	Cricket,
+	CrossTraining,
+	Curling,
+	Cycling,
+	Dance,
+	DanceInspiredTraining,
+	Elliptical,
+	EquestrianSports,
+	Fencing,
+	Fishing,
+	FunctionalStrengthTraining,
+	Golf,
+	Gymnastics,
+	Handball,
+	Hiking,
+	Hockey,
+	Hunting,
+	Lacrosse,
+	MartialArts,
+	MindAndBody,
+	MixedMetabolicCardioTraining,
+	PaddleSports,
+	Play,
+	PreparationAndRecovery,
+	Racquetball,
+	Rowing,
+	Rugby,
+	Running,
+	Sailing,
+	SkatingSports,
+	SnowSports,
+	Soccer,
+	Softball,
+	Squash,
+	StairClimbing,
+	SurfingSports,
+	Swimming,
+	TableTennis,
+	Tennis,
+	TrackAndField,
+	TraditionalStrengthTraining,
+	Volleyball,
+	Walking,
+	WaterFitness,
+	WaterPolo,
+	WaterSports,
+	Wrestling,
+	Yoga
 }
 declare enum HKWorkoutEventType {
-	HKWorkoutEventTypePause,
-	HKWorkoutEventTypeResume
+	Pause,
+	Resume
 }
 declare enum HKQueryOptions {
 	HKQueryOptionNone,
@@ -28907,31 +28907,31 @@ declare enum HKQueryOptions {
 	HKQueryOptionStrictEndDate
 }
 declare enum HKBodyTemperatureSensorLocation {
-	HKBodyTemperatureSensorLocationOther,
-	HKBodyTemperatureSensorLocationArmpit,
-	HKBodyTemperatureSensorLocationBody,
-	HKBodyTemperatureSensorLocationEar,
-	HKBodyTemperatureSensorLocationFinger,
-	HKBodyTemperatureSensorLocationGastroIntestinal,
-	HKBodyTemperatureSensorLocationMouth,
-	HKBodyTemperatureSensorLocationRectum,
-	HKBodyTemperatureSensorLocationToe,
-	HKBodyTemperatureSensorLocationEarDrum,
-	HKBodyTemperatureSensorLocationTemporalArtery,
-	HKBodyTemperatureSensorLocationForehead
+	Other,
+	Armpit,
+	Body,
+	Ear,
+	Finger,
+	GastroIntestinal,
+	Mouth,
+	Rectum,
+	Toe,
+	EarDrum,
+	TemporalArtery,
+	Forehead
 }
 declare enum HKHeartRateSensorLocation {
-	HKHeartRateSensorLocationOther,
-	HKHeartRateSensorLocationChest,
-	HKHeartRateSensorLocationWrist,
-	HKHeartRateSensorLocationFinger,
-	HKHeartRateSensorLocationHand,
-	HKHeartRateSensorLocationEarLobe,
-	HKHeartRateSensorLocationFoot
+	Other,
+	Chest,
+	Wrist,
+	Finger,
+	Hand,
+	EarLobe,
+	Foot
 }
 declare enum HKQuantityAggregationStyle {
-	HKQuantityAggregationStyleCumulative,
-	HKQuantityAggregationStyleDiscrete
+	Cumulative,
+	Discrete
 }
 declare enum HKStatisticsOptions {
 	HKStatisticsOptionNone,
@@ -28942,262 +28942,262 @@ declare enum HKStatisticsOptions {
 	HKStatisticsOptionCumulativeSum
 }
 declare enum HKMetricPrefix {
-	HKMetricPrefixNone,
-	HKMetricPrefixPico,
-	HKMetricPrefixNano,
-	HKMetricPrefixMicro,
-	HKMetricPrefixMilli,
-	HKMetricPrefixCenti,
-	HKMetricPrefixDeci,
-	HKMetricPrefixDeca,
-	HKMetricPrefixHecto,
-	HKMetricPrefixKilo,
-	HKMetricPrefixMega,
-	HKMetricPrefixGiga,
-	HKMetricPrefixTera
+	None,
+	Pico,
+	Nano,
+	Micro,
+	Milli,
+	Centi,
+	Deci,
+	Deca,
+	Hecto,
+	Kilo,
+	Mega,
+	Giga,
+	Tera
 }
 declare enum HMCharacteristicValueDoorState {
-	HMCharacteristicValueDoorStateOpen,
-	HMCharacteristicValueDoorStateClosed,
-	HMCharacteristicValueDoorStateOpening,
-	HMCharacteristicValueDoorStateClosing,
-	HMCharacteristicValueDoorStateStopped
+	Open,
+	Closed,
+	Opening,
+	Closing,
+	Stopped
 }
 declare enum HMCharacteristicValueHeatingCooling {
-	HMCharacteristicValueHeatingCoolingOff,
-	HMCharacteristicValueHeatingCoolingHeat,
-	HMCharacteristicValueHeatingCoolingCool,
-	HMCharacteristicValueHeatingCoolingAuto
+	Off,
+	Heat,
+	Cool,
+	Auto
 }
 declare enum HMCharacteristicValueRotationDirection {
-	HMCharacteristicValueRotationDirectionClockwise,
-	HMCharacteristicValueRotationDirectionCounterClockwise
+	Clockwise,
+	CounterClockwise
 }
 declare enum HMCharacteristicValueTemperatureUnit {
-	HMCharacteristicValueTemperatureUnitCelsius,
-	HMCharacteristicValueTemperatureUnitFahrenheit
+	Celsius,
+	Fahrenheit
 }
 declare enum HMCharacteristicValueLockMechanismState {
-	HMCharacteristicValueLockMechanismStateUnsecured,
-	HMCharacteristicValueLockMechanismStateSecured,
-	HMCharacteristicValueLockMechanismStateJammed,
-	HMCharacteristicValueLockMechanismStateUnknown
+	Unsecured,
+	Secured,
+	Jammed,
+	Unknown
 }
 declare enum HMCharacteristicValueLockMechanism {
-	HMCharacteristicValueLockMechanismLastKnownActionSecuredUsingPhysicalMovementInterior,
-	HMCharacteristicValueLockMechanismLastKnownActionUnsecuredUsingPhysicalMovementInterior,
-	HMCharacteristicValueLockMechanismLastKnownActionSecuredUsingPhysicalMovementExterior,
-	HMCharacteristicValueLockMechanismLastKnownActionUnsecuredUsingPhysicalMovementExterior,
-	HMCharacteristicValueLockMechanismLastKnownActionSecuredWithKeypad,
-	HMCharacteristicValueLockMechanismLastKnownActionUnsecuredWithKeypad,
-	HMCharacteristicValueLockMechanismLastKnownActionSecuredRemotely,
-	HMCharacteristicValueLockMechanismLastKnownActionUnsecuredRemotely,
-	HMCharacteristicValueLockMechanismLastKnownActionSecuredWithAutomaticSecureTimeout
+	LastKnownActionSecuredUsingPhysicalMovementInterior,
+	LastKnownActionUnsecuredUsingPhysicalMovementInterior,
+	LastKnownActionSecuredUsingPhysicalMovementExterior,
+	LastKnownActionUnsecuredUsingPhysicalMovementExterior,
+	LastKnownActionSecuredWithKeypad,
+	LastKnownActionUnsecuredWithKeypad,
+	LastKnownActionSecuredRemotely,
+	LastKnownActionUnsecuredRemotely,
+	LastKnownActionSecuredWithAutomaticSecureTimeout
 }
 declare enum HMErrorCode {
-	HMErrorCodeAlreadyExists,
-	HMErrorCodeNotFound,
-	HMErrorCodeInvalidParameter,
-	HMErrorCodeAccessoryNotReachable,
-	HMErrorCodeReadOnlyCharacteristic,
-	HMErrorCodeWriteOnlyCharacteristic,
-	HMErrorCodeNotificationNotSupported,
-	HMErrorCodeOperationTimedOut,
-	HMErrorCodeAccessoryPoweredOff,
-	HMErrorCodeAccessDenied,
-	HMErrorCodeObjectAssociatedToAnotherHome,
-	HMErrorCodeObjectNotAssociatedToAnyHome,
-	HMErrorCodeObjectAlreadyAssociatedToHome,
-	HMErrorCodeAccessoryIsBusy,
-	HMErrorCodeOperationInProgress,
-	HMErrorCodeAccessoryOutOfResources,
-	HMErrorCodeInsufficientPrivileges,
-	HMErrorCodeAccessoryPairingFailed,
-	HMErrorCodeInvalidDataFormatSpecified,
-	HMErrorCodeNilParameter,
-	HMErrorCodeUnconfiguredParameter,
-	HMErrorCodeInvalidClass,
-	HMErrorCodeOperationCancelled,
-	HMErrorCodeRoomForHomeCannotBeInZone,
-	HMErrorCodeNoActionsInActionSet,
-	HMErrorCodeNoRegisteredActionSets,
-	HMErrorCodeMissingParameter,
-	HMErrorCodeFireDateInPast,
-	HMErrorCodeRoomForHomeCannotBeUpdated,
-	HMErrorCodeActionInAnotherActionSet,
-	HMErrorCodeObjectWithSimilarNameExistsInHome,
-	HMErrorCodeHomeWithSimilarNameExists,
-	HMErrorCodeRenameWithSimilarName,
-	HMErrorCodeCannotRemoveNonBridgeAccessory,
-	HMErrorCodeNameContainsProhibitedCharacters,
-	HMErrorCodeNameDoesNotStartWithValidCharacters,
-	HMErrorCodeUserIDNotEmailAddress,
-	HMErrorCodeUserDeclinedAddingUser,
-	HMErrorCodeUserDeclinedRemovingUser,
-	HMErrorCodeUserDeclinedInvite,
-	HMErrorCodeUserManagementFailed,
-	HMErrorCodeRecurrenceTooSmall,
-	HMErrorCodeInvalidValueType,
-	HMErrorCodeValueLowerThanMinimum,
-	HMErrorCodeValueHigherThanMaximum,
-	HMErrorCodeStringLongerThanMaximum,
-	HMErrorCodeHomeAccessNotAuthorized,
-	HMErrorCodeOperationNotSupported,
-	HMErrorCodeMaximumObjectLimitReached,
-	HMErrorCodeAccessorySentInvalidResponse,
-	HMErrorCodeStringShorterThanMinimum,
-	HMErrorCodeGenericError,
-	HMErrorCodeSecurityFailure,
-	HMErrorCodeCommunicationFailure,
-	HMErrorCodeMessageAuthenticationFailed,
-	HMErrorCodeInvalidMessageSize,
-	HMErrorCodeAccessoryDiscoveryFailed,
-	HMErrorCodeClientRequestError,
-	HMErrorCodeAccessoryResponseError,
-	HMErrorCodeNameDoesNotEndWithValidCharacters,
-	HMErrorCodeAccessoryIsBlocked,
-	HMErrorCodeInvalidAssociatedServiceType,
-	HMErrorCodeActionSetExecutionFailed,
-	HMErrorCodeActionSetExecutionPartialSuccess,
-	HMErrorCodeActionSetExecutionInProgress,
-	HMErrorCodeAccessoryOutOfCompliance,
-	HMErrorCodeDataResetFailure,
-	HMErrorCodeNotificationAlreadyEnabled,
-	HMErrorCodeRecurrenceMustBeOnSpecifiedBoundaries,
-	HMErrorCodeDateMustBeOnSpecifiedBoundaries,
-	HMErrorCodeCannotActivateTriggerTooFarInFuture,
-	HMErrorCodeRecurrenceTooLarge,
-	HMErrorCodeReadWritePartialSuccess,
-	HMErrorCodeReadWriteFailure,
-	HMErrorCodeNotSignedIntoiCloud,
-	HMErrorCodeKeychainSyncNotEnabled,
-	HMErrorCodeCloudDataSyncInProgress,
-	HMErrorCodeNetworkUnavailable,
-	HMErrorCodeAddAccessoryFailed,
-	HMErrorCodeMissingEntitlement
+	AlreadyExists,
+	NotFound,
+	InvalidParameter,
+	AccessoryNotReachable,
+	ReadOnlyCharacteristic,
+	WriteOnlyCharacteristic,
+	NotificationNotSupported,
+	OperationTimedOut,
+	AccessoryPoweredOff,
+	AccessDenied,
+	ObjectAssociatedToAnotherHome,
+	ObjectNotAssociatedToAnyHome,
+	ObjectAlreadyAssociatedToHome,
+	AccessoryIsBusy,
+	OperationInProgress,
+	AccessoryOutOfResources,
+	InsufficientPrivileges,
+	AccessoryPairingFailed,
+	InvalidDataFormatSpecified,
+	NilParameter,
+	UnconfiguredParameter,
+	InvalidClass,
+	OperationCancelled,
+	RoomForHomeCannotBeInZone,
+	NoActionsInActionSet,
+	NoRegisteredActionSets,
+	MissingParameter,
+	FireDateInPast,
+	RoomForHomeCannotBeUpdated,
+	ActionInAnotherActionSet,
+	ObjectWithSimilarNameExistsInHome,
+	HomeWithSimilarNameExists,
+	RenameWithSimilarName,
+	CannotRemoveNonBridgeAccessory,
+	NameContainsProhibitedCharacters,
+	NameDoesNotStartWithValidCharacters,
+	UserIDNotEmailAddress,
+	UserDeclinedAddingUser,
+	UserDeclinedRemovingUser,
+	UserDeclinedInvite,
+	UserManagementFailed,
+	RecurrenceTooSmall,
+	InvalidValueType,
+	ValueLowerThanMinimum,
+	ValueHigherThanMaximum,
+	StringLongerThanMaximum,
+	HomeAccessNotAuthorized,
+	OperationNotSupported,
+	MaximumObjectLimitReached,
+	AccessorySentInvalidResponse,
+	StringShorterThanMinimum,
+	GenericError,
+	SecurityFailure,
+	CommunicationFailure,
+	MessageAuthenticationFailed,
+	InvalidMessageSize,
+	AccessoryDiscoveryFailed,
+	ClientRequestError,
+	AccessoryResponseError,
+	NameDoesNotEndWithValidCharacters,
+	AccessoryIsBlocked,
+	InvalidAssociatedServiceType,
+	ActionSetExecutionFailed,
+	ActionSetExecutionPartialSuccess,
+	ActionSetExecutionInProgress,
+	AccessoryOutOfCompliance,
+	DataResetFailure,
+	NotificationAlreadyEnabled,
+	RecurrenceMustBeOnSpecifiedBoundaries,
+	DateMustBeOnSpecifiedBoundaries,
+	CannotActivateTriggerTooFarInFuture,
+	RecurrenceTooLarge,
+	ReadWritePartialSuccess,
+	ReadWriteFailure,
+	NotSignedIntoiCloud,
+	KeychainSyncNotEnabled,
+	CloudDataSyncInProgress,
+	NetworkUnavailable,
+	AddAccessoryFailed,
+	MissingEntitlement
 }
 declare enum MPMediaType {
-	MPMediaTypeMusic,
-	MPMediaTypePodcast,
-	MPMediaTypeAudioBook,
-	MPMediaTypeAudioITunesU,
-	MPMediaTypeAnyAudio,
-	MPMediaTypeMovie,
-	MPMediaTypeTVShow,
-	MPMediaTypeVideoPodcast,
-	MPMediaTypeMusicVideo,
-	MPMediaTypeVideoITunesU,
-	MPMediaTypeHomeVideo,
-	MPMediaTypeAnyVideo,
-	MPMediaTypeAny
+	Music,
+	Podcast,
+	AudioBook,
+	AudioITunesU,
+	AnyAudio,
+	Movie,
+	TVShow,
+	VideoPodcast,
+	MusicVideo,
+	VideoITunesU,
+	HomeVideo,
+	AnyVideo,
+	Any
 }
 declare enum MPMediaPlaylistAttribute {
-	MPMediaPlaylistAttributeNone,
-	MPMediaPlaylistAttributeOnTheGo,
-	MPMediaPlaylistAttributeSmart,
-	MPMediaPlaylistAttributeGenius
+	None,
+	OnTheGo,
+	Smart,
+	Genius
 }
 declare enum MPMediaGrouping {
-	MPMediaGroupingTitle,
-	MPMediaGroupingAlbum,
-	MPMediaGroupingArtist,
-	MPMediaGroupingAlbumArtist,
-	MPMediaGroupingComposer,
-	MPMediaGroupingGenre,
-	MPMediaGroupingPlaylist,
-	MPMediaGroupingPodcastTitle
+	Title,
+	Album,
+	Artist,
+	AlbumArtist,
+	Composer,
+	Genre,
+	Playlist,
+	PodcastTitle
 }
 declare enum MPMediaPredicateComparison {
-	MPMediaPredicateComparisonEqualTo,
-	MPMediaPredicateComparisonContains
+	EqualTo,
+	Contains
 }
 declare enum MPMovieScalingMode {
-	MPMovieScalingModeNone,
-	MPMovieScalingModeAspectFit,
-	MPMovieScalingModeAspectFill,
-	MPMovieScalingModeFill
+	None,
+	AspectFit,
+	AspectFill,
+	Fill
 }
 declare enum MPMoviePlaybackState {
-	MPMoviePlaybackStateStopped,
-	MPMoviePlaybackStatePlaying,
-	MPMoviePlaybackStatePaused,
-	MPMoviePlaybackStateInterrupted,
-	MPMoviePlaybackStateSeekingForward,
-	MPMoviePlaybackStateSeekingBackward
+	Stopped,
+	Playing,
+	Paused,
+	Interrupted,
+	SeekingForward,
+	SeekingBackward
 }
 declare enum MPMovieLoadState {
-	MPMovieLoadStateUnknown,
-	MPMovieLoadStatePlayable,
-	MPMovieLoadStatePlaythroughOK,
-	MPMovieLoadStateStalled
+	Unknown,
+	Playable,
+	PlaythroughOK,
+	Stalled
 }
 declare enum MPMovieRepeatMode {
-	MPMovieRepeatModeNone,
-	MPMovieRepeatModeOne
+	None,
+	One
 }
 declare enum MPMovieControlStyle {
-	MPMovieControlStyleNone,
-	MPMovieControlStyleEmbedded,
-	MPMovieControlStyleFullscreen,
-	MPMovieControlStyleDefault
+	None,
+	Embedded,
+	Fullscreen,
+	Default
 }
 declare enum MPMovieFinishReason {
-	MPMovieFinishReasonPlaybackEnded,
-	MPMovieFinishReasonPlaybackError,
-	MPMovieFinishReasonUserExited
+	PlaybackEnded,
+	PlaybackError,
+	UserExited
 }
 declare enum MPMovieMediaTypeMask {
-	MPMovieMediaTypeMaskNone,
-	MPMovieMediaTypeMaskVideo,
-	MPMovieMediaTypeMaskAudio
+	None,
+	Video,
+	Audio
 }
 declare enum MPMovieSourceType {
-	MPMovieSourceTypeUnknown,
-	MPMovieSourceTypeFile,
-	MPMovieSourceTypeStreaming
+	Unknown,
+	File,
+	Streaming
 }
 declare enum MPMovieTimeOption {
-	MPMovieTimeOptionNearestKeyFrame,
-	MPMovieTimeOptionExact
+	NearestKeyFrame,
+	Exact
 }
 declare enum MPMusicPlaybackState {
-	MPMusicPlaybackStateStopped,
-	MPMusicPlaybackStatePlaying,
-	MPMusicPlaybackStatePaused,
-	MPMusicPlaybackStateInterrupted,
-	MPMusicPlaybackStateSeekingForward,
-	MPMusicPlaybackStateSeekingBackward
+	Stopped,
+	Playing,
+	Paused,
+	Interrupted,
+	SeekingForward,
+	SeekingBackward
 }
 declare enum MPMusicRepeatMode {
-	MPMusicRepeatModeDefault,
-	MPMusicRepeatModeNone,
-	MPMusicRepeatModeOne,
-	MPMusicRepeatModeAll
+	Default,
+	None,
+	One,
+	All
 }
 declare enum MPMusicShuffleMode {
-	MPMusicShuffleModeDefault,
-	MPMusicShuffleModeOff,
-	MPMusicShuffleModeSongs,
-	MPMusicShuffleModeAlbums
+	Default,
+	Off,
+	Songs,
+	Albums
 }
 declare enum MPRemoteCommandHandlerStatus {
-	MPRemoteCommandHandlerStatusSuccess,
-	MPRemoteCommandHandlerStatusNoSuchContent,
-	MPRemoteCommandHandlerStatusCommandFailed
+	Success,
+	NoSuchContent,
+	CommandFailed
 }
 declare enum MPSeekCommandEventType {
-	MPSeekCommandEventTypeBeginSeeking,
-	MPSeekCommandEventTypeEndSeeking
+	BeginSeeking,
+	EndSeeking
 }
 declare enum CGImageMetadataType {
-	kCGImageMetadataTypeInvalid,
-	kCGImageMetadataTypeDefault,
-	kCGImageMetadataTypeString,
-	kCGImageMetadataTypeArrayUnordered,
-	kCGImageMetadataTypeArrayOrdered,
-	kCGImageMetadataTypeAlternateArray,
-	kCGImageMetadataTypeAlternateText,
-	kCGImageMetadataTypeStructure
+	Invalid,
+	Default,
+	String,
+	ArrayUnordered,
+	ArrayOrdered,
+	AlternateArray,
+	AlternateText,
+	Structure
 }
 declare enum CGImageMetadataErrors {
 	kCGImageMetadataErrorUnknown,
@@ -29215,57 +29215,57 @@ declare enum CGImageSourceStatus {
 	kCGImageStatusComplete
 }
 declare enum CGImagePropertyOrientation {
-	kCGImagePropertyOrientationUp,
-	kCGImagePropertyOrientationUpMirrored,
-	kCGImagePropertyOrientationDown,
-	kCGImagePropertyOrientationDownMirrored,
-	kCGImagePropertyOrientationLeftMirrored,
-	kCGImagePropertyOrientationRight,
-	kCGImagePropertyOrientationRightMirrored,
-	kCGImagePropertyOrientationLeft
+	Up,
+	UpMirrored,
+	Down,
+	DownMirrored,
+	LeftMirrored,
+	Right,
+	RightMirrored,
+	Left
 }
 declare enum JSType {
-	kJSTypeUndefined,
-	kJSTypeNull,
-	kJSTypeBoolean,
-	kJSTypeNumber,
-	kJSTypeString,
-	kJSTypeObject
+	Undefined,
+	Null,
+	Boolean,
+	Number,
+	String,
+	Object
 }
 declare enum LAPolicy {
-	LAPolicyDeviceOwnerAuthenticationWithBiometrics
+	DeviceOwnerAuthenticationWithBiometrics
 }
 declare enum LAError {
-	LAErrorAuthenticationFailed,
-	LAErrorUserCancel,
-	LAErrorUserFallback,
-	LAErrorSystemCancel,
-	LAErrorPasscodeNotSet,
-	LAErrorTouchIDNotAvailable,
-	LAErrorTouchIDNotEnrolled
+	AuthenticationFailed,
+	UserCancel,
+	UserFallback,
+	SystemCancel,
+	PasscodeNotSet,
+	TouchIDNotAvailable,
+	TouchIDNotEnrolled
 }
 declare enum MKAnnotationViewDragState {
-	MKAnnotationViewDragStateNone,
-	MKAnnotationViewDragStateStarting,
-	MKAnnotationViewDragStateDragging,
-	MKAnnotationViewDragStateCanceling,
-	MKAnnotationViewDragStateEnding
+	None,
+	Starting,
+	Dragging,
+	Canceling,
+	Ending
 }
 declare enum MKDistanceFormatterUnits {
-	MKDistanceFormatterUnitsDefault,
-	MKDistanceFormatterUnitsMetric,
-	MKDistanceFormatterUnitsImperial,
-	MKDistanceFormatterUnitsImperialWithYards
+	Default,
+	Metric,
+	Imperial,
+	ImperialWithYards
 }
 declare enum MKDistanceFormatterUnitStyle {
-	MKDistanceFormatterUnitStyleDefault,
-	MKDistanceFormatterUnitStyleAbbreviated,
-	MKDistanceFormatterUnitStyleFull
+	Default,
+	Abbreviated,
+	Full
 }
 declare enum MKMapType {
-	MKMapTypeStandard,
-	MKMapTypeSatellite,
-	MKMapTypeHybrid
+	Standard,
+	Satellite,
+	Hybrid
 }
 declare enum MKErrorCode {
 	MKErrorUnknown,
@@ -29275,69 +29275,69 @@ declare enum MKErrorCode {
 	MKErrorDirectionsNotFound
 }
 declare enum MKUserTrackingMode {
-	MKUserTrackingModeNone,
-	MKUserTrackingModeFollow,
-	MKUserTrackingModeFollowWithHeading
+	None,
+	Follow,
+	FollowWithHeading
 }
 declare enum MKOverlayLevel {
-	MKOverlayLevelAboveRoads,
-	MKOverlayLevelAboveLabels
+	AboveRoads,
+	AboveLabels
 }
 declare enum MKPinAnnotationColor {
-	MKPinAnnotationColorRed,
-	MKPinAnnotationColorGreen,
-	MKPinAnnotationColorPurple
+	Red,
+	Green,
+	Purple
 }
 declare enum MKDirectionsTransportType {
-	MKDirectionsTransportTypeAutomobile,
-	MKDirectionsTransportTypeWalking,
-	MKDirectionsTransportTypeAny
+	Automobile,
+	Walking,
+	Any
 }
 declare enum MACaptionAppearanceDomain {
-	kMACaptionAppearanceDomainDefault,
-	kMACaptionAppearanceDomainUser
+	Default,
+	User
 }
 declare enum MACaptionAppearanceDisplayType {
-	kMACaptionAppearanceDisplayTypeForcedOnly,
-	kMACaptionAppearanceDisplayTypeAutomatic,
-	kMACaptionAppearanceDisplayTypeAlwaysOn
+	ForcedOnly,
+	Automatic,
+	AlwaysOn
 }
 declare enum MACaptionAppearanceBehavior {
-	kMACaptionAppearanceBehaviorUseValue,
-	kMACaptionAppearanceBehaviorUseContentIfAvailable
+	UseValue,
+	UseContentIfAvailable
 }
 declare enum MACaptionAppearanceFontStyle {
-	kMACaptionAppearanceFontStyleDefault,
-	kMACaptionAppearanceFontStyleMonospacedWithSerif,
-	kMACaptionAppearanceFontStyleProportionalWithSerif,
-	kMACaptionAppearanceFontStyleMonospacedWithoutSerif,
-	kMACaptionAppearanceFontStyleProportionalWithoutSerif,
-	kMACaptionAppearanceFontStyleCasual,
-	kMACaptionAppearanceFontStyleCursive,
-	kMACaptionAppearanceFontStyleSmallCapital
+	Default,
+	MonospacedWithSerif,
+	ProportionalWithSerif,
+	MonospacedWithoutSerif,
+	ProportionalWithoutSerif,
+	Casual,
+	Cursive,
+	SmallCapital
 }
 declare enum MACaptionAppearanceTextEdgeStyle {
-	kMACaptionAppearanceTextEdgeStyleUndefined,
-	kMACaptionAppearanceTextEdgeStyleNone,
-	kMACaptionAppearanceTextEdgeStyleRaised,
-	kMACaptionAppearanceTextEdgeStyleDepressed,
-	kMACaptionAppearanceTextEdgeStyleUniform,
-	kMACaptionAppearanceTextEdgeStyleDropShadow
+	Undefined,
+	None,
+	Raised,
+	Depressed,
+	Uniform,
+	DropShadow
 }
 declare enum MFMailComposeResult {
-	MFMailComposeResultCancelled,
-	MFMailComposeResultSaved,
-	MFMailComposeResultSent,
-	MFMailComposeResultFailed
+	Cancelled,
+	Saved,
+	Sent,
+	Failed
 }
 declare enum MFMailComposeErrorCode {
-	MFMailComposeErrorCodeSaveFailed,
-	MFMailComposeErrorCodeSendFailed
+	SaveFailed,
+	SendFailed
 }
 declare enum MessageComposeResult {
-	MessageComposeResultCancelled,
-	MessageComposeResultSent,
-	MessageComposeResultFailed
+	Cancelled,
+	Sent,
+	Failed
 }
 declare enum MCErrorCode {
 	MCErrorUnknown,
@@ -29353,9 +29353,9 @@ declare enum MCSessionSendDataMode {
 	MCSessionSendDataUnreliable
 }
 declare enum MCSessionState {
-	MCSessionStateNotConnected,
-	MCSessionStateConnecting,
-	MCSessionStateConnected
+	NotConnected,
+	Connecting,
+	Connected
 }
 declare enum MCEncryptionPreference {
 	MCEncryptionOptional,
@@ -29363,229 +29363,229 @@ declare enum MCEncryptionPreference {
 	MCEncryptionNone
 }
 declare enum NEVPNError {
-	NEVPNErrorConfigurationInvalid,
-	NEVPNErrorConfigurationDisabled,
-	NEVPNErrorConnectionFailed,
-	NEVPNErrorConfigurationStale
+	ConfigurationInvalid,
+	ConfigurationDisabled,
+	ConnectionFailed,
+	ConfigurationStale
 }
 declare enum NEVPNStatus {
-	NEVPNStatusInvalid,
-	NEVPNStatusDisconnected,
-	NEVPNStatusConnecting,
-	NEVPNStatusConnected,
-	NEVPNStatusReasserting,
-	NEVPNStatusDisconnecting
+	Invalid,
+	Disconnected,
+	Connecting,
+	Connected,
+	Reasserting,
+	Disconnecting
 }
 declare enum NEVPNIKEAuthenticationMethod {
-	NEVPNIKEAuthenticationMethodNone,
-	NEVPNIKEAuthenticationMethodCertificate,
-	NEVPNIKEAuthenticationMethodSharedSecret
+	None,
+	Certificate,
+	SharedSecret
 }
 declare enum NEVPNIKEv2EncryptionAlgorithm {
-	NEVPNIKEv2EncryptionAlgorithmDES,
-	NEVPNIKEv2EncryptionAlgorithm3DES,
-	NEVPNIKEv2EncryptionAlgorithmAES128,
-	NEVPNIKEv2EncryptionAlgorithmAES256
+	DES,
+	t3DES,
+	AES128,
+	AES256
 }
 declare enum NEVPNIKEv2IntegrityAlgorithm {
-	NEVPNIKEv2IntegrityAlgorithmSHA96,
-	NEVPNIKEv2IntegrityAlgorithmSHA160,
-	NEVPNIKEv2IntegrityAlgorithmSHA256,
-	NEVPNIKEv2IntegrityAlgorithmSHA384,
-	NEVPNIKEv2IntegrityAlgorithmSHA512
+	SHA96,
+	SHA160,
+	SHA256,
+	SHA384,
+	SHA512
 }
 declare enum NEVPNIKEv2DeadPeerDetectionRate {
-	NEVPNIKEv2DeadPeerDetectionRateNone,
-	NEVPNIKEv2DeadPeerDetectionRateLow,
-	NEVPNIKEv2DeadPeerDetectionRateMedium,
-	NEVPNIKEv2DeadPeerDetectionRateHigh
+	None,
+	Low,
+	Medium,
+	High
 }
 declare enum NEVPNIKEv2DiffieHellmanGroup {
-	NEVPNIKEv2DiffieHellmanGroup0,
-	NEVPNIKEv2DiffieHellmanGroup1,
-	NEVPNIKEv2DiffieHellmanGroup2,
-	NEVPNIKEv2DiffieHellmanGroup5,
-	NEVPNIKEv2DiffieHellmanGroup14,
-	NEVPNIKEv2DiffieHellmanGroup15,
-	NEVPNIKEv2DiffieHellmanGroup16,
-	NEVPNIKEv2DiffieHellmanGroup17,
-	NEVPNIKEv2DiffieHellmanGroup18
+	t0,
+	t1,
+	t2,
+	t5,
+	t14,
+	t15,
+	t16,
+	t17,
+	t18
 }
 declare enum NEOnDemandRuleAction {
-	NEOnDemandRuleActionConnect,
-	NEOnDemandRuleActionDisconnect,
-	NEOnDemandRuleActionEvaluateConnection,
-	NEOnDemandRuleActionIgnore
+	Connect,
+	Disconnect,
+	EvaluateConnection,
+	Ignore
 }
 declare enum NEOnDemandRuleInterfaceType {
-	NEOnDemandRuleInterfaceTypeWiFi,
-	NEOnDemandRuleInterfaceTypeCellular
+	WiFi,
+	Cellular
 }
 declare enum NEEvaluateConnectionRuleAction {
-	NEEvaluateConnectionRuleActionConnectIfNeeded,
-	NEEvaluateConnectionRuleActionNeverConnect
+	ConnectIfNeeded,
+	NeverConnect
 }
 declare enum NCUpdateResult {
-	NCUpdateResultNewData,
-	NCUpdateResultNoData,
-	NCUpdateResultFailed
+	NewData,
+	NoData,
+	Failed
 }
 declare enum PHAuthorizationStatus {
-	PHAuthorizationStatusNotDetermined,
-	PHAuthorizationStatusRestricted,
-	PHAuthorizationStatusDenied,
-	PHAuthorizationStatusAuthorized
+	NotDetermined,
+	Restricted,
+	Denied,
+	Authorized
 }
 declare enum PHCollectionListType {
-	PHCollectionListTypeMomentList,
-	PHCollectionListTypeFolder,
-	PHCollectionListTypeSmartFolder
+	MomentList,
+	Folder,
+	SmartFolder
 }
 declare enum PHCollectionListSubtype {
-	PHCollectionListSubtypeMomentListCluster,
-	PHCollectionListSubtypeMomentListYear,
-	PHCollectionListSubtypeRegularFolder,
-	PHCollectionListSubtypeSmartFolderEvents,
-	PHCollectionListSubtypeSmartFolderFaces,
-	PHCollectionListSubtypeAny
+	MomentListCluster,
+	MomentListYear,
+	RegularFolder,
+	SmartFolderEvents,
+	SmartFolderFaces,
+	Any
 }
 declare enum PHCollectionEditOperation {
-	PHCollectionEditOperationDeleteContent,
-	PHCollectionEditOperationRemoveContent,
-	PHCollectionEditOperationAddContent,
-	PHCollectionEditOperationCreateContent,
-	PHCollectionEditOperationRearrangeContent,
-	PHCollectionEditOperationDelete,
-	PHCollectionEditOperationRename
+	DeleteContent,
+	RemoveContent,
+	AddContent,
+	CreateContent,
+	RearrangeContent,
+	Delete,
+	Rename
 }
 declare enum PHAssetCollectionType {
-	PHAssetCollectionTypeAlbum,
-	PHAssetCollectionTypeSmartAlbum,
-	PHAssetCollectionTypeMoment
+	Album,
+	SmartAlbum,
+	Moment
 }
 declare enum PHAssetCollectionSubtype {
-	PHAssetCollectionSubtypeAlbumRegular,
-	PHAssetCollectionSubtypeAlbumSyncedEvent,
-	PHAssetCollectionSubtypeAlbumSyncedFaces,
-	PHAssetCollectionSubtypeAlbumSyncedAlbum,
-	PHAssetCollectionSubtypeAlbumImported,
-	PHAssetCollectionSubtypeAlbumCloudShared,
-	PHAssetCollectionSubtypeSmartAlbumGeneric,
-	PHAssetCollectionSubtypeSmartAlbumPanoramas,
-	PHAssetCollectionSubtypeSmartAlbumVideos,
-	PHAssetCollectionSubtypeSmartAlbumFavorites,
-	PHAssetCollectionSubtypeSmartAlbumTimelapses,
-	PHAssetCollectionSubtypeSmartAlbumAllHidden,
-	PHAssetCollectionSubtypeSmartAlbumRecentlyAdded,
-	PHAssetCollectionSubtypeSmartAlbumBursts,
-	PHAssetCollectionSubtypeSmartAlbumSlomoVideos,
-	PHAssetCollectionSubtypeAny
+	AlbumRegular,
+	AlbumSyncedEvent,
+	AlbumSyncedFaces,
+	AlbumSyncedAlbum,
+	AlbumImported,
+	AlbumCloudShared,
+	SmartAlbumGeneric,
+	SmartAlbumPanoramas,
+	SmartAlbumVideos,
+	SmartAlbumFavorites,
+	SmartAlbumTimelapses,
+	SmartAlbumAllHidden,
+	SmartAlbumRecentlyAdded,
+	SmartAlbumBursts,
+	SmartAlbumSlomoVideos,
+	Any
 }
 declare enum PHAssetEditOperation {
-	PHAssetEditOperationDelete,
-	PHAssetEditOperationContent,
-	PHAssetEditOperationProperties
+	Delete,
+	Content,
+	Properties
 }
 declare enum PHAssetMediaType {
-	PHAssetMediaTypeUnknown,
-	PHAssetMediaTypeImage,
-	PHAssetMediaTypeVideo,
-	PHAssetMediaTypeAudio
+	Unknown,
+	Image,
+	Video,
+	Audio
 }
 declare enum PHAssetMediaSubtype {
-	PHAssetMediaSubtypeNone,
-	PHAssetMediaSubtypePhotoPanorama,
-	PHAssetMediaSubtypePhotoHDR,
-	PHAssetMediaSubtypeVideoStreamed,
-	PHAssetMediaSubtypeVideoHighFrameRate,
-	PHAssetMediaSubtypeVideoTimelapse
+	None,
+	PhotoPanorama,
+	PhotoHDR,
+	VideoStreamed,
+	VideoHighFrameRate,
+	VideoTimelapse
 }
 declare enum PHAssetBurstSelectionType {
-	PHAssetBurstSelectionTypeNone,
-	PHAssetBurstSelectionTypeAutoPick,
-	PHAssetBurstSelectionTypeUserPick
+	None,
+	AutoPick,
+	UserPick
 }
 declare enum PHImageContentMode {
-	PHImageContentModeAspectFit,
-	PHImageContentModeAspectFill,
-	PHImageContentModeDefault
+	AspectFit,
+	AspectFill,
+	Default
 }
 declare enum PHImageRequestOptionsVersion {
-	PHImageRequestOptionsVersionCurrent,
-	PHImageRequestOptionsVersionUnadjusted,
-	PHImageRequestOptionsVersionOriginal
+	Current,
+	Unadjusted,
+	Original
 }
 declare enum PHImageRequestOptionsDeliveryMode {
-	PHImageRequestOptionsDeliveryModeOpportunistic,
-	PHImageRequestOptionsDeliveryModeHighQualityFormat,
-	PHImageRequestOptionsDeliveryModeFastFormat
+	Opportunistic,
+	HighQualityFormat,
+	FastFormat
 }
 declare enum PHImageRequestOptionsResizeMode {
-	PHImageRequestOptionsResizeModeNone,
-	PHImageRequestOptionsResizeModeFast,
-	PHImageRequestOptionsResizeModeExact
+	None,
+	Fast,
+	Exact
 }
 declare enum PHVideoRequestOptionsVersion {
-	PHVideoRequestOptionsVersionCurrent,
-	PHVideoRequestOptionsVersionOriginal
+	Current,
+	Original
 }
 declare enum PHVideoRequestOptionsDeliveryMode {
-	PHVideoRequestOptionsDeliveryModeAutomatic,
-	PHVideoRequestOptionsDeliveryModeHighQualityFormat,
-	PHVideoRequestOptionsDeliveryModeMediumQualityFormat,
-	PHVideoRequestOptionsDeliveryModeFastFormat
+	Automatic,
+	HighQualityFormat,
+	MediumQualityFormat,
+	FastFormat
 }
 declare enum SSReadingListErrorCode {
 	SSReadingListErrorURLSchemeNotAllowed
 }
 declare enum SLRequestMethod {
-	SLRequestMethodGET,
-	SLRequestMethodPOST,
-	SLRequestMethodDELETE,
-	SLRequestMethodPUT
+	GET,
+	POST,
+	DELETE,
+	PUT
 }
 declare enum SLComposeViewControllerResult {
-	SLComposeViewControllerResultCancelled,
-	SLComposeViewControllerResultDone
+	Cancelled,
+	Done
 }
 declare enum SKBlendMode {
-	SKBlendModeAlpha,
-	SKBlendModeAdd,
-	SKBlendModeSubtract,
-	SKBlendModeMultiply,
-	SKBlendModeMultiplyX2,
-	SKBlendModeScreen,
-	SKBlendModeReplace
+	Alpha,
+	Add,
+	Subtract,
+	Multiply,
+	MultiplyX2,
+	Screen,
+	Replace
 }
 declare enum SKTextureFilteringMode {
 	SKTextureFilteringNearest,
 	SKTextureFilteringLinear
 }
 declare enum SKUniformType {
-	SKUniformTypeNone,
-	SKUniformTypeFloat,
-	SKUniformTypeFloatVector2,
-	SKUniformTypeFloatVector3,
-	SKUniformTypeFloatVector4,
-	SKUniformTypeFloatMatrix2,
-	SKUniformTypeFloatMatrix3,
-	SKUniformTypeFloatMatrix4,
-	SKUniformTypeTexture
+	None,
+	Float,
+	FloatVector2,
+	FloatVector3,
+	FloatVector4,
+	FloatMatrix2,
+	FloatMatrix3,
+	FloatMatrix4,
+	Texture
 }
 declare enum SKSceneScaleMode {
-	SKSceneScaleModeFill,
-	SKSceneScaleModeAspectFill,
-	SKSceneScaleModeAspectFit,
-	SKSceneScaleModeResizeFill
+	Fill,
+	AspectFill,
+	AspectFit,
+	ResizeFill
 }
 declare enum SKInterpolationMode {
-	SKInterpolationModeLinear,
-	SKInterpolationModeSpline,
-	SKInterpolationModeStep
+	Linear,
+	Spline,
+	Step
 }
 declare enum SKRepeatMode {
-	SKRepeatModeClamp,
-	SKRepeatModeLoop
+	Clamp,
+	Loop
 }
 declare enum SKActionTimingMode {
 	SKActionTimingLinear,
@@ -29594,36 +29594,36 @@ declare enum SKActionTimingMode {
 	SKActionTimingEaseInEaseOut
 }
 declare enum SKLabelVerticalAlignmentMode {
-	SKLabelVerticalAlignmentModeBaseline,
-	SKLabelVerticalAlignmentModeCenter,
-	SKLabelVerticalAlignmentModeTop,
-	SKLabelVerticalAlignmentModeBottom
+	Baseline,
+	Center,
+	Top,
+	Bottom
 }
 declare enum SKLabelHorizontalAlignmentMode {
-	SKLabelHorizontalAlignmentModeCenter,
-	SKLabelHorizontalAlignmentModeLeft,
-	SKLabelHorizontalAlignmentModeRight
+	Center,
+	Left,
+	Right
 }
 declare enum SKTransitionDirection {
-	SKTransitionDirectionUp,
-	SKTransitionDirectionDown,
-	SKTransitionDirectionRight,
-	SKTransitionDirectionLeft
+	Up,
+	Down,
+	Right,
+	Left
 }
 declare enum SKDownloadState {
-	SKDownloadStateWaiting,
-	SKDownloadStateActive,
-	SKDownloadStatePaused,
-	SKDownloadStateFinished,
-	SKDownloadStateFailed,
-	SKDownloadStateCancelled
+	Waiting,
+	Active,
+	Paused,
+	Finished,
+	Failed,
+	Cancelled
 }
 declare enum SKPaymentTransactionState {
-	SKPaymentTransactionStatePurchasing,
-	SKPaymentTransactionStatePurchased,
-	SKPaymentTransactionStateFailed,
-	SKPaymentTransactionStateRestored,
-	SKPaymentTransactionStateDeferred
+	Purchasing,
+	Purchased,
+	Failed,
+	Restored,
+	Deferred
 }
 declare enum VTCompressionSessionOptionFlags {
 	kVTCompressionSessionBeginFinalPass
@@ -29635,28 +29635,28 @@ declare enum WKErrorCode {
 	WKErrorJavaScriptExceptionOccurred
 }
 declare enum WKNavigationType {
-	WKNavigationTypeLinkActivated,
-	WKNavigationTypeFormSubmitted,
-	WKNavigationTypeBackForward,
-	WKNavigationTypeReload,
-	WKNavigationTypeFormResubmitted,
-	WKNavigationTypeOther
+	LinkActivated,
+	FormSubmitted,
+	BackForward,
+	Reload,
+	FormResubmitted,
+	Other
 }
 declare enum WKNavigationActionPolicy {
-	WKNavigationActionPolicyCancel,
-	WKNavigationActionPolicyAllow
+	Cancel,
+	Allow
 }
 declare enum WKNavigationResponsePolicy {
-	WKNavigationResponsePolicyCancel,
-	WKNavigationResponsePolicyAllow
+	Cancel,
+	Allow
 }
 declare enum WKUserScriptInjectionTime {
-	WKUserScriptInjectionTimeAtDocumentStart,
-	WKUserScriptInjectionTimeAtDocumentEnd
+	AtDocumentStart,
+	AtDocumentEnd
 }
 declare enum WKSelectionGranularity {
-	WKSelectionGranularityDynamic,
-	WKSelectionGranularityCharacter
+	Dynamic,
+	Character
 }
 declare var noErr: number;
 declare var kNilOptions: number;
