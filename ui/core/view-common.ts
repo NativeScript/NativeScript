@@ -17,6 +17,7 @@ import * as visualStateConstants from "ui/styling/visual-state-constants";
 import * as bindableModule from "ui/core/bindable";
 import * as visualStateModule from "../styling/visual-state";
 import * as animModule from "ui/animation";
+import { Source } from "utils/debug";
 
 var bindable: typeof bindableModule;
 function ensureBindable() {
@@ -1151,11 +1152,18 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public toString(): string {
+        var str = this.typeName;
         if (this.id) {
-            return this.typeName + `<${this.id}>`;
+            str += `<${this.id}>`;
+        } else {
+            str += `(${this._domId})`;
+        }
+        var source = Source.get(this);
+        if (source) {
+            str += `@${source};`;
         }
 
-        return this.typeName + `(${this._domId})`;
+        return str;
     }
 
     public _setNativeViewFrame(nativeView: any, frame: any) {
