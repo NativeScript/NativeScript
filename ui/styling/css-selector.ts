@@ -6,6 +6,7 @@ import * as styleProperty from "ui/styling/style-property";
 import * as types from "utils/types";
 import * as utils from "utils/utils";
 import animationGroupModule = require("ui/animation/animationgroup");
+import {getSpecialPropertySetter} from "ui/builder/special-properties";
 
 let ID_SPECIFICITY = 1000000;
 let ATTR_SPECIFITY = 10000;
@@ -83,11 +84,25 @@ export class CssSelector {
     public apply(view: view.View) {
         let modifier = this.valueSourceModifier;
         this.eachSetter((property, value) => {
-            try {
-                view.style._setValue(property, value, modifier);
-            }
-            catch (ex) {
-                trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+            if(types.isString(property)) {
+                let attrHandled = false;
+                let specialSetter = getSpecialPropertySetter(property);
+                
+                if (!attrHandled && specialSetter) {
+                    specialSetter(view, value);
+                    attrHandled = true;
+                }
+                
+                if (!attrHandled && property in view) {
+                    view[property] = utils.convertString(value);
+                }
+            } else {
+                try {
+                    view.style._setValue(property, value, modifier);
+                }
+                catch (ex) {
+                    trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+                }
             }
         });
         if (this.isAnimated) {
@@ -118,6 +133,8 @@ export class CssSelector {
                         let pair = pairs[j];
                         callback(pair.property, pair.value);
                     }
+                } else {
+                    callback(declaration.property, declaration.value);
                 }
             }
         }
@@ -142,7 +159,7 @@ function matchesType(expression: string, view: view.View): boolean {
     let exprTypeName = exprArr[0];
     let exprClassName = exprArr[1];
 
-    let typeCheck = exprTypeName.toLowerCase() === view.typeName.toLowerCase() || 
+    let typeCheck = exprTypeName.toLowerCase() === view.typeName.toLowerCase() ||
         exprTypeName.toLowerCase() === view.typeName.split(/(?=[A-Z])/).join("-").toLowerCase();
 
     if (typeCheck) {
@@ -194,7 +211,7 @@ class CssCompositeSelector extends CssSelector {
         return result;
     }
 
-    private parentCssSelectors: [{ selector: CssSelector, onlyDirectParent: boolean}];
+    private parentCssSelectors: [{ selector: CssSelector, onlyDirectParent: boolean }];
 
     private splitExpression(expression) {
         let result = [];
@@ -230,12 +247,12 @@ class CssCompositeSelector extends CssSelector {
         let expressions = this.splitExpression(expr);
         let onlyParent = false;
         this.parentCssSelectors = <any>[];
-        for(let i = expressions.length - 1; i >= 0; i--) {
+        for (let i = expressions.length - 1; i >= 0; i--) {
             if (expressions[i].trim() === GTHAN) {
                 onlyParent = true;
                 continue;
             }
-            this.parentCssSelectors.push({selector: createSelector(expressions[i].trim(), null), onlyDirectParent: onlyParent});
+            this.parentCssSelectors.push({ selector: createSelector(expressions[i].trim(), null), onlyDirectParent: onlyParent });
             onlyParent = false;
         }
     }
@@ -246,7 +263,7 @@ class CssCompositeSelector extends CssSelector {
             return result;
         }
         let tempView = view.parent;
-        for(let i = 1; i < this.parentCssSelectors.length; i++) {
+        for (let i = 1; i < this.parentCssSelectors.length; i++) {
             let parentCounter = 0;
             while (tempView && parentCounter === 0) {
                 result = this.parentCssSelectors[i].selector.matches(tempView);
@@ -289,7 +306,7 @@ function matchesAttr(attrExpression: string, view: view.View): boolean {
             attrValue = nameValueRegexRes[2].trim().replace(/^(["'])*(.*)\1$/, '$2');
         }
         // extract entire sign (=, ~=, |=, ^=, $=, *=)
-        let escapedAttrValue = utils.escapeRegexSymbols(attrValue); 
+        let escapedAttrValue = utils.escapeRegexSymbols(attrValue);
         let attrCheckRegex;
         switch (attrExpression.charAt(equalSignIndex - 1)) {
             case "~":
@@ -310,10 +327,10 @@ function matchesAttr(attrExpression: string, view: view.View): boolean {
 
             // only = (EQUAL)
             default:
-                attrCheckRegex = new RegExp("^"+escapedAttrValue+"$");
+                attrCheckRegex = new RegExp("^" + escapedAttrValue + "$");
                 break;
         }
-        return !types.isNullOrUndefined(view[attrName]) && attrCheckRegex.test(view[attrName]+"");
+        return !types.isNullOrUndefined(view[attrName]) && attrCheckRegex.test(view[attrName] + "");
     } else {
         return !types.isNullOrUndefined(view[attrExpression]);
     }
@@ -330,7 +347,7 @@ export class CssVisualStateSelector extends CssSelector {
 
     get specificity(): number {
         return (this._isById ? ID_SPECIFICITY : 0) +
-            (this._isByAttr ? ATTR_SPECIFITY : 0) + 
+            (this._isByAttr ? ATTR_SPECIFITY : 0) +
             (this._isByClass ? CLASS_SPECIFICITY : 0) +
             (this._isByType ? TYPE_SPECIFICITY : 0);
     }

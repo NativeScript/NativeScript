@@ -6,6 +6,7 @@ import {File, Folder, path, knownFolders} from "file-system";
 import {getBindingOptions, bindingConstants} from "./binding-builder";
 import * as debugModule from "utils/debug";
 import * as platformModule from "platform";
+import {convertString} from "utils/utils";
 
 //the imports below are needed for special property registration
 import "ui/layouts/dock-layout";
@@ -182,20 +183,8 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
         if (!attrHandled && (<any>instance)._applyXmlAttribute) {
             attrHandled = (<any>instance)._applyXmlAttribute(propertyName, propertyValue);
         }
-        if (!attrHandled) {
-            if (propertyValue.trim() === "") {
-                instance[propertyName] = propertyValue;
-            } else {
-                // Try to convert value to number.
-                var valueAsNumber = +propertyValue;
-                if (!isNaN(valueAsNumber)) {
-                    instance[propertyName] = valueAsNumber;
-                } else if (propertyValue && (propertyValue.toLowerCase() === "true" || propertyValue.toLowerCase() === "false")) {
-                    instance[propertyName] = propertyValue.toLowerCase() === "true" ? true : false;
-                } else {
-                    instance[propertyName] = propertyValue;
-                }
-            }
+        if (!attrHandled) {           
+            instance[propertyName] = convertString(propertyValue);
         }
     }
 }

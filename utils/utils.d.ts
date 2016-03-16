@@ -235,4 +235,10 @@
      * @param source The original value. 
      */
     export function escapeRegexSymbols(source: string): string
+    
+    /**
+     * Converts string value to number or boolean.
+     * @param value The original value. 
+     */
+    export function convertString(value: string): any    
 }
