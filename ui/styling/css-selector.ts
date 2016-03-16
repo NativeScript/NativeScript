@@ -431,7 +431,7 @@ export function createSelector(expression: string, declarations: cssParser.Decla
         return new CssAttrSelector(goodExpr, declarations);
     }
 
-    let colonIndex = goodExpr.indexOf(COLON);
+    var colonIndex = goodExpr.indexOf(COLON);
     if (colonIndex >= 0) {
         return new CssVisualStateSelector(goodExpr, declarations);
     }
