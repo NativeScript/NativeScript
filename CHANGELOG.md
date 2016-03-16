@@ -1,5 +1,55 @@
 Cross Platform Modules Changelog
 ==============================
+
+##1.7.0 (2016, March 16)
+
+### Fixed
+
+- [(#1737)](https://github.com/NativeScript/NativeScript/issues/1737) TypeError from fetch module due to no headers received
+
+- [(#1721)](https://github.com/NativeScript/NativeScript/issues/1721) TextField returnPress event not working on Android
+
+- [(#1695)](https://github.com/NativeScript/NativeScript/issues/1695) http module does not support multiple headers with same name
+
+- [(#1693)](https://github.com/NativeScript/NativeScript/issues/1693) "ui/frame".NavigationEntry.transitionAndroid Is Not Supported
+
+- [(#1692)](https://github.com/NativeScript/NativeScript/issues/1692) Apply visibility via binding fails [Android]
+
+- [(#1691)](https://github.com/NativeScript/NativeScript/issues/1691) App crash if ActionBar inculdes an 'id' tag [Android]
+
+- [(#1667)](https://github.com/NativeScript/NativeScript/issues/1667) Tap Event Does Not Fire When Using codeFile In Different Directory
+
+- [(#1631)](https://github.com/NativeScript/NativeScript/issues/1631) dialogs.confirm throws exception when writing angular 2 + {N} app
+
+- [(#1624)](https://github.com/NativeScript/NativeScript/pull/1624) Fixed jumpy navigation between pages in iOS.
+
+- [(#1583)](https://github.com/NativeScript/NativeScript/pull/1583) Remove message escaping
+
+- [(#1569)](https://github.com/NativeScript/NativeScript/issues/1569) Regression: Back button breaks app on clearHistory: true (android)
+
+- [(#1559)](https://github.com/NativeScript/NativeScript/issues/1559) Image rotation from camera
+
+- [(#1543)](https://github.com/NativeScript/NativeScript/issues/1543) [Android] View._onDetached called twice when app is suspended.
+
+- [(#1389)](https://github.com/NativeScript/NativeScript/issues/1389) Frame navigate, while android Activity is paused, crash
+
+- [(#1078)](https://github.com/NativeScript/NativeScript/issues/1078) FormattedText styling not working in iOS
+
+### New
+
+- [(#1602)](https://github.com/NativeScript/NativeScript/issues/1602) Request: AppSettings - clearAll
+
+- [(#1488)](https://github.com/NativeScript/NativeScript/issues/1488) Ability to define a custom view in ActionItem
+
+- [(#1330)](https://github.com/NativeScript/NativeScript/issues/1330) Allow NativeScript application to define different base class for Activity and Application.
+
+- [(#1267)](https://github.com/NativeScript/NativeScript/issues/1267) Implement Icon Font support for ActionBarItems
+
+- [(#1076)](https://github.com/NativeScript/NativeScript/issues/1076) Feature request: Physics
+
+- [(#704)](https://github.com/NativeScript/NativeScript/issues/704) Support of Px,rem
+
+
 ##1.6.0 (2016, February 17)
 
 ### Breaking changes
