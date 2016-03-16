@@ -49,7 +49,9 @@ export class Button extends common.Button {
 
     public onLoaded() {
         super.onLoaded();
-        this._stateChangedHandler.start();
+        if (this.parent !== null) {
+            this._stateChangedHandler.start();
+        }
     }
 
     public onUnloaded() {

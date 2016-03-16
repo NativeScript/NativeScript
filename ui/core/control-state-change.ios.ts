@@ -21,6 +21,7 @@ export class ControlStateChangeListener implements definition.ControlStateChange
     private _observer: NSObject;
     private _states: string[];
     private _control: UIControl;
+    private _observing: boolean = false;
 
     private _callback: (state: string) => void;
 
@@ -32,11 +33,17 @@ export class ControlStateChangeListener implements definition.ControlStateChange
     }
 
     public start() {
-        this._control.addObserverForKeyPathOptionsContext(this._observer, "highlighted", NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
+        if (!this._observing) {
+            this._control.addObserverForKeyPathOptionsContext(this._observer, "highlighted", NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
+            this._observing = true;
+        }
     }
 
     public stop() {
-        this._control.removeObserverForKeyPath(this._observer, "highlighted");
+        if (this._observing) {
+            this._observing = false;
+            this._control.removeObserverForKeyPath(this._observer, "highlighted");
+        }
     }
 
     private _onEnabledChanged() {
