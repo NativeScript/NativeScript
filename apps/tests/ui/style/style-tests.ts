@@ -30,6 +30,28 @@ export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     });
 }
 
+export function test_css_is_applied_to_normal_properties() {
+    var stack = new stackModule.StackLayout();
+
+    helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
+        var page = <pageModule.Page>views[1];
+        var expected = "horizontal";
+        page.css = `StackLayout { orientation: ${expected}; }`;
+        TKUnit.assertEqual(stack.orientation, expected);
+    });
+}
+
+export function test_css_is_applied_to_special_properties() {
+    var stack = new stackModule.StackLayout();
+
+    helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
+        var page = <pageModule.Page>views[1];
+        var expected = "test";
+        page.css = `StackLayout { class: ${expected}; }`;
+        TKUnit.assertEqual(stack.className, expected);
+    });
+}
+
 // Test for inheritance in different containers
 export function test_css_is_applied_inside_StackLayout() {
     var testButton = new buttonModule.Button();
