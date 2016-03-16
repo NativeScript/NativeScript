@@ -17,11 +17,19 @@ export class TextBase extends common.TextBase {
         this.requestLayout();
     }
 
+    private _settingFormattedTextPropertyToNative = false;
     public _onStylePropertyChanged(property: dependencyObservable.Property): void {
+        if (this._settingFormattedTextPropertyToNative) {
+            // Guard against stack-overflow.
+            return;
+        }
+
         if (this.formattedText) {
             // Re-apply the formatted text to override style changes if needed.
             // https://github.com/NativeScript/NativeScript/issues/1078
+            this._settingFormattedTextPropertyToNative = true;
             this._setFormattedTextPropertyToNative(this.formattedText);
+            this._settingFormattedTextPropertyToNative = false;
         }
     }
 }
