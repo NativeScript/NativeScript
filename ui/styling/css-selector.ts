@@ -5,6 +5,7 @@ import * as trace from "trace";
 import * as styleProperty from "ui/styling/style-property";
 import * as types from "utils/types";
 import * as utils from "utils/utils";
+import {getSpecialPropertySetter} from "ui/builder/special-properties";
 
 var ID_SPECIFICITY = 1000000;
 var ATTR_SPECIFITY = 10000;
@@ -38,7 +39,7 @@ export class CssSelector {
     get expression(): string {
         return this._expression;
     }
-    
+
     get attrExpression(): string {
         return this._attrExpression;
     }
@@ -57,11 +58,25 @@ export class CssSelector {
 
     public apply(view: view.View) {
         this.eachSetter((property, value) => {
-            try {
-                view.style._setValue(property, value, observable.ValueSource.Css);
-            }
-            catch (ex) {
-                trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+            if(types.isString(property)) {
+                let attrHandled = false;
+                let specialSetter = getSpecialPropertySetter(property);
+                
+                if (!attrHandled && specialSetter) {
+                    specialSetter(view, value);
+                    attrHandled = true;
+                }
+                
+                if (!attrHandled && property in view) {
+                    view[property] = utils.convertString(value);
+                }
+            } else {
+                try {
+                    view.style._setValue(property, value, observable.ValueSource.Css);
+                }
+                catch (ex) {
+                    trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+                }
             }
         });
     }
@@ -74,7 +89,7 @@ export class CssSelector {
 
             let property = styleProperty.getPropertyByCssName(name);
 
-            if (property) {                
+            if (property) {
                 // The property.valueConverter is now used to convert the value later on in DependencyObservable._setValueInternal.
                 callback(property, resolvedValue);
             }
@@ -85,6 +100,8 @@ export class CssSelector {
                         let pair = pairs[j];
                         callback(pair.property, pair.value);
                     }
+                } else {
+                    callback(declaration.property, declaration.value);
                 }
             }
         }
@@ -108,10 +125,10 @@ function matchesType(expression: string, view: view.View): boolean {
     let exprArr = expression.split(".");
     let exprTypeName = exprArr[0];
     let exprClassName = exprArr[1];
-       
-    let typeCheck = exprTypeName.toLowerCase() === view.typeName.toLowerCase() || 
+
+    let typeCheck = exprTypeName.toLowerCase() === view.typeName.toLowerCase() ||
         exprTypeName.toLowerCase() === view.typeName.split(/(?=[A-Z])/).join("-").toLowerCase();
-          
+
     if (typeCheck) {
         if (exprClassName) {
             return view._cssClasses.some((cssClass, i, arr) => { return cssClass === exprClassName });
@@ -155,14 +172,14 @@ class CssClassSelector extends CssSelector {
 class CssCompositeSelector extends CssSelector {
     get specificity(): number {
         let result = 0;
-        for(let i = 0; i < this.parentCssSelectors.length; i++) {
+        for (let i = 0; i < this.parentCssSelectors.length; i++) {
             result += this.parentCssSelectors[i].selector.specificity;
         }
         return result;
     }
-    
-    private parentCssSelectors: [{ selector: CssSelector, onlyDirectParent: boolean}];
-    
+
+    private parentCssSelectors: [{ selector: CssSelector, onlyDirectParent: boolean }];
+
     private splitExpression(expression) {
         let result = [];
         let tempArr = [];
@@ -191,29 +208,29 @@ class CssCompositeSelector extends CssSelector {
         }
         return result;
     }
-    
+
     constructor(expr: string, declarations: cssParser.Declaration[]) {
         super(expr, declarations);
         let expressions = this.splitExpression(expr);
         let onlyParent = false;
         this.parentCssSelectors = <any>[];
-        for(let i = expressions.length - 1; i >= 0; i--) {
+        for (let i = expressions.length - 1; i >= 0; i--) {
             if (expressions[i].trim() === GTHAN) {
                 onlyParent = true;
                 continue;
             }
-            this.parentCssSelectors.push({selector: createSelector(expressions[i].trim(), null), onlyDirectParent: onlyParent});
+            this.parentCssSelectors.push({ selector: createSelector(expressions[i].trim(), null), onlyDirectParent: onlyParent });
             onlyParent = false;
         }
     }
-    
+
     public matches(view: view.View): boolean {
         let result = this.parentCssSelectors[0].selector.matches(view);
         if (!result) {
             return result;
         }
         let tempView = view.parent;
-        for(let i = 1; i < this.parentCssSelectors.length; i++) {
+        for (let i = 1; i < this.parentCssSelectors.length; i++) {
             let parentCounter = 0;
             while (tempView && parentCounter === 0) {
                 result = this.parentCssSelectors[i].selector.matches(tempView);
@@ -238,7 +255,7 @@ class CssAttrSelector extends CssSelector {
     get specificity(): number {
         return ATTR_SPECIFITY;
     }
-    
+
     public matches(view: view.View): boolean {
         return matchesAttr(this.attrExpression, view);
     }
@@ -256,7 +273,7 @@ function matchesAttr(attrExpression: string, view: view.View): boolean {
             attrValue = nameValueRegexRes[2].trim().replace(/^(["'])*(.*)\1$/, '$2');
         }
         // extract entire sign (=, ~=, |=, ^=, $=, *=)
-        let escapedAttrValue = utils.escapeRegexSymbols(attrValue); 
+        let escapedAttrValue = utils.escapeRegexSymbols(attrValue);
         let attrCheckRegex;
         switch (attrExpression.charAt(equalSignIndex - 1)) {
             case "~":
@@ -277,10 +294,10 @@ function matchesAttr(attrExpression: string, view: view.View): boolean {
 
             // only = (EQUAL)
             default:
-                attrCheckRegex = new RegExp("^"+escapedAttrValue+"$");
+                attrCheckRegex = new RegExp("^" + escapedAttrValue + "$");
                 break;
         }
-        return !types.isNullOrUndefined(view[attrName]) && attrCheckRegex.test(view[attrName]+"");
+        return !types.isNullOrUndefined(view[attrName]) && attrCheckRegex.test(view[attrName] + "");
     } else {
         return !types.isNullOrUndefined(view[attrExpression]);
     }
@@ -297,7 +314,7 @@ export class CssVisualStateSelector extends CssSelector {
 
     get specificity(): number {
         return (this._isById ? ID_SPECIFICITY : 0) +
-            (this._isByAttr ? ATTR_SPECIFITY : 0) + 
+            (this._isByAttr ? ATTR_SPECIFITY : 0) +
             (this._isByClass ? CLASS_SPECIFICITY : 0) +
             (this._isByType ? TYPE_SPECIFICITY : 0);
     }
@@ -347,7 +364,7 @@ export class CssVisualStateSelector extends CssSelector {
         if (this._isByType) {
             matches = matchesType(this._match, view);
         }
-        
+
         if (this._isByAttr) {
             matches = matchesAttr(this._key, view);
         }
@@ -371,12 +388,12 @@ export function createSelector(expression: string, declarations: cssParser.Decla
     if (spaceIndex >= 0) {
         return new CssCompositeSelector(goodExpr, declarations);
     }
-    
+
     let leftSquareBracketIndex = goodExpr.indexOf(LSBRACKET);
     if (leftSquareBracketIndex === 0) {
         return new CssAttrSelector(goodExpr, declarations);
-    } 
-    
+    }
+
     var colonIndex = goodExpr.indexOf(COLON);
     if (colonIndex >= 0) {
         return new CssVisualStateSelector(goodExpr, declarations);
