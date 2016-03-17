@@ -8,7 +8,6 @@
         "module": "commonjs",
         "declaration": false,
         "noImplicitAny": false,
-        "removeComments": true,
         "noImplicitUseStrict": true,
         "experimentalDecorators": true
     },
