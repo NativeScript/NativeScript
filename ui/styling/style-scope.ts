@@ -47,7 +47,7 @@ export class StyleScope {
     private _css: string;
     private _cssFileName: string;
     private _cssSelectors: Array<cssSelector.CssSelector>;
-    private _keyframes = new Array<Object>();
+    private _keyframes = {};
 
     get css(): string {
         return this._css;
@@ -79,18 +79,7 @@ export class StyleScope {
         let selectorsFromFile = StyleScope.createSelectorsFromCss(cssString, cssFileName, this._keyframes);
         this._cssSelectors = StyleScope._joinCssSelectorsArrays([this._cssSelectors, selectorsFromFile]);
 
-        let appliedOnSelectors = {};
-        for (let i = this._cssSelectors.length - 1; i >= 0; i --) {
-            let selector = this._cssSelectors[i];
-            if (selector.animation !== undefined) {
-                let animationName = selector.animation["name"];
-                let keyframe = this._keyframes[animationName];
-                if (keyframe !== undefined && appliedOnSelectors[selector.expression] === undefined) {
-                    selector.keyframes = keyframe;
-                    appliedOnSelectors[selector.expression] = true;
-                }
-            }
-        }
+        this._applyKeyframesOnSelectors();
     }
 
     public removeSelectors(selectorExpression: string) {
@@ -112,7 +101,7 @@ export class StyleScope {
         return undefined;
     }
 
-    public static createSelectorsFromCss(css: string, cssFileName: string, keyframes: Array<Object>): cssSelector.CssSelector[] {
+    public static createSelectorsFromCss(css: string, cssFileName: string, keyframes: Object): cssSelector.CssSelector[] {
         try {
             let pageCssSyntaxTree = css ? cssParser.parse(css, { source: cssFileName }) : null;
             let pageCssSelectors = new Array<cssSelector.CssSelector>();
@@ -127,7 +116,7 @@ export class StyleScope {
         }
     }
 
-    public static createSelectorsFromImports(tree: cssParser.SyntaxTree, keyframes: Array<Object>): cssSelector.CssSelector[] {
+    public static createSelectorsFromImports(tree: cssParser.SyntaxTree, keyframes: Object): cssSelector.CssSelector[] {
         let selectors = new Array<cssSelector.CssSelector>();
         ensureTypes();
 
@@ -169,15 +158,9 @@ export class StyleScope {
     public ensureSelectors() {
         if (!this._cssSelectors && (this._css || application.cssSelectorsCache)) {
             let applicationCssSelectors = application.cssSelectorsCache ? application.cssSelectorsCache : null;
-            let keyframes = new Array<Object>();
-            let pageCssSelectors = StyleScope.createSelectorsFromCss(this._css, this._cssFileName, keyframes);
+            let pageCssSelectors = StyleScope.createSelectorsFromCss(this._css, this._cssFileName, this._keyframes);
             this._cssSelectors = StyleScope._joinCssSelectorsArrays([applicationCssSelectors, pageCssSelectors]);
-
-            for (let selector of this._cssSelectors) {
-                if (selector.isAnimated && keyframes[selector.animation["name"]] !== undefined) {
-                    selector.keyframes = keyframes[selector.animation["name"]];
-                }
-            }
+            this._applyKeyframesOnSelectors();
         }
     }
 
@@ -271,7 +254,7 @@ export class StyleScope {
         }
     }
 
-    private static createSelectorsFromSyntaxTree(ast: cssParser.SyntaxTree, keyframes: Array<Object>): Array<cssSelector.CssSelector> {
+    private static createSelectorsFromSyntaxTree(ast: cssParser.SyntaxTree, keyframes: Object): Array<cssSelector.CssSelector> {
         let result: Array<cssSelector.CssSelector> = [];
         let rules = ast.stylesheet.rules;
         let rule: cssParser.Rule;
@@ -312,6 +295,21 @@ export class StyleScope {
     private _reset() {
         this._statesByKey = {};
         this._viewIdToKey = {};
+    }
+
+    private _applyKeyframesOnSelectors() {
+        let appliedOnSelectors = {};
+        for (let i = this._cssSelectors.length - 1; i >= 0; i --) {
+            let selector = this._cssSelectors[i];
+            if (selector.animation !== undefined) {
+                let animationName = selector.animation["name"];
+                let keyframe = this._keyframes[animationName];
+                if (keyframe !== undefined && appliedOnSelectors[selector.expression] === undefined) {
+                    selector.keyframes = keyframe;
+                    appliedOnSelectors[selector.expression] = true;
+                }
+            }
+        }
     }
 }
 

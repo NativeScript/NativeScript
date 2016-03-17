@@ -1,4 +1,4 @@
-import definition = require("./animationgroup");
+import definition = require("ui/animation/animationgroup");
 import cssParser = require("css");
 import converters = require("../styling/converters");
 import colorModule = require("color");
@@ -6,6 +6,8 @@ import * as styleProperty from "ui/styling/style-property";
 import animationModule = require("ui/animation");
 import observable = require("ui/core/dependency-observable");
 import view = require("ui/core/view");
+import enums = require("ui/enums");
+import types = require("utils/types");
 
 interface TransformInfo {
     scale: animationModule.Pair;
@@ -25,71 +27,63 @@ export class Keyframe implements definition.Keyframe {
 export class AnimationGroup implements definition.AnimationGroup {
 
     public name: string;
-    public duration: number;
-    public delay: number;
-    public iterations: number;
-    public curve: any;
-    public isForwards: boolean;
-    public isReverse: boolean;
+    public duration: number = 0.3;
+    public delay: number = 0;
+    public iterations: number = 1;
+    public curve: any = enums.AnimationCurve.easeInOut;
+    public isForwards: boolean = false;
+    public isReverse: boolean = false;
     public keyframes: Array<Keyframe>;
 
     private _resolve;
     private _reject;
     private _isPlaying: boolean;
-
-    public AnimationGroup() {
-        this.duration = 0.3;
-        this.delay = 0;
-        this.iterations = 1;
-        this.isForwards = false;
-        this.isReverse = false;
-    }
-
-    public static animationGroupFromSelectorDeclarations(declarations: cssParser.Declaration[]): AnimationGroup {
-        let animationInfo = undefined;
+    
+    public static animationGroupFromSelectorDeclarations(declarations: cssParser.Declaration[]): definition.AnimationGroup {
+        let animationGroup: definition.AnimationGroup = undefined;
         for (let declaration of declarations) {
             if (declaration.property.indexOf("animation") === 0) {
-                if (animationInfo === undefined) {
-                    animationInfo = new AnimationGroup();
+                if (animationGroup === undefined) {
+                    animationGroup = new definition.AnimationGroup();
                 }
                 switch (declaration.property) {
                     case "animation-name":
-                        animationInfo.name = declaration.value;
+                        animationGroup.name = declaration.value;
                         break;
                     case "animation-duration":
-                        animationInfo.duration = converters.timeConverter(declaration.value);
+                        animationGroup.duration = converters.timeConverter(declaration.value);
                         break;
                     case "animation-delay":
-                        animationInfo.delay = converters.timeConverter(declaration.value);
+                        animationGroup.delay = converters.timeConverter(declaration.value);
                         break;
                     case "animation-timing-function":
-                        animationInfo.curve = converters.animationTimingFunctionConverter(declaration.value);
+                        animationGroup.curve = converters.animationTimingFunctionConverter(declaration.value);
                         break;
                     case "animation-iteration-count":
                         if (declaration.value === "infinite") {
-                            animationInfo.iterations = Number.MAX_VALUE;
+                            animationGroup.iterations = Number.MAX_VALUE;
                         }
                         else {
-                            animationInfo.iterations = converters.numberConverter(declaration.value);
+                            animationGroup.iterations = converters.numberConverter(declaration.value);
                         }
                         break;
                     case "animation":
-                        animationInfo = converters.animationConverter(declaration.value);
+                        animationGroup = AnimationGroup.animationGroupFromProperty(declaration.value);
                         break;
                     case "animation-direction":
                         if (declaration.value === "reverse") {
-                            animationInfo.isReverse = true;
+                            animationGroup.isReverse = true;
                         }
                         break;
                     case "animation-fill-mode":
                         if (declaration.value === "forwards") {
-                            animationInfo.isForwards = true;
+                            animationGroup.isForwards = true;
                         }
                         break;
                 }
             }
         }
-        return animationInfo;
+        return animationGroup;
     }
 
     public static keyframesFromCSS(cssKeyframes: Object): Array<Keyframe> {
@@ -202,6 +196,36 @@ export class AnimationGroup implements definition.AnimationGroup {
             return true;
         }
         return false;
+    }
+
+    private static animationGroupFromProperty(value: any): AnimationGroup {
+        if (types.isString(value)) {
+            let animationInfo = new AnimationGroup();
+            let arr = (<string>value).split(/[ ]+/);
+
+            if (arr.length > 0) {
+                animationInfo.name = arr[0];
+            }
+            if (arr.length > 1) {
+                animationInfo.duration = converters.timeConverter(arr[1]);
+            }
+            if (arr.length > 2) {
+                animationInfo.curve = converters.animationTimingFunctionConverter(arr[2]);
+            }
+            if (arr.length > 3) {
+                animationInfo.delay = converters.timeConverter(arr[3]);
+            }
+            if (arr.length > 4) {
+                animationInfo.iterations = parseInt(arr[4]);
+            }
+            if (arr.length > 5) {
+                throw new Error("Invalid value for animation: " + value);
+            }
+            return animationInfo;
+        }
+        else {
+            return undefined;
+        }
     }
 
     public play(view: view.View): Promise<void> {

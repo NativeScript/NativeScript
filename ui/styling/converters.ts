@@ -113,7 +113,7 @@ export function animationTimingFunctionConverter(value: string): Object {
             break;
         default:
             if (value.indexOf("cubic-bezier(") === 0) {
-                let bezierArr = value.substring(13, value.length-14).split(/[,]+/);
+                let bezierArr = value.substring(13).split(/[,]+/);
                 if (bezierArr.length !== 4) {
                     throw new Error("Invalid value for animation: " + value);
                 }
@@ -129,36 +129,6 @@ export function animationTimingFunctionConverter(value: string): Object {
     }
 
     return result;
-}
-
-export function animationConverter(value: any): Object {
-    if (types.isString(value)) {
-        var animationInfo = {};
-        let arr = (<string>value).split(/[ ]+/);
-
-        if (arr.length > 0) {
-            animationInfo["name"] = arr[0];
-        }
-        if (arr.length > 1) {
-            animationInfo["duration"] = timeConverter(arr[1]);
-        }
-        if (arr.length > 2) {
-            animationInfo["curve"] = animationTimingFunctionConverter(arr[2]);
-        }
-        if (arr.length > 3) {
-            animationInfo["delay"] = timeConverter(arr[3]);
-        }
-        if (arr.length > 4) {
-            animationInfo["iterations"] = parseInt(arr[4]);
-        }
-        if (arr.length > 5) {
-            throw new Error("Invalid value for animation: " + value);
-        }
-        return animationInfo;
-    }
-    else {
-        return undefined;
-    }
 }
 
 export function transformConverter(value: any): Object {
