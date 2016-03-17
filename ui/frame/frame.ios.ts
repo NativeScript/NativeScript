@@ -70,9 +70,15 @@ export class Frame extends frameCommon.Frame {
         navDepth++;
 
         var animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
-        var navigationTransition = this._getNavigationTransition(backstackEntry.entry);
-        if (animated && navigationTransition) {
-            viewController[TRANSITION] = navigationTransition;
+        if (animated) {
+            var navigationTransition = this._getNavigationTransition(backstackEntry.entry);
+            if (navigationTransition) {
+                viewController[TRANSITION] = navigationTransition;
+            }
+        }
+        else {
+            //https://github.com/NativeScript/NativeScript/issues/1787
+            viewController[TRANSITION] = { name: "non-animated" };
         }
 
         backstackEntry[NAV_DEPTH] = navDepth;
@@ -551,6 +557,11 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             return super.popViewControllerAnimated(animated);
         }
 
+        if (navigationTransition.name === "non-animated") {
+            //https://github.com/NativeScript/NativeScript/issues/1787
+            return super.popViewControllerAnimated(false);
+        }
+
         var nativeTransition = _getNativeTransition(navigationTransition, false);
         if (!nativeTransition) {
             return super.popViewControllerAnimated(animated);
@@ -577,6 +588,11 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         trace.write(`UINavigationControllerImpl.popToViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
         if (!animated || !navigationTransition) {
             return super.popToViewControllerAnimated(viewController, animated);
+        }
+
+        if (navigationTransition.name === "non-animated") {
+            //https://github.com/NativeScript/NativeScript/issues/1787
+            return super.popToViewControllerAnimated(viewController, false);
         }
 
         var nativeTransition = _getNativeTransition(navigationTransition, false);
