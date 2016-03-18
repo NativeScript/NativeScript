@@ -166,6 +166,7 @@ export class Page extends pageCommon.Page {
         this.onUnloaded();
         this._isAddedToNativeVisualTree = false;
         this._onDetached(true);
+        parent._modal = undefined;
 
         super._hideNativeModalView(parent);
     }

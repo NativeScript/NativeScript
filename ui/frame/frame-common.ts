@@ -231,7 +231,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         var entry = this._navigationQueue[0].entry;
         var currentNavigationPage = entry.resolvedPage;
         if (page !== currentNavigationPage) {
-            throw new Error(`Corrupted navigation stack; page: ${page.id}; currentNavigationPage: ${currentNavigationPage.id}`);
+            throw new Error(`Corrupted navigation stack; page: ${page}; currentNavigationPage: ${currentNavigationPage}`);
         }
 
         // remove completed operation.
@@ -275,7 +275,6 @@ export class Frame extends CustomLayoutView implements definition.Frame {
 
     private performNavigation(navigationContext: NavigationContext) {
         var navContext = navigationContext.entry;
-        this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
 
         // TODO: This should happen once navigation is completed.
         if (navigationContext.entry.entry.clearHistory) {
@@ -285,15 +284,15 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this._backStack.push(this._currentEntry);
         }
 
+        this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
+
         this._navigateCore(navContext);
-        this._onNavigatedTo(navContext, false);
     }
 
     private performGoBack(navigationContext: NavigationContext) {
         var navContext = navigationContext.entry;
         this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
         this._goBackCore(navContext);
-        this._onNavigatedTo(navContext, true);
     }
 
     public _goBackCore(backstackEntry: definition.BackstackEntry) {
@@ -310,12 +309,6 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         }
 
         backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack);
-    }
-
-    public _onNavigatedTo(backstackEntry: definition.BackstackEntry, isBack: boolean) {
-        if (this.currentPage) {
-            this.currentPage.onNavigatedFrom(isBack);
-        }
     }
 
     public get animated(): boolean {

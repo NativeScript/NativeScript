@@ -471,7 +471,7 @@ declare module "ui/core/view" {
          * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
          * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
          */
-        off(eventNames: string | gestures.GestureTypes, callback?: any, thisArg?: any);
+        off(eventNames: string | gestures.GestureTypes, callback?: (data: observable.EventData) => void, thisArg?: any);
 
         /**
          * Raised when a loaded event occurs.

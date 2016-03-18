@@ -141,32 +141,32 @@ declare module "ui/page" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any): void;
 
         /**
          * Raised when navigation to the page has started.
          */
-        on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any);
+        on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
         /**
          * Raised when navigation to the page has finished.
          */
-        on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any);
+        on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
         /**
          * Raised when navigation from the page has started.
          */
-        on(event: "navigatingFrom", callback: (args: NavigatedData) => void, thisArg?: any);
+        on(event: "navigatingFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
         /**
          * Raised when navigation from the page has finished.
          */
-        on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any);
+        on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
         
         /**
          * Raised before the page is shown as a modal dialog.
          */
-        on(event: "showingModally", callback: (args: observable.EventData) => void, thisArg?: any);
+        on(event: "showingModally", callback: (args: observable.EventData) => void, thisArg?: any): void;
 
         /**
          * Raised after the page is shown as a modal dialog.
@@ -180,17 +180,17 @@ declare module "ui/page" {
          * @param closeCallback - A function that will be called when the page is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
          * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
          */
-        showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean);
+        showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean): Page;
 
         /**
          * Shows the page as a modal view.
          */
-        showModal();
+        showModal(): Page;
 
         /**
          * Closes the current modal view that this page is showing.
          */
-        closeModal();
+        closeModal(): void;
 
         /**
          * Returns the current modal view that this page is showing (is parent of), if any.
