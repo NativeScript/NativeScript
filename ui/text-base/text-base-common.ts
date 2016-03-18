@@ -96,7 +96,10 @@ export class TextBase extends view.View implements definition.TextBase, formatte
     }
 
     private onFormattedTextChanged(eventData: observable.PropertyChangeData) {
-        this._setFormattedTextPropertyToNative(eventData.value);
+        var value = (<formattedString.FormattedString>eventData.value);
+        this._setFormattedTextPropertyToNative(value);
+
+        this._onPropertyChangedFromNative(TextBase.textProperty, value.toString());
     }
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -108,10 +111,14 @@ export class TextBase extends view.View implements definition.TextBase, formatte
     }
 
     public _onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (data.newValue) {
-            (<formattedString.FormattedString>data.newValue).parent = this;
+        var newValue = (<formattedString.FormattedString>data.newValue);
+        if (newValue) {
+            newValue.parent = this;
         }
-        this._setFormattedTextPropertyToNative(data.newValue);
+        this._setFormattedTextPropertyToNative(newValue);
+
+        var newText = newValue ? newValue.toString() : "";
+        this._onPropertyChangedFromNative(TextBase.textProperty, newText);
     }
 
     public _addChildFromBuilder(name: string, value: any): void {

@@ -10,8 +10,9 @@ export class TextBase extends common.TextBase {
         }
     }
     public _setFormattedTextPropertyToNative(value) {
+        var newText = value ? value._formattedText : null;
         if (this.android) {
-            this.android.setText(value._formattedText);
+            this.android.setText(newText);
         }
     }
 }
