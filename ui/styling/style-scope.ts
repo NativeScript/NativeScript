@@ -7,7 +7,8 @@ import * as typesModule from "utils/types";
 import * as utilsModule from "utils/utils";
 import * as fileSystemModule from "file-system";
 import * as visualStateModule from "./visual-state";
-import animationGroupModule = require("ui/animation/animationgroup");
+import keyframeAnimation = require("ui/animation/keyframe-animation");
+import cssAnimationParser = require("./css-animation-parser");
 
 var types: typeof typesModule;
 function ensureTypes() {
@@ -91,12 +92,12 @@ export class StyleScope {
         }
     }
 
-    public getKeyframesAnimation(animationName: string): animationGroupModule.AnimationGroup {
+    public getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo {
         let keyframes = this._keyframes[animationName];
         if (keyframes !== undefined) {
-            let animationGroup = new animationGroupModule.AnimationGroup();
-            animationGroup.keyframes = animationGroupModule.AnimationGroup.keyframesFromCSS(keyframes);
-            return animationGroup;
+            let animation = new keyframeAnimation.KeyframeAnimationInfo();
+            animation.keyframes = cssAnimationParser.CssAnimationParser.keyframesArrayFromCSS(keyframes);
+            return animation;
         }
         return undefined;
     }
@@ -243,7 +244,7 @@ export class StyleScope {
             }
 
             // add all stateSelectors instead of adding setters
-            if (stateSelector.isAnimated) {
+            if (stateSelector.animation && stateSelector.animation.keyframes && stateSelector.animation.keyframes.length > 0) {
                 visualState.animations.push(stateSelector);
             }
             else {
@@ -305,7 +306,7 @@ export class StyleScope {
                 let animationName = selector.animation["name"];
                 let keyframe = this._keyframes[animationName];
                 if (keyframe !== undefined && appliedOnSelectors[selector.expression] === undefined) {
-                    selector.keyframes = keyframe;
+                    selector.animation.keyframes = cssAnimationParser.CssAnimationParser.keyframesArrayFromCSS(keyframe);
                     appliedOnSelectors[selector.expression] = true;
                 }
             }

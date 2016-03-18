@@ -5,7 +5,8 @@ import * as trace from "trace";
 import * as styleProperty from "ui/styling/style-property";
 import * as types from "utils/types";
 import * as utils from "utils/utils";
-import animationGroupModule = require("ui/animation/animationgroup");
+import keyframeAnimation = require("ui/animation/keyframe-animation");
+import cssAnimationParser = require("./css-animation-parser");
 import {getSpecialPropertySetter} from "ui/builder/special-properties";
 
 let ID_SPECIFICITY = 1000000;
@@ -14,10 +15,11 @@ let CLASS_SPECIFICITY = 100;
 let TYPE_SPECIFICITY = 1;
 
 export class CssSelector {
+    public animation: keyframeAnimation.KeyframeAnimationInfo;
+
     private _expression: string;
     private _declarations: cssParser.Declaration[];
     private _attrExpression: string;
-    protected _animationGroup: animationGroupModule.AnimationGroup;
 
     constructor(expression: string, declarations: cssParser.Declaration[]) {
         if (expression) {
@@ -36,7 +38,7 @@ export class CssSelector {
             }
         }
         this._declarations = declarations;
-        this._animationGroup = animationGroupModule.AnimationGroup.animationGroupFromSelectorDeclarations(this._declarations);
+        this.animation = cssAnimationParser.CssAnimationParser.keyframeAnimationFromCSSDeclarations(declarations);
     }
 
     get expression(): string {
@@ -55,24 +57,6 @@ export class CssSelector {
         throw "Specificity property is abstract";
     }
 
-    get isAnimated(): boolean {
-        return this._animationGroup !== undefined && this._animationGroup.keyframes !== undefined && this._animationGroup.keyframes.length > 0;
-    }
-
-    get animation(): animationGroupModule.AnimationGroup {
-        return this._animationGroup;
-    }
-
-    get keyframes(): Object {
-        return this._animationGroup.keyframes;
-    }
-
-    set keyframes(value: Object) {
-        if (this._animationGroup !== undefined) {
-            this._animationGroup.keyframes = animationGroupModule.AnimationGroup.keyframesFromCSS(value);
-        }
-    }
-
     protected get valueSourceModifier(): number {
         return observable.ValueSource.Css;
     }
@@ -84,15 +68,15 @@ export class CssSelector {
     public apply(view: view.View) {
         let modifier = this.valueSourceModifier;
         this.eachSetter((property, value) => {
-            if(types.isString(property)) {
+            if (types.isString(property)) {
                 let attrHandled = false;
                 let specialSetter = getSpecialPropertySetter(property);
-                
+
                 if (!attrHandled && specialSetter) {
                     specialSetter(view, value);
                     attrHandled = true;
                 }
-                
+
                 if (!attrHandled && property in view) {
                     view[property] = utils.convertString(value);
                 }
@@ -105,12 +89,11 @@ export class CssSelector {
                 }
             }
         });
-        if (this.isAnimated) {
-            if (this._animationGroup.isPlaying) {
-                // should be canceled here
-                return;
+        if (this.animation) {
+            let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(this.animation);
+            if (realAnimation) {
+                realAnimation.play(view);
             }
-            this._animationGroup.play(view);
         }
     }
 

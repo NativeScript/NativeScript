@@ -1,50 +1,24 @@
-import definition = require("ui/animation/animationgroup");
+import animationModule = require("ui/animation");
+import keyframeAnimationModule = require("ui/animation/keyframe-animation");
 import cssParser = require("css");
 import converters = require("../styling/converters");
-import colorModule = require("color");
-import * as styleProperty from "ui/styling/style-property";
-import animationModule = require("ui/animation");
-import observable = require("ui/core/dependency-observable");
-import view = require("ui/core/view");
-import enums = require("ui/enums");
 import types = require("utils/types");
+import colorModule = require("color");
+import styleProperty = require("ui/styling/style-property");
 
 interface TransformInfo {
     scale: animationModule.Pair;
     translate: animationModule.Pair;
 }
 
-export class KeyframeDeclaration implements definition.KeyframeDeclaration {
-    public property: string;
-    public value: any;
-}
+export class CssAnimationParser {
 
-export class Keyframe implements definition.Keyframe {
-    public duration: number;
-    public declarations: Array<KeyframeDeclaration>;
-}
-
-export class AnimationGroup implements definition.AnimationGroup {
-
-    public name: string;
-    public duration: number = 0.3;
-    public delay: number = 0;
-    public iterations: number = 1;
-    public curve: any = enums.AnimationCurve.easeInOut;
-    public isForwards: boolean = false;
-    public isReverse: boolean = false;
-    public keyframes: Array<Keyframe>;
-
-    private _resolve;
-    private _reject;
-    private _isPlaying: boolean;
-    
-    public static animationGroupFromSelectorDeclarations(declarations: cssParser.Declaration[]): definition.AnimationGroup {
-        let animationGroup: definition.AnimationGroup = undefined;
+     public static keyframeAnimationFromCSSDeclarations(declarations: cssParser.Declaration[]): keyframeAnimationModule.KeyframeAnimationInfo {
+        let animationGroup: keyframeAnimationModule.KeyframeAnimationInfo = undefined;
         for (let declaration of declarations) {
             if (declaration.property.indexOf("animation") === 0) {
                 if (animationGroup === undefined) {
-                    animationGroup = new definition.AnimationGroup();
+                    animationGroup = new keyframeAnimationModule.KeyframeAnimationInfo();
                 }
                 switch (declaration.property) {
                     case "animation-name":
@@ -68,7 +42,7 @@ export class AnimationGroup implements definition.AnimationGroup {
                         }
                         break;
                     case "animation":
-                        animationGroup = AnimationGroup.animationGroupFromProperty(declaration.value);
+                        animationGroup = CssAnimationParser.keyframeAnimationFromCSSProperty(declaration.value);
                         break;
                     case "animation-direction":
                         if (declaration.value === "reverse") {
@@ -86,10 +60,10 @@ export class AnimationGroup implements definition.AnimationGroup {
         return animationGroup;
     }
 
-    public static keyframesFromCSS(cssKeyframes: Object): Array<Keyframe> {
-        let parsedKeyframes = new Array<Keyframe>();
+    public static keyframesArrayFromCSS(cssKeyframes: Object): Array<keyframeAnimationModule.KeyframeInfo> {
+        let parsedKeyframes = new Array<keyframeAnimationModule.KeyframeInfo>();
         for (let keyframe of (<any>cssKeyframes).keyframes) {
-            let declarations = AnimationGroup.parseKeyframeDeclarations(keyframe);
+            let declarations = CssAnimationParser.parseKeyframeDeclarations(keyframe);
             for (let time of keyframe.values) {
                 if (time === "from") {
                     time = 0;
@@ -108,7 +82,7 @@ export class AnimationGroup implements definition.AnimationGroup {
                 }
                 let current = parsedKeyframes[time];
                 if (current === undefined) {
-                    current = new Keyframe();
+                    current = new keyframeAnimationModule.KeyframeInfo();
                     current.duration = time;
                     parsedKeyframes[time] = current;
                 }
@@ -123,7 +97,37 @@ export class AnimationGroup implements definition.AnimationGroup {
         return array;
     }
 
-    private static parseKeyframeDeclarations(keyframe: Object): Array<KeyframeDeclaration> {
+    private static keyframeAnimationFromCSSProperty(value: any): keyframeAnimationModule.KeyframeAnimationInfo {
+        if (types.isString(value)) {
+            let animationInfo = new keyframeAnimationModule.KeyframeAnimationInfo();
+            let arr = (<string>value).split(/[ ]+/);
+
+            if (arr.length > 0) {
+                animationInfo.name = arr[0];
+            }
+            if (arr.length > 1) {
+                animationInfo.duration = converters.timeConverter(arr[1]);
+            }
+            if (arr.length > 2) {
+                animationInfo.curve = converters.animationTimingFunctionConverter(arr[2]);
+            }
+            if (arr.length > 3) {
+                animationInfo.delay = converters.timeConverter(arr[3]);
+            }
+            if (arr.length > 4) {
+                animationInfo.iterations = parseInt(arr[4]);
+            }
+            if (arr.length > 5) {
+                throw new Error("Invalid value for animation: " + value);
+            }
+            return animationInfo;
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    private static parseKeyframeDeclarations(keyframe: Object): Array<keyframeAnimationModule.KeyframeDeclaration> {
         let declarations = {};
         let transforms = { scale: undefined, translate: undefined };
         for (let declaration of (<any>keyframe).declarations) {
@@ -156,9 +160,9 @@ export class AnimationGroup implements definition.AnimationGroup {
         if (transforms.translate !== undefined) {
             declarations["translate"] = transforms.translate;
         }
-        let array = new Array<KeyframeDeclaration>();
+        let array = new Array<keyframeAnimationModule.KeyframeDeclaration>();
         for (let declaration in declarations) {
-            let keyframeDeclaration = new KeyframeDeclaration();
+            let keyframeDeclaration = new keyframeAnimationModule.KeyframeDeclaration();
             keyframeDeclaration.property = declaration;
             keyframeDeclaration.value = declarations[declaration];
             array.push(keyframeDeclaration);
@@ -196,116 +200,5 @@ export class AnimationGroup implements definition.AnimationGroup {
             return true;
         }
         return false;
-    }
-
-    private static animationGroupFromProperty(value: any): AnimationGroup {
-        if (types.isString(value)) {
-            let animationInfo = new AnimationGroup();
-            let arr = (<string>value).split(/[ ]+/);
-
-            if (arr.length > 0) {
-                animationInfo.name = arr[0];
-            }
-            if (arr.length > 1) {
-                animationInfo.duration = converters.timeConverter(arr[1]);
-            }
-            if (arr.length > 2) {
-                animationInfo.curve = converters.animationTimingFunctionConverter(arr[2]);
-            }
-            if (arr.length > 3) {
-                animationInfo.delay = converters.timeConverter(arr[3]);
-            }
-            if (arr.length > 4) {
-                animationInfo.iterations = parseInt(arr[4]);
-            }
-            if (arr.length > 5) {
-                throw new Error("Invalid value for animation: " + value);
-            }
-            return animationInfo;
-        }
-        else {
-            return undefined;
-        }
-    }
-
-    public play(view: view.View): Promise<void> {
-        if (this._isPlaying) {
-            throw new Error("Animation is already playing.");
-        }
-
-        let animationFinishedPromise = new Promise<void>((resolve, reject) => {
-            this._resolve = resolve;
-            this._reject = reject;
-        });
-
-        this._isPlaying = true;
-
-        let animations = this.buildAnimationsFromKeyframes();
-        if (this.delay !== 0) {
-            let that = this;
-            setTimeout(function (){ that.animate(animations, 0, view, that.iterations); }, that.delay, that);
-        }
-        else {
-            this.animate(animations, 0, view, this.iterations);
-        }
-
-        return animationFinishedPromise;
-    }
-
-    private buildAnimationsFromKeyframes(): Array<Object> {
-        let animations = new Array();
-        let length = this.keyframes.length;
-        let startDuration = 0;
-        for (let index = this.isReverse ? length - 1 : 0; this.isReverse ? index >= 0 : index < this.keyframes.length; this.isReverse ? index-- : index++) {
-            let keyframe = this.keyframes[index];
-            let animation = {};
-            animation["curve"] = this.curve;
-            for (let declaration of keyframe.declarations) {
-                animation[declaration.property] = declaration.value;
-            }
-            let duration = keyframe.duration;
-            if (duration === 0) {
-                duration = 0.01;
-            }
-            else {
-                duration = (this.duration * duration) - startDuration;
-                startDuration += duration;
-            }
-            animation["duration"] = this.isReverse ? this.duration - duration : duration;
-            animation["valueSource"] = observable.ValueSource.Css;
-            animations.push(animation);
-        }
-        //animations[animations.length - 1]["valueSource"] = observable.ValueSource.Css;
-        animations[0].duration = 0.01;
-        return animations;
-    }
-
-    private animate(animations: Array<Object>, index: number, v: view.View, iterations: number) {
-        if (index < 0 || index >= animations.length) {
-            iterations -= 1;
-            if (iterations > 0) {
-                this.animate(animations, 0, v, iterations);
-            }
-            this._resolveAnimationFinishedPromise();
-        }
-        else {
-            v.animate(animations[index]).then(() => {
-                this.animate(animations, index + 1, v, iterations);
-            });
-        }
-    }
-
-    public get isPlaying(): boolean {
-        return this._isPlaying;
-    }
-
-    public _resolveAnimationFinishedPromise() {
-        this._isPlaying = false;
-        this._resolve();
-    }
-
-    public _rejectAnimationFinishedPromise() {
-        this._isPlaying = false;
-        this._reject(new Error("Animation cancelled."));
     }
 }

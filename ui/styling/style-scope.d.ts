@@ -3,7 +3,7 @@ declare module "ui/styling/style-scope" {
     import view = require("ui/core/view");
     import cssSelector = require("ui/styling/css-selector");
     import cssParser = require("css");
-    import animationGroupModule = require("ui/animation/animationgroup");
+    import keyframeAnimation = require("ui/animation/keyframe-animation");
 
     export class StyleScope {
         public css: string;
@@ -17,7 +17,7 @@ declare module "ui/styling/style-scope" {
         public getVisualStates(view: view.View): Object;
 
         public removeSelectors(selectorExpression: string);
-        public getKeyframesAnimation(animationName: string): animationGroupModule.AnimationGroup;
+        public getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo;
     }
 
     export function applyInlineSyle(view: view.View, style: string): void;

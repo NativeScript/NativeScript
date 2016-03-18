@@ -8,7 +8,7 @@ declare module "ui/page" {
     import frame = require("ui/frame");
     import actionBar = require("ui/action-bar");
     import dependencyObservable = require("ui/core/dependency-observable");
-    import animationGroupModule = require("ui/animation/animationgroup");
+    import keyframeAnimation = require("ui/animation/keyframe-animation");
 
     //@private
     import styleScope = require("ui/styling/style-scope");
@@ -128,9 +128,9 @@ declare module "ui/page" {
         removeCssSelectors(selectorExpression: string): void;
 
         /**
-         * Returns a CSS keyframe animation group with the specified name if it exists.
+         * Returns a CSS keyframe animation with the specified name, if it exists.
          */
-        getKeyframesAnimation(animationName: string): animationGroupModule.AnimationGroup;
+        getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo;
 
         /**
          * A property that is used to pass a data from another page (while navigate to).

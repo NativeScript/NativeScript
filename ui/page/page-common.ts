@@ -8,7 +8,7 @@ import * as style from "../styling/style";
 import * as fileSystemModule from "file-system";
 import * as frameModule from "ui/frame";
 import proxy = require("ui/core/proxy");
-import animationGroupModule = require("ui/animation/animationgroup");
+import keyframeAnimation = require("ui/animation/keyframe-animation");
 
 var fs: typeof fileSystemModule;
 function ensureFS() {
@@ -180,8 +180,8 @@ export class Page extends ContentView implements dts.Page {
         this._refreshCss();
     }
 
-    public getKeyframesAnimation(animationName: string): animationGroupModule.AnimationGroup {
-        return this._styleScope.getKeyframesAnimation(animationName);
+    public getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo {
+        return this._styleScope.getKeyframeAnimationWithName(animationName);
     }
 
     get frame(): frameModule.Frame {

@@ -1,23 +1,26 @@
-declare module "ui/animation/animationgroup" {
+declare module "ui/animation/keyframe-animation" {
 
 import view = require("ui/core/view");
-import cssParser = require("css");
 
     export class KeyframeDeclaration {
         property: string;
         value: any;
     }
 
-    export class Keyframe {
+    export class KeyframeInfo {
         duration: number;
+        curve: any;
         declarations: Array<KeyframeDeclaration>;
     }
 
     /**
      * Defines animation options for the View.animate method.
      */
-    export class AnimationGroup {
+    export class KeyframeAnimationInfo {
 
+        /**
+         * The animation name.
+         */
         name: string;
 
         /**
@@ -54,22 +57,38 @@ import cssParser = require("css");
         isReverse: boolean;
 
         /**
+         * Return animation keyframes.
+         */
+        keyframes: Array<KeyframeInfo>;
+    }
+
+    export class KeyframeAnimation {
+
+        /**
+         * The amount of time, in milliseconds, to delay starting the animation.
+         */
+        delay: number;
+
+        /**
+         * Specifies how many times the animation should be played. Default is 1.
+         * iOS animations support fractional iterations, i.e. 1.5.
+         * To repeat an animation infinitely, use Number.POSITIVE_INFINITY
+         */
+        iterations: number;
+
+        /**
          * Returns true if the application is currently running.
          */
         isPlaying: boolean;
-
-        /**
-         * Return animation keyframes.
-         */
-        keyframes: Array<Keyframe>;
 
         /**
          * Plays the animation.
          */
         public play: (view: view.View) => Promise<void>;
 
-        public static animationGroupFromSelectorDeclarations(declarations: cssParser.Declaration[]): AnimationGroup;
-
-        public static keyframesFromCSS(cssKeyframes: Object): Array<Keyframe>;
+        /**
+         * Creates a keyframe animation from animation definition.
+         */
+        public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo);
     }
 }
