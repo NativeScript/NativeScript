@@ -740,6 +740,7 @@ export function test_parseSpansDirectlyOnLabel() {
         var page = <Page>views[0];
         var testLabel = <Label>page.getViewById("testLabel");
         TKUnit.assertEqual(testLabel.formattedText + "", "We areAwesome", "Formatted string should be set");
+        TKUnit.assertEqual(testLabel.text + "", "We areAwesome", "Formatted string should be set");
     }
 
     helper.navigate(function () { return p; });
@@ -757,6 +758,7 @@ export function test_parseSpansDirectlyOnButton() {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "We areAwesome", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.text + "", "We areAwesome", "Formatted string should be set");
     }
 
     helper.navigate(function () { return p; });
@@ -774,6 +776,7 @@ export function test_parseFormattedStringWithoutFormattedText() {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.text + "", "author num_comments", "Formatted string should be set");
     }
 
     helper.navigate(function () { return p; });
@@ -791,6 +794,7 @@ export function test_parseFormattedStringFullSyntax() {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.text + "", "author num_comments", "Formatted string should be set");
     }
 
     helper.navigate(function () { return p; });
@@ -808,6 +812,7 @@ export function test_parseSpansDirectlyToFormattedString() {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.text + "", "author num_comments", "Formatted string should be set");
     }
 
     helper.navigate(function () { return p; });

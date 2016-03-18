@@ -6,6 +6,8 @@ import textFieldTestsNative = require("./text-field-tests-native");
 import colorModule = require("color");
 import enums = require("ui/enums");
 import platform = require("platform");
+import formattedStringModule = require("text/formatted-string");
+import spanModule = require("text/span");
 
 // <snippet module="ui/text-field" title="TextField">
 // # TextField
@@ -467,4 +469,38 @@ export var testMemoryLeak = function (done) {
     helper.buildUIWithWeakRefAndInteract(_createTextFieldFunc, function (textField) {
         textFieldTestsNative.typeTextNatively(textField, "Hello, world!");
     }, done);
+}
+
+export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_TextBase = function () {
+    var firstSpan = new spanModule.Span();
+    firstSpan.fontSize = 10;
+    firstSpan.text = "First";
+    var secondSpan = new spanModule.Span();
+    secondSpan.fontSize = 15;
+    secondSpan.text = "Second";
+    var thirdSpan = new spanModule.Span();
+    thirdSpan.fontSize = 20;
+    thirdSpan.text = "Third";
+    var formattedString1 = new formattedStringModule.FormattedString();
+    formattedString1.spans.push(firstSpan);
+    var formattedString2 = new formattedStringModule.FormattedString();
+    formattedString2.spans.push(secondSpan);
+    formattedString2.spans.push(thirdSpan);
+
+    var view = new textFieldModule.TextField();
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        TKUnit.assertEqual(view.text, "");
+
+        view.formattedText = formattedString1;
+        TKUnit.assertEqual(view.text, "First");
+
+        view.formattedText = formattedString2;
+        TKUnit.assertEqual(view.text, "SecondThird");
+
+        formattedString2.spans[0].text = "Mecond";
+        TKUnit.assertEqual(view.text, "MecondThird");
+
+        view.formattedText = null;
+        TKUnit.assertEqual(view.text, "");
+    });
 }

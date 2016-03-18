@@ -5,6 +5,8 @@ import pagesModule = require("ui/page");
 import buttonTestsNative = require("./button-tests-native");
 import colorModule = require("color");
 import enums = require("ui/enums");
+import formattedStringModule = require("text/formatted-string");
+import spanModule = require("text/span");
 
 // <snippet module="ui/button" title="button">
 // # Button
@@ -289,5 +291,39 @@ export var testNativeTextAlignmentFromLocal = function () {
 
         var actualResult = buttonTestsNative.getNativeTextAlignment(view);
         TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
+    });
+}
+
+export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_Button = function () {
+    var firstSpan = new spanModule.Span();
+    firstSpan.fontSize = 10;
+    firstSpan.text = "First";
+    var secondSpan = new spanModule.Span();
+    secondSpan.fontSize = 15;
+    secondSpan.text = "Second";
+    var thirdSpan = new spanModule.Span();
+    thirdSpan.fontSize = 20;
+    thirdSpan.text = "Third";
+    var formattedString1 = new formattedStringModule.FormattedString();
+    formattedString1.spans.push(firstSpan);
+    var formattedString2 = new formattedStringModule.FormattedString();
+    formattedString2.spans.push(secondSpan);
+    formattedString2.spans.push(thirdSpan);
+
+    var view = new buttonModule.Button();
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        TKUnit.assertEqual(view.text, "");
+
+        view.formattedText = formattedString1;
+        TKUnit.assertEqual(view.text, "First");
+
+        view.formattedText = formattedString2;
+        TKUnit.assertEqual(view.text, "SecondThird");
+
+        formattedString2.spans[0].text = "Mecond";
+        TKUnit.assertEqual(view.text, "MecondThird");
+
+        view.formattedText = null;
+        TKUnit.assertEqual(view.text, "");
     });
 }
