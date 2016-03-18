@@ -320,7 +320,7 @@ export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_Button = function
         view.formattedText = formattedString2;
         TKUnit.assertEqual(view.text, "SecondThird");
 
-        formattedString2.spans[0].text = "Mecond";
+        formattedString2.spans.getItem(0).text = "Mecond";
         TKUnit.assertEqual(view.text, "MecondThird");
 
         view.formattedText = null;
