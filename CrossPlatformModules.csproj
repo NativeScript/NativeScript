@@ -84,6 +84,9 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="apps\animations\opacity.ts" />
     <TypeScriptCompile Include="apps\custom-root-view\app.ts" />
+    <TypeScriptCompile Include="apps\navigation-events-demo\app.ts" />
+    <TypeScriptCompile Include="apps\navigation-events-demo\page2.ts" />
+    <TypeScriptCompile Include="apps\navigation-events-demo\page1.ts" />
     <TypeScriptCompile Include="apps\perf-tests\NavigationTest\list-picker-page.ts" />
     <TypeScriptCompile Include="apps\perf-tests\custom-transition.android.ts" />
     <TypeScriptCompile Include="apps\perf-tests\custom-transition.ios.ts" />
@@ -146,6 +149,8 @@
     <Content Include="apps\custom-root-view\main-page.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\navigation-events-demo\page2.xml" />
+    <Content Include="apps\navigation-events-demo\page1.xml" />
     <Content Include="apps\perf-tests\NavigationTest\list-picker-page.xml" />
     <Content Include="apps\tests\ui\action-bar\ActionBar_BetweenTags.xml" />
     <Content Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.xml" />
@@ -2096,6 +2101,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="apps\tests\file-system-access-tests\folder\file.expected" />
+    <Content Include="apps\navigation-events-demo\package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">

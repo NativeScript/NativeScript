@@ -57,7 +57,7 @@ export class Page extends ContentView implements dts.Page {
     private _styleScope: styleScope.StyleScope = new styleScope.StyleScope();
     private _actionBar: ActionBar;
 
-    private _modal: Page;
+    public _modal: Page;
 
     constructor(options?: dts.Options) {
         super(options);
@@ -206,18 +206,20 @@ export class Page extends ContentView implements dts.Page {
         this._navigationContext = undefined;
     }
 
-    public showModal() {
+    public showModal(): Page {
         ensureFrame();
         if (arguments.length === 0) {
             this._showNativeModalView(<any>frame.topmost().currentPage, undefined, undefined, true);
+            return this;
         } else {
             var moduleName: string = arguments[0];
             var context: any = arguments[1];
             var closeCallback: Function = arguments[2];
             var fullscreen: boolean = arguments[3];
 
-            var page = frame.resolvePageFromEntry({ moduleName: moduleName });
-            (<Page>page)._showNativeModalView(this, context, closeCallback, fullscreen);
+            var page = <Page>frame.resolvePageFromEntry({ moduleName: moduleName });
+            page._showNativeModalView(this, context, closeCallback, fullscreen);
+            return page;
         }
     }
 
@@ -255,7 +257,7 @@ export class Page extends ContentView implements dts.Page {
     }
 
     protected _hideNativeModalView(parent: Page) {
-        parent._modal = undefined;
+        //
     }
 
     protected _raiseShownModallyEvent(parent: Page, context: any, closeCallback: Function) {

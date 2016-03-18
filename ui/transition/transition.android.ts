@@ -235,7 +235,7 @@ export function _onFragmentHidden(fragment: android.app.Fragment, isBack: boolea
 
     if (fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS] === undefined) {
         // This might be a second call if the fragment is hidden and then destroyed.
-        _completePageRemoval(fragment, true);
+        _completePageRemoval(fragment, true, isBack);
     }
 }
 
@@ -253,7 +253,7 @@ function _completePageAddition(fragment: android.app.Fragment, isBack: boolean, 
     }
 }
 
-function _completePageRemoval(fragment: android.app.Fragment, force?: boolean) {
+function _completePageRemoval(fragment: android.app.Fragment, force: boolean = false, isBack: boolean = false) {
     if (fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS] || force) {
         fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS] = undefined;
         var frame = (<any>fragment).frame;
@@ -261,7 +261,9 @@ function _completePageRemoval(fragment: android.app.Fragment, force?: boolean) {
         var page: pageModule.Page = entry.resolvedPage;
         if (page.frame) {
             frame._removeView(page);
+            page.onNavigatedFrom(isBack);
         }
+        
         trace.write(`REMOVAL of ${page} completed`, trace.categories.Transition);
     }
 }

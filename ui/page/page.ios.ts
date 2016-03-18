@@ -8,6 +8,27 @@ import {device} from "platform";
 import {DeviceType} from "ui/enums";
 
 global.moduleMerge(pageCommon, exports);
+var ENTRY = "_entry";
+
+function isBackNavigation(frame: any, entry): boolean {
+    if (!frame) {
+        return false;
+    }
+
+    if (frame._navigationQueue.length === 0) {
+        return true;
+    }
+    else {
+        var navigationQueue = frame._navigationQueue;
+        for (var i = 0; i < navigationQueue.length; i++) {
+            if (navigationQueue[i].entry === entry) {
+                return navigationQueue[i].isBackNavigation;
+            }
+        }
+    }
+
+    return false;
+}
 
 class UIViewControllerImpl extends UIViewController {
 
@@ -31,7 +52,7 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        if (owner._isModal) {
+        if (owner._modalParent) {
             let isTablet = device.deviceType === DeviceType.Tablet;
             let isFullScreen = !owner._UIModalPresentationFormSheet || !isTablet;
             let frame = isFullScreen ? UIScreen.mainScreen().bounds : this.view.frame;
@@ -85,54 +106,151 @@ class UIViewControllerImpl extends UIViewController {
         }
     }
 
-    public viewWillAppear() {
-        let owner = this._owner.get();
-        if (!owner) {
+    public viewWillAppear(animated: boolean): void {
+        let page = this._owner.get();
+        trace.write(page + " viewWillAppear", trace.categories.Navigation);
+        if (!page) {
             return;
         }
 
-        trace.write(owner + " viewWillAppear", trace.categories.Navigation);
-        owner._enableLoadedEvents = true;
+        let frame = this.navigationController ? (<any>this.navigationController).owner : null;
+        let newEntry = this[ENTRY];
+
+        // Don't raise event if currentPage was showing modal page.
+        if (!page.modal && newEntry && (!frame || frame.currentPage !== page)) {
+            let isBack = isBackNavigation(frame, newEntry)
+            page.onNavigatingTo(newEntry.entry.context, isBack);
+        }
+
+        if (frame) {
+            if (!page.parent) {
+                if (!frame._currentEntry) {
+                    frame._currentEntry = newEntry;
+                } else {
+                    frame._navigateToEntry = newEntry;
+                }
+
+                frame._addView(page);
+                frame.remeasureFrame();
+            } else if (page.parent !== frame) {
+                throw new Error("Page is already shown on another frame.");
+            }
+
+            page.actionBar.update();
+        }
 
         //https://github.com/NativeScript/NativeScript/issues/1201
-        owner._viewWillDisappear = false;
-        owner.onLoaded();
-        owner._enableLoadedEvents = false;
+        page._viewWillDisappear = false;
+
+        page._enableLoadedEvents = true;
+        // If page was in backstack or showing modal page it will have parent but it will be in unloaded state so raise loaded here.
+        if (!page.isLoaded) {
+            page.onLoaded();
+        }
+
+        page._enableLoadedEvents = false;
     }
 
-    public viewWillDisappear() {
-        let owner = this._owner.get();
-        if (!owner) {
+    public viewDidAppear(animated: boolean): void {
+        let page = this._owner.get();
+        trace.write(page + " viewDidAppear", trace.categories.Navigation);
+        if (!page) {
             return;
         }
 
-        trace.write(owner + " viewWillDisappear", trace.categories.Navigation);
-        
         //https://github.com/NativeScript/NativeScript/issues/1201
-        owner._viewWillDisappear = true;
+        page._viewWillDisappear = false;
+
+        let frame = this.navigationController ? (<any>this.navigationController).owner : null;
+        // Skip navigation events if modal page is shown.
+        if (!page.modal && frame) {
+            let newEntry = this[ENTRY];
+            let isBack = isBackNavigation(frame, newEntry);
+            // We are on the current page which happens when navigation is canceled so isBack should be false.
+            if (frame.currentPage === page && frame._navigationQueue.length === 0) {
+                isBack = false;
+            }
+
+            frame._navigateToEntry = null;
+            frame._currentEntry = newEntry;
+            frame.remeasureFrame();
+            frame._updateActionBar(page);
+
+            page.onNavigatedTo(isBack);
+            frame._processNavigationQueue(page);
+        }
+    };
+
+    public viewWillDisappear(animated: boolean): void {
+        let page = this._owner.get();
+        trace.write(page + " viewWillDisappear", trace.categories.Navigation);
+        if (!page) {
+            return;
+        }
+
+        var frame = page.frame;
+        // Skip navigation events if we are hiding because we are about to show modal page.
+        if (!page.modal && frame && frame.currentPage === page) {
+            var isBack = page.frame && (!this.navigationController || !this.navigationController.viewControllers.containsObject(this));
+            page.onNavigatingFrom(isBack);
+        }
+
+        //https://github.com/NativeScript/NativeScript/issues/1201
+        page._viewWillDisappear = true;
     }
 
-    public viewDidDisappear() {
-        let owner = this._owner.get();
-        if (!owner) {
+    public viewDidDisappear(animated: boolean): void {
+        let page = this._owner.get();
+        trace.write(page + " viewDidDisappear", trace.categories.Navigation);
+        // Exit if no page or page is hiding because it shows another page modally.
+        if (!page || page.modal) {
             return;
         }
 
-        trace.write(owner + " viewDidDisappear", trace.categories.Navigation);
-        if (owner.modal) {
-            // Don't emit unloaded if this page is disappearing because of a modal view being shown.
-            return;
+        let modalParent = page._modalParent;
+        page._modalParent = undefined;
+        page._UIModalPresentationFormSheet = false;
+
+        // Clear modal flag on parent page.
+        if (modalParent) {
+            modalParent._modal = undefined;
         }
-        owner._enableLoadedEvents = true;
-        owner.onUnloaded();
-        owner._enableLoadedEvents = false;
+
+        // Manually pop backStack when Back button is pressed or navigating back with edge swipe.
+        // Don't pop if we are hiding modally shown page.
+        let frame = page.frame;
+        if (!modalParent && frame && frame.backStack.length > 0 && (<any>frame)._navigationQueue.length === 0 && frame.currentPage === page) {
+            (<any>frame)._backStack.pop();
+        }
+
+        page._enableLoadedEvents = true;
+
+        // Remove from parent if page was in frame and we navigated back.
+        // Showing page modally will not pass isBack check so currentPage won't be removed from Frame.
+        let isBack = frame && (!this.navigationController || !this.navigationController.viewControllers.containsObject(this));
+        if (isBack) {
+            // Remove parent when navigating back.
+            frame._removeView(page);
+        }
+
+        // Forward navigation does not remove page from frame so we raise unloaded manually.
+        if (page.isLoaded) {
+            page.onUnloaded();
+        }
+
+        page._enableLoadedEvents = false;
+
+        if (!modalParent) {
+            // Last raise onNavigatedFrom event if we are not modally shown.
+            page.onNavigatedFrom(isBack);
+        }
     }
 }
 
 export class Page extends pageCommon.Page {
     private _ios: UIViewController;
     public _enableLoadedEvents: boolean;
-    public _isModal: boolean;
+    public _modalParent: Page;
     public _UIModalPresentationFormSheet: boolean;
     public _viewWillDisappear: boolean;
 
@@ -203,7 +321,7 @@ export class Page extends pageCommon.Page {
 
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         super._showNativeModalView(parent, context, closeCallback, fullscreen);
-        this._isModal = true;
+        this._modalParent = parent;
 
         if (!parent.ios.view.window) {
             throw new Error("Parent page is not part of the window hierarchy. Close the current modal page before showing another one!");
@@ -218,17 +336,17 @@ export class Page extends pageCommon.Page {
         }
 
         super._raiseShowingModallyEvent();
+
         var that = this;
-        parent.ios.presentViewControllerAnimatedCompletion(this._ios, utils.ios.MajorVersion >= 9, function completion() {
+        parent.ios.presentViewControllerAnimatedCompletion(this._ios, utils.ios.MajorVersion >= 8, null);
+        UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(parent.ios.transitionCoordinator(), null, function () {
             that._raiseShownModallyEvent(parent, context, closeCallback);
         });
     }
 
     protected _hideNativeModalView(parent: Page) {
-        this._isModal = false;
-        this._UIModalPresentationFormSheet = false;
         parent.requestLayout();
-        parent._ios.dismissModalViewControllerAnimated(utils.ios.MajorVersion >= 9);
+        parent._ios.dismissModalViewControllerAnimated(utils.ios.MajorVersion >= 8);
 
         super._hideNativeModalView(parent);
     }
@@ -241,7 +359,6 @@ export class Page extends pageCommon.Page {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-
         let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
         let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -258,12 +375,12 @@ export class Page extends pageCommon.Page {
         if (this.frame && this.frame.parent) {
             statusBarHeight = 0;
         }
-        
+
         // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
-        if (this._isModal && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
+        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
             statusBarHeight = 0;
         }
-        
+
         if (this.frame && this.frame._getNavBarVisible(this)) {
             // Measure ActionBar with the full height. 
             let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
@@ -294,14 +411,14 @@ export class Page extends pageCommon.Page {
         }
 
         let statusBarHeight = this.backgroundSpanUnderStatusBar ? uiUtils.ios.getStatusBarHeight() : 0;
-        
+
         // If this page is inside nested frame - don't substract statusBarHeight again.
         if (this.frame && this.frame.parent) {
             statusBarHeight = 0;
         }
 
         // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
-        if (this._isModal && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
+        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
             statusBarHeight = 0;
         }
 

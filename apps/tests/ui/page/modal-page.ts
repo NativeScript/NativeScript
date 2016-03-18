@@ -1,20 +1,20 @@
-﻿import {ShownModallyData} from "ui/page";
+﻿import {topmost} from "ui/frame";
 import TKUnit = require("../../TKUnit");
-import frame = require("ui/frame");
-import page = require("ui/page");
+import {Page, ShownModallyData} from "ui/page";
 
-var modalPage: page.Page;
-
+export var modalPage: Page;
 export function onShowingModally(args) {
-    modalPage = <page.Page>args.object;
+    modalPage = <Page>args.object;
+    args.object.showingModally = true;
 }
 
 export function onShownModally(args: ShownModallyData) {
-    TKUnit.assertNotNull(modalPage);
-    TKUnit.wait(0.100);
+    let page = <Page>args.object;
+    TKUnit.assertNotNull(page);
     if (args.context) {
         args.context.shownModally = true;
     }
-    TKUnit.assert(frame.topmost().currentPage.modal = modalPage, "frame.topmost().currentPage.modal should be equal to the page instance on page.shownModally event handler.");
+
+    TKUnit.assertEqual(topmost().currentPage.modal, page, "frame.topmost().currentPage.modal should be equal to the page instance on page.shownModally event handler.");
     args.closeCallback("return value");
 }
