@@ -710,7 +710,8 @@ class NativeScriptActivity extends android.app.Activity {
         if (frameId >= 0) {
             rootView = getFrameById(frameId);
         }
-        else if (!rootView) {
+
+        if (!rootView) {
             navParam = application.mainEntry;
             if (!navParam) {
                 navParam = application.mainModule;
