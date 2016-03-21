@@ -21,12 +21,11 @@ Our [Getting Started Guide](http://docs.nativescript.org/start/getting-started) 
 ## Quick Links
 
 - [NativeScript home page](http://nativescript.org)
-- [NativeScript documentation](http://docs.nativescript.org/)
-- [NativeScript blog](http://www.nativescript.org/blog)
 - [@NativeScript on Twitter](http://twitter.com/NativeScript)
 - [NativeScript community Slack channel](http://developer.telerik.com/wp-login.php?action=slack-invitation)
-- [NativeScript community forum](https://groups.google.com/forum/#!forum/nativescript)
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
+- [NativeScript documentation](http://docs.nativescript.org/)
+- [NativeScript blog](http://www.nativescript.org/blog)
 
 ## Repositories
 
