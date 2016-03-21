@@ -723,7 +723,7 @@ export var test_getLocationOnScreen_IsUndefinedWhenNotInTheVisualTree = function
     TKUnit.assertNull(label.getLocationOnScreen());
 }
 
-var delta = 0.5;
+var delta = 1;
 export var test_getLocationRelativeToOtherView = function () {
     var a1 = new absoluteLayoutModule.AbsoluteLayout();
     a1.width = 200;
@@ -733,8 +733,8 @@ export var test_getLocationRelativeToOtherView = function () {
     var a2 = new absoluteLayoutModule.AbsoluteLayout();
     a2.width = 100;
     a2.height = 100;
-    absoluteLayoutModule.AbsoluteLayout.setLeft(a2, 11);
-    absoluteLayoutModule.AbsoluteLayout.setTop(a2, 12);
+    absoluteLayoutModule.AbsoluteLayout.setLeft(a2, 10);
+    absoluteLayoutModule.AbsoluteLayout.setTop(a2, 10);
     a2.backgroundColor = new color.Color("green");
 
     var label = new labelModule.Label();
@@ -742,8 +742,8 @@ export var test_getLocationRelativeToOtherView = function () {
     label.id = "label";
     label.width = 70;
     label.height = 30;
-    absoluteLayoutModule.AbsoluteLayout.setLeft(label, 13);
-    absoluteLayoutModule.AbsoluteLayout.setTop(label, 14);
+    absoluteLayoutModule.AbsoluteLayout.setLeft(label, 10);
+    absoluteLayoutModule.AbsoluteLayout.setTop(label, 10);
     a2.backgroundColor = new color.Color("yellow");
 
     a2.addChild(label);
@@ -757,14 +757,14 @@ export var test_getLocationRelativeToOtherView = function () {
         var labelInA1 = label.getLocationRelativeTo(a1);
         var a2InA1 = a2.getLocationRelativeTo(a1);
 
-        TKUnit.assertAreClose(labelInA2.x, 13, delta);
-        TKUnit.assertAreClose(labelInA2.y, 14, delta);
+        TKUnit.assertAreClose(labelInA2.x, 10, delta, "labelInA2.x");
+        TKUnit.assertAreClose(labelInA2.y, 10, delta, "labelInA2.y");
 
-        TKUnit.assertAreClose(labelInA1.x, 24, delta);
-        TKUnit.assertAreClose(labelInA1.y, 26, delta);
+        TKUnit.assertAreClose(labelInA1.x, 20, delta, "labelInA1.x");
+        TKUnit.assertAreClose(labelInA1.y, 20, delta, "labelInA1.y");
 
-        TKUnit.assertAreClose(a2InA1.x, 11, delta);
-        TKUnit.assertAreClose(a2InA1.y, 12, delta);
+        TKUnit.assertAreClose(a2InA1.x, 10, delta, "a2InA1.x");
+        TKUnit.assertAreClose(a2InA1.y, 10, delta, "a2InA1.y");
     });
 }
 
@@ -776,7 +776,7 @@ export var test_getActualSize = function () {
         frame.topmost().requestLayout();
         TKUnit.wait(0.1);
         var actualSize = label.getActualSize();
-        TKUnit.assertAreClose(actualSize.width, 100, delta);
-        TKUnit.assertAreClose(actualSize.height, 200, delta);
+        TKUnit.assertAreClose(actualSize.width, 100, delta, "actualSize.width");
+        TKUnit.assertAreClose(actualSize.height, 200, delta, "actualSize.height");
     });
 }
