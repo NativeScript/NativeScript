@@ -278,6 +278,21 @@ export class View extends viewCommon.View {
         } 
     }
 
+    public getLocationRelativeTo(otherView: viewDefinition.View): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.window ||
+            !otherView._nativeView || !otherView._nativeView.window ||
+            this._nativeView.window !== otherView._nativeView.window) {
+            return undefined;
+        }
+
+        var myPointInWindow = this._nativeView.convertPointToView(this._nativeView.bounds.origin, null);
+        var otherPointInWindow = otherView._nativeView.convertPointToView(otherView._nativeView.bounds.origin, null);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(myPointInWindow.x - otherPointInWindow.x),
+            y: utils.layout.toDeviceIndependentPixels(myPointInWindow.y - otherPointInWindow.y),
+        } 
+    }
+
     private _onSizeChanged() {
         this.style._sizeChanged();
     }

@@ -1149,16 +1149,7 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public getLocationRelativeTo(otherView: definition.View): definition.Point {
-        var my = this.getLocationInWindow();
-        var other = otherView.getLocationInWindow();
-        if (!my || !other) {
-            return undefined;
-        }
-
-        return {
-            x: my.x - other.x,
-            y: my.y - other.y
-        } 
+        return undefined;
     }
 
     public getActualSize(): definition.Size {
