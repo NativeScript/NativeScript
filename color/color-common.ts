@@ -18,15 +18,18 @@ export class Color implements definition.Color {
         if (arguments.length === 1) {
             var arg = arguments[0];
             if (types.isString(arg)) {
-                if (knownColors.isKnownName(arg)) {
+                if (isRgbOrRgba(arg)) {
+                    this._argb = argbFromRgbOrRgba(arg);
+                } else if (knownColors.isKnownName(arg)) {
                     // The parameter is a known color name
                     this._hex = knownColors.getKnownColor(arg);
                     this._name = arg;
+                    this._argb = this._argbFromString(this._hex);
                 } else {
                     // The parameter is a "#AARRGGBB" formatted string
                     this._hex = this._normalizeHex(arg);
+                    this._argb = this._argbFromString(this._hex);
                 }
-                this._argb = this._argbFromString(this._hex);
             } else if (types.isNumber(arg)) {
                 // The parameter is a 32-bit unsigned integer where each 8 bits specify a color component
                 this._argb = arg;
@@ -121,7 +124,7 @@ export class Color implements definition.Color {
             return true;
         }
 
-        return HEX_REGEX.test(value);
+        return HEX_REGEX.test(value) || isRgbOrRgba(value);
     }
 
     private _buildHex(): string {
@@ -158,10 +161,44 @@ export class Color implements definition.Color {
         if (hexStr.charAt(0) === AMP && hexStr.length === 4) {
             // Duplicate each char after the #, so "#123" becomes "#112233"
             hexStr = hexStr.charAt(0)
-            + hexStr.charAt(1) + hexStr.charAt(1)
-            + hexStr.charAt(2) + hexStr.charAt(2)
-            + hexStr.charAt(3) + hexStr.charAt(3);
+                + hexStr.charAt(1) + hexStr.charAt(1)
+                + hexStr.charAt(2) + hexStr.charAt(2)
+                + hexStr.charAt(3) + hexStr.charAt(3);
         }
         return hexStr;
     }
+}
+
+function isRgbOrRgba(value: string): boolean {
+    var toLower = value.toLowerCase();
+    return (toLower.indexOf("rgb(") === 0 || toLower.indexOf("rgba(") === 0) && toLower.indexOf(")") === (toLower.length - 1);
+}
+
+function argbFromRgbOrRgba(value: string): number {
+    var toLower = value.toLowerCase();
+    var parts = toLower.replace("rgba(", "").replace("rgb(", "").replace(")", "").trim().split(",");
+
+    var r = 255,
+        g = 255,
+        b = 255,
+        a = 255;
+
+    if (parts[0]) {
+        r = parseInt(parts[0].trim());
+    }
+
+    if (parts[1]) {
+        g = parseInt(parts[1].trim());
+    }
+
+    if (parts[2]) {
+        b = parseInt(parts[2].trim());
+    }
+    
+    if (parts[3]) {
+        a = Math.round(parseFloat(parts[3].trim()) * 255);
+    }
+
+    // Format is ARGB, so alpha takes the first 8 bits, red the next, green the next and the last 8 bits are for the blue component
+    return (a << 24) | (r << 16) | (g << 8) | b;
 }

@@ -180,7 +180,8 @@ module.exports = function(grunt) {
     tsOptions.compiler = "node_modules/typescript/bin/tsc";
     tsOptions.failOnTypeErrors = true;
     tsOptions.outDir = localCfg.outModulesDir;
-    tsOptions.additionalFlags = "--outDir " + localCfg.outModulesDir;
+    var removeCommentsArgument = tsOptions.removeComments ? " --removeComments" : "";
+    tsOptions.additionalFlags = "--outDir " + localCfg.outModulesDir + removeCommentsArgument;
 
     grunt.initConfig({
         localCfg : localCfg,

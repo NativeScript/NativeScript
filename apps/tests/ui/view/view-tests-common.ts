@@ -3,7 +3,7 @@ import viewModule = require("ui/core/view");
 import frame = require("ui/frame");
 import page = require("ui/page");
 import button = require("ui/button");
-import label = require("ui/label");
+import labelModule = require("ui/label");
 import types = require("utils/types");
 import helper = require("../../ui/helper");
 import color = require("color");
@@ -14,6 +14,7 @@ import observable = require("data/observable");
 import bindable = require("ui/core/bindable");
 import definition = require("./view-tests");
 import enums = require("ui/enums");
+import absoluteLayoutModule = require("ui/layouts/absolute-layout");
 
 export var test_eachDescendant = function () {
     var test = function (views: Array<viewModule.View>) {
@@ -628,7 +629,7 @@ export var test_binding_style_opacity = function () {
 }
 
 function _createLabelWithBorder(): viewModule.View {
-    var lbl = new label.Label();
+    var lbl = new labelModule.Label();
     lbl.borderRadius = 10;
     lbl.borderWidth = 2;
     lbl.borderColor = new color.Color("#FF0000");
@@ -638,7 +639,7 @@ function _createLabelWithBorder(): viewModule.View {
 }
 
 export var testIsVisible = function () {
-    var lbl = new label.Label();
+    var lbl = new labelModule.Label();
 
     helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
         TKUnit.assertEqual(lbl.visibility, enums.Visibility.visible);
@@ -655,7 +656,7 @@ export var testIsVisible = function () {
 }
 
 export var testSetInlineStyle = function () {
-    var lbl = new label.Label();
+    var lbl = new labelModule.Label();
 
     var expectedColor = "#ff0000";
     var expectedBackgroundColor = "#ff0000";
@@ -670,7 +671,7 @@ export var testSetInlineStyle = function () {
 
 export var testBorderWidth = function () {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
-        var lbl = <label.Label>views[0];
+        var lbl = <labelModule.Label>views[0];
         var expectedValue = lbl.borderWidth;
         var actualValue = definition.getNativeBorderWidth(lbl);
         TKUnit.assertEqual(actualValue, expectedValue);
@@ -679,7 +680,7 @@ export var testBorderWidth = function () {
 
 export var testCornerRadius = function () {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
-        var lbl = <label.Label>views[0];
+        var lbl = <labelModule.Label>views[0];
         var expectedValue = lbl.borderRadius;
         var actualValue = definition.getNativeCornerRadius(lbl);
         TKUnit.assertEqual(actualValue, expectedValue);
@@ -688,14 +689,14 @@ export var testCornerRadius = function () {
 
 export var testBorderColor = function () {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
-        var lbl = <label.Label>views[0];
+        var lbl = <labelModule.Label>views[0];
         TKUnit.assertEqual(definition.checkNativeBorderColor(lbl), true, "BorderColor not applied correctly!");
     });
 }
 
 export var testBackgroundColor = function () {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
-        var lbl = <label.Label>views[0];
+        var lbl = <labelModule.Label>views[0];
         TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, "BackgroundColor not applied correctly!");
     });
 }
@@ -713,4 +714,72 @@ export var testBackgroundImage = function () {
 export function test_automation_text_default_value() {
     let view = new button.Button();
     TKUnit.assertTrue(view.automationText === undefined, "AutomationText default value should be UNDEFINED.");
+}
+
+export var test_getLocationInWindow_IsUndefinedWhenNotInTheVisualTree = function () {
+    var label = new labelModule.Label();
+    TKUnit.assertNull(label.getLocationInWindow());
+}
+
+export var test_getLocationOnScreen_IsUndefinedWhenNotInTheVisualTree = function () {
+    var label = new labelModule.Label();
+    TKUnit.assertNull(label.getLocationOnScreen());
+}
+
+var delta = 1;
+export var test_getLocationRelativeToOtherView = function () {
+    var a1 = new absoluteLayoutModule.AbsoluteLayout();
+    a1.width = 200;
+    a1.height = 200;
+    a1.backgroundColor = new color.Color("red");
+
+    var a2 = new absoluteLayoutModule.AbsoluteLayout();
+    a2.width = 100;
+    a2.height = 100;
+    absoluteLayoutModule.AbsoluteLayout.setLeft(a2, 10);
+    absoluteLayoutModule.AbsoluteLayout.setTop(a2, 10);
+    a2.backgroundColor = new color.Color("green");
+
+    var label = new labelModule.Label();
+    label.text = "label";
+    label.id = "label";
+    label.width = 70;
+    label.height = 30;
+    absoluteLayoutModule.AbsoluteLayout.setLeft(label, 10);
+    absoluteLayoutModule.AbsoluteLayout.setTop(label, 10);
+    a2.backgroundColor = new color.Color("yellow");
+
+    a2.addChild(label);
+    a1.addChild(a2);
+
+    helper.buildUIAndRunTest(a1, function (views: Array<viewModule.View>) {
+        frame.topmost().requestLayout();
+        TKUnit.wait(0.1);
+
+        var labelInA2 = label.getLocationRelativeTo(a2);
+        var labelInA1 = label.getLocationRelativeTo(a1);
+        var a2InA1 = a2.getLocationRelativeTo(a1);
+
+        TKUnit.assertAreClose(labelInA2.x, 10, delta, "labelInA2.x");
+        TKUnit.assertAreClose(labelInA2.y, 10, delta, "labelInA2.y");
+
+        TKUnit.assertAreClose(labelInA1.x, 20, delta, "labelInA1.x");
+        TKUnit.assertAreClose(labelInA1.y, 20, delta, "labelInA1.y");
+
+        TKUnit.assertAreClose(a2InA1.x, 10, delta, "a2InA1.x");
+        TKUnit.assertAreClose(a2InA1.y, 10, delta, "a2InA1.y");
+    });
+}
+
+export var test_getActualSize = function () {
+    var label = new labelModule.Label();
+    label.width = 100;
+    label.height = 200;
+    helper.buildUIAndRunTest(label, function (views: Array<viewModule.View>) {
+        frame.topmost().requestLayout();
+        TKUnit.wait(0.1);
+        var actualSize = label.getActualSize();
+        TKUnit.assertAreClose(actualSize.width, 100, delta, "actualSize.width");
+        TKUnit.assertAreClose(actualSize.height, 200, delta, "actualSize.height");
+    });
 }

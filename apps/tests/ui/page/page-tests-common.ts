@@ -191,7 +191,7 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
     if (withTransition) {
         var navigationTransition: FrameModule.NavigationTransition = {
             name: "slide",
-            duration: 1000,
+            duration: 100,
         };
         var navigationEntry: FrameModule.NavigationEntry = {
             create: pageFactory,
@@ -207,7 +207,7 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
 
     helper.goBack();
 
-    var expectedEventSequence = ["navigatingTo", "loaded", "navigatedTo", "navigatingFrom", "navigatedFrom", "unloaded"];
+    var expectedEventSequence = ["navigatingTo", "loaded", "navigatedTo", "navigatingFrom", "unloaded", "navigatedFrom"];
     TKUnit.arrayAssert(eventSequence, expectedEventSequence, "Actual event sequence is not equal to expected. Actual: " + eventSequence + "; Expected: " + expectedEventSequence);
 }
 

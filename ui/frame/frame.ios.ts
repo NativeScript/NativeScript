@@ -31,13 +31,16 @@ export class Frame extends frameCommon.Frame {
     constructor() {
         super();
         this._ios = new iOSFrame(this);
-        
+
         // When there is a 40px high "in-call" status bar, nobody moves the navigationBar top from 20 to 40 and it remains underneath the status bar.
-        var that = this;
+        let frameRef = new WeakRef(this);
         application.ios.addNotificationObserver(UIApplicationDidChangeStatusBarFrameNotification, (notification: NSNotification) => {
-            that._handleHigherInCallStatusBarIfNeeded();
-            if (this._ios.controller.owner.currentPage) {
-                this._ios.controller.owner.currentPage.requestLayout();
+            let frame = frameRef.get();
+            if (frame) {
+                frame._handleHigherInCallStatusBarIfNeeded();
+                if (frame.currentPage) {
+                    frame.currentPage.requestLayout();
+                }
             }
         });
     }
@@ -61,7 +64,7 @@ export class Frame extends frameCommon.Frame {
     }
 
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
-        trace.write(`${this}._navigateCore(pageId: ${backstackEntry.resolvedPage.id}, backstackVisible: ${this._isEntryBackstackVisible(backstackEntry) }, clearHistory: ${backstackEntry.entry.clearHistory}), navDepth: ${navDepth}`, trace.categories.Navigation);
+        trace.write(`${this}._navigateCore(page: ${backstackEntry.resolvedPage}, backstackVisible: ${this._isEntryBackstackVisible(backstackEntry)}, clearHistory: ${backstackEntry.entry.clearHistory}), navDepth: ${navDepth}`, trace.categories.Navigation);
         var viewController: UIViewController = backstackEntry.resolvedPage.ios;
         if (!viewController) {
             throw new Error("Required page does not have a viewController created.");
@@ -70,9 +73,15 @@ export class Frame extends frameCommon.Frame {
         navDepth++;
 
         var animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
-        var navigationTransition = this._getNavigationTransition(backstackEntry.entry);
-        if (animated && navigationTransition) {
-            viewController[TRANSITION] = navigationTransition;
+        if (animated) {
+            var navigationTransition = this._getNavigationTransition(backstackEntry.entry);
+            if (navigationTransition) {
+                viewController[TRANSITION] = navigationTransition;
+            }
+        }
+        else {
+            //https://github.com/NativeScript/NativeScript/issues/1787
+            viewController[TRANSITION] = { name: "non-animated" };
         }
 
         backstackEntry[NAV_DEPTH] = navDepth;
@@ -126,7 +135,7 @@ export class Frame extends frameCommon.Frame {
 
     public _goBackCore(backstackEntry: definition.BackstackEntry) {
         navDepth = backstackEntry[NAV_DEPTH];
-        trace.write(`${this}._goBackCore(pageId: ${backstackEntry.resolvedPage.id}, backstackVisible: ${this._isEntryBackstackVisible(backstackEntry) }, clearHistory: ${backstackEntry.entry.clearHistory}), navDepth: ${navDepth}`, trace.categories.Navigation);
+        trace.write(`${this}._goBackCore(page: ${backstackEntry.resolvedPage}, backstackVisible: ${this._isEntryBackstackVisible(backstackEntry)}, clearHistory: ${backstackEntry.entry.clearHistory}), navDepth: ${navDepth}`, trace.categories.Navigation);
 
         if (!this._shouldSkipNativePop) {
             var controller = backstackEntry.resolvedPage.ios;
@@ -286,6 +295,10 @@ export class Frame extends frameCommon.Frame {
         }
     }
 
+    public _onNavigatingTo(backstackEntry: definition.BackstackEntry, isBack: boolean) {
+        //
+    }
+
     _handleHigherInCallStatusBarIfNeeded() {
         let statusBarHeight = uiUtils.ios.getStatusBarHeight();
         if (!this._ios ||
@@ -385,100 +398,6 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         }
     }
 
-    public navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        trace.write(`UINavigationControllerImpl.navigationControllerWillShowViewControllerAnimated(${navigationController}, ${viewController}, ${animated})`, trace.categories.NativeLifecycle);
-        // In this method we need to layout the new page otherwise page will be shown empty and update after that which is bad UX.
-        let frame = this._owner.get();
-        if (!frame) {
-            return;
-        }
-
-        let newEntry: definition.BackstackEntry = viewController[ENTRY];
-        let newPage = newEntry.resolvedPage;
-        if (!newPage.parent) {
-            if (!frame._currentEntry) {
-                // First navigation
-                frame._currentEntry = newEntry;
-            }
-            else {
-                frame._navigateToEntry = newEntry;
-            }
-
-            frame._addView(newPage);
-            frame.remeasureFrame();
-        }
-        else if (newPage.parent !== frame) {
-            throw new Error("Page is already shown on another frame.");
-        }
-
-        newPage.actionBar.update();
-        
-        //HACK: https://github.com/NativeScript/NativeScript/issues/1021
-        viewController["willShowCalled"] = true;
-    }
-
-    public navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        trace.write(`UINavigationControllerImpl.navigationControllerDidShowViewControllerAnimated(${navigationController}, ${viewController}, ${animated})`, trace.categories.NativeLifecycle);
-
-        //HACK: https://github.com/NativeScript/NativeScript/issues/1021
-        if (viewController["willShowCalled"] === undefined) {
-            return;
-        }
-        else {
-            viewController["willShowCalled"] = undefined;
-        }
-
-        let frame = this._owner.get();
-        if (!frame) {
-            return;
-        }
-
-        let newEntry: definition.BackstackEntry = viewController[ENTRY];
-        let newPage = newEntry.resolvedPage;
-
-        let backStack = frame.backStack;
-        let currentEntry = backStack.length > 0 ? backStack[backStack.length - 1] : null;
-
-        // This code check if navigation happened through UI (e.g. back button or swipe gesture).
-        // When calling goBack on frame isBack will be false.
-        let isBack: boolean = currentEntry && newEntry === currentEntry;
-
-        let currentNavigationContext;
-        let navigationQueue = (<any>frame)._navigationQueue;
-        for (let i = 0; i < navigationQueue.length; i++) {
-            if (navigationQueue[i].entry === newEntry) {
-                currentNavigationContext = navigationQueue[i];
-                break;
-            }
-        }
-
-        let isBackNavigation = currentNavigationContext ? currentNavigationContext.isBackNavigation : false;
-
-        if (isBack) {
-            try {
-                frame._shouldSkipNativePop = true;
-                frame.goBack();
-            }
-            finally {
-                frame._shouldSkipNativePop = false;
-            }
-        }
-
-        let page = frame.currentPage;
-        if (page && !navigationController.viewControllers.containsObject(page.ios)) {
-            frame._removeView(page);
-        }
-
-        frame._navigateToEntry = null;
-        frame._currentEntry = newEntry;
-        frame.remeasureFrame();
-        frame._updateActionBar(newPage);
-
-        // notify the page
-        newPage.onNavigatedTo(isBack || isBackNavigation);
-        frame._processNavigationQueue(newPage);
-    }
-
     public supportedInterfaceOrientation(): number {
         return UIInterfaceOrientationMask.UIInterfaceOrientationMaskAll;
     }
@@ -551,6 +470,11 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
             return super.popViewControllerAnimated(animated);
         }
 
+        if (navigationTransition.name === "non-animated") {
+            //https://github.com/NativeScript/NativeScript/issues/1787
+            return super.popViewControllerAnimated(false);
+        }
+
         var nativeTransition = _getNativeTransition(navigationTransition, false);
         if (!nativeTransition) {
             return super.popViewControllerAnimated(animated);
@@ -577,6 +501,11 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         trace.write(`UINavigationControllerImpl.popToViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
         if (!animated || !navigationTransition) {
             return super.popToViewControllerAnimated(viewController, animated);
+        }
+
+        if (navigationTransition.name === "non-animated") {
+            //https://github.com/NativeScript/NativeScript/issues/1787
+            return super.popToViewControllerAnimated(viewController, false);
         }
 
         var nativeTransition = _getNativeTransition(navigationTransition, false);
@@ -656,25 +585,25 @@ function _getNativeTransition(navigationTransition: definition.NavigationTransit
     return null;
 }
 
-export function _getNativeCurve(transition: definition.NavigationTransition) : UIViewAnimationCurve{
+export function _getNativeCurve(transition: definition.NavigationTransition): UIViewAnimationCurve {
     if (transition.curve) {
-      switch (transition.curve) {
-          case enums.AnimationCurve.easeIn:
-              trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseIn.", trace.categories.Transition);
-              return UIViewAnimationCurve.UIViewAnimationCurveEaseIn;
-          case enums.AnimationCurve.easeOut:
-              trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseOut.", trace.categories.Transition);
-              return UIViewAnimationCurve.UIViewAnimationCurveEaseOut;
-          case enums.AnimationCurve.easeInOut:
-              trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseInOut.", trace.categories.Transition);
-              return UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;
-          case enums.AnimationCurve.linear:
-              trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveLinear.", trace.categories.Transition);
-              return UIViewAnimationCurve.UIViewAnimationCurveLinear;
-          default:
-              trace.write("Transition curve resolved to original: " + transition.curve, trace.categories.Transition);
-              return transition.curve;
-      }
+        switch (transition.curve) {
+            case enums.AnimationCurve.easeIn:
+                trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseIn.", trace.categories.Transition);
+                return UIViewAnimationCurve.UIViewAnimationCurveEaseIn;
+            case enums.AnimationCurve.easeOut:
+                trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseOut.", trace.categories.Transition);
+                return UIViewAnimationCurve.UIViewAnimationCurveEaseOut;
+            case enums.AnimationCurve.easeInOut:
+                trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseInOut.", trace.categories.Transition);
+                return UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;
+            case enums.AnimationCurve.linear:
+                trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveLinear.", trace.categories.Transition);
+                return UIViewAnimationCurve.UIViewAnimationCurveLinear;
+            default:
+                trace.write("Transition curve resolved to original: " + transition.curve, trace.categories.Transition);
+                return transition.curve;
+        }
     }
 
     return UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;

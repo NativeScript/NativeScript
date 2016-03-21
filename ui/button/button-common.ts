@@ -99,7 +99,10 @@ export class Button extends view.View implements definition.Button {
     }
 
     private onFormattedTextChanged(eventData: observable.PropertyChangeData) {
-        this._setFormattedTextPropertyToNative(eventData.value);
+        var value = <formattedString.FormattedString>eventData.value;
+        this._setFormattedTextPropertyToNative(value);
+
+        this._onPropertyChangedFromNative(Button.textProperty, value.toString());
     }
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -111,10 +114,14 @@ export class Button extends view.View implements definition.Button {
     }
 
     public _onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (data.newValue) {
-            (<formattedString.FormattedString>data.newValue).parent = this;
+        var newValue = <formattedString.FormattedString>data.newValue;
+        if (newValue) {
+            newValue.parent = this;
         }
-        this._setFormattedTextPropertyToNative(data.newValue);
+        this._setFormattedTextPropertyToNative(newValue);
+
+        var newText = newValue ? newValue.toString() : "";
+        this._onPropertyChangedFromNative(Button.textProperty, newText);
     }
 
     public _addChildFromBuilder(name: string, value: any): void {

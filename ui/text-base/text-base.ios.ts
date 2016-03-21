@@ -11,7 +11,8 @@ export class TextBase extends common.TextBase {
     }
 
     public _setFormattedTextPropertyToNative(value) {
-        this.ios.attributedText = value._formattedText;
+        var newText = value ? value._formattedText : null;
+        this.ios.attributedText = newText;
         this.style._updateTextDecoration();
         this.style._updateTextTransform();
         this.requestLayout();

@@ -1,18 +1,18 @@
 ﻿import PageTestCommon = require("./page-tests-common");
-import PageModule = require("ui/page");
+import {Page, ShownModallyData} from "ui/page";
 import TKUnit = require("../../TKUnit");
-import LabelModule = require("ui/label");
+import {Label} from "ui/label";
 import helper = require("../helper");
-import view = require("ui/core/view");
-import frame = require("ui/frame");
+import {View} from "ui/core/view";
+import {EventData} from "data/observable";
 import uiUtils = require("ui/utils");
 
 global.moduleMerge(PageTestCommon, exports);
 
 export function test_NavigateToNewPage_InnerControl() {
-    var testPage: PageModule.Page;
-    var pageFactory = function (): PageModule.Page {
-        testPage = new PageModule.Page();
+    var testPage: Page;
+    var pageFactory = function (): Page {
+        testPage = new Page();
         PageTestCommon.addLabelToPage(testPage);
         return testPage;
     };
@@ -20,11 +20,11 @@ export function test_NavigateToNewPage_InnerControl() {
     helper.navigate(pageFactory);
     helper.goBack();
 
-    var label = <LabelModule.Label>testPage.content;
+    var label = <Label>testPage.content;
 
-    TKUnit.assert(label._context === undefined, "InnerControl._context should be undefined after navigate back.");
-    TKUnit.assert(label.android === undefined, "InnerControl.android should be undefined after navigate back.");
-    TKUnit.assert(label.isLoaded === false, "InnerControl.isLoaded should become false after navigating back");
+    TKUnit.assertEqual(label._context, undefined, "label._context should be undefined after navigate back.");
+    TKUnit.assertEqual(label.android, undefined, "label.android should be undefined after navigate back.");
+    TKUnit.assertFalse(label.isLoaded, "label.isLoaded should become false after navigating back");
 }
 
 export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
@@ -35,24 +35,48 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
 
     var modalClosed = false;
     var modalCloseCallback = function (returnValue: any) {
-        TKUnit.assert(ctx.shownModally, "Modal-page must be shown!");
-        TKUnit.assert(returnValue === "return value", "Modal-page must return value!");
-        TKUnit.assert(!frame.topmost().currentPage.modal, "frame.topmost().currentPage.modal should be undefined when no modal page is shown!");
-        TKUnit.wait(0.100);
+        TKUnit.assertTrue(ctx.shownModally, "Modal-page must be shown!");
+        TKUnit.assertEqual(returnValue, "return value", "Modal-page must return value!");
         modalClosed = true;
+    }
+    
+    let modalPage: Page;
+
+    let shownModally = 0;
+    var onShownModal = function (args: ShownModallyData) {
+        shownModally++;
+        modalPage.off(Page.shownModallyEvent, onShownModal);
+    }
+
+    let modalLoaded = 0;
+    var onModalLoaded = function (args: EventData) {
+        modalLoaded++;
+        modalPage.off(Page.loadedEvent, onModalLoaded);
+    }
+
+    let modalUnloaded = 0;
+    var onModalUnloaded = function (args: EventData) {
+        modalUnloaded++;
+        modalPage.off(Page.unloadedEvent, onModalUnloaded);
+        TKUnit.assertNull(masterPage.modal, "currentPage.modal should be undefined when no modal page is shown!");
     }
 
     var navigatedToEventHandler = function (args) {
-        TKUnit.assert(!frame.topmost().currentPage.modal, "frame.topmost().currentPage.modal should be undefined when no modal page is shown!");
-        var basePath = "ui/page/";
-        args.object.showModal(basePath + "modal-page", ctx, modalCloseCallback, false);
+        let page = <Page>args.object;
+        TKUnit.assertNull(page.modal, "currentPage.modal should be undefined when no modal page is shown!");
+        let basePath = "ui/page/";
+        modalPage = page.showModal(basePath + "modal-page", ctx, modalCloseCallback, false);
+        TKUnit.assertTrue((<any>modalPage).showingModally, "showingModally");
+        modalPage.on(Page.shownModallyEvent, onShownModal);
+        modalPage.on(Page.loadedEvent, onModalLoaded);
+        modalPage.on(Page.unloadedEvent, onModalUnloaded);
     };
 
-    var masterPageFactory = function (): PageModule.Page {
-        masterPage = new PageModule.Page();
+    var masterPageFactory = function (): Page {
+        masterPage = new Page();
         masterPage.id = "newPage";
-        masterPage.on(PageModule.Page.navigatedToEvent, navigatedToEventHandler);
-        var label = new LabelModule.Label();
+        masterPage.on(Page.navigatedToEvent, navigatedToEventHandler);
+        var label = new Label();
         label.text = "Text";
         masterPage.content = label;
         return masterPage;
@@ -60,8 +84,13 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
 
     try {
         helper.navigate(masterPageFactory);
-        TKUnit.waitUntilReady(() => { return modalClosed; });
-        masterPage.off(view.View.loadedEvent, navigatedToEventHandler);
+
+        TKUnit.waitUntilReady(() => { return modalUnloaded > 0; });
+        TKUnit.assertEqual(shownModally, 1, "shownModally");
+        TKUnit.assertEqual(modalLoaded, 1,"modalLoaded");
+        TKUnit.assertEqual(modalUnloaded,1 , "modalUnloaded");
+
+        masterPage.off(Page.navigatedToEvent, navigatedToEventHandler);
     }
     finally {
         helper.goBack();
@@ -69,29 +98,33 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
 }
 
 export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
-    var masterPage;
-    var masterPageUnloaded = false;
-    var modalClosed = false;
-    var modalCloseCallback = function (returnValue: any) {
-        TKUnit.wait(0.100);
-        modalClosed = true;
+    let masterPage: Page;
+    let masterPageUnloaded = false;
+    let modalPage: Page;
+
+    let modalUnloaded = 0;
+    let onModalUnloaded = function (args: EventData) {
+        modalUnloaded++;
+        modalPage.off(Page.unloadedEvent, onModalUnloaded);
+        TKUnit.assertNull(masterPage.modal, "currentPage.modal should be undefined when no modal page is shown!");
     }
 
     var navigatedToEventHandler = function (args) {
         var basePath = "ui/page/";
-        args.object.showModal(basePath + "modal-page", null, modalCloseCallback, false);
+        modalPage = masterPage.showModal(basePath + "modal-page", null, null, false);
+        modalPage.on(Page.unloadedEvent, onModalUnloaded);
     };
 
     var unloadedEventHandler = function (args) {
         masterPageUnloaded = true;
     };
 
-    var masterPageFactory = function (): PageModule.Page {
-        masterPage = new PageModule.Page();
+    var masterPageFactory = function (): Page {
+        masterPage = new Page();
         masterPage.id = "master-page";
-        masterPage.on(PageModule.Page.navigatedToEvent, navigatedToEventHandler);
-        masterPage.on(view.View.unloadedEvent, unloadedEventHandler);
-        var label = new LabelModule.Label();
+        masterPage.on(Page.navigatedToEvent, navigatedToEventHandler);
+        masterPage.on(View.unloadedEvent, unloadedEventHandler);
+        var label = new Label();
         label.text = "Modal Page";
         masterPage.content = label;
         return masterPage;
@@ -99,10 +132,10 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
 
     try {
         helper.navigate(masterPageFactory);
-        TKUnit.waitUntilReady(() => { return modalClosed; });
+        TKUnit.waitUntilReady(() => { return modalUnloaded > 0; });
         TKUnit.assert(!masterPageUnloaded, "Master page should not raise 'unloaded' when showing modal!");
-        masterPage.off(view.View.loadedEvent, navigatedToEventHandler);
-        masterPage.off(view.View.unloadedEvent, unloadedEventHandler);
+        masterPage.off(View.loadedEvent, navigatedToEventHandler);
+        masterPage.off(View.unloadedEvent, unloadedEventHandler);
     }
     finally {
         helper.goBack();
@@ -110,10 +143,10 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
 }
 
 export function test_page_no_anctionBar_measure_no_spanUnderBackground_measure_layout_size_isCorrect() {
-    let page = new PageModule.Page();
+    let page = new Page();
     page.backgroundSpanUnderStatusBar = true;
     page.actionBarHidden = true;
-    let lbl = new LabelModule.Label();
+    let lbl = new Label();
     page.content = lbl;
 
     try {

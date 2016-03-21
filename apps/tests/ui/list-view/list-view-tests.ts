@@ -63,6 +63,19 @@ import labelModule = require("ui/label");
 // </Page>
 //```
 
+// ### Define the ListView separatorColor property.
+//``` XML
+// <Page loaded="loaded">
+//  {%raw%}<ListView items="{{ items }}" separatorColor="red" />{%endraw%}
+// </Page>
+//```
+//``` JavaScript
+// function loaded(args) {
+//   args.object.bindingContext = { items: [1,2,3,4,5] };
+// }
+// exports.loaded = loaded;
+//```
+
 // </snippet>
 
 var ASYNC = 0.2;

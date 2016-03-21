@@ -76,7 +76,8 @@ export class Button extends common.Button {
         // the UIControlStateNormal value. If the value for UIControlStateNormal is not set,
         // then the property defaults to a system value. Therefore, at a minimum, you should
         // set the value for the normal state.
-        this.ios.setAttributedTitleForState(value._formattedText, UIControlState.UIControlStateNormal);
+        var newText = value ? value._formattedText : null;
+        this.ios.setAttributedTitleForState(newText, UIControlState.UIControlStateNormal);
         this.style._updateTextDecoration();
     }
 }
