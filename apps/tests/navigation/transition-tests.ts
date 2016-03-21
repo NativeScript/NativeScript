@@ -39,12 +39,18 @@ export var test_Transitions = function () {
     });
 
     var transitions;
+    var testCustomTransition = true;
     if (platform.device.os === platform.platformNames.ios) {
         transitions = ["curl"];
     }
     else {
         var _sdkVersion = parseInt(platform.device.sdkVersion);
         transitions = _sdkVersion >= 21 ? ["explode"] : [];
+        if (_sdkVersion === 23) {
+            // Apparently, there is some kind of Android 6.0 (API 23) bug when using ObjectAnimators
+            // http://stackoverflow.com/questions/33188485/resultindex-is-1-the-polygon-must-be-invalid-adter-addview
+            testCustomTransition = false;
+        }
     }
     transitions = transitions.concat(["fade", "flip", "slide"]);
     var durations = [undefined, 500];
@@ -68,9 +74,11 @@ export var test_Transitions = function () {
     }
 
     // Custom transition
-    var customTransitionModule = require("./custom-transition");
-    var customTransition = new customTransitionModule.CustomTransition();
-    _testTransition({ instance: customTransition });
+    if (testCustomTransition) {
+        var customTransitionModule = require("./custom-transition");
+        var customTransition = new customTransitionModule.CustomTransition();
+        _testTransition({ instance: customTransition });
+    }
 
     helper.goBack();
 }
