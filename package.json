@@ -1,7 +1,7 @@
 {
   "name": "tns-core-modules",
   "description": "Telerik NativeScript Core Modules",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "homepage":"https://www.nativescript.org",
   "repository": {
     "type": "git",
