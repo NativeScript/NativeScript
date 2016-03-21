@@ -89,7 +89,7 @@ export class CssSelector {
                 }
             }
         });
-        if (this.animations) {
+        if (this.animations && view.isLoaded) {
             for (let animationInfo of this.animations) {
                 let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
                 if (realAnimation) {
