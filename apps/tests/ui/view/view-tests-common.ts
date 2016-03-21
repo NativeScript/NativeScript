@@ -723,7 +723,7 @@ export var test_getLocationOnScreen_IsUndefinedWhenNotInTheVisualTree = function
     TKUnit.assertNull(label.getLocationOnScreen());
 }
 
-var delta = 0.1;
+var delta = 0.5;
 export var test_getLocationRelativeToOtherView = function () {
     var a1 = new absoluteLayoutModule.AbsoluteLayout();
     a1.width = 200;
