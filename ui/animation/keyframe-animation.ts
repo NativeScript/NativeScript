@@ -3,6 +3,8 @@ import view = require("ui/core/view");
 import observable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
 
+import style = require("ui/styling/style");
+
 export class KeyframeDeclaration implements definition.KeyframeDeclaration {
     public property: string;
     public value: any;
@@ -35,36 +37,63 @@ export class KeyframeAnimation {
     private _isPlaying: boolean;
 
     public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo) {
-        let animations = new Array();
+        let animations = new Array<Object>();
         let length = info.keyframes.length;
         let startDuration = 0;
-        for (let index = info.isReverse ? length - 1 : 0; info.isReverse ? index >= 0 : index < info.keyframes.length; info.isReverse ? index-- : index++) {
-            let keyframe = info.keyframes[index];
-            let animation = {};
-            animation["curve"] = info.curve;
-            for (let declaration of keyframe.declarations) {
-                animation[declaration.property] = declaration.value;
+        if (info.isReverse) {
+            for (let index = length - 1; index >= 0; index --) {
+                let keyframe = info.keyframes[index];
+                startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
             }
-            let duration = keyframe.duration;
-            if (duration === 0) {
-                duration = 0.01;
-            }
-            else {
-                duration = (info.duration * duration) - startDuration;
-                startDuration += duration;
-            }
-            animation["duration"] = info.isReverse ? info.duration - duration : duration;
-            animation["valueSource"] = observable.ValueSource.Css;
-            animations.push(animation);
         }
-        //animations[animations.length - 1]["valueSource"] = observable.ValueSource.Css;
-        animations[0].duration = 0.01;
-
+        else {
+            for (let index = 0; index < length; index ++) {
+                let keyframe = info.keyframes[index];
+                startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
+            }
+            for (let index = length - 1; index > 0; index --) {
+                let a1 = animations[index];
+                let a2 = animations[index - 1];
+                if (a2["curve"] !== undefined) {
+                    a1["curve"] = a2["curve"];
+                    a2["curve"] = undefined;
+                }
+            }
+        }
+        for (let index = 1; index < length; index++) {
+            let a = animations[index];
+            if (a["curve"] === undefined) {
+                a["curve"] = info.curve;
+            }
+        }
+        if (animations.length > 0) {
+            animations[0]["duration"] = 0.001;
+        }
         let animation: KeyframeAnimation = new KeyframeAnimation();
         animation.delay = info.delay;
         animation.iterations = info.iterations;
         animation.animations = animations;
         return animation;
+    }
+
+    private static parseKeyframe(info: KeyframeAnimationInfo, keyframe: KeyframeInfo, animations: Array<Object>, startDuration: number): number {
+        let animation = {};
+        for (let declaration of keyframe.declarations) {
+            animation[declaration.property] = declaration.value;
+        }
+        let duration = keyframe.duration;
+        if (duration === 0) {
+            duration = 0.01;
+        }
+        else {
+            duration = (info.duration * duration) - startDuration;
+            startDuration += duration;
+        }
+        animation["duration"] = info.isReverse ? info.duration - duration : duration;
+        animation["valueSource"] = observable.ValueSource.Css;
+        animation["curve"] = keyframe.curve;
+        animations.push(animation);
+        return startDuration;
     }
 
     public get isPlaying(): boolean {

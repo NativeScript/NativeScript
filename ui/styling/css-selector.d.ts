@@ -14,7 +14,7 @@
 
         specificity: number;
 
-        animation: keyframeAnimation.KeyframeAnimationInfo;
+        animations: Array<keyframeAnimation.KeyframeAnimationInfo>;
 
         matches(view: view.View): boolean;
 

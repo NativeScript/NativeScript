@@ -15,7 +15,7 @@ let CLASS_SPECIFICITY = 100;
 let TYPE_SPECIFICITY = 1;
 
 export class CssSelector {
-    public animation: keyframeAnimation.KeyframeAnimationInfo;
+    public animations: Array<keyframeAnimation.KeyframeAnimationInfo>;
 
     private _expression: string;
     private _declarations: cssParser.Declaration[];
@@ -38,7 +38,7 @@ export class CssSelector {
             }
         }
         this._declarations = declarations;
-        this.animation = cssAnimationParser.CssAnimationParser.keyframeAnimationFromCSSDeclarations(declarations);
+        this.animations = cssAnimationParser.CssAnimationParser.keyframeAnimationsFromCSSDeclarations(declarations);
     }
 
     get expression(): string {
@@ -89,10 +89,12 @@ export class CssSelector {
                 }
             }
         });
-        if (this.animation) {
-            let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(this.animation);
-            if (realAnimation) {
-                realAnimation.play(view);
+        if (this.animations) {
+            for (let animationInfo of this.animations) {
+                let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
+                if (realAnimation) {
+                    realAnimation.play(view);
+                }
             }
         }
     }

@@ -133,24 +133,24 @@ export function animationTimingFunctionConverter(value: string): Object {
 
 export function transformConverter(value: any): Object {
     if (value === "none") {
-        var operations = {};
+        let operations = {};
         operations[value] = value;
         return operations;
     }
     else if (types.isString(value)) {
-        var operations = {};
-        var operator = "";
-        var pos = 0;
+        let operations = {};
+        let operator = "";
+        let pos = 0;
         while (pos < value.length) {
             if (value[pos] === " " || value[pos] === ",") {
                 pos ++;
             }
             else if (value[pos] === "(") {
-                var start = pos+1;
+                let start = pos + 1;
                 while (pos < value.length && value[pos] !== ")") {
                     pos ++;
                 }
-                var operand = value.substring(start, pos);
+                let operand = value.substring(start, pos);
                 operations[operator] = operand.trim();
                 operator = "";
                 pos ++;

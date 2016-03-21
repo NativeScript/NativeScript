@@ -244,7 +244,7 @@ export class StyleScope {
             }
 
             // add all stateSelectors instead of adding setters
-            if (stateSelector.animation && stateSelector.animation.keyframes && stateSelector.animation.keyframes.length > 0) {
+            if (stateSelector.animations && stateSelector.animations.length > 0) {
                 visualState.animations.push(stateSelector);
             }
             else {
@@ -299,15 +299,14 @@ export class StyleScope {
     }
 
     private _applyKeyframesOnSelectors() {
-        let appliedOnSelectors = {};
         for (let i = this._cssSelectors.length - 1; i >= 0; i --) {
             let selector = this._cssSelectors[i];
-            if (selector.animation !== undefined) {
-                let animationName = selector.animation["name"];
-                let keyframe = this._keyframes[animationName];
-                if (keyframe !== undefined && appliedOnSelectors[selector.expression] === undefined) {
-                    selector.animation.keyframes = cssAnimationParser.CssAnimationParser.keyframesArrayFromCSS(keyframe);
-                    appliedOnSelectors[selector.expression] = true;
+            if (selector.animations !== undefined) {
+                for (let animation of selector.animations) {
+                    let keyframe = this._keyframes[animation.name];
+                    if (keyframe !== undefined) {
+                        animation.keyframes = cssAnimationParser.CssAnimationParser.keyframesArrayFromCSS(keyframe);
+                    }
                 }
             }
         }

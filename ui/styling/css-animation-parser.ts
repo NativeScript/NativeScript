@@ -11,53 +11,37 @@ interface TransformInfo {
     translate: animationModule.Pair;
 }
 
+let animationProperties = {
+  "animation-name": (info, declaration) => info.name = declaration.value,
+  "animation-duration": (info, declaration) => info.duration = converters.timeConverter(declaration.value),
+  "animation-delay": (info, declaration) => info.delay = converters.timeConverter(declaration.value),
+  "animation-timing-function": (info, declaration) => info.curve = converters.animationTimingFunctionConverter(declaration.value),
+  "animation-iteration-count": (info, declaration) => declaration.value === "infinite" ? info.iterations = Number.MAX_VALUE : info.iterations = converters.numberConverter(declaration.value),
+  "animation-direction": (info, declaration) => info.isReverse = declaration.value === "reverse",
+  "animation-fill-mode": (info, declaration) => info.isForwards = declaration.value === "forwards"
+};
+
 export class CssAnimationParser {
 
-     public static keyframeAnimationFromCSSDeclarations(declarations: cssParser.Declaration[]): keyframeAnimationModule.KeyframeAnimationInfo {
-        let animationGroup: keyframeAnimationModule.KeyframeAnimationInfo = undefined;
+    public static keyframeAnimationsFromCSSDeclarations(declarations: cssParser.Declaration[]): Array<keyframeAnimationModule.KeyframeAnimationInfo> {
+        let animations: Array<keyframeAnimationModule.KeyframeAnimationInfo>  = new Array<keyframeAnimationModule.KeyframeAnimationInfo>();
+        let animationInfo: keyframeAnimationModule.KeyframeAnimationInfo = undefined;
         for (let declaration of declarations) {
-            if (declaration.property.indexOf("animation") === 0) {
-                if (animationGroup === undefined) {
-                    animationGroup = new keyframeAnimationModule.KeyframeAnimationInfo();
-                }
-                switch (declaration.property) {
-                    case "animation-name":
-                        animationGroup.name = declaration.value;
-                        break;
-                    case "animation-duration":
-                        animationGroup.duration = converters.timeConverter(declaration.value);
-                        break;
-                    case "animation-delay":
-                        animationGroup.delay = converters.timeConverter(declaration.value);
-                        break;
-                    case "animation-timing-function":
-                        animationGroup.curve = converters.animationTimingFunctionConverter(declaration.value);
-                        break;
-                    case "animation-iteration-count":
-                        if (declaration.value === "infinite") {
-                            animationGroup.iterations = Number.MAX_VALUE;
-                        }
-                        else {
-                            animationGroup.iterations = converters.numberConverter(declaration.value);
-                        }
-                        break;
-                    case "animation":
-                        animationGroup = CssAnimationParser.keyframeAnimationFromCSSProperty(declaration.value);
-                        break;
-                    case "animation-direction":
-                        if (declaration.value === "reverse") {
-                            animationGroup.isReverse = true;
-                        }
-                        break;
-                    case "animation-fill-mode":
-                        if (declaration.value === "forwards") {
-                            animationGroup.isForwards = true;
-                        }
-                        break;
+            if (declaration.property === "animation") {
+                CssAnimationParser.keyframeAnimationsFromCSSProperty(declaration.value, animations);
+            }
+            else {
+                let propertyHandler = animationProperties[declaration.property];
+                if (propertyHandler) {
+                    if (animationInfo === undefined) {
+                        animationInfo = new keyframeAnimationModule.KeyframeAnimationInfo();
+                        animations.push(animationInfo);
+                    }
+                    propertyHandler(animationInfo, declaration);
                 }
             }
         }
-        return animationGroup;
+        return animations.length === 0 ? undefined : animations;
     }
 
     public static keyframesArrayFromCSS(cssKeyframes: Object): Array<keyframeAnimationModule.KeyframeInfo> {
@@ -68,7 +52,7 @@ export class CssAnimationParser {
                 if (time === "from") {
                     time = 0;
                 }
-                if (time === "to") {
+                else if (time === "to") {
                     time = 1;
                 }
                 else {
@@ -86,6 +70,11 @@ export class CssAnimationParser {
                     current.duration = time;
                     parsedKeyframes[time] = current;
                 }
+                for (let declaration of <any>keyframe.declarations) {
+                    if (declaration.property === "animation-timing-function") {
+                        current.curve = converters.animationTimingFunctionConverter(declaration.value);
+                    }
+                }
                 current.declarations = declarations;
             }
         }
@@ -97,39 +86,46 @@ export class CssAnimationParser {
         return array;
     }
 
-    private static keyframeAnimationFromCSSProperty(value: any): keyframeAnimationModule.KeyframeAnimationInfo {
+    private static keyframeAnimationsFromCSSProperty(value: any, animations: Array<keyframeAnimationModule.KeyframeAnimationInfo>) {
         if (types.isString(value)) {
-            let animationInfo = new keyframeAnimationModule.KeyframeAnimationInfo();
-            let arr = (<string>value).split(/[ ]+/);
+            let values = value.split(/[,]+/);
+            for (let parsedValue of values) {
+                let animationInfo = new keyframeAnimationModule.KeyframeAnimationInfo();
+                let arr = (<string>parsedValue).trim().split(/[ ]+/);
 
-            if (arr.length > 0) {
-                animationInfo.name = arr[0];
+                if (arr.length > 0) {
+                    animationInfo.name = arr[0];
+                }
+                if (arr.length > 1) {
+                    animationInfo.duration = converters.timeConverter(arr[1]);
+                }
+                if (arr.length > 2) {
+                    animationInfo.curve = converters.animationTimingFunctionConverter(arr[2]);
+                }
+                if (arr.length > 3) {
+                    animationInfo.delay = converters.timeConverter(arr[3]);
+                }
+                if (arr.length > 4) {
+                    animationInfo.iterations = parseInt(arr[4]);
+                }
+                if (arr.length > 5) {
+                    animationInfo.isReverse = arr[4] === "reverse";
+                }
+                if (arr.length > 6) {
+                    animationInfo.isForwards = arr[5] === "forwards";
+                }
+                if (arr.length > 7) {
+                    throw new Error("Invalid value for animation: " + value);
+                }
+                animations.push(animationInfo);
             }
-            if (arr.length > 1) {
-                animationInfo.duration = converters.timeConverter(arr[1]);
-            }
-            if (arr.length > 2) {
-                animationInfo.curve = converters.animationTimingFunctionConverter(arr[2]);
-            }
-            if (arr.length > 3) {
-                animationInfo.delay = converters.timeConverter(arr[3]);
-            }
-            if (arr.length > 4) {
-                animationInfo.iterations = parseInt(arr[4]);
-            }
-            if (arr.length > 5) {
-                throw new Error("Invalid value for animation: " + value);
-            }
-            return animationInfo;
-        }
-        else {
-            return undefined;
         }
     }
 
     private static parseKeyframeDeclarations(keyframe: Object): Array<keyframeAnimationModule.KeyframeDeclaration> {
         let declarations = {};
         let transforms = { scale: undefined, translate: undefined };
+        let curve = undefined;
         for (let declaration of (<any>keyframe).declarations) {
             let property = styleProperty.getPropertyByCssName(declaration.property);
             if (property) {
