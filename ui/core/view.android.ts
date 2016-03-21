@@ -363,6 +363,49 @@ export class View extends viewCommon.View {
         return false;
     }
 
+    public getLocationInWindow(): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.getWindowToken()) {
+            return undefined;
+        }
+
+        var nativeArray = (<any>Array).create("int", 2);
+        this._nativeView.getLocationInWindow(nativeArray);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
+            y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
+        } 
+    }
+
+    public getLocationOnScreen(): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.getWindowToken()) {
+            return undefined;
+        }
+
+        var nativeArray = (<any>Array).create("int", 2);
+        this._nativeView.getLocationOnScreen(nativeArray);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
+            y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
+        } 
+    }
+
+    public getLocationRelativeTo(otherView: viewDefinition.View): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.getWindowToken() ||
+            !otherView._nativeView || !otherView._nativeView.getWindowToken() ||
+            this._nativeView.getWindowToken() !== otherView._nativeView.getWindowToken()) {
+            return undefined;
+        }
+
+        var myArray = (<any>Array).create("int", 2);
+        this._nativeView.getLocationOnScreen(myArray);
+        var otherArray = (<any>Array).create("int", 2);
+        otherView._nativeView.getLocationOnScreen(otherArray);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(myArray[0] - otherArray[0]),
+            y: utils.layout.toDeviceIndependentPixels(myArray[1] - otherArray[1]),
+        } 
+    }
+
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
         var result = size;
         switch (specMode) {
