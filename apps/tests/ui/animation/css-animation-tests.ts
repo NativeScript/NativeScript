@@ -1,26 +1,24 @@
-﻿var TKUnit = require("../../TKUnit");
-var page = require("ui/page");
-var view = require("ui/core/view");
-var styleScope = require("ui/styling/style-scope");
-var cssSelector = require("ui/styling/css-selector");
-var keyframeAnimation = require("ui/animation/keyframe-animation");
-var enums = require("ui/enums");
-var helper = require("../../ui/helper");
-var stackModule = require("ui/layouts/stack-layout");
-var labelModule = require("ui/label");
-var color = require("color");
+﻿import TKUnit = require("../../TKUnit");
+import page = require("ui/page");
+import styleScope = require("ui/styling/style-scope");
+import keyframeAnimation = require("ui/animation/keyframe-animation");
+import enums = require("ui/enums");
+import helper = require("../../ui/helper");
+import stackModule = require("ui/layouts/stack-layout");
+import labelModule = require("ui/label");
+import color = require("color");
 
 function createAnimationFromCSS(css) {
-    var scope = new styleScope.StyleScope();
+    let scope = new styleScope.StyleScope();
     scope.css = css;
     scope.ensureSelectors();
-    var selector = scope._cssSelectors[0];
-    var animation = selector.animations[0];
+    let selector = scope._cssSelectors[0];
+    let animation = selector.animations[0];
     return animation;
 }
 
 exports.test_ReadAnimationProperties = function() {
-    var css = ".test { " +
+    let css = ".test { " +
         "animation-name: first; " +
         "animation-duration: 4s; " +
         "animation-timing-function: ease-in; " +
@@ -29,7 +27,7 @@ exports.test_ReadAnimationProperties = function() {
         "animation-direction: reverse; " +
         "animation-fill-mode: forwards; " +
         " }";
-    var animation = createAnimationFromCSS(css);
+    let animation = createAnimationFromCSS(css);
 
     TKUnit.assert(animation.name === "first");
     TKUnit.assert(animation.duration === 4000);
@@ -41,7 +39,7 @@ exports.test_ReadAnimationProperties = function() {
 }
 
 exports.test_ReadTheAnimationProperty = function() {
-    var animation = createAnimationFromCSS(".test { animation: second 0.2s ease-out 1 2 }");
+    let animation = createAnimationFromCSS(".test { animation: second 0.2s ease-out 1 2 }");
     TKUnit.assert(animation.name === "second");
     TKUnit.assert(animation.duration === 200);
     TKUnit.assert(animation.curve === enums.AnimationCurve.easeOut);
@@ -50,30 +48,30 @@ exports.test_ReadTheAnimationProperty = function() {
 }
 
 exports.test_ReadAnimationCurve = function() { // ease-in, ease-out, .. custom
-    var animation = createAnimationFromCSS(".test { animation-timing-function: ease-in; }");
-    TKUnit.assert(animation.curve == enums.AnimationCurve.easeIn);
+    let animation = createAnimationFromCSS(".test { animation-timing-function: ease-in; }");
+    TKUnit.assert(animation.curve === enums.AnimationCurve.easeIn);
     animation = createAnimationFromCSS(".test { animation-timing-function: ease-out; }");
-    TKUnit.assert(animation.curve == enums.AnimationCurve.easeOut);
+    TKUnit.assert(animation.curve === enums.AnimationCurve.easeOut);
     animation = createAnimationFromCSS(".test { animation-timing-function: linear; }");
-    TKUnit.assert(animation.curve == enums.AnimationCurve.linear);
+    TKUnit.assert(animation.curve === enums.AnimationCurve.linear);
     animation = createAnimationFromCSS(".test { animation-timing-function: ease-in-out; }");
-    TKUnit.assert(animation.curve == enums.AnimationCurve.easeInOut);
+    TKUnit.assert(animation.curve === enums.AnimationCurve.easeInOut);
     animation = createAnimationFromCSS(".test { animation-timing-function: spring; }");
-    TKUnit.assert(animation.curve == enums.AnimationCurve.spring);
+    TKUnit.assert(animation.curve === enums.AnimationCurve.spring);
     animation = createAnimationFromCSS(".test { animation-timing-function: cubic-bezier(0.1, 1.0, 0.5, 0.5); }");
-    var curve = animation.curve;
+    let curve = animation.curve;
     TKUnit.assert(curve.x1 === 0.1 && curve.y1 === 1.0 && curve.x2 === 0.5 && curve.y2 === 0.5);
 }
 
 exports.test_ReadIterations = function() {
-    var animation = createAnimationFromCSS(".test { animation-iteration-count: 5; }");
+    let animation = createAnimationFromCSS(".test { animation-iteration-count: 5; }");
     TKUnit.assert(animation.iterations === 5);
     animation = createAnimationFromCSS(".test { animation-iteration-count: infinite; }");
     TKUnit.assert(animation.iterations === Number.MAX_VALUE);
 }
 
 exports.test_ReadFillMode = function() {
-    var animation = createAnimationFromCSS(".test { animation-iteration-count: 5; }");
+    let animation = createAnimationFromCSS(".test { animation-iteration-count: 5; }");
     TKUnit.assert(animation.isForwards === false);
     animation = createAnimationFromCSS(".test { animation-fill-mode: forwards; }");
     TKUnit.assert(animation.isForwards === true);
@@ -82,7 +80,7 @@ exports.test_ReadFillMode = function() {
 }
 
 exports.test_ReadDirection = function() {
-    var animation = createAnimationFromCSS(".test { animation-iteration-count: 5; }");
+    let animation = createAnimationFromCSS(".test { animation-iteration-count: 5; }");
     TKUnit.assert(animation.isReverse === false);
     animation = createAnimationFromCSS(".test { animation-direction: reverse; }");
     TKUnit.assert(animation.isReverse === true);
@@ -91,12 +89,12 @@ exports.test_ReadDirection = function() {
 }
 
 exports.test_ReadKeyframe = function() {
-    var scope = new styleScope.StyleScope();
+    let scope = new styleScope.StyleScope();
     scope.css = ".test { animation-name: test; } @keyframes test { from { background-color: red; } to { background-color: blue; } }";
     scope.ensureSelectors();
     TKUnit.assert(scope._cssSelectors.length === 1, "CSS selector was not created!");
-    var selector = scope._cssSelectors[0];
-    var animation = selector.animations[0];
+    let selector = scope._cssSelectors[0];
+    let animation = selector.animations[0];
     TKUnit.assert(animation.name === "test", "Wrong animation name!");
     TKUnit.assert(animation.keyframes.length === 2, "Keyframes not parsed correctly!");
     TKUnit.assert(animation.keyframes[0].duration === 0, "First keyframe duration should be 0");
@@ -106,8 +104,8 @@ exports.test_ReadKeyframe = function() {
 };
 
 exports.test_ReadScale = function() {
-    var animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: scaleX(5),scaleY(10); } }");
-    var scale = animation.keyframes[0].declarations[0].value;
+    let animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: scaleX(5),scaleY(10); } }");
+    let scale = animation.keyframes[0].declarations[0].value;
     TKUnit.assert(animation.keyframes[0].declarations[0].property === "scale");
     TKUnit.assert(scale.x === 5 && scale.y === 10);
 
@@ -128,8 +126,8 @@ exports.test_ReadScale = function() {
 }
 
 exports.test_ReadTranslate = function() {
-    var animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: translateX(5),translateY(10); } }");
-    var translate = animation.keyframes[0].declarations[0].value;
+    let animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: translateX(5),translateY(10); } }");
+    let translate = animation.keyframes[0].declarations[0].value;
     TKUnit.assert(animation.keyframes[0].declarations[0].property === "translate");
     TKUnit.assert(translate.x === 5 && translate.y === 10);
 
@@ -150,48 +148,48 @@ exports.test_ReadTranslate = function() {
 }
 
 exports.test_ReadRotate = function() {
-    var animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: rotate(5); } }");
+    let animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: rotate(5); } }");
     TKUnit.assert(animation.keyframes[0].declarations[0].property === "rotate");
     TKUnit.assert(animation.keyframes[0].declarations[0].value === 5);
 
-    var animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: rotate(45deg); } }");
+    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: rotate(45deg); } }");
     TKUnit.assert(animation.keyframes[0].declarations[0].property === "rotate");
     TKUnit.assert(animation.keyframes[0].declarations[0].value === 45);
 
-    var animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: rotate(2rad); } }");
+    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: rotate(2rad); } }");
     TKUnit.assert(animation.keyframes[0].declarations[0].property === "rotate");
     TKUnit.assert(animation.keyframes[0].declarations[0].value === 2);
 }
 
 exports.test_ReadTransform = function() {
-    var css = ".test { animation-name: test; } @keyframes test { to { transform: rotate(10),scaleX(5),translate(2,4); } }";
-    var animation = createAnimationFromCSS(css);
-    var rotate = animation.keyframes[0].declarations[0].value;
-    var scale = animation.keyframes[0].declarations[1].value;
-    var translate = animation.keyframes[0].declarations[2].value;
+    let css = ".test { animation-name: test; } @keyframes test { to { transform: rotate(10),scaleX(5),translate(2,4); } }";
+    let animation = createAnimationFromCSS(css);
+    let rotate = animation.keyframes[0].declarations[0].value;
+    let scale = animation.keyframes[0].declarations[1].value;
+    let translate = animation.keyframes[0].declarations[2].value;
     TKUnit.assert(rotate === 10);
     TKUnit.assert(scale.x === 5 && scale.y === 1);
     TKUnit.assert(translate.x === 2 && translate.y === 4);
 
-    var animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: none; } }");
-    var rotate = animation.keyframes[0].declarations[0].value;
-    var scale = animation.keyframes[0].declarations[1].value;
-    var translate = animation.keyframes[0].declarations[2].value;
+    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: none; } }");
+    rotate = animation.keyframes[0].declarations[0].value;
+    scale = animation.keyframes[0].declarations[1].value;
+    translate = animation.keyframes[0].declarations[2].value;
     TKUnit.assert(rotate === 0);
-    TKUnit.assert(scale.x == 1 && scale.y == 1);
+    TKUnit.assert(scale.x === 1 && scale.y === 1);
     TKUnit.assert(translate.x === 0 && translate.y === 0);
 }
 
 exports.test_ReadAnimationWithUnsortedKeyframes = function() {
-    var css = ".test { animation-name: test; } " +
+    let css = ".test { animation-name: test; } " +
         "@keyframes test { " +
         "from { opacity: 0; } " +
         "20%, 60% { opacity: 0.5; } " +
         "40%, 80% { opacity: 0.3; } " +
         "to { opacity: 1; } " +
         "}";
-    var animation = createAnimationFromCSS(css);
-    TKUnit.assert(animation.keyframes.length == 6);
+    let animation = createAnimationFromCSS(css);
+    TKUnit.assert(animation.keyframes.length === 6);
 
     TKUnit.assert(animation.keyframes[0].declarations[0].value === 0);
     TKUnit.assert(animation.keyframes[1].declarations[0].value === 0.5);
@@ -209,19 +207,19 @@ exports.test_ReadAnimationWithUnsortedKeyframes = function() {
 }
 
 exports.test_ReadAnimationsWithCSSImport = function() {
-    var css = "@import '~/ui/animation/test.css'; .test { animation-name: test; }";
-    var animation = createAnimationFromCSS(css);
+    let css = "@import '~/ui/animation/test.css'; .test { animation-name: test; }";
+    let animation = createAnimationFromCSS(css);
     TKUnit.assert(animation.keyframes.length === 3);
     TKUnit.assert(animation.keyframes[1].declarations[0].property === "backgroundColor");
 }
 
 exports.test_LoadTwoAnimationsWithTheSameName = function() {
-    var scope = new styleScope.StyleScope();
+    let scope = new styleScope.StyleScope();
     scope.css = "@keyframes a1 { from { opacity: 0; } to { opacity: 1; } } @keyframes a1 { from { opacity: 0; } to { opacity: 0.5; } } .a { animation-name: a1; }";
     scope.ensureSelectors();
-    var selector = scope._cssSelectors[0];
-    var animation = selector.animations[0];
-    TKUnit.assert(animation.keyframes.length == 2);
+    let selector = scope._cssSelectors[0];
+    let animation = selector.animations[0];
+    TKUnit.assert(animation.keyframes.length === 2);
     TKUnit.assert(animation.keyframes[1].declarations[0].value === 0.5);
 
     scope = new styleScope.StyleScope();
@@ -233,11 +231,11 @@ exports.test_LoadTwoAnimationsWithTheSameName = function() {
 }
 
 exports.test_LoadAnimationProgrammatically = function() {
-    var stack = new stackModule.StackLayout();
+    let stack = new stackModule.StackLayout();
     helper.buildUIAndRunTest(stack, function(views) {
-        var page = views[1];
+        let page = views[1];
         page.css = "@keyframes a { from { opacity: 1; } to { opacity: 0; } }";
-        var animation = page.getKeyframeAnimationWithName("a");
+        let animation = page.getKeyframeAnimationWithName("a");
         TKUnit.assert(animation.keyframes.length === 2);
         TKUnit.assert(animation.keyframes[1].declarations[0].property === "opacity");
         TKUnit.assert(animation.keyframes[1].declarations[0].value === 0);
@@ -245,12 +243,12 @@ exports.test_LoadAnimationProgrammatically = function() {
 }
 
 exports.test_ExecuteCSSAnimation = function() {
-    var mainPage;
-    var label;
-    var pageFactory = function() {
+    let mainPage;
+    let label;
+    let pageFactory = function() {
         label = new labelModule.Label();
         label.text = "label";
-        var stackLayout = new stackModule.StackLayout();
+        let stackLayout = new stackModule.StackLayout();
         stackLayout.addChild(label);
         mainPage = new page.Page();
         mainPage.css = "@keyframes k { from { background-color: red; } to { background-color: green; } } .l { animation-name: k; animation-duration: 0.5s; animation-fill-mode: forwards; }";
@@ -265,12 +263,12 @@ exports.test_ExecuteCSSAnimation = function() {
 }
 
 exports.test_ExecuteFillMode = function() {
-    var mainPage;
-    var label;
-    var pageFactory = function() {
+    let mainPage;
+    let label;
+    let pageFactory = function() {
         label = new labelModule.Label();
         label.text = "label";
-        var stackLayout = new stackModule.StackLayout();
+        let stackLayout = new stackModule.StackLayout();
         stackLayout.addChild(label);
         mainPage = new page.Page();
         mainPage.css = "@keyframes k { from { background-color: red; } to { background-color: green; } } " +
@@ -284,19 +282,18 @@ exports.test_ExecuteFillMode = function() {
     TKUnit.assert(label.backgroundColor === undefined);
     label.className = "l";
     TKUnit.wait(1);
-    //TKUnit.assert(label.backgroundColor.equals(new color.Color("red")));
+    // TKUnit.assert(label.backgroundColor.equals(new color.Color("red")));
     label.className = "l2";
     TKUnit.wait(1);
-    //TKUnit.assert(label.backgroundColor.equals(new color.Color("green")));
-    
+    // TKUnit.assert(label.backgroundColor.equals(new color.Color("green")));
     // should be fixed!
 }
 
 exports.test_ReadTwoAnimations = function() {
-    var scope = new styleScope.StyleScope();
+    let scope = new styleScope.StyleScope();
     scope.css = ".test { animation: one 0.2s ease-out 1 2, two 2s ease-in; }";
     scope.ensureSelectors();
-    var selector = scope._cssSelectors[0];
+    let selector = scope._cssSelectors[0];
     TKUnit.assert(selector.animations.length === 2);
     TKUnit.assert(selector.animations[0].curve === enums.AnimationCurve.easeOut);
     TKUnit.assert(selector.animations[1].curve === enums.AnimationCurve.easeIn);
@@ -305,15 +302,15 @@ exports.test_ReadTwoAnimations = function() {
 }
 
 exports.test_AnimationCurveInKeyframes = function() {
-    var scope = new styleScope.StyleScope();
+    let scope = new styleScope.StyleScope();
     scope.css = "@keyframes an { from { animation-timing-function: linear; background-color: red; } 50% { background-color: green; } to { background-color: black; } } .test { animation-name: an; animation-timing-function: ease-in; }";
     scope.ensureSelectors();
-    var selector = scope._cssSelectors[0];
-    var animation = selector.animations[0];
+    let selector = scope._cssSelectors[0];
+    let animation = selector.animations[0];
     TKUnit.assert(animation.keyframes[0].curve === enums.AnimationCurve.linear);
     TKUnit.assert(animation.keyframes[1].curve === undefined);
     TKUnit.assert(animation.keyframes[1].curve === undefined);
-    var realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animation);
+    let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animation);
     TKUnit.assert(realAnimation.animations[1].curve === enums.AnimationCurve.linear);
     TKUnit.assert(realAnimation.animations[2].curve === enums.AnimationCurve.easeIn);
 }

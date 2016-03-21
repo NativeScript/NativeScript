@@ -3,8 +3,6 @@ import view = require("ui/core/view");
 import observable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
 
-import style = require("ui/styling/style");
-
 export class KeyframeDeclaration implements definition.KeyframeDeclaration {
     public property: string;
     public value: any;

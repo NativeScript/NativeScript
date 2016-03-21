@@ -125,7 +125,6 @@ export class CssAnimationParser {
     private static parseKeyframeDeclarations(keyframe: Object): Array<keyframeAnimationModule.KeyframeDeclaration> {
         let declarations = {};
         let transforms = { scale: undefined, translate: undefined };
-        let curve = undefined;
         for (let declaration of (<any>keyframe).declarations) {
             let property = styleProperty.getPropertyByCssName(declaration.property);
             if (property) {
