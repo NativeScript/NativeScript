@@ -279,6 +279,26 @@ declare module "application" {
     }
 
     /**
+     * Data for the Android activity onRequestPermissions callback
+     */
+    export interface AndroidActivityRequestPermissionsEventData extends AndroidActivityEventData {
+        /**
+         * The request code.
+         */
+        requestCode: number,
+
+        /**
+         * The Permissions
+         */
+        permissions: Array<String>,
+
+        /**
+         * The Granted.
+         */
+        grantResults: Array<Number>
+    }
+
+    /**
      * Data for the Android activity result event.
      */
     export interface AndroidActivityResultEventData extends AndroidActivityEventData {
@@ -439,6 +459,11 @@ declare module "application" {
          * This event is raised on the back button is pressed in an android application.
          */
         on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
+
+        /**
+         * This event is raised on the back button is pressed in an android application.
+         */
+        on(event: "activityRequestPermissions", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
 
         /**
          * String value used when hooking to activityCreated event.
