@@ -110,7 +110,8 @@ export class StackLayout extends common.StackLayout {
         var childRight = right - left - paddingRight;
 
         switch (this.verticalAlignment) {
-            case VerticalAlignment.center || VerticalAlignment.middle:
+            case VerticalAlignment.center:
+            case VerticalAlignment.middle:
                 childTop = (bottom - top - this._totalLength) / 2 + paddingTop - paddingBottom;
                 break;
 
