@@ -720,7 +720,8 @@ export class View extends ProxyObject implements definition.View {
                 childTop = top + marginTop * density;
                 break;
 
-            case enums.VerticalAlignment.center || enums.VerticalAlignment.middle:
+            case enums.VerticalAlignment.center:
+            case enums.VerticalAlignment.middle:
                 childTop = top + (bottom - top - childHeight + (marginTop - marginBottom) * density) / 2;
                 break;
 

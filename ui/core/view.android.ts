@@ -586,7 +586,8 @@ export class ViewStyler implements style.Styler {
                 gravity |= android.view.Gravity.TOP;
                 break;
 
-            case enums.VerticalAlignment.center || enums.VerticalAlignment.middle:
+            case enums.VerticalAlignment.center:
+            case enums.VerticalAlignment.middle:
                 gravity |= android.view.Gravity.CENTER_VERTICAL;
                 break;
 
