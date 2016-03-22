@@ -1164,7 +1164,7 @@ export class View extends ProxyObject implements definition.View {
         }
     }
 
-    public animate(animation: any): Promise<void> {
+    public animate(animation: any): animModule.AnimationPromise {
         return this.createAnimation(animation).play();
     }
 
