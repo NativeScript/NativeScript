@@ -518,7 +518,7 @@ declare module "ui/core/view" {
         /**
          * Animates one or more properties of the view based on the supplied options. 
          */
-        public animate(options: animation.AnimationDefinition): Promise<void>;
+        public animate(options: animation.AnimationDefinition): animation.AnimationPromise;
         
         /**
          * Creates an Animation object based on the supplied options. 

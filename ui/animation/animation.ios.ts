@@ -88,7 +88,7 @@ export class Animation extends common.Animation implements definition.Animation 
     private _cancelledAnimations: number;
     private _mergedPropertyAnimations: Array<common.PropertyAnimation>;
 
-    public play(): Promise<void> {
+    public play(): definition.AnimationPromise {
         var animationFinishedPromise = super.play();
         this._finishedAnimations = 0;
         this._cancelledAnimations = 0;
