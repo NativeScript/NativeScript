@@ -4,6 +4,8 @@ import viewModule = require("ui/core/view");
 import trace = require("trace");
 import enums = require("ui/enums");
 import style = require("ui/styling/style");
+import dependencyObservable = require("ui/core/dependency-observable");
+
 global.moduleMerge(common, exports);
 
 let _transform = "_transform";
@@ -195,7 +197,7 @@ export class Animation extends common.Animation implements definition.Animation 
             }
 
            let animation = propertyAnimations[index];
-           let args = Animation._getNativeAnimationArguments(animation);
+           let args = Animation._getNativeAnimationArguments(animation, valueSource);
 
            if (animation.curve === enums.AnimationCurve.spring) {
                Animation._createNativeSpringAnimation(propertyAnimations, index, playSequentially, args, animation, valueSource, finishedCallback);
@@ -206,7 +208,7 @@ export class Animation extends common.Animation implements definition.Animation 
        }
     }
 
-    private static _getNativeAnimationArguments(animation: common.PropertyAnimation): AnimationInfo {
+    private static _getNativeAnimationArguments(animation: common.PropertyAnimation, valueSource: number): AnimationInfo {
 
         let nativeView = <UIView>animation.target._nativeView;
         let presentationLayer = nativeView.layer.presentationLayer();
@@ -220,8 +222,8 @@ export class Animation extends common.Animation implements definition.Animation 
         switch (animation.property) {
             case common.Properties.backgroundColor:
                 (<any>animation)._originalValue = animation.target.backgroundColor;
-                (<any>animation)._propertyResetCallback = (value) => { animation.target.backgroundColor = value };
-                if (presentationLayer != null) {
+                (<any>animation)._propertyResetCallback = (value) => { animation.target.backgroundColor = value; };
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = presentationLayer.backgroundColor;
                 }
                 else {
@@ -235,8 +237,8 @@ export class Animation extends common.Animation implements definition.Animation 
                 break;
             case common.Properties.opacity:
                 (<any>animation)._originalValue = animation.target.opacity;
-                (<any>animation)._propertyResetCallback = (value) => { animation.target.opacity = value };
-                if (presentationLayer != null) {
+                (<any>animation)._propertyResetCallback = (value) => { animation.target.opacity = value; };
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = presentationLayer.opacity;
                 }
                 else {
@@ -245,9 +247,9 @@ export class Animation extends common.Animation implements definition.Animation 
                 break;
             case common.Properties.rotate:
                 (<any>animation)._originalValue = animation.target.rotate;
-                (<any>animation)._propertyResetCallback = (value) => { animation.target.rotate = value };
+                (<any>animation)._propertyResetCallback = (value) => { animation.target.rotate = value; };
                 propertyNameToAnimate = "transform.rotation";
-                if (presentationLayer != null) {
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = presentationLayer.valueForKeyPath("transform.rotation");
                 }
                 else {
@@ -263,7 +265,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 (<any>animation)._originalValue = { x:animation.target.translateX, y:animation.target.translateY };
                 (<any>animation)._propertyResetCallback = (value) => { animation.target.translateX = value.x; animation.target.translateY = value.y; };
                 propertyNameToAnimate = "transform"
-                if (presentationLayer != null) {
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
                 }
                 else {
@@ -275,7 +277,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 (<any>animation)._originalValue = { x:animation.target.scaleX, y:animation.target.scaleY };
                 (<any>animation)._propertyResetCallback = (value) => { animation.target.scaleX = value.x; animation.target.scaleY = value.y; };
                 propertyNameToAnimate = "transform"
-                if (presentationLayer != null) {
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
                 }
                 else {
@@ -284,7 +286,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 value = NSValue.valueWithCATransform3D(CATransform3DScale(nativeView.layer.transform, value.x, value.y, 1));
                 break;
             case _transform:
-                if (presentationLayer != null) {
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
                 }
                 else {

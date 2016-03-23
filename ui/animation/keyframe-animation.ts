@@ -90,6 +90,7 @@ export class KeyframeAnimation {
         animation["duration"] = info.isReverse ? info.duration - duration : duration;
         animation["valueSource"] = observable.ValueSource.Css;
         animation["curve"] = keyframe.curve;
+        animation["forceLayer"] = true;
         animations.push(animation);
         return startDuration;
     }
