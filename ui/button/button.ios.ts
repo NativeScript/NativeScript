@@ -6,6 +6,7 @@ import view = require("ui/core/view");
 import utils = require("utils/utils");
 import enums = require("ui/enums");
 import dependencyObservable = require("ui/core/dependency-observable");
+import styleScope = require("../styling/style-scope");
 
 class TapHandlerImpl extends NSObject {
     private _owner: WeakRef<Button>;
@@ -49,8 +50,12 @@ export class Button extends common.Button {
 
     public onLoaded() {
         super.onLoaded();
-        if (this.parent !== null) {
-            this._stateChangedHandler.start();
+        if (this.parent !== null && this.page !== null) {
+            let rootPage = this.page;
+            let scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope();
+            if (scope.getVisualStates(this) !== undefined) {
+                this._stateChangedHandler.start();
+            }
         }
     }
 

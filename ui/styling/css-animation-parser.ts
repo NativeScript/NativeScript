@@ -26,6 +26,9 @@ export class CssAnimationParser {
     public static keyframeAnimationsFromCSSDeclarations(declarations: cssParser.Declaration[]): Array<keyframeAnimationModule.KeyframeAnimationInfo> {
         let animations: Array<keyframeAnimationModule.KeyframeAnimationInfo>  = new Array<keyframeAnimationModule.KeyframeAnimationInfo>();
         let animationInfo: keyframeAnimationModule.KeyframeAnimationInfo = undefined;
+        if (declarations === null || declarations === undefined) {
+            return undefined;
+        }
         for (let declaration of declarations) {
             if (declaration.property === "animation") {
                 CssAnimationParser.keyframeAnimationsFromCSSProperty(declaration.value, animations);
