@@ -5,11 +5,13 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import utils = require("utils/utils");
 import style = require("ui/styling/style");
+import * as platformModule from "platform";
+var platform: typeof platformModule;
 
 export class LayoutBase extends view.CustomLayoutView implements definition.LayoutBase, view.AddChildFromBuilder {
 
     public static clipToBoundsProperty = new dependencyObservable.Property("clipToBounds", "LayoutBase",
-        new proxy.PropertyMetadata(true, dependencyObservable.PropertyMetadataSettings.None, LayoutBase.onClipToBoundsPropertyChanged));
+        new proxy.PropertyMetadata(true, dependencyObservable.PropertyMetadataSettings.None, LayoutBase.onClipToBoundsPropertyChanged, null, LayoutBase.onClipToBoundsPropertyChanged));
 
     private _subViews: Array<view.View> = new Array<view.View>();
 
@@ -119,17 +121,19 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
     }
 
     protected onClipToBoundsChanged(oldValue: boolean, newValue: boolean) {
-        var nativeView = this._nativeView;
-        if (!nativeView) {
+        if (!this._nativeView) {
             return;
         }
 
-        if (nativeView instanceof UIView) {
-            nativeView.clipsToBounds = newValue;
+        if (!platform) {
+            platform = require("platform");
         }
 
-        else if (nativeView instanceof android.view.ViewGroup) {
-            nativeView.setClipChildren(newValue);
+        if (platform.device.os === platform.platformNames.ios) {
+            this._nativeView.clipsToBounds = newValue;
+        }
+        else if (platform.device.os === platform.platformNames.android) {
+            this._nativeView.setClipChildren(newValue);
         }
     }
 
