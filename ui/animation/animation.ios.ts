@@ -81,6 +81,14 @@ class AnimationDelegateImpl extends NSObject {
             case common.Properties.rotate:
                 this._propertyAnimation.target.rotate = value;
                 break;
+            case common.Properties.translate:
+                this._propertyAnimation.target.translateX = value.x;
+                this._propertyAnimation.target.translateY = value.y;
+                break;
+            case common.Properties.scale:
+                this._propertyAnimation.target.scaleX = value.x;
+                this._propertyAnimation.target.scaleY = value.y;
+                break;
             case _transform:
                 if (value[common.Properties.translate] !== undefined) {
                     this._propertyAnimation.target.translateX = value[common.Properties.translate].x;
@@ -93,7 +101,7 @@ class AnimationDelegateImpl extends NSObject {
                 break;
             }
        }
-       
+
        (<any>this._propertyAnimation.target)._resumePresentationLayerUpdates();
    }
 
@@ -118,9 +126,9 @@ export class Animation extends common.Animation implements definition.Animation 
     private _cancelledAnimations: number;
     private _mergedPropertyAnimations: Array<common.PropertyAnimation>;
     private _valueSource: number;
-    
+
     public play(): definition.AnimationPromise {
-        var animationFinishedPromise = super.play();
+        let animationFinishedPromise = super.play();
         this._finishedAnimations = 0;
         this._cancelledAnimations = 0;
         this._iOSAnimationFunction();
@@ -217,7 +225,7 @@ export class Animation extends common.Animation implements definition.Animation 
         let originalValue;
 
         let tempRotate = animation.target.rotate * Math.PI / 180;
-        let abs
+        let abs;
 
         switch (animation.property) {
             case common.Properties.backgroundColor:
@@ -264,7 +272,7 @@ export class Animation extends common.Animation implements definition.Animation 
             case common.Properties.translate:
                 (<any>animation)._originalValue = { x:animation.target.translateX, y:animation.target.translateY };
                 (<any>animation)._propertyResetCallback = (value) => { animation.target.translateX = value.x; animation.target.translateY = value.y; };
-                propertyNameToAnimate = "transform"
+                propertyNameToAnimate = "transform";
                 if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
                 }
@@ -276,7 +284,7 @@ export class Animation extends common.Animation implements definition.Animation 
             case common.Properties.scale:
                 (<any>animation)._originalValue = { x:animation.target.scaleX, y:animation.target.scaleY };
                 (<any>animation)._propertyResetCallback = (value) => { animation.target.scaleX = value.x; animation.target.scaleY = value.y; };
-                propertyNameToAnimate = "transform"
+                propertyNameToAnimate = "transform";
                 if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
                 }
@@ -300,7 +308,7 @@ export class Animation extends common.Animation implements definition.Animation 
                      animation.target.scaleX = value.xs;
                      animation.target.scaleY = value.ys;
                 };
-                propertyNameToAnimate = "transform"
+                propertyNameToAnimate = "transform";
                 value = NSValue.valueWithCATransform3D(Animation._createNativeAffineTransform(animation));
                 break;
             default:
@@ -550,6 +558,8 @@ export function _resolveAnimationCurve(curve: any): any {
             return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionLinear);
         case enums.AnimationCurve.spring:
             return curve;
+        case enums.AnimationCurve.ease:
+            return CAMediaTimingFunction.functionWithControlPoints(0.25, 0.1, 0.25, 1.0);
         default:
             if (curve instanceof CAMediaTimingFunction) {
                 return curve;

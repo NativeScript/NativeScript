@@ -374,6 +374,8 @@ export function _resolveAnimationCurve(curve: any): any {
         case enums.AnimationCurve.spring:
             trace.write("Animation curve resolved to android.view.animation.BounceInterpolator().", trace.categories.Animation);
             return bounce;
+        case enums.AnimationCurve.ease:
+            return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(0.25, 0.1, 0.25, 1.0);
         default:
             trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
             if (curve instanceof common.CubicBezierAnimationCurve) {

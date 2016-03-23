@@ -1223,7 +1223,12 @@ function onTransformChanged(value: any): Array<styleProperty.KeyValuePair<styleP
                 }
                 break;
             case "rotate":
-                array.push({ property: rotateProperty, value: parseFloat(newTransform[transform]) });
+                let text = newTransform[transform];
+                let val = parseFloat(text);
+                if (text.slice(-3) === "rad") {
+                    val = val * (180.0 / Math.PI);
+                }
+                array.push({ property: rotateProperty, value: val });
                 break;
             case "none":
                 array.push({ property: scaleXProperty, value: 1 });

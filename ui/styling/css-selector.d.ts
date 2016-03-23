@@ -18,10 +18,9 @@
 
         matches(view: view.View): boolean;
 
-        apply(view: view.View);
+        apply(view: view.View, valueSourceModifier: number);
 
         eachSetter(callback: (property: styleProperty.Property, resolvedValue: any) => void);
-
     }
 
     class CssTypeSelector extends CssSelector {

@@ -526,6 +526,11 @@
     export module AnimationCurve {
 
         /**
+         * Default value. Specifies a transition effect with a slow start, then fast, then end slowly (equivalent to cubic-bezier(0.25,0.1,0.25,1))
+         */
+        export var ease: string;
+        
+        /**
          * An ease-in curve causes the animation to begin slowly, and then speed up as it progresses.
          */
         export var easeIn: string;

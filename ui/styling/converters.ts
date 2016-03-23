@@ -93,8 +93,11 @@ export function bezieArgumentConverter(value: string): number {
 }
 
 export function animationTimingFunctionConverter(value: string): Object {
-    var result:Object = enums.AnimationCurve.easeInOut;
+    let result: Object = enums.AnimationCurve.ease;
     switch (value) {
+        case "ease":
+            result = enums.AnimationCurve.ease;
+            break;
         case "linear":
             result = enums.AnimationCurve.linear;
             break;
@@ -104,7 +107,6 @@ export function animationTimingFunctionConverter(value: string): Object {
         case "ease-out":
             result = enums.AnimationCurve.easeOut;
             break;
-        case "ease":
         case "ease-in-out":
             result = enums.AnimationCurve.easeInOut;
             break;

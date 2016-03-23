@@ -65,8 +65,8 @@ export class CssSelector {
         return false;
     }
 
-    public apply(view: view.View) {
-        let modifier = this.valueSourceModifier;
+    public apply(view: view.View, valueSourceModifier: number) {
+        let modifier = valueSourceModifier || this.valueSourceModifier;
         this.eachSetter((property, value) => {
             if (types.isString(property)) {
                 let attrHandled = false;
@@ -91,7 +91,7 @@ export class CssSelector {
         });
         if (this.animations && view.isLoaded) {
             for (let animationInfo of this.animations) {
-                let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
+                let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo, modifier);
                 if (realAnimation) {
                     realAnimation.play(view);
                 }

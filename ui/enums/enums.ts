@@ -160,6 +160,7 @@ export module BackgroundRepeat {
 var animationModule;
 
 export module AnimationCurve {
+    export var ease = "ease";
     export var easeIn = "easeIn";
     export var easeOut = "easeOut";
     export var easeInOut = "easeInOut";

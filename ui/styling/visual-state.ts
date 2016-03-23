@@ -3,22 +3,23 @@ import observable = require("ui/core/dependency-observable");
 import styleProperty = require("ui/styling/style-property");
 import cssSelector = require("ui/styling/css-selector");
 import * as visualStateConstants from "ui/styling/visual-state-constants";
+import keyframeAnimation = require("ui/animation/keyframe-animation");
 
 export class VisualState {
     private _setters: {}; // use css selector instead
-    private _animations: cssSelector.CssVisualStateSelector[];
+    private _animatedSelectors: cssSelector.CssVisualStateSelector[];
 
     constructor() {
         this._setters = {};
-        this._animations = [];
+        this._animatedSelectors = [];
     }
 
     get setters(): {} {
         return this._setters;
     }
 
-    get animations(): cssSelector.CssVisualStateSelector[] {
-        return this._animations;
+    get animatedSelectors(): cssSelector.CssVisualStateSelector[] {
+        return this._animatedSelectors;
     }
 }
 
@@ -26,13 +27,13 @@ export class VisualState {
  *
  */
 export function goToState(view: viewModule.View, state: string): string {
-    var root = <any>view.page;
+    let root = <any>view.page;
     if (!root) {
         return undefined;
     }
 
     //TODO: this of optimization
-    var allStates = root._getStyleScope().getVisualStates(view);
+    let allStates = root._getStyleScope().getVisualStates(view);
     if (!allStates) {
         return undefined;
     }
@@ -51,8 +52,8 @@ export function goToState(view: viewModule.View, state: string): string {
 
     // Step 2
     if (state !== view.visualState) {
-        var newState: VisualState = allStates[state];
-        var oldState: VisualState = allStates[view.visualState];
+        let newState: VisualState = allStates[state];
+        let oldState: VisualState = allStates[view.visualState];
 
         // Step 3
         resetProperties(view, oldState, newState);
@@ -69,9 +70,9 @@ function resetProperties(view: viewModule.View, oldState: VisualState, newState:
         return;
     }
 
-    var property: styleProperty.Property;
+    let property: styleProperty.Property;
 
-    for (var name in oldState.setters) {
+    for (let name in oldState.setters) {
         if (newState && (name in newState.setters)) {
             // Property will be altered by the new state, no need to reset it.
             continue;
@@ -83,10 +84,17 @@ function resetProperties(view: viewModule.View, oldState: VisualState, newState:
         }
     }
 
-    for (let selector of oldState.animations) {
-        selector.eachSetter((property, value) => {
-            view.style._resetValue(property, observable.ValueSource.Local);
-        });
+    for (let selector of oldState.animatedSelectors) {
+        for (let animationInfo of selector.animations) {
+            for (let keyframe of animationInfo.keyframes) {
+                for (let declaration of keyframe.declarations) {
+                    property = styleProperty.getPropertyByName(declaration.property);
+                    if (property) {
+                        view.style._resetValue(property, observable.ValueSource.VisualState);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -104,7 +112,7 @@ function applyProperties(view: viewModule.View, state: VisualState) {
         }
     }
 
-    for (let animation of state.animations) {
-        animation.apply(view);;
+    for (let selector of state.animatedSelectors) {
+        selector.apply(view, observable.ValueSource.VisualState);
     }
 }

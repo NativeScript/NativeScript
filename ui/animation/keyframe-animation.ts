@@ -19,7 +19,7 @@ export class KeyframeAnimationInfo implements definition.KeyframeAnimationInfo {
     public duration: number = 0.3;
     public delay: number = 0;
     public iterations: number = 1;
-    public curve: any = enums.AnimationCurve.easeInOut;
+    public curve: any = enums.AnimationCurve.ease;
     public isForwards: boolean = false;
     public isReverse: boolean = false;
     public keyframes: Array<KeyframeInfo>;
@@ -34,20 +34,20 @@ export class KeyframeAnimation {
     private _reject;
     private _isPlaying: boolean;
 
-    public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo) {
+    public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo, valueSourceModifier: number) {
         let animations = new Array<Object>();
         let length = info.keyframes.length;
         let startDuration = 0;
         if (info.isReverse) {
             for (let index = length - 1; index >= 0; index --) {
                 let keyframe = info.keyframes[index];
-                startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
+                startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration, valueSourceModifier);
             }
         }
         else {
             for (let index = 0; index < length; index ++) {
                 let keyframe = info.keyframes[index];
-                startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
+                startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration, valueSourceModifier);
             }
             for (let index = length - 1; index > 0; index --) {
                 let a1 = animations[index];
@@ -74,7 +74,7 @@ export class KeyframeAnimation {
         return animation;
     }
 
-    private static parseKeyframe(info: KeyframeAnimationInfo, keyframe: KeyframeInfo, animations: Array<Object>, startDuration: number): number {
+    private static parseKeyframe(info: KeyframeAnimationInfo, keyframe: KeyframeInfo, animations: Array<Object>, startDuration: number, valueSourceModifier: number): number {
         let animation = {};
         for (let declaration of keyframe.declarations) {
             animation[declaration.property] = declaration.value;
@@ -88,9 +88,9 @@ export class KeyframeAnimation {
             startDuration += duration;
         }
         animation["duration"] = info.isReverse ? info.duration - duration : duration;
-        animation["valueSource"] = observable.ValueSource.Css;
         animation["curve"] = keyframe.curve;
         animation["forceLayer"] = true;
+        animation["valueSource"] = valueSourceModifier;
         animations.push(animation);
         return startDuration;
     }

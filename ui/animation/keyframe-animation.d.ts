@@ -89,6 +89,6 @@ import view = require("ui/core/view");
         /**
          * Creates a keyframe animation from animation definition.
          */
-        public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo);
+        public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo, valueSourceModifier: number);
     }
 }

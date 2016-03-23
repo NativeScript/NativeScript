@@ -9,6 +9,7 @@ import * as fileSystemModule from "file-system";
 import * as visualStateModule from "./visual-state";
 import keyframeAnimation = require("ui/animation/keyframe-animation");
 import cssAnimationParser = require("./css-animation-parser");
+import observable = require("ui/core/dependency-observable");
 
 var types: typeof typesModule;
 function ensureTypes() {
@@ -195,7 +196,7 @@ export class StyleScope {
                 if (selector instanceof cssSelector.CssVisualStateSelector) {
                     matchedStateSelectors.push(<cssSelector.CssVisualStateSelector>selector);
                 } else {
-                    selector.apply(view);
+                    selector.apply(view, observable.ValueSource.Css);
                 }
             }
         }
@@ -237,7 +238,7 @@ export class StyleScope {
         for (i = 0; i < matchedStateSelectors.length; i++) {
             stateSelector = matchedStateSelectors[i];
 
-            var visualState = allStates[stateSelector.state];
+            let visualState = allStates[stateSelector.state];
             if (!visualState) {
                 visualState = new vs.VisualState();
                 allStates[stateSelector.state] = visualState;
@@ -245,7 +246,7 @@ export class StyleScope {
 
             // add all stateSelectors instead of adding setters
             if (stateSelector.animations && stateSelector.animations.length > 0) {
-                visualState.animations.push(stateSelector);
+                visualState.animatedSelectors.push(stateSelector);
             }
             else {
                 stateSelector.eachSetter((property, value) => {
