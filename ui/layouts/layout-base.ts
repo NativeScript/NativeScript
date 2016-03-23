@@ -111,6 +111,13 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         this.style.paddingLeft = value;
     }
 
+    public get clipToBounds(): boolean {
+        return this._getValue(LayoutBase.clipToBoundsProperty);
+    }
+    public set clipToBounds(value: boolean) {
+        this._setValue(LayoutBase.clipToBoundsProperty, value);
+    }
+
     protected onClipToBoundsChanged(oldValue: boolean, newValue: boolean) {
         var nativeView = this._nativeView;
         if (!nativeView) {
