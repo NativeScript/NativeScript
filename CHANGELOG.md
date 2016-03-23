@@ -1,6 +1,12 @@
 Cross Platform Modules Changelog
 ==============================
 
+##1.7.1 (2016, March 22)
+
+### Fixed
+
+- [(#1614)](https://github.com/NativeScript/NativeScript/issues/1614) App crashes after a while leaving it open and re-selecting it on Android
+
 ##1.7.0 (2016, March 16)
 
 ### Fixed
