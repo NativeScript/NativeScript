@@ -104,5 +104,10 @@
          * Specify the top padding of this layout.
          */
         paddingTop: number;
+
+        /**
+         * Gets or sets a value indicating whether to clip the content of this layout.
+         */
+        clipToBounds: boolean;
     }
 }
