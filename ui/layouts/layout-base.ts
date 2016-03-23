@@ -9,7 +9,7 @@ import style = require("ui/styling/style");
 export class LayoutBase extends view.CustomLayoutView implements definition.LayoutBase, view.AddChildFromBuilder {
 
     public static clipToBoundsProperty = new dependencyObservable.Property("clipToBounds", "LayoutBase",
-        new proxy.PropertyMetadata(true, dependencyObservable.PropertyMetadataSettings.None, LayoutBase.onClipToBoundsPropertyChanged));
+        new proxy.PropertyMetadata(true, dependencyObservable.PropertyMetadataSettings.None, LayoutBase.onClipToBoundsPropertyChanged, null, LayoutBase.onClipToBoundsPropertyChanged));
 
     private _subViews: Array<view.View> = new Array<view.View>();
 
