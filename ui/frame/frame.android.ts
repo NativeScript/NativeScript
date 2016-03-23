@@ -710,7 +710,8 @@ class NativeScriptActivity extends android.app.Activity {
         if (frameId >= 0) {
             rootView = getFrameById(frameId);
         }
-        else if (!rootView) {
+
+        if (!rootView) {
             navParam = application.mainEntry;
             if (!navParam) {
                 navParam = application.mainModule;
@@ -801,6 +802,19 @@ class NativeScriptActivity extends android.app.Activity {
         if (!frameCommon.goBack()) {
             super.onBackPressed();
         }
+    }
+
+    public onRequestPermissionsResult (requestCode: number, permissions: Array<String>, grantResults: Array<number>): void {
+        trace.write("NativeScriptActivity.onRequestPermissionsResult;", trace.categories.NativeLifecycle);
+
+        application.android.notify(<application.AndroidActivityRequestPermissionsEventData>{
+            eventName: "activityRequestPermissions",
+            object: application.android,
+            activity: this,
+            requestCode: requestCode,
+            permissions: permissions,
+            grantResults: grantResults
+        });
     }
 
     protected onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {

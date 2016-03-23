@@ -162,6 +162,7 @@ export class AndroidApplication extends observable.Observable implements definit
     public static saveActivityStateEvent = "saveActivityState";
     public static activityResultEvent = "activityResult";
     public static activityBackPressedEvent = "activityBackPressed";
+    public static activityRequestPermissionsEvent = "activityRequestPermissions";
 
     public paused: boolean;
     public nativeApp: android.app.Application;

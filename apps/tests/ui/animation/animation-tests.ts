@@ -83,21 +83,69 @@ export var test_CancellingAnimation = function (done) {
     // <snippet module="ui/animation" title="animation">
     // # Cancelling animation
     // ``` JavaScript
-    var animation1 = label.createAnimation({ translate: { x: 100, y: 100 } });
+    var animation1 = label.createAnimation({ translate: { x: 100, y: 100}, duration: 500 });
     animation1.play()
         .then(() => {
             ////console.log("Animation finished");
             // <hide>
-            assertIOSNativeTransformIsCorrect(label);
-            helper.goBack();
-            done();
+            throw new Error("Cancelling Animation - Should not be in the Promise Then()");
             // </hide>
         })
         .catch((e) => {
             ////console.log("Animation cancelled");
             // <hide>
             helper.goBack();
-            done();
+            if (!e) {
+                done(new Error("Cancel path did not have proper error"));
+            } else if (e.toString() === "Error: Animation cancelled.") {
+                done()
+            } else {
+                done(e);
+            }
+            // </hide>
+        });
+    animation1.cancel();
+    // ```
+    // </snippet>
+}
+
+export var test_CancellingAnimate = function (done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function (): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
+
+    // <snippet module="ui/animation" title="animation">
+    // # Cancelling animation
+    // ``` JavaScript
+    var animation1 = label.animate({ translate: { x: 100, y: 100 }, duration: 500 })
+        .then(() => {
+            ////console.log("Animation finished");
+            // <hide>
+            throw new Error("Cancelling Animate - Should not be in Promise Then()");
+            // </hide>
+        })
+        .catch((e) => {
+            ////console.log("Animation cancelled");
+            // <hide>
+            helper.goBack();
+            if (!e) {
+                done(new Error("Cancel path did not have proper error"));
+            } else if (e.toString() === "Error: Animation cancelled.") {
+                done()
+            } else {
+                done(e);
+            }
             // </hide>
         });
     animation1.cancel();

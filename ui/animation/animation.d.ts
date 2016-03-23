@@ -1,7 +1,7 @@
 ﻿declare module "ui/animation" {
     import viewModule = require("ui/core/view");
     import colorModule = require("color");
-
+    
     /**
      * Defines animation options for the View.animate method.
      */
@@ -83,11 +83,22 @@
     }
 
     /**
+     * Create Promise that can cancel the animation, we have to pretend our returns itself along with the cancel
+     */
+    export class AnimationPromise extends Promise<void> {
+        cancel(): void;
+        then(onFulfilled?: (value?: any) => Thenable<void>, onRejected?: (error?: any) => Thenable<void>): AnimationPromise;
+        then(onFulfilled?: (value?: any) => void, onRejected?: (error?: any) => void): AnimationPromise;
+        catch(onRejected?: (error?: any) => Thenable<void>): AnimationPromise;
+        catch(onRejected?: (error?: any) => void): AnimationPromise;
+    }
+
+    /**
      * Defines a animation set.
      */
     export class Animation {
         constructor(animationDefinitions: Array<AnimationDefinition>, playSequentially?: boolean);
-        public play: () => Promise<void>;
+        public play: () => AnimationPromise;
         public cancel: () => void;
         public isPlaying: boolean;
     }

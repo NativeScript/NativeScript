@@ -33,8 +33,8 @@ export class Animation extends common.Animation implements definition.Animation 
     private _propertyResetCallbacks: Array<Function>;
     private _valueSource: number;
     
-    public play(): Promise<void> {
-        let animationFinishedPromise = super.play();
+    public play(): definition.AnimationPromise {
+        var animationFinishedPromise = super.play();
 
         let i: number;
         let length: number;
