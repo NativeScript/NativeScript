@@ -517,6 +517,71 @@ export class ViewStyler implements style.Styler {
         return 0;
     }
 
+    // Rotate
+    private static setRotateProperty(view: View, newValue: any) {
+        view.rotate = newValue;
+    }
+
+    private static resetRotateProperty(view: View, nativeValue: any) {
+        view.rotate = nativeValue;
+    }
+
+    private static getRotateProperty(view: View): any {
+        return view.rotate;
+    }
+
+    //ScaleX
+    private static setScaleXProperty(view: View, newValue: any) {
+        view.scaleX = newValue;
+    }
+
+    private static resetScaleXProperty(view: View, nativeValue: any) {
+        view.scaleX = nativeValue;
+    }
+
+    private static getScaleXProperty(view: View): any {
+        return view.scaleX;
+    }
+
+    //ScaleY
+    private static setScaleYProperty(view: View, newValue: any) {
+        view.scaleY = newValue;
+    }
+
+    private static resetScaleYProperty(view: View, nativeValue: any) {
+        view.scaleY = nativeValue;
+    }
+
+    private static getScaleYProperty(view: View): any {
+        return view.scaleY;
+    }
+
+    //TranslateX
+    private static setTranslateXProperty(view: View, newValue: any) {
+        view.translateX = newValue;
+    }
+
+    private static resetTranslateXProperty(view: View, nativeValue: any) {
+        view.translateX = nativeValue;
+    }
+
+    private static getTranslateXProperty(view: View): any {
+        return view.translateX;
+    }
+
+    //TranslateY
+    private static setTranslateYProperty(view: View, newValue: any) {
+        view.translateY = newValue;
+    }
+
+    private static resetTranslateYProperty(view: View, nativeValue: any) {
+        view.translateY = nativeValue;
+    }
+
+    private static getTranslateYProperty(view: View): any {
+        return view.translateY;
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.backgroundInternalProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setBackgroundInternalProperty,
@@ -545,6 +610,31 @@ export class ViewStyler implements style.Styler {
             ViewStyler.setBorderRadiusProperty,
             ViewStyler.resetBorderRadiusProperty,
             ViewStyler.getBorderRadiusProperty));
+
+        style.registerHandler(style.rotateProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setRotateProperty,
+            ViewStyler.resetRotateProperty,
+            ViewStyler.getRotateProperty));
+
+        style.registerHandler(style.scaleXProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setScaleXProperty,
+            ViewStyler.resetScaleXProperty,
+            ViewStyler.getScaleXProperty));
+
+        style.registerHandler(style.scaleYProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setScaleYProperty,
+            ViewStyler.resetScaleYProperty,
+            ViewStyler.getScaleYProperty));
+
+        style.registerHandler(style.translateXProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setTranslateXProperty,
+            ViewStyler.resetTranslateXProperty,
+            ViewStyler.getTranslateXProperty));
+
+        style.registerHandler(style.translateYProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setTranslateYProperty,
+            ViewStyler.resetTranslateYProperty,
+            ViewStyler.getTranslateYProperty));
     }
 }
 

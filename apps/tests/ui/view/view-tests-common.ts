@@ -201,6 +201,7 @@ export var test_addView_WillThrow_IfView_IsAlreadyAdded = function () {
         }
 
         TKUnit.assert(thrown);
+        views[1]._removeView(newButton);
     }
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
@@ -220,6 +221,7 @@ export var test_addToNativeVisualTree_WillThrow_IfView_IsAlreadyAdded = function
         }
 
         TKUnit.assert(thrown);
+        views[1]._removeView(newButton);
     }
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
@@ -234,6 +236,7 @@ export var test_InheritableStyleProperties_AreInherited = function () {
         views[1]._addView(newButton);
 
         TKUnit.assert(newButton.style.color === redColor);
+        views[1]._removeView(newButton);
     }
 
     helper.do_PageTest_WithStackLayout_AndButton(test);

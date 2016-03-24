@@ -5,14 +5,18 @@ import * as trace from "trace";
 import * as styleProperty from "ui/styling/style-property";
 import * as types from "utils/types";
 import * as utils from "utils/utils";
+import keyframeAnimation = require("ui/animation/keyframe-animation");
+import cssAnimationParser = require("./css-animation-parser");
 import {getSpecialPropertySetter} from "ui/builder/special-properties";
 
-var ID_SPECIFICITY = 1000000;
-var ATTR_SPECIFITY = 10000;
-var CLASS_SPECIFICITY = 100;
-var TYPE_SPECIFICITY = 1;
+let ID_SPECIFICITY = 1000000;
+let ATTR_SPECIFITY = 10000;
+let CLASS_SPECIFICITY = 100;
+let TYPE_SPECIFICITY = 1;
 
 export class CssSelector {
+    public animations: Array<keyframeAnimation.KeyframeAnimationInfo>;
+
     private _expression: string;
     private _declarations: cssParser.Declaration[];
     private _attrExpression: string;
@@ -22,7 +26,7 @@ export class CssSelector {
             let leftSquareBracketIndex = expression.indexOf(LSBRACKET);
             if (leftSquareBracketIndex > 0) {
                 // extracts what is inside square brackets ([target = 'test'] will extract "target = 'test'")
-                var paramsRegex = /\[\s*(.*)\s*\]/;
+                let paramsRegex = /\[\s*(.*)\s*\]/;
                 let attrParams = paramsRegex.exec(expression);
                 if (attrParams && attrParams.length > 1) {
                     this._attrExpression = attrParams[1].trim();
@@ -34,6 +38,7 @@ export class CssSelector {
             }
         }
         this._declarations = declarations;
+        this.animations = cssAnimationParser.CssAnimationParser.keyframeAnimationsFromCSSDeclarations(declarations);
     }
 
     get expression(): string {
@@ -52,32 +57,45 @@ export class CssSelector {
         throw "Specificity property is abstract";
     }
 
+    protected get valueSourceModifier(): number {
+        return observable.ValueSource.Css;
+    }
+
     public matches(view: view.View): boolean {
         return false;
     }
 
-    public apply(view: view.View) {
+    public apply(view: view.View, valueSourceModifier: number) {
+        let modifier = valueSourceModifier || this.valueSourceModifier;
         this.eachSetter((property, value) => {
-            if(types.isString(property)) {
+            if (types.isString(property)) {
                 let attrHandled = false;
                 let specialSetter = getSpecialPropertySetter(property);
-                
+
                 if (!attrHandled && specialSetter) {
                     specialSetter(view, value);
                     attrHandled = true;
                 }
-                
+
                 if (!attrHandled && property in view) {
                     view[property] = utils.convertString(value);
                 }
             } else {
                 try {
-                    view.style._setValue(property, value, observable.ValueSource.Css);
+                    view.style._setValue(property, value, modifier);
                 } catch (ex) {
                     trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
                 }
             }
         });
+        if (this.animations && view.isLoaded) {
+            for (let animationInfo of this.animations) {
+                let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo, modifier);
+                if (realAnimation) {
+                    realAnimation.play(view);
+                }
+            }
+        }
     }
 
     public eachSetter(callback: (property, resolvedValue: any) => void) {
@@ -93,7 +111,7 @@ export class CssSelector {
                 callback(property, resolvedValue);
             }
             else {
-                var pairs = styleProperty.getShorthandPairs(name, resolvedValue);
+                let pairs = styleProperty.getShorthandPairs(name, resolvedValue);
                 if (pairs) {
                     for (let j = 0; j < pairs.length; j++) {
                         let pair = pairs[j];
@@ -178,7 +196,7 @@ class CssClassSelector extends CssSelector {
         return CLASS_SPECIFICITY;
     }
     public matches(view: view.View): boolean {
-        var expectedClass = this.expression;
+        let expectedClass = this.expression;
         let result = view._cssClasses.some((cssClass, i, arr) => { return cssClass === expectedClass });
         if (result && this.attrExpression) {
             return matchesAttr(this.attrExpression, view);
@@ -357,10 +375,14 @@ export class CssVisualStateSelector extends CssSelector {
         return this._state;
     }
 
+    protected get valueSourceModifier(): number {
+        return observable.ValueSource.VisualState;
+    }
+
     constructor(expression: string, declarations: cssParser.Declaration[]) {
         super(expression, declarations);
 
-        var args = expression.split(COLON);
+        let args = expression.split(COLON);
         this._key = args[0];
         this._state = args[1];
 
@@ -381,13 +403,13 @@ export class CssVisualStateSelector extends CssSelector {
     }
 
     public matches(view: view.View): boolean {
-        var matches = true;
+        let matches = true;
         if (this._isById) {
             matches = this._match === view.id;
         }
 
         if (this._isByClass) {
-            var expectedClass = this._match;
+            let expectedClass = this._match;
             matches = view._cssClasses.some((cssClass, i, arr) => { return cssClass === expectedClass });
         }
 
@@ -407,18 +429,18 @@ export class CssVisualStateSelector extends CssSelector {
     }
 }
 
-var HASH = "#";
-var DOT = ".";
-var COLON = ":";
-var SPACE = " ";
-var GTHAN = ">";
-var LSBRACKET = "[";
-var RSBRACKET = "]";
-var EQUAL = "=";
+let HASH = "#";
+let DOT = ".";
+let COLON = ":";
+let SPACE = " ";
+let GTHAN = ">";
+let LSBRACKET = "[";
+let RSBRACKET = "]";
+let EQUAL = "=";
 
 export function createSelector(expression: string, declarations: cssParser.Declaration[]): CssSelector {
     let goodExpr = expression.replace(/>/g, " > ").replace(/\s\s+/g, " ");
-    var spaceIndex = goodExpr.indexOf(SPACE);
+    let spaceIndex = goodExpr.indexOf(SPACE);
     if (spaceIndex >= 0) {
         return new CssCompositeSelector(goodExpr, declarations);
     }
@@ -462,6 +484,6 @@ class InlineStyleSelector extends CssSelector {
 }
 
 export function applyInlineSyle(view: view.View, declarations: cssParser.Declaration[]) {
-    var localStyleSelector = new InlineStyleSelector(declarations);
+    let localStyleSelector = new InlineStyleSelector(declarations);
     localStyleSelector.apply(view);
 }

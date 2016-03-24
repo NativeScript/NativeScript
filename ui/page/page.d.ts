@@ -8,6 +8,7 @@ declare module "ui/page" {
     import frame = require("ui/frame");
     import actionBar = require("ui/action-bar");
     import dependencyObservable = require("ui/core/dependency-observable");
+    import keyframeAnimation = require("ui/animation/keyframe-animation");
 
     //@private
     import styleScope = require("ui/styling/style-scope");
@@ -119,6 +120,17 @@ declare module "ui/page" {
          * @param cssFileName - A valid file name (from the application root) which contains a valid css.
          */
         addCssFile(cssFileName: string): void;
+
+        /**
+         * Removes all selectors matching the specified selector expression.
+         * @param selectorExpression - A valid selector expression.
+         */
+        removeCssSelectors(selectorExpression: string): void;
+
+        /**
+         * Returns a CSS keyframe animation with the specified name, if it exists.
+         */
+        getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo;
 
         /**
          * A property that is used to pass a data from another page (while navigate to).
