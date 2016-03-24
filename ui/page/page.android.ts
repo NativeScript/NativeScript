@@ -68,7 +68,22 @@ function ensureDialogFragmentClass() {
 
         public onStart() {
             super.onStart();
+            if (!this._owner.isLoaded) {
+                this._owner.onLoaded();
+            }
             this._shownCallback();
+        }
+        
+        public onDestroyView() {
+            super.onDestroyView();
+
+            if (this._owner.isLoaded) {
+                this._owner.onUnloaded();
+            }
+
+            this._owner._isAddedToNativeVisualTree = false;
+            this._owner._onDetached(true);
+
         }
 
         public onDismiss(dialog: android.content.IDialogInterface) {
@@ -150,11 +165,10 @@ export class Page extends pageCommon.Page {
 
         this._onAttached(parent._context);
         this._isAddedToNativeVisualTree = true;
-        this.onLoaded();
 
         ensureDialogFragmentClass();
 
-        this._dialogFragment = new DialogFragmentClass(this, !!fullscreen, () => this._raiseShownModallyEvent, () => this.closeModal());
+        this._dialogFragment = new DialogFragmentClass(this, !!fullscreen, () => this._raiseShownModallyEvent(), () => this.closeModal());
 
         super._raiseShowingModallyEvent();
 
@@ -165,9 +179,6 @@ export class Page extends pageCommon.Page {
         this._dialogFragment.dismissAllowingStateLoss();
         this._dialogFragment = null;
 
-        this.onUnloaded();
-        this._isAddedToNativeVisualTree = false;
-        this._onDetached(true);
         parent._modal = undefined;
 
         super._hideNativeModalView(parent);
