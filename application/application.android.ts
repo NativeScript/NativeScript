@@ -106,6 +106,7 @@ function initEvents() {
 
         onActivityResumed: function (activity: any) {
             androidApp.paused = false;
+            androidApp.foregroundActivity = activity;
 
             if (activity === androidApp.foregroundActivity) {
                 if (typedExports.onResume) {
