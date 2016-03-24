@@ -340,7 +340,7 @@ export class Page extends pageCommon.Page {
         var that = this;
         parent.ios.presentViewControllerAnimatedCompletion(this._ios, utils.ios.MajorVersion >= 8, null);
         UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(parent.ios.transitionCoordinator(), null, function () {
-            that._raiseShownModallyEvent(parent, context, closeCallback);
+            that._raiseShownModallyEvent();
         });
     }
 

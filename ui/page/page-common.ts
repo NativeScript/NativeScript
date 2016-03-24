@@ -51,6 +51,7 @@ export class Page extends ContentView implements dts.Page {
     public static showingModallyEvent = "showingModally";
 
     protected _closeModalCallback: Function;
+    private _modalContext: any;
 
     private _navigationContext: any;
 
@@ -260,9 +261,11 @@ export class Page extends ContentView implements dts.Page {
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         parent._modal = this;
         var that = this;
+        this._modalContext = context;
         this._closeModalCallback = function () {
             if (that._closeModalCallback) {
                 that._closeModalCallback = null;
+                that._modalContext = null;
                 that._hideNativeModalView(parent);
                 if (typeof closeCallback === "function") {
                     closeCallback.apply(undefined, arguments);
@@ -275,20 +278,24 @@ export class Page extends ContentView implements dts.Page {
         //
     }
 
-    protected _raiseShownModallyEvent(parent: Page, context: any, closeCallback: Function) {
-        this.notify({
+    protected _raiseShownModallyEvent() {
+        let args: dts.ShownModallyData = {
             eventName: Page.shownModallyEvent,
             object: this,
-            context: context,
+            context: this._modalContext,
             closeCallback: this._closeModalCallback
-        });
+        }
+        this.notify(args);
     }
 
     protected _raiseShowingModallyEvent() {
-        this.notify({
+        let args: dts.ShownModallyData = {
             eventName: Page.showingModallyEvent,
-            object: this
-        });
+            object: this,
+            context: this._modalContext,
+            closeCallback: this._closeModalCallback
+        }
+        this.notify(args);
     }
 
     public _getStyleScope(): styleScope.StyleScope {
