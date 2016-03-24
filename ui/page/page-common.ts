@@ -70,7 +70,7 @@ export class Page extends ContentView implements dts.Page {
         this.style._setValue(style.backgroundColorProperty, "white", ValueSource.Inherited);
 
         this._applyCss();
-        
+
         if (this.actionBarHidden !== undefined) {
             this._updateActionBar(this.actionBarHidden);
         }
@@ -85,7 +85,7 @@ export class Page extends ContentView implements dts.Page {
     set backgroundSpanUnderStatusBar(value: boolean) {
         this._setValue(Page.backgroundSpanUnderStatusBarProperty, value);
     }
-    
+
     get actionBarHidden(): boolean {
         return this._getValue(Page.actionBarHiddenProperty);
     }
@@ -222,12 +222,17 @@ export class Page extends ContentView implements dts.Page {
             this._showNativeModalView(<any>frame.topmost().currentPage, undefined, undefined, true);
             return this;
         } else {
-            var moduleName: string = arguments[0];
             var context: any = arguments[1];
             var closeCallback: Function = arguments[2];
             var fullscreen: boolean = arguments[3];
 
-            var page = <Page>frame.resolvePageFromEntry({ moduleName: moduleName });
+            var page: Page;
+            if (arguments[0] instanceof Page) {
+                page = <Page>arguments[0];
+            } else {
+                page = <Page>frame.resolvePageFromEntry({ moduleName: arguments[0] });
+            }
+
             page._showNativeModalView(this, context, closeCallback, fullscreen);
             return page;
         }
