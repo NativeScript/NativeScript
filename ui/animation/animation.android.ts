@@ -165,6 +165,8 @@ export class Animation extends common.Animation implements definition.Animation 
             }
         }
 
+        let valueSource = this._valueSource;
+
         switch (propertyAnimation.property) {
 
             case common.Properties.opacity:
@@ -173,12 +175,11 @@ export class Animation extends common.Animation implements definition.Animation 
                 nativeArray[0] = propertyAnimation.value;
                 if (this._valueSource !== undefined) {
                     propertyUpdateCallbacks.push(checkAnimation(() => { 
-                        propertyAnimation.target.style._resetValue(styleModule.opacityProperty);
-                        propertyAnimation.target.style._setValue(styleModule.opacityProperty, propertyAnimation.value, this._valueSource);
+                        propertyAnimation.target.style._setValue(styleModule.opacityProperty, propertyAnimation.value, valueSource);
                     }));
                 }
                 else {
-                    propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.opacity = propertyAnimation.value }));
+                    propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.opacity = propertyAnimation.value; }));
                 }
                 propertyResetCallbacks.push(checkAnimation(() => { nativeView.setAlpha(originalValue1); }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
@@ -194,14 +195,14 @@ export class Animation extends common.Animation implements definition.Animation 
                 animator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
                     onAnimationUpdate(animator: android.animation.ValueAnimator) {
                         let argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
-                        propertyAnimation.target.backgroundColor = new color.Color(argb);
+                        propertyAnimation.target.style._setValue(styleModule.backgroundColorProperty, new color.Color(argb), valueSource);
                     }
                 }));
 
                 if (this._valueSource !== undefined) {
-                    propertyUpdateCallbacks.push(checkAnimation(() => { 
-                        propertyAnimation.target.style._resetValue(styleModule.backgroundColorProperty);
-                        propertyAnimation.target.style._setValue(styleModule.backgroundColorProperty, propertyAnimation.value, this._valueSource);
+                    let valueSource = this._valueSource;
+                    propertyUpdateCallbacks.push(checkAnimation(() => {
+                        propertyAnimation.target.style._setValue(styleModule.backgroundColorProperty, propertyAnimation.value, valueSource);
                     }));
                 }
                 else {
@@ -229,10 +230,8 @@ export class Animation extends common.Animation implements definition.Animation 
 
                 if (this._valueSource !== undefined) {
                     propertyUpdateCallbacks.push(checkAnimation(() => {
-                        propertyAnimation.target.style._resetValue(styleModule.translateXProperty);
-                        propertyAnimation.target.style._resetValue(styleModule.translateYProperty);
-                        propertyAnimation.target.style._setValue(styleModule.translateXProperty, propertyAnimation.value.x, this._valueSource);
-                        propertyAnimation.target.style._setValue(styleModule.translateYProperty, propertyAnimation.value.y, this._valueSource);
+                        propertyAnimation.target.style._setValue(styleModule.translateXProperty, propertyAnimation.value.x, valueSource);
+                        propertyAnimation.target.style._setValue(styleModule.translateYProperty, propertyAnimation.value.y, valueSource);
                     }));
                 }
                 else {
@@ -271,10 +270,8 @@ export class Animation extends common.Animation implements definition.Animation 
 
                 if (this._valueSource !== undefined) {
                     propertyUpdateCallbacks.push(checkAnimation(() => {
-                        propertyAnimation.target.style._resetValue(styleModule.scaleXProperty);
-                        propertyAnimation.target.style._resetValue(styleModule.scaleYProperty);
-                        propertyAnimation.target.style._setValue(styleModule.scaleXProperty, propertyAnimation.value.x, this._valueSource);
-                        propertyAnimation.target.style._setValue(styleModule.scaleYProperty, propertyAnimation.value.y, this._valueSource);
+                        propertyAnimation.target.style._setValue(styleModule.scaleXProperty, propertyAnimation.value.x, valueSource);
+                        propertyAnimation.target.style._setValue(styleModule.scaleYProperty, propertyAnimation.value.y, valueSource);
                     }));
                 }
                 else {
@@ -301,8 +298,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 nativeArray[0] = propertyAnimation.value;
                 if (this._valueSource !== undefined) {
                     propertyUpdateCallbacks.push(checkAnimation(() => { 
-                        propertyAnimation.target.style._resetValue(styleModule.rotateProperty);
-                        propertyAnimation.target.style._setValue(styleModule.rotateProperty, propertyAnimation.value, this._valueSource);
+                        propertyAnimation.target.style._setValue(styleModule.rotateProperty, propertyAnimation.value, valueSource);
                     }));
                 }
                 else {
