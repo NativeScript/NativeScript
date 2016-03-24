@@ -15,10 +15,10 @@ import animation = require("ui/animation");
 // ```
 // </snippet>
 
-export var test_AnimatingProperties = function (done) {
+export var test_AnimatingProperties = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -64,10 +64,10 @@ export var test_AnimatingProperties = function (done) {
     // </snippet>
 }
 
-export var test_CancellingAnimation = function (done) {
+export var test_CancellingAnimation = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -83,7 +83,7 @@ export var test_CancellingAnimation = function (done) {
     // <snippet module="ui/animation" title="animation">
     // # Cancelling animation
     // ``` JavaScript
-    var animation1 = label.createAnimation({ translate: { x: 100, y: 100}, duration: 500 });
+    var animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 500 });
     animation1.play()
         .then(() => {
             ////console.log("Animation finished");
@@ -109,10 +109,10 @@ export var test_CancellingAnimation = function (done) {
     // </snippet>
 }
 
-export var test_CancellingAnimate = function (done) {
+export var test_CancellingAnimate = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -153,10 +153,10 @@ export var test_CancellingAnimate = function (done) {
     // </snippet>
 }
 
-export var test_ChainingAnimations = function (done) {
+export var test_ChainingAnimations = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -198,10 +198,10 @@ export var test_ChainingAnimations = function (done) {
     // </snippet>
 }
 
-export var test_ReusingAnimations = function (done) {
+export var test_ReusingAnimations = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -245,12 +245,12 @@ export var test_ReusingAnimations = function (done) {
     // </snippet>
 }
 
-export var test_AnimatingMultipleViews = function (done) {
+export var test_AnimatingMultipleViews = function(done) {
     var mainPage: pageModule.Page;
     var label1: labelModule.Label;
     var label2: labelModule.Label;
     var label3: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label1 = new labelModule.Label();
         label1.text = "label1";
         label2 = new labelModule.Label();
@@ -299,10 +299,10 @@ export var test_AnimatingMultipleViews = function (done) {
     // </snippet>
 }
 
-export var test_AnimateOpacity = function (done) {
+export var test_AnimateOpacity = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -327,10 +327,82 @@ export var test_AnimateOpacity = function (done) {
         });
 }
 
-export var test_AnimateBackgroundColor = function (done) {
+export var test_AnimateOpacity_ShouldThrow_IfNotNumber = () => {
+    var label = new labelModule.Label();
+    helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+        TKUnit.assertThrows(() => {
+            label.animate({ opacity: <any>"0.75" });
+        }, "Setting opacity to a non number should throw.");
+    });
+}
+
+export var test_AnimateDelay_ShouldThrow_IfNotNumber = () => {
+    var label = new labelModule.Label();
+    helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+        TKUnit.assertThrows(() => {
+            label.animate({ delay: <any>"1" });
+        }, "Setting delay to a non number should throw.");
+    });
+}
+
+export var test_AnimateDuration_ShouldThrow_IfNotNumber = () => {
+    var label = new labelModule.Label();
+    helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+        TKUnit.assertThrows(() => {
+            label.animate({ duration: <any>"1" });
+        }, "Setting duration to a non number should throw.");
+    });
+}
+
+export var test_AnimateIterations_ShouldThrow_IfNotNumber = () => {
+    var label = new labelModule.Label();
+    helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+        TKUnit.assertThrows(() => {
+            label.animate({ iterations: <any>"1" });
+        }, "Setting iterations to a non number should throw.");
+    });
+}
+
+export var test_AnimateRotate_ShouldThrow_IfNotNumber = () => {
+    var label = new labelModule.Label();
+    helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+        TKUnit.assertThrows(() => {
+            label.animate({ rotate: <any>"1" });
+        }, "Setting rotate to a non number should throw.");
+    });
+}
+
+export var test_AnimateScale_ShouldThrow_IfNotPair = () => {
+    var label = new labelModule.Label();
+    helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+        TKUnit.assertThrows(() => {
+            label.animate({ scale: <any>"1" });
+        }, "Setting scale to a non Pair should throw.");
+    });
+}
+
+export var test_AnimateTranslate_ShouldThrow_IfNotPair = () => {
+    var label = new labelModule.Label();
+    helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+        TKUnit.assertThrows(() => {
+            label.animate({ translate: <any>"1" });
+        }, "Setting translate to a non Pair should throw.");
+    });
+}
+
+export var test_AnimateBackgroundColor_ShouldThrow_IfNotValidColorStringOrColor = () => {
+    var label = new labelModule.Label();
+    helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
+        TKUnit.assertThrows(() => {
+            label.animate({ backgroundColor: <any>"test" });
+        }, "Setting backgroundColor to a not valid color string or Color should throw.");
+    });
+}
+
+export var test_AnimateBackgroundColor = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -356,10 +428,41 @@ export var test_AnimateBackgroundColor = function (done) {
         });
 }
 
-export var test_AnimateTranslate = function (done) {
+export var test_AnimateBackgroundColor_FromString = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
+        label = new labelModule.Label();
+        label.text = "label";
+        var stackLayout = new stackLayoutModule.StackLayout();
+        stackLayout.addChild(label);
+        mainPage = new pageModule.Page();
+        mainPage.content = stackLayout;
+        return mainPage;
+    };
+
+    helper.navigate(pageFactory);
+    TKUnit.waitUntilReady(() => { return label.isLoaded });
+    
+    var expected = "Red";
+    var clr = new colorModule.Color(expected);
+
+    label.animate({ backgroundColor: <any>expected })
+        .then(() => {
+            TKUnit.assert(label.backgroundColor.equals(clr));
+            helper.goBack();
+            done();
+        })
+        .catch((e) => {
+            helper.goBack();
+            done(e);
+        });
+}
+
+export var test_AnimateTranslate = function(done) {
+    var mainPage: pageModule.Page;
+    var label: labelModule.Label;
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -386,10 +489,10 @@ export var test_AnimateTranslate = function (done) {
         });
 }
 
-export var test_AnimateScale = function (done) {
+export var test_AnimateScale = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -404,8 +507,8 @@ export var test_AnimateScale = function (done) {
 
     label.animate({ scale: { x: 2, y: 3 } })
         .then(() => {
-            TKUnit.assertEqual(label.scaleX, 2,"label.scaleX");
-            TKUnit.assertEqual(label.scaleY, 3,"label.scaleY");
+            TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
+            TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
             assertIOSNativeTransformIsCorrect(label);
             helper.goBack();
             done();
@@ -416,10 +519,10 @@ export var test_AnimateScale = function (done) {
         });
 }
 
-export var test_AnimateRotate = function (done) {
+export var test_AnimateRotate = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -445,10 +548,10 @@ export var test_AnimateRotate = function (done) {
         });
 }
 
-export var test_AnimateTranslateScaleAndRotateSimultaneously = function (done) {
+export var test_AnimateTranslateScaleAndRotateSimultaneously = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -482,10 +585,10 @@ export var test_AnimateTranslateScaleAndRotateSimultaneously = function (done) {
         });
 }
 
-export var test_AnimateTranslateScaleAndRotateSequentially = function (done) {
+export var test_AnimateTranslateScaleAndRotateSequentially = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -529,10 +632,10 @@ export var test_AnimateTranslateScaleAndRotateSequentially = function (done) {
         });
 }
 
-export var test_AnimationsAreAlwaysPlayed = function (done) {
+export var test_AnimationsAreAlwaysPlayed = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -565,10 +668,10 @@ export var test_AnimationsAreAlwaysPlayed = function (done) {
         });
 }
 
-export var test_PlayPromiseIsResolvedWhenAnimationFinishes = function (done) {
+export var test_PlayPromiseIsResolvedWhenAnimationFinishes = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();
@@ -595,10 +698,10 @@ export var test_PlayPromiseIsResolvedWhenAnimationFinishes = function (done) {
         });
 }
 
-export var test_PlayPromiseIsRejectedWhenAnimationIsCancelled = function (done) {
+export var test_PlayPromiseIsRejectedWhenAnimationIsCancelled = function(done) {
     var mainPage: pageModule.Page;
     var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
+    var pageFactory = function(): pageModule.Page {
         label = new labelModule.Label();
         label.text = "label";
         var stackLayout = new stackLayoutModule.StackLayout();

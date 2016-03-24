@@ -1,5 +1,7 @@
 ﻿import definition = require("ui/animation");
 import viewModule = require("ui/core/view");
+import colorModule = require("color");
+import types = require("utils/types");
 import * as traceModule from "trace";
 
 var trace: typeof traceModule;
@@ -46,8 +48,8 @@ export class CubicBezierAnimationCurve implements definition.CubicBezierAnimatio
 // We didn't want to actually modify Promise; as the cancel() is ONLY valid for animations "Promise"
 export class AnimationPromise implements definition.AnimationPromise {
     public cancel(): void { /* Do Nothing */ }
-    public then(onFulfilled?: (value?: any) => void, onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise();}
-    public catch(onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise();}
+    public then(onFulfilled?: (value?: any) => void, onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
+    public catch(onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
 }
 
 export class Animation implements definition.Animation {
@@ -139,9 +141,30 @@ export class Animation implements definition.Animation {
         this._reject(new Error("Animation cancelled."));
     }
 
-    private static _createPropertyAnimations(animationDefinition: definition.AnimationDefinition): Array<PropertyAnimation>  {
+    private static _createPropertyAnimations(animationDefinition: definition.AnimationDefinition): Array<PropertyAnimation> {
         if (!animationDefinition.target) {
             throw new Error("No animation target specified.");
+        }
+
+        for (let item in animationDefinition) {
+            if (!types.isDefined(animationDefinition[item])) {
+                continue;
+            }
+
+            if ((item === Properties.opacity ||
+                item === Properties.rotate ||
+                item === "duration" ||
+                item === "delay" ||
+                item === "iterations") && !types.isNumber(animationDefinition[item])) {
+                throw new Error(`Property ${item} must be valid number. Value: ${animationDefinition[item]}`);
+            } else if ((item === Properties.scale ||
+                item === Properties.translate) &&
+                (!types.isNumber((<definition.Pair>animationDefinition[item]).x) ||
+                    !types.isNumber((<definition.Pair>animationDefinition[item]).y))) {
+                throw new Error(`Property ${item} must be valid Pair. Value: ${animationDefinition[item]}`);
+            } else if (item === Properties.backgroundColor && !colorModule.Color.isValid(animationDefinition.backgroundColor)) {
+                throw new Error(`Property ${item} must be valid color. Value: ${animationDefinition[item]}`);
+            }
         }
 
         var propertyAnimations = new Array<PropertyAnimation>();
@@ -164,7 +187,8 @@ export class Animation implements definition.Animation {
             propertyAnimations.push({
                 target: animationDefinition.target,
                 property: Properties.backgroundColor,
-                value: animationDefinition.backgroundColor,
+                value: types.isString(animationDefinition.backgroundColor) ? 
+                    new colorModule.Color(<any>animationDefinition.backgroundColor) : animationDefinition.backgroundColor,
                 duration: animationDefinition.duration,
                 delay: animationDefinition.delay,
                 iterations: animationDefinition.iterations,
