@@ -48,7 +48,11 @@ export class StyleScope {
 
     private _css: string;
     private _cssFileName: string;
-    private _cssSelectors: Array<cssSelector.CssSelector>;
+    private _mergedCssSelectors: Array<cssSelector.CssSelector>;
+    private _localCssSelectors: Array<cssSelector.CssSelector> = [];
+    private _localCssSelectorVersion: number = 0;
+    private _localCssSelectorsAppliedVersion: number = 0;
+    private _applicationCssSelectorsAppliedVersion: number = 0;
     private _keyframes = {};
 
     get css(): string {
@@ -56,39 +60,38 @@ export class StyleScope {
     }
 
     set css(value: string) {
-        this._css = value;
         this._cssFileName = undefined;
-        this._cssSelectors = undefined;
-        this._reset();
+        this.setCss(value);
     }
 
-    public addCss(cssString: string, cssFileName: string): void {
+    public addCss(cssString: string, cssFileName?: string): void {
+        this.setCss(cssString, cssFileName, true);
+    }
+
+    private setCss(cssString: string, cssFileName?: string, append: boolean = false): void {
         this._css = this._css ? this._css + cssString : cssString;
-        this._cssFileName = cssFileName;
+        if (cssFileName) {
+            this._cssFileName = cssFileName
+        }
 
         this._reset();
 
-        if (!this._cssSelectors) {
-            // Always add app.css when initializing selectors
-            if (application.cssSelectorsCache) {
-                this._cssSelectors = StyleScope._joinCssSelectorsArrays([application.cssSelectorsCache]);
-            }
-            else {
-                this._cssSelectors = new Array<cssSelector.CssSelector>();
-            }
+        const parsedSelectors = StyleScope.createSelectorsFromCss(cssString, cssFileName, this._keyframes);
+        if (append) {
+            this._localCssSelectors.push.apply(this._localCssSelectors, parsedSelectors);
+        } else {
+            this._localCssSelectors = parsedSelectors;
         }
 
-        let selectorsFromFile = StyleScope.createSelectorsFromCss(cssString, cssFileName, this._keyframes);
-        this._cssSelectors = StyleScope._joinCssSelectorsArrays([this._cssSelectors, selectorsFromFile]);
-
-        this._applyKeyframesOnSelectors();
+        this._localCssSelectorVersion++;
+        this.ensureSelectors();
     }
 
     public removeSelectors(selectorExpression: string) {
-        for (let i = this._cssSelectors.length - 1; i >= 0; i--) {
-            let selector = this._cssSelectors[i];
+        for (let i = this._mergedCssSelectors.length - 1; i >= 0; i--) {
+            let selector = this._mergedCssSelectors[i];
             if (selector.expression === selectorExpression) {
-                this._cssSelectors.splice(i, 1);
+                this._mergedCssSelectors.splice(i, 1);
             }
         }
     }
@@ -112,8 +115,7 @@ export class StyleScope {
                 pageCssSelectors = StyleScope._joinCssSelectorsArrays([pageCssSelectors, StyleScope.createSelectorsFromSyntaxTree(pageCssSyntaxTree, keyframes)]);
             }
             return pageCssSelectors;
-        }
-        catch (e) {
+        } catch (e) {
             trace.write("Css styling failed: " + e, trace.categories.Error, trace.messageType.error);
         }
     }
@@ -157,12 +159,24 @@ export class StyleScope {
         return selectors;
     }
 
-    public ensureSelectors() {
-        if (!this._cssSelectors && (this._css || application.cssSelectorsCache)) {
-            let applicationCssSelectors = application.cssSelectorsCache ? application.cssSelectorsCache : null;
-            let pageCssSelectors = StyleScope.createSelectorsFromCss(this._css, this._cssFileName, this._keyframes);
-            this._cssSelectors = StyleScope._joinCssSelectorsArrays([applicationCssSelectors, pageCssSelectors]);
+    public ensureSelectors(): boolean {
+        let toMerge = []
+        if ((this._applicationCssSelectorsAppliedVersion !== application.cssSelectorVersion) ||
+            (this._localCssSelectorVersion !== this._localCssSelectorsAppliedVersion) ||
+
+            (!this._mergedCssSelectors)) {
+            toMerge.push(application.cssSelectors);
+            this._applicationCssSelectorsAppliedVersion = application.cssSelectorVersion;
+            toMerge.push(this._localCssSelectors);
+            this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
+        }
+
+        if (toMerge.length > 0) {
+            this._mergedCssSelectors = StyleScope._joinCssSelectorsArrays(toMerge);
             this._applyKeyframesOnSelectors();
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -180,9 +194,7 @@ export class StyleScope {
     }
 
     public applySelectors(view: view.View) {
-        if (!this._cssSelectors) {
-            return;
-        }
+        this.ensureSelectors();
 
         view.style._beginUpdate();
         let i,
@@ -190,8 +202,8 @@ export class StyleScope {
             matchedStateSelectors = new Array<cssSelector.CssVisualStateSelector>()
 
         // Go trough all selectors - and directly apply all non-state selectors
-        for (i = 0; i < this._cssSelectors.length; i++) {
-            selector = this._cssSelectors[i];
+        for (i = 0; i < this._mergedCssSelectors.length; i++) {
+            selector = this._mergedCssSelectors[i];
             if (selector.matches(view)) {
                 if (selector instanceof cssSelector.CssVisualStateSelector) {
                     matchedStateSelectors.push(<cssSelector.CssVisualStateSelector>selector);
@@ -300,8 +312,8 @@ export class StyleScope {
     }
 
     private _applyKeyframesOnSelectors() {
-        for (let i = this._cssSelectors.length - 1; i >= 0; i --) {
-            let selector = this._cssSelectors[i];
+        for (let i = this._mergedCssSelectors.length - 1; i >= 0; i--) {
+            let selector = this._mergedCssSelectors[i];
             if (selector.animations !== undefined) {
                 for (let animation of selector.animations) {
                     let keyframe = this._keyframes[animation.name];

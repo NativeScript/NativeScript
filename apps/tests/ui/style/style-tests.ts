@@ -1,4 +1,5 @@
 import TKUnit = require("../../TKUnit");
+import application = require("application");
 import buttonModule = require("ui/button");
 import labelModule = require("ui/label");
 import pageModule = require("ui/page");
@@ -49,6 +50,42 @@ export function test_css_is_applied_to_special_properties() {
         var expected = "test";
         page.css = `StackLayout { class: ${expected}; }`;
         TKUnit.assertEqual(stack.className, expected);
+    });
+}
+
+export function test_applies_css_changes_to_application_rules_before_page_load() {
+    application.addCss(".applicationChangedLabelBefore { color: red; }");
+    const label = new labelModule.Label();
+    label.className = "applicationChangedLabelBefore";
+    label.text = "Red color coming from updated application rules";
+
+    helper.buildUIAndRunTest(label, function (views: Array<viewModule.View>) {
+        helper.assertViewColor(label, "#FF0000");
+    });
+}
+
+export function test_applies_css_changes_to_application_rules_after_page_load() {
+    const label1 = new labelModule.Label();
+    label1.text = "Blue color coming from updated application rules";
+
+    helper.buildUIAndRunTest(label1, function (views: Array<viewModule.View>) {
+        application.addCss(".applicationChangedLabelAfter { color: blue; }");
+        label1.className = "applicationChangedLabelAfter";
+        helper.assertViewColor(label1, "#0000FF");
+    });
+}
+
+export function test_applies_css_changes_to_application_rules_after_page_load_new_views() {
+    const host = new stackModule.StackLayout();
+
+    helper.buildUIAndRunTest(host, function (views: Array<viewModule.View>) {
+        application.addCss(".applicationChangedLabelAfterNew { color: #00FF00; }");
+
+        const label = new labelModule.Label();
+        label.className = "applicationChangedLabelAfterNew";
+        label.text = "Blue color coming from updated application rules";
+        host.addChild(label);
+        helper.assertViewColor(label, "#00FF00");
     });
 }
 

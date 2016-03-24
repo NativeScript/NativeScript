@@ -83,8 +83,7 @@ export class CssSelector {
             } else {
                 try {
                     view.style._setValue(property, value, modifier);
-                }
-                catch (ex) {
+                } catch (ex) {
                     trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
                 }
             }
@@ -124,6 +123,18 @@ export class CssSelector {
             }
         }
     }
+
+    public get declarationText(): string {
+        return this.declarations.map((declaration) => `${declaration.property}: ${declaration.value}`).join("; ");
+    }
+
+    public get attrExpressionText(): string  {
+        if (this.attrExpression) {
+            return `[${this.attrExpression}]`;
+        } else {
+            return "";
+        }
+    }
 }
 
 class CssTypeSelector extends CssSelector {
@@ -136,6 +147,9 @@ class CssTypeSelector extends CssSelector {
             return matchesAttr(this.attrExpression, view);
         }
         return result;
+    }
+    public toString(): string {
+        return `CssTypeSelector ${this.expression}${this.attrExpressionText} { ${this.declarationText} }`;
     }
 }
 
@@ -171,6 +185,10 @@ class CssIdSelector extends CssSelector {
         }
         return result;
     }
+
+    public toString(): string {
+        return `CssIdSelector ${this.expression}${this.attrExpressionText} { ${this.declarationText} }`;
+    }
 }
 
 class CssClassSelector extends CssSelector {
@@ -185,6 +203,10 @@ class CssClassSelector extends CssSelector {
         }
         return result;
     }
+    public toString(): string {
+        return `CssClassSelector ${this.expression}${this.attrExpressionText} { ${this.declarationText} }`;
+    }
+
 }
 
 class CssCompositeSelector extends CssSelector {
@@ -267,6 +289,10 @@ class CssCompositeSelector extends CssSelector {
         }
         return result;
     }
+
+    public toString(): string {
+        return `CssCompositeSelector ${this.expression}${this.attrExpressionText} { ${this.declarationText} }`;
+    }
 }
 
 class CssAttrSelector extends CssSelector {
@@ -276,6 +302,10 @@ class CssAttrSelector extends CssSelector {
 
     public matches(view: view.View): boolean {
         return matchesAttr(this.attrExpression, view);
+    }
+
+    public toString(): string {
+        return `CssAttrSelector ${this.expression}${this.attrExpressionText} { ${this.declarationText} }`;
     }
 }
 
@@ -393,6 +423,10 @@ export class CssVisualStateSelector extends CssSelector {
 
         return matches;
     }
+
+    public toString(): string {
+        return `CssVisualStateSelector ${this.expression}${this.attrExpressionText} { ${this.declarationText} }`;
+    }
 }
 
 let HASH = "#";
@@ -442,6 +476,10 @@ class InlineStyleSelector extends CssSelector {
         this.eachSetter((property, value) => {
             view.style._setValue(property, value, observable.ValueSource.Local);
         });
+    }
+
+    public toString(): string {
+        return `InlineStyleSelector ${this.expression}${this.attrExpressionText} { ${this.declarationText} }`;
     }
 }
 

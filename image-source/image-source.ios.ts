@@ -11,7 +11,7 @@ export class ImageSource implements definition.ImageSource {
     public ios: UIImage;
 
     public loadFromResource(name: string): boolean {
-        this.ios = UIImage.imageNamed(name);
+        this.ios = UIImage.imageNamed(name) || UIImage.imageNamed(`${name}.jpg`);
         return this.ios != null;
     }
 

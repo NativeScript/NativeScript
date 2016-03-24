@@ -11,7 +11,7 @@ declare module "ui/styling/style-scope" {
 
         public static createSelectorsFromCss(css: string, cssFileName: string): cssSelector.CssSelector[];
         public static createSelectorsFromImports(tree: cssParser.SyntaxTree): cssSelector.CssSelector[];
-        public ensureSelectors();
+        public ensureSelectors(): boolean;
 
         public applySelectors(view: view.View): void
         public getVisualStates(view: view.View): Object;

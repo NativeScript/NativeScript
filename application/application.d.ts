@@ -122,10 +122,19 @@ declare module "application" {
      */
     export var cssFile: string;
 
+    //@private
+    export var appSelectors: Array<cssSelector.CssSelector>;
+    export var additionalSelectors: Array<cssSelector.CssSelector>;
     /**
      * Cached css selectors created from the content of the css file.
      */
-    export var cssSelectorsCache: Array<cssSelector.CssSelector>;
+    export var cssSelectors: Array<cssSelector.CssSelector>;
+    export var cssSelectorVersion: number;
+    export function parseCss(cssText: string, cssFileName?: string): Array<cssSelector.CssSelector>;
+    export function mergeCssSelectors(module: any): void;
+    //@endprivate
+
+    export function addCss(cssText: string): void;
 
     /**
      * Loads css file and parses to a css syntax tree.
