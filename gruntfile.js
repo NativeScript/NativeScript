@@ -352,6 +352,9 @@ module.exports = function(grunt) {
                 tsconfig: {
                     tsconfig: 'tsconfig.json',
                     passThrough: true,
+                },
+                options: {
+                    additionalFlags: "--sourceMap"
                 }
             },
             buildNodeTests: {
