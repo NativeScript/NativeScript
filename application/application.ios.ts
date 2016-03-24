@@ -242,7 +242,20 @@ global.__onUncaughtError = function (error: definition.NativeScriptError) {
 }
 
 function loadCss() {
-    typedExports.cssSelectorsCache = typedExports.loadCss(typedExports.cssFile);
+    //HACK: identical to application.ios.ts
+    typedExports.appSelectors = typedExports.loadCss(typedExports.cssFile) || [];
+    if (typedExports.appSelectors.length > 0) {
+        typedExports.mergeCssSelectors(typedExports);
+    }
+}
+
+export function addCss(cssText: string) {
+    //HACK: identical to application.android.ts
+    const parsed = typedExports.parseCss(cssText);
+    if (parsed) {
+        typedExports.additionalSelectors.push.apply(typedExports.additionalSelectors, parsed);
+        typedExports.mergeCssSelectors(typedExports);
+    }
 }
 
 var started: boolean = false;
