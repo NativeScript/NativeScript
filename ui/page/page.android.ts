@@ -25,23 +25,23 @@ function ensureColor() {
 
 export var DIALOG_FRAGMENT_TAG = "dialog";
 
-var DialogFragmentClass;
-function ensureDialogFragmentClass() {
+interface DialogFragmentClass {
+    new (owner: Page, fullscreen: boolean, shownCallback: () => void, dismissCallback: () => void): android.app.DialogFragment;
+}
+var DialogFragmentClass: DialogFragmentClass;
+    
+function ensureDialogFragmentClass() { 
     if (DialogFragmentClass) {
         return;
     }
 
     class DialogFragmentClassInner extends android.app.DialogFragment {
-        private _owner: Page;
-        private _fullscreen: boolean;
-        private _dismissCallback: Function;
-
-        constructor(owner: Page, fullscreen?: boolean, dismissCallback?: Function) {
+        constructor(
+            private _owner: Page,
+            private _fullscreen: boolean,
+            private _shownCallback: () => void,
+            private _dismissCallback: () => void) {
             super();
-
-            this._owner = owner;
-            this._fullscreen = fullscreen;
-            this._dismissCallback = dismissCallback;
             return global.__native(this);
         }
 
@@ -66,10 +66,29 @@ function ensureDialogFragmentClass() {
             return dialog;
         }
 
-        public onDismiss() {
-            if (typeof this._dismissCallback === "function") {
-                this._dismissCallback();
+        public onStart() {
+            super.onStart();
+            if (!this._owner.isLoaded) {
+                this._owner.onLoaded();
             }
+            this._shownCallback();
+        }
+        
+        public onDestroyView() {
+            super.onDestroyView();
+
+            if (this._owner.isLoaded) {
+                this._owner.onUnloaded();
+            }
+
+            this._owner._isAddedToNativeVisualTree = false;
+            this._owner._onDetached(true);
+
+        }
+
+        public onDismiss(dialog: android.content.IDialogInterface) {
+            super.onDismiss(dialog);
+            this._dismissCallback();
         }
 
     };
@@ -146,26 +165,20 @@ export class Page extends pageCommon.Page {
 
         this._onAttached(parent._context);
         this._isAddedToNativeVisualTree = true;
-        this.onLoaded();
 
         ensureDialogFragmentClass();
-        var that = this;
-        this._dialogFragment = new DialogFragmentClass(this, fullscreen, function () {
-            that.closeModal();
-        });
+
+        this._dialogFragment = new DialogFragmentClass(this, !!fullscreen, () => this._raiseShownModallyEvent(), () => this.closeModal());
 
         super._raiseShowingModallyEvent();
+
         this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), DIALOG_FRAGMENT_TAG);
-        super._raiseShownModallyEvent(parent, context, closeCallback);
     }
 
     protected _hideNativeModalView(parent: Page) {
         this._dialogFragment.dismissAllowingStateLoss();
         this._dialogFragment = null;
 
-        this.onUnloaded();
-        this._isAddedToNativeVisualTree = false;
-        this._onDetached(true);
         parent._modal = undefined;
 
         super._hideNativeModalView(parent);

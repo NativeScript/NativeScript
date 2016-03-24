@@ -1,5 +1,5 @@
 ﻿import PageTestCommon = require("./page-tests-common");
-import {Page, ShownModallyData} from "ui/page";
+import {Page} from "ui/page";
 import TKUnit = require("../../TKUnit");
 import {Label} from "ui/label";
 import helper = require("../helper");
@@ -25,76 +25,6 @@ export function test_NavigateToNewPage_InnerControl() {
     TKUnit.assertEqual(label._context, undefined, "label._context should be undefined after navigate back.");
     TKUnit.assertEqual(label.android, undefined, "label.android should be undefined after navigate back.");
     TKUnit.assertFalse(label.isLoaded, "label.isLoaded should become false after navigating back");
-}
-
-export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
-    var masterPage;
-    var ctx = {
-        shownModally: false
-    };
-
-    var modalClosed = false;
-    var modalCloseCallback = function (returnValue: any) {
-        TKUnit.assertTrue(ctx.shownModally, "Modal-page must be shown!");
-        TKUnit.assertEqual(returnValue, "return value", "Modal-page must return value!");
-        modalClosed = true;
-    }
-    
-    let modalPage: Page;
-
-    let shownModally = 0;
-    var onShownModal = function (args: ShownModallyData) {
-        shownModally++;
-        modalPage.off(Page.shownModallyEvent, onShownModal);
-    }
-
-    let modalLoaded = 0;
-    var onModalLoaded = function (args: EventData) {
-        modalLoaded++;
-        modalPage.off(Page.loadedEvent, onModalLoaded);
-    }
-
-    let modalUnloaded = 0;
-    var onModalUnloaded = function (args: EventData) {
-        modalUnloaded++;
-        modalPage.off(Page.unloadedEvent, onModalUnloaded);
-        TKUnit.assertNull(masterPage.modal, "currentPage.modal should be undefined when no modal page is shown!");
-    }
-
-    var navigatedToEventHandler = function (args) {
-        let page = <Page>args.object;
-        TKUnit.assertNull(page.modal, "currentPage.modal should be undefined when no modal page is shown!");
-        let basePath = "ui/page/";
-        modalPage = page.showModal(basePath + "modal-page", ctx, modalCloseCallback, false);
-        TKUnit.assertTrue((<any>modalPage).showingModally, "showingModally");
-        modalPage.on(Page.shownModallyEvent, onShownModal);
-        modalPage.on(Page.loadedEvent, onModalLoaded);
-        modalPage.on(Page.unloadedEvent, onModalUnloaded);
-    };
-
-    var masterPageFactory = function (): Page {
-        masterPage = new Page();
-        masterPage.id = "newPage";
-        masterPage.on(Page.navigatedToEvent, navigatedToEventHandler);
-        var label = new Label();
-        label.text = "Text";
-        masterPage.content = label;
-        return masterPage;
-    };
-
-    try {
-        helper.navigate(masterPageFactory);
-
-        TKUnit.waitUntilReady(() => { return modalUnloaded > 0; });
-        TKUnit.assertEqual(shownModally, 1, "shownModally");
-        TKUnit.assertEqual(modalLoaded, 1,"modalLoaded");
-        TKUnit.assertEqual(modalUnloaded,1 , "modalUnloaded");
-
-        masterPage.off(Page.navigatedToEvent, navigatedToEventHandler);
-    }
-    finally {
-        helper.goBack();
-    }
 }
 
 export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
