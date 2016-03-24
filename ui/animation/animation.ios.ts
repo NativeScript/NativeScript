@@ -58,6 +58,14 @@ class AnimationDelegateImpl extends NSObject {
             case common.Properties.rotate:
                 targetStyle._setValue(style.rotateProperty, value, this._valueSource);
                 break;
+            case common.Properties.translate:
+                targetStyle._setValue(style.translateXProperty, value.x, this._valueSource);
+                targetStyle._setValue(style.translateYProperty, value.y, this._valueSource);
+                break;
+            case common.Properties.scale:
+                targetStyle._setValue(style.scaleXProperty, value.x, this._valueSource);
+                targetStyle._setValue(style.scaleYProperty, value.y, this._valueSource);
+                break;
             case _transform:
                 if (value[common.Properties.translate] !== undefined) {
                     targetStyle._setValue(style.translateXProperty, value[common.Properties.translate].x, this._valueSource);
@@ -109,11 +117,6 @@ class AnimationDelegateImpl extends NSObject {
         if (this._finishedCallback) {
             this._finishedCallback(!finished);
         }
-        if (!finished) {
-            if ((<any>this._propertyAnimation)._propertyResetCallback) {
-               (<any>this._propertyAnimation)._propertyResetCallback((<any>this._propertyAnimation)._originalValue);
-            }
-        }
         if (finished && this.nextAnimation) {
             this.nextAnimation();
         }
@@ -142,6 +145,9 @@ export class Animation extends common.Animation implements definition.Animation 
         let length = this._mergedPropertyAnimations.length;
         for (; i < length; i++) {
             (<UIView>this._mergedPropertyAnimations[i].target._nativeView).layer.removeAllAnimations();
+            if ((<any>this._mergedPropertyAnimations[i])._propertyResetCallback) {
+               (<any>this._mergedPropertyAnimations[i])._propertyResetCallback((<any>this._mergedPropertyAnimations[i])._originalValue);
+            }
         }
     }
 

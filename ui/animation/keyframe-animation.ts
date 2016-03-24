@@ -2,6 +2,8 @@ import definition = require("ui/animation/keyframe-animation");
 import view = require("ui/core/view");
 import observable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
+import styleProperty = require("ui/styling/style-property");
+import style = require("ui/styling/style");
 
 export class KeyframeDeclaration implements definition.KeyframeDeclaration {
     public property: string;
@@ -33,6 +35,7 @@ export class KeyframeAnimation {
     private _resolve;
     private _reject;
     private _isPlaying: boolean;
+    private _isForwards: boolean;
 
     public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo, valueSourceModifier: number) {
         let animations = new Array<Object>();
@@ -71,6 +74,7 @@ export class KeyframeAnimation {
         animation.delay = info.delay;
         animation.iterations = info.iterations;
         animation.animations = animations;
+        animation._isForwards = info.isForwards;
         return animation;
     }
 
@@ -123,12 +127,54 @@ export class KeyframeAnimation {
     }
 
     private animate(view: view.View, index: number, iterations: number) {
-        if (index < 0 || index >= this.animations.length) {
+        if (index === 0) {
+            let animation = this.animations[0];
+            let modifier = animation["valueSource"];
+
+            if (animation["backgroundColor"] !== undefined) {
+                view.style._setValue(style.backgroundColorProperty, animation["backgroundColor"], modifier);
+            }
+            if (animation["scale"] !== undefined) {
+                view.style._setValue(style.scaleXProperty, animation["scale"].x, modifier);
+                view.style._setValue(style.scaleYProperty, animation["scale"].y, modifier);
+            }
+            if (animation["translate"] !== undefined) {
+                view.style._setValue(style.translateXProperty, animation["translate"].x, modifier);
+                view.style._setValue(style.translateYProperty, animation["translate"].y, modifier);
+            }
+            if (animation["rotate"] !== undefined) {
+                view.style._setValue(style.rotateProperty, animation["rotate"], modifier);
+            }
+
+            let that = this;
+            setTimeout(function () { that.animate(view, 1, iterations); }, 1, that);
+        }
+        else if (index < 0 || index >= this.animations.length) {
             iterations -= 1;
             if (iterations > 0) {
                 this.animate(view, 0, iterations);
             }
-            this._resolveAnimationFinishedPromise();
+            else {
+                if (this._isForwards === false) {
+                    let animation = this.animations[this.animations.length - 1];
+                    let modifier = animation["valueSource"];
+                    if (animation["backgroundColor"] !== undefined) {
+                        view.style._resetValue(style.backgroundColorProperty, modifier);
+                    }
+                    if (animation["scale"] !== undefined) {
+                        view.style._resetValue(style.scaleXProperty, modifier);
+                        view.style._resetValue(style.scaleYProperty, modifier);
+                    }
+                    if (animation["translate"] !== undefined) {
+                        view.style._resetValue(style.translateXProperty, modifier);
+                        view.style._resetValue(style.translateYProperty, modifier);
+                    }
+                    if (animation["rotate"] !== undefined) {
+                        view.style._resetValue(style.rotateProperty, modifier);
+                    }
+                }
+                this._resolveAnimationFinishedPromise();
+            }
         }
         else {
             view.animate(this.animations[index]).then(() => {

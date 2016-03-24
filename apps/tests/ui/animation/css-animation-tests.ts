@@ -156,9 +156,9 @@ exports.test_ReadRotate = function() {
     TKUnit.assert(animation.keyframes[0].declarations[0].property === "rotate");
     TKUnit.assert(animation.keyframes[0].declarations[0].value === 45);
 
-    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: rotate(2rad); } }");
+    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: rotate(0.7853981634rad); } }");
     TKUnit.assert(animation.keyframes[0].declarations[0].property === "rotate");
-    TKUnit.assert(animation.keyframes[0].declarations[0].value === 2);
+    TKUnit.assert(animation.keyframes[0].declarations[0].value - 45 < 0.1);
 }
 
 exports.test_ReadTransform = function() {
