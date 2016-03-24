@@ -166,7 +166,7 @@ declare module "ui/page" {
         /**
          * Raised before the page is shown as a modal dialog.
          */
-        on(event: "showingModally", callback: (args: observable.EventData) => void, thisArg?: any): void;
+        on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
 
         /**
          * Raised after the page is shown as a modal dialog.
