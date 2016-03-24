@@ -1,5 +1,6 @@
 ﻿import enums = require("ui/enums");
 import color = require("color");
+import types = require("utils/types");
 
 export function colorConverter(value: string): color.Color {
     return new color.Color(value);
@@ -73,3 +74,96 @@ export function opacityConverter(value: string): number {
     return result;
 }
 
+export function timeConverter(value: string): number {
+    var result = parseFloat(value);
+    if (value.indexOf("ms") === -1) {
+        result = result*1000;
+    }
+    result = Math.max(0.0, result);
+
+    return result;
+}
+
+export function bezieArgumentConverter(value: string): number {
+    var result = parseFloat(value);
+    result = Math.max(0.0, result);
+    result = Math.min(1.0, result);
+
+    return result;
+}
+
+export function animationTimingFunctionConverter(value: string): Object {
+    let result: Object = enums.AnimationCurve.ease;
+    switch (value) {
+        case "ease":
+            result = enums.AnimationCurve.ease;
+            break;
+        case "linear":
+            result = enums.AnimationCurve.linear;
+            break;
+        case "ease-in":
+            result = enums.AnimationCurve.easeIn;
+            break;
+        case "ease-out":
+            result = enums.AnimationCurve.easeOut;
+            break;
+        case "ease-in-out":
+            result = enums.AnimationCurve.easeInOut;
+            break;
+        case "spring":
+            result = enums.AnimationCurve.spring;
+            break;
+        default:
+            if (value.indexOf("cubic-bezier(") === 0) {
+                let bezierArr = value.substring(13).split(/[,]+/);
+                if (bezierArr.length !== 4) {
+                    throw new Error("Invalid value for animation: " + value);
+                }
+                result = enums.AnimationCurve.cubicBezier(bezieArgumentConverter(bezierArr[0]),
+                    bezieArgumentConverter(bezierArr[1]),
+                    bezieArgumentConverter(bezierArr[2]),
+                    bezieArgumentConverter(bezierArr[3]));
+            }
+            else {
+                throw new Error("Invalid value for animation: " + value);
+            }
+            break;
+    }
+
+    return result;
+}
+
+export function transformConverter(value: any): Object {
+    if (value === "none") {
+        let operations = {};
+        operations[value] = value;
+        return operations;
+    }
+    else if (types.isString(value)) {
+        let operations = {};
+        let operator = "";
+        let pos = 0;
+        while (pos < value.length) {
+            if (value[pos] === " " || value[pos] === ",") {
+                pos ++;
+            }
+            else if (value[pos] === "(") {
+                let start = pos + 1;
+                while (pos < value.length && value[pos] !== ")") {
+                    pos ++;
+                }
+                let operand = value.substring(start, pos);
+                operations[operator] = operand.trim();
+                operator = "";
+                pos ++;
+            }
+            else {
+                operator += value[pos ++];
+            }
+        }
+        return operations;
+    }
+    else {
+        return undefined;
+    }
+}

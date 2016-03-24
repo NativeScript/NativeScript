@@ -179,7 +179,6 @@ export var test_isAddedToNativeVisualTree_IsUpdated = function () {
 
         views[1]._addView(newButton);
         TKUnit.assert(newButton._isAddedToNativeVisualTree);
-
         views[1]._removeView(newButton);
         TKUnit.assert(!newButton._isAddedToNativeVisualTree);
     }

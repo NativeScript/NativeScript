@@ -21,20 +21,29 @@ export class ControlStateChangeListener implements definition.ControlStateChange
     private _observer: NSObject;
     private _states: string[];
     private _control: UIControl;
+    private _observing: boolean = false;
 
     private _callback: (state: string) => void;
 
     constructor(control: UIControl, callback: (state: string) => void) {
         this._observer = ObserverClass.alloc();
         this._observer["_owner"] = this;
-
-        // TODO: Commenting for now, needs revision later since we must detach the observers upon control deallocation
-        //control.addObserverForKeyPathOptionsContext(this._observer, "selected", NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
-        //control.addObserverForKeyPathOptionsContext(this._observer, "enabled", NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
-        //control.addObserverForKeyPathOptionsContext(this._observer, "highlighted", NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
-
         this._control = control;
         this._callback = callback;
+    }
+
+    public start() {
+        if (!this._observing) {
+            this._control.addObserverForKeyPathOptionsContext(this._observer, "highlighted", NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
+            this._observing = true;
+        }
+    }
+
+    public stop() {
+        if (this._observing) {
+            this._observing = false;
+            this._control.removeObserverForKeyPath(this._observer, "highlighted");
+        }
     }
 
     private _onEnabledChanged() {
@@ -52,11 +61,8 @@ export class ControlStateChangeListener implements definition.ControlStateChange
     private _updateState() {
         var state = visualStateConstants.Normal;
         if (this._control.highlighted) {
-            state = visualStateConstants.Pressed;
-        } else if (this._control.highlighted) {
-            // TODO:
+            state = "highlighted";
         }
-
         this._callback(state);
     }
 }
