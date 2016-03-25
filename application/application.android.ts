@@ -108,13 +108,11 @@ function initEvents() {
             androidApp.paused = false;
             androidApp.foregroundActivity = activity;
 
-            if (activity === androidApp.foregroundActivity) {
-                if (typedExports.onResume) {
-                    typedExports.onResume();
-                }
-
-                typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.resumeEvent, object: androidApp, android: activity });
+            if (typedExports.onResume) {
+                typedExports.onResume();
             }
+
+            typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.resumeEvent, object: androidApp, android: activity });
 
             androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityResumed", object: androidApp, activity: activity });
 
