@@ -20624,8 +20624,8 @@ interface UIViewControllerContextTransitioning {
 	finalFrameForViewController(vc: UIViewController): CGRect;
 }
 interface UIViewControllerAnimatedTransitioning {
-	transitionDuration(transitionContext: any): number;
-	animateTransition(transitionContext: any): void;
+    transitionDuration(transitionContext: UIViewControllerContextTransitioning): number;
+    animateTransition(transitionContext: UIViewControllerContextTransitioning): void;
 	animationEnded?(transitionCompleted: boolean): void;
 }
 interface UIViewControllerInteractiveTransitioning {

@@ -14,6 +14,10 @@ export function disable() {
     _enabled = false;
 }
 
+export function isCategorySet(category: string): boolean {
+    return category in _categories;
+}
+
 export function addWriter(writer: definition.TraceWriter) {
     _writers.push(writer);
 }
