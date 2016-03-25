@@ -9,7 +9,7 @@
     }
 
     export class Transition {
-        constructor(duration: number, curve: any);
+        constructor(duration: number, nativeCurve: any);
         public getDuration(): number;
         public getCurve(): any;
         public animateIOSTransition(containerView: any, fromView: any, toView: any, operation: any, completion: (finished: boolean) => void): void;
@@ -24,6 +24,6 @@
     export function _onFragmentShown(fragment: any, isBack: boolean): void;
     export function _onFragmentHidden(fragment: any, isBack: boolean): void;
 
-    export function _createIOSAnimatedTransitioning(navigationTransition: frame.NavigationTransition, operation: number, fromVC: any, toVC: any): any;
+    export function _createIOSAnimatedTransitioning(navigationTransition: frame.NavigationTransition, nativeCurve: any, operation: number, fromVC: any, toVC: any): any;
     //@endprivate
 }

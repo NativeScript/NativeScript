@@ -9,6 +9,7 @@ import {DeviceType} from "ui/enums";
 
 global.moduleMerge(pageCommon, exports);
 var ENTRY = "_entry";
+var DELEGATE = "_delegate";
 
 function isBackNavigation(frame: any, entry): boolean {
     if (!frame) {
@@ -177,6 +178,13 @@ class UIViewControllerImpl extends UIViewController {
             frame._updateActionBar(page);
 
             page.onNavigatedTo(isBack);
+
+            // If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
+            frame.ios.controller.delegate = this[DELEGATE];
+
+            // Workaround for disabled backswipe on second custom native transition
+            this.navigationController.interactivePopGestureRecognizer.delegate = this.navigationController;
+
             frame._processNavigationQueue(page);
         }
     };

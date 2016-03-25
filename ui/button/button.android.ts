@@ -26,15 +26,15 @@ export class Button extends common.Button {
 
         this._android.setOnClickListener(new android.view.View.OnClickListener(
             <utils.Owned & android.view.View.IOnClickListener>{
-            get owner() {
-                return that.get();
-            },
+                get owner() {
+                    return that.get();
+                },
 
-            onClick: function (v) {
-                if (this.owner) {
-                    this.owner._emit(common.Button.tapEvent);
+                onClick: function(v) {
+                    if (this.owner) {
+                        this.owner._emit(common.Button.tapEvent);
+                    }
                 }
-            }
         }));
 
         this._android.setOnTouchListener(new android.view.View.OnTouchListener(
@@ -62,9 +62,21 @@ export class Button extends common.Button {
         }
     }
 
+    private _transformationMethod;
     public _setFormattedTextPropertyToNative(value) {
         var newText = value ? value._formattedText : null;
         if (this.android) {
+            if (newText) {
+                if (!this._transformationMethod) {
+                    this._transformationMethod = this.android.getTransformationMethod();
+                }
+                this.android.setTransformationMethod(null);
+            } else {
+                if (this._transformationMethod && !this.android.getTransformationMethod()) {
+                    this.android.setTransformationMethod(this._transformationMethod);
+                }
+            }
+
             this.android.setText(newText);
         }
     }

@@ -1,7 +1,6 @@
 {
     "version": "1.6.2",
     "compilerOptions": {
-        "sourceMap": false,
         "noEmitOnError": true,
         "noEmitHelpers": true,
         "target": "es5",
@@ -692,6 +691,8 @@
         "ui/transition/transition.android.ts",
         "ui/transition/transition.d.ts",
         "ui/transition/transition.ios.ts",
+    "ui/transition/fade-transition.d.ts",
+    "ui/transition/slide-transition.d.ts",
         "ui/utils.d.ts",
         "ui/utils.ios.ts",
         "ui/web-view/web-view-common.ts",
