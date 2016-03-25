@@ -1,7 +1,6 @@
 {
     "version": "1.6.2",
     "compilerOptions": {
-        "sourceMap": false,
         "noEmitOnError": true,
         "noEmitHelpers": true,
         "target": "es5",
