@@ -12,9 +12,29 @@
           </FormattedString>
         </Label.formattedText>
       </Label>
+      <Label>
+        <Label.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="label" fontAttributes="Bold" foregroundColor="#0000ff" />
+              <Span text="Label" fontAttributes="Italic" foregroundColor="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Label.formattedText>
+      </Label>
 
       <Button text="buttonButton" style="text-transform: uppercase; text-decoration: underline line-through;" />
       <Button style="text-transform: uppercase; text-decoration: underline line-through;">
+        <Button.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="button" fontAttributes="Bold" foregroundColor="#0000ff" />
+              <Span text="Button" fontAttributes="Italic" foregroundColor="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Button.formattedText>
+      </Button>
+      <Button>
         <Button.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -36,9 +56,29 @@
           </FormattedString>
         </TextField.formattedText>
       </TextField>
+      <TextField>
+        <TextField.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontAttributes="Bold" foregroundColor="#0000ff" />
+              <Span text="Field" fontAttributes="Italic" foregroundColor="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </TextField.formattedText>
+      </TextField>
 
       <TextView text="textView" style="text-transform: uppercase; text-decoration: underline line-through;" />
       <TextView style="text-transform: uppercase; text-decoration: underline line-through;">
+        <TextView.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontAttributes="Bold" foregroundColor="#0000ff" />
+              <Span text="View" fontAttributes="Italic" foregroundColor="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </TextView.formattedText>
+      </TextView>
+      <TextView>
         <TextView.formattedText>
           <FormattedString>
             <FormattedString.spans>
