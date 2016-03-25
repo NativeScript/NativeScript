@@ -241,6 +241,16 @@ export class ListView extends common.ListView {
         return this._ios;
     }
 
+    get _childrenCount(): number {
+        return this._map.size;
+    }
+
+    public _eachChildView(callback: (child: view.View) => boolean): void {
+        this._map.forEach(function(view, key) {
+            callback(view);
+        }, this._map);
+    }
+
     public scrollToIndex(index: number) {
         if (this._ios) {
             this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),

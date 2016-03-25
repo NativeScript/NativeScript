@@ -172,7 +172,7 @@ function onLayoutParamsChanged(data: PropertyChangeData) {
     let marginTopValue = convertToPercentHelper(style.marginTop);
     let marginRightValue = convertToPercentHelper(style.marginRight);
     let marginBottomValue = convertToPercentHelper(style.marginBottom);
-    
+
     // Negative marginPercent means no marginPercent so native layout won't override margin with this % value.
     var layoutParams: definition.CommonLayoutParams =
         {
@@ -470,6 +470,46 @@ export class Style extends DependencyObservable implements styling.Style {
     private _updateCounter = 0;
     private _nativeSetters = new Map<Property, any>();
 
+    get rotate(): number {
+        return this._getValue(rotateProperty);
+    }
+
+    set rotate(value: number) {
+        this._setValue(rotateProperty, value);
+    }
+    
+    get scaleX(): number {
+        return this._getValue(scaleXProperty);
+    }
+    
+    set scaleX(value: number) {
+        this._setValue(scaleXProperty, value);
+    }
+    
+    get scaleY(): number {
+        return this._getValue(scaleYProperty);
+    }
+    
+    set scaleY(value: number) {
+        this._setValue(scaleYProperty, value);
+    }
+
+    get translateX(): number {
+        return this._getValue(translateXProperty);
+    }
+    
+    set translateX(value: number) {
+        this._setValue(translateXProperty, value);
+    }
+
+    get translateY(): number {
+        return this._getValue(translateYProperty);
+    }
+    
+    set translateY(value: number) {
+        this._setValue(translateYProperty, value);
+    }
+    
     get color(): Color {
         return this._getValue(colorProperty);
     }
@@ -814,7 +854,7 @@ export class Style extends DependencyObservable implements styling.Style {
     private _applyProperty(property: Property, newValue: any) {
         this._applyStyleProperty(property, newValue);
 
-        // The effective value of an inheritable property has changed 
+        // The effective value of an inheritable property has changed
         // propagate the change down to the descendants to update their inherited properties.
         if (this._view._childrenCount === 0 || !property.metadata.inheritable) {
             return;
@@ -934,6 +974,22 @@ export function getHandler(property: Property, view: View): definition.StyleProp
 }
 
 // Property registration
+
+export var rotateProperty = new styleProperty.Property("rotate", "rotate",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var scaleXProperty = new styleProperty.Property("scaleX", "scaleX",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var scaleYProperty = new styleProperty.Property("scaleY", "scaleY",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var translateXProperty = new styleProperty.Property("translateX", "translateX",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var translateYProperty = new styleProperty.Property("translateY", "translateY",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
 export var colorProperty = new styleProperty.Property("color", "color",
     new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, undefined, Color.isValid, Color.equals),
     converters.colorConverter);
@@ -1132,10 +1188,65 @@ function onFontChanged(value: any): Array<styleProperty.KeyValuePair<styleProper
     return array;
 }
 
+function onTransformChanged(value: any): Array<styleProperty.KeyValuePair<styleProperty.Property, any>> {
+    var newTransform = converters.transformConverter(value);
+    var array = new Array<styleProperty.KeyValuePair<styleProperty.Property, any>>();
+    var values = undefined;
+    for (var transform in newTransform) {
+        switch (transform) {
+            case "scaleX":
+                array.push({ property: scaleXProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "scaleY":
+                array.push({ property: scaleYProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "scale":
+            case "scale3d":
+                values = newTransform[transform].split(",");
+                if (values.length === 2 || values.length === 3) {
+                    array.push({ property: scaleXProperty, value: parseFloat(values[0]) });
+                    array.push({ property: scaleYProperty, value: parseFloat(values[1]) });
+                }
+                break;
+            case "translateX":
+                array.push({ property: translateXProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "translateY":
+                array.push({ property: translateYProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "translate":
+            case "translate3d":
+                values = newTransform[transform].split(",");
+                if (values.length === 2 || values.length === 3) {
+                    array.push({ property: translateXProperty, value: parseFloat(values[0]) });
+                    array.push({ property: translateYProperty, value: parseFloat(values[1]) });
+                }
+                break;
+            case "rotate":
+                let text = newTransform[transform];
+                let val = parseFloat(text);
+                if (text.slice(-3) === "rad") {
+                    val = val * (180.0 / Math.PI);
+                }
+                array.push({ property: rotateProperty, value: val });
+                break;
+            case "none":
+                array.push({ property: scaleXProperty, value: 1 });
+                array.push({ property: scaleYProperty, value: 1 });
+                array.push({ property: translateXProperty, value: 0 });
+                array.push({ property: translateYProperty, value: 0 });
+                array.push({ property: rotateProperty, value: 0 });
+                break;
+        }
+    }
+    return array;
+}
+
 // register default shorthand callbacks.
 styleProperty.registerShorthandCallback("font", onFontChanged);
 styleProperty.registerShorthandCallback("margin", onMarginChanged);
 styleProperty.registerShorthandCallback("padding", onPaddingChanged);
+styleProperty.registerShorthandCallback("transform", onTransformChanged);
 
 var _defaultNativeValuesCache = {};
 

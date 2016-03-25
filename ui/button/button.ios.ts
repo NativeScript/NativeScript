@@ -6,6 +6,7 @@ import view = require("ui/core/view");
 import utils = require("utils/utils");
 import enums = require("ui/enums");
 import dependencyObservable = require("ui/core/dependency-observable");
+import styleScope = require("../styling/style-scope");
 
 class TapHandlerImpl extends NSObject {
     private _owner: WeakRef<Button>;
@@ -47,28 +48,44 @@ export class Button extends common.Button {
         });
     }
 
+    public onLoaded() {
+        super.onLoaded();
+        if (this.parent !== null && this.page !== null) {
+            let rootPage = this.page;
+            let scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope();
+            if (scope.getVisualStates(this) !== undefined) {
+                this._stateChangedHandler.start();
+            }
+        }
+    }
+
+    public onUnloaded() {
+        super.onUnloaded();
+        this._stateChangedHandler.stop();
+    }
+
     get ios(): UIButton {
         return this._ios;
     }
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        // In general, if a property is not specified for a state, the default is to use 
-        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set, 
-        // then the property defaults to a system value. Therefore, at a minimum, you should 
+        // In general, if a property is not specified for a state, the default is to use
+        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set,
+        // then the property defaults to a system value. Therefore, at a minimum, you should
         // set the value for the normal state.
         this.ios.setTitleForState(data.newValue + "", UIControlState.UIControlStateNormal);
     }
 
     public _setFormattedTextPropertyToNative(value) {
-        // In general, if a property is not specified for a state, the default is to use 
-        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set, 
-        // then the property defaults to a system value. Therefore, at a minimum, you should 
+        // In general, if a property is not specified for a state, the default is to use
+        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set,
+        // then the property defaults to a system value. Therefore, at a minimum, you should
         // set the value for the normal state.
         var newText = value ? value._formattedText : null;
         this.ios.setAttributedTitleForState(newText, UIControlState.UIControlStateNormal);
         this.style._updateTextDecoration();
     }
-} 
+}
 
 export class ButtonStyler implements style.Styler {
     // color

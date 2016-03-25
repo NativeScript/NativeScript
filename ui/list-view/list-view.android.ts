@@ -138,6 +138,21 @@ export class ListView extends common.ListView {
         }
     }
 
+    get _childrenCount(): number {
+        let keys = Object.keys(this._realizedItems);
+        return keys.length;
+    }
+
+    public _eachChildView(callback: (child: viewModule.View) => boolean): void {
+        let keys = Object.keys(this._realizedItems);
+        let length = keys.length;
+        for (let i = 0; i < length; i++) {
+            let key = keys[i];
+            let view: viewModule.View = this._realizedItems[key];
+            callback(view);
+        }
+    }
+
     public _getRealizedView(convertView: android.view.View, index: number) {
         if (!convertView) {
             return this._getItemTemplateContent(index);

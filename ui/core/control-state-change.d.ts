@@ -10,5 +10,9 @@
          * @param callback A callback called when a visual state of the UIControl is changed.
          */
         constructor(control: any /* UIControl */, callback: (state: string) => void);
+
+        start();
+
+        stop();
     }
 }
