@@ -1,25 +1,29 @@
 ﻿import frameCommon = require("./frame-common");
 import definition = require("ui/frame");
 import trace = require("trace");
-import pages = require("ui/page");
-import enums = require("ui/enums");
+import {Page} from "ui/page";
+import {NavigationBarVisibility, AnimationCurve} from "ui/enums";
 import utils = require("utils/utils");
-import view = require("ui/core/view");
+import {View} from "ui/core/view";
 import uiUtils = require("ui/utils");
 import * as types from "utils/types";
-import * as transitionModule from "ui/transition";
 import application = require("application");
+import * as _transitionModule from "ui/transition";
+
+var transitionModule: typeof _transitionModule;
 
 global.moduleMerge(frameCommon, exports);
 
 var ENTRY = "_entry";
 var NAV_DEPTH = "_navDepth";
 var TRANSITION = "_transition";
+var DELEGATE = "_delegate";
 var navDepth = -1;
 
 export class Frame extends frameCommon.Frame {
     private _ios: iOSFrame;
     private _paramToNavigate: any;
+    public _animatedDelegate = <UINavigationControllerDelegate>UINavigationControllerAnimatedDelegate.new();
 
     public _shouldSkipNativePop: boolean = false;
     public _navigateToEntry: definition.BackstackEntry;
@@ -65,16 +69,17 @@ export class Frame extends frameCommon.Frame {
 
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
         trace.write(`${this}._navigateCore(page: ${backstackEntry.resolvedPage}, backstackVisible: ${this._isEntryBackstackVisible(backstackEntry)}, clearHistory: ${backstackEntry.entry.clearHistory}), navDepth: ${navDepth}`, trace.categories.Navigation);
-        var viewController: UIViewController = backstackEntry.resolvedPage.ios;
+        let viewController: UIViewController = backstackEntry.resolvedPage.ios;
         if (!viewController) {
             throw new Error("Required page does not have a viewController created.");
         }
 
         navDepth++;
 
-        var animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
+        let navigationTransition: definition.NavigationTransition;
+        let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
         if (animated) {
-            var navigationTransition = this._getNavigationTransition(backstackEntry.entry);
+            navigationTransition = this._getNavigationTransition(backstackEntry.entry);
             if (navigationTransition) {
                 viewController[TRANSITION] = navigationTransition;
             }
@@ -82,6 +87,16 @@ export class Frame extends frameCommon.Frame {
         else {
             //https://github.com/NativeScript/NativeScript/issues/1787
             viewController[TRANSITION] = { name: "non-animated" };
+        }
+
+        let nativeTransition = _getNativeTransition(navigationTransition, true);
+        if (!nativeTransition && navigationTransition) {
+            this._ios.controller.delegate = this._animatedDelegate;
+            viewController[DELEGATE] = this._animatedDelegate;
+        }
+        else {
+            viewController[DELEGATE] = null;
+            this._ios.controller.delegate = null;
         }
 
         backstackEntry[NAV_DEPTH] = navDepth;
@@ -147,7 +162,7 @@ export class Frame extends frameCommon.Frame {
         }
     }
 
-    public _updateActionBar(page?: pages.Page): void {
+    public _updateActionBar(page?: Page): void {
         super._updateActionBar(page);
 
         var page = page || this.currentPage;
@@ -159,15 +174,15 @@ export class Frame extends frameCommon.Frame {
         }
     }
 
-    public _getNavBarVisible(page: pages.Page): boolean {
+    public _getNavBarVisible(page: Page): boolean {
         switch (this._ios.navBarVisibility) {
-            case enums.NavigationBarVisibility.always:
+            case NavigationBarVisibility.always:
                 return true;
 
-            case enums.NavigationBarVisibility.never:
+            case NavigationBarVisibility.never:
                 return false;
 
-            case enums.NavigationBarVisibility.auto:
+            case NavigationBarVisibility.auto:
                 let newValue: boolean;
 
                 if (page && types.isDefined(page.actionBarHidden)) {
@@ -230,13 +245,14 @@ export class Frame extends frameCommon.Frame {
             result.measuredWidth = Math.max(result.measuredWidth, newPageSize.measuredWidth);
             result.measuredHeight = Math.max(result.measuredHeight, newPageSize.measuredHeight);
         }
-        let widthAndState = view.View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
-        let heightAndState = view.View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
+
+        let widthAndState = View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
+        let heightAndState = View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    public measurePage(page: pages.Page): { measuredWidth: number; measuredHeight: number } {
+    public measurePage(page: Page): { measuredWidth: number; measuredHeight: number } {
         // If background does not span under statusbar - reduce available height.
         let heightSpec: number = this._heightMeasureSpec;
         if (page && !page.backgroundSpanUnderStatusBar && !this.parent) {
@@ -246,7 +262,7 @@ export class Frame extends frameCommon.Frame {
             heightSpec = utils.layout.makeMeasureSpec(height - statusBarHeight, heightMode);
         }
 
-        return view.View.measureChild(this, page, this._widthMeasureSpec, heightSpec);
+        return View.measureChild(this, page, this._widthMeasureSpec, heightSpec);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
@@ -259,7 +275,7 @@ export class Frame extends frameCommon.Frame {
         }
     }
 
-    public layoutPage(page: pages.Page): void {
+    public layoutPage(page: Page): void {
         if (page && (<any>page)._viewWillDisappear) {
             //https://github.com/NativeScript/NativeScript/issues/1201
             return;
@@ -268,7 +284,7 @@ export class Frame extends frameCommon.Frame {
         // If background does not span under statusbar - reduce available height and adjust top offset.
         let statusBarHeight = (page && !page.backgroundSpanUnderStatusBar && !this.parent) ? uiUtils.ios.getStatusBarHeight() : 0;
 
-        view.View.layoutChild(this, page, 0, statusBarHeight, this._right, this._bottom);
+        View.layoutChild(this, page, 0, statusBarHeight, this._right, this._bottom);
     }
 
     public get navigationBarHeight(): number {
@@ -320,19 +336,17 @@ export class Frame extends frameCommon.Frame {
     }
 }
 
-class TransitionDelegate extends NSObject {
-    static new(): TransitionDelegate {
-        return <TransitionDelegate>super.new();
-    }
+let transitionDelegates = new Array<TransitionDelegate>();
 
-    private _owner: UINavigationControllerImpl;
+class TransitionDelegate extends NSObject {
     private _id: string;
 
-    public initWithOwnerId(owner: UINavigationControllerImpl, id: string): TransitionDelegate {
-        this._owner = owner;
-        this._owner.transitionDelegates.push(this);
-        this._id = id;
-        return this;
+    public static initWithOwnerId(id: string): TransitionDelegate {
+        let delegate = <TransitionDelegate>TransitionDelegate.new();
+        delegate._id = id;
+        transitionDelegates.push(delegate);
+
+        return delegate;
     }
 
     public animationWillStart(animationID: string, context: any): void {
@@ -347,11 +361,9 @@ class TransitionDelegate extends NSObject {
             trace.write(`CANCEL ${this._id}`, trace.categories.Transition);
         }
 
-        if (this._owner) {
-            var index = this._owner.transitionDelegates.indexOf(this);
-            if (index > -1) {
-                this._owner.transitionDelegates.splice(index, 1);
-            }
+        var index = transitionDelegates.indexOf(this);
+        if (index > -1) {
+            transitionDelegates.splice(index, 1);
         }
     }
 
@@ -362,25 +374,57 @@ class TransitionDelegate extends NSObject {
 }
 
 var _defaultTransitionDuration = 0.35;
-class UINavigationControllerImpl extends UINavigationController implements UINavigationControllerDelegate {
+
+class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
     public static ObjCProtocols = [UINavigationControllerDelegate];
 
+    navigationControllerAnimationControllerForOperationFromViewControllerToViewController(
+        navigationController: UINavigationController,
+        operation: number,
+        fromVC: UIViewController,
+        toVC: UIViewController): UIViewControllerAnimatedTransitioning {
+
+        let viewController: UIViewController;
+        switch (operation) {
+            case UINavigationControllerOperation.UINavigationControllerOperationPush:
+                viewController = toVC;
+                break;
+            case UINavigationControllerOperation.UINavigationControllerOperationPop:
+                viewController = fromVC;
+                break;
+        }
+
+        if (!viewController) {
+            return null;
+        }
+
+        let navigationTransition = <definition.NavigationTransition>viewController[TRANSITION];
+        if (!navigationTransition) {
+            return null;
+        }
+
+        trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
+        if (!transitionModule) {
+            transitionModule = require("ui/transition");
+        }
+
+        let curve = _getNativeCurve(navigationTransition);
+        let animationController = transitionModule._createIOSAnimatedTransitioning(navigationTransition, curve, operation, fromVC, toVC);
+        return animationController;
+    }
+}
+
+class UINavigationControllerImpl extends UINavigationController {
     private _owner: WeakRef<Frame>;
-    private _transitionDelegates: Array<TransitionDelegate>;
 
     public static initWithOwner(owner: WeakRef<Frame>): UINavigationControllerImpl {
         var controller = <UINavigationControllerImpl>UINavigationControllerImpl.new();
         controller._owner = owner;
-        controller._transitionDelegates = new Array<TransitionDelegate>();
         return controller;
     }
 
     get owner(): Frame {
         return this._owner.get();
-    }
-
-    get transitionDelegates(): Array<TransitionDelegate> {
-        return this._transitionDelegates;
     }
 
     public viewDidLoad(): void {
@@ -398,36 +442,46 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         }
     }
 
-    public supportedInterfaceOrientation(): number {
-        return UIInterfaceOrientationMask.UIInterfaceOrientationMaskAll;
-    }
+    private animateWithDuration(navigationTransition: definition.NavigationTransition,
+        nativeTransition: UIViewAnimationTransition,
+        transitionType: string,
+        baseCallback: Function): void {
 
-    public pushViewControllerAnimated(viewController: UIViewController, animated: boolean): void {
-        var navigationTransition = <definition.NavigationTransition>viewController[TRANSITION];
-        trace.write(`UINavigationControllerImpl.pushViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
+        let duration = navigationTransition.duration ? navigationTransition.duration / 1000 : _defaultTransitionDuration;
+        let curve = _getNativeCurve(navigationTransition);
 
-        if (!animated || !navigationTransition) {
-            super.pushViewControllerAnimated(viewController, animated);
-            return;
+        let transitionTraced = trace.isCategorySet(trace.categories.Transition);
+        let transitionDelegate: TransitionDelegate;
+        if (transitionTraced) {
+            let id = _getTransitionId(nativeTransition, transitionType);
+            transitionDelegate = TransitionDelegate.initWithOwnerId(id);
         }
 
-        var nativeTransition = _getNativeTransition(navigationTransition, true);
-        if (!nativeTransition) {
-            super.pushViewControllerAnimated(viewController, animated);
-            return;
-        }
-
-        var duration = navigationTransition.duration ? navigationTransition.duration / 1000 : _defaultTransitionDuration;
-        var curve = _getNativeCurve(navigationTransition);
-        var id = _getTransitionId(nativeTransition, "push");
-        var transitionDelegate = TransitionDelegate.new().initWithOwnerId(this, id);
         UIView.animateWithDurationAnimations(duration, () => {
-            UIView.setAnimationDelegate(transitionDelegate);
+            if (transitionTraced) {
+                UIView.setAnimationDelegate(transitionDelegate);
+            }
+
             UIView.setAnimationWillStartSelector("animationWillStart");
             UIView.setAnimationDidStopSelector("animationDidStop");
             UIView.setAnimationCurve(curve);
-            super.pushViewControllerAnimated(viewController, false);
+            baseCallback();
             UIView.setAnimationTransitionForViewCache(nativeTransition, this.view, true);
+        });
+    }
+
+    public pushViewControllerAnimated(viewController: UIViewController, animated: boolean): void {
+        let navigationTransition = <definition.NavigationTransition>viewController[TRANSITION];
+        trace.write(`UINavigationControllerImpl.pushViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
+
+        let nativeTransition = _getNativeTransition(navigationTransition, true);
+        if (!animated || !navigationTransition || !nativeTransition) {
+            super.pushViewControllerAnimated(viewController, animated);
+            return;
+        }
+
+        this.animateWithDuration(navigationTransition, nativeTransition, "push", () => {
+            super.pushViewControllerAnimated(viewController, false);
         });
     }
 
@@ -436,28 +490,14 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         var navigationTransition = <definition.NavigationTransition>viewController[TRANSITION];
         trace.write(`UINavigationControllerImpl.setViewControllersAnimated(${viewControllers}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
 
-        if (!animated || !navigationTransition) {
+        let nativeTransition = _getNativeTransition(navigationTransition, true);
+        if (!animated || !navigationTransition || !nativeTransition) {
             super.setViewControllersAnimated(viewControllers, animated);
             return;
         }
 
-        var nativeTransition = _getNativeTransition(navigationTransition, true);
-        if (!nativeTransition) {
-            super.setViewControllersAnimated(viewControllers, animated);
-            return;
-        }
-
-        var duration = navigationTransition.duration ? navigationTransition.duration / 1000 : _defaultTransitionDuration;
-        var curve = _getNativeCurve(navigationTransition);
-        var id = _getTransitionId(nativeTransition, "set");
-        var transitionDelegate = TransitionDelegate.new().initWithOwnerId(this, id);
-        UIView.animateWithDurationAnimations(duration, () => {
-            UIView.setAnimationDelegate(transitionDelegate);
-            UIView.setAnimationWillStartSelector("animationWillStart");
-            UIView.setAnimationDidStopSelector("animationDidStop");
-            UIView.setAnimationCurve(curve);
+        this.animateWithDuration(navigationTransition, nativeTransition, "set", () => {
             super.setViewControllersAnimated(viewControllers, false);
-            UIView.setAnimationTransitionForViewCache(nativeTransition, this.view, true);
         });
     }
 
@@ -466,91 +506,43 @@ class UINavigationControllerImpl extends UINavigationController implements UINav
         var navigationTransition = <definition.NavigationTransition>lastViewController[TRANSITION];
         trace.write(`UINavigationControllerImpl.popViewControllerAnimated(${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
 
-        if (!animated || !navigationTransition) {
-            return super.popViewControllerAnimated(animated);
-        }
-
-        if (navigationTransition.name === "non-animated") {
+        if (navigationTransition && navigationTransition.name === "non-animated") {
             //https://github.com/NativeScript/NativeScript/issues/1787
             return super.popViewControllerAnimated(false);
         }
 
         var nativeTransition = _getNativeTransition(navigationTransition, false);
-        if (!nativeTransition) {
+        if (!animated || !navigationTransition || !nativeTransition) {
             return super.popViewControllerAnimated(animated);
         }
 
-        var duration = navigationTransition.duration ? navigationTransition.duration / 1000 : _defaultTransitionDuration;
-        var curve = _getNativeCurve(navigationTransition);
-        var id = _getTransitionId(nativeTransition, "pop");
-        var transitionDelegate = TransitionDelegate.new().initWithOwnerId(this, id);
-        UIView.animateWithDurationAnimations(duration, () => {
-            UIView.setAnimationDelegate(transitionDelegate);
-            UIView.setAnimationWillStartSelector("animationWillStart");
-            UIView.setAnimationDidStopSelector("animationDidStop");
-            UIView.setAnimationCurve(curve);
+        this.animateWithDuration(navigationTransition, nativeTransition, "pop", () => {
             super.popViewControllerAnimated(false);
-            UIView.setAnimationTransitionForViewCache(nativeTransition, this.view, true);
         });
+
         return null;
     }
 
     public popToViewControllerAnimated(viewController: UIViewController, animated: boolean): NSArray {
-        var lastViewController = this.viewControllers.lastObject;
-        var navigationTransition = <definition.NavigationTransition>lastViewController[TRANSITION];
+        let lastViewController = this.viewControllers.lastObject;
+        let navigationTransition = <definition.NavigationTransition>lastViewController[TRANSITION];
         trace.write(`UINavigationControllerImpl.popToViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
-        if (!animated || !navigationTransition) {
-            return super.popToViewControllerAnimated(viewController, animated);
-        }
 
-        if (navigationTransition.name === "non-animated") {
+        if (navigationTransition && navigationTransition.name === "non-animated") {
             //https://github.com/NativeScript/NativeScript/issues/1787
             return super.popToViewControllerAnimated(viewController, false);
         }
 
-        var nativeTransition = _getNativeTransition(navigationTransition, false);
-        if (!nativeTransition) {
+        let nativeTransition = _getNativeTransition(navigationTransition, false);
+        if (!animated || !navigationTransition || !nativeTransition) {
             return super.popToViewControllerAnimated(viewController, animated);
         }
 
-        var duration = navigationTransition.duration ? navigationTransition.duration / 1000 : _defaultTransitionDuration;
-        var curve = _getNativeCurve(navigationTransition);
-        var id = _getTransitionId(nativeTransition, "popTo");
-        var transitionDelegate = TransitionDelegate.new().initWithOwnerId(this, id);
-        UIView.animateWithDurationAnimations(duration, () => {
-            UIView.setAnimationDelegate(transitionDelegate);
-            UIView.setAnimationWillStartSelector("animationWillStart");
-            UIView.setAnimationDidStopSelector("animationDidStop");
-            UIView.setAnimationCurve(curve);
+        this.animateWithDuration(navigationTransition, nativeTransition, "popTo", () => {
             super.popToViewControllerAnimated(viewController, false);
-            UIView.setAnimationTransitionForViewCache(nativeTransition, this.view, true);
         });
+
         return null;
-    }
-
-    public navigationControllerAnimationControllerForOperationFromViewControllerToViewController(navigationController: UINavigationController, operation: number, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
-        var viewController: UIViewController;
-        switch (operation) {
-            case UINavigationControllerOperation.UINavigationControllerOperationPush:
-                viewController = toVC;
-                break;
-            case UINavigationControllerOperation.UINavigationControllerOperationPop:
-                viewController = fromVC;
-                break;
-        }
-
-        if (!viewController) {
-            return null;
-        }
-
-        var navigationTransition = <definition.NavigationTransition>viewController[TRANSITION];
-        if (!navigationTransition) {
-            return null;
-        }
-
-        trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
-        var _transitionModule: typeof transitionModule = require("ui/transition");
-        return _transitionModule._createIOSAnimatedTransitioning(navigationTransition, operation, fromVC, toVC);
     }
 }
 
@@ -568,7 +560,7 @@ function _getTransitionId(nativeTransition: UIViewAnimationTransition, transitio
 }
 
 function _getNativeTransition(navigationTransition: definition.NavigationTransition, push: boolean): UIViewAnimationTransition {
-    if (navigationTransition.name) {
+    if (navigationTransition && navigationTransition.name) {
         switch (navigationTransition.name.toLowerCase()) {
             case "flip":
             case "flipright":
@@ -582,22 +574,23 @@ function _getNativeTransition(navigationTransition: definition.NavigationTransit
                 return push ? UIViewAnimationTransition.UIViewAnimationTransitionCurlDown : UIViewAnimationTransition.UIViewAnimationTransitionCurlUp;
         }
     }
+
     return null;
 }
 
 export function _getNativeCurve(transition: definition.NavigationTransition): UIViewAnimationCurve {
     if (transition.curve) {
         switch (transition.curve) {
-            case enums.AnimationCurve.easeIn:
+            case AnimationCurve.easeIn:
                 trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseIn.", trace.categories.Transition);
                 return UIViewAnimationCurve.UIViewAnimationCurveEaseIn;
-            case enums.AnimationCurve.easeOut:
+            case AnimationCurve.easeOut:
                 trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseOut.", trace.categories.Transition);
                 return UIViewAnimationCurve.UIViewAnimationCurveEaseOut;
-            case enums.AnimationCurve.easeInOut:
+            case AnimationCurve.easeInOut:
                 trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseInOut.", trace.categories.Transition);
                 return UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;
-            case enums.AnimationCurve.linear:
+            case AnimationCurve.linear:
                 trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveLinear.", trace.categories.Transition);
                 return UIViewAnimationCurve.UIViewAnimationCurveLinear;
             default:
@@ -618,10 +611,9 @@ class iOSFrame implements definition.iOSFrame {
 
     constructor(owner: Frame) {
         this._controller = UINavigationControllerImpl.initWithOwner(new WeakRef(owner));
-        this._controller.delegate = this._controller;
         this._controller.automaticallyAdjustsScrollViewInsets = false;
         //this.showNavigationBar = false;
-        this._navBarVisibility = enums.NavigationBarVisibility.auto;
+        this._navBarVisibility = NavigationBarVisibility.auto;
     }
 
     public get controller() {

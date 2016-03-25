@@ -402,7 +402,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
                 return entry.transitionAndroid;
             }
 
-            if (entry && isDefined(entry.transition)) {
+            if (isDefined(entry.transition)) {
                 return entry.transition;
             }
         }

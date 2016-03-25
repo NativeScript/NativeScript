@@ -2,12 +2,17 @@
 import frame = require("ui/frame");
 import types = require("utils/types");
 import trace = require("trace");
+import * as _slideTransitionModule from "./slide-transition";
+import * as _fadeTransitionModule from "./fade-transition";
+
+var slideTransitionModule: typeof _slideTransitionModule;
+var fadeTransitionModule: typeof _fadeTransitionModule;
 
 module UIViewControllerAnimatedTransitioningMethods {
     let methodSignature = NSMethodSignature.signatureWithObjCTypes("v@:c");
     let invocation = NSInvocation.invocationWithMethodSignature(methodSignature);
     invocation.selector = "completeTransition:";
-    
+
     export function completeTransition(didComplete: boolean) {
         let didCompleteReference = new interop.Reference(interop.types.bool, didComplete);
         invocation.setArgumentAtIndex(didCompleteReference, 2);
@@ -31,7 +36,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
         impl._fromVC = fromVC;
         impl._toVC = toVC;
         return impl;
-}
+    }
 
     public animateTransition(transitionContext: any): void {
         let containerView = transitionContext.valueForKey("containerView");
@@ -60,19 +65,16 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
     }
 }
 
+var transitionId = 0;
 export class Transition implements definition.Transition {
     private _duration: number;
     private _curve: UIViewAnimationCurve;
     private _id: number;
 
-    constructor(duration: number, curve: any) {
+    constructor(duration: number, curve: UIViewAnimationCurve = UIViewAnimationCurve.UIViewAnimationCurveEaseInOut) {
         this._duration = duration ? (duration / 1000) : 0.35;
-        if (curve) {
-            this._curve = (<any>frame)._getNativeCurve(curve);
-        }
-        else {
-            this._curve = UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;
-        }
+        this._curve = curve;
+        this._id = transitionId++;
     }
 
     public getDuration(): number {
@@ -96,19 +98,25 @@ export class Transition implements definition.Transition {
     }
 }
 
-export function _createIOSAnimatedTransitioning(navigationTransition: frame.NavigationTransition, operation: UINavigationControllerOperation, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
-    var transition: definition.Transition;
+export function _createIOSAnimatedTransitioning(navigationTransition: frame.NavigationTransition, nativeCurve: UIViewAnimationCurve, operation: UINavigationControllerOperation, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
+    let transition: definition.Transition;
 
     if (navigationTransition.name) {
-        var name = navigationTransition.name.toLowerCase();
+        let name = navigationTransition.name.toLowerCase();
         if (name.indexOf("slide") === 0) {
-            var slideTransitionModule = require("./slide-transition");
-            var direction = name.substr("slide".length) || "left"; //Extract the direction from the string
-            transition = new slideTransitionModule.SlideTransition(direction, navigationTransition.duration, navigationTransition.curve);
+            let direction = name.substr("slide".length) || "left"; //Extract the direction from the string
+            if (!slideTransitionModule) {
+                slideTransitionModule = require("./slide-transition");
+            }
+
+            transition = new slideTransitionModule.SlideTransition(direction, navigationTransition.duration, nativeCurve);
         }
         else if (name === "fade") {
-            var fadeTransitionModule = require("./fade-transition");
-            transition = new fadeTransitionModule.FadeTransition(navigationTransition.duration, navigationTransition.curve);
+            if (!fadeTransitionModule) {
+                fadeTransitionModule = require("./fade-transition");
+            }
+
+            transition = new fadeTransitionModule.FadeTransition(navigationTransition.duration, nativeCurve);
         }
     }
     else {
