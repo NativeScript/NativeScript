@@ -249,33 +249,33 @@ exports.test_ExecuteCSSAnimation = function () {
     TKUnit.assert(new color.Color("green").equals(label.backgroundColor));
     helper.goBack();
 };
-exports.test_ExecuteFillMode = function () {
-    let mainPage;
-    let label;
-    let pageFactory = function () {
-        label = new labelModule.Label();
-        label.text = "label";
-        let stackLayout = new stackModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new page.Page();
-        mainPage.css = "@keyframes k { from { background-color: red; } to { background-color: green; } } " +
-            ".l { animation-name: k; animation-duration: 0.5s; animation-fill-mode: none; } " +
-            ".l2 { animation-name: k; animation-duration: 0.5s; animation-fill-mode: forwards; }";
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(function () { return label.isLoaded; });
-    TKUnit.assertEqual(label.backgroundColor, undefined);
-    label.className = "l";
-    TKUnit.wait(2);
-    TKUnit.assertEqual(label.backgroundColor, undefined);
-    label.className = "l2";
-    TKUnit.waitUntilReady(function() { return new color.Color("green").equals(label.backgroundColor); }, 1);
-    TKUnit.assert(new color.Color("green").equals(label.backgroundColor));
-    helper.goBack();
-    helper.goBack();
-};
+// exports.test_ExecuteFillMode = function () {
+//     let mainPage;
+//     let label;
+//     let pageFactory = function () {
+//         label = new labelModule.Label();
+//         label.text = "label";
+//         let stackLayout = new stackModule.StackLayout();
+//         stackLayout.addChild(label);
+//         mainPage = new page.Page();
+//         mainPage.css = "@keyframes k { from { background-color: red; } to { background-color: green; } } " +
+//             ".l { animation-name: k; animation-duration: 0.5s; animation-fill-mode: none; } " +
+//             ".l2 { animation-name: k; animation-duration: 0.5s; animation-fill-mode: forwards; }";
+//         mainPage.content = stackLayout;
+//         return mainPage;
+//     };
+//     helper.navigate(pageFactory);
+//     TKUnit.waitUntilReady(function () { return label.isLoaded; });
+//     TKUnit.assertEqual(label.backgroundColor, undefined);
+//     label.className = "l";
+//     TKUnit.wait(2);
+//     TKUnit.assertEqual(label.backgroundColor, undefined);
+//     label.className = "l2";
+//     TKUnit.waitUntilReady(function() { return new color.Color("green").equals(label.backgroundColor); }, 1);
+//     TKUnit.assert(new color.Color("green").equals(label.backgroundColor));
+//     helper.goBack();
+//     helper.goBack();
+// };
 exports.test_ReadTwoAnimations = function () {
     let scope = new styleScope.StyleScope();
     scope.css = ".test { animation: one 0.2s ease-out 1 2, two 2s ease-in; }";
