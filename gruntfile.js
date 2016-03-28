@@ -146,7 +146,7 @@ module.exports = function(grunt) {
         outTsAppsDir: "./bin/dist/ts-apps",
         outApiRefDir: "./bin/dist/api-ref"
     };
-    
+
     var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
     nodeTestEnv.NODE_PATH = localCfg.outModulesDir;
 
@@ -453,7 +453,8 @@ module.exports = function(grunt) {
                     // 'flag:undefined' will set flags without options.
                     "module": 'commonjs',
                     "target": 'es5',
-                    "out": localCfg.outApiRefDir,
+                    "out": '<%= grunt.option("out") || localCfg.outApiRefDir %>',
+                    "theme": '<%= grunt.option("theme") || "default" %>',
                     //"json": './dist/doc.json',
                     "name": 'NativeScript',
                     "includeDeclarations": undefined,
@@ -701,7 +702,7 @@ module.exports = function(grunt) {
         "env:nodeTests",
         "exec:mochaNode", //spawn a new process to use the new NODE_PATH
     ]);
-    
+
     grunt.registerTask("inplace", [
         "ts:build-inplace",
         "generate-tns-core-modules-dev-dts"
