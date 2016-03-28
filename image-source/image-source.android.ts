@@ -132,7 +132,7 @@ export class ImageSource implements definition.ImageSource {
     }
 }
 
-function getTargetFromat(format: string): android.graphics.Bitmap.CompressFormat {
+function getTargetFormat(format: string): android.graphics.Bitmap.CompressFormat {
     ensureEnums();
 
     switch (format) {
