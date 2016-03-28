@@ -3,138 +3,133 @@ import definition = require("platform");
 import utils = require("utils/utils");
 import * as enumsModule from "ui/enums";
 
+const MIN_TABLET_PIXELS = 600;
+
 export module platformNames {
     export var android = "Android";
     export var ios = "iOS";
 }
 
-// This is a "static" class and it is used like a name-space.
-// It is not meant to be initialized - thus it is not capitalized
-export class device implements definition.device {
-    private static MIN_TABLET_PIXELS = 600;
-    private static _manufacturer: string;
-    private static _model: string;
-    private static _osVersion: string;
-    private static _sdkVersion: string;
-    private static _deviceType: string;
-    private static _uuid: string;
-    private static _language: string;
-    private static _region: string;
+class Device implements definition.Device {
+    private _manufacturer: string;
+    private _model: string;
+    private _osVersion: string;
+    private _sdkVersion: string;
+    private _deviceType: string;
+    private _uuid: string;
+    private _language: string;
+    private _region: string;
 
-    static get os(): string {
+    get os(): string {
         return platformNames.android;
     }
 
-    static get manufacturer(): string {
-        if (!device._manufacturer) {
-            device._manufacturer = android.os.Build.MANUFACTURER;
+    get manufacturer(): string {
+        if (!this._manufacturer) {
+            this._manufacturer = android.os.Build.MANUFACTURER;
         }
 
-        return device._manufacturer;
+        return this._manufacturer;
     }
 
-    static get osVersion(): string {
-        if (!device._osVersion) {
-            device._osVersion = android.os.Build.VERSION.RELEASE;
+    get osVersion(): string {
+        if (!this._osVersion) {
+            this._osVersion = android.os.Build.VERSION.RELEASE;
         }
 
-        return device._osVersion;
+        return this._osVersion;
     }
 
-    static get model(): string {
-        if (!device._model) {
-            device._model = android.os.Build.MODEL;
+    get model(): string {
+        if (!this._model) {
+            this._model = android.os.Build.MODEL;
         }
 
-        return device._model;
+        return this._model;
     }
 
-    static get sdkVersion(): string {
-        if (!device._sdkVersion) {
-            device._sdkVersion = android.os.Build.VERSION.SDK;
+    get sdkVersion(): string {
+        if (!this._sdkVersion) {
+            this._sdkVersion = android.os.Build.VERSION.SDK;
         }
 
-        return device._sdkVersion;
+        return this._sdkVersion;
     }
 
-    static get deviceType(): string {
-        if (!device._deviceType) {
+    get deviceType(): string {
+        if (!this._deviceType) {
             var dips = Math.min(screen.mainScreen.widthPixels, screen.mainScreen.heightPixels) / screen.mainScreen.scale;
             var enums: typeof enumsModule = require("ui/enums");
 
             // If the device has more than 600 dips it is considered to be a tablet.
-            if (dips >= device.MIN_TABLET_PIXELS) {
-                device._deviceType = enums.DeviceType.Tablet;
+            if (dips >= MIN_TABLET_PIXELS) {
+                this._deviceType = enums.DeviceType.Tablet;
             }
             else {
-                device._deviceType = enums.DeviceType.Phone;
+                this._deviceType = enums.DeviceType.Phone;
             }
         }
 
-        return device._deviceType;
+        return this._deviceType;
     }
 
-    static get uuid(): string {
-        if (!device._uuid) {
-            device._uuid = android.provider.Settings.Secure.getString(
+    get uuid(): string {
+        if (!this._uuid) {
+            this._uuid = android.provider.Settings.Secure.getString(
                 utils.ad.getApplicationContext().getContentResolver(),
                 android.provider.Settings.Secure.ANDROID_ID
                 );
         }
 
-        return device._uuid;
+        return this._uuid;
     }
 
-    static get language(): string {
-        if (!device._language) {
-            device._language = java.util.Locale.getDefault().getLanguage().replace("_", "-");
+    get language(): string {
+        if (!this._language) {
+            this._language = java.util.Locale.getDefault().getLanguage().replace("_", "-");
         }
 
-        return device._language;
+        return this._language;
     }
 
-    static get region(): string {
-        if(!device._region) {
-            device._region = java.util.Locale.getDefault().getCountry();
+    get region(): string {
+        if(!this._region) {
+            this._region = java.util.Locale.getDefault().getCountry();
         }
 
-        return device._region;
-    }
-}
-
-var mainScreen: MainScreen;
-
-// This is a "static" class and it is used like a namespace.
-// It is not meant to be initialized - thus it is not capitalized
-export class screen implements definition.screen {
-    static get mainScreen(): definition.ScreenMetrics {
-        if (!mainScreen) {
-            var metrics = utils.ad.getApplicationContext().getResources().getDisplayMetrics();
-            mainScreen = new MainScreen(metrics);
-        }
-        return mainScreen;
+        return this._region;
     }
 }
 
 class MainScreen implements definition.ScreenMetrics {
     private _metrics: android.util.DisplayMetrics;
-    constructor(metrics: android.util.DisplayMetrics) {
-        this._metrics = metrics;
+    private get metrics(): android.util.DisplayMetrics {
+        if (!this._metrics) {
+            this._metrics = utils.ad.getApplicationContext().getResources().getDisplayMetrics();
+        }
+        return this._metrics;
     }
 
     get widthPixels(): number {
-        return this._metrics.widthPixels;
+        return this.metrics.widthPixels;
     }
     get heightPixels(): number {
-        return this._metrics.heightPixels;
+        return this.metrics.heightPixels;
     }
     get scale(): number {
-        return this._metrics.density;
+        return this.metrics.density;
     }
     get widthDIPs(): number {
-        return this._metrics.widthPixels / this._metrics.density;
+        return this.metrics.widthPixels / this.metrics.density;
     }
     get heightDIPs(): number {
-        return this._metrics.heightPixels / this._metrics.density;
+        return this.metrics.heightPixels / this.metrics.density;
     }
+
+}
+
+export var device: definition.Device = new Device();
+
+export module screen {
+    export var mainScreen = new MainScreen();
 }
