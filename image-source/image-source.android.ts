@@ -87,7 +87,7 @@ export class ImageSource implements definition.ImageSource {
             return false;
         }
 
-        var targetFormat = getTargetFromat(format);
+        var targetFormat = getTargetFormat(format);
 
         // TODO add exception handling
         var outputStream = new java.io.BufferedOutputStream(new java.io.FileOutputStream(path));
@@ -102,7 +102,7 @@ export class ImageSource implements definition.ImageSource {
             return null;;
         }
 
-        var targetFormat = getTargetFromat(format);
+        var targetFormat = getTargetFormat(format);
 
         var outputStream = new java.io.ByteArrayOutputStream();
         var base64Stream = new android.util.Base64OutputStream(outputStream, android.util.Base64.NO_WRAP);
