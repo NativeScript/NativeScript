@@ -15,42 +15,42 @@ declare module "platform" {
     /*
      * An object containing device specific information.
      */
-    export class device {
+    export interface Device {
         /**
          * Gets the manufacturer of the device.
          * For example: "Apple" or "HTC" or "Samsung".
          */
-        static manufacturer: string;
+        manufacturer: string;
 
         /**
          * Gets the model of the device.
          * For example: "Nexus 5" or "iPhone".
          */
-        static model: string;
+        model: string;
 
         /**
          * Gets the model of the device.
          * For example: "Android" or "iOS".
          */
-        static os: string;
+        os: string;
 
         /**
          * Gets the OS version.
          * For example: 4.4.4(android), 8.1(ios)
          */
-        static osVersion: string;
+        osVersion: string;
 
         /**
          * Gets the OS version.
          * For example: 19(android), 8.1(ios).
          */
-        static sdkVersion: string;
+        sdkVersion: string;
 
         /**
          * Gets the type current device.
          * Available values: "phone", "tablet".
          */
-        static deviceType: string;
+        deviceType: string;
 
         /**
          * Gets the uuid.
@@ -58,17 +58,17 @@ declare module "platform" {
          * If you need to receive the same uuid even after the application has been re-installed on the device,
          * use this plugin: https://www.npmjs.com/package/nativescript-ios-uuid
          */
-         static uuid: string;
+        uuid: string;
 
         /**
          * Gets the preferred language. For example "en"
          */
-        static language: string;
+        language: string;
 
         /**
          * Gets the preferred region. For example "US"
          */
-        static region: string;
+        region: string;
     }
 
     /**
@@ -104,10 +104,15 @@ declare module "platform" {
     /**
      * An object describing general information about a display.
      */
-    export class screen {
+    export module screen {
         /**
          * Gets information about the main screen of the current device.
          */
-        static mainScreen: ScreenMetrics;
+        export var mainScreen: ScreenMetrics;
     }
+
+    /**
+     * Gets the current device information
+     */
+    export var device: Device;    
 }

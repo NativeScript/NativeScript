@@ -5,65 +5,63 @@ export module platformNames {
     export var android = "Android";
     export var ios = "iOS";
 }
+  
+class Device implements definition.Device {
+    private _model: string;
+    private _osVersion: string;
+    private _sdkVersion: string;
+    private _deviceType: string;
+    private _language: string;
+    private _region: string;
 
-// This is a "static" class and it is used like a name-space.
-// It is not meant to be initialized - thus it is not capitalized
-export class device implements definition.device {
-    private static _model: string;
-    private static _osVersion: string;
-    private static _sdkVersion: string;
-    private static _deviceType: string;
-    private static _language: string;
-    private static _region: string;
-
-    static get manufacturer(): string {
+    get manufacturer(): string {
         return "Apple";
     }
 
-    static get os(): string {
+    get os(): string {
         return platformNames.ios;
     }
 
-    static get osVersion(): string {
-        if (!device._osVersion) {
-            device._osVersion = UIDevice.currentDevice().systemVersion;
+    get osVersion(): string {
+        if (!this._osVersion) {
+            this._osVersion = UIDevice.currentDevice().systemVersion;
         }
 
-        return device._osVersion;
+        return this._osVersion;
     }
 
-    static get model(): string {
-        if (!device._model) {
-            device._model = UIDevice.currentDevice().model;
+    get model(): string {
+        if (!this._model) {
+            this._model = UIDevice.currentDevice().model;
         }
 
-        return device._model;
+        return this._model;
     }
 
-    static get sdkVersion(): string {
-        if (!device._sdkVersion) {
-            device._sdkVersion = UIDevice.currentDevice().systemVersion;
+    get sdkVersion(): string {
+        if (!this._sdkVersion) {
+            this._sdkVersion = UIDevice.currentDevice().systemVersion;
         }
 
-        return device._sdkVersion;
+        return this._sdkVersion;
     }
 
-    static get deviceType(): string {
-        if (!device._deviceType) {
+    get deviceType(): string {
+        if (!this._deviceType) {
             var enums = require("ui/enums");
 
             if (UIDevice.currentDevice().userInterfaceIdiom === UIUserInterfaceIdiom.UIUserInterfaceIdiomPhone) {
-                device._deviceType = enums.DeviceType.Phone;
+                this._deviceType = enums.DeviceType.Phone;
             }
             else {
-                device._deviceType = enums.DeviceType.Tablet;
+                this._deviceType = enums.DeviceType.Tablet;
             }
         }
 
-        return device._deviceType;
+        return this._deviceType;
     }
 
-    static get uuid(): string {
+    get uuid(): string {
         var userDefaults = NSUserDefaults.standardUserDefaults();
         var uuid_key = "TNSUUID";
         var app_uuid = userDefaults.stringForKey(uuid_key);
@@ -78,41 +76,32 @@ export class device implements definition.device {
         return app_uuid;
     }
 
-    static get language(): string {
-        if (!device._language) {
+    get language(): string {
+        if (!this._language) {
             var languages = NSLocale.preferredLanguages();
-            device._language = languages[0];
+            this._language = languages[0];
         }
         
-        return device._language;
+        return this._language;
     }
 
-    static get region(): string {
-        if(!device._region) {
-            device._region = NSLocale.currentLocale().objectForKey(NSLocaleCountryCode);
+    get region(): string {
+        if(!this._region) {
+            this._region = NSLocale.currentLocale().objectForKey(NSLocaleCountryCode);
         }
 
-        return device._region;
-    }
-}
-
-var mainScreen: MainScreen;
-
-// This is a "static" class and it is used like a name-space.
-// It is not meant to be initialized - thus it is not capitalized
-export class screen implements definition.screen {
-    static get mainScreen(): definition.ScreenMetrics {
-        if (!mainScreen) {
-            mainScreen = new MainScreen(UIScreen.mainScreen());
-        }
-        return mainScreen;
+        return this._region;
     }
 }
 
 class MainScreen implements definition.ScreenMetrics {
     private _screen: UIScreen;
-    constructor(metrics: UIScreen) {
-        this._screen = metrics;
+    private get screen(): UIScreen {
+        if (!this._screen) {
+            this._screen = UIScreen.mainScreen();
+        }
+
+        return this._screen;
     }
 
     get widthPixels(): number {
@@ -122,12 +111,18 @@ class MainScreen implements definition.ScreenMetrics {
         return this.heightDIPs * this.scale;
     }
     get scale(): number {
-        return this._screen.scale;
+        return this.screen.scale;
     }
     get widthDIPs(): number {
-        return this._screen.bounds.size.width;
+        return this.screen.bounds.size.width;
     }
     get heightDIPs(): number {
-        return this._screen.bounds.size.height;
+        return this.screen.bounds.size.height;
     }
+}
+
+export var device: definition.Device = new Device();
+
+export module screen {
+    export var mainScreen = new MainScreen();
 }
