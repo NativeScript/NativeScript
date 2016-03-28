@@ -453,7 +453,7 @@ module.exports = function(grunt) {
                     // 'flag:undefined' will set flags without options.
                     "module": 'commonjs',
                     "target": 'es5',
-                    "out": localCfg.outApiRefDir,
+                    "out": '<%= grunt.option("out") || localCfg.outApiRefDir %>',
                     "theme": '<%= grunt.option("theme") || "default" %>',
                     //"json": './dist/doc.json',
                     "name": 'NativeScript',
