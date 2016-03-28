@@ -108,6 +108,23 @@ export class TextBaseStyler implements style.Styler {
         utils.ad.setWhiteSpace(view._nativeView, enums.WhiteSpace.normal);
     }
 
+    // letter-spacing
+    private static getLetterSpacingProperty(view: view.View) : any {
+        return view.android.getLetterSpacing ? view.android.getLetterSpacing() : 0;
+    }
+
+    private static setLetterSpacingProperty(view: view.View, newValue: any) {
+        if(view.android.setLetterSpacing) {
+           view.android.setLetterSpacing(utils.layout.toDeviceIndependentPixels(newValue));
+        }
+    }
+
+    private static resetLetterSpacingProperty(view: view.View, nativeValue: any) {
+        if(view.android.setLetterSpacing) {
+            view.android.setLetterSpacing(nativeValue);
+        }
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
             TextBaseStyler.setColorProperty,
@@ -135,6 +152,11 @@ export class TextBaseStyler implements style.Styler {
         style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
             TextBaseStyler.setWhiteSpaceProperty,
             TextBaseStyler.resetWhiteSpaceProperty), "TextBase");
+
+        style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
+            TextBaseStyler.setLetterSpacingProperty,
+            TextBaseStyler.resetLetterSpacingProperty,
+            TextBaseStyler.getLetterSpacingProperty), "TextBase");
 
         // Register the same stylers for Button.
         // It also derives from TextView but is not under TextBase in our View hierarchy.
@@ -164,5 +186,10 @@ export class TextBaseStyler implements style.Styler {
         style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
             TextBaseStyler.setWhiteSpaceProperty,
             TextBaseStyler.resetWhiteSpaceProperty), "Button");
+
+        style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
+            TextBaseStyler.setLetterSpacingProperty,
+            TextBaseStyler.resetLetterSpacingProperty,
+            TextBaseStyler.getLetterSpacingProperty), "Button");
     }
 }

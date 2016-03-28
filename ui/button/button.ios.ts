@@ -153,20 +153,20 @@ export class ButtonStyler implements style.Styler {
 
     // text-decoration
     private static setTextDecorationProperty(view: view.View, newValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, newValue, view.style.textTransform);
+        utils.ios.setTextDecorationAndTransform(view, newValue, view.style.textTransform, view.style.letterSpacing);
     }
 
     private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, enums.TextDecoration.none, view.style.textTransform);
+        utils.ios.setTextDecorationAndTransform(view, enums.TextDecoration.none, view.style.textTransform, view.style.letterSpacing);
     }
 
     // text-transform
     private static setTextTransformProperty(view: view.View, newValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, newValue);
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, newValue, view.style.letterSpacing);
     }
 
     private static resetTextTransformProperty(view: view.View, nativeValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, enums.TextTransform.none);
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, enums.TextTransform.none, view.style.letterSpacing);
     }
 
     // white-space

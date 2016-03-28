@@ -72,6 +72,7 @@ declare module "ui/styling/style" {
         public visibility: string;
         public opacity: number;
         public whiteSpace: string;
+        public letterSpacing: number;
 
         constructor(parentView: View);
 
@@ -112,6 +113,7 @@ declare module "ui/styling/style" {
     export var textDecorationProperty: styleProperty.Property;
     export var textTransformProperty: styleProperty.Property;
     export var whiteSpaceProperty: styleProperty.Property;
+    export var letterSpacingProperty: styleProperty.Property;
 
     // Helper property holding most layout related properties available in CSS.
     // When layout related properties are set in CSS we chache them and send them to the native view in a single call.

@@ -1,4 +1,5 @@
 ﻿import dts = require("utils/utils");
+import types = require("utils/types");
 import common = require("./utils-common");
 import {Color} from "color";
 import enums = require("ui/enums");
@@ -49,7 +50,9 @@ export module ios {
         }
     }
 
-    export function setTextDecorationAndTransform(v: any, decoration: string, transform: string) {
+    export function setTextDecorationAndTransform(v: any, decoration: string, transform: string, letterSpacing: number) {
+        let hasLetterSpacing = types.isNumber(letterSpacing) && !isNaN(letterSpacing);
+
         if (v.formattedText) {
             if (v.style.textDecoration.indexOf(enums.TextDecoration.none) === -1) {
 
@@ -69,6 +72,22 @@ export module ios {
                 let span = v.formattedText.spans.getItem(i);
                 span.text = getTransformedText(v, span.text, transform);
             }
+            
+            if (hasLetterSpacing) {
+                let attrText; 
+                if(v._nativeView instanceof UIButton){
+                    attrText = (<UIButton>v._nativeView).attributedTitleForState(UIControlState.UIControlStateNormal);
+                } else {
+                    attrText = v._nativeView.attributedText;
+                }
+                
+                attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing, { location: 0, length: v._nativeView.attributedText.length });
+                
+                if(v._nativeView instanceof UIButton){
+                    (<UIButton>v._nativeView).setAttributedTitleForState(attrText, UIControlState.UIControlStateNormal);
+                } 
+            }
+
         } else {
             let source = v.text;
             let attributes = new Array();
@@ -76,7 +95,7 @@ export module ios {
 
             var decorationValues = (decoration + "").split(" ");
 
-            if (decorationValues.indexOf(enums.TextDecoration.none) === -1) {
+            if (decorationValues.indexOf(enums.TextDecoration.none) === -1 || hasLetterSpacing) {
                 let dict = new Map<string, number>();
 
                 if (decorationValues.indexOf(enums.TextDecoration.underline) !== -1) {
@@ -85,6 +104,10 @@ export module ios {
 
                 if (decorationValues.indexOf(enums.TextDecoration.lineThrough) !== -1) {
                     dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                }
+
+                if (hasLetterSpacing) {
+                    dict.set(NSKernAttributeName, letterSpacing);
                 }
 
                 attributes.push({ attrs: dict, range: NSValue.valueWithRange(range) });
@@ -238,7 +261,7 @@ export function openUrl(location: string): boolean {
 class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
     public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
 
-    public getViewController() : UIViewController {
+    public getViewController(): UIViewController {
         var frame = require("ui/frame");
         return frame.topmost().currentPage.ios;
     }
