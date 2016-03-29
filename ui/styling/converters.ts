@@ -12,6 +12,12 @@ export function fontSizeConverter(value: string): number {
     return result;
 }
 
+export function letterSpacingConverter(value: string): number {
+    // TODO: parse different unit types
+    var result: number = parseFloat(value);
+    return result;
+}
+
 export function textAlignConverter(value: string): string {
     switch (value) {
         case enums.TextAlignment.left:

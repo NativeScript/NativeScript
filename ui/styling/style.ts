@@ -417,6 +417,11 @@ function isOpacityValid(value: string): boolean {
     return !isNaN(parsedValue) && 0 <= parsedValue && parsedValue <= 1;
 }
 
+function isLetterSpacingValid(value: string): boolean {
+    var parsedValue: number = parseFloat(value);
+    return !isNaN(parsedValue);
+}
+
 function isFontWeightValid(value: string): boolean {
     return value === enums.FontWeight.normal || value === enums.FontWeight.bold;
 }
@@ -768,6 +773,13 @@ export class Style extends DependencyObservable implements styling.Style {
     set whiteSpace(value: string) {
         this._setValue(whiteSpaceProperty, value);
     }
+    
+    get letterSpacing(): number {
+        return this._getValue(letterSpacingProperty);
+    }
+    set letterSpacing(value: number) {
+        this._setValue(letterSpacingProperty, value);
+    }    
 
     public _updateTextDecoration() {
         if (this._getValue(textDecorationProperty) !== enums.TextDecoration.none) {
@@ -1059,6 +1071,9 @@ export var textTransformProperty = new styleProperty.Property("textTransform", "
 
 export var whiteSpaceProperty = new styleProperty.Property("whiteSpace", "white-space",
     new PropertyMetadata(undefined, AffectsLayout, undefined, isWhiteSpaceValid), converters.whiteSpaceConverter);
+    
+export var letterSpacingProperty = new styleProperty.Property("letterSpacing", "letter-spacing",
+    new PropertyMetadata(Number.NaN, AffectsLayout, undefined, isLetterSpacingValid), converters.letterSpacingConverter);    
 
 // Helper property holding most layout related properties available in CSS.
 // When layout related properties are set in CSS we chache them and send them to the native view in a single call.

@@ -1,0 +1,59 @@
+﻿<Page>
+    <StackLayout>
+    
+      <Label text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;" />
+      <Label style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;">
+        <Label.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="label" fontAttributes="Bold" foregroundColor="#0000ff" />
+              <Span text="Label" fontAttributes="Italic" foregroundColor="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Label.formattedText>
+      </Label>
+
+      <Button text="buttonButton" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;" />
+      <android>
+        <Button style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;">
+            <Button.formattedText>
+            <FormattedString>
+                <FormattedString.spans>
+                <Span text="button" fontAttributes="Bold" foregroundColor="#0000ff" />
+                <Span text="Button" fontAttributes="Italic" foregroundColor="#00ff00" />
+                </FormattedString.spans>
+            </FormattedString>
+            </Button.formattedText>
+        </Button>
+      </android>
+      
+      <TextField text="textField" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;" />
+      <android>
+        <TextField style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;">
+            <TextField.formattedText>
+            <FormattedString>
+                <FormattedString.spans>
+                <Span text="text" fontAttributes="Bold" foregroundColor="#0000ff" />
+                <Span text="Field" fontAttributes="Italic" foregroundColor="#00ff00" />
+                </FormattedString.spans>
+            </FormattedString>
+            </TextField.formattedText>
+        </TextField>
+      </android>
+
+      <TextView text="textView" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;" />
+      <android>
+        <TextView style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;">
+            <TextView.formattedText>
+            <FormattedString>
+                <FormattedString.spans>
+                <Span text="text" fontAttributes="Bold" foregroundColor="#0000ff" />
+                <Span text="View" fontAttributes="Italic" foregroundColor="#00ff00" />
+                </FormattedString.spans>
+            </FormattedString>
+            </TextView.formattedText>
+        </TextView>
+      </android>
+
+    </StackLayout>
+</Page>

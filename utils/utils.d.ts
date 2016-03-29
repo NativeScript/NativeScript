@@ -145,7 +145,7 @@
      * Module with ios specific utilities.
      */
     module ios {
-        export function setTextDecorationAndTransform(view: any, decoration: string, transform: string);
+        export function setTextDecorationAndTransform(view: any, decoration: string, transform: string, letterSpacing : number);
         export function setWhiteSpace(view, value: string, parentView?: any);
         export function setTextAlignment(view, value: string);
 
