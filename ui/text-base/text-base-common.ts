@@ -53,6 +53,9 @@ export class TextBase extends view.View implements definition.TextBase, formatte
         if (this.formattedText) {
             this.formattedText.updateSpansBindingContext(newValue);
         }
+        
+        this.style._updateTextTransform();
+        this.style._updateTextDecoration();
     }
 
     get text(): string {
