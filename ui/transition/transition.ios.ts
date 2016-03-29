@@ -106,14 +106,16 @@ export function _createIOSAnimatedTransitioning(navigationTransition: frame.Navi
         if (name.indexOf("slide") === 0) {
             let direction = name.substr("slide".length) || "left"; //Extract the direction from the string
             if (!slideTransitionModule) {
-                slideTransitionModule = require("./slide-transition");
+                //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
+                slideTransitionModule = require("ui/transition/slide-transition");
             }
 
             transition = new slideTransitionModule.SlideTransition(direction, navigationTransition.duration, nativeCurve);
         }
         else if (name === "fade") {
             if (!fadeTransitionModule) {
-                fadeTransitionModule = require("./fade-transition");
+                //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
+                fadeTransitionModule = require("ui/transition/fade-transition");
             }
 
             transition = new fadeTransitionModule.FadeTransition(navigationTransition.duration, nativeCurve);
