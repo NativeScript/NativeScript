@@ -154,13 +154,13 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     }
     
     public test_DateIsSetCorrectlyWhenYearIsSet() {
-        let today = new Date();
-        this.testView.month = today.getMonth();
-        this.testView.day = today.getDate();
+        let current = new Date(2016, 3, 15);
+        this.testView.month = current.getMonth();
+        this.testView.day = current.getDate();
         
         let expectedValue = 1980;
         this.testView.year = expectedValue;
-        let expectedDate = new Date(1980, today.getMonth() - 1, today.getDate());
+        let expectedDate = new Date(1980, current.getMonth() - 1, current.getDate());
         
         TKUnit.assertEqual(this.testView.date.getDate(), expectedDate.getDate(), "Getting Day from date property failed.");
         TKUnit.assertEqual(this.testView.date.getMonth(), expectedDate.getMonth(), "Getting Month from date property failed.");

@@ -156,16 +156,19 @@ export function _setAndroidFragmentTransitions(navigationTransition: frameModule
     var transition: definition.Transition;
     if (name) {
         if (name.indexOf("slide") === 0) {
-            var slideTransitionModule = require("./slide-transition");
+            //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
+            var slideTransitionModule = require("ui/transition/slide-transition");
             var direction = name.substr("slide".length) || "left"; //Extract the direction from the string
             transition = new slideTransitionModule.SlideTransition(direction, navigationTransition.duration, navigationTransition.curve);
         }
         else if (name === "fade") {
-            var fadeTransitionModule = require("./fade-transition");
+            //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
+            var fadeTransitionModule = require("ui/transition/fade-transition");
             transition = new fadeTransitionModule.FadeTransition(navigationTransition.duration, navigationTransition.curve);
         }
         else if (name.indexOf("flip") === 0) {
-            var flipTransitionModule = require("./flip-transition");
+            //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
+            var flipTransitionModule = require("ui/transition/flip-transition");
             var direction = name.substr("flip".length) || "right"; //Extract the direction from the string
             transition = new flipTransitionModule.FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
         }
