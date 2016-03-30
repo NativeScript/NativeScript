@@ -4,6 +4,7 @@ node_js:
 before_script:
     - npm install -g grunt-cli
     - npm install
+    - (cd build/platform-declarations && npm install)
 script:
-    grunt default
-    (cd build/platform-declarations && grunt)
+    - grunt default
+    - (cd build/platform-declarations && grunt)
