@@ -6,4 +6,4 @@ before_script:
     - npm install
 script:
     grunt default
-
+    (cd build/platform-declarations && grunt)
