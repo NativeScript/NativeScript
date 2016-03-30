@@ -2,10 +2,22 @@ module.exports = function(grunt) {
 
     var fsModule = require("fs");
 
-    function cleanDeps(content, srcPath) {
+    var masterPackageVersion = "";
+
+    function updatePackageJson(content, srcPath) {
         var contentAsJson = JSON.parse(content);
         delete contentAsJson.devDependencies;
+
+        contentAsJson.version = masterPackageVersion;
+
         return JSON.stringify(contentAsJson, null, "\t");
+    }
+
+    function readMasterPackageVersion(content, srcPath) {
+        var contentAsJson = JSON.parse(content);
+        masterPackageVersion = contentAsJson.version;
+
+        return content;
     }
 
     function isDiff(content, srcPath) {
@@ -37,7 +49,7 @@ module.exports = function(grunt) {
                 src: "./package.json",
                 dest: "./diffs/",
                 options: {
-                    process: cleanDeps
+                    process: updatePackageJson
                 }
             },
             actualDeclaraions: {
@@ -70,6 +82,15 @@ module.exports = function(grunt) {
                 src: "./*.tgz",
                 dest: "./",
                 cwd: "./diffs"
+            },
+            readMasterPackageVersion: {
+                expand: true,
+                src: "./package.json",
+                dest: "./extracted/package/",
+                cwd: "./extracted/package",
+                options: {
+                    process: readMasterPackageVersion
+                }
             }
         },
         shell: {
@@ -126,6 +147,7 @@ module.exports = function(grunt) {
         "shell:createExtractedDir",
         "shell:unpackPackage",
         "clean:package",
+        "copy:readMasterPackageVersion",
         "clean:extractedNonDeclarations",
         "shell:createActualsDir",
         "copy:actualDeclaraions",
