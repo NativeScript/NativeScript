@@ -31,6 +31,7 @@ export class Frame extends frameCommon.Frame {
     public _heightMeasureSpec: number;
     public _right: number;
     public _bottom: number;
+    public _isInitialNavigation: boolean = true;
 
     constructor() {
         super();
@@ -61,6 +62,7 @@ export class Frame extends frameCommon.Frame {
     public navigate(param: any) {
         if (this.isLoaded) {
             super.navigate(param);
+            this._isInitialNavigation = false;
         }
         else {
             this._paramToNavigate = param;
@@ -608,9 +610,11 @@ class iOSFrame implements definition.iOSFrame {
     private _controller: UINavigationControllerImpl;
     private _showNavigationBar: boolean;
     private _navBarVisibility: string;
+    private _frame: Frame;
 
-    constructor(owner: Frame) {
-        this._controller = UINavigationControllerImpl.initWithOwner(new WeakRef(owner));
+    constructor(frame: Frame) {
+        this._frame = frame;
+        this._controller = UINavigationControllerImpl.initWithOwner(new WeakRef(frame));
         this._controller.automaticallyAdjustsScrollViewInsets = false;
         //this.showNavigationBar = false;
         this._navBarVisibility = NavigationBarVisibility.auto;
@@ -626,7 +630,9 @@ class iOSFrame implements definition.iOSFrame {
     public set showNavigationBar(value: boolean) {
         var change = this._showNavigationBar !== value;
         this._showNavigationBar = value;
-        this._controller.setNavigationBarHiddenAnimated(!value, true);
+
+        let animated = !this._frame._isInitialNavigation;
+        this._controller.setNavigationBarHiddenAnimated(!value, animated);
 
         let currentPage = this._controller.owner.currentPage;
         if (currentPage && change) {
