@@ -127,10 +127,10 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     }
     
     public test_DateIsSetCorrectlyWhenDayIsSet() {
-        let today = new Date();
+        let today = new Date(2016, 3, 15);
         this.testView.year = today.getFullYear();
         this.testView.month = today.getMonth();
-        let expectedValue = today.getDate() === 19 ? 18 : 19;
+        let expectedValue = today.getDate();
         this.testView.day = expectedValue;
         
         let expectedDate = new Date(today.getFullYear(), today.getMonth() - 1, expectedValue);
@@ -140,11 +140,11 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     }
     
     public test_DateIsSetCorrectlyWhenMonthIsSet() {
-        let today = new Date();
+        let today = new Date(2016, 3, 15);
         this.testView.year = today.getFullYear();
         this.testView.day = today.getDate();
         
-        let expectedValue = today.getMonth() === 5 ? 4 : 5;
+        let expectedValue = today.getMonth();
         this.testView.month = expectedValue;
         let expectedDate = new Date(today.getFullYear(), expectedValue - 1, today.getDate());
         

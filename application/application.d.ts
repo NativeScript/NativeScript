@@ -518,6 +518,11 @@ declare module "application" {
          * String value used when hooking to activityBackPressed event.
          */
         public static activityBackPressedEvent: string;
+        
+        /**
+         * String value used when hooking to requestPermissions event.
+         */
+        public static activityRequestPermissionsEvent: string;
 
         /**
          * Register a BroadcastReceiver to be run in the main activity thread. The receiver will be called with any broadcast Intent that matches filter, in the main application thread. 
