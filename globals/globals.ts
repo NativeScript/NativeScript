@@ -29,6 +29,14 @@ global.loadModule = function(name: string): any {
     }
 }
 
+global.zonedCallback = function(callback: Function): Function {
+    if (global.zone) {
+        return global.zone.bind(callback);
+    } else {
+        return callback;
+    }
+}
+
 global.registerModule("timer", () => require("timer"));
 global.registerModule("ui/dialogs", () => require("ui/dialogs"));
 global.registerModule("xhr", () => require("xhr"));
