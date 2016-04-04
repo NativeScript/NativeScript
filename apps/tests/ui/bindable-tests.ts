@@ -14,6 +14,7 @@ import labelModule = require("ui/label");
 import textFieldModule = require("ui/text-field");
 import fs = require("file-system");
 import appModule = require("application");
+import trace = require("trace");
 
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic. 
@@ -691,6 +692,29 @@ export function test_NestedPropertiesBinding() {
     viewModel.set("activity", act);
 
     TKUnit.assertEqual(target1.get("targetProperty"), newExpectedValue);
+}
+
+export function test_WrongNestedPropertiesBinding() {
+    var expectedValue = "Default Text";
+    var viewModel = new observable.Observable();
+    viewModel.set("activity", new Activity(expectedValue, "Default First Name", "Default Last Name"));
+    let errorMessage;
+    let traceWriter = {
+        write: function (message, category, type?) {
+            errorMessage = message;
+        }
+    }
+    trace.addWriter(traceWriter);
+
+    var target1 = new bindable.Bindable();
+    target1.bind({
+        sourceProperty: "activity.",
+        targetProperty: "targetProperty",
+        twoWay: true
+    }, viewModel);
+
+    TKUnit.assertNotEqual(errorMessage, undefined);
+    trace.removeWriter(traceWriter);
 }
 
 export function test_NestedPropertiesBindingTwoTargets() {
