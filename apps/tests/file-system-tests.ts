@@ -639,3 +639,13 @@ export function test_UnlockAfterWrite(done) {
     }).then(() => done())
     .catch(done);
 }
+
+export function test_CreateParentOnNewFile(done) {
+    var documentsFolderName = fs.knownFolders.documents().path;
+    var tempFileName = fs.path.join(documentsFolderName, "folder1", "folder2", "Test_File_Create_Parent.txt");
+    var file = fs.File.fromPath(tempFileName);
+    file.writeText("Hello World!").then(() =>  {
+        return fs.knownFolders.documents().getFolder("folder1").remove();
+    }).then(() => done())
+    .catch(done);
+}

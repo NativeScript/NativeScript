@@ -52,11 +52,12 @@ export class FileSystemAccess {
             var exists = fileManager.fileExistsAtPath(path);
 
             if (!exists) {
-                if (!fileManager.createFileAtPathContentsAttributes(path, null, null)) {
+                var parentPath = this.getParent(path, onError).path;
+                if (!fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(parentPath, true, null) ||
+                        !fileManager.createFileAtPathContentsAttributes(path, null, null)) {
                     if (onError) {
-                        onError(new Error("Failed to create folder at path '" + path + "'"));
+                        onError(new Error("Failed to create file at path '" + path + "'"));
                     }
-
                     return undefined;
                 }
             }
