@@ -9,8 +9,8 @@ declare module "ui/styling/style-scope" {
         public css: string;
         public addCss(cssString: string, cssFileName: string): void;
 
-        public static createSelectorsFromCss(css: string, cssFileName: string): cssSelector.CssSelector[];
-        public static createSelectorsFromImports(tree: cssParser.SyntaxTree): cssSelector.CssSelector[];
+        public static createSelectorsFromCss(css: string, cssFileName: string, keyframes: Object): cssSelector.CssSelector[];
+        public static createSelectorsFromImports(tree: cssParser.SyntaxTree, keyframes: Object): cssSelector.CssSelector[];
         public ensureSelectors(): boolean;
 
         public applySelectors(view: view.View): void

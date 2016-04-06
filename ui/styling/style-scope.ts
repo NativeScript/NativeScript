@@ -71,7 +71,7 @@ export class StyleScope {
     private setCss(cssString: string, cssFileName?: string, append: boolean = false): void {
         this._css = this._css ? this._css + cssString : cssString;
         if (cssFileName) {
-            this._cssFileName = cssFileName
+            this._cssFileName = cssFileName;
         }
 
         this._reset();
@@ -169,6 +169,9 @@ export class StyleScope {
             this._applicationCssSelectorsAppliedVersion = application.cssSelectorVersion;
             toMerge.push(this._localCssSelectors);
             this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
+            for (let keyframe in application.keyframes) {
+                this._keyframes[keyframe] = application.keyframes[keyframe];
+            }
         }
 
         if (toMerge.length > 0) {
