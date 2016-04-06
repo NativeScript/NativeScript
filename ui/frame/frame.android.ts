@@ -7,7 +7,6 @@ import {View} from "ui/core/view";
 import {Observable} from "data/observable";
 import * as application from "application";
 import * as types from "utils/types";
-import * as utils from "utils/utils";
 
 global.moduleMerge(frameCommon, exports);
 
