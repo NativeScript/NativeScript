@@ -7,7 +7,6 @@ import {View} from "ui/core/view";
 import {Observable} from "data/observable";
 import * as application from "application";
 import * as types from "utils/types";
-import * as utils from "utils/utils";
 
 global.moduleMerge(frameCommon, exports);
 
@@ -19,6 +18,7 @@ var IS_BACK = "_isBack";
 var NAV_DEPTH = "_navDepth";
 var CLEARING_HISTORY = "_clearingHistory";
 var FRAMEID = "_frameId";
+var FRAGMENT = "_FRAGMENT";
 
 var navDepth = -1;
 
@@ -196,6 +196,9 @@ export class Frame extends frameCommon.Frame {
 
         newFragment.frame = this;
         newFragment.entry = backstackEntry;
+
+        // Cahce newFragment at backstackEntry instance so that it cannot die while backstackEntry is alive.
+        backstackEntry[FRAGMENT] = newFragment;
 
         backstackEntry[BACKSTACK_TAG] = newFragmentTag;
         backstackEntry[NAV_DEPTH] = navDepth;
@@ -664,7 +667,7 @@ class FragmentClass extends android.app.Fragment {
     public onDestroy(): void {
         trace.write(`${this.getTag()}.onDestroy()`, trace.categories.NativeLifecycle);
         super.onDestroy();
-        utils.GC();
+        this.entry[FRAGMENT] = undefined;
     }
 }
 
