@@ -28,6 +28,7 @@ export var appSelectors: Array<cssSelector.CssSelector> = [];
 export var additionalSelectors: Array<cssSelector.CssSelector> = [];
 export var cssSelectors: Array<cssSelector.CssSelector> = [];
 export var cssSelectorVersion: number = 0;
+export var keyframes: any = {};
 
 export var resources: any = {};
 
@@ -82,5 +83,5 @@ export function parseCss(cssText: string, cssFileName?: string): Array<cssSelect
     if (!styleScope) {
         styleScope = require("ui/styling/style-scope");
     }
-    return styleScope.StyleScope.createSelectorsFromCss(cssText, cssFileName);
+    return styleScope.StyleScope.createSelectorsFromCss(cssText, cssFileName, keyframes);
 }

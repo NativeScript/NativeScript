@@ -130,6 +130,7 @@ declare module "application" {
      */
     export var cssSelectors: Array<cssSelector.CssSelector>;
     export var cssSelectorVersion: number;
+    export var keyframes: any;
     export function parseCss(cssText: string, cssFileName?: string): Array<cssSelector.CssSelector>;
     export function mergeCssSelectors(module: any): void;
     //@endprivate
