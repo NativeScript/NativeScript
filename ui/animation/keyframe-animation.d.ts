@@ -87,6 +87,11 @@ import view = require("ui/core/view");
         public play: (view: view.View) => Promise<void>;
 
         /**
+         * Cancels a playing animation.
+         */
+        public cancel: () => void;
+
+        /**
          * Creates a keyframe animation from animation definition.
          */
         public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo, valueSourceModifier: number);

@@ -9,6 +9,7 @@ import enums = require("ui/enums");
 import utils = require("utils/utils");
 import color = require("color");
 import observable = require("data/observable");
+import keyframeAnimationModule = require("ui/animation/keyframe-animation");
 import {PropertyMetadata, ProxyObject} from "ui/core/proxy";
 import {PropertyMetadataSettings, PropertyChangeData, Property, ValueSource, PropertyMetadata as doPropertyMetadata} from "ui/core/dependency-observable";
 import {registerSpecialProperty} from "ui/builder/special-properties";
@@ -173,6 +174,8 @@ export class View extends ProxyObject implements definition.View {
     private _requestedVisualState: string;
     private _isLoaded: boolean;
     private _isLayoutValid: boolean = false;
+
+    private _registeredAnimations: Array<keyframeAnimationModule.KeyframeAnimation>;
 
     public _domId: number;
     public _isAddedToNativeVisualTree = false;
@@ -1170,12 +1173,36 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public createAnimation(animation: any): any {
-        var animationModule: typeof animModule = require("ui/animation");
-        var that = this;
+        let animationModule: typeof animModule = require("ui/animation");
+        let that = this;
         animation.target = that;
         return new animationModule.Animation([animation]);
     }
 
+    public _registerAnimation(animation: keyframeAnimationModule.KeyframeAnimation) {
+        if (this._registeredAnimations === undefined) {
+            this._registeredAnimations = new Array<keyframeAnimationModule.KeyframeAnimation>();
+        }
+        this._registeredAnimations.push(animation);
+    }
+
+    public _unregisterAnimation(animation: keyframeAnimationModule.KeyframeAnimation) {
+        if (this._registeredAnimations) {
+            let index = this._registeredAnimations.indexOf(animation);
+            if (index >= 0) {
+                this._registeredAnimations.splice(index, 1);
+            }
+        }
+    }
+
+    public _unregisterAllAnimations() {
+        if (this._registeredAnimations) {
+            for (let animation of this._registeredAnimations) {
+                animation.cancel();
+            }
+        }
+    }
+    
     public toString(): string {
         var str = this.typeName;
         if (this.id) {

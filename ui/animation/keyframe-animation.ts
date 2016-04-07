@@ -1,4 +1,5 @@
 import definition = require("ui/animation/keyframe-animation");
+import animationModule = require("ui/animation");
 import view = require("ui/core/view");
 import enums = require("ui/enums");
 import style = require("ui/styling/style");
@@ -34,6 +35,7 @@ export class KeyframeAnimation {
     private _reject;
     private _isPlaying: boolean;
     private _isForwards: boolean;
+    private _currentAnimation: animationModule.Animation;
 
     public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo, valueSourceModifier: number) {
         let animations = new Array<Object>();
@@ -96,6 +98,16 @@ export class KeyframeAnimation {
 
     public get isPlaying(): boolean {
         return this._isPlaying;
+    }
+
+    public cancel() {
+        if (this._isPlaying) {
+            if (this._currentAnimation && this._currentAnimation.isPlaying) {
+                this._currentAnimation.cancel();
+            }
+            this._isPlaying = false;
+            this._rejectAnimationFinishedPromise();
+        }
     }
 
     public play(view: view.View): Promise<void> {
@@ -178,19 +190,25 @@ export class KeyframeAnimation {
             }
         }
         else {
-            view.animate(this.animations[index]).then(() => {
+            let animationDef = this.animations[index];
+            (<any>animationDef).target = view;
+            let animation = new animationModule.Animation([animationDef]);
+            animation.play().then(() => {
                 this.animate(view, index + 1, iterations);
             });
+            this._currentAnimation = animation;
         }
     }
 
     public _resolveAnimationFinishedPromise() {
         this._isPlaying = false;
+        this._currentAnimation = undefined;
         this._resolve();
     }
 
     public _rejectAnimationFinishedPromise() {
         this._isPlaying = false;
+        this._currentAnimation = undefined;
         this._reject(new Error("Animation cancelled."));
     }
 }
