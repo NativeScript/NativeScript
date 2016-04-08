@@ -6,6 +6,7 @@ declare module "ui/core/view" {
     import color = require("color");
     import observable = require("data/observable");
     import animation = require("ui/animation");
+    import keyframeAnimationModule = require("ui/animation/keyframe-animation");
 
     /**
      * Gets a child view by id.
@@ -573,6 +574,10 @@ declare module "ui/core/view" {
         _isInheritedChange(): boolean;
         _domId: number;
         _cssClasses: Array<string>;
+
+        _registerAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
+        _unregisterAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
+        _unregisterAllAnimations();
 
         _isAddedToNativeVisualTree: boolean;
 

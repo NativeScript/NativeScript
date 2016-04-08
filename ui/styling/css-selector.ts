@@ -90,9 +90,12 @@ export class CssSelector {
         });
         if (this.animations && view.isLoaded) {
             for (let animationInfo of this.animations) {
-                let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo, modifier);
-                if (realAnimation) {
-                    realAnimation.play(view);
+                let animation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo, modifier);
+                if (animation) {
+                    view._registerAnimation(animation);
+                    animation.play(view)
+                        .then(() => { view._unregisterAnimation(animation);  })
+                        .catch((e) => { view._unregisterAnimation(animation); });
                 }
             }
         }

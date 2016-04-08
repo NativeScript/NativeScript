@@ -15,14 +15,28 @@ let FLT_MAX = 340282346638528859811704183484516925440.000000;
 
 declare var CASpringAnimation:any;
 
-class AnimationInfo
-{
+class AnimationInfo {
     public propertyNameToAnimate: string;
     public fromValue: any;
     public toValue: any;
     public duration: number;
     public repeatCount: number;
     public delay: number;
+}
+
+interface PropertyAnimationInfo extends common.PropertyAnimation {
+    _propertyResetCallback?: any;
+    _originalValue?: any;
+}
+
+interface AnimationDefinitionInternal extends definition.AnimationDefinition {
+    valueSource: number;
+}
+
+interface IOSView extends viewModule.View {
+    _suspendPresentationLayerUpdates();
+    _resumePresentationLayerUpdates();
+    _isPresentationLayerUpdateSuspeneded();
 }
 
 class AnimationDelegateImpl extends NSObject {
@@ -42,76 +56,44 @@ class AnimationDelegateImpl extends NSObject {
     }
 
     animationDidStart(anim: CAAnimation): void {
-       let value = this._propertyAnimation.value;
+        let value = this._propertyAnimation.value;
+        let valueSource = this._valueSource || dependencyObservable.ValueSource.Local;
+        let targetStyle = this._propertyAnimation.target.style;
 
-       (<any>this._propertyAnimation.target)._suspendPresentationLayerUpdates();
+        (<IOSView>this._propertyAnimation.target)._suspendPresentationLayerUpdates();
 
-       if (this._valueSource !== undefined) {
-           let targetStyle = this._propertyAnimation.target.style;
-           switch (this._propertyAnimation.property) {
+        switch (this._propertyAnimation.property) {
             case common.Properties.backgroundColor:
-                targetStyle._setValue(style.backgroundColorProperty, value, this._valueSource);
+                targetStyle._setValue(style.backgroundColorProperty, value, valueSource);
                 break;
             case common.Properties.opacity:
-                targetStyle._setValue(style.opacityProperty, value, this._valueSource);
+                targetStyle._setValue(style.opacityProperty, value, valueSource);
                 break;
             case common.Properties.rotate:
-                targetStyle._setValue(style.rotateProperty, value, this._valueSource);
+                targetStyle._setValue(style.rotateProperty, value, valueSource);
                 break;
             case common.Properties.translate:
-                targetStyle._setValue(style.translateXProperty, value.x, this._valueSource);
-                targetStyle._setValue(style.translateYProperty, value.y, this._valueSource);
+                targetStyle._setValue(style.translateXProperty, value.x, valueSource);
+                targetStyle._setValue(style.translateYProperty, value.y, valueSource);
                 break;
             case common.Properties.scale:
-                targetStyle._setValue(style.scaleXProperty, value.x, this._valueSource);
-                targetStyle._setValue(style.scaleYProperty, value.y, this._valueSource);
+                targetStyle._setValue(style.scaleXProperty, value.x, valueSource);
+                targetStyle._setValue(style.scaleYProperty, value.y, valueSource);
                 break;
             case _transform:
                 if (value[common.Properties.translate] !== undefined) {
-                    targetStyle._setValue(style.translateXProperty, value[common.Properties.translate].x, this._valueSource);
-                    targetStyle._setValue(style.translateYProperty, value[common.Properties.translate].y, this._valueSource);
+                    targetStyle._setValue(style.translateXProperty, value[common.Properties.translate].x, valueSource);
+                    targetStyle._setValue(style.translateYProperty, value[common.Properties.translate].y, valueSource);
                 }
                 if (value[common.Properties.scale] !== undefined) {
-                    targetStyle._setValue(style.scaleXProperty, value[common.Properties.scale].x, this._valueSource);
-                    targetStyle._setValue(style.scaleYProperty, value[common.Properties.scale].y, this._valueSource);
+                    targetStyle._setValue(style.scaleXProperty, value[common.Properties.scale].x, valueSource);
+                    targetStyle._setValue(style.scaleYProperty, value[common.Properties.scale].y, valueSource);
                 }
                 break;
-            }
-       }
-       else {
-             switch (this._propertyAnimation.property) {
-            case common.Properties.backgroundColor:
-                this._propertyAnimation.target.backgroundColor = value;
-                break;
-            case common.Properties.opacity:
-                this._propertyAnimation.target.opacity = value;
-                break;
-            case common.Properties.rotate:
-                this._propertyAnimation.target.rotate = value;
-                break;
-            case common.Properties.translate:
-                this._propertyAnimation.target.translateX = value.x;
-                this._propertyAnimation.target.translateY = value.y;
-                break;
-            case common.Properties.scale:
-                this._propertyAnimation.target.scaleX = value.x;
-                this._propertyAnimation.target.scaleY = value.y;
-                break;
-            case _transform:
-                if (value[common.Properties.translate] !== undefined) {
-                    this._propertyAnimation.target.translateX = value[common.Properties.translate].x;
-                    this._propertyAnimation.target.translateY = value[common.Properties.translate].y;
-                }
-                if (value[common.Properties.scale] !== undefined) {
-                    this._propertyAnimation.target.scaleX = value[common.Properties.scale].x;
-                    this._propertyAnimation.target.scaleY = value[common.Properties.scale].y;
-                }
-                break;
-            }
-       }
+        }
 
-       (<any>this._propertyAnimation.target)._resumePresentationLayerUpdates();
-   }
+        (<IOSView>this._propertyAnimation.target)._resumePresentationLayerUpdates();
+    }
 
     public animationDidStopFinished(anim: CAAnimation, finished: boolean): void {
         if (this._finishedCallback) {
@@ -127,7 +109,7 @@ export class Animation extends common.Animation implements definition.Animation 
     private _iOSAnimationFunction: Function;
     private _finishedAnimations: number;
     private _cancelledAnimations: number;
-    private _mergedPropertyAnimations: Array<common.PropertyAnimation>;
+    private _mergedPropertyAnimations: Array<PropertyAnimationInfo>;
     private _valueSource: number;
 
     public play(): definition.AnimationPromise {
@@ -144,18 +126,19 @@ export class Animation extends common.Animation implements definition.Animation 
         let i = 0;
         let length = this._mergedPropertyAnimations.length;
         for (; i < length; i++) {
-            (<UIView>this._mergedPropertyAnimations[i].target._nativeView).layer.removeAllAnimations();
-            if ((<any>this._mergedPropertyAnimations[i])._propertyResetCallback) {
-               (<any>this._mergedPropertyAnimations[i])._propertyResetCallback((<any>this._mergedPropertyAnimations[i])._originalValue);
+            let propertyAnimation = this._mergedPropertyAnimations[i];
+            propertyAnimation.target._nativeView.layer.removeAllAnimations();
+            if (propertyAnimation._propertyResetCallback) {
+               propertyAnimation._propertyResetCallback(propertyAnimation._originalValue, this._valueSource);
             }
         }
     }
 
-    constructor(animationDefinitions: Array<definition.AnimationDefinition>, playSequentially?: boolean) {
+    constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
         super(animationDefinitions, playSequentially);
 
-        if (animationDefinitions.length > 0 && (<any>animationDefinitions[0]).valueSource !== undefined) {
-            this._valueSource = (<any>animationDefinitions[0]).valueSource;
+        if (animationDefinitions.length > 0 && animationDefinitions[0].valueSource !== undefined) {
+            this._valueSource = animationDefinitions[0].valueSource;
         }
 
         if (!playSequentially) {
@@ -222,7 +205,7 @@ export class Animation extends common.Animation implements definition.Animation 
        }
     }
 
-    private static _getNativeAnimationArguments(animation: common.PropertyAnimation, valueSource: number): AnimationInfo {
+    private static _getNativeAnimationArguments(animation: PropertyAnimationInfo, valueSource: number): AnimationInfo {
 
         let nativeView = <UIView>animation.target._nativeView;
         let presentationLayer = nativeView.layer.presentationLayer();
@@ -235,8 +218,10 @@ export class Animation extends common.Animation implements definition.Animation 
 
         switch (animation.property) {
             case common.Properties.backgroundColor:
-                (<any>animation)._originalValue = animation.target.backgroundColor;
-                (<any>animation)._propertyResetCallback = (value) => { animation.target.backgroundColor = value; };
+                animation._originalValue = animation.target.backgroundColor;
+                animation._propertyResetCallback = (value, valueSource) => {
+                     animation.target._setValue(style.backgroundColorProperty, value, valueSource);
+                };
                 if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = presentationLayer.backgroundColor;
                 }
@@ -250,8 +235,10 @@ export class Animation extends common.Animation implements definition.Animation 
                 value = value.CGColor;
                 break;
             case common.Properties.opacity:
-                (<any>animation)._originalValue = animation.target.opacity;
-                (<any>animation)._propertyResetCallback = (value) => { animation.target.opacity = value; };
+                animation._originalValue = animation.target.opacity;
+                animation._propertyResetCallback = (value, valueSource) => {
+                    animation.target._setValue(style.opacityProperty, value, valueSource);
+                };
                 if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = presentationLayer.opacity;
                 }
@@ -260,8 +247,10 @@ export class Animation extends common.Animation implements definition.Animation 
                 }
                 break;
             case common.Properties.rotate:
-                (<any>animation)._originalValue = animation.target.rotate;
-                (<any>animation)._propertyResetCallback = (value) => { animation.target.rotate = value; };
+                animation._originalValue = animation.target.rotate;
+                animation._propertyResetCallback = (value, valueSource) => {
+                     animation.target._setValue(style.rotateProperty, value, valueSource);
+                };
                 propertyNameToAnimate = "transform.rotation";
                 if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = presentationLayer.valueForKeyPath("transform.rotation");
@@ -276,8 +265,11 @@ export class Animation extends common.Animation implements definition.Animation 
                 }
                 break;
             case common.Properties.translate:
-                (<any>animation)._originalValue = { x:animation.target.translateX, y:animation.target.translateY };
-                (<any>animation)._propertyResetCallback = (value) => { animation.target.translateX = value.x; animation.target.translateY = value.y; };
+                animation._originalValue = { x: animation.target.translateX, y: animation.target.translateY };
+                animation._propertyResetCallback = (value, valueSource) => {
+                    animation.target._setValue(style.translateXProperty, value.x, valueSource);
+                    animation.target._setValue(style.translateYProperty, value.y, valueSource);
+                };
                 propertyNameToAnimate = "transform";
                 if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
@@ -288,8 +280,11 @@ export class Animation extends common.Animation implements definition.Animation 
                 value = NSValue.valueWithCATransform3D(CATransform3DTranslate(nativeView.layer.transform, value.x, value.y, 0));
                 break;
             case common.Properties.scale:
-                (<any>animation)._originalValue = { x:animation.target.scaleX, y:animation.target.scaleY };
-                (<any>animation)._propertyResetCallback = (value) => { animation.target.scaleX = value.x; animation.target.scaleY = value.y; };
+                animation._originalValue = { x: animation.target.scaleX, y: animation.target.scaleY };
+                animation._propertyResetCallback = (value, valueSource) => { 
+                    animation.target._setValue(style.scaleXProperty, value.x, valueSource);
+                    animation.target._setValue(style.scaleYProperty, value.y, valueSource);
+                };
                 propertyNameToAnimate = "transform";
                 if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
                   originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
@@ -306,13 +301,13 @@ export class Animation extends common.Animation implements definition.Animation 
                 else {
                   originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
                 }
-                (<any>animation)._originalValue = { xs:animation.target.scaleX, ys:animation.target.scaleY,
-                                                    xt:animation.target.translateX, yt:animation.target.translateY };
-                (<any>animation)._propertyResetCallback = (value) => {
-                     animation.target.translateX = value.xt;
-                     animation.target.translateY = value.yt;
-                     animation.target.scaleX = value.xs;
-                     animation.target.scaleY = value.ys;
+                animation._originalValue = { xs: animation.target.scaleX, ys: animation.target.scaleY,
+                                                    xt: animation.target.translateX, yt: animation.target.translateY };
+                animation._propertyResetCallback = (value, valueSource) => {
+                     animation.target._setValue(style.translateXProperty, value.xt, valueSource);
+                     animation.target._setValue(style.translateYProperty, value.yt, valueSource);
+                     animation.target._setValue(style.scaleXProperty, value.xs, valueSource);
+                     animation.target._setValue(style.scaleYProperty, value.ys, valueSource);
                 };
                 propertyNameToAnimate = "transform";
                 value = NSValue.valueWithCATransform3D(Animation._createNativeAffineTransform(animation));
@@ -385,7 +380,7 @@ export class Animation extends common.Animation implements definition.Animation 
         }
     }
 
-    private static _createNativeSpringAnimation(propertyAnimations: Array<common.PropertyAnimation>, index: number, playSequentially: boolean, args: AnimationInfo, animation: common.PropertyAnimation, valueSource: number, finishedCallback: (cancelled?: boolean) => void) {
+    private static _createNativeSpringAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimationInfo, valueSource: number, finishedCallback: (cancelled?: boolean) => void) {
 
         let nativeView = <UIView>animation.target._nativeView;
 
@@ -424,9 +419,9 @@ export class Animation extends common.Animation implements definition.Animation 
                        nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
                        break;
                    case _transform:
-                       (<any>animation)._originalValue = nativeView.layer.transform;
+                       animation._originalValue = nativeView.layer.transform;
                        nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
-                       (<any>animation)._propertyResetCallback = function (value) {
+                       animation._propertyResetCallback = function (value) {
                           nativeView.layer.transform = value;
                        }
                        break;
@@ -445,8 +440,8 @@ export class Animation extends common.Animation implements definition.Animation 
                 }
             }
             else {
-                if ((<any>animation)._propertyResetCallback) {
-                    (<any>animation)._propertyResetCallback((<any>animation)._originalValue);
+                if (animation._propertyResetCallback) {
+                    animation._propertyResetCallback(animation._originalValue);
                 }
             }
             if (finishedCallback) {
@@ -461,7 +456,7 @@ export class Animation extends common.Animation implements definition.Animation 
 
     private static _createNativeAffineTransform(animation: common.PropertyAnimation): CATransform3D {
         let value = animation.value;
-        let result:CATransform3D = CATransform3DIdentity;
+        let result: CATransform3D = CATransform3DIdentity;
 
         if (value[common.Properties.translate] !== undefined) {
             let x = value[common.Properties.translate].x;

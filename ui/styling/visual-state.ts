@@ -83,6 +83,8 @@ function resetProperties(view: viewModule.View, oldState: VisualState, newState:
         }
     }
 
+    view._unregisterAllAnimations();
+
     for (let selector of oldState.animatedSelectors) {
         for (let animationInfo of selector.animations) {
             for (let keyframe of animationInfo.keyframes) {
