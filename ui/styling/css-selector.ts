@@ -24,7 +24,7 @@ export class CssSelector {
     constructor(expression: string, declarations: cssParser.Declaration[]) {
         if (expression) {
             let leftSquareBracketIndex = expression.indexOf(LSBRACKET);
-            if (leftSquareBracketIndex > 0) {
+            if (leftSquareBracketIndex >= 0) {
                 // extracts what is inside square brackets ([target = 'test'] will extract "target = 'test'")
                 let paramsRegex = /\[\s*(.*)\s*\]/;
                 let attrParams = paramsRegex.exec(expression);

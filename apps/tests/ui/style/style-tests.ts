@@ -1513,6 +1513,19 @@ export function test_star_attr_selector_incorrect_syntax() {
     }
     helper.buildUIAndRunTest(testButton, testFunc, testCss);
 }
+
+export function test_alone_attr_selector() {
+    let testButton = new buttonModule.Button();
+    testButton["testAttr"] = "flow";
+    
+    let testCss = "[testAttr*='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
+    
+    let testFunc = function (views: Array<viewModule.View>) {
+        // style from correct type css should be applied
+        helper.assertViewBackgroundColor(testButton, "#00FF00");
+    }
+    helper.buildUIAndRunTest(testButton, testFunc, testCss);
+}
 // <snippet module="ui/styling" title="styling">
 // For information and example how to use style properties please refer to special [**Styling**](../../../styling.md) topic. 
 // </snippet>
