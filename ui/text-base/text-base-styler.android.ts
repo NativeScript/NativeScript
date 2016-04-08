@@ -158,38 +158,9 @@ export class TextBaseStyler implements style.Styler {
             TextBaseStyler.resetLetterSpacingProperty,
             TextBaseStyler.getLetterSpacingProperty), "TextBase");
 
-        // Register the same stylers for Button.
-        // It also derives from TextView but is not under TextBase in our View hierarchy.
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setColorProperty,
-            TextBaseStyler.resetColorProperty,
-            TextBaseStyler.getNativeColorValue), "Button");
-
-        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setFontInternalProperty,
-            TextBaseStyler.resetFontInternalProperty,
-            TextBaseStyler.getNativeFontInternalValue), "Button");
-
-        style.registerHandler(style.textAlignmentProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextAlignmentProperty,
-            TextBaseStyler.resetTextAlignmentProperty,
-            TextBaseStyler.getNativeTextAlignmentValue), "Button");
-
-        style.registerHandler(style.textDecorationProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextDecorationProperty,
-            TextBaseStyler.resetTextDecorationProperty), "Button");
-
-        style.registerHandler(style.textTransformProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextTransformProperty,
-            TextBaseStyler.resetTextTransformProperty), "Button");
-
-        style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setWhiteSpaceProperty,
-            TextBaseStyler.resetWhiteSpaceProperty), "Button");
-
-        style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setLetterSpacingProperty,
-            TextBaseStyler.resetLetterSpacingProperty,
-            TextBaseStyler.getLetterSpacingProperty), "Button");
+        // !!! IMPORTANT !!! Button registrations were moved to button.android.ts to make sure they 
+        // are executed when there is a Button on the page: https://github.com/NativeScript/NativeScript/issues/1902
+        // If there is no TextBase on the Page, the TextBaseStyler.registerHandlers
+        // method was never called because the file it is called from was never required.
     }
 }
