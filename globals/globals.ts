@@ -29,9 +29,14 @@ global.loadModule = function(name: string): any {
     }
 }
 
-global.zonedCallback = function(callback: Function): Function {
+global.zonedCallback = function (callback: Function): Function {
     if (global.zone) {
+        // Zone v0.5.* style callback wrapping
         return global.zone.bind(callback);
+    }
+    if (global.Zone) {
+        // Zone v0.6.* style callback wrapping
+        return global.Zone.current.wrap(callback);
     } else {
         return callback;
     }
