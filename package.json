@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/NativeScript/android-widgets/issues"
   },
-  "homepage": "https://github.com/NativeScript/android-widgets#readme"
+  "homepage": "https://github.com/NativeScript/android-widgets#readme",
+  "nativescript": {
+    "platforms": {
+      "ios": "2.0.0",
+      "android": "2.0.0"
+    }
+  }
 }
