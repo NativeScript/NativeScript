@@ -14,6 +14,7 @@ module.exports = {
             emuAvdName: grunt.option("avd"),
             outFile: grunt.option("logFilePath"),
             runtimePath: grunt.option("runtimePath"),
+            runtimeVersion: grunt.option("runtimeVersion"),
             showEmu: grunt.option("showEmu"),
             runAppOnly: grunt.option("runAppOnly"),
             pathToApp: grunt.option("pathToApp")
@@ -45,6 +46,7 @@ module.exports = {
             emuAvdName: args.emuAvdName,
             outFile: args.outFile || "./TestRunResult.txt",
             frameworkArgument: args.runtimePath ? " --frameworkPath=" + args.runtimePath : "",
+            runtimeVersionArgument: args.runtimeVersion ? "@" + args.runtimeVersion : "",
             showEmu: args.showEmu || false,
             runAppOnly: args.runAppOnly || false,
 
@@ -238,7 +240,7 @@ module.exports = {
                     }
                 },
                 addPlatform: {
-                    command: "tns platform add " + localCfg.platform.toLowerCase() + " " + localCfg.frameworkArgument,
+                    command: "tns platform add " + localCfg.platform.toLowerCase() + localCfg.runtimeVersionArgument + " " + localCfg.frameworkArgument,
                     options: {
                         execOptions: {
                             maxBuffer: Infinity,
@@ -286,7 +288,7 @@ module.exports = {
         ]);
 
         grunt.registerTask("cleanup", [
-            getPlatformSpecificTask("exec:kill{platform}Emulator"),
+//            getPlatformSpecificTask("exec:kill{platform}Emulator"),
             "clean:workingDir"
         ]);
 
@@ -310,9 +312,10 @@ module.exports = {
             "buildOnly"
 
         ]);
+        grunt.registerTask("buildOnlyTestsApp", ["buildTestsApp"]);
 
         grunt.registerTask("runOnly", [
-            getPlatformSpecificTask("doPreUninstallApp{platform}"),
+//            getPlatformSpecificTask("doPreUninstallApp{platform}"),
 
             getPlatformSpecificTask("exec:uninstallExisting{platform}App"),
             getPlatformSpecificTask("exec:installNew{platform}App"),
@@ -321,12 +324,14 @@ module.exports = {
         ]);
 
         grunt.registerTask("runApp", [
-            "cleanup",
-            getPlatformSpecificTask("startEmulator{platform}"),
+//            "cleanup",
+//            getPlatformSpecificTask("startEmulator{platform}"),
             "runOnly",
             "cleanup"
 
         ]);
+
+        grunt.registerTask("runOnlyTestsApp", ["runApp"]);
 
 
         var tasksToExecute = ["runApp"];

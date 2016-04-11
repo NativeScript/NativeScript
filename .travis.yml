@@ -1,10 +1,35 @@
-language: node_js
+sudo: required
+dist: trusty
+language: android
 node_js:
-    4.2.3
+    - 4.2.3
+jdk:
+    - oraclejdk8
+android:
+    components:
+        - platform-tools
+        - tools
+        - build-tools-23.0.3
+        - android-21
+        - android-23
+        - extra-android-support
+        - extra-android-m2repository
+        - sys-img-armeabi-v7a-android-21
+
 before_script:
+    - nvm install 5.10.1
     - npm install -g grunt-cli
     - npm install
     - (cd build/platform-declarations && npm install)
+    - echo no | android create avd --force -n Arm21 -t android-21 -b armeabi-v7a -c 12M
+    - emulator -avd Arm21 -no-skin -no-audio -no-window &
+    - android-wait-for-emulator
 script:
-    - grunt default
-    - (cd build/platform-declarations && grunt)
+    - jdk_switcher use oraclejdk8
+    - grunt default &&
+        (cd build/platform-declarations && grunt) &&
+        echo no | npm install nativescript -g > /dev/null &&
+        grunt buildOnlyTestsApp --platform=Android --modulesPath=./bin/dist/tns-core-modules-2.0.0.tgz --runtimeVersion=next --emuPId=.*emulator.* --avd=Api21 --showEmu=false > /dev/null &&
+        grunt runOnlyTestsApp --platform=Android --modulesPath=./bin/dist/tns-core-modules-2.0.0.tgz --emuPId=.*emulator.* --avd=Api21 --showEmu=false
+
+    - node ./build/travis-scripts/check-testrun-broken.js
