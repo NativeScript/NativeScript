@@ -142,6 +142,9 @@ export class TextField extends common.TextField {
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;
+        
+        this.style._updateTextDecoration();
+        this.style._updateTextTransform();
     }
 
     public onUnloaded() {

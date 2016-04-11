@@ -1,5 +1,6 @@
 ﻿<Page >
   <StackLayout>
+    <Button id="ChangeText" automationText="Change text" text="Change text" tap="changeTextButonTap" />
     <Button id="Change" automationText="Change" text="Change" tap="butonTap" />
     <Label id="Label" automationText="Label" text="label Label" style.textTransform="none" />
     <Button id="Button" automationText="Button" text="button Button" style.textTransform="none" />

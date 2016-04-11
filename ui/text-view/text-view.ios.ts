@@ -83,6 +83,9 @@ export class TextView extends common.TextView {
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;
+        
+        this.style._updateTextDecoration();
+        this.style._updateTextTransform();
     }
 
     public onUnloaded() {
