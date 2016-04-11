@@ -115,8 +115,8 @@ module.exports = {
                 },
                 addAndroidPermissions: {
                     src: "AndroidManifest.xml",
-                    dest: localCfg.applicationDir + "/platforms/android/src/main/",
-                    cwd: localCfg.applicationDir + "/platforms/android/src/main",
+                    dest: localCfg.applicationDir + "/app/App_Resources/Android/",
+                    cwd: localCfg.applicationDir + "/app/App_Resources/Android",
                     expand: true,
                     options: {
                         process: function(content, srcPath) {
