@@ -579,4 +579,11 @@ declare module "application" {
          */
         removeNotificationObserver(observer: any, notificationName: string): void;
     }
+    
+    /* tslint:disable */
+    export interface RootViewControllerImpl {
+
+        contentController: any;
+
+    }
 }
