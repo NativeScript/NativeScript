@@ -25,16 +25,20 @@ var textProperty = new dependencyObservable.Property(
     "text",
     "Button",
     new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-    );
+);
 
 var formattedTextProperty = new dependencyObservable.Property(
     "formattedText",
     "Button",
     new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-    );
+);
 
 function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var button = <Button>data.object;
+
+    button.style._updateTextDecoration();
+    button.style._updateTextTransform();
+
     button._onTextPropertyChanged(data);
 }
 
@@ -63,6 +67,9 @@ export class Button extends view.View implements definition.Button {
         if (this.formattedText) {
             this.formattedText.updateSpansBindingContext(newValue);
         }
+
+        this.style._updateTextDecoration();
+        this.style._updateTextTransform();
     }
 
     get text(): string {

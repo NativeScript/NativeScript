@@ -18,16 +18,20 @@ var textProperty = new dependencyObservable.Property(
     "text",
     "TextBase",
     new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-    );
+);
 
 var formattedTextProperty = new dependencyObservable.Property(
     "formattedText",
     "TextBase",
     new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-    );
+);
 
 function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var textBase = <TextBase>data.object;
+
+    textBase.style._updateTextTransform();
+    textBase.style._updateTextDecoration();
+
     textBase._onTextPropertyChanged(data);
 }
 
@@ -53,7 +57,7 @@ export class TextBase extends view.View implements definition.TextBase, formatte
         if (this.formattedText) {
             this.formattedText.updateSpansBindingContext(newValue);
         }
-        
+
         this.style._updateTextTransform();
         this.style._updateTextDecoration();
     }
