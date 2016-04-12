@@ -88,7 +88,7 @@ export class CssSelector {
                 }
             }
         });
-        if (this.animations && view.isLoaded) {
+        if (this.animations && view.isLoaded && view._nativeView !== undefined) {
             for (let animationInfo of this.animations) {
                 let animation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo, modifier);
                 if (animation) {

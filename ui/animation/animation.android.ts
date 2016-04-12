@@ -32,9 +32,9 @@ export class Animation extends common.Animation implements definition.Animation 
     private _propertyUpdateCallbacks: Array<Function>;
     private _propertyResetCallbacks: Array<Function>;
     private _valueSource: number;
-    
+
     public play(): definition.AnimationPromise {
-        var animationFinishedPromise = super.play();
+        let animationFinishedPromise = super.play();
 
         let i: number;
         let length: number;
@@ -58,11 +58,13 @@ export class Animation extends common.Animation implements definition.Animation 
 
         this._animatorSet = new android.animation.AnimatorSet();
         this._animatorSet.addListener(this._animatorListener);
-        if (this._playSequentially) {
-            this._animatorSet.playSequentially(this._nativeAnimatorsArray);
-        }
-        else {
-            this._animatorSet.playTogether(this._nativeAnimatorsArray);
+        if (length > 0) {
+            if (this._playSequentially) {
+                this._animatorSet.playSequentially(this._nativeAnimatorsArray);
+            }
+            else {
+                this._animatorSet.playTogether(this._nativeAnimatorsArray);
+            }
         }
 
         trace.write("Starting " + this._nativeAnimatorsArray.length + " animations " + (this._playSequentially ? "sequentially." : "together."), trace.categories.Animation);
@@ -127,6 +129,11 @@ export class Animation extends common.Animation implements definition.Animation 
     }
 
     private _createAnimators(propertyAnimation: common.PropertyAnimation): void {
+
+        if (!propertyAnimation.target._nativeView) {
+            return;
+        }
+
         trace.write("Creating ObjectAnimator(s) for animation: " + common.Animation._getAnimationInfo(propertyAnimation) + "...", trace.categories.Animation);
 
         if (types.isNullOrUndefined(propertyAnimation.target)) {
