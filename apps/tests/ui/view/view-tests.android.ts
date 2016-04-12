@@ -7,7 +7,7 @@ import types = require("utils/types");
 import stack = require("ui/layouts/stack-layout");
 import labelModule = require("ui/label");
 import background = require("ui/styling/background");
-
+import frame = require("ui/frame");
 import trace = require("trace");
 // enable the trace, it is disabled by default
 trace.enable();
@@ -19,12 +19,11 @@ export var test_event_onAttached_IsRaised = function () {
     trace.addEventListener(listener);
 
     var test = function (views: Array<view.View>) {
-        // 4 onAttached calls: page, stack, button, actionBar
-        TKUnit.assertEqual(listener.receivedEvents.length, 4, "onAttached calls");
+        // 2 onAttached calls: stack, button
+        TKUnit.assertEqual(listener.receivedEvents.length, 2, "onAttached calls");
 
-        var i;
-        for (i = 0; i < listener.receivedEvents.length; i++) {
-            TKUnit.assertEqual(listener.receivedEvents[i].sender, views[i]);
+        for (let i = 0; i < listener.receivedEvents.length; i++) {
+            TKUnit.assertEqual(listener.receivedEvents[i].sender, views[i + 1]); // 0 is Page, so start with +1.
             TKUnit.assertEqual(listener.receivedEvents[i].name, "_onAttached");
         }
     }
@@ -57,12 +56,11 @@ export var test_event_onContextChanged_IsRaised_WhenAttached = function () {
     trace.addEventListener(listener);
 
     var test = function (views: Array<view.View>) {
-        // 4 onContextChanged calls: page, stack, button, actionBar
-        TKUnit.assertEqual(listener.receivedEvents.length, 4, "onContextChanged calls");
+        // 2 onContextChanged calls: stack, button
+        TKUnit.assertEqual(listener.receivedEvents.length, 2, "onContextChanged calls");
 
-        var i;
-        for (i = 0; i < listener.receivedEvents.length; i++) {
-            TKUnit.assertEqual(listener.receivedEvents[i].sender, views[i]);
+        for (let i = 0; i < listener.receivedEvents.length; i++) {
+            TKUnit.assertEqual(listener.receivedEvents[i].sender, views[i + 1]); // 0 is Page, so start with +1.
             TKUnit.assertEqual(listener.receivedEvents[i].name, "_onContextChanged");
         }
     }
@@ -104,13 +102,11 @@ export var test_event_onDetached_IsRaised = function () {
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
 
-    // 4 detached calls: page, stack, button, actionBar
-    TKUnit.assertEqual(listener.receivedEvents.length, 4, "onDetached calls");
+    // 2 detached calls: page, stack, button, actionBar
+    TKUnit.assertEqual(listener.receivedEvents.length, 2, "onDetached calls");
 
-    var i
-    var j;
     // _onDetached event is propagated to nested children first
-    for (i = 0, j = listener.receivedEvents.length - 1; i < listener.receivedEvents.length; i++ , j--) {
+    for (let i = 0, j = listener.receivedEvents.length - 1; i < listener.receivedEvents.length; i++ , j--) {
         // check the sender and remove
         var index = cachedViews.indexOf(<view.View>listener.receivedEvents[i].sender);
         TKUnit.assert(index >= 0, "_onDetached called for unknown sender");
@@ -142,41 +138,38 @@ export var test_event_onDetached_IsRaised_WhenRemoved_Dynamically = function () 
 }
 
 export var test_events_onDetachedAndRemovedFromNativeVisualTree_AreRaised_WhenNavigateBack = function () {
-    var onDetachedListener = new Listener("_onDetached");
-    var removeFromNativeVisualTreeListener = new Listener("childInLayoutRemovedFromNativeVisualTree");
+    let onDetachedListener = new Listener("_onDetached");
+    let removeFromNativeVisualTreeListener = new Listener("childInLayoutRemovedFromNativeVisualTree");
 
-    var test = function (views: Array<view.View>) {
-        trace.addEventListener(onDetachedListener);
-        trace.addEventListener(removeFromNativeVisualTreeListener);
-    };
+    let page = frame.topmost().currentPage;
+    let stackLayout = new stack.StackLayout();
+    let btn = new button.Button();
+    stackLayout.addChild(btn);
+    page.content = stackLayout;
 
-    var assert = function (views: Array<view.View>) {
-        // 4 onDetached calls: page, stack, button, actionBar
-        TKUnit.assertEqual(onDetachedListener.receivedEvents.length, 4, "onDetached calls");
+    trace.addEventListener(onDetachedListener);
+    trace.addEventListener(removeFromNativeVisualTreeListener);
 
-        TKUnit.assertEqual(onDetachedListener.receivedEvents[0].name, "_onDetached");
-        TKUnit.assertEqual(onDetachedListener.receivedEvents[0].sender, views[2]); // Button
-        TKUnit.assertEqual(onDetachedListener.receivedEvents[1].sender, views[1]); // Stack
-        TKUnit.assertEqual(onDetachedListener.receivedEvents[2].sender, views[3]); // ActionBar
-        TKUnit.assertEqual(onDetachedListener.receivedEvents[3].sender, views[0]); // Page
+    page.content = null;
 
-        // this is an event fired from CustomLayoutView when a child is removed from the native visual tree
-        // therefore this event is fired for StackLayout and Button (which is inside StackLayout).
-        TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents.length, 3);
-        TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[0].name, "childInLayoutRemovedFromNativeVisualTree");
-        TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[0].sender, views[1]);
+    // 2 onDetached calls: stack, button
+    TKUnit.assertEqual(onDetachedListener.receivedEvents.length, 2, "onDetached calls");
 
-        TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[1].name, "childInLayoutRemovedFromNativeVisualTree");
-        TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[1].sender, views[2]);
+    TKUnit.assertEqual(onDetachedListener.receivedEvents[0].name, "_onDetached");
+    TKUnit.assertEqual(onDetachedListener.receivedEvents[0].sender, btn); // Button
+    TKUnit.assertEqual(onDetachedListener.receivedEvents[1].sender, stackLayout); // stackLayout
 
-        TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[2].name, "childInLayoutRemovedFromNativeVisualTree");
-        TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[2].sender, views[3]);
+    // this is an event fired from CustomLayoutView when a child is removed from the native visual tree
+    // therefore this event is fired for StackLayout and Button (which is inside StackLayout).
+    TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents.length, 2);
+    TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[0].name, "childInLayoutRemovedFromNativeVisualTree");
+    TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[0].sender, stackLayout);
 
-        trace.removeEventListener(onDetachedListener);
-        trace.removeEventListener(removeFromNativeVisualTreeListener);
-    };
+    TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[1].name, "childInLayoutRemovedFromNativeVisualTree");
+    TKUnit.assertEqual(removeFromNativeVisualTreeListener.receivedEvents[1].sender, btn);
 
-    helper.do_PageTest_WithStackLayout_AndButton_NavigatedBack(test, assert);
+    trace.removeEventListener(onDetachedListener);
+    trace.removeEventListener(removeFromNativeVisualTreeListener);
 }
 
 export var test_cachedProperties_Applied_WhenNativeWidged_IsCreated = function () {

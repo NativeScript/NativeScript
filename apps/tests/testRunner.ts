@@ -110,6 +110,7 @@ var testsWithLongDelay = {
     testLoadInvalidUrl: 10000
 }
 
+var duration;
 var running = false;
 var testsQueue = new Array<TestInfo>();
 
@@ -127,7 +128,7 @@ function printRunTestStats() {
 
     for (j = 0; j < allTests.length; j++) {
         let testName = allTests[j].testName;
-        let duration = allTests[j].duration / 1000;
+        let duration = Math.round(allTests[j].duration / 1000);
 
         if (!allTests[j].isPassed) {
             failedTestCount++;
@@ -144,7 +145,7 @@ function printRunTestStats() {
     }
 
 
-    let finalMessage = "=== ALL TESTS COMPLETE === \n" + (allTests.length - failedTestCount) + " OK, " + failedTestCount + " failed" + "\n";
+    let finalMessage = `=== ALL TESTS COMPLETE for ${Math.round(TKUnit.time() - duration)}ms) === \n${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n`;
     TKUnit.write(finalMessage, messageType.info);
     for (j = 0; j < failedTestInfo.length; j++) {
         let failureMessage = failedTestInfo[j];
@@ -210,7 +211,7 @@ export var runAll = function (testSelector?: string) {
 
     var totalSuccess = 0;
     var totalFailed: Array<TKUnit.TestFailure> = [];
-    testsQueue.push(new TestInfo(function () { running = true; }));
+    testsQueue.push(new TestInfo(() => { running = true; duration = TKUnit.time(); }));
     for (var name in allTests) {
         if (singleModuleName && (singleModuleName !== name.toLowerCase())) {
             continue;

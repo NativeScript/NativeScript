@@ -193,7 +193,7 @@ export function assertNotEqual(actual: any, expected: any, message?: string) {
     if (types.isUndefined(actual) && types.isUndefined(expected)) {
         equals = true;
     }
-    else if (!types.isUndefined(actual) && !types.isUndefined(expected)) {
+    else if (!types.isNullOrUndefined(actual) && !types.isNullOrUndefined(expected)) {
         if (types.isFunction(actual.equals)) {
 
             // Use the equals method

@@ -29,7 +29,6 @@ export function setUpModule() {
 }
 
 export function tearDownModule() {
-    helper.goBack();
     testBtn = null;
     testPage = null;
 }

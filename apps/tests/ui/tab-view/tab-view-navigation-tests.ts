@@ -103,19 +103,19 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
         return tabViewPage;
     }
 
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "tab-view-page" }, ASYNC);
-    TKUnit.waitUntilReady(() => { return tabViewIsFullyLoaded(tabView) }, ASYNC);
+    helper.navigateWithHistory(pageFactory);
+    TKUnit.waitUntilReady(() => topFrame.currentPage.id === "tab-view-page", ASYNC);
+    TKUnit.waitUntilReady(() => tabViewIsFullyLoaded(tabView), ASYNC);
 
     // This will navigate to a details page. The wait is inside the method.
     _clickTheFirstButtonInTheListViewNatively(tabView);
     TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "details-page" }, ASYNC);
 
-    helper.goBack();
+    frameModule.goBack();
     TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "tab-view-page" }, ASYNC);
     TKUnit.waitUntilReady(() => { return tabViewIsFullyLoaded(tabView) }, ASYNC);
 
-    helper.goBack();
+    frameModule.goBack();
     TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "mainPage" }, ASYNC);
 
     if (topFrame.android) {
@@ -156,6 +156,7 @@ function tabViewIsFullyLoaded(tabView: TabView): boolean {
 
 function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache: boolean) {
     var topFrame = frameModule.topmost();
+    topFrame.currentPage.id = "mainPage";
 
     var oldChache;
     if (topFrame.android) {
@@ -197,15 +198,19 @@ function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache
         tabView.items[i].view.on("unloaded", createUnloadedFor(i));
     }
 
-    helper.navigate(() => {
-        var detailsPage = new Page();
-        detailsPage.id = "details-page";
-        detailsPage.content = new Label();
+    var detailsPage = new Page();
+    detailsPage.id = "details-page";
+
+    let createFunc = () => {
         return detailsPage;
-    });
+    };
+
+    let entry: frameModule.NavigationEntry = { create: createFunc, animated: false };
+    topFrame.navigate(entry);
+
     TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "details-page" }, ASYNC);
-                
-    helper.goBack();
+
+    topFrame.goBack();
     TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "tab-view-page" }, ASYNC);
     TKUnit.waitUntilReady(() => { return tabViewIsFullyLoaded(tabView) }, ASYNC);
 
@@ -214,12 +219,15 @@ function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack(enablePageCache
         tabView.items[i].view.off("unloaded");
     }
 
-    helper.goBack();
+    topFrame.goBack();
+
     TKUnit.waitUntilReady(() => { return topFrame.currentPage.id === "mainPage" }, ASYNC);
 
     if (topFrame.android) {
         topFrame.android.cachePagesOnNavigate = oldChache;
     }
+
+    topFrame.currentPage.id = null;
 
     TKUnit.arrayAssert(loadedEventsCount, [1, 1]);
     TKUnit.arrayAssert(unloadedEventsCount, [1, 1]);

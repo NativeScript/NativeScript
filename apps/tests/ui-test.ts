@@ -54,7 +54,6 @@ export class UITest<T extends View> implements trace.TraceWriter {
         this._testPage = null;
         this._testView = null;
         trace.removeWriter(this);
-        navHelper.goBack();
     }
 
     public setUp() {        

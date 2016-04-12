@@ -9,8 +9,6 @@ var topmost = frameModule.topmost();
 import labelModule = require("ui/label");
 import pagesModule = require("ui/page");
 
-import TKUnit = require("./TKUnit");
-
 export var ignore_test_DummyTestForSnippetOnly0 = function () {
     // <snippet module="ui/frame" title="frame">
     // ### Navigating to a Module
@@ -57,9 +55,4 @@ export var ignore_test_DummyTestForSnippetOnly3 = function () {
     topmost.goBack();
     // ```
     // </snippet>
-}
-
-export function test_currentEntry() {
-    var moduleName = frameModule.topmost().currentEntry.moduleName;
-    TKUnit.assert(moduleName === "tests/app/mainPage" || moduleName === "app/mainPage", "Expected frameModule.topmost().currentEntry.moduleName to return tests/app/mainPage or app/mainPage but instead returned " + moduleName);
 }

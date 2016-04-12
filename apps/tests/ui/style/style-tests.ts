@@ -150,381 +150,282 @@ export function test_setting_css() {
 
 // Basic selector tests
 export function test_type_selector() {
-    var page: pageModule.Page;
-    var btn: buttonModule.Button;
-    var label: labelModule.Label;
-    var pageFactory = function (): pageModule.Page {
-        page = new pageModule.Page();
+    let page = helper.getCurrentPage();
+    page.color = null;
+    let btn: buttonModule.Button;
+    let label: labelModule.Label;
 
-        // <snippet module="ui/styling" title="styling">
-        // ### Using type selector
-        // ``` JavaScript
-        page.css = "button { color: red; }";
+    // <snippet module="ui/styling" title="styling">
+    // ### Using type selector
+    // ``` JavaScript
+    page.css = "button { background-color: red; }";
 
-        //// Will be styled
-        btn = new buttonModule.Button();
+    //// Will be styled
+    btn = new buttonModule.Button();
 
-        //// Won't be styled
-        label = new labelModule.Label();
-        // ```
-        // </snippet>
+    //// Won't be styled
+    label = new labelModule.Label();
+    // ```
+    // </snippet>
 
-        var stack = new stackModule.StackLayout();
-        page.content = stack;
-        stack.addChild(label);
-        stack.addChild(btn);
-        return page;
-    };
+    let stack = new stackModule.StackLayout();
+    page.content = stack;
+    stack.addChild(label);
+    stack.addChild(btn);
 
-    // Act & Assert
-    helper.navigate(pageFactory);
-
-    helper.assertViewColor(btn, "#FF0000");
-    TKUnit.assert(label.style.color === undefined, "Color should not have a value");
-
-    helper.goBack();
+    TKUnit.assert(btn.backgroundColor, "backgroundColor property not applied correctly.");
+    TKUnit.assertEqual(btn.backgroundColor.hex, "#FF0000", "backgroundColor");
+    TKUnit.assertNull(label.backgroundColor, "backgroundColor should not have a value");
 }
 
 export function test_class_selector() {
-    var page: pageModule.Page;
-    var btnWithClass: buttonModule.Button;
-    var btnWithNoClass: buttonModule.Button;
-    var pageFactory = function (): pageModule.Page {
-        page = new pageModule.Page();
+    let page = helper.getCurrentPage();
+    page.style._resetValue(styling.properties.colorProperty);
+    let btnWithClass: buttonModule.Button;
+    let btnWithNoClass: buttonModule.Button;
 
-        // <snippet module="ui/styling" title="styling">
-        // ### Using class selector
-        // ``` JavaScript
-        page.css = ".test { color: red; }";
+    // <snippet module="ui/styling" title="styling">
+    // ### Using class selector
+    // ``` JavaScript
+    page.css = ".test { color: red; }";
 
-        //// Will be styled
-        btnWithClass = new buttonModule.Button();
-        btnWithClass.className = "test";
+    //// Will be styled
+    btnWithClass = new buttonModule.Button();
+    btnWithClass.className = "test";
 
-        //// Won't be styled
-        btnWithNoClass = new buttonModule.Button();
-        // ```
-        // </snippet>
+    //// Won't be styled
+    btnWithNoClass = new buttonModule.Button();
+    // ```
+    // </snippet>
 
-        var stack = new stackModule.StackLayout();
-        page.content = stack;
-        stack.addChild(btnWithClass);
-        stack.addChild(btnWithNoClass);
-        return page;
-    };
-
-    // Act & Assert
-    helper.navigate(pageFactory);
+    var stack = new stackModule.StackLayout();
+    page.content = stack;
+    stack.addChild(btnWithClass);
+    stack.addChild(btnWithNoClass);
 
     helper.assertViewColor(btnWithClass, "#FF0000");
     TKUnit.assert(btnWithNoClass.style.color === undefined, "Color should not have a value");
-
-    helper.goBack();
 }
 
 export function test_multiple_class_selector() {
-    var page: pageModule.Page;
-    var btnWithClasses: buttonModule.Button;
-    var pageFactory = function (): pageModule.Page {
-        page = new pageModule.Page();
+    let page = helper.getCurrentPage();
+    let btnWithClasses: buttonModule.Button;
 
-        page.css = ".style1 { color: red; } .style2 { background-color: blue } ";
+    page.css = ".style1 { color: red; } .style2 { background-color: blue } ";
 
-        //// Will be styled
-        btnWithClasses = new buttonModule.Button();
-        btnWithClasses.className = "style1 style2";
+    //// Will be styled
+    btnWithClasses = new buttonModule.Button();
+    btnWithClasses.className = "style1 style2";
 
-        var stack = new stackModule.StackLayout();
-        page.content = stack;
-        stack.addChild(btnWithClasses);
-        return page;
-    };
-
-    // Act & Assert
-    helper.navigate(pageFactory);
+    var stack = new stackModule.StackLayout();
+    page.content = stack;
+    stack.addChild(btnWithClasses);
 
     helper.assertViewColor(btnWithClasses, "#FF0000");
     helper.assertViewBackgroundColor(btnWithClasses, "#0000FF");
-
-    helper.goBack();
 }
 
 export function test_id_selector() {
-    var page: pageModule.Page;
-    var btnWithId: buttonModule.Button;
-    var btnWithNoId: buttonModule.Button;
-    var pageFactory = function (): pageModule.Page {
-        page = new pageModule.Page();
+    let page = helper.getCurrentPage();
+    page.style._resetValue(styling.properties.colorProperty);
+    let btnWithId: buttonModule.Button;
+    let btnWithNoId: buttonModule.Button;
 
-        // <snippet module="ui/styling" title="styling">
-        // ### Using id selector
-        // ``` JavaScript
-        page.css = "#myButton { color: red; }";
+    // <snippet module="ui/styling" title="styling">
+    // ### Using id selector
+    // ``` JavaScript
+    page.css = "#myButton { color: red; }";
 
-        //// Will be styled
-        btnWithId = new buttonModule.Button();
-        btnWithId.id = "myButton";
+    //// Will be styled
+    btnWithId = new buttonModule.Button();
+    btnWithId.id = "myButton";
 
-        //// Won't be styled
-        btnWithNoId = new buttonModule.Button();
-        // ```
-        // </snippet>
+    //// Won't be styled
+    btnWithNoId = new buttonModule.Button();
+    // ```
+    // </snippet>
 
-        var stack = new stackModule.StackLayout();
-        page.content = stack;
-        stack.addChild(btnWithId);
-        stack.addChild(btnWithNoId);
-        return page;
-    };
-
-    // Act & Assert
-    helper.navigate(pageFactory);
+    var stack = new stackModule.StackLayout();
+    page.content = stack;
+    stack.addChild(btnWithId);
+    stack.addChild(btnWithNoId);
 
     helper.assertViewColor(btnWithId, "#FF0000");
     TKUnit.assert(btnWithNoId.style.color === undefined, "Color should not have a value");
-
-    helper.goBack();
 }
 
 // State selector tests
 export function test_state_selector() {
-    var page: pageModule.Page;
-    var btn: buttonModule.Button;
-    var pageFactory = function (): pageModule.Page {
-        // Arrange
-        page = new pageModule.Page();
-        var testStack = new stackModule.StackLayout();
-        page.content = testStack;
+    let page = helper.getCurrentPage();
+    page.style._resetValue(styling.properties.colorProperty);
+    let btn: buttonModule.Button;
+    var testStack = new stackModule.StackLayout();
+    page.content = testStack;
 
-        btn = new buttonModule.Button();
-        testStack.addChild(btn);
+    btn = new buttonModule.Button();
+    testStack.addChild(btn);
 
-        page.css = ":pressed { color: red; }";
-        return page;
-    };
-
-    // Act & Assert
-    helper.navigate(pageFactory);
+    page.css = ":pressed { color: red; }";
 
     testButtonPressedStateIsRed(btn);
-
-    helper.goBack();
 }
 
 export function test_type_and_state_selector() {
-    var page: pageModule.Page;
+    let page = helper.getCurrentPage();
+    page.style._resetValue(styling.properties.colorProperty);
     var btn: buttonModule.Button;
-    var pageFactory = function (): pageModule.Page {
-        page = new pageModule.Page();
 
-        // <snippet module="ui/styling" title="styling">
-        // ### Using state selector
-        // ``` JavaScript
-        page.css = "button:pressed { color: red; }";
+    // <snippet module="ui/styling" title="styling">
+    // ### Using state selector
+    // ``` JavaScript
+    page.css = "button:pressed { color: red; }";
 
-        //// Will be red when pressed
-        btn = new buttonModule.Button();
-        // ```
-        // </snippet>
-        var stack = new stackModule.StackLayout();
-        page.content = stack;
-        stack.addChild(btn);
-        return page;
-    };
-
-    // Act & Assert
-    helper.navigate(pageFactory);
+    //// Will be red when pressed
+    btn = new buttonModule.Button();
+    // ```
+    // </snippet>
+    var stack = new stackModule.StackLayout();
+    page.content = stack;
+    stack.addChild(btn);
 
     testButtonPressedStateIsRed(btn);
-
-    helper.goBack();
 }
 
 export function test_class_and_state_selector() {
-    var page: pageModule.Page;
-    var btn: buttonModule.Button;
-    var pageFactory = function (): pageModule.Page {
-        // Arrange
-        page = new pageModule.Page();
-        var testStack = new stackModule.StackLayout();
-        page.content = testStack;
+    let page = helper.getCurrentPage();
+    page.style._resetValue(styling.properties.colorProperty);
 
-        btn = new buttonModule.Button();
-        btn.className = "test"
-        testStack.addChild(btn);
+    let btn = new buttonModule.Button();
+    btn.className = "test"
 
-        page.css = ".test:pressed { color: red; }";
-        return page;
-    };
+    let testStack = new stackModule.StackLayout();
+    page.content = testStack;
+    testStack.addChild(btn);
 
-    // Act & Assert
-    helper.navigate(pageFactory);
-
+    page.css = ".test:pressed { color: red; }";
     testButtonPressedStateIsRed(btn);
-
-    helper.goBack();
 }
 
 export function test_class_and_state_selector_with_multiple_classes() {
-    var page: pageModule.Page;
-    var btn: buttonModule.Button;
-    var pageFactory = function (): pageModule.Page {
-        // Arrange
-        page = new pageModule.Page();
-        var testStack = new stackModule.StackLayout();
-        page.content = testStack;
+    let page = helper.getCurrentPage();
+    page.style._resetValue(styling.properties.colorProperty);
 
-        btn = new buttonModule.Button();
-        btn.className = "test otherClass"
-        testStack.addChild(btn);
+    let btn = new buttonModule.Button();
+    let testStack = new stackModule.StackLayout();
+    page.content = testStack;
 
-        page.css = ".test:pressed { color: red; }";
-        return page;
-    };
+    btn.className = "test otherClass"
+    testStack.addChild(btn);
 
-    // Act & Assert
-    helper.navigate(pageFactory);
+    page.css = ".test:pressed { color: red; }";
 
     testButtonPressedStateIsRed(btn);
-
-    helper.goBack();
 }
 
 export function test_id_and_state_selector() {
-    var page: pageModule.Page;
-    var btn: buttonModule.Button;
-    var pageFactory = function (): pageModule.Page {
-        // Arrange
-        page = new pageModule.Page();
-        var testStack = new stackModule.StackLayout();
-        page.content = testStack;
+    let page = helper.getCurrentPage();
+    page.style._resetValue(styling.properties.colorProperty);
 
-        btn = new buttonModule.Button();
-        btn.id = "myButton";
-        testStack.addChild(btn);
+    let btn = new buttonModule.Button();
+    let testStack = new stackModule.StackLayout();
+    page.content = testStack;
 
-        page.css = "#myButton:pressed { color: red; }";
-        return page;
-    };
+    btn.id = "myButton";
+    testStack.addChild(btn);
 
-    // Act & Assert
-    helper.navigate(pageFactory);
+    page.css = "#myButton:pressed { color: red; }";
 
     testButtonPressedStateIsRed(btn);
-
-    helper.goBack();
 }
 
 export function test_restore_original_values_when_state_is_changed() {
-    var page: pageModule.Page;
-    var btn: buttonModule.Button;
-    var pageFactory = function (): pageModule.Page {
-        // Arrange
-        page = new pageModule.Page();
-        var testStack = new stackModule.StackLayout();
-        page.content = testStack;
+    let page = helper.getCurrentPage();
+    page.style._resetValue(styling.properties.colorProperty);
 
-        btn = new buttonModule.Button();
-        testStack.addChild(btn);
+    let btn = new buttonModule.Button();
+    let testStack = new stackModule.StackLayout();
+    page.content = testStack;
+    testStack.addChild(btn);
 
-        page.css = "button { color: blue; } " +
+    page.css = "button { color: blue; } " +
         "button:pressed { color: red; } ";
-        return page;
-    };
-
-    // Act & Assert
-    helper.navigate(pageFactory);
 
     helper.assertViewColor(btn, "#0000FF");
     btn._goToVisualState("pressed");
     helper.assertViewColor(btn, "#FF0000");
     btn._goToVisualState("normal");
     helper.assertViewColor(btn, "#0000FF");
-
-    helper.goBack();
 }
 
 export var test_composite_selector_type_and_class = function () {
-   // Arrange
-   var testStack = new stackModule.StackLayout();
+    // Arrange
+    var testStack = new stackModule.StackLayout();
 
-   var btnWithClass = new buttonModule.Button();
-   btnWithClass.className = "test";
-   testStack.addChild(btnWithClass);
+    var btnWithClass = new buttonModule.Button();
+    btnWithClass.className = "test";
+    testStack.addChild(btnWithClass);
 
-   var btnWithNoClass = new buttonModule.Button();
-   testStack.addChild(btnWithNoClass);
+    var btnWithNoClass = new buttonModule.Button();
+    testStack.addChild(btnWithNoClass);
 
-   var lblWithClass = new labelModule.Label();
-   lblWithClass.className = "test";
-   testStack.addChild(lblWithClass);
+    var lblWithClass = new labelModule.Label();
+    lblWithClass.className = "test";
+    testStack.addChild(lblWithClass);
 
-   let testCss = "button.test { color: red; }";
-   
-   let testFunc = function(views: Array<viewModule.View>) {
-       TKUnit.assert(btnWithClass.style.color, "Color property no applied correctly.");
-       TKUnit.assert(btnWithClass.style.color.hex === "#FF0000", "Color property no applied correctly.");
+    let testCss = "button.test { color: red; }";
 
-       TKUnit.assert(btnWithNoClass.style.color === undefined, "Color should not have a value");
+    let testFunc = function (views: Array<viewModule.View>) {
+        TKUnit.assert(btnWithClass.style.color, "Color property no applied correctly.");
+        TKUnit.assert(btnWithClass.style.color.hex === "#FF0000", "Color property no applied correctly.");
 
-       TKUnit.assert(lblWithClass.style.color === undefined, "Color should not have a value");
-   }
-   
-   helper.buildUIAndRunTest(testStack, testFunc, testCss);
+        TKUnit.assert(btnWithNoClass.style.color === undefined, "Color should not have a value");
+
+        TKUnit.assert(lblWithClass.style.color === undefined, "Color should not have a value");
+    }
+
+    helper.buildUIAndRunTest(testStack, testFunc, testCss);
 }
 
 export var test_composite_selector_type_class_state = function () {
-   // Arrange
-   var testStack = new stackModule.StackLayout();
-   
-   var btnWithClass = new buttonModule.Button();
-   btnWithClass.className = "test";
-   testStack.addChild(btnWithClass);
+    var testStack = new stackModule.StackLayout();
+    var btnWithClass = new buttonModule.Button();
+    btnWithClass.className = "test";
+    testStack.addChild(btnWithClass);
 
-   var btnWithNoClass = new buttonModule.Button();
-   testStack.addChild(btnWithNoClass);
+    var btnWithNoClass = new buttonModule.Button();
+    testStack.addChild(btnWithNoClass);
 
-   var lblWithClass = new labelModule.Label();
-   lblWithClass.className = "test";
-   testStack.addChild(lblWithClass);
+    var lblWithClass = new labelModule.Label();
+    lblWithClass.className = "test";
+    testStack.addChild(lblWithClass);
 
-   let testCss = "button.test:pressed { color: red; }";
-   
-   let testFunc = function(views: Array<viewModule.View>) {
-       testButtonPressedStateIsRed(btnWithClass);
+    let testCss = "button.test:pressed { color: red; }";
 
-       // The button with no class should not react to state changes.
-       TKUnit.assert(btnWithNoClass.style.color === undefined, "Color should not have a value.");
-       btnWithNoClass._goToVisualState("pressed");
-       TKUnit.assert(btnWithNoClass.style.color === undefined, "Color should not have a value.");
-       btnWithNoClass._goToVisualState("normal");
-       TKUnit.assert(btnWithNoClass.style.color === undefined, "Color should not have a value.");
+    let testFunc = function (views: Array<viewModule.View>) {
+        testButtonPressedStateIsRed(btnWithClass);
 
-       TKUnit.assert(lblWithClass.style.color === undefined, "Color should not have a value");
-   }
-   helper.buildUIAndRunTest(testStack, testFunc, testCss);
+        // The button with no class should not react to state changes.
+        TKUnit.assertNull(btnWithNoClass.style.color, "Color should not have a value.");
+        btnWithNoClass._goToVisualState("pressed");
+        TKUnit.assertNull(btnWithNoClass.style.color, "Color should not have a value.");
+        btnWithNoClass._goToVisualState("normal");
+        TKUnit.assertNull(btnWithNoClass.style.color, "Color should not have a value.");
+
+        TKUnit.assertNull(lblWithClass.style.color, "Color should not have a value");
+    }
+    helper.buildUIAndRunTest(testStack, testFunc, testCss);
 }
 
 export var test_style_is_applied_when_control_is_added_after_load = function () {
-    var page: pageModule.Page;
-    var btn: buttonModule.Button;
-    var testStack: stackModule.StackLayout;
-    var pageFactory = function (): pageModule.Page {
-        page = new pageModule.Page();
-        testStack = new stackModule.StackLayout();
-        page.content = testStack;
-        page.css = "button { color: red; }";
-        btn = new buttonModule.Button();
-        return page;
-    };
-
-    helper.navigate(pageFactory);
+    let page = helper.getCurrentPage();
+    let btn = new buttonModule.Button();
+    let testStack = new stackModule.StackLayout();
+    page.content = testStack;
+    page.css = "button { color: red; }";
 
     testStack.addChild(btn);
     TKUnit.assert(btn.style.color, "Color property no applied correctly.");
-    TKUnit.assert(btn.style.color.hex === "#FF0000", "Color property no applied correctly.");
-
-    helper.goBack();
+    TKUnit.assertEqual(btn.style.color.hex, "#FF0000", "Color property not applied correctly.");
 }
 
 var changeIdOrClassTestCss =
@@ -687,39 +588,32 @@ export function test_selector_priorities_6() {
 }
 
 function testSelectorsPrioritiesTemplate(css: string) {
-    var page: pageModule.Page;
-    var btn: buttonModule.Button;
-    var btnWithClass: buttonModule.Button;
-    var btnWithId: buttonModule.Button;
-    var pageFactory = function (): pageModule.Page {
-        page = new pageModule.Page();
-        var testStack = new stackModule.StackLayout();
-        page.content = testStack;
+    let page = helper.getCurrentPage();
+    page.style._resetValue(styling.properties.colorProperty);
+    let btn: buttonModule.Button;
+    let btnWithClass: buttonModule.Button;
+    let btnWithId: buttonModule.Button;
 
-        btn = new buttonModule.Button();
-        testStack.addChild(btn);
+    var testStack = new stackModule.StackLayout();
+    page.content = testStack;
 
-        btnWithClass = new buttonModule.Button();
-        btnWithClass.className = "button-class";
-        testStack.addChild(btnWithClass);
+    btn = new buttonModule.Button();
+    testStack.addChild(btn);
 
-        btnWithId = new buttonModule.Button();
-        btnWithId.className = "button-class";
-        btnWithId.id = "myButton"
-        testStack.addChild(btnWithId);
+    btnWithClass = new buttonModule.Button();
+    btnWithClass.className = "button-class";
+    testStack.addChild(btnWithClass);
 
-        page.css = css;
-        return page;
-    };
+    btnWithId = new buttonModule.Button();
+    btnWithId.className = "button-class";
+    btnWithId.id = "myButton"
+    testStack.addChild(btnWithId);
 
-    // Act & Assert
-    helper.navigate(pageFactory);
+    page.css = css;
 
     helper.assertViewColor(btn, "#0000FF");            //red
     helper.assertViewColor(btnWithClass, "#008000");   //green
     helper.assertViewColor(btnWithId, "#FF0000");      //blue
-
-    helper.goBack();
 }
 
 // helpers
@@ -797,7 +691,7 @@ export function test_CSS_isAppliedOnPage() {
     testButton.text = "Test";
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
-        var page: pageModule.Page = <pageModule.Page> views[1];
+        var page: pageModule.Page = <pageModule.Page>views[1];
         page.css = "page { background-color: red; }";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
@@ -808,7 +702,7 @@ export function test_CSS_isAppliedOnPage_From_Import() {
     testButton.text = "Test";
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
-        var page: pageModule.Page = <pageModule.Page> views[1];
+        var page: pageModule.Page = <pageModule.Page>views[1];
         page.css = "@import url('~/ui/style/test.css');";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
@@ -819,7 +713,7 @@ export function test_CSS_isAppliedOnPage_From_Import_Without_Url() {
     testButton.text = "Test";
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
-        var page: pageModule.Page = <pageModule.Page> views[1];
+        var page: pageModule.Page = <pageModule.Page>views[1];
         page.css = "@import '~/ui/style/test.css';";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
@@ -830,7 +724,7 @@ export function test_CSS_isAppliedOnPage_From_addCssFile() {
     testButton.text = "Test";
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
-        var page: pageModule.Page = <pageModule.Page> views[1];
+        var page: pageModule.Page = <pageModule.Page>views[1];
         page.addCssFile("~/ui/style/test.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
@@ -851,7 +745,7 @@ var invalidCSS = ".invalid { " +
     "visibility: invalidValue; " +
     "opacity: invalidValue; " +
     "font-size: 30;" + // set one valid value to test it is applied
-"}";
+    "}";
 
 export function test_set_invalid_CSS_values_dont_cause_crash() {
     var testButton = new buttonModule.Button();
@@ -887,23 +781,23 @@ export function test_basic_hierarchical_selectors() {
     let testButton1 = new buttonModule.Button();
     testButton1.text = "Test 1";
     testButton1.id = "testButton1";
-    
+
     let wrap = new wrapModule.WrapLayout();
     let testButton2 = new buttonModule.Button();
     testButton2.text = "Test 2";
     testButton2.id = "testButton2";
-    
+
     wrap.addChild(testButton2);
     stack.addChild(testButton1);
     stack.addChild(wrap);
-    
+
     let testCss = "stacklayout button { background-color: #FF0000; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#FF0000");
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
     }
-    
+
     helper.buildUIAndRunTest(stack, testFunc, testCss);
 }
 
@@ -912,24 +806,24 @@ export function test_basic_hierarchical_direct_child_selectors() {
     let testButton1 = new buttonModule.Button();
     testButton1.text = "Test 1";
     testButton1.id = "testButton1";
-    
+
     let wrap = new wrapModule.WrapLayout();
     let testButton2 = new buttonModule.Button();
     testButton2.text = "Test 2";
     testButton2.id = "testButton2";
-    
+
     wrap.addChild(testButton2);
     stack.addChild(testButton1);
     stack.addChild(wrap);
-    
+
     let testCss = "stacklayout > button { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#FF0000");
         // only buttons that are direct children of StackLayout should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#00FF00");
     }
-    
+
     helper.buildUIAndRunTest(stack, testFunc, testCss);
 }
 
@@ -938,24 +832,24 @@ export function test_basic_hierarchical_direct_child_more_levels_selectors() {
     let testButton1 = new buttonModule.Button();
     testButton1.text = "Test 1";
     testButton1.id = "testButton1";
-    
+
     let wrap = new wrapModule.WrapLayout();
     let testButton2 = new buttonModule.Button();
     testButton2.text = "Test 2";
     testButton2.id = "testButton2";
-    
+
     wrap.addChild(testButton2);
     stack.addChild(testButton1);
     stack.addChild(wrap);
-    
+
     let testCss = "stacklayout > wraplayout > button { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // only buttons that are direct children of StackLayout and WrapLayout should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
     }
-    
+
     helper.buildUIAndRunTest(stack, testFunc, testCss);
 }
 
@@ -964,26 +858,26 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types()
     let testButton1 = new buttonModule.Button();
     testButton1.text = "Test 1";
     testButton1.id = "testButton1";
-    
+
     let wrap = new wrapModule.WrapLayout();
     wrap.className = "wraplayoutClass";
     let testButton2 = new buttonModule.Button();
     testButton2.text = "Test 2";
     testButton2.id = "testButton2";
     testButton2.className = "buttonClass";
-    
+
     wrap.addChild(testButton2);
     stack.addChild(testButton1);
     stack.addChild(wrap);
-    
+
     let testCss = "stacklayout>.wraplayoutClass > .buttonClass { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // only buttons that are direct children of StackLayout and WrapLayout should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
     }
-    
+
     helper.buildUIAndRunTest(stack, testFunc, testCss);
 }
 
@@ -993,26 +887,26 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types2(
     let testButton1 = new buttonModule.Button();
     testButton1.text = "Test 1";
     testButton1.id = "testButton1";
-    
+
     let wrap = new wrapModule.WrapLayout();
     wrap.className = "wraplayoutClass";
     let testButton2 = new buttonModule.Button();
     testButton2.text = "Test 2";
     testButton2.id = "testButton2";
     testButton2.className = "buttonClass";
-    
+
     wrap.addChild(testButton2);
     stack.addChild(testButton1);
     stack.addChild(wrap);
-    
+
     let testCss = "#stack>.wraplayoutClass>.buttonClass { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // only buttons that are direct children of Layout with id stack and Layout with cssClass wraplayoutClass should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
     }
-    
+
     helper.buildUIAndRunTest(stack, testFunc, testCss);
 }
 
@@ -1022,26 +916,26 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types_i
     let testButton1 = new buttonModule.Button();
     testButton1.text = "Test 1";
     testButton1.id = "testButton1";
-    
+
     let wrap = new wrapModule.WrapLayout();
     wrap.className = "wraplayoutClass";
     let testButton2 = new buttonModule.Button();
     testButton2.text = "Test 2";
     testButton2.id = "testButton2";
     testButton2.className = "buttonClass";
-    
+
     wrap.addChild(testButton2);
     stack.addChild(testButton1);
     stack.addChild(wrap);
-    
+
     let testCss = "#stackErr > .wraplayoutClass > .buttonClass { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // this is an invalid css so red style should not be applied
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#00FF00");
     }
-    
+
     helper.buildUIAndRunTest(stack, testFunc, testCss);
 }
 
@@ -1051,35 +945,35 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types_i
     let testButton1 = new buttonModule.Button();
     testButton1.text = "Test 1";
     testButton1.id = "testButton1";
-    
+
     let wrap = new wrapModule.WrapLayout();
     wrap.className = "wraplayoutClass";
     let testButton2 = new buttonModule.Button();
     testButton2.text = "Test 2";
     testButton2.id = "testButton2";
     testButton2.className = "buttonClass";
-    
+
     wrap.addChild(testButton2);
     stack.addChild(testButton1);
     stack.addChild(wrap);
-    
+
     let testCss = "#stack > .wraplayoutClassErr > .buttonClass { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // this is an invalid css so red style should not be applied
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#00FF00");
     }
-    
+
     helper.buildUIAndRunTest(stack, testFunc, testCss);
 }
 
 export function test_type_attr_selector() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "some value";
-    
+
     let testCss = "button[testAttr] { background-color: #FF0000; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
     }
@@ -1090,9 +984,9 @@ export function test_class_attr_selector() {
     let testButton = new buttonModule.Button();
     testButton.className = "button";
     testButton["testAttr"] = "some value";
-    
+
     let testCss = ".button[testAttr] { background-color: #FF0000; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
     }
@@ -1103,9 +997,9 @@ export function test_id_attr_selector() {
     let testButton = new buttonModule.Button();
     testButton.id = "myButton";
     testButton["testAttr"] = "some value";
-    
+
     let testCss = "#myButton[testAttr] { background-color: #FF0000; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
     }
@@ -1115,9 +1009,9 @@ export function test_id_attr_selector() {
 export function test_type_attr_value_selector() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "somevalue";
-    
+
     let testCss = "button[testAttr='somevalue'] { background-color: #FF0000; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
     }
@@ -1127,9 +1021,9 @@ export function test_type_attr_value_selector() {
 export function test_type_attr_invalid_value_selector() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "somevalue";
-    
+
     let testCss = "button[testAttr='value'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1140,9 +1034,9 @@ export function test_type_attr_invalid_value_selector() {
 export function test_tilde_attr_selector_correct_syntax() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flower";
-    
+
     let testCss = "button[testAttr~='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1153,9 +1047,9 @@ export function test_tilde_attr_selector_correct_syntax() {
 export function test_tilde_attr_selector_correct_syntax1() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "some flower";
-    
+
     let testCss = "button[testAttr~='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1166,9 +1060,9 @@ export function test_tilde_attr_selector_correct_syntax1() {
 export function test_tilde_attr_selector_correct_syntax2() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flower new";
-    
+
     let testCss = "button[testAttr~='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1179,9 +1073,9 @@ export function test_tilde_attr_selector_correct_syntax2() {
 export function test_tilde_attr_selector_incorrect_syntax() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "my-flower";
-    
+
     let testCss = "button[testAttr~='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1192,9 +1086,9 @@ export function test_tilde_attr_selector_incorrect_syntax() {
 export function test_tilde_attr_selector_incorrect_syntax1() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flowers";
-    
+
     let testCss = "button[testAttr~='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1205,9 +1099,9 @@ export function test_tilde_attr_selector_incorrect_syntax1() {
 export function test_tilde_attr_selector_incorrect_syntax2() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flower-house";
-    
+
     let testCss = "button[testAttr~='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1218,9 +1112,9 @@ export function test_tilde_attr_selector_incorrect_syntax2() {
 export function test_pipe_attr_selector_correct_syntax() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flower";
-    
+
     let testCss = "button[testAttr|='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1231,9 +1125,9 @@ export function test_pipe_attr_selector_correct_syntax() {
 export function test_pipe_attr_selector_correct_syntax1() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flower-house";
-    
+
     let testCss = "button[testAttr|='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1244,9 +1138,9 @@ export function test_pipe_attr_selector_correct_syntax1() {
 export function test_pipe_attr_selector_incorrect_syntax() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flowers";
-    
+
     let testCss = "button[testAttr|='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1257,9 +1151,9 @@ export function test_pipe_attr_selector_incorrect_syntax() {
 export function test_pipe_attr_selector_incorrect_syntax1() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "myflower";
-    
+
     let testCss = "button[testAttr|='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1270,9 +1164,9 @@ export function test_pipe_attr_selector_incorrect_syntax1() {
 export function test_pipe_attr_selector_incorrect_syntax2() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "my-flower";
-    
+
     let testCss = "button[testAttr|='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1283,9 +1177,9 @@ export function test_pipe_attr_selector_incorrect_syntax2() {
 export function test_power_attr_selector_correct_syntax() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flower";
-    
+
     let testCss = "button[testAttr^='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1296,9 +1190,9 @@ export function test_power_attr_selector_correct_syntax() {
 export function test_power_attr_selector_correct_syntax1() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flower-house";
-    
+
     let testCss = "button[testAttr^='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1309,9 +1203,9 @@ export function test_power_attr_selector_correct_syntax1() {
 export function test_power_attr_selector_correct_synta2() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flowers";
-    
+
     let testCss = "button[testAttr^='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1322,9 +1216,9 @@ export function test_power_attr_selector_correct_synta2() {
 export function test_power_attr_selector_incorrect_syntax() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "myflower";
-    
+
     let testCss = "button[testAttr|='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1335,9 +1229,9 @@ export function test_power_attr_selector_incorrect_syntax() {
 export function test_power_attr_selector_incorrect_syntax1() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "my-flower";
-    
+
     let testCss = "button[testAttr|='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1348,9 +1242,9 @@ export function test_power_attr_selector_incorrect_syntax1() {
 export function test_dollar_attr_selector_correct_syntax() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flower";
-    
+
     let testCss = "button[testAttr$='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1361,9 +1255,9 @@ export function test_dollar_attr_selector_correct_syntax() {
 export function test_dollar_attr_selector_correct_syntax1() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "myflower";
-    
+
     let testCss = "button[testAttr$='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1374,9 +1268,9 @@ export function test_dollar_attr_selector_correct_syntax1() {
 export function test_dollar_attr_selector_correct_syntax2() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "my-flower";
-    
+
     let testCss = "button[testAttr$='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1387,9 +1281,9 @@ export function test_dollar_attr_selector_correct_syntax2() {
 export function test_dollar_attr_selector_incorrect_syntax() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flowers";
-    
+
     let testCss = "button[testAttr$='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1400,9 +1294,9 @@ export function test_dollar_attr_selector_incorrect_syntax() {
 export function test_dollar_attr_selector_incorrect_syntax1() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flowermy";
-    
+
     let testCss = "button[testAttr$='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1413,9 +1307,9 @@ export function test_dollar_attr_selector_incorrect_syntax1() {
 export function test_dollar_attr_selector_incorrect_syntax2() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flower-my";
-    
+
     let testCss = "button[testAttr$='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1426,9 +1320,9 @@ export function test_dollar_attr_selector_incorrect_syntax2() {
 export function test_star_attr_selector_correct_syntax() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flower";
-    
+
     let testCss = "button[testAttr*='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1439,9 +1333,9 @@ export function test_star_attr_selector_correct_syntax() {
 export function test_star_attr_selector_correct_syntax1() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "myflower";
-    
+
     let testCss = "button[testAttr*='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1452,9 +1346,9 @@ export function test_star_attr_selector_correct_syntax1() {
 export function test_star_attr_selector_correct_syntax2() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "my-flower";
-    
+
     let testCss = "button[testAttr*='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1465,9 +1359,9 @@ export function test_star_attr_selector_correct_syntax2() {
 export function test_star_attr_selector_correct_syntax3() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flowers";
-    
+
     let testCss = "button[testAttr*='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1478,9 +1372,9 @@ export function test_star_attr_selector_correct_syntax3() {
 export function test_star_attr_selector_correct_syntax4() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flowermy";
-    
+
     let testCss = "button[testAttr*='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1491,9 +1385,9 @@ export function test_star_attr_selector_correct_syntax4() {
 export function test_star_attr_selector_correct_syntax5() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flower-my";
-    
+
     let testCss = "button[testAttr*='flower'] { background-color: #FF0000; } ";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
@@ -1504,9 +1398,9 @@ export function test_star_attr_selector_correct_syntax5() {
 export function test_star_attr_selector_incorrect_syntax() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flow";
-    
+
     let testCss = "button[testAttr*='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");

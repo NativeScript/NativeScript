@@ -247,7 +247,6 @@ exports.test_ExecuteCSSAnimation = function () {
     label.className = "l";
     TKUnit.waitUntilReady(function () { return new color.Color("green").equals(label.backgroundColor); }, 1);
     TKUnit.assert(new color.Color("green").equals(label.backgroundColor));
-    helper.goBack();
 };
 // exports.test_ExecuteFillMode = function () {
 //     let mainPage;

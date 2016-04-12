@@ -27,23 +27,21 @@ import segmentedBar = require("ui/segmented-bar");
 import { Source } from "utils/debug";
 
 export function test_load_IsDefined() {
-    TKUnit.assert(types.isFunction(builder.load), "ui/builder should have load method!");
+    TKUnit.assertTrue(types.isFunction(builder.load), "ui/builder should have load method!");
 };
 
 export function test_parse_IsDefined() {
-    TKUnit.assert(types.isFunction(builder.parse), "ui/builder should have parse method!");
+    TKUnit.assertTrue(types.isFunction(builder.parse), "ui/builder should have parse method!");
 };
 
 export function test_load_ShouldNotCrashWithInvalidFileName() {
     var v = builder.load(fs.path.join(__dirname, "mainPage1.xml"));
-
-    TKUnit.assert(types.isUndefined(v), "Expected result: undefined; Actual result: " + v + ";");
+    TKUnit.assertTrue(types.isUndefined(v), "Expected result: undefined; Actual result: " + v + ";");
 };
 
 export function test_load_ShouldNotCrashWithoutExports() {
     var v = builder.load(fs.path.join(__dirname, "mainPage.xml"));
-
-    TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+    TKUnit.assertTrue(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 };
 
 export function test_loadWithOptionsNoXML() {
@@ -54,32 +52,20 @@ export function test_loadWithOptionsNoXML() {
         page: new Page()
     });
 
-    TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+    TKUnit.assertTrue(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 };
 
 export function test_loadWithOptionsNoXML_CSSIsApplied() {
-    var newPage: Page;
-    var pageFactory = function (): Page {
-        newPage = new Page();
+    let newPage = helper.getCurrentPage();
+    newPage.content = builder.load({
+        path: "~/xml-declaration/mymodule",
+        name: "MyControl",
+        exports: exports,
+        page: newPage
+    });
 
-        newPage.content = builder.load({
-            path: "~/xml-declaration/mymodule",
-            name: "MyControl",
-            exports: exports,
-            page: newPage
-        });
-
-        return newPage;
-    };
-
-    helper.navigate(pageFactory);
     TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
-    try {
-        helper.assertViewBackgroundColor(newPage.content, "#FF0000");
-    }
-    finally {
-        helper.goBack();
-    }
+    helper.assertViewBackgroundColor(newPage.content, "#FF0000");
 };
 
 export function test_loadInheritedPageAndResolveFromChild() {
@@ -89,13 +75,13 @@ export function test_loadInheritedPageAndResolveFromChild() {
         TKUnit.assertEqual("Inherited and loaded", contentLabel.text);
 
         let discoveredPage = contentLabel.page;
-        TKUnit.assert(page === discoveredPage);
+        TKUnit.assertEqual(page, discoveredPage);
 
         let discoveredAncestorByBaseType = viewModule.getAncestor(contentLabel, Page);
-        TKUnit.assert(page === discoveredAncestorByBaseType);
+        TKUnit.assertEqual(page, discoveredAncestorByBaseType);
 
         let discoveredAncestorByInheritedTypeName = viewModule.getAncestor(contentLabel, "InheritedPage");
-        TKUnit.assert(page === discoveredAncestorByInheritedTypeName);
+        TKUnit.assertEqual(page, discoveredAncestorByInheritedTypeName);
     });
 }
 
@@ -106,7 +92,7 @@ export function test_loadWithOptionsWithXML() {
         exports: exports,
         page: new Page()
     });
-    TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+    TKUnit.assertTrue(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
 };
 
 export function test_loadWithOptionsWithXML_CSSIsApplied() {
@@ -126,12 +112,7 @@ export function test_loadWithOptionsWithXML_CSSIsApplied() {
 
     helper.navigate(pageFactory);
     TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
-    try {
-        helper.assertViewBackgroundColor(newPage.content, "#008000");
-    }
-    finally {
-        helper.goBack();
-    }
+    helper.assertViewBackgroundColor(newPage.content, "#008000");
 };
 
 export function test_loadWithOptionsFromTNS() {
@@ -204,13 +185,7 @@ export function test_parse_ShouldResolveExportsFromCodeFileForTemplates() {
     };
 
     helper.navigate(function () { return p; });
-
-    try {
-        testAction([p.content, p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p.content, p]);
 }
 
 export function test_parse_css_is_applied_by_type_to_lower_case_dashed_components() {
@@ -222,12 +197,7 @@ export function test_parse_css_is_applied_by_type_to_lower_case_dashed_component
 
     helper.navigate(pageFactory);
     TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
-    try {
-        helper.assertViewBackgroundColor(newPage.content, "#008000");
-    }
-    finally {
-        helper.goBack();
-    }
+    helper.assertViewBackgroundColor(newPage.content, "#008000");
 };
 
 export function test_parse_ShouldApplyCssFromCssFile() {
@@ -239,12 +209,7 @@ export function test_parse_ShouldApplyCssFromCssFile() {
 
     helper.navigate(pageFactory);
     TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
-    try {
-        helper.assertViewBackgroundColor(newPage.content, "#008000");
-    }
-    finally {
-        helper.goBack();
-    }
+    helper.assertViewBackgroundColor(newPage.content, "#008000");
 };
 
 export function test_parse_ShouldResolveExportsFromCodeFileAndApplyCssFile() {
@@ -257,12 +222,7 @@ export function test_parse_ShouldResolveExportsFromCodeFileAndApplyCssFile() {
     helper.navigate(pageFactory);
     TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
     TKUnit.assert((<any>newPage).customCodeLoaded, "Parse should resolve exports from custom code file.");
-    try {
-        helper.assertViewBackgroundColor(newPage.content, "#008000");
-    }
-    finally {
-        helper.goBack();
-    }
+    helper.assertViewBackgroundColor(newPage.content, "#008000");
 };
 
 export function test_parse_ShouldFindEventHandlersInExports() {
@@ -274,7 +234,7 @@ export function test_parse_ShouldFindEventHandlersInExports() {
     });
     page._emit("loaded");
 
-    TKUnit.assert(loaded, "Parse should find event handlers in exports.");
+    TKUnit.assertTrue(loaded, "Parse should find event handlers in exports.");
 };
 
 export function test_parse_ShouldFindEventHandlersWithOnInExports() {
@@ -286,7 +246,7 @@ export function test_parse_ShouldFindEventHandlersWithOnInExports() {
     });
     page._emit("loaded");
 
-    TKUnit.assert(loaded, "Parse should find event handlers in exports.");
+    TKUnit.assertTrue(loaded, "Parse should find event handlers in exports.");
 };
 
 export function test_parse_ShouldSetGridAttachedProperties() {
@@ -295,16 +255,16 @@ export function test_parse_ShouldSetGridAttachedProperties() {
     var child = grid.getChildAt(0);
 
     var col = gridLayoutModule.GridLayout.getColumn(child);
-    TKUnit.assert(col === 2, "Expected result for grid column: 2; Actual result: " + col + ";");
+    TKUnit.assertEqual(col, 2, "Expected result for grid column: 2; Actual result: " + col + ";");
 
     var row = gridLayoutModule.GridLayout.getRow(child);
-    TKUnit.assert(row === 1, "Expected result for grid row: 1; Actual result: " + row + ";");
+    TKUnit.assertEqual(row, 1, "Expected result for grid row: 1; Actual result: " + row + ";");
 
     var colSpan = gridLayoutModule.GridLayout.getColumnSpan(child);
-    TKUnit.assert(colSpan === 4, "Expected result for grid column span: 4; Actual result: " + colSpan + ";");
+    TKUnit.assertEqual(colSpan, 4, "Expected result for grid column span: 4; Actual result: " + colSpan + ";");
 
     var rowSpan = gridLayoutModule.GridLayout.getRowSpan(child);
-    TKUnit.assert(rowSpan === 3, "Expected result for grid row span: 3; Actual result: " + rowSpan + ";");
+    TKUnit.assertEqual(rowSpan, 3, "Expected result for grid row span: 3; Actual result: " + rowSpan + ";");
 };
 
 export function test_parse_ShouldSetCanvasAttachedProperties() {
@@ -313,23 +273,23 @@ export function test_parse_ShouldSetCanvasAttachedProperties() {
     var child = grid.getChildAt(0);
 
     var left = absoluteLayoutModule.AbsoluteLayout.getLeft(child);
-    TKUnit.assert(left === 1, "Expected result for canvas left: 1; Actual result: " + left + ";");
+    TKUnit.assertEqual(left, 1, "Expected result for canvas left: 1; Actual result: " + left + ";");
 
     var top = absoluteLayoutModule.AbsoluteLayout.getTop(child);
-    TKUnit.assert(top === 2, "Expected result for canvas top: 2; Actual result: " + top + ";");
+    TKUnit.assertEqual(top, 2, "Expected result for canvas top: 2; Actual result: " + top + ";");
 };
 
 export function test_parse_ShouldParseNumberProperties() {
     var p = <Page>builder.parse("<Page width='100' />");
 
-    TKUnit.assert(p.width === 100, "Expected result: 100; Actual result: " + p.width + "; type: " + typeof (p.width));
+    TKUnit.assertEqual(p.width, 100, "Expected result: 100; Actual result: " + p.width + "; type: " + typeof (p.width));
 };
 
 export function test_parse_ShouldParseBooleanProperties() {
     var p = <Page>builder.parse("<Page><Switch checked='true' /></Page>");
     var sw = <switchModule.Switch>p.content;
 
-    TKUnit.assert(sw.checked === true, "Expected result: true; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
+    TKUnit.assertTrue(sw.checked, "Expected result: true; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
 };
 
 export function test_parse_ShouldParseBooleanPropertiesIgnoreCase() {
@@ -343,7 +303,7 @@ export function test_parse_ShouldParseBooleanPropertiesIgnoreCaseInverted() {
     var p = <Page>builder.parse("<Page><TextField editable='False' /></Page>");
     var tf = <textFieldModule.TextField>p.content;
 
-    TKUnit.assert(tf.editable === false, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
+    TKUnit.assertFalse(tf.editable, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
 };
 
 export function test_parse_ShouldParsePlatformSpecificProperties() {
@@ -351,9 +311,9 @@ export function test_parse_ShouldParsePlatformSpecificProperties() {
     var tf = <textFieldModule.TextField>p.content;
 
     if (platform.device.os === platform.platformNames.ios) {
-        TKUnit.assert(tf.editable === false, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
+        TKUnit.assertFalse(tf.editable, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
     } else {
-        TKUnit.assert(tf.editable === true, "Expected result: true; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
+        TKUnit.assertTrue(tf.editable, "Expected result: true; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
     }
 };
 
@@ -383,7 +343,7 @@ export function test_parse_ShouldParseBindings() {
     p.bindingContext = { myProp: true };
     var sw = <switchModule.Switch>p.content;
 
-    TKUnit.assert(sw.checked === true, "Expected result: true; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
+    TKUnit.assertTrue(sw.checked, "Expected result: true; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
 };
 
 export function test_parse_ShouldParseBindingsWithObservable() {
@@ -393,11 +353,11 @@ export function test_parse_ShouldParseBindingsWithObservable() {
     p.bindingContext = obj;
     var sw = <switchModule.Switch>p.content;
 
-    TKUnit.assert(sw.checked === true, "Expected result: true; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
+    TKUnit.assertTrue(sw.checked, "Expected result: true; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
 
     obj.set("myProp", false);
 
-    TKUnit.assert(sw.checked === false, "Expected result: false; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
+    TKUnit.assertFalse(sw.checked, "Expected result: false; Actual result: " + sw.checked + "; type: " + typeof (sw.checked));
 };
 
 export function test_parse_ShouldParseBindingsToEvents() {
@@ -592,68 +552,48 @@ export function test_parse_ShouldParseCustomComponentWithoutXmlInListViewTemplat
     var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodule"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><customControls:MyControl /></ListView.itemTemplate></ListView></Page>');
 
     function testAction(views: Array<viewModule.View>) {
-        var ctrl;
-
-        var obj = new observable.Observable();
+        let ctrl;
+        let obj = new observable.Observable();
         obj.set("items", [1]);
         obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
             ctrl = args.view
         });
         p.bindingContext = obj;
-
-        TKUnit.wait(0.2);
-
+        TKUnit.waitUntilReady(() => ctrl);
         TKUnit.assert(ctrl instanceof myCustomControlWithoutXml.MyControl, "Expected result: custom control is defined!; Actual result: " + ctrl);
     };
 
     helper.navigate(function () { return p; });
-
-    try {
-        testAction([p.content, p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p.content, p]);
 }
 
 export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
     var p = <Page>builder.parse('<Page xmlns="http://schemas.nativescript.org/tns.xsd"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><ListView items="{{ subItems }}" /></ListView.itemTemplate></ListView></Page>');
 
     function testAction(views: Array<viewModule.View>) {
-        var ctrl;
-
-        var obj = new observable.Observable();
+        let ctrl;
+        let obj = new observable.Observable();
         obj.set("items", [{ subItems: [1] }]);
         obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
             ctrl = args.view
         });
         p.bindingContext = obj;
-
-        TKUnit.wait(0.2);
-
+        TKUnit.waitUntilReady(() => ctrl);
         TKUnit.assert(ctrl instanceof listViewModule.ListView, "Expected result: ListView!; Actual result: " + ctrl);
     };
 
     helper.navigate(function () { return p; });
-
-    try {
-        testAction([p.content, p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p.content, p]);
 }
 
 export function test_parse_ShouldEvaluateEventBindingExpressionInListViewTemplate() {
     var p = <Page>builder.parse('<Page xmlns="http://schemas.nativescript.org/tns.xsd"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><SegmentedBar items="{{ $parents[\'ListView\'].items }}" selectedIndexChanged="{{ $parents[\'ListView\'].changed }}" /></ListView.itemTemplate></ListView></Page>');
 
     function testAction(views: Array<viewModule.View>) {
-        var ctrl: segmentedBar.SegmentedBar;
-        var changed;
-
-        var obj = new observable.Observable();
+        let ctrl: segmentedBar.SegmentedBar = null;
+        let changed;
+        let obj = new observable.Observable();
         obj.set("items", [1, 2, 3]);
-
         obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
             ctrl = <segmentedBar.SegmentedBar>args.view
         });
@@ -663,22 +603,14 @@ export function test_parse_ShouldEvaluateEventBindingExpressionInListViewTemplat
         });
 
         p.bindingContext = obj;
-
-        TKUnit.wait(0.2);
-
+        TKUnit.waitUntilReady(() => ctrl !== null);
         ctrl.selectedIndex = 1;
 
         TKUnit.assert(changed, "Expected result: true!; Actual result: " + changed);
     };
 
     helper.navigate(function () { return p; });
-
-    try {
-        testAction([p.content, p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p.content, p]);
 }
 
 export function test_parse_NestedRepeaters() {
@@ -725,13 +657,7 @@ export function test_parse_NestedRepeaters() {
     };
 
     helper.navigate(function () { return p; });
-
-    try {
-        testAction([p.content, p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p.content, p]);
 }
 
 export function test_parseSpansDirectlyOnLabel() {
@@ -744,12 +670,7 @@ export function test_parseSpansDirectlyOnLabel() {
     }
 
     helper.navigate(function () { return p; });
-    try {
-        testAction([p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p]);
 }
 
 export function test_parseSpansDirectlyOnButton() {
@@ -762,12 +683,7 @@ export function test_parseSpansDirectlyOnButton() {
     }
 
     helper.navigate(function () { return p; });
-    try {
-        testAction([p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p]);
 }
 
 export function test_parseFormattedStringWithoutFormattedText() {
@@ -780,12 +696,7 @@ export function test_parseFormattedStringWithoutFormattedText() {
     }
 
     helper.navigate(function () { return p; });
-    try {
-        testAction([p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p]);
 }
 
 export function test_parseFormattedStringFullSyntax() {
@@ -798,12 +709,7 @@ export function test_parseFormattedStringFullSyntax() {
     }
 
     helper.navigate(function () { return p; });
-    try {
-        testAction([p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p]);
 }
 
 export function test_parseSpansDirectlyToFormattedString() {
@@ -816,12 +722,7 @@ export function test_parseSpansDirectlyToFormattedString() {
     }
 
     helper.navigate(function () { return p; });
-    try {
-        testAction([p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p]);
 }
 
 export function test_searchbar_donotcrash_whentext_isempty() {
@@ -844,7 +745,7 @@ export function test_parse_template_property() {
     var templateView = <TemplateView>page.getViewById("template-view");
     TKUnit.assert(templateView, "Expected TemplateView.");
     TKUnit.assert(templateView.template, "Expected the template of the TemplateView to be defined");
-    
+
     TKUnit.assertEqual(templateView.getChildrenCount(), 0, "Expected TemplateView initially to have no children.");
     templateView.parseTemplate();
     TKUnit.assertEqual(templateView.getChildrenCount(), 1, "Expected TemplateView initially to have 1 child.");
@@ -855,46 +756,46 @@ export function test_parse_template_property() {
 
 export function test_NonExistingElementError() {
     var basePath = "xml-declaration/";
-	var expectedErrorStart =
-		"Building UI from XML. @file:///app/" + basePath + "errors/non-existing-element.xml:11:5\n" +
- 		" ↳Module 'ui/unicorn' not found for element 'Unicorn'.";
-	var message;
-	try {
-		builder.load(__dirname + "/errors/non-existing-element.xml");
-	} catch(e) {
-		message = e.message;
-	}
-	TKUnit.assertEqual(message.substr(0, expectedErrorStart.length), expectedErrorStart, "Expected load to throw, and the message to start with specific string");
+    var expectedErrorStart =
+        "Building UI from XML. @file:///app/" + basePath + "errors/non-existing-element.xml:11:5\n" +
+        " ↳Module 'ui/unicorn' not found for element 'Unicorn'.";
+    var message;
+    try {
+        builder.load(__dirname + "/errors/non-existing-element.xml");
+    } catch (e) {
+        message = e.message;
+    }
+    TKUnit.assertEqual(message.substr(0, expectedErrorStart.length), expectedErrorStart, "Expected load to throw, and the message to start with specific string");
 }
 
 export function test_NonExistingElementInTemplateError() {
     var basePath = "xml-declaration/";
-	var expectedErrorStart =
-		"Building UI from XML. @file:///app/" + basePath + "errors/non-existing-element-in-template.xml:14:17\n" +
- 		" ↳Module 'ui/unicorn' not found for element 'Unicorn'.";
-	var message;
+    var expectedErrorStart =
+        "Building UI from XML. @file:///app/" + basePath + "errors/non-existing-element-in-template.xml:14:17\n" +
+        " ↳Module 'ui/unicorn' not found for element 'Unicorn'.";
+    var message;
     var page = builder.load(__dirname + "/errors/non-existing-element-in-template.xml");
     TKUnit.assert(view, "Expected the xml to generate a page");
     var templateView = <TemplateView>page.getViewById("template-view");
     TKUnit.assert(templateView, "Expected the page to have a TemplateView with 'temaplte-view' id.");
-    
-	try {	
+
+    try {
         templateView.parseTemplate();
-	} catch(e) {
-		message = e.message;
-	}
-	TKUnit.assertEqual(message.substr(0, expectedErrorStart.length), expectedErrorStart, "Expected load to throw, and the message to start with specific string");
+    } catch (e) {
+        message = e.message;
+    }
+    TKUnit.assertEqual(message.substr(0, expectedErrorStart.length), expectedErrorStart, "Expected load to throw, and the message to start with specific string");
 }
 
 export function test_EventInTemplate() {
     var pageCode = require("./template-builder-tests/event-in-template");
-    
+
     var notified = false;
     pageCode.test = (args) => {
         notified = true;
     }
-    
-	var page = builder.load(__dirname + "/template-builder-tests/event-in-template.xml", pageCode);
+
+    var page = builder.load(__dirname + "/template-builder-tests/event-in-template.xml", pageCode);
     TKUnit.assert(view, "Expected the xml to generate a page");
     var templateView = <TemplateView>page.getViewById("template-view");
     TKUnit.assert(templateView, "Expected the page to have a TemplateView with 'temaplte-view' id.");
@@ -906,19 +807,19 @@ export function test_EventInTemplate() {
         eventName: "test",
         object: childTemplateView
     });
-    
+
     TKUnit.assert(notified, "Expected the child to raise the test event.");
 }
 
 export function test_EventInCodelessFragment() {
     var pageCode = require("./template-builder-tests/event-in-codeless-fragment");
-    
+
     var notified = false;
     pageCode.test = (args) => {
         notified = true;
     }
-    
-	var page = builder.load(__dirname + "/template-builder-tests/event-in-codeless-fragment.xml", pageCode);
+
+    var page = builder.load(__dirname + "/template-builder-tests/event-in-codeless-fragment.xml", pageCode);
     TKUnit.assert(view, "Expected the xml to generate a page");
     var templateView = <TemplateView>page.getViewById("template-view");
     TKUnit.assert(templateView, "Expected the page to have a TemplateView with 'temaplte-view' id.");
@@ -930,27 +831,27 @@ export function test_EventInCodelessFragment() {
         eventName: "test",
         object: childTemplateView
     });
-    
+
     TKUnit.assert(notified, "Expected the child to raise the test event.");
 }
 
 export function test_tabview_selectedindex_will_work_from_xml() {
     var p = <Page>builder.parse(
         '<Page>' +
-          '<TabView selectedIndex= "1">' +
-            '<TabView.items>'+
-              '<TabViewItem title="First">' +
-                 '<TabViewItem.view>' +
-                    '<Label text="First View" />' +
-                 '</TabViewItem.view>' +
-              '</TabViewItem>' +
-              '<TabViewItem title= "Second">' +
-                '<TabViewItem.view>' +
-                  '<Label text="Second View" />' +
-                '</TabViewItem.view>' +
-              '</TabViewItem>' +
-            '</TabView.items>' +
-         '</TabView>' +
+        '<TabView selectedIndex= "1">' +
+        '<TabView.items>' +
+        '<TabViewItem title="First">' +
+        '<TabViewItem.view>' +
+        '<Label text="First View" />' +
+        '</TabViewItem.view>' +
+        '</TabViewItem>' +
+        '<TabViewItem title= "Second">' +
+        '<TabViewItem.view>' +
+        '<Label text="Second View" />' +
+        '</TabViewItem.view>' +
+        '</TabViewItem>' +
+        '</TabView.items>' +
+        '</TabView>' +
         '</Page>');
 
     function testAction(views: Array<viewModule.View>) {
@@ -962,17 +863,11 @@ export function test_tabview_selectedindex_will_work_from_xml() {
     };
 
     helper.navigate(function () { return p; });
-
-    try {
-        testAction([p.content, p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p.content, p]);
 }
 
 export function test_TabViewHasCorrectParentChain() {
-    var testFunc = function(page: Page) {
+    var testFunc = function (page: Page) {
         TKUnit.assert(page.bindingContext.get("testPassed"));
     }
     var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
