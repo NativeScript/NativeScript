@@ -18,11 +18,12 @@ export function test_NavigateToNewPage_InnerControl() {
         return testPage;
     };
 
-    helper.navigate(pageFactory);
+    let currentPage = helper.getCurrentPage();
+    helper.navigateWithHistory(pageFactory);
     var label = <Label>testPage.content;
 
     frame.goBack();
-    TKUnit.waitUntilReady(() => !label.isLoaded);
+    TKUnit.waitUntilReady(() => !label.isLoaded && frame.topmost().currentPage === currentPage);
 
     TKUnit.assertEqual(label._context, undefined, "label._context should be undefined after navigate back.");
     TKUnit.assertEqual(label.android, undefined, "label.android should be undefined after navigate back.");

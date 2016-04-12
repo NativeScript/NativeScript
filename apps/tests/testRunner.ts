@@ -145,7 +145,7 @@ function printRunTestStats() {
     }
 
 
-    let finalMessage = `=== ALL TESTS COMPLETE for ${Math.round(TKUnit.time() - duration)}ms) === \n${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n`;
+    let finalMessage = `=== ALL TESTS COMPLETE for ${Math.round(TKUnit.time() - duration)} ms === \n${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n`;
     TKUnit.write(finalMessage, messageType.info);
     for (j = 0; j < failedTestInfo.length; j++) {
         let failureMessage = failedTestInfo[j];
