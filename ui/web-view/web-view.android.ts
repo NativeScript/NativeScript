@@ -103,6 +103,10 @@ export class WebView extends common.WebView {
         this._android.getSettings().setJavaScriptEnabled(true);
         this._android.getSettings().setBuiltInZoomControls(true);
         this._android.setWebViewClient(this._webViewClient);
+        
+        if (android.os.Build.VERSION.SDK_INT === 18 && (<any>this._android).setLayerType) {
+            (<any>this._android).setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+        }
     }
 
     public _loadUrl(url: string) {
