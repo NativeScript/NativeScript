@@ -4,7 +4,7 @@ env:
         - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
         - PACKAGE_NAME=tns-core-modules
         - NODE_VERSION=5.10.1
-        - EMULATOR_API_VER=21
+        - EMULATOR_API_VER=22
         - RUNTIMEVERSION=next
         - AVD_NAME=Arm$EMULATOR_API_VER
 addons:
@@ -34,7 +34,7 @@ before_script:
     - npm install
     - (cd build/platform-declarations && npm install)
     - echo no | android create avd --force -n $AVD_NAME -t android-$EMULATOR_API_VER -b armeabi-v7a -c 12M
-    - emulator -avd $AVD_NAME -no-skin -no-audio -no-window &
+    - emulator -avd $AVD_NAME -skin WXGA720 -no-audio -no-window &
     - android-wait-for-emulator
 script:
     - jdk_switcher use oraclejdk8

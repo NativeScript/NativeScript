@@ -106,8 +106,10 @@ var testsWithLongDelay = {
     testLocationOnce: 10000,
     testLocationOnceMaximumAge: 10000,
     //web-view-tests
-    testLoadExistingUrl: 10000,
-    testLoadInvalidUrl: 10000
+    testLoadExistingUrl: 10000 * 5,
+    testLoadLocalFile: 10000 * 5,
+    testLoadInvalidUrl: 10000,
+    testLoadUpperCaseSrc: 10000 * 5
 }
 
 var startTime;
@@ -150,7 +152,10 @@ function printRunTestStats() {
 
     testFileContent = testFileContent.concat(testCases);
 
-    let finalMessage = `=== ALL TESTS COMPLETE for ${totalTime} ms === \n${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n`;
+// DO NOT CHANGE THE FIRST ROW! Used as an indicator for test run pass detection.
+    let finalMessage = `=== ALL TESTS COMPLETE ===\n` +
+        `${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n` + 
+        `DURATION: ${totalTime} ms`;
     TKUnit.write(finalMessage, messageType.info);
     for (j = 0; j < failedTestInfo.length; j++) {
         let failureMessage = failedTestInfo[j];
