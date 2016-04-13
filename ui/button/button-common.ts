@@ -35,11 +35,11 @@ var formattedTextProperty = new dependencyObservable.Property(
 
 function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var button = <Button>data.object;
+    
+    button._onTextPropertyChanged(data);
 
     button.style._updateTextDecoration();
-    button.style._updateTextTransform();
-
-    button._onTextPropertyChanged(data);
+    button.style._updateTextTransform();   
 }
 
 function onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
