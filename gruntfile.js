@@ -429,7 +429,7 @@ module.exports = function(grunt) {
                 cmd: "grunt simplemocha:node"
             },
             injectArticles: {
-                cmd: "./node_modules/.bin/mdinject --root=<%= localCfg.srcAppsTests %> --docsroot=<%= localCfg.outArticlesDir %>"
+                cmd: "node node_modules/markdown-snippet-injector/index.js --root=<%= localCfg.srcAppsTests %> --docsroot=<%= localCfg.outArticlesDir %>"
             }
         },
         multidest: {
