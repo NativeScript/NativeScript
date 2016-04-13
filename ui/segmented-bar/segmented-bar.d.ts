@@ -36,7 +36,7 @@ declare module "ui/segmented-bar" {
     /**
      * Represents a UI SegmentedBar component.
      */
-    export class SegmentedBar extends view.View {
+    export class SegmentedBar extends view.View implements view.AddChildFromBuilder {
         /**
          * Gets or sets the selected index of the SegmentedBar component.
          */
@@ -84,5 +84,16 @@ declare module "ui/segmented-bar" {
          * Raised when the selected index changes.
          */
         on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
+        
+        /**
+         * Called for every child element declared in xml.
+         * @param name - Name of the element.
+         * @param value - Value of the element.
+         */
+        public _addChildFromBuilder(name: string, value: any): void;
+        
+        public insertTab(tabItem: SegmentedBarItem, index?: number): void;
+        
+        public getValidIndex(index?: number): number;
     }
 }

@@ -5,6 +5,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import color = require("color");
 import bindable = require("ui/core/bindable");
 import * as typesModule from "utils/types";
+import {WrappedValue} from "data/observable";
 
 var types: typeof typesModule;
 function ensureTypes() {
@@ -16,6 +17,8 @@ function ensureTypes() {
 export module knownCollections {
     export var items = "items";
 }
+
+var CHILD_SEGMENTED_BAR_ITEM = "SegmentedBarItem";
 
 export class SegmentedBarItem extends bindable.Bindable implements definition.SegmentedBarItem {
     private _title: string = "";
@@ -96,5 +99,38 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
                 this.items[i].bindingContext = newValue;
             }
         }
+    }
+    
+    private itemsTimerId;
+    
+    public _addChildFromBuilder(name: string, value: any): void {
+        if(name === CHILD_SEGMENTED_BAR_ITEM) {
+            if (!this.items) {
+                this.items = new Array<SegmentedBarItem>();
+            }
+            this.items.push(<SegmentedBarItem>value);
+            this.insertTab(<SegmentedBarItem>value);
+            
+        }
+    }
+    
+    public insertTab(tabItem: SegmentedBarItem, index?: number): void {
+        //
+    }
+    
+    public getValidIndex(index?: number): number {
+        ensureTypes();
+        let idx: number;
+        let itemsLength = this.items ? this.items.length : 0; 
+        if (types.isNullOrUndefined(index)) {
+            idx = itemsLength;
+        } else {
+            if (index < 0 || index > itemsLength) {
+                idx = itemsLength;
+            } else {
+                idx = index;
+            }
+        }
+        return idx;
     }
 }
