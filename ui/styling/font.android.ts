@@ -102,6 +102,10 @@ export class Font extends common.Font {
                     result = android.graphics.Typeface.MONOSPACE;
                     break;
 
+                case common.genericFontFamilies.system:
+                    result = android.graphics.Typeface.DEFAULT;
+                    break;
+
                 default:
                     result = this.loadFontFromFile(fonts[i]);
                     break;

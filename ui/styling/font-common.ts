@@ -130,6 +130,7 @@ export module genericFontFamilies {
     export var serif = "serif";
     export var sansSerif = "sans-serif";
     export var monospace = "monospace";
+    export var system = "system";
 }
 
 var styles = new Set();

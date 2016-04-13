@@ -3,10 +3,6 @@ import common = require("./font-common");
 import fs = require("file-system");
 import * as traceModule from "trace";
 
-var DEFAULT_SERIF = "Times New Roman";
-var DEFAULT_SANS_SERIF = "Helvetica";
-var DEFAULT_MONOSPACE = "Courier New";
-
 export class Font extends common.Font {
     public static default = new Font(undefined, undefined, enums.FontStyle.normal, enums.FontWeight.normal);
 
@@ -18,6 +14,8 @@ export class Font extends common.Font {
 
     public getUIFont(defaultFont: UIFont): UIFont {
         if (!this._uiFont) {
+            var size = this.fontSize || defaultFont.pointSize;
+
             var symbolicTraits: number = 0;
             if (this.isBold) {
                 symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold;
@@ -26,11 +24,30 @@ export class Font extends common.Font {
                 symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic;
             }
 
-            var descriptor = resolveFontDescriptor(this.fontFamily, symbolicTraits);
+            var descriptor: UIFontDescriptor;
+            switch (this.fontFamily) {
+
+                case common.genericFontFamilies.sansSerif:
+                case common.genericFontFamilies.system:
+                    let uiFont = UIFont.systemFontOfSize(size);
+                    descriptor = uiFont.fontDescriptor().fontDescriptorWithSymbolicTraits(symbolicTraits);
+                    break;
+
+                case common.genericFontFamilies.monospace:
+                    if ((<any>UIFont).monospacedDigitSystemFontOfSizeWeight) {// This method is available on iOS 9.0 and later.
+                        let uiFont = (<any>UIFont).monospacedDigitSystemFontOfSizeWeight(size, 0);
+                        descriptor = uiFont.fontDescriptor().fontDescriptorWithSymbolicTraits(symbolicTraits);
+                    }
+                    break;
+            }
+
+            if (!descriptor) {
+                descriptor = resolveFontDescriptor(this.fontFamily, symbolicTraits);
+            }
+
             if (!descriptor) {
                 descriptor = defaultFont.fontDescriptor().fontDescriptorWithSymbolicTraits(symbolicTraits);
             }
-            var size = this.fontSize || defaultFont.pointSize;
 
             this._uiFont = UIFont.fontWithDescriptorSize(descriptor, size);
         }
@@ -121,6 +138,9 @@ function resolveFontDescriptor(fontFamilyValue: string, symbolicTraits: number):
     return null;
 }
 
+const DEFAULT_SERIF = "Times New Roman";
+const DEFAULT_MONOSPACE = "Courier New";
+
 function getFontFamilyRespectingGenericFonts(fontFamily: string): string {
     if (!fontFamily) {
         return fontFamily;
@@ -129,9 +149,6 @@ function getFontFamilyRespectingGenericFonts(fontFamily: string): string {
     switch (fontFamily.toLowerCase()) {
         case common.genericFontFamilies.serif:
             return DEFAULT_SERIF;
-
-        case common.genericFontFamilies.sansSerif:
-            return DEFAULT_SANS_SERIF;
 
         case common.genericFontFamilies.monospace:
             return DEFAULT_MONOSPACE;
