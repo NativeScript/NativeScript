@@ -36,6 +36,7 @@
     "grunt-ts": "5.3.2",
     "grunt-typedoc": "0.2.3",
     "grunt-untar": "0.0.1",
+    "markdown-snippet-injector": "^0.1.1",
     "mocha": "2.2.5",
     "shelljs": "0.5.3",
     "grunt-tslint": "3.0.3",
