@@ -110,12 +110,13 @@ var testsWithLongDelay = {
     testLoadInvalidUrl: 10000
 }
 
-var duration;
+var startTime;
 var running = false;
 var testsQueue = new Array<TestInfo>();
 
 function printRunTestStats() {
     let testFileContent = new Array<string>();
+    let testCases = new Array<string>();
 
     var j;
     var failedTestCount = 0;
@@ -124,12 +125,11 @@ function printRunTestStats() {
     let allTests = testsQueue.filter(t=> t.isTest);
 
     testFileContent.push("<testsuites>");
-    testFileContent.push(`<testsuite name="NativeScript Tests" timestamp="${new Date()}" hostname="hostname" time="0" errors="0" tests="${allTests.length}" skipped="0" failures="${failedTestCount}">`);
 
     for (j = 0; j < allTests.length; j++) {
         let testName = allTests[j].testName;
-        let duration = Math.round(allTests[j].duration / 1000);
-
+        let duration = (allTests[j].duration / 1000).toFixed(2);
+        
         if (!allTests[j].isPassed) {
             failedTestCount++;
 
@@ -137,15 +137,20 @@ function printRunTestStats() {
 
             failedTestInfo.push(allTests[j].testName + " FAILED: " + allTests[j].errorMessage);
 
-            testFileContent.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"><failure type="exceptions.AssertionError"><![CDATA[${errorMessage}]]></failure></testcase>`);
+            testCases.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"><failure type="exceptions.AssertionError"><![CDATA[${errorMessage}]]></failure></testcase>`);
 
         } else {
-            testFileContent.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"></testcase>`);
+            testCases.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"></testcase>`);
         }
     }
+    
+    var totalTime = (TKUnit.time() - startTime).toFixed(2);
+    
+    testFileContent.push(`<testsuite name="NativeScript Tests" timestamp="${new Date()}" hostname="hostname" time="${totalTime}" errors="0" tests="${allTests.length}" skipped="0" failures="${failedTestCount}">`);
 
+    testFileContent = testFileContent.concat(testCases);
 
-    let finalMessage = `=== ALL TESTS COMPLETE for ${Math.round(TKUnit.time() - duration)} ms === \n${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n`;
+    let finalMessage = `=== ALL TESTS COMPLETE for ${totalTime} ms === \n${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n`;
     TKUnit.write(finalMessage, messageType.info);
     for (j = 0; j < failedTestInfo.length; j++) {
         let failureMessage = failedTestInfo[j];
@@ -211,7 +216,7 @@ export var runAll = function (testSelector?: string) {
 
     var totalSuccess = 0;
     var totalFailed: Array<TKUnit.TestFailure> = [];
-    testsQueue.push(new TestInfo(() => { running = true; duration = TKUnit.time(); }));
+    testsQueue.push(new TestInfo(() => { running = true; startTime = TKUnit.time(); }));
     for (var name in allTests) {
         if (singleModuleName && (singleModuleName !== name.toLowerCase())) {
             continue;
