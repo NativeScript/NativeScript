@@ -335,7 +335,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 repeatCount = FLT_MAX;
             }
             else {
-                repeatCount = animation.iterations - 1;
+                repeatCount = animation.iterations;
             }
         }
 
