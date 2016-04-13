@@ -50,5 +50,11 @@ export function butonTap(args) {
         btn.style.textDecoration = "none";
         textField.style.textDecoration = "none";
         textView.style.textDecoration = "none";
+        
+        if(lbl.text === "Change text") {
+            lbl.text = btn.text = textField.text = textView.text = "Text changed";
+        } else {
+            lbl.text = btn.text = textField.text = textView.text = "Change text";
+        }
     }
 }
