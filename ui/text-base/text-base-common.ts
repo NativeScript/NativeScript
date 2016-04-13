@@ -29,10 +29,10 @@ var formattedTextProperty = new dependencyObservable.Property(
 function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var textBase = <TextBase>data.object;
 
+    textBase._onTextPropertyChanged(data);
+
     textBase.style._updateTextTransform();
     textBase.style._updateTextDecoration();
-
-    textBase._onTextPropertyChanged(data);
 }
 
 (<proxy.PropertyMetadata>textProperty.metadata).onSetNativeValue = onTextPropertyChanged;
