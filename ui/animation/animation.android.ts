@@ -9,6 +9,10 @@ import styleModule = require("ui/styling/style");
 
 global.moduleMerge(common, exports);
 
+interface AnimationDefinitionInternal extends definition.AnimationDefinition {
+    valueSource?: number;
+}
+
 let argbEvaluator: android.animation.ArgbEvaluator;
 function ensureArgbEvaluator() {
     if (!argbEvaluator) {
@@ -79,11 +83,11 @@ export class Animation extends common.Animation implements definition.Animation 
         this._animatorSet.cancel();
     }
 
-    constructor(animationDefinitions: Array<definition.AnimationDefinition>, playSequentially?: boolean) {
+    constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
         super(animationDefinitions, playSequentially);
 
-        if (animationDefinitions.length > 0 && (<any>animationDefinitions[0]).valueSource !== undefined) {
-            this._valueSource = (<any>animationDefinitions[0]).valueSource;
+        if (animationDefinitions.length > 0 && animationDefinitions[0].valueSource !== undefined) {
+            this._valueSource = animationDefinitions[0].valueSource;
         }
 
         let that = this;

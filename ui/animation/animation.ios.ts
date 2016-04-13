@@ -30,7 +30,7 @@ interface PropertyAnimationInfo extends common.PropertyAnimation {
 }
 
 interface AnimationDefinitionInternal extends definition.AnimationDefinition {
-    valueSource: number;
+    valueSource?: number;
 }
 
 interface IOSView extends viewModule.View {
@@ -257,6 +257,9 @@ export class Animation extends common.Animation implements definition.Animation 
                 }
                 else {
                   originalValue = nativeView.layer.valueForKeyPath("transform.rotation");
+                }
+                if (originalValue === 0 && animation.target.rotate !== 0 && Math.floor(value / 360) - value / 360 === 0) {
+                    originalValue = animation.target.rotate * Math.PI / 180;
                 }
                 value = value * Math.PI / 180;
                 abs = fabs(originalValue - value);
