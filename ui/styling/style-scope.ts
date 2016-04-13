@@ -69,14 +69,14 @@ export class StyleScope {
     }
 
     private setCss(cssString: string, cssFileName?: string, append: boolean = false): void {
-        this._css = this._css ? this._css + cssString : cssString;
+        this._css = this._css && append ? this._css + cssString : cssString;
         if (cssFileName) {
             this._cssFileName = cssFileName;
         }
 
         this._reset();
 
-        const parsedSelectors = StyleScope.createSelectorsFromCss(cssString, cssFileName, this._keyframes);
+        const parsedSelectors = StyleScope.createSelectorsFromCss(this._css, cssFileName, this._keyframes);
         if (append) {
             this._localCssSelectors.push.apply(this._localCssSelectors, parsedSelectors);
         } else {

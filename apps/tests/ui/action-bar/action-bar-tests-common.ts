@@ -179,12 +179,7 @@ export function test_actionItem_inherit_bindingContext() {
 
     helper.navigate(pageFactory);
 
-    try {
-        TKUnit.assertEqual(page.actionBar.actionItems.getItemAt(0).text, "item", "actionItem.text");
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assertEqual(page.actionBar.actionItems.getItemAt(0).text, "item", "actionItem.text");
 }
 
 export function test_actionBar_inherit_bindingContext_inXML() {
@@ -325,12 +320,7 @@ export function test_ActionBarItemBindingToEvent() {
     }
 
     helper.navigate(function () { return p; });
-    try {
-        testAction([p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p]);
 }
 
 export function test_Setting_ActionItems_doesnt_thrown() {
@@ -358,12 +348,7 @@ export function test_Setting_ActionItems_doesnt_thrown() {
         gotException = true;
     }
 
-    try {
-        TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
 }
 
 export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
@@ -379,12 +364,7 @@ export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
         gotException = true;
     }
 
-    try {
-        TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
 }
 
 export function test_CanDefineEverythingAsContentBetweenTheTwoTags() {
@@ -432,13 +412,8 @@ export function test_LoadedEventsOrder() {
 
     helper.navigate(pageFactory);
 
-    try {
-        TKUnit.arrayAssert(loadedEvents, new Array<string>("content", "action-bar", "page"));
-    }
-    finally {
-        helper.goBack();
-    }
-};
+    TKUnit.arrayAssert(loadedEvents, new Array<string>("content", "action-bar", "page"));
+}
 
 export function test_LoadedEventsOrder_WithoutPageContent() {
     var loadedEvents = new Array<string>();
@@ -457,13 +432,8 @@ export function test_LoadedEventsOrder_WithoutPageContent() {
 
     helper.navigate(pageFactory);
 
-    try {
-        TKUnit.arrayAssert(loadedEvents, new Array<string>("action-bar", "page"));
-    }
-    finally {
-        helper.goBack();
-    }
-};
+    TKUnit.arrayAssert(loadedEvents, new Array<string>("action-bar", "page"));
+}
 
 export function test_setId() {
     var pageFactory = function (): PageModule.Page {
@@ -479,10 +449,7 @@ export function test_setId() {
     catch (e) {
         TKUnit.assert(false, "Failed to apply property 'id' to actionBar before its nativeView is ready.");
     }
-    finally {
-        helper.goBack();
-    }
-};
+}
 
 export function createPageAndNavigate() {
     var page: PageModule.Page;

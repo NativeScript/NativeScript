@@ -40,7 +40,6 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
     }
     finally {
         page.off(view.View.loadedEvent, handler);
-        helper.goBack();
     }
 }
 
@@ -79,7 +78,6 @@ export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript(
     }
     finally {
         page.off(view.View.loadedEvent, handler);
-        helper.goBack();
     }
 }
 
@@ -89,50 +87,41 @@ export function test_actionItem_visibility() {
     actionItem.ios.position = "left";
     var page = actionTestsCommon.createPageAndNavigate();
 
-    try {
-        page.actionBar.actionItems.addItem(actionItem);
+    page.actionBar.actionItems.addItem(actionItem);
 
-        var viewController = (<UIViewController>page.ios);
-        var navigationItem: UINavigationItem = viewController.navigationItem;
+    var viewController = (<UIViewController>page.ios);
+    var navigationItem: UINavigationItem = viewController.navigationItem;
 
-        var leftBarButtonItemsCount = navigationItem.leftBarButtonItems ? navigationItem.leftBarButtonItems.count : 0;
-        TKUnit.assertEqual(leftBarButtonItemsCount, 1, "Visibility does not work");
-        actionItem.visibility = Visibility.collapse;
+    var leftBarButtonItemsCount = navigationItem.leftBarButtonItems ? navigationItem.leftBarButtonItems.count : 0;
+    TKUnit.assertEqual(leftBarButtonItemsCount, 1, "Visibility does not work");
+    actionItem.visibility = Visibility.collapse;
 
-        TKUnit.waitUntilReady(() => {
-            leftBarButtonItemsCount = navigationItem.leftBarButtonItems ? navigationItem.leftBarButtonItems.count : 0;
-
-            return leftBarButtonItemsCount === 0;
-        });
-
+    TKUnit.waitUntilReady(() => {
         leftBarButtonItemsCount = navigationItem.leftBarButtonItems ? navigationItem.leftBarButtonItems.count : 0;
-        TKUnit.assertEqual(leftBarButtonItemsCount, 0, "Visibility does not work");
-    }
-    finally {
-        helper.goBack();
-    }
+
+        return leftBarButtonItemsCount === 0;
+    });
+
+    leftBarButtonItemsCount = navigationItem.leftBarButtonItems ? navigationItem.leftBarButtonItems.count : 0;
+    TKUnit.assertEqual(leftBarButtonItemsCount, 0, "Visibility does not work");
 }
 
 export function test_navigationButton_visibility() {
     var actionItem = new actionBar.ActionItem();
     actionItem.text = "Test";
     var page = actionTestsCommon.createPageAndNavigate();
-    try {
-        page.actionBar.navigationButton = actionItem;
 
-        var viewController = (<UIViewController>page.ios);
-        var navigationItem: UINavigationItem = viewController.navigationItem;
+    page.actionBar.navigationButton = actionItem;
 
-        TKUnit.assertFalse(navigationItem.hidesBackButton, "Visibility does not work");
-        actionItem.visibility = Visibility.collapse;
+    var viewController = (<UIViewController>page.ios);
+    var navigationItem: UINavigationItem = viewController.navigationItem;
 
-        TKUnit.waitUntilReady(() => {
-            return navigationItem.hidesBackButton;
-        });
+    TKUnit.assertFalse(navigationItem.hidesBackButton, "Visibility does not work");
+    actionItem.visibility = Visibility.collapse;
 
-        TKUnit.assertTrue(navigationItem.hidesBackButton, "Visibility does not work");
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.waitUntilReady(() => {
+        return navigationItem.hidesBackButton;
+    });
+
+    TKUnit.assertTrue(navigationItem.hidesBackButton, "Visibility does not work");
 }

@@ -7,39 +7,11 @@ import frame = require("ui/frame");
 
 global.moduleMerge(PageTestCommon, exports);
 
-export var test_NavigateToNewPage_WithAndroidCache = function () {
-    var testPage: PageModule.Page;
-    var pageFactory = function (): PageModule.Page {
-        testPage = new PageModule.Page();
-        var label = new LabelModule.Label();
-        label.text = "The quick brown fox jumps over the lazy dog.";
-        testPage.content = label;
-        return testPage;
-    };
-
-    var androidFrame = frame.topmost().android;
-    var cachingBefore = androidFrame.cachePagesOnNavigate;
-    try {
-        androidFrame.cachePagesOnNavigate = true;
-
-        helper.navigate(pageFactory);
-
-        helper.goBack();
-    }
-    finally {
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
-
-    TKUnit.assert(testPage.parent === undefined, "Page.parent should become undefined after navigating back");
-    TKUnit.assert(testPage.isLoaded === false, "Page.isLoaded should become false after navigating back");
-    TKUnit.assert(testPage.frame === undefined, "Page.frame should become undefined after navigating back");
-    TKUnit.assert(testPage._isAddedToNativeVisualTree === false, "Page._isAddedToNativeVisualTree should become false after navigating back");
-}
-
-export var test_NavigateToNewPage_InnerControl_WithAndroidCache = function () {
+export function test_NavigateToNewPage_WithAndroidCache() {
     var testPage: PageModule.Page;
     var label: LabelModule.Label;
-    var pageFactory = function () {
+
+    var pageFactory = function (): PageModule.Page {
         testPage = new PageModule.Page();
         label = new LabelModule.Label();
         label.text = "The quick brown fox jumps over the lazy dog.";
@@ -50,15 +22,22 @@ export var test_NavigateToNewPage_InnerControl_WithAndroidCache = function () {
     var androidFrame = frame.topmost().android;
     var cachingBefore = androidFrame.cachePagesOnNavigate;
     try {
+        let currentPage = frame.topmost().currentPage;
         androidFrame.cachePagesOnNavigate = true;
 
-        helper.navigate(pageFactory);
+        helper.navigateWithHistory(pageFactory);
 
-        helper.goBack();
+        frame.goBack();
+        TKUnit.waitUntilReady(() => frame.topmost().currentPage !== null && frame.topmost().currentPage === currentPage);
     }
     finally {
         androidFrame.cachePagesOnNavigate = cachingBefore;
     }
+
+    TKUnit.assert(testPage.parent === undefined, "Page.parent should become undefined after navigating back");
+    TKUnit.assert(testPage.isLoaded === false, "Page.isLoaded should become false after navigating back");
+    TKUnit.assert(testPage.frame === undefined, "Page.frame should become undefined after navigating back");
+    TKUnit.assert(testPage._isAddedToNativeVisualTree === false, "Page._isAddedToNativeVisualTree should become false after navigating back");
 
     TKUnit.assert(label._context === undefined, "InnerControl._context should not be set after navigate back.");
     TKUnit.assert(label.android === undefined, "InnerControl.android should not be set after navigate back.");
@@ -75,9 +54,10 @@ export var test_NavigateToNewPage_InnerControl = function () {
         return testPage;
     };
 
-    helper.navigate(pageFactory);
-
-    helper.goBack();
+    let currentPage = frame.topmost().currentPage;
+    helper.navigateWithHistory(pageFactory);
+    frame.goBack();
+    TKUnit.waitUntilReady(() => frame.topmost().currentPage !== null && frame.topmost().currentPage === currentPage);
 
     var label = <LabelModule.Label>testPage.content;  
 
@@ -99,7 +79,7 @@ export var test_ChangePageCaching_AfterNavigated_Throws = function () {
     var androidFrame = frame.topmost().android;
     var cachingBefore = androidFrame.cachePagesOnNavigate;
     
-    helper.navigate(pageFactory);
+    helper.navigateWithHistory(pageFactory);
     
     try {
         TKUnit.assertThrows(() => {
@@ -111,7 +91,6 @@ export var test_ChangePageCaching_AfterNavigated_Throws = function () {
             );
     }
     finally {
-        helper.goBack();
         androidFrame.cachePagesOnNavigate = cachingBefore;
     }
 }
@@ -134,7 +113,6 @@ export var test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow = func
         androidFrame.cachePagesOnNavigate = cachingBefore;
     }
     finally {
-        helper.goBack();
         androidFrame.cachePagesOnNavigate = cachingBefore;
     }
 }

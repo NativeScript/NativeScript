@@ -3,7 +3,6 @@ import * as helper from "../ui/helper";
 import * as platform from "platform";
 import * as trace from "trace";
 import {Color} from "color";
-import {GC} from "utils/utils";
 import {NavigationEntry, NavigationTransition} from "ui/frame";
 import {Page} from "ui/page";
 import {AnimationCurve} from "ui/enums"
@@ -13,7 +12,7 @@ function _testTransition(navigationTransition: NavigationTransition) {
     trace.write(`Testing ${testId}`, trace.categories.Test);
     var navigationEntry: NavigationEntry = {
         create: function (): Page {
-            var page = new Page();
+            let page = new Page();
             page.id = testId;
             page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
             return page;
@@ -24,9 +23,6 @@ function _testTransition(navigationTransition: NavigationTransition) {
 
     helper.navigateWithEntry(navigationEntry);
     TKUnit.wait(0.100);
-    helper.goBack();
-    TKUnit.wait(0.100);
-    GC();
 }
 
 // Extremely slow. Run only if needed.
@@ -79,6 +75,4 @@ export var test_Transitions = function () {
         var customTransition = new customTransitionModule.CustomTransition();
         _testTransition({ instance: customTransition });
     }
-
-    helper.goBack();
 }

@@ -1,5 +1,4 @@
 ﻿import actionTestsCommon = require("./action-bar-tests-common");
-import helper = require("../helper");
 import TKUnit = require("../../TKUnit");
 import { ActionItem } from "ui/action-bar";
 import { Visibility } from "ui/enums";
@@ -10,34 +9,24 @@ export function test_actionItem_visibility() {
     var actionItem = new ActionItem();
     actionItem.text = "Test";
     var page = actionTestsCommon.createPageAndNavigate();
-    try {
-        page.actionBar.actionItems.addItem(actionItem);
-        var toolbar = <android.support.v7.widget.Toolbar>(<any>page.actionBar)._toolbar;
-        var menu = toolbar.getMenu();
+    page.actionBar.actionItems.addItem(actionItem);
+    var toolbar = <android.support.v7.widget.Toolbar>(<any>page.actionBar)._toolbar;
+    var menu = toolbar.getMenu();
 
-        TKUnit.assertTrue(menu.hasVisibleItems(), "Visibility does not work");
-        actionItem.visibility = Visibility.collapse;
-        TKUnit.assertFalse(menu.hasVisibleItems(), "Visibility does not work");
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assertTrue(menu.hasVisibleItems(), "Visibility does not work");
+    actionItem.visibility = Visibility.collapse;
+    TKUnit.assertFalse(menu.hasVisibleItems(), "Visibility does not work");
 }
 
 export function test_navigationButton_visibility() {
     var actionItem = new ActionItem();
     actionItem.icon = "~/small-image.png";
     var page = actionTestsCommon.createPageAndNavigate();
-    try {
-        page.actionBar.navigationButton = actionItem;
+    page.actionBar.navigationButton = actionItem;
 
-        var toolbar = <android.support.v7.widget.Toolbar>(<any>page.actionBar)._toolbar;
+    var toolbar = <android.support.v7.widget.Toolbar>(<any>page.actionBar)._toolbar;
 
-        TKUnit.assertNotNull(toolbar.getNavigationIcon(), "Visibility does not work");
-        actionItem.visibility = Visibility.collapse;
-        TKUnit.assertNull(toolbar.getNavigationIcon(), "Visibility does not work");
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assertNotNull(toolbar.getNavigationIcon(), "Visibility does not work");
+    actionItem.visibility = Visibility.collapse;
+    TKUnit.assertNull(toolbar.getNavigationIcon(), "Visibility does not work");
 }

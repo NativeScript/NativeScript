@@ -85,6 +85,10 @@ export var test_ClearHistory = function () {
     var currentPage: Page;
 
     currentPage = topmostFrame().currentPage;
+    topmostFrame().navigate({ create: pageFactory, clearHistory: true });
+    TKUnit.waitUntilReady(() => { return topmostFrame().currentPage !== currentPage; });
+
+    currentPage = topmostFrame().currentPage;
     topmostFrame().navigate({ create: pageFactory });
     TKUnit.waitUntilReady(() => { return topmostFrame().currentPage !== currentPage; });
 

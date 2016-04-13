@@ -1,10 +1,11 @@
 ﻿import TKUnit = require("../../TKUnit");
 import app = require("application");
-import helper = require("../helper");
 import button = require("ui/button");
 import enums = require("ui/enums");
 import testModule = require("../../ui-test");
 import layoutHelper = require("../../layouts/layout-helper");
+import {Page} from "ui/page";
+import * as frame from "ui/frame";
 
 // <snippet module="ui/scroll-view" title="scroll-view">
 // # ScrollView
@@ -170,9 +171,15 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.testView.scrollToVerticalOffset(layoutHelper.dp(100), false);
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1, "this.testView.verticalOffset before navigation");
 
-        helper.do_PageTest_WithButton((t) => {
-            // Just navigate forward and back.
-        });
+        let page = new Page();
+        let createFunc = () => {
+            return page;
+        };
+
+        let entry: frame.NavigationEntry = { create: createFunc, animated: false };
+        frame.topmost().navigate(entry);
+        TKUnit.waitUntilReady(() => page.isLayoutValid);
+        frame.topmost().goBack();
 
         // Wait for the page to reload.
         TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1); });
@@ -189,9 +196,15 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1, "this.testView.horizontalOffset before navigation");
 
-        helper.do_PageTest_WithButton((t) => {
-            // Just navigate forward and back.
-        });
+        let page = new Page();
+        let createFunc = () => {
+            return page;
+        };
+
+        let entry: frame.NavigationEntry = { create: createFunc, animated: false };
+        frame.topmost().navigate(entry);
+        TKUnit.waitUntilReady(() => page.isLayoutValid);
+        frame.topmost().goBack();
 
         // Wait for the page to reload.
         TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1); });

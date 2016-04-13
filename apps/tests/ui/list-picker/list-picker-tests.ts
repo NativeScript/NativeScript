@@ -2,7 +2,6 @@
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 import listPickerTestsNative = require("./list-picker-tests-native");
-import pageModule = require("ui/page");
 import application = require("application");
 
 // <snippet module="ui/list-picker" title="ListPicker">
@@ -174,29 +173,17 @@ export var testSettingSelectedIndexLargerThanCountShouldThrow = function () {
 }
 
 export var testWhenSelectingAnItemNativelySelectedIndexIsUpdatedProperly = function () {
-    var listPicker: listPickerModule.ListPicker;
-    var mainPage: pageModule.Page;
-    var pageFactory = function (): pageModule.Page {
-        listPicker = _createListPicker();
-        listPicker.items = _createItems(2);
-        mainPage = new pageModule.Page();
-        mainPage.content = listPicker;
-        return mainPage;
-    };
+    let listPicker = _createListPicker();
+    let mainPage = helper.getCurrentPage();
+    listPicker.items = _createItems(2);
+    mainPage.content = listPicker;
 
-    helper.navigate(pageFactory);
-
-    var expectedValue = 1;
+    let expectedValue = 1;
     listPickerTestsNative.selectNativeItem(listPicker, expectedValue);
-    TKUnit.wait(helper.ASYNC);
+    TKUnit.waitUntilReady(() => listPicker.selectedIndex === 1);
 
-    var actualValue = listPicker.selectedIndex;
-    try {
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-    }
-    finally {
-        helper.goBack();
-    }
+    let actualValue = listPicker.selectedIndex;
+    TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
 }
 
 export var test_Android_MaxValueIsOneLessThanItemsCount = function () {

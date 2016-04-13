@@ -49,14 +49,12 @@ export var test_AnimatingProperties = function(done) {
             ////console.log("Animation finished.");
             // <hide>
             assertIOSNativeTransformIsCorrect(label);
-            helper.goBack();
             done();
             // </hide>
         })
         .catch((e) => {
             console.log(e.message);
             // <hide>
-            helper.goBack();
             done(e);
             // </hide>
         });
@@ -94,7 +92,6 @@ export var test_CancellingAnimation = function(done) {
         .catch((e) => {
             ////console.log("Animation cancelled");
             // <hide>
-            helper.goBack();
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
             } else if (e.toString() === "Error: Animation cancelled.") {
@@ -138,7 +135,6 @@ export var test_CancellingAnimate = function(done) {
         .catch((e) => {
             ////console.log("Animation cancelled");
             // <hide>
-            helper.goBack();
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
             } else if (e.toString() === "Error: Animation cancelled.") {
@@ -183,14 +179,12 @@ export var test_ChainingAnimations = function(done) {
             ////console.log("Animation finished");
             // <hide>
             assertIOSNativeTransformIsCorrect(label);
-            helper.goBack();
             done();
             // </hide>
         })
         .catch((e) => {
             console.log(e.message);
             // <hide>
-            helper.goBack();
             done(e);
             // </hide>
         });
@@ -230,14 +224,12 @@ export var test_ReusingAnimations = function(done) {
             ////console.log("Animation finished");
             // <hide>
             assertIOSNativeTransformIsCorrect(label);
-            helper.goBack();
             done();
             // </hide>
         })
         .catch((e) => {
             console.log(e.message);
             // <hide>
-            helper.goBack();
             done(e);
             // </hide>
         });
@@ -284,14 +276,12 @@ export var test_AnimatingMultipleViews = function(done) {
             assertIOSNativeTransformIsCorrect(label1);
             assertIOSNativeTransformIsCorrect(label2);
             assertIOSNativeTransformIsCorrect(label3);
-            helper.goBack();
             done();
             // </hide>
         })
         .catch((e) => {
             console.log(e.message);
             // <hide>
-            helper.goBack();
             done(e);
             // </hide>
         });
@@ -318,11 +308,9 @@ export var test_AnimateOpacity = function(done) {
     label.animate({ opacity: 0.75 })
         .then(() => {
             TKUnit.assertEqual(label.opacity, 0.75, "label.opacity");
-            helper.goBack();
             done();
         })
         .catch((e) => {
-            helper.goBack();
             done(e);
         });
 }
@@ -419,11 +407,9 @@ export var test_AnimateBackgroundColor = function(done) {
     label.animate({ backgroundColor: red })
         .then(() => {
             TKUnit.assert(label.backgroundColor.equals(red));
-            helper.goBack();
             done();
         })
         .catch((e) => {
-            helper.goBack();
             done(e);
         });
 }
@@ -450,11 +436,9 @@ export var test_AnimateBackgroundColor_FromString = function(done) {
     label.animate({ backgroundColor: <any>expected })
         .then(() => {
             TKUnit.assert(label.backgroundColor.equals(clr));
-            helper.goBack();
             done();
         })
         .catch((e) => {
-            helper.goBack();
             done(e);
         });
 }
@@ -480,11 +464,9 @@ export var test_AnimateTranslate = function(done) {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
             TKUnit.assertEqual(label.translateY, 200, "label.translateY");
             assertIOSNativeTransformIsCorrect(label);
-            helper.goBack();
             done();
         })
         .catch((e) => {
-            helper.goBack();
             done(e);
         });
 }
@@ -510,11 +492,9 @@ export var test_AnimateScale = function(done) {
             TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
             assertIOSNativeTransformIsCorrect(label);
-            helper.goBack();
             done();
         })
         .catch((e) => {
-            helper.goBack();
             done(e);
         });
 }
@@ -539,11 +519,9 @@ export var test_AnimateRotate = function(done) {
         .then(() => {
             TKUnit.assertEqual(label.rotate, 123, "label.rotate");
             assertIOSNativeTransformIsCorrect(label);
-            helper.goBack();
             done();
         })
         .catch((e) => {
-            helper.goBack();
             done(e);
         });
 }
@@ -576,11 +554,9 @@ export var test_AnimateTranslateScaleAndRotateSimultaneously = function(done) {
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
             TKUnit.assertEqual(label.rotate, 123, "label.rotate");
             assertIOSNativeTransformIsCorrect(label);
-            helper.goBack();
             done();
         })
         .catch((e) => {
-            helper.goBack();
             done(e);
         });
 }
@@ -623,11 +599,9 @@ export var test_AnimateTranslateScaleAndRotateSequentially = function(done) {
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
             TKUnit.assertEqual(label.rotate, 123, "label.rotate");
             assertIOSNativeTransformIsCorrect(label);
-            helper.goBack();
             done();
         })
         .catch((e) => {
-            helper.goBack();
             done(e);
         });
 }
@@ -658,12 +632,10 @@ export var test_AnimationsAreAlwaysPlayed = function(done) {
         })
         .then(() => {
             TKUnit.assert(label.opacity === 1, `Label opacity should be 1 after second animation, actual value is ${label.opacity}.`);
-            helper.goBack();
             done();
         })
         .catch((e) => {
             console.log(e.message);
-            helper.goBack();
             done(e);
         });
 }
@@ -689,11 +661,9 @@ export var test_PlayPromiseIsResolvedWhenAnimationFinishes = function(done) {
     animation.play()
         .then(function onResolved() {
             TKUnit.assert(animation.isPlaying === false, "Animation.isPlaying should be false when animation play promise is resolved.");
-            helper.goBack();
             done();
         }, function onRejected(e) {
             TKUnit.assert(1 === 2, "Animation play promise should be resolved, not rejected.");
-            helper.goBack();
             done(e);
         });
 }
@@ -719,11 +689,9 @@ export var test_PlayPromiseIsRejectedWhenAnimationIsCancelled = function(done) {
     animation.play()
         .then(function onResolved() {
             TKUnit.assert(1 === 2, "Animation play promise should be rejected, not resolved.");
-            helper.goBack();
             done();
         }, function onRejected(e) {
             TKUnit.assert(animation.isPlaying === false, "Animation.isPlaying should be false when animation play promise is rejected.");
-            helper.goBack();
             done();
         });
 

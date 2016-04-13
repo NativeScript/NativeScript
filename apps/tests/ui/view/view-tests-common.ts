@@ -99,15 +99,11 @@ export var test_parent_IsReset_WhenDetached_FromVisualTree = function () {
         cachedViews = views;
     }
 
-    helper.do_PageTest_WithButton(test);
+    helper.do_PageTest_WithStackLayout_AndButton(test);
 
-    // the test will call goBack to the current frame and will remove the test page
-    // verify the first view returned in the helper callback is detached (no parent)
-    TKUnit.assert(types.isUndefined(cachedViews[0].parent));
-
-    // the button (second view) should have a parent
-    TKUnit.assert(types.isDefined(cachedViews[1].parent));
-    TKUnit.assert(cachedViews[1].parent === cachedViews[0]);
+    TKUnit.assert(types.isUndefined(cachedViews[1].parent));
+    TKUnit.assert(types.isDefined(cachedViews[2].parent));
+    TKUnit.assert(cachedViews[2].parent === cachedViews[1]);
 }
 
 export var test_domId_IsUnique = function () {
@@ -152,14 +148,12 @@ export var test_event_LoadedUnloaded_IsRaised = function () {
     helper.do_PageTest_WithStackLayout_AndButton(test);
 }
 
-export var test_bindingContext_IsInherited = function () {
+export function test_bindingContext_IsInherited() {
     var context = {};
-    frame.topmost().bindingContext = context;
-
     var test = function (views: Array<viewModule.View>) {
-        var i;
-        for (i = 0; i < views.length; i++) {
-            TKUnit.assert(views[i].bindingContext === context);
+        views[0].bindingContext = context;
+        for (let i = 0; i < views.length; i++) {
+            TKUnit.assertEqual(views[i].bindingContext, context);
         }
     }
 
@@ -169,8 +163,8 @@ export var test_bindingContext_IsInherited = function () {
 
 export var test_isAddedToNativeVisualTree_IsUpdated = function () {
     var test = function (views: Array<viewModule.View>) {
-        var i;
-        for (i = 0; i < views.length; i++) {
+
+        for (let i = 0; i < views.length; i++) {
             TKUnit.assert(views[i]._isAddedToNativeVisualTree);
         }
 
@@ -243,17 +237,14 @@ export class TestButton extends button.Button {
 }
 
 export var test_InheritableStylePropertiesWhenUsedWithExtendedClass_AreInherited = function () {
-    var test = function (views: Array<viewModule.View>) {
-        var redColor = new color.Color("red");
-        views[0].style.color = redColor;
+    let page = frame.topmost().currentPage;
+    let redColor = new color.Color("red");
+    page.style.color = redColor;
 
-        var newButton = new TestButton();
-        views[1]._addView(newButton);
+    let newButton = new TestButton();
+    page.content = newButton;
 
-        TKUnit.assert(newButton.style.color === redColor);
-    }
-
-    helper.do_PageTest_WithStackLayout_AndButton(test);
+    TKUnit.assertEqual(newButton.style.color, redColor);
 }
 
 var inheritanceTestDefaultValue = 42;
