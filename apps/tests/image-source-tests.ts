@@ -1,16 +1,10 @@
-﻿// <snippet module="image-source" title="image-source">
-// # Image source
-// Using the image source requires the image-source module.
-// ``` JavaScript
-//var imageSource = require("image-source");
-// ```
-// The pre-required `imageSource` module is used throughout the following code snippets.
-// We also use fs module defined as follows:
-// ``` JavaScript
-//var fs = require("file-system");
-// ```
-// ## Loading and saving images
-// </snippet>
+﻿// >> imagesource-require
+// var imageSource = require("image-source");
+// << imagesource-require
+
+// >> imagesource-require-alt
+// var fs = require("file-system");
+// << imagesource-require-alt
 
 import imageSource = require("image-source");
 import fs = require("file-system");
@@ -24,13 +18,9 @@ var smallImagePath = fs.path.join(__dirname, "/small-image.png");
 
 /* TODO: We need a way to programmatically add an image to resources and then load it from, otherwise we do not know if there is such resource in the target native app.
 export function testFromResource() {
-    // <snippet module="image-source" title="image-source">
-    // ### Load image using resource name
-    // This is similar to loading Bitmap from `R.drawable.logo` on Android or calling `[UIImage imageNamed@"logo"]` on iOS
-    // ``` JavaScript
+    // >> imagesource-resname
     var img = imageSource.fromResource("logo");
-    // ```
-    // </snippet>
+    // << imagesource-resname
     TKUnit.assert(img.height > 0, "image.fromResource failed");
 }
 */
@@ -38,13 +28,11 @@ export function testFromUrl(done) {
     //var completed;
     var result: imageSource.ImageSource;
 
-    // <snippet module="image-source" title="image-source">
-    // ### Load image from URL
-    // ``` JavaScript
+    // >> imagesource-load-url
     imageSource.fromUrl("https://www.google.com/images/errors/logo_sm_2.png")
         .then(function (res: imageSource.ImageSource) {
         //console.log("Image successfully loaded");
-        // <hide>
+        // >> (hide)
         //completed = true;
         result = res;
         try {
@@ -55,41 +43,34 @@ export function testFromUrl(done) {
         catch (e) {
             done(e);
         }
-        // </hide>
+        // << (hide)
     }, function (error) {
             //console.log("Error loading image: " + error);
-            // <hide>
+            // >> (hide)
             //completed = true;
             done(error);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << imagesource-load-url
 }
 
 export function testSaveToFile() {
-    // <snippet module="image-source" title="image-source">
-    // ### Save image source to PNG or JPG file
-    // ``` JavaScript
+    // >> imagesource-save-to
     var img = imageSource.fromFile(imagePath);
     var folder = fs.knownFolders.documents();
     var path = fs.path.join(folder.path, "Test.png");
     var saved = img.saveToFile(path, enums.ImageFormat.png);
-    // ```
-    // </snippet>
+    // << imagesource-save-to
     TKUnit.assert(saved, "Image not saved to file");
     TKUnit.assert(fs.File.exists(path), "Image not saved to file");
 }
 
 export function testFromFile() {
-    // <snippet module="image-source" title="image-source">
-    // ### Load image from a local file
-    // ``` JavaScript
+    // >> imagesource-load-local
     var folder = fs.knownFolders.documents();
     var path = fs.path.join(folder.path, "Test.png");
     var img = imageSource.fromFile(path);
-    // ```
-    // </snippet>
+    // << imagesource-load-local
 
     TKUnit.assert(img.height > 0, "image.fromResource failed");
 

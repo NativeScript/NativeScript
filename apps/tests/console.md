@@ -14,7 +14,7 @@ Begins counting a time span for a given name (key).
 <snippet id='console-time'/>
 
 Ends a previously started time span through the time method.
-<snippet id='console-timeEnd'/>
+<snippet id='console-timeend'/>
 
 ### Assert
 Asserts a boolean condition and prints a message in case the assert fails.

@@ -1,20 +1,13 @@
 ﻿import camera = require("camera");
 
-// <snippet module="camera" title="camera">
-// # Camera module
-// Using a camera requires the camera module.
-// ``` JavaScript
+// >> camera-require
 // var camera = require("camera");
-// ```
-// </snippet>
+// << camera-require
 
 export var test_takePicture = function () {
-    // <snippet module="camera" title="camera">
-    // ### Taking a picture.
-    // ``` JavaScript
+    // >> camera-take-picture
     camera.takePicture().then(result => {
         //// result is ImageSource
     });
-    // ```
-    // </snippet>
+    // << camera-take-picture
 };

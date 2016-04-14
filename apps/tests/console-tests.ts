@@ -11,9 +11,9 @@ export var test_DummyTestForSnippetOnly1 = function () {
     // >> console-time
     console.time("LoadTime");
     // << console-time
-    // >> console-timeEnd
+    // >> console-timeend
     console.timeEnd("LoadTime");
-    // << console-timeEnd
+    // << console-timeend
 }
 
 export var test_DummyTestForSnippetOnly2 = function () {
