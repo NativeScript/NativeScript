@@ -56,8 +56,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var newItems = <Array<definition.SegmentedBarItem>>data.newValue;
     if (newItems && newItems.length) {
         for (var i = 0; i < newItems.length; i++) {
-            view.ios.insertSegmentWithTitleAtIndexAnimated(newItems[i].title || "", i, false);
-            (<SegmentedBarItem>newItems[i])._parent = view;
+            view.insertTab(<SegmentedBarItem>(newItems[i]), i);
         }
 
         if (view.ios.selectedSegmentIndex !== view.selectedIndex) {
@@ -104,6 +103,12 @@ export class SegmentedBar extends common.SegmentedBar {
 
     get ios(): UISegmentedControl {
         return this._ios;
+    }
+    
+    public insertTab(tabItem: SegmentedBarItem, index?: number): void {
+        super.insertTab(tabItem, index);
+        tabItem._parent = this;
+        this.ios.insertSegmentWithTitleAtIndexAnimated(tabItem.title || "", this.getValidIndex(index), false);
     }
 }
 
