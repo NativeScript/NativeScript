@@ -327,6 +327,7 @@ export class FileSystemAccess {
                 if (isFolder) {
                     created = javaFile.mkdirs();
                 } else {
+                    javaFile.getParentFile().mkdirs();
                     created = javaFile.createNewFile();
                 }
 
