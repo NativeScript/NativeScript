@@ -8,7 +8,6 @@ class Target {
     public onEvent(data: observable.EventData) {
         this.counter++;
     }
-
 }
 
 export function test_addWeakEventListener_throwsWhenCalledwitnInvalid_source() {
@@ -45,8 +44,6 @@ export function test_addWeakEventListener_listensForEvent() {
         target.onEvent,
         target);
 
-    helper.forceGC();
-
     source.set("testProp", "some value");
 
     TKUnit.assertEqual(target.counter, 1, "Handler not called.");
@@ -59,8 +56,6 @@ export function test_addWeakEventListener_listensForEven_multipleTargetst() {
 
     weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target1.onEvent, target1);
     weakEvents.addWeakEventListener(source, observable.Observable.propertyChangeEvent, target2.onEvent, target2);
-
-    helper.forceGC();
 
     source.set("testProp", "some value");
 

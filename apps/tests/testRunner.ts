@@ -26,34 +26,44 @@ export function isRunningOnEmulator(): boolean {
 }
 
 export var allTests = {};
+if (!isRunningOnEmulator()) {
+    allTests["LOCATION"] = require("./location-tests");
+}
+
+allTests["PLATFORM"] = require("./platform-tests");
+allTests["FILE SYSTEM"] = require("./file-system-tests");
+allTests["HTTP"] = require("./http-tests");
+allTests["XHR"] = require("./xhr-tests");
+allTests["FETCH"] = require("./fetch-tests");
+allTests["APPLICATION SETTINGS"] = require("./application-settings-tests");
+allTests["APPLICATION"] = require("./application-tests");
+allTests["IMAGE SOURCE"] = require("./image-source-tests");
+allTests["OBSERVABLE-ARRAY"] = require("./observable-array-tests");
+allTests["VIRTUAL-ARRAY"] = require("./virtual-array-tests");
+allTests["OBSERVABLE"] = require("./observable-tests");
+allTests["TIMER"] = require("./timer-tests");
+allTests["COLOR"] = require("./color-tests");
+allTests["DEPENDENCY-OBSERVABLE"] = require("./ui/dependency-observable-tests");
+allTests["BINDABLE"] = require("./ui/bindable-tests");
+allTests["BINDING-EXPRESSIONS"] = require("./ui/binding-expressions-tests");
+allTests["XML-PARSER"] = require("./xml-parser-tests/xml-parser-tests");
+allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");
+allTests["FILE-SYSTEM-ACCESS"] = require("./file-system-access-tests/file-system-access-tests");
+allTests["FILE-NAME-RESOLVER"] = require("./file-name-resolver-tests/file-name-resolver-tests");
+allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
+allTests["CONNECTIVITY"] = require("./connectivity-tests");
+
 allTests["PROXY-VIEW-CONTAINER"] = require("./ui/proxy-view-container/proxy-view-container-tests")
 allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
 allTests["ACTION-BAR"] = require("./ui/action-bar/action-bar-tests");
 allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
-allTests["APPLICATION"] = require("./application-tests");
 allTests["DOCKLAYOUT"] = require("./layouts/dock-layout-tests");
 allTests["WRAPLAYOUT"] = require("./layouts/wrap-layout-tests");
 allTests["ABSOLUTELAYOUT"] = require("./layouts/absolute-layout-tests");
 allTests["GRIDLAYOUT"] = require("./layouts/grid-layout-tests");
 allTests["STACKLAYOUT"] = require("./layouts/stack-layout-tests");
-allTests["PLATFORM"] = require("./platform-tests");
 allTests["STYLE-PROPERTIES"] = require("./ui/style/style-properties-tests");
-allTests["FILE SYSTEM"] = require("./file-system-tests");
-allTests["HTTP"] = require("./http-tests");
-allTests["XHR"] = require("./xhr-tests");
-allTests["FETCH"] = require("./fetch-tests");
 allTests["FRAME"] = require("./frame-tests");
-allTests["APPLICATION SETTINGS"] = require("./application-settings-tests");
-allTests["IMAGE SOURCE"] = require("./image-source-tests");
-allTests["TIMER"] = require("./timer-tests");
-allTests["COLOR"] = require("./color-tests");
-allTests["OBSERVABLE-ARRAY"] = require("./observable-array-tests");
-allTests["VIRTUAL-ARRAY"] = require("./virtual-array-tests");
-allTests["OBSERVABLE"] = require("./observable-tests");
-allTests["DEPENDENCY-OBSERVABLE"] = require("./ui/dependency-observable-tests");
-allTests["BINDABLE"] = require("./ui/bindable-tests");
-allTests["BINDING-EXPRESSIONS"] = require("./ui/binding-expressions-tests");
-allTests["XML-PARSER"] = require("./xml-parser-tests/xml-parser-tests");
 allTests["VIEW"] = require("./ui/view/view-tests");
 allTests["STYLE"] = require("./ui/style/style-tests");
 allTests["VISUAL-STATE"] = require("./ui/style/visual-state-tests");
@@ -73,31 +83,22 @@ allTests["LISTVIEW"] = require("./ui/list-view/list-view-tests");
 allTests["ACTIVITY-INDICATOR"] = require("./ui/activity-indicator/activity-indicator-tests");
 allTests["TEXT-FIELD"] = require("./ui/text-field/text-field-tests");
 allTests["TEXT-VIEW"] = require("./ui/text-view/text-view-tests");
-allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");
-allTests["FILE-SYSTEM-ACCESS"] = require("./file-system-access-tests/file-system-access-tests");
-allTests["FILE-NAME-RESOLVER"] = require("./file-name-resolver-tests/file-name-resolver-tests");
 allTests["LIST-PICKER"] = require("./ui/list-picker/list-picker-tests");
 allTests["DATE-PICKER"] = require("./ui/date-picker/date-picker-tests");
 allTests["TIME-PICKER"] = require("./ui/time-picker/time-picker-tests");
 allTests["WEB-VIEW"] = require("./ui/web-view/web-view-tests");
 allTests["HTML-VIEW"] = require("./ui/html-view/html-view-tests");
-allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
 allTests["REPEATER"] = require("./ui/repeater/repeater-tests");
 allTests["SEARCH-BAR"] = require('./ui/search-bar/search-bar-tests');
-allTests["CONNECTIVITY"] = require("./connectivity-tests");
 allTests["SEGMENTED-BAR"] = require("./ui/segmented-bar/segmented-bar-tests");
 allTests["ANIMATION"] = require("./ui/animation/animation-tests");
 allTests["CSS-ANIMATION"] = require("./ui/animation/css-animation-tests");
-if (!isRunningOnEmulator()) {
-    allTests["LOCATION"] = require("./location-tests");
-}
 
 // Skip transitions on android emulators with API 23
 if (!(platform.device.os === platform.platformNames.android && parseInt(platform.device.sdkVersion) === 23 && isRunningOnEmulator())) {
     allTests["TANSITIONS"] = require("./navigation/transition-tests");
 }
 
-// Navigation tests should always be last.
 allTests["NAVIGATION"] = require("./navigation/navigation-tests");
 
 var testsWithLongDelay = {

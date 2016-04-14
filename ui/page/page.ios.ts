@@ -345,16 +345,8 @@ export class Page extends pageCommon.Page {
 
         super._raiseShowingModallyEvent();
 
-        parent.ios.presentViewControllerAnimatedCompletion(this._ios, utils.ios.MajorVersion >= 8, null);
-
-        if (utils.ios.MajorVersion >= 8) {
-            var that = this;
-            UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(parent.ios.transitionCoordinator(), null, function() {
-                that._raiseShownModallyEvent();
-            });
-        } else {
-            this._raiseShownModallyEvent();
-        }
+        parent.ios.presentViewControllerAnimatedCompletion(this._ios, utils.ios.MajorVersion >= 7, null);
+        UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(parent.ios.transitionCoordinator(), null, () => this._raiseShownModallyEvent());
     }
 
     protected _hideNativeModalView(parent: Page) {

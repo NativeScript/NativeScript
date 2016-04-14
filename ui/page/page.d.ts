@@ -195,7 +195,7 @@ declare module "ui/page" {
         showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean): Page;
 
         /**
-         * Shows the page contained in moduleName as a modal view.
+         * Shows the page passed as parameter as a modal view.
          * @param page - Page instance to be shown modally.
          * @param context - Any context you want to pass to the modally shown page. This same context will be available in the arguments of the Page.shownModally event handler.
          * @param closeCallback - A function that will be called when the page is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.

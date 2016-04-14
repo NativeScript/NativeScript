@@ -109,7 +109,8 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
 
     newPage.content = sp;
 
-    TKUnit.waitUntilReady(() => { return testFinished; }, MEMORY_ASYNC);
+    TKUnit.waitUntilReady(() => testFinished, MEMORY_ASYNC);
+    TKUnit.assertTrue(testFinished, "Test did not completed.")
     done(null);
 }
 

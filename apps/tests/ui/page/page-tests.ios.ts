@@ -77,8 +77,8 @@ export function test_page_no_anctionBar_measure_no_spanUnderBackground_measure_l
     let lbl = new Label();
     page.content = lbl;
 
-    helper.navigate(() => { return page; });
-    TKUnit.waitUntilReady(() => { return page.isLayoutValid; });
+    helper.navigate(() => page);
+    TKUnit.waitUntilReady(() => page.isLayoutValid);
     TKUnit.assertTrue(page.isLoaded, "page NOT loaded!");
 
     let bounds = page._getCurrentLayoutBounds();
@@ -92,7 +92,7 @@ export function test_page_no_anctionBar_measure_no_spanUnderBackground_measure_l
     TKUnit.assertEqual(contentHeight, frameHeight - statusBarHeight, "Page.content height should match Frame height - statusBar height.");
 
     page.backgroundSpanUnderStatusBar = false;
-    TKUnit.waitUntilReady(() => { return page.isLayoutValid; });
+    TKUnit.waitUntilReady(() => page.isLayoutValid);
     pageHeight = page._getCurrentLayoutBounds().bottom - page._getCurrentLayoutBounds().top;
     TKUnit.assertEqual(pageHeight, frameHeight - statusBarHeight, "Page should be given Frame height - statusBar height.");
 
@@ -100,7 +100,7 @@ export function test_page_no_anctionBar_measure_no_spanUnderBackground_measure_l
     TKUnit.assertEqual(contentHeight, pageHeight, "Page.content height should match Page height.");
 
     page.actionBarHidden = false;
-    TKUnit.waitUntilReady(() => { return page.isLayoutValid; });
+    TKUnit.waitUntilReady(() => page.isLayoutValid);
 
     pageHeight = page._getCurrentLayoutBounds().bottom - page._getCurrentLayoutBounds().top;
     TKUnit.assertEqual(pageHeight, frameHeight - statusBarHeight, "Page should be given Frame height - statusBar height.");
