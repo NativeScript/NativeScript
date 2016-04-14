@@ -4,13 +4,9 @@ import datePickerTestsNative = require("./date-picker-tests-native");
 import color = require("color");
 import platform = require("platform");
 
-// <snippet module="ui/date-picker" title="DatePicker">
-// # DatePicker
-// Using a DatePicker requires the "ui/date-picker" module.
-// ``` JavaScript
+// >> date-picker-require
 import datePickerModule = require("ui/date-picker");
-// ```
-// </snippet>
+// << date-picker-require
 
 function assertDate(datePicker: datePickerModule.DatePicker, expectedYear: number, expectedMonth: number, expectedDay: number) {
     TKUnit.assertEqual(datePicker.year, expectedYear, "datePicker.year");
@@ -62,16 +58,13 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     
     public test_DummyForCodeSnippet() {
         let datePicker = new datePickerModule.DatePicker();
-        // <snippet module="ui/date-picker" title="DatePicker">
-        // ## Configuring a DatePicker
-        // ``` JavaScript
+        // >> date-picker-configure
         datePicker.year = 1980;
         datePicker.month = 2;
         datePicker.day = 9;
         datePicker.minDate = new Date(1975, 0, 29);
         datePicker.maxDate = new Date(2045, 4, 12);
-        // ```
-        // </snippet>
+        // << date-picker-configure
     }
     
     public test_set_color() {

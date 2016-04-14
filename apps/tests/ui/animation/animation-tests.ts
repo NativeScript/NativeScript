@@ -7,13 +7,9 @@ import stackLayoutModule = require("ui/layouts/stack-layout");
 import colorModule = require("color");
 import enums = require("ui/enums");
 
-// <snippet module="ui/animation" title="animation">
-// # Animation
-// Animating view properties requires the "ui/animation" module.
-// ``` JavaScript
+// >> animation-require
 import animation = require("ui/animation");
-// ```
-// </snippet>
+// << animation-require
 
 export var test_AnimatingProperties = function(done) {
     var mainPage: pageModule.Page;
@@ -31,9 +27,7 @@ export var test_AnimatingProperties = function(done) {
     helper.navigate(pageFactory);
     TKUnit.waitUntilReady(() => { return label.isLoaded });
 
-    // <snippet module="ui/animation" title="animation">
-    // # Animating properties
-    // ``` JavaScript
+    // >> animation-properties
     label.animate({
         opacity: 0.75,
         backgroundColor: new colorModule.Color("Red"),
@@ -47,19 +41,18 @@ export var test_AnimatingProperties = function(done) {
     })
         .then(() => {
             ////console.log("Animation finished.");
-            // <hide>
+            // >> (hide)
             assertIOSNativeTransformIsCorrect(label);
             done();
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             console.log(e.message);
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << animation-properties
 }
 
 export var test_CancellingAnimation = function(done) {
@@ -78,20 +71,18 @@ export var test_CancellingAnimation = function(done) {
     helper.navigate(pageFactory);
     TKUnit.waitUntilReady(() => { return label.isLoaded });
 
-    // <snippet module="ui/animation" title="animation">
-    // # Cancelling animation
-    // ``` JavaScript
+    // >> animation-cancel
     var animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 500 });
     animation1.play()
         .then(() => {
             ////console.log("Animation finished");
-            // <hide>
+            // >> (hide)
             throw new Error("Cancelling Animation - Should not be in the Promise Then()");
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             ////console.log("Animation cancelled");
-            // <hide>
+            // >> (hide)
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
             } else if (e.toString() === "Error: Animation cancelled.") {
@@ -99,11 +90,10 @@ export var test_CancellingAnimation = function(done) {
             } else {
                 done(e);
             }
-            // </hide>
+            // << (hide)
         });
     animation1.cancel();
-    // ```
-    // </snippet>
+    // << animation-cancel
 }
 
 export var test_CancellingAnimate = function(done) {
@@ -122,19 +112,17 @@ export var test_CancellingAnimate = function(done) {
     helper.navigate(pageFactory);
     TKUnit.waitUntilReady(() => { return label.isLoaded });
 
-    // <snippet module="ui/animation" title="animation">
-    // # Cancelling animation
-    // ``` JavaScript
+    // >> animation-cancel2
     var animation1 = label.animate({ translate: { x: 100, y: 100 }, duration: 500 })
         .then(() => {
             ////console.log("Animation finished");
-            // <hide>
+            // >> (hide)
             throw new Error("Cancelling Animate - Should not be in Promise Then()");
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             ////console.log("Animation cancelled");
-            // <hide>
+            // >> (hide)
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
             } else if (e.toString() === "Error: Animation cancelled.") {
@@ -142,11 +130,10 @@ export var test_CancellingAnimate = function(done) {
             } else {
                 done(e);
             }
-            // </hide>
+            // << (hide)
         });
     animation1.cancel();
-    // ```
-    // </snippet>
+    // << animation-cancel2
 }
 
 export var test_ChainingAnimations = function(done) {
@@ -164,9 +151,7 @@ export var test_ChainingAnimations = function(done) {
     helper.navigate(pageFactory);
     TKUnit.waitUntilReady(() => { return label.isLoaded });
 
-    // <snippet module="ui/animation" title="animation">
-    // # Chaining animations
-    // ``` JavaScript
+    // >> animation-chaining
     label.animate({ opacity: 0 })
         .then(() => label.animate({ opacity: 1 }))
         .then(() => label.animate({ translate: { x: 200, y: 200 } }))
@@ -177,19 +162,18 @@ export var test_ChainingAnimations = function(done) {
         .then(() => label.animate({ rotate: 0 }))
         .then(() => {
             ////console.log("Animation finished");
-            // <hide>
+            // >> (hide)
             assertIOSNativeTransformIsCorrect(label);
             done();
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             console.log(e.message);
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << animation-chaining
 }
 
 export var test_ReusingAnimations = function(done) {
@@ -208,9 +192,7 @@ export var test_ReusingAnimations = function(done) {
     helper.navigate(pageFactory);
     TKUnit.waitUntilReady(() => { return label.isLoaded });
 
-    // <snippet module="ui/animation" title="animation">
-    // # Reusing animations
-    // ``` JavaScript
+    // >> animation-reusing
     var animation1 = label.createAnimation({ translate: { x: 100, y: 100 } });
     var animation2 = label.createAnimation({ translate: { x: 0, y: 0 } });
 
@@ -222,19 +204,18 @@ export var test_ReusingAnimations = function(done) {
         .then(() => animation2.play())
         .then(() => {
             ////console.log("Animation finished");
-            // <hide>
+            // >> (hide)
             assertIOSNativeTransformIsCorrect(label);
             done();
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             console.log(e.message);
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << animation-reusing
 }
 
 export var test_AnimatingMultipleViews = function(done) {
@@ -260,9 +241,7 @@ export var test_AnimatingMultipleViews = function(done) {
     helper.navigate(pageFactory);
     TKUnit.waitUntilReady(() => { return label1.isLoaded && label2.isLoaded });
 
-    // <snippet module="ui/animation" title="animation">
-    // # Animating multiple views simultaneously
-    // ``` JavaScript
+    // >> animation-multiple-views
     var animations: Array<animation.AnimationDefinition> = [
         { target: label1, translate: { x: 200, y: 200 }, duration: 1000, delay: 0 },
         { target: label2, translate: { x: 200, y: 200 }, duration: 1000, delay: 333 },
@@ -272,21 +251,20 @@ export var test_AnimatingMultipleViews = function(done) {
     a.play()
         .then(() => {
             ////console.log("Animations finished");
-            // <hide>
+            // >> (hide)
             assertIOSNativeTransformIsCorrect(label1);
             assertIOSNativeTransformIsCorrect(label2);
             assertIOSNativeTransformIsCorrect(label3);
             done();
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             console.log(e.message);
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << animation-multiple-views
 }
 
 export var test_AnimateOpacity = function(done) {
