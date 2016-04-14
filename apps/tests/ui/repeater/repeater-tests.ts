@@ -88,7 +88,7 @@ export function test_set_items_to_array_loads_all_items() {
         // ```
         // </snippet>
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 
         TKUnit.assert(getChildAtText(repeater, 0) === "red", "Item not created for index 0");
         TKUnit.assert(getChildAtText(repeater, 1) === "green", "Item not created for index 1");
@@ -104,7 +104,7 @@ export function test_set_items_to_array_creates_views() {
     function testAction(views: Array<viewModule.View>) {
         repeater.items = FEW_ITEMS;
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "views count.");
     };
 
@@ -119,7 +119,7 @@ export function test_refresh_after_adding_items_to_array_loads_new_items() {
         var colors = ["red", "green", "blue"];
         repeater.items = colors;
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), colors.length, "views count.");
         // <snippet module="ui/repeater" title="repeater">
         // > Note, that changing the array after the repeater is shown will not update the UI.
@@ -147,7 +147,7 @@ export function test_refresh_reloads_all_items() {
 
         repeater.items = itemsToBind;
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         testStarted = true;
 
         itemsToBind[0] = "red";
@@ -156,7 +156,7 @@ export function test_refresh_reloads_all_items() {
 
         repeater.refresh();
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 
         TKUnit.assert(getChildAtText(repeater, 0) === "red", "Item not created for index 0");
         TKUnit.assert(getChildAtText(repeater, 1) === "green", "Item not created for index 1");
@@ -171,11 +171,11 @@ export function test_set_itmes_to_null_clears_items() {
 
     function testAction(views: Array<viewModule.View>) {
         repeater.items = FEW_ITEMS;
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "views count.");
 
         repeater.items = null;
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 0, "views count.");
     };
 
@@ -196,7 +196,7 @@ export function test_set_itemsLayout_accepted() {
     function testAction(views: Array<viewModule.View>) {
 
         repeater.items = FEW_ITEMS;
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assert((<stackLayoutModule.StackLayout>repeater.itemsLayout).orientation === "horizontal", "views count.");
         TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "views count.");
     };
@@ -209,11 +209,11 @@ export function test_set_itmes_to_undefiend_clears_items() {
 
     function testAction(views: Array<viewModule.View>) {
         repeater.items = FEW_ITEMS;
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, "views count.");
 
         repeater.items = undefined;
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 0, "views count.");
     };
 
@@ -225,11 +225,11 @@ export function test_set_itmes_to_different_source_loads_new_items() {
 
     function testAction(views: Array<viewModule.View>) {
         repeater.items = [1, 2, 3];
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 3, "views count.");
 
         repeater.items = ["a", "b", "c", "d"];
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 4, "views count.");
     };
 
@@ -248,6 +248,7 @@ export function test_set_items_to_observable_array_loads_all_items() {
         // ```
         // </snippet>
 
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assert(getChildAtText(repeater, 0) === "red", "Item not created for index 0");
         TKUnit.assert(getChildAtText(repeater, 1) === "green", "Item not created for index 1");
         TKUnit.assert(getChildAtText(repeater, 2) === "blue", "Item not created for index 2");
@@ -263,7 +264,7 @@ export function test_add_to_observable_array_refreshes_the_Repeater() {
         var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
         repeater.items = colors;
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 3, "getChildrenCount");
 
         // <snippet module="ui/repeater" title="repeater">
@@ -273,7 +274,7 @@ export function test_add_to_observable_array_refreshes_the_Repeater() {
         //// The Repeater will be updated automatically.
         // ```
         // </snippet>
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 4, "getChildrenCount");
 
     };
@@ -288,11 +289,11 @@ export function test_remove_from_observable_array_refreshes_the_Repeater() {
     function testAction(views: Array<viewModule.View>) {
         repeater.items = data;
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 3, "getChildrenCount");
 
         data.pop();
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 2, "getChildrenCount");
 
     };
@@ -307,12 +308,12 @@ export function test_splice_observable_array_refreshes_the_Repeater() {
     function testAction(views: Array<viewModule.View>) {
         repeater.items = data;
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 3, "getChildrenCount");
 
         // Remove the first 2 elements and add 
         data.splice(0, 2, "d", "e", "f");
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 4, "getChildrenCount");
 
     };
@@ -343,7 +344,7 @@ export function test_usingAppLevelConvertersInRepeaterItems() {
         repeater.itemTemplate = "<Label id=\"testLabel\" text=\"{{ date, date | dateConverter('DD.MM.YYYY') }}\" />";
         repeater.items = data;
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 
         TKUnit.assertEqual(getChildAtText(repeater, 0), dateConverter(new Date(), "DD.MM.YYYY"), "element");
     };
@@ -358,7 +359,7 @@ export function test_BindingRepeaterToASimpleArray() {
         repeater.itemTemplate = "<Label id=\"testLabel\" text=\"{{ $value }}\" />";
         repeater.items = [1, 2, 3];
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 
         TKUnit.assertEqual(getChildAtText(repeater, 0), "1", "first element text");
         TKUnit.assertEqual(getChildAtText(repeater, 1), "2", "second element text");
@@ -380,7 +381,7 @@ export function test_ItemTemplateFactoryFunction() {
         }
         repeater.items = [1, 2, 3];
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 
         TKUnit.assertEqual(getChildAtText(repeater, 0), "1", "first element text");
         TKUnit.assertEqual(getChildAtText(repeater, 1), "2", "second element text");
@@ -397,7 +398,7 @@ export function test_BindingRepeaterToASimpleArrayWithExpression() {
         repeater.itemTemplate = "<Label id=\"testLabel\" text=\"{{ $value, $value + ' some static text' }}\" />";
         repeater.items = [1, 2, 3];
 
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 
         TKUnit.assertEqual(getChildAtText(repeater, 0), "1 some static text", "first element text");
         TKUnit.assertEqual(getChildAtText(repeater, 1), "2 some static text", "second element text");
@@ -471,7 +472,7 @@ export function test_ChildrenAreNotCreatedUntilTheRepeaterIsLoaded() {
     TKUnit.assertEqual(getChildrenCount(repeater), 0, "Repeater should not create its children until loaded.");
 
     function testAction(views: Array<viewModule.View>) {
-        TKUnit.waitUntilReady(() => repeater.isLoaded);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 3, "Repeater should have created its children when loaded.");
     }
 

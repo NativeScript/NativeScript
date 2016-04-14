@@ -490,11 +490,17 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
         let page = <Page>args.object;
         TKUnit.assertNull(page.modal, "currentPage.modal should be undefined when no modal page is shown!");
         let basePath = "ui/page/";
-        modalPage = page.showModal(basePath + "modal-page", ctx, modalCloseCallback, false);
-        TKUnit.assertTrue((<any>modalPage).showingModally, "showingModally");
+        let entry: frameModule.NavigationEntry = {
+            moduleName: basePath + "modal-page"
+        };
+
+        modalPage = <Page>frameModule.resolvePageFromEntry(entry);
         modalPage.on(Page.shownModallyEvent, onShownModal);
         modalPage.on(Page.loadedEvent, onModalLoaded);
         modalPage.on(Page.unloadedEvent, onModalUnloaded);
+
+        page.showModal(modalPage, ctx, modalCloseCallback, false);
+        TKUnit.assertTrue((<any>modalPage).showingModally, "showingModally");
     };
 
     var masterPageFactory = function (): Page {

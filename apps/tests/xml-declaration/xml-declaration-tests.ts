@@ -179,8 +179,7 @@ export function test_parse_ShouldResolveExportsFromCodeFileForTemplates() {
         });
         p.bindingContext = obj;
 
-        TKUnit.wait(0.2);
-
+        TKUnit.waitUntilReady(() => ctrl !== null);
         TKUnit.assert((<any>ctrl).customCodeLoaded, "Parse should resolve exports for templates from custom code file.");
     };
 
@@ -640,9 +639,7 @@ export function test_parse_NestedRepeaters() {
 
     function testAction(views: Array<viewModule.View>) {
         p.bindingContext = [["0", "1"], ["2", "3"]];
-        TKUnit.wait(0.2);
-
-        var lbls = new Array<Label>();
+        let lbls = new Array<Label>();
         view.eachDescendant(p, (v) => {
             if (v instanceof Label) {
                 lbls.push(v);
@@ -855,10 +852,7 @@ export function test_tabview_selectedindex_will_work_from_xml() {
         '</Page>');
 
     function testAction(views: Array<viewModule.View>) {
-        var tab: TabView = <TabView>p.content;
-
-        TKUnit.wait(0.2);
-
+        let tab: TabView = <TabView>p.content;
         TKUnit.assertEqual(tab.selectedIndex, 1);
     };
 

@@ -431,12 +431,10 @@ export var test_ObservableCreatedWithJSON_shouldDistinguishSeparateObjects = fun
     });
 
     observable1.set("val", 10);
-    TKUnit.wait(0.1);
     TKUnit.assert(propName1 === "val", "propName1 should be 'val'");
     TKUnit.assert(newValue1 === 10, "newValue1 should be 10");
 
     observable2.set("val", 20);
-    TKUnit.wait(0.1);
     TKUnit.assert(propName2 === "val", "propName2 should be 'val'");
     TKUnit.assert(newValue2 === 20, "newValue2 should be 20");
 
@@ -470,12 +468,10 @@ export var test_ObservablesCreatedWithJSON_shouldNotInterfereWithOneAnother = fu
     });
 
     observable1.set("property1", 10);
-    TKUnit.wait(0.1);
     TKUnit.assert(propName1 === "property1", "propName1 should be 'property1'");
     TKUnit.assert(newValue1 === 10, "newValue1 should be 10");
 
     observable2.set("property2", 20);
-    TKUnit.wait(0.1);
     TKUnit.assert(propName2 === "property2", "propName2 should be 'property2'");
     TKUnit.assert(newValue2 === 20, "newValue2 should be 20");
 };
