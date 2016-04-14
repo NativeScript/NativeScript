@@ -58,7 +58,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
             tab.setIndicator(newItems[i].title || "");
 
             tab.setContent(new android.widget.TabHost.TabContentFactory({
-                createTabContent: function (tag: string): android.view.View {
+                createTabContent: function(tag: string): android.view.View {
                     var tv = new android.widget.TextView(view._context);
                     tv.setVisibility(android.view.View.GONE);
                     return tv;
@@ -102,6 +102,9 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
             if (view.color) {
                 t.setTextColor(view.color.android);
             }
+
+            t.setSingleLine(true);
+            t.setEllipsize(android.text.TextUtils.TruncateAt.END);
         }
     }
 }
@@ -158,7 +161,7 @@ export class SegmentedBar extends common.SegmentedBar {
         var that = new WeakRef(this);
 
         this._listener = new android.widget.TabHost.OnTabChangeListener({
-            onTabChanged: function (id: string) {
+            onTabChanged: function(id: string) {
                 var bar = that.get();
                 if (bar) {
                     bar.selectedIndex = parseInt(id);
