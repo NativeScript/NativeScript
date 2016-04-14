@@ -8,6 +8,7 @@ import types = require("utils/types");
 export class EditableTextBase extends common.EditableTextBase {
     private _android: android.widget.EditText;
     private _textWatcher: android.text.TextWatcher;
+    private _keyListenerCache: android.text.method.IKeyListener;
     /* tslint:disable */
     private _dirtyTextAccumulator: string;
     /* tslint:enable */
@@ -23,15 +24,15 @@ export class EditableTextBase extends common.EditableTextBase {
     public _createUI() {
         this._android = new android.widget.EditText(this._context);
         this._configureEditText();
-        this.android.setTag(this.android.getKeyListener());
+        this._keyListenerCache = this.android.getKeyListener();
 
         var that = new WeakRef(this);
 
         this._textWatcher = new android.text.TextWatcher({
-            beforeTextChanged: function(text: string, start: number, count: number, after: number) {
+            beforeTextChanged: function (text: string, start: number, count: number, after: number) {
                 //
             },
-            onTextChanged: function(text: string, start: number, before: number, count: number) {
+            onTextChanged: function (text: string, start: number, before: number, count: number) {
                 var owner = that.get();
                 if (!owner) {
                     return;
@@ -42,7 +43,7 @@ export class EditableTextBase extends common.EditableTextBase {
                 owner.android.addTextChangedListener(owner._textWatcher);
                 owner.android.setSelection(selectionStart);
             },
-            afterTextChanged: function(editable: android.text.IEditable) {
+            afterTextChanged: function (editable: android.text.IEditable) {
                 var owner = that.get();
                 if (!owner) {
                     return;
@@ -63,7 +64,7 @@ export class EditableTextBase extends common.EditableTextBase {
         this._android.addTextChangedListener(this._textWatcher);
 
         var focusChangeListener = new android.view.View.OnFocusChangeListener({
-            onFocusChange: function(view: android.view.View, hasFocus: boolean) {
+            onFocusChange: function (view: android.view.View, hasFocus: boolean) {
                 var owner = that.get();
                 if (!owner) {
                     return;
@@ -82,7 +83,7 @@ export class EditableTextBase extends common.EditableTextBase {
         this._android.setOnFocusChangeListener(focusChangeListener);
 
         var editorActionListener = new android.widget.TextView.OnEditorActionListener({
-            onEditorAction: function(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
+            onEditorAction: function (textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
                 var owner = that.get();
                 if (owner) {
                     if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
@@ -164,7 +165,7 @@ export class EditableTextBase extends common.EditableTextBase {
                 break;
         }
 
-        this._android.setInputType(newInputType);
+        this._setInputType(newInputType);
     }
 
     public _onReturnKeyTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -203,7 +204,7 @@ export class EditableTextBase extends common.EditableTextBase {
         }
 
         if (data.newValue) {
-            this.android.setKeyListener(<android.text.method.IKeyListener>this.android.getTag());
+            this.android.setKeyListener(this._keyListenerCache);
         }
         else {
             this.android.setKeyListener(null);
@@ -237,7 +238,7 @@ export class EditableTextBase extends common.EditableTextBase {
                 break;
         }
 
-        editableTextBase.android.setInputType(inputType);
+        editableTextBase._setInputType(inputType);
     }
 
     public _onAutocorrectPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -263,7 +264,7 @@ export class EditableTextBase extends common.EditableTextBase {
                 break;
         }
 
-        editableTextBase.android.setInputType(inputType);
+        editableTextBase._setInputType(inputType);
     }
 
     public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -273,5 +274,20 @@ export class EditableTextBase extends common.EditableTextBase {
         }
 
         editableTextBase.android.setHint(data.newValue + "");
+    }
+
+    private _setInputType(inputType): void {
+        this.android.setInputType(inputType);
+
+        // setInputType will change the keyListener so we should cache it again
+        let listener = this.android.getKeyListener();
+        if (listener) {
+            this._keyListenerCache = listener;
+        }
+
+        // clear the listener if editable is false
+        if (!this.editable) {
+            this.android.setKeyListener(null);
+        }
     }
 }  
