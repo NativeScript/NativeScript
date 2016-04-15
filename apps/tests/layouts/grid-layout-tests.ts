@@ -561,27 +561,12 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
     }
 
     public test_codesnippets = function () {
-        // <snippet module="ui/layouts/grid-layout" title="grid-layout">
-        // ## GridLayout sample
-        // ### Creating Grid Layout via code.
-        // ``` JavaScript
+        // >> grid-layout-require
         //var layout = require("ui/layouts/grid-layout");
         var gridLayout = new GridLayout();
-        //  ```
+        //  << grid-layout-require
 
-        // ### Create grid layout with an xml declaration
-        // ``` XML
-        // <GridLayout columns="80, *, auto" rows="auto, *" >
-        //  <Button col="0" />
-        //  <Button col="1" />
-        //  <Button col="2" />
-        //// by default column and row are set to 0
-        //  <Button row="1" colSpan="3" />
-        // </GridLayout>
-        // ```
-
-        // ### Add views to grid layout
-        // ``` JavaScript
+        // >> grid-layout-addviews
         var btn1 = new Button();
         var btn2 = new Button();
         var btn3 = new Button();
@@ -590,27 +575,23 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
         gridLayout.addChild(btn2);
         gridLayout.addChild(btn3);
         gridLayout.addChild(btn4);
-        //  ```
-
-        // ### Set column property on views - btn1 in first column, btn2 is second and btn3 in third
-        // ``` JavaScript
+        //  << grid-layout-addviews
+        
+        // >> grid-layout-setcolumn
         GridLayout.setColumn(btn1, 0);
         GridLayout.setColumn(btn2, 1);
         GridLayout.setColumn(btn3, 2);
-        // ```
-
-        // ### Set row property on btn4.
-        // ``` JavaScript
+        // << grid-layout-setcolumn
+        
+        // >> grid-layout-setrow
         GridLayout.setRow(btn4, 1);
-        // ```
+        // << grid-layout-setrow
 
-        // ### Set columnSpan property on btn4 to stretch into all columns
-        // ``` JavaScript
+        // >> grid-layout-columnspan
         GridLayout.setColumnSpan(btn4, 3);
-        // ```
+        // << grid-layout-columnspan
 
-        // ### Create ItemSpec for columns and rows 3 columns - 80px, *, auto size and 2 rows - 100px and auto size
-        // ``` JavaScript
+        // >> grid-layout-itemspec
         //// ItemSpec modes of the column refers to its width.
         //// Absolute size of the column
         var firstColumn = new ItemSpec(80, GridUnitType.pixel);
@@ -622,17 +603,15 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
         //// Star and Auto modes for rows behave like corresponding setting for columns but refer to row height.
         var firstRow = new ItemSpec(1, GridUnitType.auto);
         var secondRow = new ItemSpec(1, GridUnitType.star);
-        // ```
-
-        // ### Add columns and rows to GridLayout
-        // ``` JavaScript
+        // << grid-layout-itemspec
+        
+        // >> grid-layout-add-rowscols
         gridLayout.addColumn(firstColumn);
         gridLayout.addColumn(secondColumn);
         gridLayout.addColumn(thirdColumn);
         gridLayout.addRow(firstRow);
         gridLayout.addRow(secondRow);
-        // ```
-        // </snippet>
+        // << grid-layout-add-rowscols
     }
 
     public test_percent_support() {
