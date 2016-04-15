@@ -5,35 +5,16 @@ import observable = require("data/observable");
 import color = require("color");
 import platform = require("platform");
 
-// <snippet module="ui/progress" title="progress">
-// # Progress
-// Using the progress view requires the Progress module.
-// ``` JavaScript
+// >> article-require-module
 import progressModule = require("ui/progress");
-// ```
+// << article-require-module
 
-// Binding the Progress value property to a view-model property.
-//``` XML
-// <Page loaded="pageLoaded">
-//   {%raw%}<Progress value="{{ someProperty }}" />{%endraw%}
-// </Page>
-//```
-//``` JavaScript
-// function pageLoaded(args) {
-//   var page = args.object;
-//   page.bindingContext = { someProperty : 42 };
-// }
-// exports.pageLoaded = pageLoaded;
-//```
-// </snippet>
+
 
 export function test_default_TNS_values() {
-    // <snippet module="ui/progress" title="progress">
-    // ### Creating a progress view
-    // ``` JavaScript
+    // >> article-create-progress-view
     var progress = new progressModule.Progress();
-    // ```
-    // </snippet>
+    // << article-create-progress-view
 
     TKUnit.assertEqual(progress.value, 0, "Default progress.value");
     TKUnit.assertEqual(progress.maxValue, 100, "Default progress.maxValue");
@@ -101,13 +82,10 @@ if (platform.device.os === platform.platformNames.ios) {
 export function test_set_maxValue_should_adjust_value() {
     var progress = new progressModule.Progress();
 
-    // <snippet module="ui/progress" title="progress">
-    // ### Setting up the progress view
-    // ``` JavaScript
+    // >> article-set-value
     progress.maxValue = 255;
     progress.value = 16;
-    // ```
-    // </snippet>
+    // << article-set-value
 
     function testAction(views: Array<viewModule.View>) {
         progress.maxValue = 10;

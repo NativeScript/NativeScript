@@ -13,9 +13,7 @@ import viewModule = require("ui/core/view");
 import styleModule = require("ui/styling/style");
 import dependencyObservableModule = require("ui/core/dependency-observable");
 
-// <snippet module="ui/styling" title="styling">
-// # Styling
-// </snippet>
+
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     var stack = new stackModule.StackLayout();
@@ -133,20 +131,15 @@ export function test_css_is_applied_inside_NestedControls() {
 
 // Basic selector tests
 export function test_setting_css() {
-    // <snippet module="ui/styling" title="styling">
-    // ### Setting CSS to a page
-    // ``` JavaScript
+    // >> article-setting-css-page
     var page = new pageModule.Page();
     page.css = ".title { font-size: 20 }";
-    // ```
-    // </snippet>
+    // << article-setting-css-page
 
     TKUnit.assert(page.css === ".title { font-size: 20 }", "CSS not set correctly.");
 }
 
-// <snippet module="ui/styling" title="styling">
-// ## Using CSS selectors
-// </snippet>
+
 
 // Basic selector tests
 export function test_type_selector() {
@@ -155,9 +148,7 @@ export function test_type_selector() {
     let btn: buttonModule.Button;
     let label: labelModule.Label;
 
-    // <snippet module="ui/styling" title="styling">
-    // ### Using type selector
-    // ``` JavaScript
+    // >> article-using-type-selector
     page.css = "button { background-color: red; }";
 
     //// Will be styled
@@ -165,8 +156,7 @@ export function test_type_selector() {
 
     //// Won't be styled
     label = new labelModule.Label();
-    // ```
-    // </snippet>
+    // << article-using-type-selector
 
     let stack = new stackModule.StackLayout();
     page.content = stack;
@@ -184,9 +174,7 @@ export function test_class_selector() {
     let btnWithClass: buttonModule.Button;
     let btnWithNoClass: buttonModule.Button;
 
-    // <snippet module="ui/styling" title="styling">
-    // ### Using class selector
-    // ``` JavaScript
+    // >> article-using-class-selector
     page.css = ".test { color: red; }";
 
     //// Will be styled
@@ -195,8 +183,7 @@ export function test_class_selector() {
 
     //// Won't be styled
     btnWithNoClass = new buttonModule.Button();
-    // ```
-    // </snippet>
+    // << article-using-class-selector
 
     var stack = new stackModule.StackLayout();
     page.content = stack;
@@ -231,9 +218,7 @@ export function test_id_selector() {
     let btnWithId: buttonModule.Button;
     let btnWithNoId: buttonModule.Button;
 
-    // <snippet module="ui/styling" title="styling">
-    // ### Using id selector
-    // ``` JavaScript
+    // >> article-using-id-selector
     page.css = "#myButton { color: red; }";
 
     //// Will be styled
@@ -242,8 +227,7 @@ export function test_id_selector() {
 
     //// Won't be styled
     btnWithNoId = new buttonModule.Button();
-    // ```
-    // </snippet>
+    // << article-using-id-selector
 
     var stack = new stackModule.StackLayout();
     page.content = stack;
@@ -275,15 +259,12 @@ export function test_type_and_state_selector() {
     page.style._resetValue(styling.properties.colorProperty);
     var btn: buttonModule.Button;
 
-    // <snippet module="ui/styling" title="styling">
-    // ### Using state selector
-    // ``` JavaScript
+    // >>article-using-state-selector
     page.css = "button:pressed { color: red; }";
 
     //// Will be red when pressed
     btn = new buttonModule.Button();
-    // ```
-    // </snippet>
+    // << article-using-state-selector
     var stack = new stackModule.StackLayout();
     page.content = stack;
     stack.addChild(btn);

@@ -1,9 +1,6 @@
-﻿// <snippet module="xml" title="xml">
-// # Xml module
-// Using xml requires the Xml module.
-// >> xml-module
+﻿// >> xml-module-snippet
 //var xmlModule = require("xml");
-// << xml-module
+// << xml-module-snippet
 
 import TKUnit = require("../TKUnit");
 import xmlModule = require("xml");
@@ -60,7 +57,7 @@ export var test_XmlParser_OnErrorIsCalledWhenAnErrorOccurs = function () {
     var e;
     var xmlParser = new xmlModule.XmlParser(
         function (event: xmlModule.ParserEvent) {
-            //
+            
         },
         function (error: Error) {
             e = error;
@@ -166,7 +163,6 @@ export var test_XmlParser_DummyDocumentationTest = function () {
     //// Text = "I am second"
     //// EndElement Second
     //// EndElement Document
-    // ```
     // << xml-parser-snippet
 };
 
