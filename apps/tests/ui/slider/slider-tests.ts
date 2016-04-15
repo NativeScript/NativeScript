@@ -7,23 +7,13 @@ import observable = require("data/observable");
 import color = require("color");
 import platform = require("platform");
 
-// <snippet module="ui/slider" title="slider">
-// # Slider
-// Using a slider requires the Slider module.
-// ``` JavaScript
+// >> article-require-slider
 import sliderModule = require("ui/slider");
-// ```
+// << article-require-slider
 
 // ### Binding the Progress and Slider value properties to a observable view-model property.
-//``` XML
-// <Page loaded="pageLoaded">
-//  <StackLayout orientation="vertical">
-//    {%raw%}<Progress value="{{ someProperty }}" />
-//    <Slider value="{{ someProperty }}" />{%endraw%}
-//  </StackLayout>
-// </Page>
-//```
-//``` JavaScript
+
+// >> article-binding-slider-properties
 // function pageLoaded(args) {
 //   var page = args.object;
 //   var obj = new observable.Observable();
@@ -31,19 +21,15 @@ import sliderModule = require("ui/slider");
 //   page.bindingContext = obj;
 // }
 // exports.pageLoaded = pageLoaded;
-//```
+// << article-binding-slider-properties
 
-// </snippet>
 
 var TEST_VALUE = 5;
 
 export function test_set_TNS_value_updates_native_value() {
-    // <snippet module="ui/slider" title="slider">
-    // ### Creating a slider
-    // ``` JavaScript
+    // >> article-creating-slider
     var slider = new sliderModule.Slider();
-    // ```
-    // </snippet>
+    // << article-creating-slider
 
     function testAction(views: Array<viewModule.View>) {
         slider.value = TEST_VALUE;
@@ -172,14 +158,11 @@ export function test_set_maxValue_should_adjust_value() {
 export function test_set_maxValue_should_adjust_value_and_minValue() {
     var slider = new sliderModule.Slider();
 
-    // <snippet module="ui/slider" title="slider">
-    // ### Setting the slider value and bounds
-    // ``` JavaScript
+    // >> article-setting-slider-values
     slider.maxValue = 120;
     slider.value = 80;
     slider.minValue = 50;
-    // ```
-    // </snippet>
+    // << article-setting-slider-values
 
     function testAction(views: Array<viewModule.View>) {
         slider.maxValue = 30;
@@ -335,9 +318,7 @@ export function test_binding_value_to_model() {
     var slider = new sliderModule.Slider()
 
     function testAction(views: Array<viewModule.View>) {
-        // <snippet module="ui/slider" title="slider">
-        // ### Binding value property to a model
-        // ``` JavaScript
+        // >> article-binding-value-property
         var model = new observable.Observable();
         model.set("age", 21);
         var options: bindable.BindingOptions = {
@@ -346,16 +327,15 @@ export function test_binding_value_to_model() {
         };
         slider.bind(options, model);
         //// slider.value is now 21
-        // <hide>
+        // >> (hide)
         TKUnit.assertEqual(slider.value, 21, "slider.value");
-        // </hide>
+        // << (hide)
         model.set("age", 22);
         //// slider.value is now 22
-        // <hide>
+        // >> (hide)
         TKUnit.assertEqual(slider.value, 22, "slider.value");
-        // </hide>
-        // ```
-        // </snippet>
+        // << (hide)
+        // << article-binding-value-property
     }
 
     helper.buildUIAndRunTest(slider, testAction);

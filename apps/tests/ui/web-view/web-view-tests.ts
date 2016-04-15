@@ -1,42 +1,31 @@
 import TKUnit = require("../../TKUnit");
 import testModule = require("../../ui-test");
 
-// <snippet module="ui/web-view" title="WebView">
-// # WebView
-// Using a WebView requires the web-view module.
-// ``` JavaScript
+// >> webview-require
 import webViewModule = require("ui/web-view");
-// ```
-// </snippet>
+// << webview-require
 
-// <snippet module="ui/web-view" title="WebView">
-// ### Declaring a WebView.
-//``` XML
+
+// >> declare-webview-xml
 //  <Page>
 //       {%raw%}<WebView src="{{ someUrl | pathToLocalFile | htmlString }}" />{%endraw%}
 //  </Page>
-//```
+// << declare-webview-xml
 
-// </snippet>
 
 export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
     public create(): webViewModule.WebView {
-        // <snippet module="ui/web-view" title="WebView">
-        // ### Creating a WebView
-        // ``` JavaScript
+        // >> declare-webview
         let webView = new webViewModule.WebView();
-        // ```
-        // </snippet>
+        // << declare-webview
         return webView;
     }
 
     public testLoadExistingUrl(done) {
         let webView = this.testView;
 
-        // <snippet module="ui/web-view" title="WebView">
-        // ### Using WebView
-        // ``` JavaScript
+        // >> webview-url
         webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
             let message;
             if (!args.error) {
@@ -46,7 +35,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
                 message = "Error loading " + args.url + ": " + args.error;
             }
 
-            // <hide>
+            // >> (hide)
             try {
                 TKUnit.assertNull(args.error, args.error);
                 TKUnit.assertEqual(args.url, "https://github.com/", "args.url");
@@ -56,21 +45,18 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
                 done(e);
             }
 
-            // </hide>
+            // << (hide)
         });
         webView.url = "https://github.com/";
-        // ```
-        // </snippet>
+        // << webview-url
     }
 
     public testLoadLocalFile(done) {
         let webView = this.testView;
 
-        // <snippet module="ui/web-view" title="WebView">
-        // ### Using WebView
-        // ``` JavaScript
+        // >> webview-localfile
         webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
-            // <hide>
+            // >> (hide)
             let actual;
             let expectedTitle = 'MyTitle';
             let expectedHtml = '<span style="color:red">TestÖ</span>';
@@ -89,7 +75,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             catch (e) {
                 done(e);
             }
-            // </hide>
+            // << (hide)
 
             let message;
             if (!args.error) {
@@ -100,18 +86,15 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             }
         });
         webView.src = "~/ui/web-view/test.html";
-        // ```
-        // </snippet> 
+        // << webview-localfile
     }
 
     public testLoadHTMLString(done) {
         let webView = this.testView;
 
-        // <snippet module="ui/web-view" title="WebView">
-        // ### Using WebView
-        // ``` JavaScript
+        // >> webview-string
         webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
-            // <hide>
+            // >> (hide)
 
             let actual;
             let expected;
@@ -132,7 +115,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             catch (e) {
                 done(e);
             }
-            // </hide>
+            // << (hide)
 
             let message;
             if (!args.error) {
@@ -143,8 +126,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             }
         });
         webView.src = '<!DOCTYPE html><html><head><title>MyTitle</title><meta charset="utf-8" /></head><body><span style="color:red">TestÖ</span></body></html>';
-        // ```
-        // </snippet>
+        // << webview-string
     }
 
     public testLoadInvalidUrl(done) {

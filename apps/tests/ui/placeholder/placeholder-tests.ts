@@ -4,39 +4,29 @@ import utils = require("utils/utils");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 
-// <snippet module="ui/placeholder" title="placeholder">
-// # Placeholder
-// Using the placeholder requires the Placeholder module.
-// ``` JavaScript
+// >> article-require-module
 import placeholderModule = require("ui/placeholder");
-// ```
+// << article-require-module
 
-// Creating native view for the Placeholder using creatingView event.
-//``` XML
-// <Page>
-//   {%raw%}<Placeholder creatingView="creatingView" />{%endraw%}
-// </Page>
-//```
-//``` JavaScript
-//var platform = require("platform");
-//var utils = require("utils/utils");
-//
-//function creatingView(args) {
-//    var nativeView;
-//    if (platform.device.os === platform.platformNames.ios) {
-//        nativeView = new UITextView();
-//        nativeView.text = "Native";
-//    } else if (platform.device.os === platform.platformNames.android) {
-//        nativeView = new android.widget.TextView(utils.ad.getApplicationContext());
-//        nativeView.setText("Native");
-//    }
-//
-//    args.view = nativeView;
-//}
-//
-//exports.creatingView = creatingView;
-//```
-// </snippet>
+// >> article-creating-view
+var platform = require("platform");
+var utils = require("utils/utils");
+
+function creatingView(args) {
+   var nativeView;
+   if (platform.device.os === platform.platformNames.ios) {
+       nativeView = new UITextView();
+       nativeView.text = "Native";
+   } else if (platform.device.os === platform.platformNames.android) {
+       nativeView = new android.widget.TextView(utils.ad.getApplicationContext());
+       nativeView.setText("Native");
+   }
+
+   args.view = nativeView;
+}
+
+exports.creatingView = creatingView;
+// << article-creating-view
 
 export function test_placeholder_creatingView() {
     var nativeView;

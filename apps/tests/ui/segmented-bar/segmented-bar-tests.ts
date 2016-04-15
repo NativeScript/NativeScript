@@ -6,31 +6,14 @@ import bindable = require("ui/core/bindable");
 import observable = require("data/observable");
 import color = require("color");
 
-// <snippet module="ui/segmented-bar" title="SegmentedBar">
-// # SegmentedBar
-
-// Using a SegmentedBar requires the "ui/segmented-bar" module.
-// ``` JavaScript
+// >> article-require-module
 import segmentedBarModule = require("ui/segmented-bar");
-// ```
-// </snippet>
+// << article-require-module
 
 function _createSegmentedBar(): segmentedBarModule.SegmentedBar {
-    // <snippet module="ui/segmented-bar" title="SegmentedBar">
-    // ## Creating a SegmentedBar
-    // ``` JavaScript
+    // >> article-create-segmentedbar
     var segmentedBar = new segmentedBarModule.SegmentedBar();
-    // ```
-    // ``` XML
-    // <SegmentedBar>
-    //   <SegmentedBar.items>
-    //     <SegmentedBarItem title="Item 1" />
-    //     <SegmentedBarItem title="Item 2" />
-    //     <SegmentedBarItem title="Item 3" />
-    //   </SegmentedBar.items>
-    // </SegmentedBar>
-    // ```
-    // </snippet>
+    // << article-create-segmentedbar
     segmentedBar.id = "SegmentedBar";
     return segmentedBar;
 }
@@ -102,11 +85,7 @@ export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function 
 export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
     helper.buildUIAndRunTest(_createSegmentedBar(), function (views: Array<viewModule.View>) {
         var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
-        // <snippet module="ui/segmented-bar" title="SegmentedBar">
-        // ### Creating segmentedBar.items
-        // It is important that an items array gets created and filled with
-        // items first and then assigned to the segmented bar.
-        // ``` JavaScript
+        // >> article-creating-segmentedbar-items
         var items = [];
         var item1 = new segmentedBarModule.SegmentedBarItem();
         item1.title = "Item1";
@@ -118,8 +97,7 @@ export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function 
         item3.title = "Item3";
         items.push(item3);
         segmentedBar.items = items;
-        // ```
-        // </snippet>
+        // << article-creating-segmentedbar-items
         var expectedValue = 0;
         var actualValue = segmentedBar.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
@@ -130,12 +108,9 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = functio
     helper.buildUIAndRunTest(_createSegmentedBar(), function (views: Array<viewModule.View>) {
         var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
         segmentedBar.items = _createItems(10);
-        // <snippet module="ui/segmented-bar" title="SegmentedBar">
-        // ### Selecting an item programmatically
-        // ``` JavaScript
+        // >> artcile-selecting-item
         segmentedBar.selectedIndex = 9;
-        // ```
-        // </snippet>
+        // << artcile-selecting-item
         segmentedBar.items = [];
         var expectedValue = undefined;
         var actualValue = segmentedBar.selectedIndex;

@@ -4,13 +4,9 @@ import timePickerTestsNative = require("./time-picker-tests-native");
 import color = require("color");
 import platform = require("platform");
 
-// <snippet module="ui/time-picker" title="TimePicker">
-// # TimePicker
-// Using a TimePicker requires the "ui/time-picker" module.
-// ``` JavaScript
+// >> require-time-picker
 import timePickerModule = require("ui/time-picker");
-// ```
-// </snippet>
+// << require-time-picker
 
 function assertTime(timePicker: timePickerModule.TimePicker, expectedHour: number, expectedMinute) {
     TKUnit.assertEqual(timePicker.hour, expectedHour, "timePicker.hour");
@@ -28,14 +24,11 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
     }
     
     public test_DummyForCodeSnippet() {
-        // <snippet module="ui/time-picker" title="TimePicker">
-        // ## Configuring a TimePicker
-        // ``` JavaScript
+        // >> declare-time-picker
         var timePicker = new timePickerModule.TimePicker();
         timePicker.hour = 9;
         timePicker.minute = 25;
-        // ```
-        // </snippet>
+        // << declare-time-picker
     }
     
     private setUpTimePicker(hour?: number, minute?: number) {

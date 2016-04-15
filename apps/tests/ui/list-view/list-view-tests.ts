@@ -7,76 +7,34 @@ import platform = require("platform");
 import utils = require("utils/utils");
 import { Label } from "ui/label";
 
-// <snippet module="ui/list-view" title="list-view">
-// # ListView
-// Using a ListView requires the ListView module.
-// ``` JavaScript
+// >> article-require-module
 import listViewModule = require("ui/list-view");
-// ```
-// Other modules which will be used in the code samples in this article:
-// ``` JavaScript
+// << article-require-module
+
+// >> article-require-modules
 import observableArray = require("data/observable-array");
 import labelModule = require("ui/label");
-// ```
+// << article-require-modules
 
-// ### Binding the ListView items property to collection in the view-model.
-//``` XML
-// <Page>
-//   {%raw%}<ListView items="{{ myItems }}" />{%endraw%}
-// </Page>
-//```
 
-// ### Attaching event handler for the ListView itemTap event.
-//``` XML
-// <Page>
-//   {%raw%}<ListView items="{{ myItems }}" itemTap="listViewItemTap" />{%endraw%}
-// </Page>
-//```
-//``` JavaScript
-// function listViewItemTap(args) {
-//   var itemIndex = args.index;
-// }
-// exports.listViewItemTap = listViewItemTap;
-//```
+// >> article-item-tap
+function listViewItemTap(args) {
+  var itemIndex = args.index;
+}
+exports.listViewItemTap = listViewItemTap;
+// << article-item-tap
 
-// ### Attaching event handler for the ListView loadMoreItems event.
-//``` XML
-// <Page>
-//  {%raw%}<ListView items="{{ myItems }}" loadMoreItems="listViewLoadMoreItems" />{%endraw%}
-// </Page>
-//```
-//``` JavaScript
-// function listViewLoadMoreItems(args) {
-//   // Expand your collection bound to the ListView with more items here!
-// }
-// exports.listViewLoadMoreItems = listViewLoadMoreItems;
-//```
+// >> article-load-items
+function listViewLoadMoreItems(args) {
+  // Expand your collection bound to the ListView with more items here!
+}
+// << article-load-items
 
-// ### Define the ListView itemTemplate property.
-//``` XML
-// <Page>
-//  {%raw%}<ListView items="{{ myItems }}">
-//     <ListView.itemTemplate>
-//        <Label text="{{ title || 'Downloading...' }}" textWrap="true" class="title" />
-//     </ListView.itemTemplate>
-//  </ListView>{%endraw%}
-// </Page>
-//```
-
-// ### Define the ListView separatorColor property.
-//``` XML
-// <Page loaded="loaded">
-//  {%raw%}<ListView items="{{ items }}" separatorColor="red" />{%endraw%}
-// </Page>
-//```
-//``` JavaScript
 // function loaded(args) {
 //   args.object.bindingContext = { items: [1,2,3,4,5] };
 // }
 // exports.loaded = loaded;
-//```
 
-// </snippet>
 
 var ASYNC = 0.2;
 var FEW_ITEMS = [0, 1, 2];
@@ -92,12 +50,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     }
 
     public test_default_TNS_values() {
-        // <snippet module="ui/list-view" title="list-view">
-        // ### Creating a ListView
-        // ``` JavaScript
+        // >> article-create-listview
         var listView = new listViewModule.ListView();
-        // ```
-        // </snippet>
+        // << article-create-listview
 
         TKUnit.assertEqual(listView.isScrolling, false, "Default listView.isScrolling");
         TKUnit.assert(types.isUndefined(listView.items), "Default listView.items should be undefined");
@@ -107,10 +62,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var listView = this.testView;
 
         var indexes = {};
-        // <snippet module="ui/list-view" title="list-view">
-        // ### Using ListView with Array
-        // The itemLoading event is used to create the UI for each item that is shown in the ListView.
-        // ``` JavaScript
+        // >> article-listview-array
         var colors = ["red", "green", "blue"];
         listView.items = colors;
         listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
@@ -120,7 +72,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             }
             (<labelModule.Label>args.view).text = colors[args.index];
 
-            //<hide>
+            // >> (hide)
             indexes[args.index] = true;
             if (args.index === (colors.length - 1)) {
                 try {
@@ -140,10 +92,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
                     done(e);
                 }
             }
-            //</hide>
+            // << (hide)
         });
-        // ```
-        // </snippet>
+        // << article-listview-array
     }
 
     public test_set_native_item_exposed() {
@@ -210,15 +161,11 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assertEqual(this.getNativeViewCount(listView), colors.length, "Native views count.");
 
-        // <snippet module="ui/list-view" title="list-view">
-        // > Note, that changing the array after the list view is shown will not update the UI.
-        // You can force-update the UI using the refresh() method.
-        // ``` JavaScript
+        // >> article-change-refresh-listview
         colors.push("yellow");
         //// Manually trigger the update so that the new color is shown.
         listView.refresh();
-        // ```
-        // </snippet>
+        // << article-change-refresh-listview
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assertEqual(this.getNativeViewCount(listView), colors.length, "Native views count.");
     }
@@ -300,9 +247,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var listView = this.testView;
 
         var indexes = {};
-        // <snippet module="ui/list-view" title="list-view">
-        // ### Using ListView with ObservableArray
-        // ``` JavaScript
+        // >> article-listview-observablearray
         var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
         listView.items = colors;
         listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
@@ -314,8 +259,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
             indexes[args.index] = true;
         });
-        // ```
-        // </snippet>
+        // << article-listview-observablearray
 
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assert(indexes[0], "itemLoading not called for index 0");
@@ -333,13 +277,10 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assertEqual(this.getNativeViewCount(listView), 3, "getNativeViewCount");
 
-        // <snippet module="ui/list-view" title="list-view">
-        // > When using ObservableArray the list view will be automatically updated when items are added or removed form the array.
-        // ``` JavaScript
+        // >> article-push-in-observablearray
         colors.push("yellow");
         //// The ListView will be updated automatically.
-        // ```
-        // </snippet>
+        // << article-push-in-observablearray
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assertEqual(this.getNativeViewCount(listView), 4, "getNativeViewCount");
     }
@@ -383,22 +324,17 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var nativeTapRaised = false;
         var itemIndex = -1;
         /* tslint:disable:no-unused-variable */
-        // <snippet module="ui/list-view" title="list-view">
-        // ## Responding to other events
-        // ### ItemTap event
-        // The event will be raise when an item inside the ListView is tapped.
-        // ``` JavaScript
+        // >> article-itemtap-event
         listView.on(listViewModule.ListView.itemTapEvent, function (args: listViewModule.ItemEventData) {
             var tappedItemIndex = args.index;
             var tappedItemView = args.view;
             //// Do someting
-            //<hide>
+            // >> (hide)
             nativeTapRaised = true;
             itemIndex = args.index;
-            //</hide>
+            // << (hide)
         });
-        // ```
-        // </snippet>
+        // << article-itemtap-event
         /* tslint:enable:no-unused-variable */
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         this.performNativeItemTap(listView, 1);
@@ -413,19 +349,15 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var loadMoreItemsCount = 0;
         listView.items = FEW_ITEMS;
         listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
-        // <snippet module="ui/list-view" title="list-view">
-        // ### LoadMoreItems event
-        // The event will be raised when the ListView is scrolled so that the last item is visible.
-        // This even is intended to be used to add additional data in the ListView.
-        // ``` JavaScript
+        // >> article-loadmoreitems-event
         listView.on(listViewModule.ListView.loadMoreItemsEvent, function (data: observable.EventData) {
             //// Do something.
-            //<hide>
+            // >> (hide)
             loadMoreItemsCount++;
-            //</hide>
+            // << (hide)
         });
         // ```
-        // </snippet>
+        // << article-loadmoreitems-event
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assertEqual(loadMoreItemsCount, 1, "loadMoreItemsCount");
     }

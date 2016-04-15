@@ -1,27 +1,16 @@
-﻿// <snippet module="ui/page" title="Page">
-// # Page
-// Using a page requires the Page module.
-// ``` JavaScript
+﻿// >> article-require-module
 import pageModule = require("ui/page");
 //// FrameModule is needed in order to have an option to navigate to the new page.
 import frameModule = require("ui/frame");
-// ```
+// << article-require-module
 
-// ### Attaching event handler for the Page loaded event to set bindingContext.
-//``` XML
-// <Page loaded="pageLoaded">
-//   {%raw%}<Label text="{{ name }}" />{%endraw%}
-// </Page>
-//```
-//``` JavaScript
-// function pageLoaded(args) {
-//   var page = args.object;
-//   page.bindingContext = { name : "Some name" };
-// }
-// exports.pageLoaded = pageLoaded;
-//```
-
-// </snippet>
+// >> article-set-bindingcontext
+function pageLoaded(args) {
+  var page = args.object;
+  page.bindingContext = { name : "Some name" };
+}
+exports.pageLoaded = pageLoaded;
+// << article-set-bindingcontext
 import TKUnit = require("../../TKUnit");
 import labelModule = require("ui/label");
 import {StackLayout} from "ui/layouts/stack-layout";
@@ -99,13 +88,12 @@ export function test_PageLoaded_is_called_once() {
 }
 
 export function test_NavigateToNewPage() {
+    // >> artivle-create-navigate-to-page
     var currentPage;
     var topFrame = frameModule.topmost();
     currentPage = topFrame.currentPage;
 
-    // <snippet module="ui/page" title="Page">
-    // ### Creating and navigating to the created page.
-    // ``` JavaScript
+    
     var testPage: Page;
     var pageFactory = function (): Page {
         testPage = new pageModule.Page();
@@ -119,17 +107,13 @@ export function test_NavigateToNewPage() {
         animated: false
     };
     topFrame.navigate(navEntry);
-    // ```
-    // </snippet>
+    // << artivle-create-navigate-to-page
 
     TKUnit.waitUntilReady(() => { return testPage.isLayoutValid });
 
-    // <snippet module="ui/page" title="Page">
-    // ### Navigating backward is as simple as calling a single method.
-    // ``` JavaScript
+    // >> article-navigating-backward
     topFrame.goBack();
-    // ```
-    // </snippet>
+    // << article-navigating-backward
 
     TKUnit.waitUntilReady(() => { return topFrame.currentPage !== null && topFrame.currentPage === currentPage });
     TKUnit.assert(testPage.parent === undefined, "Page.parent should become undefined after navigating back");
@@ -221,9 +205,7 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
 
 export function test_NavigateTo_WithContext() {
     let currentPage = frameModule.topmost().currentPage;
-    // <snippet module="ui/page" title="Page">
-    // ### Pass data to the new page.
-    // ``` JavaScript
+    // >> article-pass-data
     var testPage: pageModule.Page;
     var pageFactory = function (): pageModule.Page {
         testPage = new pageModule.Page();
@@ -239,8 +221,7 @@ export function test_NavigateTo_WithContext() {
     };
     let topFrame = frameModule.topmost();
     topFrame.navigate(navEntry);
-    // ```
-    // </snippet>
+    // << article-pass-data
     TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage !== currentPage && testPage.isLayoutValid);
 
     var actualContextValue = testPage.navigationContext;

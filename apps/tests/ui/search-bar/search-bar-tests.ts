@@ -4,13 +4,9 @@ import viewModule = require("ui/core/view");
 import searchBarTestsNative = require("./search-bar-tests-native");
 import colorModule = require("color");
 import observable = require("data/observable");
-// <snippet module="ui/search-bar" title="search-bar">
-// # SearchBar
-// Using the SearchBar requires the "ui/search-bar" module.
-// ``` JavaScript
+// >> article-require-module
 import searchBarModule = require("ui/search-bar");
-// ```
-// </snippet>
+// << article-require-module
 
 // ### Declaring a SearchBar.
 //``` XML
@@ -21,12 +17,9 @@ import searchBarModule = require("ui/search-bar");
 // </snippet>
 
 var _createSearchBarFunc = function (): searchBarModule.SearchBar {
-    // <snippet module="ui/search-bar" title="SearchBar">
-    // ### Creating a SearchBar
-    // ``` JavaScript
+    // >> article-creating-searchbar
     var searchBar = new searchBarModule.SearchBar();
-    // ```
-    // </snippet>
+    // << article-creating-searchbar
     searchBar.text = "searchBar";
     return searchBar;
 };
@@ -75,9 +68,7 @@ export var testSearchBarFontSize = function () {
 };
 
 export function test_DummyTestForSnippetOnly() {
-    // <snippet module="ui/search-bar" title="search-bar">
-    // ### Searching
-    // ``` JavaScript
+    // >> article-searching
     var searchBar = new searchBarModule.SearchBar();
     searchBar.on(searchBarModule.SearchBar.submitEvent, function (args: observable.EventData) { 
         console.log("Search for " + (<searchBarModule.SearchBar>args.object).text);
@@ -85,6 +76,5 @@ export function test_DummyTestForSnippetOnly() {
     searchBar.on(searchBarModule.SearchBar.clearEvent, function (args: observable.EventData) {
         console.log("Clear");
     });
-    // ```
-    // </snippet>
+    // << article-searching
 }
