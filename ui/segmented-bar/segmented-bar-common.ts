@@ -5,7 +5,6 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import color = require("color");
 import bindable = require("ui/core/bindable");
 import * as typesModule from "utils/types";
-import {WrappedValue} from "data/observable";
 
 var types: typeof typesModule;
 function ensureTypes() {
@@ -100,8 +99,6 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
             }
         }
     }
-    
-    private itemsTimerId;
     
     public _addChildFromBuilder(name: string, value: any): void {
         if(name === CHILD_SEGMENTED_BAR_ITEM) {
