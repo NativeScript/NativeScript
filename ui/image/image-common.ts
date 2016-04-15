@@ -30,16 +30,29 @@ function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
         image._setValue(Image.isLoadingProperty, true);
 
+        var source = new imageSource.ImageSource();
+
         if (utils.isDataURI(value)) {
             var base64Data = value.split(",")[1];
             if (types.isDefined(base64Data)) {
-                image.imageSource = imageSource.fromBase64(base64Data);
-                image._setValue(Image.isLoadingProperty, false);
+                source.fromBase64(base64Data).then(r => {
+                    image.imageSource = source;
+                    image._setValue(Image.isLoadingProperty, false);
+                });
             }
         }
         else if (imageSource.isFileOrResourcePath(value)) {
-            image.imageSource = imageSource.fromFileOrResource(value);
-            image._setValue(Image.isLoadingProperty, false);
+            if (value.indexOf(utils.RESOURCE_PREFIX) === 0) {
+                source.fromResource(value.substr(utils.RESOURCE_PREFIX.length)).then(r => {
+                    image.imageSource = source;
+                    image._setValue(Image.isLoadingProperty, false);
+                });
+            } else {
+                source.fromFile(value).then(r => {
+                    image.imageSource = source;
+                    image._setValue(Image.isLoadingProperty, false);
+                });
+            }
         } else {
             imageSource.fromUrl(value).then((r) => {
                 if (image["_url"] === value) {

@@ -34,22 +34,46 @@ declare module "image-source" {
         loadFromResource(name: string): boolean;
 
        /**
+        * Loads this instance from the specified resource name asynchronously.
+        * @param name The name of the resource (without its extension).
+        */
+        fromResource(name: string): Promise<boolean>;
+        
+       /**
         * Loads this instance from the specified file.
         * @param path The location of the file on the file system.
         */
         loadFromFile(path: string): boolean;
 
        /**
+        * Loads this instance from the specified file asynchronously.
+        * @param path The location of the file on the file system.
+        */
+        fromFile(path: string): Promise<boolean>;
+
+       /**
         * Loads this instance from the specified native image data.
         * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
         */
         loadFromData(data: any): boolean;
+        
+       /**
+        * Loads this instance from the specified native image data asynchronously.
+        * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
+        */
+        fromData(data: any): Promise<boolean>;        
 
         /**
          * Loads this instance from the specified native image data.
          * @param source The Base64 string to load the image from.
          */
         loadFromBase64(source: string): boolean;
+        
+        /**
+         * Loads this instance from the specified native image data asynchronously.
+         * @param source The Base64 string to load the image from.
+         */
+        fromBase64(source: string): Promise<boolean>;        
 
        /**
         * Sets the provided native source object (typically a Bitmap).
