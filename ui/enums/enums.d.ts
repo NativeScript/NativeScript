@@ -485,14 +485,49 @@
      */
     export module FontWeight {
         /**
-         * Normal font weight.
+         * Thin font weight. CSS font-weight 100.
+         */
+        export var thin: string;
+        
+        /**
+         * Extra-light / Ultra-light font weight. CSS font-weight 200.
+         */
+        export var extraLight: string;
+        
+        /**
+         * Light font weight. CSS font-weight 300.
+         */
+        export var light: string;
+
+        /**
+         * Normal font weight. CSS font-weight 400.
          */
         export var normal: string;
 
         /**
-         * Bold font weight.
+         * Medium font weight. CSS font-weight 500.
+         */
+        export var medium: string;
+
+        /**
+         * Semi-bold / Demi-bold font weight. CSS font-weight 600.
+         */
+        export var semiBold: string;
+        
+        /**
+         * Bold font weight. CSS font-weight 700.
          */
         export var bold: string;
+
+        /**
+         * Extra-bold / Ultra-bold font weight. CSS font-weight 800.
+         */
+        export var extraBold: string;
+
+        /**
+         * Black font weight. CSS font-weight 900.
+         */
+        export var black: string;
     }
 
     /**
