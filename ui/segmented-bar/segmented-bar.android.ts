@@ -91,7 +91,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
                 t.setTextColor(view.color.android);
             }
 
-            t.setSingleLine(true);
+            t.setMaxLines(1);
             t.setEllipsize(android.text.TextUtils.TruncateAt.END);
         }
     }
