@@ -44,5 +44,12 @@ declare module "ui/image" {
          * Gets or sets the image stretch mode.
          */
         stretch: string;
+        
+        /**
+         * Gets or sets the loading strategy for images on the local file system:
+         * - **sync** *(default)* - blocks the UI if necessary to display immediately, good for small icons.
+         * - **async** - will try to load in the background, may appear with short delay, good for large images.
+         */
+        loadMode: "sync" | "async";
     }
 }
