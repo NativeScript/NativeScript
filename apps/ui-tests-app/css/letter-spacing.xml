@@ -1,8 +1,14 @@
 ﻿<Page>
     <StackLayout>
     
-      <Label text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;" />
-      <Label style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;">
+      <WrapLayout>
+        <Label text="labelLabel" style="letter-spacing: -1;" />
+        <Label text="labelLabel" style="letter-spacing: 0;" />
+        <Label text="labelLabel" style="letter-spacing: 1;" />
+      </WrapLayout>
+    
+      <Label text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;" />
+      <Label style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;">
         <Label.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -13,9 +19,15 @@
         </Label.formattedText>
       </Label>
 
-      <Button text="buttonButton" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;" />
-      <android>
-        <Button style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;">
+      <WrapLayout>
+        <Button text="buttonButton" style="letter-spacing: -1;" />
+        <Button text="buttonButton" style="letter-spacing: 0;" />
+        <Button text="buttonButton" style="letter-spacing: 1;" />
+      </WrapLayout>
+    
+      <Button text="buttonButton" style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;" />
+      <!--<android>-->
+        <Button style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;">
             <Button.formattedText>
             <FormattedString>
                 <FormattedString.spans>
@@ -25,11 +37,17 @@
             </FormattedString>
             </Button.formattedText>
         </Button>
-      </android>
+      <!--</android>-->
       
-      <TextField text="textField" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;" />
-      <android>
-        <TextField style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;">
+      <WrapLayout>
+        <TextField text="textField" style="letter-spacing: -1;" />
+        <TextField text="textField" style="letter-spacing: 0;" />
+        <TextField text="textField" style="letter-spacing: 1;" />
+      </WrapLayout>
+    
+      <TextField text="textField" style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;" />
+      <!--<android>-->
+        <TextField style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;">
             <TextField.formattedText>
             <FormattedString>
                 <FormattedString.spans>
@@ -39,11 +57,17 @@
             </FormattedString>
             </TextField.formattedText>
         </TextField>
-      </android>
+      <!--</android>-->
 
-      <TextView text="textView" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;" />
-      <android>
-        <TextView style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 10;">
+      <WrapLayout>
+        <TextView text="textView" style="letter-spacing: -1;" />
+        <TextView text="textView" style="letter-spacing: 0;" />
+        <TextView text="textView" style="letter-spacing: 1;" />
+      </WrapLayout>
+    
+      <TextView text="textView" style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;" />
+      <!--<android>-->
+        <TextView style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;">
             <TextView.formattedText>
             <FormattedString>
                 <FormattedString.spans>
@@ -53,7 +77,7 @@
             </FormattedString>
             </TextView.formattedText>
         </TextView>
-      </android>
+      <!--</android>-->
 
     </StackLayout>
 </Page>

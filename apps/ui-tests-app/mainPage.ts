@@ -38,6 +38,7 @@ examples.set("xmlbasics", "bindings/xmlbasics");
 
 examples.set("background", "css/background");
 examples.set("formatted", "css/decoration-transform-formattedtext");
+examples.set("spacing", "css/letter-spacing");
 examples.set("decoration", "css/text-decoration");
 examples.set("transform", "css/text-transform");
 examples.set("whitespace", "css/white-space");
