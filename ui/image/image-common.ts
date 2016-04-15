@@ -11,6 +11,10 @@ import * as types from "utils/types";
 
 var SRC = "src";
 var IMAGE_SOURCE = "imageSource";
+var LOAD_MODE = "loadMode";
+
+var SYNC = "sync";
+var ASYNC = "async";
 
 var IMAGE = "Image";
 var ISLOADING = "isLoading";
@@ -21,41 +25,8 @@ var AffectsLayout = platform.device.os === platform.platformNames.android ? depe
 
 function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
-    var value = data.newValue;
-
-    if (types.isString(value)) {
-        value = value.trim();
-        image.imageSource = null;
-        image["_url"] = value;
-
-        image._setValue(Image.isLoadingProperty, true);
-
-        if (utils.isDataURI(value)) {
-            var base64Data = value.split(",")[1];
-            if (types.isDefined(base64Data)) {
-                image.imageSource = imageSource.fromBase64(base64Data);
-                image._setValue(Image.isLoadingProperty, false);
-            }
-        }
-        else if (imageSource.isFileOrResourcePath(value)) {
-            image.imageSource = imageSource.fromFileOrResource(value);
-            image._setValue(Image.isLoadingProperty, false);
-        } else {
-            imageSource.fromUrl(value).then((r) => {
-                if (image["_url"] === value) {
-                    image.imageSource = r;
-                    image._setValue(Image.isLoadingProperty, false);
-                }
-            });
-        }
-    }
-    else if (value instanceof imageSource.ImageSource) {
-        // Support binding the imageSource trough the src property
-        image.imageSource = value;
-    }
-    else {
-        image.imageSource = imageSource.fromNativeSource(value);
-    }
+    // Check for delay...
+    image._createImageSourceFromSrc();
 }
 
 export class Image extends view.View implements definition.Image {
@@ -72,6 +43,9 @@ export class Image extends view.View implements definition.Image {
 
     public static stretchProperty = new dependencyObservable.Property(STRETCH, IMAGE,
         new proxy.PropertyMetadata(enums.Stretch.aspectFit, AffectsLayout));
+        
+    public static loadModeProperty = new dependencyObservable.Property(LOAD_MODE, IMAGE,
+        new proxy.PropertyMetadata(SYNC, 0, null, (value) => value === SYNC || value === ASYNC, null));
 
     get imageSource(): imageSource.ImageSource {
         return this._getValue(Image.imageSourceProperty);
@@ -98,7 +72,80 @@ export class Image extends view.View implements definition.Image {
         this._setValue(Image.stretchProperty, value);
     }
 
+    get loadMode(): "sync" | "async" {
+        return this._getValue(Image.loadModeProperty);
+    }
+    set loadMode(value: "sync" | "async") {
+        this._setValue(Image.loadModeProperty, value);
+    }
+
     public _setNativeImage(nativeImage: any) {
         //
+    }
+    
+    /**
+     * @internal
+     */
+    _createImageSourceFromSrc(): void {
+        var value = this.src;
+        if (types.isString(value)) {
+            value = value.trim();
+            this.imageSource = null;
+            this["_url"] = value;
+
+            this._setValue(Image.isLoadingProperty, true);
+
+            var source = new imageSource.ImageSource();
+            var imageLoaded = () => {
+                this.imageSource = source;
+                this._setValue(Image.isLoadingProperty, false);
+            }
+            if (utils.isDataURI(value)) {
+                var base64Data = value.split(",")[1];
+                if (types.isDefined(base64Data)) {
+                    if (this.loadMode === SYNC) {
+                        source.loadFromBase64(base64Data);
+                        imageLoaded();
+                    } else if (this.loadMode === ASYNC) {
+                        source.fromBase64(base64Data).then(imageLoaded);
+                    }
+                }
+            }
+            else if (imageSource.isFileOrResourcePath(value)) {
+                if (value.indexOf(utils.RESOURCE_PREFIX) === 0) {
+                    let resPath = value.substr(utils.RESOURCE_PREFIX.length);
+                    if (this.loadMode === SYNC) {
+                        source.loadFromResource(resPath);
+                        imageLoaded();
+                    } else if (this.loadMode === ASYNC) {
+                        this.imageSource = null;
+                        source.fromResource(resPath).then(imageLoaded);
+                    }
+                } else {
+                    if (this.loadMode === SYNC) {
+                        source.loadFromFile(value);
+                        imageLoaded();
+                    } else if (this.loadMode === ASYNC) {
+                        this.imageSource = null;
+                        source.fromFile(value).then(imageLoaded);
+                    }
+                }
+            } else {
+                this.imageSource = null;
+                imageSource.fromUrl(value).then((r) => {
+                    if (this["_url"] === value) {
+                        this.imageSource = r;
+                        this._setValue(Image.isLoadingProperty, false);
+                    }
+                });
+            }
+        }
+        else if (value instanceof imageSource.ImageSource) {
+            // Support binding the imageSource trough the src property
+            this.imageSource = value;
+        }
+        else {
+            this.imageSource = imageSource.fromNativeSource(value);
+        }
     }
 }
