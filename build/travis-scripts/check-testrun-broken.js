@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var fsModule = require('fs');
 var resultsFile = 'TestRunResult.txt';
-var successMarker ='=== ALL TESTS COMPLETE ===';
+var successMarker = /=== ALL TESTS COMPLETE ===/;
 var passMarker = /=== ALL TESTS COMPLETE ===\s+[^\n]*OK,\s+0\s+failed/mg;
 
 var messages = {
@@ -13,7 +13,7 @@ var messages = {
 
 var results = fsModule.readFileSync(resultsFile, 'utf-8');
 
-if (results.indexOf(successMarker) == -1) {
+if (!results.match(successMarker)) {
     console.log(messages.crash);
     process.exit(1);
 } else if (results.match(passMarker)) {

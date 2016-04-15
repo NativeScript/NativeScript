@@ -27,7 +27,7 @@ function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChang
             view.notify({ eventName: SegmentedBar.selectedIndexChangedEvent, object: view, oldIndex: data.oldValue, newIndex: data.newValue });
         } else {
             view.selectedIndex = undefined;
-            throw new Error("selectedIndex should be between [0, items.length - 1]");
+            throw new Error("selectedIndex should be between [0, " + (view.items.length - 1) + "]");
         }
     }
 }
@@ -53,19 +53,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
     if (newItems && newItems.length) {
         for (var i = 0; i < newItems.length; i++) {
-            (<SegmentedBarItem>newItems[i])._parent = view;
-            var tab = view.android.newTabSpec(i + "");
-            tab.setIndicator(newItems[i].title || "");
-
-            tab.setContent(new android.widget.TabHost.TabContentFactory({
-                createTabContent: function (tag: string): android.view.View {
-                    var tv = new android.widget.TextView(view._context);
-                    tv.setVisibility(android.view.View.GONE);
-                    return tv;
-                }
-            }));
-
-            view.android.addTab(tab);
+            view.insertTab((<SegmentedBarItem>newItems[i]), i);
         }
 
         if (types.isNumber(view.selectedIndex) && view.android.getCurrentTab() !== view.selectedIndex) {
@@ -102,6 +90,9 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
             if (view.color) {
                 t.setTextColor(view.color.android);
             }
+
+            t.setMaxLines(1);
+            t.setEllipsize(android.text.TextUtils.TruncateAt.END);
         }
     }
 }
@@ -158,7 +149,7 @@ export class SegmentedBar extends common.SegmentedBar {
         var that = new WeakRef(this);
 
         this._listener = new android.widget.TabHost.OnTabChangeListener({
-            onTabChanged: function (id: string) {
+            onTabChanged: function(id: string) {
                 var bar = that.get();
                 if (bar) {
                     bar.selectedIndex = parseInt(id);
@@ -184,6 +175,24 @@ export class SegmentedBar extends common.SegmentedBar {
 
     get android(): android.widget.TabHost {
         return this._android;
+    }
+    
+    public insertTab(tabItem: SegmentedBarItem, index?: number): void {
+        super.insertTab(tabItem, index);
+        tabItem._parent = this;
+        
+        var tab = this.android.newTabSpec(this.getValidIndex(index) + "");
+        tab.setIndicator(tabItem.title || "");
+        let that = this;
+        tab.setContent(new android.widget.TabHost.TabContentFactory({
+            createTabContent: function (tag: string): android.view.View {
+                var tv = new android.widget.TextView(that._context);
+                tv.setVisibility(android.view.View.GONE);
+                return tv;
+            }
+        }));
+
+        this.android.addTab(tab);
     }
 }
 

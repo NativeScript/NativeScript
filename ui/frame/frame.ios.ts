@@ -430,6 +430,7 @@ class UINavigationControllerImpl extends UINavigationController {
     }
 
     public viewDidLoad(): void {
+        super.viewDidLoad();
         let owner = this._owner.get();
         if (owner) {
             owner.onLoaded();

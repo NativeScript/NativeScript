@@ -96,22 +96,19 @@ declare module "ui/core/view" {
         /**
          * Specifies extra space on the left side of this view.
          */
-        marginLeft: number;
-
+        marginLeft?: number;
         /**
          * Specifies extra space on the top side of this view.
          */
-        marginTop: number;
-
+        marginTop?: number;
         /**
          * Specifies extra space on the right side of this view.
          */
-        marginRight: number;
-
+        marginRight?: number;
         /**
          * Specifies extra space on the bottom side of this view.
          */
-        marginBottom: number;
+        marginBottom?: number;
         /**
          * Gets or sets the visibility of this view.
          */
@@ -120,7 +117,6 @@ declare module "ui/core/view" {
          * [Deprecated. Please use className instead] Gets or sets the CSS class of this view.
          */
         cssClass?: string;
-
         /**
          * Gets or sets the CSS class name of this view.
          */

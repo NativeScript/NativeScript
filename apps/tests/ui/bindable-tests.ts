@@ -917,7 +917,7 @@ export function test_BindingContextOfAChildElementIsNotOverwrittenBySettingTheBi
     });
 
     page.content = child;
-    TKUnit.waitUntilReady(() => { return testFinished });
+    TKUnit.waitUntilReady(() => testFinished);
 }
 
 export var test_BindingHitsGetterTooManyTimes = function () {

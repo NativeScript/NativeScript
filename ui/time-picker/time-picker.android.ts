@@ -26,7 +26,7 @@ export class TimePicker extends common.TimePicker {
                     if (this.owner) {
                         var validTime = common.getValidTime(this.owner, hour, minute);
                         this.owner._setNativeValueSilently(validTime.hour, validTime.minute);
-                        this.owner._onPropertyChangedFromNative(common.TimePicker.timeProperty, new Date(0, 0, 0, hour, minute));
+                        this.owner._onPropertyChangedFromNative(common.TimePicker.timeProperty, new Date(0, 0, 0, validTime.hour, validTime.minute));
                     }
                 }
             });

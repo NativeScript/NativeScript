@@ -9,7 +9,6 @@ import color = require("color");
 import activityIndicatorModule = require("ui/activity-indicator");
 // << activity-indicator-require
 
-var ASYNC = 0.2;
 export function test_default_TNS_values() {
     // >> activity-indicator-create
     var indicator = new activityIndicatorModule.ActivityIndicator();
@@ -37,7 +36,7 @@ export function test_set_TNS_value_updates_native_value() {
 
     function testAction(views: Array<viewModule.View>) {
         indicator.busy = true;
-        TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => getNativeBusy(indicator) === true);
         TKUnit.assertEqual(getNativeBusy(indicator), true, "Native value is different from TNS value.");
     };
 

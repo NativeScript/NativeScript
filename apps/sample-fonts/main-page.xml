@@ -1,0 +1,5 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" >
+  <ScrollView>
+    <StackLayout loaded="onStackLayoutLoaded"/>
+  </ScrollView>
+</Page>

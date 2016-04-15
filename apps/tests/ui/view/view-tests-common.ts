@@ -740,8 +740,7 @@ export var test_getLocationRelativeToOtherView = function () {
     a1.addChild(a2);
 
     helper.buildUIAndRunTest(a1, function (views: Array<viewModule.View>) {
-        frame.topmost().requestLayout();
-        TKUnit.wait(0.1);
+        TKUnit.waitUntilReady(() => a1.isLayoutValid);
 
         var labelInA2 = label.getLocationRelativeTo(a2);
         var labelInA1 = label.getLocationRelativeTo(a1);
@@ -763,8 +762,7 @@ export var test_getActualSize = function () {
     label.width = 100;
     label.height = 200;
     helper.buildUIAndRunTest(label, function (views: Array<viewModule.View>) {
-        frame.topmost().requestLayout();
-        TKUnit.wait(0.1);
+        TKUnit.waitUntilReady(() => label.isLayoutValid);
         var actualSize = label.getActualSize();
         TKUnit.assertAreClose(actualSize.width, 100, delta, "actualSize.width");
         TKUnit.assertAreClose(actualSize.height, 200, delta, "actualSize.height");

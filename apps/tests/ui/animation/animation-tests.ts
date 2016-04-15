@@ -1,9 +1,8 @@
 ﻿import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
-import pageModule = require("ui/page");
 import viewModule = require("ui/core/view");
-import labelModule = require("ui/label");
-import stackLayoutModule = require("ui/layouts/stack-layout");
+import {Label} from "ui/label";
+import {StackLayout} from "ui/layouts/stack-layout";
 import colorModule = require("color");
 import enums = require("ui/enums");
 
@@ -11,21 +10,18 @@ import enums = require("ui/enums");
 import animation = require("ui/animation");
 // << animation-require
 
-export var test_AnimatingProperties = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
+function prepareTest(): Label {
+    let mainPage = helper.getCurrentPage();
+    let label = new Label({ text: "label" });
+    let stackLayout = new StackLayout();
+    stackLayout.addChild(label);
+    mainPage.content = stackLayout;
+    TKUnit.waitUntilReady(() => label.isLoaded);
+    return label;
+}
 
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
+export function test_AnimatingProperties(done) {
+    let label = prepareTest();
 
     // >> animation-properties
     label.animate({
@@ -34,7 +30,7 @@ export var test_AnimatingProperties = function(done) {
         translate: { x: 100, y: 100 },
         scale: { x: 2, y: 2 },
         rotate: 180,
-        duration: 1000,
+        duration: 10,
         delay: 100,
         iterations: 3,
         curve: enums.AnimationCurve.easeIn
@@ -55,24 +51,12 @@ export var test_AnimatingProperties = function(done) {
     // << animation-properties
 }
 
-export var test_CancellingAnimation = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
-
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
+export function test_CancellingAnimation(done) {
+    let label = prepareTest();
 
     // >> animation-cancel
-    var animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 500 });
+    var animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 20 });
+
     animation1.play()
         .then(() => {
             ////console.log("Animation finished");
@@ -96,24 +80,11 @@ export var test_CancellingAnimation = function(done) {
     // << animation-cancel
 }
 
-export var test_CancellingAnimate = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
-
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
+export function test_CancellingAnimate(done) {
+    let label = prepareTest();
 
     // >> animation-cancel2
-    var animation1 = label.animate({ translate: { x: 100, y: 100 }, duration: 500 })
+    var animation1 = label.animate({ translate: { x: 100, y: 100 }, duration: 20 })
         .then(() => {
             ////console.log("Animation finished");
             // >> (hide)
@@ -136,30 +107,22 @@ export var test_CancellingAnimate = function(done) {
     // << animation-cancel2
 }
 
-export var test_ChainingAnimations = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
+export function test_ChainingAnimations(done) {
+    let label = prepareTest();
 
     // >> animation-chaining
-    label.animate({ opacity: 0 })
-        .then(() => label.animate({ opacity: 1 }))
-        .then(() => label.animate({ translate: { x: 200, y: 200 } }))
-        .then(() => label.animate({ translate: { x: 0, y: 0 } }))
-        .then(() => label.animate({ scale: { x: 5, y: 5 } }))
-        .then(() => label.animate({ scale: { x: 1, y: 1 } }))
-        .then(() => label.animate({ rotate: 180 }))
-        .then(() => label.animate({ rotate: 0 }))
+    let duration = 300;
+    // >> (hide)
+    duration = 5;
+    // << (hide)
+    label.animate({ opacity: 0, duration: duration })
+        .then(() => label.animate({ opacity: 1, duration: duration }))
+        .then(() => label.animate({ translate: { x: 200, y: 200 }, duration: duration }))
+        .then(() => label.animate({ translate: { x: 0, y: 0 }, duration: duration }))
+        .then(() => label.animate({ scale: { x: 5, y: 5 }, duration: duration }))
+        .then(() => label.animate({ scale: { x: 1, y: 1 }, duration: duration }))
+        .then(() => label.animate({ rotate: 180, duration: duration }))
+        .then(() => label.animate({ rotate: 0, duration: duration }))
         .then(() => {
             ////console.log("Animation finished");
             // >> (hide)
@@ -176,25 +139,12 @@ export var test_ChainingAnimations = function(done) {
     // << animation-chaining
 }
 
-export var test_ReusingAnimations = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
-
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
+export function test_ReusingAnimations(done) {
+    let label = prepareTest();
 
     // >> animation-reusing
-    var animation1 = label.createAnimation({ translate: { x: 100, y: 100 } });
-    var animation2 = label.createAnimation({ translate: { x: 0, y: 0 } });
+    var animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
+    var animation2 = label.createAnimation({ translate: { x: 0, y: 0 }, duration: 5 });
 
     animation1.play()
         .then(() => animation2.play())
@@ -218,34 +168,23 @@ export var test_ReusingAnimations = function(done) {
     // << animation-reusing
 }
 
-export var test_AnimatingMultipleViews = function(done) {
-    var mainPage: pageModule.Page;
-    var label1: labelModule.Label;
-    var label2: labelModule.Label;
-    var label3: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label1 = new labelModule.Label();
-        label1.text = "label1";
-        label2 = new labelModule.Label();
-        label2.text = "label2";
-        label3 = new labelModule.Label();
-        label3.text = "label3";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label1);
-        stackLayout.addChild(label2);
-        stackLayout.addChild(label3);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label1.isLoaded && label2.isLoaded });
+export function test_AnimatingMultipleViews(done) {
+    let mainPage = helper.getCurrentPage();
+    let label1 = new Label({ text: "label1" });
+    let label2 = new Label({ text: "label2" });
+    let label3 = new Label({ text: "label3" });
+    let stackLayout = new StackLayout();
+    stackLayout.addChild(label1);
+    stackLayout.addChild(label2);
+    stackLayout.addChild(label3);
+    mainPage.content = stackLayout;
+    TKUnit.waitUntilReady(() => label3.isLoaded);
 
     // >> animation-multiple-views
     var animations: Array<animation.AnimationDefinition> = [
-        { target: label1, translate: { x: 200, y: 200 }, duration: 1000, delay: 0 },
-        { target: label2, translate: { x: 200, y: 200 }, duration: 1000, delay: 333 },
-        { target: label3, translate: { x: 200, y: 200 }, duration: 1000, delay: 666 },
+        { target: label1, translate: { x: 200, y: 200 }, duration: 20, delay: 0 },
+        { target: label2, translate: { x: 200, y: 200 }, duration: 20, delay: 7 },
+        { target: label3, translate: { x: 200, y: 200 }, duration: 20, delay: 14 },
     ];
     var a = new animation.Animation(animations);
     a.play()
@@ -267,23 +206,10 @@ export var test_AnimatingMultipleViews = function(done) {
     // << animation-multiple-views
 }
 
-export var test_AnimateOpacity = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
+export function test_AnimateOpacity(done) {
+    let label = prepareTest();
 
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
-
-    label.animate({ opacity: 0.75 })
+    label.animate({ opacity: 0.75, duration: 20 })
         .then(() => {
             TKUnit.assertEqual(label.opacity, 0.75, "label.opacity");
             done();
@@ -293,8 +219,8 @@ export var test_AnimateOpacity = function(done) {
         });
 }
 
-export var test_AnimateOpacity_ShouldThrow_IfNotNumber = () => {
-    var label = new labelModule.Label();
+export function test_AnimateOpacity_ShouldThrow_IfNotNumber() {
+    var label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
             label.animate({ opacity: <any>"0.75" });
@@ -302,8 +228,8 @@ export var test_AnimateOpacity_ShouldThrow_IfNotNumber = () => {
     });
 }
 
-export var test_AnimateDelay_ShouldThrow_IfNotNumber = () => {
-    var label = new labelModule.Label();
+export function test_AnimateDelay_ShouldThrow_IfNotNumber() {
+    var label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
             label.animate({ delay: <any>"1" });
@@ -311,8 +237,8 @@ export var test_AnimateDelay_ShouldThrow_IfNotNumber = () => {
     });
 }
 
-export var test_AnimateDuration_ShouldThrow_IfNotNumber = () => {
-    var label = new labelModule.Label();
+export function test_AnimateDuration_ShouldThrow_IfNotNumber() {
+    var label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
             label.animate({ duration: <any>"1" });
@@ -320,8 +246,8 @@ export var test_AnimateDuration_ShouldThrow_IfNotNumber = () => {
     });
 }
 
-export var test_AnimateIterations_ShouldThrow_IfNotNumber = () => {
-    var label = new labelModule.Label();
+export function test_AnimateIterations_ShouldThrow_IfNotNumber() {
+    var label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
             label.animate({ iterations: <any>"1" });
@@ -329,8 +255,8 @@ export var test_AnimateIterations_ShouldThrow_IfNotNumber = () => {
     });
 }
 
-export var test_AnimateRotate_ShouldThrow_IfNotNumber = () => {
-    var label = new labelModule.Label();
+export function test_AnimateRotate_ShouldThrow_IfNotNumber() {
+    var label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
             label.animate({ rotate: <any>"1" });
@@ -338,8 +264,8 @@ export var test_AnimateRotate_ShouldThrow_IfNotNumber = () => {
     });
 }
 
-export var test_AnimateScale_ShouldThrow_IfNotPair = () => {
-    var label = new labelModule.Label();
+export function test_AnimateScale_ShouldThrow_IfNotPair() {
+    var label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
             label.animate({ scale: <any>"1" });
@@ -347,8 +273,8 @@ export var test_AnimateScale_ShouldThrow_IfNotPair = () => {
     });
 }
 
-export var test_AnimateTranslate_ShouldThrow_IfNotPair = () => {
-    var label = new labelModule.Label();
+export function test_AnimateTranslate_ShouldThrow_IfNotPair() {
+    var label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
             label.animate({ translate: <any>"1" });
@@ -356,8 +282,8 @@ export var test_AnimateTranslate_ShouldThrow_IfNotPair = () => {
     });
 }
 
-export var test_AnimateBackgroundColor_ShouldThrow_IfNotValidColorStringOrColor = () => {
-    var label = new labelModule.Label();
+export function test_AnimateBackgroundColor_ShouldThrow_IfNotValidColorStringOrColor() {
+    var label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
             label.animate({ backgroundColor: <any>"test" });
@@ -365,24 +291,11 @@ export var test_AnimateBackgroundColor_ShouldThrow_IfNotValidColorStringOrColor 
     });
 }
 
-export var test_AnimateBackgroundColor = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
-
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
+export function test_AnimateBackgroundColor(done) {
+    let label = prepareTest();
     var red = new colorModule.Color("Red");
 
-    label.animate({ backgroundColor: red })
+    label.animate({ backgroundColor: red, duration: 20 })
         .then(() => {
             TKUnit.assert(label.backgroundColor.equals(red));
             done();
@@ -392,26 +305,12 @@ export var test_AnimateBackgroundColor = function(done) {
         });
 }
 
-export var test_AnimateBackgroundColor_FromString = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
-
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
-    
+export function test_AnimateBackgroundColor_FromString(done) {
+    let label = prepareTest();
     var expected = "Red";
     var clr = new colorModule.Color(expected);
 
-    label.animate({ backgroundColor: <any>expected })
+    label.animate({ backgroundColor: <any>expected, duration: 20 })
         .then(() => {
             TKUnit.assert(label.backgroundColor.equals(clr));
             done();
@@ -421,23 +320,10 @@ export var test_AnimateBackgroundColor_FromString = function(done) {
         });
 }
 
-export var test_AnimateTranslate = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
+export function test_AnimateTranslate(done) {
+    let label = prepareTest();
 
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
-
-    label.animate({ translate: { x: 100, y: 200 } })
+    label.animate({ translate: { x: 100, y: 200 }, duration: 20 })
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
             TKUnit.assertEqual(label.translateY, 200, "label.translateY");
@@ -449,23 +335,10 @@ export var test_AnimateTranslate = function(done) {
         });
 }
 
-export var test_AnimateScale = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
+export function test_AnimateScale(done) {
+    let label = prepareTest();
 
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
-
-    label.animate({ scale: { x: 2, y: 3 } })
+    label.animate({ scale: { x: 2, y: 3 }, duration: 20 })
         .then(() => {
             TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
@@ -477,23 +350,10 @@ export var test_AnimateScale = function(done) {
         });
 }
 
-export var test_AnimateRotate = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
+export function test_AnimateRotate(done) {
+    let label = prepareTest();
 
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
-
-    label.animate({ rotate: 123 })
+    label.animate({ rotate: 123, duration: 20 })
         .then(() => {
             TKUnit.assertEqual(label.rotate, 123, "label.rotate");
             assertIOSNativeTransformIsCorrect(label);
@@ -504,26 +364,14 @@ export var test_AnimateRotate = function(done) {
         });
 }
 
-export var test_AnimateTranslateScaleAndRotateSimultaneously = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
-
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
+export function test_AnimateTranslateScaleAndRotateSimultaneously(done) {
+    let label = prepareTest();
 
     label.animate({
         translate: { x: 100, y: 200 },
         scale: { x: 2, y: 3 },
-        rotate: 123
+        rotate: 123,
+        duration: 20
     })
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
@@ -539,28 +387,15 @@ export var test_AnimateTranslateScaleAndRotateSimultaneously = function(done) {
         });
 }
 
-export var test_AnimateTranslateScaleAndRotateSequentially = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
+export function test_AnimateTranslateScaleAndRotateSequentially(done) {
+    let label = prepareTest();
 
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
-
-    label.animate({ translate: { x: 100, y: 200 } })
+    label.animate({ translate: { x: 100, y: 200 }, duration: 20 })
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
             TKUnit.assertEqual(label.translateY, 200, "label.translateY");
             assertIOSNativeTransformIsCorrect(label);
-            return label.animate({ scale: { x: 2, y: 3 } });
+            return label.animate({ scale: { x: 2, y: 3 }, duration: 20 });
         })
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
@@ -568,7 +403,7 @@ export var test_AnimateTranslateScaleAndRotateSequentially = function(done) {
             TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
             assertIOSNativeTransformIsCorrect(label);
-            return label.animate({ rotate: 123 });
+            return label.animate({ rotate: 123, duration: 20 });
         })
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
@@ -584,24 +419,11 @@ export var test_AnimateTranslateScaleAndRotateSequentially = function(done) {
         });
 }
 
-export var test_AnimationsAreAlwaysPlayed = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
+export function test_AnimationsAreAlwaysPlayed(done) {
+    let label = prepareTest();
 
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
-
-    var animation1 = label.createAnimation({ opacity: 0 });
-    var animation2 = label.createAnimation({ opacity: 1 });
+    var animation1 = label.createAnimation({ opacity: 0, duration: 20 });
+    var animation2 = label.createAnimation({ opacity: 1, duration: 20 });
 
     animation1.play()
         .then(() => {
@@ -618,23 +440,10 @@ export var test_AnimationsAreAlwaysPlayed = function(done) {
         });
 }
 
-export var test_PlayPromiseIsResolvedWhenAnimationFinishes = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
+export function test_PlayPromiseIsResolvedWhenAnimationFinishes(done) {
+    let label = prepareTest();
 
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
-
-    var animation = label.createAnimation({ opacity: 0, duration: 1000 });
+    var animation = label.createAnimation({ opacity: 0, duration: 20 });
 
     animation.play()
         .then(function onResolved() {
@@ -646,23 +455,10 @@ export var test_PlayPromiseIsResolvedWhenAnimationFinishes = function(done) {
         });
 }
 
-export var test_PlayPromiseIsRejectedWhenAnimationIsCancelled = function(done) {
-    var mainPage: pageModule.Page;
-    var label: labelModule.Label;
-    var pageFactory = function(): pageModule.Page {
-        label = new labelModule.Label();
-        label.text = "label";
-        var stackLayout = new stackLayoutModule.StackLayout();
-        stackLayout.addChild(label);
-        mainPage = new pageModule.Page();
-        mainPage.content = stackLayout;
-        return mainPage;
-    };
+export function test_PlayPromiseIsRejectedWhenAnimationIsCancelled(done) {
+    let label = prepareTest();
 
-    helper.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => { return label.isLoaded });
-
-    var animation = label.createAnimation({ opacity: 0, duration: 1000 });
+    var animation = label.createAnimation({ opacity: 0, duration: 20 });
 
     animation.play()
         .then(function onResolved() {

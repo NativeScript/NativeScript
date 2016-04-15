@@ -1,0 +1,12 @@
+<Page>
+      <StackLayout>
+            <SegmentedBar>
+                  <SegmentedBar.items>
+                        <SegmentedBarItem title="Incomplete" />
+                        <SegmentedBarItem title="Complete" />
+                        <SegmentedBarItem title="Something Else" />
+                        <SegmentedBarItem title="All" />
+                  </SegmentedBar.items>
+            </SegmentedBar>
+      </StackLayout>
+</Page>
