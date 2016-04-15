@@ -76,6 +76,13 @@ export class Label extends common.Label {
         return this._ios;
     }
 
+    public onLoaded() {
+        super.onLoaded();
+
+        this.style._updateTextDecoration();
+        this.style._updateTextTransform();
+    }
+
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var nativeView = this._nativeView;
         if (nativeView) {
@@ -109,7 +116,7 @@ export class Label extends common.Label {
             this.setMeasuredDimension(widthAndState, heightAndState);
         }
     }
-} 
+}
 
 export class LabelStyler implements style.Styler {
     //Background methods
