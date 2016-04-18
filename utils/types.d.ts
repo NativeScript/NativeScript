@@ -83,4 +83,10 @@
          */
         baseClassInfo: ClassInfo;
     }
+
+    /**
+     * Returns a string representation of a string to be shown in UI.
+     * @param object The object which class hierarchy will be get.
+     */
+    export function toUIString(object): string;
 }

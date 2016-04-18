@@ -1,5 +1,6 @@
 ﻿import formattedStringCommon = require("./formatted-string-common");
 import spanModule = require("text/span");
+import types = require("utils/types");
 
 global.moduleMerge(formattedStringCommon, exports);
 
@@ -12,7 +13,7 @@ export class FormattedString extends formattedStringCommon.FormattedString {
         var spanText = "";
         for (i = 0; i < this.spans.length; i++) {
             var span = <spanModule.Span>this.spans.getItem(i);
-            spanText = span.text || "";
+            spanText = types.toUIString(span.text);
             spanLength = spanText.length;
             span.updateSpanModifiers(this);
             var attrDict = NSMutableDictionary.alloc().init();

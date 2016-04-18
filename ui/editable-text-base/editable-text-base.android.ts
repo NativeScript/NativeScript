@@ -133,7 +133,7 @@ export class EditableTextBase extends common.EditableTextBase {
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (this._android) {
-            var newValue = types.isNullOrUndefined(data.newValue) ? "" : data.newValue + "";
+            var newValue = types.toUIString(data.newValue);
             this.android.setText(newValue, android.widget.TextView.BufferType.EDITABLE);
         }
     }
