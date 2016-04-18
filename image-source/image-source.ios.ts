@@ -15,6 +15,26 @@ export class ImageSource implements definition.ImageSource {
         return this.ios != null;
     }
 
+    public fromResource(name: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                UIImage.imageNamed["async"](UIImage, [name]).then(image => {
+                    if (image) {
+                        this.ios = image;
+                        resolve(true);
+                    } else {
+                        UIImage.imageNamed["async"](UIImage, [`${name}.jpg`]).then(image => {
+                            this.ios = image;
+                            resolve(true);
+                        });
+                    }
+                });
+            } catch (ex) {
+                reject(ex);
+            }
+        });
+    }
+
     public loadFromFile(path: string): boolean {
         var fileName = types.isString(path) ? path.trim() : "";
 
@@ -26,9 +46,41 @@ export class ImageSource implements definition.ImageSource {
         return this.ios != null;
     }
 
+    public fromFile(path: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                var fileName = types.isString(path) ? path.trim() : "";
+
+                if (fileName.indexOf("~/") === 0) {
+                    fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
+                }
+
+                UIImage.imageWithContentsOfFile["async"](UIImage, [fileName]).then(image => {
+                    this.ios = image;
+                    resolve(true);
+                });
+            } catch (ex) {
+                reject(ex);
+            }
+        });
+    }
+
     public loadFromData(data: any): boolean {
         this.ios = UIImage.imageWithData(data);
         return this.ios != null;
+    }
+
+    public fromData(data: any): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                UIImage.imageWithData["async"](UIImage, [data]).then(image => {
+                    this.ios = image;
+                    resolve(true);
+                });
+            } catch (ex) {
+                reject(ex);
+            }
+        });
     }
 
     public loadFromBase64(source: string): boolean {
@@ -36,7 +88,23 @@ export class ImageSource implements definition.ImageSource {
             var data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.NSDataBase64DecodingIgnoreUnknownCharacters);
             this.ios = UIImage.imageWithData(data);
         }
+
         return this.ios != null;
+    }
+
+    public fromBase64(source: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                var data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.NSDataBase64DecodingIgnoreUnknownCharacters);
+                UIImage.imageWithData["async"](UIImage, [data]).then(image => {
+                    this.ios = image;
+                    resolve(true);
+                });
+
+            } catch (ex) {
+                reject(ex);
+            }
+        });
     }
 
     public setNativeSource(source: any): boolean {

@@ -44,12 +44,18 @@ export class ImageSource implements definition.ImageSource {
                 // Load BitmapDrawable with getDrawable to make use of Android internal caching
                 var bitmapDrawable = <android.graphics.drawable.BitmapDrawable>res.getDrawable(identifier);
                 if (bitmapDrawable && bitmapDrawable.getBitmap) {
-                    this.android  = bitmapDrawable.getBitmap();
+                    this.android = bitmapDrawable.getBitmap();
                 }
             }
         }
 
         return this.android != null;
+    }
+
+    public fromResource(name: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.loadFromResource(name));
+        });
     }
 
     public loadFromFile(path: string): boolean {
@@ -64,9 +70,21 @@ export class ImageSource implements definition.ImageSource {
         return this.android != null;
     }
 
+    public fromFile(path: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.loadFromFile(path));
+        });
+    }
+
     public loadFromData(data: any): boolean {
         this.android = android.graphics.BitmapFactory.decodeStream(data);
         return this.android != null;
+    }
+
+    public fromData(data: any): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.loadFromData(data));
+        });
     }
 
     public loadFromBase64(source: string): boolean {
@@ -75,6 +93,12 @@ export class ImageSource implements definition.ImageSource {
             this.android = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
         }
         return this.android != null;
+    }
+
+    public fromBase64(data: any): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.loadFromBase64(data));
+        });
     }
 
     public setNativeSource(source: any): boolean {
