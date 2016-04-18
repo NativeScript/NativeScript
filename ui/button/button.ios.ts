@@ -186,6 +186,15 @@ export class ButtonStyler implements style.Styler {
         utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, enums.TextTransform.none, view.style.letterSpacing);
     }
 
+    // letter-spacing
+    private static setLetterSpacingProperty(view: view.View, newValue: any) {
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, view.style.textTransform, newValue);
+    }
+
+    private static resetLetterSpacingProperty(view: view.View, nativeValue: any) {
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, view.style.textTransform, 0);
+    }
+
     // white-space
     private static setWhiteSpaceProperty(view: view.View, newValue: any) {
         utils.ios.setWhiteSpace((<UIButton>view.ios).titleLabel, newValue, view.ios);
@@ -222,6 +231,10 @@ export class ButtonStyler implements style.Styler {
         style.registerHandler(style.textTransformProperty, new style.StylePropertyChangedHandler(
             ButtonStyler.setTextTransformProperty,
             ButtonStyler.resetTextTransformProperty), "Button");
+
+        style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
+            ButtonStyler.setLetterSpacingProperty,
+            ButtonStyler.resetLetterSpacingProperty), "Button");
 
         style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
             ButtonStyler.setWhiteSpaceProperty,
