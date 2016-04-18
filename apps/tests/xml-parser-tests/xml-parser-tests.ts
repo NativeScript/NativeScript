@@ -57,7 +57,7 @@ export var test_XmlParser_OnErrorIsCalledWhenAnErrorOccurs = function () {
     var e;
     var xmlParser = new xmlModule.XmlParser(
         function (event: xmlModule.ParserEvent) {
-            
+            //test_XmlParser_OnErrorIsCalledWhenAnErrorOccurs
         },
         function (error: Error) {
             e = error;
