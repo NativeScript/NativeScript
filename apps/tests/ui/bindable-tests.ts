@@ -998,3 +998,128 @@ export function test_$ValueSupportWithinExpression() {
 
     TKUnit.assertEqual(bindableObj.get("test"), "red", "When anyColor is red test property should be red too.");
 }
+
+class DummyNestedClass extends observable.Observable {
+    private _secondsobject: number;
+    public get secondsobject(): number {
+        return this._secondsobject;
+    }
+    public set secondsobject(value: number) {
+        if (this._secondsobject !== value) {
+            this._secondsobject = value;
+            this.notifyPropertyChange('secondsobject', value);
+        }
+    }
+}
+
+class DummyClassWithSamePropertyNames extends observable.Observable {
+    private _seconds: number;
+    private _secondsobject: DummyNestedClass;
+    public get seconds(): number {
+        return this._seconds;
+    }
+    public set seconds(value: number) {
+        if (this._seconds !== value) {
+            this._seconds = value;
+            this.notifyPropertyChange('seconds', value);
+        }
+    }
+    
+    public get secondsobject(): DummyNestedClass {
+        return this._secondsobject;
+    }
+    public set secondsobject(value: DummyNestedClass) {
+        if (this._secondsobject !== value) {
+            this._secondsobject = value;
+            this.notifyPropertyChange('secondsobject', value);
+        }
+    }
+}
+
+class DummyModel extends observable.Observable {
+    private _item: DummyClassWithSamePropertyNames;
+    public get item(): DummyClassWithSamePropertyNames {
+        return this._item;
+    }
+    
+    public set item(value: DummyClassWithSamePropertyNames) {
+        if (this._item !== value) {
+            this._item = value;
+            this.notifyPropertyChange("item", value);
+        }
+    }
+}
+
+export function test_BindingToPropertiesWithSameNames() {
+    var model = new DummyModel();
+    model.item = new DummyClassWithSamePropertyNames();
+    model.item.seconds = 1;
+    var secondsobject = new DummyNestedClass();
+    secondsobject.secondsobject = 1;
+    model.item.secondsobject = secondsobject;
+    
+    var target1 = new bindable.Bindable();
+    target1.bind({
+        sourceProperty: "item.seconds",
+        targetProperty: "targetProperty",
+        twoWay: true
+    }, model);
+
+    var target2 = new bindable.Bindable();
+    target2.bind({
+        sourceProperty: "item.secondsobject.secondsobject",
+        targetProperty: "targetProp",
+        twoWay: true
+    }, model);
+    
+    model.item.set("seconds", model.item.seconds + 1);
+    var newValue = (<any>model).item.secondsobject.secondsobject + 1;
+    model.item.secondsobject.set("secondsobject", newValue);
+    
+    TKUnit.assertEqual(target1.get("targetProperty"), model.item.get("seconds"));
+    TKUnit.assertEqual(target2.get("targetProp"), newValue);
+    
+    // calling this two times in order to ensure that adding and removing weak event listeners is working fine.
+    newValue = model.item.secondsobject.secondsobject + 1;
+    model.item.secondsobject.set("secondsobject", newValue);
+    
+    TKUnit.assertEqual(target1.get("targetProperty"), model.item.get("seconds"));
+    TKUnit.assertEqual(target2.get("targetProp"), newValue);
+}
+
+export function test_BindingToPropertiesWithSameNamesSecondCase() {
+    var model = new DummyModel();
+    model.item = new DummyClassWithSamePropertyNames();
+    model.item.seconds = 1;
+    var secondsobject = new DummyNestedClass();
+    secondsobject.secondsobject = 1;
+    model.item.secondsobject = secondsobject;
+    
+    var target1 = new bindable.Bindable();
+    target1.bind({
+        sourceProperty: "item.seconds",
+        targetProperty: "targetProperty",
+        twoWay: true
+    }, model);
+
+    var target2 = new bindable.Bindable();
+    target2.bind({
+        sourceProperty: "item.secondsobject.secondsobject",
+        targetProperty: "targetProp",
+        twoWay: true
+    }, model);
+    
+    model.item.set("seconds", model.item.seconds + 1);
+    var newValue = model.item.secondsobject.secondsobject + 1;
+    model.item.set("secondsobject",{secondsobject: newValue});
+    
+    TKUnit.assertEqual(target1.get("targetProperty"), model.item.get("seconds"));
+    TKUnit.assertEqual(target2.get("targetProp"), newValue);
+    
+    // calling this two times in order to ensure that adding and removing weak event listeners is working fine.
+    newValue = model.item.secondsobject.secondsobject + 1;
+    model.item.set("secondsobject",{secondsobject: newValue});
+    
+    TKUnit.assertEqual(target1.get("targetProperty"), model.item.get("seconds"));
+    TKUnit.assertEqual(target2.get("targetProp"), newValue);
+}

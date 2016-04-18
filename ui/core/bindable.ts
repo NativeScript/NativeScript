@@ -280,13 +280,14 @@ export class Binding {
         return result;
     }
 
-    private addPropertyChangeListeners(source: WeakRef<Object>, sourceProperty: Array<string>) {
+    private addPropertyChangeListeners(source: WeakRef<Object>, sourceProperty: Array<string>, parentProperies?: string) {
         var objectsAndProperties = this.resolveObjectsAndProperties(source.get(), sourceProperty)
         var objectsAndPropertiesLength = objectsAndProperties.length;
         if (objectsAndPropertiesLength > 0) {
             var i;
+            var prop = parentProperies || "";
             for (i = 0; i < objectsAndPropertiesLength; i++) {
-                var prop = objectsAndProperties[i].property;
+                prop += "$" + objectsAndProperties[i].property;
                 var currentObject = objectsAndProperties[i].instance;
                   if (!this.propertyChangeListeners[prop] && currentObject instanceof observable.Observable) {
                     weakEvents.addWeakEventListener(
@@ -406,6 +407,18 @@ export class Binding {
     }
 
     public onSourcePropertyChanged(data: observable.PropertyChangeData) {
+        var sourceProps = Binding.getProperties(this.options.sourceProperty);
+        var sourcePropsLength = sourceProps.length;
+        var changedPropertyIndex = sourceProps.indexOf(data.propertyName);
+        var parentProps = "";
+        if (changedPropertyIndex > -1) {
+            parentProps = "$" + sourceProps.slice(0, changedPropertyIndex + 1).join("$");
+            while (this.propertyChangeListeners[parentProps] !== data.object) {
+                changedPropertyIndex += sourceProps.slice(changedPropertyIndex + 1).indexOf(data.propertyName) + 1;
+                parentProps = "$" + sourceProps.slice(0, changedPropertyIndex + 1).join("$");
+            }
+        }
+        
         if (this.options.expression) {
             var expressionValue = this._getExpressionValue(this.options.expression, false, undefined);
             if (expressionValue instanceof Error) {
@@ -415,14 +428,12 @@ export class Binding {
                 this.updateTarget(expressionValue);
             }
         } else {
-            var propIndex = this.getSourceProperties().indexOf(data.propertyName);
-            if (propIndex > -1) {
-                var props = this.getSourceProperties().slice(propIndex + 1);
+            if (changedPropertyIndex > -1) {
+                var props = sourceProps.slice(changedPropertyIndex + 1);
                 var propsLength = props.length;
                 if (propsLength > 0) {
                     var value = data.value;
-                    var i;
-                    for (i = 0; i < propsLength; i++) {
+                    for (let i = 0; i < propsLength; i++) {
                         value = value[props[i]];
                     }
                     this.updateTarget(value);
@@ -433,27 +444,29 @@ export class Binding {
             }
         }
 
-        var sourceProps = Binding.getProperties(this.options.sourceProperty);
-        var sourcePropsLength = sourceProps.length;
-        var changedPropertyIndex = sourceProps.indexOf(data.propertyName);
         if (changedPropertyIndex > -1) {
-            var probablyChangedObject = this.propertyChangeListeners[sourceProps[changedPropertyIndex + 1]];
+            var probablyChangedObject = this.propertyChangeListeners[parentProps];
             if (probablyChangedObject &&
                 probablyChangedObject !== data.object[sourceProps[changedPropertyIndex]]) {
                 // remove all weakevent listeners after change, because changed object replaces object that is hooked for
                 // propertyChange event
-                for (i = sourcePropsLength - 1; i > changedPropertyIndex; i--) {
-                    weakEvents.removeWeakEventListener(
-                        this.propertyChangeListeners[sourceProps[i]],
-                        observable.Observable.propertyChangeEvent,
-                        this.onSourcePropertyChanged,
-                        this);
-                    delete this.propertyChangeListeners[sourceProps[i]];
+                for (let i = sourcePropsLength - 1; i > changedPropertyIndex; i--) {
+                    var prop = "$" + sourceProps.slice(0, i + 1).join("$");
+                    if (this.propertyChangeListeners[prop]) {
+                        weakEvents.removeWeakEventListener(
+                            this.propertyChangeListeners[prop],
+                            observable.Observable.propertyChangeEvent,
+                            this.onSourcePropertyChanged,
+                            this);
+                        delete this.propertyChangeListeners[prop];
+                    }
                 }
-                //var newProps = this.options.sourceProperty.substr(this.options.sourceProperty.indexOf(data.propertyName) + data.propertyName.length + 1);
                 var newProps = sourceProps.slice(changedPropertyIndex + 1);
                 // add new weakevent listeners
-                this.addPropertyChangeListeners(new WeakRef(data.object[sourceProps[changedPropertyIndex]]), newProps);
+                var newObject = data.object[sourceProps[changedPropertyIndex]]
+                if (typeof newObject === 'object') {
+                    this.addPropertyChangeListeners(new WeakRef(data.object[sourceProps[changedPropertyIndex]]), newProps, parentProps);
+                }
             }
         }
     }
