@@ -146,8 +146,15 @@ export module FontStyle {
 }
 
 export module FontWeight {
-    export var normal: string = "normal";
-    export var bold: string = "bold";
+    export var thin: string = "100";
+    export var extraLight: string = "200";
+    export var light: string = "300";
+    export var normal: string = "normal"; // 400 
+    export var medium: string = "500";
+    export var semiBold: string = "600";
+    export var bold: string = "bold"; // 700 
+    export var extraBold: string = "800";
+    export var black: string = "900";
 }
 
 export module BackgroundRepeat {

@@ -423,7 +423,19 @@ function isLetterSpacingValid(value: string): boolean {
 }
 
 function isFontWeightValid(value: string): boolean {
-    return value === enums.FontWeight.normal || value === enums.FontWeight.bold;
+    if (!value) {
+        console.trace();
+    }
+    return value === enums.FontWeight.thin
+        || value === enums.FontWeight.extraLight
+        || value === enums.FontWeight.light
+        || value === enums.FontWeight.normal || value === "400"
+        || value === enums.FontWeight.medium
+        || value === enums.FontWeight.semiBold
+        || value === enums.FontWeight.bold || value === "700"
+        || value === enums.FontWeight.extraBold
+        || value === enums.FontWeight.black
+        ;
 }
 
 function isFontStyleValid(value: string): boolean {
