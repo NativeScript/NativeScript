@@ -67,7 +67,7 @@ export var testSetText = function () {
 
         var expectedValue = "Hello, world!";
         var actualValue = textFieldTestsNative.getNativeText(textField);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
     });    
 }
 
@@ -79,7 +79,7 @@ export var testSetTextNull = function () {
 
         var expectedValue = "";
         var actualValue = textFieldTestsNative.getNativeText(textField);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
     });
 }
 
@@ -91,7 +91,75 @@ export var testSetTextUndefined = function () {
 
         var expectedValue = "";
         var actualValue = textFieldTestsNative.getNativeText(textField);
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
+    });
+}
+
+export var testSetTextToZero = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
+        var textField = <textFieldModule.TextField>views[0];
+
+        (<any>textField).text = 0;
+
+        var expectedValue = "0";
+        var actualValue = textFieldTestsNative.getNativeText(textField);
+        TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
+    });
+}
+
+function createFormattedString(value: any): formattedStringModule.FormattedString {
+    var span = new spanModule.Span();
+    span.text = value;
+    var result = new formattedStringModule.FormattedString();
+    result.spans.push(span);
+    return result;
+}
+
+export var testSetTextWithSpan = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
+        var textField = <textFieldModule.TextField>views[0];
+  
+        textField.formattedText = createFormattedString("Hello, world!");
+
+        var expectedValue = "Hello, world!";
+        var actualValue = textFieldTestsNative.getNativeText(textField);
+        TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
+    });
+}
+
+export var testSetTextNullWithSpan = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
+        var textField = <textFieldModule.TextField>views[0];
+
+        textField.formattedText = createFormattedString(null);
+
+        var expectedValue = "";
+        var actualValue = textFieldTestsNative.getNativeText(textField);
+        TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
+    });
+}
+
+export var testSetTextUndefinedWithSpan = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
+        var textField = <textFieldModule.TextField>views[0];
+
+        textField.formattedText = createFormattedString(undefined);
+
+        var expectedValue = "";
+        var actualValue = textFieldTestsNative.getNativeText(textField);
+        TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
+    });
+}
+
+export var testSetTextToZeroWithSpan = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
+        var textField = <textFieldModule.TextField>views[0];
+
+        textField.formattedText = createFormattedString(0);
+
+        var expectedValue = "0";
+        var actualValue = textFieldTestsNative.getNativeText(textField);
+        TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
     });
 }
 

@@ -5,7 +5,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 export class TextBase extends common.TextBase {
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (this.android) {
-            var newValue = types.isNullOrUndefined(data.newValue) ? "" : data.newValue + "";
+            var newValue = types.toUIString(data.newValue);
             this.android.setText(newValue);
         }
     }
