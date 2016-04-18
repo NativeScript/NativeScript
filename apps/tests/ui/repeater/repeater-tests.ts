@@ -19,8 +19,6 @@ import observableArray = require("data/observable-array");
 import labelModule = require("ui/label");
 // << article-require-modules
 
-
-
 var ASYNC = 0.2;
 var FEW_ITEMS = [0, 1, 2];
 var MANY_ITEMS = [];

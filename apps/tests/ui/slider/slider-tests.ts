@@ -23,7 +23,6 @@ import sliderModule = require("ui/slider");
 // exports.pageLoaded = pageLoaded;
 // << article-binding-slider-properties
 
-
 var TEST_VALUE = 5;
 
 export function test_set_TNS_value_updates_native_value() {

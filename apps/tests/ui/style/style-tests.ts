@@ -13,8 +13,6 @@ import viewModule = require("ui/core/view");
 import styleModule = require("ui/styling/style");
 import dependencyObservableModule = require("ui/core/dependency-observable");
 
-
-
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     var stack = new stackModule.StackLayout();
 
@@ -138,8 +136,6 @@ export function test_setting_css() {
 
     TKUnit.assert(page.css === ".title { font-size: 20 }", "CSS not set correctly.");
 }
-
-
 
 // Basic selector tests
 export function test_type_selector() {

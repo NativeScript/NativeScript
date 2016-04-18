@@ -9,8 +9,6 @@ import platform = require("platform");
 import progressModule = require("ui/progress");
 // << article-require-module
 
-
-
 export function test_default_TNS_values() {
     // >> article-create-progress-view
     var progress = new progressModule.Progress();

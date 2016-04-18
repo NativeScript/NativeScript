@@ -5,13 +5,11 @@ import testModule = require("../../ui-test");
 import webViewModule = require("ui/web-view");
 // << webview-require
 
-
 // >> declare-webview-xml
 //  <Page>
 //       {%raw%}<WebView src="{{ someUrl | pathToLocalFile | htmlString }}" />{%endraw%}
 //  </Page>
 // << declare-webview-xml
-
 
 export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 

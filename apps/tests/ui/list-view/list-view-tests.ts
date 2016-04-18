@@ -16,10 +16,12 @@ import observableArray = require("data/observable-array");
 import labelModule = require("ui/label");
 // << article-require-modules
 
-
 // >> article-item-tap
 function listViewItemTap(args) {
   var itemIndex = args.index;
+  // >> (hide)
+  console.dump(itemIndex);
+  // << (hide)
 }
 exports.listViewItemTap = listViewItemTap;
 // << article-item-tap
@@ -29,12 +31,11 @@ function listViewLoadMoreItems(args) {
   // Expand your collection bound to the ListView with more items here!
 }
 // << article-load-items
-
+listViewLoadMoreItems("test");
 // function loaded(args) {
 //   args.object.bindingContext = { items: [1,2,3,4,5] };
 // }
 // exports.loaded = loaded;
-
 
 var ASYNC = 0.2;
 var FEW_ITEMS = [0, 1, 2];

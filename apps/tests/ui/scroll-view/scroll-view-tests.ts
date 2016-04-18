@@ -33,6 +33,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         // >> article-creating-scrollview
         var scrollView = new scrollViewModule.ScrollView();
         // << article-creating-scrollview
+        console.dump(scrollView);
     }
 
     public test_default_TNS_values() {

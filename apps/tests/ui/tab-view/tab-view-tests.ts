@@ -5,8 +5,6 @@ import labelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import tabViewTestsNative = require("./tab-view-tests-native");
 
-
-
 // Using a TabView requires the "ui/tab-view" module.
 // >> article-require-tabview-module
 import tabViewModule = require("ui/tab-view");

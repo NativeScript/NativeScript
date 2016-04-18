@@ -1,5 +1,7 @@
 ﻿import TKUnit = require("../../TKUnit");
+// >> article-creating-view
 import platform = require("platform");
+//var utils = require("utils/utils");
 import utils = require("utils/utils");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
@@ -7,10 +9,6 @@ import viewModule = require("ui/core/view");
 // >> article-require-module
 import placeholderModule = require("ui/placeholder");
 // << article-require-module
-
-// >> article-creating-view
-var platform = require("platform");
-var utils = require("utils/utils");
 
 function creatingView(args) {
    var nativeView;

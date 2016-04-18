@@ -21,7 +21,6 @@ function pageLoaded(args) {
 exports.pageLoaded = pageLoaded;
 // << article-binding-switch-property
 
-
 export function test_default_TNS_values() {
     // >> article-create-switch
     var mySwitch = new switchModule.Switch();

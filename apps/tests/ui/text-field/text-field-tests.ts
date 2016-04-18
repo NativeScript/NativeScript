@@ -30,7 +30,6 @@ function pageLoaded(args) {
 exports.pageLoaded = pageLoaded;
 // << binding-text-property
 
-
 var _createTextFieldFunc = function (): textFieldModule.TextField {
     // >> creating-textfield
     var textField = new textFieldModule.TextField();
