@@ -105,14 +105,28 @@ export class XMLHttpRequest {
         this._setResponseType();
 
         if (this.responseType === XMLHttpRequestResponseType.json) {
-            this._responseTextReader = () => r.content.toString();
-            this._response = JSON.parse(this.responseText);
+            this._prepareJsonResponse(r);
+
         } else if (this.responseType === XMLHttpRequestResponseType.empty ||
             this.responseType === XMLHttpRequestResponseType.text) {
             this._responseTextReader = () => r.content.toString();
         }
 
         this._setReadyState(this.DONE);
+    }
+
+    private _prepareJsonResponse(r) {
+        this._responseTextReader = () => r.content.toString();
+        this._response = JSON.parse(this.responseText);
+
+        // Add toString() method to ease debugging and 
+        // make Angular2 response.text() method work properly.
+        Object.defineProperty(this._response, "toString", {
+            configurable: true,
+            enumerable: false,
+            writable: true,
+            value: () => this.responseText
+        });
     }
 
     private _setResponseType() {
