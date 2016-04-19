@@ -35,7 +35,7 @@ export class KeyframeAnimation {
     private _reject;
     private _isPlaying: boolean;
     private _isForwards: boolean;
-    private _currentAnimation: animationModule.Animation;
+    private _nativeAnimations: Array<animationModule.Animation>;
 
     public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo, valueSourceModifier: number) {
         let animations = new Array<Object>();
@@ -102,10 +102,11 @@ export class KeyframeAnimation {
 
     public cancel() {
         if (this._isPlaying) {
-            if (this._currentAnimation && this._currentAnimation.isPlaying) {
-                this._currentAnimation.cancel();
-            }
             this._isPlaying = false;
+            for (let i = this._nativeAnimations.length - 1; i >= 0; i--) {
+                let animation = this._nativeAnimations[i];
+                animation.cancel();
+            }
             this._rejectAnimationFinishedPromise();
         }
     }
@@ -121,6 +122,7 @@ export class KeyframeAnimation {
         });
 
         this._isPlaying = true;
+        this._nativeAnimations = new Array<animationModule.Animation>();
 
         if (this.delay !== 0) {
             let that = this;
@@ -134,6 +136,9 @@ export class KeyframeAnimation {
     }
 
     private animate(view: view.View, index: number, iterations: number) {
+        if (!this._isPlaying) {
+            return;
+        }
         if (index === 0) {
             let animation = this.animations[0];
             let modifier = animation["valueSource"];
@@ -196,19 +201,19 @@ export class KeyframeAnimation {
             animation.play().then(() => {
                 this.animate(view, index + 1, iterations);
             });
-            this._currentAnimation = animation;
+            this._nativeAnimations.push(animation);
         }
     }
 
     public _resolveAnimationFinishedPromise() {
+        this._nativeAnimations = new Array<animationModule.Animation>();
         this._isPlaying = false;
-        this._currentAnimation = undefined;
         this._resolve();
     }
 
     public _rejectAnimationFinishedPromise() {
+        this._nativeAnimations = new Array<animationModule.Animation>();
         this._isPlaying = false;
-        this._currentAnimation = undefined;
         this._reject(new Error("Animation cancelled."));
     }
 }
