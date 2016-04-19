@@ -99,3 +99,7 @@ export class ClassInfo {
         return result;
     }
 }
+
+export function toUIString(obj): string {
+    return isNullOrUndefined(obj) ? "" : obj + "";
+}

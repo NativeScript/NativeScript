@@ -4,7 +4,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 
 export class TextBase extends common.TextBase {
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var newValue = types.isNullOrUndefined(data.newValue) ? "" : data.newValue + "";
+        var newValue = types.toUIString(data.newValue);
         this.ios.text = newValue;
         this.style._updateTextDecoration();
         this.style._updateTextTransform();
