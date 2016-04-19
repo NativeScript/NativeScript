@@ -179,7 +179,7 @@ export function test_parse_ShouldResolveExportsFromCodeFileForTemplates() {
         });
         p.bindingContext = obj;
 
-        TKUnit.waitUntilReady(() => ctrl !== null);
+        TKUnit.waitUntilReady(() => ctrl);
         TKUnit.assert((<any>ctrl).customCodeLoaded, "Parse should resolve exports for templates from custom code file.");
     };
 
