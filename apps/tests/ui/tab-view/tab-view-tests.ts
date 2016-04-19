@@ -5,44 +5,17 @@ import labelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import tabViewTestsNative = require("./tab-view-tests-native");
 
-// <snippet module="ui/tab-view" title="TabView">
-// # TabView
-
-// ### Declaring the TabView in xml.
-//``` XML
-// <Page>
-//  <TabView>
-//    <TabView.items>
-//      <TabViewItem title="Tab 1">
-//        <TabViewItem.view>
-//           <Label text="Label in Tab1" />
-//        </TabViewItem.view>
-//      </TabViewItem>
-//      <TabViewItem title="Tab 2">
-//        <TabViewItem.view>
-//           <Label text="Label in Tab2" />
-//        </TabViewItem.view>
-//      </TabViewItem>
-//    </TabView.items>
-//  </TabView>
-// </Page>
-//```
-
 // Using a TabView requires the "ui/tab-view" module.
-// ``` JavaScript
+// >> article-require-tabview-module
 import tabViewModule = require("ui/tab-view");
-// ```
-// </snippet>
+// << article-require-tabview-module
 
 export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
 
     public create(): tabViewModule.TabView {
-        // <snippet module="ui/tab-view" title="TabView">
-        // ## Creating a TabView
-        // ``` JavaScript
+        // >> article-create-tabview
         var tabView = new tabViewModule.TabView();
-        // ```
-        // </snippet>
+        // << article-create-tabview
         tabView.id = "TabView";
         return tabView;
     }
@@ -92,9 +65,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
 
     public testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
         var tabView = this.testView;
-        // <snippet module="ui/tab-view" title="TabView">
-        // ### Binding TabView.items
-        // ``` JavaScript
+        // >> article-binding-tabview-items
         var items = [];
         var StackLayout0 = new stackLayoutModule.StackLayout();
         var label0 = new labelModule.Label();
@@ -115,8 +86,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         };
         items.push(tabEntry1);
         tabView.items = items;
-        // ```
-        // </snippet>
+        // << article-binding-tabview-items
 
         this.waitUntilTestElementIsLoaded();
 
@@ -131,12 +101,9 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         tabView.items = this._createItems(10);
         this.waitUntilTestElementIsLoaded();
 
-        // <snippet module="ui/tab-view" title="TabView">
-        // ### Selecting a tab programmatically
-        // ``` JavaScript
+        // >> article-select-tab
         tabView.selectedIndex = 9;
-        // ```
-        // </snippet>
+        // << article-select-tab
         tabView.items = [];
 
         var expectedValue = undefined;

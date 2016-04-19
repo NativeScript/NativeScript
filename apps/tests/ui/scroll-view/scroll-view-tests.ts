@@ -7,23 +7,9 @@ import layoutHelper = require("../../layouts/layout-helper");
 import {Page} from "ui/page";
 import * as frame from "ui/frame";
 
-// <snippet module="ui/scroll-view" title="scroll-view">
-// # ScrollView
-// Using a ScrollView requires the ScrollView module.
-// ``` JavaScript
+// >> article-require-module
 import scrollViewModule = require("ui/scroll-view");
-// ```
-
-// ### Declaring the ScrollView.
-//``` XML
-// <Page>
-//  <ScrollView>
-//    {%raw%}<Image src="{{ someBigImageUrl }}" />{%endraw%}
-//  </ScrollView>
-// </Page>
-//```
-
-// </snippet>
+// << article-require-module
 
 class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
@@ -44,13 +30,10 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_snippets() {
-        /* tslint:disable:no-unused-variable */
-        // <snippet module="ui/scroll-view" title="scroll-view">
-        // ### Creating a ScrollView
-        // ``` JavaScript
+        // >> article-creating-scrollview
         var scrollView = new scrollViewModule.ScrollView();
-        // ```
-        // </snippet>
+        // << article-creating-scrollview
+        console.dump(scrollView);
     }
 
     public test_default_TNS_values() {

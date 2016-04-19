@@ -7,29 +7,25 @@ import colorModule = require("color");
 import enums = require("ui/enums");
 import platform = require("platform");
 
-// <snippet module="ui/text-view" title="TextView">
-// # TextView
-
-// Using a TextView requires the text-view module.
-// ``` JavaScript
+// >> require-textmodules
 import textViewModule = require("ui/text-view");
-// ```
-// Other frequently used modules when working with buttons include:
-// ``` JavaScript
-import bindable = require("ui/core/bindable");
-import observable = require("data/observable");
-// ```
+// << require-textmodules
 
-// ### Binding two TextViews text property to observable view-model property.
-//``` XML
+// Other frequently used modules when working with buttons include:
+import bindable = require("ui/core/bindable");
+// >> require-observable
+import observable = require("data/observable");
+// << require-observable
+
+// >> text-view-xml
 // <Page loaded="pageLoaded">
 //  <StackLayout orientation="vertical">
 //    {%raw%}<TextView text="{{ someProperty }}" />
 //    <TextView text="{{ someProperty }}" />{%endraw%}
 //  </StackLayout>
 // </Page>
-//```
-//``` JavaScript
+// << text-view-xml
+// >> observable-declare
 // function pageLoaded(args) {
 //   var page = args.object;
 //   var obj = new observable.Observable();
@@ -37,17 +33,12 @@ import observable = require("data/observable");
 //   page.bindingContext = obj;
 // }
 // exports.pageLoaded = pageLoaded;
-//```
-
-// </snippet> 
+// << observable-declare
 
 var _createTextViewFunc = function (): textViewModule.TextView {
-    // <snippet module="ui/text-view" title="TextView">
-    // ### Creating a TextView
-    // ``` JavaScript
+    // >> text-view-create
     var textView = new textViewModule.TextView();
-    // ```
-    // </snippet>
+    // << text-view-create
     textView.text = "textView";
     return textView;
 }
@@ -56,12 +47,9 @@ export var testSetText = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
         
-        // <snippet module="ui/text-view" title="TextView">
-        // ### Setting the text of a TextView
-        // ``` JavaScript
+        // >> set-text-value
         textView.text = "Hello, world!";
-        // ```
-        // </snippet>
+        // << set-text-value
 
         var expectedValue = "Hello, world!";
         var actualValue = textViewTestsNative.getNativeText(textView);
@@ -108,9 +96,7 @@ export var testBindTextDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
 
-        // <snippet module="ui/text-view" title="TextView">
-        // ### Binding text property directly to model
-        // ``` JavaScript
+        // >> binding-text-property
         var model = new observable.Observable();
         model.set("username", "john");
         var options: bindable.BindingOptions = {
@@ -119,18 +105,17 @@ export var testBindTextDirectlyToModel = function () {
         }
         textView.bind(options, model);
         //// textView.text is now "john"
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textView.text === "john", "Actual: " + textView.text + "; Expected: " + "john");
         TKUnit.assert(textViewTestsNative.getNativeText(textView) === "john", "Actual: " + textViewTestsNative.getNativeText(textView) + "; Expected: " + "john");
-        // </hide>
+        // << (hide)
         model.set("username", "mary");
         //// textView.text is now "mary"
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textView.text === "mary", "Actual: " + textView.text + "; Expected: " + "mary");
         TKUnit.assert(textViewTestsNative.getNativeText(textView) === "mary", "Actual: " + textViewTestsNative.getNativeText(textView) + "; Expected: " + "mary");
-        // </hide>
-        // ```
-        // </snippet>
+        // << (hide)
+        // >> binding-text-property
     });
 }
 
@@ -176,12 +161,9 @@ export var testSetHint = function () {
         var textView = <textViewModule.TextView>views[0];
         textView.text = "";
 
-        // <snippet module="ui/text-view" title="TextView">
-        // ### Setting the hint of a TextView
-        // ``` JavaScript
+        // >> set-textview-hint
         textView.hint = "type your username here";
-        // ```
-        // </snippet>
+        // << set-textview-hint
 
         var expectedValue = "type your username here";
         var actualValue = textViewTestsNative.getNativeHint(textView);
@@ -194,9 +176,7 @@ export var testBindHintDirectlyToModel = function () {
         var textView = <textViewModule.TextView>views[0];
         textView.text = "";
 
-        // <snippet module="ui/text-view" title="TextView">
-        // ### Binding hint property directly to model
-        // ``` JavaScript
+        // >> binding-hint-property
         var model = new observable.Observable();
         model.set("hint", "type your username here");
         var options: bindable.BindingOptions = {
@@ -205,18 +185,17 @@ export var testBindHintDirectlyToModel = function () {
         }
         textView.bind(options, model);
         //// TextView.hint is now "type your username here"
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textView.hint === "type your username here", "Actual: " + textView.hint + "; Expected: " + "type your username here");
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your username here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your username here");
-        // </hide>
+        // << (hide)
         model.set("hint", "type your password here");
         //// TextView.hint is now "type your password here"
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textView.hint === "type your password here", "Actual: " + textView.hint + "; Expected: " + "type your password here");
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your password here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your password here");
-        // </hide>
-        // ```
-        // </snippet>
+        // << (hide)
+        // << binding-hint-property
     });
 }
 
@@ -304,12 +283,9 @@ export var testSetEditable = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
 
-        // <snippet module="ui/text-view" title="TextView">
-        // ### Setting the editable property of a TextView
-        // ``` JavaScript
+        // >> setting-editable-property
         textView.editable = false;
-        // ```
-        // </snippet>
+        // << setting-editable-property
 
         var expectedValue = false;
         var actualValue = textViewTestsNative.getNativeEditable(textView);
@@ -321,9 +297,7 @@ export var testBindEditableDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
 
-        // <snippet module="ui/text-view" title="TextView">
-        // ### Binding editable property directly to model
-        // ``` JavaScript
+        // >> binding-editable-property
         var model = new observable.Observable();
         model.set("editable", false);
         var options: bindable.BindingOptions = {
@@ -332,18 +306,17 @@ export var testBindEditableDirectlyToModel = function () {
         }
         textView.bind(options, model);
         //// textView.editable is now false
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textView.editable === false, "Actual: " + textView.text + "; Expected: " + false);
         TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === false, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + false);
-        // </hide>
+        // << (hide)
         model.set("editable", true);
         //// textView.editable is now true
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textView.editable === true, "Actual: " + textView.text + "; Expected: " + true);
         TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === true, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + true);
-        // </hide>
-        // ```
-        // </snippet>
+        // << (hide)
+        // << binding-editable-property
     });
 }
 

@@ -5,9 +5,7 @@ import commonTests = require("./application-tests-common");
 
 global.moduleMerge(commonTests, exports);
 
-// <snippet module="application" title="application">
-// ### Adding a Notification Observer (iOS)
-// ``` JavaScript
+// >> application-ios-observer
 //// Add the notification observer
 if (app.ios) {
     var observer = app.ios.addNotificationObserver(UIDeviceBatteryLevelDidChangeNotification,
@@ -21,5 +19,4 @@ if (app.ios) {
 if (app.ios) {
     app.ios.removeNotificationObserver(observer, UIDeviceBatteryLevelDidChangeNotification);
 }
-// ```
-// </snippet> 
+// << application-ios-observer

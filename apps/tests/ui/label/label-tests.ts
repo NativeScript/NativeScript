@@ -2,21 +2,10 @@
 import testModule = require("../../ui-test");
 import styling = require("ui/styling");
 
-// <snippet module="ui/label" title="Label">
-// # Label
-// Using a label requires the Label module.
-// ``` JavaScript
+//>> label-require
 import LabelModule = require("ui/label");
-// ```
+// << label-require
 
-// ### Binding the Label text property to a view-model property.
-//``` XML
-// <Page>
-//   {%raw%}<Label text="{{ title }}" />{%endraw%}
-// </Page>
-//```
-
-// </snippet>
 import types = require("utils/types");
 import colorModule = require("color");
 import utils = require("utils/utils");
@@ -43,24 +32,18 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
     }
 
     public snippet_Set_Text_TNS() {
-        // <snippet module="ui/label" title="Label">
-        // ### How to set label text content
-        // ``` JavaScript
+        // >> label-settext
         var label = new LabelModule.Label();
         var expectedValue = "Expected Value";
         label.text = expectedValue;
-        // ```
-        // </snippet>
+        // << label-settext
     }
 
     public snippet_Set_TextWrap_TNS() {
-        // <snippet module="ui/label" title="Label">
-        // ### How to turn on text wrapping for a label
-        // ``` JavaScript
+        // >> label-textwrap
         var label = new LabelModule.Label();
         label.textWrap = true;
-        // ```
-        // </snippet>
+        // << label-textwrap
     }
 
     public test_Set_Text_TNS() {
@@ -249,15 +232,12 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             "color: ", color, "; ",
             "font-size: ", fontSize, ";}"].join("");
 
-        // <snippet module="ui/label" title="Label">
-        // ### How to style a label via css class
-        // ``` JavaScript
+        // >> label-cssclass
         label.text = "The quick brown fox jumps over the lazy dog.";
         label.className = "title";
         //// after that all we have to do is to set a similar css entry within parent page css property
         //// label.parentPage.css = ".title {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
-        // ```
-        // </snippet>
+        // << label-cssclass
 
         var actualTextSize;
         var expSize;
@@ -316,15 +296,12 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         this.testPage.css = testCss;
         this.waitUntilTestElementIsLoaded();
 
-        // <snippet module="ui/label" title="Label">
-        // ### How to style a label via css type
-        // ``` JavaScript
+        // >> label-cssclass-type
         label.text = "The quick brown fox jumps over the lazy dog.";
         //// in order to style label with a "type style scope" just put a similar css entry
         //// testLabel.parentPage.css = "label {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
         //// all labels within the parent page will be styled according to css values
-        // ```
-        // </snippet>
+        // << label-cssclass-type
         var expectedBackgroundColor = new colorModule.Color(backgroundColor);
         var actualBackgroundColor = label.style.backgroundColor;
         TKUnit.assertEqual(expectedBackgroundColor.hex, actualBackgroundColor.hex);
@@ -349,15 +326,12 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         this.testPage.css = testCss;
         this.waitUntilTestElementIsLoaded();
 
-        // <snippet module="ui/label" title="Label">
-        // ### How to style a label via css control identifier
-        // ``` JavaScript
+        // >> label-css-identifier
         label.text = "The quick brown fox jumps over the lazy dog.";
         label.id = "testLabel";
         //// after that all we have to do is to set a similar css entry within parent page css property
         //// label.parentPage.css = "#testLabel {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
-        // ```
-        // </snippet>
+        // << label-css-identifier
 
         var expectedBackgroundColor = new colorModule.Color(backgroundColor);
         var actualBackgroundColor = label.style.backgroundColor;
@@ -372,9 +346,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
     }
 
     public test_BindingToText() {
-        // <snippet module="ui/label" title="Label">
-        // ### How to bind text property of a label to an observable model
-        // ``` JavaScript
+        // >> label-observable
         var label = new LabelModule.Label();
         var expValue = "Expected Value";
         var sourceModel = new observableModule.Observable();
@@ -385,8 +357,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         label.bind(bindingOptions, sourceModel);
         sourceModel.set("sourceProperty", expValue);
         //// console.log(label.text); --> prints: "Expected Value"
-        // ```
-        // </snippet>
+        // << label-observable
 
         TKUnit.assertEqual(label.text, expValue);
     }

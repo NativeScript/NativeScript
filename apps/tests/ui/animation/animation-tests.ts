@@ -6,13 +6,9 @@ import {StackLayout} from "ui/layouts/stack-layout";
 import colorModule = require("color");
 import enums = require("ui/enums");
 
-// <snippet module="ui/animation" title="animation">
-// # Animation
-// Animating view properties requires the "ui/animation" module.
-// ``` JavaScript
+// >> animation-require
 import animation = require("ui/animation");
-// ```
-// </snippet>
+// << animation-require
 
 function prepareTest(): Label {
     let mainPage = helper.getCurrentPage();
@@ -27,9 +23,7 @@ function prepareTest(): Label {
 export function test_AnimatingProperties(done) {
     let label = prepareTest();
 
-    // <snippet module="ui/animation" title="animation">
-    // # Animating properties
-    // ``` JavaScript
+    // >> animation-properties
     label.animate({
         opacity: 0.75,
         backgroundColor: new colorModule.Color("Red"),
@@ -43,38 +37,36 @@ export function test_AnimatingProperties(done) {
     })
         .then(() => {
             ////console.log("Animation finished.");
-            // <hide>
+            // >> (hide)
             assertIOSNativeTransformIsCorrect(label);
             done();
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             console.log(e.message);
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << animation-properties
 }
 
 export function test_CancellingAnimation(done) {
     let label = prepareTest();
 
-    // <snippet module="ui/animation" title="animation">
-    // # Cancelling animation
-    // ``` JavaScript
+    // >> animation-cancel
     var animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 20 });
+
     animation1.play()
         .then(() => {
             ////console.log("Animation finished");
-            // <hide>
+            // >> (hide)
             throw new Error("Cancelling Animation - Should not be in the Promise Then()");
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             ////console.log("Animation cancelled");
-            // <hide>
+            // >> (hide)
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
             } else if (e.toString() === "Error: Animation cancelled.") {
@@ -82,29 +74,26 @@ export function test_CancellingAnimation(done) {
             } else {
                 done(e);
             }
-            // </hide>
+            // << (hide)
         });
     animation1.cancel();
-    // ```
-    // </snippet>
+    // << animation-cancel
 }
 
 export function test_CancellingAnimate(done) {
     let label = prepareTest();
 
-    // <snippet module="ui/animation" title="animation">
-    // # Cancelling animation
-    // ``` JavaScript
+    // >> animation-cancel2
     var animation1 = label.animate({ translate: { x: 100, y: 100 }, duration: 20 })
         .then(() => {
             ////console.log("Animation finished");
-            // <hide>
+            // >> (hide)
             throw new Error("Cancelling Animate - Should not be in Promise Then()");
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             ////console.log("Animation cancelled");
-            // <hide>
+            // >> (hide)
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
             } else if (e.toString() === "Error: Animation cancelled.") {
@@ -112,24 +101,20 @@ export function test_CancellingAnimate(done) {
             } else {
                 done(e);
             }
-            // </hide>
+            // << (hide)
         });
     animation1.cancel();
-    // ```
-    // </snippet>
+    // << animation-cancel2
 }
 
 export function test_ChainingAnimations(done) {
     let label = prepareTest();
 
-    // <snippet module="ui/animation" title="animation">
-    // # Chaining animations
-    // ``` JavaScript
-
+    // >> animation-chaining
     let duration = 300;
-    // <hide>
+    // >> (hide)
     duration = 5;
-    // </hide>
+    // << (hide)
     label.animate({ opacity: 0, duration: duration })
         .then(() => label.animate({ opacity: 1, duration: duration }))
         .then(() => label.animate({ translate: { x: 200, y: 200 }, duration: duration }))
@@ -140,27 +125,24 @@ export function test_ChainingAnimations(done) {
         .then(() => label.animate({ rotate: 0, duration: duration }))
         .then(() => {
             ////console.log("Animation finished");
-            // <hide>
+            // >> (hide)
             assertIOSNativeTransformIsCorrect(label);
             done();
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             console.log(e.message);
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << animation-chaining
 }
 
 export function test_ReusingAnimations(done) {
     let label = prepareTest();
 
-    // <snippet module="ui/animation" title="animation">
-    // # Reusing animations
-    // ``` JavaScript
+    // >> animation-reusing
     var animation1 = label.createAnimation({ translate: { x: 100, y: 100 }, duration: 5 });
     var animation2 = label.createAnimation({ translate: { x: 0, y: 0 }, duration: 5 });
 
@@ -172,19 +154,18 @@ export function test_ReusingAnimations(done) {
         .then(() => animation2.play())
         .then(() => {
             ////console.log("Animation finished");
-            // <hide>
+            // >> (hide)
             assertIOSNativeTransformIsCorrect(label);
             done();
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             console.log(e.message);
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << animation-reusing
 }
 
 export function test_AnimatingMultipleViews(done) {
@@ -199,9 +180,7 @@ export function test_AnimatingMultipleViews(done) {
     mainPage.content = stackLayout;
     TKUnit.waitUntilReady(() => label3.isLoaded);
 
-    // <snippet module="ui/animation" title="animation">
-    // # Animating multiple views simultaneously
-    // ``` JavaScript
+    // >> animation-multiple-views
     var animations: Array<animation.AnimationDefinition> = [
         { target: label1, translate: { x: 200, y: 200 }, duration: 20, delay: 0 },
         { target: label2, translate: { x: 200, y: 200 }, duration: 20, delay: 7 },
@@ -211,21 +190,20 @@ export function test_AnimatingMultipleViews(done) {
     a.play()
         .then(() => {
             ////console.log("Animations finished");
-            // <hide>
+            // >> (hide)
             assertIOSNativeTransformIsCorrect(label1);
             assertIOSNativeTransformIsCorrect(label2);
             assertIOSNativeTransformIsCorrect(label3);
             done();
-            // </hide>
+            // << (hide)
         })
         .catch((e) => {
             console.log(e.message);
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << animation-multiple-views
 }
 
 export function test_AnimateOpacity(done) {

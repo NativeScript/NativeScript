@@ -1,20 +1,14 @@
-﻿// <snippet module="text/formatted-string" title="Formatted String">
-// # Formatted String
-// Using a formatted string requires loading formatted-string and span module.
-// ``` JavaScript
+﻿// >> formatted-string-require
 import formattedStringModule = require("text/formatted-string");
 import spanModule = require("text/span");
-// ```
-// </snippet>
+// << formatted-string-require
 
 import observable = require("data/observable");
 import TKUnit = require("../TKUnit");
 import LabelModule = require("ui/label");
 
 export var test_FormattedString_RemovesEventListeners_for_spans = function () {
-    // <snippet module="text/formatted-string" title="Formatted String">
-    // ### How to set formatted text content for a label
-    // ``` JavaScript
+    // >> formatted-string-set
     var label = new LabelModule.Label();
     var formattedString = new formattedStringModule.FormattedString();
     var firstSpan = new spanModule.Span();
@@ -23,8 +17,7 @@ export var test_FormattedString_RemovesEventListeners_for_spans = function () {
     firstSpan.text = "LoremIpsum";
     formattedString.spans.push(firstSpan);
     label.formattedText = formattedString;
-    // ```
-    // </snippet>
+    // << formatted-string-set
 
     TKUnit.assert(formattedString.spans.getItem(0).hasListeners(observable.Observable.propertyChangeEvent) === true, "Listener for spans collection change event is not attached!");
     var removedSpan = formattedString.spans.pop();

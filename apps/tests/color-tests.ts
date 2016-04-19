@@ -1,21 +1,14 @@
-﻿// <snippet module="color" title="color">
-// # Color
-// Using Colors requires the "color" module.
-// ``` JavaScript
+﻿// >> color-require
 import colorModule = require("color");
 var Color = colorModule.Color;
-// ```
-// </snippet>
+// << color-require
 import TKUnit = require("./TKUnit");
 
 export var test_Hex_Color = function () {
-    // <snippet module="color" title="color">
-    // ### Creating a Color from a hex value.
-    // ``` JavaScript
+    // >> color-hex
     //// Creates the red color
     var color = new Color("#FF0000");
-    // ```
-    // </snippet>
+    // << color-hex
     TKUnit.assertEqual(color.a, 255, "Color.a not properly parsed");
     TKUnit.assertEqual(color.r, 255, "Color.r not properly parsed");
     TKUnit.assertEqual(color.g, 0, "Color.g not properly parsed");
@@ -25,13 +18,10 @@ export var test_Hex_Color = function () {
 }
 
 export var test_ShortHex_Color = function () {
-    // <snippet module="color" title="color">
-    // ### Creating a Color from a short hex value.
-    // ``` JavaScript
+    // >> color-hex-short
     //// Creates the color #FF8800
     var color = new Color("#F80");
-    // ```
-    // </snippet>
+    // << color-hex-short
     TKUnit.assertEqual(color.a, 255, "Color.a not properly parsed");
     TKUnit.assertEqual(color.r, 255, "Color.r not properly parsed");
     TKUnit.assertEqual(color.g, 136, "Color.g not properly parsed"); // 0x88 == 136
@@ -41,13 +31,10 @@ export var test_ShortHex_Color = function () {
 }
 
 export var test_Argb_Color = function () {
-    // <snippet module="color" title="color">
-    // ### Creating a Color from four ARGB values
-    // ``` JavaScript
+    // >> color-rgb
     //// Creates the color with 100 alpha, 255 red, 100 green, 100 blue
     var color = new Color(100, 255, 100, 100);
-    // ```
-    // </snippet>
+    // << color-rgb
     TKUnit.assertEqual(color.a, 100, "Color.a not properly parsed");
     TKUnit.assertEqual(color.r, 255, "Color.r not properly parsed");
     TKUnit.assertEqual(color.g, 100, "Color.g not properly parsed");
@@ -57,14 +44,11 @@ export var test_Argb_Color = function () {
 }
 
 export var test_ArgbInt_Color = function () {
-    // <snippet module="color" title="color">
-    // ### Creating a Color from a single ARGB value
-    // ``` JavaScript
+    // >> color-rgb-single
     //// Creates the color with 100 alpha, 100 red, 100 green, 100 blue
     var argb = (100 << 24) | (100 << 16) | (100 << 8) | 100;
     var color = new Color(argb);
-    // ```
-    // </snippet>
+    // << color-rgb-single
     TKUnit.assertEqual(color.a, 100, "Color.a not properly parsed");
     TKUnit.assertEqual(color.r, 100, "Color.r not properly parsed");
     TKUnit.assertEqual(color.g, 100, "Color.g not properly parsed");

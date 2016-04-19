@@ -1,14 +1,9 @@
 ﻿import TKUnit = require("./TKUnit");
 import app = require("application");
 
-// <snippet module="platform" title="platform">
-// # Platform
-// Information about the current device and screen are defined in the platform module
-// ### Declaring platform module to be available for further usage.
-// ``` JavaScript
+// >> platform-require
 import platformModule = require("platform");
-// ```
-// </snippet>
+// << platform-require
 
 export function test_setTimeout_isDefined() {
     var expected;
@@ -22,9 +17,7 @@ export function test_setTimeout_isDefined() {
 };
 
 export function snippet_print_all() {
-    // <snippet module="platform" title="platform">
-    // ### Getting information about the current device:
-    // ``` JavaScript
+    // >> platform-current
     console.log("Device model: " + platformModule.device.model);
     console.log("Device type: " + platformModule.device.deviceType);
     console.log("OS: " + platformModule.device.os);
@@ -34,6 +27,5 @@ export function snippet_print_all() {
     console.log("Screen width: " + platformModule.screen.mainScreen.widthPixels);
     console.log("Screen height: " + platformModule.screen.mainScreen.heightPixels);
     console.log("Screen scale: " + platformModule.screen.mainScreen.scale);
-    // ```
-    // </snippet>
+    // << platform-current
 };

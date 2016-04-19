@@ -5,41 +5,26 @@ import bindable = require("ui/core/bindable");
 import observable = require("data/observable");
 import color = require("color");
 import platform = require("platform");
-// <snippet module="ui/switch" title="switch">
-// # Switch
-// Using a switch requires the Switch module.
-// ``` JavaScript
+// >> article-require-switch
 import switchModule = require("ui/switch");
-// ```
+// << article-require-switch
 
 // ### Binding the Switch checked property and Button isEanbled property to a observable view-model property.
-//``` XML
-// <Page loaded="pageLoaded">
-//  <StackLayout orientation="vertical">
-//    {%raw%}<Switch checked="{{ someProperty }}" />
-//    <Button isEanbled="{{ someProperty }}" text="This is a Button!" />{%endraw%}
-//  </StackLayout>
-// </Page>
-//```
-//``` JavaScript
-// function pageLoaded(args) {
-//   var page = args.object;
-//   var obj = new observable.Observable();
-//   obj.set("someProperty", false);
-//   page.bindingContext = obj;
-// }
-// exports.pageLoaded = pageLoaded;
-//```
 
-// </snippet>
+// >> article-binding-switch-property
+function pageLoaded(args) {
+  var page = args.object;
+  var obj = new observable.Observable();
+  obj.set("someProperty", false);
+  page.bindingContext = obj;
+}
+exports.pageLoaded = pageLoaded;
+// << article-binding-switch-property
 
 export function test_default_TNS_values() {
-    // <snippet module="ui/switch" title="switch">
-    // ### Creating a switch
-    // ``` JavaScript
+    // >> article-create-switch
     var mySwitch = new switchModule.Switch();
-    // ```
-    // </snippet>
+    // << article-create-switch
     TKUnit.assertEqual(mySwitch.checked, false, "Default switch.checked");
 }
 
@@ -81,12 +66,9 @@ if (platform.device.os === platform.platformNames.ios) {
 export function test_set_TNS_checked_updates_native_checked() {
     var mySwitch = new switchModule.Switch();
     function testAction(views: Array<viewModule.View>) {
-        // <snippet module="ui/switch" title="switch">
-        // ### Setting the checked property of a switch
-        // ``` JavaScript
+        // >> article-setting-checked-property
         mySwitch.checked = true;
-        // ```
-        // </snippet>
+        // << article-setting-checked-property
         TKUnit.assertEqual(getNativeValue(mySwitch), true, "Native checked is different from TNS checked.");
     };
 
@@ -131,9 +113,7 @@ export function test_binding_value_to_model() {
     var mySwitch = new switchModule.Switch()
 
     function testAction(views: Array<viewModule.View>) {
-        // <snippet module="ui/switch" title="switch">
-        // ### Binding checked property to a model
-        // ``` JavaScript
+        // >> aricle-binding-checked-property
         var model = new observable.Observable();
         model.set("enabled", true);
         var options: bindable.BindingOptions = {
@@ -142,16 +122,15 @@ export function test_binding_value_to_model() {
         };
         mySwitch.bind(options, model);
         //// mySwitch.checked is now true
-        // <hide>
+        // >> (hide)
         TKUnit.assertEqual(mySwitch.checked, true, "mySwitch.checked");
-        // </hide>
+        // << (hide)
         model.set("enabled", false);
         //// mySwitch.checked is now false
-        // <hide>
+        // >> (hide)
         TKUnit.assertEqual(mySwitch.checked, false, "mySwitch.checked");
-        // </hide>
-        // ```
-        // </snippet>
+        // << (hide)
+        // << aricle-binding-checked-property
     }
 
     helper.buildUIAndRunTest(mySwitch, testAction);

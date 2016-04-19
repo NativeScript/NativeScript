@@ -1,10 +1,6 @@
-﻿// <snippet module="location" title="location">
-// # Location
-// Using the location requires the Location module.
-// ``` JavaScript
+﻿// >> location-require
 import locationModule = require("location");
-// ```
-// </snippet>
+// << location-require
 
 import TKUnit = require("./TKUnit");
 
@@ -21,29 +17,20 @@ export function tearDown() {
     locationIsEnabled = undefined;
 }
 
-// <snippet module="location" title="location">
-// ## Other functions
-// </snippet>
-
 export var testIsEnabled = function () {
     if (!locationIsEnabled) {
 		console.log("Location service is not enabled!!!");
         return;
     }
-    // <snippet module="location" title="location">
-    // ### Test are location services available for this device
-    // ``` JavaScript
+    // >> location-funcs
     //var LocationManager = require("location").LocationManager;
     var isEnabled = LocationManager.isEnabled();
-    // ```
-    // </snippet>
+    // << location-funcs
     TKUnit.assert(isEnabled);
 };
 
 export var testDistance = function () {
-    // <snippet module="location" title="location">
-    // ### Get distance between two locations
-    // ``` JavaScript
+    // >> location-distance
     //var Location = require("location").Location;
     var locSofia = new Location();
     locSofia.longitude = 42.696552;
@@ -52,14 +39,9 @@ export var testDistance = function () {
     locNewYork.longitude = 40.71448;
     locNewYork.latitude = -74.00598;
     var distance = LocationManager.distance(locSofia, locNewYork);
-    // ```
-    // </snippet>
+    // << location-distance
     TKUnit.assert((distance > 10780000) && (distance < 10860000), "invalid distance " + distance);
 };
-
-// <snippet module="location" title="location">
-// ## Getting location
-// </snippet>
 
 export var testLocation = function (done) {
     if (!locationIsEnabled) {
@@ -68,15 +50,13 @@ export var testLocation = function (done) {
 
     var locationReceived;
 
-    // <snippet module="location" title="location">
-    // ### Receive continuous location updates
-    // ``` JavaScript
+    // >> location-updates 
     //var LocationManager = require("location").LocationManager;
     var locationManager = new LocationManager();
 
     locationManager.startLocationMonitoring(function (location) {
         //console.log('Location received: ' + location);
-        // <hide>
+        // >> (hide)
         locationReceived = true;
         locationManager.stopLocationMonitoring();
         try {
@@ -86,19 +66,18 @@ export var testLocation = function (done) {
         catch (e) {
             done(e);
         }
-        // </hide>
+        // << (hide)
     }, function (error) {
             //console.log('Location error received: ' + error);
-            // <hide>
+            // >> (hide)
         locationReceived = error;
         locationManager.stopLocationMonitoring();
         done(error);
-            // </hide>
+            // << (hide)
         }
         );
 
-    // ```
-    // </snippet>
+    // << location-updates
     //var isReady = function () {
     //    return locationReceived;
     //}
@@ -116,14 +95,11 @@ export var testLastKnownLocation = function () {
     }
 
     TKUnit.waitUntilReady(function () { return false; }, 1); // give it some time after the last test
-    // <snippet module="location" title="location">
-    // ### Get last known location
-    // ``` JavaScript
-    //var LocationManager = require("location").LocationManager;
+    // >> location-last-known
+    // var LocationManager = require("location").LocationManager;
     var locationManager = new LocationManager();
     var lastKnownLocation = locationManager.lastKnownLocation;
-    // ```
-    // </snippet>
+    // << location-last-known
     TKUnit.assert((lastKnownLocation != null), "There is no last known location");
 };
 
@@ -179,27 +155,21 @@ export var testSnippet = function (done) {
         return done(null);
     }
     var locationReceived;
-    // <snippet module="location" title="location">
-    // ### Get location once
-    // if there is `options.timeout` you will receive error on timeout. If `options.timeout` is 0 then the result is the same as the result from `LocationManager.lastKnownLocation`
-    // and there will be no wait. You can use `options.maximumAge` to specify you don't want to receive locations older than specified time in ms.
-    //
-    // ``` JavaScript
+    // >> location-timeour
     // var locationModule = require("location");
     //// options can also look like { maximumAge: 2000, timeout: 20 * 1000 }
     locationModule.getLocation({ maximumAge: 30000, timeout: 0 }).then(function (location) {
         //console.log('Location received: ' + location);
-        // <hide>
+        // >> (hide)
         locationReceived = true;
         done(null);
-        // </hide>
+        // << (hide)
     }, function (error) {
             //console.log('Location error received: ' + error);
-            // <hide>
+            // >> (hide)
         locationReceived = error;
         done(error);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << location-timeour
 };

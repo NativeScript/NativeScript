@@ -1,73 +1,50 @@
 /* tslint:disable:no-unused-variable */
-// <snippet module="file-system" title="file-system">
-// # File System
-// Using the file system requires the FileSystem module.
-// ``` JavaScript
+// >> file-system-require
 import fs = require("file-system");
-// ```
-// The pre-required `fs` module is used throughout the following code snippets.
-// </snippet>
+// << file-system-require
 
 import TKUnit = require("./TKUnit");
 import appModule = require("application");
 import platform = require("platform");
 
-// <snippet module="file-system" title="file-system">
-// ## Path
-// </snippet>
-
 export var testPathNormalize = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Normalize a Path
-    // ``` JavaScript
+    // >> file-system-normalize
     var documents = fs.knownFolders.documents();
     var testPath = "///test.txt";
     //// Get a normalized path such as <folder.path>/test.txt from <folder.path>///test.txt
     var normalizedPath = fs.path.normalize(documents.path + testPath);
-    // <hide>
+    // >> (hide)
     var expected = documents.path + "/test.txt";
     TKUnit.assert(normalizedPath === expected);
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-normalize
 };
 
 export var testPathJoin = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Path Join
-    // Concatenate a path to a file by providing multiple path arguments.
-    // ``` JavaScript
+    // >> file-system-multiple-args
     var documents = fs.knownFolders.documents();
     //// Generate a path like <documents.path>/myFiles/test.txt
     var path = fs.path.join(documents.path, "myFiles", "test.txt");
-    // <hide>
+    // >> (hide)
     var expected = documents.path + "/myFiles/test.txt";
     TKUnit.assert(path === expected);
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-multiple-args
 };
 
 export var testPathSeparator = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Get the Path Separator
-    // ``` JavaScript
+    // >> file-system-separator
     //// An OS dependent path separator, "\" or "/".
     var separator = fs.path.separator;
-    // <hide>
+    // >> (hide)
     var expected = "/";
     TKUnit.assert(separator === expected);
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-separator
 };
 
 export var testFileFromPath = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Get or Create a File With Path
-    // The following example writes some text to a file created for path.
-    // It will create a new file or overwrite an existing file.
-    // ``` JavaScript
+    // >> file-system-create
     var documents = fs.knownFolders.documents();
     var path = fs.path.join(documents.path, "FileFromPath.txt");
     var file = fs.File.fromPath(path);
@@ -76,7 +53,7 @@ export var testFileFromPath = function () {
     file.writeText("Something")
         .then(function () {
             //// Succeeded writing to the file.
-            // <hide>
+            // >> (hide)
             file.readText()
                 .then(function (content) {
                     TKUnit.assert(content === "Something", "File read/write not working.");
@@ -85,43 +62,31 @@ export var testFileFromPath = function () {
                     TKUnit.assert(false, "Failed to read/write text");
                     //console.dump(error);
                 });
-            // </hide>
+            // << (hide)
         }, function (error) {
             //// Failed to write to the file.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(false, "Failed to read/write text");
             //console.dump(error);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << file-system-create
 }
 
 export var testFolderFromPath = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Get or Create a Folder With Path
-    // ``` JavaScript
+    // >> file-system-create-folder
     var path = fs.path.join(fs.knownFolders.documents().path, "music");
     var folder = fs.Folder.fromPath(path);
-    // <hide>
+    // >> (hide)
     TKUnit.assert(<any>folder, "Folder.getFolder API not working.");
     TKUnit.assert(fs.Folder.exists(folder.path), "Folder.getFolder API not working.");
     folder.remove();
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-create-folder
 }
 
-// <snippet module="file-system" title="file-system">
-// ## Create
-// </snippet>
-
 export var testFileWrite = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Writing a string to a File
-    // The following example writes some text to a file.
-    // It will create a new file or overwrite an existing file.
-    // ``` JavaScript
+    // >> file-system-write-string
     var documents = fs.knownFolders.documents();
     var file = documents.getFile("Test_Write.txt");
 
@@ -129,7 +94,7 @@ export var testFileWrite = function () {
     file.writeText("Something")
         .then(function () {
             //// Succeeded writing to the file.
-            // <hide>
+            // >> (hide)
             file.readText()
                 .then(function (content) {
                     TKUnit.assert(content === "Something", "File read/write not working.");
@@ -138,57 +103,43 @@ export var testFileWrite = function () {
                     TKUnit.assert(false, "Failed to read/write text");
                     //console.dump(error);
                 });
-            // </hide>
+            // << (hide)
         }, function (error) {
             //// Failed to write to the file.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(false, "Failed to read/write text");
             //console.dump(error);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << file-system-write-string
 };
 
 export var testGetFile = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Get or Create a File
-    // ``` JavaScript
+    // >> file-system-create-file
     var documents = fs.knownFolders.documents();
     var file = documents.getFile("NewFileToCreate.txt");
-    // <hide>
+    // >> (hide)
     TKUnit.assert(<any>file, "File.getFile API not working.");
     TKUnit.assert(fs.File.exists(file.path), "File.getFile API not working.");
     file.remove();
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-create-file
 }
 
 export var testGetFolder = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Get or Create a Folder
-    // ``` JavaScript
+    // >> file-system-get-folder
     var documents = fs.knownFolders.documents();
     var folder = documents.getFolder("NewFolderToCreate");
-    // <hide>
+    // >> (hide)
     TKUnit.assert(<any>folder, "Folder.getFolder API not working.");
     TKUnit.assert(fs.Folder.exists(folder.path), "Folder.getFolder API not working.");
     folder.remove();
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-get-folder
 };
 
-// <snippet module="file-system" title="file-system">
-// ## Read
-// </snippet>
-
 export var testFileRead = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Reading from a File
-    // The following example writes some text to a file and then reads it back.
-    // ``` JavaScript
+    // >> file-system-example-text
     var documents = fs.knownFolders.documents();
     var myFile = documents.getFile("Test_Write.txt");
 
@@ -202,33 +153,30 @@ export var testFileRead = function () {
             myFile.readText()
                 .then(function (content) {
                     //// Successfully read the file's content.
-                    // <hide>
+                    // >> (hide)
                     written = content === "Something";
                     TKUnit.assert(written, "File read/write not working.");
                     myFile.remove();
-                    // </hide>
+                    // << (hide)
                 }, function (error) {
                     //// Failed to read from the file.
-                    // <hide>
+                    // >> (hide)
                     TKUnit.assert(false, "Failed to read/write text");
                     //console.dump(error);
-                    // </hide>
+                    // << (hide)
                 });
         }, function (error) {
             //// Failed to write to the file.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(false, "Failed to read/write text");
             //console.dump(error);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << file-system-example-text
 };
 
 export var testFileReadWriteBinary = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Reading/writing binary data from/to a File
-    // ``` JavaScript
+    // >> file-system-read-binary
     var fileName = "logo.png";
     var error;
 
@@ -239,7 +187,7 @@ export var testFileReadWriteBinary = function () {
 
     destinationFile.writeSync(source, e=> { error = e; });
     
-    // <hide>
+    // >> (hide)
     var destination = destinationFile.readSync(e=> { error = e; });
     TKUnit.assertNull(error);
     if (platform.device.os === platform.platformNames.ios) {
@@ -249,39 +197,31 @@ export var testFileReadWriteBinary = function () {
     }
 
     destinationFile.removeSync();
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-read-binary
 };
 
 export var testGetKnownFolders = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Getting the Known Folders
-    // Each app has several well known folders. This is how to access them:
-    // ``` JavaScript
+    // >> file-system-known-folders
     //// Getting the application's 'documents' folder.
     var documents = fs.knownFolders.documents();
-    // <hide>
+    // >> (hide)
     TKUnit.assert(<any>documents, "Could not retrieve the Documents known folder.");
     TKUnit.assert(documents.isKnown, "The Documents folder should have its isKnown property set to true.");
-    // </hide>
+    // << (hide)
     //// Getting the application's 'temp' folder.
     var temp = fs.knownFolders.temp();
-    // <hide>
+    // >> (hide)
     TKUnit.assert(<any>temp, "Could not retrieve the Temporary known folder.");
     TKUnit.assert(temp.isKnown, "The Temporary folder should have its isKnown property set to true.");
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-known-folders
 };
 
 export var testGetEntities = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Getting Folder Contents
-    // Getting all files and folders within a folder:
-    // ``` JavaScript
+    // >> file-system-folders-content
     var documents = fs.knownFolders.documents();
-    // <hide>
+    // >> (hide)
     var file = documents.getFile("Test.txt");
     var file1 = documents.getFile("Test1.txt");
 
@@ -300,37 +240,32 @@ export var testGetEntities = function () {
         }
     };
 
-    // </hide>
+    // << (hide)
     documents.getEntities()
         .then(function (entities) {
             //// entities is array with the document's files and folders.
             entities.forEach(function (entity) {
                 console.log(entity.name);
             });
-            // <hide>
+            // >> (hide)
 
             TKUnit.assert(fileFound, "Failed to enumerate Test.txt");
             TKUnit.assert(file1Found, "Failed to enumerate Test1.txt");
 
             file.remove();
             file1.remove();
-            // </hide>
+            // << (hide)
         }, function (error) {
             //// Failed to obtain folder's contents.
             // globalConsole.error(error.message);
         });
-    // ```
-    // </snippet>
+    // << file-system-folders-content
 };
 
 export var testEnumEntities = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Enumerating Folder Contents
-    // Getting all folder entities in array may be slow with large number of files.
-    // Enumerating the folder entities would iterate the files one by one without blocking the UI.
-    // ``` JavaScript
+    // >> file-system-enum-content
     var documents = fs.knownFolders.documents();
-    // <hide>
+    // >> (hide)
     var file = documents.getFile("Test.txt");
     var file1 = documents.getFile("Test1.txt");
     var testFolder = documents.getFolder("testFolder");
@@ -348,13 +283,13 @@ export var testEnumEntities = function () {
             }
         }
     }
-    // </hide>
+    // << (hide)
     documents.eachEntity(function (entity) {
         console.log(entity.name);
         //// Return true to continue, or return false to stop the iteration.
         return true;
     });
-    // <hide>
+    // >> (hide)
     TKUnit.assert(fileFound, "Failed to enumerate Test.txt");
     TKUnit.assert(file1Found, "Failed to enumerate Test1.txt");
     TKUnit.assert(testFolderFound, "Failed to enumerate testFolder");
@@ -362,79 +297,66 @@ export var testEnumEntities = function () {
     file.remove();
     file1.remove();
     testFolder.remove();
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-enum-content
 };
 
 export var testGetParent = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Getting Parent Folder
-    // ``` JavaScript
+    // >> file-system-parent
     var documents = fs.knownFolders.documents();
     var file = documents.getFile("Test.txt");
-    // <hide>
+    // >> (hide)
     TKUnit.assert(<any>file, "Failed to create file in the Documents folder.");
-    // </hide>
+    // << (hide)
     //// The parent folder of the file would be the documents folder.
     var parent = file.parent;
-    // <hide>
+    // >> (hide)
     TKUnit.assert(documents === parent, "The parent folder should be the Documents folder.");
     file.remove();
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-parent
 };
 
 export var testFileNameExtension = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Getting File Name and Extension
-    // ``` JavaScript
+    // >> file-system-extension
     var documents = fs.knownFolders.documents();
     var file = documents.getFile("Test.txt");
     //// Getting the file name "Test.txt".
     var fileName = file.name;
     //// Getting the file extension ".txt".
     var fileExtension = file.extension;
-    // <hide>
+    // >> (hide)
     TKUnit.assert(fileName === "Test.txt", "Wrong file name.");
     TKUnit.assert(fileExtension === ".txt", "Wrong extension.");
     file.remove();
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-extension
 };
 
 export var testFileExists = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Checking if a File Exists
-    // ``` JavaScript
+    // >> file-system-fileexists
     var documents = fs.knownFolders.documents();
     var file = documents.getFile("Test.txt");
     var exists = fs.File.exists(file.path);
-    // <hide>
+    // >> (hide)
     TKUnit.assert(exists, "File.exists API not working.");
     exists = fs.File.exists(file.path + "_");
     TKUnit.assert(!exists, "File.exists API not working.");
     file.remove();
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-fileexists
 };
 
 export var testFolderExists = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Checking if a Folder Exists
-    // ``` JavaScript
+    // >> file-system-folderexists
     var documents = fs.knownFolders.documents();
     var exists = fs.Folder.exists(documents.path);
-    // <hide>
+    // >> (hide)
     TKUnit.assert(exists, "Folder.exists API not working.");
     exists = fs.Folder.exists(documents.path + "_");
     TKUnit.assert(!exists, "Folder.exists API not working.");
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-folderexists
 };
 
 export var testContainsFile = function () {
@@ -449,143 +371,118 @@ export var testContainsFile = function () {
     file.remove();
 };
 
-// <snippet module="file-system" title="file-system">
-// ## Update
-// </snippet>
-
 export var testFileRename = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Renaming a File
-    // ``` JavaScript
+    // >> file-system-renaming
     var documents = fs.knownFolders.documents();
     var file = documents.getFile("Test.txt");
 
     file.rename("Test_renamed.txt")
         .then(function (result) {
             //// Successfully Renamed.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(file.name === "Test_renamed.txt", "File.rename API not working.");
             file.remove();
             documents.getFile("Test.txt").remove();
-            // </hide>
+            // << (hide)
         }, function (error) {
             //// Failed to rename the file.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(false, "Failed to rename file");
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << file-system-renaming
 };
 
 export var testFolderRename = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Renaming a Folder
-    // ``` JavaScript
+    // >> file-system-renaming-folder
     var folder = fs.knownFolders.documents();
     var myFolder = folder.getFolder("Test__");
 
     myFolder.rename("Something")
         .then(function (result) {
             //// Successfully Renamed.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(myFolder.name === "Something", "Folder.rename API not working.");
             myFolder.remove();
             folder.getFolder("Test__").remove();
-            // </hide>
+            // << (hide)
         }, function (error) {
             //// Failed to rename the folder.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(false, "Folder.rename API not working.");
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << file-system-renaming-folder
 };
 
-// <snippet module="file-system" title="file-system">
-// ## Delete
-// </snippet>
-
 export var testFileRemove = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Removing a File
-    // To 'delete', 'remove' or 'unlink' a file use the file's remove method:
-    // ``` JavaScript
+    // >> file-system-remove-file
     var documents = fs.knownFolders.documents();
     var file = documents.getFile("AFileToRemove.txt");
     file.remove()
         .then(function (result) {
             //// Success removing the file.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(!fs.File.exists(file.path));
-            // </hide>
+            // << (hide)
         }, function (error) {
             //// Failed to remove the file.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(false, "File.remove API not working.");
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << file-system-remove-file
 };
 
 export var testFolderRemove = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Removing a Folder
-    // ``` JavaScript
+    // >> file-system-remove-folder
     var documents = fs.knownFolders.documents();
     var file = documents.getFolder("AFolderToRemove");
     //// Remove a folder and recursively its content.
     file.remove()
         .then(function (result) {
             //// Success removing the folder.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(!fs.File.exists(file.path));
-            // </hide>
+            // << (hide)
         }, function (error) {
             //// Failed to remove the folder.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(false, "File.remove API not working.");
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << file-system-remove-folder
 }
 
 export var testFolderClear = function () {
-    // <snippet module="file-system" title="file-system">
-    // ### Clearing the Contents of a Folder
-    // The clear method removes all files within a folder.
-    // ``` JavaScript
+    // >> file-system-clear-folder
     var documents = fs.knownFolders.documents();
     var folder = documents.getFolder("testFolderEmpty");
-    // <hide>
+    // >> (hide)
     folder.getFile("Test1.txt");
     folder.getFile("Test2.txt");
     var emptied;
-    // </hide>
+    // << (hide)
     folder.clear()
         .then(function () {
             //// Successfully cleared the folder.
-            // <hide>
+            // >> (hide)
             emptied = true;
-            // </hide>
+            // << (hide)
         }, function (error) {
             //// Failed to clear the folder.
-            // <hide>
+            // >> (hide)
             TKUnit.assert(false, error.message);
-            // </hide>
+            // << (hide)
         });
-    // <hide>
+    // >> (hide)
     folder.getEntities()
         .then(function (entities) {
             TKUnit.assert(entities.length === 0, "Failed to clear a Folder");
             folder.remove();
         });
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << file-system-clear-folder
 };
 
 // misc

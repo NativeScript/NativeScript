@@ -1,17 +1,11 @@
-﻿// <snippet module="ui/image-cache" title="image-cache">
-// # ImageCache
-// Using the ImageCache requires the "ui/image-cache" module.
-// ``` JavaScript
+﻿// >> image-cache-require
 import imageCacheModule = require("ui/image-cache");
 import imageSource = require("image-source");
 import fs = require("file-system");
-// ```
-// </snippet>
+// << image-cache-require
 
 export function test_DummyTestForSnippetOnly() {
-    // <snippet module="ui/image-cache" title="image-cache">
-    // ### Requesting Images
-    // ``` JavaScript
+    // >> image-cache-request-images
     var cache = new imageCacheModule.Cache();
     cache.placeholder = imageSource.fromFile(fs.path.join(__dirname, "res/no-image.png"));
     cache.maxRequests = 5;
@@ -42,6 +36,5 @@ export function test_DummyTestForSnippetOnly() {
 
     //// Disable download while scrolling
     cache.disableDownload();
-    // ```
-    // </snippet>
+    // << image-cache-request-images
 }

@@ -1,15 +1,11 @@
 ﻿import TKUnit = require("./TKUnit");
 import timer = require("timer");
 
-// <snippet module="timer" title="timer">
-// # Timer module
-// ### How to require timer module
-// ``` JavaScript
+// >> timer-require
 // require("globals");
 //// OR
 // var timer = require("timer");
-// ```
-// </snippet>
+// << timer-require
 
 export function test_setTimeout_isDefined() {
     TKUnit.assert(typeof (timer.setTimeout) !== "undefined", "Method timer.setTimeout() should be defined!");
@@ -30,16 +26,13 @@ export function test_clearInterval_isDefined() {
 export function test_setTimeout() {
     let completed: boolean;
 
-    // <snippet module="timer" title="timer">
-    // ### Evaluates an expression after 0 milliseconds.
-    // ``` JavaScript
+    // >> timer-set-zero
     timer.setTimeout(() => {
-        // <hide>
+        // >> (hide)
         completed = true;
-        // </hide>
+        // << (hide)
     });
-    // ```
-    // </snippet>
+    // << timer-set-zero
 
     TKUnit.waitUntilReady(() => completed, 0.5);
     TKUnit.assert(completed, "Callback should be called!");
@@ -48,16 +41,13 @@ export function test_setTimeout() {
 export function test_setTimeout_callbackCalledAfterSpecifiedTime() {
     let completed = false;
 
-    // <snippet module="timer" title="timer">
-    // ### Evaluates an expression after a specified number of milliseconds.
-    // ``` JavaScript
+    // >> timer-set-fivehundred
     timer.setTimeout(() => {
-        // <hide>
+        // >> (hide)
         completed = true;
-        // </hide>
+        // << (hide)
     }, 10);
-    // ```
-    // </snippet>
+    // << timer-set-fivehundred
 
     TKUnit.waitUntilReady(() => completed, 1);
     TKUnit.assert(completed, "Callback should be called after specified time!");
@@ -81,20 +71,18 @@ export function test_setTimeout_shouldReturnNumber() {
 export function test_setTimeout_callbackShouldBeCleared() {
     let completed = false;
 
-    // <snippet module="timer" title="timer">
-    // ### Cancels the evaluation with the clearTimeout method.
-    // ``` JavaScript
+    // >> timer-set-twothousands
     let id = timer.setTimeout(() => {
-        // <hide>
+        // >> (hide)
         completed = true;
-        // </hide>
+        // << (hide)
     }, 50);
+    // << timer-set-twothousands
 
     //// Clear timeout with specified id.
     timer.clearTimeout(id);
 
-    // ```
-    // </snippet>
+    // << timer-set-twothousands
 
     TKUnit.waitUntilReady(() => completed, 0.060);
     TKUnit.assert(!completed, "Callback should be cleared when clearTimeout() is executed for specified id!");
@@ -104,16 +92,13 @@ export function test_setInterval_callbackCalledDuringPeriod() {
     let counter = 0;
     let expected = 4;
 
-    // <snippet module="timer" title="timer">
-    // ### Evaluates an expression each time a specified number of milliseconds has elapsed.
-    // ``` JavaScript
+    // >> timer-set-expression
     timer.setInterval(() => {
-        // <hide>
+        // >> (hide)
         counter++;
-        // </hide>
+        // << (hide)
     }, 100);
-    // ```
-    // </snippet>
+    // << timer-set-expression
 
     TKUnit.waitUntilReady(() => counter >= expected, 0.5);
     TKUnit.assert(counter >= expected, "Callback should be raised at least" + expected + "times! Callback raised " + counter + " times.");
@@ -122,17 +107,14 @@ export function test_setInterval_callbackCalledDuringPeriod() {
 export function test_setInterval_callbackShouldBeCleared() {
     let counter = 0;
 
-    // <snippet module="timer" title="timer">
-    // ### Cancel the interval previously started using the setInterval method.
-    // ``` JavaScript
+    // >> timer-set-interval
     let id = timer.setInterval(() => {
-        // <hide>
+        // >> (hide)
         counter++;
-        // </hide>
+        // << (hide)
         timer.clearInterval(id);
     }, 100);
-    // ```
-    // </snippet>
+    // << timer-set-interval
 
     TKUnit.waitUntilReady(() => false, 0.5);
     TKUnit.assert(counter === 1, "Callback should be raised only once!");

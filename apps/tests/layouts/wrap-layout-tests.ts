@@ -4,41 +4,20 @@ import layoutHelper = require("./layout-helper");
 import testModule = require("../ui-test");
 import commonTests = require("./common-layout-tests");
 
-// <snippet module="ui/layouts/wrap-layout" title="WrapLayout">
-// # WrapLayout
-// Using a WrapLayout requires the WrapLayout module.
-// ``` JavaScript
+// >> wrap-layout-require
 import wrapLayoutModule = require("ui/layouts/wrap-layout");
-// ```
+// << wrap-layout-require
 
-// Other frequently used modules when working with a WrapLayout include:
-// ``` JavaScript
+// >> wrap-layout-others
 import enums = require("ui/enums");
-// ```
-// </snippet> 
+// << wrap-layout-others
 
 export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayout> {
 
     public create(): wrapLayoutModule.WrapLayout {
-        // <snippet module="ui/layouts/wrap-layout" title="WrapLayout">
-        // ## Creating a WrapLayout
-        // ``` JavaScript
+        // >> wrap-layout-new
         var wrapLayout = new wrapLayoutModule.WrapLayout();
-        // ```
-        // </snippet>
-
-        // ### Declaring a WrapLayout.
-        //``` XML
-        // <Page>
-        //   <WrapLayout>
-        //     <Label text="This is Label 1" />
-        //     <Label text="This is Label 2" />
-        //     <Label text="This is Label 3" />
-        //     <Label text="This is Label 4" />
-        //   </WrapLayout>
-        // </Page>
-        //```
-        // </snippet>
+        // << wrap-layout-new
 
         wrapLayout.width = layoutHelper.dp(200);
         wrapLayout.height = layoutHelper.dp(200);
@@ -124,12 +103,9 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testVerticalOrientation() {
         var wrapLayout = this.testView;
-        // <snippet module="ui/layouts/wrap-layout" title="WrapLayout">
-        // ## Setting the orientation of a wrap-layout.
-        // ``` JavaScript
+        // >> wrap-layout-orientation
         wrapLayout.orientation = enums.Orientation.vertical;
-        // ```
-        // </snippet>
+        // << wrap-layout-orientation
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(0)._getCurrentLayoutBounds();

@@ -1,10 +1,6 @@
-﻿// <snippet module="data/observable" title="data/observable">
-// # Observable
-// Using Observable objects requires the "data/observable" module.
-// ``` JavaScript
+﻿// >> observable-require
 import observable = require("data/observable");
-// ```
-// </snippet>
+// << observable-require
 
 import dependencyObservable = require("ui/core/dependency-observable");
 import TKUnit = require("./TKUnit");
@@ -19,9 +15,7 @@ class TestObservable extends observable.Observable {
 }
 
 export var test_Observable_Constructor = function () {
-    // <snippet module="data/observable" title="data/observable">
-    // ### Creating an Observable
-    // ``` JavaScript
+    // >> observable-creating
     var json = {
         Name: "John",
         Age: 34,
@@ -32,17 +26,14 @@ export var test_Observable_Constructor = function () {
     var age = person.get("Age");
     var married = person.get("Married");
     //// console.log(name + " " + age + " " + married); // Prints out "John 34 true" if uncommented.
-    // ```
-    // </snippet>
+    // << observable-creating
     TKUnit.assert(name === "John", "Expected name is John");
     TKUnit.assert(age === 34, "Expected age is 34");
     TKUnit.assert(married === true, "Expected married is true");
 }
 
 export var tests_DummyTestForCodeSnippet = function () {
-    // <snippet module="data/observable" title="data/observable">
-    // ### Responding to property changes
-    // ``` JavaScript
+    // >> observable-property-change
     var person = new observable.Observable();
     person.set("Name", "John");
     person.set("Age", 34);
@@ -55,8 +46,7 @@ export var tests_DummyTestForCodeSnippet = function () {
     //// If uncommented, the console.log above produces the following output:
     //// propertyChange Age 35
     //// propertyChange Married false
-    // ```
-    // </snippet>
+    // << observable-property-change
 }
 
 export var test_Observable_Members = function () {

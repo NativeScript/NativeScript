@@ -8,28 +8,14 @@ import enums = require("ui/enums");
 import formattedStringModule = require("text/formatted-string");
 import spanModule = require("text/span");
 
-// <snippet module="ui/button" title="button">
-// # Button
-// ### Declaring button module
-// Button module is required to use any button feature.
-// ``` JavaScript
+// >> button-require
 import buttonModule = require("ui/button");
-// ```
+// << button-require
 
-// Other frequently used modules when working with buttons include:
-// ``` JavaScript
+// >> button-require-others
 import bindable = require("ui/core/bindable");
 import observable = require("data/observable");
-// ```
-
-// ### Attaching event handler for the button tap event.
-//``` XML
-// <Page>
-//   <Button tap="buttonTap" />
-// </Page>
-//```
-
-// </snippet> 
+// << button-require-others
 
 export var testSetText = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testSetText);
@@ -90,24 +76,18 @@ export var testMemoryLeak = function (done) {
 }
 
 var _createButtonFunc = function (): buttonModule.Button {
-    // <snippet module="ui/button" title="button">
-    // ### Creating a button
-    // ``` JavaScript
+    // >>button-create
     var button = new buttonModule.Button();
-    // ```
-    // </snippet>
-    button.text = "Button";
+    // << button-create
+    button.text = "Button";  
     return button;
 }
 
 var _testSetText = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
-    // <snippet module="ui/button" title="button">
-    // ### Setting the text of a button
-    // ``` JavaScript
+    // >> button-settext
     button.text = "Hello, world!";
-    // ```
-    // </snippet>
+    // << button-settext
 
     var expectedValue = button.text;
     var actualValue = buttonTestsNative.getNativeText(button);
@@ -119,17 +99,14 @@ var _testOnClick = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
 
     var actualValue = false;
-    // <snippet module="ui/button" title="button">
-    // ### Responding to the tap event
-    // ``` JavaScript
+    // >> button-tap
     button.on(buttonModule.Button.tapEvent, function (args: observable.EventData) {
         //// Do something
-        // <hide>
+        // >> (hide)
         actualValue = true;
-        // </hide>
+        // << (hide)
     });
-    // ```
-    // </snippet>
+    // << button-tap
 
     buttonTestsNative.performNativeClick(button);
     TKUnit.assert(actualValue === true, "Actual: " + actualValue + "; Expected: " + true);
@@ -138,9 +115,7 @@ var _testOnClick = function (views: Array<viewModule.View>) {
 var _testBindTextDirectlyToModel = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
 
-    // <snippet module="ui/button" title="button">
-    // ### Binding text property directly to model
-    // ``` JavaScript
+    // >> button-bind
     var model = new observable.Observable();
     model.set("buttonTitle", "OK");
     var options: bindable.BindingOptions = {
@@ -149,16 +124,15 @@ var _testBindTextDirectlyToModel = function (views: Array<viewModule.View>) {
     }
     button.bind(options, model);
     //// button.text is now "OK"
-    // <hide>
+    // >> (hide)
     TKUnit.assert(button.text === "OK", "Actual: " + button.text + "; Expected: " + "OK");
-    // </hide>
+    // << (hide)
     model.set("buttonTitle", "Cancel");
     //// button.text is now "Cancel"
-    // <hide>
+    // >> (hide)
     TKUnit.assert(button.text === "Cancel", "Actual: " + button.text + "; Expected: " + "Cancel");
-    // </hide>
-    // ```
-    // </snippet>
+    // << (hide)
+    // << button-bind
 }
 
 var _testBindTextToBindingContext = function (views: Array<viewModule.View>) {

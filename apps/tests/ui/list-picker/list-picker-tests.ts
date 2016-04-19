@@ -4,21 +4,14 @@ import viewModule = require("ui/core/view");
 import listPickerTestsNative = require("./list-picker-tests-native");
 import application = require("application");
 
-// <snippet module="ui/list-picker" title="ListPicker">
-// # ListPicker
-// Using a ListPicker requires the "ui/list-picker" module.
-// ``` JavaScript
+// >> article-require-module
 import listPickerModule = require("ui/list-picker");
-// ```
-// </snippet>
+// << article-require-module
 
 function _createListPicker(): listPickerModule.ListPicker {
-    // <snippet module="ui/list-picker" title="ListPicker">
-    // ## Creating a ListPicker
-    // ``` JavaScript
+    // >> article-create-listpicker
     var listPicker = new listPickerModule.ListPicker();
-    // ```
-    // </snippet>
+    // << article-create-listpicker
     listPicker.id = "ListPicker";
     return listPicker;
 }
@@ -72,12 +65,9 @@ export var testWhenSettingItemsToEmptyArrayZeroNativeItemsAreCreated = function 
 export var testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
         var listPicker = <listPickerModule.ListPicker>views[0];
-        // <snippet module="ui/list-picker" title="listPicker">
-        // ## Binding listPicker.items
-        // ``` JavaScript
+        // >> article-binding-listpickeritems
         listPicker.items = [1, 2, 3];
-        // ```
-        // </snippet>
+        // << article-binding-listpickeritems
         var expectedValue = 0;
         var actualValue = listPicker.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
@@ -88,12 +78,9 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = functio
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
         var listPicker = <listPickerModule.ListPicker>views[0];
         listPicker.items = _createItems(10);
-        // <snippet module="ui/list-picker" title="listPicker">
-        // ## Selecting an item programmatically
-        // ``` JavaScript
+        // >> article-selecting-item
         listPicker.selectedIndex = 9;
-        // ```
-        // </snippet>
+        // << article-selecting-item
         listPicker.items = [];
         var expectedValue = undefined;
         var actualValue = listPicker.selectedIndex;

@@ -5,13 +5,9 @@ import types = require("utils/types");
 import fs = require("file-system");
 require("globals");
 
-// <snippet module="http" title="http">
-// # Http module
-// Using http methods requires to load "http" module.
-// ``` JavaScript
+// >> http-require
 // var http = require("http");
-// ```
-// </snippet>
+// << http-require
 
 export var test_getString_isDefined = function () {
     TKUnit.assert(typeof (http.getString) !== "undefined", "Method http.getString() should be defined!");
@@ -20,23 +16,20 @@ export var test_getString_isDefined = function () {
 export var test_getString = function (done: (err: Error, res?: string) => void) {
     var result;
 
-    // <snippet module="http" title="http">
-    // ### Get string from URL
-    // ``` JavaScript
+    // >> http-get-string
     http.getString("https://httpbin.org/get").then(function (r) {
         //// Argument (r) is string!
-        // <hide>
+        // >> (hide)
         result = r;
         done(null);
-        // </hide>
+        // << (hide)
     }, function (e) {
         //// Argument (e) is Error!
-        // <hide>
+        // >> (hide)
         done(e);
-        // </hide>
+        // << (hide)
     });
-    // ```
-    // </snippet>
+    // << http-get-string
 };
 
 export var test_getString_fail = function (done) {
@@ -73,12 +66,10 @@ export var test_getJSON_isDefined = function () {
 export var test_getJSON = function (done) {
     var result;
 
-    // <snippet module="http" title="http">
-    // ### Get JSON from URL
-    // ``` JavaScript
+    // >> http-get-json
     http.getJSON("https://httpbin.org/get").then(function (r) {
         //// Argument (r) is JSON!
-        // <hide>
+        // >> (hide)
         //completed = true;
         result = r;
         try {
@@ -89,16 +80,15 @@ export var test_getJSON = function (done) {
             done(e);
         }
         done(null);
-        // </hide>
+        // << (hide)
     }, function (e) {
         //// Argument (e) is Error!
         //console.log(e);
-        // <hide>
+        // >> (hide)
         done(e);
-        // </hide>
+        // << (hide)
     });
-    // ```
-    // </snippet>
+    // << http-get-json
 };
 
 export var test_getJSON_fail = function (done) {
@@ -171,12 +161,10 @@ export var test_getImage_isDefined = function () {
 export var test_getImage = function (done) {
     var result;
 
-    // <snippet module="http" title="http">
-    // ### Get Image from URL
-    // ``` JavaScript
+    // >> http-get-image
     http.getImage("https://httpbin.org/image/png").then(function (r) {
         //// Argument (r) is Image!
-        // <hide>
+        // >> (hide)
         result = r;
         try {
             TKUnit.assert(result instanceof require("image-source").ImageSource, "Result from getImage() should be valid ImageSource object!");
@@ -185,15 +173,14 @@ export var test_getImage = function (done) {
         catch (err) {
             done(err);
         }
-        // </hide>
+        // << (hide)
     }, function (e) {
         //// Argument (e) is Error!
-        // <hide>
+        // >> (hide)
         done(e);
-        // </hide>
+        // << (hide)
     });
-    // ```
-    // </snippet>
+    // << http-get-image
 };
 
 export var test_getImage_fail = function (done) {
@@ -233,12 +220,10 @@ export var test_getFile_isDefined = function () {
 export var test_getFile = function (done) {
     var result;
 
-    // <snippet module="http" title="http">
-    // ### Get File from URL. By default the file will be saved in Documents folder.
-    // ``` JavaScript
+    // >> http-get-urlfile
     http.getFile("https://raw.githubusercontent.com/NativeScript/NativeScript/master/apps/tests/logo.png").then(function (r) {
         //// Argument (r) is File!
-        // <hide>
+        // >> (hide)
         result = r;
         try {
             TKUnit.assert(result instanceof fs.File, "Result from getFile() should be valid File object!");
@@ -247,27 +232,24 @@ export var test_getFile = function (done) {
         catch (err) {
             done(err);
         }
-        // </hide>
+        // << (hide)
     }, function (e) {
         //// Argument (e) is Error!
-        // <hide>
+        // >> (hide)
         done(e);
-        // </hide>
+        // << (hide)
     });
-    // ```
-    // </snippet>
+    // << http-get-urlfile
 };
 
 export var test_getContentAsFile = function (done) {
     var result;
 
-    // <snippet module="http" title="http">
-    // ### Get content as File from URL. You can specify where the file should be saved.
-    // ``` JavaScript
+    // >> http-get-urlfile-content
     var filePath = fs.path.join(fs.knownFolders.documents().path, "test.png");
     http.getFile("https://httpbin.org/image/png", filePath).then(function (r) {
         //// Argument (r) is File!
-        // <hide>
+        // >> (hide)
         result = r;
         try {
             TKUnit.assert(result instanceof fs.File, "Result from getFile() should be valid File object!");
@@ -276,15 +258,14 @@ export var test_getContentAsFile = function (done) {
         catch (err) {
             done(err);
         }
-        // </hide>
+        // << (hide)
     }, function (e) {
         //// Argument (e) is Error!
-        // <hide>
+        // >> (hide)
         done(e);
-        // </hide>
+        // << (hide)
     });
-    // ```
-    // </snippet>
+    // << http-get-urlfile-content
 };
 
 export var test_getFile_fail = function (done) {
@@ -338,13 +319,11 @@ export var test_request_requestShouldTimeout = function (done) {
 export var test_request_responseStatusCodeShouldBeDefined = function (done) {
     var result: http.HttpResponse;
 
-    // <snippet module="http" title="http">
-    // ### Get response status code
-    // ``` JavaScript
+    // >> http-get-response
     http.request({ url: "https://httpbin.org/get", method: "GET" }).then(function (response) {
         //// Argument (response) is HttpResponse!
         var statusCode = response.statusCode;
-        // <hide>
+        // >> (hide)
         result = response;
         try {
             TKUnit.assert(typeof (result.statusCode) !== "undefined", "response.statusCode should be defined!");
@@ -353,29 +332,26 @@ export var test_request_responseStatusCodeShouldBeDefined = function (done) {
         catch (err) {
             done(err);
         }
-        // </hide>
+        // << (hide)
     }, function (e) {
         //// Argument (e) is Error!
-        // <hide>
+        // >> (hide)
         done(e);
-        // </hide>
+        // << (hide)
     });
-    // ```
-    // </snippet>
+    // << http-get-response
 };
 
 export var test_request_responseHeadersShouldBeDefined = function (done) {
     var result: http.HttpResponse;
 
-    // <snippet module="http" title="http">
-    // ### Get response headers
-    // ``` JavaScript
+    // >> http-get-response-headers
     http.request({ url: "https://httpbin.org/get", method: "GET" }).then(function (response) {
         //// Argument (response) is HttpResponse!
         //for (var header in response.headers) {
         //    console.log(header + ":" + response.headers[header]);
         //}
-        // <hide>
+        // >> (hide)
         result = response;
         try {
             TKUnit.assert(typeof (result.headers) !== "undefined", "response.headers should be defined!");
@@ -384,30 +360,27 @@ export var test_request_responseHeadersShouldBeDefined = function (done) {
         catch (err) {
             done(err);
         }
-        // </hide>
+        // << (hide)
     }, function (e) {
         //// Argument (e) is Error!
-        // <hide>
+        // >> (hide)
         done(e);
-        // </hide>
+        // << (hide)
     });
-    // ```
-    // </snippet>
+    // << http-get-response-headers
 };
 
 export var test_request_responseContentShouldBeDefined = function (done) {
     var result: http.HttpResponse;
 
-    // <snippet module="http" title="http">
-    // ### Get response content
-    // ``` JavaScript
+    // >> http-get-response-content
     http.request({ url: "https://httpbin.org/get", method: "GET" }).then(function (response) {
         //// Argument (response) is HttpResponse!
         //// Content property of the response is HttpContent!
         var str = response.content.toString();
         var obj = response.content.toJSON();
         var img = response.content.toImage();
-        // <hide>
+        // >> (hide)
         result = response;
         try {
             TKUnit.assert(typeof (result.content) !== "undefined", "response.content should be defined!");
@@ -416,15 +389,14 @@ export var test_request_responseContentShouldBeDefined = function (done) {
         catch (err) {
             done(err);
         }
-        // </hide>
+        // << (hide)
     }, function (e) {
         //// Argument (e) is Error!
-        // <hide>
+        // >> (hide)
         done(e);
-        // </hide>
+        // << (hide)
     });
-    // ```
-    // </snippet>
+    // << http-get-response-content
 };
 
 export var test_request_responseContentToStringShouldReturnString = function (done) {
@@ -629,9 +601,7 @@ export var test_request_NonStringHeadersSentAndReceivedProperly = function (done
 };
 
 export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
-    // <snippet module="http" title="http">
-    // ### Post JSON
-    // ``` JavaScript
+    // >> http-post-json
     var result;
 
     http.request({
@@ -641,7 +611,7 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
         content: JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })
     }).then(function (response) {
         // result = response.content.toJSON();
-        // <hide>
+        // >> (hide)
         result = response.content.toJSON();
         try {
             TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
@@ -650,14 +620,13 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
         catch (err) {
             done(err);
         }
-        // </hide>
+        // << (hide)
         // console.log(result);
     }, function (e) {
-        // <hide>
+        // >> (hide)
         done(e);
-        // </hide>
+        // << (hide)
         // console.log("Error occurred " + e);
     });
-    // ```
-    // </snippet>
+    // << http-post-json
 };

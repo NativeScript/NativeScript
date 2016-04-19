@@ -10,64 +10,14 @@ import pageModule = require("ui/page");
 import gestureModule = require("ui/gestures");
 import { Label } from "ui/label";
 
-// <snippet module="ui/repeater" title="repeater">
-// # Repeater
-// Using a Repeater requires the repeater module.
-// ``` JavaScript
+// >> article-require-module
 import repeaterModule = require("ui/repeater");
-// ```
-// Other modules which will be used in the code samples in this article:
-// ``` JavaScript
+// << article-require-module
+
+// >> article-require-modules
 import observableArray = require("data/observable-array");
 import labelModule = require("ui/label");
-// ```
-
-// ### Binding the Repeater items property to collection in the view-model.
-//``` XML
-// <Page>
-//   {%raw%}<Repeater items="{{ myItems }}" />{%endraw%}
-// </Page>
-//```
-
-// ### Define the Repeater itemTemplate property.
-//``` XML
-// <Page>
-//  {%raw%}<Repeater items="{{ myItems }}">
-//     <Repeater.itemTemplate>
-//        <Label text="{{ title || 'Downloading...' }}" textWrap="true" class="title" />
-//     </Repeater.itemTemplate>
-//  </Repeater>{%endraw%}
-// </Page>
-//```
-
-// ### Define the Repeater itemsLayout property. Default is StackLayout with orientation="vertical".
-//``` XML
-// <Page>
-//  {%raw%}<Repeater items="{{ myItems }}">
-//     <Repeater.itemsLayout>
-//        <StackLayout orientation="horizontal" />
-//     </Repeater.itemsLayout>
-//  </Repeater>{%endraw%}
-// </Page>
-//```
-
-// ### Repeater with WrapLayout inside ScrollView.
-//``` XML
-// <Page>
-// {%raw%}<ScrollView>
-//   <Repeater items="{{ myItems }}">
-//     <Repeater.itemsLayout>
-//        <WrapLayout />
-//     </Repeater.itemsLayout>
-//     <Repeater.itemTemplate>
-//        <Label text="{{ $value }}" margin="10" />
-//     </Repeater.itemTemplate>
-//   </Repeater>
-//  </ScrollView>{%endraw%}
-// </Page>
-//```
-
-// </snippet>
+// << article-require-modules
 
 var ASYNC = 0.2;
 var FEW_ITEMS = [0, 1, 2];
@@ -80,13 +30,10 @@ export function test_set_items_to_array_loads_all_items() {
     var repeater = new repeaterModule.Repeater();
 
     function testAction(views: Array<viewModule.View>) {
-        // <snippet module="ui/repeater" title="repeater">
-        // ### Using Repeater with Array
-        // ``` JavaScript
+        // >> article-repeater-with-array
         var colors = ["red", "green", "blue"];
         repeater.items = colors;
-        // ```
-        // </snippet>
+        // << article-repeater-with-array
 
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 
@@ -121,15 +68,11 @@ export function test_refresh_after_adding_items_to_array_loads_new_items() {
 
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), colors.length, "views count.");
-        // <snippet module="ui/repeater" title="repeater">
-        // > Note, that changing the array after the repeater is shown will not update the UI.
-        // You can force-update the UI using the refresh() method.
-        // ``` JavaScript
+        // >> artcle-array-push-element
         colors.push("yellow");
         //// Manually trigger the update so that the new color is shown.
         repeater.refresh();
-        // ```
-        // </snippet>
+        // << artcle-array-push-element
         TKUnit.wait(ASYNC);
         TKUnit.assertEqual(getChildrenCount(repeater), colors.length, "views count.");
     };
@@ -183,15 +126,12 @@ export function test_set_itmes_to_null_clears_items() {
 }
 
 export function test_set_itemsLayout_accepted() {
-    // <snippet module="ui/repeater" title="repeater">
-    // ### Using Repeater with different layout.
-    // ``` JavaScript
+    // >> article-repeater-layout
     var repeater = new repeaterModule.Repeater();
     var stackLayout = new stackLayoutModule.StackLayout();
     stackLayout.orientation = "horizontal";
     repeater.itemsLayout = stackLayout;
-    // ```
-    // </snippet>
+    // << article-repeater-layout
 
     function testAction(views: Array<viewModule.View>) {
 
@@ -240,13 +180,10 @@ export function test_set_items_to_observable_array_loads_all_items() {
     var repeater = new repeaterModule.Repeater();
 
     function testAction(views: Array<viewModule.View>) {
-        // <snippet module="ui/repeater" title="repeater">
-        // ### Using Repeater with ObservableArray
-        // ``` JavaScript
+        // >> article-repeater-observablearray
         var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
         repeater.items = colors;
-        // ```
-        // </snippet>
+        // << article-repeater-observablearray
 
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assert(getChildAtText(repeater, 0) === "red", "Item not created for index 0");
@@ -267,13 +204,11 @@ export function test_add_to_observable_array_refreshes_the_Repeater() {
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 3, "getChildrenCount");
 
-        // <snippet module="ui/repeater" title="repeater">
-        // > When using ObservableArray the repeater will be automatically updated when items are added or removed form the array.
-        // ``` JavaScript
+        // >> article-push-to-observablearray
         colors.push("yellow");
         //// The Repeater will be updated automatically.
-        // ```
-        // </snippet>
+        // << article-push-to-observablearray
+        TKUnit.wait(ASYNC);
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 4, "getChildrenCount");
 

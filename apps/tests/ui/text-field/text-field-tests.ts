@@ -9,47 +9,31 @@ import platform = require("platform");
 import formattedStringModule = require("text/formatted-string");
 import spanModule = require("text/span");
 
-// <snippet module="ui/text-field" title="TextField">
-// # TextField
-
-// Using a TextField requires the text-field module.
-// ``` JavaScript
+// >> require-textfield
 import textFieldModule = require("ui/text-field");
-// ```
+// << require-textfield
 // Other frequently used modules when working with buttons include:
-// ``` JavaScript
+
 import bindable = require("ui/core/bindable");
+// >> require-observable
 import observable = require("data/observable");
-// ```
+// << require-observable
 
 // ### Binding two TextFields text property to observable view-model property.
-//``` XML
-// <Page loaded="pageLoaded">
-//  <StackLayout orientation="vertical">
-//    {%raw%}<TextField text="{{ someProperty }}" />
-//    <TextField text="{{ someProperty }}" />{%endraw%}
-//  </StackLayout>
-// </Page>
-//```
-//``` JavaScript
-// function pageLoaded(args) {
-//   var page = args.object;
-//   var obj = new observable.Observable();
-//   obj.set("someProperty", "Please change this text!");
-//   page.bindingContext = obj;
-// }
-// exports.pageLoaded = pageLoaded;
-//```
-
-// </snippet> 
+// >> binding-text-property
+function pageLoaded(args) {
+  var page = args.object;
+  var obj = new observable.Observable();
+  obj.set("someProperty", "Please change this text!");
+  page.bindingContext = obj;
+}
+exports.pageLoaded = pageLoaded;
+// << binding-text-property
 
 var _createTextFieldFunc = function (): textFieldModule.TextField {
-    // <snippet module="ui/text-field" title="TextField">
-    // ## Creating a TextField
-    // ``` JavaScript
+    // >> creating-textfield
     var textField = new textFieldModule.TextField();
-    // ```
-    // </snippet>
+    // << creating-textfield
     textField.text = "textField";
     return textField;
 }
@@ -58,12 +42,9 @@ export var testSetText = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
         
-        // <snippet module="ui/text-field" title="TextField">
-        // ### Setting the text of a TextField
-        // ``` JavaScript
+        // >> setting-text-property
         textField.text = "Hello, world!";
-        // ```
-        // </snippet>
+        // << setting-text-property
 
         var expectedValue = "Hello, world!";
         var actualValue = textFieldTestsNative.getNativeText(textField);
@@ -101,12 +82,9 @@ export var testSetHintToNumber = function () {
         var textField = <textFieldModule.TextField>views[0];
         var expectedValue = 1;
 
-        // <snippet module="ui/text-field" title="TextField">
-        // ### Setting the text of a TextField
-        // ``` JavaScript
+        // >> setting-hint-property
         textField.hint = <any>expectedValue;
-        // ```
-        // </snippet>
+        // << setting-hint-property
 
         var actualValue = textFieldTestsNative.getNativeHint(textField);
         TKUnit.assert(<any>actualValue == expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
@@ -117,9 +95,7 @@ export var testBindTextDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
 
-        // <snippet module="ui/text-field" title="TextField">
-        // ### Binding text property directly to model
-        // ``` JavaScript
+        // >> binding-text-property-second
         var model = new observable.Observable();
         model.set("username", "john");
         var options: bindable.BindingOptions = {
@@ -128,18 +104,17 @@ export var testBindTextDirectlyToModel = function () {
         }
         textField.bind(options, model);
         //// textField.text is now "john"
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textField.text === "john", "Actual: " + textField.text + "; Expected: " + "john");
         TKUnit.assert(textFieldTestsNative.getNativeText(textField) === "john", "Actual: " + textFieldTestsNative.getNativeText(textField) + "; Expected: " + "john");
-        // </hide>
+        // << (hide)
         model.set("username", "mary");
         //// textField.text is now "mary"
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textField.text === "mary", "Actual: " + textField.text + "; Expected: " + "mary");
         TKUnit.assert(textFieldTestsNative.getNativeText(textField) === "mary", "Actual: " + textFieldTestsNative.getNativeText(textField) + "; Expected: " + "mary");
-        // </hide>
-        // ```
-        // </snippet>
+        // << (hide)
+        // << binding-text-property-second
     });
 }
 
@@ -195,12 +170,9 @@ export var testSetHint = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
 
-        // <snippet module="ui/text-field" title="TextField">
-        // ### Setting the hint of a TextField
-        // ``` JavaScript
+        // >> setting-hint-text
         textField.hint = "type your username here";
-        // ```
-        // </snippet>
+        // << setting-hint-text
 
         var expectedValue = "type your username here";
         var actualValue = textFieldTestsNative.getNativeHint(textField);
@@ -212,9 +184,7 @@ export var testBindHintDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
 
-        // <snippet module="ui/text-field" title="TextField">
-        // ### Binding hint property directly to model
-        // ``` JavaScript
+        // >> binding-hint-property
         var model = new observable.Observable();
         model.set("hint", "type your username here");
         var options: bindable.BindingOptions = {
@@ -223,18 +193,17 @@ export var testBindHintDirectlyToModel = function () {
         }
         textField.bind(options, model);
         //// textField.hint is now "type your username here"
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textField.hint === "type your username here", "Actual: " + textField.text + "; Expected: " + "type your username here");
         TKUnit.assert(textFieldTestsNative.getNativeHint(textField) === "type your username here", "Actual: " + textFieldTestsNative.getNativeHint(textField) + "; Expected: " + "type your username here");
-        // </hide>
+        // << (hide)
         model.set("hint", "type your password here");
         //// textField.hint is now "type your password here"
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textField.hint === "type your password here", "Actual: " + textField.text + "; Expected: " + "type your password here");
         TKUnit.assert(textFieldTestsNative.getNativeHint(textField) === "type your password here", "Actual: " + textFieldTestsNative.getNativeHint(textField) + "; Expected: " + "type your password here");
-        // </hide>
-        // ```
-        // </snippet>
+        // << (hide)
+        // << binding-hint-property
     });
 }
 
@@ -266,12 +235,9 @@ export var testSetSecure = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
 
-        // <snippet module="ui/text-field" title="TextField">
-        // ### Setting the secure property of a TextField
-        // ``` JavaScript
+        // >> setting-secure-property
         textField.secure = true;
-        // ```
-        // </snippet>
+        // << setting-secure-property
 
         var expectedValue = true;
         var actualValue = textFieldTestsNative.getNativeSecure(textField);
@@ -283,9 +249,7 @@ export var testBindSecureDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
 
-        // <snippet module="ui/text-field" title="TextField">
-        // ### Binding secure property directly to model
-        // ``` JavaScript
+        // >> binding-secure-property
         var model = new observable.Observable();
         model.set("secure", true);
         var options: bindable.BindingOptions = {
@@ -294,18 +258,17 @@ export var testBindSecureDirectlyToModel = function () {
         }
         textField.bind(options, model);
         //// textField.secure is now true
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textField.secure === true, "Actual: " + textField.secure + "; Expected: " + true);
         TKUnit.assert(textFieldTestsNative.getNativeSecure(textField) === true, "Actual: " + textFieldTestsNative.getNativeSecure(textField) + "; Expected: " + true);
-        // </hide>
+        // << (hide)
         model.set("secure", false);
         //// textField.secure is now false
-        // <hide>
+        // >> (hide)
         TKUnit.assert(textField.secure === false, "Actual: " + textField.secure + "; Expected: " + false);
         TKUnit.assert(textFieldTestsNative.getNativeSecure(textField) === false, "Actual: " + textFieldTestsNative.getNativeSecure(textField) + "; Expected: " + false);
-        // </hide>
-        // ```
-        // </snippet>
+        // << (hide)
+        // << binding-secure-property
     });
 }
 

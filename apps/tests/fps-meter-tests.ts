@@ -1,15 +1,9 @@
-﻿// <snippet module="fps-meter" title="fps-meter">
-// # Frames-per-second meter
-// Logging frames-per-second statistics for your app requires the "fps-meter" module.
-// ``` JavaScript
+﻿// >> fps-meter-require
 import fpsMeter = require("fps-meter");
-// ```
-// </snippet>
+// << fps-meter-require
 
 export var test_DummyTestForSnippetOnly0 = function () {
-    // <snippet module="fps-meter" title="fps-meter">
-    // ### Start and stop logging
-    // ``` JavaScript
+    // >> fps-meter-logging
     var callbackId = fpsMeter.addCallback(function (fps: number, minFps: number) {
         console.info("fps=" + fps + " minFps=" + minFps);
     });
@@ -17,6 +11,5 @@ export var test_DummyTestForSnippetOnly0 = function () {
     ////...
     fpsMeter.removeCallback(callbackId);
     fpsMeter.stop();
-    // ```
-    // </snippet>
+    // << fps-meter-logging
 }

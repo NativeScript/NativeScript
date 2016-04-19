@@ -5,27 +5,14 @@ import imageModule = require("ui/image");
 import platform = require("platform");
 import color = require("color");
 
-// <snippet module="ui/activity-indicator" title="activity-indicator">
-// # ActivityIndicator
-// Using the activity indicator requires the ActivityIndicator module.
-// ``` JavaScript
+// >> activity-indicator-require
 import activityIndicatorModule = require("ui/activity-indicator");
-// ```
-// ### Binding the activity indicator busy property to a view-model property.
-//``` XML
-// <Page>
-//   {%raw%}<ActivityIndicator busy="{{ isLoading }}" />{%endraw%}
-// </Page>
-//```
-// </snippet>
+// << activity-indicator-require
 
 export function test_default_TNS_values() {
-    // <snippet module="ui/activity-indicator" title="activity-indicator">
-    // ### Creating an activity indicator
-    // ``` JavaScript
+    // >> activity-indicator-create
     var indicator = new activityIndicatorModule.ActivityIndicator();
-    // ```
-    // </snippet>
+    // << activity-indicator-create
 
     TKUnit.assertEqual(indicator.busy, false, "Default indicator.busy");
 }
@@ -75,9 +62,7 @@ if (platform.device.os === platform.platformNames.ios) {
 function binding_busy_to_image() {
     /* tslint:enable:no-unused-variable */
     
-    // <snippet module="ui/activity-indicator" title="activity-indicator">
-    // ### Showing activity indicator while image is loading
-    // ``` JavaScript
+    // >> activity-indicator-loading
     var image = new imageModule.Image();
     var indicator = new activityIndicatorModule.ActivityIndicator();
     indicator.width = 100;
@@ -88,8 +73,7 @@ function binding_busy_to_image() {
         sourceProperty: "isLoading",
         targetProperty: "busy"
     }, image);
-    // ```
-    // </snippet>
+    // << activity-indicator-loading
 }
 
 function getNativeBusy(indicator: activityIndicatorModule.ActivityIndicator): boolean {

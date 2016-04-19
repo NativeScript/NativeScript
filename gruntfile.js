@@ -139,12 +139,14 @@ module.exports = function(grunt) {
     var localCfg = {
         srcDir: ".",
         srcAppsDir: "./apps",
+        srcAppsTests: "./apps/tests",
         packageJsonFilePath: "./package.json",
         outDir: "./bin/dist",
+        outArticlesDir: "./bin/dist/articles",
         outModulesDir: tsconfig.compilerOptions.outDir || "./bin/dist/modules",
         outAppsDir: "./bin/dist/apps",
         outTsAppsDir: "./bin/dist/ts-apps",
-        outApiRefDir: "./bin/dist/api-ref"
+        outApiRefDir: "./bin/dist/apiref"
     };
 
     var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
@@ -214,6 +216,12 @@ module.exports = function(grunt) {
             },
             readyAppFiles: {
                 src: [localCfg.outModulesDir + "/apps/**"]
+            },
+            articles: {
+                src: [ localCfg.outArticlesDir ]
+            },
+            "apiref": {
+                src: [ localCfg.outApiRefDir ]
             }
         },
         copy: {
@@ -227,6 +235,12 @@ module.exports = function(grunt) {
                 ],
                 dest: localCfg.outModulesDir,
                 cwd: localCfg.srcDir
+            },
+            articleMDs: {
+                expand: true,
+                src: [ "**/*.md" ],
+                dest: localCfg.outArticlesDir,
+                cwd: localCfg.srcAppsTests
             },
             license: {
                 expand: true,
@@ -413,6 +427,9 @@ module.exports = function(grunt) {
             },
             mochaNode: {
                 cmd: "grunt simplemocha:node"
+            },
+            injectArticles: {
+                cmd: "node node_modules/markdown-snippet-injector/index.js --root=<%= localCfg.srcAppsTests %> --docsroot=<%= localCfg.outArticlesDir %>"
             }
         },
         multidest: {
@@ -706,5 +723,21 @@ module.exports = function(grunt) {
     grunt.registerTask("inplace", [
         "ts:build-inplace",
         "generate-tns-core-modules-dev-dts"
+    ]);
+    
+    grunt.registerTask("apiref", [
+        "clean:apiref",
+        "typedoc:build"
+    ]);
+    
+    grunt.registerTask("articles", [
+        "clean:articles",
+        "copy:articleMDs",
+        "exec:injectArticles"
+    ]);
+    
+    grunt.registerTask("docs", [
+        "apiref",
+        "articles"
     ]);
 };

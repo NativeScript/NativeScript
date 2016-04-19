@@ -6,32 +6,13 @@ import testModule = require("../ui-test");
 import layoutHelper = require("./layout-helper");
 import commonTests = require("./common-layout-tests");
 
-// <snippet module="ui/layouts/dock-layout" title="dock-layout">
-// # DockLayout
-// Using a DockLayout requires the DockLayout module.
-// ``` JavaScript
+// >> <snippet id='dock-layout-require'/>
 import dockModule = require("ui/layouts/dock-layout");
-// ```
+// << <snippet id='dock-layout-require'/>
 
-// ### Declaring a DockLayout.
-//``` XML
-//<Page>
-//  <DockLayout stretchLastChild="true" >
-//    <Button dock="left" text="left" style="background-color: red; margin: 5;"/ >/ >
-//    <Button dock="top" text="top" style="background-color: lightblue; margin: 5;"/ >
-//    <Button dock="right" text="right" style="background-color: lightgreen; margin: 5;"/ >
-//    <Button dock="bottom" text="bottom" style="background-color: lightpink; margin: 5;"/ >
-//    <Button text="fill" style="background-color: wheat; margin: 5;"/ >
-//  </DockLayout >
-//</Page>
-//```
-// </snippet>
-
-// Other frequently used modules when working with a DockLayout include:
-// ``` JavaScript
+// >> dock-layout-others
 import enums = require("ui/enums");
-// ```
-// </snippet> 
+// << dock-layout-others
 
 export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
@@ -164,30 +145,24 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
     }
 
     public test_codesnippets() {
-        // <snippet module="ui/layouts/dock-layout" title="dock-layout">
-        // ## Create DockLayout
-        // ``` JavaScript
+        // >> dock-layout-create
         var dockLayout = new dockModule.DockLayout();
-        //  ```
-
-        // ## Add child view to layout
-        // ``` JavaScript
+        //  << dock-layout-create
+        
+        // >> dock-layout-addchild
         var btn = new button.Button();
         dockLayout.addChild(btn);
-        //  ```
+        // << dock-layout-addchild
 
-        // ## Remove child view from layout
-        // ``` JavaScript
+        // >> dock-layout-removechild
         dockLayout.removeChild(btn);
-        // ```
+        // << dock-layout-removechild
 
-        // ## Setting the dock property
-        // ``` JavaScript
+        // >> dock-layout-setdocl
         var btnDockedToRight = new button.Button();
         dockModule.DockLayout.setDock(btnDockedToRight, enums.Dock.right);
         dockLayout.addChild(btnDockedToRight);
-        // ```
-        // </snippet>
+        // << dock-layout-setdocl
     }
 
     public test_percent_support() {
