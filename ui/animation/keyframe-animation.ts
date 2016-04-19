@@ -105,7 +105,9 @@ export class KeyframeAnimation {
             this._isPlaying = false;
             for (let i = this._nativeAnimations.length - 1; i >= 0; i--) {
                 let animation = this._nativeAnimations[i];
-                animation.cancel();
+                if (animation.isPlaying) {
+                    animation.cancel();
+                }
             }
             this._rejectAnimationFinishedPromise();
         }
