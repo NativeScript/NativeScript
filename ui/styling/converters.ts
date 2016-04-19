@@ -6,16 +6,14 @@ export function colorConverter(value: string): color.Color {
     return new color.Color(value);
 }
 
-export function fontSizeConverter(value: string): number {
+export function floatConverter(value: string): number {
     // TODO: parse different unit types
     var result: number = parseFloat(value);
     return result;
 }
 
-export function letterSpacingConverter(value: string): number {
-    // TODO: parse different unit types
-    var result: number = parseFloat(value);
-    return result;
+export function fontSizeConverter(value: string): number {
+    return floatConverter(value);
 }
 
 export function textAlignConverter(value: string): string {
