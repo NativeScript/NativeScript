@@ -6,6 +6,7 @@ import trace = require("trace");
 import types = require("utils/types");
 import enums = require("ui/enums");
 import styleModule = require("ui/styling/style");
+import lazy from "utils/lazy";
 
 global.moduleMerge(common, exports);
 
@@ -359,28 +360,28 @@ export class Animation extends common.Animation implements definition.Animation 
     }
 }
 
-let easeIn = new android.view.animation.AccelerateInterpolator(1);
-let easeOut = new android.view.animation.DecelerateInterpolator(1);
-let easeInOut = new android.view.animation.AccelerateDecelerateInterpolator();
-let linear = new android.view.animation.LinearInterpolator();
-let bounce = new android.view.animation.BounceInterpolator();
+let easeIn = lazy(() => new android.view.animation.AccelerateInterpolator(1));
+let easeOut = lazy(() => new android.view.animation.DecelerateInterpolator(1));
+let easeInOut = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
+let linear = lazy(() => new android.view.animation.LinearInterpolator());
+let bounce = lazy(() => new android.view.animation.BounceInterpolator());
 export function _resolveAnimationCurve(curve: any): any {
     switch (curve) {
         case enums.AnimationCurve.easeIn:
             trace.write("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", trace.categories.Animation);
-            return easeIn;
+            return easeIn();
         case enums.AnimationCurve.easeOut:
             trace.write("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", trace.categories.Animation);
-            return easeOut;
+            return easeOut();
         case enums.AnimationCurve.easeInOut:
             trace.write("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", trace.categories.Animation);
-            return easeInOut;
+            return easeInOut();
         case enums.AnimationCurve.linear:
             trace.write("Animation curve resolved to android.view.animation.LinearInterpolator().", trace.categories.Animation);
-            return linear;
+            return linear();
         case enums.AnimationCurve.spring:
             trace.write("Animation curve resolved to android.view.animation.BounceInterpolator().", trace.categories.Animation);
-            return bounce;
+            return bounce();
         case enums.AnimationCurve.ease:
             return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(0.25, 0.1, 0.25, 1.0);
         default:

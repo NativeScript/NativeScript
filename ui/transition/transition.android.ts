@@ -5,9 +5,10 @@ import pageModule = require("ui/page");
 import * as animationModule from "ui/animation";
 import types = require("utils/types");
 import trace = require("trace");
+import lazy from "utils/lazy";
 
-var _sdkVersion = parseInt(platform.device.sdkVersion);
-var _defaultInterpolator = new android.view.animation.AccelerateDecelerateInterpolator();
+var _sdkVersion = lazy(() => parseInt(platform.device.sdkVersion));
+var _defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
 
 interface CompleteOptions {
     isBack: boolean;
@@ -40,7 +41,7 @@ export function _clearBackwardTransitions(fragment: any): void {
         expandedFragment.enterPopExitTransition = undefined;
     }
     
-    if (_sdkVersion >= 21) {
+    if (_sdkVersion() >= 21) {
         var enterTransition = (<any>fragment).getEnterTransition();
         if (enterTransition) {
             trace.write(`Cleared Enter ${enterTransition.getClass().getSimpleName()} transition for ${fragment.getTag()}`, trace.categories.Transition);
@@ -61,7 +62,7 @@ export function _clearForwardTransitions(fragment: any): void {
         expandedFragment.exitPopEnterTransition = undefined;
     }
 
-    if (_sdkVersion >= 21) {
+    if (_sdkVersion() >= 21) {
         var exitTransition = (<any>fragment).getExitTransition();
         if (exitTransition) {
             trace.write(`Cleared Exit ${exitTransition.getClass().getSimpleName()} transition for ${fragment.getTag()}`, trace.categories.Transition);
@@ -81,7 +82,7 @@ export function _setAndroidFragmentTransitions(navigationTransition: frameModule
         name = navigationTransition.name.toLowerCase();
     }
     
-    var useLollipopTransition = name && (name.indexOf("slide") === 0 || name === "fade" || name === "explode") && _sdkVersion >= 21;
+    var useLollipopTransition = name && (name.indexOf("slide") === 0 || name === "fade" || name === "explode") && _sdkVersion() >= 21;
     if (useLollipopTransition) {
         // setEnterTransition: Enter
         // setExitTransition: Exit
@@ -229,7 +230,7 @@ function _setUpNativeTransition(navigationTransition: frameModule.NavigationTran
         nativeTransition.setInterpolator(interpolator);
     }
     else {
-        nativeTransition.setInterpolator(_defaultInterpolator);
+        nativeTransition.setInterpolator(_defaultInterpolator());
     }
 }
 
@@ -241,7 +242,7 @@ export function _onFragmentShown(fragment: any, isBack: boolean): void {
         trace.write(`${fragment.getTag() } has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${relevantTransition}. Will complete page addition when transition ends.`, trace.categories.Transition);
         expandedFragment.completePageAdditionWhenTransitionEnds = { isBack: isBack };
     }
-    else if (_sdkVersion >= 21) {
+    else if (_sdkVersion() >= 21) {
         var nativeTransition = isBack ? (<any>fragment).getReenterTransition() : (<any>fragment).getEnterTransition();
         if (nativeTransition) {
             trace.write(`${fragment.getTag() } has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${nativeTransition.getClass().getSimpleName()} transition. Will complete page addition when transition ends.`, trace.categories.Transition);
@@ -262,7 +263,7 @@ export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boo
         trace.write(`${fragment.getTag()} has been hidden when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${relevantTransition}. Will complete page removal when transition ends.`, trace.categories.Transition);
         expandedFragment.completePageRemovalWhenTransitionEnds = { isBack: isBack };
     }
-    else if (_sdkVersion >= 21) {
+    else if (_sdkVersion() >= 21) {
         var nativeTransition = isBack ? (<any>fragment).getReturnTransition() : (<any>fragment).getExitTransition();
         if (nativeTransition) {
             trace.write(`${fragment.getTag()} has been hidden when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${nativeTransition.getClass().getSimpleName()} transition. Will complete page removal when transition ends.`, trace.categories.Transition);
@@ -422,7 +423,7 @@ export class Transition implements definition.Transition {
             this._interpolator = animation._resolveAnimationCurve(curve);
         }
         else {
-            this._interpolator = _defaultInterpolator;
+            this._interpolator = _defaultInterpolator();
         }
         this._id = transitionId++;
     }
