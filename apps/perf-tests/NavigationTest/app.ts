@@ -1,11 +1,14 @@
 ﻿import * as application from "application";
 import {NavPage} from "../nav-page";
 import * as trace from "trace";
+import { Frame } from "ui/frame";
+
+Frame.defaultTransition = { name: "fade" };
+
 trace.enable();
 trace.setCategories(trace.categories.concat(
     trace.categories.NativeLifecycle,
     trace.categories.Navigation,
-    //trace.categories.Animation,
     trace.categories.Transition
 ));
 

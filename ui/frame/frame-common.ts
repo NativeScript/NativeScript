@@ -431,6 +431,17 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     public _removeViewFromNativeVisualTree(child: View): void {
         child._isAddedToNativeVisualTree = false;
     }
+
+    public _printFrameBackStack() {
+        var length = this.backStack.length;
+        var i = length - 1;
+        console.log("---------------------------");
+        console.log("Frame Back Stack (" + length + ")");
+        while (i >= 0) {
+            var backstackEntry = <definition.BackstackEntry>this.backStack[i--];
+            console.log("[ " + backstackEntry.resolvedPage.id + " ]");
+        }
+    }
 }
 
 var _topmost = function (): Frame {

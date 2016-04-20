@@ -25,6 +25,26 @@ export module AndroidTransitionType {
     export var popExit: string = "popExit";
 }
 
+export function _clearBackwardTransitions(fragment: any): void {
+    if (fragment[ENTER_POPEXIT_TRANSITION]) {
+        trace.write(`Cleared ENTER_POPEXIT_TRANSITION ${fragment[ENTER_POPEXIT_TRANSITION]} for ${fragment.getTag()}`, trace.categories.Transition);
+        fragment[ENTER_POPEXIT_TRANSITION] = undefined;
+    }
+
+    if (_sdkVersion >= 21) {
+        var enterTransition = (<any>fragment).getEnterTransition();
+        if (enterTransition) {
+            trace.write(`Cleared Enter ${enterTransition.getClass().getSimpleName()} transition for ${fragment.getTag()}`, trace.categories.Transition);
+            (<any>fragment).setEnterTransition(null);
+        }
+        var returnTransition = (<any>fragment).getReturnTransition();
+        if (returnTransition) {
+            trace.write(`Cleared Pop Exit ${returnTransition.getClass().getSimpleName()} transition for ${fragment.getTag()}`, trace.categories.Transition);
+            (<any>fragment).setReturnTransition(null);
+        }
+    }
+}
+
 export function _clearForwardTransitions(fragment: any): void {
     if (fragment[EXIT_POPENTER_TRANSITION]) {
         trace.write(`Cleared EXIT_POPENTER_TRANSITION ${fragment[EXIT_POPENTER_TRANSITION]} for ${fragment.getTag()}`, trace.categories.Transition);
@@ -265,9 +285,11 @@ function _completePageRemoval(fragment: android.app.Fragment, force: boolean = f
         if (page.frame) {
             frame._removeView(page);
             page.onNavigatedFrom(isBack);
+            trace.write(`REMOVAL of ${page} completed`, trace.categories.Transition);
         }
-        
-        trace.write(`REMOVAL of ${page} completed`, trace.categories.Transition);
+        else {
+            trace.write(`REMOVAL of ${page} has already been done`, trace.categories.Transition);
+        }
     }
 }
 
