@@ -1,0 +1,6 @@
+<Page>
+  <AbsoluteLayout>
+    <StackLayout style="height:100; width: 100; z-index: 1; background-color: red;" />
+    <StackLayout style="height:100; width: 100; background-color: green;" />
+  </AbsoluteLayout>
+</Page>
