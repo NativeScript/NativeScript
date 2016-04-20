@@ -386,17 +386,26 @@ export class Binding {
             if (exp) {
                 var context = this.source && this.source.get && this.source.get() || global;
                 var model = {};
+                var addedProps = [];
                 ensureApplication();
                 for (var prop in application.resources) {
                     if (application.resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
                         context[prop] = application.resources[prop];
+                        addedProps.push(prop);
                     }
                 }
-
+                
                 this.prepareContextForExpression(context, expression);
-
                 model[contextKey] = context;
-                return exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
+                let result = exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
+                // clear added props
+                let addedPropsLength = addedProps.length;
+                for(let i = 0; i < addedPropsLength; i++) {
+                    delete context[addedProps[i]];
+                }
+                addedProps.length = 0;
+                
+                return result;
             }
             return new Error(expression + " is not a valid expression.");
         }

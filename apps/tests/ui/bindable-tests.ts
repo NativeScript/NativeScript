@@ -567,6 +567,7 @@ export function test_BindingToDictionaryAtAppLevel() {
         page.bindingContext = pageViewModel;
 
         TKUnit.assertEqual(testLabel.text, expectedValue);
+        TKUnit.assertTrue(testLabel.bindingContext["dict"] === undefined, "BindingContext should not contain properties from application resources.");
     }
 
     helper.buildUIAndRunTest(createLabel(), testFunc);
