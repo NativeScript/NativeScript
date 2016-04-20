@@ -18,6 +18,7 @@
     }
 
     //@private
+    export function _clearBackwardTransitions(fragment: any): void;
     export function _clearForwardTransitions(fragment: any): void;
     export function _setAndroidFragmentTransitions(navigationTransition: frame.NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): void;
     export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): any;
