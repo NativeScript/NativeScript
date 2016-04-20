@@ -1034,6 +1034,8 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="utils\debug.d.ts" />
     <TypeScriptCompile Include="utils\debug.ts" />
+    <TypeScriptCompile Include="utils\lazy.d.ts" />
+    <TypeScriptCompile Include="utils\lazy.ts" />
     <TypeScriptCompile Include="utils\module-merge.ts" />
     <TypeScriptCompile Include="utils\utils.android.ts">
       <DependentUpon>utils.d.ts</DependentUpon>

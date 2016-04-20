@@ -1,8 +1,9 @@
 ﻿import transition = require("ui/transition");
 import platform = require("platform");
+import lazy from "utils/lazy";
 
-var screenWidth = platform.screen.mainScreen.widthPixels;
-var screenHeight = platform.screen.mainScreen.heightPixels;
+var screenWidth = lazy(() => platform.screen.mainScreen.widthPixels);
+var screenHeight = lazy(() => platform.screen.mainScreen.heightPixels);
 
 export class SlideTransition extends transition.Transition {
     private _direction: string;
@@ -18,80 +19,80 @@ export class SlideTransition extends transition.Transition {
             case "left":
                 switch (transitionType) {
                     case transition.AndroidTransitionType.enter:
-                        translationValues[0] = screenWidth;
+                        translationValues[0] = screenWidth();
                         translationValues[1] = 0;
                         break;
                     case transition.AndroidTransitionType.exit:
                         translationValues[0] = 0;
-                        translationValues[1] = -screenWidth;
+                        translationValues[1] = -screenWidth();
                         break;
                     case transition.AndroidTransitionType.popEnter:
-                        translationValues[0] = -screenWidth;
+                        translationValues[0] = -screenWidth();
                         translationValues[1] = 0;
                         break;
                     case transition.AndroidTransitionType.popExit:
                         translationValues[0] = 0;
-                        translationValues[1] = screenWidth;
+                        translationValues[1] = screenWidth();
                         break;
                 }
                 break;
             case "right":
                 switch (transitionType) {
                     case transition.AndroidTransitionType.enter:
-                        translationValues[0] = -screenWidth;
+                        translationValues[0] = -screenWidth();
                         translationValues[1] = 0;
                         break;
                     case transition.AndroidTransitionType.exit:
                         translationValues[0] = 0;
-                        translationValues[1] = screenWidth;
+                        translationValues[1] = screenWidth();
                         break;
                     case transition.AndroidTransitionType.popEnter:
-                        translationValues[0] = screenWidth;
+                        translationValues[0] = screenWidth();
                         translationValues[1] = 0;
                         break;
                     case transition.AndroidTransitionType.popExit:
                         translationValues[0] = 0;
-                        translationValues[1] = -screenWidth;
+                        translationValues[1] = -screenWidth();
                         break;
                 }
                 break;
             case "top":
                 switch (transitionType) {
                     case transition.AndroidTransitionType.enter:
-                        translationValues[0] = screenHeight;
+                        translationValues[0] = screenHeight();
                         translationValues[1] = 0;
                         break;
                     case transition.AndroidTransitionType.exit:
                         translationValues[0] = 0;
-                        translationValues[1] = -screenHeight;
+                        translationValues[1] = -screenHeight();
                         break;
                     case transition.AndroidTransitionType.popEnter:
-                        translationValues[0] = -screenHeight;
+                        translationValues[0] = -screenHeight();
                         translationValues[1] = 0;
                         break;
                     case transition.AndroidTransitionType.popExit:
                         translationValues[0] = 0;
-                        translationValues[1] = screenHeight;
+                        translationValues[1] = screenHeight();
                         break;
                 }
                 break;
             case "bottom":
                 switch (transitionType) {
                     case transition.AndroidTransitionType.enter:
-                        translationValues[0] = -screenHeight;
+                        translationValues[0] = -screenHeight();
                         translationValues[1] = 0;
                         break;
                     case transition.AndroidTransitionType.exit:
                         translationValues[0] = 0;
-                        translationValues[1] = screenHeight;
+                        translationValues[1] = screenHeight();
                         break;
                     case transition.AndroidTransitionType.popEnter:
-                        translationValues[0] = screenHeight;
+                        translationValues[0] = screenHeight();
                         translationValues[1] = 0;
                         break;
                     case transition.AndroidTransitionType.popExit:
                         translationValues[0] = 0;
-                        translationValues[1] = -screenHeight;
+                        translationValues[1] = -screenHeight();
                         break;
                 }
                 break;

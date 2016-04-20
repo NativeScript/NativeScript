@@ -703,6 +703,8 @@
         "ui/web-view/web-view.ios.ts",
         "utils/debug.d.ts",
         "utils/debug.ts",
+        "utils/lazy.d.ts",
+        "utils/lazy.ts",
         "utils/module-merge.ts",
         "utils/number-utils.ts",
         "utils/types.d.ts",
