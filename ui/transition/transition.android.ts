@@ -13,6 +13,7 @@ var ENTER_POPEXIT_TRANSITION = "ENTER_POPEXIT_TRANSITION";
 var EXIT_POPENTER_TRANSITION = "EXIT_POPENTER_TRANSITION";
 var COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS = "COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS";
 var COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS = "COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS";
+var DESTROYED = "DESTROYED";
 var enterFakeResourceId = -10;
 var exitFakeResourceId = -20;
 var popEnterFakeResourceId = -30;
@@ -241,7 +242,7 @@ export function _onFragmentShown(fragment: android.app.Fragment, isBack: boolean
     }
 }
 
-export function _onFragmentHidden(fragment: android.app.Fragment, isBack: boolean) {
+export function _onFragmentHidden(fragment: android.app.Fragment, isBack: boolean, destroyed: boolean) {
     var transitionType = isBack ? "Pop Exit" : "Exit";
     var relevantTransition = isBack ? ENTER_POPEXIT_TRANSITION : EXIT_POPENTER_TRANSITION;
     if (fragment[relevantTransition]) {
@@ -255,6 +256,8 @@ export function _onFragmentHidden(fragment: android.app.Fragment, isBack: boolea
             fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS] = true;
         }
     }
+
+    fragment[DESTROYED] = destroyed;
 
     if (fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS] === undefined) {
         // This might be a second call if the fragment is hidden and then destroyed.
@@ -289,6 +292,17 @@ function _completePageRemoval(fragment: android.app.Fragment, force: boolean = f
         }
         else {
             trace.write(`REMOVAL of ${page} has already been done`, trace.categories.Transition);
+        }
+    }
+
+    if (fragment[DESTROYED]) {
+        fragment[DESTROYED] = undefined;
+        if (page._context) {
+            page._onDetached(true);
+            trace.write(`DETACHMENT of ${page} completed`, trace.categories.Transition);
+        }
+        else {
+            trace.write(`DETACHMENT of ${page} has already been done`, trace.categories.Transition);
         }
     }
 }

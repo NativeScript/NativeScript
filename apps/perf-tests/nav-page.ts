@@ -40,9 +40,9 @@ export class NavPage extends Page implements definition.ControlsPage {
         var that = this;
         that.on(View.loadedEvent, (args) => {
             console.log(`${args.object}.loadedEvent`);
-            if (topmostFrame().android) {
-                topmostFrame().android.cachePagesOnNavigate = true;
-            }
+            //if (topmostFrame().android) {
+            //    topmostFrame().android.cachePagesOnNavigate = true;
+            //}
         });
         that.on(View.unloadedEvent, (args) => {
             console.log(`${args.object}.unloadedEvent`);
