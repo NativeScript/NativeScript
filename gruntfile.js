@@ -374,6 +374,7 @@ module.exports = function(grunt) {
             buildNodeTests: {
                 src: [
                         'js-libs/easysax/**/*.ts',
+                        'module.d.ts',
                         'xml/**/*.ts',
                         'node-tests/**/*.ts',
                         'es-collections.d.ts',
