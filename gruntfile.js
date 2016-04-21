@@ -374,6 +374,7 @@ module.exports = function(grunt) {
             buildNodeTests: {
                 src: [
                         'js-libs/easysax/**/*.ts',
+                        'module.d.ts',
                         'xml/**/*.ts',
                         'node-tests/**/*.ts',
                         'es-collections.d.ts',
@@ -667,6 +668,7 @@ module.exports = function(grunt) {
     //aliasing pack-modules for backwards compatibility
     grunt.registerTask("pack-modules", [
         "compile-modules",
+        "node-tests",
         "exec:packModules"
     ]);
     grunt.registerTask("pack-apps", [
