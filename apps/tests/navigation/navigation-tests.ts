@@ -1,5 +1,5 @@
 ﻿import * as TKUnit from "../TKUnit";
-import {Page} from "ui/page";
+import {Page, NavigatedData} from "ui/page";
 import {topmost as topmostFrame, NavigationTransition} from "ui/frame";
 import {Color} from "color";
 
@@ -173,4 +173,66 @@ export var test_ClearHistoryWithTransitionDoesNotBreakNavigation = function () {
 
     // Clean up
     topmost.transition = undefined;
+}
+
+function _test_NavigationEvents(transition?: NavigationTransition) {
+    let argsToString = (args: NavigatedData) => {
+        return `${(<Page>args.object).id} ${args.eventName} ${(args.isBackNavigation ? "back" : "forward") }`
+    };
+
+    let topmost = topmostFrame();
+    let mainTestPage = topmost.currentPage;
+    let originalMainPageId = mainTestPage.id;
+    mainTestPage.id = "main-page";
+    let actualMainPageEvents = new Array<string>();
+    mainTestPage.on(Page.navigatingFromEvent, (args: NavigatedData) => { actualMainPageEvents.push(argsToString(args)); });
+    mainTestPage.on(Page.navigatedFromEvent, (args: NavigatedData) => { actualMainPageEvents.push(argsToString(args)); });
+    mainTestPage.on(Page.navigatingToEvent, (args: NavigatedData) => { actualMainPageEvents.push(argsToString(args)); });
+    mainTestPage.on(Page.navigatedToEvent, (args: NavigatedData) => { actualMainPageEvents.push(argsToString(args)); });
+
+    let actualSecondPageEvents = new Array<string>();
+    let secondPageFactory = function (): Page {
+        var secondPage = new Page();
+        secondPage.id = "second-page"
+        secondPage.on(Page.navigatingFromEvent, (args: NavigatedData) => { actualSecondPageEvents.push(argsToString(args)); });
+        secondPage.on(Page.navigatedFromEvent, (args: NavigatedData) => { actualSecondPageEvents.push(argsToString(args)); });
+        secondPage.on(Page.navigatingToEvent, (args: NavigatedData) => { actualSecondPageEvents.push(argsToString(args)); });
+        secondPage.on(Page.navigatedToEvent, (args: NavigatedData) => { actualSecondPageEvents.push(argsToString(args)); });
+        secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+        return secondPage;
+    };
+
+    // Go to other page
+    topmost.navigate({ create: secondPageFactory, transition: transition });
+    TKUnit.waitUntilReady(() => { return topmost.currentPage !== mainTestPage; });
+
+    // Go back to main
+    topmost.goBack();
+    TKUnit.waitUntilReady(() => { return topmost.currentPage === mainTestPage; });
+    mainTestPage.id = originalMainPageId;
+
+    let expectedMainPageEvents = [
+        "main-page navigatingFrom forward",
+        "main-page navigatedFrom forward",
+        "main-page navigatingTo back",
+        "main-page navigatedTo back"
+    ];
+    TKUnit.arrayAssert(actualMainPageEvents, expectedMainPageEvents, "Actual main-page events are different from expected.");
+
+    let expectedSecondPageEvents = [
+        "second-page navigatingTo forward",
+        "second-page navigatedTo forward",
+        "second-page navigatingFrom back",
+        "second-page navigatedFrom back"
+    ];
+    TKUnit.arrayAssert(actualSecondPageEvents, expectedSecondPageEvents, "Actual second-page events are different from expected.");
+
+}
+
+export var test_NavigationEvents = function () {
+    _test_NavigationEvents();
+}
+
+export var test_NavigationEvents_WithTransition = function () {
+    _test_NavigationEvents({ name: "slide" });
 }

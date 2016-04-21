@@ -9,10 +9,18 @@ import trace = require("trace");
 var _sdkVersion = parseInt(platform.device.sdkVersion);
 var _defaultInterpolator = new android.view.animation.AccelerateDecelerateInterpolator();
 
-var ENTER_POPEXIT_TRANSITION = "ENTER_POPEXIT_TRANSITION";
-var EXIT_POPENTER_TRANSITION = "EXIT_POPENTER_TRANSITION";
-var COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS = "COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS";
-var COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS = "COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS";
+interface CompleteOptions {
+    isBack: boolean;
+}
+
+interface ExpandedFragment {
+    enterPopExitTransition: definition.Transition;
+    exitPopEnterTransition: definition.Transition;
+    completePageAdditionWhenTransitionEnds: CompleteOptions;
+    completePageRemovalWhenTransitionEnds: CompleteOptions;
+    isDestroyed: boolean;
+}
+
 var enterFakeResourceId = -10;
 var exitFakeResourceId = -20;
 var popEnterFakeResourceId = -30;
@@ -26,11 +34,12 @@ export module AndroidTransitionType {
 }
 
 export function _clearBackwardTransitions(fragment: any): void {
-    if (fragment[ENTER_POPEXIT_TRANSITION]) {
-        trace.write(`Cleared ENTER_POPEXIT_TRANSITION ${fragment[ENTER_POPEXIT_TRANSITION]} for ${fragment.getTag()}`, trace.categories.Transition);
-        fragment[ENTER_POPEXIT_TRANSITION] = undefined;
+    var expandedFragment = <ExpandedFragment>fragment;
+    if (expandedFragment.enterPopExitTransition) {
+        trace.write(`Cleared enterPopExitTransition ${expandedFragment.enterPopExitTransition} for ${fragment.getTag()}`, trace.categories.Transition);
+        expandedFragment.enterPopExitTransition = undefined;
     }
-
+    
     if (_sdkVersion >= 21) {
         var enterTransition = (<any>fragment).getEnterTransition();
         if (enterTransition) {
@@ -46,9 +55,10 @@ export function _clearBackwardTransitions(fragment: any): void {
 }
 
 export function _clearForwardTransitions(fragment: any): void {
-    if (fragment[EXIT_POPENTER_TRANSITION]) {
-        trace.write(`Cleared EXIT_POPENTER_TRANSITION ${fragment[EXIT_POPENTER_TRANSITION]} for ${fragment.getTag()}`, trace.categories.Transition);
-        fragment[EXIT_POPENTER_TRANSITION] = undefined;
+    var expandedFragment = <ExpandedFragment>fragment;
+    if (expandedFragment.exitPopEnterTransition) {
+        trace.write(`Cleared exitPopEnterTransition ${expandedFragment.exitPopEnterTransition} for ${fragment.getTag()}`, trace.categories.Transition);
+        expandedFragment.exitPopEnterTransition = undefined;
     }
 
     if (_sdkVersion >= 21) {
@@ -198,9 +208,11 @@ export function _setAndroidFragmentTransitions(navigationTransition: frameModule
     }
 
     if (transition) {
-        newFragment[ENTER_POPEXIT_TRANSITION] = transition;
+        var newexpandedFragment = <ExpandedFragment>newFragment;
+        newexpandedFragment.enterPopExitTransition = transition;
         if (currentFragment) {
-            currentFragment[EXIT_POPENTER_TRANSITION] = transition;
+            var currentexpandedFragment = <ExpandedFragment>currentFragment;
+            currentexpandedFragment.exitPopEnterTransition = transition;
         }
         fragmentTransaction.setCustomAnimations(enterFakeResourceId, exitFakeResourceId, popEnterFakeResourceId, popExitFakeResourceId);
     }
@@ -221,96 +233,110 @@ function _setUpNativeTransition(navigationTransition: frameModule.NavigationTran
     }
 }
 
-export function _onFragmentShown(fragment: android.app.Fragment, isBack: boolean): void {
+export function _onFragmentShown(fragment: any, isBack: boolean): void {
+    var expandedFragment = <ExpandedFragment>fragment;
     var transitionType = isBack ? "Pop Enter" : "Enter";
-    var relevantTransition = isBack ? EXIT_POPENTER_TRANSITION : ENTER_POPEXIT_TRANSITION;
-    if (fragment[relevantTransition]) {
-        trace.write(`${fragment.getTag()} has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${fragment[relevantTransition]}. Will complete page addition when transition ends.`, trace.categories.Transition);
-        fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS] = { isBack: isBack };
+    var relevantTransition = isBack ? expandedFragment.exitPopEnterTransition : expandedFragment.enterPopExitTransition;
+    if (relevantTransition) {
+        trace.write(`${fragment.getTag() } has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${relevantTransition}. Will complete page addition when transition ends.`, trace.categories.Transition);
+        expandedFragment.completePageAdditionWhenTransitionEnds = { isBack: isBack };
     }
     else if (_sdkVersion >= 21) {
         var nativeTransition = isBack ? (<any>fragment).getReenterTransition() : (<any>fragment).getEnterTransition();
         if (nativeTransition) {
             trace.write(`${fragment.getTag() } has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${nativeTransition.getClass().getSimpleName()} transition. Will complete page addition when transition ends.`, trace.categories.Transition);
-            fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS] = { isBack: isBack };
+            expandedFragment.completePageAdditionWhenTransitionEnds = { isBack: isBack };
         }
     }
 
-    if (fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS] === undefined) {
-        _completePageAddition(fragment, isBack, true);
+    if (!expandedFragment.completePageAdditionWhenTransitionEnds) {
+        _completePageAddition(fragment, isBack);
     }
 }
 
-export function _onFragmentHidden(fragment: android.app.Fragment, isBack: boolean) {
+export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boolean) {
+    var expandedFragment = <ExpandedFragment>fragment;
     var transitionType = isBack ? "Pop Exit" : "Exit";
-    var relevantTransition = isBack ? ENTER_POPEXIT_TRANSITION : EXIT_POPENTER_TRANSITION;
-    if (fragment[relevantTransition]) {
-        trace.write(`${fragment.getTag()} has been hidden when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${fragment[relevantTransition]}. Will complete page removal when transition ends.`, trace.categories.Transition);
-        fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS] = true;
+    var relevantTransition = isBack ? expandedFragment.enterPopExitTransition : expandedFragment.exitPopEnterTransition;
+    if (relevantTransition) {
+        trace.write(`${fragment.getTag()} has been hidden when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${relevantTransition}. Will complete page removal when transition ends.`, trace.categories.Transition);
+        expandedFragment.completePageRemovalWhenTransitionEnds = { isBack: isBack };
     }
     else if (_sdkVersion >= 21) {
         var nativeTransition = isBack ? (<any>fragment).getReturnTransition() : (<any>fragment).getExitTransition();
         if (nativeTransition) {
             trace.write(`${fragment.getTag()} has been hidden when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${nativeTransition.getClass().getSimpleName()} transition. Will complete page removal when transition ends.`, trace.categories.Transition);
-            fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS] = true;
+            expandedFragment.completePageRemovalWhenTransitionEnds = { isBack: isBack };
         }
     }
 
-    if (fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS] === undefined) {
+    expandedFragment.isDestroyed = destroyed;
+
+    if (expandedFragment.completePageRemovalWhenTransitionEnds === undefined) {
         // This might be a second call if the fragment is hidden and then destroyed.
-        _completePageRemoval(fragment, true, isBack);
+        _completePageRemoval(fragment, isBack);
     }
 }
 
-function _completePageAddition(fragment: android.app.Fragment, isBack: boolean, force?: boolean) {
-    if (fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS] || force) {
-        fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS] = undefined;
-        var frame = (<any>fragment).frame;
-        var entry: frameModule.BackstackEntry = (<any>fragment).entry;
-        var page: pageModule.Page = entry.resolvedPage;
-        // The original code that was once in Frame onFragmentShown
-        frame._currentEntry = entry;
-        page.onNavigatedTo(isBack);
-        frame._processNavigationQueue(page);
-        trace.write(`ADDITION of ${page} completed`, trace.categories.Transition);
-    }
+function _completePageAddition(fragment: any, isBack: boolean) {
+    var expandedFragment = <ExpandedFragment>fragment;
+    expandedFragment.completePageAdditionWhenTransitionEnds = undefined;
+    var frame = fragment.frame;
+    var entry: frameModule.BackstackEntry = fragment.entry;
+    var page: pageModule.Page = entry.resolvedPage;
+    // The original code that was once in Frame onFragmentShown
+    frame._currentEntry = entry;
+    page.onNavigatedTo(isBack);
+    frame._processNavigationQueue(page);
+    trace.write(`ADDITION of ${page} completed`, trace.categories.Transition);
 }
 
-function _completePageRemoval(fragment: android.app.Fragment, force: boolean = false, isBack: boolean = false) {
-    if (fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS] || force) {
-        fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS] = undefined;
-        var frame = (<any>fragment).frame;
-        var entry: frameModule.BackstackEntry = (<any>fragment).entry;
-        var page: pageModule.Page = entry.resolvedPage;
-        if (page.frame) {
-            frame._removeView(page);
-            page.onNavigatedFrom(isBack);
-            trace.write(`REMOVAL of ${page} completed`, trace.categories.Transition);
+function _completePageRemoval(fragment: any, isBack: boolean) {
+    var expandedFragment = <ExpandedFragment>fragment;
+    expandedFragment.completePageRemovalWhenTransitionEnds = undefined;
+    var frame = fragment.frame;
+    var entry: frameModule.BackstackEntry = fragment.entry;
+    var page: pageModule.Page = entry.resolvedPage;
+    if (page.frame) {
+        frame._removeView(page);
+        page.onNavigatedFrom(isBack);
+        trace.write(`REMOVAL of ${page} completed`, trace.categories.Transition);
+    }
+    else {
+        trace.write(`REMOVAL of ${page} has already been done`, trace.categories.Transition);
+    }
+
+    if (expandedFragment.isDestroyed) {
+        expandedFragment.isDestroyed = undefined;
+        if (page._context) {
+            page._onDetached(true);
+            trace.write(`DETACHMENT of ${page} completed`, trace.categories.Transition);
         }
         else {
-            trace.write(`REMOVAL of ${page} has already been done`, trace.categories.Transition);
+            trace.write(`DETACHMENT of ${page} has already been done`, trace.categories.Transition);
         }
     }
 }
 
-function _addNativeTransitionListener(fragment: android.app.Fragment, nativeTransition: any/*android.transition.Transition*/) {
+function _addNativeTransitionListener(fragment: any, nativeTransition: any/*android.transition.Transition*/) {
+    var expandedFragment = <ExpandedFragment>fragment;
     var transitionListener = new (<any>android).transition.Transition.TransitionListener({
         onTransitionCancel: function (transition: any): void {
             trace.write(`CANCEL ${nativeTransition} transition for ${fragment}`, trace.categories.Transition);
-            if (fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS]) {
-                _completePageRemoval(fragment);
+            if (expandedFragment.completePageRemovalWhenTransitionEnds) {
+                _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
             }
-            if (fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS]) {
-                _completePageAddition(fragment, fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS].isBack);
+            if (expandedFragment.completePageAdditionWhenTransitionEnds) {
+                _completePageAddition(fragment, expandedFragment.completePageAdditionWhenTransitionEnds.isBack);
             }
         },
         onTransitionEnd: function (transition: any): void {
             trace.write(`END ${nativeTransition} transition for ${fragment}`, trace.categories.Transition);
-            if (fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS]) {
-                _completePageRemoval(fragment);
+            if (expandedFragment.completePageRemovalWhenTransitionEnds) {
+                _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
             }
-            if (fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS]) {
-                _completePageAddition(fragment, fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS].isBack);
+            if (expandedFragment.completePageAdditionWhenTransitionEnds) {
+                _completePageAddition(fragment, expandedFragment.completePageAdditionWhenTransitionEnds.isBack);
             }
         },
         onTransitionPause: function (transition: any): void {
@@ -326,7 +352,8 @@ function _addNativeTransitionListener(fragment: android.app.Fragment, nativeTran
     nativeTransition.addListener(transitionListener);
 }
 
-export function _onFragmentCreateAnimator(fragment: android.app.Fragment, nextAnim: number): android.animation.Animator {
+export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): android.animation.Animator {
+    var expandedFragment = <ExpandedFragment>fragment;
     var transitionType;
     switch (nextAnim) {
         case enterFakeResourceId: transitionType = AndroidTransitionType.enter; break;
@@ -339,11 +366,11 @@ export function _onFragmentCreateAnimator(fragment: android.app.Fragment, nextAn
     switch (transitionType) {
         case AndroidTransitionType.enter:
         case AndroidTransitionType.popExit:
-            transition = <Transition>fragment[ENTER_POPEXIT_TRANSITION];
+            transition = expandedFragment.enterPopExitTransition;
             break;
         case AndroidTransitionType.exit:
         case AndroidTransitionType.popEnter:
-            transition = <Transition>fragment[EXIT_POPENTER_TRANSITION];
+            transition = expandedFragment.exitPopEnterTransition;
             break;
     }
 
@@ -359,20 +386,20 @@ export function _onFragmentCreateAnimator(fragment: android.app.Fragment, nextAn
             },
             onAnimationEnd: function (animator: android.animation.Animator): void {
                 trace.write(`END ${transitionType} ${transition}`, trace.categories.Transition);
-                if (fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS]) {
-                    _completePageRemoval(fragment);
+                if (expandedFragment.completePageRemovalWhenTransitionEnds) {
+                    _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
                 }
-                if (fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS]) {
-                    _completePageAddition(fragment, fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS].isBack);
+                if (expandedFragment.completePageAdditionWhenTransitionEnds) {
+                    _completePageAddition(fragment, expandedFragment.completePageAdditionWhenTransitionEnds.isBack);
                 }
             },
             onAnimationCancel: function (animator: android.animation.Animator): void {
                 trace.write(`CANCEL ${transitionType} ${transition} for ${fragment.getTag()}`, trace.categories.Transition);
-                if (fragment[COMPLETE_PAGE_REMOVAL_WHEN_TRANSITION_ENDS]) {
-                    _completePageRemoval(fragment);
+                if (expandedFragment.completePageRemovalWhenTransitionEnds) {
+                    _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
                 }
-                if (fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS]) {
-                    _completePageAddition(fragment, fragment[COMPLETE_PAGE_ADDITION_WHEN_TRANSITION_ENDS].isBack);
+                if (expandedFragment.completePageAdditionWhenTransitionEnds) {
+                    _completePageAddition(fragment, expandedFragment.completePageAdditionWhenTransitionEnds.isBack);
                 }
             }
         });
