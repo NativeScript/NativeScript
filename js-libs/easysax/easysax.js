@@ -462,7 +462,7 @@ EasySAXParser.prototype.parse = function(xml) {
     , elem
     , tagend = false
     , tagstart = false
-    , j = 0, i = 0
+    , j = 0, i = 0, k = 0, len
     , x, y, q, w
     , xmlns
     , stopIndex = 0
@@ -472,6 +472,7 @@ EasySAXParser.prototype.parse = function(xml) {
     , pos = 0, ln = 0, lnStart = -2, lnEnd = -1
     ;
 
+    len = xml.length;
     function getStringNode() {
         return xml.substring(i, j+1)
     };
@@ -582,7 +583,24 @@ EasySAXParser.prototype.parse = function(xml) {
             };
         };
 
-        j = xml.indexOf('>', i+1);
+        var inside=false;
+        for (k=i,j=-1;k<len;k++) {
+            var c = xml.charCodeAt(k);
+            if (!inside) {
+
+                if (c === 34) { // '"'
+                    inside = c;
+                }
+                else if (c === 39) { // "'"
+                    inside = c;
+                }
+                else if (c === 62) { // <
+                    j = k; break;
+                }
+            } else {
+                if (c === inside) { inside = false; }
+            }
+        }
 
         if (j == -1) { // error
             this.onError('...>', position(i + 1));
