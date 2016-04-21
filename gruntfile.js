@@ -668,6 +668,7 @@ module.exports = function(grunt) {
     //aliasing pack-modules for backwards compatibility
     grunt.registerTask("pack-modules", [
         "compile-modules",
+        "node-tests",
         "exec:packModules"
     ]);
     grunt.registerTask("pack-apps", [
