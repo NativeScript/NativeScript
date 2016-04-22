@@ -473,7 +473,7 @@ export class Binding {
                 var newProps = sourceProps.slice(changedPropertyIndex + 1);
                 // add new weakevent listeners
                 var newObject = data.object[sourceProps[changedPropertyIndex]]
-                if (typeof newObject === 'object') {
+                if (!types.isNullOrUndefined(newObject) && typeof newObject === 'object') {
                     this.addPropertyChangeListeners(new WeakRef(data.object[sourceProps[changedPropertyIndex]]), newProps, parentProps);
                 }
             }
