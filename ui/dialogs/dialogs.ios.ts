@@ -388,7 +388,7 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
 function showUIAlertController(alertController: UIAlertController) {
     var currentPage = dialogsCommon.getCurrentPage();
     if (currentPage) {
-        var viewController: UIViewController = currentPage.ios;
+        var viewController: UIViewController = currentPage.modal ? currentPage.modal.ios : currentPage.ios;
         if (viewController) {
             if (alertController.popoverPresentationController) {
                 alertController.popoverPresentationController.sourceView = viewController.view;

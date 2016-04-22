@@ -2,6 +2,7 @@
 import pages = require("ui/page");
 import textField = require("ui/text-field");
 import frame = require("ui/frame");
+import dialogs = require("ui/dialogs");
 
 var closeCallback: Function;
 
@@ -65,4 +66,13 @@ export function onLoginButtonTap() {
     else {
         frame.topmost().goBack();
     }
+}
+
+export function onShowDialogButtonTap() {
+    console.log(">>> login-page.onShowDialogButtonTap");
+
+    dialogs.alert({ title: "test", message: "Anything", okButtonText: "ok" })
+        .then(function () {
+            console.log("Dialog closed!");
+        });
 }
