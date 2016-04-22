@@ -267,15 +267,8 @@ export class ActionBar extends common.ActionBar {
             if (item.actionView && item.actionView.android) {
                 // With custom action view, the menuitem cannot be displayed in a popup menu. 
                 item.android.position = enums.AndroidActionItemPosition.actionBar;
-
                 menuItem.setActionView(item.actionView.android);
-                // Note: When using a custom action view the toolbar's MenuItemClickListener is not triggered!
-                menuItem.getActionView().setOnClickListener(new android.view.View.OnClickListener({
-                    onClick:
-                    function () {
-                        item._raiseTap();
-                    }
-                }));
+                ActionBar._setOnClickListener(item);
             }
             else if (item.android.systemIcon) {
                 // Try to look in the system resources.
@@ -297,6 +290,14 @@ export class ActionBar extends common.ActionBar {
             var showAsAction = getShowAsAction(item);
             menuItem.setShowAsAction(showAsAction);
         }
+    }
+
+    private static _setOnClickListener(item: ActionItem): void {
+        item.actionView.android.setOnClickListener(new android.view.View.OnClickListener({
+            onClick: function (v: android.view.View) {
+                item._raiseTap();
+            }
+        }));
     }
 
     public _onTitlePropertyChanged() {
