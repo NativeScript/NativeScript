@@ -468,20 +468,13 @@ module.exports = function(grunt) {
         typedoc: {
             build: {
                 options: {
-                    // 'flag:undefined' will set flags without options.
                     "module": 'commonjs',
                     "target": 'es5',
                     "out": '<%= grunt.option("out") || localCfg.outApiRefDir %>',
                     "theme": '<%= grunt.option("theme") || "default" %>',
-                    //"json": './dist/doc.json',
                     "name": 'NativeScript',
                     "includeDeclarations": undefined,
-                    //"excludeExternals": undefined,
-                    //"externalPattern": './declarations.d.ts',
-                    "mode": "file",
-                    //"readme": "source/README.md",
-                    //"entryPoint": '"a-module"'
-                    // verbose: undefined
+                    "mode": "file"
                 },
                 src: localCfg.srcTsdFiles
             }
@@ -726,18 +719,18 @@ module.exports = function(grunt) {
         "ts:build-inplace",
         "generate-tns-core-modules-dev-dts"
     ]);
-    
+
     grunt.registerTask("apiref", [
         "clean:apiref",
         "typedoc:build"
     ]);
-    
+
     grunt.registerTask("articles", [
         "clean:articles",
         "copy:articleMDs",
         "exec:injectArticles"
     ]);
-    
+
     grunt.registerTask("docs", [
         "apiref",
         "articles"
