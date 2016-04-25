@@ -192,6 +192,10 @@ export class FileSystemAccess {
         var dir = utils.ad.getApplicationContext().getCacheDir();
         return dir.getAbsolutePath();
     }
+    
+    public getCurrentAppPath(): string {
+        return this.getLogicalRootPath() + "/app";
+    }
 
     public read(path: string, onError?: (error: any) => any) {
         try {
