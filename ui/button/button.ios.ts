@@ -7,6 +7,7 @@ import utils = require("utils/utils");
 import enums = require("ui/enums");
 import dependencyObservable = require("ui/core/dependency-observable");
 import styleScope = require("../styling/style-scope");
+import {Property} from "ui/core/dependency-observable";
 
 class TapHandlerImpl extends NSObject {
     private _owner: WeakRef<Button>;
@@ -50,18 +51,19 @@ export class Button extends common.Button {
 
     public onLoaded() {
         super.onLoaded();
-        if (this.parent !== null && this.page !== null) {
-            let rootPage = this.page;
-            let scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope();
-            if (scope.getVisualStates(this) !== undefined) {
-                this._stateChangedHandler.start();
-            }
-        }
+        this._updateHandler();
     }
 
     public onUnloaded() {
         super.onUnloaded();
         this._stateChangedHandler.stop();
+    }
+
+    public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
+        super._onPropertyChanged(property, oldValue, newValue);
+        if (property.metadata.affectsStyle) {
+            this._updateHandler();
+        }
     }
 
     get ios(): UIButton {
@@ -81,9 +83,22 @@ export class Button extends common.Button {
         // the UIControlStateNormal value. If the value for UIControlStateNormal is not set,
         // then the property defaults to a system value. Therefore, at a minimum, you should
         // set the value for the normal state.
-        var newText = value ? value._formattedText : null;
+        let newText = value ? value._formattedText : null;
         this.ios.setAttributedTitleForState(newText, UIControlState.UIControlStateNormal);
         this.style._updateTextDecoration();
+    }
+
+    private _updateHandler() {
+        if (this.parent !== null && this.page !== null) {
+            let rootPage = this.page;
+            let scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope();
+            if (scope.getVisualStates(this) !== undefined) {
+                this._stateChangedHandler.start();
+            }
+            else {
+                this._stateChangedHandler.stop();
+            }
+        }
     }
 }
 
