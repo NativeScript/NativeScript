@@ -165,11 +165,28 @@ export class TextViewStyler implements style.Styler {
         }
     }
 
+    // Padding
+    private static setPaddingProperty(view: View, newValue: any) {
+        var top = newValue.top + view.borderWidth;
+        var left = newValue.left + view.borderWidth;
+        var bottom = newValue.bottom + view.borderWidth;
+        var right = newValue.right + view.borderWidth;
+        (<UITextView>view._nativeView).textContainerInset = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
+    }
+
+    private static resetPaddingProperty(view: View, nativeValue: any) {
+        (<UITextView>view._nativeView).textContainerInset = UIEdgeInsetsFromString("{0,0,0,0}");
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
             TextViewStyler.setColorProperty,
             TextViewStyler.resetColorProperty,
             TextViewStyler.getNativeColorValue), "TextView");
+
+        style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
+            TextViewStyler.setPaddingProperty,
+            TextViewStyler.resetPaddingProperty), "TextView");
     }
 }
 

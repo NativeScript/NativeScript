@@ -80,6 +80,8 @@ examples.set("pwrap", "layouts-percent/wrap");
 examples.set("modalview", "modal-view/modal-view");
 examples.set("nordic", "nordic/nordic");
 
+examples.set("padding", "padding/padding");
+
 examples.set("gestures", "pages/gestures");
 examples.set("touch", "pages/touch-event");
 examples.set("handlers", "pages/handlers");
