@@ -28,6 +28,7 @@ export class ActivityIndicator extends aiCommon.ActivityIndicator  {
     constructor() {
         super();
         this._ios = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.UIActivityIndicatorViewStyleGray);
+        this._ios.hidesWhenStopped = false; //https://github.com/NativeScript/NativeScript/issues/2007
     }
 
     get ios(): UIActivityIndicatorView {
