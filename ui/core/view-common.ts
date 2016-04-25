@@ -894,8 +894,7 @@ export class View extends ProxyObject implements definition.View {
         if (!rootPage || !rootPage.isLoaded) {
             return;
         }
-
-        var scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope()
+        var scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope();
         scope.applySelectors(this);
     }
 
