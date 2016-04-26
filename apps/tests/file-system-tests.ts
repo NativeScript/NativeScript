@@ -461,6 +461,9 @@ export var testFolderClear = function () {
     // >> (hide)
     folder.getFile("Test1.txt");
     folder.getFile("Test2.txt");
+    var subfolder = folder.getFolder("subfolder");
+    subfolder.getFile("Test3.txt");
+    subfolder.getFile("Test4.txt");
     var emptied;
     // << (hide)
     folder.clear()
@@ -478,7 +481,7 @@ export var testFolderClear = function () {
     // >> (hide)
     folder.getEntities()
         .then(function (entities) {
-            TKUnit.assert(entities.length === 0, "Failed to clear a Folder");
+            TKUnit.assertEqual(entities.length, 0, `${entities.length} entities left after clearing a folder.`);
             folder.remove();
         });
     // << (hide)
