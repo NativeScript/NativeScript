@@ -10,33 +10,37 @@ interface KeyValuePair<K, V> {
 }
 
 class TimerTargetImpl extends NSObject {
-    private _callback: Function;
-    public canceled = false;
+    private callback: Function;
+    private disposed: boolean;
     private id: number
     private shouldRepeat: boolean
 
     public static initWithCallback(callback: Function, id: number, shouldRepeat: boolean): TimerTargetImpl {
         let handler = <TimerTargetImpl>TimerTargetImpl.new();
-        handler._callback = callback;
+        handler.callback = callback;
         handler.id = id;
         handler.shouldRepeat = shouldRepeat;
         return handler;
     }
 
     public tick(timer): void {
-        if (!this.canceled) {
-            this._callback();
+        if (!this.disposed) {
+            this.callback();
         }
 
-        if (this.canceled || !this.shouldRepeat) {
+        if (!this.shouldRepeat) {
             this.unregister();
         }
     }
 
     public unregister() {
-        let timer = timeoutCallbacks.get(this.id).k;
-        timer.invalidate();
-        timeoutCallbacks.delete(this.id);
+        if (!this.disposed) {
+            this.disposed = true;
+
+            let timer = timeoutCallbacks.get(this.id).k;
+            timer.invalidate();
+            timeoutCallbacks.delete(this.id);
+        }
     }
 
     public static ObjCExposedMethods = {

@@ -137,3 +137,53 @@ export function test_setInterval_callbackShouldBeCleared() {
     TKUnit.waitUntilReady(() => false, 0.5);
     TKUnit.assert(counter === 1, "Callback should be raised only once!");
 };
+
+export function test_clearTimeout_multipleTimes_afterTick() {
+    let completed = false;
+
+    let id = timer.setTimeout(() => {
+        completed = true;
+    });
+
+    TKUnit.waitUntilReady(() => completed, 0.5);
+    TKUnit.assert(completed, "Callback should be called");
+    
+    timer.clearTimeout(id);
+    timer.clearTimeout(id);
+}
+
+export function test_clearTimeout_immediatelyAfterCreate() {
+    let completed = false;
+
+    let id = timer.setTimeout(() => {
+        completed = true;
+    });
+    timer.clearTimeout(id);
+
+    TKUnit.waitUntilReady(() => false, 0.02);
+    TKUnit.assert(!completed, "Callback should not be called");
+}
+
+export function test_clearInterval_immediatelyAfterCreate() {
+    let completed = false;
+
+    let id = timer.setInterval(() => {
+        completed = true;
+    });
+    timer.clearInterval(id);
+
+    TKUnit.waitUntilReady(() => false, 0.02);
+    TKUnit.assert(!completed, "Callback should not be called");
+}
+
+export function test_clearTimeout_insideCallback() {
+    let completed = false;
+
+    let id = timer.setTimeout(() => {
+        completed = true;
+        timer.clearTimeout(id);
+    });
+
+    TKUnit.waitUntilReady(() => completed, 0.5);
+    TKUnit.assert(completed, "Callback should be called");
+}
