@@ -462,8 +462,6 @@ export var testFolderClear = function () {
     folder.getFile("Test1.txt");
     folder.getFile("Test2.txt");
     var subfolder = folder.getFolder("subfolder");
-    subfolder.getFile("Test3.txt");
-    subfolder.getFile("Test4.txt");
     var emptied;
     // << (hide)
     folder.clear()
@@ -548,4 +546,18 @@ export function test_CreateParentOnNewFile(done) {
         return fs.knownFolders.documents().getFolder("folder1").remove();
     }).then(() => done())
     .catch(done);
+}
+
+export function test_FolderClear_RemovesEmptySubfolders(done) {
+    let documents = fs.knownFolders.documents();
+    let rootFolder = documents.getFolder("rootFolder");
+    let emptySubfolder = rootFolder.getFolder("emptySubfolder");
+    TKUnit.assertTrue(fs.Folder.exists(emptySubfolder.path), "emptySubfolder should exist before parent folder is cleared.");
+    rootFolder.clear().then(
+        () => {
+            TKUnit.assertFalse(fs.File.exists(emptySubfolder.path), "emptySubfolder should not exist after parent folder was cleared.");
+            rootFolder.remove();
+            done();
+        })
+        .catch(done);
 }
