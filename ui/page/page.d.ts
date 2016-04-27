@@ -3,7 +3,6 @@
  */
 declare module "ui/page" {
     import observable = require("data/observable");
-    import view = require("ui/core/view");
     import contentView = require("ui/content-view");
     import frame = require("ui/frame");
     import actionBar = require("ui/action-bar");
@@ -37,7 +36,7 @@ declare module "ui/page" {
          * The context (optional, may be undefined) passed to the page when shown modally.
          */
         context: any;
-        
+
         /**
          * A callback to call when you want to close the modally shown page. Pass in any kind of arguments and you will receive when the callback parameter of Page.showModal is executed.
          */
@@ -91,8 +90,6 @@ declare module "ui/page" {
          * String value used when hooking to navigatedFrom event.
          */
         public static navigatedFromEvent: string;
-
-        constructor(options?: Options)
 
         /**
          * Gets or sets whether page background spans under status bar.
@@ -174,7 +171,7 @@ declare module "ui/page" {
          * Raised when navigation from the page has finished.
          */
         on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
-        
+
         /**
          * Raised before the page is shown as a modal dialog.
          */
@@ -217,7 +214,7 @@ declare module "ui/page" {
          * Returns the current modal view that this page is showing (is parent of), if any.
          */
         modal: Page;
-        
+
         //@private
 
         /**
@@ -247,25 +244,5 @@ declare module "ui/page" {
 
         _getStyleScope(): styleScope.StyleScope;
         //@endprivate
-    }
-
-    /**
-     * Provides a set with most common option used to create a page instance.
-     */
-    export interface Options extends view.Options {
-        /**
-         * Gets or sets the page module.
-         */
-        module?: any;
-
-        /**
-         * Gets or sets the page module file name.
-         */
-        filename?: string;
-
-        /**
-         * Gets or sets the page module exports.
-         */
-        exports?: any;
     }
 }

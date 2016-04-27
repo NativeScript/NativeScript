@@ -21,7 +21,9 @@ function _createSegmentedBar(): segmentedBarModule.SegmentedBar {
 function _createItems(count: number): Array<segmentedBarModule.SegmentedBarItem> {
     var items = new Array<segmentedBarModule.SegmentedBarItem>();
     for (var i = 0; i < count; i++) {
-        items.push(new segmentedBarModule.SegmentedBarItem({ title: i + "" }));
+        let bar = new segmentedBarModule.SegmentedBarItem();
+        bar.title = i + "";
+        items.push(bar);
     }
     return items;
 }

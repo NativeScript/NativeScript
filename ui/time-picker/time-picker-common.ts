@@ -196,10 +196,6 @@ export class TimePicker extends view.View implements definition.TimePicker {
     public static timeProperty = new dependencyObservable.Property("time", "TimePicker",
         new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, onTimePropertyChanged, isValidTime));
 
-    constructor() {
-        super();
-    }
-
     get hour(): number {
         return this._getValue(TimePicker.hourProperty);
     }

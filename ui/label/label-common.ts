@@ -19,10 +19,6 @@ export class Label extends textBase.TextBase implements definition.Label {
         new proxy.PropertyMetadata(false, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
         );
 
-    constructor(options?: definition.Options) {
-        super(options);
-    }
-
     get textWrap(): boolean {
         return this._getValue(Label.textWrapProperty);
     }

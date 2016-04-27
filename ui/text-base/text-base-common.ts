@@ -48,10 +48,6 @@ export class TextBase extends view.View implements definition.TextBase, formatte
     public static textProperty = textProperty;
     public static formattedTextProperty = formattedTextProperty;
 
-    constructor(options?: definition.Options) {
-        super(options);
-    }
-
     public _onBindingContextChanged(oldValue: any, newValue: any) {
         super._onBindingContextChanged(oldValue, newValue);
         if (this.formattedText) {

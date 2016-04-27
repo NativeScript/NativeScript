@@ -104,10 +104,6 @@ export class EditableTextBase extends textBase.TextBase implements definition.Ed
 
     public static hintProperty = hintProperty;
 
-    constructor(options?: definition.Options) {
-        super(options);
-    }
-
     get keyboardType(): string {
         return this._getValue(EditableTextBase.keyboardTypeProperty);
     }

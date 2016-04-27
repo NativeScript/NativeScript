@@ -263,7 +263,7 @@ export class PropertyEntry implements definition.PropertyEntry {
 
 var defaultValueForPropertyPerType: Map<string, any> = new Map<string, any>();
 
-export class DependencyObservable extends Observable {
+export class DependencyObservable extends Observable implements definition.DependencyObservable {
     private _propertyEntries = {};
 
     public set(name: string, value: any) {

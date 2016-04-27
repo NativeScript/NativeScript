@@ -1,5 +1,4 @@
 ﻿import pageCommon = require("./page-common");
-import definition = require("ui/page");
 import view = require("ui/core/view");
 import enums = require("ui/enums");
 import * as actionBar from "ui/action-bar";
@@ -98,12 +97,7 @@ function ensureDialogFragmentClass() {
 
 export class Page extends pageCommon.Page {
     private _isBackNavigation = false;
-
     private _grid: org.nativescript.widgets.GridLayout;
-
-    constructor(options?: definition.Options) {
-        super(options);
-    }
 
     get android(): android.view.ViewGroup {
         return this._grid;

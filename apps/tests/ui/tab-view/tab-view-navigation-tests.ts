@@ -21,10 +21,9 @@ function _createItems(count: number): Array<TabViewItem> {
     for (var i = 0; i < count; i++) {
         var label = new Label();
         label.text = "Tab " + i;
-        var tabEntry = new TabViewItem({
-            title: "Tab " + i,
-            view: label
-        });
+        var tabEntry = new TabViewItem();
+        tabEntry.title = "Tab " + i;
+        tabEntry.view = label;
         tabEntry["index"] = i;
         items.push(tabEntry);
     }

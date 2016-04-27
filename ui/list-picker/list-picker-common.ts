@@ -11,10 +11,6 @@ export class ListPicker extends view.View implements definition.ListPicker {
     public static selectedIndexProperty = new dependencyObservable.Property("selectedIndex", "ListPicker", new proxy.PropertyMetadata(undefined));
     public static itemsProperty = new dependencyObservable.Property("items", "ListPicker", new proxy.PropertyMetadata(undefined));
 
-    constructor() {
-        super();
-    }
-
     get selectedIndex(): number {
         return this._getValue(ListPicker.selectedIndexProperty);
     }

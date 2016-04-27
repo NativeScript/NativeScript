@@ -25,10 +25,9 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         for (var i = 0; i < count; i++) {
             var label = new labelModule.Label();
             label.text = "Tab " + i;
-            var tabEntry = new tabViewModule.TabViewItem({
-                title: "Tab " + i,
-                view: label
-            });
+            var tabEntry = new tabViewModule.TabViewItem();
+            tabEntry.title = "Tab " + i;
+            tabEntry.view = label;
             items.push(tabEntry);
         }
         return items;
@@ -48,7 +47,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
 
         let expectedValue = this.testView.items.length;
         let actualValue = tabViewTestsNative.getNativeTabCount(this.testView);
-        
+
         TKUnit.assertEqual(actualValue, expectedValue, "NativeItems not equal to JS items.");
     }
 
@@ -181,7 +180,11 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         this.waitUntilTestElementIsLoaded();
 
         TKUnit.assertThrows(function () {
-            tabView.items = [new tabViewModule.TabViewItem({ title: "Tab 0", view: undefined })];
+            let item = new tabViewModule.TabViewItem();
+            item.title = "Tab 0";
+            item.view = undefined;
+            tabView.items = [item];
+
         }, "Binding TabView to a TabViewItem with undefined view should throw.");
     }
 
@@ -190,7 +193,11 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         this.waitUntilTestElementIsLoaded();
 
         TKUnit.assertThrows(function () {
-            tabView.items = [new tabViewModule.TabViewItem({ title: "Tab 0", view: null })];
+            let item = new tabViewModule.TabViewItem();
+            item.title = "Tab 0";
+            item.view = null;
+            tabView.items = [item];
+
         }, "Binding TabView to a TabViewItem with null view should throw.");
     }
 

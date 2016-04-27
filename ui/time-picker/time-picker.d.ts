@@ -13,8 +13,6 @@ declare module "ui/time-picker" {
         public static minuteProperty: dependencyObservable.Property;
         public static timeProperty: dependencyObservable.Property;
 
-        constructor();
-
         /**
          * Gets the native [android.widget.TimePicker](http://developer.android.com/reference/android/widget/TimePicker.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
@@ -72,4 +70,4 @@ declare module "ui/time-picker" {
         _setNativeMinuteIntervalTime(): void;
         //@endprivate
     }
-} 
+}

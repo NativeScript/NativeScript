@@ -15,10 +15,6 @@ global.moduleMerge(textBase, exports);
 export class TextField extends editableTextBase.EditableTextBase implements definition.TextField {
     public static returnPressEvent = "returnPress";
 
-    constructor(options?: definition.Options) {
-        super(options);
-    }
-
     get secure(): boolean {
         return this._getValue(secureProperty);
     }

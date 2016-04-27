@@ -15,10 +15,6 @@ export class ListPicker extends common.ListPicker {
         return this._android;
     }
 
-    constructor() {
-        super();
-    }
-
     public _createUI() {
         this._android = new android.widget.NumberPicker(this._context);
         this._android.setDescendantFocusability(android.widget.NumberPicker.FOCUS_BLOCK_DESCENDANTS);

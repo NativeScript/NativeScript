@@ -1,5 +1,4 @@
 ﻿import common = require("./html-view-common");
-import definition = require("ui/html-view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import * as utils from "utils/utils";
@@ -30,8 +29,8 @@ global.moduleMerge(common, exports);
 export class HtmlView extends common.HtmlView {
     private _ios: UITextView;
 
-    constructor(options?: definition.Options) {
-        super(options);
+    constructor() {
+        super();
         this._ios = UITextView.new();
 
         this._ios.scrollEnabled = false;

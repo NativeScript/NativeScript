@@ -179,7 +179,7 @@ export var test_bindingContext_Change_IsReflected_Properly = function () {
 
         views[0].bindingContext = undefined;
         model.set("testProperty", "updatedValue");
-        TKUnit.assert(button.text === "testValue", "Binding not properly detached when bindingContext is cleared.");
+        TKUnit.assertEqual(button.text, "", "Binding not properly detached when bindingContext is cleared.");
     }
 
     helper.do_PageTest_WithButton(test);

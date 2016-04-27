@@ -61,8 +61,8 @@ export class Page extends ContentView implements dts.Page {
 
     public _modal: Page;
 
-    constructor(options?: dts.Options) {
-        super(options);
+    constructor() {
+        super();
         this.actionBar = new ActionBar();
     }
 

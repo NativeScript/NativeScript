@@ -190,12 +190,8 @@ export class View extends ProxyObject implements definition.View {
 
     private _updatingInheritedProperties: boolean;
 
-    public _options: definition.Options;
-
-    constructor(options?: definition.Options) {
-        super();
-
-        this._options = options;
+    constructor() {
+        super({});
 
         this._style = new style.Style(this);
         this._domId = viewIdCounter++;

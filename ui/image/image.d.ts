@@ -45,24 +45,4 @@ declare module "ui/image" {
          */
         stretch: string;
     }
-
-    /**
-     * Provides common options for creating an image.
-     */
-    export interface Options extends view.Options {
-        /**
-         * Gets or sets the image source of the image.
-         */
-        imageSource: imageSource.ImageSource;
-
-        /**
-         * Gets or sets the URL of the image.
-         */
-        src: string;
-
-        /**
-         * Gets or sets the image stretch mode. Possible values are contained in the [Stretch enumeration](../enums/Stretch/README.md).
-         */
-        stretch: string;
-    }
 }

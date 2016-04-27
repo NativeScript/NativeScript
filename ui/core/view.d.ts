@@ -64,68 +64,6 @@ declare module "ui/core/view" {
          */
         height: number;
     }
-    
-    /**
-     * Defines interface for an optional parameter used to create a view.
-     */
-    export interface Options {
-        /**
-         * Gets or sets the desired width of the view.
-         */
-        width?: number;
-        /**
-         * Gets or sets the desired height of the view.
-         */
-        height?: number;
-        /**
-         * Gets or sets the minimum width the view may grow to.
-         */
-        minWidth?: number;
-        /**
-         * Gets or sets the minimum height the view may grow to.
-         */
-        minHeight?: number;
-        /**
-         * Gets or sets the alignment of this view within its parent along the Horizontal axis.
-         */
-        horizontalAlignment?: string;
-        /**
-         * Gets or sets the alignment of this view within its parent along the Vertical axis.
-         */
-        verticalAlignment?: string;
-        /**
-         * Specifies extra space on the left side of this view.
-         */
-        marginLeft?: number;
-        /**
-         * Specifies extra space on the top side of this view.
-         */
-        marginTop?: number;
-        /**
-         * Specifies extra space on the right side of this view.
-         */
-        marginRight?: number;
-        /**
-         * Specifies extra space on the bottom side of this view.
-         */
-        marginBottom?: number;
-        /**
-         * Gets or sets the visibility of this view.
-         */
-        visibility?: string;
-        /**
-         * [Deprecated. Please use className instead] Gets or sets the CSS class of this view.
-         */
-        cssClass?: string;
-        /**
-         * Gets or sets the CSS class name of this view.
-         */
-        className?: string;
-        /**
-         * Gets or sets the id of this view.
-         */
-        id?: string;
-    }
 
     /**
      * This class is the base class for all UI components. 
@@ -191,8 +129,6 @@ declare module "ui/core/view" {
          * Represents the observable property backing the isUserInteractionEnabled property of each View.
          */
         public static isUserInteractionEnabledProperty: dependencyObservable.Property;
-
-        constructor(options?: Options);
 
         //----------Style property shortcuts----------
 
