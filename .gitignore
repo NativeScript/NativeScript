@@ -16,7 +16,7 @@ proguard/
 captures/
 
 # Built application files
-/*/build/
+build/
 
 ## File-based project format:
 *.ipr
