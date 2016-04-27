@@ -105,6 +105,12 @@
         getLogicalRootPath(): string;
 
         /**
+         * Gets the root folder for the current application. This Folder is private for the application and not accessible from Users/External apps.
+         * iOS - this folder is read-only and contains the app and all its resources.
+         */
+        getCurrentAppPath(): string;
+
+        /**
          * Reads a text from a file with a given path.
          * @param path The path to the source file.
          * @param onSuccess A callback function which is called when a text is red.

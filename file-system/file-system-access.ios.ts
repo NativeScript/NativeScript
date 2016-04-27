@@ -232,6 +232,20 @@ export class FileSystemAccess {
     public getTempFolderPath(): string {
         return this.getKnownPath(this.cachesDir);
     }
+    
+    public getCurrentAppPath(): string {
+        const currentDir = __dirname;
+        const tnsModulesIndex = currentDir.indexOf("/tns_modules");
+
+        // Module not hosted in ~/tns_modules when bundled. Use current dir.
+        let appPath = currentDir;
+        if (tnsModulesIndex !== -1) {
+            // Strip part after tns_modules to obtain app root
+            appPath = currentDir.substring(0, tnsModulesIndex);
+        }
+        
+        return appPath;
+    }
 
     public readText(path: string, onError?: (error: any) => any, encoding?: any) {
         var actualEncoding = encoding;
