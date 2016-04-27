@@ -1,7 +1,6 @@
 ﻿import imageCommon = require("./image-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import definition = require("ui/image");
 import enums = require("ui/enums");
 
 global.moduleMerge(imageCommon, exports);
@@ -38,8 +37,8 @@ function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeD
 export class Image extends imageCommon.Image {
     private _ios: UIImageView;
 
-    constructor(options?: definition.Options) {
-        super(options);
+    constructor() {
+        super();
 
         //TODO: Think of unified way of setting all the default values.
         this._ios = new UIImageView();

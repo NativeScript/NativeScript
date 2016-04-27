@@ -17,8 +17,6 @@ declare module "ui/html-view" {
          */
         public static htmlProperty: dependencyObservable.Property;
 
-        constructor(options?: Options);
-
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/TextView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
@@ -33,15 +31,5 @@ declare module "ui/html-view" {
          * Gets or sets html string for the HtmlView.
          */
         html: string;
-    }
-
-    /**
-     * Provides a set of most common options for creating a HtmlView.
-     */
-    export interface Options extends view.Options {
-        /**
-         * Gets or sets the html content of a HtmlView.
-         */
-        html?: string;
     }
 }

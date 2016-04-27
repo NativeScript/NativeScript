@@ -268,9 +268,6 @@ export class View extends viewCommon.View {
             this._nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
         }
 
-        utils.copyFrom(this._options, this);
-        delete this._options;
-
         // copy all the locally cached values to the native android widget
         this._syncNativeProperties();
         trace.notifyEvent(this, "_onContextChanged");

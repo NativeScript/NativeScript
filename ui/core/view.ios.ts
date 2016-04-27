@@ -90,20 +90,6 @@ export class View extends viewCommon.View {
         this.requestLayout();
     }
 
-    public onLoaded() {
-        super.onLoaded();
-
-        // TODO: It is very late to work with options here in the onLoaded method.
-        // We should not do anything that affects UI AFTER the widget has been loaded.
-        utils.copyFrom(this._options, this);
-        delete this._options;
-
-        // We do not need to call this in iOS, since the native instance is created immediately
-        // and any props that you set on our instance are immediately synced onto the native one.
-        // _syncNativeProperties makes sense for Android only, where widgets are created later.
-        // this._syncNativeProperties();
-    }
-
     get _nativeView(): UIView {
         return this.ios;
     }

@@ -2,13 +2,13 @@
  * Contains the Border class, which represents a UI border component.
  */
 declare module "ui/border" {
-    import contentView = require("ui/content-view");
-    import color = require("color");
+    import {ContentView} from "ui/content-view";
+    import {Color} from "color";
 
     /**
      * Represents a UI border component.
      */
-    export class Border extends contentView.ContentView {
+    export class Border extends ContentView {
         /**
          * Gets or sets the corner radius of the border component.
          */
@@ -22,6 +22,6 @@ declare module "ui/border" {
         /**
          * Gets or sets the border color of the border component.
          */
-        borderColor: color.Color;
+        borderColor: Color;
     }
 }

@@ -73,10 +73,6 @@ export class Image extends view.View implements definition.Image {
     public static stretchProperty = new dependencyObservable.Property(STRETCH, IMAGE,
         new proxy.PropertyMetadata(enums.Stretch.aspectFit, AffectsLayout));
 
-    constructor(options?: definition.Options) {
-        super(options);
-    }
-
     get imageSource(): imageSource.ImageSource {
         return this._getValue(Image.imageSourceProperty);
     }

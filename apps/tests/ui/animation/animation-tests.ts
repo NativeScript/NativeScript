@@ -12,7 +12,9 @@ import animation = require("ui/animation");
 
 function prepareTest(): Label {
     let mainPage = helper.getCurrentPage();
-    let label = new Label({ text: "label" });
+    let label = new Label();
+    label.text = "label";
+
     let stackLayout = new StackLayout();
     stackLayout.addChild(label);
     mainPage.content = stackLayout;
@@ -170,9 +172,12 @@ export function test_ReusingAnimations(done) {
 
 export function test_AnimatingMultipleViews(done) {
     let mainPage = helper.getCurrentPage();
-    let label1 = new Label({ text: "label1" });
-    let label2 = new Label({ text: "label2" });
-    let label3 = new Label({ text: "label3" });
+    let label1 = new Label();
+    label1.text = "label1";
+    let label2 = new Label();
+    label2.text = "label2";
+    let label3 = new Label();
+    label3.text = "label3";
     let stackLayout = new StackLayout();
     stackLayout.addChild(label1);
     stackLayout.addChild(label2);

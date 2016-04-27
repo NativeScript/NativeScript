@@ -103,7 +103,10 @@ export function test_css_is_applied_inside_TabView() {
     var testButton = new buttonModule.Button();
     testButton.text = "Test";
     var tabView = new tabViewModule.TabView();
-    tabView.items = [new tabViewModule.TabViewItem({ title: "First tab", view: testButton })];
+    let item = new tabViewModule.TabViewItem();
+    item.title = "First tab";
+    item.view = testButton;
+    tabView.items = [item];
 
     helper.buildUIAndRunTest(tabView, function (views: Array<viewModule.View>) {
         var page = <pageModule.Page>views[1];

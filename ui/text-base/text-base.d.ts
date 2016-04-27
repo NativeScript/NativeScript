@@ -18,8 +18,6 @@
          */
         public static formattedTextProperty: dependencyObservable.Property;
 
-        constructor(options?: Options);
-
         /**
          * Gets or sets the text.
          */
@@ -52,15 +50,5 @@
         _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData): void;
         _setFormattedTextPropertyToNative(value: any): void;
         //@endprivate
-    }
-
-    /**
-     * Defines interface for an optional parameter used to create a text-base component.
-     */
-    export interface Options extends view.Options {
-        /**
-         * Gets or sets the text.
-         */
-        text?: string;
     }
 }

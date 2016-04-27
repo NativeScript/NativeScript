@@ -2,14 +2,12 @@
  * Contains the TextView class, which represents an editable multi-line line box.
  */
 declare module "ui/text-view" {
-    import editableTextBase = require("ui/editable-text-base");
+    import {EditableTextBase} from "ui/editable-text-base";
 
     /**
      * Represents an editable multiline text view.
      */
-    export class TextView extends editableTextBase.EditableTextBase {
-        constructor(options?: editableTextBase.Options);
-
+    export class TextView extends EditableTextBase {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/EditText.html) that represents the user interface for this component. Valid only when running on Android OS.
          */

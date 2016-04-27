@@ -247,7 +247,8 @@ export function test_LoadAnimationProgrammatically() {
 export function test_ExecuteCSSAnimation() {
     let mainPage = helper.getCurrentPage();
     mainPage.css = null;
-    let label = new labelModule.Label({ text: "label" });
+    let label = new labelModule.Label()
+    label.text = "label";
     let stackLayout = new stackModule.StackLayout();
     stackLayout.addChild(label);
 

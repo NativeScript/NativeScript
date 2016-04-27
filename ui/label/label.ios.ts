@@ -1,5 +1,4 @@
 ﻿import common = require("./label-common");
-import definition = require("ui/label");
 import * as enums from "ui/enums";
 import * as utils from "utils/utils";
 import * as backgroundModule from "ui/styling/background";
@@ -61,8 +60,8 @@ class UILabelImpl extends UILabel {
 export class Label extends common.Label {
     private _ios: UILabel;
 
-    constructor(options?: definition.Options) {
-        super(options);
+    constructor() {
+        super();
 
         this._ios = UILabelImpl.initWithOwner(new WeakRef(this));
         this._ios.userInteractionEnabled = true;

@@ -90,10 +90,6 @@ export abstract class WebView extends view.View implements definition.WebView {
 
     public _suspendLoading: boolean;
 
-    constructor() {
-        super();
-    }
-
     get url(): string {
         return this._getValue(WebView.urlProperty);
     }

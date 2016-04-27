@@ -1,5 +1,4 @@
 ﻿import pageCommon = require("./page-common");
-import definition = require("ui/page");
 import {View} from "ui/core/view";
 import trace = require("trace");
 import uiUtils = require("ui/utils");
@@ -256,16 +255,11 @@ class UIViewControllerImpl extends UIViewController {
 }
 
 export class Page extends pageCommon.Page {
-    private _ios: UIViewController;
+    private _ios: UIViewController = UIViewControllerImpl.initWithOwner(new WeakRef(this));
     public _enableLoadedEvents: boolean;
     public _modalParent: Page;
     public _UIModalPresentationFormSheet: boolean;
     public _viewWillDisappear: boolean;
-
-    constructor(options?: definition.Options) {
-        super(options);
-        this._ios = UIViewControllerImpl.initWithOwner(new WeakRef(this));
-    }
 
     public requestLayout(): void {
         super.requestLayout();
