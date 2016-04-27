@@ -300,6 +300,9 @@ export class FileSystemAccess {
 
     private deleteFolderContent(file: java.io.File): boolean {
         var filesList = file.listFiles();
+        if (filesList.length === 0) {
+            return true;// Nothing to delete, so success!
+        }
 
         var i,
             childFile: java.io.File,
