@@ -1,6 +1,84 @@
 Cross Platform Modules Changelog
 ==============================
 
+##2.0.0 (2016, April 27)
+
+### Fixed
+
+- [(#2018)](https://github.com/NativeScript/NativeScript/issues/2018) Bold and italic do not work on Android when no font family is specified
+
+- [(#1982)](https://github.com/NativeScript/NativeScript/issues/1982) UI not updated when propertyChange event of Observable is raised
+
+- [(#1963)](https://github.com/NativeScript/NativeScript/issues/1963) Default SegmentedBar items to textwrap false, expose option to configure
+
+- [(#1958)](https://github.com/NativeScript/NativeScript/issues/1958) Animate itterations property counts -1 on iOS when value is => 2
+
+- [(#1916)](https://github.com/NativeScript/NativeScript/issues/1916) TimePicker minHour, maxHour are throwing exception when hour is out of their range
+
+- [(#1912)](https://github.com/NativeScript/NativeScript/issues/1912) text-transform not applied on text property change (Label, Button, etc)
+
+- [(#1905)](https://github.com/NativeScript/NativeScript/issues/1905) Visual states not working properly when the animation is canceled in Android
+
+- [(#1902)](https://github.com/NativeScript/NativeScript/issues/1902) Css text properties not applying on Button when no other text-element is used in page
+
+- [(#1893)](https://github.com/NativeScript/NativeScript/issues/1893) CSS animations from the application-wide .css file do not aply
+
+- [(#1887)](https://github.com/NativeScript/NativeScript/issues/1887) Parent directory not created by file-system.File.fromPath()
+
+- [(#1878)](https://github.com/NativeScript/NativeScript/issues/1878) Multiple actionView items do not handle tap event correctly
+
+- [(#1864)](https://github.com/NativeScript/NativeScript/issues/1864) Generic font families should use system fonts on iOS
+
+- [(#1859)](https://github.com/NativeScript/NativeScript/issues/1859) CSS text-transform is not correctly applied in a virtualized ListView
+
+- [(#1822)](https://github.com/NativeScript/NativeScript/issues/1822) verticalAlignment "middle" and "center" crash the app on Android
+
+- [(#1820)](https://github.com/NativeScript/NativeScript/issues/1820) all topmost().navigate instances stop working after Admob Interstitial close
+
+- [(#1813)](https://github.com/NativeScript/NativeScript/issues/1813) Add ability to set attributed text on Button
+
+- [(#1809)](https://github.com/NativeScript/NativeScript/issues/1809) Unable to show dialog from a modal page
+
+- [(#1794)](https://github.com/NativeScript/NativeScript/issues/1794) Update TextBase/Button `text` property when `formattedText` changes
+
+- [(#1792)](https://github.com/NativeScript/NativeScript/issues/1792) NSRangeException when typing in a TextField with formatted text
+
+- [(#1788)](https://github.com/NativeScript/NativeScript/issues/1788) Difference in jpg resource syntax on iOS/Android
+
+- [(#1787)](https://github.com/NativeScript/NativeScript/issues/1787) Going back with the stock "Back" button on iOS always animates the transition.
+
+- [(#1776)](https://github.com/NativeScript/NativeScript/issues/1776) Swipe back not working since 1.6
+
+- [(#1775)](https://github.com/NativeScript/NativeScript/issues/1775) Using rgba in CSS
+
+- [(#1772)](https://github.com/NativeScript/NativeScript/issues/1772) Unable to open a page with FormattedText on iOS
+
+- [(#1770)](https://github.com/NativeScript/NativeScript/issues/1770) Color animations are broken on Android
+
+- [(#1570)](https://github.com/NativeScript/NativeScript/issues/1570) 1.6 Navigation Events firing out of order
+
+### New
+
+- [(#1943)](https://github.com/NativeScript/NativeScript/issues/1943) Publish @next builds
+
+- [(#1862)](https://github.com/NativeScript/NativeScript/issues/1862) Support for all font-weight CSS values with the best mapping possible.
+
+- [(#1760)](https://github.com/NativeScript/NativeScript/issues/1760) Add public instance methods to View class for getting locations and sizes
+
+- [(#1757)](https://github.com/NativeScript/NativeScript/issues/1757) Support letter-spacing in CSS
+
+- [(#1686)](https://github.com/NativeScript/NativeScript/issues/1686) Allow updates to application CSS
+
+- [(#1660)](https://github.com/NativeScript/NativeScript/issues/1660) Feature Request: Add css ability for other properties
+
+- [(#1608)](https://github.com/NativeScript/NativeScript/issues/1608) Add support for CSS 3 animations & transitions
+
+- [(#1451)](https://github.com/NativeScript/NativeScript/issues/1451) Enable Android 6 way for requesting permissions
+
+- [(#828)](https://github.com/NativeScript/NativeScript/issues/828) Create a 'source'-like property on the View class for debugging
+
+- [(#515)](https://github.com/NativeScript/NativeScript/issues/515) CSS Style Property "z-index"
+
 ##1.7.1 (2016, March 22)
 
 ### Fixed
