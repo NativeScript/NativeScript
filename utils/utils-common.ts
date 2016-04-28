@@ -34,10 +34,12 @@ export function escapeRegexSymbols(source: string): string {
     return source.replace(escapeRegex, "\\$&");
 }
 
-export function convertString(value: string): any {
+export function convertString(value: any): any {
     var result;
-    
-    if (value.trim() === "") {
+
+    if (!types.isString(value)) {
+        result = value;
+    } else if (value.trim() === "") {
         result = value;
     } else {
         // Try to convert value to number.
@@ -50,7 +52,7 @@ export function convertString(value: string): any {
             result = value;
         }
     }
-    
+
     return result;
 }
 
