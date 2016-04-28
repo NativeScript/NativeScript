@@ -414,8 +414,9 @@ export class Binding {
             }
         }
 
-        if (changedPropertyIndex > -1) {
-            let probablyChangedObject = this.propertyChangeListeners.get(parentProps);
+        // we need to do this only if nested objects are used as source and some middle object is changed.
+        if (changedPropertyIndex > -1 && changedPropertyIndex < sourcePropsLength - 1) {
+            var probablyChangedObject = this.propertyChangeListeners.get(parentProps);
             if (probablyChangedObject &&
                 probablyChangedObject !== data.object[sourceProps[changedPropertyIndex]]) {
                 // remove all weakevent listeners after change, because changed object replaces object that is hooked for
@@ -434,9 +435,9 @@ export class Binding {
 
                 let newProps = sourceProps.slice(changedPropertyIndex + 1);
                 // add new weakevent listeners
-                let newObject = data.object[sourceProps[changedPropertyIndex]]
-                if (typeof newObject === 'object') {
-                    this.addPropertyChangeListeners(new WeakRef(data.object[sourceProps[changedPropertyIndex]]), newProps, parentProps);
+                var newObject = data.object[sourceProps[changedPropertyIndex]]
+                if (!types.isNullOrUndefined(newObject) && typeof newObject === 'object') {
+                    this.addPropertyChangeListeners(new WeakRef(newObject), newProps, parentProps);
                 }
             }
         }

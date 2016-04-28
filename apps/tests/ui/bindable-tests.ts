@@ -1124,3 +1124,46 @@ export function test_BindingToPropertiesWithSameNamesSecondCase() {
     TKUnit.assertEqual(target1.get("targetProperty"), model.item.get("seconds"));
     TKUnit.assertEqual(target2.get("targetProp"), newValue);
 }
+
+class RelatedPropsClass extends observable.Observable {
+    private _prop1: boolean;
+    private _prop2: string;
+    public get prop1(): boolean {
+        return this._prop1;
+    }
+    public set prop1(value: boolean) {
+        if (this._prop1 !== value) {
+            this._prop1 = value;
+            this.notifyPropertyChange("prop1", value);
+        }
+    }
+    
+    public get prop2(): string {
+        this.prop1 = !this._prop1;
+        this.notifyPropertyChange("prop2", this._prop2);
+        return this._prop2;
+    }
+    
+    public set prop2(value: string) {
+        if (this._prop2 !== value) {
+            this._prop2 = value;
+            this.notifyPropertyChange("prop2", value);
+        }
+    }
+}
+
+export function test_BindingToRelatedProps() {
+    let model = new RelatedPropsClass();
+    model.prop1 = false;
+    model.prop2 = "Alabala";
+    
+    let target1 = new bindable.Bindable();
+    target1.bind({sourceProperty: 'prop1', targetProperty: 'targetProp1'}, model);
+    
+    let target2 = new bindable.Bindable();
+    target2.bind({sourceProperty: 'prop2', targetProperty: 'targetProp2'}, model);
+    
+    model.prop2 = "Tralala";
+    
+    TKUnit.assertEqual(target2.get('targetProp2'), "Tralala");
+}
