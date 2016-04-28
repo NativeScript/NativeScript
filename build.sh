@@ -1,5 +1,6 @@
 #!/bin/sh
 
+echo "Clean dist"
 rm -rf dist
 mkdir dist
 mkdir dist/package
@@ -25,7 +26,6 @@ cp LICENSE.md dist/package/LICENSE.md
 cp README.md dist/package/README.md
 cp package.json dist/package/package.json
 
-# npm pack
 echo "NPM pack"
 cd dist/package
 PACKAGE="$(npm pack)"
