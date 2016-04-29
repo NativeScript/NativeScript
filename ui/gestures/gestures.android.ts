@@ -4,7 +4,6 @@ import observable = require("data/observable");
 import view = require("ui/core/view");
 import trace = require("trace");
 import utils = require("utils/utils");
-import types = require("utils/types");
 
 global.moduleMerge(common, exports);
 
@@ -427,9 +426,6 @@ class CustomPanGestureDetector {
     }
 
     public onTouchEvent(event: android.view.MotionEvent) {
-        let pointerID = event.getPointerId(event.getActionIndex());
-        let wasTracking = this.isTracking;
-
         switch (event.getActionMasked()) {
             case android.view.MotionEvent.ACTION_UP:
             case android.view.MotionEvent.ACTION_CANCEL:

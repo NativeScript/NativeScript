@@ -9,6 +9,34 @@ import * as labelModule from "ui/label";
 import * as observableArrayModule from "data/observable-array";
 import * as weakEventsModule from "ui/core/weak-event-listener";
 
+var builder: typeof builderModule;
+function ensureBuilder() {
+    if (!builder) {
+        builder = require("ui/builder");
+    }
+}
+
+var label: typeof labelModule;
+function ensureLabel() {
+    if (!label) {
+        label = require("ui/label");
+    }
+}
+
+var observableArray: typeof observableArrayModule;
+function ensureObservableArray() {
+    if (!observableArray) {
+        observableArray = require("data/observable-array");
+    }
+}
+
+var weakEvents: typeof weakEventsModule;
+function ensureWeakEvents() {
+    if (!weakEvents) {
+        weakEvents = require("ui/core/weak-event-listener");
+    }
+}
+
 var ITEMS = "items";
 var ITEMTEMPLATE = "itemTemplate";
 var ISSCROLLING = "isScrolling";
@@ -129,11 +157,10 @@ export class ListView extends view.View implements definition.ListView {
     }
 
     public _getItemTemplateContent(index: number): view.View {
+        ensureBuilder();
+
         var v;
-
         if (this.itemTemplate && this.items) {
-            var builder : typeof builderModule = require("ui/builder");
-
             v = builder.parse(this.itemTemplate, this);
         }
 
@@ -156,7 +183,7 @@ export class ListView extends view.View implements definition.ListView {
     }
 
     public _getDefaultItemContent(index: number): view.View {
-        var label: typeof labelModule = require("ui/label");
+        ensureLabel();
 
         var lbl = new label.Label();
         lbl.bind({
@@ -167,8 +194,8 @@ export class ListView extends view.View implements definition.ListView {
     }
 
     public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var observableArray: typeof observableArrayModule = require("data/observable-array");
-        var weakEvents: typeof weakEventsModule = require("ui/core/weak-event-listener");
+        ensureObservableArray();
+        ensureWeakEvents();
 
         if (data.oldValue instanceof observable.Observable) {
             weakEvents.removeWeakEventListener(data.oldValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);

@@ -1,109 +1,36 @@
 ﻿import testModule = require("../../ui-test");
 import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
-import viewModule = require("ui/core/view");
 import labelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import tabViewTestsNative = require("./tab-view-tests-native");
-import frameModule = require("ui/frame");
-import pageModule = require("ui/page");
-import listViewModule = require("ui/list-view");
-import buttonModule = require("ui/button");
-import observable = require("data/observable");
-import builder = require("ui/builder");
-
-// <snippet module="ui/tab-view" title="TabView">
-// # TabView
-
-// ### Declaring the TabView in xml.
-//```XML
-// <Page>
-//  <TabView>
-//    <TabView.items>
-//      <TabViewItem title="Tab 1">
-//        <TabViewItem.view>
-//           <Label text="Label in Tab1" />
-//        </TabViewItem.view>
-//      </TabViewItem>
-//      <TabViewItem title="Tab 2">
-//        <TabViewItem.view>
-//           <Label text="Label in Tab2" />
-//        </TabViewItem.view>
-//      </TabViewItem>
-//    </TabView.items>
-//  </TabView>
-// </Page>
-//```
 
 // Using a TabView requires the "ui/tab-view" module.
-// ``` JavaScript
+// >> article-require-tabview-module
 import tabViewModule = require("ui/tab-view");
-// ```
-// </snippet>
-
-var ASYNC = 2;
+// << article-require-tabview-module
 
 export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
 
     public create(): tabViewModule.TabView {
-        // <snippet module="ui/tab-view" title="TabView">
-        // ## Creating a TabView
-        // ``` JavaScript
+        // >> article-create-tabview
         var tabView = new tabViewModule.TabView();
-        // ```
-        // </snippet>
+        // << article-create-tabview
         tabView.id = "TabView";
         return tabView;
     }
 
-    private _createItems(count: number): Array<tabViewModule.TabViewItem> {
+    _createItems(count: number): Array<tabViewModule.TabViewItem> {
         var items = new Array<tabViewModule.TabViewItem>();
         for (var i = 0; i < count; i++) {
             var label = new labelModule.Label();
             label.text = "Tab " + i;
-            var tabEntry = new tabViewModule.TabViewItem({
-                title: "Tab " + i,
-                view: label
-            });
+            var tabEntry = new tabViewModule.TabViewItem();
+            tabEntry.title = "Tab " + i;
+            tabEntry.view = label;
             items.push(tabEntry);
         }
         return items;
-    }
-
-    private _createListView(): listViewModule.ListView {
-        var listView = new listViewModule.ListView();
-        listView.id = "ListView";
-        var items = Array.apply(null, Array(10)).map(function (_, i) { return i; });
-
-        listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
-            var button = <buttonModule.Button>args.view;
-            if (!button) {
-                button = new buttonModule.Button();
-                args.view = button;
-            }
-
-            button.text = "Button" + args.index;
-            button.id = button.text;
-            button.on(buttonModule.Button.tapEvent, this._clickHandlerFactory(args.index));
-        });
-
-        listView.items = items;
-
-        return listView;
-    }
-
-    private _clickHandlerFactory = function (index: number) {
-        return function () {
-            var pageFactory = function (): pageModule.Page {
-                var detailsLabel = new labelModule.Label();
-                detailsLabel.text = "Details Page " + index;
-                var detailsPage = new pageModule.Page();
-                detailsPage.content = detailsLabel;
-                return detailsPage;
-            };
-
-            helper.navigate(pageFactory);
-        }
     }
 
     public testWhenTabViewIsCreatedItemsAreUndefined = function () {
@@ -120,7 +47,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
 
         let expectedValue = this.testView.items.length;
         let actualValue = tabViewTestsNative.getNativeTabCount(this.testView);
-        
+
         TKUnit.assertEqual(actualValue, expectedValue, "NativeItems not equal to JS items.");
     }
 
@@ -137,9 +64,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
 
     public testSelectedIndexBecomesZeroWhenItemsBoundToNonEmptyArray = function () {
         var tabView = this.testView;
-        // <snippet module="ui/tab-view" title="TabView">
-        // ### Binding TabView.items
-        // ``` JavaScript
+        // >> article-binding-tabview-items
         var items = [];
         var StackLayout0 = new stackLayoutModule.StackLayout();
         var label0 = new labelModule.Label();
@@ -160,8 +85,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         };
         items.push(tabEntry1);
         tabView.items = items;
-        // ```
-        // </snippet>
+        // << article-binding-tabview-items
 
         this.waitUntilTestElementIsLoaded();
 
@@ -176,12 +100,9 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         tabView.items = this._createItems(10);
         this.waitUntilTestElementIsLoaded();
 
-        // <snippet module="ui/tab-view" title="TabView">
-        // ### Selecting a tab programmatically
-        // ``` JavaScript
+        // >> article-select-tab
         tabView.selectedIndex = 9;
-        // ```
-        // </snippet>
+        // << article-select-tab
         tabView.items = [];
 
         var expectedValue = undefined;
@@ -259,7 +180,11 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         this.waitUntilTestElementIsLoaded();
 
         TKUnit.assertThrows(function () {
-            tabView.items = [new tabViewModule.TabViewItem({ title: "Tab 0", view: undefined })];
+            let item = new tabViewModule.TabViewItem();
+            item.title = "Tab 0";
+            item.view = undefined;
+            tabView.items = [item];
+
         }, "Binding TabView to a TabViewItem with undefined view should throw.");
     }
 
@@ -268,7 +193,11 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         this.waitUntilTestElementIsLoaded();
 
         TKUnit.assertThrows(function () {
-            tabView.items = [new tabViewModule.TabViewItem({ title: "Tab 0", view: null })];
+            let item = new tabViewModule.TabViewItem();
+            item.title = "Tab 0";
+            item.view = null;
+            tabView.items = [item];
+
         }, "Binding TabView to a TabViewItem with null view should throw.");
     }
 

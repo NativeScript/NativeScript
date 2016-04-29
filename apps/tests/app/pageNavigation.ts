@@ -15,10 +15,10 @@ export function createPage() {
             topFrame.goBack();
         });
 
-        tab.items.push(new tabViewModule.TabViewItem({
-            title: "Tab " + i,
-            view: button
-        }));
+        let item = new tabViewModule.TabViewItem();
+        item.title = "Tab " + i;
+        item.view = button;
+        tab.items.push(item);
     }
     var page = new pages.Page();
     page.content = tab;

@@ -1,31 +1,28 @@
 ﻿import common = require("./editable-text-base-common");
-import textBase = require("ui/text-base");
 import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
+import types = require("utils/types");
 
 export class EditableTextBase extends common.EditableTextBase {
     private _android: android.widget.EditText;
     private _textWatcher: android.text.TextWatcher;
+    private _keyListenerCache: android.text.method.IKeyListener;
     /* tslint:disable */
     private _dirtyTextAccumulator: string;
     /* tslint:enable */
-
-    constructor(options?: textBase.Options) {
-        super(options);
-    }
 
     get android(): android.widget.EditText {
         return this._android;
     }
 
-    public _createUI() {      
+    public _createUI() {
         this._android = new android.widget.EditText(this._context);
         this._configureEditText();
-        this.android.setTag(this.android.getKeyListener());
+        this._keyListenerCache = this.android.getKeyListener();
 
         var that = new WeakRef(this);
-        
+
         this._textWatcher = new android.text.TextWatcher({
             beforeTextChanged: function (text: string, start: number, count: number, after: number) {
                 //
@@ -56,7 +53,6 @@ export class EditableTextBase extends common.EditableTextBase {
                         break;
                     default:
                         throw new Error("Invalid updateTextTrigger: " + owner.updateTextTrigger);
-                        break;
                 }
             }
         });
@@ -89,7 +85,8 @@ export class EditableTextBase extends common.EditableTextBase {
                         actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
                         actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
                         actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
-                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
+                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT ||
+                        (event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
                         owner.dismissSoftInput();
                         owner._onReturnPress();
                     }
@@ -121,17 +118,18 @@ export class EditableTextBase extends common.EditableTextBase {
 
     public focus(): boolean {
         var result = super.focus();
-        
+
         if (result) {
             utils.ad.showSoftInput(this._nativeView);
         }
-        
+
         return result;
     }
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (this._android) {
-            this.android.setText(data.newValue + "", android.widget.TextView.BufferType.EDITABLE);
+            var newValue = types.toUIString(data.newValue);
+            this.android.setText(newValue, android.widget.TextView.BufferType.EDITABLE);
         }
     }
 
@@ -162,9 +160,9 @@ export class EditableTextBase extends common.EditableTextBase {
                 break;
         }
 
-        this._android.setInputType(newInputType);
+        this._setInputType(newInputType);
     }
-    
+
     public _onReturnKeyTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
         if (!this._android) {
             return;
@@ -201,7 +199,7 @@ export class EditableTextBase extends common.EditableTextBase {
         }
 
         if (data.newValue) {
-            this.android.setKeyListener(<android.text.method.IKeyListener>this.android.getTag());
+            this.android.setKeyListener(this._keyListenerCache);
         }
         else {
             this.android.setKeyListener(null);
@@ -235,7 +233,7 @@ export class EditableTextBase extends common.EditableTextBase {
                 break;
         }
 
-        editableTextBase.android.setInputType(inputType);
+        editableTextBase._setInputType(inputType);
     }
 
     public _onAutocorrectPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -261,7 +259,7 @@ export class EditableTextBase extends common.EditableTextBase {
                 break;
         }
 
-        editableTextBase.android.setInputType(inputType);
+        editableTextBase._setInputType(inputType);
     }
 
     public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -271,5 +269,20 @@ export class EditableTextBase extends common.EditableTextBase {
         }
 
         editableTextBase.android.setHint(data.newValue + "");
+    }
+
+    private _setInputType(inputType): void {
+        this.android.setInputType(inputType);
+
+        // setInputType will change the keyListener so we should cache it again
+        let listener = this.android.getKeyListener();
+        if (listener) {
+            this._keyListenerCache = listener;
+        }
+
+        // clear the listener if editable is false
+        if (!this.editable) {
+            this.android.setKeyListener(null);
+        }
     }
 }  

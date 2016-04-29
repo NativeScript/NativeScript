@@ -2,19 +2,23 @@
     import view = require("ui/core/view");
     import cssParser = require("css");
     import styleProperty = require("ui/styling/style-property");
+    import keyframeAnimation = require("ui/animation/keyframe-animation");
 
     export class CssSelector {
         constructor(expression: string, declarations: cssParser.Declaration[]);
 
         expression: string;
+        attrExpression: string;
 
         declarations(): Array<{ property: string; value: any }>;
 
         specificity: number;
 
+        animations: Array<keyframeAnimation.KeyframeAnimationInfo>;
+
         matches(view: view.View): boolean;
 
-        apply(view: view.View);
+        apply(view: view.View, valueSourceModifier: number);
 
         eachSetter(callback: (property: styleProperty.Property, resolvedValue: any) => void);
     }

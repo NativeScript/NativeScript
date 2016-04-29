@@ -1,9 +1,7 @@
-﻿import {Page} from "ui/page";
-import {StackLayout} from "ui/layouts/stack-layout";
+﻿import {StackLayout} from "ui/layouts/stack-layout";
 import {Button} from "ui/button";
 import TKUnit = require("../TKUnit");
 import helper = require("./layout-helper");
-import navHelper = require("../ui/helper");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 import testModule = require("../ui-test");
@@ -39,7 +37,6 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     public test_Orientation_Change() {
         this.waitUntilTestElementLayoutIsValid();
 
-        var arrangeCount = this.rootLayout.arrangeCount;
         TKUnit.assertEqual(this.rootLayout.orientation, enums.Orientation.vertical, "Default orientation should be Vertical.");
 
         this.rootLayout.orientation = enums.Orientation.horizontal;
@@ -164,42 +161,28 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     }
 
     public test_codesnippets() {
-        // <snippet module="ui/layouts/stack-layout" title="stack-layout">
-        // ### import StackLayout and Button classes
+        
+        // >> stack-layout-new     
         // var StackLayout = require("ui/layouts/stack-layout").StackLayout;
+        // >> (hide)
         // var Button = require("ui/button").Button;
-        // ### Create StackLayout
-        // ``` JavaScript        
+        // << (hide)
         var stackLayout = new StackLayout();
-        //  ```
+        // << stack-layout-new
 
-        // ### Declaring a StackLayout.
-        //```XML
-        // <Page>
-        //   <StackLayout orientation="horizontal">
-        //     <Label text="This is Label 1" />
-        //   </StackLayout>
-        // </Page>
-        //```
-        // </snippet>
-
-        // ### Add child view to layout
-        // ``` JavaScript
+        // >> stack-layout-addchild
         var btn = new Button();
         stackLayout.addChild(btn);
-        //  ```
+        //  << stack-layout-addchild
 
-        // ### Remove child view from layout
-        // ``` JavaScript
+        // >> stack-layout-remove
         stackLayout.removeChild(btn);
-        // ```
+        // << stack-layout-remove
 
-        // ### Change layout orientation to Horizontal
-        // ``` JavaScript
+        // >> stack-layout-horizontal
         stackLayout.orientation = enums.Orientation.horizontal;
-        // ```
+        // << stack-layout-horizontal
 
-        // </snippet>
     }
 
     private setup_percent(): layoutHelper.MyButton {

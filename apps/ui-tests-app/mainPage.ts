@@ -1,12 +1,7 @@
-﻿import button = require("ui/button");
-import frame = require("ui/frame");
-import gridModule = require("ui/layouts/grid-layout");
+﻿import frame = require("ui/frame");
 import pages = require("ui/page");
-import text = require("ui/text-view");
-import fs = require("file-system");
 import trace = require("trace");
 import observable = require("data/observable");
-import view = require("ui/core/view");
 import dialogs = require("ui/dialogs");
 
 trace.enable();
@@ -36,18 +31,21 @@ examples.set("actColor", "action-bar/color");
 examples.set("actBG", "action-bar/background");
 examples.set("actStyle", "action-bar/all");
 examples.set("actIcons", "action-bar/system-icons");
+examples.set("actView", "action-bar/action-view");
 
 examples.set("basics", "bindings/basics");
 examples.set("xmlbasics", "bindings/xmlbasics");
 
 examples.set("background", "css/background");
 examples.set("formatted", "css/decoration-transform-formattedtext");
+examples.set("spacing", "css/letter-spacing");
 examples.set("decoration", "css/text-decoration");
 examples.set("transform", "css/text-transform");
 examples.set("whitespace", "css/white-space");
 examples.set("radius", "css/radius");
 examples.set("styles", "css/styles");
 examples.set("switch", "css/views");
+examples.set("tabmore", "css/tab-view-more");
 
 examples.set("dialogs", "dialogs/dialogs");
 
@@ -55,6 +53,10 @@ examples.set("fontbtn", "font/button");
 examples.set("fontlbl", "font/label");
 examples.set("fontfield", "font/text-field");
 examples.set("fontview", "font/text-view");
+
+examples.set("customfonts", "font/custom-fonts");
+examples.set("material", "font/material-icons");
+examples.set("tabfont", "font/tab-view");
 
 examples.set("htmlview", "html-view/html-view");
 
@@ -78,9 +80,15 @@ examples.set("pwrap", "layouts-percent/wrap");
 examples.set("modalview", "modal-view/modal-view");
 examples.set("nordic", "nordic/nordic");
 
+examples.set("padding", "padding/padding");
+
 examples.set("gestures", "pages/gestures");
 examples.set("touch", "pages/touch-event");
 examples.set("handlers", "pages/handlers");
+
+examples.set("animeBG", "animations/background");
+examples.set("transitions", "transitions/page0");
+
 //examples.set("listview_binding", "pages/listview_binding");
 examples.set("console", "pages/console");
 examples.set("i61", "pages/i61");

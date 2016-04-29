@@ -7,10 +7,16 @@ import types = require("utils/types");
 import utils = require("utils/utils");
 import proxy = require("ui/core/proxy");
 import color = require("color");
-import * as imageSourceModule from "image-source";
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
-import styling = require("ui/styling");
+import * as imageSourceModule from "image-source";
+
+var imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
+}
 
 var VIEWS_STATES = "_viewStates";
 var ACCENT_COLOR = "colorAccent";
@@ -70,17 +76,17 @@ function ensurePagerAdapterClass() {
 
             if (this[VIEWS_STATES]) {
                 trace.write("TabView.PagerAdapter.instantiateItem; restoreHierarchyState: " + item.view, common.traceCategory);
-                item.view.android.restoreHierarchyState(this[VIEWS_STATES]);
+                item.view._nativeView.restoreHierarchyState(this[VIEWS_STATES]);
             }
 
-            container.addView(item.view.android);
-            return item.view.android;
+            container.addView(item.view._nativeView);
+            return item.view._nativeView;
         }
 
         destroyItem(container: android.view.ViewGroup, index: number, _object: any) {
             trace.write("TabView.PagerAdapter.destroyItem; container: " + container + "; index: " + index + "; _object: " + _object, common.traceCategory);
             var item = this.items[index];
-            var nativeView = item.view.android;
+            var nativeView = item.view._nativeView;
 
             if (nativeView.toString() !== _object.toString()) {
                 throw new Error("Expected " + nativeView.toString() + " to equal " + _object.toString());
@@ -93,7 +99,7 @@ function ensurePagerAdapterClass() {
 
             container.removeView(nativeView);
 
-            // Note: this.owner._removeView will clear item.view.android.
+            // Note: this.owner._removeView will clear item.view._nativeView.
             // So call this after the native instance is removed form the container. 
             if (item.view.parent === this.owner) {
                 this.owner._removeView(item.view);
@@ -117,7 +123,7 @@ function ensurePagerAdapterClass() {
             }
             var viewStates = this[VIEWS_STATES];
             var childCallback = function (view: view.View): boolean {
-                var nativeView: android.view.View = view.android;
+                var nativeView: android.view.View = view._nativeView;
                 if (nativeView && nativeView.isSaveFromParentEnabled && nativeView.isSaveFromParentEnabled()) {
                     nativeView.saveHierarchyState(viewStates);
                 }
@@ -184,7 +190,7 @@ export class TabView extends common.TabView {
     private _tabLayout: org.nativescript.widgets.TabLayout;
     private _viewPager: android.support.v4.view.ViewPager;
     private _pagerAdapter: android.support.v4.view.PagerAdapter;
-    private _androidViewId: number;
+    private _androidViewId: number = -1;
 
     private _pageChagedListener: android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
 
@@ -220,7 +226,7 @@ export class TabView extends common.TabView {
         this._viewPager.setLayoutParams(lp);
         this._grid.addView(this._viewPager);
 
-        if (!this._androidViewId) {
+        if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
         }
         this._grid.setId(this._androidViewId);
@@ -316,7 +322,7 @@ export class TabView extends common.TabView {
                 result.iconId = utils.ad.resources.getDrawableId(item.iconSource.substr(utils.RESOURCE_PREFIX.length));
             }
             else {
-                var imageSource: typeof imageSourceModule = require("image-source");
+                ensureImageSource();
 
                 var is = imageSource.fromFileOrResource(item.iconSource);
                 if (is) {

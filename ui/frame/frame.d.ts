@@ -5,6 +5,7 @@ declare module "ui/frame" {
     import view = require("ui/core/view");
     import observable = require("data/observable");
     import pages = require("ui/page");
+    import transition = require("ui/transition");
 
     /**
      * Represents the logical View unit that is responsible for navigation withing an application.
@@ -13,6 +14,7 @@ declare module "ui/frame" {
      */
     export class Frame extends view.View {
         /**
+         * Deprecated.
          * String value used when hooking to androidOptionSelected event (prefix `android` states that this event is available only in Android).
          */
         public static androidOptionSelectedEvent: string;
@@ -74,9 +76,19 @@ declare module "ui/frame" {
         animated: boolean;
 
         /**
+         * Gets or sets the default navigation transition for this frame.
+         */
+        transition: NavigationTransition;
+
+        /**
          * Gets or sets if navigation transitions should be animated globally.
          */
         static defaultAnimatedNavigation: boolean;
+
+        /**
+         * Gets or sets the default NavigationTransition for all frames across the app.
+         */
+        static defaultTransition: NavigationTransition;
 
         /**
          * Gets the AndroidFrame object that represents the Android-specific APIs for this Frame. Valid when running on Android OS.
@@ -150,6 +162,21 @@ declare module "ui/frame" {
         animated?: boolean;
 
         /**
+         * Specifies an optional navigation transition for all platforms. If not specified, the default platform transition will be used.
+         */
+        transition?: NavigationTransition;
+
+        /**
+         * Specifies an optional navigation transition for iOS. If not specified, the default platform transition will be used.
+         */
+        transitioniOS?: NavigationTransition;
+
+        /**
+         * Specifies an optional navigation transition for iOS. If not specified, the default platform transition will be used.
+         */
+        transitionAndroid?: NavigationTransition;
+
+        /**
          * True to record the navigation in the backstack, false otherwise. 
          * If the parameter is set to false then the Page will be displayed but once navigated from it will not be able to be navigated back to.
          */
@@ -159,6 +186,45 @@ declare module "ui/frame" {
          * True to clear the navigation history, false otherwise. Very useful when navigating away from login pages.
          */
         clearHistory?: boolean;
+    }
+
+    /**
+     * Represents an object specifying a page navigation transition.
+     */
+    export interface NavigationTransition {
+        /**
+         * Can be one of the built-in transitions:
+         * - curl (same as curlUp) (iOS only)
+         * - curlUp (iOS only)
+         * - curlDown (iOS only)
+         * - explode (Android Lollipop an up only)
+         * - fade
+         * - flip (same as flipRight)
+         * - flipRight
+         * - flipLeft
+         * - slide (same as slideLeft)
+         * - slideLeft
+         * - slideRight
+         * - slideTop
+         * - slideBottom
+         */
+        name?: string;
+        
+        /**
+         * An user-defined instance of the "ui/transition".Transition class.
+         */
+        instance?: transition.Transition;
+
+        /**
+         * The length of the transition in milliseconds. If you do not specify this, the default platform transition duration will be used.
+         */
+        duration?: number;
+
+        /**
+         * An optional transition animation curve. Possible values are contained in the [AnimationCurve enumeration](../enums/AnimationCurve/README.md).
+         * Alternatively, you can pass an instance of type UIViewAnimationCurve for iOS or android.animation.TimeInterpolator for Android.
+         */
+        curve?: any;
     }
 
     /**
@@ -212,12 +278,6 @@ declare module "ui/frame" {
         actionBar: any /* android.app.ActionBar */;
 
         /**
-         * A function called by the Runtime whenever a new Activity is about to be opened.
-         * @param intent The native [android Intent](http://developer.android.com/reference/android/content/Intent.html) object passed to the Activity's onCreate method.
-         */
-        onActivityRequested(intent: any /* android.content.Intent */): Object;
-
-        /**
          * Determines whether the Activity associated with this Frame will display an action bar or not.
          */
         showActionBar: boolean;
@@ -248,6 +308,7 @@ declare module "ui/frame" {
     }
 
     //@private
-    export function reloadPage(): void;
+    function reloadPage(): void;
+    function resolvePageFromEntry(entry: NavigationEntry): pages.Page;
     //@endprivate
 }

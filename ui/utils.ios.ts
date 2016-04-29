@@ -1,5 +1,5 @@
 ﻿import {View} from "ui/core/view";
-import * as utilsModule from "utils/utils";
+import * as utils from "utils/utils";
 
 export module ios {
     export function getActualHeight(view: UIView): number {
@@ -34,8 +34,6 @@ export module ios {
         if (superview) {
             superViewRotationRadians = atan2f(superview.transform.b, superview.transform.a);
         }
-
-        var utils: typeof utilsModule = require("utils/utils");
 
         if (utils.ios.MajorVersion < 8 && utils.ios.isLandscape() && !superViewRotationRadians) {
             // in iOS 7 when in landscape we switch width with height because on device they don't change even when rotated.

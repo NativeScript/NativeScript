@@ -9,13 +9,32 @@ import * as traceModule from "trace";
 import * as utilsModule from "utils/utils";
 import * as imageSourceModule from "image-source";
 import style = require("ui/styling/style");
-import font = require("ui/styling/font");
-import styling = require("ui/styling");
 
 const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 1000;
 
 global.moduleMerge(common, exports);
+
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
+
+var utils: typeof utilsModule;
+function ensureUtils() {
+    if (!utils) {
+        utils = require("utils/utils");
+    }
+}
+
+var imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
+}
 
 var actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
 function generateItemId(): number {
@@ -245,7 +264,13 @@ export class ActionBar extends common.ActionBar {
             var item = <ActionItem>items[i];
             var menuItem = menu.add(android.view.Menu.NONE, item._getItemId(), android.view.Menu.NONE, item.text + "");
 
-            if (item.android.systemIcon) {
+            if (item.actionView && item.actionView.android) {
+                // With custom action view, the menuitem cannot be displayed in a popup menu. 
+                item.android.position = enums.AndroidActionItemPosition.actionBar;
+                menuItem.setActionView(item.actionView.android);
+                ActionBar._setOnClickListener(item);
+            }
+            else if (item.android.systemIcon) {
                 // Try to look in the system resources.
                 let systemResourceId = getSystemResourceId(item.android.systemIcon);
                 if (systemResourceId) {
@@ -267,16 +292,24 @@ export class ActionBar extends common.ActionBar {
         }
     }
 
+    private static _setOnClickListener(item: ActionItem): void {
+        item.actionView.android.setOnClickListener(new android.view.View.OnClickListener({
+            onClick: function (v: android.view.View) {
+                item._raiseTap();
+            }
+        }));
+    }
+
     public _onTitlePropertyChanged() {
         var topFrame = frame.topmost();
-        if (topFrame && topFrame.currentPage === this.page) {
+        if (this._toolbar && topFrame && topFrame.currentPage === this.page) {
             this._updateTitleAndTitleView();
         }
     }
 
     public _onIconPropertyChanged() {
         var topFrame = frame.topmost();
-        if (topFrame && topFrame.currentPage === this.page) {
+        if (this._toolbar && topFrame && topFrame.currentPage === this.page) {
             this._updateIcon();
         }
     }
@@ -309,7 +342,7 @@ export class ActionBar extends common.ActionBar {
         if (this._toolbar && child._nativeView) {
             this._toolbar.removeView(child._nativeView);
 
-            var trace: typeof traceModule = require("trace");
+            ensureTrace();
 
             trace.notifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
         }
@@ -321,7 +354,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
         return undefined;
     }
 
-    var utils: typeof utilsModule = require("utils/utils");
+    ensureUtils();
 
     if (icon.indexOf(utils.RESOURCE_PREFIX) === 0) {
         var resourceId: number = resources.getIdentifier(icon.substr(utils.RESOURCE_PREFIX.length), 'drawable', application.android.packageName);
@@ -332,7 +365,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
     else {
         var drawable: android.graphics.drawable.BitmapDrawable;
 
-        var imageSource: typeof imageSourceModule = require("image-source");
+        ensureImageSource();
 
         var is = imageSource.fromFileOrResource(icon);
         if (is) {

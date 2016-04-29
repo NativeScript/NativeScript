@@ -2,10 +2,12 @@
 import stateChanged = require("ui/core/control-state-change");
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
-import styling = require("ui/styling");
 import view = require("ui/core/view");
 import utils = require("utils/utils");
 import enums = require("ui/enums");
+import dependencyObservable = require("ui/core/dependency-observable");
+import styleScope = require("../styling/style-scope");
+import {Property} from "ui/core/dependency-observable";
 
 class TapHandlerImpl extends NSObject {
     private _owner: WeakRef<Button>;
@@ -47,10 +49,58 @@ export class Button extends common.Button {
         });
     }
 
+    public onLoaded() {
+        super.onLoaded();
+        this._updateHandler();
+    }
+
+    public onUnloaded() {
+        super.onUnloaded();
+        this._stateChangedHandler.stop();
+    }
+
+    public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
+        super._onPropertyChanged(property, oldValue, newValue);
+        if (property.metadata.affectsStyle) {
+            this._updateHandler();
+        }
+    }
+
     get ios(): UIButton {
         return this._ios;
     }
-} 
+
+    public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        // In general, if a property is not specified for a state, the default is to use
+        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set,
+        // then the property defaults to a system value. Therefore, at a minimum, you should
+        // set the value for the normal state.
+        this.ios.setTitleForState(data.newValue + "", UIControlState.UIControlStateNormal);
+    }
+
+    public _setFormattedTextPropertyToNative(value) {
+        // In general, if a property is not specified for a state, the default is to use
+        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set,
+        // then the property defaults to a system value. Therefore, at a minimum, you should
+        // set the value for the normal state.
+        let newText = value ? value._formattedText : null;
+        this.ios.setAttributedTitleForState(newText, UIControlState.UIControlStateNormal);
+        this.style._updateTextDecoration();
+    }
+
+    private _updateHandler() {
+        if (this.parent !== null && this.page !== null) {
+            let rootPage = this.page;
+            let scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope();
+            if (scope.getVisualStates(this) !== undefined) {
+                this._stateChangedHandler.start();
+            }
+            else {
+                this._stateChangedHandler.stop();
+            }
+        }
+    }
+}
 
 export class ButtonStyler implements style.Styler {
     // color
@@ -135,20 +185,29 @@ export class ButtonStyler implements style.Styler {
 
     // text-decoration
     private static setTextDecorationProperty(view: view.View, newValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, newValue, view.style.textTransform);
+        utils.ios.setTextDecorationAndTransform(view, newValue, view.style.textTransform, view.style.letterSpacing);
     }
 
     private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, enums.TextDecoration.none, view.style.textTransform);
+        utils.ios.setTextDecorationAndTransform(view, enums.TextDecoration.none, view.style.textTransform, view.style.letterSpacing);
     }
 
     // text-transform
     private static setTextTransformProperty(view: view.View, newValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, newValue);
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, newValue, view.style.letterSpacing);
     }
 
     private static resetTextTransformProperty(view: view.View, nativeValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, enums.TextTransform.none);
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, enums.TextTransform.none, view.style.letterSpacing);
+    }
+
+    // letter-spacing
+    private static setLetterSpacingProperty(view: view.View, newValue: any) {
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, view.style.textTransform, newValue);
+    }
+
+    private static resetLetterSpacingProperty(view: view.View, nativeValue: any) {
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, view.style.textTransform, 0);
     }
 
     // white-space
@@ -187,6 +246,10 @@ export class ButtonStyler implements style.Styler {
         style.registerHandler(style.textTransformProperty, new style.StylePropertyChangedHandler(
             ButtonStyler.setTextTransformProperty,
             ButtonStyler.resetTextTransformProperty), "Button");
+
+        style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
+            ButtonStyler.setLetterSpacingProperty,
+            ButtonStyler.resetLetterSpacingProperty), "Button");
 
         style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
             ButtonStyler.setWhiteSpaceProperty,

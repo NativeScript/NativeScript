@@ -1,5 +1,7 @@
 ﻿import {EventData as ObservableEventData} from "data/observable";
-import {Page, ItemEventData, topmost as topmostFrame, ItemEventData as ListViewItemEventData} from "ui";
+import {Page} from "ui/page";
+import {ItemEventData as ListViewItemEventData} from "ui/list-view";
+import {topmost as topmostFrame} from "ui/frame";
 import {AppViewModel} from "./reddit-app-view-model";
 
 var appViewModel = new AppViewModel();

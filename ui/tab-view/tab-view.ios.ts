@@ -9,10 +9,15 @@ import proxy = require("ui/core/proxy");
 import color = require("color");
 import * as imageSourceModule from "image-source";
 import style = require("ui/styling/style");
-import font = require("ui/styling/font");
-import styling = require("ui/styling");
 
 global.moduleMerge(common, exports);
+
+var imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
+}
 
 class UITabBarControllerImpl extends UITabBarController {
 
@@ -240,7 +245,7 @@ export class TabView extends common.TabView {
         var image: UIImage;
         image = this._iconsCache[iconSource];
         if (!image) {
-            var imageSource: typeof imageSourceModule = require("image-source");
+            ensureImageSource();
 
             var is = imageSource.fromFileOrResource(iconSource);
             if (is && is.ios) {
@@ -333,7 +338,7 @@ export class TabView extends common.TabView {
         tabBar.tintColor = this.selectedColor ? this.selectedColor.ios : null;
         var states = getTitleAttributesForStates(this);
 
-        for (var i = 0; i < this.items.length; i++) {
+        for (var i = 0; i < tabBar.items.count; i++) {
             var item = <UITabBarItem>tabBar.items[i];
             item.setTitleTextAttributesForState(states.normalState, UIControlState.UIControlStateNormal);
             item.setTitleTextAttributesForState(states.selectedState, UIControlState.UIControlStateSelected);

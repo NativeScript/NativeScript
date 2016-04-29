@@ -1,9 +1,7 @@
 ﻿import view = require("ui/core/view");
 import utils = require("utils/utils");
-import types = require("utils/types");
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
-import styling = require("ui/styling");
 import enums = require("ui/enums");
 
 export class TextBaseStyler implements style.Styler {
@@ -40,20 +38,20 @@ export class TextBaseStyler implements style.Styler {
 
     // text-decoration
     private static setTextDecorationProperty(view: view.View, newValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, newValue, view.style.textTransform);
+        utils.ios.setTextDecorationAndTransform(view, newValue, view.style.textTransform, view.style.letterSpacing);
     }
 
     private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, enums.TextDecoration.none, view.style.textTransform);
+        utils.ios.setTextDecorationAndTransform(view, enums.TextDecoration.none, view.style.textTransform, view.style.letterSpacing);
     }
 
     // text-transform
     private static setTextTransformProperty(view: view.View, newValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, newValue);
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, newValue, view.style.letterSpacing);
     }
 
     private static resetTextTransformProperty(view: view.View, nativeValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, enums.TextTransform.none);
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, enums.TextTransform.none, view.style.letterSpacing);
     }
 
     // white-space
@@ -63,6 +61,15 @@ export class TextBaseStyler implements style.Styler {
 
     private static resetWhiteSpaceProperty(view: view.View, nativeValue: any) {
         utils.ios.setWhiteSpace(view._nativeView, enums.WhiteSpace.normal);
+    }
+    
+    // letter-spacing
+    private static setLetterSpacingProperty(view: view.View, newValue: any) {
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, enums.TextTransform.none, newValue);
+    }
+
+    private static resetLetterSpacingProperty(view: view.View, nativeValue: any) {
+        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, enums.TextTransform.none, 0);
     }
 
     // color
@@ -108,5 +115,9 @@ export class TextBaseStyler implements style.Styler {
         style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
             TextBaseStyler.setWhiteSpaceProperty,
             TextBaseStyler.resetWhiteSpaceProperty), "TextBase");
+            
+        style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
+            TextBaseStyler.setLetterSpacingProperty,
+            TextBaseStyler.resetLetterSpacingProperty), "TextBase");            
     }
 }

@@ -1,6 +1,15 @@
 ﻿import definition = require("ui/animation");
 import viewModule = require("ui/core/view");
+import colorModule = require("color");
+import types = require("utils/types");
 import * as traceModule from "trace";
+
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
 
 export module Properties {
     export var opacity = "opacity";
@@ -20,6 +29,29 @@ export interface PropertyAnimation {
     curve?: any;
 }
 
+export class CubicBezierAnimationCurve implements definition.CubicBezierAnimationCurve {
+
+    public x1: number;
+    public y1: number;
+    public x2: number;
+    public y2: number;
+
+    constructor(x1: number, y1: number, x2: number, y2: number) {
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+    }
+}
+
+// This is a BOGUS Class to make TypeScript happy - This is not needed other than to make TS happy.
+// We didn't want to actually modify Promise; as the cancel() is ONLY valid for animations "Promise"
+export class AnimationPromise implements definition.AnimationPromise {
+    public cancel(): void { /* Do Nothing */ }
+    public then(onFulfilled?: (value?: any) => void, onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
+    public catch(onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
+}
+
 export class Animation implements definition.Animation {
     public _propertyAnimations: Array<PropertyAnimation>;
     public _playSequentially: boolean;
@@ -27,18 +59,42 @@ export class Animation implements definition.Animation {
     private _resolve;
     private _reject;
 
-    public play(): Promise<void> {
+    public play(): AnimationPromise {
         if (this.isPlaying) {
             throw new Error("Animation is already playing.");
         }
 
-        var animationFinishedPromise = new Promise<void>((resolve, reject) => {
+        // We have to actually create a "Promise" due to a bug in the v8 engine and decedent promises
+        // We just cast it to a animationPromise so that all the rest of the code works fine
+        var animationFinishedPromise = <AnimationPromise>new Promise<void>((resolve, reject) => {
             this._resolve = resolve;
             this._reject = reject;
         });
 
+        this.fixupAnimationPromise(animationFinishedPromise);
+
         this._isPlaying = true;
         return animationFinishedPromise;
+    }
+
+    private fixupAnimationPromise(promise: AnimationPromise): void {
+        // Since we are using function() below because of arguments, TS won't automatically do a _this for those functions.
+        var _this = this;
+        promise.cancel = () => {
+            _this.cancel();
+        };
+        var _then = promise.then;
+        promise.then = function() {
+            var r = _then.apply(promise, arguments);
+            _this.fixupAnimationPromise(r);
+            return r;
+        };
+        var _catch = promise.catch;
+        promise.catch = function() {
+            var r = _catch.apply(promise, arguments);
+            _this.fixupAnimationPromise(r);
+            return r;
+        };
     }
 
     public cancel(): void {
@@ -56,14 +112,14 @@ export class Animation implements definition.Animation {
             throw new Error("No animation definitions specified");
         }
 
-        var trace : typeof traceModule = require("trace");
+        ensureTrace();
 
         trace.write("Analyzing " + animationDefinitions.length + " animation definitions...", trace.categories.Animation);
         this._propertyAnimations = new Array<PropertyAnimation>();
         var i = 0;
         var length = animationDefinitions.length;
         for (; i < length; i++) {
-            animationDefinitions[i].curve = this._resolveAnimationCurve(animationDefinitions[i].curve);
+            animationDefinitions[i].curve = definition._resolveAnimationCurve(animationDefinitions[i].curve);
             this._propertyAnimations = this._propertyAnimations.concat(Animation._createPropertyAnimations(animationDefinitions[i]));
         }
 
@@ -85,17 +141,34 @@ export class Animation implements definition.Animation {
         this._reject(new Error("Animation cancelled."));
     }
 
-    _resolveAnimationCurve(curve: any): any {
-        //
-    }
-
-    private static _createPropertyAnimations(animationDefinition: definition.AnimationDefinition): Array<PropertyAnimation>  {
+    private static _createPropertyAnimations(animationDefinition: definition.AnimationDefinition): Array<PropertyAnimation> {
         if (!animationDefinition.target) {
             throw new Error("No animation target specified.");
         }
 
+        for (let item in animationDefinition) {
+            if (!types.isDefined(animationDefinition[item])) {
+                continue;
+            }
+
+            if ((item === Properties.opacity ||
+                item === Properties.rotate ||
+                item === "duration" ||
+                item === "delay" ||
+                item === "iterations") && !types.isNumber(animationDefinition[item])) {
+                throw new Error(`Property ${item} must be valid number. Value: ${animationDefinition[item]}`);
+            } else if ((item === Properties.scale ||
+                item === Properties.translate) &&
+                (!types.isNumber((<definition.Pair>animationDefinition[item]).x) ||
+                    !types.isNumber((<definition.Pair>animationDefinition[item]).y))) {
+                throw new Error(`Property ${item} must be valid Pair. Value: ${animationDefinition[item]}`);
+            } else if (item === Properties.backgroundColor && !colorModule.Color.isValid(animationDefinition.backgroundColor)) {
+                throw new Error(`Property ${item} must be valid color. Value: ${animationDefinition[item]}`);
+            }
+        }
+
         var propertyAnimations = new Array<PropertyAnimation>();
-        
+
         // opacity
         if (animationDefinition.opacity !== undefined) {
             propertyAnimations.push({
@@ -114,7 +187,8 @@ export class Animation implements definition.Animation {
             propertyAnimations.push({
                 target: animationDefinition.target,
                 property: Properties.backgroundColor,
-                value: animationDefinition.backgroundColor,
+                value: types.isString(animationDefinition.backgroundColor) ? 
+                    new colorModule.Color(<any>animationDefinition.backgroundColor) : animationDefinition.backgroundColor,
                 duration: animationDefinition.duration,
                 delay: animationDefinition.delay,
                 iterations: animationDefinition.iterations,

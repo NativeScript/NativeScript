@@ -1,7 +1,7 @@
 ﻿import common = require("./application-common");
-import frame = require("ui/frame");
+import {Frame, NavigationEntry, reloadPage} from "ui/frame";
 import definition = require("application");
-import * as uiUtilsModule from "ui/utils";
+import * as uiUtils from "ui/utils";
 import * as typesModule from "utils/types";
 import * as fileResolverModule  from "file-system/file-name-resolver";
 import * as enumsModule from "ui/enums";
@@ -11,6 +11,43 @@ var typedExports: typeof definition = exports;
 
 class Responder extends UIResponder {
     //
+}
+
+class RootViewControllerImpl extends UIViewController implements definition.RootViewControllerImpl {
+    private _contentController: UIViewController;
+
+    get contentController(): UIViewController {
+        return this._contentController;
+    }
+
+    set contentController(contentController: UIViewController) {
+
+        if (contentController.parentViewController !== null) {
+            contentController.willMoveToParentViewController(null);
+            contentController.view.removeFromSuperview();
+            contentController.removeFromParentViewController();
+            contentController.didMoveToParentViewController(this);
+        }
+
+        if (this._contentController) {
+            this._contentController.willMoveToParentViewController(null);
+            this._contentController.view.removeFromSuperview();
+            this._contentController.removeFromParentViewController();
+        }
+
+        this.addChildViewController(contentController);
+        this.view.addSubview(contentController.view);
+        contentController.view.frame = this.view.bounds;
+        contentController.view.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingFlexibleWidth | UIViewAutoresizing.UIViewAutoresizingFlexibleHeight;
+
+        this._contentController = contentController;
+        this._contentController.didMoveToParentViewController(this);
+    }
+
+    public viewDidLoad(): void {
+        super.viewDidLoad();
+        this.view.backgroundColor = UIColor.whiteColor();
+    }
 }
 
 class Window extends UIWindow {
@@ -33,8 +70,6 @@ class Window extends UIWindow {
     }
 
     public layoutSubviews(): void {
-        var uiUtils: typeof uiUtilsModule = require("ui/utils");
-
         uiUtils.ios._layoutRootView(this._content, UIScreen.mainScreen().bounds);
     }
 }
@@ -114,32 +149,53 @@ class IOSApplication implements definition.iOSApplication {
             typedExports.onLaunch(undefined);
         }
 
-        typedExports.notify({
+        let args: definition.LaunchEventData = {
             eventName: typedExports.launchEvent,
             object: this,
             ios: notification.userInfo && notification.userInfo.objectForKey("UIApplicationLaunchOptionsLocalNotificationKey") || null
-        });
+        };
 
-        var topFrame = frame.topmost();
-        if (!topFrame) {
+        typedExports.notify(args);
+
+        let rootView = args.root;
+        let frame: Frame;
+        let navParam: Object;
+        if (!rootView) {
             // try to navigate to the mainEntry/Module (if specified)
-            var navParam = typedExports.mainEntry;
+            navParam = typedExports.mainEntry;
             if (!navParam) {
                 navParam = typedExports.mainModule;
             }
 
             if (navParam) {
-                topFrame = new frame.Frame();
-                topFrame.navigate(navParam);
+                frame = new Frame();
+                frame.navigate(navParam);
             } else {
                 // TODO: Throw an exception?
                 throw new Error("A Frame must be used to navigate to a Page.");
             }
+
+            rootView = frame;
         }
 
-        this._window.content = topFrame;
+        this._window.content = rootView;
 
-        this.rootController = this._window.rootViewController = topFrame.ios.controller;
+        if (rootView instanceof Frame) {
+            let rootController = new RootViewControllerImpl();
+            this.rootController = this._window.rootViewController = rootController;
+            rootController.contentController = rootView.ios.controller;
+        }
+        else if (rootView.ios instanceof UIViewController) {
+            this.rootController = this._window.rootViewController = rootView.ios;
+        }
+        else if (rootView.ios instanceof UIView) {
+            let newController = new UIViewController();
+            newController.view.addSubview(rootView.ios);
+            this.rootController = newController;
+        }
+        else {
+            throw new Error("Root should be either UIViewController or UIView");
+        }
 
         this._window.makeKeyAndVisible();
     }
@@ -225,11 +281,24 @@ global.__onUncaughtError = function (error: definition.NativeScriptError) {
 }
 
 function loadCss() {
-    typedExports.cssSelectorsCache = typedExports.loadCss(typedExports.cssFile);
+    //HACK: identical to application.ios.ts
+    typedExports.appSelectors = typedExports.loadCss(typedExports.cssFile) || [];
+    if (typedExports.appSelectors.length > 0) {
+        typedExports.mergeCssSelectors(typedExports);
+    }
+}
+
+export function addCss(cssText: string) {
+    //HACK: identical to application.android.ts
+    const parsed = typedExports.parseCss(cssText);
+    if (parsed) {
+        typedExports.additionalSelectors.push.apply(typedExports.additionalSelectors, parsed);
+        typedExports.mergeCssSelectors(typedExports);
+    }
 }
 
 var started: boolean = false;
-typedExports.start = function (entry?: frame.NavigationEntry) {
+typedExports.start = function (entry?: NavigationEntry) {
     if (!started) {
         if (entry) {
             exports.mainEntry = entry;
@@ -256,5 +325,5 @@ global.__onLiveSync = function () {
     loadCss();
 
     // Reload current page.
-    frame.reloadPage();
+    reloadPage();
 }

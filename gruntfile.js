@@ -1,9 +1,14 @@
 var tsconfig = require('./tsconfig.json');
 var shelljs = require("shelljs");
+var path = require("path");
 
 module.exports = function(grunt) {
+    if (grunt.option('profile')) {
+        grunt.log.writeln('Profiling all grunt tasks...');
+        require('time-grunt')(grunt);
+    }
 
-    if (grunt.cli.tasks.indexOf("testsapp") >= 0 || grunt.cli.tasks.indexOf("buildTestsApp")>= 0) {
+    if (grunt.cli.tasks.indexOf("testsapp") >= 0 || grunt.cli.tasks.indexOf("buildOnlyTestsApp")>= 0 || grunt.cli.tasks.indexOf("runOnlyTestsApp")>= 0) {
         var tsTester = require("./build/run-testsapp.grunt.js");
         tsTester.run(grunt);
         return;
@@ -134,12 +139,14 @@ module.exports = function(grunt) {
     var localCfg = {
         srcDir: ".",
         srcAppsDir: "./apps",
+        srcAppsTests: "./apps/tests",
         packageJsonFilePath: "./package.json",
         outDir: "./bin/dist",
-        outModulesDir: tsconfig.compilerOptions.outDir,
+        outArticlesDir: "./bin/dist/articles",
+        outModulesDir: tsconfig.compilerOptions.outDir || "./bin/dist/modules",
         outAppsDir: "./bin/dist/apps",
         outTsAppsDir: "./bin/dist/ts-apps",
-        outApiRefDir: "./bin/dist/api-ref"
+        outApiRefDir: "./bin/dist/apiref"
     };
 
     var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
@@ -174,6 +181,9 @@ module.exports = function(grunt) {
     tsOptions.removeComments = !grunt.option('leavecomments') || '';
     tsOptions.compiler = "node_modules/typescript/bin/tsc";
     tsOptions.failOnTypeErrors = true;
+    tsOptions.outDir = localCfg.outModulesDir;
+    var removeCommentsArgument = tsOptions.removeComments ? " --removeComments" : "";
+    tsOptions.additionalFlags = "--outDir " + localCfg.outModulesDir + removeCommentsArgument;
 
     grunt.initConfig({
         localCfg : localCfg,
@@ -206,6 +216,12 @@ module.exports = function(grunt) {
             },
             readyAppFiles: {
                 src: [localCfg.outModulesDir + "/apps/**"]
+            },
+            articles: {
+                src: [ localCfg.outArticlesDir ]
+            },
+            "apiref": {
+                src: [ localCfg.outApiRefDir ]
             }
         },
         copy: {
@@ -219,6 +235,12 @@ module.exports = function(grunt) {
                 ],
                 dest: localCfg.outModulesDir,
                 cwd: localCfg.srcDir
+            },
+            articleMDs: {
+                expand: true,
+                src: [ "**/*.md" ],
+                dest: localCfg.outArticlesDir,
+                cwd: localCfg.srcAppsTests
             },
             license: {
                 expand: true,
@@ -332,18 +354,33 @@ module.exports = function(grunt) {
         },
         ts: {
             build: {
-                tsconfig: 'tsconfig.json',
+                tsconfig: {
+                    tsconfig: 'tsconfig.json',
+                    passThrough: true,
+                },
                 outDir: localCfg.outModulesDir,
+                dest: localCfg.outModulesDir,
                 options: tsOptions
+            },
+            "build-inplace": {
+                tsconfig: {
+                    tsconfig: 'tsconfig.json',
+                    passThrough: true,
+                },
+                options: {
+                    additionalFlags: "--sourceMap"
+                }
             },
             buildNodeTests: {
                 src: [
                         'js-libs/easysax/**/*.ts',
+                        'module.d.ts',
                         'xml/**/*.ts',
                         'node-tests/**/*.ts',
                         'es-collections.d.ts',
                     ],
                 outDir: localCfg.outModulesDir,
+                dest: localCfg.outModulesDir,
                 options: tsOptions
             },
             buildDts: {
@@ -358,6 +395,7 @@ module.exports = function(grunt) {
                     '!ios.d.ts',
                 ],
                 outDir: localCfg.outModulesDir,
+                dest: localCfg.outModulesDir,
                 options: tsOptions
             },
             testCombinedDts: {
@@ -365,6 +403,7 @@ module.exports = function(grunt) {
                     pathModule.join(localCfg.outModulesDir, 'tns-core-modules.d.ts'),
                 ],
                 outDir: localCfg.outModulesDir,
+                dest: localCfg.outModulesDir,
                 options: tsOptions
             }
         },
@@ -389,6 +428,9 @@ module.exports = function(grunt) {
             },
             mochaNode: {
                 cmd: "grunt simplemocha:node"
+            },
+            injectArticles: {
+                cmd: "node node_modules/markdown-snippet-injector/index.js --root=<%= localCfg.srcAppsTests %> --docsroot=<%= localCfg.outArticlesDir %>"
             }
         },
         multidest: {
@@ -429,7 +471,8 @@ module.exports = function(grunt) {
                     // 'flag:undefined' will set flags without options.
                     "module": 'commonjs',
                     "target": 'es5',
-                    "out": localCfg.outApiRefDir,
+                    "out": '<%= grunt.option("out") || localCfg.outApiRefDir %>',
+                    "theme": '<%= grunt.option("theme") || "default" %>',
                     //"json": './dist/doc.json',
                     "name": 'NativeScript',
                     "includeDeclarations": undefined,
@@ -478,6 +521,50 @@ module.exports = function(grunt) {
             grunt.config(task.name, task.cfg);
             grunt.task.run(task.name.join(":"));
         }
+    };
+    function writeDtsFile(dtsFiles, outDir, outFile) {
+        var dtsLines = dtsFiles.map(function(dtsFile) {
+            return '/// <reference path="' + dtsFile + '" />';
+        });
+        var combinedDtsPath = pathModule.join(outDir, outFile);
+        grunt.file.write(combinedDtsPath, dtsLines.join('\n'));
+    }
+    function generateModulesDts(outDir) {
+        var angularConflicts = ['module.d.ts']
+        var angularExcludes = angularConflicts.map(function(file) {
+            return '!' + file;
+        })
+        var nonES6Files = [
+            'es-collections.d.ts',
+            'es6-promise.d.ts',
+            'es6.d.ts',
+            'weakmap.d.ts',
+        ];
+        var es6Excludes = nonES6Files.map(function(file) {
+            return '!' + file;
+        })
+        var dtsFiles = grunt.file.expand({cwd: outDir}, [
+            "**/*.d.ts",
+            //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
+            "!apps/**",
+            "!ts-apps/**",
+            "!node-tests/**",
+            "!org.nativescript.widgets.d.ts",
+            "!android17.d.ts",
+            "!**/*.android.d.ts",
+            "!ios.d.ts",
+            "!**/*.ios.d.ts",
+            "!tns-core-modules.d.ts",
+            "!tns-core-modules.es6.d.ts",
+            "!tns-core-modules.base.d.ts",
+        ].concat(localCfg.defaultExcludes).concat(es6Excludes).concat(angularExcludes));
+        dtsFiles.sort();
+
+        writeDtsFile(dtsFiles, outDir, 'tns-core-modules.base.d.ts');
+        var es6Files = angularConflicts.concat(['tns-core-modules.base.d.ts']);
+        writeDtsFile(es6Files, outDir, 'tns-core-modules.es6.d.ts');
+        var allFiles = angularConflicts.concat(nonES6Files).concat(['tns-core-modules.base.d.ts']);
+        writeDtsFile(allFiles, outDir, 'tns-core-modules.d.ts');
     };
 
     grunt.registerTask("processEachApp", function(outAppsDir, pkgAppNameSuffix){
@@ -576,22 +663,12 @@ module.exports = function(grunt) {
     grunt.registerTask("distribute-ts-apps-files", [
             "copy:readyTsAppFiles"
     ]);
-    grunt.registerTask("generate-tns-core-modules-dts", function() {
-        var dtsFiles = grunt.file.expand({cwd: localCfg.outModulesDir}, [
-            '**/*.d.ts',
-            '!tns-core-modules.d.ts'
-        ].concat(localCfg.defaultExcludes));
-        dtsFiles.sort();
-
-        var dtsLines = dtsFiles.map(function(dtsFile) {
-            return '/// <reference path="' + dtsFile + '" />';
-        });
-        var combinedDtsPath = pathModule.join(localCfg.outModulesDir, 'tns-core-modules.d.ts');
-        grunt.file.write(combinedDtsPath, dtsLines.join('\n'));
-    });
+    grunt.registerTask("generate-tns-core-modules-dev-dts", generateModulesDts.bind(null, "."));
+    grunt.registerTask("generate-tns-core-modules-dts", generateModulesDts.bind(null, localCfg.outModulesDir));
     //aliasing pack-modules for backwards compatibility
     grunt.registerTask("pack-modules", [
         "compile-modules",
+        "node-tests",
         "exec:packModules"
     ]);
     grunt.registerTask("pack-apps", [
@@ -628,13 +705,13 @@ module.exports = function(grunt) {
     //alias just-build for backwards compatibility
     grunt.registerTask("just-build", ["build-all"]);
 
-    grunt.registerTask("build-all", (skipTsLint ? [] : ["tslint:build"]).concat([
+    grunt.registerTask("build-all", [
         "pack-modules",
 
         "collect-apps-raw-files",
         "distribute-apps-files",
         "distribute-ts-apps-files",
-    ]));
+    ]);
 
     grunt.registerTask("node-tests", [
         "clean:nodeTests",
@@ -643,5 +720,26 @@ module.exports = function(grunt) {
         "copy:jsLibs",
         "env:nodeTests",
         "exec:mochaNode", //spawn a new process to use the new NODE_PATH
+    ]);
+
+    grunt.registerTask("inplace", [
+        "ts:build-inplace",
+        "generate-tns-core-modules-dev-dts"
+    ]);
+    
+    grunt.registerTask("apiref", [
+        "clean:apiref",
+        "typedoc:build"
+    ]);
+    
+    grunt.registerTask("articles", [
+        "clean:articles",
+        "copy:articleMDs",
+        "exec:injectArticles"
+    ]);
+    
+    grunt.registerTask("docs", [
+        "apiref",
+        "articles"
     ]);
 };

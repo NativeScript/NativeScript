@@ -1,7 +1,6 @@
 ﻿import utils = require("utils/utils");
 import common = require("./grid-layout-common");
 import {View} from "ui/core/view";
-import {CommonLayoutParams} from "ui/styling/style";
 import {HorizontalAlignment, VerticalAlignment} from "ui/enums";
 
 global.moduleMerge(common, exports);
@@ -35,24 +34,12 @@ export class GridLayout extends common.GridLayout {
         this.helper.columns.splice(index, 1);
     }
 
-    public addChild(child: View): void {
-        super.addChild(child);
+    public _registerLayoutChild(child: View) {
         this.addToMap(child);
     }
 
-    public insertChild(child: View, atIndex: number): void {
-        super.insertChild(child, atIndex);
-        this.addToMap(child);
-    }
-
-    public removeChild(child: View): void {
+    public _unregisterLayoutChild(child: View) {
         this.removeFromMap(child);
-        super.removeChild(child);
-    }
-
-    public removeChildren(): void {
-        this.map.clear();
-        super.removeChildren();
     }
 
     private getColumnIndex(view: View): number {
@@ -380,11 +367,14 @@ class MeasureHelper {
     infinityWidth: boolean = false;
     infinityHeight: boolean = false;
 
+    private minColumnStarValue: number = 0;
+    private maxColumnStarValue: number = 0;
+
+    private minRowStarValue: number = 0;
+    private maxRowStarValue: number = 0;
+
     measuredWidth: number = 0;
     measuredHeight: number = 0;
-
-    private columnStarValue: number;
-    private rowStarValue: number;
 
     private fakeRowAdded: boolean = false;
     private fakeColumnAdded: boolean = false;
@@ -398,10 +388,6 @@ class MeasureHelper {
         this.singleColumn = new common.ItemSpec();
         this.singleRowGroup = new ItemGroup(this.singleRow);
         this.singleColumnGroup = new ItemGroup(this.singleColumn);
-    }
-
-    public getColumnsFixed(): boolean {
-        return this.columnStarValue >= 0;
     }
 
     public setInfinityWidth(value: boolean): void {
@@ -525,8 +511,10 @@ class MeasureHelper {
         MeasureHelper.initList(this.rows);
         MeasureHelper.initList(this.columns);
 
-        this.columnStarValue = -1;
-        this.rowStarValue = -1;
+        this.minColumnStarValue = -1;
+        this.minRowStarValue = -1;
+        this.maxColumnStarValue = -1;
+        this.maxRowStarValue = -1;
     }
 
     private itemMeasured(measureSpec: MeasureSpecs, isFakeMeasure: boolean): void {
@@ -564,24 +552,19 @@ class MeasureHelper {
         let columnCount = this.columns.length;
         for (let i = 0; i < columnCount; i++) {
             let item: ItemGroup = this.columns[i];
-
-            // Star columns are still zeros (not calculated).
-            currentColumnWidth += item.length;
             if (item.rowOrColumn.isStar) {
                 columnStarCount += item.rowOrColumn.value;
             }
-        }
-
-        this.columnStarValue = columnStarCount > 0 ? (this.width - currentColumnWidth) / columnStarCount : 0;
-
-        if (this.stretchedHorizontally) {
-            for (let i = 0; i < columnCount; i++) {
-                let item: ItemGroup = this.columns[i];
-                if (item.getIsStar()) {
-                    item.length = item.rowOrColumn.value * this.columnStarValue;
-                }
+            else {
+                // Star columns are still zeros (not calculated).
+                currentColumnWidth += item.length;
             }
         }
+
+        let widthForStarColumns = Math.max(0, this.width - currentColumnWidth);
+        this.maxColumnStarValue = columnStarCount > 0 ? widthForStarColumns / columnStarCount : 0;
+
+        MeasureHelper.updateStarLength(this.columns, this.maxColumnStarValue);
     }
 
     private fixRows(): void {
@@ -591,22 +574,33 @@ class MeasureHelper {
         let rowCount = this.rows.length;
         for (let i = 0; i < rowCount; i++) {
             let item: ItemGroup = this.rows[i];
-
-            // Star rows are still zeros (not calculated).
-            currentRowHeight += item.length;
             if (item.rowOrColumn.isStar) {
                 rowStarCount += item.rowOrColumn.value;
             }
+            else {
+                // Star rows are still zeros (not calculated).
+                currentRowHeight += item.length;
+            }
         }
 
-        this.rowStarValue = rowStarCount > 0 ? (this.height - currentRowHeight) / rowStarCount : 0;
+        let heightForStarRows = Math.max(0, this.height - currentRowHeight);
+        this.maxRowStarValue = rowStarCount > 0 ? heightForStarRows / rowStarCount : 0;
 
-        if (this.stretchedVertically) {
-            for (let i = 0; i < rowCount; i++) {
-                let item: ItemGroup = this.rows[i];
-                if (item.getIsStar()) {
-                    item.length = item.rowOrColumn.value * this.rowStarValue;
-                }
+        MeasureHelper.updateStarLength(this.rows, this.maxRowStarValue);
+    }
+
+    private static updateStarLength(list: Array<ItemGroup>, starValue: number): void {
+        let offset = 0;
+        let roundedOffset = 0;
+        for (let i = 0, rowCount = list.length; i < rowCount; i++) {
+            let item = list[i];
+            if (item.getIsStar()) {
+                offset += item.rowOrColumn.value * starValue;
+
+                let actualLength = offset - roundedOffset;
+                let roundedLength = Math.round(actualLength);
+                item.length = roundedLength;
+                roundedOffset += roundedLength;
             }
         }
     }
@@ -752,6 +746,18 @@ class MeasureHelper {
             }
         }
 
+        // If we are not stretched and minColumnStarValue is less than maxColumnStarValue
+        // we need to reduce the width of star columns.
+        if (!this.stretchedHorizontally && this.minColumnStarValue !== -1 && this.minColumnStarValue < this.maxColumnStarValue) {
+            MeasureHelper.updateStarLength(this.columns, this.minColumnStarValue);
+        }
+
+        // If we are not stretched and minRowStarValue is less than maxRowStarValue
+        // we need to reduce the height of star maxRowStarValue.
+        if (!this.stretchedVertically && this.minRowStarValue !== -1 && this.minRowStarValue < this.maxRowStarValue) {
+            MeasureHelper.updateStarLength(this.rows, this.minRowStarValue);
+        }
+
         this.measuredWidth = MeasureHelper.getMeasureLength(this.columns);
         this.measuredHeight = MeasureHelper.getMeasureLength(this.rows);
     }
@@ -814,17 +820,13 @@ class MeasureHelper {
         let rowIndex = measureSpec.getRowIndex();
         let rowSpanEnd = rowIndex + measureSpec.getRowSpan();
 
-        let columnsWidth = 0;
+        let measureWidth = 0;
         let growSize = 0;
 
         for (let i = columnIndex; i < columnSpanEnd; i++) {
             let columnGroup: ItemGroup = this.columns[i];
-            if (!columnGroup.getIsStar()) {
-                columnsWidth += columnGroup.length;
-            }
+            measureWidth += columnGroup.length;
         }
-
-        let measureWidth = Math.floor(columnsWidth + measureSpec.starColumnsCount * this.columnStarValue);
 
         let widthMeasureSpec = utils.layout.makeMeasureSpec(measureWidth, this.stretchedHorizontally ? utils.layout.EXACTLY : utils.layout.AT_MOST);
         let heightMeasureSpec = (measureSpec.autoRowsCount > 0) ? this.infinity : utils.layout.makeMeasureSpec(measureSpec.pixelHeight, utils.layout.EXACTLY);
@@ -833,24 +835,7 @@ class MeasureHelper {
         let childMeasuredWidth = childSize.measuredWidth;
         let childMeasuredHeight = childSize.measuredHeight;
 
-        // Distribute width over star columns
-        if (!this.stretchedHorizontally) {
-            let remainingSpace = childMeasuredWidth;
-            for (let i = columnIndex; i < columnSpanEnd; i++) {
-                let columnGroup: ItemGroup = this.columns[i];
-                remainingSpace -= columnGroup.length;
-            }
-
-            if (remainingSpace > 0) {
-                growSize = remainingSpace / measureSpec.starColumnsCount;
-                for (let i = columnIndex; i < columnSpanEnd; i++) {
-                    let columnGroup: ItemGroup = this.columns[i];
-                    if (columnGroup.getIsStar()) {
-                        columnGroup.length += growSize;
-                    }
-                }
-            }
-        }
+        this.updateMinColumnStarValueIfNeeded(measureSpec, childMeasuredWidth);
 
         // Distribute height over auto rows
         if (measureSpec.autoRowsCount > 0) {
@@ -880,16 +865,12 @@ class MeasureHelper {
         let columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
         let rowIndex = measureSpec.getRowIndex();
         let rowSpanEnd = rowIndex + measureSpec.getRowSpan();
-        let rowsHeight = 0;
+        let measureHeight = 0;
 
         for (let i = rowIndex; i < rowSpanEnd; i++) {
             let rowGroup: ItemGroup = this.rows[i];
-            if (!rowGroup.getIsStar()) {
-                rowsHeight += rowGroup.length;
-            }
+            measureHeight += rowGroup.length;
         }
-
-        let measureHeight = Math.floor(rowsHeight + measureSpec.starRowsCount * this.rowStarValue);
 
         let widthMeasureSpec = (measureSpec.autoColumnsCount > 0) ? this.infinity : utils.layout.makeMeasureSpec(measureSpec.pixelWidth, utils.layout.EXACTLY);
         let heightMeasureSpec = utils.layout.makeMeasureSpec(measureHeight, this.stretchedVertically ? utils.layout.EXACTLY : utils.layout.AT_MOST);
@@ -922,25 +903,7 @@ class MeasureHelper {
             }
         }
 
-        // Distribute height over star rows
-        if (!this.stretchedVertically) {
-            remainingSpace = childMeasuredHeight;
-            for (let i = rowIndex; i < rowSpanEnd; i++) {
-                let rowGroup: ItemGroup = this.rows[i];
-                remainingSpace -= rowGroup.length;
-            }
-
-            if (remainingSpace > 0) {
-                growSize = remainingSpace / measureSpec.starRowsCount;
-                for (let i = rowIndex; i < rowSpanEnd; i++) {
-                    let rowGroup: ItemGroup = this.rows[i];
-                    if (rowGroup.getIsStar()) {
-                        rowGroup.length += growSize;
-                    }
-                }
-            }
-        }
-
+        this.updateMinRowStarValueIfNeeded(measureSpec, childMeasuredHeight);
         this.itemMeasured(measureSpec, false);
     }
 
@@ -950,24 +913,17 @@ class MeasureHelper {
         let rowIndex = measureSpec.getRowIndex();
         let rowSpanEnd = rowIndex + measureSpec.getRowSpan();
 
-        let columnsWidth = 0;
+        let measureWidth = 0;
         for (let i = columnIndex; i < columnSpanEnd; i++) {
             let columnGroup: ItemGroup = this.columns[i];
-            if (!columnGroup.getIsStar()) {
-                columnsWidth += columnGroup.length;
-            }
+            measureWidth += columnGroup.length;
         }
 
-        let rowsHeight = 0;
+        let measureHeight = 0;
         for (let i = rowIndex; i < rowSpanEnd; i++) {
             let rowGroup: ItemGroup = this.rows[i];
-            if (!rowGroup.getIsStar()) {
-                rowsHeight += rowGroup.length;
-            }
+            measureHeight += rowGroup.length;
         }
-
-        let measureWidth = Math.floor(columnsWidth + measureSpec.starColumnsCount * this.columnStarValue);
-        let measureHeight = Math.floor(rowsHeight + measureSpec.starRowsCount * this.rowStarValue);
 
         // if (have stars) & (not stretch) - at most
         let widthMeasureSpec = utils.layout.makeMeasureSpec(measureWidth,
@@ -980,45 +936,46 @@ class MeasureHelper {
         let childMeasuredWidth = childSize.measuredWidth;
         let childMeasuredHeight = childSize.measuredHeight;
 
-        let remainingSpace = childMeasuredWidth;
-        let growSize = 0;
-
-        if (!this.stretchedHorizontally) {
-            for (let i = columnIndex; i < columnSpanEnd; i++) {
-                let columnGroup: ItemGroup = this.columns[i];
-                remainingSpace -= columnGroup.length;
-            }
-
-            if (remainingSpace > 0) {
-                growSize = remainingSpace / measureSpec.starColumnsCount;
-                for (let i = columnIndex; i < columnSpanEnd; i++) {
-                    let columnGroup: ItemGroup = this.columns[i];
-                    if (columnGroup.getIsStar()) {
-                        columnGroup.length += growSize;
-                    }
-                }
-            }
-        }
-
-        remainingSpace = childMeasuredHeight;
-
-        if (!this.stretchedVertically) {
-            for (let i = rowIndex; i < rowSpanEnd; i++) {
-                let rowGroup: ItemGroup = this.rows[i];
-                remainingSpace -= rowGroup.length;
-            }
-
-            if (remainingSpace > 0) {
-                growSize = remainingSpace / measureSpec.starRowsCount;
-                for (let i = rowIndex; i < rowSpanEnd; i++) {
-                    let rowGroup: ItemGroup = this.rows[i];
-                    if (rowGroup.getIsStar()) {
-                        rowGroup.length += growSize;
-                    }
-                }
-            }
-        }
-
+        this.updateMinColumnStarValueIfNeeded(measureSpec, childMeasuredWidth);
+        this.updateMinRowStarValueIfNeeded(measureSpec, childMeasuredHeight);
         this.itemMeasured(measureSpec, false);
+    }
+
+    private updateMinRowStarValueIfNeeded(measureSpec: MeasureSpecs, childMeasuredHeight: number): void {
+        if (!this.stretchedVertically && measureSpec.starRowsCount > 0) {
+            let remainingSpace = childMeasuredHeight;
+            let rowIndex = measureSpec.getRowIndex();
+            let rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+            for (let i = rowIndex; i < rowSpanEnd; i++) {
+                let rowGroup = this.rows[i];
+                if (!rowGroup.getIsStar()) {
+                    remainingSpace -= rowGroup.length;
+                }
+            }
+
+            if (remainingSpace > 0) {
+                this.minRowStarValue = Math.max(remainingSpace / measureSpec.starRowsCount, this.minRowStarValue);
+            }
+        }
+    }
+
+    private updateMinColumnStarValueIfNeeded(measureSpec: MeasureSpecs, childMeasuredWidth: number): void {
+        // When not stretched star columns are not fixed so we may grow them here
+        // if there is an element that spans on multiple columns
+        if (!this.stretchedHorizontally && measureSpec.starColumnsCount > 0) {
+            let remainingSpace = childMeasuredWidth;
+            let columnIndex = measureSpec.getColumnIndex();
+            let columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
+            for (let i = columnIndex; i < columnSpanEnd; i++) {
+                let columnGroup = this.columns[i];
+                if (!columnGroup.getIsStar()) {
+                    remainingSpace -= columnGroup.length;
+                }
+            }
+
+            if (remainingSpace > 0) {
+                this.minColumnStarValue = Math.max(remainingSpace / measureSpec.starColumnsCount, this.minColumnStarValue);
+            }
+        }
     }
 }

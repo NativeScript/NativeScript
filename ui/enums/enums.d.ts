@@ -1,5 +1,7 @@
 ﻿declare module "ui/enums" {
 
+    import animationModule = require("ui/animation");
+
     /**
      * Represents a soft keyboard flavor.
      */
@@ -9,25 +11,25 @@
          * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
          */
         export var datetime: string;
-        
+
         /**
          * Android: [TYPE_CLASS_PHONE](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_PHONE)
          * iOS:  [UIKeyboardTypePhonePad](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
          */
         export var phone: string;
-        
+
         /**
-         * Android: [TYPE_CLASS_NUMBER](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_NUMBER) | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | [TYPE_NUMBER_FLAG_SIGNED](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_SIGNED) | [TYPE_NUMBER_FLAG_DECIMAL](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_DECIMAL)
+         * Android: [TYPE_CLASS_NUMBER](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_NUMBER) | [TYPE_NUMBER_VARIATION_NORMAL](http://developer.android.com/intl/es/reference/android/text/InputType.html#TYPE_NUMBER_VARIATION_NORMAL) | [TYPE_NUMBER_FLAG_SIGNED](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_SIGNED) | [TYPE_NUMBER_FLAG_DECIMAL](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_DECIMAL)
          * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
          */
         export var number: string;
-        
+
         /**
          * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_URI](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_URI)
          * iOS:  [UIKeyboardTypeURL](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
          */
         export var url: string;
-        
+
         /**
          * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_EMAIL_ADDRESS](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_EMAIL_ADDRESS)
          * iOS:  [UIKeyboardTypeEmailAddress](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
@@ -56,13 +58,13 @@
          * iOS: [UIReturnKeyGo](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
          */
         export var go: string;
-        
+
         /**
          * Android: [IME_ACTION_SEARCH](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_SEARCH)
          * iOS: [UIReturnKeySearch](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
          */
         export var search: string;
-        
+
         /**
          * Android: [IME_ACTION_SEND](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_SEND)
          * iOS: [UIReturnKeySend](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
@@ -324,17 +326,17 @@
         export var none: string;
 
         /**
-         * Capitalize the first letter of each word automatically. 
+         * Capitalize the first letter of each word automatically.
          */
         export var words: string;
 
         /**
-         * Capitalize the first letter of each sentence automatically. 
+         * Capitalize the first letter of each sentence automatically.
          */
         export var sentences: string;
-        
+
         /**
-         * Capitalize all characters automatically. 
+         * Capitalize all characters automatically.
          */
         export var allCharacters: string;
     }
@@ -402,7 +404,7 @@
          */
         export var popup: string;
     }
-    
+
     /**
      * Specifies different font styles.
      */
@@ -411,7 +413,7 @@
          * Normal font style.
          */
         export var normal: string;
-        
+
         /**
          * Italic font style.
          */
@@ -426,7 +428,7 @@
          * No decoration.
          */
         export var none: string;
-        
+
         /**
          * Text decoration underline.
          */
@@ -446,7 +448,7 @@
          * No transform.
          */
         export var none: string;
-        
+
         /**
          * Text transform capitalize.
          */
@@ -456,7 +458,7 @@
          * Text transform uppercase.
          */
         export var uppercase: string;
-        
+
         /**
          * Text transform lowercase.
          */
@@ -471,28 +473,63 @@
          * Normal wrap.
          */
         export var normal: string;
-        
+
         /**
          * No wrap.
          */
         export var nowrap: string;
     }
-    
+
     /**
      * Specifies different font weights.
      */
     export module FontWeight {
         /**
-         * Normal font weight.
+         * Thin font weight. CSS font-weight 100.
          */
-        export var normal: string;
+        export var thin: string;
         
         /**
-         * Bold font weight.
+         * Extra-light / Ultra-light font weight. CSS font-weight 200.
+         */
+        export var extraLight: string;
+        
+        /**
+         * Light font weight. CSS font-weight 300.
+         */
+        export var light: string;
+
+        /**
+         * Normal font weight. CSS font-weight 400.
+         */
+        export var normal: string;
+
+        /**
+         * Medium font weight. CSS font-weight 500.
+         */
+        export var medium: string;
+
+        /**
+         * Semi-bold / Demi-bold font weight. CSS font-weight 600.
+         */
+        export var semiBold: string;
+        
+        /**
+         * Bold font weight. CSS font-weight 700.
          */
         export var bold: string;
+
+        /**
+         * Extra-bold / Ultra-bold font weight. CSS font-weight 800.
+         */
+        export var extraBold: string;
+
+        /**
+         * Black font weight. CSS font-weight 900.
+         */
+        export var black: string;
     }
-    
+
     /**
      * Specifies background repeat.
      */
@@ -521,7 +558,13 @@
     /**
      * Represents an animation curve type.
      */
-    module AnimationCurve {
+    export module AnimationCurve {
+
+        /**
+         * Default value. Specifies a transition effect with a slow start, then fast, then end slowly (equivalent to cubic-bezier(0.25,0.1,0.25,1))
+         */
+        export var ease: string;
+        
         /**
          * An ease-in curve causes the animation to begin slowly, and then speed up as it progresses.
          */
@@ -536,10 +579,20 @@
          * An ease-in ease-out curve causes the animation to begin slowly, accelerate through the middle of its duration, and then slow again before completing.
          */
         export var easeInOut: string;
-        
+
         /**
          * A linear animation curve causes an animation to occur evenly over its duration.
          */
         export var linear: string;
+
+        /**
+         * A spring animation curve causes an animation to produce a spring (bounce) effect.
+         */
+        export var spring: string;
+
+        /**
+         * A custom cubic bezier function defined by its two control points. Possible values are numeric values from 0 to 1
+         */
+        export function cubicBezier(x1: number, y1: number, x2: number, y2: number): animationModule.CubicBezierAnimationCurve;
     }
 }

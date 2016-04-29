@@ -6,6 +6,8 @@ import cssSelector = require("ui/styling/css-selector");
 import * as fileSystemModule from "file-system";
 import * as styleScopeModule from "ui/styling/style-scope";
 
+var styleScope: typeof styleScopeModule = undefined;
+
 var events = new observable.Observable();
 global.moduleMerge(events, exports);
 
@@ -22,7 +24,11 @@ export var mainEntry: frame.NavigationEntry;
 
 export var cssFile: string = "app.css"
 
-export var cssSelectorsCache: Array<cssSelector.CssSelector> = undefined;
+export var appSelectors: Array<cssSelector.CssSelector> = [];
+export var additionalSelectors: Array<cssSelector.CssSelector> = [];
+export var cssSelectors: Array<cssSelector.CssSelector> = [];
+export var cssSelectorVersion: number = 0;
+export var keyframes: any = {};
 
 export var resources: any = {};
 
@@ -50,16 +56,32 @@ export function loadCss(cssFile?: string): Array<cssSelector.CssSelector> {
     var result: Array<cssSelector.CssSelector>;
 
     var fs: typeof fileSystemModule = require("file-system");
-    var styleScope: typeof styleScopeModule = require("ui/styling/style-scope");
+    if (!styleScope) {
+        styleScope = require("ui/styling/style-scope");
+    }
 
     var cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFile);
     if (fs.File.exists(cssFileName)) {
         var file = fs.File.fromPath(cssFileName);
         var applicationCss = file.readTextSync();
         if (applicationCss) {
-            result = styleScope.StyleScope.createSelectorsFromCss(applicationCss, cssFileName);
+            result = parseCss(applicationCss, cssFileName);
         }
     }
 
     return result;
+}
+
+export function mergeCssSelectors(module: any): void {
+    //HACK: pass the merged module and work with its exported vars.
+    module.cssSelectors = module.appSelectors.slice();
+    module.cssSelectors.push.apply(module.cssSelectors, module.additionalSelectors);
+    module.cssSelectorVersion++;
+}
+
+export function parseCss(cssText: string, cssFileName?: string): Array<cssSelector.CssSelector> {
+    if (!styleScope) {
+        styleScope = require("ui/styling/style-scope");
+    }
+    return styleScope.StyleScope.createSelectorsFromCss(cssText, cssFileName, keyframes);
 }

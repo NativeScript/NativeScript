@@ -1,15 +1,9 @@
-﻿// <snippet module="connectivity" title="connectivity">
-// # Connectivity
-// Obtaining connectivity information requires the "connectivity" module.
-// ``` JavaScript
+﻿// >> connectivity-require
 import connectivity = require("connectivity");
-// ```
-// </snippet>
+// << connectivity-require
 
 export var test_DummyTestForSnippetOnly0 = function () {
-    // <snippet module="connectivity" title="connectivity">
-    // ### Getting connection type
-    // ``` JavaScript
+    // >> connectivity-type
     var connectionType = connectivity.getConnectionType();
     switch (connectionType) {
         case connectivity.connectionType.none:
@@ -22,14 +16,11 @@ export var test_DummyTestForSnippetOnly0 = function () {
             ////console.log("Mobile connection");
             break;
     }
-    // ```
-    // </snippet>
+    // << connectivity-type
 }
 
 export var test_DummyTestForSnippetOnly1 = function () {
-    // <snippet module="connectivity" title="connectivity">
-    // ### Monitoring connection type.
-    // ``` JavaScript
+    // >> connectivity-monitoring
     connectivity.startMonitoring(function onConnectionTypeChanged(newConnectionType: number) {
         switch (newConnectionType) {
             case connectivity.connectionType.none:
@@ -45,6 +36,5 @@ export var test_DummyTestForSnippetOnly1 = function () {
     });
     ////...
     connectivity.stopMonitoring();
-    // ```
-    // </snippet>
+    // << connectivity-monitoring
 }

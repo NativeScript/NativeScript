@@ -51,6 +51,16 @@
         removeChildren(): void;
 
         /**
+         * INTERNAL. Used by the layout system.
+         */
+        _registerLayoutChild(child: view.View): void;
+
+        /**
+         * INTERNAL. Used by the layout system.
+         */
+        _unregisterLayoutChild(child: view.View): void;
+
+        /**
          * Calls the callback for each child that should be laid out.
          * @param callback The callback
          */
@@ -94,5 +104,10 @@
          * Specify the top padding of this layout.
          */
         paddingTop: number;
+
+        /**
+         * Gets or sets a value indicating whether to clip the content of this layout.
+         */
+        clipToBounds: boolean;
     }
 }

@@ -10,10 +10,6 @@ export class HtmlView extends view.View implements definition.HtmlView {
         new proxy.PropertyMetadata(false, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
         );
 
-    constructor(options?: definition.Options) {
-        super(options);
-    }
-
     get html(): string {
         return this._getValue(HtmlView.htmlProperty);
     }

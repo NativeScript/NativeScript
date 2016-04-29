@@ -1,4 +1,4 @@
-﻿export module KeyboardType {
+export module KeyboardType {
     export var datetime = "datetime";
     export var phone = "phone";
     export var number = "number";
@@ -146,8 +146,15 @@ export module FontStyle {
 }
 
 export module FontWeight {
-    export var normal: string = "normal";
-    export var bold: string = "bold";
+    export var thin: string = "100";
+    export var extraLight: string = "200";
+    export var light: string = "300";
+    export var normal: string = "normal"; // 400 
+    export var medium: string = "500";
+    export var semiBold: string = "600";
+    export var bold: string = "bold"; // 700 
+    export var extraBold: string = "800";
+    export var black: string = "900";
 }
 
 export module BackgroundRepeat {
@@ -157,9 +164,17 @@ export module BackgroundRepeat {
     export var noRepeat: string = "no-repeat";
 }
 
+var animationModule;
+
 export module AnimationCurve {
+    export var ease = "ease";
     export var easeIn = "easeIn";
     export var easeOut = "easeOut";
     export var easeInOut = "easeInOut";
     export var linear = "linear";
+    export var spring = "spring";
+    export function cubicBezier(x1: number, y1: number, x2: number, y2: number): Object {
+        animationModule = animationModule || require("ui/animation");
+        return new animationModule.CubicBezierAnimationCurve(x1, y1 ,x2, y2);
+    }
 }

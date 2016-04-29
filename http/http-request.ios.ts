@@ -1,29 +1,45 @@
 ﻿/**
  * iOS specific http request implementation.
  */
+
 import http = require("http");
-import * as typesModule from "utils/types";
+
+import * as types from "utils/types";
 import * as imageSourceModule from "image-source";
 import * as utilsModule from "utils/utils";
 import * as fsModule from "file-system";
 
+import domainDebugger = require("./../debugger/debugger");
+
 var GET = "GET";
 var USER_AGENT_HEADER = "User-Agent";
 var USER_AGENT = "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25";
+var sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration();
+var queue = NSOperationQueue.mainQueue();
+var session = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, null, queue);
+
+var utils: typeof utilsModule;
+function ensureUtils() {
+    if (!utils) {
+        utils = require("utils/utils");
+    }
+}
+
+var imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
+}
 
 export function request(options: http.HttpRequestOptions): Promise<http.HttpResponse> {
     return new Promise<http.HttpResponse>((resolve, reject) => {
 
         try {
-            var types: typeof typesModule = require("utils/types");
-
-            var sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration();
-            var queue = NSOperationQueue.mainQueue();
-            var session = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(
-                sessionConfig, null, queue);
+            var debugRequest = domainDebugger.network && domainDebugger.network.create();
 
             var urlRequest = NSMutableURLRequest.requestWithURL(
-                NSURL.URLWithString(options.url.replace("%", "%25")));
+                NSURL.URLWithString(options.url));
 
             urlRequest.HTTPMethod = types.isDefined(options.method) ? options.method : GET;
 
@@ -48,15 +64,28 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                     if (error) {
                         reject(new Error(error.localizedDescription));
                     } else {
-                        var headers = {};
+                        var headers: http.Headers = {};
                         if (response && response.allHeaderFields) {
                             var headerFields = response.allHeaderFields;
-                            var keys = headerFields.allKeys;
-
-                            for (var i = 0, l = keys.count; i < l; i++) {
-                                var key = keys.objectAtIndex(i);
-                                headers[key] = headerFields.valueForKey(key);
+                            
+                            headerFields.enumerateKeysAndObjectsUsingBlock((key, value, stop) => {
+                                (<any>http).addHeader(headers, key, value);
+                            });
+                        }
+                        
+                        if (debugRequest) {
+                            debugRequest.mimeType = response.MIMEType;
+                            debugRequest.data = data;
+                            var debugResponse = {
+                                url: options.url,
+                                status: response.statusCode,
+                                statusText: NSHTTPURLResponse.localizedStringForStatusCode(response.statusCode),
+                                headers: headers,
+                                mimeType: response.MIMEType,
+                                fromDiskCache: false
                             }
+                            debugRequest.responseReceived(debugResponse);
+                            debugRequest.loadingFinished();
                         }
 
                         resolve({
@@ -64,13 +93,11 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                 raw: data,
                                 toString: () => { return NSDataToString(data); },
                                 toJSON: () => {
-                                    var utils: typeof utilsModule = require("utils/utils");
-
+                                    ensureUtils();
                                     return utils.parseJSON(NSDataToString(data));
                                 },
                                 toImage: () => {
-                                    var imageSource: typeof imageSourceModule = require("image-source");
-
+                                    ensureImageSource();
                                     if (UIImage.imageWithData["async"]) {
                                         return UIImage.imageWithData["async"](UIImage, [data])
                                                       .then(image => {
@@ -113,6 +140,15 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                         });
                     }
                 });
+
+            if(options.url && debugRequest) {
+                var request = {
+                    url: options.url,
+                    method: "GET",
+                    headers: options.headers
+                };
+                debugRequest.requestWillBeSent(request);
+            }
 
             dataTask.resume();
         } catch (ex) {

@@ -6,8 +6,16 @@ import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import definition = require("ui/list-view");
 import utils = require("utils/utils")
-import * as layoutBaseModule from "ui/layouts/layout-base";
+import {ProxyViewContainer} from "ui/proxy-view-container";
+import * as layoutBase from "ui/layouts/layout-base";
 import * as colorModule from "color";
+
+var color: typeof colorModule;
+function ensureColor() {
+    if (!color) {
+        color = require("color");
+    }
+}
 
 var ITEMLOADING = common.ListView.itemLoadingEvent;
 var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
@@ -22,7 +30,7 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
         return;
     }
 
-    var color: typeof colorModule = require("color");
+    ensureColor();
 
     if (data.newValue instanceof color.Color) {
         bar.android.setDivider(new android.graphics.drawable.ColorDrawable(data.newValue.android));
@@ -36,14 +44,14 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
 export class ListView extends common.ListView {
     private _android: android.widget.ListView;
     public _realizedItems = {};
-    private _androidViewId: number;
+    private _androidViewId: number = -1;
 
     public _createUI() {
         this._android = new android.widget.ListView(this._context);
 
         // Fixes issue with black random black items when scrolling
         this._android.setCacheColorHint(android.graphics.Color.TRANSPARENT);
-        if (!this._androidViewId) {
+        if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
         }
         this._android.setId(this._androidViewId);
@@ -130,6 +138,21 @@ export class ListView extends common.ListView {
         }
     }
 
+    get _childrenCount(): number {
+        let keys = Object.keys(this._realizedItems);
+        return keys.length;
+    }
+
+    public _eachChildView(callback: (child: viewModule.View) => boolean): void {
+        let keys = Object.keys(this._realizedItems);
+        let length = keys.length;
+        for (let i = 0; i < length; i++) {
+            let key = keys[i];
+            let view: viewModule.View = this._realizedItems[key];
+            callback(view);
+        }
+    }
+
     public _getRealizedView(convertView: android.view.View, index: number) {
         if (!convertView) {
             return this._getItemTemplateContent(index);
@@ -144,17 +167,17 @@ export class ListView extends common.ListView {
         var length = keys.length;
         var view: viewModule.View;
         var key;
-
         for (i = 0; i < length; i++) {
             key = keys[i];
             view = this._realizedItems[key];
-
-            this.notify({
-                eventName: ITEMLOADING,
-                object: this,
-                index: view[REALIZED_INDEX],
-                view: view
-            });
+            if (view[REALIZED_INDEX] < this.items.length) {
+                this.notify({
+                    eventName: ITEMLOADING,
+                    object: this,
+                    index: view[REALIZED_INDEX],
+                    view: view
+                });
+            }
         }
     }
 }
@@ -222,9 +245,10 @@ function ensureListViewAdapterClass() {
                 }
                 this._listView._prepareItem(args.view, index);
                 if (!args.view.parent) {
-                    var layoutBase: typeof layoutBaseModule = require("ui/layouts/layout-base");
-
-                    if (args.view instanceof layoutBase.LayoutBase) {
+                    // Proxy containers should not get treated as layouts.
+                    // Wrap them in a real layout as well.
+                    if (args.view instanceof layoutBase.LayoutBase &&
+                        !(args.view instanceof ProxyViewContainer)) {
                         this._listView._addView(args.view);
                         convertView = args.view.android;
                     } else {

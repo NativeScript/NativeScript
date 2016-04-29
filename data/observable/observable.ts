@@ -6,6 +6,45 @@ interface ListenerEntry {
     thisArg: any;
 }
 
+var _wrappedIndex = 0;
+
+export class WrappedValue implements definition.WrappedValue {
+    private _wrapped: any;
+    
+    public get wrapped(): any {
+        return this._wrapped;
+    }
+    
+    public set wrapped(value) {
+        this._wrapped = value;
+    }
+    
+    constructor(value: any) {
+        this._wrapped = value;
+    }
+    
+    public static unwrap(value: any) {
+        if (value && value.wrapped) {
+            return value.wrapped;
+        }
+        return value;
+    }
+    
+    public static wrap(value: any) {
+        var w = _wrappedValues[_wrappedIndex++ % 5];
+        w.wrapped = value;
+        return w;
+    }
+}
+
+var _wrappedValues = [
+    new WrappedValue(null),
+    new WrappedValue(null),
+    new WrappedValue(null),
+    new WrappedValue(null),
+    new WrappedValue(null)
+]
+
 export class Observable implements definition.Observable {
     public static propertyChangeEvent = "propertyChange";
     private _map: Map<string, Object>;
@@ -126,7 +165,8 @@ export class Observable implements definition.Observable {
 
     public _setCore(data: definition.PropertyChangeData) {
         this.disableNotifications[data.propertyName] = true;
-        this[data.propertyName] = data.value;
+        let newValue = WrappedValue.unwrap(data.value);
+        this[data.propertyName] = newValue;
         delete this.disableNotifications[data.propertyName];
     }
 

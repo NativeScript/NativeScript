@@ -1,13 +1,8 @@
 ﻿import common = require("./editable-text-base-common");
-import textBase = require("ui/text-base");
 import dependencyObservable = require("ui/core/dependency-observable");
 import enums = require("ui/enums");
 
 export class EditableTextBase extends common.EditableTextBase {
-    constructor(options?: textBase.Options) {
-        super(options);
-    }
-
     public dismissSoftInput() {
         (<UIResponder>this.ios).resignFirstResponder();
     }

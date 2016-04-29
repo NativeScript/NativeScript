@@ -8,15 +8,31 @@ import styleScope = require("../styling/style-scope");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
 import color = require("color");
-import animationModule = require("ui/animation");
 import observable = require("data/observable");
+import keyframeAnimationModule = require("ui/animation/keyframe-animation");
 import {PropertyMetadata, ProxyObject} from "ui/core/proxy";
 import {PropertyMetadataSettings, PropertyChangeData, Property, ValueSource, PropertyMetadata as doPropertyMetadata} from "ui/core/dependency-observable";
 import {registerSpecialProperty} from "ui/builder/special-properties";
 import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
-import * as visualStateConstantsModule from "ui/styling/visual-state-constants";
+import * as visualStateConstants from "ui/styling/visual-state-constants";
 import * as bindableModule from "ui/core/bindable";
 import * as visualStateModule from "../styling/visual-state";
+import * as animModule from "ui/animation";
+import { Source } from "utils/debug";
+
+var bindable: typeof bindableModule;
+function ensureBindable() {
+    if (!bindable) {
+        bindable = require("ui/core/bindable");
+    }
+}
+
+var visualState: typeof visualStateModule;
+function ensureVisualState() {
+    if (!visualState) {
+        visualState = require("../styling/visual-state");
+    }
+}
 
 registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
     instance.className = propertyValue;
@@ -159,6 +175,8 @@ export class View extends ProxyObject implements definition.View {
     private _isLoaded: boolean;
     private _isLayoutValid: boolean = false;
 
+    private _registeredAnimations: Array<keyframeAnimationModule.KeyframeAnimation>;
+
     public _domId: number;
     public _isAddedToNativeVisualTree = false;
 
@@ -172,18 +190,11 @@ export class View extends ProxyObject implements definition.View {
 
     private _updatingInheritedProperties: boolean;
 
-    public _options: definition.Options;
-
-    constructor(options?: definition.Options) {
-        super();
-
-        this._options = options;
+    constructor() {
+        super({});
 
         this._style = new style.Style(this);
         this._domId = viewIdCounter++;
-
-        var visualStateConstants: typeof visualStateConstantsModule = require("ui/styling/visual-state-constants");
-
         this._visualState = visualStateConstants.Normal;
     }
 
@@ -708,7 +719,8 @@ export class View extends ProxyObject implements definition.View {
                 childTop = top + marginTop * density;
                 break;
 
-            case enums.VerticalAlignment.center || enums.VerticalAlignment.middle:
+            case enums.VerticalAlignment.center:
+            case enums.VerticalAlignment.middle:
                 childTop = top + (bottom - top - childHeight + (marginTop - marginBottom) * density) / 2;
                 break;
 
@@ -878,8 +890,7 @@ export class View extends ProxyObject implements definition.View {
         if (!rootPage || !rootPage.isLoaded) {
             return;
         }
-
-        var scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope()
+        var scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope();
         scope.applySelectors(this);
     }
 
@@ -961,6 +972,7 @@ export class View extends ProxyObject implements definition.View {
 
         view._parent = this;
         this._addViewCore(view, atIndex);
+        view._parentChanged(null);
 
         trace.write("called _addView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
     }
@@ -1014,6 +1026,7 @@ export class View extends ProxyObject implements definition.View {
 
         this._removeViewCore(view);
         view._parent = undefined;
+        view._parentChanged(this);
 
         trace.write("called _removeView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
     }
@@ -1030,7 +1043,7 @@ export class View extends ProxyObject implements definition.View {
             view.onUnloaded();
         }
 
-        var bindable: typeof bindableModule = require("ui/core/bindable");
+        ensureBindable();
 
         view._setValue(bindable.Bindable.bindingContextProperty, undefined, ValueSource.Inherited);
         var inheritablePropertiesSetCallback = function (property: Property) {
@@ -1043,6 +1056,10 @@ export class View extends ProxyObject implements definition.View {
             return true;
         }
         view._eachSetProperty(inheritablePropertiesSetCallback);
+    }
+
+    public _parentChanged(oldParent: View): void {
+        //Overridden
     }
 
     /**
@@ -1077,8 +1094,8 @@ export class View extends ProxyObject implements definition.View {
             return;
         }
         // we use lazy require to prevent cyclic dependencies issues
-        var vsm: typeof visualStateModule = require("ui/styling/visual-state");
-        this._visualState = vsm.goToState(this, state);
+        ensureVisualState();
+        this._visualState = visualState.goToState(this, state);
 
         // TODO: What state should we set here - the requested or the actual one?
         this._requestedVisualState = state;
@@ -1122,25 +1139,90 @@ export class View extends ProxyObject implements definition.View {
         return undefined;
     }
 
-    public animate(animation: animationModule.AnimationDefinition): Promise<void> {
+    public getLocationInWindow(): definition.Point {
+        return undefined;
+    }
+
+    public getLocationOnScreen(): definition.Point {
+        return undefined;
+    }
+
+    public getLocationRelativeTo(otherView: definition.View): definition.Point {
+        return undefined;
+    }
+
+    public getActualSize(): definition.Size {
+        var currentBounds = this._getCurrentLayoutBounds();
+        if (!currentBounds) {
+            return undefined;
+        }
+
+        return {
+            width: utils.layout.toDeviceIndependentPixels(currentBounds.right - currentBounds.left),
+            height: utils.layout.toDeviceIndependentPixels(currentBounds.bottom - currentBounds.top),
+        }
+    }
+
+    public animate(animation: any): animModule.AnimationPromise {
         return this.createAnimation(animation).play();
     }
 
-    public createAnimation(animation: animationModule.AnimationDefinition): animationModule.Animation {
-        var that = this;
+    public createAnimation(animation: any): any {
+        let animationModule: typeof animModule = require("ui/animation");
+        let that = this;
         animation.target = that;
         return new animationModule.Animation([animation]);
     }
 
+    public _registerAnimation(animation: keyframeAnimationModule.KeyframeAnimation) {
+        if (this._registeredAnimations === undefined) {
+            this._registeredAnimations = new Array<keyframeAnimationModule.KeyframeAnimation>();
+        }
+        this._registeredAnimations.push(animation);
+    }
+
+    public _unregisterAnimation(animation: keyframeAnimationModule.KeyframeAnimation) {
+        if (this._registeredAnimations) {
+            let index = this._registeredAnimations.indexOf(animation);
+            if (index >= 0) {
+                this._registeredAnimations.splice(index, 1);
+            }
+        }
+    }
+
+    public _unregisterAllAnimations() {
+        if (this._registeredAnimations) {
+            for (let animation of this._registeredAnimations) {
+                animation.cancel();
+            }
+        }
+    }
+    
     public toString(): string {
+        var str = this.typeName;
         if (this.id) {
-            return this.typeName + `<${this.id}>`;
+            str += `<${this.id}>`;
+        } else {
+            str += `(${this._domId})`;
+        }
+        var source = Source.get(this);
+        if (source) {
+            str += `@${source};`;
         }
 
-        return this.typeName + `(${this._domId})`;
+        return str;
     }
 
     public _setNativeViewFrame(nativeView: any, frame: any) {
         //
+    }
+
+    public _onStylePropertyChanged(property: Property): void {
+        //
+    }
+
+    protected _canApplyNativeProperty(): boolean {
+        // Check for a valid _nativeView instance
+        return !!this._nativeView;
     }
 }

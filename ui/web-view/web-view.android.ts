@@ -1,8 +1,15 @@
-﻿import common = require("./web-view-common");
+import common = require("./web-view-common");
 import trace = require("trace");
 import * as fileSystemModule from "file-system";
 
 global.moduleMerge(common, exports);
+
+var fs: typeof fileSystemModule;
+function ensureFS() {
+    if (!fs) {
+        fs = require("file-system");
+    }
+}
 
 var WebViewClientClass;
 function ensureWebViewClientClass() {
@@ -30,7 +37,7 @@ function ensureWebViewClientClass() {
 
             if (this._view) {
                 trace.write("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", trace.categories.Debug);
-                this._view._onLoadStarted(url);
+                this._view._onLoadStarted(url, common.WebView.navigationTypes[common.WebView.navigationTypes.indexOf("linkClicked")]);
             }
         }
 
@@ -130,7 +137,7 @@ export class WebView extends common.WebView {
             return;
         }
 
-        var fs: typeof fileSystemModule = require("file-system");
+        ensureFS();
 
         var baseUrl = `file:///${fs.knownFolders.currentApp().path}/`;
         this._android.loadDataWithBaseURL(baseUrl, src, "text/html", "utf-8", null);

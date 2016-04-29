@@ -1,10 +1,11 @@
 ﻿<Page >
   <StackLayout>
-    <Button id="Change" text="Change" tap="butonTap" />
-    <Label id="Label" text="Label" style.textDecoration="none" />
-    <Button id="Button" text="Button" style.textDecoration="none" />
-    <TextField id="TextField" text="TextField" style.textDecoration="none" />
-    <TextView id="TextView" text="TextView" style.textDecoration="none" />
+    <!--<Button id="ChangeText" automationText="Change text" text="Change text" tap="changeTextButonTap" />-->
+    <Button id="Change" automationText="Change" text="Change" tap="butonTap" />
+    <Label id="Label" automationText="Label" text="Label" style.textDecoration="none" />
+    <Button id="Button" automationText="Button" text="Button" style.textDecoration="none" />
+    <TextField id="TextField" automationText="TextField" text="TextField" style.textDecoration="none" />
+    <TextView id="TextView" automationText="TextView" text="TextView" style.textDecoration="none" />
 
     <!--
     <Label text="Label" style="text-decoration:none" />

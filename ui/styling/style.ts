@@ -15,6 +15,13 @@ import platform = require("platform");
 import definition = require("ui/styling/style");
 import * as imageSourceModule from "image-source";
 
+var imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
+}
+
 // key is the property id and value is Dictionary<string, StylePropertyChangedHandler>;
 var _registeredHandlers = Array<Object>();
 
@@ -165,25 +172,25 @@ function onLayoutParamsChanged(data: PropertyChangeData) {
     let marginTopValue = convertToPercentHelper(style.marginTop);
     let marginRightValue = convertToPercentHelper(style.marginRight);
     let marginBottomValue = convertToPercentHelper(style.marginBottom);
-    
+
     // Negative marginPercent means no marginPercent so native layout won't override margin with this % value.
-    var layoutParams: definition.CommonLayoutParams = 
-    {
-        width: width,
-        height: height,
-        widthPercent: widthPercent,
-        heightPercent: heightPercent,
-        leftMargin: marginLeftValue.isPercent ? 0 : marginLeftValue.value,
-        leftMarginPercent: marginLeftValue.isPercent ? marginLeftValue.value / 100 : -1,
-        topMargin: marginTopValue.isPercent ? 0 : marginTopValue.value,
-        topMarginPercent: marginTopValue.isPercent ? marginTopValue.value / 100 : -1,
-        rightMargin: marginRightValue.isPercent ? 0 : marginRightValue.value,
-        rightMarginPercent: marginRightValue.isPercent ? marginRightValue.value / 100 : -1,
-        bottomMargin: marginBottomValue.isPercent ? 0 : marginBottomValue.value,
-        bottomMarginPercent: marginBottomValue.isPercent ? marginBottomValue.value / 100 : -1,
-        horizontalAlignment: style.horizontalAlignment,
-        verticalAlignment: style.verticalAlignment
-    };
+    var layoutParams: definition.CommonLayoutParams =
+        {
+            width: width,
+            height: height,
+            widthPercent: widthPercent,
+            heightPercent: heightPercent,
+            leftMargin: marginLeftValue.isPercent ? 0 : marginLeftValue.value,
+            leftMarginPercent: marginLeftValue.isPercent ? marginLeftValue.value / 100 : -1,
+            topMargin: marginTopValue.isPercent ? 0 : marginTopValue.value,
+            topMarginPercent: marginTopValue.isPercent ? marginTopValue.value / 100 : -1,
+            rightMargin: marginRightValue.isPercent ? 0 : marginRightValue.value,
+            rightMarginPercent: marginRightValue.isPercent ? marginRightValue.value / 100 : -1,
+            bottomMargin: marginBottomValue.isPercent ? 0 : marginBottomValue.value,
+            bottomMarginPercent: marginBottomValue.isPercent ? marginBottomValue.value / 100 : -1,
+            horizontalAlignment: style.horizontalAlignment,
+            verticalAlignment: style.verticalAlignment
+        };
 
     style._setValue(nativeLayoutParamsProperty, layoutParams);
 }
@@ -279,7 +286,7 @@ function onBackgroundImagePropertyChanged(data: PropertyChangeData) {
             url = match[2];
         }
 
-        var imageSource: typeof imageSourceModule = require("image-source");
+        ensureImageSource();
 
         if (utils.isDataURI(url)) {
             var base64Data = url.split(",")[1];
@@ -297,6 +304,8 @@ function onBackgroundImagePropertyChanged(data: PropertyChangeData) {
             style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
             imageSource.fromUrl(url).then((r) => {
                 if (style && style["_url"] === url) {
+                    // Get the current background again, as it might have changed while doing the request.
+                    currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
                     style._setValue(backgroundInternalProperty, currentBackground.withImage(r));
                 }
             });
@@ -408,8 +417,25 @@ function isOpacityValid(value: string): boolean {
     return !isNaN(parsedValue) && 0 <= parsedValue && parsedValue <= 1;
 }
 
+function isFloatValueValid(value: string): boolean {
+    var parsedValue: number = parseFloat(value);
+    return !isNaN(parsedValue);
+}
+
 function isFontWeightValid(value: string): boolean {
-    return value === enums.FontWeight.normal || value === enums.FontWeight.bold;
+    if (!value) {
+        console.trace();
+    }
+    return value === enums.FontWeight.thin
+        || value === enums.FontWeight.extraLight
+        || value === enums.FontWeight.light
+        || value === enums.FontWeight.normal || value === "400"
+        || value === enums.FontWeight.medium
+        || value === enums.FontWeight.semiBold
+        || value === enums.FontWeight.bold || value === "700"
+        || value === enums.FontWeight.extraBold
+        || value === enums.FontWeight.black
+        ;
 }
 
 function isFontStyleValid(value: string): boolean {
@@ -461,6 +487,46 @@ export class Style extends DependencyObservable implements styling.Style {
     private _updateCounter = 0;
     private _nativeSetters = new Map<Property, any>();
 
+    get rotate(): number {
+        return this._getValue(rotateProperty);
+    }
+
+    set rotate(value: number) {
+        this._setValue(rotateProperty, value);
+    }
+    
+    get scaleX(): number {
+        return this._getValue(scaleXProperty);
+    }
+    
+    set scaleX(value: number) {
+        this._setValue(scaleXProperty, value);
+    }
+    
+    get scaleY(): number {
+        return this._getValue(scaleYProperty);
+    }
+    
+    set scaleY(value: number) {
+        this._setValue(scaleYProperty, value);
+    }
+
+    get translateX(): number {
+        return this._getValue(translateXProperty);
+    }
+    
+    set translateX(value: number) {
+        this._setValue(translateXProperty, value);
+    }
+
+    get translateY(): number {
+        return this._getValue(translateYProperty);
+    }
+    
+    set translateY(value: number) {
+        this._setValue(translateYProperty, value);
+    }
+    
     get color(): Color {
         return this._getValue(colorProperty);
     }
@@ -719,6 +785,20 @@ export class Style extends DependencyObservable implements styling.Style {
     set whiteSpace(value: string) {
         this._setValue(whiteSpaceProperty, value);
     }
+    
+    get letterSpacing(): number {
+        return this._getValue(letterSpacingProperty);
+    }
+    set letterSpacing(value: number) {
+        this._setValue(letterSpacingProperty, value);
+    }
+    
+    get zIndex(): number {
+        return this._getValue(zIndexProperty);
+    }
+    set zIndex(value: number) {
+        this._setValue(zIndexProperty, value);
+    }         
 
     public _updateTextDecoration() {
         if (this._getValue(textDecorationProperty) !== enums.TextDecoration.none) {
@@ -805,7 +885,7 @@ export class Style extends DependencyObservable implements styling.Style {
     private _applyProperty(property: Property, newValue: any) {
         this._applyStyleProperty(property, newValue);
 
-        // The effective value of an inheritable property has changed 
+        // The effective value of an inheritable property has changed
         // propagate the change down to the descendants to update their inherited properties.
         if (this._view._childrenCount === 0 || !property.metadata.inheritable) {
             return;
@@ -852,6 +932,8 @@ export class Style extends DependencyObservable implements styling.Style {
                 } else {
                     (<any>handler).applyProperty(property, this._view, newValue);
                 }
+
+                this._view._onStylePropertyChanged(property);
             }
         }
         catch (ex) {
@@ -923,6 +1005,22 @@ export function getHandler(property: Property, view: View): definition.StyleProp
 }
 
 // Property registration
+
+export var rotateProperty = new styleProperty.Property("rotate", "rotate",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var scaleXProperty = new styleProperty.Property("scaleX", "scaleX",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var scaleYProperty = new styleProperty.Property("scaleY", "scaleY",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var translateXProperty = new styleProperty.Property("translateX", "translateX",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
+export var translateYProperty = new styleProperty.Property("translateY", "translateY",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+
 export var colorProperty = new styleProperty.Property("color", "color",
     new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, undefined, Color.isValid, Color.equals),
     converters.colorConverter);
@@ -992,6 +1090,12 @@ export var textTransformProperty = new styleProperty.Property("textTransform", "
 
 export var whiteSpaceProperty = new styleProperty.Property("whiteSpace", "white-space",
     new PropertyMetadata(undefined, AffectsLayout, undefined, isWhiteSpaceValid), converters.whiteSpaceConverter);
+    
+export var letterSpacingProperty = new styleProperty.Property("letterSpacing", "letter-spacing",
+    new PropertyMetadata(Number.NaN, AffectsLayout, undefined, isFloatValueValid), converters.floatConverter);
+    
+export var zIndexProperty = new styleProperty.Property("zIndex", "z-index",
+    new PropertyMetadata(Number.NaN, AffectsLayout, undefined, isFloatValueValid), converters.floatConverter);      
 
 // Helper property holding most layout related properties available in CSS.
 // When layout related properties are set in CSS we chache them and send them to the native view in a single call.
@@ -1121,10 +1225,65 @@ function onFontChanged(value: any): Array<styleProperty.KeyValuePair<styleProper
     return array;
 }
 
+function onTransformChanged(value: any): Array<styleProperty.KeyValuePair<styleProperty.Property, any>> {
+    var newTransform = converters.transformConverter(value);
+    var array = new Array<styleProperty.KeyValuePair<styleProperty.Property, any>>();
+    var values = undefined;
+    for (var transform in newTransform) {
+        switch (transform) {
+            case "scaleX":
+                array.push({ property: scaleXProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "scaleY":
+                array.push({ property: scaleYProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "scale":
+            case "scale3d":
+                values = newTransform[transform].split(",");
+                if (values.length === 2 || values.length === 3) {
+                    array.push({ property: scaleXProperty, value: parseFloat(values[0]) });
+                    array.push({ property: scaleYProperty, value: parseFloat(values[1]) });
+                }
+                break;
+            case "translateX":
+                array.push({ property: translateXProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "translateY":
+                array.push({ property: translateYProperty, value: parseFloat(newTransform[transform]) });
+                break;
+            case "translate":
+            case "translate3d":
+                values = newTransform[transform].split(",");
+                if (values.length === 2 || values.length === 3) {
+                    array.push({ property: translateXProperty, value: parseFloat(values[0]) });
+                    array.push({ property: translateYProperty, value: parseFloat(values[1]) });
+                }
+                break;
+            case "rotate":
+                let text = newTransform[transform];
+                let val = parseFloat(text);
+                if (text.slice(-3) === "rad") {
+                    val = val * (180.0 / Math.PI);
+                }
+                array.push({ property: rotateProperty, value: val });
+                break;
+            case "none":
+                array.push({ property: scaleXProperty, value: 1 });
+                array.push({ property: scaleYProperty, value: 1 });
+                array.push({ property: translateXProperty, value: 0 });
+                array.push({ property: translateYProperty, value: 0 });
+                array.push({ property: rotateProperty, value: 0 });
+                break;
+        }
+    }
+    return array;
+}
+
 // register default shorthand callbacks.
 styleProperty.registerShorthandCallback("font", onFontChanged);
 styleProperty.registerShorthandCallback("margin", onMarginChanged);
 styleProperty.registerShorthandCallback("padding", onPaddingChanged);
+styleProperty.registerShorthandCallback("transform", onTransformChanged);
 
 var _defaultNativeValuesCache = {};
 

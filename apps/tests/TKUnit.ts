@@ -27,6 +27,7 @@ export interface TestInfoEntry {
     isPassed: boolean;
     errorMessage: string;
     testTimeout: number;
+    duration: number;
 }
 
 export function time(): number {
@@ -56,6 +57,7 @@ var runTest = function (testInfo: TestInfoEntry) {
 
         if (testInfo.isTest) {
             duration = time() - start;
+            testInfo.duration = duration;
             write("--- [" + testInfo.testName + "] OK, duration: " + duration, trace.messageType.info);
             testInfo.isPassed = true;
         }
@@ -63,6 +65,7 @@ var runTest = function (testInfo: TestInfoEntry) {
     catch (e) {
         if (testInfo.isTest) {
             duration = time() - start;
+            testInfo.duration = duration;
             write("--- [" + testInfo.testName + "]  FAILED: " + e.message + ", duration: " + duration, trace.messageType.error);
             testInfo.isPassed = false;
             testInfo.errorMessage = e.message;
@@ -109,6 +112,7 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
     let duration;
     var checkFinished = function () {
         duration = time() - testStartTime;
+        testInfo.duration = duration;
         if (isDone) {
             write("--- [" + testInfo.testName + "] OK, duration: " + duration, trace.messageType.info);
             //write("--- [" + testInfo.testName + "] took: " + (new Date().getTime() - testStartTime), trace.messageType.info);
@@ -189,7 +193,7 @@ export function assertNotEqual(actual: any, expected: any, message?: string) {
     if (types.isUndefined(actual) && types.isUndefined(expected)) {
         equals = true;
     }
-    else if (!types.isUndefined(actual) && !types.isUndefined(expected)) {
+    else if (!types.isNullOrUndefined(actual) && !types.isNullOrUndefined(expected)) {
         if (types.isFunction(actual.equals)) {
 
             // Use the equals method

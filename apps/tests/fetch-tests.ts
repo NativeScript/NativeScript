@@ -8,89 +8,77 @@ export var test_fetch_defined = function () {
 
 export var test_fetch = function (done: (err: Error, res?: string) => void) {
     var result;
-    // <snippet module="fetch" title="fetch">
-    // ### Get Response from URL
-    // ``` JavaScript
+    // >> fetch-response
     fetch("https://httpbin.org/get").then(function (r) {
         //// Argument (r) is Response!
-        // <hide>
+        // >> (hide)
         TKUnit.assert(r instanceof Response, "Result from fetch() should be valid Response object! Actual result is: " + result);
         done(null);
-        // </hide>
+        // << (hide)
     }, function (e) {
             //// Argument (e) is Error!
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << fetch-response
 };
 
 export var test_fetch_text = function (done: (err: Error, res?: string) => void) {
     var result;
 
-    // <snippet module="fetch" title="fetch">
-    // ### Get string from URL
-    // ``` JavaScript
+    // >> fetch-string'
     fetch("https://httpbin.org/get").then(response => { return response.text(); }).then(function (r) {
         //// Argument (r) is string!
-        // <hide>
+        // >> (hide)
         TKUnit.assert(types.isString(r), "Result from text() should be string! Actual result is: " + r);
         done(null);
-        // </hide>
+        // << (hide)
     }, function (e) {
             //// Argument (e) is Error!
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << fetch-string'
 };
 
 export var test_fetch_json = function (done: (err: Error, res?: string) => void) {
     var result;
 
-    // <snippet module="fetch" title="fetch">
-    // ### Get JSON from URL
-    // ``` JavaScript
+    // >> fetch-json
     fetch("https://httpbin.org/get").then(response => { return response.json(); }).then(function (r) {
         //// Argument (r) is JSON object!
-        // <hide>
+        // >> (hide)
         TKUnit.assert(types.isString(JSON.stringify(r)), "Result from json() should be JSON object! Actual result is: " + r);
         done(null);
-        // </hide>
+        // << (hide)
     }, function (e) {
             //// Argument (e) is Error!
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << fetch-json
 };
 
 export var test_fetch_formData = function (done: (err: Error, res?: string) => void) {
     var result;
 
-    // <snippet module="fetch" title="fetch">
-    // ### Get FormData from URL
-    // ``` JavaScript
+    // >> fetch-formdata
     fetch("https://httpbin.org/get").then(response => { return response.formData(); }).then(function (r) {
         //// Argument (r) is FormData object!
-        // <hide>
+        // >> (hide)
         TKUnit.assert(r instanceof FormData, "Result from formData() should be FormData object! Actual result is: " + r);
         done(null);
-        // </hide>
+        // << (hide)
     }, function (e) {
             //// Argument (e) is Error!
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << fetch-formdata
 };
 
 export var test_fetch_fail_invalid_url = function (done) {
@@ -105,13 +93,11 @@ export var test_fetch_fail_invalid_url = function (done) {
 
 export var test_fetch_response_status = function (done) {
 
-    // <snippet module="fetch" title="fetch">
-    // ### Get Response status
-    // ``` fetch
+    // >> fetch-status-response
     fetch("https://httpbin.org/get").then(function (response) {
         //// Argument (response) is Response!
         var statusCode = response.status;
-        // <hide>
+        // >> (hide)
         try {
             TKUnit.assert(types.isDefined(statusCode), "response.status should be defined! Actual result is: " + statusCode);
             done(null);
@@ -119,26 +105,23 @@ export var test_fetch_response_status = function (done) {
         catch (err) {
             done(err);
         }
-        // </hide>
+        // << (hide)
     }, function (e) {
             //// Argument (e) is Error!
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << fetch-status-response
 };
 
 export var test_fetch_response_headers = function (done) {
 
-    // <snippet module="fetch" title="fetch">
-    // ### Get response headers
-    // ``` JavaScript
+    // >> fetch-headers-response
     fetch("https://httpbin.org/get").then(function (response) {
         //// Argument (response) is Response!
         // var all = response.headers.getAll();
-        // <hide>
+        // >> (hide)
         try {
             TKUnit.assert(types.isDefined(response.headers), "response.headers should be defined! Actual result is: " + response.headers);
             done(null);
@@ -146,15 +129,14 @@ export var test_fetch_response_headers = function (done) {
         catch (err) {
             done(err);
         }
-        // </hide>
+        // << (hide)
     }, function (e) {
             //// Argument (e) is Error!
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
         });
-    // ```
-    // </snippet>
+    // << fetch-headers-response
 };
 
 export var test_fetch_headers_sent = function (done) {
@@ -202,15 +184,13 @@ export var test_fetch_post_form_data = function (done) {
 };
 
 export var test_fetch_post_json = function (done) {
-    // <snippet module="fetch" title="fetch">
-    // ### Post JSON
-    // ``` JavaScript
+    // >> fetch-post-json
     fetch("https://httpbin.org/post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })
     }).then(r => { return r.json(); }).then(function (r) {
-        // <hide>
+        // >> (hide)
         try {
             TKUnit.assert(r.json["MyVariableOne"] === "ValueOne" && r.json["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly! Actual result is: " + r.json);
             done(null);
@@ -218,14 +198,13 @@ export var test_fetch_post_json = function (done) {
         catch (err) {
             done(err);
         }
-        // </hide>
+        // << (hide)
         // console.log(result);
     }, function (e) {
-            // <hide>
+            // >> (hide)
             done(e);
-            // </hide>
+            // << (hide)
             // console.log("Error occurred " + e);
         });
-    // ```
-    // </snippet>
+    // << fetch-post-json
 };

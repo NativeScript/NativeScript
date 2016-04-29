@@ -15,11 +15,12 @@ function createHandlerAndGetId(): number {
 }
 
 export function setTimeout(callback: Function, milliseconds = 0): number {
-    var id = createHandlerAndGetId();
+    const id = createHandlerAndGetId();
+    const zoneBound = zonedCallback(callback);
 
     var runnable = new java.lang.Runnable({
         run: () => {
-            callback();
+            zoneBound();
 
             if (timeoutCallbacks[id]) {
                 delete timeoutCallbacks[id];
@@ -44,12 +45,13 @@ export function clearTimeout(id: number): void {
 }
 
 export function setInterval(callback: Function, milliseconds = 0): number {
-    var id = createHandlerAndGetId();
-    var handler = timeoutHandler;
+    const id = createHandlerAndGetId();
+    const handler = timeoutHandler;
+    const zoneBound = zonedCallback(callback);
 
     var runnable = new java.lang.Runnable({
         run: () => {
-            callback();
+            zoneBound();
             if (timeoutCallbacks[id]) {
                 handler.postDelayed(runnable, long(milliseconds));
             }

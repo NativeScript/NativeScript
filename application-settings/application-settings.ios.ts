@@ -59,3 +59,7 @@ export var remove = function (key: string): void {
     userDefaults.removeObjectForKey(key);
     userDefaults.synchronize();
 }
+
+export var clear = function (): void {
+    userDefaults.removePersistentDomainForName(NSBundle.mainBundle().bundleIdentifier);
+}

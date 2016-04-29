@@ -1,9 +1,7 @@
 ﻿import view = require("ui/core/view");
 import utils = require("utils/utils");
-import types = require("utils/types");
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
-import styling = require("ui/styling");
 import enums = require("ui/enums");
 
 export class TextBaseStyler implements style.Styler {
@@ -110,6 +108,23 @@ export class TextBaseStyler implements style.Styler {
         utils.ad.setWhiteSpace(view._nativeView, enums.WhiteSpace.normal);
     }
 
+    // letter-spacing
+    private static getLetterSpacingProperty(view: view.View) : any {
+        return view.android.getLetterSpacing ? view.android.getLetterSpacing() : 0;
+    }
+
+    private static setLetterSpacingProperty(view: view.View, newValue: any) {
+        if(view.android.setLetterSpacing) {
+           view.android.setLetterSpacing(utils.layout.toDeviceIndependentPixels(newValue));
+        }
+    }
+
+    private static resetLetterSpacingProperty(view: view.View, nativeValue: any) {
+        if(view.android.setLetterSpacing) {
+            view.android.setLetterSpacing(nativeValue);
+        }
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
             TextBaseStyler.setColorProperty,
@@ -138,33 +153,14 @@ export class TextBaseStyler implements style.Styler {
             TextBaseStyler.setWhiteSpaceProperty,
             TextBaseStyler.resetWhiteSpaceProperty), "TextBase");
 
-        // Register the same stylers for Button.
-        // It also derives from TextView but is not under TextBase in our View hierarchy.
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setColorProperty,
-            TextBaseStyler.resetColorProperty,
-            TextBaseStyler.getNativeColorValue), "Button");
+        style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
+            TextBaseStyler.setLetterSpacingProperty,
+            TextBaseStyler.resetLetterSpacingProperty,
+            TextBaseStyler.getLetterSpacingProperty), "TextBase");
 
-        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setFontInternalProperty,
-            TextBaseStyler.resetFontInternalProperty,
-            TextBaseStyler.getNativeFontInternalValue), "Button");
-
-        style.registerHandler(style.textAlignmentProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextAlignmentProperty,
-            TextBaseStyler.resetTextAlignmentProperty,
-            TextBaseStyler.getNativeTextAlignmentValue), "Button");
-
-        style.registerHandler(style.textDecorationProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextDecorationProperty,
-            TextBaseStyler.resetTextDecorationProperty), "Button");
-
-        style.registerHandler(style.textTransformProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextTransformProperty,
-            TextBaseStyler.resetTextTransformProperty), "Button");
-
-        style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setWhiteSpaceProperty,
-            TextBaseStyler.resetWhiteSpaceProperty), "Button");
+        // !!! IMPORTANT !!! Button registrations were moved to button.android.ts to make sure they 
+        // are executed when there is a Button on the page: https://github.com/NativeScript/NativeScript/issues/1902
+        // If there is no TextBase on the Page, the TextBaseStyler.registerHandlers
+        // method was never called because the file it is called from was never required.
     }
 }

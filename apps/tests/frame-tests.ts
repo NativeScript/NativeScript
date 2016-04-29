@@ -1,29 +1,19 @@
-﻿// <snippet module="ui/frame" title="frame">
-// # Frame
-// To perform navigation, you will need a reference to the topmost frame of the application.
-// ``` JavaScript
+﻿// >> frame-require
 import frameModule = require("ui/frame");
 var topmost = frameModule.topmost();
-// ```
-// </snippet>
+// << frame-require
+
 import labelModule = require("ui/label");
 import pagesModule = require("ui/page");
 
-import TKUnit = require("./TKUnit");
-
 export var ignore_test_DummyTestForSnippetOnly0 = function () {
-    // <snippet module="ui/frame" title="frame">
-    // ### Navigating to a Module
-    // ``` JavaScript
+    // >> frame-navigating
     topmost.navigate("details-page");
-    // ```
-    // </snippet>
+    // << frame-navigating
 }
 
 export var ignore_test_DummyTestForSnippetOnly1 = function () {
-    // <snippet module="ui/frame" title="frame">
-    // ### Navigating with a Factory Function
-    // ``` JavaScript
+    // >> frame-factory-func
     var factoryFunc = function () {
         var label = new labelModule.Label();
         label.text = "Hello, world!";
@@ -32,34 +22,22 @@ export var ignore_test_DummyTestForSnippetOnly1 = function () {
         return page;
     };
     topmost.navigate(factoryFunc);    
-    // ```
-    // </snippet>
+    // <<frame-factory-func
 }
 
 export var ignore_test_DummyTestForSnippetOnly2 = function () {
-    // <snippet module="ui/frame" title="frame">
-    // ### Navigating with NavigationEntry
-    // ``` JavaScript
+    // >> frame-naventry
     var navigationEntry = {
         moduleName: "details-page",
         context: { info: "something you want to pass to your page" },
         animated: false
     };
     topmost.navigate(navigationEntry);
-    // ```
-    // </snippet>
+    // << frame-naventry
 }
 
 export var ignore_test_DummyTestForSnippetOnly3 = function () {
-    // <snippet module="ui/frame" title="frame">
-    // ### Navigating Back
-    // ``` JavaScript
+    // >> frame-back
     topmost.goBack();
-    // ```
-    // </snippet>
-}
-
-export function test_currentEntry() {
-    var moduleName = frameModule.topmost().currentEntry.moduleName;
-    TKUnit.assert(moduleName === "tests/app/mainPage" || moduleName === "app/mainPage", "Expected frameModule.topmost().currentEntry.moduleName to return tests/app/mainPage or app/mainPage but instead returned " + moduleName);
+    // << frame-back
 }

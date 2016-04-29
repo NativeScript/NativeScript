@@ -6,9 +6,18 @@ import color = require("color");
 import bindable = require("ui/core/bindable");
 import * as typesModule from "utils/types";
 
+var types: typeof typesModule;
+function ensureTypes() {
+    if (!types) {
+        types = require("utils/types");
+    }
+}
+
 export module knownCollections {
     export var items = "items";
 }
+
+var CHILD_SEGMENTED_BAR_ITEM = "SegmentedBarItem";
 
 export class SegmentedBarItem extends bindable.Bindable implements definition.SegmentedBarItem {
     private _title: string = "";
@@ -40,7 +49,7 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
     public _adjustSelectedIndex(items: Array<definition.SegmentedBarItem>) {
         if (this.items) {
             if (this.items.length > 0) {
-                var types: typeof typesModule = require("utils/types");
+                ensureTypes();
 
                 if (types.isUndefined(this.selectedIndex) || (this.selectedIndex > this.items.length - 1)) {
                     this._setValue(SegmentedBar.selectedIndexProperty, 0);
@@ -89,5 +98,36 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
                 this.items[i].bindingContext = newValue;
             }
         }
+    }
+    
+    public _addChildFromBuilder(name: string, value: any): void {
+        if(name === CHILD_SEGMENTED_BAR_ITEM) {
+            if (!this.items) {
+                this.items = new Array<SegmentedBarItem>();
+            }
+            this.items.push(<SegmentedBarItem>value);
+            this.insertTab(<SegmentedBarItem>value);
+            
+        }
+    }
+    
+    public insertTab(tabItem: SegmentedBarItem, index?: number): void {
+        //
+    }
+    
+    public getValidIndex(index?: number): number {
+        ensureTypes();
+        let idx: number;
+        let itemsLength = this.items ? this.items.length : 0; 
+        if (types.isNullOrUndefined(index)) {
+            idx = itemsLength;
+        } else {
+            if (index < 0 || index > itemsLength) {
+                idx = itemsLength;
+            } else {
+                idx = index;
+            }
+        }
+        return idx;
     }
 }

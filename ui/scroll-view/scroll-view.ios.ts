@@ -42,7 +42,7 @@ export class ScrollView extends common.ScrollView implements definition.ScrollVi
 
     constructor() {
         super();
-        this._scroll = new UIScrollView();
+        this._scroll = UIScrollView.new();
     }
 
     protected attachNative() {
@@ -109,7 +109,7 @@ export class ScrollView extends common.ScrollView implements definition.ScrollVi
         var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
         var density = utils.layout.getDisplayDensity();
-        var child = this.content
+        var child = this.layoutView;
         if (!child) {
             this._contentMeasuredWidth = this.minWidth * density;
             this._contentMeasuredHeight = this.minHeight * density;
@@ -140,10 +140,10 @@ export class ScrollView extends common.ScrollView implements definition.ScrollVi
         var height = (bottom - top);
 
         if (this.orientation === enums.Orientation.horizontal) {
-            view.View.layoutChild(this, this.content, 0, 0, Math.max(this._contentMeasuredWidth, width), height);
+            view.View.layoutChild(this, this.layoutView, 0, 0, Math.max(this._contentMeasuredWidth, width), height);
         }
         else {
-            view.View.layoutChild(this, this.content, 0, 0, width, Math.max(this._contentMeasuredHeight, height));
+            view.View.layoutChild(this, this.layoutView, 0, 0, width, Math.max(this._contentMeasuredHeight, height));
         }
     }
 }

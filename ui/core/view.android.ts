@@ -5,9 +5,8 @@ import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import gestures = require("ui/gestures");
-import * as typesModule from "utils/types";
+import * as types from "utils/types";
 import style = require("ui/styling/style");
-import styling = require("ui/styling");
 import enums = require("ui/enums");
 import background = require("ui/styling/background");
 import {CommonLayoutParams, Thickness} from "ui/styling/style";
@@ -17,7 +16,6 @@ global.moduleMerge(viewCommon, exports);
 var ANDROID = "_android";
 var NATIVE_VIEW = "_nativeView";
 var VIEW_GROUP = "_viewGroup";
-var OWNER = "_owner";
 
 function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
@@ -180,8 +178,9 @@ export class View extends viewCommon.View {
 
     public _removeViewCore(view: viewCommon.View) {
         super._removeViewCore(view);
-        // TODO: Detach from the context?
-        view._onDetached();
+        if (view._context) {
+            view._onDetached();
+        }
     }
 
     public _onAttached(context: android.content.Context) {
@@ -196,7 +195,7 @@ export class View extends viewCommon.View {
         }
 
         if (this._context) {
-            this._onDetached();
+            this._onDetached(true);
         }
 
         this._context = context;
@@ -227,7 +226,9 @@ export class View extends viewCommon.View {
                 if (child._isAddedToNativeVisualTree) {
                     that._removeViewFromNativeVisualTree(child);
                 }
-                child._onDetached(force);
+                if (child._context) {
+                    child._onDetached(force);
+                }
                 return true;
             }
             this._eachChildView(eachChild);
@@ -266,9 +267,6 @@ export class View extends viewCommon.View {
         if (this._nativeView && !(this._nativeView.getLayoutParams() instanceof org.nativescript.widgets.CommonLayoutParams)) {
             this._nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
         }
-
-        utils.copyFrom(this._options, this);
-        delete this._options;
 
         // copy all the locally cached values to the native android widget
         this._syncNativeProperties();
@@ -362,6 +360,49 @@ export class View extends viewCommon.View {
         return false;
     }
 
+    public getLocationInWindow(): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.getWindowToken()) {
+            return undefined;
+        }
+
+        var nativeArray = (<any>Array).create("int", 2);
+        this._nativeView.getLocationInWindow(nativeArray);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
+            y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
+        } 
+    }
+
+    public getLocationOnScreen(): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.getWindowToken()) {
+            return undefined;
+        }
+
+        var nativeArray = (<any>Array).create("int", 2);
+        this._nativeView.getLocationOnScreen(nativeArray);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
+            y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
+        } 
+    }
+
+    public getLocationRelativeTo(otherView: viewDefinition.View): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.getWindowToken() ||
+            !otherView._nativeView || !otherView._nativeView.getWindowToken() ||
+            this._nativeView.getWindowToken() !== otherView._nativeView.getWindowToken()) {
+            return undefined;
+        }
+
+        var myArray = (<any>Array).create("int", 2);
+        this._nativeView.getLocationOnScreen(myArray);
+        var otherArray = (<any>Array).create("int", 2);
+        otherView._nativeView.getLocationOnScreen(otherArray);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(myArray[0] - otherArray[0]),
+            y: utils.layout.toDeviceIndependentPixels(myArray[1] - otherArray[1]),
+        } 
+    }
+
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
         var result = size;
         switch (specMode) {
@@ -403,8 +444,6 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
         super._addViewToNativeVisualTree(child);
 
         if (this._nativeView && child._nativeView) {
-            var types: typeof typesModule = require("utils/types");
-
             if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.getChildCount()) {
                 this._nativeView.addView(child._nativeView);
             }
@@ -544,7 +583,8 @@ export class ViewStyler implements style.Styler {
                 gravity |= android.view.Gravity.TOP;
                 break;
 
-            case enums.VerticalAlignment.center || enums.VerticalAlignment.middle:
+            case enums.VerticalAlignment.center:
+            case enums.VerticalAlignment.middle:
                 gravity |= android.view.Gravity.CENTER_VERTICAL;
                 break;
 
@@ -593,6 +633,88 @@ export class ViewStyler implements style.Styler {
         (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
     }
 
+    // Rotate
+    private static setRotateProperty(view: View, newValue: any) {
+        view.rotate = newValue;
+    }
+
+    private static resetRotateProperty(view: View, nativeValue: any) {
+        view.rotate = nativeValue;
+    }
+
+    private static getRotateProperty(view: View): any {
+        return view.rotate;
+    }
+
+    //ScaleX
+    private static setScaleXProperty(view: View, newValue: any) {
+        view.scaleX = newValue;
+    }
+
+    private static resetScaleXProperty(view: View, nativeValue: any) {
+        view.scaleX = nativeValue;
+    }
+
+    private static getScaleXProperty(view: View): any {
+        return view.scaleX;
+    }
+
+    //ScaleY
+    private static setScaleYProperty(view: View, newValue: any) {
+        view.scaleY = newValue;
+    }
+
+    private static resetScaleYProperty(view: View, nativeValue: any) {
+        view.scaleY = nativeValue;
+    }
+
+    private static getScaleYProperty(view: View): any {
+        return view.scaleY;
+    }
+
+    //TranslateX
+    private static setTranslateXProperty(view: View, newValue: any) {
+        view.translateX = newValue;
+    }
+
+    private static resetTranslateXProperty(view: View, nativeValue: any) {
+        view.translateX = nativeValue;
+    }
+
+    private static getTranslateXProperty(view: View): any {
+        return view.translateX;
+    }
+
+    //TranslateY
+    private static setTranslateYProperty(view: View, newValue: any) {
+        view.translateY = newValue;
+    }
+
+    private static resetTranslateYProperty(view: View, nativeValue: any) {
+        view.translateY = nativeValue;
+    }
+
+    private static getTranslateYProperty(view: View): any {
+        return view.translateY;
+    }
+    
+    // z-index
+    private static getZIndexProperty(view: View): any {
+        return view.android.getZ ? view.android.getZ() : 0;
+    }
+
+    private static setZIndexProperty(view: View, newValue: any) {
+        if (view.android.setZ) {
+            view.android.setZ(newValue);
+        }
+    }
+
+    private static resetZIndexProperty(view: View, nativeValue: any) {
+        if (view.android.setZ) {
+            view.android.setZ(nativeValue);
+        }
+    }    
+
     public static registerHandlers() {
         style.registerHandler(style.visibilityProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setVisibilityProperty,
@@ -636,6 +758,36 @@ export class ViewStyler implements style.Styler {
         style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setPaddingProperty,
             ViewStyler.resetPaddingProperty), "LayoutBase");
+            
+             style.registerHandler(style.rotateProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setRotateProperty,
+            ViewStyler.resetRotateProperty,
+            ViewStyler.getRotateProperty));
+
+        style.registerHandler(style.scaleXProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setScaleXProperty,
+            ViewStyler.resetScaleXProperty,
+            ViewStyler.getScaleXProperty));
+
+        style.registerHandler(style.scaleYProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setScaleYProperty,
+            ViewStyler.resetScaleYProperty,
+            ViewStyler.getScaleYProperty));
+
+        style.registerHandler(style.translateXProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setTranslateXProperty,
+            ViewStyler.resetTranslateXProperty,
+            ViewStyler.getTranslateXProperty));
+
+        style.registerHandler(style.translateYProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setTranslateYProperty,
+            ViewStyler.resetTranslateYProperty,
+            ViewStyler.getTranslateYProperty));
+            
+        style.registerHandler(style.zIndexProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setZIndexProperty,
+            ViewStyler.resetZIndexProperty,
+            ViewStyler.getZIndexProperty));
     }
 }
 

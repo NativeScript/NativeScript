@@ -3,12 +3,12 @@
     <TabView.items>
       <TabViewItem ios:title="Tab 1 &#xf179;" android:title="Tab 1 &#xf17b;">
         <TabViewItem.view>
-          <Label text="Tab 1" />
+          <Label text="Tab 1 &#xf117;" style="font-family: Material-Design-Iconic-Font" />
         </TabViewItem.view>
       </TabViewItem>
       <TabViewItem ios:title="Tab 2 &#xf179;" android:title="Tab 2 &#xf17b;">
         <TabViewItem.view>
-          <Label text="Tab 2" />
+          <Label text="Tab 2 &#xf117;" style="font-family: Material-Design-Iconic-Font" />
         </TabViewItem.view>
       </TabViewItem>
     </TabView.items>

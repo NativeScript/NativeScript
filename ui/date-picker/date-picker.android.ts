@@ -2,7 +2,7 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import utils = require("utils/utils")
-import * as typesModule from "utils/types";
+import * as types from "utils/types";
 
 function onYearPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
@@ -35,13 +35,11 @@ function onDayPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 (<proxy.PropertyMetadata>common.DatePicker.dayProperty.metadata).onSetNativeValue = onDayPropertyChanged;
 
 function updateNativeDate(picker: DatePicker) {
-    var types: typeof typesModule = require("utils/types");
-
     var year = types.isNumber(picker.year) ? picker.year : picker.android.getYear();
     var month = types.isNumber(picker.month) ? (picker.month - 1) : picker.android.getMonth();
     var day = types.isNumber(picker.day) ? picker.day : picker.android.getDayOfMonth();
 
-    picker.android.updateDate(year, month, day);
+    picker.date = new Date(year, month, day);
 }
 
 function onMaxDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -66,6 +64,19 @@ function onMinDatePropertyChanged(data: dependencyObservable.PropertyChangeData)
 
 (<proxy.PropertyMetadata>common.DatePicker.minDateProperty.metadata).onSetNativeValue = onMinDatePropertyChanged;
 
+function onDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var picker = <DatePicker>data.object;
+
+    var newValue = <Date>data.newValue;
+    if (picker.android && (picker.android.getDayOfMonth() !== newValue.getDay() 
+                            || picker.android.getMonth() !== newValue.getMonth() 
+                            || picker.android.getYear() !== newValue.getFullYear())) {
+        picker.android.updateDate(newValue.getFullYear(), newValue.getMonth(), newValue.getDate());
+    }
+}
+
+(<proxy.PropertyMetadata>common.DatePicker.dateProperty.metadata).onSetNativeValue = onDatePropertyChanged;
+
 global.moduleMerge(common, exports);
 
 export class DatePicker extends common.DatePicker {
@@ -89,17 +100,22 @@ export class DatePicker extends common.DatePicker {
 
             onDateChanged: function (picker: android.widget.DatePicker, year: number, month: number, day: number) {
                 if (this.owner) {
-
+                    let dateIsChanged = false;
                     if (year !== this.owner.year) {
                         this.owner._onPropertyChangedFromNative(common.DatePicker.yearProperty, year);
+                        dateIsChanged = true;
                     }
-
                     if ((month + 1) !== this.owner.month) {
                         this.owner._onPropertyChangedFromNative(common.DatePicker.monthProperty, month + 1);
+                        dateIsChanged = true;
                     }
-
                     if (day !== this.owner.day) {
                         this.owner._onPropertyChangedFromNative(common.DatePicker.dayProperty, day);
+                        dateIsChanged = true;
+                    }
+                    
+                    if (dateIsChanged) {
+                        this.owner._onPropertyChangedFromNative(common.DatePicker.dateProperty, new Date(year, month, day));
                     }
                 }
             }

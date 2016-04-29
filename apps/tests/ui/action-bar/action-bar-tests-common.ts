@@ -8,130 +8,9 @@ import viewModule = require("ui/core/view");
 import fs = require("file-system");
 import { Observable } from "data/observable";
 
-// <snippet module="ui/action-bar" title="ActionBar">
-// # ActionBar
-// Using a ActionBar requires the action-bar module.
-// ``` JavaScript
+// >> actionbar-common-require
 import actionBarModule = require("ui/action-bar");
-// ```
-// 
-// ## Setting Title and Icon
-//```XML
-// <Page>
-//   <Page.actionBar>
-//     {%raw%}<ActionBar title="{{ title }}" android.icon="res://is_custom_home_icon"/>{%endraw%}
-//   </Page.actionBar>
-//   ...
-// </Page>
-//```
-//The icon can only be set in Android platform. It is hidden by default, but you explicitly control its visibility with the `android.iconVisibility' property.
-//
-// 
-// ## Setting Custom Title View 
-//```XML
-// <Page loaded="pageLoaded">
-//   <Page.actionBar>
-//     <ActionBar title="Title">
-//       <ActionBar.titleView>
-//         <StackLayout orientation="horizontal">
-//           <Button text="1st" />
-//           <Button text="2nd" />
-//           <Button text="3rd" />
-//         </StackLayout>
-//       </ActionBar.titleView>
-//     </ActionBar>
-//   </Page.actionBar>
-//   ...
-// </Page>
-//```
-//
-// ## Setting Action Items
-//```XML
-// <Page>
-//   <Page.actionBar>
-//     <ActionBar title="Title">
-//       <ActionBar.actionItems>
-//         <ActionItem text="left"  ios.position="left"/>
-//         <ActionItem text="right" ios.position="right"/>
-//         <ActionItem text="pop"   ios.position="right"  android.position="popup"/>
-//       </ActionBar.actionItems>
-//     </ActionBar>
-//   </Page.actionBar>
-//   ...
-// </Page>
-//```
-//
-//The position option is platform specific. The available values are as follows:
-// * **Android** - `actionBar`, `actionBarIfRoom` and `popup`. The default is `actionBar`.
-// * **iOS** - `left` and `right`. The default is `left`.
-//
-// ## Displaying Platform-Specific System Icons on Action Items
-//```XML
-// <Page>
-//   <Page.actionBar>
-//     <ActionBar>
-//       <ActionBar.actionItems>
-//          <ActionItem ios.systemIcon="12" android.systemIcon = "ic_menu_search" />
-//          <ActionItem ios.systemIcon="15" android.systemIcon = "ic_menu_camera" />
-//          <ActionItem ios.systemIcon="16" android.systemIcon = "ic_menu_delete" />
-//       </ActionBar.actionItems>
-//     </ActionBar>
-//   </Page.actionBar>
-//   ...
-// </Page>
-//```
-//
-//### iOS
-//Set `ios.systemIcon` to a number representing the iOS system item to be displayed.
-//Use this property instead of `ActionItem.icon` if you want to diplsay a built-in iOS system icon.
-//Note: systemIcon is not supported on NavigationButton in iOS
-//The value should be a number from the `UIBarButtonSystemItem` enumeration
-//(https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIBarButtonItem_Class/#//apple_ref/c/tdef/UIBarButtonSystemItem)
-//0: Done
-//1: Cancel
-//2: Edit
-//3: Save
-//4: Add
-//5: FlexibleSpace
-//6: FixedSpace
-//7: Compose
-//8: Reply
-//9: Action
-//10: Organize
-//11: Bookmarks
-//12: Search
-//13: Refresh
-//14: Stop
-//15: Camera
-//16: Trash
-//17: Play
-//18: Pause
-//19: Rewind
-//20: FastForward
-//21: Undo
-//22: Redo
-//23: PageCurl
-//
-//### Android
-//Set `android.systemIcon` the name of the system drawable resource to be displayed.
-//Use this property instead of `ActionItem.icon` if you want to diplsay a built-in Android system icon.
-//The value should be a string such as 'ic_menu_search' if you want to display the built-in Android Menu Search icon for example.
-//For a full list of Android drawable names, please visit http://androiddrawables.com
-//
-// ## Setting Navigation Button
-//```XML
-// <Page>
-//   <Page.actionBar>
-//     <ActionBar title="Title">
-//       <NavigationButton text="go back" android.systemIcon = "ic_menu_back"/>
-//     </ActionBar>
-//   ...
-// </Page>
-//```
-//Setting `text` for the navigation button is not supproted in Android. You can use `icon` or `android.systemIcon` to set the image in Android.
-//Setting `ios.systemIcon` for the navigation button is not supported in iOS.
-//
-// </snippet>
+// << actionbar-common-require
 
 export function test_actionItem_inherit_bindingContext() {
     var page: PageModule.Page;
@@ -158,12 +37,7 @@ export function test_actionItem_inherit_bindingContext() {
 
     helper.navigate(pageFactory);
 
-    try {
-        TKUnit.assertEqual(page.actionBar.actionItems.getItemAt(0).text, "item", "actionItem.text");
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assertEqual(page.actionBar.actionItems.getItemAt(0).text, "item", "actionItem.text");
 }
 
 export function test_actionBar_inherit_bindingContext_inXML() {
@@ -195,6 +69,37 @@ export function test_actionItem_page_property_inXML() {
     var actionItem = p.actionBar.actionItems.getItemAt(0);
 
     TKUnit.assertEqual(actionItem.page, p, "actionItem.page");
+};
+
+export function test_actionItem_actionView_inXML() {
+    var p = <PageModule.Page>builder.parse(
+        "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
+        "<Label/>" +
+        "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
+
+    var label = <LabelModule.Label>p.actionBar.actionItems.getItemAt(0).actionView;
+    TKUnit.assert(label instanceof LabelModule.Label, "ActionItem.actionView not loaded correctly");
+};
+
+export function test_actionItem_actionView_inherit_bindingContext_inXML() {
+    var p = <PageModule.Page>builder.parse(
+        "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
+        "<Label text=\"{{ myProp }} \" />" +
+        "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
+    p.bindingContext = { myProp: "success" };
+
+    var label = <LabelModule.Label>p.actionBar.actionItems.getItemAt(0).actionView;
+    TKUnit.assert(label instanceof LabelModule.Label, "ActionItem.actionView not loaded correctly");
+    TKUnit.assertEqual(label.text, "success", "ActionItem.actionView");
+};
+
+export function test_ActionBar_is_not_empty_when_actionItem_actionView_is_set() {
+    var p = <PageModule.Page>builder.parse(
+        "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
+        "<Label text=\"test\" />" +
+        "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
+
+    TKUnit.assertFalse(p.actionBar._isEmpty(), "ActionItem.actionView is set but ActionBar reports empty");
 };
 
 export function test_navigationButton_inherit_bindingContext_inXML() {
@@ -273,12 +178,7 @@ export function test_ActionBarItemBindingToEvent() {
     }
 
     helper.navigate(function () { return p; });
-    try {
-        testAction([p]);
-    }
-    finally {
-        helper.goBack();
-    }
+    testAction([p]);
 }
 
 export function test_Setting_ActionItems_doesnt_thrown() {
@@ -306,12 +206,7 @@ export function test_Setting_ActionItems_doesnt_thrown() {
         gotException = true;
     }
 
-    try {
-        TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
 }
 
 export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
@@ -327,12 +222,7 @@ export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
         gotException = true;
     }
 
-    try {
-        TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
 }
 
 export function test_CanDefineEverythingAsContentBetweenTheTwoTags() {
@@ -355,6 +245,68 @@ export function test_CanDefineEverythingAsContentBetweenTheTwoTags() {
         TKUnit.assertEqual(items[1].text, "i2");
         TKUnit.assertEqual(items[2].text, "i3");
     });
+}
+
+export function test_LoadedEventsOrder() {
+    var loadedEvents = new Array<string>();
+    var pageFactory = function (): PageModule.Page {
+        var page = new PageModule.Page();
+        page.on(viewModule.View.loadedEvent, () => {
+            loadedEvents.push("page");
+        });
+
+        page.actionBar.on(viewModule.View.loadedEvent, () => {
+            loadedEvents.push("action-bar");
+        });
+
+        var content = new LabelModule.Label();
+        content.on(viewModule.View.loadedEvent, () => {
+            loadedEvents.push("content");
+        });
+        page.content = content;
+
+        return page;
+    };
+
+    helper.navigate(pageFactory);
+
+    TKUnit.arrayAssert(loadedEvents, new Array<string>("content", "action-bar", "page"));
+}
+
+export function test_LoadedEventsOrder_WithoutPageContent() {
+    var loadedEvents = new Array<string>();
+    var pageFactory = function (): PageModule.Page {
+        var page = new PageModule.Page();
+        page.on(viewModule.View.loadedEvent, () => {
+            loadedEvents.push("page");
+        });
+
+        page.actionBar.on(viewModule.View.loadedEvent, () => {
+            loadedEvents.push("action-bar");
+        });
+
+        return page;
+    };
+
+    helper.navigate(pageFactory);
+
+    TKUnit.arrayAssert(loadedEvents, new Array<string>("action-bar", "page"));
+}
+
+export function test_setId() {
+    var pageFactory = function (): PageModule.Page {
+        var page = new PageModule.Page();
+        page.actionBar.id = "myId";
+
+        return page;
+    };
+
+    try {
+        helper.navigate(pageFactory);
+    }
+    catch (e) {
+        TKUnit.assert(false, "Failed to apply property 'id' to actionBar before its nativeView is ready.");
+    }
 }
 
 export function createPageAndNavigate() {

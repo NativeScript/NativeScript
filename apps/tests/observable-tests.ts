@@ -1,10 +1,6 @@
-﻿// <snippet module="data/observable" title="data/observable">
-// # Observable
-// Using Observable objects requires the "data/observable" module.
-// ``` JavaScript
+﻿// >> observable-require
 import observable = require("data/observable");
-// ```
-// </snippet>
+// << observable-require
 
 import dependencyObservable = require("ui/core/dependency-observable");
 import TKUnit = require("./TKUnit");
@@ -19,9 +15,7 @@ class TestObservable extends observable.Observable {
 }
 
 export var test_Observable_Constructor = function () {
-    // <snippet module="data/observable" title="data/observable">
-    // ### Creating an Observable
-    // ``` JavaScript
+    // >> observable-creating
     var json = {
         Name: "John",
         Age: 34,
@@ -32,17 +26,14 @@ export var test_Observable_Constructor = function () {
     var age = person.get("Age");
     var married = person.get("Married");
     //// console.log(name + " " + age + " " + married); // Prints out "John 34 true" if uncommented.
-    // ```
-    // </snippet>
+    // << observable-creating
     TKUnit.assert(name === "John", "Expected name is John");
     TKUnit.assert(age === 34, "Expected age is 34");
     TKUnit.assert(married === true, "Expected married is true");
 }
 
 export var tests_DummyTestForCodeSnippet = function () {
-    // <snippet module="data/observable" title="data/observable">
-    // ### Responding to property changes
-    // ``` JavaScript
+    // >> observable-property-change
     var person = new observable.Observable();
     person.set("Name", "John");
     person.set("Age", 34);
@@ -55,8 +46,7 @@ export var tests_DummyTestForCodeSnippet = function () {
     //// If uncommented, the console.log above produces the following output:
     //// propertyChange Age 35
     //// propertyChange Married false
-    // ```
-    // </snippet>
+    // << observable-property-change
 }
 
 export var test_Observable_Members = function () {
@@ -431,12 +421,10 @@ export var test_ObservableCreatedWithJSON_shouldDistinguishSeparateObjects = fun
     });
 
     observable1.set("val", 10);
-    TKUnit.wait(0.1);
     TKUnit.assert(propName1 === "val", "propName1 should be 'val'");
     TKUnit.assert(newValue1 === 10, "newValue1 should be 10");
 
     observable2.set("val", 20);
-    TKUnit.wait(0.1);
     TKUnit.assert(propName2 === "val", "propName2 should be 'val'");
     TKUnit.assert(newValue2 === 20, "newValue2 should be 20");
 
@@ -470,12 +458,10 @@ export var test_ObservablesCreatedWithJSON_shouldNotInterfereWithOneAnother = fu
     });
 
     observable1.set("property1", 10);
-    TKUnit.wait(0.1);
     TKUnit.assert(propName1 === "property1", "propName1 should be 'property1'");
     TKUnit.assert(newValue1 === 10, "newValue1 should be 10");
 
     observable2.set("property2", 20);
-    TKUnit.wait(0.1);
     TKUnit.assert(propName2 === "property2", "propName2 should be 'property2'");
     TKUnit.assert(newValue2 === 20, "newValue2 should be 20");
 };
@@ -490,4 +476,52 @@ export function test_ObservablesCreatedWithJSON_shouldNotEmitTwoTimesPropertyCha
     testObservable.set("property1", 2);
 
     TKUnit.assertEqual(propertyChangeCounter, 1, "PropertyChange event should be fired only once for a single change.");
+}
+
+export function test_ObservableShouldEmitPropertyChangeWithSameObjectUsingWrappedValue() {
+    var testArray = [1];
+    var testObservable = new observable.Observable({ "property1": testArray});
+    var propertyChangeCounter = 0;
+    var propertyChangeHandler = function (args) {
+        propertyChangeCounter++;
+    }
+    testObservable.on(observable.Observable.propertyChangeEvent, propertyChangeHandler);
+    testArray.push(2);
+    
+    testObservable.set("property1", testArray);
+
+    TKUnit.assertEqual(propertyChangeCounter, 0, "PropertyChange event should not be fired when the same object instance is passed.");
+    
+    testObservable.set("property1", observable.WrappedValue.wrap(testArray));
+
+    TKUnit.assertEqual(propertyChangeCounter, 1, "PropertyChange event should be fired only once for a single change.");
+}
+
+export function test_CorrectEventArgsWhenWrappedValueIsUsed() {
+    let testArray = [1];
+    let testObservable = new observable.Observable({ "property1": testArray});
+    let actualArgsValue = 0;
+    let propertyChangeHandler = function (args) {
+        actualArgsValue = args.value;
+        
+    }
+    testObservable.on(observable.Observable.propertyChangeEvent, propertyChangeHandler);
+    testArray.push(2);
+    
+    let wrappedArray = observable.WrappedValue.wrap(testArray);
+    
+    testObservable.set("property1", wrappedArray);
+
+    TKUnit.assertEqual(actualArgsValue, wrappedArray, "PropertyChange event should be fired with correct value in arguments.");
+}
+
+export function test_CorrectPropertyValueAfterUsingWrappedValue() {
+    let testArray = [1];
+    let testObservable = new observable.Observable({ "property1": testArray});
+    
+    let wrappedArray = observable.WrappedValue.wrap(testArray);
+    
+    testObservable.set("property1", wrappedArray);
+
+    TKUnit.assertEqual(testObservable.get("property1"), testArray, "WrappedValue is used only to execute property change logic and unwrapped value should be used as proeprty value.");
 }

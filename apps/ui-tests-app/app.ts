@@ -1,4 +1,12 @@
 ﻿import application = require("application");
+import trace = require("trace");
+trace.enable();
+trace.setCategories(trace.categories.concat(
+    trace.categories.NativeLifecycle,
+    trace.categories.Navigation,
+    //trace.categories.Animation,
+    trace.categories.Transition
+    ));
 
 var countResume = 0;
 var countSuspend = 0;

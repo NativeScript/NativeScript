@@ -20624,8 +20624,8 @@ interface UIViewControllerContextTransitioning {
 	finalFrameForViewController(vc: UIViewController): CGRect;
 }
 interface UIViewControllerAnimatedTransitioning {
-	transitionDuration(transitionContext: any): number;
-	animateTransition(transitionContext: any): void;
+    transitionDuration(transitionContext: UIViewControllerContextTransitioning): number;
+    animateTransition(transitionContext: UIViewControllerContextTransitioning): void;
 	animationEnded?(transitionCompleted: boolean): void;
 }
 interface UIViewControllerInteractiveTransitioning {
@@ -27073,12 +27073,12 @@ declare enum UITouchPhase {
 	UITouchPhaseCancelled
 }
 declare enum UIWebViewNavigationType {
-	UIWebViewNavigationTypeLinkClicked,
-	UIWebViewNavigationTypeFormSubmitted,
-	UIWebViewNavigationTypeBackForward,
-	UIWebViewNavigationTypeReload,
-	UIWebViewNavigationTypeFormResubmitted,
-	UIWebViewNavigationTypeOther
+	LinkClicked,
+	FormSubmitted,
+	BackForward,
+	Reload,
+	FormResubmitted,
+	Other
 }
 declare enum UIWebPaginationMode {
 	UIWebPaginationModeUnpaginated,

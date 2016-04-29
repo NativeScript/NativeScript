@@ -1,9 +1,22 @@
 ﻿import view = require("ui/core/view");
-import observable = require("data/observable");
 import label = require("ui/label");
 import button = require("ui/button");
 import textField = require("ui/text-field");
 import textView = require("ui/text-view");
+
+export function changeTextButonTap(args) {
+    var btnChange = <button.Button>args.object;
+    var lbl = <label.Label>btnChange.parent.getViewById("Label");
+    var btn = <button.Button>btnChange.parent.getViewById("Button");
+    var textField = <textField.TextField>btnChange.parent.getViewById("TextField");
+    var textView = <textView.TextView>btnChange.parent.getViewById("TextView");
+    
+    if(lbl.text === "Change text") {
+        lbl.text = btn.text = textField.text = textView.text = "Text changed";
+    } else {
+        lbl.text = btn.text = textField.text = textView.text = "Change text";
+    }
+}
 
 export function butonTap(args) {
     var btnChange = <view.View>args.object;

@@ -5,6 +5,34 @@ import * as typesModule from "utils/types";
 import * as traceModule from "trace";
 import * as fileSystemModule from "file-system";
 
+var application: typeof applicationModule;
+function ensureApplication() {
+    if (!application) {
+        application = require("application");
+    }
+}
+
+var types: typeof typesModule;
+function ensureTypes() {
+    if (!types) {
+        types = require("utils/types");
+    }
+}
+
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
+
+var fs: typeof fileSystemModule;
+function ensureFS() {
+    if (!fs) {
+        fs = require("file-system");
+    }
+}
+
 var typefaceCache = new Map<string, android.graphics.Typeface>();
 var appAssets: android.content.res.AssetManager;
 var FONTS_BASE_PATH = "/fonts/";
@@ -36,97 +64,123 @@ export class Font extends common.Font {
 
     public getAndroidTypeface(): android.graphics.Typeface {
         if (!this._typeface) {
-            var style: number = 0;
-
+            var fontStyle = 0;
             if (this.isBold) {
-                style |= android.graphics.Typeface.BOLD;
+                fontStyle |= android.graphics.Typeface.BOLD;
             }
-
             if (this.isItalic) {
-                style |= android.graphics.Typeface.ITALIC;
+                fontStyle |= android.graphics.Typeface.ITALIC;
             }
 
-            var typeFace = this.getTypeFace(this.fontFamily);
-            this._typeface = android.graphics.Typeface.create(typeFace, style);
+            var typeFace  = createTypeface(this);
+            this._typeface = android.graphics.Typeface.create(typeFace, fontStyle);
         }
-
         return this._typeface;
     }
+}
 
-    private getTypeFace(fontFamily: string): android.graphics.Typeface {
-        var fonts = common.parseFontFamily(fontFamily);
-        var result = null;
-        if (fonts.length === 0) {
-            return null;
-        }
+function loadFontFromFile(fontFamily: string): android.graphics.Typeface {
+    ensureApplication();
 
-        for (var i = 0; i < fonts.length; i++) {
-            switch (fonts[i].toLowerCase()) {
-                case common.genericFontFamilies.serif:
-                    result = android.graphics.Typeface.SERIF;
-                    break;
-
-                case common.genericFontFamilies.sansSerif:
-                    result = android.graphics.Typeface.SANS_SERIF;
-                    break;
-
-                case common.genericFontFamilies.monospace:
-                    result = android.graphics.Typeface.MONOSPACE;
-                    break;
-
-                default:
-                    result = this.loadFontFromFile(fonts[i]);
-                    break;
-            }
-
-            if (result) {
-                return result;
-            }
-        }
-
+    appAssets = appAssets || application.android.context.getAssets();
+    if (!appAssets) {
         return null;
     }
 
-    private loadFontFromFile(fontFamily: string): android.graphics.Typeface {
-        var application: typeof applicationModule = require("application");
+    ensureTypes();
 
-        appAssets = appAssets || application.android.context.getAssets();
-        if (!appAssets) {
-            return null;
+    var result = typefaceCache.get(fontFamily);
+    // Check for undefined explicitly as null mean we tried to load the font, but failed.
+    if (types.isUndefined(result)) {
+        result = null;
+
+        ensureTrace();
+        ensureFS();
+
+        var fontAssetPath: string;
+        var basePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFamily);
+        if (fs.File.exists(basePath + ".ttf")) {
+            fontAssetPath = FONTS_BASE_PATH + fontFamily + ".ttf";
+        }
+        else if (fs.File.exists(basePath + ".otf")) {
+            fontAssetPath = FONTS_BASE_PATH + fontFamily + ".otf";
+        }
+        else {
+            trace.write("Could not find font file for " + fontFamily, trace.categories.Error, trace.messageType.error);
         }
 
-        var types: typeof typesModule = require("utils/types");
+        if (fontAssetPath) {
+            try {
+                fontAssetPath = fs.path.join(fs.knownFolders.currentApp().path, fontAssetPath);
+                result = android.graphics.Typeface.createFromFile(fontAssetPath)
+            } catch (e) {
+                trace.write("Error loading font asset: " + fontAssetPath, trace.categories.Error, trace.messageType.error);
+            }
+        }
+        typefaceCache.set(fontFamily, result);
+    }
 
-        var result = typefaceCache.get(fontFamily);
-        // Check for undefined explicitly as null mean we tried to load the font, but failed.
-        if (types.isUndefined(result)) {
-            result = null;
-            var trace: typeof traceModule = require("trace");
-            var fs: typeof fileSystemModule  = require("file-system");
+    return result;
+}
 
-            var fontAssetPath: string;
-            var basePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFamily);
-            if (fs.File.exists(basePath + ".ttf")) {
-                fontAssetPath = FONTS_BASE_PATH + fontFamily + ".ttf";
-            }
-            else if (fs.File.exists(basePath + ".otf")) {
-                fontAssetPath = FONTS_BASE_PATH + fontFamily + ".otf";
-            }
-            else {
-                trace.write("Could not find font file for " + fontFamily, trace.categories.Error, trace.messageType.error);
-            }
+function createTypeface(font: Font): android.graphics.Typeface {
+    //http://stackoverflow.com/questions/19691530/valid-values-for-androidfontfamily-and-what-they-map-to
+    var fonts = common.parseFontFamily(font.fontFamily);
+    var result = null;
+    if (fonts.length === 0) {
+        return null;
+    }
 
-            if (fontAssetPath) {
-                try {
-                    fontAssetPath = fs.path.join(fs.knownFolders.currentApp().path, fontAssetPath);
-                    result = android.graphics.Typeface.createFromFile(fontAssetPath)
-                } catch (e) {
-                    trace.write("Error loading font asset: " + fontAssetPath, trace.categories.Error, trace.messageType.error);
-                }
-            }
-            typefaceCache.set(fontFamily, result);
+    for (var i = 0; i < fonts.length; i++) {
+        switch (fonts[i].toLowerCase()) {
+            case common.genericFontFamilies.serif:
+                result = android.graphics.Typeface.create("serif" + getFontWeightSuffix(font.fontWeight), 0);
+                break;
+
+            case common.genericFontFamilies.sansSerif:
+            case common.genericFontFamilies.system:
+                result = android.graphics.Typeface.create("sans-serif" + getFontWeightSuffix(font.fontWeight), 0);
+                break;
+
+            case common.genericFontFamilies.monospace:
+                result = android.graphics.Typeface.create("monospace" + getFontWeightSuffix(font.fontWeight), 0);
+                break;
+
+            default:
+                result = loadFontFromFile(fonts[i]);
+                break;
         }
 
-        return result;
+        if (result) {
+            return result;
+        }
+    }
+
+    return null;
+}
+
+function getFontWeightSuffix(fontWeight: string): string {
+    switch (fontWeight) {
+        case enums.FontWeight.thin:
+            return android.os.Build.VERSION.SDK_INT >= 16 ? "-thin" : "";
+        case enums.FontWeight.extraLight:
+        case enums.FontWeight.light:
+            return android.os.Build.VERSION.SDK_INT >= 16 ? "-light" : "";
+        case enums.FontWeight.normal:
+        case "400":
+        case undefined:
+        case null:
+            return "";
+        case enums.FontWeight.medium:
+        case enums.FontWeight.semiBold:
+            return android.os.Build.VERSION.SDK_INT >= 21 ? "-medium" : "";
+        case enums.FontWeight.bold:
+        case "700":
+        case enums.FontWeight.extraBold:
+            return "";
+        case enums.FontWeight.black:
+            return android.os.Build.VERSION.SDK_INT >= 21 ? "-black" : "";
+        default:
+            throw new Error(`Invalid font weight: "${fontWeight}"`);
     }
 }

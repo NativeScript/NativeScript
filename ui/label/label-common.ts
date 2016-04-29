@@ -5,16 +5,19 @@ import textBase = require("ui/text-base");
 import view = require("ui/core/view");
 import * as enumsModule from "ui/enums";
 
+var enums: typeof enumsModule;
+function ensureEnums() {
+    if (!enums) {
+        enums = require("ui/enums");
+    }
+}
+
 export class Label extends textBase.TextBase implements definition.Label {
     public static textWrapProperty = new dependencyObservable.Property(
         "textWrap",
         "Label",
         new proxy.PropertyMetadata(false, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
         );
-
-    constructor(options?: definition.Options) {
-        super(options);
-    }
 
     get textWrap(): boolean {
         return this._getValue(Label.textWrapProperty);
@@ -26,7 +29,7 @@ export class Label extends textBase.TextBase implements definition.Label {
 
 function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var v = <view.View>data.object;
-    var enums: typeof enumsModule = require("ui/enums");
+    ensureEnums();
 
     v.style.whiteSpace = data.newValue ? enums.WhiteSpace.normal : enums.WhiteSpace.nowrap;
 }

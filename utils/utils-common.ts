@@ -29,6 +29,31 @@ export function parseJSON(source: string): any {
     return JSON.parse(src);
 }
 
+export function escapeRegexSymbols(source: string): string {
+    let escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
+    return source.replace(escapeRegex, "\\$&");
+}
+
+export function convertString(value: string): any {
+    var result;
+    
+    if (value.trim() === "") {
+        result = value;
+    } else {
+        // Try to convert value to number.
+        var valueAsNumber = +value;
+        if (!isNaN(valueAsNumber)) {
+            result = valueAsNumber;
+        } else if (value && (value.toLowerCase() === "true" || value.toLowerCase() === "false")) {
+            result = value.toLowerCase() === "true" ? true : false;
+        } else {
+            result = value;
+        }
+    }
+    
+    return result;
+}
+
 export module layout {
 
     var MODE_SHIFT = 30;

@@ -145,7 +145,7 @@
      * Module with ios specific utilities.
      */
     module ios {
-        export function setTextDecorationAndTransform(view: any, decoration: string, transform: string);
+        export function setTextDecorationAndTransform(view: any, decoration: string, transform: string, letterSpacing : number);
         export function setWhiteSpace(view, value: string, parentView?: any);
         export function setTextAlignment(view, value: string);
 
@@ -188,6 +188,12 @@
          * Gets the iOS device major version (for 8.1 will return 8).
          */
         export var MajorVersion: number;
+
+        /**
+         * Opens file with associated application.
+         * @param filePath The file path.
+         */
+        export function openFile(filePath: string): boolean
     }
     /**
      * An utility function that copies properties from source object to target object.
@@ -223,4 +229,16 @@
      * @param url The url.
      */
     export function openUrl(url: string): boolean
+    
+    /**
+     * Escapes special regex symbols (., *, ^, $ and so on) in string in order to create a valid regex from it.
+     * @param source The original value. 
+     */
+    export function escapeRegexSymbols(source: string): string
+    
+    /**
+     * Converts string value to number or boolean.
+     * @param value The original value. 
+     */
+    export function convertString(value: string): any    
 }

@@ -60,14 +60,15 @@ export class WrapLayout extends common.WrapLayout {
             var desiredSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
             let childMeasuredWidth = useItemWidth ? itemWidth : desiredSize.measuredWidth;
             let childMeasuredHeight = useItemHeight ? itemHeight : desiredSize.measuredHeight;
+            let isFirst = this._lengths.length <= rowOrColumn;
 
             if (isVertical) {
                 if (childMeasuredHeight > remainingHeight) {
                     rowOrColumn++;
                     maxLength = Math.max(maxLength, measureHeight);
                     measureHeight = childMeasuredHeight;
-                    remainingWidth = availableHeight - childMeasuredHeight;
-                    this._lengths[rowOrColumn] = childMeasuredWidth;
+                    remainingHeight = availableHeight - childMeasuredHeight;
+                    this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn] = childMeasuredWidth;
                 }
                 else {
                     remainingHeight -= childMeasuredHeight;
@@ -80,7 +81,7 @@ export class WrapLayout extends common.WrapLayout {
                     maxLength = Math.max(maxLength, measureWidth);
                     measureWidth = childMeasuredWidth;
                     remainingWidth = availableWidth - childMeasuredWidth;
-                    this._lengths[rowOrColumn] = childMeasuredHeight;
+                    this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn] = childMeasuredHeight;
                 }
                 else {
                     remainingWidth -= childMeasuredWidth;
@@ -88,7 +89,7 @@ export class WrapLayout extends common.WrapLayout {
                 }
             }
 
-            if (this._lengths.length <= rowOrColumn) {
+            if (isFirst) {
                 this._lengths[rowOrColumn] = isVertical ? childMeasuredWidth : childMeasuredHeight;
             }
             else {
@@ -151,35 +152,41 @@ export class WrapLayout extends common.WrapLayout {
             if (isVertical) {
                 childWidth = length;
                 childHeight = this.itemHeight > 0 ? this.itemHeight * density : childHeight;
+                let isFirst = childTop === this.paddingTop * density;
                 if (childTop + childHeight > childrenLength) {
                     // Move to top.
                     childTop = this.paddingTop * density;
 
+                    if (!isFirst) {
                     // Move to right with current column width.
-                    childLeft += length;
+                        childLeft += length;
+                    }
 
                     // Move to next column.
                     rowOrColumn++;
 
-                    // Take current column width.
-                    childWidth = length = this._lengths[rowOrColumn];
+                    // Take respective column width.
+                    childWidth = this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn];
                 }
             }
             else {
                 childWidth = this.itemWidth > 0 ? this.itemWidth * density : childWidth;
                 childHeight = length;
+                let isFirst = childLeft === this.paddingLeft * density;
                 if (childLeft + childWidth > childrenLength) {
                     // Move to left.
                     childLeft = this.paddingLeft * density;
 
-                    // Move to bottom with current row height.
-                    childTop += length;
+                    if (!isFirst) {
+                        // Move to bottom with current row height.
+                        childTop += length;
+                    }
 
-                    // Move to next column.
+                    // Move to next row.
                     rowOrColumn++;
 
-                    // Take current row height.
-                    childHeight = length = this._lengths[rowOrColumn];
+                    // Take respective row height.
+                    childHeight = this._lengths[isFirst ? rowOrColumn - 1 : rowOrColumn];
                 }
             }
 

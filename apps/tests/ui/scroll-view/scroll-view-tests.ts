@@ -1,43 +1,39 @@
 ﻿import TKUnit = require("../../TKUnit");
 import app = require("application");
-import helper = require("../helper");
-import buttonModule = require("ui/button");
-import page = require("ui/page");
 import button = require("ui/button");
 import enums = require("ui/enums");
 import testModule = require("../../ui-test");
 import layoutHelper = require("../../layouts/layout-helper");
+import {Page} from "ui/page";
+import * as frame from "ui/frame";
 
-// <snippet module="ui/scroll-view" title="scroll-view">
-// # ScrollView
-// Using a ScrollView requires the ScrollView module.
-// ``` JavaScript
+// >> article-require-module
 import scrollViewModule = require("ui/scroll-view");
-// ```
-
-// ### Declaring the ScrollView.
-//```XML
-// <Page>
-//  <ScrollView>
-//    {%raw%}<Image src="{{ someBigImageUrl }}" />{%endraw%}
-//  </ScrollView>
-// </Page>
-//```
-
-// </snippet>
+// << article-require-module
 
 class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
+
     public create(): scrollViewModule.ScrollView {
-        return new scrollViewModule.ScrollView();
+        let scrollView = new scrollViewModule.ScrollView();
+        scrollView.orientation = enums.Orientation.vertical;
+
+        scrollView.width = layoutHelper.dp(200);
+        scrollView.height = layoutHelper.dp(300);
+
+        let btn = new button.Button();
+        btn.text = "test";
+        btn.width = layoutHelper.dp(500);
+        btn.height = layoutHelper.dp(500);
+        scrollView.content = btn;
+
+        return scrollView;
     }
 
     public test_snippets() {
-        // <snippet module="ui/scroll-view" title="scroll-view">
-        // ### Creating a ScrollView
-        // ``` JavaScript
+        // >> article-creating-scrollview
         var scrollView = new scrollViewModule.ScrollView();
-        // ```
-        // </snippet>
+        // << article-creating-scrollview
+        TKUnit.assertTrue(scrollView !== null, "ScrollView should be created.");
     }
 
     public test_default_TNS_values() {
@@ -68,79 +64,43 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         }
     }
 
-    public test_scrollabeHeight_vertical_orientation_when_content_is_small() {
-        this.testView.orientation = enums.Orientation.vertical;
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        let btn = new button.Button();
-        btn.text = "test";
-        btn.height = 100;
-        this.testView.content = btn;
-
+    public test_scrollableHeight_vertical_orientation_when_content_is_small() {
+        this.testView.content.width = layoutHelper.dp(100);
+        this.testView.content.height = layoutHelper.dp(100);
         this.waitUntilTestElementLayoutIsValid();
+
         TKUnit.assertEqual(this.testView.scrollableHeight, 0, "this.testView.scrollableHeight");
         TKUnit.assertEqual(this.testView.scrollableWidth, 0, "this.testView.scrollableWidth");
     }
 
-    public test_scrollabeHeight_vertical_orientation_when_content_is_big() {
-        this.testView.orientation = enums.Orientation.vertical;
-
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        let btn = new button.Button();
-        btn.text = "test";
-        btn.height = 500;
-        this.testView.content = btn;
-
+    public test_scrollableHeight_vertical_orientation_when_content_is_big() {
+        this.testView.content.width = layoutHelper.dp(100);
         this.waitUntilTestElementLayoutIsValid();
-        TKUnit.assertAreClose(this.testView.scrollableHeight, 200, 0.4, "this.testView.scrollableHeight");
-        TKUnit.assertEqual(this.testView.scrollableWidth, 0, "this.testView.scrollableWidth");
 
-    }
-
-    public test_scrollabeWidth_horizontal_orientation_when_content_is_small() {
-        this.testView.orientation = enums.Orientation.vertical;
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        let btn = new button.Button();
-        btn.text = "test";
-        btn.width = 100;
-        this.testView.content = btn;
-
-        this.waitUntilTestElementLayoutIsValid();
-        TKUnit.assertEqual(this.testView.scrollableHeight, 0, "this.testView.scrollableHeight");
+        TKUnit.assertAreClose(layoutHelper.dip(this.testView.scrollableHeight), 200, 0.4, "this.testView.scrollableHeight");
         TKUnit.assertEqual(this.testView.scrollableWidth, 0, "this.testView.scrollableWidth");
     }
 
-    public test_scrollabeWidth_horizontal_orientation_when_content_is_big() {
+    public test_scrollableWidth_horizontal_orientation_when_content_is_small() {
         this.testView.orientation = enums.Orientation.horizontal;
-
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        let btn = new button.Button();
-        btn.text = "test";
-        btn.width = 500;
-        this.testView.content = btn;
-
+        this.testView.content.width = layoutHelper.dp(100);
+        this.testView.content.height = layoutHelper.dp(100);
         this.waitUntilTestElementLayoutIsValid();
+
         TKUnit.assertEqual(this.testView.scrollableHeight, 0, "this.testView.scrollableHeight");
-        TKUnit.assertAreClose(this.testView.scrollableWidth, 300, 0.4, "this.testView.scrollableWidth");
+        TKUnit.assertEqual(this.testView.scrollableWidth, 0, "this.testView.scrollableWidth");
+    }
+
+    public test_scrollableWidth_horizontal_orientation_when_content_is_big() {
+        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.content.height = layoutHelper.dp(100);
+        this.waitUntilTestElementLayoutIsValid();
+
+        TKUnit.assertEqual(this.testView.scrollableHeight, 0, "this.testView.scrollableHeight");
+        TKUnit.assertAreClose(layoutHelper.dip(this.testView.scrollableWidth), 300, 0.4, "this.testView.scrollableWidth");
     }
 
     public test_scrollToVerticalOffset_no_animation() {
-        this.testView.orientation = enums.Orientation.vertical;
-
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        let btn = new button.Button();
-        btn.text = "test";
-        btn.height = 500;
-        this.testView.content = btn;
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.verticalOffset, 0, "this.testView.verticalOffset");
@@ -149,15 +109,6 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollToVerticalOffset_with_animation() {
-        this.testView.orientation = enums.Orientation.vertical;
-
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        let btn = new button.Button();
-        btn.text = "test";
-        btn.height = 500;
-        this.testView.content = btn;
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.verticalOffset, 0, "this.testView.verticalOffset");
@@ -174,14 +125,6 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
     public test_scrollToHorizontalOffset_no_animation() {
         this.testView.orientation = enums.Orientation.horizontal;
-
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        let btn = new button.Button();
-        btn.text = "test";
-        btn.width = 500;
-        this.testView.content = btn;
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
@@ -191,14 +134,6 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
     public test_scrollToHorizontalOffset_with_animation() {
         this.testView.orientation = enums.Orientation.horizontal;
-
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        let btn = new button.Button();
-        btn.text = "test";
-        btn.width = 500;
-        this.testView.content = btn;
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
@@ -214,24 +149,20 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollView_persistsState_vertical() {
-        this.testView.orientation = enums.Orientation.vertical;
-
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        var btn = new button.Button();
-        btn.text = "test";
-        btn.height = 500;
-        this.testView.content = btn;
         this.waitUntilTestElementLayoutIsValid();
 
         this.testView.scrollToVerticalOffset(layoutHelper.dp(100), false);
-
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1, "this.testView.verticalOffset before navigation");
 
-        helper.do_PageTest_WithButton((t) => {
-            // Just navigate forward and back.
-        });
+        let page = new Page();
+        let createFunc = () => {
+            return page;
+        };
+
+        let entry: frame.NavigationEntry = { create: createFunc, animated: false };
+        frame.topmost().navigate(entry);
+        TKUnit.waitUntilReady(() => page.isLayoutValid);
+        frame.topmost().goBack();
 
         // Wait for the page to reload.
         TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.verticalOffset), 100, 0.1); });
@@ -242,23 +173,21 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
     public test_scrollView_persistsState_horizontal() {
         this.testView.orientation = enums.Orientation.horizontal;
-
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        var btn = new button.Button();
-        btn.text = "test";
-        btn.width = 500;
-        this.testView.content = btn;
         this.waitUntilTestElementLayoutIsValid();
 
         this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), false);
 
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1, "this.testView.horizontalOffset before navigation");
 
-        helper.do_PageTest_WithButton((t) => {
-            // Just navigate forward and back.
-        });
+        let page = new Page();
+        let createFunc = () => {
+            return page;
+        };
+
+        let entry: frame.NavigationEntry = { create: createFunc, animated: false };
+        frame.topmost().navigate(entry);
+        TKUnit.waitUntilReady(() => page.isLayoutValid);
+        frame.topmost().goBack();
 
         // Wait for the page to reload.
         TKUnit.waitUntilReady(() => { return TKUnit.areClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.1); });
@@ -268,23 +197,14 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollView_vertical_raised_scroll_event() {
-        this.testView.orientation = enums.Orientation.vertical;
-
         var scrollY: number;
         this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
             scrollY = args.scrollY;
         });
 
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        var btn = new button.Button();
-        btn.text = "test";
-        btn.height = 500;
-        this.testView.content = btn;
         this.waitUntilTestElementLayoutIsValid();
 
-        this.testView.scrollToVerticalOffset(100, false);
+        this.testView.scrollToVerticalOffset(layoutHelper.dp(100), false);
         TKUnit.waitUntilReady(function () { return scrollY > 0; });
         TKUnit.assertEqual(scrollY, this.testView.verticalOffset);
     }
@@ -297,66 +217,42 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
             scrollX = args.scrollX;
         });
 
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        var btn = new button.Button();
-        btn.text = "test";
-        btn.width = 500;
-        this.testView.content = btn;
         this.waitUntilTestElementLayoutIsValid();
 
-        this.testView.scrollToHorizontalOffset(100, false);
+        this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), false);
         TKUnit.waitUntilReady(function () { return scrollX > 0; });
         TKUnit.assertEqual(scrollX, this.testView.horizontalOffset);
     }
 
     public test_scrollView_vertical_raised_scroll_event_after_loaded() {
-        this.testView.orientation = enums.Orientation.vertical;
-
-        this.waitUntilTestElementIsLoaded();
+        this.waitUntilTestElementLayoutIsValid();
 
         var scrollY: number;
         this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
             scrollY = args.scrollY;
         });
 
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        var btn = new button.Button();
-        btn.text = "test";
-        btn.height = 500;
-        this.testView.content = btn;
-        this.waitUntilTestElementLayoutIsValid();
-
-        this.testView.scrollToVerticalOffset(100, false);
+        this.testView.scrollToVerticalOffset(layoutHelper.dp(100), false);
         TKUnit.waitUntilReady(function () { return scrollY > 0; });
         TKUnit.assertEqual(scrollY, this.testView.verticalOffset);
+        TKUnit.assertEqual(scrollY, layoutHelper.dp(100));
     }
 
     public test_scrollView_horizontal_raised_scroll_event_after_loaded() {
         this.testView.orientation = enums.Orientation.horizontal;
-
-        this.waitUntilTestElementIsLoaded();
+        this.waitUntilTestElementLayoutIsValid();
 
         var scrollX: number;
         this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
             scrollX = args.scrollX;
         });
 
-        this.testView.width = 200;
-        this.testView.height = 300;
-
-        var btn = new button.Button();
-        btn.text = "test";
-        btn.width = 500;
-        this.testView.content = btn;
         this.waitUntilTestElementLayoutIsValid();
 
-        this.testView.scrollToHorizontalOffset(100, false);
+        this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), false);
         TKUnit.waitUntilReady(function () { return scrollX > 0; });
         TKUnit.assertEqual(scrollX, this.testView.horizontalOffset);
+        TKUnit.assertEqual(scrollX, layoutHelper.dp(100));
     }
 }
 

@@ -5,7 +5,5 @@ import editableTextBase = require("ui/editable-text-base");
 global.moduleMerge(textBase, exports);
 
 export class TextView extends editableTextBase.EditableTextBase implements definition.TextView {
-    constructor(options?: editableTextBase.Options) {
-        super(options);
-    }
-}  
+    // TSLint error if empty.
+}

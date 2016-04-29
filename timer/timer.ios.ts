@@ -1,23 +1,46 @@
 ﻿/**
  * iOS specific timer functions implementation.
  */
-var timeoutCallbacks = {};
+var timeoutCallbacks = new Map<number, KeyValuePair<NSTimer, TimerTargetImpl>>();
 var timerId = 0;
 
+interface KeyValuePair<K, V> {
+    k: K;
+    v: V
+}
+
 class TimerTargetImpl extends NSObject {
-    static new(): TimerTargetImpl {
-        return <TimerTargetImpl>super.new();
-    }
+    private callback: Function;
+    private disposed: boolean;
+    private id: number
+    private shouldRepeat: boolean
 
-    private _callback: Function;
-
-    public initWithCallback(callback: Function): TimerTargetImpl {
-        this._callback = callback;
-        return this;
+    public static initWithCallback(callback: Function, id: number, shouldRepeat: boolean): TimerTargetImpl {
+        let handler = <TimerTargetImpl>TimerTargetImpl.new();
+        handler.callback = callback;
+        handler.id = id;
+        handler.shouldRepeat = shouldRepeat;
+        return handler;
     }
 
     public tick(timer): void {
-        this._callback();
+        if (!this.disposed) {
+            this.callback();
+        }
+
+        if (!this.shouldRepeat) {
+            this.unregister();
+        }
+    }
+
+    public unregister() {
+        if (!this.disposed) {
+            this.disposed = true;
+
+            let timer = timeoutCallbacks.get(this.id).k;
+            timer.invalidate();
+            timeoutCallbacks.delete(this.id);
+        }
     }
 
     public static ObjCExposedMethods = {
@@ -27,31 +50,29 @@ class TimerTargetImpl extends NSObject {
 
 function createTimerAndGetId(callback: Function, milliseconds: number, shouldRepeat: boolean): number {
     timerId++;
-    var id = timerId;
+    let id = timerId;
+    let timerTarget = TimerTargetImpl.initWithCallback(callback, id, shouldRepeat);
+    let timer = NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(milliseconds / 1000, timerTarget, "tick", null, shouldRepeat);
 
-    var timerTarget = TimerTargetImpl.new().initWithCallback(callback);
-    var timer = NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(milliseconds / 1000, timerTarget, "tick", null, shouldRepeat);
-
-    if (!timeoutCallbacks[id]) {
-        timeoutCallbacks[id] = timer;
-    }
+    let pair: KeyValuePair<NSTimer, TimerTargetImpl> = { k: timer, v: timerTarget };
+    timeoutCallbacks.set(id, pair);
 
     return id;
 }
 
 export function setTimeout(callback: Function, milliseconds = 0): number {
-    return createTimerAndGetId(callback, milliseconds, false);
+    return createTimerAndGetId(zonedCallback(callback), milliseconds, false);
 }
 
 export function clearTimeout(id: number): void {
-    if (timeoutCallbacks[id]) {
-        timeoutCallbacks[id].invalidate();
-        delete timeoutCallbacks[id];
+    let pair = timeoutCallbacks.get(id);
+    if (pair) {
+        pair.v.unregister();
     }
 }
 
 export function setInterval(callback: Function, milliseconds = 0): number {
-    return createTimerAndGetId(callback, milliseconds, true);
+    return createTimerAndGetId(zonedCallback(callback), milliseconds, true);
 }
 
 export var clearInterval = clearTimeout;

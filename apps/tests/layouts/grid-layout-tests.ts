@@ -3,8 +3,6 @@ import {GridLayout, ItemSpec, GridUnitType} from "ui/layouts/grid-layout";
 import {Button} from "ui/button";
 import TKUnit = require("../TKUnit");
 import view = require("ui/core/view");
-import navHelper = require("../ui/helper");
-import utils = require("utils/utils");
 import builder = require("ui/builder");
 import enums = require("ui/enums");
 import testModule = require("../ui-test");
@@ -292,15 +290,15 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
 
     public test_ItemSpec_constructor_throws_onNegativeValue() {
         TKUnit.assertThrows(() => {
-            new ItemSpec(-1, GridUnitType.auto);
+            return new ItemSpec(-1, GridUnitType.auto);
         }, "'value' should be positive number.");
     }
 
     public test_ItemSpec_constructor_doesnt_throw_onCorrectType() {
         try {
-            new ItemSpec(1, GridUnitType.auto);
-            new ItemSpec(1, GridUnitType.star);
-            new ItemSpec(1, GridUnitType.pixel);
+            var dummy = new ItemSpec(1, GridUnitType.auto);
+            dummy = new ItemSpec(1, GridUnitType.star);
+            dummy = new ItemSpec(1, GridUnitType.pixel);
         }
         catch (ex) {
             TKUnit.assert(false, "ItemSpec type should support auto, star and pixel.");
@@ -309,7 +307,7 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
 
     public test_ItemSpec_constructor_throws_onWrongType() {
         TKUnit.assertThrows(() => {
-            new ItemSpec(1, "unsupported");
+            return new ItemSpec(1, "unsupported");
         }, "'ItemSpec type' incorrect value.");
     }
 
@@ -529,7 +527,6 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
     }
 
     private assertRows(grid: GridLayout) {
-        var columns: Array<ItemSpec> = grid.getColumns();
         var rows: Array<ItemSpec> = grid.getRows();
 
         TKUnit.assertEqual(rows.length, 4, "rows.length");
@@ -564,27 +561,12 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
     }
 
     public test_codesnippets = function () {
-        // <snippet module="ui/layouts/grid-layout" title="grid-layout">
-        // ## GridLayout sample
-        // ### Creating Grid Layout via code.
-        // ``` JavaScript
+        // >> grid-layout-require
         //var layout = require("ui/layouts/grid-layout");
         var gridLayout = new GridLayout();
-        //  ```
+        //  << grid-layout-require
 
-        // ### Create grid layout with an xml declaration
-        // ``` XML
-        // <GridLayout columns="80, *, auto" rows="auto, *" >
-        //  <Button col="0" />
-        //  <Button col="1" />
-        //  <Button col="2" />
-        //// by default column and row are set to 0
-        //  <Button row="1" colSpan="3" />
-        // </GridLayout>
-        // ```
-
-        // ### Add views to grid layout
-        // ``` JavaScript
+        // >> grid-layout-addviews
         var btn1 = new Button();
         var btn2 = new Button();
         var btn3 = new Button();
@@ -593,27 +575,23 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
         gridLayout.addChild(btn2);
         gridLayout.addChild(btn3);
         gridLayout.addChild(btn4);
-        //  ```
-
-        // ### Set column property on views - btn1 in first column, btn2 is second and btn3 in third
-        // ``` JavaScript
+        //  << grid-layout-addviews
+        
+        // >> grid-layout-setcolumn
         GridLayout.setColumn(btn1, 0);
         GridLayout.setColumn(btn2, 1);
         GridLayout.setColumn(btn3, 2);
-        // ```
-
-        // ### Set row property on btn4.
-        // ``` JavaScript
+        // << grid-layout-setcolumn
+        
+        // >> grid-layout-setrow
         GridLayout.setRow(btn4, 1);
-        // ```
+        // << grid-layout-setrow
 
-        // ### Set columnSpan property on btn4 to stretch into all columns
-        // ``` JavaScript
+        // >> grid-layout-columnspan
         GridLayout.setColumnSpan(btn4, 3);
-        // ```
+        // << grid-layout-columnspan
 
-        // ### Create ItemSpec for columns and rows 3 columns - 80px, *, auto size and 2 rows - 100px and auto size
-        // ``` JavaScript
+        // >> grid-layout-itemspec
         //// ItemSpec modes of the column refers to its width.
         //// Absolute size of the column
         var firstColumn = new ItemSpec(80, GridUnitType.pixel);
@@ -625,17 +603,15 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
         //// Star and Auto modes for rows behave like corresponding setting for columns but refer to row height.
         var firstRow = new ItemSpec(1, GridUnitType.auto);
         var secondRow = new ItemSpec(1, GridUnitType.star);
-        // ```
-
-        // ### Add columns and rows to GridLayout
-        // ``` JavaScript
+        // << grid-layout-itemspec
+        
+        // >> grid-layout-add-rowscols
         gridLayout.addColumn(firstColumn);
         gridLayout.addColumn(secondColumn);
         gridLayout.addColumn(thirdColumn);
         gridLayout.addRow(firstRow);
         gridLayout.addRow(secondRow);
-        // ```
-        // </snippet>
+        // << grid-layout-add-rowscols
     }
 
     public test_percent_support() {
@@ -686,6 +662,42 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
 
         TKUnit.assertTrue(rows[0].isStar, "First row should be *");
         TKUnit.assertTrue(rows[1].isAbsolute, "Second row should be Absolute");
+    }
+
+    public test_columns_widths() {
+        this.testView.width = layoutHelper.dp(400);
+        this.testView.height = layoutHelper.dp(600);
+
+        let grid = new GridLayout();
+        this.testView.addChild(grid);
+        grid.horizontalAlignment = enums.HorizontalAlignment.left;
+        grid.verticalAlignment = enums.VerticalAlignment.top;
+        
+        grid.addColumn(new ItemSpec(1, GridUnitType.star));
+        grid.addColumn(new ItemSpec(layoutHelper.dp(100), GridUnitType.pixel));
+        grid.addColumn(new ItemSpec(2, GridUnitType.star));
+        
+        grid.addRow(new ItemSpec(1, GridUnitType.star));
+        grid.addRow(new ItemSpec(layoutHelper.dp(100), GridUnitType.pixel));
+        grid.addRow(new ItemSpec(2, GridUnitType.star));
+
+        let btn = new Button();
+        btn.width = layoutHelper.dp(300);
+        btn.height = layoutHelper.dp(500);
+        grid.addChild(btn);
+        GridLayout.setColumnSpan(btn, 3);
+        GridLayout.setRowSpan(btn, 3);
+        this.waitUntilTestElementLayoutIsValid();
+
+        var cols = grid.getColumns();
+        TKUnit.assertAreClose(cols[0].actualLength, layoutHelper.dp(67), DELTA, "Column[0] actual length should be 67");
+        TKUnit.assertAreClose(cols[1].actualLength, layoutHelper.dp(100), DELTA, "Column[1] actual length should be 100");
+        TKUnit.assertAreClose(cols[2].actualLength, layoutHelper.dp(133), DELTA, "Column[2] actual length should be 133");
+
+        var rows = grid.getRows();
+        TKUnit.assertAreClose(rows[0].actualLength, layoutHelper.dp(133), DELTA, "Row[0] actual length should be 133");
+        TKUnit.assertAreClose(rows[1].actualLength, layoutHelper.dp(100), DELTA, "Row[1] actual length should be 100");
+        TKUnit.assertAreClose(rows[2].actualLength, layoutHelper.dp(267), DELTA, "Row[2] actual length should be 267");
     }
 }
 

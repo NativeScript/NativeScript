@@ -42,6 +42,12 @@ declare module "trace" {
     export function addCategories(categories: string);
 
     /**
+     * Check if category is already set in trace module.
+     * @param category The category to check.
+     */
+    export function isCategorySet(category: string): boolean;
+
+    /**
      * Writes a message using the available writers.
      * @param message The message to be written.
      * @param category The category of the message.
@@ -76,6 +82,7 @@ declare module "trace" {
         export var Binding: string;
         export var Error: string;
         export var Animation: string;
+        export var Transition: string;
 
         export var All: string;
 

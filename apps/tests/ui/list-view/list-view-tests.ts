@@ -1,72 +1,41 @@
 ﻿import testModule = require("../../ui-test");
 import TKUnit = require("../../TKUnit");
-import testRunner = require("../../testRunner");
 import app = require("application");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
 import observable = require("data/observable");
 import types = require("utils/types");
 import platform = require("platform");
 import utils = require("utils/utils");
 import { Label } from "ui/label";
 
-// <snippet module="ui/list-view" title="list-view">
-// # ListView
-// Using a ListView requires the ListView module.
-// ``` JavaScript
+// >> article-require-module
 import listViewModule = require("ui/list-view");
-// ```
-// Other modules which will be used in the code samples in this article:
-// ``` JavaScript
+// << article-require-module
+
+// >> article-require-modules
 import observableArray = require("data/observable-array");
 import labelModule = require("ui/label");
-// ```
+// << article-require-modules
 
-// ### Binding the ListView items property to collection in the view-model.
-//```XML
-// <Page>
-//   {%raw%}<ListView items="{{ myItems }}" />{%endraw%}
-// </Page>
-//```
+// >> article-item-tap
+function listViewItemTap(args) {
+  var itemIndex = args.index;
+  // >> (hide)
+  console.dump(itemIndex);
+  // << (hide)
+}
+exports.listViewItemTap = listViewItemTap;
+// << article-item-tap
 
-// ### Attaching event handler for the ListView itemTap event.
-//```XML
-// <Page>
-//   {%raw%}<ListView items="{{ myItems }}" itemTap="listViewItemTap" />{%endraw%}
-// </Page>
-//```
-//```JS
-// function listViewItemTap(args) {
-//   var itemIndex = args.index;
+// >> article-load-items
+function listViewLoadMoreItems(args) {
+  // Expand your collection bound to the ListView with more items here!
+}
+// << article-load-items
+listViewLoadMoreItems("test");
+// function loaded(args) {
+//   args.object.bindingContext = { items: [1,2,3,4,5] };
 // }
-// exports.listViewItemTap = listViewItemTap;
-//```
-
-// ### Attaching event handler for the ListView loadMoreItems event.
-//```XML
-// <Page>
-//  {%raw%}<ListView items="{{ myItems }}" loadMoreItems="listViewLoadMoreItems" />{%endraw%}
-// </Page>
-//```
-//```JS
-// function listViewLoadMoreItems(args) {
-//   // Expand your collection bound to the ListView with more items here!
-// }
-// exports.listViewLoadMoreItems = listViewLoadMoreItems;
-//```
-
-// ### Define the ListView itemTemplate property.
-//```XML
-// <Page>
-//  {%raw%}<ListView items="{{ myItems }}">
-//     <ListView.itemTemplate>
-//        <Label text="{{ title || 'Downloading...' }}" textWrap="true" class="title" />
-//     </ListView.itemTemplate>
-//  </ListView>{%endraw%}
-// </Page>
-//```
-
-// </snippet>
+// exports.loaded = loaded;
 
 var ASYNC = 0.2;
 var FEW_ITEMS = [0, 1, 2];
@@ -82,12 +51,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     }
 
     public test_default_TNS_values() {
-        // <snippet module="ui/list-view" title="list-view">
-        // ### Creating a ListView
-        // ``` JavaScript
+        // >> article-create-listview
         var listView = new listViewModule.ListView();
-        // ```
-        // </snippet>
+        // << article-create-listview
 
         TKUnit.assertEqual(listView.isScrolling, false, "Default listView.isScrolling");
         TKUnit.assert(types.isUndefined(listView.items), "Default listView.items should be undefined");
@@ -97,10 +63,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var listView = this.testView;
 
         var indexes = {};
-        // <snippet module="ui/list-view" title="list-view">
-        // ### Using ListView with Array
-        // The itemLoading event is used to create the UI for each item that is shown in the ListView.
-        // ``` JavaScript
+        // >> article-listview-array
         var colors = ["red", "green", "blue"];
         listView.items = colors;
         listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
@@ -110,7 +73,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             }
             (<labelModule.Label>args.view).text = colors[args.index];
 
-            //<hide>
+            // >> (hide)
             indexes[args.index] = true;
             if (args.index === (colors.length - 1)) {
                 try {
@@ -130,10 +93,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
                     done(e);
                 }
             }
-            //</hide>
+            // << (hide)
         });
-        // ```
-        // </snippet>
+        // << article-listview-array
     }
 
     public test_set_native_item_exposed() {
@@ -200,15 +162,11 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assertEqual(this.getNativeViewCount(listView), colors.length, "Native views count.");
 
-        // <snippet module="ui/list-view" title="list-view">
-        // > Note, that changing the array after the list view is shown will not update the UI.
-        // You can force-update the UI using the refresh() method.
-        // ``` JavaScript
+        // >> article-change-refresh-listview
         colors.push("yellow");
         //// Manually trigger the update so that the new color is shown.
         listView.refresh();
-        // ```
-        // </snippet>
+        // << article-change-refresh-listview
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assertEqual(this.getNativeViewCount(listView), colors.length, "Native views count.");
     }
@@ -228,18 +186,23 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             completed = args.index === (listView.items.length - 1);
         });
 
+        // iOS7 needs to know the size of the cell before it is generated so we first measure them using fake cell
+        // then we generate the real cells. This cause itemLoading to be called twice per index.
+        let expected = (platform.device.os === platform.platformNames.ios && utils.ios.MajorVersion === 7) ? 2 : 1;
         TKUnit.waitUntilReady(() => { return completed; }, ASYNC);
-        TKUnit.assertEqual(indexes[0], 1, "itemLoading called more than once");
-        TKUnit.assertEqual(indexes[1], 1, "itemLoading called more than once");
-        TKUnit.assertEqual(indexes[2], 1, "itemLoading called more than once");
+        TKUnit.assertEqual(indexes[0], expected, "itemLoading called more than once");
+        TKUnit.assertEqual(indexes[1], expected, "itemLoading called more than once");
+        TKUnit.assertEqual(indexes[2], expected, "itemLoading called more than once");
 
         completed = false;
         listView.refresh();
 
+        // again calling refresh will generate itemLoading twice per item.
+        expected += expected;
         TKUnit.waitUntilReady(() => { return completed; }, ASYNC);
-        TKUnit.assertEqual(indexes[0], 2, "itemLoading not called for index 0");
-        TKUnit.assertEqual(indexes[1], 2, "itemLoading not called for index 1");
-        TKUnit.assertEqual(indexes[2], 2, "itemLoading not called for index 2");
+        TKUnit.assertEqual(indexes[0], expected, "itemLoading not called for index 0");
+        TKUnit.assertEqual(indexes[1], expected, "itemLoading not called for index 1");
+        TKUnit.assertEqual(indexes[2], expected, "itemLoading not called for index 2");
     }
 
     public test_set_itmes_to_null_clears_native_items() {
@@ -285,9 +248,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var listView = this.testView;
 
         var indexes = {};
-        // <snippet module="ui/list-view" title="list-view">
-        // ### Using ListView with ObservableArray
-        // ``` JavaScript
+        // >> article-listview-observablearray
         var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
         listView.items = colors;
         listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
@@ -299,8 +260,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
             indexes[args.index] = true;
         });
-        // ```
-        // </snippet>
+        // << article-listview-observablearray
 
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assert(indexes[0], "itemLoading not called for index 0");
@@ -318,13 +278,10 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assertEqual(this.getNativeViewCount(listView), 3, "getNativeViewCount");
 
-        // <snippet module="ui/list-view" title="list-view">
-        // > When using ObservableArray the list view will be automatically updated when items are added or removed form the array.
-        // ``` JavaScript
+        // >> article-push-in-observablearray
         colors.push("yellow");
         //// The ListView will be updated automatically.
-        // ```
-        // </snippet>
+        // << article-push-in-observablearray
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assertEqual(this.getNativeViewCount(listView), 4, "getNativeViewCount");
     }
@@ -368,22 +325,17 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var nativeTapRaised = false;
         var itemIndex = -1;
         /* tslint:disable:no-unused-variable */
-        // <snippet module="ui/list-view" title="list-view">
-        // ## Responding to other events
-        // ### ItemTap event
-        // The event will be raise when an item inside the ListView is tapped.
-        // ``` JavaScript
+        // >> article-itemtap-event
         listView.on(listViewModule.ListView.itemTapEvent, function (args: listViewModule.ItemEventData) {
             var tappedItemIndex = args.index;
             var tappedItemView = args.view;
             //// Do someting
-            //<hide>
+            // >> (hide)
             nativeTapRaised = true;
             itemIndex = args.index;
-            //</hide>
+            // << (hide)
         });
-        // ```
-        // </snippet>
+        // << article-itemtap-event
         /* tslint:enable:no-unused-variable */
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         this.performNativeItemTap(listView, 1);
@@ -398,19 +350,15 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var loadMoreItemsCount = 0;
         listView.items = FEW_ITEMS;
         listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
-        // <snippet module="ui/list-view" title="list-view">
-        // ### LoadMoreItems event
-        // The event will be raised when the ListView is scrolled so that the last item is visible.
-        // This even is intended to be used to add additional data in the ListView.
-        // ``` JavaScript
+        // >> article-loadmoreitems-event
         listView.on(listViewModule.ListView.loadMoreItemsEvent, function (data: observable.EventData) {
             //// Do something.
-            //<hide>
+            // >> (hide)
             loadMoreItemsCount++;
-            //</hide>
+            // << (hide)
         });
         // ```
-        // </snippet>
+        // << article-loadmoreitems-event
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assertEqual(loadMoreItemsCount, 1, "loadMoreItemsCount");
     }
@@ -632,36 +580,37 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         this.assertNoMemoryLeak(weakRef);
     }
 
-    private test_view_in_itemLoading_is_not_collected_prematurely() {
-        let weakRef: WeakRef<labelModule.Label>;
+    //private test_view_in_itemLoading_is_not_collected_prematurely() {
+        //let weakRef: WeakRef<labelModule.Label>;
 
-        let handler = function (args: listViewModule.ItemEventData) {
-            let lbl = new labelModule.Label();
-            lbl.text = args.index.toString();
-            weakRef = new WeakRef(lbl);
-            args.view = lbl;
-            let listView: listViewModule.ListView = <listViewModule.ListView>args.object;
-            listView.off("itemLoading", handler);
-        };
+        //let handler = function (args: listViewModule.ItemEventData) {
+            //let lbl = new labelModule.Label();
+            //lbl.text = args.index.toString();
+            //weakRef = new WeakRef(lbl);
+            //args.view = lbl;
+            //let listView: listViewModule.ListView = <listViewModule.ListView>args.object;
+            //listView.off("itemLoading", handler);
+        //};
 
-        this.testView.on("itemLoading", handler);
-        this.testView.items = [1];
-        TKUnit.waitUntilReady(() => { return this.getNativeViewCount(this.testView) === this.testView.items.length; }, ASYNC);
+        //this.testView.on("itemLoading", handler);
+        //this.testView.items = [1];
+        //TKUnit.waitUntilReady(() => { return this.getNativeViewCount(this.testView) === this.testView.items.length; }, ASYNC);
 
-        if (platform.device.os === platform.platformNames.ios) {
-            // Could cause GC on the next call.
-            // NOTE: Don't replace this with forceGC();
-            new ArrayBuffer(4 * 1024 * 1024);
-        }
-        utils.GC();
+        //if (platform.device.os === platform.platformNames.ios) {
+            //// Could cause GC on the next call.
+            //// NOTE: Don't replace this with forceGC();
+            //new ArrayBuffer(4 * 1024 * 1024);
+        //}
+        //utils.GC();
 
-        TKUnit.assert(weakRef.get(), weakRef.get() + " died prematurely!");
-    }
+        //TKUnit.assert(weakRef.get(), weakRef.get() + " died prematurely!");
+    //}
 
     private assertNoMemoryLeak(weakRef: WeakRef<listViewModule.ListView>) {
         this.tearDown();
         TKUnit.waitUntilReady(() => {
             if (platform.device.os === platform.platformNames.ios) {
+                /* tslint:disable:no-unused-expression */
                 // Could cause GC on the next call.
                 // NOTE: Don't replace this with forceGC();
                 new ArrayBuffer(4 * 1024 * 1024);

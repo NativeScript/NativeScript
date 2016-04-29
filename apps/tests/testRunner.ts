@@ -5,6 +5,7 @@ import {topmost, Frame} from "ui/frame";
 import {TextView} from "ui/text-view";
 import * as platform from "platform";
 import "./ui-test";
+import fs = require("file-system");
 
 Frame.defaultAnimatedNavigation = false;
 
@@ -25,34 +26,44 @@ export function isRunningOnEmulator(): boolean {
 }
 
 export var allTests = {};
+if (!isRunningOnEmulator()) {
+    allTests["LOCATION"] = require("./location-tests");
+}
+
+allTests["PLATFORM"] = require("./platform-tests");
+allTests["FILE SYSTEM"] = require("./file-system-tests");
+allTests["HTTP"] = require("./http-tests");
+allTests["XHR"] = require("./xhr-tests");
+allTests["FETCH"] = require("./fetch-tests");
+allTests["APPLICATION SETTINGS"] = require("./application-settings-tests");
+allTests["APPLICATION"] = require("./application-tests");
+allTests["IMAGE SOURCE"] = require("./image-source-tests");
+allTests["OBSERVABLE-ARRAY"] = require("./observable-array-tests");
+allTests["VIRTUAL-ARRAY"] = require("./virtual-array-tests");
+allTests["OBSERVABLE"] = require("./observable-tests");
+allTests["TIMER"] = require("./timer-tests");
+allTests["COLOR"] = require("./color-tests");
+allTests["DEPENDENCY-OBSERVABLE"] = require("./ui/dependency-observable-tests");
+allTests["BINDABLE"] = require("./ui/bindable-tests");
+allTests["BINDING-EXPRESSIONS"] = require("./ui/binding-expressions-tests");
+allTests["XML-PARSER"] = require("./xml-parser-tests/xml-parser-tests");
+allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");
+allTests["FILE-SYSTEM-ACCESS"] = require("./file-system-access-tests/file-system-access-tests");
+allTests["FILE-NAME-RESOLVER"] = require("./file-name-resolver-tests/file-name-resolver-tests");
+allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
+allTests["CONNECTIVITY"] = require("./connectivity-tests");
+
 allTests["PROXY-VIEW-CONTAINER"] = require("./ui/proxy-view-container/proxy-view-container-tests")
 allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
 allTests["ACTION-BAR"] = require("./ui/action-bar/action-bar-tests");
 allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
-allTests["APPLICATION"] = require("./application-tests");
 allTests["DOCKLAYOUT"] = require("./layouts/dock-layout-tests");
 allTests["WRAPLAYOUT"] = require("./layouts/wrap-layout-tests");
 allTests["ABSOLUTELAYOUT"] = require("./layouts/absolute-layout-tests");
 allTests["GRIDLAYOUT"] = require("./layouts/grid-layout-tests");
 allTests["STACKLAYOUT"] = require("./layouts/stack-layout-tests");
-allTests["PLATFORM"] = require("./platform-tests");
 allTests["STYLE-PROPERTIES"] = require("./ui/style/style-properties-tests");
-allTests["FILE SYSTEM"] = require("./file-system-tests");
-allTests["HTTP"] = require("./http-tests");
-allTests["XHR"] = require("./xhr-tests");
-allTests["FETCH"] = require("./fetch-tests");
 allTests["FRAME"] = require("./frame-tests");
-allTests["APPLICATION SETTINGS"] = require("./application-settings-tests");
-allTests["IMAGE SOURCE"] = require("./image-source-tests");
-allTests["TIMER"] = require("./timer-tests");
-allTests["COLOR"] = require("./color-tests");
-allTests["OBSERVABLE-ARRAY"] = require("./observable-array-tests");
-allTests["VIRTUAL-ARRAY"] = require("./virtual-array-tests");
-allTests["OBSERVABLE"] = require("./observable-tests");
-allTests["DEPENDENCY-OBSERVABLE"] = require("./ui/dependency-observable-tests");
-allTests["BINDABLE"] = require("./ui/bindable-tests");
-allTests["BINDING-EXPRESSIONS"] = require("./ui/binding-expressions-tests");
-allTests["XML-PARSER"] = require("./xml-parser-tests/xml-parser-tests");
 allTests["VIEW"] = require("./ui/view/view-tests");
 allTests["STYLE"] = require("./ui/style/style-tests");
 allTests["VISUAL-STATE"] = require("./ui/style/visual-state-tests");
@@ -72,61 +83,95 @@ allTests["LISTVIEW"] = require("./ui/list-view/list-view-tests");
 allTests["ACTIVITY-INDICATOR"] = require("./ui/activity-indicator/activity-indicator-tests");
 allTests["TEXT-FIELD"] = require("./ui/text-field/text-field-tests");
 allTests["TEXT-VIEW"] = require("./ui/text-view/text-view-tests");
-allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");
-allTests["FILE-SYSTEM-ACCESS"] = require("./file-system-access-tests/file-system-access-tests");
-allTests["FILE-NAME-RESOLVER"] = require("./file-name-resolver-tests/file-name-resolver-tests");
 allTests["LIST-PICKER"] = require("./ui/list-picker/list-picker-tests");
 allTests["DATE-PICKER"] = require("./ui/date-picker/date-picker-tests");
 allTests["TIME-PICKER"] = require("./ui/time-picker/time-picker-tests");
 allTests["WEB-VIEW"] = require("./ui/web-view/web-view-tests");
 allTests["HTML-VIEW"] = require("./ui/html-view/html-view-tests");
-allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
 allTests["REPEATER"] = require("./ui/repeater/repeater-tests");
 allTests["SEARCH-BAR"] = require('./ui/search-bar/search-bar-tests');
-allTests["CONNECTIVITY"] = require("./connectivity-tests");
 allTests["SEGMENTED-BAR"] = require("./ui/segmented-bar/segmented-bar-tests");
 allTests["ANIMATION"] = require("./ui/animation/animation-tests");
+allTests["CSS-ANIMATION"] = require("./ui/animation/css-animation-tests");
 
-if (!isRunningOnEmulator()) {
-    allTests["LOCATION"] = require("./location-tests");
+// Skip transitions on android emulators with API 23
+if (!(platform.device.os === platform.platformNames.android && parseInt(platform.device.sdkVersion) === 23 && isRunningOnEmulator())) {
+    allTests["TANSITIONS"] = require("./navigation/transition-tests");
 }
 
-// Navigation tests should always be last.
-allTests["NAVIGATION"] = require("./navigation-tests");
+allTests["NAVIGATION"] = require("./navigation/navigation-tests");
 
 var testsWithLongDelay = {
+    test_Transitions: 3 * 60 * 1000,
     testLocation: 10000,
     testLocationOnce: 10000,
     testLocationOnceMaximumAge: 10000,
     //web-view-tests
-    testLoadExistingUrl: 10000,
+    testLoadExistingUrl: 10000 * 5,
+    testLoadLocalFile: 10000 * 5,
     testLoadInvalidUrl: 10000,
+    testLoadUpperCaseSrc: 10000 * 5
 }
 
+var startTime;
 var running = false;
 var testsQueue = new Array<TestInfo>();
 
 function printRunTestStats() {
+    let testFileContent = new Array<string>();
+    let testCases = new Array<string>();
+
     var j;
-    var testsCount = 0;
     var failedTestCount = 0;
     var failedTestInfo = [];
-    for (j = 0; j < testsQueue.length; j++) {
-        if (testsQueue[j].isTest) {
-            testsCount++;
-            if (!testsQueue[j].isPassed) {
-                failedTestCount++;
-                failedTestInfo.push(testsQueue[j].testName + " FAILED: " + testsQueue[j].errorMessage);
-            }
+
+    let allTests = testsQueue.filter(t=> t.isTest);
+
+    testFileContent.push("<testsuites>");
+
+    for (j = 0; j < allTests.length; j++) {
+        let testName = allTests[j].testName;
+        let duration = (allTests[j].duration / 1000).toFixed(2);
+        
+        if (!allTests[j].isPassed) {
+            failedTestCount++;
+
+            let errorMessage = allTests[j].errorMessage;
+
+            failedTestInfo.push(allTests[j].testName + " FAILED: " + allTests[j].errorMessage);
+
+            testCases.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"><failure type="exceptions.AssertionError"><![CDATA[${errorMessage}]]></failure></testcase>`);
+
+        } else {
+            testCases.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"></testcase>`);
         }
     }
-    let finalMessage = "=== ALL TESTS COMPLETE === \n" + (testsCount - failedTestCount) + " OK, " + failedTestCount + " failed" + "\n";
+    
+    var totalTime = (TKUnit.time() - startTime).toFixed(2);
+    
+    testFileContent.push(`<testsuite name="NativeScript Tests" timestamp="${new Date()}" hostname="hostname" time="${totalTime}" errors="0" tests="${allTests.length}" skipped="0" failures="${failedTestCount}">`);
+
+    testFileContent = testFileContent.concat(testCases);
+
+// DO NOT CHANGE THE FIRST ROW! Used as an indicator for test run pass detection.
+    let finalMessage = `=== ALL TESTS COMPLETE ===\n` +
+        `${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n` + 
+        `DURATION: ${totalTime} ms`;
     TKUnit.write(finalMessage, messageType.info);
     for (j = 0; j < failedTestInfo.length; j++) {
         let failureMessage = failedTestInfo[j];
         TKUnit.write(failureMessage, messageType.error);
         finalMessage += "\n" + failureMessage;
     }
+
+    testFileContent.push("</testsuite>");
+    testFileContent.push("</testsuites>");
+
+    let testFilePath = fs.path.join(fs.knownFolders.documents().path, "test-results.xml");
+    let testFile = fs.File.fromPath(testFilePath);
+    testFile.writeTextSync(testFileContent.join(""));
+
+    finalMessage += "\n" + "Test results: " + testFilePath;
 
     let messageContainer = new TextView();
     messageContainer.text = finalMessage;
@@ -150,7 +195,7 @@ export var runAll = function (testSelector?: string) {
         // TODO: We may schedule pending run requests
         return;
     }
-    
+
     var singleModuleName, singleTestName;
     if (testSelector) {
         var pair = testSelector.split(".");
@@ -162,7 +207,7 @@ export var runAll = function (testSelector?: string) {
                 singleModuleName = singleModuleName.toLowerCase();
             }
         }
-        
+
         singleTestName = pair[1];
         if (singleTestName) {
             if (singleTestName.length === 0) {
@@ -172,12 +217,12 @@ export var runAll = function (testSelector?: string) {
             }
         }
     }
-    
+
     console.log("TESTS: " + singleModuleName + " " + singleTestName);
 
     var totalSuccess = 0;
     var totalFailed: Array<TKUnit.TestFailure> = [];
-    testsQueue.push(new TestInfo(function () { running = true; }));
+    testsQueue.push(new TestInfo(() => { running = true; startTime = TKUnit.time(); }));
     for (var name in allTests) {
         if (singleModuleName && (singleModuleName !== name.toLowerCase())) {
             continue;
@@ -199,7 +244,7 @@ export var runAll = function (testSelector?: string) {
             if (singleTestName && (singleTestName !== testName.toLowerCase())) {
                 continue;
             }
-            
+
             var testFunction = test[testName];
             if ((typeof (testFunction) === "function") && (testName.substring(0, 4) == "test")) {
                 if (test.setUp) {
@@ -234,8 +279,9 @@ class TestInfo implements TKUnit.TestInfoEntry {
     isPassed: boolean;
     errorMessage: string;
     testTimeout: number;
+    duration: number;
 
-    constructor(testFunc, testInstance?: any, isTest?, testName?, isPassed?, errorMessage?, testTimeout?) {
+    constructor(testFunc, testInstance?: any, isTest?, testName?, isPassed?, errorMessage?, testTimeout?, duration?) {
         this.testFunc = testFunc;
         this.instance = testInstance || null;
         this.isTest = isTest || false;
@@ -243,5 +289,6 @@ class TestInfo implements TKUnit.TestInfoEntry {
         this.isPassed = isPassed || false;
         this.errorMessage = errorMessage || "";
         this.testTimeout = testTimeout;
+        this.duration = duration;
     }
 }

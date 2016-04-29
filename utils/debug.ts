@@ -1,4 +1,4 @@
-import { knownFolders } from "file-system"
+import {knownFolders} from "file-system"
 
 export var debug = true;
 
@@ -17,7 +17,6 @@ export class Source {
 	private _column: number;
 	
 	private static _source: symbol = Symbol("source");
-	private static _appRoot: string;
 	
     constructor(uri: string, line: number, column: number) {
         ensureAppRootPath();
@@ -48,11 +47,12 @@ export class Source {
 	}
 }
 
-export class ScopeError implements Error {
+export class ScopeError extends Error {
 	private _child: Error;
 	private _message: string;
 	
-	constructor(child: Error, message?: string) {
+    constructor(child: Error, message?: string) {
+        super(message);
 		if (!child) {
 			throw new Error("Required child error!");
 		}

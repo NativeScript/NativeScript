@@ -6,10 +6,16 @@ import types = require("utils/types");
 import * as colorModule from "color";
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
-import styling = require("ui/styling");
 import view = require("ui/core/view");
 
 global.moduleMerge(common, exports);
+
+var color: typeof colorModule;
+function ensureColor() {
+    if (!color) {
+        color = require("color");
+    }
+}
 
 function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <SegmentedBar>data.object;
@@ -50,8 +56,7 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var newItems = <Array<definition.SegmentedBarItem>>data.newValue;
     if (newItems && newItems.length) {
         for (var i = 0; i < newItems.length; i++) {
-            view.ios.insertSegmentWithTitleAtIndexAnimated(newItems[i].title || "", i, false);
-            (<SegmentedBarItem>newItems[i])._parent = view;
+            view.insertTab(<SegmentedBarItem>(newItems[i]), i);
         }
 
         if (view.ios.selectedSegmentIndex !== view.selectedIndex) {
@@ -67,7 +72,7 @@ function onSelectedBackgroundColorPropertyChanged(data: dependencyObservable.Pro
         return;
     }
 
-    var color: typeof colorModule = require("color");
+    ensureColor();
 
     if (data.newValue instanceof color.Color) {
         view.ios.tintColor = data.newValue.ios;
@@ -98,6 +103,12 @@ export class SegmentedBar extends common.SegmentedBar {
 
     get ios(): UISegmentedControl {
         return this._ios;
+    }
+    
+    public insertTab(tabItem: SegmentedBarItem, index?: number): void {
+        super.insertTab(tabItem, index);
+        tabItem._parent = this;
+        this.ios.insertSegmentWithTitleAtIndexAnimated(tabItem.title || "", this.getValidIndex(index), false);
     }
 }
 

@@ -1,15 +1,9 @@
-﻿// <snippet module="ui/dialogs" title="dialogs">
-// # Dialogs
-// Displaying dialogs requires the "ui/dialogs" module.
-// ``` JavaScript
+﻿// >> dialog-require
 import dialogs = require("ui/dialogs");
-// ```
-// </snippet>
+// << dialog-require
 
 export function test_DummyTestForSnippetOnly0() {
-    // <snippet module="ui/dialogs" title="dialogs">
-    // ### Action
-    // ``` JavaScript
+    // >> dialog-action
     var options = {
         title: "Race Selection",
         message: "Choose your race",
@@ -19,14 +13,11 @@ export function test_DummyTestForSnippetOnly0() {
     dialogs.action(options).then((result) => { 
         console.log(result);
     });
-    // ```
-    // </snippet>
+    // << dialog-action
 }
 
 export function test_DummyTestForSnippetOnly1() {
-    // <snippet module="ui/dialogs" title="dialogs">
-    // ### Confirm
-    // ``` JavaScript
+    // >> dialog-confirm
     var options = {
         title: "Race Selection",
         message: "Are you sure you want to be an Elf?",
@@ -38,14 +29,11 @@ export function test_DummyTestForSnippetOnly1() {
         //// result can be true/false/undefined
         console.log(result);
     });
-    // ```
-    // </snippet>
+    // << dialog-confirm
 }
 
 export function test_DummyTestForSnippetOnly2() {
-    // <snippet module="ui/dialogs" title="dialogs">
-    // ### Alert
-    // ``` JavaScript
+    // >> dialog-alert
     var options = {
         title: "Race Selection",
         message: "Race Chosen: Elf",
@@ -54,14 +42,11 @@ export function test_DummyTestForSnippetOnly2() {
     dialogs.alert(options).then(() => {
         console.log("Race Chosen!");
     });
-    // ```
-    // </snippet>
+    // << dialog-alert
 }
 
 export function test_DummyTestForSnippetOnly3() {
-    // <snippet module="ui/dialogs" title="dialogs">
-    // ### Login
-    // ``` JavaScript
+    // >> dialog-login
     var options = {
         title: "Login",
         message: "Login",
@@ -72,14 +57,11 @@ export function test_DummyTestForSnippetOnly3() {
         //// true or false.
         console.log(loginResult.result);
     });
-    // ```
-    // </snippet>
+    // << dialog-login
 }
 
 export function test_DummyTestForSnippetOnly4() {
-    // <snippet module="ui/dialogs" title="dialogs">
-    // ### Prompt
-    // ``` JavaScript
+    // >> dialog-prompt
     var options = {
         title: "Name",
         defaultText: "Enter your name",
@@ -88,6 +70,5 @@ export function test_DummyTestForSnippetOnly4() {
     dialogs.prompt(options).then((result: dialogs.PromptResult) => { 
         console.log("Hello, " + result.text);
     });
-    // ```
-    // </snippet>
+    // << dialog-prompt
 }

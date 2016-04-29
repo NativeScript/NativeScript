@@ -1,8 +1,7 @@
 ﻿import common = require("./switch-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import * as utilsModule from "utils/utils";
-import styling = require("ui/styling");
+import * as utils from "utils/utils";
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 
@@ -59,8 +58,7 @@ export class Switch extends common.Switch {
         let nativeSize = this._nativeView.sizeThatFits(CGSizeMake(0, 0));
         this.width = nativeSize.width;
         this.height = nativeSize.height;
-        var utils: typeof utilsModule = require("utils/utils");
-
+        
         let widthAndState = utils.layout.makeMeasureSpec(nativeSize.width, utils.layout.EXACTLY);
         let heightAndState = utils.layout.makeMeasureSpec(nativeSize.height, utils.layout.EXACTLY);
         this.setMeasuredDimension(widthAndState, heightAndState);

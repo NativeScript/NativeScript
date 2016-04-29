@@ -1,31 +1,46 @@
 ﻿import pageCommon = require("./page-common");
-import definition = require("ui/page");
 import view = require("ui/core/view");
 import enums = require("ui/enums");
-import * as actionBarModule from "ui/action-bar";
-import * as gridLayoutModule from "ui/layouts/grid-layout";
+import * as actionBar from "ui/action-bar";
+import * as gridLayout from "ui/layouts/grid-layout";
 import * as traceModule from "trace";
 import * as colorModule from "color";
 
 global.moduleMerge(pageCommon, exports);
 
-var DialogFragmentClass;
-function ensureDialogFragmentClass() {
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
+
+var color: typeof colorModule;
+function ensureColor() {
+    if (!color) {
+        color = require("color");
+    }
+}
+
+export var DIALOG_FRAGMENT_TAG = "dialog";
+
+interface DialogFragmentClass {
+    new (owner: Page, fullscreen: boolean, shownCallback: () => void, dismissCallback: () => void): android.app.DialogFragment;
+}
+var DialogFragmentClass: DialogFragmentClass;
+    
+function ensureDialogFragmentClass() { 
     if (DialogFragmentClass) {
         return;
     }
 
     class DialogFragmentClassInner extends android.app.DialogFragment {
-        private _owner: Page;
-        private _fullscreen: boolean;
-        private _dismissCallback: Function;
-
-        constructor(owner: Page, fullscreen?: boolean, dismissCallback?: Function) {
+        constructor(
+            private _owner: Page,
+            private _fullscreen: boolean,
+            private _shownCallback: () => void,
+            private _dismissCallback: () => void) {
             super();
-
-            this._owner = owner;
-            this._fullscreen = fullscreen;
-            this._dismissCallback = dismissCallback;
             return global.__native(this);
         }
 
@@ -50,10 +65,29 @@ function ensureDialogFragmentClass() {
             return dialog;
         }
 
-        public onDismiss() {
-            if (typeof this._dismissCallback === "function") {
-                this._dismissCallback();
+        public onStart() {
+            super.onStart();
+            if (!this._owner.isLoaded) {
+                this._owner.onLoaded();
             }
+            this._shownCallback();
+        }
+        
+        public onDestroyView() {
+            super.onDestroyView();
+
+            if (this._owner.isLoaded) {
+                this._owner.onUnloaded();
+            }
+
+            this._owner._isAddedToNativeVisualTree = false;
+            this._owner._onDetached(true);
+
+        }
+
+        public onDismiss(dialog: android.content.IDialogInterface) {
+            super.onDismiss(dialog);
+            this._dismissCallback();
         }
 
     };
@@ -63,12 +97,7 @@ function ensureDialogFragmentClass() {
 
 export class Page extends pageCommon.Page {
     private _isBackNavigation = false;
-
     private _grid: org.nativescript.widgets.GridLayout;
-
-    constructor(options?: definition.Options) {
-        super(options);
-    }
 
     get android(): android.view.ViewGroup {
         return this._grid;
@@ -87,16 +116,13 @@ export class Page extends pageCommon.Page {
     public _addViewToNativeVisualTree(child: view.View, atIndex?: number): boolean {
         // Set the row property for the child 
         if (this._nativeView && child._nativeView) {
-            var actionBar: typeof actionBarModule = require("ui/action-bar");
-            var grid: typeof gridLayoutModule = require("ui/layouts/grid-layout");
-
             if (child instanceof actionBar.ActionBar) {
-                grid.GridLayout.setRow(child, 0);
+                gridLayout.GridLayout.setRow(child, 0);
                 child.horizontalAlignment = enums.HorizontalAlignment.stretch;
                 child.verticalAlignment = enums.VerticalAlignment.top;
             }
             else {
-                grid.GridLayout.setRow(child, 1);
+                gridLayout.GridLayout.setRow(child, 1);
             }
         }
 
@@ -107,10 +133,9 @@ export class Page extends pageCommon.Page {
         var skipDetached = !force && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
 
         if (skipDetached) {
-            var trace: typeof traceModule = require("trace");
-
+            ensureTrace();
             // Do not detach the context and android reference.
-            trace.write("Caching Page " + this._domId, trace.categories.NativeLifecycle);
+            trace.write(`Caching ${this}`, trace.categories.NativeLifecycle);
         }
         else {
             super._onDetached();
@@ -128,33 +153,27 @@ export class Page extends pageCommon.Page {
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         super._showNativeModalView(parent, context, closeCallback, fullscreen);
         if (!this.backgroundColor) {
-            var color: typeof colorModule = require("color");
-
+            ensureColor();
             this.backgroundColor = new color.Color("White");
         }
 
         this._onAttached(parent._context);
         this._isAddedToNativeVisualTree = true;
-        this.onLoaded();
 
         ensureDialogFragmentClass();
-        var that = this;
-        this._dialogFragment = new DialogFragmentClass(this, fullscreen, function () {
-            that.closeModal();
-        });
+
+        this._dialogFragment = new DialogFragmentClass(this, !!fullscreen, () => this._raiseShownModallyEvent(), () => this.closeModal());
 
         super._raiseShowingModallyEvent();
-        this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), "dialog");
-        super._raiseShownModallyEvent(parent, context, closeCallback);
+
+        this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), DIALOG_FRAGMENT_TAG);
     }
 
     protected _hideNativeModalView(parent: Page) {
         this._dialogFragment.dismissAllowingStateLoss();
         this._dialogFragment = null;
 
-        this.onUnloaded();
-        this._isAddedToNativeVisualTree = false;
-        this._onDetached(true);
+        parent._modal = undefined;
 
         super._hideNativeModalView(parent);
     }

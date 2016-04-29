@@ -3,6 +3,13 @@ import utils = require("utils/utils");
 import trace = require("trace");
 import * as httpRequestModule from "http/http-request";
 
+var httpRequest: typeof httpRequestModule;
+function ensureHttpRequest() {
+    if (!httpRequest) {
+        httpRequest = require("http/http-request");
+    }
+}
+
 //class NSCacheDelegateImpl extends NSObject implements NSCacheDelegate {
 //    public static ObjCProtocols = [NSCacheDelegate];
 
@@ -65,7 +72,7 @@ export class Cache extends common.Cache {
     }
 
     public _downloadCore(request: common.DownloadRequest) {
-        var httpRequest: typeof httpRequestModule = require("http/http-request");
+        ensureHttpRequest();
 
         var that = this;
         httpRequest.request({ url: request.url, method: "GET" })

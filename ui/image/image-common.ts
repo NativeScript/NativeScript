@@ -7,7 +7,7 @@ import enums = require("ui/enums");
 import platform = require("platform");
 import utils = require("utils/utils");
 
-import * as typesModule from "utils/types";
+import * as types from "utils/types";
 
 var SRC = "src";
 var IMAGE_SOURCE = "imageSource";
@@ -22,8 +22,6 @@ var AffectsLayout = platform.device.os === platform.platformNames.android ? depe
 function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var image = <Image>data.object;
     var value = data.newValue;
-
-    var types: typeof typesModule = require("utils/types");
 
     if (types.isString(value)) {
         value = value.trim();
@@ -74,10 +72,6 @@ export class Image extends view.View implements definition.Image {
 
     public static stretchProperty = new dependencyObservable.Property(STRETCH, IMAGE,
         new proxy.PropertyMetadata(enums.Stretch.aspectFit, AffectsLayout));
-
-    constructor(options?: definition.Options) {
-        super(options);
-    }
 
     get imageSource(): imageSource.ImageSource {
         return this._getValue(Image.imageSourceProperty);

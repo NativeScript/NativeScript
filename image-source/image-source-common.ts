@@ -1,6 +1,13 @@
 ﻿import utils = require("utils/utils");
 import * as httpModule from "http";
 
+var http: typeof httpModule;
+function ensureHttp() {
+    if (!http) {
+        http = require("http");
+    }
+}
+
 // This is used for definition purposes only, it does not generate JavaScript for it.
 import definition = require("image-source");
 
@@ -30,7 +37,7 @@ export function fromNativeSource(source: any): definition.ImageSource {
 }
 
 export function fromUrl(url: string): Promise<definition.ImageSource> {
-    var http: typeof httpModule = require("http");
+    ensureHttp();
     return http.getImage(url);
 }
 

@@ -1,25 +1,16 @@
-﻿// <snippet module="trace" title="trace">
-// # Trace
-// Tracing information about your app requires the "trace" module.
-// ``` JavaScript
+﻿// >> trace-require
 import trace = require("trace");
-// ```
-// </snippet>
+// << trace-require
 
 export var test_DummyTestForSnippetOnly0 = function () {
-    // <snippet module="trace" title="trace">
-    // ### Tracing all categories of events.
-    // ``` JavaScript
+    // >> trace-all-categories
     trace.setCategories(trace.categories.All);
     trace.enable();
-    // ```
-    // </snippet>
+    // << trace-all-categories
 }
 
 export var test_DummyTestForSnippetOnly1 = function () {
-    // <snippet module="trace" title="trace">
-    // ### Tracing specific categories of events.
-    // ``` JavaScript
+    // >> trace-specific-categories
     trace.setCategories(trace.categories.concat(
         trace.categories.Binding
         , trace.categories.Debug
@@ -31,17 +22,13 @@ export var test_DummyTestForSnippetOnly1 = function () {
         , trace.categories.VisualTreeEvents
         ));
     trace.enable();
-    // ```
-    // </snippet>
+    // << trace-specific-categories
 }
 
 export var test_DummyTestForSnippetOnly2 = function () {
-    // <snippet module="trace" title="trace">
-    // ### Write your own trace message.
-    // ``` JavaScript
+    // >> trace-message
     trace.setCategories(trace.categories.Debug);
     trace.enable();
     trace.write("My Debug Message", trace.categories.Debug);
-    // ```
-    // </snippet>
+    // << trace-message
 }

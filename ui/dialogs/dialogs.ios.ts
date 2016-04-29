@@ -388,7 +388,7 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
 function showUIAlertController(alertController: UIAlertController) {
     var currentPage = dialogsCommon.getCurrentPage();
     if (currentPage) {
-        var viewController: UIViewController = currentPage.ios;
+        var viewController: UIViewController = currentPage.modal ? currentPage.modal.ios : currentPage.ios;
         if (viewController) {
             if (alertController.popoverPresentationController) {
                 alertController.popoverPresentationController.sourceView = viewController.view;
@@ -403,10 +403,14 @@ function showUIAlertController(alertController: UIAlertController) {
 
             var lblColor = dialogsCommon.getLabelColor();
             if (lblColor) {
-                var title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-                alertController.setValueForKey(title, "attributedTitle");
-                var message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-                alertController.setValueForKey(message, "attributedMessage");
+                if (alertController.title) {
+                    var title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+                    alertController.setValueForKey(title, "attributedTitle");
+                }
+                if (alertController.message) {
+                    var message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+                    alertController.setValueForKey(message, "attributedMessage");
+                }
             }
 
             viewController.presentModalViewControllerAnimated(alertController, true);

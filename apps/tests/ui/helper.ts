@@ -14,99 +14,149 @@ var DELTA = 0.1;
 export var ASYNC = 0.2;
 export var MEMORY_ASYNC = 2;
 
+function clearPage(): void {
+    let newPage = frame.topmost().currentPage;
+    if (!newPage) {
+        TKUnit.waitUntilReady(() => frame.topmost().currentPage !== null);
+        newPage = frame.topmost().currentPage;
+    }
+
+    if (!newPage) {
+        throw new Error("NO CURRENT PAGE!!!!");
+    }
+
+    newPage.style._resetValue(styling.properties.backgroundColorProperty);
+    newPage.style._resetValue(styling.properties.colorProperty);
+    newPage._resetValue(button.Button.bindingContextProperty);
+    newPage._resetValue(button.Button.cssClassProperty);
+    newPage._resetValue(button.Button.idProperty);
+}
+
 export function do_PageTest(test: (views: Array<view.View>) => void, content: view.View, secondView: view.View, thirdView: view.View) {
-    var newPage: page.Page;
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
-        newPage.content = content;
-        return newPage;
-    };
-
-    navigate(pageFactory);
-
-    try {
-        test([newPage, content, secondView, thirdView, newPage.actionBar]);
-    }
-    finally {
-        goBack();
-    }
+    clearPage();
+    let newPage = frame.topmost().currentPage;
+    newPage.content = content;
+    test([newPage, content, secondView, thirdView, newPage.actionBar]);
+    newPage.content = null;
 }
 
 export function do_PageTest_WithButton(test: (views: Array<view.View>) => void) {
-    var newPage: page.Page;
-    var btn: button.Button;
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
-        btn = new button.Button();
-        newPage.content = btn;
-        return newPage;
-    };
-
-    navigate(pageFactory);
-
-    try {
-        test([newPage, btn, newPage.actionBar]);
-    }
-    finally {
-        goBack();
-    }
+    clearPage();
+    let newPage = frame.topmost().currentPage;
+    let btn = new button.Button();
+    newPage.content = btn;
+    test([newPage, btn, newPage.actionBar]);
+    newPage.content = null;
 }
 
 export function do_PageTest_WithStackLayout_AndButton(test: (views: Array<view.View>) => void) {
-    var newPage: page.Page;
-    var stackLayout;
-    var btn;
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
-        stackLayout = new stackLayoutModule.StackLayout();
-        btn = new button.Button();
-
-        stackLayout.addChild(btn);
-        newPage.content = stackLayout;
-        return newPage;
-    };
-
-    navigate(pageFactory);
-
-    try {
-        test([newPage, stackLayout, btn, newPage.actionBar]);
-    }
-    finally {
-        goBack();
-    }
+    clearPage();
+    let newPage = frame.topmost().currentPage;
+    let stackLayout = new stackLayoutModule.StackLayout();
+    let btn = new button.Button();
+    stackLayout.addChild(btn);
+    newPage.content = stackLayout;
+    test([newPage, stackLayout, btn, newPage.actionBar]);
+    newPage.content = null;
 }
 
-export function do_PageTest_WithStackLayout_AndButton_NavigatedBack(test: (views: Array<view.View>) => void,
-    assert: (views: Array<view.View>) => void) {
-
-    var newPage: page.Page;
-    var stackLayout;
-    var btn;
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
-        stackLayout = new stackLayoutModule.StackLayout();
-        btn = new button.Button();
-        stackLayout.addChild(btn);
-        newPage.content = stackLayout;
-        return newPage;
-    };
-
-    navigate(pageFactory);
-
-    try {
-        test([newPage, stackLayout, btn, newPage.actionBar]);
-    }
-    finally {
-        goBack();
+//export function buildUIAndRunTest(controlToTest, testFunction, pageCss?, testDelay?) {
+export function buildUIAndRunTest(controlToTest, testFunction, pageCss?) {
+    clearPage();
+    let newPage = frame.topmost().currentPage;
+    newPage.content = controlToTest;
+    if (pageCss) {
+        newPage.css = pageCss;
     }
 
-    try {
-        assert([newPage, stackLayout, btn, newPage.actionBar]);
+    testFunction([controlToTest, newPage]);
+    newPage.content = null;
+    newPage.css = null;
+}
+
+export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: () => T, interactWithViewFunc?: (view: T) => void, done?) {
+    clearPage();
+    let newPage = frame.topmost().currentPage;
+    let sp = new stackLayoutModule.StackLayout();
+    let testFinished = false;
+
+    sp.on("loaded", () => {
+        let weakRef = new WeakRef(createFunc());
+        try {
+            sp.addChild(weakRef.get());
+
+            if (interactWithViewFunc) {
+                interactWithViewFunc(weakRef.get());
+            }
+
+            sp.removeChild(weakRef.get());
+            if (newPage.ios) {
+                /* tslint:disable:no-unused-expression */
+                // Could cause GC on the next call.
+                // NOTE: Don't replace this with forceGC();
+                new ArrayBuffer(4 * 1024 * 1024);
+            }
+            utils.GC();
+
+            TKUnit.waitUntilReady(() => { return weakRef.get() ? !(weakRef.get().isLoaded) : true; }, MEMORY_ASYNC);
+            TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
+            testFinished = true;
+        }
+        catch (e) {
+            done(e);
+        }
+    });
+
+    newPage.content = sp;
+
+    TKUnit.waitUntilReady(() => testFinished, MEMORY_ASYNC);
+    TKUnit.assertTrue(testFinished, "Test did not completed.")
+    done(null);
+}
+
+export function navigateToModuleAndRunTest(moduleName, context, testFunction) {
+    let page = navigateToModule(moduleName, context);
+    testFunction(page);
+}
+
+export function navigate(pageFactory: () => page.Page, navigationContext?: any): page.Page {
+    let entry: frame.NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: true };
+    return navigateWithEntry(entry);
+}
+
+export function navigateWithHistory(pageFactory: () => page.Page, navigationContext?: any): page.Page {
+    let entry: frame.NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: false };
+    return navigateWithEntry(entry);
+}
+
+export function navigateToModule(moduleName: string, context?: any): page.Page {
+    let entry: frame.NavigationEntry = { moduleName: moduleName, context: context, animated: false, clearHistory: true };
+    return navigateWithEntry(entry);
+}
+
+export function navigateWithEntry(entry: frame.NavigationEntry): page.Page {
+    let page = frame.resolvePageFromEntry(entry);
+    entry.moduleName = null;
+    entry.animated = false
+    entry.create = function () {
+        return page;
     }
-    finally {
-        // wait to ensure asynchronous navigation
-        TKUnit.wait(ASYNC);
-    }
+
+    let currentPage = getCurrentPage();
+    frame.topmost().navigate(entry);
+    TKUnit.waitUntilReady(() => getCurrentPage() !== null && getCurrentPage() !== currentPage);
+    return page;
+}
+
+export function getCurrentPage(): page.Page {
+    return frame.topmost().currentPage;
+}
+
+export function assertAreClose(actual: number, expected: number, message: string): void {
+    var density = utils.layout.getDisplayDensity();
+    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
+
+    TKUnit.assertAreClose(actual, expected, delta, message);
 }
 
 export function assertViewColor(testView: view.View, hexColor: string, valueSource?: number) {
@@ -123,120 +173,13 @@ export function assertViewBackgroundColor(testView: view.View, hexColor: string)
     TKUnit.assertEqual(testView.style.backgroundColor.hex, hexColor, "backgroundColor property");
 }
 
-//export function buildUIAndRunTest(controlToTest, testFunction, pageCss?, testDelay?) {
-export function buildUIAndRunTest(controlToTest, testFunction, pageCss?) {
-    var newPage: page.Page;
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
-        newPage.content = controlToTest;
-        if (pageCss) {
-            newPage.css = pageCss;
-        }
-        return newPage;
-    };
-
-    navigate(pageFactory);
-    TKUnit.assert(newPage.isLoaded, "The page should be loaded here.");
-    try {
-        testFunction([controlToTest, newPage]);
-    }
-    finally {
-        goBack();
-    }
-}
-
-export function navigateToModuleAndRunTest(moduleName, context, testFunction) {
-    navigateToModule(moduleName, context);
-    try {
-        testFunction(frame.topmost().currentPage);
-    }
-    finally {
-        goBack();
-    }
-}
-
-export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: () => T, interactWithViewFunc?: (view: T) => void, done?) {
-    var newPage: page.Page;
-    var testFinished = false;
-    var pageFactory = function (): page.Page {
-        newPage = new page.Page();
-        var sp = new stackLayoutModule.StackLayout();
-        newPage.content = sp;
-        var loaded = false;
-
-        newPage.on("loaded", () => {
-            loaded = true;
-            var weakRef = new WeakRef(createFunc());
-            try {
-                sp.addChild(weakRef.get());
-
-                if (interactWithViewFunc) {
-                    interactWithViewFunc(weakRef.get());
-                }
-
-                sp.removeChild(weakRef.get());
-                if (newPage.ios) {
-                    // Could cause GC on the next call.
-                    // NOTE: Don't replace this with forceGC();
-                    new ArrayBuffer(4 * 1024 * 1024);
-                }
-                utils.GC();
-
-                TKUnit.waitUntilReady(() => { return weakRef.get() ? !(weakRef.get().isLoaded) : true; }, MEMORY_ASYNC);
-                TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
-                testFinished = true;
-            }
-            catch (e) {
-                done(e);
-            }
-        });
-
-        return newPage;
-    };
-
-    try {
-        navigate(pageFactory);
-        TKUnit.waitUntilReady(() => { return testFinished; }, MEMORY_ASYNC);
-    }
-    finally {
-        goBack();
-        done(null);
-    }
-}
-
-export function navigate(pageFactory: () => page.Page, navigationContext?: any) {
-    var currentPage = frame.topmost().currentPage;
-    frame.topmost().navigate({ create: pageFactory, animated: false, context: navigationContext });
-    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
-}
-
-export function navigateToModule(moduleName: string, context?: any) {
-    var currentPage = frame.topmost().currentPage;
-    frame.topmost().navigate({ moduleName: moduleName, context: context, animated: false });
-    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
-    TKUnit.assert(frame.topmost().currentPage.isLoaded, "Current page should be loaded!");
-}
-
-export function goBack(): void {
-    var currentPage = frame.topmost().currentPage;
-    frame.topmost().goBack();
-    TKUnit.waitUntilReady(() => { return frame.topmost().currentPage !== currentPage; });
-    TKUnit.assert(frame.topmost().currentPage.isLoaded, "Current page should be loaded!");
-    TKUnit.assert(!currentPage.isLoaded, "Previous page should be unloaded!");
-}
-
-export function assertAreClose(actual: number, expected: number, message: string): void {
-    var density = utils.layout.getDisplayDensity();
-    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
-
-    TKUnit.assertAreClose(actual, expected, delta, message);
-}
-
 export function forceGC() {
     if (platform.device.os === platform.platformNames.ios) {
+        /* tslint:disable:no-unused-expression */
         // Could cause GC on the next call.
         new ArrayBuffer(4 * 1024 * 1024);
         TKUnit.wait(ASYNC);
     }
+
     utils.GC();
 }

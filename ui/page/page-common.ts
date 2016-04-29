@@ -1,14 +1,28 @@
 ﻿import {ContentView} from "ui/content-view";
 import view = require("ui/core/view");
 import dts = require("ui/page");
-import frame = require("ui/frame");
 import styleScope = require("../styling/style-scope");
 import {ActionBar} from "ui/action-bar";
-import {DependencyObservable, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData, Property, ValueSource} from "ui/core/dependency-observable";
-import * as styleModule from "../styling/style";
+import {PropertyMetadataSettings, PropertyChangeData, Property, ValueSource} from "ui/core/dependency-observable";
+import * as style from "../styling/style";
 import * as fileSystemModule from "file-system";
-import * as frameCommonModule from "../frame/frame-common";
+import * as frameModule from "ui/frame";
 import proxy = require("ui/core/proxy");
+import keyframeAnimation = require("ui/animation/keyframe-animation");
+
+var fs: typeof fileSystemModule;
+function ensureFS() {
+    if (!fs) {
+        fs = require("file-system");
+    }
+}
+
+var frame: typeof frameModule;
+function ensureFrame() {
+    if (!frame) {
+        frame = require("ui/frame");
+    }
+}
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
 var AffectsLayout = global.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
@@ -37,6 +51,7 @@ export class Page extends ContentView implements dts.Page {
     public static showingModallyEvent = "showingModally";
 
     protected _closeModalCallback: Function;
+    private _modalContext: any;
 
     private _navigationContext: any;
 
@@ -44,21 +59,19 @@ export class Page extends ContentView implements dts.Page {
     private _styleScope: styleScope.StyleScope = new styleScope.StyleScope();
     private _actionBar: ActionBar;
 
-    private _modal: Page;
+    public _modal: Page;
 
-    constructor(options?: dts.Options) {
-        super(options);
+    constructor() {
+        super();
         this.actionBar = new ActionBar();
     }
 
     public onLoaded() {
-        var sm: typeof styleModule = require("../styling/style");
-
         // The default style of the page should be white background
-        this.style._setValue(sm.backgroundColorProperty, "white", ValueSource.Inherited);
+        this.style._setValue(style.backgroundColorProperty, "white", ValueSource.Inherited);
 
         this._applyCss();
-        
+
         if (this.actionBarHidden !== undefined) {
             this._updateActionBar(this.actionBarHidden);
         }
@@ -73,7 +86,7 @@ export class Page extends ContentView implements dts.Page {
     set backgroundSpanUnderStatusBar(value: boolean) {
         this._setValue(Page.backgroundSpanUnderStatusBarProperty, value);
     }
-    
+
     get actionBarHidden(): boolean {
         return this._getValue(Page.actionBarHiddenProperty);
     }
@@ -146,7 +159,7 @@ export class Page extends ContentView implements dts.Page {
 
     private _cssFiles = {};
     public addCssFile(cssFileName: string) {
-        var fs: typeof fileSystemModule = require("file-system");
+        ensureFS();
 
         if (cssFileName.indexOf("~/") === 0) {
             cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName.replace("~/", ""));
@@ -163,8 +176,17 @@ export class Page extends ContentView implements dts.Page {
         }
     }
 
-    get frame(): frame.Frame {
-        return <frame.Frame>this.parent;
+    public removeCssSelectors(selectorExpression: string) {
+        this._styleScope.removeSelectors(selectorExpression);
+        this._refreshCss();
+    }
+
+    public getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo {
+        return this._styleScope.getKeyframeAnimationWithName(animationName);
+    }
+
+    get frame(): frameModule.Frame {
+        return <frameModule.Frame>this.parent;
     }
 
     private createNavigatedData(eventName: string, isBackNavigation: boolean): dts.NavigatedData {
@@ -195,19 +217,25 @@ export class Page extends ContentView implements dts.Page {
         this._navigationContext = undefined;
     }
 
-    public showModal() {
+    public showModal(): Page {
+        ensureFrame();
         if (arguments.length === 0) {
             this._showNativeModalView(<any>frame.topmost().currentPage, undefined, undefined, true);
+            return this;
         } else {
-            var moduleName: string = arguments[0];
             var context: any = arguments[1];
             var closeCallback: Function = arguments[2];
             var fullscreen: boolean = arguments[3];
 
-            var frameCommon: typeof frameCommonModule = require("../frame/frame-common");
+            var page: Page;
+            if (arguments[0] instanceof Page) {
+                page = <Page>arguments[0];
+            } else {
+                page = <Page>frame.resolvePageFromEntry({ moduleName: arguments[0] });
+            }
 
-            var page = frameCommon.resolvePageFromEntry({ moduleName: moduleName });
-            (<Page>page)._showNativeModalView(this, context, closeCallback, fullscreen);
+            page._showNativeModalView(this, context, closeCallback, fullscreen);
+            return page;
         }
     }
 
@@ -233,9 +261,11 @@ export class Page extends ContentView implements dts.Page {
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         parent._modal = this;
         var that = this;
+        this._modalContext = context;
         this._closeModalCallback = function () {
             if (that._closeModalCallback) {
                 that._closeModalCallback = null;
+                that._modalContext = null;
                 that._hideNativeModalView(parent);
                 if (typeof closeCallback === "function") {
                     closeCallback.apply(undefined, arguments);
@@ -245,23 +275,27 @@ export class Page extends ContentView implements dts.Page {
     }
 
     protected _hideNativeModalView(parent: Page) {
-        parent._modal = undefined;
+        //
     }
 
-    protected _raiseShownModallyEvent(parent: Page, context: any, closeCallback: Function) {
-        this.notify({
+    protected _raiseShownModallyEvent() {
+        let args: dts.ShownModallyData = {
             eventName: Page.shownModallyEvent,
             object: this,
-            context: context,
+            context: this._modalContext,
             closeCallback: this._closeModalCallback
-        });
+        }
+        this.notify(args);
     }
 
     protected _raiseShowingModallyEvent() {
-        this.notify({
+        let args: dts.ShownModallyData = {
             eventName: Page.showingModallyEvent,
-            object: this
-        });
+            object: this,
+            context: this._modalContext,
+            closeCallback: this._closeModalCallback
+        }
+        this.notify(args);
     }
 
     public _getStyleScope(): styleScope.StyleScope {
@@ -270,8 +304,11 @@ export class Page extends ContentView implements dts.Page {
 
     public _eachChildView(callback: (child: view.View) => boolean) {
         super._eachChildView(callback);
-
         callback(this.actionBar);
+    }
+
+    get _childrenCount(): number {
+        return (this.content ? 1 : 0) + (this.actionBar ? 1 : 0);
     }
 
     private _applyCss() {

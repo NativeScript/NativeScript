@@ -18,8 +18,6 @@
          */
         public static formattedTextProperty: dependencyObservable.Property;
 
-        constructor(options?: Options);
-
         /**
          * Gets or sets the text.
          */
@@ -40,8 +38,6 @@
          */
         formattedText: formattedString.FormattedString;
 
-        _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData);
-
         /**
          * Called for every child element declared in xml.
          * This method will add a child element (value) to current element.
@@ -49,15 +45,10 @@
          * @param value - Value of the element.
          */
         _addChildFromBuilder(name: string, value: any): void;
-    }
 
-    /**
-     * Defines interface for an optional parameter used to create a text-base component.
-     */
-    export interface Options extends view.Options {
-        /**
-         * Gets or sets the text.
-         */
-        text?: string;
+        //@private
+        _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData): void;
+        _setFormattedTextPropertyToNative(value: any): void;
+        //@endprivate
     }
 }

@@ -1,10 +1,19 @@
 ﻿import dts = require("utils/utils");
+import types = require("utils/types");
 import common = require("./utils-common");
-import colorModule = require("color");
+import {Color} from "color";
 import enums = require("ui/enums");
-import * as typesModule from "utils/types";
+import * as fsModule from "file-system";
+import * as traceModule from "trace";
 
 global.moduleMerge(common, exports);
+
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
 
 function isOrientationLandscape(orientation: number) {
     return orientation === UIDeviceOrientation.UIDeviceOrientationLandscapeLeft || orientation === UIDeviceOrientation.UIDeviceOrientationLandscapeRight;
@@ -49,7 +58,9 @@ export module ios {
         }
     }
 
-    export function setTextDecorationAndTransform(v: any, decoration: string, transform: string) {
+    export function setTextDecorationAndTransform(v: any, decoration: string, transform: string, letterSpacing: number) {
+        let hasLetterSpacing = types.isNumber(letterSpacing) && !isNaN(letterSpacing);
+
         if (v.formattedText) {
             if (v.style.textDecoration.indexOf(enums.TextDecoration.none) === -1) {
 
@@ -69,6 +80,22 @@ export module ios {
                 let span = v.formattedText.spans.getItem(i);
                 span.text = getTransformedText(v, span.text, transform);
             }
+            
+            if (hasLetterSpacing) {
+                let attrText; 
+                if(v._nativeView instanceof UIButton){
+                    attrText = (<UIButton>v._nativeView).attributedTitleForState(UIControlState.UIControlStateNormal);
+                } else {
+                    attrText = v._nativeView.attributedText;
+                }
+                
+                attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing, { location: 0, length: v._nativeView.attributedText.length });
+                
+                if(v._nativeView instanceof UIButton){
+                    (<UIButton>v._nativeView).setAttributedTitleForState(attrText, UIControlState.UIControlStateNormal);
+                } 
+            }
+
         } else {
             let source = v.text;
             let attributes = new Array();
@@ -76,7 +103,7 @@ export module ios {
 
             var decorationValues = (decoration + "").split(" ");
 
-            if (decorationValues.indexOf(enums.TextDecoration.none) === -1) {
+            if (decorationValues.indexOf(enums.TextDecoration.none) === -1 || hasLetterSpacing) {
                 let dict = new Map<string, number>();
 
                 if (decorationValues.indexOf(enums.TextDecoration.underline) !== -1) {
@@ -85,6 +112,10 @@ export module ios {
 
                 if (decorationValues.indexOf(enums.TextDecoration.lineThrough) !== -1) {
                     dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                }
+
+                if (hasLetterSpacing) {
+                    dict.set(NSKernAttributeName, letterSpacing);
                 }
 
                 attributes.push({ attrs: dict, range: NSValue.valueWithRange(range) });
@@ -121,14 +152,10 @@ export module ios {
     function getTransformedText(view, source: string, transform: string): string {
         let result = source;
 
-        if (view["originalString"] && view["originalString"] !== NSStringFromNSAttributedString(source)) {
-            view["originalString"] = undefined;
-        }
-
         switch (transform) {
             case enums.TextTransform.none:
             default:
-                result = view["originalString"] || NSStringFromNSAttributedString(source);
+                result = view.text;
                 break;
             case enums.TextTransform.uppercase:
                 result = NSStringFromNSAttributedString(source).uppercaseString;
@@ -139,10 +166,6 @@ export module ios {
             case enums.TextTransform.capitalize:
                 result = NSStringFromNSAttributedString(source).capitalizedString;
                 break;
-        }
-
-        if (!view["originalString"]) {
-            view["originalString"] = NSStringFromNSAttributedString(source);
         }
 
         return result;
@@ -185,7 +208,7 @@ export module ios {
         }
     }
 
-    export function getColor(uiColor: UIColor): colorModule.Color {
+    export function getColor(uiColor: UIColor): Color {
         var redRef = new interop.Reference<number>();
         var greenRef = new interop.Reference<number>();
         var blueRef = new interop.Reference<number>();
@@ -197,7 +220,7 @@ export module ios {
         var blue = blueRef.value * 255;
         var alpha = alphaRef.value * 255;
 
-        return new colorModule.Color(alpha, red, green, blue);
+        return new Color(alpha, red, green, blue);
     }
 
     export function isLandscape(): boolean {
@@ -208,6 +231,22 @@ export module ios {
     }
 
     export var MajorVersion = NSString.stringWithString(UIDevice.currentDevice().systemVersion).intValue;
+
+    export function openFile(filePath: string): boolean {
+        try {
+            var fs: typeof fsModule = require("file-system");
+            var path = filePath.replace("~", fs.knownFolders.currentApp().path)
+
+            var controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
+            controller.delegate = new UIDocumentInteractionControllerDelegateImpl();
+            return controller.presentPreviewAnimated(true);
+        }
+        catch (e) {
+            ensureTrace();
+            trace.write("Error in openFile", trace.categories.Error, trace.messageType.error);
+        }
+        return false;
+    }
 }
 
 export function GC() {
@@ -222,8 +261,30 @@ export function openUrl(location: string): boolean {
         }
     }
     catch (e) {
+        ensureTrace();
         // We Don't do anything with an error.  We just output it
-        console.error("Error in OpenURL", e);
+        trace.write("Error in OpenURL", trace.categories.Error, trace.messageType.error);
     }
     return false;
+}
+
+class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
+    public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
+
+    public getViewController(): UIViewController {
+        var frame = require("ui/frame");
+        return frame.topmost().currentPage.ios;
+    }
+
+    public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
+        return this.getViewController();
+    }
+
+    public documentInteractionControllerViewForPreview(controller: UIDocumentInteractionController) {
+        return this.getViewController().view;
+    }
+
+    public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
+        return this.getViewController().view.frame;
+    }
 }

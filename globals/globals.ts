@@ -29,6 +29,19 @@ global.loadModule = function(name: string): any {
     }
 }
 
+global.zonedCallback = function (callback: Function): Function {
+    if (global.zone) {
+        // Zone v0.5.* style callback wrapping
+        return global.zone.bind(callback);
+    }
+    if (global.Zone) {
+        // Zone v0.6.* style callback wrapping
+        return global.Zone.current.wrap(callback);
+    } else {
+        return callback;
+    }
+}
+
 global.registerModule("timer", () => require("timer"));
 global.registerModule("ui/dialogs", () => require("ui/dialogs"));
 global.registerModule("xhr", () => require("xhr"));
@@ -100,24 +113,7 @@ if (platform.device.os === platform.platformNames.android) {
     global.console.dump = function (args) { c.dump(args); };
 }
 
-if (typeof global.__decorate !== "function") {
-    global.__decorate = function (decorators, target, key, desc) {
-        var c = arguments.length
-        var r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-
-        if (typeof global.Reflect === "object" && typeof global.Reflect.decorate === "function") {
-            r = global.Reflect.decorate(decorators, target, key, desc);
-        }
-        else {
-            for (var i = decorators.length - 1; i >= 0; i--) {
-                if (d = decorators[i]) {
-                    r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-                }
-            }
-        }
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    }
-}
+require("./decorators");
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {
@@ -137,3 +133,22 @@ export function Deprecated(target: Object, key?: string | symbol, descriptor?: a
 }
 
 global.Deprecated = Deprecated;
+
+export function Experimental(target: Object, key?: string | symbol, descriptor?: any) {
+    if (descriptor) {
+        var originalMethod = descriptor.value;
+
+        descriptor.value = function (...args: any[]) {
+            console.log(`${key} is experimental`);
+
+            return originalMethod.apply(this, args);
+        }
+
+        return descriptor;
+    } else {
+        console.log(`${(target && (<any>target).name || target)} is experimental`);
+        return target;
+    }
+}
+
+global.Experimental = Experimental;

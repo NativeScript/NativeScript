@@ -3,11 +3,11 @@
  */
 declare module "ui/page" {
     import observable = require("data/observable");
-    import view = require("ui/core/view");
     import contentView = require("ui/content-view");
     import frame = require("ui/frame");
     import actionBar = require("ui/action-bar");
     import dependencyObservable = require("ui/core/dependency-observable");
+    import keyframeAnimation = require("ui/animation/keyframe-animation");
 
     //@private
     import styleScope = require("ui/styling/style-scope");
@@ -36,7 +36,7 @@ declare module "ui/page" {
          * The context (optional, may be undefined) passed to the page when shown modally.
          */
         context: any;
-        
+
         /**
          * A callback to call when you want to close the modally shown page. Pass in any kind of arguments and you will receive when the callback parameter of Page.showModal is executed.
          */
@@ -91,8 +91,6 @@ declare module "ui/page" {
          */
         public static navigatedFromEvent: string;
 
-        constructor(options?: Options)
-
         /**
          * Gets or sets whether page background spans under status bar.
          */
@@ -121,6 +119,17 @@ declare module "ui/page" {
         addCssFile(cssFileName: string): void;
 
         /**
+         * Removes all selectors matching the specified selector expression.
+         * @param selectorExpression - A valid selector expression.
+         */
+        removeCssSelectors(selectorExpression: string): void;
+
+        /**
+         * Returns a CSS keyframe animation with the specified name, if it exists.
+         */
+        getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo;
+
+        /**
          * A property that is used to pass a data from another page (while navigate to).
          */
         navigationContext: any;
@@ -141,32 +150,32 @@ declare module "ui/page" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any): void;
 
         /**
          * Raised when navigation to the page has started.
          */
-        on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any);
+        on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
         /**
          * Raised when navigation to the page has finished.
          */
-        on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any);
+        on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
         /**
          * Raised when navigation from the page has started.
          */
-        on(event: "navigatingFrom", callback: (args: NavigatedData) => void, thisArg?: any);
+        on(event: "navigatingFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
         /**
          * Raised when navigation from the page has finished.
          */
-        on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any);
-        
+        on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
+
         /**
          * Raised before the page is shown as a modal dialog.
          */
-        on(event: "showingModally", callback: (args: observable.EventData) => void, thisArg?: any);
+        on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
 
         /**
          * Raised after the page is shown as a modal dialog.
@@ -180,23 +189,32 @@ declare module "ui/page" {
          * @param closeCallback - A function that will be called when the page is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
          * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
          */
-        showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean);
+        showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean): Page;
+
+        /**
+         * Shows the page passed as parameter as a modal view.
+         * @param page - Page instance to be shown modally.
+         * @param context - Any context you want to pass to the modally shown page. This same context will be available in the arguments of the Page.shownModally event handler.
+         * @param closeCallback - A function that will be called when the page is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
+         * @param fullscreen - An optional parameter specifying whether to show the modal page in full-screen mode.
+         */
+        showModal(page: Page, context: any, closeCallback: Function, fullscreen?: boolean): Page;
 
         /**
          * Shows the page as a modal view.
          */
-        showModal();
+        showModal(): Page;
 
         /**
          * Closes the current modal view that this page is showing.
          */
-        closeModal();
+        closeModal(): void;
 
         /**
          * Returns the current modal view that this page is showing (is parent of), if any.
          */
         modal: Page;
-        
+
         //@private
 
         /**
@@ -226,25 +244,5 @@ declare module "ui/page" {
 
         _getStyleScope(): styleScope.StyleScope;
         //@endprivate
-    }
-
-    /**
-     * Provides a set with most common option used to create a page instance.
-     */
-    export interface Options extends view.Options {
-        /**
-         * Gets or sets the page module.
-         */
-        module?: any;
-
-        /**
-         * Gets or sets the page module file name.
-         */
-        filename?: string;
-
-        /**
-         * Gets or sets the page module exports.
-         */
-        exports?: any;
     }
 }

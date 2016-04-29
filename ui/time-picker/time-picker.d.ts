@@ -11,8 +11,7 @@ declare module "ui/time-picker" {
     export class TimePicker extends view.View {
         public static hourProperty: dependencyObservable.Property;
         public static minuteProperty: dependencyObservable.Property;
-
-        constructor();
+        public static timeProperty: dependencyObservable.Property;
 
         /**
          * Gets the native [android.widget.TimePicker](http://developer.android.com/reference/android/widget/TimePicker.html) that represents the user interface for this component. Valid only when running on Android OS.
@@ -33,6 +32,11 @@ declare module "ui/time-picker" {
          * Gets or sets the time minute.
          */
         minute: number;
+        
+        /**
+         * Gets or sets the time.
+         */
+        time: Date;
 
         /**
          * Gets or sets the max time hour.
@@ -66,4 +70,4 @@ declare module "ui/time-picker" {
         _setNativeMinuteIntervalTime(): void;
         //@endprivate
     }
-} 
+}

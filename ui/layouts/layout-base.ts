@@ -5,11 +5,13 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import utils = require("utils/utils");
 import style = require("ui/styling/style");
+import * as platformModule from "platform";
+var platform: typeof platformModule;
 
 export class LayoutBase extends view.CustomLayoutView implements definition.LayoutBase, view.AddChildFromBuilder {
 
     public static clipToBoundsProperty = new dependencyObservable.Property("clipToBounds", "LayoutBase",
-        new proxy.PropertyMetadata(true, dependencyObservable.PropertyMetadataSettings.None, LayoutBase.onClipToBoundsPropertyChanged));
+        new proxy.PropertyMetadata(true, dependencyObservable.PropertyMetadataSettings.None, LayoutBase.onClipToBoundsPropertyChanged, null, LayoutBase.onClipToBoundsPropertyChanged));
 
     private _subViews: Array<view.View> = new Array<view.View>();
 
@@ -40,15 +42,25 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         return view.getViewById(this, id);
     }
 
+    public _registerLayoutChild(child: view.View) {
+        //Overridden
+    }
+
+    public _unregisterLayoutChild(child: view.View) {
+        //Overridden
+    }
+
     public addChild(child: view.View): void {
         // TODO: Do we need this method since we have the core logic in the View implementation?
         this._subViews.push(child);
         this._addView(child);
+        this._registerLayoutChild(child);
     }
 
     public insertChild(child: view.View, atIndex: number): void {
         this._subViews.splice(atIndex, 0, child);
         this._addView(child, atIndex);
+        this._registerLayoutChild(child);
     }
 
     public removeChild(child: view.View): void {
@@ -57,6 +69,7 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         // TODO: consider caching the index on the child.
         var index = this._subViews.indexOf(child);
         this._subViews.splice(index, 1);
+        this._unregisterLayoutChild(child);
     }
 
     public removeChildren(): void {
@@ -100,18 +113,27 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         this.style.paddingLeft = value;
     }
 
+    public get clipToBounds(): boolean {
+        return this._getValue(LayoutBase.clipToBoundsProperty);
+    }
+    public set clipToBounds(value: boolean) {
+        this._setValue(LayoutBase.clipToBoundsProperty, value);
+    }
+
     protected onClipToBoundsChanged(oldValue: boolean, newValue: boolean) {
-        var nativeView = this._nativeView;
-        if (!nativeView) {
+        if (!this._nativeView) {
             return;
         }
 
-        if (nativeView instanceof UIView) {
-            nativeView.clipsToBounds = newValue;
+        if (!platform) {
+            platform = require("platform");
         }
 
-        else if (nativeView instanceof android.view.ViewGroup) {
-            nativeView.setClipChildren(newValue);
+        if (platform.device.os === platform.platformNames.ios) {
+            this._nativeView.clipsToBounds = newValue;
+        }
+        else if (platform.device.os === platform.platformNames.android) {
+            this._nativeView.setClipChildren(newValue);
         }
     }
 
@@ -140,7 +162,6 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
     }
 
     public eachLayoutChild(callback: (child: view.View, isLast: boolean) => void): void {
-        var index = 0;
         var lastChild: view.View = null;
         
         this._eachChildView((cv) => {

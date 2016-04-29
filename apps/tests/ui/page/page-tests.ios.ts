@@ -1,154 +1,110 @@
 ﻿import PageTestCommon = require("./page-tests-common");
-import PageModule = require("ui/page");
+import {Page} from "ui/page";
 import TKUnit = require("../../TKUnit");
-import LabelModule = require("ui/label");
+import {Label} from "ui/label";
 import helper = require("../helper");
-import view = require("ui/core/view");
-import frame = require("ui/frame");
+import {View} from "ui/core/view";
+import {EventData} from "data/observable";
 import uiUtils = require("ui/utils");
+import * as frame from "ui/frame";
 
 global.moduleMerge(PageTestCommon, exports);
 
 export function test_NavigateToNewPage_InnerControl() {
-    var testPage: PageModule.Page;
-    var pageFactory = function (): PageModule.Page {
-        testPage = new PageModule.Page();
+    var testPage: Page;
+    var pageFactory = function (): Page {
+        testPage = new Page();
         PageTestCommon.addLabelToPage(testPage);
         return testPage;
     };
 
-    helper.navigate(pageFactory);
-    helper.goBack();
+    let currentPage = helper.getCurrentPage();
+    helper.navigateWithHistory(pageFactory);
+    var label = <Label>testPage.content;
 
-    var label = <LabelModule.Label>testPage.content;
+    frame.goBack();
+    TKUnit.waitUntilReady(() => !label.isLoaded && frame.topmost().currentPage === currentPage);
 
-    TKUnit.assert(label._context === undefined, "InnerControl._context should be undefined after navigate back.");
-    TKUnit.assert(label.android === undefined, "InnerControl.android should be undefined after navigate back.");
-    TKUnit.assert(label.isLoaded === false, "InnerControl.isLoaded should become false after navigating back");
-}
-
-export function test_WhenPageIsLoadedItCanShowAnotherPageAsModal() {
-    var masterPage;
-    var ctx = {
-        shownModally: false
-    };
-
-    var modalClosed = false;
-    var modalCloseCallback = function (returnValue: any) {
-        TKUnit.assert(ctx.shownModally, "Modal-page must be shown!");
-        TKUnit.assert(returnValue === "return value", "Modal-page must return value!");
-        TKUnit.assert(!frame.topmost().currentPage.modal, "frame.topmost().currentPage.modal should be undefined when no modal page is shown!");
-        TKUnit.wait(0.100);
-        modalClosed = true;
-    }
-
-    var loadedEventHandler = function (args) {
-        TKUnit.assert(!frame.topmost().currentPage.modal, "frame.topmost().currentPage.modal should be undefined when no modal page is shown!");
-        var basePath = "ui/page/";
-        args.object.showModal(basePath + "modal-page", ctx, modalCloseCallback, false);
-    };
-
-    var masterPageFactory = function (): PageModule.Page {
-        masterPage = new PageModule.Page();
-        masterPage.id = "newPage";
-        masterPage.on(view.View.loadedEvent, loadedEventHandler);
-        var label = new LabelModule.Label();
-        label.text = "Text";
-        masterPage.content = label;
-        return masterPage;
-    };
-
-    try {
-        helper.navigate(masterPageFactory);
-        TKUnit.waitUntilReady(() => { return modalClosed; });
-        masterPage.off(view.View.loadedEvent, loadedEventHandler);
-    }
-    finally {
-        helper.goBack();
-    }
+    TKUnit.assertEqual(label._context, undefined, "label._context should be undefined after navigate back.");
+    TKUnit.assertEqual(label.android, undefined, "label.android should be undefined after navigate back.");
+    TKUnit.assertFalse(label.isLoaded, "label.isLoaded should become false after navigating back");
 }
 
 export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
-    var masterPage;
-    var masterPageUnloaded = false;
-    var modalClosed = false;
-    var modalCloseCallback = function (returnValue: any) {
-        TKUnit.wait(0.100);
-        modalClosed = true;
+    let masterPage: Page;
+    let masterPageUnloaded = false;
+    let modalPage: Page;
+
+    let modalUnloaded = 0;
+    let onModalUnloaded = function (args: EventData) {
+        modalUnloaded++;
+        modalPage.off(Page.unloadedEvent, onModalUnloaded);
+        TKUnit.assertNull(masterPage.modal, "currentPage.modal should be undefined when no modal page is shown!");
     }
 
-    var loadedEventHandler = function (args) {
+    var navigatedToEventHandler = function (args) {
         var basePath = "ui/page/";
-        args.object.showModal(basePath + "modal-page", null, modalCloseCallback, false);
+        modalPage = masterPage.showModal(basePath + "modal-page", null, null, false);
+        modalPage.on(Page.unloadedEvent, onModalUnloaded);
     };
 
     var unloadedEventHandler = function (args) {
         masterPageUnloaded = true;
     };
 
-    var masterPageFactory = function (): PageModule.Page {
-        masterPage = new PageModule.Page();
+    var masterPageFactory = function (): Page {
+        masterPage = new Page();
         masterPage.id = "master-page";
-        masterPage.on(view.View.loadedEvent, loadedEventHandler);
-        masterPage.on(view.View.unloadedEvent, unloadedEventHandler);
-        var label = new LabelModule.Label();
+        masterPage.on(Page.navigatedToEvent, navigatedToEventHandler);
+        masterPage.on(View.unloadedEvent, unloadedEventHandler);
+        var label = new Label();
         label.text = "Modal Page";
         masterPage.content = label;
         return masterPage;
     };
 
-    try {
-        helper.navigate(masterPageFactory);
-        TKUnit.waitUntilReady(() => { return modalClosed; });
-        TKUnit.assert(!masterPageUnloaded, "Master page should not raise 'unloaded' when showing modal!");
-        masterPage.off(view.View.loadedEvent, loadedEventHandler);
-        masterPage.off(view.View.unloadedEvent, loadedEventHandler);
-    }
-    finally {
-        helper.goBack();
-    }
+    helper.navigate(masterPageFactory);
+    TKUnit.waitUntilReady(() => { return modalUnloaded > 0; });
+    TKUnit.assert(!masterPageUnloaded, "Master page should not raise 'unloaded' when showing modal!");
+    masterPage.off(View.loadedEvent, navigatedToEventHandler);
+    masterPage.off(View.unloadedEvent, unloadedEventHandler);
 }
 
 export function test_page_no_anctionBar_measure_no_spanUnderBackground_measure_layout_size_isCorrect() {
-    let page = new PageModule.Page();
+    let page = new Page();
     page.backgroundSpanUnderStatusBar = true;
     page.actionBarHidden = true;
-    let lbl = new LabelModule.Label();
+    let lbl = new Label();
     page.content = lbl;
 
-    try {
-        helper.navigate(() => { return page; });
-        TKUnit.waitUntilReady(() => { return page.isLayoutValid; });
-        TKUnit.assertTrue(page.isLoaded, "page NOT loaded!");
+    helper.navigate(() => page);
+    TKUnit.waitUntilReady(() => page.isLayoutValid);
+    TKUnit.assertTrue(page.isLoaded, "page NOT loaded!");
 
-        let bounds = page._getCurrentLayoutBounds();
-        let pageHeight = bounds.bottom - bounds.top;
-        let frameBounds = page.frame._getCurrentLayoutBounds();
-        let frameHeight = frameBounds.bottom - frameBounds.top;
-        TKUnit.assertEqual(pageHeight, frameHeight, "Page height should match Frame height.");
+    let bounds = page._getCurrentLayoutBounds();
+    let pageHeight = bounds.bottom - bounds.top;
+    let frameBounds = page.frame._getCurrentLayoutBounds();
+    let frameHeight = frameBounds.bottom - frameBounds.top;
+    TKUnit.assertEqual(pageHeight, frameHeight, "Page height should match Frame height.");
 
-        let contentHeight = lbl._getCurrentLayoutBounds().bottom - lbl._getCurrentLayoutBounds().top;
-        let statusBarHeight = uiUtils.ios.getStatusBarHeight();
-        TKUnit.assertEqual(contentHeight, frameHeight - statusBarHeight, "Page.content height should match Frame height - statusBar height.");
+    let contentHeight = lbl._getCurrentLayoutBounds().bottom - lbl._getCurrentLayoutBounds().top;
+    let statusBarHeight = uiUtils.ios.getStatusBarHeight();
+    TKUnit.assertEqual(contentHeight, frameHeight - statusBarHeight, "Page.content height should match Frame height - statusBar height.");
 
-        page.backgroundSpanUnderStatusBar = false;
-        TKUnit.waitUntilReady(() => { return page.isLayoutValid; });
-        pageHeight = page._getCurrentLayoutBounds().bottom - page._getCurrentLayoutBounds().top;
-        TKUnit.assertEqual(pageHeight, frameHeight - statusBarHeight, "Page should be given Frame height - statusBar height.");
+    page.backgroundSpanUnderStatusBar = false;
+    TKUnit.waitUntilReady(() => page.isLayoutValid);
+    pageHeight = page._getCurrentLayoutBounds().bottom - page._getCurrentLayoutBounds().top;
+    TKUnit.assertEqual(pageHeight, frameHeight - statusBarHeight, "Page should be given Frame height - statusBar height.");
 
-        contentHeight = lbl._getCurrentLayoutBounds().bottom - lbl._getCurrentLayoutBounds().top;
-        TKUnit.assertEqual(contentHeight, pageHeight, "Page.content height should match Page height.");
+    contentHeight = lbl._getCurrentLayoutBounds().bottom - lbl._getCurrentLayoutBounds().top;
+    TKUnit.assertEqual(contentHeight, pageHeight, "Page.content height should match Page height.");
 
-        page.actionBarHidden = false;
-        TKUnit.waitUntilReady(() => { return page.isLayoutValid; });
+    page.actionBarHidden = false;
+    TKUnit.waitUntilReady(() => page.isLayoutValid);
 
-        pageHeight = page._getCurrentLayoutBounds().bottom - page._getCurrentLayoutBounds().top;
-        TKUnit.assertEqual(pageHeight, frameHeight - statusBarHeight, "Page should be given Frame height - statusBar height.");
+    pageHeight = page._getCurrentLayoutBounds().bottom - page._getCurrentLayoutBounds().top;
+    TKUnit.assertEqual(pageHeight, frameHeight - statusBarHeight, "Page should be given Frame height - statusBar height.");
 
-        contentHeight = lbl._getCurrentLayoutBounds().bottom - lbl._getCurrentLayoutBounds().top;
-        TKUnit.assertTrue(contentHeight < pageHeight, "Page.content be given less space than Page when ActionBar is shown.");
-    }
-    finally {
-        helper.goBack();
-    }
+    contentHeight = lbl._getCurrentLayoutBounds().bottom - lbl._getCurrentLayoutBounds().top;
+    TKUnit.assertTrue(contentHeight < pageHeight, "Page.content be given less space than Page when ActionBar is shown.");
 }

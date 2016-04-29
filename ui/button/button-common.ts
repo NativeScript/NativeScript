@@ -7,21 +7,39 @@ import observable = require("data/observable");
 import * as weakEventListenerModule from "ui/core/weak-event-listener";
 import * as enumsModule from "ui/enums";
 
+var weakEvents: typeof weakEventListenerModule;
+function ensureWeakEvents() {
+    if (!weakEvents) {
+        weakEvents = require("ui/core/weak-event-listener");
+    }
+}
+
+var enums: typeof enumsModule;
+function ensureEnums() {
+    if (!enums) {
+        enums = require("ui/enums");
+    }
+}
+
 var textProperty = new dependencyObservable.Property(
     "text",
     "Button",
     new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-    );
+);
 
 var formattedTextProperty = new dependencyObservable.Property(
     "formattedText",
     "Button",
     new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-    );
+);
 
 function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var button = <Button>data.object;
+    
     button._onTextPropertyChanged(data);
+
+    button.style._updateTextDecoration();
+    button.style._updateTextTransform();   
 }
 
 function onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -49,6 +67,9 @@ export class Button extends view.View implements definition.Button {
         if (this.formattedText) {
             this.formattedText.updateSpansBindingContext(newValue);
         }
+
+        this.style._updateTextDecoration();
+        this.style._updateTextTransform();
     }
 
     get text(): string {
@@ -65,7 +86,7 @@ export class Button extends view.View implements definition.Button {
 
     set formattedText(value: formattedString.FormattedString) {
         if (this.formattedText !== value) {
-            var weakEvents: typeof weakEventListenerModule = require("ui/core/weak-event-listener");
+            ensureWeakEvents();
 
             if (this.formattedText) {
                 weakEvents.removeWeakEventListener(this.formattedText, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
@@ -85,41 +106,29 @@ export class Button extends view.View implements definition.Button {
     }
 
     private onFormattedTextChanged(eventData: observable.PropertyChangeData) {
-        this.setFormattedTextPropertyToNative(eventData.value);
+        var value = <formattedString.FormattedString>eventData.value;
+        this._setFormattedTextPropertyToNative(value);
+
+        this._onPropertyChangedFromNative(Button.textProperty, value.toString());
     }
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (this.android) {
-            this.android.setText(data.newValue + "");
-        }
-        if (this.ios) {
-            // In general, if a property is not specified for a state, the default is to use 
-            // the UIControlStateNormal value. If the value for UIControlStateNormal is not set, 
-            // then the property defaults to a system value. Therefore, at a minimum, you should 
-            // set the value for the normal state.
-            this.ios.setTitleForState(data.newValue + "", UIControlState.UIControlStateNormal);
-        }
+        //
     }
 
-    private setFormattedTextPropertyToNative(value) {
-        if (this.android) {
-            this.android.setText(value._formattedText);
-        }
-        if (this.ios) {
-            // In general, if a property is not specified for a state, the default is to use 
-            // the UIControlStateNormal value. If the value for UIControlStateNormal is not set, 
-            // then the property defaults to a system value. Therefore, at a minimum, you should 
-            // set the value for the normal state.
-            this.ios.setAttributedTitleForState(value._formattedText, UIControlState.UIControlStateNormal);
-            this.style._updateTextDecoration();
-        }
+    public _setFormattedTextPropertyToNative(value) {
+        //
     }
 
     public _onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (data.newValue) {
-            (<formattedString.FormattedString>data.newValue).parent = this;
+        var newValue = <formattedString.FormattedString>data.newValue;
+        if (newValue) {
+            newValue.parent = this;
         }
-        this.setFormattedTextPropertyToNative(data.newValue);
+        this._setFormattedTextPropertyToNative(newValue);
+
+        var newText = newValue ? newValue.toString() : "";
+        this._onPropertyChangedFromNative(Button.textProperty, newText);
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
@@ -129,7 +138,7 @@ export class Button extends view.View implements definition.Button {
 
 function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var v = <view.View>data.object;
-    var enums : typeof enumsModule = require("ui/enums");
+    ensureEnums();
 
     v.style.whiteSpace = data.newValue ? enums.WhiteSpace.normal : enums.WhiteSpace.nowrap;
 }

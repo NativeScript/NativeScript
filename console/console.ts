@@ -252,7 +252,7 @@ export class Console implements definition.Console {
             let formatedMessage = this.formatParams.apply(this, arguments);
             this.error(formatedMessage, trace.messageType.error);
             if (global.__consoleMessage) {
-                global.__consoleMessage(this.escapeConsoleMessage(formatedMessage), "error");
+                global.__consoleMessage(formatedMessage, "error");
             }
         }
     }
@@ -265,7 +265,7 @@ export class Console implements definition.Console {
         let formatedMessage = this.formatParams.apply(this, arguments);
         this.logMessage(formatedMessage, trace.messageType.warn);
         if (global.__consoleMessage) {
-            global.__consoleMessage(this.escapeConsoleMessage(formatedMessage), "warning");
+            global.__consoleMessage(formatedMessage, "warning");
         }
     }
 
@@ -273,7 +273,7 @@ export class Console implements definition.Console {
         let formatedMessage = this.formatParams.apply(this, arguments);
         this.logMessage(formatedMessage, trace.messageType.error);
         if (global.__consoleMessage) {
-            global.__consoleMessage(this.escapeConsoleMessage(formatedMessage), "error")
+            global.__consoleMessage(formatedMessage, "error")
         }
     }
 
@@ -281,27 +281,10 @@ export class Console implements definition.Console {
         let formatedMessage = this.formatParams.apply(this, arguments);
         this.logMessage(formatedMessage, trace.messageType.log);
         if (global.__consoleMessage) {
-            global.__consoleMessage(this.escapeConsoleMessage(formatedMessage), "log")
+            global.__consoleMessage(formatedMessage, "log")
         }
     }
     
-    private escapeConsoleMessage(str: string): string {
-        if (typeof (str) !== "string") {
-            return str;
-        }
-
-        return str
-            .replace(/[\\]/g, '\\\\')
-            .replace(/[\/]/g, '\\/')
-            .replace(/[\b]/g, '\\b')
-            .replace(/[\f]/g, '\\f')
-            .replace(/[\n]/g, '\\n')
-            .replace(/[\r]/g, '\\r')
-            .replace(/[\t]/g, '\\t')
-            .replace(/[\"]/g, '\\"')
-            .replace(/\\'/g, "\\'");
-    }
-
     private logMessage(message: string, messageType: number): void {
         if (!global.android) {
             // This case may be entered during heap snapshot where the global.android is not present

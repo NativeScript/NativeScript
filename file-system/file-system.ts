@@ -1,5 +1,4 @@
 ﻿import file_access_module = require("file-system/file-system-access");
-import * as utilsModule from "utils/utils";
 
 // The FileSystemAccess implementation, used through all the APIs.
 var fileAccess;
@@ -228,7 +227,7 @@ export class File extends FileSystemEntity {
                     onError(error);
                 }
             };
-    
+
             getFileAccess().write(this.path, content, localError);
         } finally {
             this[fileLockedProperty] = false;
@@ -263,7 +262,7 @@ export class File extends FileSystemEntity {
             }
         };
 
-        var content = getFileAccess().readText(this.path, localError, encoding);        
+        var content = getFileAccess().readText(this.path, localError, encoding);
         this[fileLockedProperty] = false;
 
         return content;
@@ -289,7 +288,7 @@ export class File extends FileSystemEntity {
 
         try {
             this[fileLockedProperty] = true;
-    
+
             var that = this;
             var localError = function (error) {
                 that[fileLockedProperty] = false;
@@ -484,9 +483,9 @@ export module knownFolders {
 
     export var currentApp = function (): Folder {
         if (!_app) {
-            var logicalRoot = getFileAccess().getLogicalRootPath();
+            var path = getFileAccess().getCurrentAppPath();
             _app = new Folder();
-            _app[pathProperty] = logicalRoot + "/app";
+            _app[pathProperty] = path;
             _app[isKnownProperty] = true;
         }
 

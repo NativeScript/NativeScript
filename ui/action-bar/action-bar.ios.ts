@@ -7,8 +7,6 @@ import view = require("ui/core/view");
 import utils = require("utils/utils");
 import types = require("utils/types");
 import style = require("ui/styling/style");
-import font = require("ui/styling/font");
-import styling = require("ui/styling");
 import frame = require("ui/frame");
 
 global.moduleMerge(common, exports);
@@ -134,7 +132,17 @@ export class ActionBar extends common.ActionBar {
 
         var barButtonItem: UIBarButtonItem;
 
-        if (types.isNumber(item.ios.systemIcon)) {
+        if (item.actionView && item.actionView.ios) {
+            let buttonView: UIButton = UIButton.buttonWithType(UIButtonType.UIButtonTypeSystem);
+            // Disable the interaction of the custom view so that the tap event of the button is triggered 
+            (<UIView>item.actionView.ios).userInteractionEnabled = false; 
+
+            buttonView.addTargetActionForControlEvents(tapHandler, "tap", UIControlEvents.UIControlEventTouchUpInside);
+            buttonView.frame = CGRectMake(0, 0, item.actionView.getMeasuredWidth(), item.actionView.getMeasuredHeight());
+            buttonView.addSubview(item.actionView.ios);
+            barButtonItem = UIBarButtonItem.alloc().initWithCustomView(buttonView);
+        }
+        else if (types.isNumber(item.ios.systemIcon)) {
             barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(item.ios.systemIcon, tapHandler, "tap");
         }
         else if (item.icon) {
@@ -212,12 +220,33 @@ export class ActionBar extends common.ActionBar {
                 utils.layout.makeMeasureSpec(navBarHeight, utils.layout.AT_MOST));
         }
 
+        this.actionItems.getItems().forEach((actionItem) => {
+            if (actionItem.actionView) {
+                view.View.measureChild(this, actionItem.actionView, 
+                    utils.layout.makeMeasureSpec(width, utils.layout.AT_MOST),
+                    utils.layout.makeMeasureSpec(navBarHeight, utils.layout.AT_MOST));
+            }
+        });
+
         // We ignore our width/height, minWidth/minHeight dimensions because it is against Apple policy to change height of NavigationBar.
         this.setMeasuredDimension(navBarWidth, navBarHeight);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
         view.View.layoutChild(this, this.titleView, 0, 0, right - left, this._navigationBarHeight);
+        this.actionItems.getItems().forEach((actionItem) => {
+            if (actionItem.actionView && actionItem.actionView.ios) {
+                let measuredWidth = actionItem.actionView.getMeasuredWidth();
+                let measuredHeight = actionItem.actionView.getMeasuredHeight();
+                let buttonView = (<UIView>actionItem.actionView.ios).superview;
+
+                view.View.layoutChild(this, actionItem.actionView, 0, 0, measuredWidth, measuredHeight);
+                if (buttonView) {
+                    buttonView.frame = CGRectMake(0, 0, measuredWidth, measuredHeight);
+                }
+            }
+        });
+
         super.onLayout(left, top, right, bottom);
     }
 

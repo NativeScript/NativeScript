@@ -4,6 +4,13 @@ import enums = require("ui/enums");
 
 global.moduleMerge(common, exports);
 
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
+
 export module layout {
     var density = -1;
     var metrics: android.util.DisplayMetrics;
@@ -141,7 +148,9 @@ export module ad {
         view.setEllipsize(value === enums.WhiteSpace.nowrap ? android.text.TextUtils.TruncateAt.END : null);
     }
 
-    export function getApplication() { return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance(); }
+    export function getApplication() {
+        return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance();
+    }
     export function getApplicationContext() { return <android.content.Context>getApplication().getApplicationContext(); }
 
     var inputMethodManager: android.view.inputmethod.InputMethodManager;
@@ -234,7 +243,7 @@ export module ad {
                 }
             }
             catch (ex) {
-                var trace: typeof traceModule = require("trace");
+                ensureTrace();
 
                 trace.write("Cannot get pallete color: " + name, trace.categories.Error, trace.messageType.error);
             }
@@ -257,8 +266,9 @@ export function openUrl(location: string): boolean {
 
         context.startActivity(intent);
     } catch (e) {
+        ensureTrace();
         // We Don't do anything with an error.  We just output it
-        console.error("Error in OpenURL", e);
+        trace.write("Error in OpenURL", trace.categories.Error, trace.messageType.error);
         return false;
     }
     return true;

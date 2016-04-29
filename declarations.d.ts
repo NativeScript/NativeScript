@@ -99,11 +99,17 @@ interface Console {
 }
 
 declare var console: Console;
-declare var global;
-declare var require;
+declare var require: NativeScriptRequire;
 
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
+declare function Experimental(target: Object, key?: string | symbol, value?: any): void;
+
+/**
+ * Decorates class that extends native Java class
+ * @param nativeClassName The name of the newly generated class. Must be unique in the application.
+ */
+declare function JavaProxy(nativeClassName: string): ClassDecorator;
 
 declare function Log(data: any): void;
 declare function log(data: any): void;
@@ -140,16 +146,16 @@ declare function setInterval(callback: Function, milliseconds?: number): number;
  */
 declare function clearInterval(id: number): void;
 
+//@private
+declare function zonedCallback(callback: Function): Function;
+//@endprivate
+
 declare class WeakRef<T> {
     constructor(obj: T);
     get(): T;
     clear(): void;
 }
 
-declare module module {
-    var id: string;
-    var filename: string;
-    var exports: any;
-}
+declare var module: NativeScriptModule;
 // Same as module.exports
 declare var exports: any;

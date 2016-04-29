@@ -5,7 +5,7 @@ declare module "application" {
     import cssSelector = require("ui/styling/css-selector");
     import observable = require("data/observable");
     import frame = require("ui/frame");
-
+    import {View} from "ui/core/view";
     /**
      * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
      */
@@ -77,6 +77,17 @@ declare module "application" {
     }
 
     /**
+     * Event data containing information for launch event.
+     */
+    export interface LaunchEventData extends ApplicationEventData {        
+        /**
+         * The root view for this Window on iOS or Activity for Android.
+         * If not set a new Frame will be created as a root view in order to maintain backwards compatibility.
+         */
+        root?: View;
+    }
+
+    /**
      * Event data containing information for orientation changed event.
      */
     export interface OrientationChangedEventData extends ApplicationEventData {
@@ -111,10 +122,20 @@ declare module "application" {
      */
     export var cssFile: string;
 
+    //@private
+    export var appSelectors: Array<cssSelector.CssSelector>;
+    export var additionalSelectors: Array<cssSelector.CssSelector>;
     /**
      * Cached css selectors created from the content of the css file.
      */
-    export var cssSelectorsCache: Array<cssSelector.CssSelector>;
+    export var cssSelectors: Array<cssSelector.CssSelector>;
+    export var cssSelectorVersion: number;
+    export var keyframes: any;
+    export function parseCss(cssText: string, cssFileName?: string): Array<cssSelector.CssSelector>;
+    export function mergeCssSelectors(module: any): void;
+    //@endprivate
+
+    export function addCss(cssText: string): void;
 
     /**
      * Loads css file and parses to a css syntax tree.
@@ -130,7 +151,7 @@ declare module "application" {
     /**
      * The main entry point event. This method is expected to use the root frame to navigate to the main application page.
      */
-    export function onLaunch(context: any): void;
+    export function onLaunch(context?: any): void;
 
     /**
      * A callback to be used when an uncaught error occurs while the application is running.
@@ -174,7 +195,7 @@ declare module "application" {
      * @param callback - Callback function which will be removed.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
-    export function off(eventNames: string, callback ?: any, thisArg ?: any);
+    export function off(eventNames: string, callback?: any, thisArg?: any);
 
     /**
      * Notifies all the registered listeners for the event provided in the data.eventName.
@@ -191,7 +212,7 @@ declare module "application" {
     /**
      * This event is raised on application launchEvent.
      */
-    export function on(event: "launch", callback: (args: ApplicationEventData) => void, thisArg?: any);
+    export function on(event: "launch", callback: (args: LaunchEventData) => void, thisArg?: any);
 
     /**
      * This event is raised when the Application is suspended.
@@ -268,6 +289,26 @@ declare module "application" {
     }
 
     /**
+     * Data for the Android activity onRequestPermissions callback
+     */
+    export interface AndroidActivityRequestPermissionsEventData extends AndroidActivityEventData {
+        /**
+         * The request code.
+         */
+        requestCode: number,
+
+        /**
+         * The Permissions
+         */
+        permissions: Array<String>,
+
+        /**
+         * The Granted.
+         */
+        grantResults: Array<Number>
+    }
+
+    /**
      * Data for the Android activity result event.
      */
     export interface AndroidActivityResultEventData extends AndroidActivityEventData {
@@ -335,13 +376,6 @@ declare module "application" {
          * True if the application is not running (suspended), false otherwise.
          */
         paused: boolean;
-
-        /**
-         * This method is called by the JavaScript Bridge when navigation to a new activity is triggered.
-         * @param intent - Native (android) intent used to create the activity.
-         * Returns com.tns.NativeScriptActivity.extend implementation.
-         */
-        getActivity(intent: any /* android.content.Intent */): any;
 
         /**
          * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityCreated method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
@@ -437,6 +471,11 @@ declare module "application" {
         on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
 
         /**
+         * This event is raised on the back button is pressed in an android application.
+         */
+        on(event: "activityRequestPermissions", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
+
+        /**
          * String value used when hooking to activityCreated event.
          */
         public static activityCreatedEvent: string;
@@ -480,6 +519,11 @@ declare module "application" {
          * String value used when hooking to activityBackPressed event.
          */
         public static activityBackPressedEvent: string;
+        
+        /**
+         * String value used when hooking to requestPermissions event.
+         */
+        public static activityRequestPermissionsEvent: string;
 
         /**
          * Register a BroadcastReceiver to be run in the main activity thread. The receiver will be called with any broadcast Intent that matches filter, in the main application thread. 
@@ -534,5 +578,12 @@ declare module "application" {
          * @param onReceiveCallback A callback function that will be called each time the observer receives a notification.
          */
         removeNotificationObserver(observer: any, notificationName: string): void;
+    }
+    
+    /* tslint:disable */
+    export interface RootViewControllerImpl {
+
+        contentController: any;
+
     }
 }

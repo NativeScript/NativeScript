@@ -1,7 +1,6 @@
 ﻿import common = require("./progress-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import styling = require("ui/styling");
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 
@@ -67,7 +66,6 @@ export class ProgressStyler implements style.Styler {
     }
 
     private static resetBackgroundAndBorderProperty(view: view.View, nativeValue: number) {
-        var bar = <android.widget.ProgressBar>view._nativeView;
         // Do nothing.
     }
 

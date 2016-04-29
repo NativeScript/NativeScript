@@ -6,9 +6,15 @@ import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
 import view = require("ui/core/view");
 import * as styleModule from "../styling/style";
-import * as dependencyObservableModule from "ui/core/dependency-observable";
 
 var ACTION_ITEMS = "actionItems";
+
+var style: typeof styleModule;
+function ensureStyle() {
+    if (!style) {
+        style = require("../styling/style");
+    }
+}
 
 export module knownCollections {
     export var actionItems = "actionItems";
@@ -65,20 +71,18 @@ export class ActionBar extends view.View implements dts.ActionBar {
     }
     set titleView(value: view.View) {
         if (this._titleView !== value) {
-            var style: typeof styleModule = require("../styling/style");
-            var observable: typeof dependencyObservableModule = require("ui/core/dependency-observable");
-
+            ensureStyle();
             if (this._titleView) {
                 this._removeView(this._titleView);
-                this._titleView.style._resetValue(style.horizontalAlignmentProperty, observable.ValueSource.Inherited);
-                this._titleView.style._resetValue(style.verticalAlignmentProperty, observable.ValueSource.Inherited);
+                this._titleView.style._resetValue(style.horizontalAlignmentProperty, dependencyObservable.ValueSource.Inherited);
+                this._titleView.style._resetValue(style.verticalAlignmentProperty, dependencyObservable.ValueSource.Inherited);
             }
 
             this._titleView = value;
 
             if (this._titleView) {
-                this._titleView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, observable.ValueSource.Inherited);
-                this._titleView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, observable.ValueSource.Inherited);
+                this._titleView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, dependencyObservable.ValueSource.Inherited);
+                this._titleView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, dependencyObservable.ValueSource.Inherited);
                 this._addView(this._titleView);
             }
 
@@ -104,7 +108,14 @@ export class ActionBar extends view.View implements dts.ActionBar {
     }
 
     get _childrenCount(): number {
-        return this.titleView ? 1 : 0;
+        let actionViewsCount = 0;
+        this._actionItems.getItems().forEach((actionItem) => {
+            if (actionItem.actionView) {
+                actionViewsCount++;
+            }
+        });
+
+        return actionViewsCount + (this.titleView ? 1 : 0);
     }
 
     constructor() {
@@ -153,6 +164,12 @@ export class ActionBar extends view.View implements dts.ActionBar {
         if (this.titleView) {
             callback(this.titleView);
         }
+
+        this.actionItems.getItems().forEach((actionItem) => {
+            if (actionItem.actionView) {
+                callback(actionItem.actionView);
+            }
+        });
     }
 
     public _isEmpty(): boolean {
@@ -259,7 +276,29 @@ export class ActionItem extends bindable.Bindable implements dts.ActionItem {
         "visibility", "ActionItem", new dependencyObservable.PropertyMetadata(enums.Visibility.visible, null, ActionItem.onItemChanged));
 
     private _actionBar: ActionBar;
+    private _actionView: view.View;
 
+    get actionView(): view.View {
+        return this._actionView;
+    }
+    set actionView(value: view.View) {
+        if (this._actionView !== value) {
+            ensureStyle();
+            if (this._actionView && this._actionBar) {
+                this._actionBar._removeView(this._actionView);
+                this._actionView.style._resetValue(style.horizontalAlignmentProperty, dependencyObservable.ValueSource.Inherited);
+                this._actionView.style._resetValue(style.verticalAlignmentProperty, dependencyObservable.ValueSource.Inherited);
+            }
+
+            this._actionView = value;
+
+            this._addActionViewToActionBar();
+            
+            if (this._actionBar) {
+                this._actionBar.update();
+            }
+        }
+    }
     get text(): string {
         return this._getValue(ActionItem.textProperty);
     }
@@ -293,6 +332,7 @@ export class ActionItem extends bindable.Bindable implements dts.ActionItem {
             this._actionBar = value;
             if (this._actionBar) {
                 this.bindingContext = this._actionBar.bindingContext;
+                this._addActionViewToActionBar();
             }
         }
     }
@@ -313,6 +353,19 @@ export class ActionItem extends bindable.Bindable implements dts.ActionItem {
         if (menuItem.actionBar) {
             menuItem.actionBar.update();
         }
+    }
+
+    private _addActionViewToActionBar() {
+        if (this._actionView && !this._actionView._isAddedToNativeVisualTree && this._actionBar) {
+            ensureStyle();
+            this._actionView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, dependencyObservable.ValueSource.Inherited);
+            this._actionView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, dependencyObservable.ValueSource.Inherited);
+            this._actionBar._addView(this._actionView);
+        }
+    }
+
+    public _addChildFromBuilder(name: string, value: any) {
+        this.actionView = value;
     }
 }
 

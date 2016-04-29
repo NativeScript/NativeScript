@@ -1,10 +1,10 @@
 ﻿import common = require("./text-view-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import textBase = require("ui/text-base");
-import enums = require("ui/enums");
-import view = require("ui/core/view");
-import style = require("ui/styling/style");
-import styling = require("ui/styling");
+import {PropertyChangeData} from "ui/core/dependency-observable";
+import {TextBase} from "ui/text-base";
+import {UpdateTextTrigger} from "ui/enums";
+import {View} from "ui/core/view";
+import * as style from "ui/styling/style";
+import {isNullOrUndefined} from "utils/types";
 
 global.moduleMerge(common, exports);
 
@@ -39,8 +39,8 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public textViewDidEndEditing(textView: UITextView) {
         let owner = this._owner.get();
         if (owner) {
-            if (owner.updateTextTrigger === enums.UpdateTextTrigger.focusLost) {
-                owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
+            if (owner.updateTextTrigger === UpdateTextTrigger.focusLost) {
+                owner._onPropertyChangedFromNative(TextBase.textProperty, textView.text);
             }
 
             owner.dismissSoftInput();
@@ -59,8 +59,8 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
             owner.style._updateTextTransform();
             textView.selectedRange = range;
 
-            if (owner.updateTextTrigger === enums.UpdateTextTrigger.textChanged) {
-                owner._onPropertyChangedFromNative(textBase.TextBase.textProperty, textView.text);
+            if (owner.updateTextTrigger === UpdateTextTrigger.textChanged) {
+                owner._onPropertyChangedFromNative(TextBase.textProperty, textView.text);
             }
         }        
     }
@@ -83,6 +83,9 @@ export class TextView extends common.TextView {
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;
+        
+        this.style._updateTextDecoration();
+        this.style._updateTextTransform();
     }
 
     public onUnloaded() {
@@ -94,15 +97,15 @@ export class TextView extends common.TextView {
         return this._ios;
     }
 
-    public _onEditablePropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    public _onEditablePropertyChanged(data: PropertyChangeData) {
         this._ios.editable = data.newValue;
     }
 
-    public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    public _onHintPropertyChanged(data: PropertyChangeData) {
         this._refreshHintState(data.newValue, this.text);
     }
 
-    public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    public _onTextPropertyChanged(data: PropertyChangeData) {
         super._onTextPropertyChanged(data);
         this._refreshHintState(this.hint, data.newValue);
     }
@@ -118,25 +121,25 @@ export class TextView extends common.TextView {
 
     public _showHint(hint: string) {
         this.ios.textColor = this.ios.textColor ? this.ios.textColor.colorWithAlphaComponent(0.22) : UIColor.blackColor().colorWithAlphaComponent(0.22);
-        this.ios.text = hint + "";
+        this.ios.text = isNullOrUndefined(hint) ? "" : hint + "";
         (<any>this.ios).isShowingHint = true;
     }
 
     public _hideHint() {
         this.ios.textColor = this.color ? this.color.ios : null;
-        this.ios.text = this.text + "";
+        this.ios.text = isNullOrUndefined(this.text) ? "" : this.text + "";
         (<any>this.ios).isShowingHint = false;
     }
 } 
 
 export class TextViewStyler implements style.Styler {
     // Color methods
-    private static setColorProperty(v: view.View, newValue: any) {
+    private static setColorProperty(v: View, newValue: any) {
         var textView: UITextView = <UITextView>v._nativeView;
         TextViewStyler._setTextViewColor(textView, newValue);
     }
 
-    private static resetColorProperty(v: view.View, nativeValue: any) {
+    private static resetColorProperty(v: View, nativeValue: any) {
         var textView: UITextView = <UITextView>v._nativeView;
         TextViewStyler._setTextViewColor(textView, nativeValue);
     }
@@ -152,7 +155,7 @@ export class TextViewStyler implements style.Styler {
         }
     }
 
-    private static getNativeColorValue(v: view.View): any {
+    private static getNativeColorValue(v: View): any {
         var textView: UITextView = <UITextView>v._nativeView;
         if ((<any>textView).isShowingHint && textView.textColor) {
             return textView.textColor.colorWithAlphaComponent(1);
@@ -162,11 +165,28 @@ export class TextViewStyler implements style.Styler {
         }
     }
 
+    // Padding
+    private static setPaddingProperty(view: View, newValue: any) {
+        var top = newValue.top + view.borderWidth;
+        var left = newValue.left + view.borderWidth;
+        var bottom = newValue.bottom + view.borderWidth;
+        var right = newValue.right + view.borderWidth;
+        (<UITextView>view._nativeView).textContainerInset = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
+    }
+
+    private static resetPaddingProperty(view: View, nativeValue: any) {
+        (<UITextView>view._nativeView).textContainerInset = UIEdgeInsetsFromString("{0,0,0,0}");
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
             TextViewStyler.setColorProperty,
             TextViewStyler.resetColorProperty,
             TextViewStyler.getNativeColorValue), "TextView");
+
+        style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
+            TextViewStyler.setPaddingProperty,
+            TextViewStyler.resetPaddingProperty), "TextView");
     }
 }
 

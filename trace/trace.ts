@@ -1,5 +1,5 @@
 ﻿import definition = require("trace");
-import * as typesModule from "utils/types";
+import * as types from "utils/types";
 
 var _enabled = false;
 var _categories = {};
@@ -12,6 +12,10 @@ export function enable() {
 
 export function disable() {
     _enabled = false;
+}
+
+export function isCategorySet(category: string): boolean {
+    return category in _categories;
 }
 
 export function addWriter(writer: definition.TraceWriter) {
@@ -44,6 +48,14 @@ export function addCategories(categories: string) {
 }
 
 export function write(message: any, category: string, type?: number) {
+    // print error no matter what
+    var i;
+    if (type === messageType.error) {
+        for (i = 0; i < _writers.length; i++) {
+            _writers[i].write(message, category, type);
+        }
+    }
+    
     if (!_enabled) {
         return;
     }
@@ -52,7 +64,7 @@ export function write(message: any, category: string, type?: number) {
         return;
     }
 
-    var i;
+    
     for (i = 0; i < _writers.length; i++) {
         _writers[i].write(message, category, type);
     }
@@ -109,9 +121,11 @@ export module categories {
     export var Navigation = "Navigation";
     export var Test = "Test";
     export var Binding = "Binding";
+    export var BindingError = "BindingError";
     export var Error = "Error";
     export var Animation = "Animation";
-    export var All = VisualTreeEvents + "," + Layout + "," + Style + "," + ViewHierarchy + "," + NativeLifecycle + "," + Debug + "," + Navigation + "," + Test + "," + Binding + "," + Error + "," + Animation;
+    export var Transition = "Transition";
+    export var All = VisualTreeEvents + "," + Layout + "," + Style + "," + ViewHierarchy + "," + NativeLifecycle + "," + Debug + "," + Navigation + "," + Test + "," + Binding + "," + Error + "," + Animation + "," + Transition;
 
     export var separator = ",";
 
@@ -136,8 +150,6 @@ class ConsoleWriter implements definition.TraceWriter {
         if (!console) {
             return;
         }
-
-        var types: typeof typesModule = require("utils/types");
 
         var msgType;
         if (types.isUndefined(type)) {

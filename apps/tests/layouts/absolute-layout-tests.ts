@@ -1,29 +1,13 @@
 ﻿import testModule = require("../ui-test");
 import TKUnit = require("../TKUnit");
-import viewModule = require("ui/core/view");
 import labelModule = require("ui/label");
-import helper = require("../ui/helper");
 import colorModule = require("color");
 import layoutHelper = require("./layout-helper");
 import commonTests = require("./common-layout-tests");
 
-// <snippet module="ui/layouts/absolute-layout" title="absolute-layout">
-// # AbsoluteLayout
-// Using a AbsoluteLayout requires the AbsoluteLayout module.
-// ``` JavaScript
+// >> absolute-layout-require
 import absoluteLayoutModule = require("ui/layouts/absolute-layout");
-// ```
-// </snippet> 
-
-// ### Declaring a AbsoluteLayout.
-//```XML
-// <Page>
-//   <AbsoluteLayout>
-//     <Label text="This is Label 1" left="30" top="70" />
-//   </AbsoluteLayout>
-// </Page>
-//```
-// </snippet>
+// << absolute-layout-require
 
 export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.AbsoluteLayout> {
 
@@ -33,9 +17,7 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
 
     public snippet() {
 
-        // <snippet module="ui/layouts/absolute-layout" title="absolute-layout">
-        // ## Creating and populating a AbsoluteLayout with children
-        // ``` JavaScript
+        // >> absolute-layout-populating
         var absoluteLayout = new absoluteLayoutModule.AbsoluteLayout();
         absoluteLayout.width = 230;
         absoluteLayout.height = 230;
@@ -50,8 +32,7 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
         label.id = "LT";
         label.style.backgroundColor = new colorModule.Color("Red");
         absoluteLayout.addChild(label);
-        // ```
-        // </snippet>
+        // << absolute-layout-populating
     }
 
     public testAll() {

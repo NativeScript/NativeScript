@@ -1,3 +1,4 @@
+//@private
 declare module "ui/styling/background" {
     // We are using "ad" here to avoid namespace collision with the global android object
     export module ad {

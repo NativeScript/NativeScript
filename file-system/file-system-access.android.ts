@@ -80,11 +80,7 @@ export class FileSystemAccess {
 
     public folderExists(path: string): boolean {
         var file = new java.io.File(path);
-        var exists = file.exists();
-        var dir = file.isDirectory();
-
-        // return file.exists() && file.getCanonicalFile().isDirectory();
-        return exists && dir;
+        return file.exists() && file.isDirectory();
     }
 
     public deleteFile(path: string, onError?: (error: any) => any) {
@@ -196,12 +192,16 @@ export class FileSystemAccess {
         var dir = utils.ad.getApplicationContext().getCacheDir();
         return dir.getAbsolutePath();
     }
+    
+    public getCurrentAppPath(): string {
+        return this.getLogicalRootPath() + "/app";
+    }
 
     public read(path: string, onError?: (error: any) => any) {
         try {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileInputStream(javaFile);
-            var bytes = new byte[javaFile.length()];
+            var bytes = (<any>Array).create("byte", javaFile.length());
             var dataInputStream = new java.io.DataInputStream(stream);
             dataInputStream.readFully(bytes);
             return bytes;
@@ -212,11 +212,10 @@ export class FileSystemAccess {
         }
     }
 
-    public write(path: string, content: java.io.ByteArrayOutputStream, onError?: (error: any) => any) {
+    public write(path: string, bytes: native.Array<number>, onError?: (error: any) => any) {
         try {
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileOutputStream(javaFile);
-            var bytes = content.toByteArray();
             stream.write(bytes, 0, bytes.length);
             stream.close();
         } catch (exception) {
@@ -305,6 +304,9 @@ export class FileSystemAccess {
 
     private deleteFolderContent(file: java.io.File): boolean {
         var filesList = file.listFiles();
+        if (filesList.length === 0) {
+            return true;// Nothing to delete, so success!
+        }
 
         var i,
             childFile: java.io.File,
@@ -332,6 +334,7 @@ export class FileSystemAccess {
                 if (isFolder) {
                     created = javaFile.mkdirs();
                 } else {
+                    javaFile.getParentFile().mkdirs();
                     created = javaFile.createNewFile();
                 }
 

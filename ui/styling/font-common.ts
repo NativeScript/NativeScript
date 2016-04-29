@@ -1,6 +1,6 @@
 ﻿import enums = require("ui/enums");
 import definitios = require("ui/styling/font");
-import * as convertersModule from "./converters";
+import * as converters from "./converters";
 
 export class Font implements definitios.Font {
     public static default = undefined;
@@ -39,14 +39,15 @@ export class Font implements definitios.Font {
     }
 
     get isBold(): boolean {
-        return this._fontWeight.toLowerCase() === enums.FontWeight.bold;;
+        return this._fontWeight.toLowerCase() === enums.FontWeight.bold
+            || this._fontWeight.toLowerCase() === "700";
     }
     set isBold(value: boolean) {
         throw new Error("isBold is read-only");
     }
 
     get isItalic(): boolean {
-        return this._fontStyle.toLowerCase() === enums.FontStyle.italic;;
+        return this._fontStyle.toLowerCase() === enums.FontStyle.italic;
     }
     set isItalic(value: boolean) {
         throw new Error("isItalic is read-only");
@@ -102,7 +103,6 @@ export class Font implements definitios.Font {
 
     public static parse(cssValue: string): Font {
         var parsed = parseFont(cssValue);
-        var converters: typeof convertersModule = require("./converters");
 
         var size = converters.fontSizeConverter(parsed.fontSize);
         size = !!size ? size : undefined;
@@ -131,12 +131,26 @@ export module genericFontFamilies {
     export var serif = "serif";
     export var sansSerif = "sans-serif";
     export var monospace = "monospace";
+    export var system = "system";
 }
 
 var styles = new Set();
 ["italic", "oblique"].forEach((val, i, a) => styles.add(val));
+
+// http://www.w3schools.com/cssref/pr_font_weight.asp
+//- normal(same as 400)
+//- bold(same as 700)
+//- 100(Thin) (API16 -thin)
+//- 200(Extra Light / Ultra Light) (API16 -light)
+//- 300(Light) (API16 -light)
+//- 400(Normal) 
+//- 500(Medium) (API21 -medium)
+//- 600(Semi Bold / Demi Bold) (API21 -medium)
+//- 700(Bold) (API16 -bold)
+//- 800(Extra Bold / Ultra Bold) (API16 -bold)
+//- 900(Black / Heavy) (API21 -black)
 var weights = new Set();
-["bold", "bolder", "lighter", "100", "200", "300", "400", "500", "600", "700", "800", "900"].forEach((val, i, a) => weights.add(val));
+["normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"].forEach((val, i, a) => weights.add(val));
 
 interface ParsedFont {
     fontStyle?: string;

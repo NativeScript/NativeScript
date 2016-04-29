@@ -2,10 +2,16 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import * as typesModule from "utils/types";
-import styling = require("ui/styling");
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 import font = require("ui/styling/font");
+
+var types: typeof typesModule;
+function ensureTypes() {
+    if (!types) {
+        types = require("utils/types");
+    }
+}
 
 function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var bar = <SearchBar>data.object;
@@ -48,7 +54,7 @@ function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     }
 
     var newValue = data.newValue;
-    var types: typeof typesModule = require("utils/types");
+    ensureTypes();
 
     if (types.isString(newValue)) {
         bar.ios.placeholder = newValue;
@@ -63,7 +69,6 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
     public static ObjCProtocols = [UISearchBarDelegate];
 
     private _owner: WeakRef<SearchBar>;
-    private _searchText: string;
 
     public static initWithOwner(owner: WeakRef<SearchBar>): UISearchBarDelegateImpl {
         let delegate = <UISearchBarDelegateImpl>UISearchBarDelegateImpl.new();
@@ -80,11 +85,9 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
         owner._onPropertyChangedFromNative(common.SearchBar.textProperty, searchText);
 
         // This code is needed since sometimes searchBarCancelButtonClicked is not called!
-        if (searchText === "" && this._searchText !== searchText) {
+        if (searchText === "") {
             owner._emit(common.SearchBar.clearEvent);
         }
-
-        this._searchText = searchText;
     }
 
     public searchBarCancelButtonClicked(searchBar: UISearchBar) {

@@ -52,11 +52,12 @@ export class FileSystemAccess {
             var exists = fileManager.fileExistsAtPath(path);
 
             if (!exists) {
-                if (!fileManager.createFileAtPathContentsAttributes(path, null, null)) {
+                var parentPath = this.getParent(path, onError).path;
+                if (!fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(parentPath, true, null) ||
+                        !fileManager.createFileAtPathContentsAttributes(path, null, null)) {
                     if (onError) {
-                        onError(new Error("Failed to create folder at path '" + path + "'"));
+                        onError(new Error("Failed to create file at path '" + path + "'"));
                     }
-
                     return undefined;
                 }
             }
@@ -147,17 +148,21 @@ export class FileSystemAccess {
     }
 
     public fileExists(path: string): boolean {
-        var fileManager = NSFileManager.defaultManager();
-        return fileManager.fileExistsAtPath(path);
+        var result = this.exists(path);
+        return result.exists;
     }
 
     public folderExists(path: string): boolean {
+        var result = this.exists(path);
+        return result.exists && result.isDirectory;
+    }
+
+    private exists(path: string): { exists: boolean, isDirectory: boolean } {
         var fileManager = NSFileManager.defaultManager();
+        var isDirectory = new interop.Reference(interop.types.bool, false);
+        var exists = fileManager.fileExistsAtPathIsDirectory(path, isDirectory);
 
-        var outVal = new interop.Reference();
-        var exists = fileManager.fileExistsAtPathIsDirectory(path, outVal);
-
-        return exists && outVal.value > 0;
+        return { exists: exists, isDirectory: isDirectory.value };
     }
 
     public concatPath(left: string, right: string): string {
@@ -215,7 +220,9 @@ export class FileSystemAccess {
     }
 
     public getLogicalRootPath(): string {
-        return NSBundle.mainBundle().bundlePath;
+        let mainBundlePath = NSBundle.mainBundle().bundlePath;
+        let resolvedPath = NSString.stringWithString(mainBundlePath).stringByResolvingSymlinksInPath;
+        return resolvedPath;
     }
 
     public getDocumentsFolderPath(): string {
@@ -224,6 +231,20 @@ export class FileSystemAccess {
 
     public getTempFolderPath(): string {
         return this.getKnownPath(this.cachesDir);
+    }
+    
+    public getCurrentAppPath(): string {
+        const currentDir = __dirname;
+        const tnsModulesIndex = currentDir.indexOf("/tns_modules");
+
+        // Module not hosted in ~/tns_modules when bundled. Use current dir.
+        let appPath = currentDir;
+        if (tnsModulesIndex !== -1) {
+            // Strip part after tns_modules to obtain app root
+            appPath = currentDir.substring(0, tnsModulesIndex);
+        }
+        
+        return appPath;
     }
 
     public readText(path: string, onError?: (error: any) => any, encoding?: any) {
@@ -243,7 +264,7 @@ export class FileSystemAccess {
         }
     }
 
-    public read(path: string, onError?: (error: any) => any) : NSData {
+    public read(path: string, onError?: (error: any) => any): NSData {
         try {
             return NSData.dataWithContentsOfFile(path);
         }

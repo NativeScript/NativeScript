@@ -4,10 +4,16 @@ import proxy = require("ui/core/proxy");
 import color = require("color");
 import utils = require("utils/utils")
 import * as typesModule from "utils/types";
-import styling = require("ui/styling");
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 import font = require("ui/styling/font");
+
+var types: typeof typesModule;
+function ensureTypes() {
+    if (!types) {
+        types = require("utils/types");
+    }
+}
 
 var SEARCHTEXT = "searchText";
 var QUERY = "query";
@@ -60,7 +66,7 @@ function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     }
 
     var newValue = data.newValue;
-    var types: typeof typesModule = require("utils/types");
+    ensureTypes();
 
     if (types.isString(newValue)) {
         bar.android.setQueryHint(newValue);

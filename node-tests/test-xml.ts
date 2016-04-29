@@ -43,4 +43,9 @@ describe("xml parser", () => {
         assert.equal("Ω", last_data);
     });
 
+    it("resolves <> inside quotes", () => {
+            parser.parse("<element name='<&>' blah=\"b<a&>\"/>");
+            assert.equal("<&>", last_attrs.name);
+            assert.equal("b<a&>", last_attrs.blah);
+    });
 });

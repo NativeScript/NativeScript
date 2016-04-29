@@ -1,155 +1,171 @@
 ﻿import TKUnit = require("./TKUnit");
-import platform = require("platform");
-var timer = require("timer/timer");
+import timer = require("timer");
 
-// <snippet module="timer" title="timer">
-// # Timer module
-// ### How to require timer module
-// ``` JavaScript
+// >> timer-require
 // require("globals");
 //// OR
 // var timer = require("timer");
-// ```
-// </snippet>
+// << timer-require
 
-export var test_setTimeout_isDefined = function () {
+export function test_setTimeout_isDefined() {
     TKUnit.assert(typeof (timer.setTimeout) !== "undefined", "Method timer.setTimeout() should be defined!");
 };
 
-export var test_clearTimeout_isDefined = function () {
+export function test_clearTimeout_isDefined() {
     TKUnit.assert(typeof (timer.clearTimeout) !== "undefined", "Method timer.clearTimeout() should be defined!");
 };
 
-export var test_setInterval_isDefined = function () {
+export function test_setInterval_isDefined() {
     TKUnit.assert(typeof (timer.setInterval) !== "undefined", "Method timer.setInterval() should be defined!");
 };
 
-export var test_clearInterval_isDefined = function () {
+export function test_clearInterval_isDefined() {
     TKUnit.assert(typeof (timer.clearInterval) !== "undefined", "Method timer.clearInterval() should be defined!");
 };
 
-export var test_setTimeout = function () {
-    var completed: boolean;
-    var isReady = function () { return completed; }
+export function test_setTimeout() {
+    let completed: boolean;
 
-    // <snippet module="timer" title="timer">
-    // ### Evaluates an expression after 0 milliseconds.
-    // ``` JavaScript
-    timer.setTimeout(function () {
-        // <hide>
+    // >> timer-set-zero
+    timer.setTimeout(() => {
+        // >> (hide)
         completed = true;
-        // </hide>
+        // << (hide)
     });
-    // ```
-    // </snippet>
+    // << timer-set-zero
 
-    TKUnit.waitUntilReady(isReady, 0.5);
+    TKUnit.waitUntilReady(() => completed, 0.5);
     TKUnit.assert(completed, "Callback should be called!");
 };
 
-export var test_setTimeout_callbackCalledAfterSpecifiedTime = function () {
-    var completed: boolean;
-    var isReady = function () { return completed; }
+export function test_setTimeout_callbackCalledAfterSpecifiedTime() {
+    let completed = false;
 
-    // <snippet module="timer" title="timer">
-    // ### Evaluates an expression after a specified number of milliseconds.
-    // ``` JavaScript
-    timer.setTimeout(function () {
-        // <hide>
+    // >> timer-set-fivehundred
+    timer.setTimeout(() => {
+        // >> (hide)
         completed = true;
-        // </hide>
-    }, 500);
-    // ```
-    // </snippet>
+        // << (hide)
+    }, 10);
+    // << timer-set-fivehundred
 
-    TKUnit.waitUntilReady(isReady, 1);
+    TKUnit.waitUntilReady(() => completed, 1);
     TKUnit.assert(completed, "Callback should be called after specified time!");
 };
 
-export var test_setTimeout_callbackNotCalled = function () {
-    var completed: boolean;
-    var isReady = function () { return completed; }
+export function test_setTimeout_callbackNotCalled() {
+    let completed = false;
+    timer.setTimeout(() => completed = true, 50);
 
-    timer.setTimeout(function () {
-        completed = true;
-    }, 1000);
-
-    TKUnit.waitUntilReady(isReady, 0.5);
+    TKUnit.waitUntilReady(() => completed, 0.01);
     TKUnit.assert(!completed, "Callback should be called after specified time!");
 };
 
-export var test_setTimeout_shouldReturnNumber = function () {
-    var id = timer.setTimeout(function () {
+export function test_setTimeout_shouldReturnNumber() {
+    let id = timer.setTimeout(() => {
         //
     });
     TKUnit.assert(typeof id === "number", "Callback should return number!");
 };
 
-export var test_setTimeout_callbackShouldBeCleared = function () {
-    // This test is very unstable in iOS, because the platform does not guarantee the 
-    // callback will be cleared on time. Better skip it for iOS.
-    if (platform.device.os === platform.platformNames.ios) {
-        return;
-    }
+export function test_setTimeout_callbackShouldBeCleared() {
+    let completed = false;
 
-    var completed: boolean;
-    var isReady = function () { return completed; }
-
-    // <snippet module="timer" title="timer">
-    // ### Cancels the evaluation with the clearTimeout method.
-    // ``` JavaScript
-    var id = timer.setTimeout(function () {
-        // <hide>
+    // >> timer-set-twothousands
+    let id = timer.setTimeout(() => {
+        // >> (hide)
         completed = true;
-        // </hide>
-    }, 2000);
+        // << (hide)
+    }, 50);
+    // << timer-set-twothousands
 
     //// Clear timeout with specified id.
     timer.clearTimeout(id);
 
-    // ```
-    // </snippet>
+    // << timer-set-twothousands
 
-    TKUnit.waitUntilReady(isReady, 3);
+    TKUnit.waitUntilReady(() => completed, 0.060);
     TKUnit.assert(!completed, "Callback should be cleared when clearTimeout() is executed for specified id!");
 };
 
-export var test_setInterval_callbackCalledDuringPeriod = function () {
-    var counter = 0;
-    var expected = 4;
-    var isReady = function () { return counter >= expected; }
+export function test_setInterval_callbackCalledDuringPeriod() {
+    let counter = 0;
+    let expected = 4;
 
-    // <snippet module="timer" title="timer">
-    // ### Evaluates an expression each time a specified number of milliseconds has elapsed.
-    // ``` JavaScript
-    timer.setInterval(function () {
-        // <hide>
+    // >> timer-set-expression
+    timer.setInterval(() => {
+        // >> (hide)
         counter++;
-        // </hide>
+        // << (hide)
     }, 100);
-    // ```
-    // </snippet>
+    // << timer-set-expression
 
-    TKUnit.waitUntilReady(isReady, 0.5);
-    TKUnit.assert(isReady(), "Callback should be raised at least" + expected + "times! Callback raised " + counter + " times.");
+    TKUnit.waitUntilReady(() => counter >= expected, 0.5);
+    TKUnit.assert(counter >= expected, "Callback should be raised at least" + expected + "times! Callback raised " + counter + " times.");
 };
 
-export var test_setInterval_callbackShouldBeCleared = function () {
-    var counter = 0;
-    var isReady = function () { return false; }
+export function test_setInterval_callbackShouldBeCleared() {
+    let counter = 0;
 
-    // <snippet module="timer" title="timer">
-    // ### Cancel the interval previously started using the setInterval method.
-    // ``` JavaScript
-    var id = timer.setInterval(function () {
-        // <hide>
+    // >> timer-set-interval
+    let id = timer.setInterval(() => {
+        // >> (hide)
         counter++;
-        // </hide>
+        // << (hide)
         timer.clearInterval(id);
     }, 100);
-    // ```
-    // </snippet>
+    // << timer-set-interval
 
-    TKUnit.waitUntilReady(isReady, 0.5);
+    TKUnit.waitUntilReady(() => false, 0.5);
     TKUnit.assert(counter === 1, "Callback should be raised only once!");
 };
+
+export function test_clearTimeout_multipleTimes_afterTick() {
+    let completed = false;
+
+    let id = timer.setTimeout(() => {
+        completed = true;
+    });
+
+    TKUnit.waitUntilReady(() => completed, 0.5);
+    TKUnit.assert(completed, "Callback should be called");
+    
+    timer.clearTimeout(id);
+    timer.clearTimeout(id);
+}
+
+export function test_clearTimeout_immediatelyAfterCreate() {
+    let completed = false;
+
+    let id = timer.setTimeout(() => {
+        completed = true;
+    });
+    timer.clearTimeout(id);
+
+    TKUnit.waitUntilReady(() => false, 0.02);
+    TKUnit.assert(!completed, "Callback should not be called");
+}
+
+export function test_clearInterval_immediatelyAfterCreate() {
+    let completed = false;
+
+    let id = timer.setInterval(() => {
+        completed = true;
+    });
+    timer.clearInterval(id);
+
+    TKUnit.waitUntilReady(() => false, 0.02);
+    TKUnit.assert(!completed, "Callback should not be called");
+}
+
+export function test_clearTimeout_insideCallback() {
+    let completed = false;
+
+    let id = timer.setTimeout(() => {
+        completed = true;
+        timer.clearTimeout(id);
+    });
+
+    TKUnit.waitUntilReady(() => completed, 0.5);
+    TKUnit.assert(completed, "Callback should be called");
+}

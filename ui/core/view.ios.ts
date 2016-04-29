@@ -1,13 +1,20 @@
 ﻿import types = require("utils/types");
 import viewCommon = require("./view-common");
+import viewDefinition = require("ui/core/view");
 import trace = require("trace");
 import utils = require("utils/utils");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import style = require("ui/styling/style");
-import styling = require("ui/styling");
 import enums = require("ui/enums");
 import * as backgroundModule from "ui/styling/background";
+
+var background: typeof backgroundModule;
+function ensureBackground() {
+    if (!background) {
+        background = require("ui/styling/background");
+    }
+}
 
 global.moduleMerge(viewCommon, exports);
 
@@ -64,6 +71,7 @@ export class View extends viewCommon.View {
     private _hasTransfrom = false;
     private _privateFlags: number;
     private _cachedFrame: CGRect;
+    private _suspendCATransaction = false;
 
     constructor() {
         super();
@@ -80,20 +88,6 @@ export class View extends viewCommon.View {
         // TODO: Detach from the context?
         view._onDetached();
         this.requestLayout();
-    }
-
-    public onLoaded() {
-        super.onLoaded();
-
-        // TODO: It is very late to work with options here in the onLoaded method. 
-        // We should not do anything that affects UI AFTER the widget has been loaded.
-        utils.copyFrom(this._options, this);
-        delete this._options;
-
-        // We do not need to call this in iOS, since the native instance is created immediately
-        // and any props that you set on our instance are immediately synced onto the native one.
-        // _syncNativeProperties makes sense for Android only, where widgets are created later.
-        // this._syncNativeProperties();
     }
 
     get _nativeView(): UIView {
@@ -119,7 +113,7 @@ export class View extends viewCommon.View {
         var measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
         var forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
         if (forceLayout || measureSpecsChanged) {
-            
+
             // first clears the measured dimension flag
             this._privateFlags &= ~PFLAG_MEASURED_DIMENSION_SET;
 
@@ -130,7 +124,7 @@ export class View extends viewCommon.View {
             // flag not set, setMeasuredDimension() was not invoked, we raise
             // an exception to warn the developer
             if ((this._privateFlags & PFLAG_MEASURED_DIMENSION_SET) !== PFLAG_MEASURED_DIMENSION_SET) {
-                throw new Error("onMeasure() did not set the measured dimension by calling setMeasuredDimension()");
+                throw new Error("onMeasure() did not set the measured dimension by calling setMeasuredDimension() " + this);
             }
         }
     }
@@ -216,7 +210,7 @@ export class View extends viewCommon.View {
         }
 
         // This is done because when rotated in iOS7 there is rotation applied on the first subview on the Window which is our frame.nativeView.view.
-        // If we set it it should be transformed so it is correct. 
+        // If we set it it should be transformed so it is correct.
         // When in landscape in iOS 7 there is transformation on the first subview of the window so we set frame to its subview.
         // in iOS 8 we set frame to subview again otherwise we get clipped.
         var nativeView: UIView;
@@ -243,6 +237,46 @@ export class View extends viewCommon.View {
         }
 
         return false;
+    }
+
+    public getLocationInWindow(): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.window) {
+            return undefined;
+        }
+
+        var pointInWindow = this._nativeView.convertPointToView(this._nativeView.bounds.origin, null);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(pointInWindow.x),
+            y: utils.layout.toDeviceIndependentPixels(pointInWindow.y),
+        }
+    }
+
+    public getLocationOnScreen(): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.window) {
+            return undefined;
+        }
+
+        var pointInWindow = this._nativeView.convertPointToView(this._nativeView.bounds.origin, null);
+        var pointOnScreen = this._nativeView.window.convertPointToWindow(pointInWindow, null);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(pointOnScreen.x),
+            y: utils.layout.toDeviceIndependentPixels(pointOnScreen.y),
+        }
+    }
+
+    public getLocationRelativeTo(otherView: viewDefinition.View): viewDefinition.Point {
+        if (!this._nativeView || !this._nativeView.window ||
+            !otherView._nativeView || !otherView._nativeView.window ||
+            this._nativeView.window !== otherView._nativeView.window) {
+            return undefined;
+        }
+
+        var myPointInWindow = this._nativeView.convertPointToView(this._nativeView.bounds.origin, null);
+        var otherPointInWindow = otherView._nativeView.convertPointToView(otherView._nativeView.bounds.origin, null);
+        return {
+            x: utils.layout.toDeviceIndependentPixels(myPointInWindow.x - otherPointInWindow.x),
+            y: utils.layout.toDeviceIndependentPixels(myPointInWindow.y - otherPointInWindow.y),
+        }
     }
 
     private _onSizeChanged() {
@@ -278,7 +312,7 @@ export class View extends viewCommon.View {
 
             return true;
         }
-        
+
         return false;
     }
 
@@ -286,7 +320,22 @@ export class View extends viewCommon.View {
         if (this._nativeView) {
             this._nativeView.removeFromSuperview();
         }
-    } 
+    }
+
+    // By default we update the view's presentation layer when setting backgroundColor and opacity properties.
+    // This is done by calling CATransaction begin and commit methods.
+    // This action should be disabled when updating those properties during an animation.
+    public _suspendPresentationLayerUpdates() {
+        this._suspendCATransaction = true;
+    }
+
+    public _resumePresentationLayerUpdates() {
+        this._suspendCATransaction = false;
+    }
+
+    public _isPresentationLayerUpdateSuspeneded() {
+        return this._suspendCATransaction;
+    }
 }
 
 export class CustomLayoutView extends View {
@@ -328,8 +377,15 @@ export class ViewStyler implements style.Styler {
     private static setBackgroundInternalProperty(view: View, newValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
-            var background: typeof backgroundModule = require("ui/styling/background");
+            ensureBackground();
+            var updateSuspended = view._isPresentationLayerUpdateSuspeneded();
+            if (!updateSuspended) {
+                CATransaction.begin();
+            }
             nativeView.backgroundColor = background.ios.createBackgroundUIColor(view);
+            if (!updateSuspended) {
+                CATransaction.commit();
+            }
         }
     }
 
@@ -367,7 +423,15 @@ export class ViewStyler implements style.Styler {
     private static setOpacityProperty(view: View, newValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
-            return nativeView.alpha = newValue;
+            var updateSuspended = view._isPresentationLayerUpdateSuspeneded();
+            if (!updateSuspended) {
+                CATransaction.begin();
+            }
+            var alpha = nativeView.alpha = newValue;
+            if (!updateSuspended) {
+                CATransaction.commit();
+            }
+            return alpha;
         }
     }
 
@@ -439,6 +503,84 @@ export class ViewStyler implements style.Styler {
         return 0;
     }
 
+    // Rotate
+    private static setRotateProperty(view: View, newValue: any) {
+        view.rotate = newValue;
+    }
+
+    private static resetRotateProperty(view: View, nativeValue: any) {
+        view.rotate = nativeValue;
+    }
+
+    private static getRotateProperty(view: View): any {
+        return view.rotate;
+    }
+
+    //ScaleX
+    private static setScaleXProperty(view: View, newValue: any) {
+        view.scaleX = newValue;
+    }
+
+    private static resetScaleXProperty(view: View, nativeValue: any) {
+        view.scaleX = nativeValue;
+    }
+
+    private static getScaleXProperty(view: View): any {
+        return view.scaleX;
+    }
+
+    //ScaleY
+    private static setScaleYProperty(view: View, newValue: any) {
+        view.scaleY = newValue;
+    }
+
+    private static resetScaleYProperty(view: View, nativeValue: any) {
+        view.scaleY = nativeValue;
+    }
+
+    private static getScaleYProperty(view: View): any {
+        return view.scaleY;
+    }
+
+    //TranslateX
+    private static setTranslateXProperty(view: View, newValue: any) {
+        view.translateX = newValue;
+    }
+
+    private static resetTranslateXProperty(view: View, nativeValue: any) {
+        view.translateX = nativeValue;
+    }
+
+    private static getTranslateXProperty(view: View): any {
+        return view.translateX;
+    }
+
+    //TranslateY
+    private static setTranslateYProperty(view: View, newValue: any) {
+        view.translateY = newValue;
+    }
+
+    private static resetTranslateYProperty(view: View, nativeValue: any) {
+        view.translateY = nativeValue;
+    }
+
+    private static getTranslateYProperty(view: View): any {
+        return view.translateY;
+    }
+    
+    //z-index
+    private static setZIndexProperty(view: View, newValue: any) {
+        view.ios.layer.zPosition = newValue;
+    }
+
+    private static resetZIndexProperty(view: View, nativeValue: any) {
+        view.ios.layer.zPosition = nativeValue;
+    }
+
+    private static getZIndexProperty(view: View): any {
+        return view.ios.layer.zPosition;
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.backgroundInternalProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setBackgroundInternalProperty,
@@ -467,6 +609,36 @@ export class ViewStyler implements style.Styler {
             ViewStyler.setBorderRadiusProperty,
             ViewStyler.resetBorderRadiusProperty,
             ViewStyler.getBorderRadiusProperty));
+
+        style.registerHandler(style.rotateProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setRotateProperty,
+            ViewStyler.resetRotateProperty,
+            ViewStyler.getRotateProperty));
+
+        style.registerHandler(style.scaleXProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setScaleXProperty,
+            ViewStyler.resetScaleXProperty,
+            ViewStyler.getScaleXProperty));
+
+        style.registerHandler(style.scaleYProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setScaleYProperty,
+            ViewStyler.resetScaleYProperty,
+            ViewStyler.getScaleYProperty));
+
+        style.registerHandler(style.translateXProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setTranslateXProperty,
+            ViewStyler.resetTranslateXProperty,
+            ViewStyler.getTranslateXProperty));
+
+        style.registerHandler(style.translateYProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setTranslateYProperty,
+            ViewStyler.resetTranslateYProperty,
+            ViewStyler.getTranslateYProperty));
+
+        style.registerHandler(style.zIndexProperty, new style.StylePropertyChangedHandler(
+            ViewStyler.setZIndexProperty,
+            ViewStyler.resetZIndexProperty,
+            ViewStyler.getZIndexProperty));
     }
 }
 

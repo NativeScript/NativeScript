@@ -1,5 +1,4 @@
-﻿import * as trace from "trace";
-import {debug, ScopeError, SourceError, Source} from "utils/debug";
+﻿import {debug, ScopeError, SourceError, Source} from "utils/debug";
 import * as xml from "xml";
 import {View, Template} from "ui/core/view";
 import {File, path, knownFolders} from "file-system";
@@ -12,6 +11,13 @@ import {resolveFileName} from "file-system/file-name-resolver";
 import * as traceModule from "trace";
 
 const defaultNameSpaceMatcher = /tns\.xsd$/i;
+
+var trace: typeof traceModule;
+function ensureTrace() {
+    if (!trace) {
+        trace = require("trace");
+    }
+}
 
 export function parse(value: string | Template, context: any): View {
     if (isString(value)) {
@@ -38,10 +44,13 @@ function parseInternal(value: string, context: any, uri?: string): ComponentModu
     var ui: xml2ui.ComponentParser;
 
     var errorFormat = (debug && uri) ? xml2ui.SourceErrorFormat(uri) : xml2ui.PositionErrorFormat;
+    var componentSourceTracker = (debug && uri) ? xml2ui.ComponentSourceTracker(uri) : () => {
+        // no-op
+    };
 
     (start = new xml2ui.XmlStringParser(errorFormat))
         .pipe(new xml2ui.PlatformFilter())
-        .pipe(new xml2ui.XmlStateParser(ui = new xml2ui.ComponentParser(context, errorFormat)));
+        .pipe(new xml2ui.XmlStateParser(ui = new xml2ui.ComponentParser(context, errorFormat, componentSourceTracker)));
 
     start.parse(value);
 
@@ -90,7 +99,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         if (parentPage) {
             parentPage.addCssFile(cssFilePath);
         } else {
-            var trace: typeof traceModule = require("trace");
+            ensureTrace();
 
             trace.write("CSS file found but no page specified. Please specify page in the options!", trace.categories.Error, trace.messageType.error);
         }
@@ -219,6 +228,19 @@ namespace xml2ui {
         }
     }
 
+    interface SourceTracker {
+        (component: any, p: xml.Position): void;
+    }
+
+    export function ComponentSourceTracker(uri): SourceTracker {
+        return (component: any, p: xml.Position) => {
+            if (!Source.get(component)) {
+                var source = p ? new Source(uri, p.line, p.column) : new Source(uri, -1, -1);
+                Source.set(component, source);
+            }
+        }
+    }
+
     export class PlatformFilter extends XmlProducerBase implements XmlProducer, XmlConsumer {
         private currentPlatformContext: string;
 
@@ -287,6 +309,7 @@ namespace xml2ui {
         elementName: string;
         templateItems: Array<string>;
         errorFormat: ErrorFormatter;
+        sourceTracker: SourceTracker;
     }
 
     /**
@@ -374,13 +397,14 @@ namespace xml2ui {
             if (this._templateProperty.name in this._templateProperty.parent.component) {
                 var context = this._context;
                 var errorFormat = this._templateProperty.errorFormat;
+                var sourceTracker = this._templateProperty.sourceTracker;
                 var template: Template = () => {
                     var start: xml2ui.XmlArgsReplay;
                     var ui: xml2ui.ComponentParser;
 
                     (start = new xml2ui.XmlArgsReplay(this._recordedXmlStream, errorFormat))
                         // No platform filter, it has been filtered allready
-                        .pipe(new XmlStateParser(ui = new ComponentParser(context, errorFormat)));
+                        .pipe(new XmlStateParser(ui = new ComponentParser(context, errorFormat, sourceTracker)));
 
                     start.replay();
 
@@ -412,11 +436,13 @@ namespace xml2ui {
         private parents = new Array<ComponentModule>();
         private complexProperties = new Array<ComponentParser.ComplexProperty>();
 
-        private error;
+        private error: ErrorFormatter;
+        private sourceTracker: SourceTracker;
 
-        constructor(context: any, errorFormat: ErrorFormatter) {
+        constructor(context: any, errorFormat: ErrorFormatter, sourceTracker: SourceTracker) {
             this.context = context;
             this.error = errorFormat;
+            this.sourceTracker = sourceTracker;
         }
 
         public parse(args: xml.ParserEvent): XmlStateConsumer {
@@ -444,7 +470,8 @@ namespace xml2ui {
                             name: name,
                             elementName: args.elementName,
                             templateItems: [],
-                            errorFormat: this.error
+                            errorFormat: this.error,
+                            sourceTracker: this.sourceTracker
                         });
                     }
 
@@ -466,6 +493,7 @@ namespace xml2ui {
                     }
 
                     if (componentModule) {
+                        this.sourceTracker(componentModule.component, args.position);
                         if (parent) {
                             if (complexProperty) {
                                 // Add component to complex property of parent component.
@@ -479,6 +507,10 @@ namespace xml2ui {
 
                             if (this.rootComponentModule && this.rootComponentModule.component instanceof Page) {
                                 this.currentPage = <Page>this.rootComponentModule.component;
+                                
+                                if((<any>this.currentPage).exports){
+                                    this.context = (<any>this.currentPage).exports;
+                                }
                             }
                         }
 

@@ -9,7 +9,7 @@ import types = require("utils/types");
 global.moduleMerge(dialogsCommon, exports);
 
 function createAlertDialog(options?: dialogs.DialogOptions): android.app.AlertDialog.Builder {
-    var alert = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
+    var alert = new android.app.AlertDialog.Builder(appmodule.android.currentContext);
     alert.setTitle(options && types.isString(options.title) ? options.title : "");
     alert.setMessage(options && types.isString(options.message) ? options.message : "");
     if (options && options.cancelable === false) {

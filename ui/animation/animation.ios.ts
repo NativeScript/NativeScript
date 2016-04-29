@@ -3,57 +3,119 @@ import common = require("./animation-common");
 import viewModule = require("ui/core/view");
 import trace = require("trace");
 import enums = require("ui/enums");
+import style = require("ui/styling/style");
+import dependencyObservable = require("ui/core/dependency-observable");
 
 global.moduleMerge(common, exports);
 
-var _transform = "_transform";
-var _skip = "_skip";
+let _transform = "_transform";
+let _skip = "_skip";
 
-var FLT_MAX = 340282346638528859811704183484516925440.000000;
+let FLT_MAX = 340282346638528859811704183484516925440.000000;
+
+declare var CASpringAnimation:any;
+
+class AnimationInfo {
+    public propertyNameToAnimate: string;
+    public fromValue: any;
+    public toValue: any;
+    public duration: number;
+    public repeatCount: number;
+    public delay: number;
+}
+
+interface PropertyAnimationInfo extends common.PropertyAnimation {
+    _propertyResetCallback?: any;
+    _originalValue?: any;
+}
+
+interface AnimationDefinitionInternal extends definition.AnimationDefinition {
+    valueSource?: number;
+}
+
+interface IOSView extends viewModule.View {
+    _suspendPresentationLayerUpdates();
+    _resumePresentationLayerUpdates();
+    _isPresentationLayerUpdateSuspeneded();
+}
 
 class AnimationDelegateImpl extends NSObject {
-    static new(): AnimationDelegateImpl {
-        return <AnimationDelegateImpl>super.new();
-    }
+
+    public nextAnimation: Function;
 
     private _finishedCallback: Function;
+    private _propertyAnimation: common.PropertyAnimation;
+    private _valueSource: number;
 
-    public initWithFinishedCallback(finishedCallback: Function): AnimationDelegateImpl {
-        this._finishedCallback = finishedCallback;
-        return this;
+    public static initWithFinishedCallback(finishedCallback: Function, propertyAnimation: common.PropertyAnimation, valueSource: number): AnimationDelegateImpl {
+        let delegate = <AnimationDelegateImpl>AnimationDelegateImpl.new();
+        delegate._finishedCallback = finishedCallback;
+        delegate._propertyAnimation = propertyAnimation;
+        delegate._valueSource = valueSource;
+        return delegate;
     }
 
-    public animationWillStart(animationID: string, context: any): void {
-        trace.write("AnimationDelegateImpl.animationWillStart, animationID: " + animationID, trace.categories.Animation);
+    animationDidStart(anim: CAAnimation): void {
+        let value = this._propertyAnimation.value;
+        let valueSource = this._valueSource || dependencyObservable.ValueSource.Local;
+        let targetStyle = this._propertyAnimation.target.style;
+
+        (<IOSView>this._propertyAnimation.target)._suspendPresentationLayerUpdates();
+
+        switch (this._propertyAnimation.property) {
+            case common.Properties.backgroundColor:
+                targetStyle._setValue(style.backgroundColorProperty, value, valueSource);
+                break;
+            case common.Properties.opacity:
+                targetStyle._setValue(style.opacityProperty, value, valueSource);
+                break;
+            case common.Properties.rotate:
+                targetStyle._setValue(style.rotateProperty, value, valueSource);
+                break;
+            case common.Properties.translate:
+                targetStyle._setValue(style.translateXProperty, value.x, valueSource);
+                targetStyle._setValue(style.translateYProperty, value.y, valueSource);
+                break;
+            case common.Properties.scale:
+                targetStyle._setValue(style.scaleXProperty, value.x, valueSource);
+                targetStyle._setValue(style.scaleYProperty, value.y, valueSource);
+                break;
+            case _transform:
+                if (value[common.Properties.translate] !== undefined) {
+                    targetStyle._setValue(style.translateXProperty, value[common.Properties.translate].x, valueSource);
+                    targetStyle._setValue(style.translateYProperty, value[common.Properties.translate].y, valueSource);
+                }
+                if (value[common.Properties.scale] !== undefined) {
+                    targetStyle._setValue(style.scaleXProperty, value[common.Properties.scale].x, valueSource);
+                    targetStyle._setValue(style.scaleYProperty, value[common.Properties.scale].y, valueSource);
+                }
+                break;
+        }
+
+        (<IOSView>this._propertyAnimation.target)._resumePresentationLayerUpdates();
     }
 
-    public animationDidStop(animationID: string, finished: boolean, context: any): void {
-        trace.write("AnimationDelegateImpl.animationDidStop, animationID: " + animationID + ", finished: " + finished, trace.categories.Animation);
+    public animationDidStopFinished(anim: CAAnimation, finished: boolean): void {
         if (this._finishedCallback) {
-            var cancelled = !finished;
-            // This could either be the master finishedCallback or an nextAnimationCallback depending on the playSequentially argument values.
-            this._finishedCallback(cancelled);
+            this._finishedCallback(!finished);
+        }
+        if (finished && this.nextAnimation) {
+            this.nextAnimation();
         }
     }
-
-    public static ObjCExposedMethods = {
-        "animationWillStart": { returns: interop.types.void, params: [NSString, NSObject] },
-        "animationDidStop": { returns: interop.types.void, params: [NSString, NSNumber, NSObject] }
-    };
 }
 
 export class Animation extends common.Animation implements definition.Animation {
     private _iOSAnimationFunction: Function;
     private _finishedAnimations: number;
     private _cancelledAnimations: number;
-    private _mergedPropertyAnimations: Array<common.PropertyAnimation>;
+    private _mergedPropertyAnimations: Array<PropertyAnimationInfo>;
+    private _valueSource: number;
 
-    public play(): Promise<void> {
-        var animationFinishedPromise = super.play();
-
+    public play(): definition.AnimationPromise {
+        let animationFinishedPromise = super.play();
         this._finishedAnimations = 0;
         this._cancelledAnimations = 0;
-
         this._iOSAnimationFunction();
         return animationFinishedPromise;
     }
@@ -61,25 +123,35 @@ export class Animation extends common.Animation implements definition.Animation 
     public cancel(): void {
         super.cancel();
 
-        var i = 0;
-        var length = this._mergedPropertyAnimations.length;
+        let i = 0;
+        let length = this._mergedPropertyAnimations.length;
         for (; i < length; i++) {
-            (<UIView>this._mergedPropertyAnimations[i].target._nativeView).layer.removeAllAnimations();
-            if ((<any>this._mergedPropertyAnimations[i])._propertyResetCallback) {
-                (<any>this._mergedPropertyAnimations[i])._propertyResetCallback();
+            let propertyAnimation = this._mergedPropertyAnimations[i];
+            propertyAnimation.target._nativeView.layer.removeAllAnimations();
+            if (propertyAnimation._propertyResetCallback) {
+               propertyAnimation._propertyResetCallback(propertyAnimation._originalValue, this._valueSource);
             }
         }
     }
 
-    constructor(animationDefinitions: Array<definition.AnimationDefinition>, playSequentially?: boolean) {
+    constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
         super(animationDefinitions, playSequentially);
 
-        trace.write("Non-merged Property Animations: " + this._propertyAnimations.length, trace.categories.Animation);
-        this._mergedPropertyAnimations = Animation._mergeAffineTransformAnimations(this._propertyAnimations);
-        trace.write("Merged Property Animations: " + this._mergedPropertyAnimations.length, trace.categories.Animation);
+        if (animationDefinitions.length > 0 && animationDefinitions[0].valueSource !== undefined) {
+            this._valueSource = animationDefinitions[0].valueSource;
+        }
 
-        var that = this;
-        var animationFinishedCallback = (cancelled: boolean) => {
+        if (!playSequentially) {
+            trace.write("Non-merged Property Animations: " + this._propertyAnimations.length, trace.categories.Animation);
+            this._mergedPropertyAnimations = Animation._mergeAffineTransformAnimations(this._propertyAnimations);
+            trace.write("Merged Property Animations: " + this._mergedPropertyAnimations.length, trace.categories.Animation);
+        }
+        else {
+            this._mergedPropertyAnimations = this._propertyAnimations;
+        }
+
+        let that = this;
+        let animationFinishedCallback = (cancelled: boolean) => {
             if (that._playSequentially) {
                 // This function will be called by the last animation when done or by another animation if the user cancels them halfway through.
                 if (cancelled) {
@@ -104,203 +176,314 @@ export class Animation extends common.Animation implements definition.Animation 
                 }
                 else if (that._finishedAnimations === that._mergedPropertyAnimations.length) {
                     trace.write(that._finishedAnimations + " animations finished.", trace.categories.Animation);
-
-                    // Update our properties on the view.
-                    // This should not change the native transform which is already updated by the animation itself.
-                    var i;
-                    var len = that._propertyAnimations.length;
-                    var a: common.PropertyAnimation;
-                    for (i = 0; i < len; i++) {
-                        a = that._propertyAnimations[i];
-                        switch (a.property) {
-                            case common.Properties.translate:
-                                a.target.translateX = a.value.x;
-                                a.target.translateY = a.value.y;
-                                break;
-                            case common.Properties.rotate:
-                                a.target.rotate = a.value;
-                                break;
-                            case common.Properties.scale:
-                                a.target.scaleX = a.value.x;
-                                a.target.scaleY = a.value.y;
-                                break;
-                        }
-                    }
-
-                    // Validate that the properties of our view are aligned with the native transform matrix.
-                    for (i = 0; i < len; i++) {
-                        a = that._propertyAnimations[i];
-                        var errorMessage = _getTransformMismatchErrorMessage(a.target);
-                        if (errorMessage) {
-                            throw new Error(errorMessage);
-                        }
-                    }
-
                     that._resolveAnimationFinishedPromise();
                 }
             }
         };
 
-        this._iOSAnimationFunction = Animation._createiOSAnimationFunction(this._mergedPropertyAnimations, 0, this._playSequentially, animationFinishedCallback);
+        this._iOSAnimationFunction = Animation._createiOSAnimationFunction(this._mergedPropertyAnimations, 0, this._playSequentially, this._valueSource, animationFinishedCallback);
     }
 
-    _resolveAnimationCurve(curve: any): any {
-        switch (curve) {
-            case enums.AnimationCurve.easeIn:
-                trace.write("Animation curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseIn.", trace.categories.Animation);
-                return UIViewAnimationCurve.UIViewAnimationCurveEaseIn;
-            case enums.AnimationCurve.easeOut:
-                trace.write("Animation curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseOut.", trace.categories.Animation);
-                return UIViewAnimationCurve.UIViewAnimationCurveEaseOut;
-            case enums.AnimationCurve.easeInOut:
-                trace.write("Animation curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseInOut.", trace.categories.Animation);
-                return UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;
-            case enums.AnimationCurve.linear:
-                trace.write("Animation curve resolved to UIViewAnimationCurve.UIViewAnimationCurveLinear.", trace.categories.Animation);
-                return UIViewAnimationCurve.UIViewAnimationCurveLinear;
-            default:
-                trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
-                return curve;
-        }
-    }
-
-    private static _createiOSAnimationFunction(propertyAnimations: Array<common.PropertyAnimation>, index: number, playSequentially: boolean, finishedCallback: (cancelled?: boolean) => void): Function {
+    private static _createiOSAnimationFunction(propertyAnimations: Array<common.PropertyAnimation>, index: number, playSequentially: boolean, valueSource: number, finishedCallback: (cancelled?: boolean) => void): Function {
         return (cancelled?: boolean) => {
+
             if (cancelled && finishedCallback) {
                 trace.write("Animation " + (index - 1).toString() + " was cancelled. Will skip the rest of animations and call finishedCallback(true).", trace.categories.Animation);
                 finishedCallback(cancelled);
                 return;
             }
 
-            var animation = propertyAnimations[index];
-            var nativeView = (<UIView>animation.target._nativeView);
+           let animation = propertyAnimations[index];
+           let args = Animation._getNativeAnimationArguments(animation, valueSource);
 
-            var nextAnimationCallback: Function;
-            var animationDelegate: AnimationDelegateImpl;
-            if (index === propertyAnimations.length - 1) {
-                // This is the last animation, so tell it to call the master finishedCallback when done.
-                animationDelegate = AnimationDelegateImpl.new().initWithFinishedCallback(finishedCallback);
+           if (animation.curve === enums.AnimationCurve.spring) {
+               Animation._createNativeSpringAnimation(propertyAnimations, index, playSequentially, args, animation, valueSource, finishedCallback);
+           }
+           else {
+               Animation._createNativeAnimation(propertyAnimations, index, playSequentially, args, animation, valueSource, finishedCallback);
+           }
+       }
+    }
+
+    private static _getNativeAnimationArguments(animation: PropertyAnimationInfo, valueSource: number): AnimationInfo {
+
+        let nativeView = <UIView>animation.target._nativeView;
+        let presentationLayer = nativeView.layer.presentationLayer();
+        let propertyNameToAnimate = animation.property;
+        let value = animation.value;
+        let originalValue;
+
+        let tempRotate = animation.target.rotate * Math.PI / 180;
+        let abs;
+
+        switch (animation.property) {
+            case common.Properties.backgroundColor:
+                animation._originalValue = animation.target.backgroundColor;
+                animation._propertyResetCallback = (value, valueSource) => {
+                     animation.target._setValue(style.backgroundColorProperty, value, valueSource);
+                };
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
+                  originalValue = presentationLayer.backgroundColor;
+                }
+                else {
+                  originalValue = nativeView.layer.backgroundColor;
+                }
+                if (nativeView instanceof UILabel) {
+                    originalValue = nativeView.layer.backgroundColor;
+                    nativeView.setValueForKey(UIColor.clearColor(), "backgroundColor");
+                }
+                value = value.CGColor;
+                break;
+            case common.Properties.opacity:
+                animation._originalValue = animation.target.opacity;
+                animation._propertyResetCallback = (value, valueSource) => {
+                    animation.target._setValue(style.opacityProperty, value, valueSource);
+                };
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
+                  originalValue = presentationLayer.opacity;
+                }
+                else {
+                  originalValue = nativeView.layer.opacity;
+                }
+                break;
+            case common.Properties.rotate:
+                animation._originalValue = animation.target.rotate;
+                animation._propertyResetCallback = (value, valueSource) => {
+                     animation.target._setValue(style.rotateProperty, value, valueSource);
+                };
+                propertyNameToAnimate = "transform.rotation";
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
+                  originalValue = presentationLayer.valueForKeyPath("transform.rotation");
+                }
+                else {
+                  originalValue = nativeView.layer.valueForKeyPath("transform.rotation");
+                }
+                if (originalValue === 0 && animation.target.rotate !== 0 && Math.floor(value / 360) - value / 360 === 0) {
+                    originalValue = animation.target.rotate * Math.PI / 180;
+                }
+                value = value * Math.PI / 180;
+                abs = fabs(originalValue - value);
+                if (abs < 0.001 && originalValue !== tempRotate) {
+                    originalValue = tempRotate;
+                }
+                break;
+            case common.Properties.translate:
+                animation._originalValue = { x: animation.target.translateX, y: animation.target.translateY };
+                animation._propertyResetCallback = (value, valueSource) => {
+                    animation.target._setValue(style.translateXProperty, value.x, valueSource);
+                    animation.target._setValue(style.translateYProperty, value.y, valueSource);
+                };
+                propertyNameToAnimate = "transform";
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
+                  originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
+                }
+                else {
+                  originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+                }
+                value = NSValue.valueWithCATransform3D(CATransform3DTranslate(nativeView.layer.transform, value.x, value.y, 0));
+                break;
+            case common.Properties.scale:
+                animation._originalValue = { x: animation.target.scaleX, y: animation.target.scaleY };
+                animation._propertyResetCallback = (value, valueSource) => { 
+                    animation.target._setValue(style.scaleXProperty, value.x, valueSource);
+                    animation.target._setValue(style.scaleYProperty, value.y, valueSource);
+                };
+                propertyNameToAnimate = "transform";
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
+                  originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
+                }
+                else {
+                  originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+                }
+                value = NSValue.valueWithCATransform3D(CATransform3DScale(nativeView.layer.transform, value.x, value.y, 1));
+                break;
+            case _transform:
+                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
+                  originalValue = NSValue.valueWithCATransform3D(presentationLayer.transform);
+                }
+                else {
+                  originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
+                }
+                animation._originalValue = { xs: animation.target.scaleX, ys: animation.target.scaleY,
+                                                    xt: animation.target.translateX, yt: animation.target.translateY };
+                animation._propertyResetCallback = (value, valueSource) => {
+                     animation.target._setValue(style.translateXProperty, value.xt, valueSource);
+                     animation.target._setValue(style.translateYProperty, value.yt, valueSource);
+                     animation.target._setValue(style.scaleXProperty, value.xs, valueSource);
+                     animation.target._setValue(style.scaleYProperty, value.ys, valueSource);
+                };
+                propertyNameToAnimate = "transform";
+                value = NSValue.valueWithCATransform3D(Animation._createNativeAffineTransform(animation));
+                break;
+            default:
+                throw new Error("Cannot animate " + animation.property);
+        }
+
+        let duration = 0.3;
+        if (animation.duration !== undefined) {
+            duration = animation.duration / 1000.0;
+        }
+
+        let delay = undefined;
+        if (animation.delay) {
+            delay = animation.delay / 1000.0;
+        }
+
+        let repeatCount = undefined;
+        if (animation.iterations !== undefined) {
+            if (animation.iterations === Number.POSITIVE_INFINITY) {
+                repeatCount = FLT_MAX;
             }
             else {
-                nextAnimationCallback = Animation._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially, finishedCallback);
-                // If animations are to be played sequentially, tell it to start the next animation when done. 
-                // If played together, all individual animations will call the master finishedCallback, which increments a counter every time it is called.
-                animationDelegate = AnimationDelegateImpl.new().initWithFinishedCallback(playSequentially ? nextAnimationCallback : finishedCallback);
+                repeatCount = animation.iterations;
             }
+        }
 
-            trace.write("UIView.beginAnimationsContext(" + index + "): " + common.Animation._getAnimationInfo(animation), trace.categories.Animation);
+        return {
+            propertyNameToAnimate: propertyNameToAnimate,
+            fromValue: originalValue,
+            toValue: value,
+            duration: duration,
+            repeatCount: repeatCount,
+            delay: delay
+        };
+    }
 
-            UIView.animateKeyframesWithDurationDelayOptionsAnimationsCompletion(1, 0,
-                UIViewKeyframeAnimationOptions.UIViewKeyframeAnimationOptionBeginFromCurrentState,
-                () => {
-                    UIView.addKeyframeWithRelativeStartTimeRelativeDurationAnimations(0, 1, () => {
-                        if (animationDelegate) {
-                            UIView.setAnimationDelegate(animationDelegate);
-                            UIView.setAnimationWillStartSelector("animationWillStart");
-                            UIView.setAnimationDidStopSelector("animationDidStop");
-                        }
+    private static _createNativeAnimation(propertyAnimations: Array<common.PropertyAnimation>, index: number, playSequentially: boolean, args: AnimationInfo, animation: common.PropertyAnimation, valueSource: number, finishedCallback: (cancelled?: boolean) => void) {
 
-                        if (animation.duration !== undefined) {
-                            UIView.setAnimationDuration(animation.duration / 1000.0);
-                        }
-                        else {
-                            UIView.setAnimationDuration(0.3); //Default duration.
-                        }
-                        if (animation.delay !== undefined) {
-                            UIView.setAnimationDelay(animation.delay / 1000.0);
-                        }
-                        if (animation.iterations !== undefined) {
-                            if (animation.iterations === Number.POSITIVE_INFINITY) {
-                                UIView.setAnimationRepeatCount(FLT_MAX);
-                            }
-                            else {
-                                UIView.setAnimationRepeatCount(animation.iterations - 1);
-                            }
-                        }
-                        if (animation.curve !== undefined) {
-                            UIView.setAnimationCurve(animation.curve);
-                        }
+        let nativeView = <UIView>animation.target._nativeView;
+        let nativeAnimation = CABasicAnimation.animationWithKeyPath(args.propertyNameToAnimate);
+        nativeAnimation.fromValue = args.fromValue;
+        nativeAnimation.toValue = args.toValue;
+        nativeAnimation.duration = args.duration;
+        if (args.repeatCount !== undefined) {
+            nativeAnimation.repeatCount = args.repeatCount;
+        }
+        if (args.delay !== undefined) {
+            nativeAnimation.beginTime = CACurrentMediaTime() + args.delay;
+        }
+        if (animation.curve !== undefined) {
+            nativeAnimation.timingFunction = animation.curve;
+        }
 
-                        var originalValue;
-                        switch (animation.property) {
-                            case common.Properties.opacity:
-                                originalValue = animation.target.opacity;
-                                (<any>animation)._propertyResetCallback = () => { animation.target.opacity = originalValue };
-                                animation.target.opacity = animation.value;
-                                break;
-                            case common.Properties.backgroundColor:
-                                originalValue = animation.target.backgroundColor;
-                                (<any>animation)._propertyResetCallback = () => { animation.target.backgroundColor = originalValue };
-                                animation.target.backgroundColor = animation.value;
-                                break;
-                            case _transform:
-                                originalValue = nativeView.transform;
-                                (<any>animation)._propertyResetCallback = () => { nativeView.transform = originalValue };
-                                nativeView.transform = Animation._createNativeAffineTransform(animation);
-                                break;
-                            default:
-                                throw new Error("Cannot animate " + animation.property);
-                                break;
-                        }
-                    })
-                },
-                null
-            );
+        let animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(finishedCallback, animation, valueSource);
+        nativeAnimation.setValueForKey(animationDelegate, "delegate");
 
-            trace.write("UIView.commitAnimations " + index, trace.categories.Animation);
+        nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
 
-            if (!playSequentially && nextAnimationCallback) {
-                nextAnimationCallback();
+        let callback = undefined;
+        if (index + 1 < propertyAnimations.length) {
+            callback = Animation._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially, valueSource, finishedCallback);
+            if (!playSequentially) {
+                callback();
+            }
+            else {
+                animationDelegate.nextAnimation = callback;
             }
         }
     }
 
-    private static _createNativeAffineTransform(animation: common.PropertyAnimation): CGAffineTransform {
-        var view = animation.target;
-        var value = animation.value;
+    private static _createNativeSpringAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimationInfo, valueSource: number, finishedCallback: (cancelled?: boolean) => void) {
 
-        trace.write("Creating native affine transform. Curent transform is: " + NSStringFromCGAffineTransform(view._nativeView.transform), trace.categories.Animation);
-        
-        // Order is important: translate, rotate, scale
-        var result: CGAffineTransform = CGAffineTransformIdentity;
-        trace.write("Identity: " + NSStringFromCGAffineTransform(result), trace.categories.Animation);
+        let nativeView = <UIView>animation.target._nativeView;
+
+        let callback = undefined;
+        let nextAnimation;
+        if (index + 1 < propertyAnimations.length) {
+            callback = Animation._createiOSAnimationFunction(propertyAnimations, index + 1, playSequentially, valueSource, finishedCallback);
+            if (!playSequentially) {
+                callback();
+            }
+            else {
+                nextAnimation = callback;
+            }
+        }
+
+        let delay = 0;
+        if (args.delay) {
+            delay = args.delay;
+        }
+
+        UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(args.duration, delay, 0.2, 0,
+            UIViewKeyframeAnimationOptions.UIViewKeyframeAnimationOptionCalculationModeLinear,
+            () => {
+                if (args.repeatCount !== undefined) {
+                    UIView.setAnimationRepeatCount(args.repeatCount);
+                }
+
+                switch (animation.property) {
+                   case common.Properties.backgroundColor:
+                       animation.target.backgroundColor = args.toValue;
+                       break;
+                   case common.Properties.opacity:
+                       animation.target.opacity = args.toValue;
+                       break;
+                   case common.Properties.rotate:
+                       nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+                       break;
+                   case _transform:
+                       animation._originalValue = nativeView.layer.transform;
+                       nativeView.layer.setValueForKey(args.toValue, args.propertyNameToAnimate);
+                       animation._propertyResetCallback = function (value) {
+                          nativeView.layer.transform = value;
+                       }
+                       break;
+                }
+        }, function (finished:boolean) {
+            if (finished) {
+                if (animation.property === _transform) {
+                    if (animation.value[common.Properties.translate] !== undefined) {
+                         animation.target.translateX = animation.value[common.Properties.translate].x;
+                         animation.target.translateY = animation.value[common.Properties.translate].y;
+                    }
+                    if (animation.value[common.Properties.scale] !== undefined) {
+                         animation.target.scaleX = animation.value[common.Properties.scale].x;
+                         animation.target.scaleY = animation.value[common.Properties.scale].y;
+                    }
+                }
+            }
+            else {
+                if (animation._propertyResetCallback) {
+                    animation._propertyResetCallback(animation._originalValue);
+                }
+            }
+            if (finishedCallback) {
+                let cancelled = !finished;
+                finishedCallback(cancelled);
+            }
+            if (finished && nextAnimation) {
+                nextAnimation();
+            }
+        });
+    }
+
+    private static _createNativeAffineTransform(animation: common.PropertyAnimation): CATransform3D {
+        let value = animation.value;
+        let result: CATransform3D = CATransform3DIdentity;
 
         if (value[common.Properties.translate] !== undefined) {
-            result = CGAffineTransformTranslate(result, value[common.Properties.translate].x, value[common.Properties.translate].y);
+            let x = value[common.Properties.translate].x;
+            let y = value[common.Properties.translate].y;
+            result = CATransform3DTranslate(result, x, y, 0);
         }
-        else {
-            result = CGAffineTransformTranslate(result, view.translateX, view.translateY);
-        }
-        trace.write("After translate: " + NSStringFromCGAffineTransform(result), trace.categories.Animation);
-
-        if (value[common.Properties.rotate] !== undefined) {
-            result = CGAffineTransformRotate(result, value[common.Properties.rotate] * Math.PI / 180);
-        }
-        else {
-            result = CGAffineTransformRotate(result, view.rotate * Math.PI / 180);
-        }
-        trace.write("After rotate: " + NSStringFromCGAffineTransform(result), trace.categories.Animation);
 
         if (value[common.Properties.scale] !== undefined) {
-            result = CGAffineTransformScale(result, value[common.Properties.scale].x, value[common.Properties.scale].y);
+            let x = value[common.Properties.scale].x;
+            let y = value[common.Properties.scale].y;
+            result = CATransform3DScale(result, x, y, 1);
         }
-        else {
-            result = CGAffineTransformScale(result, view.scaleX, view.scaleY);
-        }
-        trace.write("After scale: " + NSStringFromCGAffineTransform(result), trace.categories.Animation);
 
         return result;
-    } 
+    }
 
     private static _isAffineTransform(property: string): boolean {
         return property === _transform
             || property === common.Properties.translate
-            || property === common.Properties.rotate
             || property === common.Properties.scale;
     }
 
     private static _canBeMerged(animation1: common.PropertyAnimation, animation2: common.PropertyAnimation) {
-        var result =
+        let result =
             Animation._isAffineTransform(animation1.property) &&
             Animation._isAffineTransform(animation2.property) &&
             animation1.target === animation2.target &&
@@ -312,11 +495,11 @@ export class Animation extends common.Animation implements definition.Animation 
     }
 
     private static _mergeAffineTransformAnimations(propertyAnimations: Array<common.PropertyAnimation>): Array<common.PropertyAnimation> {
-        var result = new Array<common.PropertyAnimation>();
+        let result = new Array<common.PropertyAnimation>();
 
-        var i = 0;
-        var j;
-        var length = propertyAnimations.length;
+        let i = 0;
+        let j;
+        let length = propertyAnimations.length;
         for (; i < length; i++) {
             if (propertyAnimations[i][_skip]) {
                 continue;
@@ -334,14 +517,16 @@ export class Animation extends common.Animation implements definition.Animation 
                 //    rotate: 90,
                 //    scale: {x: 2, y: 2 }
                 // }
-                var newTransformAnimation: common.PropertyAnimation = {
+                let newTransformAnimation: common.PropertyAnimation = {
                     target: propertyAnimations[i].target,
                     property: _transform,
-                    value: {}, 
+                    value: {},
                     duration: propertyAnimations[i].duration,
                     delay: propertyAnimations[i].delay,
-                    iterations: propertyAnimations[i].iterations
+                    iterations: propertyAnimations[i].iterations,
+                    curve: propertyAnimations[i].curve
                 };
+                trace.write("Curve: " + propertyAnimations[i].curve, trace.categories.Animation);
                 newTransformAnimation.value[propertyAnimations[i].property] = propertyAnimations[i].value;
                 trace.write("Created new transform animation: " + common.Animation._getAnimationInfo(newTransformAnimation), trace.categories.Animation);
 
@@ -361,20 +546,44 @@ export class Animation extends common.Animation implements definition.Animation 
                 result.push(newTransformAnimation);
             }
         }
-
         return result;
     }
+}
 
+export function _resolveAnimationCurve(curve: any): any {
+    switch (curve) {
+        case enums.AnimationCurve.easeIn:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseIn);
+        case enums.AnimationCurve.easeOut:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseOut);
+        case enums.AnimationCurve.easeInOut:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseInEaseOut);
+        case enums.AnimationCurve.linear:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionLinear);
+        case enums.AnimationCurve.spring:
+            return curve;
+        case enums.AnimationCurve.ease:
+            return CAMediaTimingFunction.functionWithControlPoints(0.25, 0.1, 0.25, 1.0);
+        default:
+            if (curve instanceof CAMediaTimingFunction) {
+                return curve;
+            }
+            else if (curve instanceof common.CubicBezierAnimationCurve) {
+                let animationCurve = <common.CubicBezierAnimationCurve>curve;
+                return CAMediaTimingFunction.functionWithControlPoints(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
+            }
+            return undefined;
+    }
 }
 
 export function _getTransformMismatchErrorMessage(view: viewModule.View): string {
     // Order is important: translate, rotate, scale
-    var result: CGAffineTransform = CGAffineTransformIdentity;
+    let result: CGAffineTransform = CGAffineTransformIdentity;
     result = CGAffineTransformTranslate(result, view.translateX, view.translateY);
     result = CGAffineTransformRotate(result, view.rotate * Math.PI / 180);
     result = CGAffineTransformScale(result, view.scaleX, view.scaleY);
-    var viewTransform = NSStringFromCGAffineTransform(result);
-    var nativeTransform = NSStringFromCGAffineTransform(view._nativeView.transform);
+    let viewTransform = NSStringFromCGAffineTransform(result);
+    let nativeTransform = NSStringFromCGAffineTransform(view._nativeView.transform);
 
     if (viewTransform !== nativeTransform) {
         return "View and Native transforms do not match. View: " + viewTransform + "; Native: " + nativeTransform;

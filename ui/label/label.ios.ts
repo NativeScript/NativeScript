@@ -1,13 +1,18 @@
 ﻿import common = require("./label-common");
-import definition = require("ui/label");
-import * as enumsModule from "ui/enums";
-import * as utilsModule from "utils/utils";
+import * as enums from "ui/enums";
+import * as utils from "utils/utils";
 import * as backgroundModule from "ui/styling/background";
 import view = require("ui/core/view");
 import style = require("ui/styling/style");
-import styling = require("ui/styling");
 
 global.moduleMerge(common, exports);
+
+var background: typeof backgroundModule;
+function ensureBackground() {
+    if (!background) {
+        background = require("ui/styling/background");
+    }
+}
 
 class UILabelImpl extends UILabel {
 
@@ -55,8 +60,8 @@ class UILabelImpl extends UILabel {
 export class Label extends common.Label {
     private _ios: UILabel;
 
-    constructor(options?: definition.Options) {
-        super(options);
+    constructor() {
+        super();
 
         this._ios = UILabelImpl.initWithOwner(new WeakRef(this));
         this._ios.userInteractionEnabled = true;
@@ -70,11 +75,16 @@ export class Label extends common.Label {
         return this._ios;
     }
 
+    public onLoaded() {
+        super.onLoaded();
+
+        this.style._updateTextDecoration();
+        this.style._updateTextTransform();
+    }
+
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var nativeView = this._nativeView;
         if (nativeView) {
-            var utils: typeof utilsModule = require("utils/utils");
-
             var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
             var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -92,8 +102,6 @@ export class Label extends common.Label {
             var nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
             var labelWidth = nativeSize.width;
 
-            var enums: typeof enumsModule = require("ui/enums");
-
             if (!this.textWrap && this.style.whiteSpace !== enums.WhiteSpace.nowrap) {
                 labelWidth = Math.min(labelWidth, width);
             }
@@ -107,7 +115,7 @@ export class Label extends common.Label {
             this.setMeasuredDimension(widthAndState, heightAndState);
         }
     }
-} 
+}
 
 export class LabelStyler implements style.Styler {
     //Background methods
@@ -115,7 +123,7 @@ export class LabelStyler implements style.Styler {
         var uiLabel: UILabel = <UILabel>view._nativeView;
         if (uiLabel && uiLabel.layer) {
             var flipImage = true;
-            var background: typeof backgroundModule = require("ui/styling/background");
+            ensureBackground();
             var uiColor = <UIColor>background.ios.createBackgroundUIColor(view, flipImage);
             var cgColor = uiColor ? uiColor.CGColor : null;
             uiLabel.layer.backgroundColor = cgColor;

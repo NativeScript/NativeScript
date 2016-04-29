@@ -201,6 +201,7 @@
         textDecoration: string;
         textTransform: string;
         whiteSpace: string;
+        letterSpacing: number;
 
         //@private
         public _beginUpdate();

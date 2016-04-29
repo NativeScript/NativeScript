@@ -7,6 +7,27 @@ import * as enumsModule from "ui/enums";
 
 global.moduleMerge(common, exports);
 
+var utils: typeof utilsModule;
+function ensureUtils() {
+    if (!utils) {
+        utils = require("utils/utils");
+    }
+}
+
+var fs: typeof fileSystemModule;
+function ensureFS() {
+    if (!fs) {
+        fs = require("file-system");
+    }
+}
+
+var enums: typeof enumsModule;
+function ensureEnums() {
+    if (!enums) {
+        enums = require("ui/enums");
+    }
+}
+
 export class ImageSource implements definition.ImageSource {
     public android: android.graphics.Bitmap;
     public ios: UIImage;
@@ -14,7 +35,7 @@ export class ImageSource implements definition.ImageSource {
     public loadFromResource(name: string): boolean {
         this.android = null;
 
-        var utils: typeof utilsModule = require("utils/utils");
+        ensureUtils();
 
         var res = utils.ad.getApplicationContext().getResources();
         if (res) {
@@ -32,7 +53,7 @@ export class ImageSource implements definition.ImageSource {
     }
 
     public loadFromFile(path: string): boolean {
-        var fs: typeof fileSystemModule = require("file-system");
+        ensureFS();
 
         var fileName = types.isString(path) ? path.trim() : "";
         if (fileName.indexOf("~/") === 0) {
@@ -66,7 +87,7 @@ export class ImageSource implements definition.ImageSource {
             return false;
         }
 
-        var targetFormat = getTargetFromat(format);
+        var targetFormat = getTargetFormat(format);
 
         // TODO add exception handling
         var outputStream = new java.io.BufferedOutputStream(new java.io.FileOutputStream(path));
@@ -81,7 +102,7 @@ export class ImageSource implements definition.ImageSource {
             return null;;
         }
 
-        var targetFormat = getTargetFromat(format);
+        var targetFormat = getTargetFormat(format);
 
         var outputStream = new java.io.ByteArrayOutputStream();
         var base64Stream = new android.util.Base64OutputStream(outputStream, android.util.Base64.NO_WRAP);
@@ -111,8 +132,8 @@ export class ImageSource implements definition.ImageSource {
     }
 }
 
-function getTargetFromat(format: string): android.graphics.Bitmap.CompressFormat {
-    var enums: typeof enumsModule = require("ui/enums");
+function getTargetFormat(format: string): android.graphics.Bitmap.CompressFormat {
+    ensureEnums();
 
     switch (format) {
         case enums.ImageFormat.jpeg:

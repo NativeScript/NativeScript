@@ -13,6 +13,27 @@ import http = require("http");
 var requestIdCounter = 0;
 var pendingRequests = {};
 
+var utils: typeof utilsModule;
+function ensureUtils() {
+    if (!utils) {
+        utils = require("utils/utils");
+    }
+}
+
+var imageSource: typeof imageSourceModule;
+function ensureImageSource() {
+    if (!imageSource) {
+        imageSource = require("image-source");
+    }
+}
+
+var platform: typeof platformModule;
+function ensurePlatform() {
+    if (!platform) {
+        platform = require("platform");
+    }
+}
+
 var completeCallback: com.tns.Async.CompleteCallback;
 function ensureCompleteCallback() {
     if (completeCallback) {
@@ -37,7 +58,7 @@ function onRequestComplete(requestId: number, result: com.tns.Async.Http.Request
     }
 
     // read the headers
-    var headers = {};
+    var headers: http.Headers = {};
     if (result.headers) {
         var jHeaders = result.headers;
         var length = jHeaders.size();
@@ -45,7 +66,8 @@ function onRequestComplete(requestId: number, result: com.tns.Async.Http.Request
         var pair: com.tns.Async.Http.KeyValuePair;
         for (i = 0; i < length; i++) {
             pair = jHeaders.get(i);
-            headers[pair.key] = pair.value;
+            
+            (<any>http).addHeader(headers, pair.key, pair.value);
         }
     }
 
@@ -60,12 +82,11 @@ function onRequestComplete(requestId: number, result: com.tns.Async.Http.Request
                 }
             },
             toJSON: () => {
-                var utils: typeof utilsModule = require("utils/utils");
-
+                ensureUtils();
                 return utils.parseJSON(result.responseAsString);
             },
             toImage: () => {
-                var imageSource: typeof imageSourceModule = require("image-source");
+                ensureImageSource();
 
                 return new Promise<any>((resolveImage, rejectImage) => {
                     if (result.responseAsImage != null) {
@@ -111,7 +132,7 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
 
     var javaOptions = new com.tns.Async.Http.RequestOptions();
 
-    javaOptions.url = options.url.replace("%", "%25");
+    javaOptions.url = options.url;
 
     if (types.isString(options.method)) {
         javaOptions.method = options.method;
@@ -134,7 +155,7 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
         javaOptions.headers = arrayList;
     }
 
-    var platform: typeof platformModule = require("platform");
+    ensurePlatform();
 
     // pass the maximum available image size to the request options in case we need a bitmap conversion
     var screen = platform.screen.mainScreen;

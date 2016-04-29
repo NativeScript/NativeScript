@@ -6,6 +6,7 @@ import {File, Folder, path, knownFolders} from "file-system";
 import {getBindingOptions, bindingConstants} from "./binding-builder";
 import * as debugModule from "utils/debug";
 import * as platformModule from "platform";
+import {convertString} from "utils/utils";
 
 //the imports below are needed for special property registration
 import "ui/layouts/dock-layout";
@@ -26,6 +27,13 @@ var MODULES = {
 
 var CODEFILE = "codeFile";
 var CSSFILE = "cssFile";
+
+var platform: typeof platformModule;
+function ensurePlatform() {
+    if (!platform) {
+        platform = require("platform");
+    }
+}
 
 export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object): ComponentModule {
     var instance: View;
@@ -72,11 +80,13 @@ export function getComponentModule(elementName: string, namespace: string, attri
                 if (codeFilePath.indexOf("~/") === 0) {
                     codeFilePath = path.join(knownFolders.currentApp().path, codeFilePath.replace("~/", ""));
                 }
-                try {
+
+                let codeFilePathWithExt = codeFilePath.indexOf(".js") !== -1 ? codeFilePath : `${codeFilePath}.js`;
+                if (File.exists(codeFilePathWithExt)) {
                     exports = global.loadModule(codeFilePath);
                     (<any>instance).exports = exports;
-                } catch (ex) {
-                    throw new Error(`Code file with path "${codeFilePath}" cannot be found!`);
+                } else {
+                    throw new Error(`Code file with path "${codeFilePathWithExt}" cannot be found!`);
                 }
             } else {
                 throw new Error("Code file atribute is valid only for pages!");
@@ -109,7 +119,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
             if (attr.indexOf(":") !== -1) {
                 var platformName = attr.split(":")[0].trim();
 
-                var platform: typeof platformModule = require("platform");
+                ensurePlatform();
 
                 if (platformName.toLowerCase() === platform.device.os.toLowerCase()) {
                     attr = attr.split(":")[1].trim();
@@ -138,7 +148,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
             }
         }
 
-        componentModule = {component: instance, exports: instanceModule};
+        componentModule = { component: instance, exports: instanceModule };
     }
 
     return componentModule;
@@ -173,20 +183,8 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
         if (!attrHandled && (<any>instance)._applyXmlAttribute) {
             attrHandled = (<any>instance)._applyXmlAttribute(propertyName, propertyValue);
         }
-        if (!attrHandled) {
-            if (propertyValue.trim() === "") {
-                instance[propertyName] = propertyValue;
-            } else {
-                // Try to convert value to number.
-                var valueAsNumber = +propertyValue;
-                if (!isNaN(valueAsNumber)) {
-                    instance[propertyName] = valueAsNumber;
-                } else if (propertyValue && (propertyValue.toLowerCase() === "true" || propertyValue.toLowerCase() === "false")) {
-                    instance[propertyName] = propertyValue.toLowerCase() === "true" ? true : false;
-                } else {
-                    instance[propertyName] = propertyValue;
-                }
-            }
+        if (!attrHandled) {           
+            instance[propertyName] = convertString(propertyValue);
         }
     }
 }

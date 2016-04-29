@@ -21,7 +21,7 @@ export class XMLHttpRequest {
     private _readyState: number;
     private _status: number;
     private _response: any;
-    private _responseText: Function;
+    private _responseTextReader: Function;
     private _headers: any;
     private _errorFlag: boolean;
     private _responseType: string = "";
@@ -53,7 +53,7 @@ export class XMLHttpRequest {
         this._errorFlag = true;
 
         this._response = null;
-        this._responseText = null;
+        this._responseTextReader = null;
         this._headers = null;
         this._status = null;
 
@@ -67,7 +67,7 @@ export class XMLHttpRequest {
     public send(data?: any) {
         this._errorFlag = false;
         this._response = null;
-        this._responseText = null;
+        this._responseTextReader = null;
         this._headers = null;
         this._status = null;
 
@@ -83,27 +83,64 @@ export class XMLHttpRequest {
 
             http.request(this._options).then(r=> {
                 if (!this._errorFlag) {
-                    this._status = r.statusCode;
-                    this._response = r.content.raw;
-
-                    this._headers = r.headers;
-                    this._setReadyState(this.HEADERS_RECEIVED);
-
-                    this._setReadyState(this.LOADING);
-
-                    if (this.responseType === XMLHttpRequestResponseType.empty ||
-                        this.responseType === XMLHttpRequestResponseType.text ||
-                        this.responseType === XMLHttpRequestResponseType.json) {
-                        this._responseText = r.content.toString;
-                    }
-
-                    this._setReadyState(this.DONE);
+                    this._loadResponse(r);
                 }
 
             }).catch(e => {
                 this._errorFlag = true;
                 this._setReadyState(this.DONE, e);
             });
+        }
+    }
+
+    private _loadResponse(r) {
+        this._status = r.statusCode;
+        this._response = r.content.raw;
+
+        this._headers = r.headers;
+        this._setReadyState(this.HEADERS_RECEIVED);
+
+        this._setReadyState(this.LOADING);
+
+        this._setResponseType();
+
+        if (this.responseType === XMLHttpRequestResponseType.json) {
+            this._prepareJsonResponse(r);
+
+        } else if (this.responseType === XMLHttpRequestResponseType.empty ||
+            this.responseType === XMLHttpRequestResponseType.text) {
+            this._responseTextReader = () => r.content.toString();
+        }
+
+        this._setReadyState(this.DONE);
+    }
+
+    private _prepareJsonResponse(r) {
+        this._responseTextReader = () => r.content.toString();
+        this._response = JSON.parse(this.responseText);
+
+        // Add toString() method to ease debugging and 
+        // make Angular2 response.text() method work properly.
+        Object.defineProperty(this._response, "toString", {
+            configurable: true,
+            enumerable: false,
+            writable: true,
+            value: () => this.responseText
+        });
+    }
+
+    private _setResponseType() {
+        const header = this.getResponseHeader('Content-Type');
+        const contentType = header && header.toLowerCase();
+
+        if (contentType) {
+            if (contentType.indexOf('application/json') >= 0) {
+                this.responseType = XMLHttpRequestResponseType.json;
+            } else if (contentType.indexOf('text/plain') >= 0) {
+                this.responseType = XMLHttpRequestResponseType.text;
+            }
+        } else {
+            this.responseType = XMLHttpRequestResponseType.text;
         }
     }
 
@@ -159,7 +196,7 @@ export class XMLHttpRequest {
             && this._headers
             && this._headers[header]
             && !this._errorFlag
-            ) {
+        ) {
             return this._headers[header];
         }
 
@@ -211,8 +248,8 @@ export class XMLHttpRequest {
     }
 
     get responseText(): string {
-        if (types.isFunction(this._responseText)) {
-            return this._responseText();
+        if (types.isFunction(this._responseTextReader)) {
+            return this._responseTextReader();
         }
 
         return "";
@@ -291,8 +328,8 @@ export class FormData {
     toString(): string {
         var arr = new Array<string>();
 
-        this._data.forEach(function (value, name, map) {
-            arr.push(`${encodeURIComponent(name) }=${encodeURIComponent(value) }`);
+        this._data.forEach(function(value, name, map) {
+            arr.push(`${encodeURIComponent(name)}=${encodeURIComponent(value)}`);
         });
 
         return arr.join("&");

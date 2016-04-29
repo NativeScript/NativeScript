@@ -6,6 +6,7 @@ declare module "ui/core/view" {
     import color = require("color");
     import observable = require("data/observable");
     import animation = require("ui/animation");
+    import keyframeAnimationModule = require("ui/animation/keyframe-animation");
 
     /**
      * Gets a child view by id.
@@ -33,69 +34,35 @@ declare module "ui/core/view" {
     export function isEventOrGesture(name: string, view: View): boolean;
 
     /**
-     * Defines interface for an optional parameter used to create a view.
+     * The Point interface describes a two dimensional location. 
+     * It has two properties x and y, representing the x and y coordinate of the location. 
      */
-    export interface Options {
+    export interface Point {
         /**
-         * Gets or sets the desired width of the view.
+         * Represents the x coordinate of the location.
          */
-        width?: number;
+        x: number;
+        
         /**
-         * Gets or sets the desired height of the view.
+         * Represents the y coordinate of the location.
          */
-        height?: number;
-        /**
-         * Gets or sets the minimum width the view may grow to.
-         */
-        minWidth?: number;
-        /**
-         * Gets or sets the minimum height the view may grow to.
-         */
-        minHeight?: number;
-        /**
-         * Gets or sets the alignment of this view within its parent along the Horizontal axis.
-         */
-        horizontalAlignment?: string;
-        /**
-         * Gets or sets the alignment of this view within its parent along the Vertical axis.
-         */
-        verticalAlignment?: string;
-        /**
-         * Specifies extra space on the left side of this view.
-         */
-        marginLeft: number;
+        y: number;
+    }
 
+    /**
+     * The Size interface describes abstract dimensions in two dimensional space. 
+     * It has two properties width and height, representing the width and height values of the size. 
+     */
+    export interface Size {
         /**
-         * Specifies extra space on the top side of this view.
+         * Represents the width of the size.
          */
-        marginTop: number;
-
+        width: number;
+        
         /**
-         * Specifies extra space on the right side of this view.
+         * Represents the height of the size.
          */
-        marginRight: number;
-
-        /**
-         * Specifies extra space on the bottom side of this view.
-         */
-        marginBottom: number;
-        /**
-         * Gets or sets the visibility of this view.
-         */
-        visibility?: string;
-        /**
-         * [Deprecated. Please use className instead] Gets or sets the CSS class of this view.
-         */
-        cssClass?: string;
-
-        /**
-         * Gets or sets the CSS class name of this view.
-         */
-        className?: string;
-        /**
-         * Gets or sets the id of this view.
-         */
-        id?: string;
+        height: number;
     }
 
     /**
@@ -162,8 +129,6 @@ declare module "ui/core/view" {
          * Represents the observable property backing the isUserInteractionEnabled property of each View.
          */
         public static isUserInteractionEnabledProperty: dependencyObservable.Property;
-
-        constructor(options?: Options);
 
         //----------Style property shortcuts----------
 
@@ -433,7 +398,7 @@ declare module "ui/core/view" {
         /**
          * Returns the child view with the specified id.
          */
-        getViewById<T extends View>(id: string): T;
+        public getViewById<T extends View>(id: string): T;
 
         /**
          * Tries to focus the view.
@@ -471,7 +436,7 @@ declare module "ui/core/view" {
          * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
          * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
          */
-        off(eventNames: string | gestures.GestureTypes, callback?: any, thisArg?: any);
+        off(eventNames: string | gestures.GestureTypes, callback?: (data: observable.EventData) => void, thisArg?: any);
 
         /**
          * Raised when a loaded event occurs.
@@ -483,9 +448,36 @@ declare module "ui/core/view" {
          */
         on(event: "unloaded", callback: (args: observable.EventData) => void, thisArg?: any);
 
-        public animate(options: animation.AnimationDefinition): Promise<void>;
+        /**
+         * Animates one or more properties of the view based on the supplied options. 
+         */
+        public animate(options: animation.AnimationDefinition): animation.AnimationPromise;
+        
+        /**
+         * Creates an Animation object based on the supplied options. 
+         */
         public createAnimation(options: animation.AnimationDefinition): animation.Animation;
 
+        /**
+         * Returns the location of this view in the window coordinate system.
+         */
+        public getLocationInWindow(): Point;
+
+        /**
+         * Returns the location of this view in the screen coordinate system.
+         */
+        public getLocationOnScreen(): Point;
+
+        /**
+         * Returns the location of this view in the otherView's coordinate system.
+         */
+        public getLocationRelativeTo(otherView: View): Point;
+
+        /**
+         * Returns the actual size of the view in device-independent pixels.
+         */
+        public getActualSize(): Size;
+        
         // Lifecycle events
         onLoaded(): void;
         onUnloaded(): void;
@@ -509,10 +501,15 @@ declare module "ui/core/view" {
 
         // TODO: Implement logic for stripping these lines out
         //@private
+        _parentChanged(oldParent: View): void;
         _gestureObservers: any;
         _isInheritedChange(): boolean;
         _domId: number;
         _cssClasses: Array<string>;
+
+        _registerAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
+        _unregisterAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
+        _unregisterAllAnimations();
 
         _isAddedToNativeVisualTree: boolean;
 
@@ -554,6 +551,7 @@ declare module "ui/core/view" {
         _nativeView: any;
         _isVisible: boolean;
         _setNativeViewFrame(nativeView: any, frame: any): void;
+        _onStylePropertyChanged(property: dependencyObservable.Property): void;
         //@endprivate
     }
 

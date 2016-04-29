@@ -29,6 +29,37 @@ declare module "data/observable" {
          */
         value: any;
     }
+    
+    /**
+     * Helper class that is used to fire property change even when real object is the same.
+     * By default property change will not be fired for a same object.
+     * By wrapping object into a WrappedValue instance `same object restriction` will be passed.
+     */
+    class WrappedValue {
+        /**
+         * Property which holds the real value.
+         */
+        wrapped: any;
+        
+        /**
+         * Creates an instance of WrappedValue object.
+         * @param value - the real value which should be wrapped.
+         */
+        constructor(value: any);
+        
+        /**
+         * Gets the real value of previously wrappedValue.
+         * @param value - Value that should be unwraped. If there is no wrappedValue property of the value object then value will be returned.
+         */
+        static unwrap(value: any): any;
+        
+        /**
+         * Returns an instance of WrappedValue. The actual instance is get from a WrappedValues pool.
+         * @param value - Value that should be wrapped. 
+         */
+        static wrap(value: any): WrappedValue
+
+    } 
 
     /**
      * Observable is used when you want to be notified when a change occurs. Use on/off methods to add/remove listener.
@@ -40,7 +71,7 @@ declare module "data/observable" {
         public static propertyChangeEvent: string;
 
         /**
-         * Creates an Observable instance and sets its properties accroding to the supplied JSON object.
+         * Creates an Observable instance and sets its properties according to the supplied JSON object.
          */
         constructor(json?: any);
 

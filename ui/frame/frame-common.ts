@@ -3,11 +3,17 @@ import {View, CustomLayoutView} from "ui/core/view";
 import {Page} from "ui/page";
 import {isString, isFunction, isDefined} from "utils/types";
 import * as trace from "trace";
-import {load as buildModule} from "ui/builder";
-import {knownFolders, path} from "file-system";
 import {resolveFileName} from "file-system/file-name-resolver";
-import * as fileSystemModule from "file-system";
+import * as fs from "file-system";
 import * as builderModule from "ui/builder";
+import * as platform from "platform";
+
+var builder: typeof builderModule;
+function ensureBuilder() {
+    if (!builder) {
+        builder = require("ui/builder");
+    }
+}
 
 var frameStack: Array<Frame> = [];
 
@@ -58,12 +64,10 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): Page {
         }
     }
     else if (entry.moduleName) {
-        var fs: typeof fileSystemModule = require("file-system");
-
         // Current app full path.
-        var currentAppPath = knownFolders.currentApp().path;
+        var currentAppPath = fs.knownFolders.currentApp().path;
         //Full path of the module = current app full path + module name.
-        var moduleNamePath = path.join(currentAppPath, entry.moduleName);
+        var moduleNamePath = fs.path.join(currentAppPath, entry.moduleName);
 
         var moduleExports;
         if (global.moduleExists(entry.moduleName)) {
@@ -111,10 +115,10 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
     if (fileName) {
         trace.write("Loading XML file: " + fileName, trace.categories.Navigation);
 
-        var builder: typeof builderModule = require("ui/builder");
+        ensureBuilder();
 
         // Or check if the file exists in the app modules and load the page from XML.
-        element = buildModule(fileName, moduleExports);
+        element = builder.load(fileName, moduleExports);
         if (element instanceof Page) {
             page = <Page>element;
         }
@@ -123,7 +127,7 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
     return page;
 }
 
-interface NavigationContext {
+export interface NavigationContext {
     entry: definition.BackstackEntry;
     isBackNavigation: boolean;
 }
@@ -135,9 +139,11 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     private _backStack: Array<definition.BackstackEntry>;
     public _currentEntry: definition.BackstackEntry;
     private _animated: boolean;
+    private _transition: definition.NavigationTransition;
 
     public _isInFrameStack = false;
     public static defaultAnimatedNavigation = true;
+    public static defaultTransition: definition.NavigationTransition;
 
     // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
 
@@ -157,7 +163,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
      * @param to The backstack entry to navigate back to.
      */
     public goBack(backstackEntry?: definition.BackstackEntry) {
-        trace.write(this._getTraceId() + ".goBack();", trace.categories.Navigation);
+        trace.write(`GO BACK`, trace.categories.Navigation);
         if (!this.canGoBack()) {
             // TODO: Do we need to throw an error?
             return;
@@ -184,12 +190,12 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this._processNavigationContext(navigationContext);
         }
         else {
-            trace.write(this._getTraceId() + ".goBack scheduled;", trace.categories.Navigation);
+            trace.write(`Going back scheduled`, trace.categories.Navigation);
         }
     }
 
     public navigate(param: any) {
-        trace.write(this._getTraceId() + ".navigate();", trace.categories.Navigation);
+        trace.write(`NAVIGATE`, trace.categories.Navigation);
 
         var entry = buildEntryFromArgs(param);
         var page = resolvePageFromEntry(entry);
@@ -212,7 +218,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this._processNavigationContext(navigationContext);
         }
         else {
-            trace.write(this._getTraceId() + ".navigation scheduled;", trace.categories.Navigation);
+            trace.write(`Navigation scheduled`, trace.categories.Navigation);
         }
     }
 
@@ -225,7 +231,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         var entry = this._navigationQueue[0].entry;
         var currentNavigationPage = entry.resolvedPage;
         if (page !== currentNavigationPage) {
-            throw new Error(`Corrupted navigation stack; page: ${page.id}; currentNavigationPage: ${currentNavigationPage.id}`);
+            throw new Error(`Corrupted navigation stack; page: ${page}; currentNavigationPage: ${currentNavigationPage}`);
         }
 
         // remove completed operation.
@@ -255,10 +261,10 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     }
 
     public _updateActionBar(page?: Page) {
-        trace.write("calling _updateActionBar on Frame", trace.categories.Navigation);
+        //trace.write("calling _updateActionBar on Frame", trace.categories.Navigation);
     }
 
-    private _processNavigationContext(navigationContext: NavigationContext) {
+    protected _processNavigationContext(navigationContext: NavigationContext) {
         if (navigationContext.isBackNavigation) {
             this.performGoBack(navigationContext);
         }
@@ -269,7 +275,6 @@ export class Frame extends CustomLayoutView implements definition.Frame {
 
     private performNavigation(navigationContext: NavigationContext) {
         var navContext = navigationContext.entry;
-        this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
 
         // TODO: This should happen once navigation is completed.
         if (navigationContext.entry.entry.clearHistory) {
@@ -279,15 +284,15 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this._backStack.push(this._currentEntry);
         }
 
+        this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
+
         this._navigateCore(navContext);
-        this._onNavigatedTo(navContext, false);
     }
 
     private performGoBack(navigationContext: NavigationContext) {
         var navContext = navigationContext.entry;
         this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
         this._goBackCore(navContext);
-        this._onNavigatedTo(navContext, true);
     }
 
     public _goBackCore(backstackEntry: definition.BackstackEntry) {
@@ -306,17 +311,20 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack);
     }
 
-    public _onNavigatedTo(backstackEntry: definition.BackstackEntry, isBack: boolean) {
-        if (this.currentPage) {
-            this.currentPage.onNavigatedFrom(isBack);
-        }
-    }
-
     public get animated(): boolean {
         return this._animated;
     }
+
     public set animated(value: boolean) {
         this._animated = value;
+    }
+
+    public get transition(): definition.NavigationTransition {
+        return this._transition;
+    }
+
+    public set transition(value: definition.NavigationTransition) {
+        this._transition = value;
     }
 
     get backStack(): Array<definition.BackstackEntry> {
@@ -372,7 +380,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         }
     }
 
-    public _getIsAnimatedNavigation(entry: definition.NavigationEntry) {
+    public _getIsAnimatedNavigation(entry: definition.NavigationEntry): boolean {
         if (entry && isDefined(entry.animated)) {
             return entry.animated;
         }
@@ -384,8 +392,26 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         return Frame.defaultAnimatedNavigation;
     }
 
-    private _getTraceId(): string {
-        return "Frame<" + this._domId + ">";
+    public _getNavigationTransition(entry: definition.NavigationEntry): definition.NavigationTransition {
+        if (entry) {
+            if (platform.device.os === platform.platformNames.ios && isDefined(entry.transitioniOS)) {
+                return entry.transitioniOS;
+            }
+
+            if (platform.device.os === platform.platformNames.android && isDefined(entry.transitionAndroid)) {
+                return entry.transitionAndroid;
+            }
+
+            if (isDefined(entry.transition)) {
+                return entry.transition;
+            }
+        }
+
+        if (isDefined(this.transition)) {
+            return this.transition;
+        }
+
+        return Frame.defaultTransition;
     }
 
     public get navigationBarHeight(): number {
@@ -404,6 +430,17 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     // We don't need to put Page as visual child. Don't call super.
     public _removeViewFromNativeVisualTree(child: View): void {
         child._isAddedToNativeVisualTree = false;
+    }
+
+    public _printFrameBackStack() {
+        var length = this.backStack.length;
+        var i = length - 1;
+        console.log("---------------------------");
+        console.log("Frame Back Stack (" + length + ")");
+        while (i >= 0) {
+            var backstackEntry = <definition.BackstackEntry>this.backStack[i--];
+            console.log("[ " + backstackEntry.resolvedPage.id + " ]");
+        }
     }
 }
 
