@@ -1,6 +1,6 @@
 ---
 nav-title: "repeater How-To"
-title: "Repeater"
+title: "repeater"
 description: "Examples for using repeater"
 ---
 # Repeater

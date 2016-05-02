@@ -1,6 +1,6 @@
 ---
 nav-title: "color How-To"
-title: "Color"
+title: "color"
 description: "Examples for using color"
 ---
 # Color

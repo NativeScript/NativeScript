@@ -1,6 +1,6 @@
 ---
 nav-title: "gestures How-To"
-title: "Gestures"
+title: "gestures"
 description: "Examples for using gestures"
 ---
 # Gestures

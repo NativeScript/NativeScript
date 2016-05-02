@@ -1,6 +1,6 @@
 ---
 nav-title: "DatePicker How-To"
-title: "DatePicker"
+title: "date-picker"
 description: "Examples for using DatePicker"
 ---
 # DatePicker

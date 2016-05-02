@@ -1,6 +1,6 @@
 ---
 nav-title: "http How-To"
-title: "Http"
+title: "http"
 description: "Examples for using http"
 ---
 # Http module

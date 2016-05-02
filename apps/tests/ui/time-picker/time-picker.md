@@ -1,6 +1,6 @@
 ---
 nav-title: "TimePicker How-To"
-title: "TimePicker"
+title: "time-picker"
 description: "Examples for using TimePicker"
 ---
 # TimePicker

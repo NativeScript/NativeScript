@@ -1,6 +1,6 @@
 ---
 nav-title: "scroll-view How-To"
-title: "ScrollView"
+title: "scroll-view"
 description: "Examples for using scroll-view"
 ---
 # ScrollView

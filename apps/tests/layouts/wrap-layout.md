@@ -1,6 +1,6 @@
 ---
 nav-title: "WrapLayout How-To"
-title: "WrapLayout"
+title: "wrap-layout"
 description: "Examples for using WrapLayout"
 ---
 # WrapLayout

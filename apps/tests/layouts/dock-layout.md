@@ -1,7 +1,6 @@
-
 ---
 nav-title: "dock-layout How-To"
-title: "DockLayout"
+title: "dock-layout"
 description: "Examples for using dock-layout"
 ---
 # DockLayout
@@ -33,5 +32,5 @@ Other frequently used modules when working with a DockLayout include:
 ## Remove child view from layout
 <snippet id='dock-layout-removechild'/>
 
-## Setting the dock property
+## Setting the dock roperty
 <snippet id='dock-layout-setdocl'/>

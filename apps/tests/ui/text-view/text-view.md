@@ -1,6 +1,6 @@
 ---
 nav-title: "TextView How-To"
-title: "TextView"
+title: "text-view"
 description: "Examples for using TextView"
 ---
 # TextView

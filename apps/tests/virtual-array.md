@@ -1,6 +1,6 @@
 ---
 nav-title: "virtual-array How-To"
-title: "VirtualArray"
+title: "virtual-array"
 description: "Examples for using virtual-array"
 ---
 # Virtual Array module

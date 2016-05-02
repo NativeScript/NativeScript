@@ -1,6 +1,6 @@
 ---
 nav-title: "platform How-To"
-title: "Platform"
+title: "platform"
 description: "Examples for using platform"
 ---
 # Platform
