@@ -1,6 +1,6 @@
 ---
 nav-title: "data/observable How-To"
-title: "How-To"
+title: "Observable"
 description: "Examples for using data/observable"
 ---
 # Observable

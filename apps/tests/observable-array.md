@@ -1,6 +1,6 @@
 ---
 nav-title: "observable-array How-To"
-title: "How-To"
+title: "ObservableArray"
 description: "Examples for using observable-array"
 ---
 # Observable Array module

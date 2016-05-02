@@ -1,6 +1,6 @@
 ---
 nav-title: "slider How-To"
-title: "How-To"
+title: "Slider"
 description: "Examples for using slider"
 ---
 # Slider

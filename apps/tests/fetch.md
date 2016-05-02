@@ -1,6 +1,6 @@
 ---
 nav-title: "fetch How-To"
-title: "How-To"
+title: "Fetch"
 description: "Examples for using fetch"
 ---
 ### Get Response from URL

@@ -1,6 +1,6 @@
 ---
 nav-title: "absolute-layout How-To"
-title: "How-To"
+title: "AbsoluteLayout"
 description: "Examples for using absolute-layout"
 ---
 # AbsoluteLayout

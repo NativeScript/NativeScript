@@ -1,6 +1,6 @@
 ---
 nav-title: "progress How-To"
-title: "How-To"
+title: "Progress"
 description: "Examples for using progress"
 ---
 # Progress

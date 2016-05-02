@@ -1,6 +1,6 @@
 ---
 nav-title: "placeholder How-To"
-title: "How-To"
+title: "Placeholder"
 description: "Examples for using placeholder"
 ---
 # Placeholder

@@ -1,6 +1,6 @@
 ---
 nav-title: "dialogs How-To"
-title: "How-To"
+title: "Dialogs"
 description: "Examples for using dialogs"
 ---
 # Dialogs

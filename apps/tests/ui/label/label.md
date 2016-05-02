@@ -1,6 +1,6 @@
 ---
 nav-title: "Label How-To"
-title: "How-To"
+title: "Label"
 description: "Examples for using Label"
 ---
 # Label

@@ -1,6 +1,6 @@
 ---
 nav-title: "camera How-To"
-title: "How-To"
+title: "Camera"
 description: "Examples for using camera"
 ---
 # Camera module

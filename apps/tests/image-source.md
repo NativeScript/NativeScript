@@ -1,6 +1,6 @@
 ---
 nav-title: "image-source How-To"
-title: "How-To"
+title: "ImageSource"
 description: "Examples for using image-source"
 ---
 # Image source

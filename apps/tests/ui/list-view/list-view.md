@@ -1,6 +1,6 @@
 ---
 nav-title: "list-view How-To"
-title: "How-To"
+title: "ListView"
 description: "Examples for using list-view"
 ---
 # ListView

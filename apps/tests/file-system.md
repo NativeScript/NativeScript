@@ -1,6 +1,6 @@
 ---
 nav-title: "file-system How-To"
-title: "How-To"
+title: "FileSystem"
 description: "Examples for using file-system"
 ---
 # File System

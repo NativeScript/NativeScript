@@ -1,6 +1,6 @@
 ---
 nav-title: "image-cache How-To"
-title: "How-To"
+title: "Image"
 description: "Examples for using image-cache"
 ---
 # ImageCache

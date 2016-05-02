@@ -1,7 +1,7 @@
 
 ---
 nav-title: "dock-layout How-To"
-title: "How-To"
+title: "DockLayout"
 description: "Examples for using dock-layout"
 ---
 # DockLayout

@@ -1,6 +1,6 @@
 ---
 nav-title: "grid-layout How-To"
-title: "How-To"
+title: "GridLayout"
 description: "Examples for using grid-layout"
 ---
 ## GridLayout sample

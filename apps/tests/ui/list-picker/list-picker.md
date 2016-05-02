@@ -1,6 +1,6 @@
 ---
 nav-title: "ListPicker How-To"
-title: "How-To"
+title: "ListPicker"
 description: "Examples for using ListPicker"
 ---
 # ListPicker

@@ -1,6 +1,6 @@
 ---
 nav-title: "animation How-To"
-title: "How-To"
+title: "Animation"
 description: "Examples for using animation"
 ---
 # Animation

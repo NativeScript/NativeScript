@@ -1,6 +1,6 @@
 ---
 nav-title: "HtmlView How-To"
-title: "How-To"
+title: "HtmlView"
 description: "Examples for using HtmlView"
 ---
 # HtmlView

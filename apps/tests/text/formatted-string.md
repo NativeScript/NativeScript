@@ -1,6 +1,6 @@
 ---
 nav-title: "Formatted String How-To"
-title: "How-To"
+title: "FormattedString"
 description: "Examples for using Formatted String"
 ---
 # Formatted String

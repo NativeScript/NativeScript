@@ -1,6 +1,6 @@
 ---
 nav-title: "button How-To"
-title: "How-To"
+title: "Button"
 description: "Examples for using button"
 ---
 # Button

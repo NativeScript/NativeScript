@@ -1,6 +1,6 @@
 ---
 nav-title: "stack-layout How-To"
-title: "How-To"
+title: "StackLayout"
 description: "Examples for using stack-layout"
 ---
 ### import StackLayout and Button classes
