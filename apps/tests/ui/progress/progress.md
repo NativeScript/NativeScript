@@ -5,7 +5,7 @@ description: "Examples for using progress"
 ---
 # Progress
 Using the progress view requires the Progress module.
-<snippet id='article-require-module'/>
+<snippet id='article-require-progress-module'/>
 Binding the Progress value property to a view-model property.
 ``` XML
 <Page loaded="pageLoaded">

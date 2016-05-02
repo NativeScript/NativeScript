@@ -5,9 +5,9 @@ import observable = require("data/observable");
 import color = require("color");
 import platform = require("platform");
 
-// >> article-require-module
+// >> article-require-progress-module
 import progressModule = require("ui/progress");
-// << article-require-module
+// << article-require-progress-module
 
 export function test_default_TNS_values() {
     // >> article-create-progress-view

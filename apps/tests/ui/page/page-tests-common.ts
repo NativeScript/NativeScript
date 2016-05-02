@@ -1,8 +1,8 @@
-﻿// >> article-require-module
+﻿// >> article-require-page-module
 import pageModule = require("ui/page");
 //// FrameModule is needed in order to have an option to navigate to the new page.
 import frameModule = require("ui/frame");
-// << article-require-module
+// << article-require-page-module
 
 // >> article-set-bindingcontext
 function pageLoaded(args) {

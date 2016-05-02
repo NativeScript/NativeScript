@@ -5,7 +5,7 @@ description: "Examples for using placeholder"
 ---
 # Placeholder
 Using the placeholder requires the Placeholder module.
-<snippet id='article-require-module'/>
+<snippet id='article-require-placeholder-module'/>
 Creating native view for the Placeholder using creatingView event.
 ``` XML
 <Page>

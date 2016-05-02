@@ -5,7 +5,7 @@ description: "Examples for using SegmentedBar"
 ---
 # SegmentedBar
 Using a SegmentedBar requires the "ui/segmented-bar" module.
-<snippet id='article-require-module'/>
+<snippet id='article-require-segmentedbar-module'/>
 ## Creating a SegmentedBar
 <snippet id='article-create-segmentedbar'/>
 ``` XML

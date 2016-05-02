@@ -6,9 +6,9 @@ import utils = require("utils/utils");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 
-// >> article-require-module
+// >> article-require-placeholder-module
 import placeholderModule = require("ui/placeholder");
-// << article-require-module
+// << article-require-placeholder-module
 
 function creatingView(args) {
    var nativeView;

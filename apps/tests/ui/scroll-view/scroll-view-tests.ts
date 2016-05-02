@@ -3,13 +3,13 @@ import app = require("application");
 import button = require("ui/button");
 import enums = require("ui/enums");
 import testModule = require("../../ui-test");
-import layoutHelper = require("../../layouts/layout-helper");
+import layoutHelper = require("../layouts/layout-helper");
 import {Page} from "ui/page";
 import * as frame from "ui/frame";
 
-// >> article-require-module
+// >> article-require-scrollview-module
 import scrollViewModule = require("ui/scroll-view");
-// << article-require-module
+// << article-require-scrollview-module
 
 class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 

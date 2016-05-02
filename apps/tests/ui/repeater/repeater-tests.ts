@@ -10,9 +10,9 @@ import pageModule = require("ui/page");
 import gestureModule = require("ui/gestures");
 import { Label } from "ui/label";
 
-// >> article-require-module
+// >> article-require-repeater-module
 import repeaterModule = require("ui/repeater");
-// << article-require-module
+// << article-require-repeater-module
 
 // >> article-require-modules
 import observableArray = require("data/observable-array");
