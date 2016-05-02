@@ -1,6 +1,6 @@
 ---
 nav-title: "SegmentedBar How-To"
-title: "SegmentedBar"
+title: "segmented-bar"
 description: "Examples for using SegmentedBar"
 ---
 # SegmentedBar

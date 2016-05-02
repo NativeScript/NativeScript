@@ -1,6 +1,6 @@
 ---
 nav-title: "connectivity How-To"
-title: "Connectivity"
+title: "connectivity"
 description: "Examples for using connectivity"
 ---
 # Connectivity

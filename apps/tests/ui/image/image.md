@@ -1,6 +1,6 @@
 ---
 nav-title: "Image How-To"
-title: "Image"
+title: "image"
 description: "Examples for using Image"
 ---
 # Image

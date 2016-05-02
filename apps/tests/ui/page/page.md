@@ -1,6 +1,6 @@
 ---
 nav-title: "Page How-To"
-title: "Page"
+title: "page"
 description: "Examples for using Page"
 ---
 # Page

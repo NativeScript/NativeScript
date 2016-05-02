@@ -1,6 +1,6 @@
 ---
 nav-title: "trace How-To"
-title: "Trace"
+title: "trace"
 description: "Examples for using trace"
 ---
 # Trace

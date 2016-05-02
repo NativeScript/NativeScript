@@ -1,6 +1,6 @@
 ---
 nav-title: "location How-To"
-title: "Location"
+title: "location"
 description: "Examples for using location"
 ---
 # Location

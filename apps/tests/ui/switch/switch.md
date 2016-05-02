@@ -1,6 +1,6 @@
 ---
 nav-title: "switch How-To"
-title: "Switch How-To"
+title: "switch"
 description: "Examples for using switch"
 ---
 # Switch

@@ -1,6 +1,6 @@
 ---
 nav-title: "styling How-To"
-title: "Styling"
+title: "styling"
 description: "Examples for using styling"
 ---
 # Styling

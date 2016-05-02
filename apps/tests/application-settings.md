@@ -1,6 +1,6 @@
 ---
 nav-title: "application-settings How-To"
-title: "ApplicationSettings"
+title: "application-settings"
 description: "Examples for using application-settings"
 ---
 # Application Settings

@@ -1,6 +1,6 @@
 ---
 nav-title: "fps-meter How-To"
-title: "FpsMeter"
+title: "fps-meter"
 description: "Examples for using fps-meter"
 ---
 # Frames-per-second meter

@@ -1,6 +1,6 @@
 ---
 nav-title: "application How-To"
-title: "Application"
+title: "application"
 description: "Examples for using application"
 ---
 # Application

@@ -1,6 +1,6 @@
 ---
 nav-title: "TabView How-To"
-title: "TabView"
+title: "tab-view"
 description: "Examples for using TabView"
 ---
 # TabView
