@@ -1,6 +1,6 @@
 ---
 nav-title: "ActionBar How-To"
-title: "actiob-bar"
+title: "action-bar"
 description: "Examples for using ActionBar"
 ---
 # ActionBar
