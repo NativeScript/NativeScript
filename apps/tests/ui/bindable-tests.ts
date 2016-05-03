@@ -492,6 +492,7 @@ export var test_bindingToNestedPropertyWithValueSyntax = function () {
     }, bindingSource);
 
     TKUnit.assertEqual(testElement.get("targetPropertyName"), "testValue");
+    TKUnit.assertTrue(bindingSource['$value'] === undefined, "We should not add $value to bindingSource.");
 }
 
 export var test_TwoElementsBindingToSameBindingContext = function () {
@@ -544,6 +545,58 @@ export var test_BindingToSource_FailsAfterBindingContextChange = function () {
     }
 
     helper.buildUIAndRunTest(createLabel(), testFunc);
+}
+
+export var test_BindingToParentView_ShouldNotLeaveGarbageInViewModel = function () {
+    var createStack = function () {
+        var stack = new stackLayoutModule.StackLayout();
+        var label = new labelModule.Label();
+        stack.addChild(label);
+        return stack;
+    }
+    var stackViewModel = new observable.Observable();
+    var expectedValue = "testValue";
+    stackViewModel.set("testProperty", expectedValue);
+
+    var testFunc = function (views: Array<viewModule.View>) {
+        let testStack = <stackLayoutModule.StackLayout>(views[0]);
+        testStack.bindingContext = stackViewModel;
+        
+        let testLabel = <labelModule.Label>(testStack.getChildAt(0));
+        testLabel.bind({ sourceProperty: "$parent.testProperty", targetProperty: "text", expression: "$parent.testProperty"});
+
+        TKUnit.assertEqual(testLabel.text, expectedValue);
+        TKUnit.assertTrue(stackViewModel['$parent'] === undefined, "stackViewModel['$parent'] should be removed from parent binding context.");
+        TKUnit.assertTrue(testLabel.bindingContext['$parent'] === undefined, "testLabel.bindingContext['$parent'] should be removed from parent binding context.");
+    }
+
+    helper.buildUIAndRunTest(createStack(), testFunc);
+}
+
+export var test_BindingToParentsView_ShouldNotLeaveGarbageInViewModel = function () {
+    var createStack = function () {
+        var stack = new stackLayoutModule.StackLayout();
+        var label = new labelModule.Label();
+        stack.addChild(label);
+        return stack;
+    }
+    var stackViewModel = new observable.Observable();
+    var expectedValue = "testValue";
+    stackViewModel.set("testProperty", expectedValue);
+
+    var testFunc = function (views: Array<viewModule.View>) {
+        let testStack = <stackLayoutModule.StackLayout>(views[0]);
+        testStack.bindingContext = stackViewModel;
+        
+        let testLabel = <labelModule.Label>(testStack.getChildAt(0));
+        testLabel.bind({ sourceProperty: "$parents['StackLayout'].testProperty", targetProperty: "text", expression: "$parents['StackLayout'].testProperty"});
+
+        TKUnit.assertEqual(testLabel.text, expectedValue);
+        TKUnit.assertTrue(stackViewModel['$parent'] === undefined, "stackViewModel['$parent'] should be removed from parent binding context.");
+        TKUnit.assertTrue(testLabel.bindingContext['$parents'] === undefined, "testLabel.bindingContext['$parents'] should be removed from parent binding context.");
+    }
+
+    helper.buildUIAndRunTest(createStack(), testFunc);
 }
 
 export function test_BindingToDictionaryAtAppLevel() {
@@ -998,6 +1051,7 @@ export function test_$ValueSupportWithinExpression() {
     model.set("anyColor", "red");
 
     TKUnit.assertEqual(bindableObj.get("test"), "red", "When anyColor is red test property should be red too.");
+    TKUnit.assertTrue(model['$value'] === undefined, "We should not add $value to binding context.");
 }
 
 class DummyNestedClass extends observable.Observable {
