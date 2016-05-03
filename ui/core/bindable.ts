@@ -330,7 +330,7 @@ export class Binding {
             }
 
             let updateExpression = this.prepareExpressionForUpdate();
-            this.prepareContextForExpression(changedModel, updateExpression);
+            this.prepareContextForExpression(changedModel, updateExpression, undefined);
 
             let expressionValue = this._getExpressionValue(updateExpression, true, changedModel);
             if (expressionValue instanceof Error) {
@@ -357,7 +357,7 @@ export class Binding {
                     }
                 }
 
-                this.prepareContextForExpression(context, expression);
+                this.prepareContextForExpression(context, expression, addedProps);
                 model[contextKey] = context;
                 let result = exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
                 // clear added props
@@ -443,17 +443,20 @@ export class Binding {
         }
     }
 
-    private prepareContextForExpression(model: Object, expression: string) {
+    private prepareContextForExpression(model: Object, expression: string, newProps: Array<string>) {
         let parentViewAndIndex: { view: viewModule.View, index: number };
         let parentView;
+        let addedProps = newProps || [];
         if (expression.indexOf(bc.bindingValueKey) > -1) {
             model[bc.bindingValueKey] = model;
+            addedProps.push(bc.bindingValueKey);
         }
 
         if (expression.indexOf(bc.parentValueKey) > -1) {
             parentView = this.getParentView(this.target.get(), bc.parentValueKey).view;
             if (parentView) {
                 model[bc.parentValueKey] = parentView.bindingContext;
+                addedProps.push(bc.parentValueKey);
             }
         }
 
@@ -464,6 +467,7 @@ export class Binding {
                 if (parentViewAndIndex.view) {
                     model[bc.parentsValueKey] = model[bc.parentsValueKey] || {};
                     model[bc.parentsValueKey][parentViewAndIndex.index] = parentViewAndIndex.view.bindingContext;
+                    addedProps.push(bc.parentsValueKey);
                 }
             }
         }
