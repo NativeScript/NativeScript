@@ -2,16 +2,26 @@
 import types = require("utils/types");
 import view = require("ui/core/view");
 import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
 import utils = require("utils/utils");
 import style = require("ui/styling/style");
-import * as platformModule from "platform";
-var platform: typeof platformModule;
+import {PropertyChangeData, Property } from "ui/core/dependency-observable";
+import {PropertyMetadata } from "ui/core/proxy";
+
+var clipToBoundsProperty = new Property(
+    "clipToBounds",
+    "LayoutBase",
+    new PropertyMetadata(true, dependencyObservable.PropertyMetadataSettings.None));
+
+function onClipToBoundsPropertyChanged(data: PropertyChangeData) {
+    var layout = <LayoutBase>data.object;
+    layout._onClipToBoundsChanged(data.oldValue, data.newValue);
+}
+
+(<PropertyMetadata>clipToBoundsProperty.metadata).onSetNativeValue = onClipToBoundsPropertyChanged;
 
 export class LayoutBase extends view.CustomLayoutView implements definition.LayoutBase, view.AddChildFromBuilder {
 
-    public static clipToBoundsProperty = new dependencyObservable.Property("clipToBounds", "LayoutBase",
-        new proxy.PropertyMetadata(true, dependencyObservable.PropertyMetadataSettings.None, LayoutBase.onClipToBoundsPropertyChanged, null, LayoutBase.onClipToBoundsPropertyChanged));
+    public static clipToBoundsProperty = clipToBoundsProperty;
 
     private _subViews: Array<view.View> = new Array<view.View>();
 
@@ -120,21 +130,8 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         this._setValue(LayoutBase.clipToBoundsProperty, value);
     }
 
-    protected onClipToBoundsChanged(oldValue: boolean, newValue: boolean) {
-        if (!this._nativeView) {
-            return;
-        }
-
-        if (!platform) {
-            platform = require("platform");
-        }
-
-        if (platform.device.os === platform.platformNames.ios) {
-            this._nativeView.clipsToBounds = newValue;
-        }
-        else if (platform.device.os === platform.platformNames.android) {
-            this._nativeView.setClipChildren(newValue);
-        }
+    public _onClipToBoundsChanged(oldValue: boolean, newValue: boolean) {
+        //
     }
 
     public _childIndexToNativeChildIndex(index?: number): number {
@@ -180,11 +177,6 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
             callback(lastChild, true);
         }
 
-    }
-
-    private static onClipToBoundsPropertyChanged(data: dependencyObservable.PropertyChangeData): void {
-        var layout = <LayoutBase>data.object;
-        layout.onClipToBoundsChanged(data.oldValue, data.newValue);
     }
 
     protected static adjustChildrenLayoutParams(layoutBase: LayoutBase, widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -255,3 +247,4 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         }
     }
 }
+

@@ -829,10 +829,16 @@
     <TypeScriptCompile Include="ui\layouts\layout.android.ts">
       <DependentUpon>layout.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\layouts\layout-base.ts">
+    <TypeScriptCompile Include="ui\layouts\layout-base.d.ts" />
+    <TypeScriptCompile Include="ui\layouts\layout-base-common.ts">
       <DependentUpon>layout-base.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\layouts\layout-base.d.ts" />
+    <TypeScriptCompile Include="ui\layouts\layout-base.android.ts">
+      <DependentUpon>layout-base.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\layout-base.ios.ts">
+      <DependentUpon>layout-base.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\layouts\stack-layout\stack-layout.ios.ts">
       <DependentUpon>stack-layout.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -1343,7 +1349,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include=".gitignore" />
-    <Content Include="apps\template-blank\main-page.xml" />
+    <Content Include="apps\template-blank\main-page.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\tests\small-image.png" />
     <Content Include="apps\tests\pages\page14.xml">
       <SubType>Designer</SubType>
@@ -2222,7 +2230,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
