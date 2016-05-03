@@ -105,6 +105,13 @@ export class WebView extends common.WebView {
         this._android.setWebViewClient(this._webViewClient);
     }
 
+    public _onDetached(force?: boolean) {
+        if (this.android) {
+            this.android.destroy();
+        }
+        super._onDetached(force);
+    }
+
     public _loadUrl(url: string) {
         if (!this._android) {
             return;
