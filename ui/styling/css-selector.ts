@@ -143,7 +143,12 @@ export class CssSelector {
 
 class CssTypeSelector extends CssSelector {
     get specificity(): number {
-        return TYPE_SPECIFICITY;
+        let result = TYPE_SPECIFICITY;
+        let dotIndex = this.expression.indexOf(DOT);
+        if (dotIndex > -1) {
+            result += CLASS_SPECIFICITY;
+        }
+        return result;
     }
     public matches(view: view.View): boolean {
         let result = matchesType(this.expression, view);

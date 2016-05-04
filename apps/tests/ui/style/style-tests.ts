@@ -1400,6 +1400,32 @@ export function test_alone_attr_selector() {
     }
     helper.buildUIAndRunTest(testButton, testFunc, testCss);
 }
+
+export function test_UsingSameSelectors_ShouldApplyLatest() {
+    let testButton = new buttonModule.Button();
+    testButton.className = 'green';
+    
+    let testCss = ".green { background-color: #FF0000; } .green { background-color: #00FF00; }";
+    
+    let testFunc = function (views: Array<viewModule.View>) {
+        // style from correct type css should be applied
+        helper.assertViewBackgroundColor(testButton, "#00FF00");
+    }
+    helper.buildUIAndRunTest(testButton, testFunc, testCss);
+}
+
+export function test_UsingSameSelectorsWithSpecific_ShouldApplyLatest() {
+    let testButton = new buttonModule.Button();
+    testButton.className = 'red green';
+    
+    let testCss = ".red { background-color: #FF0000; } Button.green { background-color: #00FF00; }";
+    
+    let testFunc = function (views: Array<viewModule.View>) {
+        // style from correct type css should be applied
+        helper.assertViewBackgroundColor(testButton, "#00FF00");
+    }
+    helper.buildUIAndRunTest(testButton, testFunc, testCss);
+}
 // <snippet module="ui/styling" title="styling">
 // For information and example how to use style properties please refer to special [**Styling**](../../../styling.md) topic. 
 // </snippet>
