@@ -161,9 +161,11 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     }
 
     public test_codesnippets() {
+        // >> stack-layout-require
+        // var StackLayout = require("ui/layouts/stack-layout").StackLayout;
+        // << stack-layout-require
         
         // >> stack-layout-new     
-        // var StackLayout = require("ui/layouts/stack-layout").StackLayout;
         // >> (hide)
         // var Button = require("ui/button").Button;
         // << (hide)

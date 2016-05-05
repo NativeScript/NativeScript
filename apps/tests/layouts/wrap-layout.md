@@ -7,12 +7,6 @@ description: "Examples for using WrapLayout"
 Using a WrapLayout requires the WrapLayout module.
 <snippet id='wrap-layout-require'/>
 
-Other frequently used modules when working with a WrapLayout include:
-<snippet id='wrap-layout-others'/>
-
-## Creating a WrapLayout
-<snippet id='wrap-layout-new'/>
-
 ### Declaring a WrapLayout.
 ``` XML
 <Page>
@@ -24,6 +18,12 @@ Other frequently used modules when working with a WrapLayout include:
     </WrapLayout>
 </Page>
 ```
+
+Other frequently used modules when working with a WrapLayout include:
+<snippet id='wrap-layout-others'/>
+
+## Creating a WrapLayout
+<snippet id='wrap-layout-new'/>
 
 ## Setting the orientation of a wrap-layout.
 <snippet id='wrap-layout-orientation'/>
