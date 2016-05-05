@@ -2,6 +2,7 @@
 nav-title: "TabView How-To"
 title: "tab-view"
 description: "Examples for using TabView"
+previous_url: /ApiReference/ui/tab-view/HOW-TO
 ---
 # TabView
 ### Declaring the TabView in xml.

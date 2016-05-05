@@ -2,6 +2,7 @@
 nav-title: "progress How-To"
 title: "progress"
 description: "Examples for using progress"
+previous_url: /ApiReference/ui/progress/HOW-TO
 ---
 # Progress
 Using the progress view requires the Progress module.

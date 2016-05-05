@@ -1,4 +1,4 @@
-import TKUnit = require("./TKUnit");
+import TKUnit = require("../TKUnit");
 import bindableModule = require("ui/core/bindable");
 require("globals");
 

@@ -2,6 +2,7 @@
 nav-title: "platform How-To"
 title: "platform"
 description: "Examples for using platform"
+previous_url: /ApiReference/platform/HOW-TO
 ---
 # Platform
 Information about the current device and screen are defined in the platform module

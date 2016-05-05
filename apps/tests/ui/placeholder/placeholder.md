@@ -2,6 +2,7 @@
 nav-title: "placeholder How-To"
 title: "placeholder"
 description: "Examples for using placeholder"
+previous_url: /ApiReference/ui/placeholder/HOW-TO
 ---
 # Placeholder
 Using the placeholder requires the Placeholder module.

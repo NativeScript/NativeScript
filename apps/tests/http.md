@@ -2,6 +2,7 @@
 nav-title: "http How-To"
 title: "http"
 description: "Examples for using http"
+previous_url: /ApiReference/http/HOW-TO
 ---
 # Http module
 Using http methods requires to load "http" module.

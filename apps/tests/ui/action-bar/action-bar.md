@@ -2,6 +2,7 @@
 nav-title: "ActionBar How-To"
 title: "action-bar"
 description: "Examples for using ActionBar"
+previous_url: /ApiReference/ui/action-bar/HOW-TO
 ---
 # ActionBar
 Using a ActionBar requires the action-bar module.

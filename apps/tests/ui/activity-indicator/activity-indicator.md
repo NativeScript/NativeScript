@@ -2,6 +2,7 @@
 nav-title: "activity-indicator How-To"
 title: "activity-indicator"
 description: "Examples for using activity-indicator"
+previous_url: /ApiReference/ui/activity-indicator/HOW-TO
 ---
 # ActivityIndicator
 Using the activity indicator requires the ActivityIndicator module.

@@ -2,6 +2,7 @@
 nav-title: "virtual-array How-To"
 title: "virtual-array"
 description: "Examples for using virtual-array"
+previous_url: /ApiReference/data/virtual-array/HOW-TO
 ---
 # Virtual Array module
 <snippet id='virtual-array-require'/>

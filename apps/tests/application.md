@@ -2,6 +2,7 @@
 nav-title: "application How-To"
 title: "application"
 description: "Examples for using application"
+previous_url: /ApiReference/application/HOW-TO
 ---
 # Application
 The Application module provides abstraction over the platform-specific Application implementations.

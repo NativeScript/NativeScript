@@ -2,6 +2,7 @@
 nav-title: "fetch How-To"
 title: "fetch"
 description: "Examples for using fetch"
+previous_url: /ApiReference/fetch/HOW-TO
 ---
 ### Get Response from URL
 <snippet id='fetch-response'/>

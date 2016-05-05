@@ -3,7 +3,7 @@ import observable = require("data/observable");
 // << observable-require
 
 import dependencyObservable = require("ui/core/dependency-observable");
-import TKUnit = require("./TKUnit");
+import TKUnit = require("../TKUnit");
 import types = require("utils/types");
 import proxy = require("ui/core/proxy");
 

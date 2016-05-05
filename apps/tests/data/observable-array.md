@@ -2,6 +2,7 @@
 nav-title: "observable-array How-To"
 title: "observable-array"
 description: "Examples for using observable-array"
+previous_url: /ApiReference/data/observable-array/HOW-TO
 ---
 # Observable Array module
 <snippet id='observable-array-require'/>
