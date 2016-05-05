@@ -3,12 +3,10 @@ nav-title: "stack-layout How-To"
 title: "stack-layout"
 description: "Examples for using stack-layout"
 ---
-### import StackLayout and Button classes
-var StackLayout = require("ui/layouts/stack-layout").StackLayout;
-var Button = require("ui/button").Button;
-### Create StackLayout
-<snippet id='stack-layout-new'/>
- 
+# StackLayout
+Using a StackLayout requires the StackLayout module.
+<snippet id='stack-layout-require'/>
+
 ### Declaring a StackLayout.
 ``` XML
 <Page>
@@ -18,12 +16,15 @@ var Button = require("ui/button").Button;
 </Page>
 ```
 
-### Add child view to layout
+## Create StackLayout
+<snippet id='stack-layout-new'/>
+ 
+## Add child view to layout
 <snippet id='stack-layout-addchild'/>
 
-### Remove child view from layout
+## Remove child view from layout
 <snippet id='stack-layout-remove'/>
 
-### Change layout orientation to Horizontal
+## Change layout orientation to Horizontal
 <snippet id='stack-layout-horizontal'/>
 
