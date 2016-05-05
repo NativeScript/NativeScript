@@ -336,12 +336,13 @@ export var testFileNameExtension = function () {
 export var testFileExists = function () {
     // >> file-system-fileexists
     var documents = fs.knownFolders.documents();
-    var file = documents.getFile("Test.txt");
-    var exists = fs.File.exists(file.path);
+    var filePath = fs.path.join(documents.path, "Test.txt");
+    var exists = fs.File.exists(filePath);
     // >> (hide)
-    TKUnit.assert(exists, "File.exists API not working.");
-    exists = fs.File.exists(file.path + "_");
     TKUnit.assert(!exists, "File.exists API not working.");
+    var file = documents.getFile("Test.txt");
+    exists = fs.File.exists(file.path);
+    TKUnit.assert(exists, "File.exists API not working.");
     file.remove();
     // << (hide)
     // << file-system-fileexists
