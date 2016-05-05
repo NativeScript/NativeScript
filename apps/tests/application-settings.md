@@ -2,6 +2,7 @@
 nav-title: "application-settings How-To"
 title: "application-settings"
 description: "Examples for using application-settings"
+previous_url: /ApiReference/application-settings/HOW-TO
 ---
 # Application Settings
 Using application settings methods requires to load "application settings" module.

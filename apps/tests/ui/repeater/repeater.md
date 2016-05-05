@@ -2,6 +2,7 @@
 nav-title: "repeater How-To"
 title: "repeater"
 description: "Examples for using repeater"
+previous_url: /ApiReference/ui/repeater/HOW-TO
 ---
 # Repeater
 Using a Repeater requires the repeater module.

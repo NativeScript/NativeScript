@@ -2,6 +2,7 @@
 nav-title: "SegmentedBar How-To"
 title: "segmented-bar"
 description: "Examples for using SegmentedBar"
+previous_url: /ApiReference/ui/segmented-bar/HOW-TO
 ---
 # SegmentedBar
 Using a SegmentedBar requires the "ui/segmented-bar" module.

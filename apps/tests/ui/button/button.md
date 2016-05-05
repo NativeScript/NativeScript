@@ -2,6 +2,7 @@
 nav-title: "button How-To"
 title: "button"
 description: "Examples for using button"
+previous_url: /ApiReference/ui/button/HOW-TO
 ---
 # Button
 ### Declaring button module

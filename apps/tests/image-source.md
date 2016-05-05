@@ -2,6 +2,7 @@
 nav-title: "image-source How-To"
 title: "image-source"
 description: "Examples for using image-source"
+previous_url: /ApiReference/image-source/HOW-TO
 ---
 # Image source
 Using the image source requires the image-source module.

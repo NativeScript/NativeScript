@@ -2,6 +2,7 @@
 nav-title: "dock-layout How-To"
 title: "dock-layout"
 description: "Examples for using dock-layout"
+previous_url: /ApiReference/ui/layouts/dock-layout/HOW-TO
 ---
 # DockLayout
 Using a DockLayout requires the DockLayout module.

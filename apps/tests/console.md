@@ -2,6 +2,7 @@
 nav-title: "console How-To"
 title: "console"
 description: "Examples for using console"
+previous_url: /ApiReference/console/HOW-TO
 ---
 # Console
 ### Logging

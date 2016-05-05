@@ -2,6 +2,7 @@
 nav-title: "ListPicker How-To"
 title: "list-picker"
 description: "Examples for using ListPicker"
+previous_url: /ApiReference/ui/list-picker/HOW-TO
 ---
 # ListPicker
 Using a ListPicker requires the "ui/list-picker" module.

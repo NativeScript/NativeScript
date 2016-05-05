@@ -2,6 +2,7 @@
 nav-title: "list-view How-To"
 title: "list-view"
 description: "Examples for using list-view"
+previous_url: /ApiReference/ui/list-view/HOW-TO
 ---
 # ListView
 Using a ListView requires the ListView module.

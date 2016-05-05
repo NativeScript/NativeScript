@@ -2,6 +2,7 @@
 nav-title: "color How-To"
 title: "color"
 description: "Examples for using color"
+previous_url: /ApiReference/color/HOW-TO
 ---
 # Color
 Using Colors requires the "color" module.

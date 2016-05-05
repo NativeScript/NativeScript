@@ -2,6 +2,7 @@
 nav-title: "camera How-To"
 title: "camera"
 description: "Examples for using camera"
+previous_url: /ApiReference/camera/HOW-TO
 ---
 # Camera module
 Using a camera requires the camera module.

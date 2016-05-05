@@ -2,6 +2,7 @@
 nav-title: "trace How-To"
 title: "trace"
 description: "Examples for using trace"
+previous_url: /ApiReference/trace/HOW-TO
 ---
 # Trace
 Tracing information about your app requires the "trace" module.

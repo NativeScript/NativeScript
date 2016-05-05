@@ -683,7 +683,7 @@ export function test_CSS_isAppliedOnPage_From_Import() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         var page: pageModule.Page = <pageModule.Page>views[1];
-        page.css = "@import url('~/ui/style/test.css');";
+        page.css = "@import url('~/ui/styling/test.css');";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
@@ -694,7 +694,7 @@ export function test_CSS_isAppliedOnPage_From_Import_Without_Url() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         var page: pageModule.Page = <pageModule.Page>views[1];
-        page.css = "@import '~/ui/style/test.css';";
+        page.css = "@import '~/ui/styling/test.css';";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
@@ -705,7 +705,7 @@ export function test_CSS_isAppliedOnPage_From_addCssFile() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         var page: pageModule.Page = <pageModule.Page>views[1];
-        page.addCssFile("~/ui/style/test.css");
+        page.addCssFile("~/ui/styling/test.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
