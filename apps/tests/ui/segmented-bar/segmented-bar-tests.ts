@@ -6,9 +6,9 @@ import bindable = require("ui/core/bindable");
 import observable = require("data/observable");
 import color = require("color");
 
-// >> article-require-module
+// >> article-require-segmentedbar-module
 import segmentedBarModule = require("ui/segmented-bar");
-// << article-require-module
+// << article-require-segmentedbar-module
 
 function _createSegmentedBar(): segmentedBarModule.SegmentedBar {
     // >> article-create-segmentedbar

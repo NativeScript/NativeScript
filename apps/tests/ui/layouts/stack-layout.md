@@ -1,7 +1,8 @@
 ---
 nav-title: "stack-layout How-To"
-title: "How-To"
+title: "stack-layout"
 description: "Examples for using stack-layout"
+previous_url: /ApiReference/ui/layouts/stack-layout/HOW-TO
 ---
 ### import StackLayout and Button classes
 var StackLayout = require("ui/layouts/stack-layout").StackLayout;

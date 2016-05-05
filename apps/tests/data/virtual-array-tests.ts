@@ -1,4 +1,4 @@
-import TKUnit = require("./TKUnit");
+import TKUnit = require("../TKUnit");
 import types = require("utils/types");
 
 // >> virtual-array-require

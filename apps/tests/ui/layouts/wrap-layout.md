@@ -1,7 +1,8 @@
 ---
 nav-title: "WrapLayout How-To"
-title: "How-To"
+title: "wrap-layout"
 description: "Examples for using WrapLayout"
+previous_url: /ApiReference/ui/layouts/wrap-layout/HOW-TO
 ---
 # WrapLayout
 Using a WrapLayout requires the WrapLayout module.

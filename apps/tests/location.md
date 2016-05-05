@@ -1,7 +1,8 @@
 ---
 nav-title: "location How-To"
-title: "How-To"
+title: "location"
 description: "Examples for using location"
+previous_url: /ApiReference/location/HOW-TO
 ---
 # Location
 Using the location requires the Location module.

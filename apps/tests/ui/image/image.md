@@ -1,7 +1,8 @@
 ---
 nav-title: "Image How-To"
-title: "How-To"
+title: "image"
 description: "Examples for using Image"
+previous_url: /ApiReference/ui/image/HOW-TO
 ---
 # Image
 Using an image requires the Image module to be loaded.

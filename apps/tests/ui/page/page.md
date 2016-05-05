@@ -1,11 +1,12 @@
 ---
 nav-title: "Page How-To"
-title: "How-To"
+title: "page"
 description: "Examples for using Page"
+previous_url: /ApiReference/ui/page/HOW-TO
 ---
 # Page
 Using a page requires the Page module.
-<snippet id='article-require-module'/>
+<snippet id='article-require-page/module'/>
 ### Attaching event handler for the Page loaded event to set bindingContext.
 ``` XML
 <Page loaded="pageLoaded">

@@ -447,8 +447,8 @@
     <TypeScriptCompile Include="apps\tests\connectivity-tests.ts" />
     <TypeScriptCompile Include="apps\tests\console-tests.ts" />
     <TypeScriptCompile Include="apps\tests\file-name-resolver-tests\file-name-resolver-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\frame-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\gestures-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\frame-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\gestures\gestures-tests.ts" />
     <TypeScriptCompile Include="apps\tests\fetch-tests.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\layout-helper.d.ts" />
     <TypeScriptCompile Include="apps\tests\layouts\layout-helper.ios.ts">
@@ -548,7 +548,7 @@
     <TypeScriptCompile Include="apps\tests\ui\list-picker\list-picker-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\scroll-view\scroll-view-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\search-bar\search-bar-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\ui\style\style-properties-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\styling\style-properties-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\view\view-tests.d.ts" />
     <TypeScriptCompile Include="apps\tests\ui\html-view\html-view-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\web-view\web-view-tests.ts" />
@@ -720,7 +720,7 @@
     <TypeScriptCompile Include="apps\tests\ui\bindable-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\dependency-observable-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\helper.ts" />
-    <TypeScriptCompile Include="apps\tests\observable-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\data\observable-tests.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page6.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page5.ts" />
     <TypeScriptCompile Include="apps\tests\application-tests-common.ts" />
@@ -737,7 +737,7 @@
     <TypeScriptCompile Include="apps\tests\location-tests.ts" />
     <TypeScriptCompile Include="apps\tests\TKUnit.ts" />
     <TypeScriptCompile Include="apps\tests\ui\slider\slider-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\ui\style\visual-state-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\styling\visual-state-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\switch\switch-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\view\view-tests-common.ts" />
     <TypeScriptCompile Include="apps\tests\ui\view\view-tests.android.ts">
@@ -829,10 +829,16 @@
     <TypeScriptCompile Include="ui\layouts\layout.android.ts">
       <DependentUpon>layout.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\layouts\layout-base.ts">
+    <TypeScriptCompile Include="ui\layouts\layout-base.d.ts" />
+    <TypeScriptCompile Include="ui\layouts\layout-base-common.ts">
       <DependentUpon>layout-base.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="ui\layouts\layout-base.d.ts" />
+    <TypeScriptCompile Include="ui\layouts\layout-base.android.ts">
+      <DependentUpon>layout-base.d.ts</DependentUpon>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\layouts\layout-base.ios.ts">
+      <DependentUpon>layout-base.d.ts</DependentUpon>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="ui\layouts\stack-layout\stack-layout.ios.ts">
       <DependentUpon>stack-layout.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -1174,7 +1180,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="apps\tests\test-icon.png" />
-    <Content Include="apps\tests\ui\style\test.css" />
+    <Content Include="apps\tests\ui\styling\test.css" />
     <Content Include="apps\tests\xml-declaration\inherited-page.xml" />
     <Content Include="apps\tests\xml-declaration\mymodulewithxml\my-control-no-js.xml">
       <SubType>Designer</SubType>
@@ -1343,7 +1349,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include=".gitignore" />
-    <Content Include="apps\template-blank\main-page.xml" />
+    <Content Include="apps\template-blank\main-page.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="apps\tests\small-image.png" />
     <Content Include="apps\tests\pages\page14.xml">
       <SubType>Designer</SubType>
@@ -1456,7 +1464,7 @@
     <TypeScriptCompile Include="xhr\xhr.ts" />
     <TypeScriptCompile Include="xml\xml.d.ts" />
     <TypeScriptCompile Include="data\observable-array\observable-array.d.ts" />
-    <TypeScriptCompile Include="apps\tests\observable-array-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\data\observable-array-tests.ts" />
     <TypeScriptCompile Include="apps\tests\xml-parser-tests\xml-parser-tests.ts" />
     <TypeScriptCompile Include="xml\xml.ts">
       <DependentUpon>xml.d.ts</DependentUpon>
@@ -1626,7 +1634,7 @@
     <TypeScriptCompile Include="utils\utils-common.ts">
       <DependentUpon>utils.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\tests\virtual-array-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\data\virtual-array-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\button\button-tests-native.d.ts" />
     <TypeScriptCompile Include="apps\tests\ui\button\button-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\button\button-tests-native.android.ts">
@@ -2222,7 +2230,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

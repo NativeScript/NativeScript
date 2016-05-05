@@ -7,9 +7,9 @@ import platform = require("platform");
 import utils = require("utils/utils");
 import { Label } from "ui/label";
 
-// >> article-require-module
+// >> article-require-listview-module
 import listViewModule = require("ui/list-view");
-// << article-require-module
+// << article-require-listview-module
 
 // >> article-require-modules
 import observableArray = require("data/observable-array");

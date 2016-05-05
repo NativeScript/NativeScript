@@ -1,7 +1,8 @@
 ---
 nav-title: "dialogs How-To"
-title: "How-To"
+title: "dialogs"
 description: "Examples for using dialogs"
+previous_url: /ApiReference/ui/dialogs/HOW-TO
 ---
 # Dialogs
 Displaying dialogs requires the "ui/dialogs" module.

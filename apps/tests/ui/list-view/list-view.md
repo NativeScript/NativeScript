@@ -1,11 +1,12 @@
 ---
 nav-title: "list-view How-To"
-title: "How-To"
+title: "list-view"
 description: "Examples for using list-view"
+previous_url: /ApiReference/ui/list-view/HOW-TO
 ---
 # ListView
 Using a ListView requires the ListView module.
-<snippet id='article-require-module'/>
+<snippet id='article-require-listview-module'/>
 Other modules which will be used in the code samples in this article:
 <snippet id='article-require-modules'/>
 ### Binding the ListView items property to collection in the view-model.

@@ -683,7 +683,7 @@ export function test_CSS_isAppliedOnPage_From_Import() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         var page: pageModule.Page = <pageModule.Page>views[1];
-        page.css = "@import url('~/ui/style/test.css');";
+        page.css = "@import url('~/ui/styling/test.css');";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
@@ -694,7 +694,7 @@ export function test_CSS_isAppliedOnPage_From_Import_Without_Url() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         var page: pageModule.Page = <pageModule.Page>views[1];
-        page.css = "@import '~/ui/style/test.css';";
+        page.css = "@import '~/ui/styling/test.css';";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
@@ -705,7 +705,7 @@ export function test_CSS_isAppliedOnPage_From_addCssFile() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         var page: pageModule.Page = <pageModule.Page>views[1];
-        page.addCssFile("~/ui/style/test.css");
+        page.addCssFile("~/ui/styling/test.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
@@ -1393,6 +1393,32 @@ export function test_alone_attr_selector() {
     testButton["testAttr"] = "flow";
     
     let testCss = "[testAttr*='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
+    
+    let testFunc = function (views: Array<viewModule.View>) {
+        // style from correct type css should be applied
+        helper.assertViewBackgroundColor(testButton, "#00FF00");
+    }
+    helper.buildUIAndRunTest(testButton, testFunc, testCss);
+}
+
+export function test_UsingSameSelectors_ShouldApplyLatest() {
+    let testButton = new buttonModule.Button();
+    testButton.className = 'green';
+    
+    let testCss = ".green { background-color: #FF0000; } .green { background-color: #00FF00; }";
+    
+    let testFunc = function (views: Array<viewModule.View>) {
+        // style from correct type css should be applied
+        helper.assertViewBackgroundColor(testButton, "#00FF00");
+    }
+    helper.buildUIAndRunTest(testButton, testFunc, testCss);
+}
+
+export function test_UsingSameSelectorsWithSpecific_ShouldApplyLatest() {
+    let testButton = new buttonModule.Button();
+    testButton.className = 'red green';
+    
+    let testCss = ".red { background-color: #FF0000; } Button.green { background-color: #00FF00; }";
     
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied

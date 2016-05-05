@@ -1,11 +1,12 @@
 ---
 nav-title: "repeater How-To"
-title: "How-To"
+title: "repeater"
 description: "Examples for using repeater"
+previous_url: /ApiReference/ui/repeater/HOW-TO
 ---
 # Repeater
 Using a Repeater requires the repeater module.
-<snippet id='article-require-module'/>
+<snippet id='article-require-repeater-module'/>
 Other modules which will be used in the code samples in this article:
 <snippet id='article-require-modules'/>
 ### Binding the Repeater items property to collection in the view-model.

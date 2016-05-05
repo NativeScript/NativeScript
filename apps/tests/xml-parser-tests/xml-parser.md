@@ -1,7 +1,8 @@
 ---
 nav-title: "xml How-To"
-title: "How-To"
+title: "xml"
 description: "Examples for using xml"
+previous_url: /ApiReference/xml/HOW-TO
 ---
 # Xml module
 Using xml requires the Xml module.

@@ -1,7 +1,8 @@
 ---
 nav-title: "Label How-To"
-title: "How-To"
+title: "label"
 description: "Examples for using Label"
+previous_url: /ApiReference/ui/label/HOW-TO
 ---
 # Label
 Using a label requires the Label module.

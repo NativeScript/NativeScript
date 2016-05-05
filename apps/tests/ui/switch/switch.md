@@ -1,7 +1,8 @@
 ---
 nav-title: "switch How-To"
-title: "How-To"
+title: "switch"
 description: "Examples for using switch"
+previous_url: /ApiReference/ui/switch/HOW-TO
 ---
 # Switch
 Using a switch requires the Switch module.

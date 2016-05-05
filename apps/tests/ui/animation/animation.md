@@ -1,7 +1,8 @@
 ---
 nav-title: "animation How-To"
-title: "How-To"
+title: "animation"
 description: "Examples for using animation"
+previous_url: /ApiReference/ui/animation/HOW-TO
 ---
 # Animation
 Animating view properties requires the "ui/animation" module.

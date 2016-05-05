@@ -4,9 +4,9 @@ import viewModule = require("ui/core/view");
 import searchBarTestsNative = require("./search-bar-tests-native");
 import colorModule = require("color");
 import observable = require("data/observable");
-// >> article-require-module
+// >> article-require-searchbar-module
 import searchBarModule = require("ui/search-bar");
-// << article-require-module
+// << article-require-searchbar-module
 
 // ### Declaring a SearchBar.
 //``` XML

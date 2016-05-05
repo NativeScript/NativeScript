@@ -1,7 +1,8 @@
 ---
 nav-title: "slider How-To"
-title: "How-To"
+title: "slider"
 description: "Examples for using slider"
+previous_url: /ApiReference/ui/slider/HOW-TO
 ---
 # Slider
 Using a slider requires the Slider module.

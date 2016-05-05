@@ -11,7 +11,7 @@ addons:
   artifacts:
     paths:
       - "$HOME/test-run-results$PACKAGE_VERSION.xml"
-sudo: required
+sudo: false
 dist: trusty
 language: android
 node_js:

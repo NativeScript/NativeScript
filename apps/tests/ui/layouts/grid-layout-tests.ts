@@ -1,11 +1,11 @@
 ﻿import {Page} from "ui/page";
 import {GridLayout, ItemSpec, GridUnitType} from "ui/layouts/grid-layout";
 import {Button} from "ui/button";
-import TKUnit = require("../TKUnit");
+import TKUnit = require("../../TKUnit");
 import view = require("ui/core/view");
 import builder = require("ui/builder");
 import enums = require("ui/enums");
-import testModule = require("../ui-test");
+import testModule = require("../../ui-test");
 import layoutHelper = require("./layout-helper");
 import platform = require("platform");
 import commonTests = require("./common-layout-tests");

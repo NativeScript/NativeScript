@@ -1,5 +1,5 @@
-﻿import testModule = require("../ui-test");
-import TKUnit = require("../TKUnit");
+﻿import testModule = require("../../ui-test");
+import TKUnit = require("../../TKUnit");
 import labelModule = require("ui/label");
 import colorModule = require("color");
 import layoutHelper = require("./layout-helper");

@@ -1,7 +1,8 @@
 ---
 nav-title: "TextView How-To"
-title: "How-To"
+title: "text-view"
 description: "Examples for using TextView"
+previous_url: /ApiReference/ui/text-view/HOW-TO
 ---
 # TextView
 Using a TextView requires the text-view module.

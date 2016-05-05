@@ -1,10 +1,10 @@
 ﻿import {StackLayout} from "ui/layouts/stack-layout";
 import {Button} from "ui/button";
-import TKUnit = require("../TKUnit");
+import TKUnit = require("../../TKUnit");
 import helper = require("./layout-helper");
 import enums = require("ui/enums");
 import utils = require("utils/utils");
-import testModule = require("../ui-test");
+import testModule = require("../../ui-test");
 import layoutHelper = require("./layout-helper");
 import commonTests = require("./common-layout-tests");
 

@@ -4,9 +4,9 @@ import viewModule = require("ui/core/view");
 import listPickerTestsNative = require("./list-picker-tests-native");
 import application = require("application");
 
-// >> article-require-module
+// >> article-require-listpicker-module
 import listPickerModule = require("ui/list-picker");
-// << article-require-module
+// << article-require-listpicker-module
 
 function _createListPicker(): listPickerModule.ListPicker {
     // >> article-create-listpicker

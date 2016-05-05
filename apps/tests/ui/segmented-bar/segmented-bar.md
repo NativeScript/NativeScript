@@ -1,11 +1,12 @@
 ---
 nav-title: "SegmentedBar How-To"
-title: "How-To"
+title: "segmented-bar"
 description: "Examples for using SegmentedBar"
+previous_url: /ApiReference/ui/segmented-bar/HOW-TO
 ---
 # SegmentedBar
 Using a SegmentedBar requires the "ui/segmented-bar" module.
-<snippet id='article-require-module'/>
+<snippet id='article-require-segmentedbar-module'/>
 ## Creating a SegmentedBar
 <snippet id='article-create-segmentedbar'/>
 ``` XML

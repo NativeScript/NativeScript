@@ -2,7 +2,7 @@
 import {StackLayout} from "ui/layouts/stack-layout";
 import {GridLayout} from "ui/layouts/grid-layout";
 import utils = require("utils/utils");
-import TKUnit = require("../TKUnit");
+import TKUnit = require("../../TKUnit");
 import def = require("./layout-helper");
 
 var DELTA = 0.1;

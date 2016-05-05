@@ -1,7 +1,8 @@
 ---
 nav-title: "HtmlView How-To"
-title: "How-To"
+title: "html-view"
 description: "Examples for using HtmlView"
+previous_url: /ApiReference/ui/html-view/HOW-TO
 ---
 # HtmlView
 Using a HtmlView requires the html-view module.

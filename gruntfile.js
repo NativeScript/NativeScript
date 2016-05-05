@@ -429,7 +429,7 @@ module.exports = function(grunt) {
             mochaNode: {
                 cmd: "grunt simplemocha:node"
             },
-            injectArticles: {
+            injectArticleSnippets: {
                 cmd: "node node_modules/markdown-snippet-injector/index.js --root=<%= localCfg.srcAppsTests %> --docsroot=<%= localCfg.outArticlesDir %>"
             }
         },
@@ -663,6 +663,29 @@ module.exports = function(grunt) {
     grunt.registerTask("distribute-ts-apps-files", [
             "copy:readyTsAppFiles"
     ]);
+    grunt.registerTask("herdArticles", function() {
+        var moveSinglesUp = function(dir) {
+            var objs = fs.readdirSync(dir);
+            for (var i=0; i<objs.length; i++) {
+                var obj = objs[i];
+                var fullPath = pathModule.join(dir, obj);
+                if (objs.length == 1) {
+                    var parentDir = pathModule.dirname(dir);
+                    var newPath = pathModule.join(parentDir, obj);
+                    fs.renameSync(fullPath, newPath);
+                    fs.rmdirSync(dir);
+                } else {
+                    var objStat = fs.statSync(fullPath);
+                    if (objStat.isDirectory()) {
+                        moveSinglesUp(fullPath);
+                    }
+                }
+            }
+        };
+
+        moveSinglesUp(localCfg.outArticlesDir);
+    });
+
     grunt.registerTask("generate-tns-core-modules-dev-dts", generateModulesDts.bind(null, "."));
     grunt.registerTask("generate-tns-core-modules-dts", generateModulesDts.bind(null, localCfg.outModulesDir));
     //aliasing pack-modules for backwards compatibility
@@ -735,7 +758,8 @@ module.exports = function(grunt) {
     grunt.registerTask("articles", [
         "clean:articles",
         "copy:articleMDs",
-        "exec:injectArticles"
+        "exec:injectArticleSnippets",
+        "herdArticles"
     ]);
     
     grunt.registerTask("docs", [

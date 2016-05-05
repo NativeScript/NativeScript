@@ -1,7 +1,8 @@
 ---
 nav-title: "grid-layout How-To"
-title: "How-To"
+title: "grid-layout"
 description: "Examples for using grid-layout"
+previous_url: /ApiReference/ui/layouts/grid-layout/HOW-TO
 ---
 ## GridLayout sample
 ### Creating Grid Layout via code.

@@ -1,7 +1,8 @@
 ---
 nav-title: "WebView How-To"
-title: "How-To"
+title: "web-view"
 description: "Examples for using WebView"
+previous_url: /ApiReference/ui/web-view/HOW-TO
 ---
 # WebView
 Using a WebView requires the web-view module.

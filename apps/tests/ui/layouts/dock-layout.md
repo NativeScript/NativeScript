@@ -1,8 +1,8 @@
-
 ---
 nav-title: "dock-layout How-To"
-title: "How-To"
+title: "dock-layout"
 description: "Examples for using dock-layout"
+previous_url: /ApiReference/ui/layouts/dock-layout/HOW-TO
 ---
 # DockLayout
 Using a DockLayout requires the DockLayout module.
@@ -33,5 +33,5 @@ Other frequently used modules when working with a DockLayout include:
 ## Remove child view from layout
 <snippet id='dock-layout-removechild'/>
 
-## Setting the dock property
+## Setting the dock roperty
 <snippet id='dock-layout-setdocl'/>

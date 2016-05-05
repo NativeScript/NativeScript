@@ -1,7 +1,8 @@
 ---
 nav-title: "TextField How-To"
-title: "How-To"
+title: "text-field"
 description: "Examples for using TextField"
+previous_url: /ApiReference/ui/text-field/HOW-TO
 ---
 # TextField
 Using a TextField requires the text-field module.

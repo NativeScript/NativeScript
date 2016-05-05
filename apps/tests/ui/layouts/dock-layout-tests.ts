@@ -1,8 +1,8 @@
 ﻿import button = require("ui/button");
 import {DockLayout} from "ui/layouts/dock-layout";
-import TKUnit = require("../TKUnit");
+import TKUnit = require("../../TKUnit");
 import helper = require("./layout-helper");
-import testModule = require("../ui-test");
+import testModule = require("../../ui-test");
 import layoutHelper = require("./layout-helper");
 import commonTests = require("./common-layout-tests");
 

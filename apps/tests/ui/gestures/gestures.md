@@ -1,7 +1,8 @@
 ---
 nav-title: "gestures How-To"
-title: "How-To"
+title: "gestures"
 description: "Examples for using gestures"
+previous_url: /ApiReference/ui/gestures/HOW-TO
 ---
 # Gestures
 Detecting user gestures requires the "ui/gestures" module.
