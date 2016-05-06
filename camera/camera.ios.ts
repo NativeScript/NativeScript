@@ -86,6 +86,7 @@ export var takePicture = function (options): Promise<any> {
         var reqWidth = 0;
         var reqHeight = 0;
         var keepAspectRatio = true;
+	var saveToGallery = true;
         if (options) {
             reqWidth = options.width || 0;
             reqHeight = options.height || reqWidth;
