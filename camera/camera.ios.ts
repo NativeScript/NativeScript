@@ -26,7 +26,7 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
         if (options) {
             this._width = options.width;
             this._height = options.height;
-
+	    this._saveToGallery = options.saveToGallery;
             this._keepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
         }
         return this;
@@ -57,9 +57,10 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
                 var imageSource: typeof imageSourceModule = require("image-source");
 
                 var imageSourceResult = image ? imageSource.fromNativeSource(image) : imageSource.fromNativeSource(source);
-
+		
                 if (this._callback) {
                     this._callback(imageSourceResult);
+		    UIImageWriteToSavedPhotosAlbum(imageSourceResult, nil, nil, nil);
                 }
             }
         }
@@ -86,9 +87,10 @@ export var takePicture = function (options): Promise<any> {
             reqWidth = options.width || 0;
             reqHeight = options.height || reqWidth;
             keepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
+	    saveToGallery = options.saveToGallery ? true : false;
         }
         if (reqWidth && reqHeight) {
-            listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { width: reqWidth, height: reqHeight, keepAspectRatio: keepAspectRatio });
+            listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { width: reqWidth, height: reqHeight, keepAspectRatio: keepAspectRatio, saveToGallery: saveToGallery });
         }
         else {
             listener = UIImagePickerControllerDelegateImpl.new().initWithCallback(resolve);
