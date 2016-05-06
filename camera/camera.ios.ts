@@ -62,7 +62,7 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
                 if (this._callback) {
                     this._callback(imageSourceResult);
 		    if(this._saveToGallery) {
-			UIImageWriteToSavedPhotosAlbum(imageSourceResult.ios, nil, nil, nil);
+			UIImageWriteToSavedPhotosAlbum(imageSourceResult.ios, null, null, null);
 		    }
                 }
             }
