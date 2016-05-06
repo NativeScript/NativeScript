@@ -15,6 +15,7 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
     private _width: number;
     private _height: number;
     private _keepAspectRatio: boolean;
+    private _saveToGallery: boolean;
 
     public initWithCallback(callback: (result?) => void): UIImagePickerControllerDelegateImpl {
         this._callback = callback;
@@ -60,7 +61,9 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
 		
                 if (this._callback) {
                     this._callback(imageSourceResult);
-		    UIImageWriteToSavedPhotosAlbum(imageSourceResult, nil, nil, nil);
+		    if(this._saveToGallery) {
+			UIImageWriteToSavedPhotosAlbum(imageSourceResult, nil, nil, nil);
+		    }
                 }
             }
         }
