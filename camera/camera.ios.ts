@@ -95,7 +95,7 @@ export var takePicture = function (options): Promise<any> {
         }
         if (reqWidth && reqHeight) {
             listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { width: reqWidth, height: reqHeight, keepAspectRatio: keepAspectRatio, saveToGallery: saveToGallery });
-        } if (saveToGallery) {
+        } else if (saveToGallery) {
 	    listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { saveToGallery: saveToGallery });
 	}
         else {
