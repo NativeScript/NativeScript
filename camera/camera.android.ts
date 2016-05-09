@@ -23,7 +23,6 @@ export var takePicture = function (options?): Promise<any> {
             var takePictureIntent = new android.content.Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
             var dateStamp = createDateTimeStamp();
 
-            var fileSystem: typeof fileSystemModule = require("file-system");
             if (saveToGallery) {
                 var picturePath = android.os.Environment.getExternalStoragePublicDirectory(
                     android.os.Environment.DIRECTORY_PICTURES).getAbsolutePath() + "/" + "cameraPicture_" + dateStamp + ".jpg";
