@@ -1,10 +1,25 @@
 # Android-Widgets
-Contains the source code of the `org.nativescript.widgets` library used by the NativeScript cross-platform modules implementation for Android.
+Contains the source code of the `tns-core-modules-widgets` library.
+This library contains native code (Java and Objective-C) used by the NativeScript core modules `tns-core-modules`.
 
 ## How to Build
+On Mac in the root folder run:
 ```
-gradle packFramework
+./build.sh
 ```
+This will run Android and iOS build and pack `dist/tns-core-modules-widgets-*.tgz`.
 
-This generates widgets-debug.aar and widgets-release.aar files located in the widgets/build/outputs/aar folder.
-And generates tgz files in dist folder.
+## How to Build Android
+In the `android` folder run:
+```
+gradle build
+```
+This will output `android/build/widgets-release.aar`.
+
+## How to Build iOS
+On Mac in the `ios` folder under mac run:
+```
+./build.sh
+```
+This will output `ios/build/TNSWidgets.framework`.
+
