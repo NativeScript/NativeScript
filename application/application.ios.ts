@@ -13,43 +13,6 @@ class Responder extends UIResponder {
     //
 }
 
-class RootViewControllerImpl extends UIViewController implements definition.RootViewControllerImpl {
-    private _contentController: UIViewController;
-
-    get contentController(): UIViewController {
-        return this._contentController;
-    }
-
-    set contentController(contentController: UIViewController) {
-
-        if (contentController.parentViewController !== null) {
-            contentController.willMoveToParentViewController(null);
-            contentController.view.removeFromSuperview();
-            contentController.removeFromParentViewController();
-            contentController.didMoveToParentViewController(this);
-        }
-
-        if (this._contentController) {
-            this._contentController.willMoveToParentViewController(null);
-            this._contentController.view.removeFromSuperview();
-            this._contentController.removeFromParentViewController();
-        }
-
-        this.addChildViewController(contentController);
-        this.view.addSubview(contentController.view);
-        contentController.view.frame = this.view.bounds;
-        contentController.view.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingFlexibleWidth | UIViewAutoresizing.UIViewAutoresizingFlexibleHeight;
-
-        this._contentController = contentController;
-        this._contentController.didMoveToParentViewController(this);
-    }
-
-    public viewDidLoad(): void {
-        super.viewDidLoad();
-        this.view.backgroundColor = UIColor.whiteColor();
-    }
-}
-
 class Window extends UIWindow {
 
     private _content;
@@ -181,9 +144,7 @@ class IOSApplication implements definition.iOSApplication {
         this._window.content = rootView;
 
         if (rootView instanceof Frame) {
-            let rootController = new RootViewControllerImpl();
-            this.rootController = this._window.rootViewController = rootController;
-            rootController.contentController = rootView.ios.controller;
+            this.rootController = this._window.rootViewController = rootView.ios.controller;
         }
         else if (rootView.ios instanceof UIViewController) {
             this.rootController = this._window.rootViewController = rootView.ios;
