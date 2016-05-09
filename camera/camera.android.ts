@@ -24,8 +24,6 @@ export var takePicture = function (options?): Promise<any> {
             var dateStamp = createDateTimeStamp();
 
             var fileSystem: typeof fileSystemModule = require("file-system");
-
-
             if (saveToGallery) {
                 var picturePath = android.os.Environment.getExternalStoragePublicDirectory(
                     android.os.Environment.DIRECTORY_PICTURES).getAbsolutePath() + "/" + "cameraPicture_" + dateStamp + ".jpg";
@@ -33,7 +31,7 @@ export var takePicture = function (options?): Promise<any> {
                 var tempPictureUri = android.net.Uri.fromFile(nativeFile);
                 takePictureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, tempPictureUri);
             } else {
-                picturePath = utils.ad.getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + "/" + "cameraPicture_" + dateStamp + ".jpg";
+                var picturePath = utils.ad.getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + "/" + "cameraPicture_" + dateStamp + ".jpg";
                 var nativeFile = new java.io.File(picturePath);
                 var tempPictureUri = android.net.Uri.fromFile(nativeFile);
                 takePictureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, tempPictureUri);
