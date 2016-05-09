@@ -1,6 +1,5 @@
 import * as typesModule from "utils/types";
 import * as utilsModule from "utils/utils";
-import * as fileSystemModule from "file-system";
 import * as applicationModule from "application";
 import * as imageSourceModule from "image-source";
 import * as cameraCommonModule from "./camera-common";
