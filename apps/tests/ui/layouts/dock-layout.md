@@ -8,7 +8,7 @@ previous_url: /ApiReference/ui/layouts/dock-layout/HOW-TO
 Using a DockLayout requires the DockLayout module.
 <snippet id='dock-layout-require'/>
 
-### Declaring a DockLayout.
+### Declaring a DockLayout
 ``` XML
 <Page>
  <DockLayout stretchLastChild="true">

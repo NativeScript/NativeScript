@@ -23,17 +23,17 @@ Binding the image source property to a view-model property.
   </StackLayout>
 </Page>
 ```
-### How to create an image and set its source.
+### Creating an image and setting its source
 <snippet id='img-create'/>
 
-### How to create an image and set its src.
+### Creating an image and setting its src
 <snippet id='img-create-src'/>
 
-### How to create an image and set its src to file within the application.
+### Creating an image and setting its src to a file within the application
 <snippet id='img-create-local'/>
 
-### How to create an image and set its src to Data URI.
+### Creating an image and setting its src to Data URI
 <snippet id='img-create-datauri'/>
 
-### How to set image stretching.
+### Setting image stretching
 <snippet id='img-set-stretch'/>

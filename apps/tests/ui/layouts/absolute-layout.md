@@ -1,13 +1,14 @@
 ---
 nav-title: "absolute-layout How-To"
-title: "absolute-layoyt"
+title: "absolute-layout"
 description: "Examples for using absolute-layout"
 previous_url: /ApiReference/ui/layouts/absolute-layout/HOW-TO
 ---
 # AbsoluteLayout
-Using a AbsoluteLayout requires the AbsoluteLayout module.
+Using an AbsoluteLayout requires the AbsoluteLayout module.
 <snippet id='absolute-layout-require'/>
 
+### Declaring an AbsoluteLayout
 ``` XML
 <Page>
   <AbsoluteLayout>

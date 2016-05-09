@@ -5,7 +5,7 @@ description: "Examples for using Border"
 previous_url: /ApiReference/ui/border/HOW-TO
 ---
 # Border
-Using borders requires the "ui/border" module.
+Using borders requires the Border module.
 <snippet id='border-require'/>
 
 ### Declaring a Border.

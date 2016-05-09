@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/scroll-view/HOW-TO
 # ScrollView
 Using a ScrollView requires the ScrollView module.
 <snippet id='article-require-scrollview-module'/>
-### Declaring the ScrollView.
+### Declaring the ScrollView
 ``` XML
 <Page>
  <ScrollView>
