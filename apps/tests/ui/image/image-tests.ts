@@ -127,9 +127,9 @@ export var test_SettingStretch_AspectFit = function () {
     // >> img-set-stretch
     var image = new ImageModule.Image();
     image.imageSource = ImageSourceModule.fromFile(imagePath);
-    //// There are 4 modes of stretching none, fill, aspectFill, aspectFit
-    //// The default value is aspectFit.
-    //// Image stretch can be set by using ImageModule.stretch enum.
+    // There are 4 modes of stretching none, fill, aspectFill, aspectFit
+    // The default value is aspectFit.
+    // Image stretch can be set by using ImageModule.stretch enum.
     image.stretch = enumsModule.Stretch.aspectFit;
     // << img-set-stretch
 

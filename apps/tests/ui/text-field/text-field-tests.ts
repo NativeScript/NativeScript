@@ -171,13 +171,13 @@ export var testBindTextDirectlyToModel = function () {
             targetProperty: "text"
         }
         textField.bind(options, model);
-        //// textField.text is now "john"
+        // textField.text is now "john"
         // >> (hide)
         TKUnit.assert(textField.text === "john", "Actual: " + textField.text + "; Expected: " + "john");
         TKUnit.assert(textFieldTestsNative.getNativeText(textField) === "john", "Actual: " + textFieldTestsNative.getNativeText(textField) + "; Expected: " + "john");
         // << (hide)
         model.set("username", "mary");
-        //// textField.text is now "mary"
+        // textField.text is now "mary"
         // >> (hide)
         TKUnit.assert(textField.text === "mary", "Actual: " + textField.text + "; Expected: " + "mary");
         TKUnit.assert(textFieldTestsNative.getNativeText(textField) === "mary", "Actual: " + textFieldTestsNative.getNativeText(textField) + "; Expected: " + "mary");
@@ -260,13 +260,13 @@ export var testBindHintDirectlyToModel = function () {
             targetProperty: "hint"
         }
         textField.bind(options, model);
-        //// textField.hint is now "type your username here"
+        // textField.hint is now "type your username here"
         // >> (hide)
         TKUnit.assert(textField.hint === "type your username here", "Actual: " + textField.text + "; Expected: " + "type your username here");
         TKUnit.assert(textFieldTestsNative.getNativeHint(textField) === "type your username here", "Actual: " + textFieldTestsNative.getNativeHint(textField) + "; Expected: " + "type your username here");
         // << (hide)
         model.set("hint", "type your password here");
-        //// textField.hint is now "type your password here"
+        // textField.hint is now "type your password here"
         // >> (hide)
         TKUnit.assert(textField.hint === "type your password here", "Actual: " + textField.text + "; Expected: " + "type your password here");
         TKUnit.assert(textFieldTestsNative.getNativeHint(textField) === "type your password here", "Actual: " + textFieldTestsNative.getNativeHint(textField) + "; Expected: " + "type your password here");
@@ -325,13 +325,13 @@ export var testBindSecureDirectlyToModel = function () {
             targetProperty: "secure"
         }
         textField.bind(options, model);
-        //// textField.secure is now true
+        // textField.secure is now true
         // >> (hide)
         TKUnit.assert(textField.secure === true, "Actual: " + textField.secure + "; Expected: " + true);
         TKUnit.assert(textFieldTestsNative.getNativeSecure(textField) === true, "Actual: " + textFieldTestsNative.getNativeSecure(textField) + "; Expected: " + true);
         // << (hide)
         model.set("secure", false);
-        //// textField.secure is now false
+        // textField.secure is now false
         // >> (hide)
         TKUnit.assert(textField.secure === false, "Actual: " + textField.secure + "; Expected: " + false);
         TKUnit.assert(textFieldTestsNative.getNativeSecure(textField) === false, "Actual: " + textFieldTestsNative.getNativeSecure(textField) + "; Expected: " + false);

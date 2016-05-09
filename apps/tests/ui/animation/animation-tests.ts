@@ -38,7 +38,7 @@ export function test_AnimatingProperties(done) {
         curve: enums.AnimationCurve.easeIn
     })
         .then(() => {
-            ////console.log("Animation finished.");
+            //console.log("Animation finished.");
             // >> (hide)
             assertIOSNativeTransformIsCorrect(label);
             done();
@@ -61,13 +61,13 @@ export function test_CancellingAnimation(done) {
 
     animation1.play()
         .then(() => {
-            ////console.log("Animation finished");
+            //console.log("Animation finished");
             // >> (hide)
             throw new Error("Cancelling Animation - Should not be in the Promise Then()");
             // << (hide)
         })
         .catch((e) => {
-            ////console.log("Animation cancelled");
+            //console.log("Animation cancelled");
             // >> (hide)
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
@@ -88,13 +88,13 @@ export function test_CancellingAnimate(done) {
     // >> animation-cancel2
     var animation1 = label.animate({ translate: { x: 100, y: 100 }, duration: 20 })
         .then(() => {
-            ////console.log("Animation finished");
+            //console.log("Animation finished");
             // >> (hide)
             throw new Error("Cancelling Animate - Should not be in Promise Then()");
             // << (hide)
         })
         .catch((e) => {
-            ////console.log("Animation cancelled");
+            //console.log("Animation cancelled");
             // >> (hide)
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
@@ -126,7 +126,7 @@ export function test_ChainingAnimations(done) {
         .then(() => label.animate({ rotate: 180, duration: duration }))
         .then(() => label.animate({ rotate: 0, duration: duration }))
         .then(() => {
-            ////console.log("Animation finished");
+            //console.log("Animation finished");
             // >> (hide)
             assertIOSNativeTransformIsCorrect(label);
             done();
@@ -155,7 +155,7 @@ export function test_ReusingAnimations(done) {
         .then(() => animation1.play())
         .then(() => animation2.play())
         .then(() => {
-            ////console.log("Animation finished");
+            //console.log("Animation finished");
             // >> (hide)
             assertIOSNativeTransformIsCorrect(label);
             done();
@@ -194,7 +194,7 @@ export function test_AnimatingMultipleViews(done) {
     var a = new animation.Animation(animations);
     a.play()
         .then(() => {
-            ////console.log("Animations finished");
+            //console.log("Animations finished");
             // >> (hide)
             assertIOSNativeTransformIsCorrect(label1);
             assertIOSNativeTransformIsCorrect(label2);

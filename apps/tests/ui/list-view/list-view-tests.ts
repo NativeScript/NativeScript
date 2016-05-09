@@ -68,7 +68,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         listView.items = colors;
         listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
             if (!args.view) {
-                //// Create label if it is not already created.
+                // Create label if it is not already created.
                 args.view = new labelModule.Label();
             }
             (<labelModule.Label>args.view).text = colors[args.index];
@@ -164,7 +164,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
         // >> article-change-refresh-listview
         colors.push("yellow");
-        //// Manually trigger the update so that the new color is shown.
+        // Manually trigger the update so that the new color is shown.
         listView.refresh();
         // << article-change-refresh-listview
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
@@ -253,7 +253,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         listView.items = colors;
         listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
             if (!args.view) {
-                //// Create label if it is not already created.
+                // Create label if it is not already created.
                 args.view = new labelModule.Label();
             }
             (<labelModule.Label>args.view).text = colors.getItem(args.index);
@@ -280,7 +280,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
         // >> article-push-in-observablearray
         colors.push("yellow");
-        //// The ListView will be updated automatically.
+        // The ListView will be updated automatically.
         // << article-push-in-observablearray
         TKUnit.waitUntilReady(() => { return this.getNativeViewCount(listView) === listView.items.length; }, ASYNC);
         TKUnit.assertEqual(this.getNativeViewCount(listView), 4, "getNativeViewCount");
@@ -329,7 +329,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         listView.on(listViewModule.ListView.itemTapEvent, function (args: listViewModule.ItemEventData) {
             var tappedItemIndex = args.index;
             var tappedItemView = args.view;
-            //// Do someting
+            // Do someting
             // >> (hide)
             nativeTapRaised = true;
             itemIndex = args.index;
@@ -352,7 +352,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
         // >> article-loadmoreitems-event
         listView.on(listViewModule.ListView.loadMoreItemsEvent, function (data: observable.EventData) {
-            //// Do something.
+            // Do something.
             // >> (hide)
             loadMoreItemsCount++;
             // << (hide)
@@ -597,8 +597,8 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         //TKUnit.waitUntilReady(() => { return this.getNativeViewCount(this.testView) === this.testView.items.length; }, ASYNC);
 
         //if (platform.device.os === platform.platformNames.ios) {
-            //// Could cause GC on the next call.
-            //// NOTE: Don't replace this with forceGC();
+            // Could cause GC on the next call.
+            // NOTE: Don't replace this with forceGC();
             //new ArrayBuffer(4 * 1024 * 1024);
         //}
         //utils.GC();

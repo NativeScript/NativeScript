@@ -325,12 +325,12 @@ export function test_binding_value_to_model() {
             targetProperty: "value"
         };
         slider.bind(options, model);
-        //// slider.value is now 21
+        // slider.value is now 21
         // >> (hide)
         TKUnit.assertEqual(slider.value, 21, "slider.value");
         // << (hide)
         model.set("age", 22);
-        //// slider.value is now 22
+        // slider.value is now 22
         // >> (hide)
         TKUnit.assertEqual(slider.value, 22, "slider.value");
         // << (hide)

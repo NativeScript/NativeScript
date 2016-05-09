@@ -25,7 +25,7 @@ export var test_Observable_Constructor = function () {
     var name = person.get("Name");
     var age = person.get("Age");
     var married = person.get("Married");
-    //// console.log(name + " " + age + " " + married); // Prints out "John 34 true" if uncommented.
+    // console.log(name + " " + age + " " + married); // Prints out "John 34 true" if uncommented.
     // << observable-creating
     TKUnit.assert(name === "John", "Expected name is John");
     TKUnit.assert(age === 34, "Expected age is 34");
@@ -43,9 +43,9 @@ export var tests_DummyTestForCodeSnippet = function () {
     });
     person.set("Age", 35);
     person.set("Married", false);
-    //// If uncommented, the console.log above produces the following output:
-    //// propertyChange Age 35
-    //// propertyChange Married false
+    // If uncommented, the console.log above produces the following output:
+    // propertyChange Age 35
+    // propertyChange Married false
     // << observable-property-change
 }
 

@@ -68,7 +68,7 @@ function binding_busy_to_image() {
     indicator.width = 100;
     indicator.height = 100;
 
-    //// Bind the busy property of the indicator to the isLoading property of the image
+    // Bind the busy property of the indicator to the isLoading property of the image
     indicator.bind({
         sourceProperty: "isLoading",
         targetProperty: "busy"

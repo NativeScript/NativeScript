@@ -70,7 +70,7 @@ export function test_refresh_after_adding_items_to_array_loads_new_items() {
         TKUnit.assertEqual(getChildrenCount(repeater), colors.length, "views count.");
         // >> artcle-array-push-element
         colors.push("yellow");
-        //// Manually trigger the update so that the new color is shown.
+        // Manually trigger the update so that the new color is shown.
         repeater.refresh();
         // << artcle-array-push-element
         TKUnit.wait(ASYNC);
@@ -206,7 +206,7 @@ export function test_add_to_observable_array_refreshes_the_Repeater() {
 
         // >> article-push-to-observablearray
         colors.push("yellow");
-        //// The Repeater will be updated automatically.
+        // The Repeater will be updated automatically.
         // << article-push-to-observablearray
         TKUnit.wait(ASYNC);
         TKUnit.waitUntilReady(() => repeater.isLayoutValid);

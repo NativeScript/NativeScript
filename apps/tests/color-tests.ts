@@ -6,7 +6,7 @@ import TKUnit = require("./TKUnit");
 
 export var test_Hex_Color = function () {
     // >> color-hex
-    //// Creates the red color
+    // Creates the red color
     var color = new Color("#FF0000");
     // << color-hex
     TKUnit.assertEqual(color.a, 255, "Color.a not properly parsed");
@@ -19,7 +19,7 @@ export var test_Hex_Color = function () {
 
 export var test_ShortHex_Color = function () {
     // >> color-hex-short
-    //// Creates the color #FF8800
+    // Creates the color #FF8800
     var color = new Color("#F80");
     // << color-hex-short
     TKUnit.assertEqual(color.a, 255, "Color.a not properly parsed");
@@ -32,7 +32,7 @@ export var test_ShortHex_Color = function () {
 
 export var test_Argb_Color = function () {
     // >> color-rgb
-    //// Creates the color with 100 alpha, 255 red, 100 green, 100 blue
+    // Creates the color with 100 alpha, 255 red, 100 green, 100 blue
     var color = new Color(100, 255, 100, 100);
     // << color-rgb
     TKUnit.assertEqual(color.a, 100, "Color.a not properly parsed");
@@ -45,7 +45,7 @@ export var test_Argb_Color = function () {
 
 export var test_ArgbInt_Color = function () {
     // >> color-rgb-single
-    //// Creates the color with 100 alpha, 100 red, 100 green, 100 blue
+    // Creates the color with 100 alpha, 100 red, 100 green, 100 blue
     var argb = (100 << 24) | (100 << 16) | (100 << 8) | 100;
     var color = new Color(argb);
     // << color-rgb-single
@@ -61,7 +61,7 @@ export var test_rgb_Color_CSS = function () {
     // <snippet module="color" title="color">
     // ### Creating a Color from four RGB values
     // ``` JavaScript
-    //// Creates the color with 255 red, 100 green, 100 blue
+    // Creates the color with 255 red, 100 green, 100 blue
     var color = new Color("rgb(255, 100, 100)");
     // ```
     // </snippet>
@@ -79,7 +79,7 @@ export var test_rgba_Color_CSS = function () {
     // <snippet module="color" title="color">
     // ### Creating a Color from four RGB values
     // ``` JavaScript
-    //// Creates the color with 255 red, 100 green, 100 blue and 0 alpha
+    // Creates the color with 255 red, 100 green, 100 blue and 0 alpha
     var color = new Color(`rgba(255, 100, 100, ${alpha})`);
     // ```
     // </snippet>

@@ -1,6 +1,6 @@
 ﻿// >> article-require-page-module
 import pageModule = require("ui/page");
-//// FrameModule is needed in order to have an option to navigate to the new page.
+// FrameModule is needed in order to have an option to navigate to the new page.
 import frameModule = require("ui/frame");
 // << article-require-page-module
 
@@ -210,7 +210,7 @@ export function test_NavigateTo_WithContext() {
     var pageFactory = function (): pageModule.Page {
         testPage = new pageModule.Page();
         testPage.on(pageModule.Page.navigatedToEvent, function () {
-            ////console.log(JSON.stringify(context));
+            //console.log(JSON.stringify(context));
         });
         return testPage;
     };
