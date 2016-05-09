@@ -1221,3 +1221,14 @@ export function test_BindingToRelatedProps() {
     
     TKUnit.assertEqual(target2.get('targetProp2'), "Tralala");
 }
+
+export function test_only_Bindable_BindingContext_Null_DoesNotThrow() {
+        var options: bindable.BindingOptions = {
+            sourceProperty: "a.b",
+            targetProperty: "test"
+        }
+        var obj = new bindable.Bindable();
+        obj.bind(options);
+        obj.bindingContext = new observable.Observable({ a: "b" });
+        obj.bindingContext = null;
+}

@@ -192,10 +192,8 @@ export class Binding {
             this.sourceOptions = undefined;
         }
     }
-
-    public bind(source: Object): void {
-        this.clearSource();
-
+    
+    private sourceAsObject(source: any): any {
         /* tslint:disable */
         let objectType = typeof source;
         if (objectType === "number") {
@@ -208,6 +206,13 @@ export class Binding {
             source = new String(source);
         }
         /* tslint:enable */
+        return source;
+    }
+
+    public bind(source: Object): void {
+        this.clearSource();
+
+        source = this.sourceAsObject(source);
 
         if (!types.isNullOrUndefined(source)) {
             this.source = new WeakRef(source);
@@ -559,7 +564,7 @@ export class Binding {
             let resolvedObj = objectsAndProperties[objectsAndProperties.length - 1].instance;
             let prop = objectsAndProperties[objectsAndProperties.length - 1].property;
             return {
-                instance: new WeakRef(resolvedObj),
+                instance: new WeakRef(this.sourceAsObject(resolvedObj)),
                 property: prop
             }
         }
