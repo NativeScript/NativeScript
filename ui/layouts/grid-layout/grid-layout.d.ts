@@ -175,5 +175,12 @@
          * Gets array of row specifications defined on this instance of GridLayout.
          */
         public getRows(): Array<ItemSpec>;
+
+        //@private
+        public _onRowAdded(itemSpec: ItemSpec): void;
+        public _onColumnAdded(itemSpec: ItemSpec): void;
+        public _onRowRemoved(itemSpec: ItemSpec, index: number): void;
+        public _onColumnRemoved(itemSpec: ItemSpec, index: number): void;
+        //@endprivate
     }
 }

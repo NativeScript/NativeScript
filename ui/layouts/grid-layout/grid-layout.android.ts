@@ -85,11 +85,11 @@ export class GridLayout extends common.GridLayout {
         this._layout = new org.nativescript.widgets.GridLayout(this._context);
         
         // Update native GridLayout
-        this.getRows().forEach((itemSpec: ItemSpec, index, rows) => { this.onRowAdded(itemSpec); }, this);
-        this.getColumns().forEach((itemSpec: ItemSpec, index, rows) => { this.onColumnAdded(itemSpec); }, this);
+        this.getRows().forEach((itemSpec: ItemSpec, index, rows) => { this._onRowAdded(itemSpec); }, this);
+        this.getColumns().forEach((itemSpec: ItemSpec, index, rows) => { this._onColumnAdded(itemSpec); }, this);
     }
 
-    protected onRowAdded(itemSpec: ItemSpec) {
+    public _onRowAdded(itemSpec: ItemSpec) {
         if (this._layout) {
             var nativeSpec = createNativeSpec(itemSpec);
             itemSpec.nativeSpec = nativeSpec;
@@ -97,7 +97,7 @@ export class GridLayout extends common.GridLayout {
         }
     }
 
-    protected onColumnAdded(itemSpec: ItemSpec) {
+    public _onColumnAdded(itemSpec: ItemSpec) {
         if (this._layout) {
             var nativeSpec = createNativeSpec(itemSpec);
             itemSpec.nativeSpec = nativeSpec;
@@ -105,14 +105,14 @@ export class GridLayout extends common.GridLayout {
         }
     }
 
-    protected onRowRemoved(itemSpec: ItemSpec, index: number) {
+    public _onRowRemoved(itemSpec: ItemSpec, index: number) {
         itemSpec.nativeSpec = null;
         if (this._layout) {
             this._layout.removeRowAt(index);
         }
     }
 
-    protected onColumnRemoved(itemSpec: ItemSpec, index: number) {
+    public _onColumnRemoved(itemSpec: ItemSpec, index: number) {
         itemSpec.nativeSpec = null;
         if (this._layout) {
             this._layout.removeColumnAt(index);

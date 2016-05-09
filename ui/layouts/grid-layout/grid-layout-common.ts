@@ -169,7 +169,7 @@ export class GridLayout extends LayoutBase implements definition.GridLayout, App
         GridLayout.validateItemSpec(itemSpec);
         itemSpec.owner = this;
         this._rows.push(itemSpec);
-        this.onRowAdded(itemSpec);
+        this._onRowAdded(itemSpec);
         this.invalidate();
     }
 
@@ -177,7 +177,7 @@ export class GridLayout extends LayoutBase implements definition.GridLayout, App
         GridLayout.validateItemSpec(itemSpec);
         itemSpec.owner = this;
         this._cols.push(itemSpec);
-        this.onColumnAdded(itemSpec);
+        this._onColumnAdded(itemSpec);
         this.invalidate();
     }
 
@@ -193,7 +193,7 @@ export class GridLayout extends LayoutBase implements definition.GridLayout, App
 
         itemSpec.index = -1;
         this._rows.splice(index, 1);
-        this.onRowRemoved(itemSpec, index);
+        this._onRowRemoved(itemSpec, index);
         this.invalidate();
     }
 
@@ -209,21 +209,25 @@ export class GridLayout extends LayoutBase implements definition.GridLayout, App
 
         itemSpec.index = -1;
         this._cols.splice(index, 1);
-        this.onColumnRemoved(itemSpec, index);
+        this._onColumnRemoved(itemSpec, index);
         this.invalidate();
     }
 
     public removeColumns() {
-        for (var i = 0; i < this._cols.length; i++) {
-            this._cols[i].index = -1;
+        for (var i = this._cols.length - 1; i >= 0; i--) {
+            const colSpec = this._cols[i];
+            this._onColumnRemoved(colSpec, i);
+            colSpec.index = -1;
         }
         this._cols.length = 0;
         this.invalidate();
     }
 
     public removeRows() {
-        for (var i = 0; i < this._rows.length; i++) {
-            this._rows[i].index = -1;
+        for (var i = this._rows.length - 1; i >= 0; i--) {
+            const rowSpec = this._rows[i];
+            this._onRowRemoved(rowSpec, i);
+            rowSpec.index = -1;
         }
         this._rows.length = 0;
         this.invalidate();
@@ -245,19 +249,19 @@ export class GridLayout extends LayoutBase implements definition.GridLayout, App
         this.invalidate();
     }
 
-    protected onRowAdded(itemSpec: ItemSpec) {
+    public _onRowAdded(itemSpec: ItemSpec) {
         //
     }
 
-    protected onColumnAdded(itemSpec: ItemSpec) {
+    public _onColumnAdded(itemSpec: ItemSpec) {
         //
     }
 
-    protected onRowRemoved(itemSpec: ItemSpec, index: number) {
+    public _onRowRemoved(itemSpec: ItemSpec, index: number): void {
         //
     }
 
-    protected onColumnRemoved(itemSpec: ItemSpec, index: number) {
+    public _onColumnRemoved(itemSpec: ItemSpec, index: number): void {
         //
     }
 
