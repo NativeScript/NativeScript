@@ -42,6 +42,16 @@ global.zonedCallback = function (callback: Function): Function {
     }
 }
 
+global.__extends = global.__extends || function (d, b) {
+    for (var p in b) {
+        if (b.hasOwnProperty(p)) {
+            d[p] = b[p];
+        }
+    }
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
 global.registerModule("timer", () => require("timer"));
 global.registerModule("ui/dialogs", () => require("ui/dialogs"));
 global.registerModule("xhr", () => require("xhr"));
