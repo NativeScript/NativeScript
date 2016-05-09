@@ -44,9 +44,9 @@ export var takePicture = function (options?): Promise<any> {
                     appModule.android.onActivityResult = previousResult;
 
                     if (requestCode === REQUEST_IMAGE_CAPTURE && resultCode === android.app.Activity.RESULT_OK) {
-
+                            var imageSource: typeof imageSourceModule = require("image-source");
                         if (saveToGallery) {
-                            resolve(picturePath);
+                            resolve({image:imageSource.fromFile(picturePath) ,path:picturePath});
                         } else {
                             var options = new android.graphics.BitmapFactory.Options();
                             options.inJustDecodeBounds = true;
@@ -89,8 +89,7 @@ export var takePicture = function (options?): Promise<any> {
                                     break;
                             }
 
-                            var imageSource: typeof imageSourceModule = require("image-source");
-                            resolve(imageSource.fromNativeSource(scaledSizeImage), picturePath);
+                            resolve({image:imageSource.fromNativeSource(scaledSizeImage), path:picturePath});
 
                         }
                     }
