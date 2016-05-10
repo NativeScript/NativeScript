@@ -138,7 +138,7 @@ export function test_loadWithAttributes() {
     var lWrap = true;
     var lColor = "#FF0000"; // red
     var v = builder.load({
-        path: "ui/label",
+        path: "tns_modules/ui/label",
         name: "Label",
         attributes: {
             text: lText,
@@ -147,9 +147,10 @@ export function test_loadWithAttributes() {
         }
     });
 
+    TKUnit.assert(v instanceof Label, "Expected result: Label; Actual result: " + v + ";");
     TKUnit.assertEqual(v.text, lText, "Expected result: true; Actual result: " + false + ";");
     TKUnit.assertEqual(v.textWrap, lWrap, "Expected result: true; Actual result: " + false + ";");
-    TKUnit.assertViewColor(v, lColor, "Expected result: true; Actual result: " + false + ";");
+    helper.assertViewColor(v, lColor, "Expected result: true; Actual result: " + false + ";");
 };
 
 export function test_parse_ShouldNotCrashWithoutExports() {
