@@ -133,6 +133,25 @@ export function test_loadWithOptionsFromTNSPath() {
     TKUnit.assert(v instanceof Label, "Expected result: Label; Actual result: " + v + ";");
 };
 
+export function test_loadWithAttributes() {
+    var lText = "Nativescript rocks";
+    var lWrap = true;
+    var lColor = "#FF0000"; // red
+    var v = builder.load({
+        path: "ui/label",
+        name: "Label",
+        attributes: {
+            text: lText,
+            textWrap: lWrap,
+            style: "background-color: " + lColor + ";"
+        }
+    });
+
+    TKUnit.assertEqual(v.text, lText, "Expected result: true; Actual result: " + false + ";");
+    TKUnit.assertEqual(v.textWrap, lWrap, "Expected result: true; Actual result: " + false + ";");
+    TKUnit.assertViewColor(v, lColor, "Expected result: true; Actual result: " + false + ";");
+};
+
 export function test_parse_ShouldNotCrashWithoutExports() {
     var file = fs.File.fromPath(fs.path.join(__dirname, "mainPage.xml"));
     var text = file.readTextSync();
