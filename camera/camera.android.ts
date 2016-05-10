@@ -1,6 +1,5 @@
-﻿import * as typesModule from "utils/types";
+import * as typesModule from "utils/types";
 import * as utilsModule from "utils/utils";
-import * as fileSystemModule from "file-system";
 import * as applicationModule from "application";
 import * as imageSourceModule from "image-source";
 import * as cameraCommonModule from "./camera-common";
@@ -15,6 +14,7 @@ export var takePicture = function (options?): Promise<any> {
 
             var density = utils.layout.getDisplayDensity();
             if (options) {
+                var saveToGallery = options.saveToGallery ? true : false;
                 var reqWidth = options.width ? options.width * density : 0;
                 var reqHeight = options.height ? options.height * density : reqWidth;
                 var shouldKeepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
@@ -22,12 +22,19 @@ export var takePicture = function (options?): Promise<any> {
             var takePictureIntent = new android.content.Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
             var dateStamp = createDateTimeStamp();
 
-            var fileSystem: typeof fileSystemModule = require("file-system");
+            if (saveToGallery) {
+                var picturePath = android.os.Environment.getExternalStoragePublicDirectory(
+                    android.os.Environment.DIRECTORY_PICTURES).getAbsolutePath() + "/" + "cameraPicture_" + dateStamp + ".jpg";
+                var nativeFile = new java.io.File(picturePath);
+                var tempPictureUri = android.net.Uri.fromFile(nativeFile);
+                takePictureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, tempPictureUri);
+            } else {
+                var picturePath = utils.ad.getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + "/" + "cameraPicture_" + dateStamp + ".jpg";
+                var nativeFile = new java.io.File(picturePath);
+                var tempPictureUri = android.net.Uri.fromFile(nativeFile);
+                takePictureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, tempPictureUri);
+            }
 
-            var tempPicturePath = fileSystem.path.join(utils.ad.getApplicationContext().getExternalFilesDir(null).getAbsolutePath(), "cameraPicture_" + dateStamp + ".jpg");
-            var nativeFile = new java.io.File(tempPicturePath);
-            var tempPictureUri = android.net.Uri.fromFile(nativeFile);
-            takePictureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, tempPictureUri);
             if (takePictureIntent.resolveActivity(utils.ad.getApplicationContext().getPackageManager()) != null) {
 
                 var appModule: typeof applicationModule = require("application");
@@ -37,50 +44,54 @@ export var takePicture = function (options?): Promise<any> {
                     appModule.android.onActivityResult = previousResult;
 
                     if (requestCode === REQUEST_IMAGE_CAPTURE && resultCode === android.app.Activity.RESULT_OK) {
-                        var options = new android.graphics.BitmapFactory.Options();
-                        options.inJustDecodeBounds = true;
-                        android.graphics.BitmapFactory.decodeFile(tempPicturePath, options);
+                            var imageSource: typeof imageSourceModule = require("image-source");
+                        if (saveToGallery) {
+                            resolve({image:imageSource.fromFile(picturePath) ,path:picturePath});
+                        } else {
+                            var options = new android.graphics.BitmapFactory.Options();
+                            options.inJustDecodeBounds = true;
+                            android.graphics.BitmapFactory.decodeFile(picturePath, options);
 
-                        var sampleSize = calculateInSampleSize(options.outWidth, options.outHeight, reqWidth, reqHeight);
+                            var sampleSize = calculateInSampleSize(options.outWidth, options.outHeight, reqWidth, reqHeight);
 
-                        var finalBitmapOptions = new android.graphics.BitmapFactory.Options();
-                        finalBitmapOptions.inSampleSize = sampleSize;
-                        var bitmap = android.graphics.BitmapFactory.decodeFile(tempPicturePath, finalBitmapOptions);
-                        var scaledSizeImage = null;
-                        if (reqHeight > 0 && reqWidth > 0) {
-                            if (shouldKeepAspectRatio) {
+                            var finalBitmapOptions = new android.graphics.BitmapFactory.Options();
+                            finalBitmapOptions.inSampleSize = sampleSize;
+                            var bitmap = android.graphics.BitmapFactory.decodeFile(picturePath, finalBitmapOptions);
+                            var scaledSizeImage = null;
+                            if (reqHeight > 0 && reqWidth > 0) {
+                                if (shouldKeepAspectRatio) {
 
-                                var common: typeof cameraCommonModule = require("./camera-common");
+                                    var common: typeof cameraCommonModule = require("./camera-common");
 
-                                var aspectSafeSize = common.getAspectSafeDimensions(bitmap.getWidth(), bitmap.getHeight(), reqWidth, reqHeight);
-                                scaledSizeImage = android.graphics.Bitmap.createScaledBitmap(bitmap, aspectSafeSize.width, aspectSafeSize.height, true);
+                                    var aspectSafeSize = common.getAspectSafeDimensions(bitmap.getWidth(), bitmap.getHeight(), reqWidth, reqHeight);
+                                    scaledSizeImage = android.graphics.Bitmap.createScaledBitmap(bitmap, aspectSafeSize.width, aspectSafeSize.height, true);
+                                }
+                                else {
+                                    scaledSizeImage = android.graphics.Bitmap.createScaledBitmap(bitmap, reqWidth, reqHeight, true);
+                                }
                             }
                             else {
-                                scaledSizeImage = android.graphics.Bitmap.createScaledBitmap(bitmap, reqWidth, reqHeight, true);
+                                scaledSizeImage = bitmap;
                             }
+
+                            var ei = new android.media.ExifInterface(picturePath);
+                            var orientation = ei.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+
+                            switch (orientation) {
+                                case android.media.ExifInterface.ORIENTATION_ROTATE_90:
+                                    scaledSizeImage = rotateBitmap(scaledSizeImage, 90);
+                                    break;
+                                case android.media.ExifInterface.ORIENTATION_ROTATE_180:
+                                    scaledSizeImage = rotateBitmap(scaledSizeImage, 180);
+                                    break;
+                                case android.media.ExifInterface.ORIENTATION_ROTATE_270:
+                                    scaledSizeImage = rotateBitmap(scaledSizeImage, 270);
+                                    break;
+                            }
+
+                            resolve({image:imageSource.fromNativeSource(scaledSizeImage), path:picturePath});
+
                         }
-                        else {
-                            scaledSizeImage = bitmap;
-                        }
-
-                        var ei = new android.media.ExifInterface(tempPicturePath);
-                        var orientation = ei.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
-
-                        switch (orientation) {
-                            case android.media.ExifInterface.ORIENTATION_ROTATE_90:
-                                scaledSizeImage = rotateBitmap(scaledSizeImage, 90);
-                                break;
-                            case android.media.ExifInterface.ORIENTATION_ROTATE_180:
-                                scaledSizeImage = rotateBitmap(scaledSizeImage, 180);
-                                break;
-                            case android.media.ExifInterface.ORIENTATION_ROTATE_270:
-                                scaledSizeImage = rotateBitmap(scaledSizeImage, 270);
-                                break;
-                        }
-
-                        var imageSource: typeof imageSourceModule = require("image-source");
-
-                        resolve(imageSource.fromNativeSource(scaledSizeImage));
                     }
                 };
 
