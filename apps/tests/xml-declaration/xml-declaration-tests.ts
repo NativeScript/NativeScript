@@ -135,22 +135,22 @@ export function test_loadWithOptionsFromTNSPath() {
 
 export function test_loadWithAttributes() {
     var lText = "Nativescript rocks";
-    var lWrap = true;
     var lColor = "#FF0000"; // red
+
     var v = builder.load({
-        path: "tns_modules/ui/label",
-        name: "Label",
+        path: "~/xml-declaration/mymodulewithxml",
+        name: "MyControl",
+        page: new Page(),
         attributes: {
-            text: lText,
-            textWrap: lWrap,
+            customAttribute: {
+                text: lText
+            },
             style: "background-color: " + lColor + ";"
         }
     });
 
-    TKUnit.assert(v instanceof Label, "Expected result: Label; Actual result: " + v + ";");
-    TKUnit.assertEqual(v.text, lText, "Expected result: true; Actual result: " + false + ";");
-    TKUnit.assertEqual(v.textWrap, lWrap, "Expected result: true; Actual result: " + false + ";");
-    helper.assertViewColor(v, lColor, "Expected result: true; Actual result: " + false + ";");
+    TKUnit.assertEqual(v.customAttribute.text, lText, "Expected result: true; Actual result: " + v + ";");
+    helper.assertViewBackgroundColor(v, lColor, "Expected result: true; Actual result: " + false + ";");
 };
 
 export function test_parse_ShouldNotCrashWithoutExports() {
