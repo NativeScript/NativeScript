@@ -149,8 +149,8 @@ export function test_loadWithAttributes() {
         }
     });
 
-    TKUnit.assertEqual(v.customAttribute.text, lText, "Expected result: true; Actual result: " + v + ";");
-    helper.assertViewBackgroundColor(v, lColor, "Expected result: true; Actual result: " + false + ";");
+    TKUnit.assertEqual(v["customAttribute"]["text"], lText, "Expected result: true; Actual result: " + v + ";");
+    helper.assertViewBackgroundColor(v, lColor);
 };
 
 export function test_parse_ShouldNotCrashWithoutExports() {
