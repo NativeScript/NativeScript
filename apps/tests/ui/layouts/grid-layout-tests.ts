@@ -12,10 +12,27 @@ import commonTests = require("./common-layout-tests");
 
 var DELTA = 1;
 
-export class GridLayoutTest extends testModule.UITest<GridLayout> {
+class RemovalTrackingGridLayout extends GridLayout {
+    public removedRows = 0;
+    public removedCols = 0;
 
-    public create(): GridLayout {
-        return new GridLayout();
+    public _onRowRemoved(itemSpec: ItemSpec, index: number) {
+        console.log("_onRowRemoved");
+        this.removedRows++;
+        super._onRowRemoved(itemSpec, index);
+    }
+
+    public _onColumnRemoved(itemSpec: ItemSpec, index: number) {
+        console.log("_onColumnRemoved");
+        this.removedCols++;
+        super._onColumnRemoved(itemSpec, index);
+    }
+}
+
+export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout> {
+
+    public create(): RemovalTrackingGridLayout {
+        return new RemovalTrackingGridLayout();
     }
 
     private row(view: view.View): number {
@@ -194,16 +211,20 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
 
     public test_removeColumns() {
         this.prepareGridLayout(false);
-        TKUnit.assertTrue(this.testView.getColumns().length > 0, "There should be columns.");
+        const colsBefore = this.testView.getColumns().length;
+        TKUnit.assertTrue(colsBefore > 0, "There should be columns.");
         this.testView.removeColumns();
         TKUnit.assertTrue(this.testView.getColumns().length === 0, "Columns should be empty.");
+        TKUnit.assertTrue(this.testView.removedCols === colsBefore, "_onColumnRemoved called for each column.");
     }
 
     public test_removeRows() {
         this.prepareGridLayout(false);
-        TKUnit.assertTrue(this.testView.getRows().length > 0, "There should be rows.");
+        const rowsBefore = this.testView.getRows().length;
+        TKUnit.assertTrue(rowsBefore > 0, "There should be rows.");
         this.testView.removeRows();
         TKUnit.assertTrue(this.testView.getRows().length === 0, "Rows should be empty.");
+        TKUnit.assertTrue(this.testView.removedRows === rowsBefore, "_onRowRemoved called for each row.");
     }
 
     public test_removeChildren() {

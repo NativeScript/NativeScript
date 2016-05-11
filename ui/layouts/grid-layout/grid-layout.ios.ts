@@ -16,20 +16,20 @@ export class GridLayout extends common.GridLayout {
         this.helper = new MeasureHelper(this);
     }
 
-    protected onRowAdded(itemSpec: common.ItemSpec) {
+    public _onRowAdded(itemSpec: common.ItemSpec) {
         this.helper.rows.push(new ItemGroup(itemSpec));
     }
 
-    protected onColumnAdded(itemSpec: common.ItemSpec) {
+    public _onColumnAdded(itemSpec: common.ItemSpec) {
         this.helper.columns.push(new ItemGroup(itemSpec));
     }
 
-    protected onRowRemoved(itemSpec: common.ItemSpec, index: number) {
+    public _onRowRemoved(itemSpec: common.ItemSpec, index: number) {
         this.helper.rows[index].children.length = 0;
         this.helper.rows.splice(index, 1);
     }
 
-    protected onColumnRemoved(itemSpec: common.ItemSpec, index: number) {
+    public _onColumnRemoved(itemSpec: common.ItemSpec, index: number) {
         this.helper.columns[index].children.length = 0;
         this.helper.columns.splice(index, 1);
     }
