@@ -240,5 +240,5 @@
      * Converts string value to number or boolean.
      * @param value The original value. 
      */
-    export function convertString(value: string): any    
+    export function convertString(value: any): any    
 }

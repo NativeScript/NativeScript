@@ -154,7 +154,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
     return componentModule;
 }
 
-export function setPropertyValue(instance: View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: string) {
+export function setPropertyValue(instance: View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: any) {
     // Note: instanceModule can be null if we are loading custom compnenet with no code-behind.
 
     if (isBinding(propertyValue) && instance.bind) {
@@ -183,7 +183,7 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
         if (!attrHandled && (<any>instance)._applyXmlAttribute) {
             attrHandled = (<any>instance)._applyXmlAttribute(propertyName, propertyValue);
         }
-        if (!attrHandled) {           
+        if (!attrHandled) {
             instance[propertyName] = convertString(propertyValue);
         }
     }
@@ -193,7 +193,7 @@ function getBindingExpressionFromAttribute(value: string): string {
     return value.replace("{{", "").replace("}}", "").trim();
 }
 
-function isBinding(value: string): boolean {
+function isBinding(value: any): boolean {
     var isBinding;
 
     if (isString(value)) {

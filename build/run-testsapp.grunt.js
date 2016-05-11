@@ -209,7 +209,7 @@ module.exports = {
             },
             shell: {
                 collectAndroidLog: {
-                    command: "./expect.exp " + "'adb logcat' " + localCfg.outFile,
+                    command: "./expect.exp " + "'adb logcat *:D' " + localCfg.outFile,
                     options: {
                         execOptions: {
                             maxBuffer: Infinity

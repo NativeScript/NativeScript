@@ -115,7 +115,7 @@ export function load(pathOrOptions: string | LoadOptions, context?: any): View {
     if (!context) {
         if (!isString(pathOrOptions)) {
             let options = <LoadOptions>pathOrOptions;
-            componentModule = loadCustomComponent(options.path, options.name, undefined, options.exports, options.page);
+            componentModule = loadCustomComponent(options.path, options.name, options.attributes, options.exports, options.page);
         } else {
             let path = <string>pathOrOptions;
             componentModule = loadInternal(path);
