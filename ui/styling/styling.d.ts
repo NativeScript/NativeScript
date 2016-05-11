@@ -82,6 +82,11 @@
          * Gets or sets the border-radius style property.
          */
         borderRadius: number;
+        
+        /**
+         * Gets or sets the clip-path style property.
+         */
+        clipPath: string;        
 
         /**
          * Gets or sets font-size style property.

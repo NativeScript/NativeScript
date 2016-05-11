@@ -42,10 +42,21 @@ export module ad {
             private _borderWidth: number;
             private _cornerRadius: number;
             private _borderColor: number;
+            private _clipPath: string;
 
             constructor() {
                 super();
                 return global.__native(this);
+            }
+
+            get clipPath(): string {
+                return this._clipPath;
+            }
+            set clipPath(value: string) {
+                if (this._clipPath !== value) {
+                    this._clipPath = value;
+                    this.invalidateSelf();
+                }
             }
 
             get borderWidth(): number {
@@ -101,7 +112,7 @@ export module ad {
                 let backgroundBoundsF = new android.graphics.RectF(bounds.left + backoffAntialias, bounds.top + backoffAntialias, bounds.right - backoffAntialias, bounds.bottom - backoffAntialias);
 
                 let outerRadius = this._cornerRadius * this._density;
-                
+
                 // draw background
                 if (this.background.color && this.background.color.android) {
                     let backgroundColorPaint = new android.graphics.Paint();
@@ -109,7 +120,11 @@ export module ad {
                     backgroundColorPaint.setColor(this.background.color.android);
                     backgroundColorPaint.setAntiAlias(true);
 
-                    canvas.drawRoundRect(backgroundBoundsF, outerRadius, outerRadius, backgroundColorPaint);
+                    if (this.clipPath) {
+                        drawClipPath(this.clipPath, canvas, backgroundColorPaint, backgroundBoundsF);
+                    } else {
+                        canvas.drawRoundRect(backgroundBoundsF, outerRadius, outerRadius, backgroundColorPaint);
+                    }
                 }
 
                 // draw image
@@ -139,21 +154,25 @@ export module ad {
                     params.posX = params.repeatX ? 0 : params.posX;
                     params.posY = params.repeatY ? 0 : params.posY;
 
-                    let supportsPathOp = android.os.Build.VERSION.SDK_INT >= 19;
-                    if (supportsPathOp) {
-                        // Path.Op can be used in API level 19+ to achieve the perfect geometry.
-                        let backgroundPath = new android.graphics.Path();
-                        backgroundPath.addRoundRect(backgroundBoundsF, outerRadius, outerRadius, android.graphics.Path.Direction.CCW);
-                        let backgroundNoRepeatPath = new android.graphics.Path();
-                        backgroundNoRepeatPath.addRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight, android.graphics.Path.Direction.CCW);
-                        (<any>backgroundPath).op(backgroundNoRepeatPath, (<any>android).graphics.Path.Op.INTERSECT);
-                        canvas.drawPath(backgroundPath, backgroundImagePaint);
+                    if (this.clipPath) {
+                        drawClipPath(this.clipPath, canvas, backgroundImagePaint, backgroundBoundsF);
                     } else {
-                        // Clipping here will not be antialiased but at least it won't shine through the rounded corners.
-                        canvas.save();
-                        canvas.clipRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight);
-                        canvas.drawRoundRect(backgroundBoundsF, outerRadius, outerRadius, backgroundImagePaint);
-                        canvas.restore();
+                        let supportsPathOp = android.os.Build.VERSION.SDK_INT >= 19;
+                        if (supportsPathOp) {
+                            // Path.Op can be used in API level 19+ to achieve the perfect geometry.
+                            let backgroundPath = new android.graphics.Path();
+                            backgroundPath.addRoundRect(backgroundBoundsF, outerRadius, outerRadius, android.graphics.Path.Direction.CCW);
+                            let backgroundNoRepeatPath = new android.graphics.Path();
+                            backgroundNoRepeatPath.addRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight, android.graphics.Path.Direction.CCW);
+                            (<any>backgroundPath).op(backgroundNoRepeatPath, (<any>android).graphics.Path.Op.INTERSECT);
+                            canvas.drawPath(backgroundPath, backgroundImagePaint);
+                        } else {
+                            // Clipping here will not be antialiased but at least it won't shine through the rounded corners.
+                            canvas.save();
+                            canvas.clipRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight);
+                            canvas.drawRoundRect(backgroundBoundsF, outerRadius, outerRadius, backgroundImagePaint);
+                            canvas.restore();
+                        }
                     }
                 }
 
@@ -164,23 +183,29 @@ export module ad {
                     borderPaint.setColor(this._borderColor);
                     borderPaint.setAntiAlias(true);
 
-                    if (outerRadius <= 0) {
+                    if (this.clipPath) {
                         borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
                         borderPaint.setStrokeWidth(borderWidth);
-                        canvas.drawRect(middleBoundsF, borderPaint);
-                    } else if (outerRadius >= borderWidth) {
-                        borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
-                        borderPaint.setStrokeWidth(borderWidth);
-                        let middleRadius = Math.max(0, outerRadius - halfBorderWidth);
-                        canvas.drawRoundRect(middleBoundsF, middleRadius, middleRadius, borderPaint);
+                        drawClipPath(this.clipPath, canvas, borderPaint, backgroundBoundsF);
                     } else {
-                        let borderPath = new android.graphics.Path();
-                        let borderOuterBoundsF = new android.graphics.RectF(bounds.left, bounds.top, bounds.right, bounds.bottom);
-                        borderPath.addRoundRect(borderOuterBoundsF, outerRadius, outerRadius, android.graphics.Path.Direction.CCW);
-                        let borderInnerBoundsF = new android.graphics.RectF(bounds.left + borderWidth, bounds.top + borderWidth, bounds.right - borderWidth, bounds.bottom - borderWidth);
-                        borderPath.addRect(borderInnerBoundsF, android.graphics.Path.Direction.CW);
-                        borderPaint.setStyle(android.graphics.Paint.Style.FILL);
-                        canvas.drawPath(borderPath, borderPaint);
+                        if (outerRadius <= 0) {
+                            borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
+                            borderPaint.setStrokeWidth(borderWidth);
+                            canvas.drawRect(middleBoundsF, borderPaint);
+                        } else if (outerRadius >= borderWidth) {
+                            borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
+                            borderPaint.setStrokeWidth(borderWidth);
+                            let middleRadius = Math.max(0, outerRadius - halfBorderWidth);
+                            canvas.drawRoundRect(middleBoundsF, middleRadius, middleRadius, borderPaint);
+                        } else {
+                            let borderPath = new android.graphics.Path();
+                            let borderOuterBoundsF = new android.graphics.RectF(bounds.left, bounds.top, bounds.right, bounds.bottom);
+                            borderPath.addRoundRect(borderOuterBoundsF, outerRadius, outerRadius, android.graphics.Path.Direction.CCW);
+                            let borderInnerBoundsF = new android.graphics.RectF(bounds.left + borderWidth, bounds.top + borderWidth, bounds.right - borderWidth, bounds.bottom - borderWidth);
+                            borderPath.addRect(borderInnerBoundsF, android.graphics.Path.Direction.CW);
+                            borderPaint.setStyle(android.graphics.Paint.Style.FILL);
+                            canvas.drawPath(borderPath, borderPaint);
+                        }
                     }
                 }
             }
@@ -209,6 +234,8 @@ export module ad {
         ensureBorderDrawable();
         ensureLazyRequires();
 
+        var clipPathValue = v.style._getValue(style.clipPathProperty);
+
         var backgroundValue = v.style._getValue(style.backgroundInternalProperty);
         var borderWidth = v.borderWidth;
         var bkg = <any>nativeView.getBackground();
@@ -220,7 +247,7 @@ export module ad {
             let backgroundColor = bkg.backgroundColor = v.style._getValue(style.backgroundColorProperty).android;
             bkg.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
             bkg.backgroundColor = backgroundColor;
-        } else if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty()) {
+        } else if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty() || !clipPathValue.isEmpty()) {
 
             if (!(bkg instanceof BorderDrawableClass)) {
                 bkg = new BorderDrawableClass();
@@ -236,6 +263,7 @@ export module ad {
             bkg.cornerRadius = v.borderRadius;
             bkg.borderColor = v.borderColor ? v.borderColor.android : android.graphics.Color.TRANSPARENT;
             bkg.background = backgroundValue;
+            bkg.clipPath = clipPathValue;
 
             if (getSDK() < 18) {
                 // Switch to software because of unsupported canvas methods if hardware acceleration is on:
@@ -272,5 +300,68 @@ export module ad {
             Math.round((borderWidth + v.style.paddingRight) * density),
             Math.round((borderWidth + v.style.paddingBottom) * density)
         );
+    }
+}
+
+function drawClipPath(clipPath: string, canvas: android.graphics.Canvas, paint: android.graphics.Paint, bounds: android.graphics.RectF) {
+    var functionName = clipPath.substring(0, clipPath.indexOf("("));
+    var value = clipPath.replace(`${functionName}(`, "").replace(")", "");
+
+    if (functionName === "rect") {
+        var arr = value.split(/[\s]+/);
+
+        var top = common.cssValueToDevicePixels(arr[0], bounds.top);
+        var left = common.cssValueToDevicePixels(arr[1], bounds.left);
+        var bottom = common.cssValueToDevicePixels(arr[2], bounds.bottom);
+        var right = common.cssValueToDevicePixels(arr[3], bounds.right);
+
+        canvas.drawRect(left, top, right, bottom, paint);
+
+    } else if (functionName === "circle") {
+        var arr = value.split(/[\s]+/);
+
+        var radius = common.cssValueToDevicePixels(arr[0], (bounds.width() > bounds.height() ? bounds.height() : bounds.width()) / 2);
+        var y = common.cssValueToDevicePixels(arr[2], bounds.height());
+        var x = common.cssValueToDevicePixels(arr[3], bounds.width());
+
+        canvas.drawCircle(x, y, radius, paint);
+
+    } else if (functionName === "ellipse") {
+        var arr = value.split(/[\s]+/);
+
+        var rX = common.cssValueToDevicePixels(arr[0], bounds.right);
+        var rY = common.cssValueToDevicePixels(arr[1], bounds.bottom);
+        var cX = common.cssValueToDevicePixels(arr[3], bounds.right);
+        var cY = common.cssValueToDevicePixels(arr[4], bounds.bottom);
+        
+        var left = cX - rX;
+        var top = cY - rY;
+        var right = (rX * 2) + left;
+        var bottom = (rY * 2) + top;
+
+        canvas.drawOval(new android.graphics.RectF(left, top, right, bottom), paint);
+
+    } else if (functionName === "polygon") {
+        var path = new android.graphics.Path();
+        var firstPoint: view.Point;
+        var arr = value.split(/[,]+/);
+        for (let i = 0; i < arr.length; i++) {
+            let xy = arr[i].trim().split(/[\s]+/);
+            let point: view.Point = {
+                x: common.cssValueToDevicePixels(xy[0], bounds.width()),
+                y: common.cssValueToDevicePixels(xy[1], bounds.height())
+            };
+            
+            if (!firstPoint) {
+                firstPoint = point;
+                path.moveTo(point.x, point.y);
+            }
+
+            path.lineTo(point.x, point.y);
+        }
+
+        path.lineTo(firstPoint.x, firstPoint.y);
+
+        canvas.drawPath(path, paint);
     }
 }

@@ -742,6 +742,7 @@ export class ViewStyler implements style.Styler {
         style.registerHandler(style.borderWidthProperty, borderHandler);
         style.registerHandler(style.borderColorProperty, borderHandler);
         style.registerHandler(style.borderRadiusProperty, borderHandler);
+        style.registerHandler(style.clipPathProperty, borderHandler);
 
         style.registerHandler(style.nativeLayoutParamsProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setNativeLayoutParamsProperty,
