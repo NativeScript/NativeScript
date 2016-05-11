@@ -101,7 +101,7 @@ var _testOnClick = function (views: Array<viewModule.View>) {
     var actualValue = false;
     // >> button-tap
     button.on(buttonModule.Button.tapEvent, function (args: observable.EventData) {
-        //// Do something
+        // Do something
         // >> (hide)
         actualValue = true;
         // << (hide)
@@ -123,12 +123,12 @@ var _testBindTextDirectlyToModel = function (views: Array<viewModule.View>) {
         targetProperty: "text"
     }
     button.bind(options, model);
-    //// button.text is now "OK"
+    // button.text is now "OK"
     // >> (hide)
     TKUnit.assert(button.text === "OK", "Actual: " + button.text + "; Expected: " + "OK");
     // << (hide)
     model.set("buttonTitle", "Cancel");
-    //// button.text is now "Cancel"
+    // button.text is now "Cancel"
     // >> (hide)
     TKUnit.assert(button.text === "Cancel", "Actual: " + button.text + "; Expected: " + "Cancel");
     // << (hide)

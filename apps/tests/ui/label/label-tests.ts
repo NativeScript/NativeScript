@@ -235,8 +235,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         // >> label-cssclass
         label.text = "The quick brown fox jumps over the lazy dog.";
         label.className = "title";
-        //// after that all we have to do is to set a similar css entry within parent page css property
-        //// label.parentPage.css = ".title {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
+        // after that all we have to do is to set a similar css entry within parent page css property
+        // label.parentPage.css = ".title {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
         // << label-cssclass
 
         var actualTextSize;
@@ -298,9 +298,9 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         // >> label-cssclass-type
         label.text = "The quick brown fox jumps over the lazy dog.";
-        //// in order to style label with a "type style scope" just put a similar css entry
-        //// testLabel.parentPage.css = "label {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
-        //// all labels within the parent page will be styled according to css values
+        // in order to style label with a "type style scope" just put a similar css entry
+        // testLabel.parentPage.css = "label {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
+        // all labels within the parent page will be styled according to css values
         // << label-cssclass-type
         var expectedBackgroundColor = new colorModule.Color(backgroundColor);
         var actualBackgroundColor = label.style.backgroundColor;
@@ -329,8 +329,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         // >> label-css-identifier
         label.text = "The quick brown fox jumps over the lazy dog.";
         label.id = "testLabel";
-        //// after that all we have to do is to set a similar css entry within parent page css property
-        //// label.parentPage.css = "#testLabel {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
+        // after that all we have to do is to set a similar css entry within parent page css property
+        // label.parentPage.css = "#testLabel {background-color: #C6C6C6; color: #10C2B0; font-size: 14;}";
         // << label-css-identifier
 
         var expectedBackgroundColor = new colorModule.Color(backgroundColor);
@@ -356,7 +356,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         };
         label.bind(bindingOptions, sourceModel);
         sourceModel.set("sourceProperty", expValue);
-        //// console.log(label.text); --> prints: "Expected Value"
+        // console.log(label.text); --> prints: "Expected Value"
         // << label-observable
 
         TKUnit.assertEqual(label.text, expValue);

@@ -10,19 +10,19 @@ export function test_DummyTestForSnippetOnly() {
     cache.placeholder = imageSource.fromFile(fs.path.join(__dirname, "res/no-image.png"));
     cache.maxRequests = 5;
     
-    //// Enable download while not scrolling
+    // Enable download while not scrolling
     cache.enableDownload();
     
     var imgSouce: imageSource.ImageSource;
     var url = "https://github.com/NativeScript.png";
-    //// Try to read the image from the cache
+    // Try to read the image from the cache
     var image = cache.get(url);
     if (image) {
-        //// If present -- use it.
+        // If present -- use it.
         imgSouce = imageSource.fromNativeSource(image);
     }
     else {
-        //// If not present -- request its download.
+        // If not present -- request its download.
         cache.push({
             key: url,
             url: url,
@@ -34,7 +34,7 @@ export function test_DummyTestForSnippetOnly() {
         });
     }
 
-    //// Disable download while scrolling
+    // Disable download while scrolling
     cache.disableDownload();
     // << image-cache-request-images
 }

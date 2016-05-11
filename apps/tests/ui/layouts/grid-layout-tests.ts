@@ -592,15 +592,15 @@ export class GridLayoutTest extends testModule.UITest<GridLayout> {
         // << grid-layout-columnspan
 
         // >> grid-layout-itemspec
-        //// ItemSpec modes of the column refers to its width.
-        //// Absolute size of the column
+        // ItemSpec modes of the column refers to its width.
+        // Absolute size of the column
         var firstColumn = new ItemSpec(80, GridUnitType.pixel);
-        //// Star width means that this column will expand to fill the gap left from other columns
+        // Star width means that this column will expand to fill the gap left from other columns
         var secondColumn = new ItemSpec(1, GridUnitType.star);
-        //// Auto size means that column will expand or shrink in order to give enough place for all child UI elements.
+        // Auto size means that column will expand or shrink in order to give enough place for all child UI elements.
         var thirdColumn = new ItemSpec(1, GridUnitType.auto);
 
-        //// Star and Auto modes for rows behave like corresponding setting for columns but refer to row height.
+        // Star and Auto modes for rows behave like corresponding setting for columns but refer to row height.
         var firstRow = new ItemSpec(1, GridUnitType.auto);
         var secondRow = new ItemSpec(1, GridUnitType.star);
         // << grid-layout-itemspec

@@ -134,12 +134,12 @@ export var test_ObservableArray_popShouldRemoveTheLastElementAndRaiseChangeEvent
     // << (hide)
 
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
-        //// Argument (args) is ChangedData<T>.
-        //// args.eventName is "change".
-        //// args.action is "delete".
-        //// args.index is equal to the array length - 1.
-        //// args.removed.length is 1.
-        //// args.addedCount is 0.
+        // Argument (args) is ChangedData<T>.
+        // args.eventName is "change".
+        // args.action is "delete".
+        // args.index is equal to the array length - 1.
+        // args.removed.length is 1.
+        // args.addedCount is 0.
 
         // >> (hide)
         result = args;
@@ -173,12 +173,12 @@ export var test_ObservableArray_pushShouldAppendNewElementAndRaiseChangeEventWit
     // >> observable-array-change-push
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
-        //// Argument (args) is ChangedData<T>.
-        //// args.eventName is "change".
-        //// args.action is "add".
-        //// args.index is equal to the array length.
-        //// args.removed.length is 0.
-        //// args.addedCount is 1.
+        // Argument (args) is ChangedData<T>.
+        // args.eventName is "change".
+        // args.action is "add".
+        // args.index is equal to the array length.
+        // args.removed.length is 0.
+        // args.addedCount is 1.
 
         // >> (hide)
         result = args;
@@ -212,12 +212,12 @@ export var test_ObservableArray_pushShouldAppendNewElementsAndRaiseChangeEventWi
     // >> observable-array-push-multiple-info
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
-        //// Argument (args) is ChangedData<T>.
-        //// args.eventName is "change".
-        //// args.action is "add".
-        //// args.index is equal to the array length.
-        //// args.removed.length is 0.
-        //// args.addedCount is equal to the number of added items.
+        // Argument (args) is ChangedData<T>.
+        // args.eventName is "change".
+        // args.action is "add".
+        // args.index is equal to the array length.
+        // args.removed.length is 0.
+        // args.addedCount is equal to the number of added items.
 
         // >> (hide)
         result = args;
@@ -251,12 +251,12 @@ export var test_ObservableArray_pushShouldAppendNewElementsFromSourceArrayAndRai
     // >> observable-array-push-source-info
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
-        //// Argument (args) is ChangedData<T>.
-        //// args.eventName is "change".
-        //// args.action is "add".
-        //// args.index is equal to the array length.
-        //// args.removed.length is 0.
-        //// args.addedCount is equal to the number of added items.
+        // Argument (args) is ChangedData<T>.
+        // args.eventName is "change".
+        // args.action is "add".
+        // args.index is equal to the array length.
+        // args.removed.length is 0.
+        // args.addedCount is equal to the number of added items.
 
         // >> (hide)
         result = args;
@@ -299,12 +299,12 @@ export var test_ObservableArray_shiftShouldRemoveTheFirstElementAndRaiseChangeEv
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
 
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
-        //// Argument (args) is ChangedData<T>.
-        //// args.eventName is "change".
-        //// args.action is "delete".
-        //// args.index is 0.
-        //// args.removed.length is 1.
-        //// args.addedCount is 0.
+        // Argument (args) is ChangedData<T>.
+        // args.eventName is "change".
+        // args.action is "delete".
+        // args.index is 0.
+        // args.removed.length is 1.
+        // args.addedCount is 0.
 
         // >> (hide)
         result = args;
@@ -372,12 +372,12 @@ export var test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStart
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
 
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
-        //// Argument (args) is ChangedData<T>.
-        //// args.eventName is "change".
-        //// args.action is "splice".
-        //// args.index is the start index.
-        //// args.removed.length is equal to the number of deleted items.
-        //// args.addedCount is 0.
+        // Argument (args) is ChangedData<T>.
+        // args.eventName is "change".
+        // args.action is "splice".
+        // args.index is the start index.
+        // args.removed.length is equal to the number of deleted items.
+        // args.addedCount is 0.
 
         // >> (hide)
         result = args;
@@ -407,12 +407,12 @@ export var test_ObservableArray_spliceShouldRemoveAndInertSpecifiedNumberOfEleme
     var array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
 
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
-        //// Argument (args) is ChangedData<T>.
-        //// args.eventName is "change".
-        //// args.action is "splice".
-        //// args.index is the start index.
-        //// args.removed.length is equal to the number of deleted items.
-        //// args.addedCount is equal to the delta between number of inserted items and number of deleted items but not less than 0.
+        // Argument (args) is ChangedData<T>.
+        // args.eventName is "change".
+        // args.action is "splice".
+        // args.index is the start index.
+        // args.removed.length is equal to the number of deleted items.
+        // args.addedCount is equal to the delta between number of inserted items and number of deleted items but not less than 0.
 
         // >> (hide)
         result = args;

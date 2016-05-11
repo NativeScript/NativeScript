@@ -104,13 +104,13 @@ export var testBindTextDirectlyToModel = function () {
             targetProperty: "text"
         }
         textView.bind(options, model);
-        //// textView.text is now "john"
+        // textView.text is now "john"
         // >> (hide)
         TKUnit.assert(textView.text === "john", "Actual: " + textView.text + "; Expected: " + "john");
         TKUnit.assert(textViewTestsNative.getNativeText(textView) === "john", "Actual: " + textViewTestsNative.getNativeText(textView) + "; Expected: " + "john");
         // << (hide)
         model.set("username", "mary");
-        //// textView.text is now "mary"
+        // textView.text is now "mary"
         // >> (hide)
         TKUnit.assert(textView.text === "mary", "Actual: " + textView.text + "; Expected: " + "mary");
         TKUnit.assert(textViewTestsNative.getNativeText(textView) === "mary", "Actual: " + textViewTestsNative.getNativeText(textView) + "; Expected: " + "mary");
@@ -184,13 +184,13 @@ export var testBindHintDirectlyToModel = function () {
             targetProperty: "hint"
         }
         textView.bind(options, model);
-        //// TextView.hint is now "type your username here"
+        // TextView.hint is now "type your username here"
         // >> (hide)
         TKUnit.assert(textView.hint === "type your username here", "Actual: " + textView.hint + "; Expected: " + "type your username here");
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your username here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your username here");
         // << (hide)
         model.set("hint", "type your password here");
-        //// TextView.hint is now "type your password here"
+        // TextView.hint is now "type your password here"
         // >> (hide)
         TKUnit.assert(textView.hint === "type your password here", "Actual: " + textView.hint + "; Expected: " + "type your password here");
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your password here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your password here");
@@ -305,13 +305,13 @@ export var testBindEditableDirectlyToModel = function () {
             targetProperty: "editable"
         }
         textView.bind(options, model);
-        //// textView.editable is now false
+        // textView.editable is now false
         // >> (hide)
         TKUnit.assert(textView.editable === false, "Actual: " + textView.text + "; Expected: " + false);
         TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === false, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + false);
         // << (hide)
         model.set("editable", true);
-        //// textView.editable is now true
+        // textView.editable is now true
         // >> (hide)
         TKUnit.assert(textView.editable === true, "Actual: " + textView.text + "; Expected: " + true);
         TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === true, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + true);

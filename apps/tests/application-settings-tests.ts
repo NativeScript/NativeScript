@@ -44,7 +44,7 @@ export var testNumber = function () {
 export var testDefaults = function () {
     // >> application-settings-notset
     var defaultValue = appSettings.getString("noStringKey", "No string value");
-    //// will return "No string value" if there is no value for "noStringKey"
+    // will return "No string value" if there is no value for "noStringKey"
     // << application-settings-notset
     TKUnit.assert("No string value" === defaultValue, "Bad default string value");
     TKUnit.assert(true === appSettings.getBoolean(noBoolKey, true), "Bad default boolean value");
@@ -54,7 +54,7 @@ export var testDefaults = function () {
 export var testDefaultsWithNoDefaultValueProvided = function () {
     // >> application-settings-nodefault
     var defaultValue = appSettings.getString("noStringKey");
-    //// will return undefined if there is no value for "noStringKey"
+    // will return undefined if there is no value for "noStringKey"
     // << application-settings-nodefault
     TKUnit.assert("undefined" === typeof defaultValue, "Default string value is not undefined");
 
@@ -69,7 +69,7 @@ export var testDefaultsWithNoDefaultValueProvided = function () {
 export var testHasKey = function () {
     // >> application-settings-haskey
     var hasKey = appSettings.hasKey("noBoolKey");
-    //// will return false if there is no value for "noBoolKey"
+    // will return false if there is no value for "noBoolKey"
     // << application-settings-haskey
     TKUnit.assert(!hasKey, "There is a key: " + noBoolKey);
     TKUnit.assert(!appSettings.hasKey(noStringKey), "There is a key: " + noStringKey);

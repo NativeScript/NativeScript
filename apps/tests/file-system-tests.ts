@@ -11,7 +11,7 @@ export var testPathNormalize = function () {
     // >> file-system-normalize
     var documents = fs.knownFolders.documents();
     var testPath = "///test.txt";
-    //// Get a normalized path such as <folder.path>/test.txt from <folder.path>///test.txt
+    // Get a normalized path such as <folder.path>/test.txt from <folder.path>///test.txt
     var normalizedPath = fs.path.normalize(documents.path + testPath);
     // >> (hide)
     var expected = documents.path + "/test.txt";
@@ -23,7 +23,7 @@ export var testPathNormalize = function () {
 export var testPathJoin = function () {
     // >> file-system-multiple-args
     var documents = fs.knownFolders.documents();
-    //// Generate a path like <documents.path>/myFiles/test.txt
+    // Generate a path like <documents.path>/myFiles/test.txt
     var path = fs.path.join(documents.path, "myFiles", "test.txt");
     // >> (hide)
     var expected = documents.path + "/myFiles/test.txt";
@@ -34,7 +34,7 @@ export var testPathJoin = function () {
 
 export var testPathSeparator = function () {
     // >> file-system-separator
-    //// An OS dependent path separator, "\" or "/".
+    // An OS dependent path separator, "\" or "/".
     var separator = fs.path.separator;
     // >> (hide)
     var expected = "/";
@@ -49,10 +49,10 @@ export var testFileFromPath = function () {
     var path = fs.path.join(documents.path, "FileFromPath.txt");
     var file = fs.File.fromPath(path);
 
-    //// Writing text to the file.
+    // Writing text to the file.
     file.writeText("Something")
         .then(function () {
-            //// Succeeded writing to the file.
+            // Succeeded writing to the file.
             // >> (hide)
             file.readText()
                 .then(function (content) {
@@ -64,7 +64,7 @@ export var testFileFromPath = function () {
                 });
             // << (hide)
         }, function (error) {
-            //// Failed to write to the file.
+            // Failed to write to the file.
             // >> (hide)
             TKUnit.assert(false, "Failed to read/write text");
             //console.dump(error);
@@ -90,10 +90,10 @@ export var testFileWrite = function () {
     var documents = fs.knownFolders.documents();
     var file = documents.getFile("Test_Write.txt");
 
-    //// Writing text to the file.
+    // Writing text to the file.
     file.writeText("Something")
         .then(function () {
-            //// Succeeded writing to the file.
+            // Succeeded writing to the file.
             // >> (hide)
             file.readText()
                 .then(function (content) {
@@ -105,7 +105,7 @@ export var testFileWrite = function () {
                 });
             // << (hide)
         }, function (error) {
-            //// Failed to write to the file.
+            // Failed to write to the file.
             // >> (hide)
             TKUnit.assert(false, "Failed to read/write text");
             //console.dump(error);
@@ -144,29 +144,29 @@ export var testFileRead = function () {
     var myFile = documents.getFile("Test_Write.txt");
 
     var written: boolean;
-    //// Writing text to the file.
+    // Writing text to the file.
     myFile.writeText("Something")
         .then(function () {
-            //// Succeeded writing to the file.
+            // Succeeded writing to the file.
 
-            //// Getting back the contents of the file.
+            // Getting back the contents of the file.
             myFile.readText()
                 .then(function (content) {
-                    //// Successfully read the file's content.
+                    // Successfully read the file's content.
                     // >> (hide)
                     written = content === "Something";
                     TKUnit.assert(written, "File read/write not working.");
                     myFile.remove();
                     // << (hide)
                 }, function (error) {
-                    //// Failed to read from the file.
+                    // Failed to read from the file.
                     // >> (hide)
                     TKUnit.assert(false, "Failed to read/write text");
                     //console.dump(error);
                     // << (hide)
                 });
         }, function (error) {
-            //// Failed to write to the file.
+            // Failed to write to the file.
             // >> (hide)
             TKUnit.assert(false, "Failed to read/write text");
             //console.dump(error);
@@ -203,13 +203,13 @@ export var testFileReadWriteBinary = function () {
 
 export var testGetKnownFolders = function () {
     // >> file-system-known-folders
-    //// Getting the application's 'documents' folder.
+    // Getting the application's 'documents' folder.
     var documents = fs.knownFolders.documents();
     // >> (hide)
     TKUnit.assert(<any>documents, "Could not retrieve the Documents known folder.");
     TKUnit.assert(documents.isKnown, "The Documents folder should have its isKnown property set to true.");
     // << (hide)
-    //// Getting the application's 'temp' folder.
+    // Getting the application's 'temp' folder.
     var temp = fs.knownFolders.temp();
     // >> (hide)
     TKUnit.assert(<any>temp, "Could not retrieve the Temporary known folder.");
@@ -243,7 +243,7 @@ export var testGetEntities = function () {
     // << (hide)
     documents.getEntities()
         .then(function (entities) {
-            //// entities is array with the document's files and folders.
+            // entities is array with the document's files and folders.
             entities.forEach(function (entity) {
                 console.log(entity.name);
             });
@@ -256,7 +256,7 @@ export var testGetEntities = function () {
             file1.remove();
             // << (hide)
         }, function (error) {
-            //// Failed to obtain folder's contents.
+            // Failed to obtain folder's contents.
             // globalConsole.error(error.message);
         });
     // << file-system-folders-content
@@ -286,7 +286,7 @@ export var testEnumEntities = function () {
     // << (hide)
     documents.eachEntity(function (entity) {
         console.log(entity.name);
-        //// Return true to continue, or return false to stop the iteration.
+        // Return true to continue, or return false to stop the iteration.
         return true;
     });
     // >> (hide)
@@ -308,7 +308,7 @@ export var testGetParent = function () {
     // >> (hide)
     TKUnit.assert(<any>file, "Failed to create file in the Documents folder.");
     // << (hide)
-    //// The parent folder of the file would be the documents folder.
+    // The parent folder of the file would be the documents folder.
     var parent = file.parent;
     // >> (hide)
     TKUnit.assert(documents === parent, "The parent folder should be the Documents folder.");
@@ -321,9 +321,9 @@ export var testFileNameExtension = function () {
     // >> file-system-extension
     var documents = fs.knownFolders.documents();
     var file = documents.getFile("Test.txt");
-    //// Getting the file name "Test.txt".
+    // Getting the file name "Test.txt".
     var fileName = file.name;
-    //// Getting the file extension ".txt".
+    // Getting the file extension ".txt".
     var fileExtension = file.extension;
     // >> (hide)
     TKUnit.assert(fileName === "Test.txt", "Wrong file name.");
@@ -379,14 +379,14 @@ export var testFileRename = function () {
 
     file.rename("Test_renamed.txt")
         .then(function (result) {
-            //// Successfully Renamed.
+            // Successfully Renamed.
             // >> (hide)
             TKUnit.assert(file.name === "Test_renamed.txt", "File.rename API not working.");
             file.remove();
             documents.getFile("Test.txt").remove();
             // << (hide)
         }, function (error) {
-            //// Failed to rename the file.
+            // Failed to rename the file.
             // >> (hide)
             TKUnit.assert(false, "Failed to rename file");
             // << (hide)
@@ -401,14 +401,14 @@ export var testFolderRename = function () {
 
     myFolder.rename("Something")
         .then(function (result) {
-            //// Successfully Renamed.
+            // Successfully Renamed.
             // >> (hide)
             TKUnit.assert(myFolder.name === "Something", "Folder.rename API not working.");
             myFolder.remove();
             folder.getFolder("Test__").remove();
             // << (hide)
         }, function (error) {
-            //// Failed to rename the folder.
+            // Failed to rename the folder.
             // >> (hide)
             TKUnit.assert(false, "Folder.rename API not working.");
             // << (hide)
@@ -422,12 +422,12 @@ export var testFileRemove = function () {
     var file = documents.getFile("AFileToRemove.txt");
     file.remove()
         .then(function (result) {
-            //// Success removing the file.
+            // Success removing the file.
             // >> (hide)
             TKUnit.assert(!fs.File.exists(file.path));
             // << (hide)
         }, function (error) {
-            //// Failed to remove the file.
+            // Failed to remove the file.
             // >> (hide)
             TKUnit.assert(false, "File.remove API not working.");
             // << (hide)
@@ -439,15 +439,15 @@ export var testFolderRemove = function () {
     // >> file-system-remove-folder
     var documents = fs.knownFolders.documents();
     var file = documents.getFolder("AFolderToRemove");
-    //// Remove a folder and recursively its content.
+    // Remove a folder and recursively its content.
     file.remove()
         .then(function (result) {
-            //// Success removing the folder.
+            // Success removing the folder.
             // >> (hide)
             TKUnit.assert(!fs.File.exists(file.path));
             // << (hide)
         }, function (error) {
-            //// Failed to remove the folder.
+            // Failed to remove the folder.
             // >> (hide)
             TKUnit.assert(false, "File.remove API not working.");
             // << (hide)
@@ -467,12 +467,12 @@ export var testFolderClear = function () {
     // << (hide)
     folder.clear()
         .then(function () {
-            //// Successfully cleared the folder.
+            // Successfully cleared the folder.
             // >> (hide)
             emptied = true;
             // << (hide)
         }, function (error) {
-            //// Failed to clear the folder.
+            // Failed to clear the folder.
             // >> (hide)
             TKUnit.assert(false, error.message);
             // << (hide)

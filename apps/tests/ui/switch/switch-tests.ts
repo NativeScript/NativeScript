@@ -121,12 +121,12 @@ export function test_binding_value_to_model() {
             targetProperty: "checked"
         };
         mySwitch.bind(options, model);
-        //// mySwitch.checked is now true
+        // mySwitch.checked is now true
         // >> (hide)
         TKUnit.assertEqual(mySwitch.checked, true, "mySwitch.checked");
         // << (hide)
         model.set("enabled", false);
-        //// mySwitch.checked is now false
+        // mySwitch.checked is now false
         // >> (hide)
         TKUnit.assertEqual(mySwitch.checked, false, "mySwitch.checked");
         // << (hide)

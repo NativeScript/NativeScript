@@ -26,7 +26,7 @@ export function test_DummyTestForSnippetOnly1() {
         neutralButtonText: "Cancel"
     };
     dialogs.confirm(options).then((result: boolean) => {
-        //// result can be true/false/undefined
+        // result can be true/false/undefined
         console.log(result);
     });
     // << dialog-confirm
@@ -54,7 +54,7 @@ export function test_DummyTestForSnippetOnly3() {
         password: ""
     };
     dialogs.login(options).then((loginResult: dialogs.LoginResult) => {
-        //// true or false.
+        // true or false.
         console.log(loginResult.result);
     });
     // << dialog-login

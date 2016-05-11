@@ -10,13 +10,13 @@ export var test_fetch = function (done: (err: Error, res?: string) => void) {
     var result;
     // >> fetch-response
     fetch("https://httpbin.org/get").then(function (r) {
-        //// Argument (r) is Response!
+        // Argument (r) is Response!
         // >> (hide)
         TKUnit.assert(r instanceof Response, "Result from fetch() should be valid Response object! Actual result is: " + result);
         done(null);
         // << (hide)
     }, function (e) {
-            //// Argument (e) is Error!
+            // Argument (e) is Error!
             // >> (hide)
             done(e);
             // << (hide)
@@ -29,13 +29,13 @@ export var test_fetch_text = function (done: (err: Error, res?: string) => void)
 
     // >> fetch-string'
     fetch("https://httpbin.org/get").then(response => { return response.text(); }).then(function (r) {
-        //// Argument (r) is string!
+        // Argument (r) is string!
         // >> (hide)
         TKUnit.assert(types.isString(r), "Result from text() should be string! Actual result is: " + r);
         done(null);
         // << (hide)
     }, function (e) {
-            //// Argument (e) is Error!
+            // Argument (e) is Error!
             // >> (hide)
             done(e);
             // << (hide)
@@ -48,13 +48,13 @@ export var test_fetch_json = function (done: (err: Error, res?: string) => void)
 
     // >> fetch-json
     fetch("https://httpbin.org/get").then(response => { return response.json(); }).then(function (r) {
-        //// Argument (r) is JSON object!
+        // Argument (r) is JSON object!
         // >> (hide)
         TKUnit.assert(types.isString(JSON.stringify(r)), "Result from json() should be JSON object! Actual result is: " + r);
         done(null);
         // << (hide)
     }, function (e) {
-            //// Argument (e) is Error!
+            // Argument (e) is Error!
             // >> (hide)
             done(e);
             // << (hide)
@@ -67,13 +67,13 @@ export var test_fetch_formData = function (done: (err: Error, res?: string) => v
 
     // >> fetch-formdata
     fetch("https://httpbin.org/get").then(response => { return response.formData(); }).then(function (r) {
-        //// Argument (r) is FormData object!
+        // Argument (r) is FormData object!
         // >> (hide)
         TKUnit.assert(r instanceof FormData, "Result from formData() should be FormData object! Actual result is: " + r);
         done(null);
         // << (hide)
     }, function (e) {
-            //// Argument (e) is Error!
+            // Argument (e) is Error!
             // >> (hide)
             done(e);
             // << (hide)
@@ -95,7 +95,7 @@ export var test_fetch_response_status = function (done) {
 
     // >> fetch-status-response
     fetch("https://httpbin.org/get").then(function (response) {
-        //// Argument (response) is Response!
+        // Argument (response) is Response!
         var statusCode = response.status;
         // >> (hide)
         try {
@@ -107,7 +107,7 @@ export var test_fetch_response_status = function (done) {
         }
         // << (hide)
     }, function (e) {
-            //// Argument (e) is Error!
+            // Argument (e) is Error!
             // >> (hide)
             done(e);
             // << (hide)
@@ -119,7 +119,7 @@ export var test_fetch_response_headers = function (done) {
 
     // >> fetch-headers-response
     fetch("https://httpbin.org/get").then(function (response) {
-        //// Argument (response) is Response!
+        // Argument (response) is Response!
         // var all = response.headers.getAll();
         // >> (hide)
         try {
@@ -131,7 +131,7 @@ export var test_fetch_response_headers = function (done) {
         }
         // << (hide)
     }, function (e) {
-            //// Argument (e) is Error!
+            // Argument (e) is Error!
             // >> (hide)
             done(e);
             // << (hide)

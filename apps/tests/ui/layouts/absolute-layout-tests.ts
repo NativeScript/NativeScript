@@ -23,7 +23,7 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
         absoluteLayout.height = 230;
         absoluteLayout.style.backgroundColor = new colorModule.Color("LightGray");
         var label = new labelModule.Label();
-        //// In absolute layout place of an UI element is determined by 4 parameters : left, top, width and height.
+        // In absolute layout place of an UI element is determined by 4 parameters : left, top, width and height.
         absoluteLayoutModule.AbsoluteLayout.setLeft(label, 10);
         absoluteLayoutModule.AbsoluteLayout.setTop(label, 10);
         label.width = 100;
