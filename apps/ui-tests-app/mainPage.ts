@@ -46,6 +46,7 @@ examples.set("radius", "css/radius");
 examples.set("styles", "css/styles");
 examples.set("switch", "css/views");
 examples.set("tabmore", "css/tab-view-more");
+examples.set("zindex", "css/zindex");
 
 examples.set("dialogs", "dialogs/dialogs");
 

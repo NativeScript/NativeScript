@@ -1,6 +1,10 @@
 <Page>
-  <AbsoluteLayout>
-    <StackLayout style="height:100; width: 100; z-index: 1; background-color: red;" />
-    <StackLayout style="height:100; width: 100; background-color: green;" />
-  </AbsoluteLayout>
+    <StackLayout automationText="zIndex">
+      <AbsoluteLayout style="background-color: green;">
+        <Button text="button 1" style="height: 100; width: 100; z-index: 999; background-color: red;" />
+        <Button text="button 2" left="20" top="70" style="height: 100; width: 100; z-index:1; background-color: yellow;"/>
+        <Button text="button 3" left="60" top="130" style="height: 100; width: 100; z-index:0; background-color: blue; color: black;"/>
+        <Button text="button 4" left="90" top="190" style="height: 100; width: 100; z-index:-1; background-color: orange;"/>
+      </AbsoluteLayout>
+  </StackLayout>
 </Page>
