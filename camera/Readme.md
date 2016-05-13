@@ -8,4 +8,7 @@ camera.takePicture({"cameraPosition": camera.CameraPosition.BACK, "flashMode": c
     console.log('pic canceled');
 });
 
+if(camera.isAvailable()){
+   console.log('you may take a picture');   
+}
 ```

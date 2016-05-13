@@ -10,6 +10,11 @@ declare module "camera" {
      * @param options - Optional parameter for setting different camera options.
      */
     export function takePicture(options?: CameraOptions): Promise<imageSource.ImageSource>;
+    
+     /**
+     * Is the camera available to use
+     */
+    export function isAvailable(): Boolean;
 
     export interface CameraOptions {
         /**
