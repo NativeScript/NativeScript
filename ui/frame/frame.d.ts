@@ -209,7 +209,7 @@ declare module "ui/frame" {
          * - slideBottom
          */
         name?: string;
-        
+
         /**
          * An user-defined instance of the "ui/transition".Transition class.
          */
@@ -233,6 +233,10 @@ declare module "ui/frame" {
     export interface BackstackEntry {
         entry: NavigationEntry;
         resolvedPage: pages.Page;
+
+        //@private
+        isNavigation: boolean;
+        //@endprivate
     }
 
     /**
