@@ -395,7 +395,7 @@ class Pointer implements definition.Pointer {
     }
 
     getY(): number {
-        return this.location.x;
+        return this.location.y;
     }
 }
 
