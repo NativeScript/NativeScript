@@ -137,6 +137,11 @@ export class Frame extends frameCommon.Frame {
         let manager = activity.getFragmentManager();
         let isFirstNavigation = types.isNullOrUndefined(this._currentEntry);
 
+        backstackEntry.isNavigation = true;
+        if (this._currentEntry) {
+            this._currentEntry.isNavigation = true;
+        }
+
         // Clear history
         if (backstackEntry.entry.clearHistory) {
             let backStackEntryCount = manager.getBackStackEntryCount();
@@ -260,9 +265,11 @@ export class Frame extends frameCommon.Frame {
     public _goBackCore(backstackEntry: definition.BackstackEntry) {
         navDepth = backstackEntry[NAV_DEPTH];
 
+        backstackEntry.isNavigation = true;
         if (this._currentEntry) {
             // We need this information inside onFragmentHidden
             this._currentEntry[IS_BACK] = true;
+            this._currentEntry.isNavigation = true;
         }
 
         trace.write(`${this}._goBackCore(pageId: ${backstackEntry.resolvedPage.id}, backstackVisible: ${this._isEntryBackstackVisible(backstackEntry)}, clearHistory: ${backstackEntry.entry.clearHistory}), navDepth: ${navDepth}`, trace.categories.Navigation);

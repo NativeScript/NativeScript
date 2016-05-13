@@ -205,6 +205,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         var backstackEntry: definition.BackstackEntry = {
             entry: entry,
             resolvedPage: page,
+            isNavigation: true
         };
 
         var navigationContext: NavigationContext = {

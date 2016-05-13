@@ -289,6 +289,7 @@ function _completePageAddition(fragment: any, isBack: boolean) {
     frame._currentEntry = entry;
     page.onNavigatedTo(isBack);
     frame._processNavigationQueue(page);
+    entry.isNavigation = undefined;
     trace.write(`ADDITION of ${page} completed`, trace.categories.Transition);
 }
 
@@ -300,7 +301,10 @@ function _completePageRemoval(fragment: any, isBack: boolean) {
     var page: pageModule.Page = entry.resolvedPage;
     if (page.frame) {
         frame._removeView(page);
-        page.onNavigatedFrom(isBack);
+        // This could be undefined if activity is destroyed (e.g. without actual navigation).
+        if (entry.isNavigation) {
+            page.onNavigatedFrom(isBack);
+        }
         trace.write(`REMOVAL of ${page} completed`, trace.categories.Transition);
     }
     else {
@@ -317,6 +321,8 @@ function _completePageRemoval(fragment: any, isBack: boolean) {
             trace.write(`DETACHMENT of ${page} has already been done`, trace.categories.Transition);
         }
     }
+
+    entry.isNavigation = undefined;
 }
 
 function _addNativeTransitionListener(fragment: any, nativeTransition: any/*android.transition.Transition*/) {
