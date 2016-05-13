@@ -106,6 +106,12 @@ export var takePicture = function (options?): Promise<any> {
     });
 }
 
+export var isAvailable = function () {
+    var utils: typeof utilsModule = require("utils/utils");
+    
+    return utils.ad.getApplicationContext().getPackageManager().hasSystemFeature(android.content.pm.PackageManager.FEATURE_CAMERA)
+}
+
 var calculateInSampleSize = function (imageWidth, imageHeight, reqWidth, reqHeight) {
     var sampleSize = 1;
     if (imageWidth > reqWidth && imageHeight > reqHeight) {

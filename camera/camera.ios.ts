@@ -124,3 +124,7 @@ export var takePicture = function (options): Promise<any> {
         }
     });
 }
+
+export var isAvailable = function () {
+    return UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera);
+}
