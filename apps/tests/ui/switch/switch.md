@@ -7,12 +7,12 @@ previous_url: /ApiReference/ui/switch/HOW-TO
 # Switch
 Using a switch requires the Switch module.
 <snippet id='article-require-switch'/>
-### Binding the Switch checked property and Button isEanbled property to a observable view-model property.
+### Binding the Switch checked property and Button isEnabled property to a observable view-model property.
 ``` XML
 <Page loaded="pageLoaded">
  <StackLayout orientation="vertical">
    {%raw%}<Switch checked="{{ someProperty }}" />
-   <Button isEanbled="{{ someProperty }}" text="This is a Button!" />{%endraw%}
+   <Button isEnabled="{{ someProperty }}" text="This is a Button!" />{%endraw%}
  </StackLayout>
 </Page>
 ```
