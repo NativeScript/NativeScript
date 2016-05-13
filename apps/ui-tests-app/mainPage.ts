@@ -38,14 +38,15 @@ examples.set("xmlbasics", "bindings/xmlbasics");
 
 examples.set("background", "css/background");
 examples.set("formatted", "css/decoration-transform-formattedtext");
+examples.set("csslv", "css/listview");
+examples.set("radius", "css/radius");
+examples.set("styles", "css/styles");
+examples.set("tabmore", "css/tab-view-more");
 examples.set("spacing", "css/letter-spacing");
 examples.set("decoration", "css/text-decoration");
 examples.set("transform", "css/text-transform");
 examples.set("whitespace", "css/white-space");
-examples.set("radius", "css/radius");
-examples.set("styles", "css/styles");
 examples.set("switch", "css/views");
-examples.set("tabmore", "css/tab-view-more");
 examples.set("zindex", "css/zindex");
 
 examples.set("dialogs", "dialogs/dialogs");
