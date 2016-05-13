@@ -6,24 +6,13 @@
 //  Copyright © 2016 Telerik A D. All rights reserved.
 //
 #import <UIKit/UIKit.h>
+#import <CoreGraphics/CoreGraphics.h>
 #import "UIImage+TNSBlocks.h"
 
 @implementation UIImage (TNSBlocks)
 
-static NSLock* image_lock_handle;
 static dispatch_queue_t image_queue;
-
-void image_lock() {
-    if (image_lock_handle) {
-        [image_lock_handle lock];
-    }
-}
-
-void image_unlock() {
-    if (image_lock_handle) {
-        [image_lock_handle unlock];
-    }
-}
+static NSLock* image_lock_handle;
 
 + (void) initialize {
     image_queue = dispatch_queue_create("org.nativescript.TNSWidgets.image", NULL);
@@ -35,20 +24,21 @@ void image_unlock() {
     }
 }
 
-- (void) tns_decompressImage {
-    UIGraphicsBeginImageContext(CGSizeMake(1, 1));
-    [self drawAtPoint:CGPointZero];
-    UIGraphicsEndImageContext();
+- (void) tns_forceDecode {
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef context = CGBitmapContextCreate(NULL, 1, 1, 8, 0, colorSpace, kCGImageAlphaPremultipliedFirst);
+    CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), [self CGImage]);
+    CGContextRelease(context);
+    CGColorSpaceRelease(colorSpace);
 }
 
 + (void) tns_safeDecodeImageNamed: (NSString*) name completion: (void (^) (UIImage*))callback {
     dispatch_async(image_queue, ^(void){
-        image_lock();
+        [image_lock_handle lock];
         UIImage* image = [UIImage imageNamed: name];
-        if (image) {
-            [image tns_decompressImage];
-        }
-        image_unlock();
+        [image_lock_handle unlock];
+        [image tns_forceDecode];
+
         dispatch_async(dispatch_get_main_queue(), ^(void) {
             callback(image);
         });
@@ -56,10 +46,32 @@ void image_unlock() {
 }
 
 + (UIImage*) tns_safeImageNamed: (NSString*) name {
-    image_lock();
+    [image_lock_handle lock];
     UIImage* image = [UIImage imageNamed: name];
-    image_unlock();
+    [image_lock_handle unlock];
     return image;
+}
+
++ (void) tns_decodeImageWithData: (NSData*) data completion: (void (^) (UIImage*))callback {
+    dispatch_async(image_queue, ^(void) {
+        UIImage* image = [UIImage imageWithData: data];
+        [image tns_forceDecode];
+
+        dispatch_async(dispatch_get_main_queue(), ^(void) {
+            callback(image);
+        });
+    });
+}
+
++ (void) tns_decodeImageWidthContentsOfFile: (NSString*) file completion: (void (^) (UIImage*))callback {
+    dispatch_async(image_queue, ^(void) {
+        UIImage* image = [UIImage imageWithContentsOfFile: file];
+        [image tns_forceDecode];
+
+        dispatch_async(dispatch_get_main_queue(), ^(void) {
+            callback(image);
+        });
+    });
 }
 
 @end
