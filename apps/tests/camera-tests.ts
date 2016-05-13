@@ -16,5 +16,5 @@ export var test_isCameraAvailable = function () {
     // >> camera-is-availabile
     var availability = camera.isAvailable();
     // >> camera-is-availabile
-    TKUnit.assertTrue(availability == true || availability == false, "Availability should return a Boolean");
+    TKUnit.assertTrue(availability === true || availability === false, "Availability should return a Boolean");
 };
