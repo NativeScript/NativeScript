@@ -10,3 +10,6 @@ Using a camera requires the camera module.
 
 ### Taking a picture.
 <snippet id='camera-take-picture'/>
+
+### Check for availability
+<snippet id='camera-is-availabile'/>

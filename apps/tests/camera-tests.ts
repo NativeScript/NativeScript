@@ -13,7 +13,8 @@ export var test_takePicture = function () {
 };
 
 export var test_isCameraAvailable = function () {
-    // >> camera-take-picture
+    // >> camera-is-availabile
     var availability = camera.isAvailable();
+    // >> camera-is-availabile
     TKUnit.assertTrue(availability == true || availability == false, "Availability should return a Boolean");
 };

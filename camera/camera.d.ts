@@ -11,7 +11,7 @@ declare module "camera" {
      */
     export function takePicture(options?: CameraOptions): Promise<imageSource.ImageSource>;
     
-     /**
+    /**
      * Is the camera available to use
      */
     export function isAvailable(): Boolean;
