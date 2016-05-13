@@ -1,2 +1,6 @@
-{ "name" : "globals",
-  "main" : "globals.js" }
+{
+	"name" : "globals",
+  	"main" : "globals.js",
+	"nativescript": {}
+}
+

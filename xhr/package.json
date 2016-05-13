@@ -1,2 +1,5 @@
-{ "name" : "xhr",
-  "main" : "xhr.js" }
+{
+	"name" : "xhr",
+  	"main" : "xhr.js",
+	"nativescript": {}
+}

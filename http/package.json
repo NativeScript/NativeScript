@@ -1,2 +1,6 @@
-{ "name" : "http",
-  "main" : "http.js" }
+{
+	"name" : "http",
+  	"main" : "http.js",
+	"nativescript": {}
+}
+

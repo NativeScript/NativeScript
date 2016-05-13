@@ -1,2 +1,5 @@
-{ "name" : "platform",
-  "main" : "platform.js" }
+{
+	"name" : "platform",
+  	"main" : "platform.js",
+	"nativescript": {}
+}
