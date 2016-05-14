@@ -1,8 +1,8 @@
 ﻿export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, reqHeight) {
-    var widthCoef = sourceWidth / reqWidth;
-    var heightCoef = sourceHeight / reqHeight;
+    let widthCoef = sourceWidth / reqWidth;
+    let heightCoef = sourceHeight / reqHeight;
 
-    var aspectCoef = widthCoef > heightCoef ? widthCoef : heightCoef;
+    let aspectCoef = widthCoef > heightCoef ? widthCoef : heightCoef;
 
     return {
         width: Math.floor(sourceWidth / aspectCoef),

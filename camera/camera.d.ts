@@ -36,5 +36,10 @@ declare module "camera" {
          * This property could affect width or heigth return values.
          */
         keepAspectRatio?: boolean;
+        
+        /**
+         * Defines if camera picture should be copied to photo Gallery (Android) or Photos (iOS) 
+         */
+        saveToGallery?: boolean;
     }
 }

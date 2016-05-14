@@ -27,7 +27,7 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
         if (options) {
             this._width = options.width;
             this._height = options.height;
-	    this._saveToGallery = options.saveToGallery;
+            this._saveToGallery = options.saveToGallery;
             this._keepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
         }
         return this;
@@ -35,15 +35,15 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
 
     imagePickerControllerDidFinishPickingMediaWithInfo(picker, info): void {
         if (info) {
-            var source = info.valueForKey(UIImagePickerControllerOriginalImage);
+            let source = info.valueForKey(UIImagePickerControllerOriginalImage);
             if (source) {
-                var image = null;
+                let image = null;
                 if (this._width || this._height) {
-                    var newSize = null;
+                    let newSize = null;
                     if (this._keepAspectRatio) {
-                        var common: typeof cameraCommonModule = require("./camera-common");
+                        let common: typeof cameraCommonModule = require("./camera-common");
 
-                        var aspectSafeSize = common.getAspectSafeDimensions(source.size.width, source.size.height, this._width, this._height);
+                        let aspectSafeSize = common.getAspectSafeDimensions(source.size.width, source.size.height, this._width, this._height);
                         newSize = CGSizeMake(aspectSafeSize.width, aspectSafeSize.height);
                     }
                     else {
@@ -55,15 +55,15 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
                     UIGraphicsEndImageContext();
                 }
 
-                var imageSource: typeof imageSourceModule = require("image-source");
+                let imageSource: typeof imageSourceModule = require("image-source");
 
-                var imageSourceResult = image ? imageSource.fromNativeSource(image) : imageSource.fromNativeSource(source);
-		
+                let imageSourceResult = image ? imageSource.fromNativeSource(image) : imageSource.fromNativeSource(source);
+
                 if (this._callback) {
                     this._callback(imageSourceResult);
-		    if(this._saveToGallery) {
-			UIImageWriteToSavedPhotosAlbum(imageSourceResult.ios, null, null, null);
-		    }
+                    if (this._saveToGallery) {
+                        UIImageWriteToSavedPhotosAlbum(imageSourceResult.ios, null, null, null);
+                    }
                 }
             }
         }
@@ -82,29 +82,29 @@ var listener;
 export var takePicture = function (options): Promise<any> {
     return new Promise((resolve, reject) => {
         listener = null;
-        var imagePickerController = new UIImagePickerController();
-        var reqWidth = 0;
-        var reqHeight = 0;
-        var keepAspectRatio = true;
-	var saveToGallery = true;
+        let imagePickerController = new UIImagePickerController();
+        let reqWidth = 0;
+        let reqHeight = 0;
+        let keepAspectRatio = true;
+        let saveToGallery = true;
         if (options) {
             reqWidth = options.width || 0;
             reqHeight = options.height || reqWidth;
             keepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
-	    saveToGallery = options.saveToGallery ? true : false;
+            saveToGallery = options.saveToGallery ? true : false;
         }
         if (reqWidth && reqHeight) {
             listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { width: reqWidth, height: reqHeight, keepAspectRatio: keepAspectRatio, saveToGallery: saveToGallery });
         } else if (saveToGallery) {
-	    listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { saveToGallery: saveToGallery });
-	}
+            listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { saveToGallery: saveToGallery });
+        }
         else {
             listener = UIImagePickerControllerDelegateImpl.new().initWithCallback(resolve);
         }
         imagePickerController.delegate = listener;
 
-        var sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera;
-        var mediaTypes = UIImagePickerController.availableMediaTypesForSourceType(sourceType);
+        let sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera;
+        let mediaTypes = UIImagePickerController.availableMediaTypesForSourceType(sourceType);
 
         if (mediaTypes) {
             imagePickerController.mediaTypes = mediaTypes;
@@ -113,11 +113,11 @@ export var takePicture = function (options): Promise<any> {
 
         imagePickerController.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationCurrentContext;
 
-        var frame: typeof frameModule = require("ui/frame");
+        let frame: typeof frameModule = require("ui/frame");
 
-        var topMostFrame = frame.topmost();
+        let topMostFrame = frame.topmost();
         if (topMostFrame) {
-            var viewController: UIViewController = topMostFrame.currentPage && topMostFrame.currentPage.ios;
+            let viewController: UIViewController = topMostFrame.currentPage && topMostFrame.currentPage.ios;
             if (viewController) {
                 viewController.presentViewControllerAnimatedCompletion(imagePickerController, true, null);
             }
