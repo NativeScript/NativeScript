@@ -2,6 +2,9 @@
     import definition = require("ui/styling");
     import observable = require("ui/core/dependency-observable");
 
+    export type StyleProperty = Property;
+    export type ResolvedStylePropertyHandler = (property: Property | string, value: any) => void;
+    export function withStyleProperty(name: string, value: any, resolvedCallback: ResolvedStylePropertyHandler): void;
     export function getShorthandPairs(name: string, value: any): Array<KeyValuePair<Property, any>>;
 
     export function registerShorthandCallback(name: string, callback: (value: any) => Array<KeyValuePair<Property, any>>): void;

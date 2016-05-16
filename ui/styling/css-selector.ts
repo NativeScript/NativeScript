@@ -2,7 +2,7 @@
 import observable = require("ui/core/dependency-observable");
 import cssParser = require("css");
 import * as trace from "trace";
-import * as styleProperty from "ui/styling/style-property";
+import {StyleProperty, ResolvedStylePropertyHandler, withStyleProperty} from "ui/styling/style-property";
 import * as types from "utils/types";
 import * as utils from "utils/utils";
 import keyframeAnimation = require("ui/animation/keyframe-animation");
@@ -69,22 +69,24 @@ export class CssSelector {
         let modifier = valueSourceModifier || this.valueSourceModifier;
         this.eachSetter((property, value) => {
             if (types.isString(property)) {
+                const propertyName = <string>property;
                 let attrHandled = false;
-                let specialSetter = getSpecialPropertySetter(property);
+                let specialSetter = getSpecialPropertySetter(propertyName);
 
                 if (!attrHandled && specialSetter) {
                     specialSetter(view, value);
                     attrHandled = true;
                 }
 
-                if (!attrHandled && property in view) {
-                    view[property] = utils.convertString(value);
+                if (!attrHandled && propertyName in view) {
+                    view[propertyName] = utils.convertString(value);
                 }
             } else {
+                const resolvedProperty = <StyleProperty>property;
                 try {
-                    view.style._setValue(property, value, modifier);
+                    view.style._setValue(resolvedProperty, value, modifier);
                 } catch (ex) {
-                    trace.write("Error setting property: " + property.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+                    trace.write("Error setting property: " + resolvedProperty.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
                 }
             }
         });
@@ -102,29 +104,12 @@ export class CssSelector {
         }
     }
 
-    public eachSetter(callback: (property, resolvedValue: any) => void) {
+    public eachSetter(callback: ResolvedStylePropertyHandler) {
         for (let i = 0; i < this._declarations.length; i++) {
             let declaration = this._declarations[i];
             let name = declaration.property;
             let resolvedValue = declaration.value;
-
-            let property = styleProperty.getPropertyByCssName(name);
-
-            if (property) {
-                // The property.valueConverter is now used to convert the value later on in DependencyObservable._setValueInternal.
-                callback(property, resolvedValue);
-            }
-            else {
-                let pairs = styleProperty.getShorthandPairs(name, resolvedValue);
-                if (pairs) {
-                    for (let j = 0; j < pairs.length; j++) {
-                        let pair = pairs[j];
-                        callback(pair.property, pair.value);
-                    }
-                } else {
-                    callback(declaration.property, declaration.value);
-                }
-            }
+            withStyleProperty(name, resolvedValue, callback);
         }
     }
 
@@ -483,7 +468,8 @@ class InlineStyleSelector extends CssSelector {
 
     public apply(view: view.View) {
         this.eachSetter((property, value) => {
-            view.style._setValue(property, value, observable.ValueSource.Local);
+            const resolvedProperty = <StyleProperty>property;
+            view.style._setValue(resolvedProperty, value, observable.ValueSource.Local);
         });
     }
 
