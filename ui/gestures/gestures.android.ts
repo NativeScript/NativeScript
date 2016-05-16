@@ -468,7 +468,7 @@ class CustomPanGestureDetector {
     }
 
     private trackStart(currentEvent: android.view.MotionEvent) {
-        let inital = this.getMotionEventCenter(this.lastEventCache ? this.lastEventCache : currentEvent);
+        let inital = this.getEventCoordinates(this.lastEventCache ? this.lastEventCache : currentEvent);
         this.initialX = inital.x;
         this.initialY = inital.y;
         this.isTracking = true;
@@ -478,7 +478,7 @@ class CustomPanGestureDetector {
     }
 
     private trackChange(currentEvent: android.view.MotionEvent) {
-        let current = this.getMotionEventCenter(currentEvent);
+        let current = this.getEventCoordinates(currentEvent);
         this.deltaX = current.x - this.initialX;
         this.deltaY = current.y - this.initialY;
 
@@ -486,18 +486,28 @@ class CustomPanGestureDetector {
         _executeCallback(this.observer, args);
     }
 
-    private getMotionEventCenter(event: android.view.MotionEvent): { x: number, y: number } {
-        let count = event.getPointerCount();
-        let res = { x: 0, y: 0 };
-        for (let i = 0; i < count; i++) {
-            res.x += event.getRawX();
-            res.y += event.getRawY();
+    private getEventCoordinates(event: android.view.MotionEvent): { x: number, y: number } {
+        var count = event.getPointerCount();
+        if (count === 1) {
+            return {
+                x: event.getRawX() / this.density,
+                y: event.getRawY() / this.density
+            };
         }
+        else {
+            var res = { x: 0, y: 0 };
+            var offX = event.getRawX() - event.getX();
+            var offY = event.getRawY() - event.getY();
 
-        res.x /= (count * this.density);
-        res.y /= (count * this.density);
+            for (var i = 0; i < count; i++) {
+                res.x += event.getX(i) + offX;
+                res.y += event.getY(i) + offY;
+            }
 
-        return res;
+            res.x /= (count * this.density);
+            res.y /= (count * this.density);
+            return res;
+        }
     }
 }
 
