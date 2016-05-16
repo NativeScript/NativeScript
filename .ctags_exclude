@@ -1,2 +1,5 @@
 node_modules
+android17.d.ts
+ios.d.ts
+*.js
 bin
