@@ -110,7 +110,7 @@ export class GesturesObserver extends common.GesturesObserver {
                 this._eventData = new TouchGestureEventData();
             }
 
-            this._eventData.prepare(this.target, motionEvent);          
+            this._eventData.prepare(this.target, motionEvent);
             _executeCallback(this, this._eventData);
         }
 
@@ -489,9 +489,9 @@ class CustomPanGestureDetector {
     private getMotionEventCenter(event: android.view.MotionEvent): { x: number, y: number } {
         let count = event.getPointerCount();
         let res = { x: 0, y: 0 };
-        for (var i = 0; i < count; i++) {
-            res.x += event.getX(i);
-            res.y += event.getY(i);
+        for (let i = 0; i < count; i++) {
+            res.x += event.getRawX();
+            res.y += event.getRawY();
         }
 
         res.x /= (count * this.density);
