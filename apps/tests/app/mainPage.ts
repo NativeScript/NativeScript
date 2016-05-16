@@ -6,6 +6,16 @@ import {Label} from "ui/label";
 trace.enable();
 trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
 
+// When debugging
+//trace.setCategories(trace.categories.concat(
+//    trace.categories.Test,
+//    trace.categories.Navigation,
+//    trace.categories.Transition,
+//    trace.categories.NativeLifecycle,
+//    trace.categories.ViewHierarchy,
+//    trace.categories.VisualTreeEvents
+//));
+
 let page = new Page();
 page.id = "mainPage";
 

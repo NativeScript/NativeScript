@@ -1,13 +1,13 @@
-﻿import definition = require("ui/transition");
-import platform = require("platform");
-import frameModule = require("ui/frame");
-import pageModule = require("ui/page");
+﻿import { Transition as definitionTransition } from "ui/transition";
+import { NavigationTransition, BackstackEntry } from "ui/frame";
+import { Page} from "ui/page";
+import { getClass } from "utils/types";
+import { device } from "platform";
 import * as animationModule from "ui/animation";
-import types = require("utils/types");
-import trace = require("trace");
 import lazy from "utils/lazy";
+import trace = require("trace");
+var _sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
-var _sdkVersion = lazy(() => parseInt(platform.device.sdkVersion));
 var _defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
 
 interface CompleteOptions {
@@ -15,8 +15,8 @@ interface CompleteOptions {
 }
 
 interface ExpandedFragment {
-    enterPopExitTransition: definition.Transition;
-    exitPopEnterTransition: definition.Transition;
+    enterPopExitTransition: definitionTransition;
+    exitPopEnterTransition: definitionTransition;
     completePageAdditionWhenTransitionEnds: CompleteOptions;
     completePageRemovalWhenTransitionEnds: CompleteOptions;
     isDestroyed: boolean;
@@ -37,19 +37,19 @@ export module AndroidTransitionType {
 export function _clearBackwardTransitions(fragment: any): void {
     var expandedFragment = <ExpandedFragment>fragment;
     if (expandedFragment.enterPopExitTransition) {
-        trace.write(`Cleared enterPopExitTransition ${expandedFragment.enterPopExitTransition} for ${fragment.getTag()}`, trace.categories.Transition);
+        trace.write(`Cleared enterPopExitTransition ${expandedFragment.enterPopExitTransition} for ${fragment}`, trace.categories.Transition);
         expandedFragment.enterPopExitTransition = undefined;
     }
     
     if (_sdkVersion() >= 21) {
         var enterTransition = (<any>fragment).getEnterTransition();
         if (enterTransition) {
-            trace.write(`Cleared Enter ${enterTransition.getClass().getSimpleName()} transition for ${fragment.getTag()}`, trace.categories.Transition);
+            trace.write(`Cleared Enter ${enterTransition.getClass().getSimpleName() } transition for ${fragment}`, trace.categories.Transition);
             (<any>fragment).setEnterTransition(null);
         }
         var returnTransition = (<any>fragment).getReturnTransition();
         if (returnTransition) {
-            trace.write(`Cleared Pop Exit ${returnTransition.getClass().getSimpleName()} transition for ${fragment.getTag()}`, trace.categories.Transition);
+            trace.write(`Cleared Pop Exit ${returnTransition.getClass().getSimpleName() } transition for ${fragment}`, trace.categories.Transition);
             (<any>fragment).setReturnTransition(null);
         }
     }
@@ -58,25 +58,25 @@ export function _clearBackwardTransitions(fragment: any): void {
 export function _clearForwardTransitions(fragment: any): void {
     var expandedFragment = <ExpandedFragment>fragment;
     if (expandedFragment.exitPopEnterTransition) {
-        trace.write(`Cleared exitPopEnterTransition ${expandedFragment.exitPopEnterTransition} for ${fragment.getTag()}`, trace.categories.Transition);
+        trace.write(`Cleared exitPopEnterTransition ${expandedFragment.exitPopEnterTransition} for ${fragment}`, trace.categories.Transition);
         expandedFragment.exitPopEnterTransition = undefined;
     }
 
     if (_sdkVersion() >= 21) {
         var exitTransition = (<any>fragment).getExitTransition();
         if (exitTransition) {
-            trace.write(`Cleared Exit ${exitTransition.getClass().getSimpleName()} transition for ${fragment.getTag()}`, trace.categories.Transition);
+            trace.write(`Cleared Exit ${exitTransition.getClass().getSimpleName()} transition for ${fragment}`, trace.categories.Transition);
             (<any>fragment).setExitTransition(null);//exit
         }
         var reenterTransition = (<any>fragment).getReenterTransition();
         if (reenterTransition) {
-            trace.write(`Cleared Pop Enter ${reenterTransition.getClass().getSimpleName()} transition for ${fragment.getTag()}`, trace.categories.Transition);
+            trace.write(`Cleared Pop Enter ${reenterTransition.getClass().getSimpleName()} transition for ${fragment}`, trace.categories.Transition);
             (<any>fragment).setReenterTransition(null);//popEnter
         }
     }
 }
 
-export function _setAndroidFragmentTransitions(navigationTransition: frameModule.NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): void {
+export function _setAndroidFragmentTransitions(navigationTransition: NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): void {
     var name;
     if (navigationTransition.name) {
         name = navigationTransition.name.toLowerCase();
@@ -184,7 +184,7 @@ export function _setAndroidFragmentTransitions(navigationTransition: frameModule
         return;
     }
 
-    var transition: definition.Transition;
+    var transition: definitionTransition;
     if (name) {
         if (name.indexOf("slide") === 0) {
             //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
@@ -209,17 +209,17 @@ export function _setAndroidFragmentTransitions(navigationTransition: frameModule
     }
 
     if (transition) {
-        var newexpandedFragment = <ExpandedFragment>newFragment;
-        newexpandedFragment.enterPopExitTransition = transition;
+        var newExpandedFragment = <ExpandedFragment>newFragment;
+        newExpandedFragment.enterPopExitTransition = transition;
         if (currentFragment) {
-            var currentexpandedFragment = <ExpandedFragment>currentFragment;
-            currentexpandedFragment.exitPopEnterTransition = transition;
+            var currentExpandedFragment = <ExpandedFragment>currentFragment;
+            currentExpandedFragment.exitPopEnterTransition = transition;
         }
         fragmentTransaction.setCustomAnimations(enterFakeResourceId, exitFakeResourceId, popEnterFakeResourceId, popExitFakeResourceId);
     }
 }
 
-function _setUpNativeTransition(navigationTransition: frameModule.NavigationTransition, nativeTransition: any/*android.transition.Transition*/) {
+function _setUpNativeTransition(navigationTransition: NavigationTransition, nativeTransition: any/*android.transition.Transition*/) {
     if (navigationTransition.duration) {
         nativeTransition.setDuration(navigationTransition.duration);
     }
@@ -239,13 +239,13 @@ export function _onFragmentShown(fragment: any, isBack: boolean): void {
     var transitionType = isBack ? "Pop Enter" : "Enter";
     var relevantTransition = isBack ? expandedFragment.exitPopEnterTransition : expandedFragment.enterPopExitTransition;
     if (relevantTransition) {
-        trace.write(`${fragment.getTag() } has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${relevantTransition}. Will complete page addition when transition ends.`, trace.categories.Transition);
+        trace.write(`${fragment } has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${relevantTransition}. Will complete page addition when transition ends.`, trace.categories.Transition);
         expandedFragment.completePageAdditionWhenTransitionEnds = { isBack: isBack };
     }
     else if (_sdkVersion() >= 21) {
         var nativeTransition = isBack ? (<any>fragment).getReenterTransition() : (<any>fragment).getEnterTransition();
         if (nativeTransition) {
-            trace.write(`${fragment.getTag() } has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${nativeTransition.getClass().getSimpleName()} transition. Will complete page addition when transition ends.`, trace.categories.Transition);
+            trace.write(`${fragment } has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${nativeTransition.getClass().getSimpleName()} transition. Will complete page addition when transition ends.`, trace.categories.Transition);
             expandedFragment.completePageAdditionWhenTransitionEnds = { isBack: isBack };
         }
     }
@@ -260,13 +260,13 @@ export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boo
     var transitionType = isBack ? "Pop Exit" : "Exit";
     var relevantTransition = isBack ? expandedFragment.enterPopExitTransition : expandedFragment.exitPopEnterTransition;
     if (relevantTransition) {
-        trace.write(`${fragment.getTag()} has been hidden when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${relevantTransition}. Will complete page removal when transition ends.`, trace.categories.Transition);
+        trace.write(`${fragment} has been hidden when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${relevantTransition}. Will complete page removal when transition ends.`, trace.categories.Transition);
         expandedFragment.completePageRemovalWhenTransitionEnds = { isBack: isBack };
     }
     else if (_sdkVersion() >= 21) {
         var nativeTransition = isBack ? (<any>fragment).getReturnTransition() : (<any>fragment).getExitTransition();
         if (nativeTransition) {
-            trace.write(`${fragment.getTag()} has been hidden when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${nativeTransition.getClass().getSimpleName()} transition. Will complete page removal when transition ends.`, trace.categories.Transition);
+            trace.write(`${fragment} has been hidden when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${nativeTransition.getClass().getSimpleName()} transition. Will complete page removal when transition ends.`, trace.categories.Transition);
             expandedFragment.completePageRemovalWhenTransitionEnds = { isBack: isBack };
         }
     }
@@ -280,11 +280,12 @@ export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boo
 }
 
 function _completePageAddition(fragment: any, isBack: boolean) {
+    trace.write(`STARTING ADDITION of ${page}...`, trace.categories.Transition);
     var expandedFragment = <ExpandedFragment>fragment;
     expandedFragment.completePageAdditionWhenTransitionEnds = undefined;
     var frame = fragment.frame;
-    var entry: frameModule.BackstackEntry = fragment.entry;
-    var page: pageModule.Page = entry.resolvedPage;
+    var entry: BackstackEntry = fragment.entry;
+    var page: Page = entry.resolvedPage;
     // The original code that was once in Frame onFragmentShown
     frame._currentEntry = entry;
     page.onNavigatedTo(isBack);
@@ -294,11 +295,12 @@ function _completePageAddition(fragment: any, isBack: boolean) {
 }
 
 function _completePageRemoval(fragment: any, isBack: boolean) {
+    trace.write(`STARTING REMOVAL of ${page}...`, trace.categories.Transition);
     var expandedFragment = <ExpandedFragment>fragment;
     expandedFragment.completePageRemovalWhenTransitionEnds = undefined;
     var frame = fragment.frame;
-    var entry: frameModule.BackstackEntry = fragment.entry;
-    var page: pageModule.Page = entry.resolvedPage;
+    var entry: BackstackEntry = fragment.entry;
+    var page: Page = entry.resolvedPage;
     if (page.frame) {
         frame._removeView(page);
         // This could be undefined if activity is destroyed (e.g. without actual navigation).
@@ -320,9 +322,21 @@ function _completePageRemoval(fragment: any, isBack: boolean) {
         else {
             trace.write(`DETACHMENT of ${page} has already been done`, trace.categories.Transition);
         }
+
+        _removePageNativeViewFromAndroidParent(page);
     }
 
     entry.isNavigation = undefined;
+}
+
+export function _removePageNativeViewFromAndroidParent(page: Page): void {
+    if (page._nativeView && page._nativeView.getParent) {
+        var androidParent = page._nativeView.getParent();
+        if (androidParent && androidParent.removeView) {
+            trace.write(`REMOVED ${page}._nativeView from its Android parent`, trace.categories.Transition);
+            androidParent.removeView(page._nativeView);
+        }
+    }
 }
 
 function _addNativeTransitionListener(fragment: any, nativeTransition: any/*android.transition.Transition*/) {
@@ -386,13 +400,13 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
         animator = <android.animation.Animator>transition.createAndroidAnimator(transitionType);
         var transitionListener = new android.animation.Animator.AnimatorListener({
             onAnimationStart: function (animator: android.animation.Animator): void {
-                trace.write(`START ${transitionType} ${transition} for ${fragment.getTag()}`, trace.categories.Transition);
+                trace.write(`START ${transitionType} ${transition} for ${fragment}`, trace.categories.Transition);
             },
             onAnimationRepeat: function (animator: android.animation.Animator): void {
-                trace.write(`REPEAT ${transitionType} ${transition} for ${fragment.getTag()}`, trace.categories.Transition);
+                trace.write(`REPEAT ${transitionType} ${transition} for ${fragment}`, trace.categories.Transition);
             },
             onAnimationEnd: function (animator: android.animation.Animator): void {
-                trace.write(`END ${transitionType} ${transition}`, trace.categories.Transition);
+                trace.write(`END ${transitionType} ${transition} for ${fragment}`, trace.categories.Transition);
                 if (expandedFragment.completePageRemovalWhenTransitionEnds) {
                     _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
                 }
@@ -401,7 +415,7 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
                 }
             },
             onAnimationCancel: function (animator: android.animation.Animator): void {
-                trace.write(`CANCEL ${transitionType} ${transition} for ${fragment.getTag()}`, trace.categories.Transition);
+                trace.write(`CANCEL ${transitionType} ${transition} for ${fragment}`, trace.categories.Transition);
                 if (expandedFragment.completePageRemovalWhenTransitionEnds) {
                     _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
                 }
@@ -413,14 +427,37 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
         animator.addListener(transitionListener);
     }
 
+    if (transitionType && !animator) {
+        // Happens when the transaction has setCustomAnimations, but we have cleared the transitions because of CLEARING_HISTORY
+        animator = _createDummyZeroDurationAnimator();
+    }
+
     return animator;
 }
 
-var transitionId = 0;
-export class Transition implements definition.Transition {
+let intEvaluator: android.animation.IntEvaluator;
+function ensureIntEvaluator() {
+    if (!intEvaluator) {
+        intEvaluator = new android.animation.IntEvaluator();
+    }
+}
+
+function _createDummyZeroDurationAnimator(): android.animation.Animator {
+    trace.write(`_createDummyZeroDurationAnimator()`, trace.categories.Transition);
+    ensureIntEvaluator();
+    let nativeArray = (<any>Array).create(java.lang.Object, 2);
+    nativeArray[0] = java.lang.Integer.valueOf(0);
+    nativeArray[1] = java.lang.Integer.valueOf(1);
+    var animator = android.animation.ValueAnimator.ofObject(intEvaluator, nativeArray);
+    animator.setDuration(0);
+    return animator;
+}
+
+export class Transition implements definitionTransition {
     private _duration: number;
     private _interpolator: android.view.animation.Interpolator;
     private _id: number;
+    private static transitionId = 0;
 
     constructor(duration: number, curve: any) {
         this._duration = duration;
@@ -431,7 +468,7 @@ export class Transition implements definition.Transition {
         else {
             this._interpolator = _defaultInterpolator();
         }
-        this._id = transitionId++;
+        this._id = Transition.transitionId++;
     }
 
     public getDuration(): number {
@@ -451,6 +488,6 @@ export class Transition implements definition.Transition {
     }
 
     public toString(): string {
-        return `${types.getClass(this)}@${this._id}`;
+        return `${getClass(this)}@${this._id}`;
     }
 }

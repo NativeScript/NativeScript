@@ -70,7 +70,8 @@ export class Frame extends frameCommon.Frame {
     }
 
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
-        trace.write(`${this}._navigateCore(page: ${backstackEntry.resolvedPage}, backstackVisible: ${this._isEntryBackstackVisible(backstackEntry)}, clearHistory: ${backstackEntry.entry.clearHistory}), navDepth: ${navDepth}`, trace.categories.Navigation);
+        super._navigateCore(backstackEntry);
+
         let viewController: UIViewController = backstackEntry.resolvedPage.ios;
         if (!viewController) {
             throw new Error("Required page does not have a viewController created.");
@@ -125,7 +126,7 @@ export class Frame extends frameCommon.Frame {
         }
 
         // We should hide the current entry from the back stack.
-        if (!this._isEntryBackstackVisible(this._currentEntry)) {
+        if (!Frame._isEntryBackstackVisible(this._currentEntry)) {
             var newControllers = NSMutableArray.alloc().initWithArray(this._ios.controller.viewControllers);
             if (newControllers.count === 0) {
                 throw new Error("Wrong controllers count.");
@@ -151,8 +152,9 @@ export class Frame extends frameCommon.Frame {
     }
 
     public _goBackCore(backstackEntry: definition.BackstackEntry) {
+        super._goBackCore(backstackEntry);
+
         navDepth = backstackEntry[NAV_DEPTH];
-        trace.write(`${this}._goBackCore(page: ${backstackEntry.resolvedPage}, backstackVisible: ${this._isEntryBackstackVisible(backstackEntry)}, clearHistory: ${backstackEntry.entry.clearHistory}), navDepth: ${navDepth}`, trace.categories.Navigation);
 
         if (!this._shouldSkipNativePop) {
             var controller = backstackEntry.resolvedPage.ios;
