@@ -70,9 +70,8 @@ export class Frame extends frameCommon.Frame {
     }
 
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
-        if (trace.enabled) {
-            trace.write(`${this}._navigateCore(page: ${backstackEntry.resolvedPage}, backstackVisible: ${this._isEntryBackstackVisible(backstackEntry)}, clearHistory: ${backstackEntry.entry.clearHistory}), navDepth: ${navDepth}`, trace.categories.Navigation);
-        }
+        super._navigateCore(backstackEntry);
+
         let viewController: UIViewController = backstackEntry.resolvedPage.ios;
         if (!viewController) {
             throw new Error("Required page does not have a viewController created.");
@@ -112,7 +111,7 @@ export class Frame extends frameCommon.Frame {
         if (!this._currentEntry) {
             this._ios.controller.pushViewControllerAnimated(viewController, animated);
             if (trace.enabled) {
-                trace.write(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, trace.categories.Navigation);
+            trace.write(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, trace.categories.Navigation);
             }
             return;
         }
@@ -124,14 +123,14 @@ export class Frame extends frameCommon.Frame {
             newControllers.addObject(viewController);
             this._ios.controller.setViewControllersAnimated(newControllers, animated);
             if (trace.enabled) {
-                trace.write(`${this}.setViewControllersAnimated([${viewController}], ${animated}); depth = ${navDepth}`, trace.categories.Navigation);
+            trace.write(`${this}.setViewControllersAnimated([${viewController}], ${animated}); depth = ${navDepth}`, trace.categories.Navigation);
             }
             return;
 
         }
 
         // We should hide the current entry from the back stack.
-        if (!this._isEntryBackstackVisible(this._currentEntry)) {
+        if (!Frame._isEntryBackstackVisible(this._currentEntry)) {
             var newControllers = NSMutableArray.alloc().initWithArray(this._ios.controller.viewControllers);
             if (newControllers.count === 0) {
                 throw new Error("Wrong controllers count.");
@@ -148,7 +147,7 @@ export class Frame extends frameCommon.Frame {
             // replace the controllers instead of pushing directly
             this._ios.controller.setViewControllersAnimated(newControllers, animated);
             if (trace.enabled) {
-                trace.write(`${this}.setViewControllersAnimated([originalControllers - lastController + ${viewController}], ${animated}); depth = ${navDepth}`, trace.categories.Navigation);
+            trace.write(`${this}.setViewControllersAnimated([originalControllers - lastController + ${viewController}], ${animated}); depth = ${navDepth}`, trace.categories.Navigation);
             }
             return;
         }
@@ -156,15 +155,14 @@ export class Frame extends frameCommon.Frame {
         // General case.
         this._ios.controller.pushViewControllerAnimated(viewController, animated);
         if (trace.enabled) {
-            trace.write(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, trace.categories.Navigation);
-        }
+        trace.write(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, trace.categories.Navigation);
+    }
     }
 
     public _goBackCore(backstackEntry: definition.BackstackEntry) {
+        super._goBackCore(backstackEntry);
+
         navDepth = backstackEntry[NAV_DEPTH];
-        if (trace.enabled) {
-            trace.write(`${this}._goBackCore(page: ${backstackEntry.resolvedPage}, backstackVisible: ${this._isEntryBackstackVisible(backstackEntry)}, clearHistory: ${backstackEntry.entry.clearHistory}), navDepth: ${navDepth}`, trace.categories.Navigation);
-        }
 
         if (!this._shouldSkipNativePop) {
             var controller = backstackEntry.resolvedPage.ios;
@@ -172,7 +170,7 @@ export class Frame extends frameCommon.Frame {
 
             this._updateActionBar(backstackEntry.resolvedPage);
             if (trace.enabled) {
-                trace.write(`${this}.popToViewControllerAnimated(${controller}, ${animated}); depth = ${navDepth}`, trace.categories.Navigation);
+            trace.write(`${this}.popToViewControllerAnimated(${controller}, ${animated}); depth = ${navDepth}`, trace.categories.Navigation);
             }
             this._ios.controller.popToViewControllerAnimated(controller, animated);
         }
@@ -342,7 +340,7 @@ export class Frame extends frameCommon.Frame {
         }
 
         if (trace.enabled) {
-            trace.write(`Forcing navigationBar.frame.origin.y to ${statusBarHeight} due to a higher in-call status-bar`, trace.categories.Layout);
+        trace.write(`Forcing navigationBar.frame.origin.y to ${statusBarHeight} due to a higher in-call status-bar`, trace.categories.Layout);
         }
         
         this._ios.controller.navigationBar.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
@@ -370,20 +368,20 @@ class TransitionDelegate extends NSObject {
 
     public animationWillStart(animationID: string, context: any): void {
         if (trace.enabled) {
-            trace.write(`START ${this._id}`, trace.categories.Transition);
-        }
+        trace.write(`START ${this._id}`, trace.categories.Transition);
+    }
     }
 
     public animationDidStop(animationID: string, finished: boolean, context: any): void {
         if (finished) {
             if (trace.enabled) {
-                trace.write(`END ${this._id}`, trace.categories.Transition);
-            }
+            trace.write(`END ${this._id}`, trace.categories.Transition);
+        }
         }
         else {
             if (trace.enabled) {
-                trace.write(`CANCEL ${this._id}`, trace.categories.Transition);
-            }
+            trace.write(`CANCEL ${this._id}`, trace.categories.Transition);
+        }
         }
 
         var index = transitionDelegates.indexOf(this);
@@ -429,7 +427,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
         }
 
         if (trace.enabled) {
-            trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
+        trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
         }
         
         if (!transitionModule) {
@@ -467,7 +465,7 @@ class UINavigationControllerImpl extends UINavigationController {
         let owner = this._owner.get();
         if (owner) {
             if (trace.enabled) {
-                trace.write(this._owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
+            trace.write(this._owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
             }
             
             owner._updateLayout();
@@ -505,7 +503,7 @@ class UINavigationControllerImpl extends UINavigationController {
     public pushViewControllerAnimated(viewController: UIViewController, animated: boolean): void {
         let navigationTransition = <definition.NavigationTransition>viewController[TRANSITION];
         if (trace.enabled) {
-            trace.write(`UINavigationControllerImpl.pushViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
+        trace.write(`UINavigationControllerImpl.pushViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
         }
 
         let nativeTransition = _getNativeTransition(navigationTransition, true);
@@ -523,7 +521,7 @@ class UINavigationControllerImpl extends UINavigationController {
         var viewController = viewControllers.lastObject;
         var navigationTransition = <definition.NavigationTransition>viewController[TRANSITION];
         if (trace.enabled) {
-            trace.write(`UINavigationControllerImpl.setViewControllersAnimated(${viewControllers}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
+        trace.write(`UINavigationControllerImpl.setViewControllersAnimated(${viewControllers}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
         }
 
         let nativeTransition = _getNativeTransition(navigationTransition, true);
@@ -541,7 +539,7 @@ class UINavigationControllerImpl extends UINavigationController {
         var lastViewController = this.viewControllers.lastObject;
         var navigationTransition = <definition.NavigationTransition>lastViewController[TRANSITION];
         if (trace.enabled) {
-            trace.write(`UINavigationControllerImpl.popViewControllerAnimated(${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
+        trace.write(`UINavigationControllerImpl.popViewControllerAnimated(${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
         }
 
         if (navigationTransition && navigationTransition.name === "non-animated") {
@@ -565,7 +563,7 @@ class UINavigationControllerImpl extends UINavigationController {
         let lastViewController = this.viewControllers.lastObject;
         let navigationTransition = <definition.NavigationTransition>lastViewController[TRANSITION];
         if (trace.enabled) {
-            trace.write(`UINavigationControllerImpl.popToViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
+        trace.write(`UINavigationControllerImpl.popToViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
         }
 
         if (navigationTransition && navigationTransition.name === "non-animated") {
@@ -623,27 +621,27 @@ export function _getNativeCurve(transition: definition.NavigationTransition): UI
         switch (transition.curve) {
             case AnimationCurve.easeIn:
                 if (trace.enabled) {
-                    trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseIn.", trace.categories.Transition);
+                trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseIn.", trace.categories.Transition);
                 }
                 return UIViewAnimationCurve.UIViewAnimationCurveEaseIn;
             case AnimationCurve.easeOut:
                 if (trace.enabled) {
-                    trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseOut.", trace.categories.Transition);
+                trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseOut.", trace.categories.Transition);
                 }
                 return UIViewAnimationCurve.UIViewAnimationCurveEaseOut;
             case AnimationCurve.easeInOut:
                 if (trace.enabled) {
-                    trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseInOut.", trace.categories.Transition);
+                trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseInOut.", trace.categories.Transition);
                 }
                 return UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;
             case AnimationCurve.linear:
                 if (trace.enabled) {
-                    trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveLinear.", trace.categories.Transition);
+                trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveLinear.", trace.categories.Transition);
                 }
                 return UIViewAnimationCurve.UIViewAnimationCurveLinear;
             default:
                 if (trace.enabled) {
-                    trace.write("Transition curve resolved to original: " + transition.curve, trace.categories.Transition);
+                trace.write("Transition curve resolved to original: " + transition.curve, trace.categories.Transition);
                 }
                 return transition.curve;
         }

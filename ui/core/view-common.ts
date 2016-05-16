@@ -647,8 +647,8 @@ export class View extends ProxyObject implements definition.View {
         this._measuredWidth = measuredWidth;
         this._measuredHeight = measuredHeight;
         if (trace.enabled) {
-            trace.write(this + " :setMeasuredDimension: " + measuredWidth + ", " + measuredHeight, trace.categories.Layout);
-        }
+        trace.write(this + " :setMeasuredDimension: " + measuredWidth + ", " + measuredHeight, trace.categories.Layout);
+    }
     }
 
     public requestLayout(): void {
@@ -771,7 +771,7 @@ export class View extends ProxyObject implements definition.View {
         childTop = Math.round(childTop);
 
         if (trace.enabled) {
-            trace.write(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, trace.categories.Layout);
+        trace.write(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, trace.categories.Layout);
         }
         child.layout(childLeft, childTop, childRight, childBottom);
     }
@@ -792,7 +792,7 @@ export class View extends ProxyObject implements definition.View {
             var childHeightMeasureSpec = View.getMeasureSpec(child, height, heightMode, false);
 
             if (trace.enabled) {
-                trace.write(child.parent + " :measureChild: " + child + " " + utils.layout.measureSpecToString(childWidthMeasureSpec) + ", " + utils.layout.measureSpecToString(childHeightMeasureSpec), trace.categories.Layout);
+            trace.write(child.parent + " :measureChild: " + child + " " + utils.layout.measureSpecToString(childWidthMeasureSpec) + ", " + utils.layout.measureSpecToString(childHeightMeasureSpec), trace.categories.Layout);
             }
 
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
@@ -968,6 +968,8 @@ export class View extends ProxyObject implements definition.View {
      * // TODO: Think whether we need the base Layout routine.
      */
     public _addView(view: View, atIndex?: number) {
+        trace.write(`${this}._addView(${view}, ${atIndex})`, trace.categories.ViewHierarchy);
+
         if (!view) {
             throw new Error("Expecting a valid View instance.");
         }
@@ -979,10 +981,7 @@ export class View extends ProxyObject implements definition.View {
         view._parent = this;
         this._addViewCore(view, atIndex);
         view._parentChanged(null);
-
-        if (trace.enabled) {
-            trace.write("called _addView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
-        }
+    }
     }
 
     /**
@@ -1028,6 +1027,8 @@ export class View extends ProxyObject implements definition.View {
      * Core logic for removing a child view from this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
      */
     public _removeView(view: View) {
+        trace.write(`${this}._removeView(${view})`, trace.categories.ViewHierarchy);
+
         if (view._parent !== this) {
             throw new Error("View not added to this instance. View: " + view + " CurrentParent: " + view._parent + " ExpectedParent: " + this);
         }
@@ -1035,10 +1036,7 @@ export class View extends ProxyObject implements definition.View {
         this._removeViewCore(view);
         view._parent = undefined;
         view._parentChanged(this);
-
-        if (trace.enabled) {
-            trace.write("called _removeView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
-        }
+    }
     }
 
     /**
@@ -1100,7 +1098,7 @@ export class View extends ProxyObject implements definition.View {
 
     public _goToVisualState(state: string) {
         if (trace.enabled) {
-            trace.write(this + " going to state: " + state, trace.categories.Style);
+        trace.write(this + " going to state: " + state, trace.categories.Style);
         }
         if (state === this._visualState || this._requestedVisualState === state) {
             return;
