@@ -1,0 +1,9 @@
+<Page>
+    <GridLayout rows="*,*,*,*,*">
+        <Button text="circle" style="background-color: red; border-width:2; border-color: blue; clip-path: circle(100% at 50% 50%);"/>
+        <Button text="ellipse" style="background-color: orange; border-width:2; border-color: green; clip-path: ellipse(50% 50% at 50% 50%);" row="1" />
+        <Button text="rect" style="background-color: red; border-width:2; border-color: blue; clip-path: rect(0, 0, 100%, 100%);" row="2" />
+        <Button text="polygon" style="background-color: magenta; border-width:2; border-color: red; clip-path: polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%);" row="3" />
+        <Button text="image polygon" style="background-image: url('https://media-cdn.tripadvisor.com/media/photo-s/03/9b/2f/ce/maldives.jpg'); border-width:2; border-color: red; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);" row="4" />
+    </GridLayout>
+</Page>

@@ -75,6 +75,7 @@ declare module "ui/styling/style" {
         public horizontalAlignment: string;
         public verticalAlignment: string;
         public visibility: string;
+        public clipPath: string;
         public opacity: number;
         public whiteSpace: string;
         public letterSpacing: number;
@@ -111,6 +112,7 @@ declare module "ui/styling/style" {
     export var borderColorProperty: styleProperty.Property;
     export var borderWidthProperty: styleProperty.Property;
     export var borderRadiusProperty: styleProperty.Property;
+    export var clipPathProperty: styleProperty.Property;
     export var backgroundInternalProperty: styleProperty.Property;
     export var fontSizeProperty: styleProperty.Property;
     export var fontFamilyProperty: styleProperty.Property;

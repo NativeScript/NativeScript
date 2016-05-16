@@ -3,6 +3,7 @@ import colorModule = require("color");
 import enums = require("ui/enums");
 import definition = require("ui/styling/background");
 import cssValue = require("css-value");
+import utils = require("utils/utils");
 import * as typesModule from "utils/types";
 
 var types: typeof typesModule;
@@ -241,4 +242,19 @@ export class Background implements definition.Background {
             value1.size === value2.size &&
             colorModule.Color.equals(value1.color, value2.color);
     }
+}
+
+export function cssValueToDevicePixels(source: string, total: number): number {
+    var result;
+    source = source.trim();
+
+    if (source.indexOf("px") !== -1) {
+        result = parseFloat(source.replace("px", ""));
+    }
+    else if (source.indexOf("%") !== -1 && total > 0) {
+        result = (parseFloat(source.replace("%", "")) / 100) * utils.layout.toDeviceIndependentPixels(total);
+    } else {
+        result = parseFloat(source);
+    }
+    return utils.layout.toDevicePixels(result);
 }
