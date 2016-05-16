@@ -3,7 +3,7 @@ import * as helper from "../ui/helper";
 import * as platform from "platform";
 import * as trace from "trace";
 import {Color} from "color";
-import {NavigationEntry, NavigationTransition} from "ui/frame";
+import {NavigationEntry, NavigationTransition, topmost as topmostFrame} from "ui/frame";
 import {Page} from "ui/page";
 import {AnimationCurve} from "ui/enums"
 
@@ -29,6 +29,12 @@ function _testTransition(navigationTransition: NavigationTransition) {
 
 // Extremely slow. Run only if needed.
 export var test_Transitions = function () {
+    let topmost = topmostFrame();
+    let mainTestPage = topmost.currentPage;
+    let mainPageFactory = function (): Page {
+        return mainTestPage;
+    };
+
     helper.navigate(() => {
         var page = new Page();
         page.id = "TransitionsTestPage_MAIN"
@@ -77,4 +83,14 @@ export var test_Transitions = function () {
         var customTransition = new customTransitionModule.CustomTransition();
         _testTransition({ instance: customTransition });
     }
+
+    var oldPage = topmost.currentPage;
+    topmost.navigate({ create: mainPageFactory, clearHistory: true, animated: false });
+    TKUnit.waitUntilReady(() => {
+        return topmost.currentPage
+            && topmost.currentPage !== oldPage
+            && topmost.currentPage.isLoaded
+            && !oldPage.isLoaded
+            ;
+    });
 }

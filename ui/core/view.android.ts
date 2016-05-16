@@ -187,11 +187,10 @@ export class View extends viewCommon.View {
         if (!context) {
             throw new Error("Expected valid android.content.Context instance.");
         }
-        
-        if (trace.enabled) {
-            trace.write("calling _onAttached on view " + this._domId, trace.categories.VisualTreeEvents);
-        }
 
+        if (trace.enabled) {
+            trace.write(`${this}._onAttached(context)`, trace.categories.VisualTreeEvents);
+        }
         if (this._context === context) {
             return;
         }
@@ -221,6 +220,9 @@ export class View extends viewCommon.View {
     }
 
     public _onDetached(force?: boolean) {
+        if (trace.enabled) {
+            trace.write(`${this}._onDetached(force)`, trace.categories.VisualTreeEvents);
+        }
         if (this._childrenCount > 0) {
             // Detach children first
             var that = this;
@@ -234,10 +236,6 @@ export class View extends viewCommon.View {
                 return true;
             }
             this._eachChildView(eachChild);
-        }
-
-        if (trace.enabled) {
-            trace.write("calling _onDetached on view " + this._domId, trace.categories.VisualTreeEvents);
         }
 
         this._clearAndroidReference();
@@ -265,9 +263,8 @@ export class View extends viewCommon.View {
 
     public _onContextChanged() {
         if (trace.enabled) {
-            trace.write("calling _onContextChanged on view " + this._domId, trace.categories.VisualTreeEvents);
+            trace.write(`${this}._onContextChanged`, trace.categories.VisualTreeEvents);
         }
-
         this._createUI();
         // Ensure layout params
         if (this._nativeView && !(this._nativeView.getLayoutParams() instanceof org.nativescript.widgets.CommonLayoutParams)) {
@@ -451,9 +448,15 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
 
         if (this._nativeView && child._nativeView) {
             if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.getChildCount()) {
+                if (trace.enabled) {
+                    trace.write(`${this}._nativeView.addView(${child}._nativeView)`, trace.categories.VisualTreeEvents);
+                }
                 this._nativeView.addView(child._nativeView);
             }
             else {
+                if (trace.enabled) {
+                    trace.write(`${this}._nativeView.addView(${child}._nativeView, ${atIndex})`, trace.categories.VisualTreeEvents);
+                }
                 this._nativeView.addView(child._nativeView, atIndex);
             }
             return true;
@@ -466,6 +469,9 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
         super._removeViewFromNativeVisualTree(child);
 
         if (this._nativeView && child._nativeView) {
+            if (trace.enabled) {
+                trace.write(`${this}._nativeView.removeView(${child}._nativeView)`, trace.categories.VisualTreeEvents);
+            }
             this._nativeView.removeView(child._nativeView);
             trace.notifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
         }

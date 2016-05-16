@@ -39,25 +39,26 @@ export class NavPage extends Page implements definition.ControlsPage {
 
         var that = this;
         that.on(View.loadedEvent, (args) => {
-            console.log(`Loaded ${args.object}`);
+            console.log(`NavPage: Loaded ${args.object}`);
             if (topmostFrame().android) {
+                console.log(`NavPage: topmostFrame().android.cachePagesOnNavigate = true;`);
                 topmostFrame().android.cachePagesOnNavigate = true;
             }
         });
         that.on(View.unloadedEvent, (args) => {
-            console.log(`Unloaded ${args.object}`);
+            console.log(`NavPage: Unloaded ${args.object}`);
         });
         that.on(Page.navigatingFromEvent, (args: NavigatedData) => {
-            console.log(`NavigatING FROM ${args.object}, isBackNavigation: ${args.isBackNavigation}`);
+            console.log(`NavPage: NavigatING FROM ${args.object}, isBackNavigation: ${args.isBackNavigation}`);
         });
         that.on(Page.navigatedFromEvent, (args: NavigatedData) => {
-            console.log(`NaviagatED FROM ${args.object}, isBackNavigation: ${args.isBackNavigation}`);
+            console.log(`NavPage: NaviagatED FROM ${args.object}, isBackNavigation: ${args.isBackNavigation}`);
         });
         that.on(Page.navigatingToEvent, (args: NavigatedData) => {
-            console.log(`NavigatING TO ${args.object}, isBackNavigation: ${args.isBackNavigation}`);
+            console.log(`NavPage: NavigatING TO ${args.object}, isBackNavigation: ${args.isBackNavigation}`);
         });
         that.on(Page.navigatedToEvent, (args: NavigatedData) => {
-            console.log(`NavigatED TO ${args.object}, isBackNavigation: ${args.isBackNavigation}`);
+            console.log(`NavPage: NavigatED TO ${args.object}, isBackNavigation: ${args.isBackNavigation}`);
             (<any>topmostFrame())._printFrameBackStack();
             if (topmostFrame().android) {
                 (<any>topmostFrame())._printNativeBackStack();
