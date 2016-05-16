@@ -351,6 +351,7 @@
         "apps/ui-tests-app/bindings/basics.ts",
         "apps/ui-tests-app/bindings/xmlbasics.ts",
         "apps/ui-tests-app/css/background.ts",
+        "apps/ui-tests-app/css/listview.ts",
         "apps/ui-tests-app/css/styles.ts",
         "apps/ui-tests-app/css/text-decoration.ts",
         "apps/ui-tests-app/css/text-transform.ts",
