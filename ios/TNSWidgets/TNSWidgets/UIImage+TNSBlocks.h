@@ -20,4 +20,7 @@
  */
 + (UIImage*) tns_safeImageNamed: (NSString*) name;
 
++ (void) tns_decodeImageWithData: (NSData*) data completion: (void (^) (UIImage*))callback;
++ (void) tns_decodeImageWidthContentsOfFile: (NSString*) file completion: (void (^) (UIImage*))callback;
+
 @end

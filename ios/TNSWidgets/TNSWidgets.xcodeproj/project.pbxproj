@@ -382,6 +382,7 @@
 				F98F5CC51CD0EFEA00978308 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		F98F5CC61CD0EFEA00978308 /* Build configuration list for PBXNativeTarget "TNSWidgetsTests" */ = {
 			isa = XCConfigurationList;
@@ -390,6 +391,7 @@
 				F98F5CC81CD0EFEA00978308 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
