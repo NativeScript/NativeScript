@@ -8,7 +8,9 @@ import fps = require("fps-meter");
 
 export function createPage() {
     fps.addCallback(function (fps, minFps) {
-        trace.write("fps=" + fps + " minFps=" + minFps, trace.categories.Test, trace.messageType.info);
+        if (trace.enabled) {
+            trace.write("fps=" + fps + " minFps=" + minFps, trace.categories.Test, trace.messageType.info);
+        }
     });
     fps.start();
 
@@ -27,7 +29,9 @@ export function createPage() {
     var button;
     var childStackLayout;
     var childStackLayoutCount = count / buttonsPerRow;
-    trace.write("Creating " + count + " buttons.", trace.categories.Test, trace.messageType.info);
+    if (trace.enabled) {
+        trace.write("Creating " + count + " buttons.", trace.categories.Test, trace.messageType.info);
+    }
     console.time("creatingButtons");
     for (var i = 0; i < childStackLayoutCount; i++) {
         childStackLayout = new stackLayoutModule.StackLayout();
@@ -36,7 +40,9 @@ export function createPage() {
         for (var j = 0; j < buttonsPerRow; j++) {
             button = new buttonModule.Button();
             button.on(buttonModule.Button.tapEvent, function (data) {
-                trace.write("eventName=" + data.eventName + " object=" + data.object, trace.categories.Test, trace.messageType.info);
+                if (trace.enabled) {
+                    trace.write("eventName=" + data.eventName + " object=" + data.object, trace.categories.Test, trace.messageType.info);
+                }
             });
             button.text = "" + i + j;
             childStackLayout.addChild(button);
@@ -44,7 +50,9 @@ export function createPage() {
     }
     console.timeEnd("creatingButtons");
     var message = "Created " + count + " buttons";
-    trace.write(message, trace.categories.Test, trace.messageType.info);
+    if (trace.enabled) {
+        trace.write(message, trace.categories.Test, trace.messageType.info);
+    }
     label.text = message;
 
     var page = new pagesModule.Page();

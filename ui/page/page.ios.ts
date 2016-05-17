@@ -47,7 +47,10 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        trace.write(owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
+        if (trace.enabled) {
+            trace.write(owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
+        }
+        
         if (!owner.isLoaded) {
             return;
         }
@@ -99,7 +102,9 @@ class UIViewControllerImpl extends UIViewController {
                 }
             }
 
-            trace.write(owner + ", native frame = " + NSStringFromCGRect(this.view.frame), trace.categories.Layout);
+            if (trace.enabled) {
+                trace.write(owner + ", native frame = " + NSStringFromCGRect(this.view.frame), trace.categories.Layout);
+            }
         }
         else {
             owner._updateLayout();
@@ -108,7 +113,11 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewWillAppear(animated: boolean): void {
         let page = this._owner.get();
-        trace.write(page + " viewWillAppear", trace.categories.Navigation);
+        if (trace.enabled) {
+            if (trace.enabled) {
+                trace.write(page + " viewWillAppear", trace.categories.Navigation);
+            }
+        }
         if (!page) {
             return;
         }
@@ -153,7 +162,9 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewDidAppear(animated: boolean): void {
         let page = this._owner.get();
-        trace.write(page + " viewDidAppear", trace.categories.Navigation);
+        if (trace.enabled) {
+            trace.write(page + " viewDidAppear", trace.categories.Navigation);
+        }
         if (!page) {
             return;
         }
@@ -190,7 +201,9 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewWillDisappear(animated: boolean): void {
         let page = this._owner.get();
-        trace.write(page + " viewWillDisappear", trace.categories.Navigation);
+        if (trace.enabled) {
+            trace.write(page + " viewWillDisappear", trace.categories.Navigation);
+        }
         if (!page) {
             return;
         }
@@ -208,7 +221,9 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewDidDisappear(animated: boolean): void {
         let page = this._owner.get();
-        trace.write(page + " viewDidDisappear", trace.categories.Navigation);
+        if (trace.enabled) {
+            trace.write(page + " viewDidDisappear", trace.categories.Navigation);
+        }
         // Exit if no page or page is hiding because it shows another page modally.
         if (!page || page.modal) {
             return;
@@ -291,7 +306,9 @@ export class Page extends pageCommon.Page {
 
     private _addNativeView(view: View) {
         if (view) {
-            trace.write("Native: Adding " + view + " to " + this, trace.categories.ViewHierarchy);
+            if (trace.enabled) {
+                trace.write("Native: Adding " + view + " to " + this, trace.categories.ViewHierarchy);
+            }
             if (view.ios instanceof UIView) {
                 this._ios.view.addSubview(view.ios);
             } else if (view.ios instanceof UIViewController) {
@@ -303,7 +320,9 @@ export class Page extends pageCommon.Page {
 
     private _removeNativeView(view: View) {
         if (view) {
-            trace.write("Native: Removing " + view + " from " + this, trace.categories.ViewHierarchy);
+            if (trace.enabled) {
+                trace.write("Native: Removing " + view + " from " + this, trace.categories.ViewHierarchy);
+            }
             if (view.ios instanceof UIView) {
                 (<UIView>view.ios).removeFromSuperview();
             } else if (view.ios instanceof UIViewController) {

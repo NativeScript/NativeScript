@@ -11,14 +11,21 @@ export function createPage() {
     var label = new labelModule.Label();
     page.content = label;
     
-    trace.write("Creating " + count + " objects.", trace.categories.Test, trace.messageType.info);
+    if (trace.enabled) {
+        trace.write("Creating " + count + " objects.", trace.categories.Test, trace.messageType.info);
+    }
+    
     console.time("creatingObjects");
     for (var i = 0; i < count; i++) {
         people[i] = new common.Person("John Doe", 33, 1234.56);
     }
     console.timeEnd("creatingObjects");
     var message = "Created " + people.length + " objects";
-    trace.write(message, trace.categories.Test, trace.messageType.info);
+    
+    if (trace.enabled) {
+        trace.write(message, trace.categories.Test, trace.messageType.info);
+    }
+    
     label.text = message;
     return page;
 }

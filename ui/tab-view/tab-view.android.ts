@@ -67,7 +67,9 @@ function ensurePagerAdapterClass() {
         }
 
         instantiateItem(container: android.view.ViewGroup, index: number) {
-            trace.write("TabView.PagerAdapter.instantiateItem; container: " + container + "; index: " + index, common.traceCategory);
+            if (trace.enabled) {
+                trace.write("TabView.PagerAdapter.instantiateItem; container: " + container + "; index: " + index, common.traceCategory);
+            }
 
             var item = this.items[index];
             if (item.view.parent !== this.owner) {
@@ -75,7 +77,9 @@ function ensurePagerAdapterClass() {
             }
 
             if (this[VIEWS_STATES]) {
-                trace.write("TabView.PagerAdapter.instantiateItem; restoreHierarchyState: " + item.view, common.traceCategory);
+                if (trace.enabled) {
+                    trace.write("TabView.PagerAdapter.instantiateItem; restoreHierarchyState: " + item.view, common.traceCategory);
+                }
                 item.view._nativeView.restoreHierarchyState(this[VIEWS_STATES]);
             }
 
@@ -84,7 +88,9 @@ function ensurePagerAdapterClass() {
         }
 
         destroyItem(container: android.view.ViewGroup, index: number, _object: any) {
-            trace.write("TabView.PagerAdapter.destroyItem; container: " + container + "; index: " + index + "; _object: " + _object, common.traceCategory);
+            if (trace.enabled) {
+                trace.write("TabView.PagerAdapter.destroyItem; container: " + container + "; index: " + index + "; _object: " + _object, common.traceCategory);
+            }
             var item = this.items[index];
             var nativeView = item.view._nativeView;
 
@@ -111,7 +117,9 @@ function ensurePagerAdapterClass() {
         }
 
         saveState(): android.os.Parcelable {
-            trace.write("TabView.PagerAdapter.saveState", common.traceCategory);
+            if (trace.enabled) {
+                trace.write("TabView.PagerAdapter.saveState", common.traceCategory);
+            }
 
             var owner: TabView = this.owner;
             if (!owner || owner._childrenCount === 0) {
@@ -137,7 +145,9 @@ function ensurePagerAdapterClass() {
         }
 
         restoreState(state: android.os.Parcelable, loader: java.lang.ClassLoader) {
-            trace.write("TabView.PagerAdapter.restoreState", common.traceCategory);
+            if (trace.enabled) {
+                trace.write("TabView.PagerAdapter.restoreState", common.traceCategory);
+            }
             var bundle: android.os.Bundle = <android.os.Bundle>state;
             bundle.setClassLoader(loader);
             this[VIEWS_STATES] = bundle.getSparseParcelableArray(VIEWS_STATES);
@@ -199,7 +209,9 @@ export class TabView extends common.TabView {
     }
 
     public _createUI() {
-        trace.write("TabView._createUI(" + this + ");", common.traceCategory);
+        if (trace.enabled) {
+            trace.write("TabView._createUI(" + this + ");", common.traceCategory);
+        }
 
         this._grid = new org.nativescript.widgets.GridLayout(this._context);
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
@@ -246,7 +258,9 @@ export class TabView extends common.TabView {
     }
 
     public _onItemsPropertyChangedSetNativeValue(data: dependencyObservable.PropertyChangeData) {
-        trace.write("TabView._onItemsPropertyChangedSetNativeValue(" + data.oldValue + " ---> " + data.newValue + ");", common.traceCategory);
+        if (trace.enabled) {
+            trace.write("TabView._onItemsPropertyChangedSetNativeValue(" + data.oldValue + " ---> " + data.newValue + ");", common.traceCategory);
+        }
 
         if (data.oldValue) {
             var oldItems: Array<TabViewItem> = data.oldValue;
@@ -295,7 +309,9 @@ export class TabView extends common.TabView {
     }
 
     public _onSelectedIndexPropertyChangedSetNativeValue(data: dependencyObservable.PropertyChangeData) {
-        trace.write("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + data.oldValue + " ---> " + data.newValue + ");", common.traceCategory);
+        if (trace.enabled) {
+            trace.write("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + data.oldValue + " ---> " + data.newValue + ");", common.traceCategory);
+        }
         super._onSelectedIndexPropertyChangedSetNativeValue(data);
 
         var index = data.newValue;
@@ -303,7 +319,9 @@ export class TabView extends common.TabView {
             // Select the respective page in the ViewPager
             var viewPagerSelectedIndex = this._viewPager.getCurrentItem();
             if (viewPagerSelectedIndex !== index) {
-                trace.write("TabView this._viewPager.setCurrentItem(" + index + ", true);", common.traceCategory);
+                if (trace.enabled) {
+                    trace.write("TabView this._viewPager.setCurrentItem(" + index + ", true);", common.traceCategory);
+                }
                 this._viewPager.setCurrentItem(index, true);
             }
         }

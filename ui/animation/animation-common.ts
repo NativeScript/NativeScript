@@ -114,7 +114,9 @@ export class Animation implements definition.Animation {
 
         ensureTrace();
 
-        trace.write("Analyzing " + animationDefinitions.length + " animation definitions...", trace.categories.Animation);
+        if (trace.enabled) {
+            trace.write("Analyzing " + animationDefinitions.length + " animation definitions...", trace.categories.Animation);
+        }
         this._propertyAnimations = new Array<PropertyAnimation>();
         var i = 0;
         var length = animationDefinitions.length;
@@ -126,7 +128,9 @@ export class Animation implements definition.Animation {
         if (this._propertyAnimations.length === 0) {
             throw new Error("Nothing to animate.");
         }
-        trace.write("Created " + this._propertyAnimations.length + " individual property animations.", trace.categories.Animation);
+        if (trace.enabled) {
+            trace.write("Created " + this._propertyAnimations.length + " individual property animations.", trace.categories.Animation);
+        }
 
         this._playSequentially = playSequentially;
     }

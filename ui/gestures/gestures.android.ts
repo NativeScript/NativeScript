@@ -29,11 +29,15 @@ export class GesturesObserver extends common.GesturesObserver {
         if (this.target) {
             this.type = type;
             this._onTargetLoaded = args => {
-                trace.write(this.target + ".target loaded. android:" + this.target._nativeView, "gestures");
+                if (trace.enabled) {
+                    trace.write(this.target + ".target loaded. android:" + this.target._nativeView, "gestures");
+                }
                 this._attach(this.target, type);
             };
             this._onTargetUnloaded = args => {
-                trace.write(this.target + ".target unloaded. android:" + this.target._nativeView, "gestures");
+                if (trace.enabled) {
+                    trace.write(this.target + ".target unloaded. android:" + this.target._nativeView, "gestures");
+                }
                 this._detach();
             };
 
@@ -61,7 +65,9 @@ export class GesturesObserver extends common.GesturesObserver {
     }
 
     private _detach() {
-        trace.write(this.target + "._detach() android:" + this.target._nativeView, "gestures");
+        if (trace.enabled) {
+            trace.write(this.target + "._detach() android:" + this.target._nativeView, "gestures");
+        }
 
         this._notifyTouch = false
         this._simpleGestureDetector = null;
@@ -73,7 +79,9 @@ export class GesturesObserver extends common.GesturesObserver {
     }
 
     private _attach(target: view.View, type: definition.GestureTypes) {
-        trace.write(this.target + "._attach() android:" + this.target._nativeView, "gestures");
+        if (trace.enabled) {
+            trace.write(this.target + "._attach() android:" + this.target._nativeView, "gestures");
+        }
         this._detach();
 
         if (type & definition.GestureTypes.tap || type & definition.GestureTypes.doubleTap || type & definition.GestureTypes.longPress) {

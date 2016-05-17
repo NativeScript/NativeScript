@@ -57,7 +57,9 @@ export class ProxyViewContainer extends LayoutBase implements definition.ProxyVi
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
-        trace.write("ViewContainer._addViewToNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, trace.categories.ViewHierarchy);
+        if (trace.enabled) {
+            trace.write("ViewContainer._addViewToNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, trace.categories.ViewHierarchy);
+        }
         super._addViewToNativeVisualTree(child);
 
         var parent = this.parent;
@@ -75,8 +77,9 @@ export class ProxyViewContainer extends LayoutBase implements definition.ProxyVi
                 // Add last;
                 insideIndex = this._getNativeViewsCount();
             }
-
-            trace.write("ProxyViewContainer._addViewToNativeVisualTree at: " + atIndex + " base: " + baseIndex + " additional: " + insideIndex, trace.categories.ViewHierarchy);
+            if (trace.enabled) {
+                trace.write("ProxyViewContainer._addViewToNativeVisualTree at: " + atIndex + " base: " + baseIndex + " additional: " + insideIndex, trace.categories.ViewHierarchy);
+            }
             return parent._addViewToNativeVisualTree(child, baseIndex + insideIndex);
         }
 
@@ -84,7 +87,9 @@ export class ProxyViewContainer extends LayoutBase implements definition.ProxyVi
     }
 
     public _removeViewFromNativeVisualTree(child: View): void {
-        trace.write("ProxyViewContainer._removeViewFromNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, trace.categories.ViewHierarchy);
+        if (trace.enabled) {
+            trace.write("ProxyViewContainer._removeViewFromNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, trace.categories.ViewHierarchy);
+        }
         super._removeViewFromNativeVisualTree(child);
 
         var parent = this.parent;

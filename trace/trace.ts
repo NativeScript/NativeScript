@@ -1,17 +1,17 @@
 ﻿import definition = require("trace");
 import * as types from "utils/types";
 
-var _enabled = false;
+export var enabled = false;
 var _categories = {};
 var _writers: Array<definition.TraceWriter> = [];
 var _eventListeners: Array<definition.EventListener> = [];
 
 export function enable() {
-    _enabled = true;
+    enabled = true;
 }
 
 export function disable() {
-    _enabled = false;
+    enabled = false;
 }
 
 export function isCategorySet(category: string): boolean {
@@ -56,7 +56,7 @@ export function write(message: any, category: string, type?: number) {
         }
     }
     
-    if (!_enabled) {
+    if (!enabled) {
         return;
     }
 
@@ -71,7 +71,7 @@ export function write(message: any, category: string, type?: number) {
 }
 
 export function notifyEvent(object: Object, name: string, data?: any) {
-    if (!_enabled) {
+    if (!enabled) {
         return;
     }
 

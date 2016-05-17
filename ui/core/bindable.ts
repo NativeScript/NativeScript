@@ -86,7 +86,9 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
     }
 
     public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
-        trace.write(`${this}._onPropertyChanged(${property.name}, ${oldValue}, ${newValue})`, trace.categories.Binding);
+        if (trace.enabled) {
+            trace.write(`${this}._onPropertyChanged(${property.name}, ${oldValue}, ${newValue})`, trace.categories.Binding);
+        }
         super._onPropertyChanged(property, oldValue, newValue);
         if (this instanceof viewModule.View) {
             if (property.metadata.inheritable && (<viewModule.View>(<any>this))._isInheritedChange() === true) {
@@ -97,11 +99,15 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
         let binding = this.bindings.get(property.name);
         if (binding && !binding.updating) {
             if (binding.options.twoWay) {
-                trace.write(`${this}._updateTwoWayBinding(${property.name}, ${newValue});` + property.name, trace.categories.Binding);
+                if (trace.enabled) {
+                    trace.write(`${this}._updateTwoWayBinding(${property.name}, ${newValue});` + property.name, trace.categories.Binding);
+                }
                 this._updateTwoWayBinding(property.name, newValue);
             }
             else {
-                trace.write(`${this}.unbind(${property.name});`, trace.categories.Binding);
+                if (trace.enabled) {
+                    trace.write(`${this}.unbind(${property.name});`, trace.categories.Binding);
+                }
                 this.unbind(property.name);
             }
         }
@@ -110,7 +116,9 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
     public _onBindingContextChanged(oldValue: any, newValue: any) {
         this.bindings.forEach((binding, index, bindings) => {
             if (!binding.updating && binding.sourceIsBindingContext) {
-                trace.write(`Binding ${binding.target.get()}.${binding.options.targetProperty} to new context ${newValue}`, trace.categories.Binding);
+                if (trace.enabled) {
+                    trace.write(`Binding ${binding.target.get()}.${binding.options.targetProperty} to new context ${newValue}`, trace.categories.Binding);
+                }
                 binding.bind(newValue);
             }
         });
