@@ -112,7 +112,9 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     public onLoaded() {
-        trace.write("Repeater.onLoaded()", "Repeater");
+        if (trace.enabled) {
+            trace.write("Repeater.onLoaded()", "Repeater");
+        }
         if (this._isDirty) {
             this.refresh();
         }
@@ -121,7 +123,9 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     private _requestRefresh() {
-        trace.write(`Repeater._requestRefresh()`, "Repeater");
+        if (trace.enabled) {
+            trace.write(`Repeater._requestRefresh()`, "Repeater");
+        }
         this._isDirty = true;
         if (this.isLoaded) {
             this.refresh();
@@ -129,7 +133,9 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     public refresh() {
-        trace.write("Repeater.refresh()", "Repeater");
+        if (trace.enabled) {
+            trace.write("Repeater.refresh()", "Repeater");
+        }
         if (this.itemsLayout) {
             this.itemsLayout.removeChildren();
         }
@@ -152,7 +158,9 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        trace.write(`Repeater._onItemsPropertyChanged(${data.oldValue} => ${data.newValue})`, "Repeater");
+        if (trace.enabled) {
+            trace.write(`Repeater._onItemsPropertyChanged(${data.oldValue} => ${data.newValue})`, "Repeater");
+        }
         if (data.oldValue instanceof observableArray.ObservableArray) {
             weakEvents.removeWeakEventListener(data.oldValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
         }
@@ -165,12 +173,16 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     public _onItemTemplatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        trace.write(`Repeater._onItemTemplatePropertyChanged(${data.oldValue} => ${data.newValue})`, "Repeater");
+        if (trace.enabled) {
+            trace.write(`Repeater._onItemTemplatePropertyChanged(${data.oldValue} => ${data.newValue})`, "Repeater");
+        }
         this._requestRefresh();
     }
 
     public _onItemsLayoutPropertyPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        trace.write(`Repeater._onItemsLayoutPropertyPropertyChanged(${data.oldValue} => ${data.newValue})`, "Repeater");
+        if (trace.enabled) {
+            trace.write(`Repeater._onItemsLayoutPropertyPropertyChanged(${data.oldValue} => ${data.newValue})`, "Repeater");
+        }
         if (data.oldValue instanceof layoutBaseModule.LayoutBase) {
             this._removeView((<layoutBaseModule.LayoutBase>data.oldValue));
         }
@@ -183,7 +195,9 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     private _onItemsChanged(data: observable.EventData) {
-        trace.write(`Repeater._onItemsChanged(${data})`, "Repeater");
+        if (trace.enabled) {
+            trace.write(`Repeater._onItemsChanged(${data})`, "Repeater");
+        }
         this._requestRefresh();
     }
 

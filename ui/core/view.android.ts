@@ -187,8 +187,10 @@ export class View extends viewCommon.View {
         if (!context) {
             throw new Error("Expected valid android.content.Context instance.");
         }
-
-        trace.write(`${this}._onAttached(context)`, trace.categories.VisualTreeEvents);
+        
+        if (trace.enabled) {
+            trace.write("calling _onAttached on view " + this._domId, trace.categories.VisualTreeEvents);
+        }
 
         if (this._context === context) {
             return;
@@ -219,8 +221,6 @@ export class View extends viewCommon.View {
     }
 
     public _onDetached(force?: boolean) {
-        trace.write(`${this}._onDetached(force)`, trace.categories.VisualTreeEvents);
-
         if (this._childrenCount > 0) {
             // Detach children first
             var that = this;
@@ -234,6 +234,10 @@ export class View extends viewCommon.View {
                 return true;
             }
             this._eachChildView(eachChild);
+        }
+
+        if (trace.enabled) {
+            trace.write("calling _onDetached on view " + this._domId, trace.categories.VisualTreeEvents);
         }
 
         this._clearAndroidReference();
@@ -260,7 +264,9 @@ export class View extends viewCommon.View {
     }
 
     public _onContextChanged() {
-        trace.write(`${this}._onContextChanged`, trace.categories.VisualTreeEvents);
+        if (trace.enabled) {
+            trace.write("calling _onContextChanged on view " + this._domId, trace.categories.VisualTreeEvents);
+        }
 
         this._createUI();
         // Ensure layout params
@@ -445,11 +451,9 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
 
         if (this._nativeView && child._nativeView) {
             if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.getChildCount()) {
-                trace.write(`${this}._nativeView.addView(${child}._nativeView)`, trace.categories.VisualTreeEvents);
                 this._nativeView.addView(child._nativeView);
             }
             else {
-                trace.write(`${this}._nativeView.addView(${child}._nativeView, ${atIndex})`, trace.categories.VisualTreeEvents);
                 this._nativeView.addView(child._nativeView, atIndex);
             }
             return true;
@@ -462,7 +466,6 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
         super._removeViewFromNativeVisualTree(child);
 
         if (this._nativeView && child._nativeView) {
-            trace.write(`${this}._nativeView.removeView(${child}._nativeView)`, trace.categories.VisualTreeEvents);
             this._nativeView.removeView(child._nativeView);
             trace.notifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
         }
@@ -709,10 +712,6 @@ export class ViewStyler implements style.Styler {
     private static setZIndexProperty(view: View, newValue: any) {
         if (view.android.setZ) {
             view.android.setZ(newValue);
-            
-            if(view.android instanceof android.widget.Button){
-                view.android.setStateListAnimator(null);
-            }
         }
     }
 

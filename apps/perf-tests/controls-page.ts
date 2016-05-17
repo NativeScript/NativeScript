@@ -40,7 +40,9 @@ export class ControlsPage extends pagesModule.Page implements definition.Control
     }
 
     public onNavigatedTo() {
-        trace.write("Creating " + this._count + " controls...", trace.categories.Test, trace.messageType.info);
+        if (trace.enabled) {
+            trace.write("Creating " + this._count + " controls...", trace.categories.Test, trace.messageType.info);
+        }
         this._infoLabel.text = "Creating " + this._count + " controls...";
         var startTime = new Date().getMilliseconds();
         for (var i = 0; i < this._childStackLayoutCount; i++) {
@@ -55,7 +57,9 @@ export class ControlsPage extends pagesModule.Page implements definition.Control
         }
         var elapsedTime = Math.round(new Date().getMilliseconds() - startTime);
         var message = "Created " + this._count + " controls in " + elapsedTime + " ms.";
-        trace.write(message, trace.categories.Test, trace.messageType.info);
+        if (trace.enabled) {
+            trace.write(message, trace.categories.Test, trace.messageType.info);
+        }
         this._infoLabel.text = message;
     }
 }

@@ -48,7 +48,9 @@ function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     webView.stopLoading();    
 
     var src = <string>data.newValue;
-    trace.write("WebView._loadSrc(" + src + ")", trace.categories.Debug);
+    if (trace.enabled) {
+        trace.write("WebView._loadSrc(" + src + ")", trace.categories.Debug);
+    }
 
     if (utils.isFileOrResourcePath(src)) {
         ensureFS();

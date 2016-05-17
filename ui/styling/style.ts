@@ -864,11 +864,13 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 
     public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
-        trace.write(
-            "Style._onPropertyChanged view:" + this._view +
-            ", property: " + property.name +
-            ", oldValue: " + oldValue +
-            ", newValue: " + newValue, trace.categories.Style);
+        if (trace.enabled) {
+            trace.write(
+                "Style._onPropertyChanged view:" + this._view +
+                ", property: " + property.name +
+                ", oldValue: " + oldValue +
+                ", newValue: " + newValue, trace.categories.Style);
+        }
 
         super._onPropertyChanged(property, oldValue, newValue);
 
@@ -933,10 +935,14 @@ export class Style extends DependencyObservable implements styling.Style {
             var handler: definition.StylePropertyChangedHandler = getHandler(property, this._view);
 
             if (!handler) {
-                trace.write("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, trace.categories.Style);
+                if (trace.enabled) {
+                    trace.write("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, trace.categories.Style);
+                }
             }
             else {
-                trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
+                if (trace.enabled) {
+                    trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
+                }
 
                 var shouldReset = false;
                 if (property.metadata.equalityComparer) {
@@ -956,7 +962,9 @@ export class Style extends DependencyObservable implements styling.Style {
             }
         }
         catch (ex) {
-            trace.write("Error setting property: " + property.name + " on " + this._view + ": " + ex, trace.categories.Style, trace.messageType.error);
+            if (trace.enabled) {
+                trace.write("Error setting property: " + property.name + " on " + this._view + ": " + ex, trace.categories.Style, trace.messageType.error);
+            }
         }
     }
 

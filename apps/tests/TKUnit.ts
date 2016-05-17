@@ -41,7 +41,9 @@ export function time(): number {
 
 export var write = function write(message: string, type?: number) {
     //console.log(message);
-    trace.write(message, trace.categories.Test, type);
+    if (trace.enabled) {
+        trace.write(message, trace.categories.Test, type);
+    }
 }
 
 var runTest = function (testInfo: TestInfoEntry) {

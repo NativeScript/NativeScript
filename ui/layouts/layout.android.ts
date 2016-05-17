@@ -58,7 +58,9 @@ export class Layout extends layoutBase.LayoutBase implements definition.Layout {
             var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
             var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
-            trace.write(this + " :measure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
+            if (trace.enabled) {
+                trace.write(this + " :measure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
+            }
             view.measure(widthMeasureSpec, heightMeasureSpec);
         }
     }
@@ -69,7 +71,9 @@ export class Layout extends layoutBase.LayoutBase implements definition.Layout {
         var view = this._nativeView;
         if (view) {
             this.layoutNativeView(left, top, right, bottom);
-            trace.write(this + " :layout: " + left + ", " + top + ", " + (right - left) + ", " + (bottom - top), trace.categories.Layout);
+            if (trace.enabled) {
+                trace.write(this + " :layout: " + left + ", " + top + ", " + (right - left) + ", " + (bottom - top), trace.categories.Layout);
+            }
         }
     }
 

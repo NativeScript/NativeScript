@@ -187,7 +187,9 @@ export class View extends viewCommon.View {
 
     public _setNativeViewFrame(nativeView: any, frame: any) {
         if (!CGRectEqualToRect(nativeView.frame, frame)) {
-            trace.write(this + ", Native setFrame: = " + NSStringFromCGRect(frame), trace.categories.Layout);
+            if (trace.enabled) {
+                trace.write(this + ", Native setFrame: = " + NSStringFromCGRect(frame), trace.categories.Layout);
+            }
             this._cachedFrame = frame;
             if (this._hasTransfrom) {
                 // Always set identity transform before setting frame;
@@ -215,7 +217,9 @@ export class View extends viewCommon.View {
         // in iOS 8 we set frame to subview again otherwise we get clipped.
         var nativeView: UIView;
         if (!this.parent && this._nativeView.subviews.count > 0 && utils.ios.MajorVersion < 8) {
-            trace.write(this + " has no parent. Setting frame to first child instead.", trace.categories.Layout);
+            if (trace.enabled) {
+                trace.write(this + " has no parent. Setting frame to first child instead.", trace.categories.Layout);
+            }
             nativeView = (<UIView>this._nativeView.subviews[0]);
         }
         else {

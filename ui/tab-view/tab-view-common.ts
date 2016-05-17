@@ -122,7 +122,9 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
     }
 
     public _onItemsPropertyChangedSetNativeValue(data: dependencyObservable.PropertyChangeData) {
-        trace.write("TabView.__onItemsPropertyChangedSetNativeValue(" + data.oldValue + " -> " + data.newValue + ");", traceCategory);
+        if (trace.enabled) {
+            trace.write("TabView.__onItemsPropertyChangedSetNativeValue(" + data.oldValue + " -> " + data.newValue + ");", traceCategory);
+        }
         if (data.oldValue) {
             this._removeTabs(data.oldValue);
         }
@@ -135,7 +137,9 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
     }
 
     public _updateSelectedIndexOnItemsPropertyChanged(newItems) {
-        trace.write("TabView._updateSelectedIndexOnItemsPropertyChanged(" + newItems + ");", traceCategory);
+        if (trace.enabled) {
+            trace.write("TabView._updateSelectedIndexOnItemsPropertyChanged(" + newItems + ");", traceCategory);
+        }
         var newItemsCount = 0;
         if (newItems) {
             newItemsCount = newItems.length;

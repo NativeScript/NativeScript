@@ -78,11 +78,15 @@ export class GesturesObserver extends common.GesturesObserver {
         if (this.target) {
             this.type = type;
             this._onTargetLoaded = args => {
-                trace.write(this.target + ".target loaded. _nativeView:" + this.target._nativeView, "gestures");
+                if (trace.enabled) {
+                    trace.write(this.target + ".target loaded. _nativeView:" + this.target._nativeView, "gestures");
+                }
                 this._attach(this.target, type);
             };
             this._onTargetUnloaded = args => {
-                trace.write(this.target + ".target unloaded. _nativeView:" + this.target._nativeView, "gestures");
+                if (trace.enabled) {
+                    trace.write(this.target + ".target unloaded. _nativeView:" + this.target._nativeView, "gestures");
+                }
                 this._detach();
             };
 
@@ -96,7 +100,9 @@ export class GesturesObserver extends common.GesturesObserver {
     }
 
     private _attach(target: view.View, type: definition.GestureTypes) {
-        trace.write(target + "._attach() _nativeView:" + target._nativeView, "gestures");
+        if (trace.enabled) {
+            trace.write(target + "._attach() _nativeView:" + target._nativeView, "gestures");
+        }
         this._detach();
 
         if (target && target._nativeView && target._nativeView.addGestureRecognizer) {
@@ -160,7 +166,9 @@ export class GesturesObserver extends common.GesturesObserver {
     }
 
     private _detach() {
-        trace.write(this.target + "._detach() _nativeView:" + this.target._nativeView, "gestures");
+        if (trace.enabled) {
+            trace.write(this.target + "._detach() _nativeView:" + this.target._nativeView, "gestures");
+        }
         if (this.target && this.target._nativeView) {
             for (var name in this._recognizers) {
                 if (this._recognizers.hasOwnProperty(name)) {

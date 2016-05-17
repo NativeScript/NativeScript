@@ -88,9 +88,11 @@ export class Image extends imageCommon.Image {
 
             var trace = require("trace");
 
-            trace.write("Image stretch: " + this.stretch +
-                ", nativeWidth: " + nativeWidth +
-                ", nativeHeight: " + nativeHeight, trace.categories.Layout);
+            if (trace.enabled) {
+                trace.write("Image stretch: " + this.stretch +
+                    ", nativeWidth: " + nativeWidth +
+                    ", nativeHeight: " + nativeHeight, trace.categories.Layout);
+            }
         }
 
         var view = require("ui/core/view");

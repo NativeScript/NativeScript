@@ -47,7 +47,9 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
             case UINavigationControllerOperation.UINavigationControllerOperationNone: this._transitionType = "none"; break;
         }
 
-        trace.write(`START ${this._transition} ${this._transitionType}`, trace.categories.Transition);
+        if (trace.enabled) {
+            trace.write(`START ${this._transition} ${this._transitionType}`, trace.categories.Transition);
+        }
         this._transition.animateIOSTransition(containerView, this._fromVC.view, this._toVC.view, this._operation, completion);
     }
 
@@ -57,10 +59,14 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
 
     public animationEnded(transitionCompleted: boolean): void {
         if (transitionCompleted) {
-            trace.write(`END ${this._transition} ${this._transitionType}`, trace.categories.Transition);
+            if (trace.enabled) {
+                trace.write(`END ${this._transition} ${this._transitionType}`, trace.categories.Transition);
+            }
         }
         else {
-            trace.write(`CANCEL ${this._transition} ${this._transitionType}`, trace.categories.Transition);
+            if (trace.enabled) {
+                trace.write(`CANCEL ${this._transition} ${this._transitionType}`, trace.categories.Transition);
+            }
         }
     }
 }

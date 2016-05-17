@@ -306,7 +306,9 @@ export module ios {
         if (!CTFontManagerRegisterGraphicsFont(font, error)) {
             var trace: typeof traceModule = require("trace");
 
-            trace.write("Error occur while registering font: " + CFErrorCopyDescription(<NSError>error.value), trace.categories.Error, trace.messageType.error);
+            if (trace.enabled) {
+                trace.write("Error occur while registering font: " + CFErrorCopyDescription(<NSError>error.value), trace.categories.Error, trace.messageType.error);
+            }
         }
 
         areSystemFontSetsValid = false;

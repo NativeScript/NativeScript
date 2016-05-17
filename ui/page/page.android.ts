@@ -135,7 +135,9 @@ export class Page extends pageCommon.Page {
         if (skipDetached) {
             ensureTrace();
             // Do not detach the context and android reference.
-            trace.write(`Caching ${this}`, trace.categories.NativeLifecycle);
+            if (trace.enabled) {
+                trace.write(`Caching ${this}`, trace.categories.NativeLifecycle);
+            }
         }
         else {
             super._onDetached();
