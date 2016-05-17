@@ -20,6 +20,30 @@ function registerProperty(property: Property) {
     }
 }
 
+export type StyleProperty = definition.Property;
+export type ResolvedStylePropertyHandler = (property: definition.Property | string, value: any) => void;
+export function withStyleProperty(name: string, value: any, resolvedCallback: ResolvedStylePropertyHandler): void {
+    let property = getPropertyByCssName(name);
+
+    if (property) {
+        // The property.valueConverter is now used to convert the value later on in DependencyObservable._setValueInternal.
+        resolvedCallback(property, value);
+    }
+    else {
+        let pairs = getShorthandPairs(name, value);
+        if (pairs) {
+            for (let j = 0; j < pairs.length; j++) {
+                let pair = pairs[j];
+                resolvedCallback(pair.property, pair.value);
+            }
+        } else {
+            //Fall back to the string property name as a last resort and let
+            //the callback handle it further.
+            resolvedCallback(name, value);
+        }
+    }
+}
+
 export function getShorthandPairs(name: string, value: any): Array<definition.KeyValuePair<definition.Property, any>> {
     var callback = callbackByShorthandName.get(name);
     if (callback) {
