@@ -29,7 +29,21 @@ export class NavigationButton extends ActionItem {
 }
 
 export class ActionBar extends common.ActionBar {
-    public update() {
+
+     get ios(): UIView {
+
+        if (!(this.page && this.page.parent)) {
+            return;
+        }
+
+        let viewController = (<UIViewController>this.page.ios);
+        if (viewController.navigationController !== null) {
+            return viewController.navigationController.navigationBar;
+        }
+        return null;
+     }
+
+     public update() {
         // Page should be attached to frame to update the action bar.
         if (!(this.page && this.page.parent)) {
             return;
@@ -38,7 +52,7 @@ export class ActionBar extends common.ActionBar {
         var viewController = (<UIViewController>this.page.ios);
         var navigationItem: UINavigationItem = viewController.navigationItem;
         var navController = frameModule.topmost().ios.controller; 
-        var navigationBar = <UINavigationBar>navController.navigationBar;
+        var navigationBar = navController ? <UINavigationBar>navController.navigationBar : null;
         var previousController: UIViewController;
 
         // Set Title
@@ -53,7 +67,7 @@ export class ActionBar extends common.ActionBar {
         if (indexOfViewController < navController.viewControllers.count && indexOfViewController > 0) {
             previousController = navController.viewControllers[indexOfViewController - 1];
         }
-   
+
         // Set back button text
         if (previousController) {
             if (this.navigationButton) {
@@ -248,6 +262,10 @@ export class ActionBar extends common.ActionBar {
         });
 
         super.onLayout(left, top, right, bottom);
+    }
+
+    public layoutNativeView(left: number, top: number, right: number, bottom: number) {
+        return;
     }
 
     public _shouldApplyStyleHandlers() {
