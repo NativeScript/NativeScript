@@ -1,2 +1,6 @@
-{ "name" : "console",
-  "main" : "console.js" }
+{
+	"name" : "console",
+  	"main" : "console.js",
+	"nativescript": {}
+}
+

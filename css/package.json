@@ -30,5 +30,6 @@
     "parser",
     "stringifier",
     "stylesheet"
-  ]
+  ],
+  "nativescript": {}
 }

@@ -1,2 +1,5 @@
-{ "name" : "xml",
-  "main" : "xml.js" }
+{
+	"name" : "xml",
+  	"main" : "xml.js",
+	"nativescript": {}
+}

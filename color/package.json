@@ -1,2 +1,6 @@
-{ "name" : "color",
-  "main" : "color.js" }
+{ 
+	"name" : "color",
+  	"main" : "color.js",
+	"nativescript": {}
+}
+

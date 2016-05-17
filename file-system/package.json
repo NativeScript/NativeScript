@@ -1,2 +1,5 @@
-{ "name" : "file-system",
-  "main" : "file-system.js" }
+{
+	"name" : "file-system",
+  	"main" : "file-system.js",
+	"nativescript": {}
+}

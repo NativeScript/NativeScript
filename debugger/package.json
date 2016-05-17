@@ -1,2 +1,5 @@
-{ "name" : "debugger",
-  "main" : "debugger.js" }
+{
+	"name" : "debugger",
+  	"main" : "debugger.js",
+	"nativescript": {}
+}

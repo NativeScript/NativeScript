@@ -13,5 +13,6 @@
     "mocha": "~1.9.0",
     "should": "~1.2.2"
   },
-  "main": "index"
+  "main": "index",
+  "nativescript": {}
 }
