@@ -706,6 +706,10 @@ export class ViewStyler implements style.Styler {
     private static setZIndexProperty(view: View, newValue: any) {
         if (view.android.setZ) {
             view.android.setZ(newValue);
+            
+            if(view.android instanceof android.widget.Button){
+                view.android.setStateListAnimator(null);
+            }
         }
     }
 
