@@ -487,7 +487,7 @@ class CustomPanGestureDetector {
     }
 
     private getEventCoordinates(event: android.view.MotionEvent): { x: number, y: number } {
-        var count = event.getPointerCount();
+        const count = event.getPointerCount();
         if (count === 1) {
             return {
                 x: event.getRawX() / this.density,
@@ -495,11 +495,11 @@ class CustomPanGestureDetector {
             };
         }
         else {
-            var res = { x: 0, y: 0 };
-            var offX = event.getRawX() - event.getX();
-            var offY = event.getRawY() - event.getY();
+            const offX = event.getRawX() - event.getX();
+            const offY = event.getRawY() - event.getY();
+            let res = { x: 0, y: 0 };
 
-            for (var i = 0; i < count; i++) {
+            for (let i = 0; i < count; i++) {
                 res.x += event.getX(i) + offX;
                 res.y += event.getY(i) + offY;
             }
