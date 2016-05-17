@@ -241,13 +241,13 @@ export module ad {
         var bkg = <any>nativeView.getBackground();
 
         if (v instanceof button.Button && !types.isNullOrUndefined(bkg) && types.isFunction(bkg.setColorFilter) &&
-            v.borderWidth === 0 && v.borderRadius === 0 &&
+            v.borderWidth === 0 && v.borderRadius === 0 && !clipPathValue &&
             types.isNullOrUndefined(v.style._getValue(style.backgroundImageProperty)) &&
             !types.isNullOrUndefined(v.style._getValue(style.backgroundColorProperty))) {
             let backgroundColor = bkg.backgroundColor = v.style._getValue(style.backgroundColorProperty).android;
             bkg.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
             bkg.backgroundColor = backgroundColor;
-        } else if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty() || !clipPathValue.isEmpty()) {
+        } else if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty() || clipPathValue) {
 
             if (!(bkg instanceof BorderDrawableClass)) {
                 bkg = new BorderDrawableClass();
