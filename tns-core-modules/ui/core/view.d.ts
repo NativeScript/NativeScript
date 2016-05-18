@@ -484,8 +484,8 @@ declare module "ui/core/view" {
         isLoaded: boolean;
 
         _addView(view: View, atIndex?: number);
-        _propagateInheritableProperties(view: View)
-        _inheritProperties(parentView: View)
+        _propagateInheritableProperties(view: View);
+        _inheritProperties(parentView: View);
         _removeView(view: View);
         _context: any /* android.content.Context */;
 
@@ -499,8 +499,8 @@ declare module "ui/core/view" {
 
         public _applyXmlAttribute(attribute: string, value: any): boolean;
 
-        // TODO: Implement logic for stripping these lines out
         //@private
+        isLayoutRequired: boolean;
         _parentChanged(oldParent: View): void;
         _gestureObservers: any;
         _isInheritedChange(): boolean;
@@ -610,5 +610,4 @@ declare module "ui/core/view" {
          */
         _applyXmlAttribute(attributeName: string, attrValue: any): boolean;
     }
-
 }
