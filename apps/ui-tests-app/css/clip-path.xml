@@ -1,5 +1,5 @@
 <Page>
-    <GridLayout rows="*,*,*,*,*">
+    <GridLayout rows="*,*,*,*,*" automationText="clipPath">
         <Button text="circle" style="background-color: red; border-width:2; border-color: blue; clip-path: circle(100% at 50% 50%);"/>
         <Button text="ellipse" style="background-color: orange; border-width:2; border-color: green; clip-path: ellipse(50% 50% at 50% 50%);" row="1" />
         <Button text="rect" style="background-color: red; border-width:2; border-color: blue; clip-path: rect(0, 0, 100%, 100%);" row="2" />

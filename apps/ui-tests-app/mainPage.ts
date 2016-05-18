@@ -48,7 +48,7 @@ examples.set("transform", "css/text-transform");
 examples.set("whitespace", "css/white-space");
 examples.set("switch", "css/views");
 examples.set("zindex", "css/zindex");
-
+examples.set("clipPath", "css/clip-path");
 examples.set("dialogs", "dialogs/dialogs");
 
 examples.set("fontbtn", "font/button");
@@ -83,7 +83,7 @@ examples.set("modalview", "modal-view/modal-view");
 examples.set("nordic", "nordic/nordic");
 
 examples.set("padding", "padding/padding");
-
+examples.set("timePicker", "time-picker/time-picker");
 examples.set("gestures", "pages/gestures");
 examples.set("touch", "pages/touch-event");
 examples.set("handlers", "pages/handlers");
