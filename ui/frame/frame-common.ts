@@ -246,7 +246,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         this._updateActionBar();
     }
 
-    public navigationQueueIsEmpty() {
+    public navigationQueueIsEmpty(): boolean {
         return this._navigationQueue.length === 0;
     }
 

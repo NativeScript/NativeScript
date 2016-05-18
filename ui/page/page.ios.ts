@@ -10,16 +10,17 @@ global.moduleMerge(pageCommon, exports);
 var ENTRY = "_entry";
 var DELEGATE = "_delegate";
 
-function isBackNavigation(frame: any, entry): boolean {
+function isBackNavigation(page: Page, entry): boolean {
+    let frame = page.frame;
     if (!frame) {
         return false;
     }
 
-    if (frame._navigationQueue.length === 0) {
+    if (frame.navigationQueueIsEmpty()) {
         return true;
     }
     else {
-        var navigationQueue = frame._navigationQueue;
+        let navigationQueue = (<any>frame)._navigationQueue;
         for (var i = 0; i < navigationQueue.length; i++) {
             if (navigationQueue[i].entry === entry) {
                 return navigationQueue[i].isBackNavigation;
@@ -117,8 +118,8 @@ class UIViewControllerImpl extends UIViewController {
         let newEntry = this[ENTRY];
 
         // Don't raise event if currentPage was showing modal page.
-        if (!page.modal && newEntry && (!frame || frame.currentPage !== page)) {
-            let isBack = isBackNavigation(frame, newEntry)
+        if (!page._presentedViewController && newEntry && (!frame || frame.currentPage !== page)) {
+            let isBack = isBackNavigation(page, newEntry)
             page.onNavigatingTo(newEntry.entry.context, isBack);
         }
 
@@ -143,7 +144,7 @@ class UIViewControllerImpl extends UIViewController {
         page._viewWillDisappear = false;
 
         page._enableLoadedEvents = true;
-        // If page was in backstack or showing modal page it will have parent but it will be in unloaded state so raise loaded here.
+        // Pages in backstack are unloaded so raise loaded here.
         if (!page.isLoaded) {
             page.onLoaded();
         }
@@ -163,9 +164,9 @@ class UIViewControllerImpl extends UIViewController {
 
         let frame = this.navigationController ? (<any>this.navigationController).owner : null;
         // Skip navigation events if modal page is shown.
-        if (!page.modal && frame) {
+        if (!page._presentedViewController && frame) {
             let newEntry = this[ENTRY];
-            let isBack = isBackNavigation(frame, newEntry);
+            let isBack = isBackNavigation(page, newEntry);
             // We are on the current page which happens when navigation is canceled so isBack should be false.
             if (frame.currentPage === page && frame._navigationQueue.length === 0) {
                 isBack = false;
@@ -186,6 +187,13 @@ class UIViewControllerImpl extends UIViewController {
 
             frame._processNavigationQueue(page);
         }
+
+        if (!this.presentedViewController) {
+            // clear presented viewController here only if no presented controller.
+            // this is needed because in iOS9 the order of events could be - willAppear, willDisappear, didAppear.
+            // If we clean it when we have viewController then once presented VC is dismissed then 
+            page._presentedViewController = null;
+        }
     };
 
     public viewWillDisappear(animated: boolean): void {
@@ -195,10 +203,16 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
+        // Cache presentedViewController if any. We don't want to raise 
+        // navigation events in case of presenting view controller.
+        if (!page._presentedViewController) {
+            page._presentedViewController = this.presentedViewController;
+        }
+
         var frame = page.frame;
         // Skip navigation events if we are hiding because we are about to show modal page.
-        if (!page.modal && frame && frame.currentPage === page) {
-            var isBack = page.frame && (!this.navigationController || !this.navigationController.viewControllers.containsObject(this));
+        if (!page._presentedViewController && frame && frame.currentPage === page) {
+            let isBack = page.frame && (!this.navigationController || !this.navigationController.viewControllers.containsObject(this));
             page.onNavigatingFrom(isBack);
         }
 
@@ -210,7 +224,7 @@ class UIViewControllerImpl extends UIViewController {
         let page = this._owner.get();
         trace.write(page + " viewDidDisappear", trace.categories.Navigation);
         // Exit if no page or page is hiding because it shows another page modally.
-        if (!page || page.modal) {
+        if (!page || page.modal || page._presentedViewController ) {
             return;
         }
 
@@ -226,7 +240,9 @@ class UIViewControllerImpl extends UIViewController {
         // Manually pop backStack when Back button is pressed or navigating back with edge swipe.
         // Don't pop if we are hiding modally shown page.
         let frame = page.frame;
-        if (!modalParent && frame && frame.backStack.length > 0 && (<any>frame)._navigationQueue.length === 0 && frame.currentPage === page) {
+        // We are not modal page, have frame with backstack and navigation queue is empty and currentPage is closed
+        // then pop our backstack.
+        if (!modalParent && frame && frame.backStack.length > 0 && frame.navigationQueueIsEmpty() && frame.currentPage === page) {
             (<any>frame)._backStack.pop();
         }
 
@@ -260,6 +276,7 @@ export class Page extends pageCommon.Page {
     public _modalParent: Page;
     public _UIModalPresentationFormSheet: boolean;
     public _viewWillDisappear: boolean;
+    public _presentedViewController: UIViewController; // used when our page present native viewController without going through our abstraction.
 
     public requestLayout(): void {
         super.requestLayout();
@@ -345,7 +362,7 @@ export class Page extends pageCommon.Page {
 
     protected _hideNativeModalView(parent: Page) {
         parent.requestLayout();
-        parent._ios.dismissModalViewControllerAnimated(utils.ios.MajorVersion >= 8);
+        parent._ios.dismissModalViewControllerAnimated(utils.ios.MajorVersion >= 7);
 
         super._hideNativeModalView(parent);
     }

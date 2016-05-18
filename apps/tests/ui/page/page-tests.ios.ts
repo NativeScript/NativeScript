@@ -108,3 +108,57 @@ export function test_page_no_anctionBar_measure_no_spanUnderBackground_measure_l
     contentHeight = lbl._getCurrentLayoutBounds().bottom - lbl._getCurrentLayoutBounds().top;
     TKUnit.assertTrue(contentHeight < pageHeight, "Page.content be given less space than Page when ActionBar is shown.");
 }
+
+export function test_showing_native_viewcontroller_doesnt_throw_exception() {
+    let testPage = new Page();
+    let loaded = 0;
+    let unloaded = 0;
+    let navigatingTo = 0;
+    let navigatedTo = 0;
+    let navigatingFrom = 0;
+    let navigatedFrom = 0;
+
+    testPage.on(Page.loadedEvent, () => loaded++);
+    testPage.on(Page.unloadedEvent, () => unloaded++);
+    testPage.on(Page.navigatingToEvent, () => navigatingTo++);
+    testPage.on(Page.navigatedToEvent, () => navigatedTo++);
+    testPage.on(Page.navigatingFromEvent, () => navigatingFrom++);
+    testPage.on(Page.navigatedFromEvent, () => navigatedFrom++);
+
+    helper.navigate(() => { return testPage; });
+
+    TKUnit.assertEqual(1, navigatingTo, "navigatingTo");
+    TKUnit.assertEqual(1, loaded, "navigatingTo");
+    TKUnit.assertEqual(1, navigatedTo, "navigatingTo");
+    TKUnit.assertEqual(0, navigatingFrom, "navigatingTo");
+    TKUnit.assertEqual(0, unloaded, "navigatingTo");
+    TKUnit.assertEqual(0, navigatedFrom, "navigatingTo");
+
+    let page = new Page();
+    let navcontroller = <UINavigationController>frame.topmost().ios.controller;
+
+    let completed = false;
+    navcontroller.presentViewControllerAnimatedCompletion(page.ios, false, () => completed = true);
+    TKUnit.waitUntilReady(() => completed);
+
+    TKUnit.assertEqual(testPage.modal, undefined, "testPage.modal should be null");
+
+    TKUnit.assertEqual(1, navigatingTo, "navigatingTo");
+    TKUnit.assertEqual(1, loaded, "navigatingTo");
+    TKUnit.assertEqual(1, navigatedTo, "navigatingTo");
+    TKUnit.assertEqual(0, navigatingFrom, "navigatingTo");
+    TKUnit.assertEqual(0, unloaded, "navigatingTo");
+    TKUnit.assertEqual(0, navigatedFrom, "navigatingTo");
+
+    completed = false;
+    let controller = <UIViewController>page.ios;
+    controller.dismissViewControllerAnimatedCompletion(false, () => completed = true);
+    TKUnit.waitUntilReady(() => completed);
+
+    TKUnit.assertEqual(1, navigatingTo, "navigatingTo");
+    TKUnit.assertEqual(1, loaded, "navigatingTo");
+    TKUnit.assertEqual(1, navigatedTo, "navigatingTo");
+    TKUnit.assertEqual(0, navigatingFrom, "navigatingTo");
+    TKUnit.assertEqual(0, unloaded, "navigatingTo");
+    TKUnit.assertEqual(0, navigatedFrom, "navigatingTo");
+}

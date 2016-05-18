@@ -278,7 +278,7 @@ export class Page extends ContentView implements dts.Page {
         //
     }
 
-    protected _raiseShownModallyEvent() {
+    public _raiseShownModallyEvent() {
         let args: dts.ShownModallyData = {
             eventName: Page.shownModallyEvent,
             object: this,

@@ -101,6 +101,7 @@ declare module "ui/frame" {
         ios: iOSFrame;
 
         //@private
+        navigationQueueIsEmpty(): boolean;
         navigationBarHeight: number;
         _processNavigationQueue(page: pages.Page);
         _updateActionBar(page?: pages.Page);
