@@ -646,7 +646,9 @@ export class View extends ProxyObject implements definition.View {
     public setMeasuredDimension(measuredWidth: number, measuredHeight: number): void {
         this._measuredWidth = measuredWidth;
         this._measuredHeight = measuredHeight;
-        trace.write(this + " :setMeasuredDimension: " + measuredWidth + ", " + measuredHeight, trace.categories.Layout);
+        if (trace.enabled) {
+            trace.write(this + " :setMeasuredDimension: " + measuredWidth + ", " + measuredHeight, trace.categories.Layout);
+        }
     }
 
     public requestLayout(): void {
@@ -768,7 +770,9 @@ export class View extends ProxyObject implements definition.View {
         childLeft = Math.round(childLeft);
         childTop = Math.round(childTop);
 
-        trace.write(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, trace.categories.Layout);
+        if (trace.enabled) {
+            trace.write(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, trace.categories.Layout);
+        }
         child.layout(childLeft, childTop, childRight, childBottom);
     }
 
@@ -787,7 +791,9 @@ export class View extends ProxyObject implements definition.View {
             var childWidthMeasureSpec = View.getMeasureSpec(child, width, widthMode, true);
             var childHeightMeasureSpec = View.getMeasureSpec(child, height, heightMode, false);
 
-            trace.write(child.parent + " :measureChild: " + child + " " + utils.layout.measureSpecToString(childWidthMeasureSpec) + ", " + utils.layout.measureSpecToString(childHeightMeasureSpec), trace.categories.Layout);
+            if (trace.enabled) {
+                trace.write(child.parent + " :measureChild: " + child + " " + utils.layout.measureSpecToString(childWidthMeasureSpec) + ", " + utils.layout.measureSpecToString(childHeightMeasureSpec), trace.categories.Layout);
+            }
 
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
             measureWidth = child.getMeasuredWidth();
@@ -974,7 +980,9 @@ export class View extends ProxyObject implements definition.View {
         this._addViewCore(view, atIndex);
         view._parentChanged(null);
 
-        trace.write("called _addView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
+        if (trace.enabled) {
+            trace.write("called _addView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
+        }
     }
 
     /**
@@ -1028,7 +1036,9 @@ export class View extends ProxyObject implements definition.View {
         view._parent = undefined;
         view._parentChanged(this);
 
-        trace.write("called _removeView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
+        if (trace.enabled) {
+            trace.write("called _removeView on view " + this._domId + " for a child " + view._domId, trace.categories.ViewHierarchy);
+        }
     }
 
     /**
@@ -1089,7 +1099,9 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public _goToVisualState(state: string) {
-        trace.write(this + " going to state: " + state, trace.categories.Style);
+        if (trace.enabled) {
+            trace.write(this + " going to state: " + state, trace.categories.Style);
+        }
         if (state === this._visualState || this._requestedVisualState === state) {
             return;
         }

@@ -86,7 +86,9 @@ export class CssSelector {
                 try {
                     view.style._setValue(resolvedProperty, value, modifier);
                 } catch (ex) {
-                    trace.write("Error setting property: " + resolvedProperty.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+                    if (trace.enabled) {
+                        trace.write("Error setting property: " + resolvedProperty.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+                    }
                 }
             }
         });

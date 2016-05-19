@@ -28,7 +28,9 @@ function ensureWebViewClientClass() {
         }
 
         public shouldOverrideUrlLoading(view: android.webkit.WebView, url: string) {
-            trace.write("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", trace.categories.Debug);
+            if (trace.enabled) {
+                trace.write("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", trace.categories.Debug);
+            }
             return false;
         }
 
@@ -36,7 +38,9 @@ function ensureWebViewClientClass() {
             super.onPageStarted(view, url, favicon);
 
             if (this._view) {
-                trace.write("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", trace.categories.Debug);
+                if (trace.enabled) {
+                    trace.write("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", trace.categories.Debug);
+                }
                 this._view._onLoadStarted(url, common.WebView.navigationTypes[common.WebView.navigationTypes.indexOf("linkClicked")]);
             }
         }
@@ -45,7 +49,9 @@ function ensureWebViewClientClass() {
             super.onPageFinished(view, url);
 
             if (this._view) {
-                trace.write("WebViewClientClass.onPageFinished(" + url + ")", trace.categories.Debug);
+                if (trace.enabled) {
+                    trace.write("WebViewClientClass.onPageFinished(" + url + ")", trace.categories.Debug);
+                }
                 this._view._onLoadFinished(url, undefined);
             }
         }
@@ -62,7 +68,9 @@ function ensureWebViewClientClass() {
                 super.onReceivedError(view, errorCode, description, failingUrl);
 
                 if (this._view) {
-                    trace.write("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", trace.categories.Debug);
+                    if (trace.enabled) {
+                        trace.write("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", trace.categories.Debug);
+                    }
                     this._view._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
                 }
             } else {
@@ -73,7 +81,9 @@ function ensureWebViewClientClass() {
                 super.onReceivedError(view, request, error);
 
                 if (this._view) {
-                    trace.write("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", trace.categories.Debug);
+                    if (trace.enabled) {
+                        trace.write("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", trace.categories.Debug);
+                    }
                     this._view._onLoadFinished(error.getUrl && error.getUrl(), error.getDescription() + "(" + error.getErrorCode() + ")");
                 }
             }
@@ -117,7 +127,9 @@ export class WebView extends common.WebView {
             return;
         }
 
-        trace.write("WebView._loadUrl(" + url + ")", trace.categories.Debug);
+        if (trace.enabled) {
+            trace.write("WebView._loadUrl(" + url + ")", trace.categories.Debug);
+        }
         this._android.stopLoading();
         this._android.loadUrl(url);
     }

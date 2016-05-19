@@ -9,7 +9,9 @@ import {AnimationCurve} from "ui/enums"
 
 function _testTransition(navigationTransition: NavigationTransition) {
     var testId = `Transition[${JSON.stringify(navigationTransition)}]`;
-    trace.write(`Testing ${testId}`, trace.categories.Test);
+    if (trace.enabled) {
+        trace.write(`Testing ${testId}`, trace.categories.Test);
+    }
     var navigationEntry: NavigationEntry = {
         create: function (): Page {
             let page = new Page();

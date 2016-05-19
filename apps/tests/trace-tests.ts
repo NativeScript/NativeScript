@@ -29,6 +29,8 @@ export var test_DummyTestForSnippetOnly2 = function () {
     // >> trace-message
     trace.setCategories(trace.categories.Debug);
     trace.enable();
-    trace.write("My Debug Message", trace.categories.Debug);
+    if (trace.enabled) {
+        trace.write("My Debug Message", trace.categories.Debug);
+    }
     // << trace-message
 }

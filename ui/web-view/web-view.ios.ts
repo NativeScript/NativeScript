@@ -38,7 +38,9 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
                     break;
             }
 
-            trace.write("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", trace.categories.Debug);
+            if (trace.enabled) {
+                trace.write("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", trace.categories.Debug);
+            }
             owner._onLoadStarted(request.URL.absoluteString, common.WebView.navigationTypes[navTypeIndex]);
         }
 
@@ -46,11 +48,15 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
     }
 
     public webViewDidStartLoad(webView: UIWebView) {
-        trace.write("UIWebViewDelegateClass.webViewDidStartLoad(" + webView.request.URL + ")", trace.categories.Debug);
+        if (trace.enabled) {
+            trace.write("UIWebViewDelegateClass.webViewDidStartLoad(" + webView.request.URL + ")", trace.categories.Debug);
+        }
     }
 
     public webViewDidFinishLoad(webView: UIWebView) {
-        trace.write("UIWebViewDelegateClass.webViewDidFinishLoad(" + webView.request.URL + ")", trace.categories.Debug);
+        if (trace.enabled) {
+            trace.write("UIWebViewDelegateClass.webViewDidFinishLoad(" + webView.request.URL + ")", trace.categories.Debug);
+        }
         let owner = this._owner.get();
         if (owner) {
             owner._onLoadFinished(webView.request.URL.absoluteString);
@@ -65,7 +71,9 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
                 url = webView.request.URL.absoluteString;
             }
 
-            trace.write("UIWebViewDelegateClass.webViewDidFailLoadWithError(" + error.localizedDescription + ")", trace.categories.Debug);
+            if (trace.enabled) {
+                trace.write("UIWebViewDelegateClass.webViewDidFailLoadWithError(" + error.localizedDescription + ")", trace.categories.Debug);
+            }
             if (owner) {
                 owner._onLoadFinished(url, error.localizedDescription);
             }
@@ -103,7 +111,9 @@ export class WebView extends common.WebView {
     }
 
     public _loadUrl(url: string) {
-        trace.write("WebView._loadUrl(" + url + ")", trace.categories.Debug);
+        if (trace.enabled) {
+            trace.write("WebView._loadUrl(" + url + ")", trace.categories.Debug);
+        }
 
         if (this._ios.loading) {
             this._ios.stopLoading();

@@ -40,7 +40,9 @@ export class ListPicker extends view.View implements definition.ListPicker {
     }
 
     public _onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        trace.write("ListPicker._onSelectedIndexPropertyChanged("+data.oldValue+" => "+data.newValue+");", traceCategory);
+        if (trace.enabled) {
+            trace.write("ListPicker._onSelectedIndexPropertyChanged("+data.oldValue+" => "+data.newValue+");", traceCategory);
+        }
         var index = this.selectedIndex;
         if (types.isUndefined(index)) {
             return;
@@ -59,7 +61,9 @@ export class ListPicker extends view.View implements definition.ListPicker {
     }
 
     public _updateSelectedIndexOnItemsPropertyChanged(newItems) {
-        trace.write("ListPicker._updateSelectedIndexOnItemsPropertyChanged(" + newItems + ");", traceCategory);
+        if (trace.enabled) {
+            trace.write("ListPicker._updateSelectedIndexOnItemsPropertyChanged(" + newItems + ");", traceCategory);
+        }
         var newItemsCount = 0;
         if (newItems && newItems.length) {
             newItemsCount = newItems.length;

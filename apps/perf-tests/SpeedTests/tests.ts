@@ -12,7 +12,10 @@ export function compareNativeDates(count: number): string {
     var elapsedTime = Math.round(new Date().getMilliseconds() - startTime);
     var averageTime = (elapsedTime / count);
     var message = "Total: " + elapsedTime + " ms. Avg: " + averageTime + " ms.";
-    trace.write(message, trace.categories.Test, trace.messageType.info);
+    
+    if (trace.enabled) {
+        trace.write(message, trace.categories.Test, trace.messageType.info);
+    }
     return message;
 }
 
@@ -25,7 +28,9 @@ export function compareJavaScriptDates(count: number): string {
     var elapsedTime = Math.round(new Date().getMilliseconds() - startTime);
     var averageTime = (elapsedTime / count);
     var message = "Total: " + elapsedTime + " ms. Avg: " + averageTime + " ms.";
-    trace.write(message, trace.categories.Test, trace.messageType.info);
+    if (trace.enabled) {
+        trace.write(message, trace.categories.Test, trace.messageType.info);
+    }
     return message;
 }
 
@@ -46,7 +51,9 @@ export function decodeAndEncodeBitmap(count: number, finishedCallback: (message)
         var elapsedTime = Math.round(new Date().getMilliseconds() - startTime);
         var averageTime = (elapsedTime / count);
         var message = "Total: " + elapsedTime + " ms. Avg: " + averageTime + " ms.";
-        trace.write(message, trace.categories.Test, trace.messageType.info);
+        if (trace.enabled) {
+            trace.write(message, trace.categories.Test, trace.messageType.info);
+        }
         return finishedCallback(message);
     }, function (error) {
             console.log(error.message);

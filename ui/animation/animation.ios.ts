@@ -142,9 +142,13 @@ export class Animation extends common.Animation implements definition.Animation 
         }
 
         if (!playSequentially) {
-            trace.write("Non-merged Property Animations: " + this._propertyAnimations.length, trace.categories.Animation);
+            if (trace.enabled) {
+                trace.write("Non-merged Property Animations: " + this._propertyAnimations.length, trace.categories.Animation);
+            }
             this._mergedPropertyAnimations = Animation._mergeAffineTransformAnimations(this._propertyAnimations);
-            trace.write("Merged Property Animations: " + this._mergedPropertyAnimations.length, trace.categories.Animation);
+            if (trace.enabled) {
+                trace.write("Merged Property Animations: " + this._mergedPropertyAnimations.length, trace.categories.Animation);
+            }
         }
         else {
             this._mergedPropertyAnimations = this._propertyAnimations;
@@ -171,11 +175,15 @@ export class Animation extends common.Animation implements definition.Animation 
                 }
 
                 if (that._cancelledAnimations > 0 && (that._cancelledAnimations + that._finishedAnimations) === that._mergedPropertyAnimations.length) {
-                    trace.write(that._cancelledAnimations + " animations cancelled.", trace.categories.Animation);
+                    if (trace.enabled) {
+                        trace.write(that._cancelledAnimations + " animations cancelled.", trace.categories.Animation);
+                    }
                     that._rejectAnimationFinishedPromise();
                 }
                 else if (that._finishedAnimations === that._mergedPropertyAnimations.length) {
-                    trace.write(that._finishedAnimations + " animations finished.", trace.categories.Animation);
+                    if (trace.enabled) {
+                        trace.write(that._finishedAnimations + " animations finished.", trace.categories.Animation);
+                    }
                     that._resolveAnimationFinishedPromise();
                 }
             }
@@ -188,7 +196,9 @@ export class Animation extends common.Animation implements definition.Animation 
         return (cancelled?: boolean) => {
 
             if (cancelled && finishedCallback) {
-                trace.write("Animation " + (index - 1).toString() + " was cancelled. Will skip the rest of animations and call finishedCallback(true).", trace.categories.Animation);
+                if (trace.enabled) {
+                    trace.write("Animation " + (index - 1).toString() + " was cancelled. Will skip the rest of animations and call finishedCallback(true).", trace.categories.Animation);
+                }
                 finishedCallback(cancelled);
                 return;
             }
@@ -526,16 +536,22 @@ export class Animation extends common.Animation implements definition.Animation 
                     iterations: propertyAnimations[i].iterations,
                     curve: propertyAnimations[i].curve
                 };
-                trace.write("Curve: " + propertyAnimations[i].curve, trace.categories.Animation);
+                if (trace.enabled) {
+                    trace.write("Curve: " + propertyAnimations[i].curve, trace.categories.Animation);
+                }
                 newTransformAnimation.value[propertyAnimations[i].property] = propertyAnimations[i].value;
-                trace.write("Created new transform animation: " + common.Animation._getAnimationInfo(newTransformAnimation), trace.categories.Animation);
+                if (trace.enabled) {
+                    trace.write("Created new transform animation: " + common.Animation._getAnimationInfo(newTransformAnimation), trace.categories.Animation);
+                }
 
                 // Merge all compatible affine transform animations to the right into this new animation.
                 j = i + 1;
                 if (j < length) {
                     for (; j < length; j++) {
                         if (Animation._canBeMerged(propertyAnimations[i], propertyAnimations[j])) {
-                            trace.write("Merging animations: " + common.Animation._getAnimationInfo(newTransformAnimation) + " + " + common.Animation._getAnimationInfo(propertyAnimations[j]) + ";", trace.categories.Animation);
+                            if (trace.enabled) {
+                                trace.write("Merging animations: " + common.Animation._getAnimationInfo(newTransformAnimation) + " + " + common.Animation._getAnimationInfo(propertyAnimations[j]) + ";", trace.categories.Animation);
+                            }
                             newTransformAnimation.value[propertyAnimations[j].property] = propertyAnimations[j].value;
                             // Mark that it has been merged so we can skip it on our outer loop.
                             propertyAnimations[j][_skip] = true;

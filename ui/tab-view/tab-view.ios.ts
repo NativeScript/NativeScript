@@ -30,7 +30,9 @@ class UITabBarControllerImpl extends UITabBarController {
     }
 
     public viewDidLayoutSubviews(): void {
-        trace.write("TabView.UITabBarControllerClass.viewDidLayoutSubviews();", trace.categories.Debug);
+        if (trace.enabled) {
+            trace.write("TabView.UITabBarControllerClass.viewDidLayoutSubviews();", trace.categories.Debug);
+        }
         super.viewDidLayoutSubviews();
         let owner = this._owner.get();
         if (owner && owner.isLoaded) {
@@ -51,7 +53,9 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
     }
 
     public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
-        trace.write("TabView.UITabBarControllerDelegateClass.tabBarControllerDidSelectViewController(" + tabBarController + ", " + viewController + ");", trace.categories.Debug);
+        if (trace.enabled) {
+            trace.write("TabView.UITabBarControllerDelegateClass.tabBarControllerDidSelectViewController(" + tabBarController + ", " + viewController + ");", trace.categories.Debug);
+        }
         let owner = this._owner.get();
         if (owner) {
             owner._onViewControllerShown(viewController);
@@ -71,7 +75,9 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     }
 
     navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        trace.write("TabView.UINavigationControllerDelegateClass.navigationControllerDidShowViewControllerAnimated(" + navigationController + ", " + viewController + ", " + animated + ");", trace.categories.Debug);
+        if (trace.enabled) {
+            trace.write("TabView.UINavigationControllerDelegateClass.navigationControllerDidShowViewControllerAnimated(" + navigationController + ", " + viewController + ", " + animated + ");", trace.categories.Debug);
+        }
         // We don't need Edit button in More screen.
         navigationController.navigationBar.topItem.rightBarButtonItem = null;
         let owner = this._owner.get();
@@ -158,17 +164,23 @@ export class TabView extends common.TabView {
 
     public _onViewControllerShown(viewController: UIViewController) {
         // This method could be called with the moreNavigationController or its list controller, so we have to check.
-        trace.write("TabView._onViewControllerShown(" + viewController + ");", trace.categories.Debug);
+        if (trace.enabled) {
+            trace.write("TabView._onViewControllerShown(" + viewController + ");", trace.categories.Debug);
+        }
         if (this._ios.viewControllers.containsObject(viewController)) {
             this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);;
         }
         else {
-            trace.write("TabView._onViewControllerShown: viewController is not one of our viewControllers", trace.categories.Debug);
+            if (trace.enabled) {
+                trace.write("TabView._onViewControllerShown: viewController is not one of our viewControllers", trace.categories.Debug);
+            }
         }
     }
 
     public _removeTabs(oldItems: Array<definition.TabViewItem>) {
-        trace.write("TabView._removeTabs(" + oldItems + ");", trace.categories.Debug);
+        if (trace.enabled) {
+            trace.write("TabView._removeTabs(" + oldItems + ");", trace.categories.Debug);
+        }
         super._removeTabs(oldItems);
 
         var i: number;
@@ -184,7 +196,9 @@ export class TabView extends common.TabView {
     }
 
     public _addTabs(newItems: Array<definition.TabViewItem>) {
-        trace.write("TabView._addTabs(" + newItems + ");", trace.categories.Debug);
+        if (trace.enabled) {
+            trace.write("TabView._addTabs(" + newItems + ");", trace.categories.Debug);
+        }
         super._addTabs(newItems);
 
         var i: number;
@@ -262,7 +276,9 @@ export class TabView extends common.TabView {
         super._onSelectedIndexPropertyChangedSetNativeValue(data);
 
         var newIndex = data.newValue;
-        trace.write("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + newIndex + ")", trace.categories.Debug);
+        if (trace.enabled) {
+            trace.write("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + newIndex + ")", trace.categories.Debug);
+        }
         if (types.isNullOrUndefined(newIndex)) {
             return;
         }

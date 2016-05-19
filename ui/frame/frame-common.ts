@@ -71,12 +71,16 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): Page {
 
         var moduleExports;
         if (global.moduleExists(entry.moduleName)) {
-            trace.write("Loading pre-registered JS module: " + entry.moduleName, trace.categories.Navigation);
+            if (trace.enabled) {
+                trace.write("Loading pre-registered JS module: " + entry.moduleName, trace.categories.Navigation);
+            }
             moduleExports = global.loadModule(entry.moduleName);
         } else {
             var moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
             if (moduleExportsResolvedPath) {
-                trace.write("Loading JS file: " + moduleExportsResolvedPath, trace.categories.Navigation);
+                if (trace.enabled) {
+                    trace.write("Loading JS file: " + moduleExportsResolvedPath, trace.categories.Navigation);
+                }
 
                 // Exclude extension when doing require.
                 moduleExportsResolvedPath = moduleExportsResolvedPath.substr(0, moduleExportsResolvedPath.length - 3)
@@ -85,7 +89,9 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): Page {
         }
 
         if (moduleExports && moduleExports.createPage) {
-            trace.write("Calling createPage()", trace.categories.Navigation);
+            if (trace.enabled) {
+                trace.write("Calling createPage()", trace.categories.Navigation);
+            }
             page = moduleExports.createPage();
         }
         else {
@@ -113,7 +119,9 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
     // Possible XML file path.
     var fileName = resolveFileName(moduleNamePath, "xml");
     if (fileName) {
-        trace.write("Loading XML file: " + fileName, trace.categories.Navigation);
+        if (trace.enabled) {
+            trace.write("Loading XML file: " + fileName, trace.categories.Navigation);
+        }
 
         ensureBuilder();
 
@@ -163,7 +171,9 @@ export class Frame extends CustomLayoutView implements definition.Frame {
      * @param to The backstack entry to navigate back to.
      */
     public goBack(backstackEntry?: definition.BackstackEntry) {
-        trace.write(`GO BACK`, trace.categories.Navigation);
+        if (trace.enabled) {
+            trace.write(`GO BACK`, trace.categories.Navigation);
+        }
         if (!this.canGoBack()) {
             // TODO: Do we need to throw an error?
             return;
@@ -190,12 +200,16 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this._processNavigationContext(navigationContext);
         }
         else {
-            trace.write(`Going back scheduled`, trace.categories.Navigation);
+            if (trace.enabled) {
+                trace.write(`Going back scheduled`, trace.categories.Navigation);
+            }
         }
     }
 
     public navigate(param: any) {
-        trace.write(`NAVIGATE`, trace.categories.Navigation);
+        if (trace.enabled) {
+            trace.write(`NAVIGATE`, trace.categories.Navigation);
+        }
 
         var entry = buildEntryFromArgs(param);
         var page = resolvePageFromEntry(entry);
@@ -219,7 +233,9 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this._processNavigationContext(navigationContext);
         }
         else {
-            trace.write(`Navigation scheduled`, trace.categories.Navigation);
+            if (trace.enabled) {
+                trace.write(`Navigation scheduled`, trace.categories.Navigation);
+            }
         }
     }
 

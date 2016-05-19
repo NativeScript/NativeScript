@@ -187,8 +187,10 @@ export class View extends viewCommon.View {
         if (!context) {
             throw new Error("Expected valid android.content.Context instance.");
         }
-
-        trace.write("calling _onAttached on view " + this._domId, trace.categories.VisualTreeEvents);
+        
+        if (trace.enabled) {
+            trace.write("calling _onAttached on view " + this._domId, trace.categories.VisualTreeEvents);
+        }
 
         if (this._context === context) {
             return;
@@ -234,7 +236,9 @@ export class View extends viewCommon.View {
             this._eachChildView(eachChild);
         }
 
-        trace.write("calling _onDetached on view " + this._domId, trace.categories.VisualTreeEvents);
+        if (trace.enabled) {
+            trace.write("calling _onDetached on view " + this._domId, trace.categories.VisualTreeEvents);
+        }
 
         this._clearAndroidReference();
 
@@ -260,7 +264,9 @@ export class View extends viewCommon.View {
     }
 
     public _onContextChanged() {
-        trace.write("calling _onContextChanged on view " + this._domId, trace.categories.VisualTreeEvents);
+        if (trace.enabled) {
+            trace.write("calling _onContextChanged on view " + this._domId, trace.categories.VisualTreeEvents);
+        }
 
         this._createUI();
         // Ensure layout params
