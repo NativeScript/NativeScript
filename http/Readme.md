@@ -1,1 +1,1 @@
-https://github.com/NativeScript/docs/tree/master/http
+Allows you to send web requests and receive the responses.
