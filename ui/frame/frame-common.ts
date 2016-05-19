@@ -205,6 +205,9 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         var backstackEntry: definition.BackstackEntry = {
             entry: entry,
             resolvedPage: page,
+            navDepth: undefined,
+            fragmentTag: undefined,
+            isBack: undefined,
             isNavigation: true
         };
 
@@ -250,7 +253,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         return this._navigationQueue.length === 0;
     }
 
-    public _isEntryBackstackVisible(entry: definition.BackstackEntry): boolean {
+    public static _isEntryBackstackVisible(entry: definition.BackstackEntry): boolean {
         if (!entry) {
             return false;
         }
@@ -281,7 +284,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         if (navigationContext.entry.entry.clearHistory) {
             this._backStack.length = 0;
         }
-        else if (this._isEntryBackstackVisible(this._currentEntry)) {
+        else if (Frame._isEntryBackstackVisible(this._currentEntry)) {
             this._backStack.push(this._currentEntry);
         }
 
@@ -297,11 +300,11 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     }
 
     public _goBackCore(backstackEntry: definition.BackstackEntry) {
-        //
+        trace.write(`${this}._goBackCore(${this._backstackEntryTrace(backstackEntry) }); ${this}.currentPage: ${this.currentPage}`, trace.categories.Navigation);
     }
 
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
-        //
+        trace.write(`${this}._navigateCore(${this._backstackEntryTrace(backstackEntry)}); ${this}.currentPage: ${this.currentPage}`, trace.categories.Navigation);
     }
 
     public _onNavigatingTo(backstackEntry: definition.BackstackEntry, isBack: boolean) {
@@ -436,12 +439,36 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     public _printFrameBackStack() {
         var length = this.backStack.length;
         var i = length - 1;
-        console.log("---------------------------");
-        console.log("Frame Back Stack (" + length + ")");
+        console.log(`Frame Back Stack: `);
         while (i >= 0) {
             var backstackEntry = <definition.BackstackEntry>this.backStack[i--];
-            console.log("[ " + backstackEntry.resolvedPage.id + " ]");
+            console.log(`\t${backstackEntry.resolvedPage}`);
         }
+    }
+
+    public _backstackEntryTrace(b: definition.BackstackEntry): string {
+        let result = `${b.resolvedPage}`;
+
+        let backstackVisible = Frame._isEntryBackstackVisible(b);
+        if (!backstackVisible) {
+            result += ` | INVISIBLE`;
+        }
+
+        if (b.entry.clearHistory) {
+            result += ` | CLEAR HISTORY`;
+        }
+
+        let animated = this._getIsAnimatedNavigation(b.entry);
+        if (!animated) {
+            result += ` | NOT ANIMATED`;
+        }
+
+        let t = this._getNavigationTransition(b.entry);
+        if (t) {
+            result += ` | Transition[${JSON.stringify(t)}]`;
+        }
+
+        return result;
     }
 }
 
@@ -472,3 +499,4 @@ export function goBack(): boolean {
 export function stack(): Array<definition.Frame> {
     return frameStack;
 }
+

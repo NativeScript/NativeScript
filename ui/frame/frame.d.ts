@@ -236,6 +236,9 @@ declare module "ui/frame" {
         resolvedPage: pages.Page;
 
         //@private
+        navDepth: number;
+        fragmentTag: string;
+        isBack: boolean;
         isNavigation: boolean;
         //@endprivate
     }
