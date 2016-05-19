@@ -94,19 +94,38 @@
     <TypeScriptCompile Include="apps\sample-fonts\main-page.ts">
       <DependentUpon>main-page.xml</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\tests\layouts\common-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\navigation\custom-transition.android.ts" />
     <TypeScriptCompile Include="apps\tests\navigation\custom-transition.ios.ts" />
     <TypeScriptCompile Include="apps\tests\navigation\transition-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\pages\performance-test\start.ts" />
+    <TypeScriptCompile Include="apps\tests\pages\performance-test\test-big.ts" />
+    <TypeScriptCompile Include="apps\tests\pages\performance-test\test-small.ts" />
     <TypeScriptCompile Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.ts" />
     <TypeScriptCompile Include="apps\tests\ui\animation\css-animation-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\frame\frame-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\layouts\absolute-layout-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\layouts\common-layout-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\layouts\dock-layout-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\layouts\grid-layout-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\layouts\layout-helper.android.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\layouts\layout-helper.d.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\layouts\layout-helper.ios.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\layouts\stack-layout-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\layouts\wrap-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\page\modal-page.ts">
       <DependentUpon>modal-page.xml</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="apps\tests\ui\page\test-page-module-css.ts" />
     <TypeScriptCompile Include="apps\tests\ui\placeholder\placeholder-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\proxy-view-container\proxy-view-container-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\styling\style-tests.ts" />
+    <TypeScriptCompile Include="apps\tests\ui\styling\value-source-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\tab-view\tab-view-navigation-tests.ts" />
     <TypeScriptCompile Include="apps\tests\xml-declaration\custom-code-file.ts" />
+    <TypeScriptCompile Include="apps\tests\xml-declaration\mymodulewithxml\TabViewParentChain.ts" />
+    <TypeScriptCompile Include="apps\tests\xml-declaration\template-builder-tests\event-in-codeless-fragment.ts" />
+    <TypeScriptCompile Include="apps\tests\xml-declaration\template-builder-tests\event-in-template.ts" />
+    <TypeScriptCompile Include="apps\tests\xml-declaration\template-builder-tests\template-view.ts" />
     <TypeScriptCompile Include="apps\transforms\app.ts" />
     <TypeScriptCompile Include="apps\transforms\main-page.ts" />
     <TypeScriptCompile Include="apps\transforms\model.ts" />
@@ -164,13 +183,28 @@
     <Content Include="apps\sample-fonts\main-page.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\tests\pages\performance-test\start.xml" />
+    <Content Include="apps\tests\pages\performance-test\test-big.xml" />
+    <Content Include="apps\tests\pages\performance-test\test-small.xml" />
     <Content Include="apps\tests\ui\action-bar\ActionBar_BetweenTags.xml" />
     <Content Include="apps\tests\ui\action-bar\ActionBar_NumberAsText.xml" />
     <Content Include="apps\tests\ui\animation\test.css" />
     <Content Include="apps\tests\ui\page\modal-page.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\tests\ui\page\test-page-declarative-css.css" />
+    <Content Include="apps\tests\ui\page\test-page-declarative-css.xml" />
+    <Content Include="apps\tests\ui\page\test-page-module-css.css" />
+    <Content Include="apps\tests\ui\web-view\test.html" />
     <Content Include="apps\tests\xml-declaration\custom-css-file.css" />
+    <Content Include="apps\tests\xml-declaration\errors\non-existing-element-in-template.xml" />
+    <Content Include="apps\tests\xml-declaration\errors\non-existing-element.xml" />
+    <Content Include="apps\tests\xml-declaration\examples\test-page.xml" />
+    <Content Include="apps\tests\xml-declaration\mymodulewithxml\TabViewParentChain.xml" />
+    <Content Include="apps\tests\xml-declaration\template-builder-tests\event-in-codeless-fragment-the-fragment.xml" />
+    <Content Include="apps\tests\xml-declaration\template-builder-tests\event-in-codeless-fragment.xml" />
+    <Content Include="apps\tests\xml-declaration\template-builder-tests\event-in-template.xml" />
+    <Content Include="apps\tests\xml-declaration\template-builder-tests\simple-template-test.xml" />
     <Content Include="apps\transforms\main-page.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -283,6 +317,7 @@
     <Content Include="apps\ui-tests-app\pages\touch-event.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="apps\ui-tests-app\resources\logo.jpg" />
     <Content Include="apps\ui-tests-app\segmented-bar\all.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -373,7 +408,11 @@
     <TypeScriptCompile Include="apps\ui-tests-app\transitions\page1.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\transitions\page0.ts" />
     <TypeScriptCompile Include="color\known-colors.d.ts" />
+    <TypeScriptCompile Include="debugger\debugger.ts" />
+    <TypeScriptCompile Include="debugger\InspectorBackendCommands.ios.ts" />
+    <TypeScriptCompile Include="debugger\webinspector.ios.ts" />
     <TypeScriptCompile Include="es6.d.ts" />
+    <TypeScriptCompile Include="globals\decorators.ts" />
     <TypeScriptCompile Include="ui\animation\animation.d.ts" />
     <TypeScriptCompile Include="ui\animation\animation-common.ts">
       <DependentUpon>animation.d.ts</DependentUpon>
@@ -447,23 +486,12 @@
     <TypeScriptCompile Include="apps\tests\connectivity-tests.ts" />
     <TypeScriptCompile Include="apps\tests\console-tests.ts" />
     <TypeScriptCompile Include="apps\tests\file-name-resolver-tests\file-name-resolver-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\ui\frame-tests.ts" />
     <TypeScriptCompile Include="apps\tests\ui\gestures\gestures-tests.ts" />
     <TypeScriptCompile Include="apps\tests\fetch-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\layouts\layout-helper.d.ts" />
-    <TypeScriptCompile Include="apps\tests\layouts\layout-helper.ios.ts">
-      <DependentUpon>layout-helper.d.ts</DependentUpon>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="apps\tests\xhr-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\layouts\dock-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\pages\app.ts" />
     <TypeScriptCompile Include="apps\tests\pages\file-load-test.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page12.ts" />
-    <TypeScriptCompile Include="apps\tests\layouts\absolute-layout-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\layouts\layout-helper.android.ts">
-      <DependentUpon>layout-helper.d.ts</DependentUpon>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\tests\layouts\wrap-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page12.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page16.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page15.ts" />
@@ -711,8 +739,6 @@
     <TypeScriptCompile Include="apps\tests\pages\navigation\pageC.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page11.ts" />
     <TypeScriptCompile Include="apps\tests\pages\page7.ts" />
-    <TypeScriptCompile Include="apps\tests\layouts\grid-layout-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\layouts\stack-layout-tests.ts" />
     <TypeScriptCompile Include="apps\tests\testRunner.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\app.ts" />
     <TypeScriptCompile Include="apps\ui-tests-app\mainPage.ts" />
@@ -757,6 +783,8 @@
     <TypeScriptCompile Include="trace\trace.ts">
       <DependentUpon>trace.d.ts</DependentUpon>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="ui\animation\keyframe-animation.d.ts" />
+    <TypeScriptCompile Include="ui\animation\keyframe-animation.ts" />
     <TypeScriptCompile Include="ui\border\border.ts">
       <DependentUpon>border.d.ts</DependentUpon>
     </TypeScriptCompile>
@@ -1166,12 +1194,6 @@
     <Content Include="apps\tests\ui\bindingContext_testPage1.xml" />
     <Content Include="apps\tests\ui\bindingContext_testPage2.xml" />
     <Content Include="apps\tests\ui\label\label-tests-wrong.css" />
-    <Content Include="apps\tests\pages\files\other.xml" />
-    <Content Include="apps\tests\pages\files\test.android.phone.xml" />
-    <Content Include="apps\tests\pages\files\test.android.xml" />
-    <Content Include="apps\tests\pages\files\test.minWH300.xml" />
-    <Content Include="apps\tests\pages\files\test.minWH450.xml" />
-    <Content Include="apps\tests\pages\files\test.xml" />
     <Content Include="apps\tests\file-name-resolver-tests\files\other.xml" />
     <Content Include="apps\tests\file-name-resolver-tests\files\test.land.xml" />
     <Content Include="apps\tests\file-name-resolver-tests\files\test.minWH600.xml" />
@@ -1239,6 +1261,7 @@
     <Content Include="apps\ui-tests-app\font\text-view.xml" />
     <Content Include="apps\ui-tests-app\font\label.xml" />
     <Content Include="apps\ui-tests-app\font\button.xml" />
+    <Content Include="apps\ui-tests-app\time-picker\time-picker.xml" />
     <Content Include="apps\ui-tests-app\transitions\page1.xml" />
     <Content Include="apps\ui-tests-app\transitions\page0.xml" />
     <Content Include="apps\ui-tests-app\web-view\test.css" />
@@ -1593,8 +1616,6 @@
     <TypeScriptCompile Include="apps\perf-tests\SpeedTests\tests-native.ios.ts">
       <DependentUpon>tests-native.d.ts</DependentUpon>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="apps\tests\ui\style\style-tests.ts" />
-    <TypeScriptCompile Include="apps\tests\ui\style\value-source-tests.ts" />
     <TypeScriptCompile Include="apps\perf-tests\NavigationMemoryLeakTest\app.ts" />
     <TypeScriptCompile Include="apps\perf-tests\nav-page.d.ts" />
     <TypeScriptCompile Include="apps\perf-tests\nav-page.ts">
@@ -1778,7 +1799,6 @@
     <Content Include="application\Readme.md" />
     <Content Include="globals\Readme.md" />
     <Content Include="timer\Readme.md" />
-    <Content Include="apps\tests\Readme.md" />
     <Content Include="application-settings\Readme.md" />
   </ItemGroup>
   <ItemGroup>
@@ -2133,6 +2153,76 @@
     </Content>
     <Content Include="apps\sample-fonts\package.json" />
     <Content Include="apps\App_Resources\package.json" />
+    <Content Include="apps\tests\ui\frame\frame.md" />
+    <Content Include="apps\tests\ui\layouts\absolute-layout.md" />
+    <Content Include="apps\tests\ui\layouts\dock-layout.md" />
+    <Content Include="apps\tests\ui\layouts\grid-layout.md" />
+    <Content Include="apps\tests\ui\layouts\stack-layout.md" />
+    <Content Include="apps\tests\ui\layouts\wrap-layout.md" />
+    <Content Include="apps\tests\ui\list-picker\list-picker.md" />
+    <Content Include="apps\tests\ui\list-view\list-view.md" />
+    <Content Include="apps\tests\ui\page\page.md" />
+    <Content Include="apps\fonts\Entypo.ttf" />
+    <Content Include="apps\fonts\EvilIcons.ttf" />
+    <Content Include="apps\fonts\FontAwesome.ttf" />
+    <Content Include="apps\fonts\Foundation.ttf" />
+    <Content Include="apps\fonts\Ionicons.ttf" />
+    <Content Include="apps\fonts\Material-Design-Iconic-Font.ttf" />
+    <Content Include="apps\fonts\MaterialIcons.ttf" />
+    <Content Include="apps\fonts\Octicons.ttf" />
+    <Content Include="apps\fonts\package.json" />
+    <Content Include="apps\fonts\Zocial.ttf" />
+    <Content Include="debugger\package.json" />
+    <Content Include="data\package.json" />
+    <Content Include="apps\ui-tests-app\fonts\Pacifico.ttf" />
+    <Content Include="apps\ui-tests-app\fonts\Sofia.otf" />
+    <Content Include="apps\tests\application-settings.md" />
+    <Content Include="apps\tests\application.md" />
+    <Content Include="apps\tests\camera.md" />
+    <Content Include="apps\tests\color.md" />
+    <Content Include="apps\tests\connectivity.md" />
+    <Content Include="apps\tests\console.md" />
+    <Content Include="apps\tests\fetch.md" />
+    <Content Include="apps\tests\file-system.md" />
+    <Content Include="apps\tests\fps-meter.md" />
+    <Content Include="apps\tests\http.md" />
+    <Content Include="apps\tests\image-source.md" />
+    <Content Include="apps\tests\location.md" />
+    <Content Include="apps\tests\platform.md" />
+    <Content Include="apps\tests\timer.md" />
+    <Content Include="apps\tests\trace.md" />
+    <Content Include="apps\tests\xml-parser-tests\xml-parser.md" />
+    <Content Include="apps\tests\ui\web-view\web-view.md" />
+    <Content Include="apps\tests\ui\time-picker\time-picker.md" />
+    <Content Include="apps\tests\ui\text-view\text-view.md" />
+    <Content Include="apps\tests\ui\text-field\text-field.md" />
+    <Content Include="apps\tests\ui\tab-view\tab-view.md" />
+    <Content Include="apps\tests\ui\switch\switch.md" />
+    <Content Include="apps\tests\ui\styling\styling.md" />
+    <Content Include="apps\tests\ui\slider\slider.md" />
+    <Content Include="apps\tests\ui\segmented-bar\segmented-bar.md" />
+    <Content Include="apps\tests\ui\search-bar\search-bar.md" />
+    <Content Include="apps\tests\ui\scroll-view\scroll-view.md" />
+    <Content Include="apps\tests\ui\repeater\repeater.md" />
+    <Content Include="apps\tests\ui\progress\progress.md" />
+    <Content Include="apps\tests\ui\placeholder\placeholder.md" />
+    <Content Include="apps\tests\ui\label\label.md" />
+    <Content Include="apps\tests\ui\image-cache\image-cache.md" />
+    <Content Include="apps\tests\ui\image\image.md" />
+    <Content Include="apps\tests\ui\html-view\htm-view.md" />
+    <Content Include="apps\tests\ui\gestures\gestures.md" />
+    <Content Include="apps\tests\ui\dialogs\dialogs.md" />
+    <Content Include="apps\tests\ui\date-picker\date-picker.md" />
+    <Content Include="apps\tests\ui\button\button.md" />
+    <Content Include="apps\tests\ui\border\border.md" />
+    <Content Include="apps\tests\ui\animation\animation.md" />
+    <Content Include="apps\tests\ui\activity-indicator\activity-indicator.md" />
+    <Content Include="apps\tests\ui\action-bar\action-bar.md" />
+    <Content Include="apps\tests\text\formatted-string.md" />
+    <Content Include="apps\tests\data\observable-array.md" />
+    <Content Include="apps\tests\data\observable.md" />
+    <Content Include="apps\tests\data\virtual-array.md" />
+    <Content Include="apps\perf-tests\LargeObjectArrayMemoryTest\package.json" />
     <None Include="js-libs\esprima\LICENSE.BSD" />
     <Content Include="source-control.md" />
     <Content Include="ui\segmented-bar\package.json">
@@ -2168,10 +2258,10 @@
     <Content Include="ui\transition\package.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="utils\package.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build\tslint.json" />
-    <None Include="build\scripts\prepublish.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="js-libs\esprima\package.json" />
@@ -2179,7 +2269,9 @@
   <ItemGroup>
     <Content Include="js-libs\esprima\README.md" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="build\scripts\" />
+  </ItemGroup>
   <!-- To save maintenance effort, the Visual Studio build does not rely on the Microsoft targets.
         Instead, it calls the Grunt build.
   -->
@@ -2230,7 +2322,7 @@
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
-      <UserProperties ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" />
+      <UserProperties ui_2layouts_2wrap-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2layouts_2grid-layout_2package_1json__JSONSchema="" ui_2layouts_2dock-layout_2package_1json__JSONSchema="" ui_2layouts_2absolute-layout_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2web-view_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2content-view_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2gallery-app_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2absolute-layout-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" apps_2editable-text-demo_2package_1json__JSONSchema="http://json.schemastore.org/package" ui_2scroll-view_2package_1json__JSONSchema="http://json.schemastore.org/package" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
