@@ -20,3 +20,24 @@ if (app.ios) {
     app.ios.removeNotificationObserver(observer, UIDeviceBatteryLevelDidChangeNotification);
 }
 // << application-ios-observer
+
+// >> application-ios-delegate
+//// Add custom application delegate
+if (app.ios) {
+    class MyDelegate extends UIResponder implements UIApplicationDelegate {
+        public static ObjCProtocols = [UIApplicationDelegate];
+
+        applicationDidFinishLaunchingWithOptions(application: UIApplication, launchOptions: NSDictionary): boolean {
+            return true;
+        }
+
+        applicationDidBecomeActive(application: UIApplication): void {
+            // Get reference to the application window.
+            //console.log("keyWindow: " + application.keyWindow);
+        }
+    }
+
+    app.ios.delegate = MyDelegate;
+}
+
+// << application-ios-delegate
