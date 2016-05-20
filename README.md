@@ -21,6 +21,7 @@ Our [Getting Started Guide](http://docs.nativescript.org/start/getting-started) 
 ## Quick Links
 
 - [NativeScript home page](http://nativescript.org)
+- [NativeScript and Angular](http://docs.nativescript.org/angular/tutorial/ng-chapter-0)
 - [@NativeScript on Twitter](http://twitter.com/NativeScript)
 - [NativeScript community Slack channel](http://developer.telerik.com/wp-login.php?action=slack-invitation)
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
@@ -50,9 +51,6 @@ We love PRs, and accept them for all of our repositories—even docs! Please fol
 
 ## Angular 2
 
-We are [working together with the Google Angular JS team](http://angularjs.blogspot.com/2015/12/building-mobile-apps-with-angular-2-and.html) to make Angular 2.0 work on top of NativeScript. To follow our progress, check out the following links:
-
-- [NativeScript Angular 2.0 plugin](https://www.npmjs.com/package/nativescript-angular) - This plugin is the only thing you need to install in order to enable Angular 2.0 in NativeScript.
-- [TodoMVC sample](//github.com/NativeScript/sample-ng-todomvc) - The classic TodoMVC sample implemented with NativeScript and Angular 2.0.
+We are [working together with the Google Angular JS team](http://angularjs.blogspot.com/2015/12/building-mobile-apps-with-angular-2-and.html) to make Angular 2.0 work on top of NativeScript. [To use Angular 2 and NativeScript please follow the getting started article](http://docs.nativescript.org/angular/tutorial/ng-chapter-0).
 
 ![](https://ga-beacon.appspot.com/UA-111455-24/nativescript/nativescript?pixel) 
