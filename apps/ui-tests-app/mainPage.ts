@@ -86,6 +86,7 @@ examples.set("padding", "padding/padding");
 examples.set("timePicker", "time-picker/time-picker");
 examples.set("gestures", "pages/gestures");
 examples.set("touch", "pages/touch-event");
+examples.set("pan", "pages/pan-event");
 examples.set("handlers", "pages/handlers");
 
 examples.set("animeBG", "animations/background");
