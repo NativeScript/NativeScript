@@ -24,6 +24,14 @@ function waitUntilNavigatedFrom(oldPage: Page) {
     });
 }
 
+function androidGC() {
+    let topmost = topmostFrame();
+    if (topmost.android) {
+        gc();
+        java.lang.System.gc();
+    }
+}
+
 function _test_backstackVisible(transition?: NavigationTransition) {
     let topmost = topmostFrame();
     let mainTestPage = topmost.currentPage;
@@ -52,10 +60,12 @@ function _test_backstackVisible(transition?: NavigationTransition) {
 }
 
 export var test_backstackVisible = function () {
+    androidGC();
     _test_backstackVisible();
 }
 
 export var test_backstackVisible_WithTransition = function () {
+    androidGC();
     _test_backstackVisible({name: "fade"});
 }
 
@@ -107,10 +117,12 @@ function _test_backToEntry(transition?: NavigationTransition) {
 }
 
 export var test_backToEntry = function () {
+    androidGC();
     _test_backToEntry();
 }
 
 export var test_backToEntry_WithTransition = function () {
+    androidGC();
     _test_backToEntry({name: "flip"});
 }
 
@@ -159,14 +171,17 @@ function _test_ClearHistory(transition?: NavigationTransition) {
 
 // Clearing the history messes up the tests app.
 export var test_ClearHistory = function () {
+    androidGC();
     _test_ClearHistory();
 }
 
 export var test_ClearHistory_WithTransition = function () {
+    androidGC();
     _test_ClearHistory({ name: "fade" });
 }
 
 export var test_ClearHistory_WithTransition_WithCachePagesOnNavigate = function () {
+    androidGC();
     let topmost = topmostFrame();
     if (!topmost.android) {
         return;
@@ -180,6 +195,7 @@ export var test_ClearHistory_WithTransition_WithCachePagesOnNavigate = function 
 
 // Test case for https://github.com/NativeScript/NativeScript/issues/1948
 export var test_ClearHistoryWithTransitionDoesNotBreakNavigation = function () {
+    androidGC();
     let topmost = topmostFrame();
     let mainTestPage = topmost.currentPage;
     let mainPageFactory = function (): Page {
@@ -215,6 +231,7 @@ export var test_ClearHistoryWithTransitionDoesNotBreakNavigation = function () {
 }
 
 export var test_ClearHistoryWithTransitionDoesNotBreakNavigation_WithLocalTransition = function () {
+    androidGC();
     let topmost = topmostFrame();
     let originalCachePagesOnNavigate: boolean;
     if (topmost.android) {
@@ -314,9 +331,11 @@ function _test_NavigationEvents(transition?: NavigationTransition) {
 }
 
 export var test_NavigationEvents = function () {
+    androidGC();
     _test_NavigationEvents();
 }
 
 export var test_NavigationEvents_WithTransition = function () {
+    androidGC();
     _test_NavigationEvents({ name: "fade" });
 }
