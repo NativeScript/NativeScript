@@ -6,13 +6,18 @@
 
 NativeScript provides a best-of-both-worlds development experience. Our cross-platform JavaScript modules give you the convenience of writing iOS and Android apps from a single JavaScript codebase, while our runtimes give you the power of accessing native APIs, SDKs, and frameworks when you need them—all without needing to open Xcode or Android Studio. NativeScript was created and is supported by [Telerik](http://www.telerik.com/).
 
-You can read more about [why NativeScript may be a good fit for your next project](https://github.com/NativeScript/NativeScript/wiki/Why-NativeScript%3F), or check out the links below to get started.
+Check out the links below to get started:
 
+* [CTO's guide to NativeScript](#for-ctos)
 * [Getting Started and Installation](#getting-started-and-installation)
 * [Quick Links](#quick-links)
 * [Repositories](#repositories)
 * [Contributing](#contributing)
 * [Angular 2](#angular-2)
+
+## For CTO's
+
+Making the right technology choices is key to success. Our [CTO's guide to NativeScript](https://www.nativescript.org/ctos-guide) helps you understand why NativeScript is the right choice for your next mobile project.
 
 ## Getting Started and Installation
 
