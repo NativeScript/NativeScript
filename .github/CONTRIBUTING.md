@@ -148,4 +148,4 @@ All code contributed to this project should adhere to a consistent style, so ple
 - Declare variables at the top of a scope
 - Return early
 
-For a more detailed guide, check the [Coding Convention](CodingConvention.md). 
+For a more detailed guide, check the [Coding Convention](https://github.com/NativeScript/NativeScript/blob/master/CodingConvention.md). 
