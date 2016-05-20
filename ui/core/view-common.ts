@@ -982,7 +982,6 @@ export class View extends ProxyObject implements definition.View {
         this._addViewCore(view, atIndex);
         view._parentChanged(null);
     }
-    }
 
     /**
      * Method is intended to be overridden by inheritors and used as "protected"
@@ -1036,7 +1035,6 @@ export class View extends ProxyObject implements definition.View {
         this._removeViewCore(view);
         view._parent = undefined;
         view._parentChanged(this);
-    }
     }
 
     /**
