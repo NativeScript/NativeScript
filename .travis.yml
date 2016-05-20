@@ -35,7 +35,7 @@ before_script:
   - "(cd build/platform-declarations && npm install)"
   - echo no | android create avd --force -n $AVD_NAME -t android-$EMULATOR_API_VER -b
     armeabi-v7a -c 12M
-  - emulator -avd $AVD_NAME -skin WXGA720 -no-audio -no-window &
+  - emulator -avd $AVD_NAME -skin WXGA720 -no-audio -no-window -memory 2048 &
   - android-wait-for-emulator
 script:
   - jdk_switcher use oraclejdk8
