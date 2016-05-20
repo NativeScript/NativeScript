@@ -11,8 +11,28 @@ export class ImageSource implements definition.ImageSource {
     public ios: UIImage;
 
     public loadFromResource(name: string): boolean {
-        this.ios = UIImage.imageNamed(name) || UIImage.imageNamed(`${name}.jpg`);
+        this.ios = (<any>UIImage).tns_safeImageNamed(name) || (<any>UIImage).tns_safeImageNamed(`${name}.jpg`);
         return this.ios != null;
+    }
+
+    public fromResource(name: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                (<any>UIImage).tns_safeDecodeImageNamedCompletion(name, image => {
+                    if (image) {
+                        this.ios = image;
+                        resolve(true);
+                    } else {
+                        (<any>UIImage).tns_safeDecodeImageNamedCompletion(`${name}.jpg`, image => {
+                            this.ios = image;
+                            resolve(true);
+                        });
+                    }
+                });
+            } catch (ex) {
+                reject(ex);
+            }
+        });
     }
 
     public loadFromFile(path: string): boolean {
@@ -26,9 +46,41 @@ export class ImageSource implements definition.ImageSource {
         return this.ios != null;
     }
 
+    public fromFile(path: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                var fileName = types.isString(path) ? path.trim() : "";
+
+                if (fileName.indexOf("~/") === 0) {
+                    fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
+                }
+
+                (<any>UIImage).tns_decodeImageWidthContentsOfFileCompletion(fileName, image => {
+                    this.ios = image;
+                    resolve(true);
+                });
+            } catch (ex) {
+                reject(ex);
+            }
+        });
+    }
+
     public loadFromData(data: any): boolean {
         this.ios = UIImage.imageWithData(data);
         return this.ios != null;
+    }
+
+    public fromData(data: any): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                (<any>UIImage).tns_decodeImageWithDataCompletion(data, image => {
+                    this.ios = image;
+                    resolve(true);
+                });
+            } catch (ex) {
+                reject(ex);
+            }
+        });
     }
 
     public loadFromBase64(source: string): boolean {
@@ -36,7 +88,23 @@ export class ImageSource implements definition.ImageSource {
             var data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.NSDataBase64DecodingIgnoreUnknownCharacters);
             this.ios = UIImage.imageWithData(data);
         }
+
         return this.ios != null;
+    }
+
+    public fromBase64(source: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            try {
+                var data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.NSDataBase64DecodingIgnoreUnknownCharacters);
+                UIImage.imageWithData["async"](UIImage, [data]).then(image => {
+                    this.ios = image;
+                    resolve(true);
+                });
+
+            } catch (ex) {
+                reject(ex);
+            }
+        });
     }
 
     public setNativeSource(source: any): boolean {

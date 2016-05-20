@@ -42,12 +42,7 @@ export var test_settingImageSource = function () {
 }
 */
 
-export var test_SettingImageSrc = function (done) {
-    // >> img-create-src
-    var image = new ImageModule.Image();
-    image.src = "https://www.google.com/images/errors/logo_sm_2.png";
-    // << img-create-src
-
+function runImageTest(done, image: ImageModule.Image, src: string) {
     image.src = null;
 
     var testModel = new ObservableModule.Observable();
@@ -61,10 +56,16 @@ export var test_SettingImageSrc = function (done) {
             TKUnit.assertTrue(!image.isLoading, "Image.isLoading should be false.");
             TKUnit.assertTrue(!testModel.get("imageIsLoading"), "imageIsLoading on viewModel should be false.");
             TKUnit.assertTrue(imageIsLoaded, "imageIsLoading should be true.");
-            done(null);
+            if (done) {
+                done(null);
+            }
         }
         catch (e) {
-            done(e);
+            if (done) {
+                done(e);
+            } else {
+                throw e;
+            }
         }
     };
 
@@ -74,53 +75,55 @@ export var test_SettingImageSrc = function (done) {
         twoWay: true
     }, testModel);
 
-    image.src = "https://www.google.com/images/errors/logo_sm_2.png";
+    image.src = src;
     testModel.on(ObservableModule.Observable.propertyChangeEvent, handler);
-    TKUnit.assertTrue(image.isLoading, "Image.isLoading should be true.");
-    TKUnit.assertTrue(testModel.get("imageIsLoading"), "model.isLoading should be true.");
+    if (done) {
+        TKUnit.assertTrue(image.isLoading, "Image.isLoading should be true.");
+        TKUnit.assertTrue(testModel.get("imageIsLoading"), "model.isLoading should be true.");
+    } else {
+        // Since it is synchronous check immediately.
+        handler(null);
+    }
 }
 
-export var test_SettingImageSrcToFileWithinApp = function (done) {
+export var test_SettingImageSrc = function (done) {
+    // >> img-create-src
+    var image = new ImageModule.Image();
+    image.src = "https://www.google.com/images/errors/logo_sm_2.png";
+    // << img-create-src
+    runImageTest(done, image, image.src)
+}
+
+export var test_SettingImageSrcToFileWithinApp = function () {
     // >> img-create-local
     var image = new ImageModule.Image();
     image.src = "~/logo.png";
     // << img-create-local
 
-    var testFunc = function (views: Array<ViewModule.View>) {
-        var testImage = <ImageModule.Image> views[0];
-        TKUnit.waitUntilReady(() => !testImage.isLoading, 3);
-        try {
-            TKUnit.assertTrue(!testImage.isLoading, "isLoading should be false.");
-            done(null);
-        }
-        catch (e) {
-            done(e);
-        }
-    }
-
-    helper.buildUIAndRunTest(image, testFunc);
+    runImageTest(null, image, image.src)
 }
 
-export var test_SettingImageSrcToDataURI = function (done) {
+export var test_SettingImageSrcToDataURI = function () {
     // >> img-create-datauri
     var image = new ImageModule.Image();
     image.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==";
     // << img-create-datauri
 
-    var testFunc = function (views: Array<ViewModule.View>) {
-        var testImage = <ImageModule.Image>views[0];
-        TKUnit.waitUntilReady(() => !testImage.isLoading, 3);
-        try {
-            TKUnit.assertTrue(!testImage.isLoading, "isLoading should be false.");
-            TKUnit.assertNotNull(testImage.imageSource);
-            done(null);
-        }
-        catch (e) {
-            done(e);
-        }
-    }
+    runImageTest(null, image, image.src)
+}
 
-    helper.buildUIAndRunTest(image, testFunc);
+export var test_SettingImageSrcToFileWithinAppAsync = function (done) {
+    var image = new ImageModule.Image();
+    image.loadMode = "async";
+    image.src = "~/logo.png";
+    runImageTest(done, image, image.src)
+}
+
+export var test_SettingImageSrcToDataURIAsync = function (done) {
+    var image = new ImageModule.Image();
+    image.loadMode = "async";
+    image.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==";
+    runImageTest(done, image, image.src)
 }
 
 export var test_SettingStretch_AspectFit = function () {

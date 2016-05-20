@@ -98,27 +98,14 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                 },
                                 toImage: () => {
                                     ensureImageSource();
-                                    if (UIImage.imageWithData["async"]) {
-                                        return UIImage.imageWithData["async"](UIImage, [data])
-                                                      .then(image => {
-                                                          if (!image) {
-                                                              throw new Error("Response content may not be converted to an Image");
-                                                          }
-                                    
-                                                          var source = new imageSource.ImageSource();
-                                                          source.setNativeSource(image);
-                                                          return source;
-                                                      });
-                                    }
-   
-                                    return new Promise<any>((resolveImage, rejectImage) => {
-                                        var img = imageSource.fromData(data);
-                                        if (img instanceof imageSource.ImageSource) {
-                                            resolveImage(img);
-                                        } else {
-                                            rejectImage(new Error("Response content may not be converted to an Image"));
-                                        }
-
+                                    return new Promise((resolve, reject) => {
+                                        (<any>UIImage).tns_decodeImageWithDataCompletion(data, image => {
+                                            if (image) {
+                                                resolve(imageSource.fromNativeSource(image))
+                                            } else {
+                                                reject(new Error("Response content may not be converted to an Image"));
+                                            }
+                                        });
                                     });
                                 },
                                 toFile: (destinationFilePath?: string) => {

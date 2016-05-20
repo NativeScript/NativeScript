@@ -46,7 +46,7 @@
   },
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
-    "tns-core-modules-widgets": "2.0.0"
+    "tns-core-modules-widgets": "next"
   },
   "nativescript": {
     "platforms": {
