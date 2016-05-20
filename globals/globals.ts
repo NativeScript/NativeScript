@@ -25,7 +25,7 @@ global.loadModule = function(name: string): any {
     if (loader) {
         return loader();
     } else {
-        return require(name);
+        return global.require(name);
     }
 }
 
