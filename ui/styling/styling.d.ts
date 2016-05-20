@@ -92,6 +92,11 @@
          * Gets or sets font-size style property.
          */
         fontSize: number;
+        
+        /**
+         * Gets or sets z-index style property.
+         */        
+        zIndex: number;
 
         /**
          * Gets or sets font-family style property.
