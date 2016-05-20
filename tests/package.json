@@ -1,0 +1,15 @@
+{
+	"description": "NativeScript Application",
+	"license": "SEE LICENSE IN <your-license-filename>",
+	"readme": "NativeScript Application",
+	"repository": "<fill-your-repository-here>",
+	"nativescript": {
+		"id": "org.nativescript.tests",
+		"tns-ios": {
+			"version": "2.0.0"
+		}
+	},
+	"dependencies": {
+		"tns-core-modules": "2.0.1"
+	}
+}
