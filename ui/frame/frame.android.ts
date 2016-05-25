@@ -706,7 +706,7 @@ class FragmentClass extends android.app.Fragment {
     }
 
     public toString(): string {
-        return `${this.getTag()}<${(this.entry && this.entry.resolvedPage) ? this.entry.resolvedPage : ""}>`;
+        return `${this.getTag()}<${this.entry ? this.entry.resolvedPage : ""}>`;
     }
 }
 
