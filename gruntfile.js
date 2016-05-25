@@ -40,6 +40,7 @@ module.exports = function(grunt) {
     };
 
     var updateModulesPackageDef = function(content, srcPath) {
+        console.log("Patch: " + srcPath);
         return updatePackageDef(content, function(contentAsObject) {
             contentAsObject.version = localCfg.packageVersion;
             if (localCfg.commitSHA) {
@@ -276,8 +277,9 @@ module.exports = function(grunt) {
             },
             modulesPackageDef: {
                 expand: true,
-                src: localCfg.packageJsonFilePath,
-                dest: localCfg.outDir + "/",
+                src: path.basename(localCfg.packageJsonFilePath),
+                cwd: path.dirname(localCfg.packageJsonFilePath),
+                dest: localCfg.outTnsCoreModules + "/",
                 options: {
                     process: updateModulesPackageDef
                 }
@@ -724,6 +726,7 @@ module.exports = function(grunt) {
     grunt.registerTask("pack-modules", [
         "compile-modules",
         "node-tests",
+        "copy:modulesPackageDef",
         "exec:packModules"
     ]);
     grunt.registerTask("pack-apps", [
@@ -752,7 +755,6 @@ module.exports = function(grunt) {
         "check-packagejson-boms",
         "compile-ts",
         "collect-modules-raw-files",
-        "copy:modulesPackageDef",
         "copy:definitionFiles",
         "copy:jsLibs",
         "generate-tns-core-modules-dts",
