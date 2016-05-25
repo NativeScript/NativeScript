@@ -512,13 +512,6 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
 }
 
 function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
-    if (!fragment) {
-        if (trace.enabled) {
-            trace.write(`Can't find page for a null fragment.`, trace.categories.NativeLifecycle);
-        }
-        return;
-    }
-
     var fragmentTag = fragment.getTag();
     var page: pages.Page;
     var entry: definition.BackstackEntry;
@@ -705,12 +698,15 @@ class FragmentClass extends android.app.Fragment {
         super.onDestroy();
 
         this.entry.fragmentTag = undefined;
+        this.entry = undefined;
+        this.frame = undefined;
+        this.clearHistory = undefined;
         transitionModule._clearBackwardTransitions(this);
         transitionModule._clearForwardTransitions(this);
     }
 
     public toString(): string {
-        return `${this ? this.getTag() : ""}<${(this.entry && this.entry.resolvedPage) ? this.entry.resolvedPage : ""}>`;
+        return `${this.getTag()}<${(this.entry && this.entry.resolvedPage) ? this.entry.resolvedPage : ""}>`;
     }
 }
 
