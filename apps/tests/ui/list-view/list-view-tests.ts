@@ -624,7 +624,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
         let currentPage = listView.page;
         let frame = topmost();
-        frame.navigate("tests/pages/navigation/pageB");
+        frame.navigate("pages/navigation/pageB");
         TKUnit.waitUntilReady(() => frame.currentPage !== null && frame.currentPage !== currentPage);
         frame.goBack();
         TKUnit.waitUntilReady(() => frame.currentPage !== null && frame.currentPage === currentPage);
