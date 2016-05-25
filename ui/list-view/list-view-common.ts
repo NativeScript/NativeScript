@@ -127,10 +127,10 @@ export class ListView extends view.View implements definition.ListView {
     }
 
     get isScrolling(): boolean {
-        return this._getValue(ListView.isScrollingProperty);
+        return false;
     }
     set isScrolling(value: boolean) {
-        this._setValue(ListView.isScrollingProperty, value);
+        // Do nothing.
     }
 
     get separatorColor(): color.Color {
@@ -169,12 +169,7 @@ export class ListView extends view.View implements definition.ListView {
 
     public _prepareItem(item: view.View, index: number) {
         if (item) {
-            var dataItem = this._getDataItem(index);
-            if (!(dataItem instanceof observable.Observable)) {
-                item.bindingContext = null;
-            }
-            item.bindingContext = dataItem;
-            item._inheritProperties(this);
+            item.bindingContext = this._getDataItem(index);
         }
     }
 
@@ -214,9 +209,5 @@ export class ListView extends view.View implements definition.ListView {
 
     public _onRowHeightPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         this.refresh();
-    }
-
-    public _propagateInheritableProperties(view: view.View) {
-        // do not get binding context from parent when adding items, since the binding context of the items will be different.
     }
 }

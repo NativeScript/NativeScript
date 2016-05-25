@@ -5,27 +5,25 @@ import stackLayout = require("ui/layouts/stack-layout");
 import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import definition = require("ui/list-view");
-import utils = require("utils/utils")
 import {ProxyViewContainer} from "ui/proxy-view-container";
 import * as layoutBase from "ui/layouts/layout-base";
 import * as colorModule from "color";
 
-var color: typeof colorModule;
+let color: typeof colorModule;
 function ensureColor() {
     if (!color) {
         color = require("color");
     }
 }
 
-var ITEMLOADING = common.ListView.itemLoadingEvent;
-var LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
-var ITEMTAP = common.ListView.itemTapEvent;
-var REALIZED_INDEX = "realizedIndex";
+let ITEMLOADING = common.ListView.itemLoadingEvent;
+let LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
+let ITEMTAP = common.ListView.itemTapEvent;
 
 global.moduleMerge(common, exports);
 
 function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var bar = <ListView>data.object;
+    let bar = <ListView>data.object;
     if (!bar.android) {
         return;
     }
@@ -42,9 +40,9 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
 (<proxy.PropertyMetadata>common.ListView.separatorColorProperty.metadata).onSetNativeValue = onSeparatorColorPropertyChanged;
 
 export class ListView extends common.ListView {
-    private _android: android.widget.ListView;
-    public _realizedItems = {};
     private _androidViewId: number = -1;
+    private _android: android.widget.ListView;
+    public _realizedItems = new Map<android.view.View, viewModule.View>();
 
     public _createUI() {
         this._android = new android.widget.ListView(this._context);
@@ -59,42 +57,10 @@ export class ListView extends common.ListView {
         ensureListViewAdapterClass();
         this.android.setAdapter(new ListViewAdapterClass(this));
 
-        var that = new WeakRef(this);
-
-        // TODO: This causes many marshalling calls, rewrite in Java and generate bindings
-        this.android.setOnScrollListener(new android.widget.AbsListView.OnScrollListener(<utils.Owned & android.widget.AbsListView.IOnScrollListener>{
-            onScrollStateChanged: function (view: android.widget.AbsListView, scrollState: number) {
-                var owner: ListView = this.owner;
-                if (!owner) {
-                    return;
-                }
-
-                if (scrollState === android.widget.AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-                    owner._setValue(common.ListView.isScrollingProperty, false);
-                    owner._notifyScrollIdle();
-                } else {
-                    owner._setValue(common.ListView.isScrollingProperty, true);
-                }
-            },
-            onScroll: function (view: android.widget.AbsListView, firstVisibleItem: number, visibleItemCount: number, totalItemCount: number) {
-                var owner: ListView = this.owner;
-                if (!owner) {
-                    return;
-                }
-
-                if (totalItemCount > 0 && firstVisibleItem + visibleItemCount === totalItemCount) {
-                    owner.notify(<observable.EventData>{ eventName: LOADMOREITEMS, object: owner });
-                }
-            },
-
-            get owner() {
-                return that.get();
-            }
-        }));
-
+        let that = new WeakRef(this);
         this.android.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener({
             onItemClick: function (parent: any, convertView: android.view.View, index: number, id: number) {
-                var owner = that.get();
+                let owner = that.get();
                 if (owner) {
                     owner.notify({ eventName: ITEMTAP, object: owner, index: index, view: owner._getRealizedView(convertView, index) });
                 }
@@ -111,6 +77,13 @@ export class ListView extends common.ListView {
             return;
         }
 
+        // clear bindingContext when it is not observable because otherwise bindings to items won't reevaluate
+        this._realizedItems.forEach((view, nativeView, map) => {            
+            if (!(view.bindingContext instanceof observable.Observable)) {
+                view.bindingContext = null;
+            }
+        });
+
         (<android.widget.BaseAdapter>this.android.getAdapter()).notifyDataSetChanged();
     }
 
@@ -122,35 +95,22 @@ export class ListView extends common.ListView {
 
     public _onDetached(force?: boolean) {
         super._onDetached(force);
-
-        // clear the cache
-        var keys = Object.keys(this._realizedItems);
-        var i;
-        var length = keys.length;
-        var view: viewModule.View;
-        var key;
-
-        for (i = 0; i < length; i++) {
-            key = keys[i];
-            view = this._realizedItems[key];
-            view.parent._removeView(view);
-            delete this._realizedItems[key];
-        }
+        this.clearRealizedCells();
     }
 
     get _childrenCount(): number {
-        let keys = Object.keys(this._realizedItems);
-        return keys.length;
+        return this._realizedItems.size;
     }
 
     public _eachChildView(callback: (child: viewModule.View) => boolean): void {
-        let keys = Object.keys(this._realizedItems);
-        let length = keys.length;
-        for (let i = 0; i < length; i++) {
-            let key = keys[i];
-            let view: viewModule.View = this._realizedItems[key];
-            callback(view);
-        }
+        this._realizedItems.forEach((view, nativeView, map) => {
+            if (view.parent instanceof ListView) {
+                callback(view);
+            }
+            else {
+                callback(view.parent);
+            }
+        });
     }
 
     public _getRealizedView(convertView: android.view.View, index: number) {
@@ -158,31 +118,25 @@ export class ListView extends common.ListView {
             return this._getItemTemplateContent(index);
         }
 
-        return this._realizedItems[convertView.hashCode()];
+        return this._realizedItems.get(convertView);
     }
 
-    public _notifyScrollIdle() {
-        var keys = Object.keys(this._realizedItems);
-        var i;
-        var length = keys.length;
-        var view: viewModule.View;
-        var key;
-        for (i = 0; i < length; i++) {
-            key = keys[i];
-            view = this._realizedItems[key];
-            if (view[REALIZED_INDEX] < this.items.length) {
-                this.notify({
-                    eventName: ITEMLOADING,
-                    object: this,
-                    index: view[REALIZED_INDEX],
-                    view: view
-                });
+    private clearRealizedCells(): void {
+        // clear the cache
+        this._realizedItems.forEach((view, nativeView, map) => {
+            // This is to clear the StackLayout that is used to wrap non LayoutBase & ProxyViewContainer instances.
+            if (!(view.parent instanceof ListView)) {
+                this._removeView(view.parent);
             }
-        }
+
+            view.parent._removeView(view);
+        });
+
+        this._realizedItems.clear();
     }
 }
 
-var ListViewAdapterClass;
+let ListViewAdapterClass;
 function ensureListViewAdapterClass() {
     if (ListViewAdapterClass) {
         return;
@@ -224,12 +178,18 @@ function ensureListViewAdapterClass() {
                 return null;
             }
 
-            var view = this._listView._getRealizedView(convertView, index);
-            var args = <definition.ItemEventData>{
+            let totalItemCount = this._listView.items ? this._listView.items.length : 0;
+            if (index === (totalItemCount - 1)) {
+                this._listView.notify({ eventName: LOADMOREITEMS, object: this._listView });
+            }
+
+            let view = this._listView._getRealizedView(convertView, index);
+            let args: definition.ItemEventData = {
                 eventName: ITEMLOADING, object: this._listView, index: index, view: view,
                 android: parent,
                 ios: undefined
             };
+
             this._listView.notify(args);
 
             if (!args.view) {
@@ -243,6 +203,7 @@ function ensureListViewAdapterClass() {
                 else {
                     args.view.height = Number.NaN;
                 }
+
                 this._listView._prepareItem(args.view, index);
                 if (!args.view.parent) {
                     // Proxy containers should not get treated as layouts.
@@ -252,7 +213,7 @@ function ensureListViewAdapterClass() {
                         this._listView._addView(args.view);
                         convertView = args.view.android;
                     } else {
-                        var sp = new stackLayout.StackLayout();
+                        let sp = new stackLayout.StackLayout();
                         sp.addChild(args.view);
                         this._listView._addView(sp);
 
@@ -260,9 +221,7 @@ function ensureListViewAdapterClass() {
                     }
                 }
 
-                this._listView._realizedItems[convertView.hashCode()] = args.view;
-                // cache the realized index (used to raise the ItemLoading event upon scroll stop)
-                args.view[REALIZED_INDEX] = index;
+                this._listView._realizedItems.set(convertView, args.view);
             }
 
             return convertView;

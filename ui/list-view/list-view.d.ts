@@ -47,6 +47,7 @@ declare module "ui/list-view" {
         /**
          * Represents the observable property backing the isScrolling property of each ListView instance.
          */
+        @Deprecated // in 2.1
         public static isScrollingProperty: dependencyObservable.Property;
 
         /**
@@ -67,6 +68,7 @@ declare module "ui/list-view" {
         /**
          * Gets a value indicating whether the ListView is currently scrolling.
          */
+        @Deprecated // in 2.1
         isScrolling: boolean;
 
         /**
