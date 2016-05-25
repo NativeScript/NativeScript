@@ -1,6 +1,34 @@
 Cross Platform Modules Changelog
 ==============================
 
+##2.0.1 (2016, May 18)
+
+### Fixed
+
+- [(#2133)](https://github.com/NativeScript/NativeScript/pull/2133) Removed unnecessary view state creation.
+
+- [(#2126)](https://github.com/NativeScript/NativeScript/pull/2126) zIndex fixed for Android buttons
+
+- [(#2113)](https://github.com/NativeScript/NativeScript/issues/2113) Panning gesture in Android creates non-smooth delta coordinates. 
+
+- [(#2100)](https://github.com/NativeScript/NativeScript/pull/2100) Fix navigatedFrom event raised when Activity is destroyed without act…
+
+- [(#2099)](https://github.com/NativeScript/NativeScript/pull/2099) Typo in Pointer.getY method for iOS
+
+- [(#2084)](https://github.com/NativeScript/NativeScript/issues/2084) App crashes when animating ActionBar
+
+- [(#2077)](https://github.com/NativeScript/NativeScript/issues/2077) Animations not working in 2.0.0 on android?
+
+- [(#2076)](https://github.com/NativeScript/NativeScript/issues/2076) 2.0 Corrupted navigation stack
+
+- [(#2062)](https://github.com/NativeScript/NativeScript/issues/2062) Cannot change the iOS status bar text color since 2.0
+
+### New
+
+- [(#2108)](https://github.com/NativeScript/NativeScript/pull/2108) Add Method to see if camera is available
+
+- [(#2102)](https://github.com/NativeScript/NativeScript/pull/2102) clip-path support added
+
 ##2.0.0 (2016, April 27)
 
 ### Fixed
