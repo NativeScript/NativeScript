@@ -571,12 +571,13 @@ export class View extends ProxyObject implements definition.View {
 
     public _unloadEachChildView() {
         if (this._childrenCount > 0) {
-            // iterate all children and call onLoaded on them first
-            var eachChild = function (child: View): boolean {
-                child.onUnloaded();
+            this._eachChildView((child) => {
+                if (child.isLoaded) {
+                    child.onUnloaded();
+                }
+
                 return true;
-            }
-            this._eachChildView(eachChild);
+            });
         }
     }
 

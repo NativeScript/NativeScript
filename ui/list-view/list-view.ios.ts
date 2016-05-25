@@ -28,7 +28,7 @@ var infinity = utils.layout.makeMeasureSpec(0, utils.layout.UNSPECIFIED);
 
 class ListViewCell extends UITableViewCell {
     public willMoveToSuperview(newSuperview: UIView): void {
-        let parent: ListView = <ListView>(this.view ? this.view.parent : null);
+        let parent = <ListView>(this.view ? this.view.parent : null);
 
         // When inside ListView and there is no newSuperview this cell is 
         // removed from native visual tree so we remove it from our tree too.
@@ -117,14 +117,14 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 
     public tableViewDidSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
         tableView.deselectRowAtIndexPathAnimated(indexPath, true);
-   
+
         return indexPath;
     }
 
     public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
         let owner = this._owner.get();
         if (!owner) {
-            return 44;
+            return DEFAULT_HEIGHT;
         }
 
         let height = undefined;
@@ -171,7 +171,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
-        return indexPath; 
+        return indexPath;
     }
 
     public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
@@ -246,9 +246,9 @@ export class ListView extends common.ListView {
     }
 
     public _eachChildView(callback: (child: view.View) => boolean): void {
-        this._map.forEach(function(view, key) {
+        this._map.forEach((view, key) => {
             callback(view);
-        }, this._map);
+        });
     }
 
     public scrollToIndex(index: number) {
@@ -259,6 +259,13 @@ export class ListView extends common.ListView {
     }
 
     public refresh() {
+        // clear bindingContext when it is not observable because otherwise bindings to items won't reevaluate
+        this._map.forEach((view, nativeView, map) => {
+            if (!(view.bindingContext instanceof observable.Observable)) {
+                view.bindingContext = null;
+            }
+        });
+
         if (this.isLoaded) {
             this._ios.reloadData();
             this.requestLayout();
@@ -287,9 +294,11 @@ export class ListView extends common.ListView {
             this._nativeView.estimatedRowHeight = data.newValue;
             this._delegate = UITableViewRowHeightDelegateImpl.initWithOwner(new WeakRef(this));
         }
+
         if (this.isLoaded) {
             this._nativeView.delegate = this._delegate;
         }
+
         super._onRowHeightPropertyChanged(data);
     }
 
@@ -310,20 +319,18 @@ export class ListView extends common.ListView {
     }
 
     private _layoutCell(cellView: view.View, indexPath: NSIndexPath): number {
-
         if (cellView) {
-            var measuredSize = view.View.measureChild(this, cellView, this.widthMeasureSpec, infinity);
-            var height = measuredSize.measuredHeight;
+            let measuredSize = view.View.measureChild(this, cellView, this.widthMeasureSpec, infinity);
+            let height = measuredSize.measuredHeight;
             this.setHeight(indexPath.row, height);
             return height;
         }
 
-        return 0;
+        return DEFAULT_HEIGHT;
     }
 
     public _prepareCell(cell: ListViewCell, indexPath: NSIndexPath): number {
         let cellHeight: number;
-
         try {
             this._preparingCell = true;
             let view = cell.view;
@@ -337,12 +344,12 @@ export class ListView extends common.ListView {
             // Proxy containers should not get treated as layouts.
             // Wrap them in a real layout as well.
             if (view instanceof ProxyViewContainer) {
-                var sp = new StackLayout();
+                let sp = new StackLayout();
                 sp.addChild(view);
                 view = sp;
             }
 
-            // If cell is reused be have old content - remove it first.
+            // If cell is reused it have old content - remove it first.
             if (!cell.view) {
                 cell.owner = new WeakRef(view);
             } else if (cell.view !== view) {
@@ -367,7 +374,13 @@ export class ListView extends common.ListView {
     }
 
     public _removeContainer(cell: ListViewCell): void {
-        this._removeView(cell.view)
+        let view = cell.view;
+        // This is to clear the StackLayout that is used to wrap ProxyViewContainer instances.
+        if (!(view.parent instanceof ListView)) {
+            this._removeView(view.parent);
+        }
+
+        view.parent._removeView(view);
         this._map.delete(cell);
     }
 }
