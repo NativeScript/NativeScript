@@ -1,5 +1,6 @@
 ﻿declare module "ui/transition" {
-    import frame = require("ui/frame");
+    import { NavigationTransition } from "ui/frame";
+    import { Page } from "ui/page";
 
     export module AndroidTransitionType {
         export var enter: string;
@@ -20,11 +21,12 @@
     //@private
     export function _clearBackwardTransitions(fragment: any): void;
     export function _clearForwardTransitions(fragment: any): void;
-    export function _setAndroidFragmentTransitions(navigationTransition: frame.NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): void;
+    export function _setAndroidFragmentTransitions(navigationTransition: NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): void;
     export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): any;
     export function _onFragmentShown(fragment: any, isBack: boolean): void;
     export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boolean): void;
+    export function _removePageNativeViewFromAndroidParent(page: Page): void;
 
-    export function _createIOSAnimatedTransitioning(navigationTransition: frame.NavigationTransition, nativeCurve: any, operation: number, fromVC: any, toVC: any): any;
+    export function _createIOSAnimatedTransitioning(navigationTransition: NavigationTransition, nativeCurve: any, operation: number, fromVC: any, toVC: any): any;
     //@endprivate
 }
