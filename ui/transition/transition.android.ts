@@ -35,6 +35,9 @@ export module AndroidTransitionType {
 }
 
 export function _clearBackwardTransitions(fragment: any): void {
+    if (!fragment) {
+        return;
+    }
     var expandedFragment = <ExpandedFragment>fragment;
     if (expandedFragment.enterPopExitTransition) {
         if (trace.enabled) {
@@ -62,6 +65,9 @@ export function _clearBackwardTransitions(fragment: any): void {
 }
 
 export function _clearForwardTransitions(fragment: any): void {
+    if (!fragment) {
+        return;
+    }
     var expandedFragment = <ExpandedFragment>fragment;
     if (expandedFragment.exitPopEnterTransition) {
         if (trace.enabled) {
