@@ -387,6 +387,7 @@
         "apps/ui-tests-app/pages/i73.ts",
         "apps/ui-tests-app/pages/listview_binding.ts",
         "apps/ui-tests-app/pages/touch-event.ts",
+        "apps/ui-tests-app/pages/pan-event.ts",
         "apps/ui-tests-app/segmented-bar/all.ts",
         "apps/ui-tests-app/segmented-bar/clean.ts",
         "apps/ui-tests-app/text-field/text-field.ts",
