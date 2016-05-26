@@ -509,6 +509,38 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
         // can go back only if it is not the main one.
         return this.activity.getIntent().getAction() !== android.content.Intent.ACTION_MAIN;
     }
+    
+    public fragmentForPage(page: pages.Page): android.app.Fragment {
+        if(!page || !this._owner) {
+            return undefined;
+        }
+        
+        let tag;
+        
+        if(this._owner._currentEntry && this._owner._currentEntry.resolvedPage === page) {
+            tag = this._owner._currentEntry.fragmentTag;
+        }
+        else {
+            let backstack = this._owner.backStack;
+            let length = backstack.length;
+            let entry: definition.BackstackEntry;
+            
+            for(let i = length - 1; i >= 0; i--) {
+                entry = backstack[i];
+                if(entry.resolvedPage === page) {
+                    tag = entry.fragmentTag;
+                    break;
+                }
+            } 
+        }
+        
+        if(tag) {
+            let manager = this.activity.getFragmentManager();
+            return manager.findFragmentByTag(tag);
+        }
+        
+        return undefined;
+    }
 }
 
 function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
