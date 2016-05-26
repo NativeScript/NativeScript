@@ -141,7 +141,6 @@ export var test_Resolve_Fragment_ForPage = function () {
     };
 
     var topFrame = frame.topmost();
-    var androidFrame = topFrame.android;
 
     helper.navigate(pageFactory);
 
