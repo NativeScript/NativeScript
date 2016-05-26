@@ -4,6 +4,7 @@ import LabelModule = require("ui/label");
 import PageTestCommon = require("./page-tests-common");
 import helper = require("../helper");
 import frame = require("ui/frame");
+import types = require("utils/types");
 
 global.moduleMerge(PageTestCommon, exports);
 
@@ -129,4 +130,23 @@ export var test_ChangePageCaching_BeforeNavigated_DoesNotThrow = function () {
     finally {
         androidFrame.cachePagesOnNavigate = cachingBefore;
     }
+}
+
+export var test_Resolve_Fragment_ForPage = function () {
+    var testPage: PageModule.Page;
+    var pageFactory = function () {
+        var testPage = new PageModule.Page();
+        testPage.content = new LabelModule.Label();
+        return testPage;
+    };
+
+    var topFrame = frame.topmost();
+    var androidFrame = topFrame.android;
+
+    helper.navigate(pageFactory);
+
+    TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage === testPage);
+
+    var fragment = topFrame.android.fragmentForPage(testPage);
+    TKUnit.assertFalse(types.isNullOrUndefined(fragment), "Failed to resolve native fragment for page");
 }
