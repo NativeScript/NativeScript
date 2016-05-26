@@ -299,7 +299,7 @@ declare module "ui/frame" {
          * Finds the native android.app.Fragment instance created for the specified Page.
          * @param page The Page instance to search for.
          */
-        fragmentForPage(page: pages.Page): android.app.Fragment;
+        fragmentForPage(page: pages.Page): any;
     }
 
     /* tslint:disable */

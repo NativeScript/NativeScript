@@ -515,7 +515,7 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
             return undefined;
         }
         
-        var tag;
+        let tag;
         
         if(this._owner._currentEntry && this._owner._currentEntry.resolvedPage === page) {
             tag = this._owner._currentEntry.fragmentTag;
