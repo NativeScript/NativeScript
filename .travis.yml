@@ -40,7 +40,7 @@ before_script:
 script:
   - jdk_switcher use oraclejdk8
   - grunt default &&
-    FULL_PACKAGE_VERSION=`node -e 'console.log(require("./bin/dist/modules/package.json").version);'` &&
+    FULL_PACKAGE_VERSION=`node -e 'console.log(require("./bin/dist/tns-core-modules/package.json").version);'` &&
     (cd build/platform-declarations && grunt) &&
     echo no | npm install nativescript@next -g > /dev/null &&
     grunt buildOnlyTestsApp --platform=Android --modulesPath=./bin/dist/$PACKAGE_NAME-$FULL_PACKAGE_VERSION.tgz --runtimeVersion=$RUNTIMEVERSION --emuPId=.*emulator.* --avd=$AVD_NAME --showEmu=false > /dev/null &&
