@@ -58,7 +58,7 @@ module.exports = {
             pathToApp: "./platforms/ios/build/emulator/TestsApp.app",
             deployedAppName:"org.nativescript.TestsApp",
             mainActivityName:"com.tns.NativeScriptActivity",
-            pathToCompiledTests: "bin/dist/apps/tests",
+            pathToCompiledTests: "bin/dist/tests/app",
             simulatorSysLog: pathModule.join(process.env.HOME, "Library/Logs/CoreSimulator", args.emuAvdName, "/system.log"),
             platform: args.platform
         }
@@ -199,12 +199,10 @@ module.exports = {
                 },
                 startiOSApp: {
                     cmd: "xcrun simctl launch " + localCfg.emuAvdName + " org.nativescript." + localCfg.testsAppName
-                }
-            },
-            untar: {
-                modules: {
-                    src: localCfg.modulesPath,
-                    dest: pathModule.join(localCfg.applicationDir, "node_modules")
+                },
+                "npm-i-modules": {
+                    cmd: "npm i " + pathModule.relative(localCfg.applicationDir, localCfg.modulesPath),
+                    cwd: localCfg.applicationDir
                 }
             },
             shell: {
@@ -297,7 +295,7 @@ module.exports = {
             "clean:originalAppDir",
             "copy:testsAppToRunDir",
             "clean:modules",
-            "untar:modules",
+            "exec:npm-i-modules",
             "copy:modulesToDir",
             "clean:tempExtractedModules",
 
