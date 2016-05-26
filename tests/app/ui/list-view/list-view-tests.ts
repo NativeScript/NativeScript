@@ -6,7 +6,8 @@ import types = require("utils/types");
 import platform = require("platform");
 import utils = require("utils/utils");
 import { Label } from "ui/label";
-import {topmost} from "ui/frame";
+import helper = require("../helper");
+import { Page } from "ui/page";
 
 // >> article-require-listview-module
 import listViewModule = require("ui/list-view");
@@ -622,12 +623,8 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         listView.items = items;
         this.waitUntilListViewReady();
 
-        let currentPage = listView.page;
-        let frame = topmost();
-        frame.navigate("pages/navigation/pageB");
-        TKUnit.waitUntilReady(() => frame.currentPage !== null && frame.currentPage !== currentPage);
-        frame.goBack();
-        TKUnit.waitUntilReady(() => frame.currentPage !== null && frame.currentPage === currentPage);
+        helper.navigateWithHistory(() => new Page());
+        helper.goBack();
 
         for (let i = 0; i < count; i++) {
             TKUnit.assertEqual(items.getItem(i).loadedCount, 1 + modifier, "Loaded Count");

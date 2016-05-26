@@ -15,10 +15,10 @@ export var ASYNC = 0.2;
 export var MEMORY_ASYNC = 2;
 
 function clearPage(): void {
-    let newPage = frame.topmost().currentPage;
+    let newPage = getCurrentPage();
     if (!newPage) {
-        TKUnit.waitUntilReady(() => frame.topmost().currentPage !== null);
-        newPage = frame.topmost().currentPage;
+        TKUnit.waitUntilReady(() => getCurrentPage() !== null);
+        newPage = getCurrentPage();
     }
 
     if (!newPage) {
@@ -34,7 +34,7 @@ function clearPage(): void {
 
 export function do_PageTest(test: (views: Array<view.View>) => void, content: view.View, secondView: view.View, thirdView: view.View) {
     clearPage();
-    let newPage = frame.topmost().currentPage;
+    let newPage = getCurrentPage();
     newPage.content = content;
     test([newPage, content, secondView, thirdView, newPage.actionBar]);
     newPage.content = null;
@@ -42,7 +42,7 @@ export function do_PageTest(test: (views: Array<view.View>) => void, content: vi
 
 export function do_PageTest_WithButton(test: (views: Array<view.View>) => void) {
     clearPage();
-    let newPage = frame.topmost().currentPage;
+    let newPage = getCurrentPage();
     let btn = new button.Button();
     newPage.content = btn;
     test([newPage, btn, newPage.actionBar]);
@@ -51,7 +51,7 @@ export function do_PageTest_WithButton(test: (views: Array<view.View>) => void) 
 
 export function do_PageTest_WithStackLayout_AndButton(test: (views: Array<view.View>) => void) {
     clearPage();
-    let newPage = frame.topmost().currentPage;
+    let newPage = getCurrentPage();
     let stackLayout = new stackLayoutModule.StackLayout();
     let btn = new button.Button();
     stackLayout.addChild(btn);
@@ -63,7 +63,7 @@ export function do_PageTest_WithStackLayout_AndButton(test: (views: Array<view.V
 //export function buildUIAndRunTest(controlToTest, testFunction, pageCss?, testDelay?) {
 export function buildUIAndRunTest(controlToTest, testFunction, pageCss?) {
     clearPage();
-    let newPage = frame.topmost().currentPage;
+    let newPage = getCurrentPage();
     newPage.content = controlToTest;
     if (pageCss) {
         newPage.css = pageCss;
@@ -76,7 +76,7 @@ export function buildUIAndRunTest(controlToTest, testFunction, pageCss?) {
 
 export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: () => T, interactWithViewFunc?: (view: T) => void, done?) {
     clearPage();
-    let newPage = frame.topmost().currentPage;
+    let newPage = getCurrentPage();
     let sp = new stackLayoutModule.StackLayout();
     let testFinished = false;
 
@@ -134,22 +134,31 @@ export function navigateToModule(moduleName: string, context?: any): page.Page {
     return navigateWithEntry(entry);
 }
 
+export function getCurrentPage(): page.Page {
+    return frame.topmost().currentPage;
+}
+
+export function waitUntilNavigatedFrom(oldPage: page.Page) {
+    TKUnit.waitUntilReady(() => getCurrentPage() && getCurrentPage() !== oldPage);
+}
+
 export function navigateWithEntry(entry: frame.NavigationEntry): page.Page {
     let page = frame.resolvePageFromEntry(entry);
     entry.moduleName = null;
-    entry.animated = false
     entry.create = function () {
         return page;
     }
 
     let currentPage = getCurrentPage();
     frame.topmost().navigate(entry);
-    TKUnit.waitUntilReady(() => getCurrentPage() !== null && getCurrentPage() !== currentPage);
+    waitUntilNavigatedFrom(currentPage);
     return page;
 }
 
-export function getCurrentPage(): page.Page {
-    return frame.topmost().currentPage;
+export function goBack() {
+    let currentPage = getCurrentPage();
+    frame.topmost().goBack();
+    waitUntilNavigatedFrom(currentPage);
 }
 
 export function assertAreClose(actual: number, expected: number, message: string): void {

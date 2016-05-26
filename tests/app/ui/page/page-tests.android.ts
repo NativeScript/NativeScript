@@ -8,11 +8,21 @@ import frame = require("ui/frame");
 global.moduleMerge(PageTestCommon, exports);
 
 export function test_NavigateToNewPage_WithAndroidCache() {
+    // Clear history if any.
+    helper.navigate(() => {
+        let launchPage = new PageModule.Page();
+        launchPage.id = "launchPage_test_NavigateToNewPage_WithAndroidCache";
+        return launchPage;
+    });
+
+    TKUnit.assertEqual(frame.topmost().backStack.length, 0, "The backstack should be empty before this test can be run.");
+
     var testPage: PageModule.Page;
     var label: LabelModule.Label;
 
     var pageFactory = function (): PageModule.Page {
         testPage = new PageModule.Page();
+        testPage.id = "testPage_test_NavigateToNewPage_WithAndroidCache";
         label = new LabelModule.Label();
         label.text = "The quick brown fox jumps over the lazy dog.";
         testPage.content = label;
@@ -22,13 +32,11 @@ export function test_NavigateToNewPage_WithAndroidCache() {
     var androidFrame = frame.topmost().android;
     var cachingBefore = androidFrame.cachePagesOnNavigate;
     try {
-        let currentPage = frame.topmost().currentPage;
         androidFrame.cachePagesOnNavigate = true;
 
         helper.navigateWithHistory(pageFactory);
 
-        frame.goBack();
-        TKUnit.waitUntilReady(() => frame.topmost().currentPage !== null && frame.topmost().currentPage === currentPage);
+        helper.goBack();
     }
     finally {
         androidFrame.cachePagesOnNavigate = cachingBefore;
@@ -50,14 +58,13 @@ export var test_NavigateToNewPage_InnerControl = function () {
     var testPage: PageModule.Page;
     var pageFactory = function () {
         testPage = new PageModule.Page();
+        testPage.id = "testPage_test_NavigateToNewPage_InnerControl";
         PageTestCommon.addLabelToPage(testPage);
         return testPage;
     };
 
-    let currentPage = frame.topmost().currentPage;
     helper.navigateWithHistory(pageFactory);
-    frame.goBack();
-    TKUnit.waitUntilReady(() => frame.topmost().currentPage !== null && frame.topmost().currentPage === currentPage);
+    helper.goBack();
 
     var label = <LabelModule.Label>testPage.content;  
 
@@ -72,6 +79,7 @@ export var test_ChangePageCaching_AfterNavigated_Throws = function () {
     var testPage: PageModule.Page;
     var pageFactory = function () {
         var testPage = new PageModule.Page();
+        testPage.id = "testPage_test_ChangePageCaching_AfterNavigated_Throws";
         testPage.content = new LabelModule.Label();
         return testPage;
     };
@@ -99,6 +107,7 @@ export var test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow = func
     var testPage: PageModule.Page;
     var pageFactory = function () {
         var testPage = new PageModule.Page();
+        testPage.id = "testPage_test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow";
         testPage.content = new LabelModule.Label();
         return testPage;
     };

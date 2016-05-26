@@ -84,13 +84,5 @@ export var test_Transitions = function () {
         _testTransition({ instance: customTransition });
     }
 
-    var oldPage = topmost.currentPage;
-    topmost.navigate({ create: mainPageFactory, clearHistory: true, animated: false });
-    TKUnit.waitUntilReady(() => {
-        return topmost.currentPage
-            && topmost.currentPage !== oldPage
-            && topmost.currentPage.isLoaded
-            && !oldPage.isLoaded
-            ;
-    });
+    helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: false });
 }

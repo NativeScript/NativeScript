@@ -494,6 +494,9 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
     public set cachePagesOnNavigate(value: boolean) {
         if (this._cachePagesOnNavigate !== value) {
             if (this._owner.backStack.length > 0) {
+                this._owner._printFrameBackStack();
+                this._owner._printNativeBackStack();
+                console.log(`currentPage: ${this._owner.currentPage}`);
                 throw new Error("Cannot set cachePagesOnNavigate if there are items in the back stack.");
             }
 

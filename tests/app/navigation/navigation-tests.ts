@@ -2,6 +2,7 @@
 import {Page, NavigatedData} from "ui/page";
 import {topmost as topmostFrame, NavigationTransition} from "ui/frame";
 import {Color} from "color";
+import helper = require("../ui/helper");
 
 // Creates a random colorful page full of meaningless stuff.
 var id = 0;
@@ -12,17 +13,6 @@ var pageFactory = function (): Page {
     page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
     return page;
 };
-
-function waitUntilNavigatedFrom(oldPage: Page) {
-    let topmost = topmostFrame();
-    TKUnit.waitUntilReady(() => {
-        return topmost.currentPage
-            && topmost.currentPage !== oldPage
-            && topmost.currentPage.isLoaded
-            && !oldPage.isLoaded
-            ;
-    });
-}
 
 function androidGC() {
     let topmost = topmostFrame();
@@ -35,27 +25,20 @@ function androidGC() {
 function _test_backstackVisible(transition?: NavigationTransition) {
     let topmost = topmostFrame();
     let mainTestPage = topmost.currentPage;
-    topmost.navigate({ create: pageFactory, transition: transition, animated: true });
-    waitUntilNavigatedFrom(mainTestPage);    
+    helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
     
     // page1 should not be added to the backstack
     let page0 = topmost.currentPage;
-    topmost.navigate({ create: pageFactory, backstackVisible: false, transition: transition, animated: true });
-    waitUntilNavigatedFrom(page0);    
+    helper.navigateWithEntry({ create: pageFactory, backstackVisible: false, transition: transition, animated: true });
 
-    let page1 = topmost.currentPage;
-    topmost.navigate({ create: pageFactory, transition: transition, animated: true });
-    waitUntilNavigatedFrom(page1);    
+    helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
     
-    let page2 = topmost.currentPage;
-    topmost.goBack();
-    waitUntilNavigatedFrom(page2);    
+    helper.goBack();
 
     // From page2 we have to go directly to page0, skipping page1.
     TKUnit.assert(topmost.currentPage === page0, "Page 1 should be skipped when going back.");
 
-    topmost.goBack();
-    waitUntilNavigatedFrom(page0);
+    helper.goBack();
     TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
 
@@ -66,7 +49,7 @@ export var test_backstackVisible = function () {
 
 export var test_backstackVisible_WithTransition = function () {
     androidGC();
-    _test_backstackVisible({name: "fade"});
+    _test_backstackVisible({ name: "fade" });
 }
 
 function _test_backToEntry(transition?: NavigationTransition) {
@@ -112,7 +95,7 @@ function _test_backToEntry(transition?: NavigationTransition) {
     currentPageMustBe("page1");
     let page1 = topmost.currentPage;
     back(1);
-    waitUntilNavigatedFrom(page1);
+    helper.waitUntilNavigatedFrom(page1);
     TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
 
@@ -133,35 +116,23 @@ function _test_ClearHistory(transition?: NavigationTransition) {
         return mainTestPage;
     };
 
-    var currentPage: Page;
-
-    currentPage = topmost.currentPage;
-    topmost.navigate({ create: pageFactory, clearHistory: true, transition: transition, animated: true });
-    waitUntilNavigatedFrom(currentPage);
+    helper.navigateWithEntry({ create: pageFactory, clearHistory: true, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 0, "1.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), false, "1.topmost.canGoBack().");
 
-    currentPage = topmost.currentPage;
-    topmost.navigate({ create: pageFactory, transition: transition, animated: true });
-    waitUntilNavigatedFrom(currentPage);
+    helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 1, "2.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), true, "2.topmost.canGoBack().");
 
-    currentPage = topmost.currentPage;
-    topmost.navigate({ create: pageFactory, transition: transition, animated: true });
-    waitUntilNavigatedFrom(currentPage);
+    helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 2, "3.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), true, "3.topmost.canGoBack().");
 
-    currentPage = topmost.currentPage;
-    topmost.navigate({ create: pageFactory, clearHistory: true, transition: transition, animated: true });
-    waitUntilNavigatedFrom(currentPage);
+    helper.navigateWithEntry({ create: pageFactory, clearHistory: true, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 0, "4.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), false, "4.topmost.canGoBack().");
 
-    currentPage = topmost.currentPage;
-    topmost.navigate({ create: mainPageFactory, clearHistory: true, animated: false });
-    waitUntilNavigatedFrom(currentPage);
+    helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: false });
     TKUnit.assertEqual(topmost.backStack.length, 0, "5.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), false, "5.topmost.canGoBack().");
 
@@ -203,25 +174,18 @@ export var test_ClearHistoryWithTransitionDoesNotBreakNavigation = function () {
     };
 
     // Go to details-page
-    topmost.navigate({ create: pageFactory, clearHistory: false, animated: true });
-    waitUntilNavigatedFrom(mainTestPage);
+    helper.navigateWithEntry({ create: pageFactory, clearHistory: false, animated: true });
     
     // Go back to main-page with clearHistory
-    var detailsPage: Page;
-    detailsPage = topmost.currentPage;
     topmost.transition = { name: "fade" };
-    topmost.navigate({ create: mainPageFactory, clearHistory: true, animated: true });
-    waitUntilNavigatedFrom(detailsPage);
+    helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: true });
     
     // Go to details-page AGAIN
-    topmost.navigate({ create: pageFactory, clearHistory: false, animated: true });
-    waitUntilNavigatedFrom(mainTestPage);
+    helper.navigateWithEntry({ create: pageFactory, clearHistory: false, animated: true });
     
     // Go back to main-page with clearHistory
-    detailsPage = topmost.currentPage;
     topmost.transition = { name: "fade" };
-    topmost.navigate({ create: mainPageFactory, clearHistory: true, animated: true });
-    waitUntilNavigatedFrom(detailsPage);
+    helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: true });
     
     // Clean up
     topmost.transition = undefined;
@@ -245,24 +209,16 @@ export var test_ClearHistoryWithTransitionDoesNotBreakNavigation_WithLocalTransi
     };
 
     // Go to 1st page
-    var currentPage = topmost.currentPage;
-    topmost.navigate({ create: pageFactory, clearHistory: false, transition: { name: "fade" }, animated: true });
-    waitUntilNavigatedFrom(currentPage);
+    helper.navigateWithEntry({ create: pageFactory, clearHistory: false, transition: { name: "fade" }, animated: true });
     
     // Go to 2nd page
-    currentPage = topmost.currentPage;
-    topmost.navigate({ create: pageFactory, clearHistory: false, transition: { name: "fade" }, animated: true });
-    waitUntilNavigatedFrom(currentPage);
+    helper.navigateWithEntry({ create: pageFactory, clearHistory: false, transition: { name: "fade" }, animated: true });
     
     // Go to 3rd page with clearHistory
-    currentPage = topmost.currentPage;
-    topmost.navigate({ create: pageFactory, clearHistory: true, transition: { name: "fade" }, animated: true });
-    waitUntilNavigatedFrom(currentPage);
+    helper.navigateWithEntry({ create: pageFactory, clearHistory: true, transition: { name: "fade" }, animated: true });
     
     // Go back to main
-    currentPage = topmost.currentPage;
-    topmost.navigate({ create: mainPageFactory, clearHistory: true, transition: { name: "fade" }, animated: true });
-    waitUntilNavigatedFrom(currentPage);
+    helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, transition: { name: "fade" }, animated: true });
     
     if (topmost.android) {
         topmostFrame().android.cachePagesOnNavigate = originalCachePagesOnNavigate;
@@ -301,13 +257,10 @@ function _test_NavigationEvents(transition?: NavigationTransition) {
     };
 
     // Go to other page
-    topmost.navigate({ create: secondPageFactory, transition: transition, animated: true });
-    waitUntilNavigatedFrom(mainTestPage);
+    helper.navigateWithEntry({ create: secondPageFactory, transition: transition, animated: true });
     
     // Go back to main
-    let currentPage = topmost.currentPage;
-    topmost.goBack();
-    waitUntilNavigatedFrom(currentPage);
+    helper.goBack();
     
     mainTestPage.id = originalMainPageId;
 

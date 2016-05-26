@@ -41,6 +41,7 @@ export function test_AfterPageLoaded_is_called_NativeInstance_is_created() {
 
     let pageFactory = function (): Page {
         page = new Page();
+        page.id = `page_test_AfterPageLoaded_is_called_NativeInstance_is_created`;
         page.on(view.View.loadedEvent, handler);
 
         label = new Label();
@@ -67,6 +68,7 @@ export function test_PageLoaded_is_called_once() {
 
     let pageFactory = function (): Page {
         page1 = new Page();
+        page1.id = `page1_test_PageLoaded_is_called_once`;
         addLabelToPage(page1, "Page 1");
         return page1;
     };
@@ -76,6 +78,7 @@ export function test_PageLoaded_is_called_once() {
 
     let pageFactory2 = function (): Page {
         page2 = new Page();
+        page2.id = `page2_test_PageLoaded_is_called_once`;
         addLabelToPage(page2, "Page 2");
         page2.on(view.View.loadedEvent, handler);
         return page2;
@@ -137,6 +140,7 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
     let eventSequence = [];
     let pageFactory = function () {
         testPage = new Page();
+        testPage.id = "testPage_test_PageNavigation_EventSequence";
         addLabelToPage(testPage);
 
         testPage.on(Page.navigatingToEvent, function (data: NavigatedData) {
@@ -172,32 +176,27 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
         return testPage;
     };
 
-    let currentPage = frameModule.topmost().currentPage;
+    let navigationEntry: frameModule.NavigationEntry;
     if (withTransition) {
-        let navigationTransition: frameModule.NavigationTransition = {
-            name: "slide",
-            duration: 100,
-        };
-        let navigationEntry: frameModule.NavigationEntry = {
+        navigationEntry = {
             create: pageFactory,
             context: context,
             animated: true,
-            transition: navigationTransition
+            transition: {
+                name: "slide",
+                duration: 100,
+            }
         }
-        frameModule.topmost().navigate(navigationEntry);
     }
     else {
-        let navigationEntry: frameModule.NavigationEntry = {
+        navigationEntry = {
             create: pageFactory,
             context: context,
+            animated: false
         }
-        frameModule.topmost().navigate(navigationEntry);
     }
-
-    TKUnit.waitUntilReady(() => frameModule.topmost().currentPage !== null && frameModule.topmost().currentPage === testPage);
-
-    frameModule.goBack();
-    TKUnit.waitUntilReady(() => frameModule.topmost().currentPage !== null && frameModule.topmost().currentPage === currentPage);
+    helper.navigateWithEntry(navigationEntry);
+    helper.goBack();
 
     let expectedEventSequence = ["navigatingTo", "loaded", "navigatedTo", "navigatingFrom", "unloaded", "navigatedFrom"];
     TKUnit.arrayAssert(eventSequence, expectedEventSequence, "Actual event sequence is not equal to expected. Actual: " + eventSequence + "; Expected: " + expectedEventSequence);
@@ -227,9 +226,7 @@ export function test_NavigateTo_WithContext() {
     let actualContextValue = testPage.navigationContext;
     TKUnit.assertEqual(actualContextValue, "myContext");
 
-    topFrame.goBack();
-    TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage === currentPage);
-
+    helper.goBack();
     TKUnit.assertNull(testPage.navigationContext, "Navigation context should be cleared on navigating back");
 }
 
@@ -237,24 +234,21 @@ export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
     let testPage: Page;
     let pageFactory = function () {
         testPage = new Page();
+        testPage.id = "testPage_test_FrameBackStack_WhenNavigatingForwardAndBack";
         addLabelToPage(testPage);
         return testPage;
     };
 
+    helper.navigateWithHistory(pageFactory);
+
     let topFrame = frameModule.topmost();
-    let currentPage = topFrame.currentPage;
-
-    topFrame.navigate(pageFactory);
-    TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage === testPage);
-
     TKUnit.assertEqual(topFrame.backStack.length, 1);
-    TKUnit.assertTrue(topFrame.canGoBack(), "We should can go back.");
+    TKUnit.assertTrue(topFrame.canGoBack(), "topFrame.canGoBack() should be true");
 
-    topFrame.goBack();
-    TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage === currentPage);
+    helper.goBack();
 
     TKUnit.assertEqual(topFrame.backStack.length, 0);
-    TKUnit.assertFalse(topFrame.canGoBack(), "canGoBack should return false.");
+    TKUnit.assertFalse(topFrame.canGoBack(), "topFrame.canGoBack() should be false");
 }
 
 export function test_LoadPageFromModule() {
@@ -291,6 +285,7 @@ export function test_NavigateToPageCreatedWithNavigationEntry() {
     let testPage: Page;
     let pageFactory = function () {
         testPage = new Page();
+        testPage.id = "testPage_test_NavigateToPageCreatedWithNavigationEntry";
         addLabelToPage(testPage, expectedText);
         return testPage;
     };
@@ -304,6 +299,7 @@ export function test_NavigateToPageCreatedWithNavigationEntry() {
 export function test_cssShouldBeAppliedToAllNestedElements() {
     let expectedText = "Some text";
     let testPage = new Page();
+    testPage.id = "testPage_test_cssShouldBeAppliedToAllNestedElements";
     let label = new Label();
     label.text = expectedText;
 
@@ -325,6 +321,7 @@ export function test_cssShouldBeAppliedToAllNestedElements() {
 export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
     let expectedText = "Some text";
     let testPage = new Page();
+    testPage.id = "testPage_test_cssShouldBeAppliedAfterChangeToAllNestedElements";
     let label = new Label();
     label.text = expectedText;
 
@@ -349,6 +346,7 @@ export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
 
 export function test_page_backgroundColor_is_white() {
     let page = new Page();
+    page.id = "page_test_page_backgroundColor_is_white";
     let factory = () => page;
     helper.navigate(factory);
     TKUnit.assertEqual(page.style.backgroundColor.hex.toLowerCase(), "#ffffff", "page background-color");
@@ -362,7 +360,7 @@ export function test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage() 
 
     let pageFactory = function (): Page {
         page = new Page();
-        page.id = "newPage";
+        page.id = "page_test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage";
         page.on(view.View.loadedEvent, loadedEventHandler);
         let label = new Label();
         label.text = "Text";
@@ -382,7 +380,7 @@ export function test_WhenPageIsNavigatedToFrameCurrentPageIsNowTheSameAsThePage(
 
     let pageFactory = function (): Page {
         page = new Page();
-        page.id = "newPage";
+        page.id = "page_test_WhenPageIsNavigatedToFrameCurrentPageIsNowTheSameAsThePage";
         page.on(Page.navigatedToEvent, navigatedEventHandler);
         let label = new Label();
         label.text = "Text";
@@ -410,31 +408,32 @@ export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
 
     let pageFactory1 = function (): Page {
         page1 = new Page();
+        page1.id = "page1_test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect";
         page1.on(Page.navigatedToEvent, navigatedEventHandler);
         return page1;
     };
 
     let pageFactory2 = function (): Page {
         page2 = new Page();
+        page2.id = "page2_test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect";
         page2.on(Page.navigatedToEvent, navigatedEventHandler);
         return page2;
     };
 
-    let topFrame = frameModule.topmost();
     helper.navigateWithHistory(pageFactory1);
     helper.navigateWithHistory(pageFactory2);
 
-    frameModule.goBack();
-    TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage === page1);
+    helper.goBack();
 
-    TKUnit.assertEqual(forwardCounter, 2, "Forward navigation counter should be 1");
+    TKUnit.assertEqual(forwardCounter, 2, "Forward navigation counter should be 2");
     TKUnit.assertEqual(backCounter, 1, "Backward navigation counter should be 1");
     page1.off(Page.navigatedToEvent, navigatedEventHandler);
     page2.off(Page.navigatedToEvent, navigatedEventHandler);
+
+    helper.goBack();
 }
 
 export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
-
     if (platform.device.os === platform.platformNames.android
         && android.os.Build.VERSION.SDK_INT === android.os.Build.VERSION_CODES.JELLY_BEAN_MR1
         && android.os.Build.CPU_ABI.indexOf("x86") !== -1) {
@@ -494,7 +493,7 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
 
     let masterPageFactory = function (): Page {
         masterPage = new Page();
-        masterPage.id = "newPage";
+        masterPage.id = "masterPage_test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal";
         masterPage.on(Page.navigatedToEvent, navigatedToEventHandler);
         let label = new Label();
         label.text = "Text";
