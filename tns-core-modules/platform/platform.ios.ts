@@ -126,3 +126,5 @@ export var device: definition.Device = new Device();
 export module screen {
     export var mainScreen = new MainScreen();
 }
+
+export var isIOS = true;

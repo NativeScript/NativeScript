@@ -1,5 +1,6 @@
 ﻿import TKUnit = require("./TKUnit");
 import app = require("application");
+import { isIOS, isAndroid } from "platform";
 
 // >> platform-require
 import platformModule = require("platform");
@@ -29,3 +30,12 @@ export function snippet_print_all() {
     console.log("Screen scale: " + platformModule.screen.mainScreen.scale);
     // << platform-current
 };
+
+export function testIsIOSandIsAndroid() {
+    if (isIOS) {
+        TKUnit.assertTrue(!!NSObject, "isIOS is true-ish but common iOS APIs are not available.");
+    } else if (isAndroid) {
+        TKUnit.assertTrue(!!android, "isAndroid is true but common 'android' package is not available.");
+    }
+}
+

@@ -3,6 +3,16 @@
  * Contains all kinds of information about the device, its operating system and software.
  */
 declare module "platform" {
+    
+    /**
+     * Gets a value indicating if the app is running on the Android platform.
+     */
+    export var isAndroid: boolean;
+    
+    /**
+     * Gets a value indicating if the app is running on the iOS platform.
+     */
+    export var isIOS: boolean;
 
     /*
      * Enum holding platform names.
