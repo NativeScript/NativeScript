@@ -38,3 +38,6 @@ TestRunResult.txt
 tns-core-modules.base.d.ts
 tns-core-modules.d.ts
 tns-core-modules.es6.d.ts
+
+tests/platforms/
+tests/lib/
