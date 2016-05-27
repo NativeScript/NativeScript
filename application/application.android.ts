@@ -3,7 +3,6 @@ import definition = require("application");
 import frame = require("ui/frame");
 import observable = require("data/observable");
 import * as typesModule from "utils/types";
-import * as fileResolverModule  from "file-system/file-name-resolver";
 
 global.moduleMerge(appModule, exports);
 var typedExports: typeof definition = exports;
@@ -341,17 +340,8 @@ global.__onLiveSync = function () {
     if (typedExports.android && typedExports.android.paused) {
         return;
     }
-
-    var fileResolver: typeof fileResolverModule = require("file-system/file-name-resolver");
-
-    // Clear file resolver cache to respect newly added files.
-    fileResolver.clearCache();
-
-    // Reload app.css in case it was changed.
-    loadCss();
-
-    // Reload current page.
-    frame.reloadPage();
+    
+    appModule.__onLiveSync();
 }
 
 global.__onUncaughtError = function (error: definition.NativeScriptError) {

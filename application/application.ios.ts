@@ -1,9 +1,8 @@
 ﻿import common = require("./application-common");
-import {Frame, NavigationEntry, reloadPage} from "ui/frame";
+import {Frame, NavigationEntry} from "ui/frame";
 import definition = require("application");
 import * as uiUtils from "ui/utils";
 import * as typesModule from "utils/types";
-import * as fileResolverModule  from "file-system/file-name-resolver";
 import * as enumsModule from "ui/enums";
 
 global.moduleMerge(common, exports);
@@ -277,14 +276,5 @@ global.__onLiveSync = function () {
         return;
     }
 
-    var fileResolver: typeof fileResolverModule = require("file-system/file-name-resolver");
-
-    // Clear file resolver cache to respect newly added files.
-    fileResolver.clearCache();
-
-    // Reload app.css in case it was changed.
-    loadCss();
-
-    // Reload current page.
-    reloadPage();
+    common.__onLiveSync();
 }
