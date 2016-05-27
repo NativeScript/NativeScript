@@ -9,7 +9,7 @@
         "noImplicitAny": false,
         "noImplicitUseStrict": true,
         "experimentalDecorators": true,
-        "diagnostics": false
+        "diagnostics": true
     },
     "filesGlob": [
         "**/*.ts",
