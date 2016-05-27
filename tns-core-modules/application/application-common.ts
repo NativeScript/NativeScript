@@ -5,6 +5,7 @@ import frame = require("ui/frame");
 import cssSelector = require("ui/styling/css-selector");
 import * as fileSystemModule from "file-system";
 import * as styleScopeModule from "ui/styling/style-scope";
+import * as fileResolverModule  from "file-system/file-name-resolver";
 
 var styleScope: typeof styleScopeModule = undefined;
 
@@ -84,4 +85,30 @@ export function parseCss(cssText: string, cssFileName?: string): Array<cssSelect
         styleScope = require("ui/styling/style-scope");
     }
     return styleScope.StyleScope.createSelectorsFromCss(cssText, cssFileName, keyframes);
+}
+
+export function __onLiveSync() {
+    // Close the error page if available and remove the reference from global context.
+    if (global.errorPage) {
+        global.errorPage.closeModal();
+        global.errorPage = undefined;
+    }
+
+    try {
+        var fileResolver: typeof fileResolverModule = require("file-system/file-name-resolver");
+
+        // Clear file resolver cache to respect newly added files.
+        fileResolver.clearCache();
+
+        // Reload app.css in case it was changed.
+        loadCss();
+
+        // Reload current page.
+        frame.reloadPage();
+    } catch (ex) {
+        // Show the error as modal page, save reference to the page in global context.
+        var builder = require("ui/builder");
+        global.errorPage = builder.parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
+        global.errorPage.showModal();
+    }
 }
