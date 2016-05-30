@@ -114,15 +114,15 @@ var files = JSON.parse(fs.readFileSync("./tsconfig.json")).files;
 var options = {
     noEmitOnError: true,
     noEmitHelpers: true,
-    target: 1 /* ES5 */,
-    module: 1 /* CommonJS */,
+    target: ts.ScriptTarget.ES5,
+    module: ts.ModuleKind.CommonJS,
     declaration: false,
     noImplicitAny: false,
     noImplicitUseStrict: true,
     experimentalDecorators: true
 };
 if (isTranspile) {
-    transpile(files, { module: 1 /* CommonJS */ });
+    transpile(files, { module: ts.ModuleKind.CommonJS, noImplicitUseStrict: true });
 }
 else {
     compile(files, options);
