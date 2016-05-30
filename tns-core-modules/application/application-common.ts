@@ -6,6 +6,14 @@ import cssSelector = require("ui/styling/css-selector");
 import * as fileSystemModule from "file-system";
 import * as styleScopeModule from "ui/styling/style-scope";
 import * as fileResolverModule  from "file-system/file-name-resolver";
+import * as builderModule from "ui/builder";
+
+var builder: typeof builderModule;
+function ensureBuilder() {
+    if (!builder) {
+        builder = require("ui/builder");
+    }
+}
 
 var styleScope: typeof styleScopeModule = undefined;
 
@@ -107,7 +115,7 @@ export function __onLiveSync() {
         frame.reloadPage();
     } catch (ex) {
         // Show the error as modal page, save reference to the page in global context.
-        var builder = require("ui/builder");
+        ensureBuilder();
         global.errorPage = builder.parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
         global.errorPage.showModal();
     }
