@@ -16,6 +16,7 @@ let FRAMEID = "_frameId";
 let navDepth = -1;
 let fragmentId = -1;
 let activityInitialized = false;
+const PAGE_FRAGMENT_TAG = "_fragmentTag";
 
 function onFragmentShown(fragment: FragmentClass) {
     if (trace.enabled) {
@@ -33,8 +34,9 @@ function onFragmentShown(fragment: FragmentClass) {
     // TODO: consider putting entry and page in queue so we can safely extract them here. Pass the index of current navigation and extract it from here.
     // After extracting navigation info - remove this index from navigation stack.
     var frame = fragment.frame;
-    var entry: definition.BackstackEntry = fragment.entry;
-    var page: pages.Page = entry.resolvedPage;
+    var entry = fragment.entry;
+    var page = entry.resolvedPage;
+    page[PAGE_FRAGMENT_TAG] = entry.fragmentTag;
 
     let currentNavigationContext;
     let navigationQueue = (<any>frame)._navigationQueue;
@@ -70,6 +72,7 @@ function onFragmentHidden(fragment: FragmentClass, destroyed: boolean) {
 
     var isBack = fragment.entry.isBack;
     fragment.entry.isBack = undefined;
+    fragment.entry.resolvedPage[PAGE_FRAGMENT_TAG] = undefined;
 
     // Handle page transitions.
     transitionModule._onFragmentHidden(fragment, isBack, destroyed);
@@ -511,29 +514,11 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
     }
     
     public fragmentForPage(page: pages.Page): android.app.Fragment {
-        if(!page || !this._owner) {
+        if(!page) {
             return undefined;
         }
-        
-        let tag;
-        
-        if(this._owner._currentEntry && this._owner._currentEntry.resolvedPage === page) {
-            tag = this._owner._currentEntry.fragmentTag;
-        }
-        else {
-            let backstack = this._owner.backStack;
-            let length = backstack.length;
-            let entry: definition.BackstackEntry;
-            
-            for(let i = length - 1; i >= 0; i--) {
-                entry = backstack[i];
-                if(entry.resolvedPage === page) {
-                    tag = entry.fragmentTag;
-                    break;
-                }
-            } 
-        }
-        
+
+        let tag = page[PAGE_FRAGMENT_TAG];
         if(tag) {
             let manager = this.activity.getFragmentManager();
             return manager.findFragmentByTag(tag);
