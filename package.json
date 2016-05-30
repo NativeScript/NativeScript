@@ -2,6 +2,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "3.2.0",
+    "concurrently": "^2.1.0",
     "grunt": "0.4.5",
     "grunt-contrib-clean": "0.6.0",
     "grunt-contrib-copy": "git+https://github.com/ErjanGavalji/grunt-contrib-copy.git#1c976a133210be4ce8c96313f5daf14833f7f8f9",
@@ -28,6 +29,10 @@
     "tsc": "tsc",
     "link-tests": "cd tns-core-modules && npm link && cd ../tests && npm link tns-core-modules",
     "dev-tests-android": "npm run tsc-ti && tns livesync android --path tests",
-    "dev-tests-ios": "npm run tsc-ti && tns livesync ios --path tests"
+    "dev-tests-ios": "npm run tsc-ti && tns livesync ios --path tests",
+    "test-watch-android": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns run android --path tests --watch\"",
+    "test-watch-ios": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns run ios --path tests --watch\"",
+    "pretest": "npm run link-tests && npm run tsc",
+    "test": "tns run ios --path tests --justlaunch && tns run android --path tests --justlaunch"
   }
 }
