@@ -1,4 +1,11 @@
-﻿import TKUnit = require("../../TKUnit");
+﻿import {Image} from "ui/image";
+import {StackLayout} from "ui/layouts/stack-layout";
+import {GridLayout} from "ui/layouts/grid-layout";
+import {isIOS} from "platform";
+// import {target} from "../../TKUnit";
+
+import TKUnit = require("../../TKUnit");
+
 // >> img-require
 import ImageModule = require("ui/image");
 // << img-require
@@ -244,3 +251,62 @@ export var test_SettingStretch_none = function () {
 
     helper.buildUIAndRunTest(image, testFunc);
 }
+
+function ios<T>(func: T): T {
+    return isIOS ? func : undefined;
+}
+
+export var test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(() => {
+    let host = new GridLayout();
+    
+    let image = new Image();
+
+    host.width = 300;
+    host.height = 300;
+    host.addChild(image);
+    
+    let mainPage = helper.getCurrentPage();
+    mainPage.content = host;
+    TKUnit.waitUntilReady(() => host.isLoaded);
+    
+    let called = false;
+    image.requestLayout = () => called = true;
+    image.src = "~/logo.png";
+    
+    TKUnit.assertFalse(called, "image.requestLayout should not be called.");
+});
+
+export var test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout = ios(() => {
+    let host = new StackLayout();
+    let image = new Image();
+    image.width = 100;
+    image.height = 100;
+    host.addChild(image);
+    
+    let mainPage = helper.getCurrentPage();
+    mainPage.content = host;
+    TKUnit.waitUntilReady(() => host.isLoaded);
+    
+    let called = false;
+    image.requestLayout = () => called = true;
+    image.src = "~/logo.png";
+    
+    TKUnit.assertFalse(called, "image.requestLayout should not be called.");
+});
+
+export var test_SettingImageSourceWhenSizedToContentShouldInvalidate = ios(() => {
+    let host = new StackLayout();
+    let image = new Image();
+    host.addChild(image);
+    
+    let mainPage = helper.getCurrentPage();
+    mainPage.content = host;
+    TKUnit.waitUntilReady(() => host.isLoaded);
+    
+    let called = false;
+    image.requestLayout = () => called = true;
+    image.src = "~/logo.png";
+    
+    TKUnit.assertTrue(called, "image.requestLayout should be called.");
+});
+

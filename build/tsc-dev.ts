@@ -5,9 +5,89 @@ var path = require("path");
 
 var arg1 = process.argv.length > 2 ? process.argv[2] : "";
 
+var isTranspile = arg1.indexOf("t") >= 0;
 var isIncremental = arg1.indexOf("i") >= 0;
+var isWatching = arg1.indexOf("w") >= 0;
+
+var opts = [];
+
+if (isTranspile) {
+    opts.push("transpile");
+}
+
 if (isIncremental) {
-    console.log("incremental");
+    opts.push("incremental");
+}
+
+if (isWatching) {
+    opts.push("watch");
+}
+
+if (opts.length > 0) {
+    console.log("Options: " + opts.join(", "));
+}
+
+function isTS(file: string): boolean {
+    return file.lastIndexOf(".ts") === file.length - 3;
+}
+
+function isDTS(file: string): boolean {
+    return file.lastIndexOf(".d.ts") === file.length - 5;
+}
+
+function getJsPath(tsPath: string): string {
+    return path.join(path.dirname(tsPath), path.basename(tsPath, ".ts")) + ".js";
+}
+
+function hasChanged(tsName: string): boolean {
+    try {
+        var jsName = getJsPath(tsName);
+        
+        var tsTime = fs.statSync(tsName).mtime.getTime();
+        var jsTime = fs.statSync(jsName).mtime.getTime();
+    
+        return jsTime < tsTime;
+    } catch(e) {
+        return true;
+    }
+}
+
+function transpile(fileNames: string[], options: ts.CompilerOptions) {
+    console.time("transpile");
+    var files = fileNames.filter(f => !isDTS(f));
+    if (isIncremental) {
+        files = files.filter(hasChanged);
+    }
+    files.forEach(tsPath => {
+        var tsSource = fs.readFileSync(tsPath, { encoding: "utf8" });
+        var jsSource = ts.transpile(tsSource, options);
+        var jsPath = getJsPath(tsPath);
+        fs.writeFileSync(jsPath, jsSource, { flag: "w" }, function(err) { console.log(err); });
+        if (isIncremental) {
+            console.log(" - " + tsPath);
+        }
+    });
+    console.timeEnd("transpile");
+    
+    if (isWatching) {
+        console.log("Watching for changes...");
+        fs.watch(".", { persistent: true, recursive: true, encoding: "utf8" }, (event, file) => {
+            try {
+                if (isTS(file) && !isDTS(file)) {
+                    var tsPath = file;
+                    var label = " - " + tsPath;
+                    console.time(label);
+                    var tsSource = fs.readFileSync(tsPath, { encoding: "utf8" });
+                    var jsSource = ts.transpile(tsSource, options);
+                    var jsPath = getJsPath(tsPath);
+                    fs.writeFileSync(jsPath, jsSource, { flag: "w" }, function(err) { console.log(err); });
+                    console.timeEnd(label);
+                }
+            } catch(e) {
+                // console.log(e);
+            }
+        });
+    }
 }
 
 function compile(fileNames: string[], options: ts.CompilerOptions) {
@@ -15,27 +95,14 @@ function compile(fileNames: string[], options: ts.CompilerOptions) {
     var program = ts.createProgram(fileNames, options);
     
     console.timeEnd("program");
-    var sourceFiles = program.getSourceFiles().filter(f => f.fileName.lastIndexOf(".d.ts") !== f.fileName.length - 5);
+    var sourceFiles = program.getSourceFiles().filter(f => !isDTS(f.fileName));
     
     var emitResults = [];
     var allDiagnostics = [];
     
     console.time("transpile");
     if (isIncremental) {
-        sourceFiles = sourceFiles.filter(srcFile => {
-            try {
-                var tsName = srcFile.fileName;
-                var jsName = path.join(path.dirname(tsName), path.basename(tsName, ".ts")) + ".js";
-                
-                var tsTime = fs.statSync(tsName).mtime.getTime();
-                var jsTime = fs.statSync(jsName).mtime.getTime();
-            
-                return jsTime < tsTime;
-            } catch(e) {
-                return true;
-            }
-        });
-        
+        sourceFiles = sourceFiles.filter(srcFile => hasChanged(srcFile.fileName));
         sourceFiles.forEach(srcFile => {
             console.log(" - " + srcFile.fileName);
             emitResults.push(program.emit(srcFile));
@@ -66,8 +133,7 @@ function compile(fileNames: string[], options: ts.CompilerOptions) {
 }
 
 var files = JSON.parse(fs.readFileSync("./tsconfig.json")).files;
-compile(files,
-{
+var options: ts.CompilerOptions = {
     noEmitOnError: true,
     noEmitHelpers: true,
     target: ts.ScriptTarget.ES5,
@@ -76,5 +142,9 @@ compile(files,
     noImplicitAny: false,
     noImplicitUseStrict: true,
     experimentalDecorators: true
-});
-
+};
+if (isTranspile) {
+    transpile(files, { module: ts.ModuleKind.CommonJS });
+} else {
+    compile(files, options);
+}
