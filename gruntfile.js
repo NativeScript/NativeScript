@@ -140,6 +140,7 @@ module.exports = function(grunt) {
         srcDir: ".",
         srcAppsDir: "./apps",
         srcAppsTestsDir: "./tests/app",
+        srcTnsCoreModules: "./tns-core-modules",
         packageJsonFilePath: "./tns-core-modules/package.json",
         outArticlesDir: "./bin/dist/articles",
         outDir: outDir,
@@ -545,7 +546,7 @@ module.exports = function(grunt) {
         var combinedDtsPath = path.join(outDir, outFile);
         grunt.file.write(combinedDtsPath, dtsLines.join('\n'));
     }
-    function generateModulesDts(outDir) {
+    function generateModulesDts(outDir, srcDir) {
         var angularConflicts = ['module.d.ts'];
         var angularExcludes = angularConflicts.map(function(file) {
             return '!' + file;
@@ -559,7 +560,7 @@ module.exports = function(grunt) {
         var es6Excludes = nonES6Files.map(function(file) {
             return '!' + file;
         });
-        var dtsFiles = grunt.file.expand({cwd: localCfg.outTnsCoreModules }, [
+        var dtsFiles = grunt.file.expand({cwd: srcDir }, [
             "**/*.d.ts",
             //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
             "!apps/**",
@@ -720,8 +721,8 @@ module.exports = function(grunt) {
         moveSinglesUp(localCfg.outArticlesDir);
     });
 
-    grunt.registerTask("generate-tns-core-modules-dev-dts", generateModulesDts.bind(null, "."));
-    grunt.registerTask("generate-tns-core-modules-dts", generateModulesDts.bind(null, localCfg.outDir));
+    grunt.registerTask("generate-tns-core-modules-dev-dts", generateModulesDts.bind(null, ".", localCfg.srcTnsCoreModules));
+    grunt.registerTask("generate-tns-core-modules-dts", generateModulesDts.bind(null, localCfg.outDir, localCfg.outTnsCoreModules));
     //aliasing pack-modules for backwards compatibility
     grunt.registerTask("pack-modules", [
         "compile-modules",

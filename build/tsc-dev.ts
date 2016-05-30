@@ -73,7 +73,7 @@ function transpile(fileNames: string[], options: ts.CompilerOptions) {
         console.log("Watching for changes...");
         fs.watch(".", { persistent: true, recursive: true, encoding: "utf8" }, (event, file) => {
             try {
-                if (isTS(file) && !isDTS(file)) {
+                if (isTS(file) && !isDTS(file) && file.indexOf("platforms/android/") < 0 && file.indexOf("platforms/ios/") < 0) {
                     var tsPath = file;
                     var label = " - " + tsPath;
                     console.time(label);
