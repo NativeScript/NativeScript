@@ -60,9 +60,6 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
             view.android.setCurrentTab(view.selectedIndex);
         }
 
-        view.android.setOnTabChangedListener(null);
-        view.android.setOnTabChangedListener(view._listener);
-
         var tabHost = <android.widget.TabHost>view.android;
         var tabIndex: number;
 
@@ -193,6 +190,12 @@ export class SegmentedBar extends common.SegmentedBar {
         }));
 
         this.android.addTab(tab);
+        this.resetNativeListener();
+    }
+
+    private resetNativeListener() {
+        this.android.setOnTabChangedListener(null);
+        this.android.setOnTabChangedListener(this._listener);
     }
 }
 
