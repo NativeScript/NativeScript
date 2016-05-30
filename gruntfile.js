@@ -1,6 +1,7 @@
 var tsconfig = require('./tsconfig.json');
 var shelljs = require("shelljs");
 var path = require("path");
+var fs=require("fs");
 
 module.exports = function(grunt) {
     if (grunt.option('profile')) {
@@ -13,9 +14,6 @@ module.exports = function(grunt) {
         tsTester.run(grunt);
         return;
     }
-
-    var fs=require("fs");
-    var pathModule=require("path");
 
     var tsLintOption = grunt.option('runtslint');
     var skipTsLint = tsLintOption == 'false' || tsLintOption == false;
@@ -42,6 +40,7 @@ module.exports = function(grunt) {
     };
 
     var updateModulesPackageDef = function(content, srcPath) {
+        console.log("Patch: " + srcPath);
         return updatePackageDef(content, function(contentAsObject) {
             contentAsObject.version = localCfg.packageVersion;
             if (localCfg.commitSHA) {
@@ -122,38 +121,40 @@ module.exports = function(grunt) {
 
     var getSubDirs = function(dir) {
         return shelljs.ls(dir).filter(function (subDir) {
-            return shelljs.test('-d', pathModule.join(dir, subDir));
+            return shelljs.test('-d', path.join(dir, subDir));
         });
     };
 
     var getApps = function() {
         var allApps = getSubDirs(localCfg.srcAppsDir);
         if (grunt.option('test-app-only')) {
-            allApps = allApps.filter(function(appName) {
-                return appName === 'tests';
+            allApps = allApps.filter(function(app) {
+                return app === 'tests';
             });
         }
         return allApps;
     };
 
+    var outDir = tsconfig.compilerOptions.outDir || "./bin/dist";
     var localCfg = {
         srcDir: ".",
         srcAppsDir: "./apps",
-        srcAppsTests: "./apps/tests",
-        packageJsonFilePath: "./package.json",
-        outDir: "./bin/dist",
+        srcAppsTestsDir: "./tests/app",
+        packageJsonFilePath: "./tns-core-modules/package.json",
         outArticlesDir: "./bin/dist/articles",
-        outModulesDir: tsconfig.compilerOptions.outDir || "./bin/dist/modules",
+        outDir: outDir,
+        outTnsCoreModules: path.join(outDir, "tns-core-modules"),
         outAppsDir: "./bin/dist/apps",
-        outTsAppsDir: "./bin/dist/ts-apps",
+        outAppsTestsDir: "./bin/dist/tests/app",
+        outTsAppsTestsDir: "./bin/dist/ts-tests/app",
+        outTsAppsDir: "./bin/dist/ts-apps/app",
         outApiRefDir: "./bin/dist/apiref"
     };
 
     var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
-    nodeTestEnv.NODE_PATH = localCfg.outModulesDir;
+    nodeTestEnv.NODE_PATH = localCfg.outTnsCoreModules;
 
-    localCfg.nodeTestsDir = pathModule.join(localCfg.outModulesDir, 'node-tests');
-
+    localCfg.nodeTestsDir = path.join(localCfg.outDir, 'node-tests');
 
     localCfg.mainPackageContent = grunt.file.readJSON(localCfg.packageJsonFilePath);
     localCfg.packageVersion = getPackageVersion(localCfg.packageJsonFilePath);
@@ -161,18 +162,20 @@ module.exports = function(grunt) {
     localCfg.typeScriptSrc = tsconfig.filesGlob;
     localCfg.defaultExcludes = localCfg.typeScriptSrc.filter(function(item) { return /^!/.test(item); });
     localCfg.typeScriptSrcForTsLint = localCfg.typeScriptSrc.concat([
-            "!ios.d.ts",
-            "!android17.d.ts",
-            "!libjs.d.ts"
+        "!tns-core-modules/ios.d.ts",
+        "!tns-core-modules/android17.d.ts",
+        "!tns-core-modules/libjs.d.ts",
+        "!tests/node_modules/"
     ]);
     localCfg.srcTsdFiles = [
         "**/*.d.ts",
         "!apps/**",
+        "!tests/**",
         "!node-tests/**",
-        "!org.nativescript.widgets.d.ts",
-        "!android17.d.ts",
+        "!tns-core-modules/org.nativescript.widgets.d.ts",
+        "!tns-core-modules/android17.d.ts",
         "!**/*.android.d.ts",
-        "!ios.d.ts",
+        "!tns-core-modules/ios.d.ts",
         "!**/*.ios.d.ts"
     ].concat(localCfg.defaultExcludes);
 
@@ -181,9 +184,9 @@ module.exports = function(grunt) {
     tsOptions.removeComments = !grunt.option('leavecomments') || '';
     tsOptions.compiler = "node_modules/typescript/bin/tsc";
     tsOptions.failOnTypeErrors = true;
-    tsOptions.outDir = localCfg.outModulesDir;
+    tsOptions.outDir = localCfg.outDir;
     var removeCommentsArgument = tsOptions.removeComments ? " --removeComments" : "";
-    tsOptions.additionalFlags = "--outDir " + localCfg.outModulesDir + removeCommentsArgument;
+    tsOptions.additionalFlags = "--outDir " + localCfg.outDir + removeCommentsArgument;
 
     grunt.initConfig({
         localCfg : localCfg,
@@ -199,13 +202,13 @@ module.exports = function(grunt) {
                     "_references.js",
                     "**/*.map"
                 ],
-                cwd: localCfg.outModulesDir
+                cwd: localCfg.outDir
             },
             nodeTests: {
                 src: localCfg.nodeTestsDir,
             },
             builtModules: {
-                src: localCfg.outModulesDir
+                src: localCfg.outDir
             },
             externalModules: {
                 expand: true,
@@ -213,9 +216,6 @@ module.exports = function(grunt) {
                 options: {
                     force: true
                 },
-            },
-            readyAppFiles: {
-                src: [localCfg.outModulesDir + "/apps/**"]
             },
             articles: {
                 src: [ localCfg.outArticlesDir ]
@@ -228,26 +228,26 @@ module.exports = function(grunt) {
             jsLibs: {
                 expand: true,
                 src: [
-                    "js-libs/**/*.js",
-                    "fetch/**/*.js",
-                    "css/**/*.js",
-                    "css-value/**/*.js",
+                    "tns-core-modules/js-libs/**/*.js",
+                    "tns-core-modules/fetch/**/*.js",
+                    "tns-core-modules/css/**/*.js",
+                    "tns-core-modules/css-value/**/*.js",
                 ],
-                dest: localCfg.outModulesDir,
+                dest: localCfg.outDir,
                 cwd: localCfg.srcDir
             },
             articleMDs: {
                 expand: true,
                 src: [ "**/*.md" ],
                 dest: localCfg.outArticlesDir,
-                cwd: localCfg.srcAppsTests
+                cwd: localCfg.srcAppsTestsDir
             },
             license: {
                 expand: true,
                 src: [
                     "./LICENSE",
                 ],
-                dest: "<%= localCfg.outModulesDir %>/",
+                dest: localCfg.outTnsCoreModules,
                 cwd: localCfg.srcDir
             },
             appLicense: {
@@ -269,7 +269,7 @@ module.exports = function(grunt) {
                     "!ios.d.ts",
                     "!**/*.ios.d.ts",
                 ].concat(localCfg.defaultExcludes),
-                dest: localCfg.outModulesDir + "/",
+                dest: localCfg.outDir + "/",
                 expand: true,
                 options: {
                     process: filterTypeScriptFiles
@@ -277,8 +277,9 @@ module.exports = function(grunt) {
             },
             modulesPackageDef: {
                 expand: true,
-                src: localCfg.packageJsonFilePath,
-                dest: localCfg.outModulesDir + "/",
+                src: path.basename(localCfg.packageJsonFilePath),
+                cwd: path.dirname(localCfg.packageJsonFilePath),
+                dest: localCfg.outTnsCoreModules + "/",
                 options: {
                     process: updateModulesPackageDef
                 }
@@ -303,7 +304,7 @@ module.exports = function(grunt) {
                     "!node_modules/**/*.*",
                     "!" + localCfg.outDir + "/**/*.*"
                 ],
-                dest: localCfg.outModulesDir + "/"
+                dest: localCfg.outDir + "/"
             },
             rawAppsFiles: {
                 expand: true,
@@ -311,26 +312,45 @@ module.exports = function(grunt) {
                     "**/*.*",
                     "**/*",
                     "!**/*.map",
-                        "!**/*.ts"
+                    "!**/*.ts"
                 ],
                 dest: localCfg.outAppsDir,
                 cwd: localCfg.srcAppsDir,
+                dot: true
+            },
+            rawTestsFiles: {
+                expand: true,
+                src: [
+                    "**/*.*",
+                    "**/*",
+                    "!**/*.map",
+                    "!**/*.ts"
+                ],
+                dest: localCfg.outAppsTestsDir,
+                cwd: localCfg.srcAppsTestsDir,
                 dot: true
             },
             readyAppFiles: {
                 expand: true,
                 src: ["./**/*.*"],
                 dest: localCfg.outAppsDir + "/",
-                cwd: localCfg.outModulesDir + "/apps/",
-                options: {
-                    process: processAppFile
-                }
+                cwd: localCfg.outDir + "/apps/",
+                // WARNING: Why not insert BOMs in .png files?
+                // options: {
+                //     process: processAppFile
+                // }
             },
             readyTsAppFiles: {
                 expand: true,
                 src: ["./**/*.*", "!./**/*.map"],
                 dest: localCfg.outTsAppsDir + "/",
                 cwd: localCfg.srcAppsDir
+            },
+            readyTsAppsTestsFiles: {
+                expand: true,
+                src: ["./**/*.*", "!./**/*.map"],
+                dest: localCfg.outTsAppsTestsDir + "/",
+                cwd: localCfg.srcAppsTestsDir
             },
             readyPackages: {
                 expand: true,
@@ -348,7 +368,7 @@ module.exports = function(grunt) {
                     '!node_modules/**/*',
                     '!node-tests/**/*',
                 ],
-                cwd: localCfg.outModulesDir,
+                cwd: localCfg.outDir,
                 dest: "<%= grunt.option('path') %>/node_modules/tns-core-modules/",
             }
         },
@@ -358,8 +378,8 @@ module.exports = function(grunt) {
                     tsconfig: 'tsconfig.json',
                     passThrough: true,
                 },
-                outDir: localCfg.outModulesDir,
-                dest: localCfg.outModulesDir,
+                outDir: localCfg.outDir,
+                dest: localCfg.outDir,
                 options: tsOptions
             },
             "build-inplace": {
@@ -373,14 +393,14 @@ module.exports = function(grunt) {
             },
             buildNodeTests: {
                 src: [
-                        'js-libs/easysax/**/*.ts',
-                        'module.d.ts',
-                        'xml/**/*.ts',
-                        'node-tests/**/*.ts',
-                        'es-collections.d.ts',
-                    ],
-                outDir: localCfg.outModulesDir,
-                dest: localCfg.outModulesDir,
+                    'tns-core-modules/js-libs/easysax/**/*.ts',
+                    'tns-core-modules/module.d.ts',
+                    'tns-core-modules/xml/**/*.ts',
+                    'tns-core-modules/es-collections.d.ts',
+                    'node-tests/**/*.ts',
+                ],
+                outDir: localCfg.outDir,
+                dest: localCfg.outDir,
                 options: tsOptions
             },
             buildDts: {
@@ -389,21 +409,22 @@ module.exports = function(grunt) {
                     '!org.nativescript.widgets.d.ts',
                     '!**/*.android.d.ts',
                     '!node_modules/**/*',
+                    '!tests/node_modules/**/*.*',
                     '!bin/**/*',
                     '!apps/**/*',
                     '!android17.d.ts',
                     '!ios.d.ts',
                 ],
-                outDir: localCfg.outModulesDir,
-                dest: localCfg.outModulesDir,
+                outDir: localCfg.outDir,
+                dest: localCfg.outDir,
                 options: tsOptions
             },
             testCombinedDts: {
                 src: [
-                    pathModule.join(localCfg.outModulesDir, 'tns-core-modules.d.ts'),
+                    path.join(localCfg.outTnsCoreModules, 'tns-core-modules.d.ts'),
                 ],
-                outDir: localCfg.outModulesDir,
-                dest: localCfg.outModulesDir,
+                outDir: localCfg.outDir,
+                dest: localCfg.outDir,
                 options: tsOptions
             }
         },
@@ -420,7 +441,7 @@ module.exports = function(grunt) {
         exec: {
             packModules: {
                 cmd: "npm pack",
-                cwd: localCfg.outModulesDir + "/"
+                cwd: localCfg.outTnsCoreModules + "/"
             },
             packApp: {
                 cmd: "npm pack",
@@ -430,7 +451,7 @@ module.exports = function(grunt) {
                 cmd: "grunt simplemocha:node"
             },
             injectArticleSnippets: {
-                cmd: "node node_modules/markdown-snippet-injector/index.js --root=<%= localCfg.srcAppsTests %> --docsroot=<%= localCfg.outArticlesDir %>"
+                cmd: "node node_modules/markdown-snippet-injector/index.js --root=<%= localCfg.srcAppsTestsDir %> --docsroot=<%= localCfg.outArticlesDir %>"
             }
         },
         multidest: {
@@ -440,9 +461,11 @@ module.exports = function(grunt) {
                     var apps = getApps();
                     var targetDirs = [];
                     apps.forEach(function(item){
-                        targetDirs.push(pathModule.join(localCfg.outAppsDir, item));
-                        targetDirs.push(pathModule.join(localCfg.outTsAppsDir, item));
+                        targetDirs.push(path.join(localCfg.outAppsDir, item));
+                        targetDirs.push(path.join(localCfg.outTsAppsDir, item));
                     });
+                    targetDirs.push(localCfg.outAppsTestsDir);
+                    targetDirs.push(localCfg.outTsAppsTestsDir);
                     return targetDirs;
                 }()
             }
@@ -462,7 +485,7 @@ module.exports = function(grunt) {
         },
         env: {
             nodeTests: {
-                NODE_PATH: localCfg.outModulesDir,
+                NODE_PATH: nodeTestEnv.NODE_PATH,
             }
         },
         typedoc: {
@@ -492,16 +515,16 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-simple-mocha");
     grunt.loadNpmTasks('grunt-typedoc');
 
-    var cloneTasks = function(originalTasks, taskNameSuffix) {
+    var cloneTasks = function(originalTasks, app) {
         var clonedTasks = [];
         for(var i=0; i<originalTasks.length; i++) {
             var originalTask = originalTasks[i];
 
             var taskCfg = grunt.util._.clone(grunt.config(originalTask.name));
             var taskName = grunt.util._.clone(originalTask.name);
-            taskName[1] = taskName[1] + "_" + taskNameSuffix;
+            taskName[1] = taskName[1] + "_" + app;
 
-            originalTask.specializeCfg(taskCfg, taskNameSuffix);
+            originalTask.specializeCfg(taskCfg, app);
 
             clonedTasks.push({name: taskName, cfg: taskCfg});
         }
@@ -519,14 +542,14 @@ module.exports = function(grunt) {
         var dtsLines = dtsFiles.map(function(dtsFile) {
             return '/// <reference path="' + dtsFile + '" />';
         });
-        var combinedDtsPath = pathModule.join(outDir, outFile);
+        var combinedDtsPath = path.join(outDir, outFile);
         grunt.file.write(combinedDtsPath, dtsLines.join('\n'));
     }
     function generateModulesDts(outDir) {
-        var angularConflicts = ['module.d.ts']
+        var angularConflicts = ['module.d.ts'];
         var angularExcludes = angularConflicts.map(function(file) {
             return '!' + file;
-        })
+        });
         var nonES6Files = [
             'es-collections.d.ts',
             'es6-promise.d.ts',
@@ -535,11 +558,12 @@ module.exports = function(grunt) {
         ];
         var es6Excludes = nonES6Files.map(function(file) {
             return '!' + file;
-        })
-        var dtsFiles = grunt.file.expand({cwd: outDir}, [
+        });
+        var dtsFiles = grunt.file.expand({cwd: localCfg.outTnsCoreModules }, [
             "**/*.d.ts",
             //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
             "!apps/**",
+            "!tests/**",
             "!ts-apps/**",
             "!node-tests/**",
             "!org.nativescript.widgets.d.ts",
@@ -549,39 +573,55 @@ module.exports = function(grunt) {
             "!**/*.ios.d.ts",
             "!tns-core-modules.d.ts",
             "!tns-core-modules.es6.d.ts",
-            "!tns-core-modules.base.d.ts",
+            "!tns-core-modules.base.d.ts"
         ].concat(localCfg.defaultExcludes).concat(es6Excludes).concat(angularExcludes));
         dtsFiles.sort();
 
-        writeDtsFile(dtsFiles, outDir, 'tns-core-modules.base.d.ts');
+        writeDtsFile(dtsFiles, outDir, 'tns-core-modules/tns-core-modules.base.d.ts');
         var es6Files = angularConflicts.concat(['tns-core-modules.base.d.ts']);
-        writeDtsFile(es6Files, outDir, 'tns-core-modules.es6.d.ts');
+        writeDtsFile(es6Files, outDir, 'tns-core-modules/tns-core-modules.es6.d.ts');
         var allFiles = angularConflicts.concat(nonES6Files).concat(['tns-core-modules.base.d.ts']);
-        writeDtsFile(allFiles, outDir, 'tns-core-modules.d.ts');
-    };
+        writeDtsFile(allFiles, outDir, 'tns-core-modules/tns-core-modules.d.ts');
+    }
 
-    grunt.registerTask("processEachApp", function(outAppsDir, pkgAppNameSuffix){
-        var allApps = getApps();
-        if (grunt.option('test-app-only')) {
-            allApps = allApps.filter(function(appName) {
-                return appName === 'tests';
-            });
-        }
+    grunt.registerTask("processTestsApp", function(outTestsAppDir, pkgAppNameSuffix) {
         var tasks = [
             {
                 name: ["copy", "appPackageDef"],
-                specializeCfg: function (cfg, currentAppName) {
-                    outAppDir = pathModule.join(outAppsDir, currentAppName);
-                    var pkgFilePath = pathModule.join(outAppDir, "package.json");
-                    cfg.src = pkgFilePath;
-                    cfg.dest = outAppDir;
-                    cfg.appName = currentAppName + (pkgAppNameSuffix || "");
+                specializeCfg: function (cfg, app) {
+                    cfg.src = path.join(outTestsAppDir, "package.json");
+                    cfg.dest = outTestsAppDir;
+                    cfg.appName = "tests" + (pkgAppNameSuffix || "");
                 }
             },
             {
                 name: ["exec", "packApp"],
-                specializeCfg: function(cfg, currentAppName) {
-                    cfg.cwd = pathModule.join(outAppsDir, currentAppName);
+                specializeCfg: function(cfg, app) {
+                    cfg.cwd = outTestsAppDir;
+                }
+            }
+        ];
+        var clonedTasks = cloneTasks(tasks, "tests");
+        enqueueTasks(clonedTasks);
+    });
+
+    grunt.registerTask("processEachApp", function(outAppsDir, pkgAppNameSuffix){
+        var allApps = getApps();
+        var tasks = [
+            {
+                name: ["copy", "appPackageDef"],
+                specializeCfg: function (cfg, app) {
+                    outAppDir = path.join(outAppsDir, app);
+                    var pkgFilePath = path.join(outAppDir, "package.json");
+                    cfg.src = pkgFilePath;
+                    cfg.dest = outAppDir;
+                    cfg.appName = app + (pkgAppNameSuffix || "");
+                }
+            },
+            {
+                name: ["exec", "packApp"],
+                specializeCfg: function(cfg, app) {
+                    cfg.cwd = path.join(outAppsDir, app);
                 }
             }
         ];
@@ -598,6 +638,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask("collect-apps-raw-files", [
         "copy:rawAppsFiles",
+        "copy:rawTestsFiles",
         "multidest:copyLicenseFiles"
     ]);
 
@@ -631,8 +672,7 @@ module.exports = function(grunt) {
         "copy:builtModules"
     ]);
     grunt.registerTask("distribute-apps-files", [
-            "copy:readyAppFiles",
-            "clean:readyAppFiles"
+            "copy:readyAppFiles"
     ]);
     grunt.registerTask("check-packagejson-boms", function() {
         function hasBOM(filepath) {
@@ -654,17 +694,18 @@ module.exports = function(grunt) {
             grunt.fail.fatal("\n" + errors.join("\n"));
     });
     grunt.registerTask("distribute-ts-apps-files", [
-            "copy:readyTsAppFiles"
+            "copy:readyTsAppFiles",
+            "copy:readyTsAppsTestsFiles"
     ]);
     grunt.registerTask("herdArticles", function() {
         var moveSinglesUp = function(dir) {
             var objs = fs.readdirSync(dir);
             for (var i=0; i<objs.length; i++) {
                 var obj = objs[i];
-                var fullPath = pathModule.join(dir, obj);
+                var fullPath = path.join(dir, obj);
                 if (objs.length == 1) {
-                    var parentDir = pathModule.dirname(dir);
-                    var newPath = pathModule.join(parentDir, obj);
+                    var parentDir = path.dirname(dir);
+                    var newPath = path.join(parentDir, obj);
                     fs.renameSync(fullPath, newPath);
                     fs.rmdirSync(dir);
                 } else {
@@ -680,17 +721,20 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask("generate-tns-core-modules-dev-dts", generateModulesDts.bind(null, "."));
-    grunt.registerTask("generate-tns-core-modules-dts", generateModulesDts.bind(null, localCfg.outModulesDir));
+    grunt.registerTask("generate-tns-core-modules-dts", generateModulesDts.bind(null, localCfg.outDir));
     //aliasing pack-modules for backwards compatibility
     grunt.registerTask("pack-modules", [
         "compile-modules",
         "node-tests",
+        "copy:modulesPackageDef",
         "exec:packModules"
     ]);
     grunt.registerTask("pack-apps", [
+        "processTestsApp:" + localCfg.outAppsTestsDir,
         "processEachApp:" + localCfg.outAppsDir
     ]);
     grunt.registerTask("pack-ts-apps", [
+        "processTestsApp:" + localCfg.outTsAppsTestsDir + ":-ts",
         "processEachApp:" + localCfg.outTsAppsDir + ":-ts"
     ]);
     grunt.registerTask("get-ready-packages", [
@@ -711,7 +755,6 @@ module.exports = function(grunt) {
         "check-packagejson-boms",
         "compile-ts",
         "collect-modules-raw-files",
-        "copy:modulesPackageDef",
         "copy:definitionFiles",
         "copy:jsLibs",
         "generate-tns-core-modules-dts",

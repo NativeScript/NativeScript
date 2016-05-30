@@ -1,5 +1,6 @@
 import {assert} from "chai";
-import xml = require('xml');
+import * as xmlModule from "xml";
+var xml: typeof xmlModule = require("../tns-core-modules/xml");
 
 describe("angular xml parser", () => {
     let last_element = null;
@@ -7,7 +8,7 @@ describe("angular xml parser", () => {
     let parser = null;
 
     beforeEach(() => {
-        parser = new xml.XmlParser(function (event: xml.ParserEvent) {
+        parser = new xml.XmlParser(function (event: xmlModule.ParserEvent) {
             switch (event.eventType) {
                 case xml.ParserEventType.StartElement:
                     last_element = event.elementName;

@@ -1,26 +1,4 @@
 {
-  "name": "tns-core-modules",
-  "description": "Telerik NativeScript Core Modules",
-  "version": "2.1.0",
-  "homepage":"https://www.nativescript.org",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/NativeScript/NativeScript"
-  },
-  "files": [
-    "**/*.d.ts",
-    "**/*.js",
-    "!android17.d.ts",
-    "!ios.d.ts",
-    "!bin/",
-    "!apps/",
-    "!build/",
-    "!node-tests/",
-    "!declarations.android.d.ts",
-    "!declarations.ios.d.ts",
-    "!gruntfile.js",
-    "!org.nativescript.widgets.d.ts"
-  ],
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "3.2.0",
@@ -44,14 +22,12 @@
     "tslint": "3.4.0",
     "typescript": "1.8.2"
   },
-  "typings": "tns-core-modules.d.ts",
-  "dependencies": {
-    "tns-core-modules-widgets": "next"
-  },
-  "nativescript": {
-    "platforms": {
-      "ios": "2.0.0",
-      "android": "2.0.0"
-    }
+  "scripts": {
+    "tsc-tiw": "node build/tsc-dev.js tiw",
+    "tsc-ti": "node build/tsc-dev.js ti",
+    "tsc": "tsc",
+    "link-tests": "cd tns-core-modules && npm link && cd ../tests && npm link tns-core-modules",
+    "dev-tests-android": "npm run tsc-ti && tns livesync android --path tests",
+    "dev-tests-ios": "npm run tsc-ti && tns livesync ios --path tests"
   }
 }
