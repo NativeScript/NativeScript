@@ -225,8 +225,14 @@ export module ad {
 
     var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
 
+    interface CacheLayerType {
+        layerType: number;
+    }
+    
     export function onBackgroundOrBorderPropertyChanged(v: view.View) {
         var nativeView = <android.view.View>v._nativeView;
+        var cache = <CacheLayerType>v._nativeView;
+        
         if (!nativeView) {
             return;
         }
@@ -265,13 +271,11 @@ export module ad {
             bkg.background = backgroundValue;
             bkg.clipPath = clipPathValue;
 
-            if (getSDK() < 18) {
+            if ((v.borderWidth !== 0 || v.borderRadius !== 0 || clipPathValue) && getSDK() < 18) {
                 // Switch to software because of unsupported canvas methods if hardware acceleration is on:
                 // http://developer.android.com/guide/topics/graphics/hardware-accel.html
+                cache.layerType = nativeView.getLayerType();
                 nativeView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
-            }
-            else {
-                nativeView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
             }
         }
         else {
@@ -287,9 +291,10 @@ export module ad {
                 }
             }
 
-            if (getSDK() < 18) {
-                // Reset layer type to hardware
-                nativeView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+            if (cache.layerType !== undefined) {
+                // Reset layer type
+                nativeView.setLayerType(cache.layerType, null);
+                cache.layerType = undefined;
             }
         }
 

@@ -405,9 +405,11 @@ function isPaddingValid(value: number): boolean {
 
 var supportedPaths = ["rect", "circle", "ellipse", "polygon"];
 function isClipPathValid(value: string): boolean {
+    if (!value){
+        return true;
+    }
     var functionName = value.substring(0, value.indexOf("(")).trim();
-    
-    return supportedPaths.indexOf(functionName) !== -1 || value === "";
+    return supportedPaths.indexOf(functionName) !== -1;
 }
 
 function isMarginValid(value: number): boolean {
@@ -921,7 +923,7 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 
     private _applyStyleProperty(property: Property, newValue: any) {
-
+        
         if (!this._view._shouldApplyStyleHandlers()) {
             return;
         }
