@@ -152,7 +152,7 @@ module.exports = function(grunt) {
     };
 
     var nodeTestEnv = JSON.parse(JSON.stringify(process.env));
-    nodeTestEnv.NODE_PATH = localCfg.outTnsCoreModules
+    nodeTestEnv.NODE_PATH = localCfg.outTnsCoreModules;
 
     localCfg.nodeTestsDir = path.join(localCfg.outDir, 'node-tests');
 
@@ -546,10 +546,10 @@ module.exports = function(grunt) {
         grunt.file.write(combinedDtsPath, dtsLines.join('\n'));
     }
     function generateModulesDts(outDir) {
-        var angularConflicts = ['module.d.ts']
+        var angularConflicts = ['module.d.ts'];
         var angularExcludes = angularConflicts.map(function(file) {
             return '!' + file;
-        })
+        });
         var nonES6Files = [
             'es-collections.d.ts',
             'es6-promise.d.ts',
@@ -558,7 +558,7 @@ module.exports = function(grunt) {
         ];
         var es6Excludes = nonES6Files.map(function(file) {
             return '!' + file;
-        })
+        });
         var dtsFiles = grunt.file.expand({cwd: localCfg.outTnsCoreModules }, [
             "**/*.d.ts",
             //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
@@ -582,8 +582,8 @@ module.exports = function(grunt) {
         writeDtsFile(es6Files, outDir, 'tns-core-modules/tns-core-modules.es6.d.ts');
         var allFiles = angularConflicts.concat(nonES6Files).concat(['tns-core-modules.base.d.ts']);
         writeDtsFile(allFiles, outDir, 'tns-core-modules/tns-core-modules.d.ts');
-    };
-    
+    }
+
     grunt.registerTask("processTestsApp", function(outTestsAppDir, pkgAppNameSuffix) {
         var tasks = [
             {
