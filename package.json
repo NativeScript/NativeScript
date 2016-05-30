@@ -1,4 +1,8 @@
 {
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NativeScript/NativeScript"
+  },
   "license": "Apache-2.0",
   "devDependencies": {
     "chai": "3.2.0",
