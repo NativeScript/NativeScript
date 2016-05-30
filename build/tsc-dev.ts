@@ -144,7 +144,7 @@ var options: ts.CompilerOptions = {
     experimentalDecorators: true
 };
 if (isTranspile) {
-    transpile(files, { module: ts.ModuleKind.CommonJS });
+    transpile(files, { module: ts.ModuleKind.CommonJS, noImplicitUseStrict: true });
 } else {
     compile(files, options);
 }
