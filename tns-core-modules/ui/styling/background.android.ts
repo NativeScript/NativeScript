@@ -5,6 +5,7 @@ import view = require("ui/core/view");
 import types = require("utils/types");
 import * as styleModule from "./style";
 import * as buttonModule from "ui/button";
+import { CacheLayerType } from "utils/utils";
 
 //@private
 declare module "ui/styling/background" {
@@ -238,10 +239,6 @@ export module ad {
 
     var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
 
-    interface CacheLayerType {
-        layerType: number;
-    }
-    
     export function onBackgroundOrBorderPropertyChanged(v: view.View) {
         var nativeView = <android.view.View>v._nativeView;
         var cache = <CacheLayerType>v._nativeView;
@@ -266,8 +263,8 @@ export module ad {
             let backgroundColor = bkg.backgroundColor = v.style._getValue(style.backgroundColorProperty).android;
             bkg.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
             bkg.backgroundColor = backgroundColor;
-        } else if (v.borderWidth !== 0 || v.borderRadius !== 0 || !backgroundValue.isEmpty() || clipPathValue) {
-
+        } 
+        else if (v.borderWidth || v.borderRadius || clipPathValue || !backgroundValue.isEmpty()) {
             if (!(bkg instanceof BorderDrawableClass)) {
                 bkg = new BorderDrawableClass();
                 let viewClass = types.getClass(v);
@@ -284,11 +281,12 @@ export module ad {
             bkg.background = backgroundValue;
             bkg.clipPath = clipPathValue;
 
-            if ((v.borderWidth !== 0 || v.borderRadius !== 0 || clipPathValue) && getSDK() < 18) {
+            if ((v.borderWidth || v.borderRadius || clipPathValue) && getSDK() < 18) {
                 // Switch to software because of unsupported canvas methods if hardware acceleration is on:
                 // http://developer.android.com/guide/topics/graphics/hardware-accel.html
-                cache.layerType = nativeView.getLayerType();
-                nativeView.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+                cache.layerType = cache.getLayerType();
+                console.log(`$$$ ${cache}.setLayerType(${android.view.View.LAYER_TYPE_SOFTWARE}, null);`)
+                cache.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
             }
         }
         else {
@@ -305,8 +303,7 @@ export module ad {
             }
 
             if (cache.layerType !== undefined) {
-                // Reset layer type
-                nativeView.setLayerType(cache.layerType, null);
+                cache.setLayerType(cache.layerType, null);
                 cache.layerType = undefined;
             }
         }
