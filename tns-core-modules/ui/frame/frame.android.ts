@@ -47,8 +47,6 @@ function onFragmentShown(fragment: FragmentClass) {
 
     var isBack = currentNavigationContext ? currentNavigationContext.isBackNavigation : false;
 
-    transitionModule._removePageNativeViewFromAndroidParent(page);
-
     frame._addView(page);
 
     // onFragmentShown is called before NativeActivity.start where we call frame.onLoaded
