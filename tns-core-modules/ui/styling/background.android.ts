@@ -285,7 +285,6 @@ export module ad {
                 // Switch to software because of unsupported canvas methods if hardware acceleration is on:
                 // http://developer.android.com/guide/topics/graphics/hardware-accel.html
                 cache.layerType = cache.getLayerType();
-                console.log(`$$$ ${cache}.setLayerType(${android.view.View.LAYER_TYPE_SOFTWARE}, null);`)
                 cache.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
             }
         }
