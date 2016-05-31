@@ -3,37 +3,33 @@ import definition = require("application");
 import frame = require("ui/frame");
 import observable = require("data/observable");
 import * as typesModule from "utils/types";
+import {lazyExtend} from "utils/lazy";
 
 global.moduleMerge(appModule, exports);
 var typedExports: typeof definition = exports;
 
-@JavaProxy("com.tns.NativeScriptApplication")
-class NativeScriptApplication extends android.app.Application {
+lazyExtend(() =>
+    (<any>android.app.Application).extend("com.tns.NativeScriptApplication", {
+        onCreate(): void {
+            androidApp.init(this);
+            setupOrientationListener(androidApp);
+        },
 
-    constructor() {
-        super();
-        return global.__native(this);
+        onLowMemory(): void {
+            gc();
+            java.lang.System.gc();
+            this.super.onLowMemory();
+
+            typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.lowMemoryEvent, object: this, android: this });
+        },
+
+        onTrimMemory(level: number): void {
+            gc();
+            java.lang.System.gc();
+            this.super.onTrimMemory(level);
+        }
     }
-
-    public onCreate(): void {
-        androidApp.init(this);
-        setupOrientationListener(androidApp);
-    }
-
-    public onLowMemory(): void {
-        gc();
-        java.lang.System.gc();
-        super.onLowMemory();
-
-        typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.lowMemoryEvent, object: this, android: this });
-    }
-
-    public onTrimMemory(level: number): void {
-        gc();
-        java.lang.System.gc();
-        super.onTrimMemory(level);
-    }
-}
+));
 
 // We are using the exports object for the common events since we merge the appModule with this module's exports, which is what users will receive when require("application") is called;
 // TODO: This is kind of hacky and is "pure JS in TypeScript"
