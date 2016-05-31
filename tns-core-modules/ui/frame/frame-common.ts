@@ -39,6 +39,10 @@ function buildEntryFromArgs(arg: any): definition.NavigationEntry {
 export function reloadPage(): void {
     let frame = topmost();
     if (frame) {
+        if (frame.currentPage && (<any>frame.currentPage)._modal) {
+            (<any>frame.currentPage)._modal.closeModal();
+        }
+
         let currentEntry = frame._currentEntry.entry;
         let newEntry: definition.NavigationEntry = {
             animated: false,
@@ -317,13 +321,13 @@ export class Frame extends CustomLayoutView implements definition.Frame {
 
     public _goBackCore(backstackEntry: definition.BackstackEntry) {
         if (trace.enabled) {
-            trace.write(`${this}._goBackCore(${this._backstackEntryTrace(backstackEntry) }); ${this}.currentPage: ${this.currentPage}`, trace.categories.Navigation);
+            trace.write(`${this}._goBackCore(${this._backstackEntryTrace(backstackEntry)}); ${this}.currentPage: ${this.currentPage}`, trace.categories.Navigation);
         }
     }
 
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
         if (trace.enabled) {
-            trace.write(`${this}._navigateCore(${this._backstackEntryTrace(backstackEntry) }); ${this}.currentPage: ${this.currentPage}`, trace.categories.Navigation);
+            trace.write(`${this}._navigateCore(${this._backstackEntryTrace(backstackEntry)}); ${this}.currentPage: ${this.currentPage}`, trace.categories.Navigation);
         }
     }
 
