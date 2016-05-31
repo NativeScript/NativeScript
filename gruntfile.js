@@ -498,6 +498,7 @@ module.exports = function(grunt) {
                     "theme": '<%= grunt.option("theme") || "default" %>',
                     "name": 'NativeScript',
                     "includeDeclarations": undefined,
+                    "experimentalDecorators": undefined,
                     "mode": "file"
                 },
                 src: localCfg.srcTsdFiles
