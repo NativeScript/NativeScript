@@ -143,18 +143,22 @@ export var test_ChangePageCaching_BeforeNavigated_DoesNotThrow = function () {
 
 export var test_Resolve_Fragment_ForPage = function () {
     var testPage: PageModule.Page;
+    var navigatedTo = false;
+    
     var pageFactory = function () {
-        var testPage = new PageModule.Page();
+        testPage = new PageModule.Page();
         testPage.content = new LabelModule.Label();
+        // use navigatedTo to ensure the fragment is already created
+        testPage.on("navigatedTo", function(args) {
+            navigatedTo = true;
+        });
         return testPage;
     };
 
-    var topFrame = frame.topmost();
-    
     helper.navigate(pageFactory);
 
-    TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage === testPage);
+    TKUnit.waitUntilReady(() => navigatedTo === true);
 
-    var fragment = topFrame.android.fragmentForPage(testPage);
+    var fragment = frame.topmost().android.fragmentForPage(testPage);
     TKUnit.assertFalse(types.isNullOrUndefined(fragment), "Failed to resolve native fragment for page");
 }
