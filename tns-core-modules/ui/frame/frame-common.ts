@@ -39,8 +39,8 @@ function buildEntryFromArgs(arg: any): definition.NavigationEntry {
 export function reloadPage(): void {
     let frame = topmost();
     if (frame) {
-        if (frame.currentPage && (<any>frame.currentPage)._modal) {
-            (<any>frame.currentPage)._modal.closeModal();
+        if (frame.currentPage && frame.currentPage.modal) {
+            frame.currentPage.modal.closeModal();
         }
 
         let currentEntry = frame._currentEntry.entry;
