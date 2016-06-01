@@ -16,6 +16,7 @@ let FRAMEID = "_frameId";
 let navDepth = -1;
 let fragmentId = -1;
 let activityInitialized = false;
+const PAGE_FRAGMENT_TAG = "_fragmentTag";
 
 function onFragmentShown(fragment: FragmentClass) {
     if (trace.enabled) {
@@ -33,8 +34,9 @@ function onFragmentShown(fragment: FragmentClass) {
     // TODO: consider putting entry and page in queue so we can safely extract them here. Pass the index of current navigation and extract it from here.
     // After extracting navigation info - remove this index from navigation stack.
     var frame = fragment.frame;
-    var entry: definition.BackstackEntry = fragment.entry;
-    var page: pages.Page = entry.resolvedPage;
+    var entry = fragment.entry;
+    var page = entry.resolvedPage;
+    page[PAGE_FRAGMENT_TAG] = entry.fragmentTag;
 
     let currentNavigationContext;
     let navigationQueue = (<any>frame)._navigationQueue;
@@ -68,6 +70,7 @@ function onFragmentHidden(fragment: FragmentClass, destroyed: boolean) {
 
     var isBack = fragment.entry.isBack;
     fragment.entry.isBack = undefined;
+    fragment.entry.resolvedPage[PAGE_FRAGMENT_TAG] = undefined;
 
     // Handle page transitions.
     transitionModule._onFragmentHidden(fragment, isBack, destroyed);
@@ -509,6 +512,20 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
 
         // can go back only if it is not the main one.
         return this.activity.getIntent().getAction() !== android.content.Intent.ACTION_MAIN;
+    }
+    
+    public fragmentForPage(page: pages.Page): any {
+        if(!page) {
+            return undefined;
+        }
+
+        let tag = page[PAGE_FRAGMENT_TAG];
+        if(tag) {
+            let manager = this.activity.getFragmentManager();
+            return manager.findFragmentByTag(tag);
+        }
+        
+        return undefined;
     }
 }
 

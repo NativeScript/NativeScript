@@ -294,6 +294,12 @@ declare module "ui/frame" {
          * Gets or sets whether the page UI will be cached when navigating away from the page.
          */
         cachePagesOnNavigate: boolean;
+        
+        /**
+         * Finds the native android.app.Fragment instance created for the specified Page.
+         * @param page The Page instance to search for.
+         */
+        fragmentForPage(page: pages.Page): any;
     }
 
     /* tslint:disable */
