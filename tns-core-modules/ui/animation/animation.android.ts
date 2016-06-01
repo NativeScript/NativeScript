@@ -7,6 +7,7 @@ import types = require("utils/types");
 import enums = require("ui/enums");
 import styleModule = require("ui/styling/style");
 import lazy from "utils/lazy";
+import { CacheLayerType } from "utils/utils";
 
 global.moduleMerge(common, exports);
 
@@ -41,29 +42,22 @@ export class Animation extends common.Animation implements definition.Animation 
     public play(): definition.AnimationPromise {
         let animationFinishedPromise = super.play();
 
-        let i: number;
-        let length: number;
-
         this._animators = new Array<android.animation.Animator>();
         this._propertyUpdateCallbacks = new Array<Function>();
         this._propertyResetCallbacks = new Array<Function>();
 
-        i = 0;
-        length = this._propertyAnimations.length;
-        for (; i < length; i++) {
+        for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
             this._createAnimators(this._propertyAnimations[i]);
         }
 
         this._nativeAnimatorsArray = (<any>Array).create(android.animation.Animator, this._animators.length);
-        i = 0;
-        length = this._animators.length;
-        for (; i < length; i++) {
+        for (let i = 0, length = this._animators.length; i < length; i++) {
             this._nativeAnimatorsArray[i] = this._animators[i];
         }
 
         this._animatorSet = new android.animation.AnimatorSet();
         this._animatorSet.addListener(this._animatorListener);
-        if (length > 0) {
+        if (this._animators.length > 0) {
             if (this._playSequentially) {
                 this._animatorSet.playSequentially(this._nativeAnimatorsArray);
             }
@@ -72,6 +66,8 @@ export class Animation extends common.Animation implements definition.Animation 
             }
         }
 
+        this._enableHardwareAcceleration();
+
         if (trace.enabled) {
             trace.write("Starting " + this._nativeAnimatorsArray.length + " animations " + (this._playSequentially ? "sequentially." : "together."), trace.categories.Animation);
         }
@@ -79,7 +75,7 @@ export class Animation extends common.Animation implements definition.Animation 
         this._animatorSet.start();
         return animationFinishedPromise;
     }
-
+    
     public cancel(): void {
         super.cancel();
         if (trace.enabled) {
@@ -133,6 +129,7 @@ export class Animation extends common.Animation implements definition.Animation 
         for (; i < length; i++) {
             this._propertyUpdateCallbacks[i]();
         }
+        this._disableHardwareAcceleration();
         this._resolveAnimationFinishedPromise();
     }
 
@@ -142,11 +139,11 @@ export class Animation extends common.Animation implements definition.Animation 
         for (; i < length; i++) {
             this._propertyResetCallbacks[i]();
         }
+        this._disableHardwareAcceleration();
         this._rejectAnimationFinishedPromise();
     }
 
     private _createAnimators(propertyAnimation: common.PropertyAnimation): void {
-
         if (!propertyAnimation.target._nativeView) {
             return;
         }
@@ -168,7 +165,7 @@ export class Animation extends common.Animation implements definition.Animation 
         }
 
         let nativeArray;
-        let nativeView: android.view.View = (<android.view.View>propertyAnimation.target._nativeView);
+        let nativeView = <android.view.View>propertyAnimation.target._nativeView;
         let animators = new Array<android.animation.Animator>();
         let propertyUpdateCallbacks = new Array<Function>();
         let propertyResetCallbacks = new Array<Function>();
@@ -375,6 +372,27 @@ export class Animation extends common.Animation implements definition.Animation 
     private static _getAndroidRepeatCount(iterations: number): number {
         return (iterations === Number.POSITIVE_INFINITY) ? android.view.animation.Animation.INFINITE : iterations - 1;
     }
+    
+    private _enableHardwareAcceleration() {
+        for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
+            let cache = <CacheLayerType>this._propertyAnimations[i].target._nativeView;
+            let layerType = cache.getLayerType();
+            if (layerType !== android.view.View.LAYER_TYPE_HARDWARE) {
+                cache.layerType = layerType;
+                cache.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+            } 
+        }
+    }
+
+    private _disableHardwareAcceleration() {
+        for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
+            let cache = <CacheLayerType>this._propertyAnimations[i].target._nativeView;
+            if (cache.layerType !== undefined) {
+                cache.setLayerType(cache.layerType, null);
+                cache.layerType = undefined;
+            }
+        }
+    }
 }
 
 let easeIn = lazy(() => new android.view.animation.AccelerateInterpolator(1));
@@ -422,4 +440,4 @@ export function _resolveAnimationCurve(curve: any): any {
             }
             return curve;
     }
-}
+} 

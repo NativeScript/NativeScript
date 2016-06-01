@@ -10,6 +10,15 @@
     interface Owned {
         owner: any;
     }
+    
+    /**
+     * Used to cache and restore Android views' layer type, i.e. android.view.View.getLayerType and android.view.View.setLayerType. 
+     */
+    interface CacheLayerType {
+        layerType: number;
+        setLayerType(layerType: number, paint: any): void;
+        getLayerType(): number;    
+    }
     //@endprivate
 
     /**
