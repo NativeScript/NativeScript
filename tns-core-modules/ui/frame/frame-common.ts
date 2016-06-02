@@ -321,13 +321,13 @@ export class Frame extends CustomLayoutView implements definition.Frame {
 
     public _goBackCore(backstackEntry: definition.BackstackEntry) {
         if (trace.enabled) {
-            trace.write(`${this}._goBackCore(${this._backstackEntryTrace(backstackEntry)}); ${this}.currentPage: ${this.currentPage}`, trace.categories.Navigation);
+            trace.write(`GO BACK CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, trace.categories.Navigation);
         }
     }
 
     public _navigateCore(backstackEntry: definition.BackstackEntry) {
         if (trace.enabled) {
-            trace.write(`${this}._navigateCore(${this._backstackEntryTrace(backstackEntry)}); ${this}.currentPage: ${this.currentPage}`, trace.categories.Navigation);
+            trace.write(`NAVIGATE CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, trace.categories.Navigation);
         }
     }
 

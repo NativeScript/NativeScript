@@ -163,24 +163,6 @@ export class Frame extends frameCommon.Frame {
         backstackEntry.fragmentTag = newFragmentTag;
         backstackEntry.navDepth = navDepth;
 
-        // Clear History
-        let length = manager.getBackStackEntryCount();
-        let emptyNativeBackStack = clearHistory && length > 0; 
-        if (emptyNativeBackStack) {
-            for (let i = 0; i < length; i++) {
-                let fragmentToRemove = <FragmentClass>manager.findFragmentByTag(manager.getBackStackEntryAt(i).getName());
-                Frame._clearHistory(fragmentToRemove);
-            }
-            if (currentFragment) {
-                Frame._clearHistory(currentFragment);
-            }
-            let firstEntryName = manager.getBackStackEntryAt(0).getName();
-            if (trace.enabled) {
-                trace.write(`POP BACK STACK ${firstEntryName}`, trace.categories.Navigation);
-            }
-            manager.popBackStackImmediate(firstEntryName, android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        }
-
         let fragmentTransaction = manager.beginTransaction();
         if (trace.enabled) {
             trace.write(`BEGIN TRANSACTION ${fragmentTransaction}`, trace.categories.Navigation);
@@ -196,6 +178,27 @@ export class Frame extends frameCommon.Frame {
             if (animated && navigationTransition) {
                 transitionModule._setAndroidFragmentTransitions(navigationTransition, currentFragment, newFragment, fragmentTransaction);
             }
+        }
+
+        // Clear History
+        let length = manager.getBackStackEntryCount();
+        let emptyNativeBackStack = clearHistory && length > 0; 
+        if (emptyNativeBackStack) {
+            for (let i = 0; i < length; i++) {
+                let fragmentToRemove = <FragmentClass>manager.findFragmentByTag(manager.getBackStackEntryAt(i).getName());
+                Frame._clearHistory(fragmentToRemove);
+            }
+            if (currentFragment) {
+                // We need to reverse the transitions because Android will ask the current fragment
+                // to create its POP EXIT animator due to popping the back stack, but in reality
+                // we need to create the EXIT animator because we are actually going forward and not back.
+                transitionModule._reverseTransitionsDirection(currentFragment);
+            }
+            let firstEntryName = manager.getBackStackEntryAt(0).getName();
+            if (trace.enabled) {
+                trace.write(`POP BACK STACK ${firstEntryName}`, trace.categories.Navigation);
+            }
+            manager.popBackStackImmediate(firstEntryName, android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
 
         // Hide/remove current fragment if it exists and was not popped

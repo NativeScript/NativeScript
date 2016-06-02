@@ -6,9 +6,34 @@ import { device } from "platform";
 import * as animationModule from "ui/animation";
 import lazy from "utils/lazy";
 import trace = require("trace");
-var _sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
-var _defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
+let slideTransition: any;
+function ensureSlideTransition() {
+    if (!slideTransition) {
+        slideTransition = require("ui/transition/slide-transition");
+    }
+}
+let fadeTransition: any;
+function ensureFadeTransition() {
+    if (!fadeTransition) {
+        fadeTransition = require("ui/transition/fade-transition");
+    }
+}
+let flipTransition: any;
+function ensureFlipTransition() {
+    if (!flipTransition) {
+        flipTransition = require("ui/transition/flip-transition");
+    }
+}
+let animation: typeof animationModule;
+function ensureAnimationModule() {
+    if (!animation) {
+        animation = require("ui/animation");
+    }
+}
+
+let _sdkVersion = lazy(() => parseInt(device.sdkVersion));
+let _defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
 
 interface CompleteOptions {
     isBack: boolean;
@@ -20,22 +45,23 @@ interface ExpandedFragment {
     completePageAdditionWhenTransitionEnds: CompleteOptions;
     completePageRemovalWhenTransitionEnds: CompleteOptions;
     isDestroyed: boolean;
+    reverseNextAnimDirection: boolean;
 }
 
-var enterFakeResourceId = -10;
-var exitFakeResourceId = -20;
-var popEnterFakeResourceId = -30;
-var popExitFakeResourceId = -40;
+let enterFakeResourceId = -10;
+let exitFakeResourceId = -20;
+let popEnterFakeResourceId = -30;
+let popExitFakeResourceId = -40;
 
 export module AndroidTransitionType {
-    export var enter: string = "enter";
-    export var exit: string = "exit";
-    export var popEnter: string = "popEnter";
-    export var popExit: string = "popExit";
+    export let enter: string = "enter";
+    export let exit: string = "exit";
+    export let popEnter: string = "popEnter";
+    export let popExit: string = "popExit";
 }
 
 export function _clearBackwardTransitions(fragment: any): void {
-    var expandedFragment = <ExpandedFragment>fragment;
+    let expandedFragment = <ExpandedFragment>fragment;
     if (expandedFragment.enterPopExitTransition) {
         if (trace.enabled) {
             trace.write(`Cleared enterPopExitTransition ${expandedFragment.enterPopExitTransition} for ${fragment}`, trace.categories.Transition);
@@ -44,14 +70,14 @@ export function _clearBackwardTransitions(fragment: any): void {
     }
     
     if (_sdkVersion() >= 21) {
-        var enterTransition = (<any>fragment).getEnterTransition();
+        let enterTransition = (<any>fragment).getEnterTransition();
         if (enterTransition) {
             if (trace.enabled) {
                 trace.write(`Cleared Enter ${enterTransition.getClass().getSimpleName() } transition for ${fragment}`, trace.categories.Transition);
             }
             (<any>fragment).setEnterTransition(null);
         }
-        var returnTransition = (<any>fragment).getReturnTransition();
+        let returnTransition = (<any>fragment).getReturnTransition();
         if (returnTransition) {
             if (trace.enabled) {
                 trace.write(`Cleared Pop Exit ${returnTransition.getClass().getSimpleName() } transition for ${fragment}`, trace.categories.Transition);
@@ -62,7 +88,7 @@ export function _clearBackwardTransitions(fragment: any): void {
 }
 
 export function _clearForwardTransitions(fragment: any): void {
-    var expandedFragment = <ExpandedFragment>fragment;
+    let expandedFragment = <ExpandedFragment>fragment;
     if (expandedFragment.exitPopEnterTransition) {
         if (trace.enabled) {
             trace.write(`Cleared exitPopEnterTransition ${expandedFragment.exitPopEnterTransition} for ${fragment}`, trace.categories.Transition);
@@ -71,14 +97,14 @@ export function _clearForwardTransitions(fragment: any): void {
     }
 
     if (_sdkVersion() >= 21) {
-        var exitTransition = (<any>fragment).getExitTransition();
+        let exitTransition = (<any>fragment).getExitTransition();
         if (exitTransition) {
             if (trace.enabled) {
                 trace.write(`Cleared Exit ${exitTransition.getClass().getSimpleName() } transition for ${fragment}`, trace.categories.Transition);
             }
             (<any>fragment).setExitTransition(null);//exit
         }
-        var reenterTransition = (<any>fragment).getReenterTransition();
+        let reenterTransition = (<any>fragment).getReenterTransition();
         if (reenterTransition) {
             if (trace.enabled) {
                 trace.write(`Cleared Pop Enter ${reenterTransition.getClass().getSimpleName() } transition for ${fragment}`, trace.categories.Transition);
@@ -89,12 +115,13 @@ export function _clearForwardTransitions(fragment: any): void {
 }
 
 export function _setAndroidFragmentTransitions(navigationTransition: NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): void {
-    var name;
+    trace.write(`Setting Android Fragment Transitions...`, trace.categories.Transition);
+    let name;
     if (navigationTransition.name) {
         name = navigationTransition.name.toLowerCase();
     }
     
-    var useLollipopTransition = name && (name.indexOf("slide") === 0 || name === "fade" || name === "explode") && _sdkVersion() >= 21;
+    let useLollipopTransition = name && (name.indexOf("slide") === 0 || name === "fade" || name === "explode") && _sdkVersion() >= 21;
     if (useLollipopTransition) {
         // setEnterTransition: Enter
         // setExitTransition: Exit
@@ -109,7 +136,7 @@ export function _setAndroidFragmentTransitions(navigationTransition: NavigationT
         }
 
         if (name.indexOf("slide") === 0) {
-            var direction = name.substr("slide".length) || "left"; //Extract the direction from the string
+            let direction = name.substr("slide".length) || "left"; //Extract the direction from the string
             switch (direction) {
                 case "left":
                     let rightEdge = new (<any>android).transition.Slide((<any>android).view.Gravity.RIGHT);
@@ -193,42 +220,42 @@ export function _setAndroidFragmentTransitions(navigationTransition: NavigationT
                 currentFragment.setExitTransition(explodeExit); 
             }
         }
-        return;
-    }
-
-    var transition: definitionTransition;
-    if (name) {
-        if (name.indexOf("slide") === 0) {
-            //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
-            var slideTransitionModule = require("ui/transition/slide-transition");
-            var direction = name.substr("slide".length) || "left"; //Extract the direction from the string
-            transition = new slideTransitionModule.SlideTransition(direction, navigationTransition.duration, navigationTransition.curve);
-        }
-        else if (name === "fade") {
-            //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
-            var fadeTransitionModule = require("ui/transition/fade-transition");
-            transition = new fadeTransitionModule.FadeTransition(navigationTransition.duration, navigationTransition.curve);
-        }
-        else if (name.indexOf("flip") === 0) {
-            //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
-            var flipTransitionModule = require("ui/transition/flip-transition");
-            var direction = name.substr("flip".length) || "right"; //Extract the direction from the string
-            transition = new flipTransitionModule.FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
-        }
     }
     else {
-        transition = navigationTransition.instance; // User-defined instance of Transition
-    }
-
-    if (transition) {
-        var newExpandedFragment = <ExpandedFragment>newFragment;
-        newExpandedFragment.enterPopExitTransition = transition;
-        if (currentFragment) {
-            var currentExpandedFragment = <ExpandedFragment>currentFragment;
-            currentExpandedFragment.exitPopEnterTransition = transition;
+        let transition: definitionTransition;
+        if (name) {
+            if (name.indexOf("slide") === 0) {
+                let direction = name.substr("slide".length) || "left"; //Extract the direction from the string
+                ensureSlideTransition();
+                transition = new slideTransition.SlideTransition(direction, navigationTransition.duration, navigationTransition.curve);
+            }
+            else if (name === "fade") {
+                ensureFadeTransition();
+                transition = new fadeTransition.FadeTransition(navigationTransition.duration, navigationTransition.curve);
+            }
+            else if (name.indexOf("flip") === 0) {
+                let direction = name.substr("flip".length) || "right"; //Extract the direction from the string
+                ensureFlipTransition();
+                transition = new flipTransition.FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
+            }
         }
-        fragmentTransaction.setCustomAnimations(enterFakeResourceId, exitFakeResourceId, popEnterFakeResourceId, popExitFakeResourceId);
+        else {
+            transition = navigationTransition.instance; // User-defined instance of Transition
+        }
+
+        if (transition) {
+            let newExpandedFragment = <ExpandedFragment>newFragment;
+            newExpandedFragment.enterPopExitTransition = transition;
+            if (currentFragment) {
+                let currentExpandedFragment = <ExpandedFragment>currentFragment;
+                currentExpandedFragment.exitPopEnterTransition = transition;
+            }
+            fragmentTransaction.setCustomAnimations(enterFakeResourceId, exitFakeResourceId, popEnterFakeResourceId, popExitFakeResourceId);
+        }
     }
+    
+    _printTransitions(currentFragment);
+    _printTransitions(newFragment);
 }
 
 function _setUpNativeTransition(navigationTransition: NavigationTransition, nativeTransition: any/*android.transition.Transition*/) {
@@ -237,8 +264,8 @@ function _setUpNativeTransition(navigationTransition: NavigationTransition, nati
     }
 
     if (navigationTransition.curve) {
-        var animation: typeof animationModule = require("ui/animation");
-        var interpolator = animation._resolveAnimationCurve(navigationTransition.curve);
+        ensureAnimationModule();
+        let interpolator = animation._resolveAnimationCurve(navigationTransition.curve);
         nativeTransition.setInterpolator(interpolator);
     }
     else {
@@ -247,20 +274,23 @@ function _setUpNativeTransition(navigationTransition: NavigationTransition, nati
 }
 
 export function _onFragmentShown(fragment: any, isBack: boolean): void {
-    var expandedFragment = <ExpandedFragment>fragment;
-    var transitionType = isBack ? "Pop Enter" : "Enter";
-    var relevantTransition = isBack ? expandedFragment.exitPopEnterTransition : expandedFragment.enterPopExitTransition;
+    if (trace.enabled){
+        trace.write(`_onFragmentShown(${fragment}, isBack: ${isBack})`, trace.categories.Transition);
+    }
+    let expandedFragment = <ExpandedFragment>fragment;
+    let transitionType = isBack ? "Pop Enter" : "Enter";
+    let relevantTransition = isBack ? expandedFragment.exitPopEnterTransition : expandedFragment.enterPopExitTransition;
     if (relevantTransition) {
         if (trace.enabled) {
-            trace.write(`${fragment } has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${relevantTransition}. Will complete page addition when transition ends.`, trace.categories.Transition);
+            trace.write(`${fragment} has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${relevantTransition}. Will complete page addition when transition ends.`, trace.categories.Transition);
         }
         expandedFragment.completePageAdditionWhenTransitionEnds = { isBack: isBack };
     }
     else if (_sdkVersion() >= 21) {
-        var nativeTransition = isBack ? (<any>fragment).getReenterTransition() : (<any>fragment).getEnterTransition();
+        let nativeTransition = isBack ? (<any>fragment).getReenterTransition() : (<any>fragment).getEnterTransition();
         if (nativeTransition) {
             if (trace.enabled) {
-                trace.write(`${fragment } has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${nativeTransition.getClass().getSimpleName() } transition. Will complete page addition when transition ends.`, trace.categories.Transition);
+                trace.write(`${fragment} has been shown when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${nativeTransition.getClass().getSimpleName() } transition. Will complete page addition when transition ends.`, trace.categories.Transition);
             }
             expandedFragment.completePageAdditionWhenTransitionEnds = { isBack: isBack };
         }
@@ -272,9 +302,12 @@ export function _onFragmentShown(fragment: any, isBack: boolean): void {
 }
 
 export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boolean) {
-    var expandedFragment = <ExpandedFragment>fragment;
-    var transitionType = isBack ? "Pop Exit" : "Exit";
-    var relevantTransition = isBack ? expandedFragment.enterPopExitTransition : expandedFragment.exitPopEnterTransition;
+    if (trace.enabled){
+        trace.write(`_onFragmentHidden(${fragment}, isBack: ${isBack}, destroyed: ${destroyed})`, trace.categories.Transition);
+    }
+    let expandedFragment = <ExpandedFragment>fragment;
+    let transitionType = isBack ? "Pop Exit" : "Exit";
+    let relevantTransition = isBack ? expandedFragment.enterPopExitTransition : expandedFragment.exitPopEnterTransition;
     if (relevantTransition) {
         if (trace.enabled) {
             trace.write(`${fragment} has been hidden when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${relevantTransition}. Will complete page removal when transition ends.`, trace.categories.Transition);
@@ -282,7 +315,7 @@ export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boo
         expandedFragment.completePageRemovalWhenTransitionEnds = { isBack: isBack };
     }
     else if (_sdkVersion() >= 21) {
-        var nativeTransition = isBack ? (<any>fragment).getReturnTransition() : (<any>fragment).getExitTransition();
+        let nativeTransition = isBack ? (<any>fragment).getReturnTransition() : (<any>fragment).getExitTransition();
         if (nativeTransition) {
             if (trace.enabled) {
                 trace.write(`${fragment} has been hidden when going ${isBack ? "back" : "forward"}, but there is ${transitionType} ${nativeTransition.getClass().getSimpleName() } transition. Will complete page removal when transition ends.`, trace.categories.Transition);
@@ -300,14 +333,14 @@ export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boo
 }
 
 function _completePageAddition(fragment: any, isBack: boolean) {
+    let expandedFragment = <ExpandedFragment>fragment;
+    expandedFragment.completePageAdditionWhenTransitionEnds = undefined;
+    let frame = fragment.frame;
+    let entry: BackstackEntry = fragment.entry;
+    let page: Page = entry.resolvedPage;
     if (trace.enabled) {
         trace.write(`STARTING ADDITION of ${page}...`, trace.categories.Transition);
     }
-    var expandedFragment = <ExpandedFragment>fragment;
-    expandedFragment.completePageAdditionWhenTransitionEnds = undefined;
-    var frame = fragment.frame;
-    var entry: BackstackEntry = fragment.entry;
-    var page: Page = entry.resolvedPage;
     // The original code that was once in Frame onFragmentShown
     frame._currentEntry = entry;
     page.onNavigatedTo(isBack);
@@ -319,14 +352,14 @@ function _completePageAddition(fragment: any, isBack: boolean) {
 }
 
 function _completePageRemoval(fragment: any, isBack: boolean) {
+    let expandedFragment = <ExpandedFragment>fragment;
+    expandedFragment.completePageRemovalWhenTransitionEnds = undefined;
+    let frame = fragment.frame;
+    let entry: BackstackEntry = fragment.entry;
+    let page: Page = entry.resolvedPage;
     if (trace.enabled) {
         trace.write(`STARTING REMOVAL of ${page}...`, trace.categories.Transition);
     }
-    var expandedFragment = <ExpandedFragment>fragment;
-    expandedFragment.completePageRemovalWhenTransitionEnds = undefined;
-    var frame = fragment.frame;
-    var entry: BackstackEntry = fragment.entry;
-    var page: Page = entry.resolvedPage;
     if (page.frame) {
         frame._removeView(page);
         // This could be undefined if activity is destroyed (e.g. without actual navigation).
@@ -364,7 +397,7 @@ function _completePageRemoval(fragment: any, isBack: boolean) {
 
 export function _removePageNativeViewFromAndroidParent(page: Page): void {
     if (page._nativeView && page._nativeView.getParent) {
-        var androidParent = page._nativeView.getParent();
+        let androidParent = page._nativeView.getParent();
         if (androidParent && androidParent.removeView) {
             if (trace.enabled) {
                 trace.write(`REMOVED ${page}._nativeView from its Android parent`, trace.categories.Transition);
@@ -374,12 +407,16 @@ export function _removePageNativeViewFromAndroidParent(page: Page): void {
     }
 }
 
+function _toShortString(nativeTransition: any): string {
+    return `${nativeTransition.getClass().getSimpleName()}@${nativeTransition.hashCode().toString(16)}`;
+}
+
 function _addNativeTransitionListener(fragment: any, nativeTransition: any/*android.transition.Transition*/) {
-    var expandedFragment = <ExpandedFragment>fragment;
-    var transitionListener = new (<any>android).transition.Transition.TransitionListener({
+    let expandedFragment = <ExpandedFragment>fragment;
+    let transitionListener = new (<any>android).transition.Transition.TransitionListener({
         onTransitionCancel: function (transition: any): void {
             if (trace.enabled) {
-                trace.write(`CANCEL ${nativeTransition} transition for ${fragment}`, trace.categories.Transition);
+                trace.write(`CANCEL ${_toShortString(nativeTransition)} transition for ${fragment}`, trace.categories.Transition);
             }
             if (expandedFragment.completePageRemovalWhenTransitionEnds) {
                 _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
@@ -390,7 +427,7 @@ function _addNativeTransitionListener(fragment: any, nativeTransition: any/*andr
         },
         onTransitionEnd: function (transition: any): void {
             if (trace.enabled) {
-                trace.write(`END ${nativeTransition} transition for ${fragment}`, trace.categories.Transition);
+                trace.write(`END ${_toShortString(nativeTransition)} transition for ${fragment}`, trace.categories.Transition);
             }
             if (expandedFragment.completePageRemovalWhenTransitionEnds) {
                 _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
@@ -401,17 +438,17 @@ function _addNativeTransitionListener(fragment: any, nativeTransition: any/*andr
         },
         onTransitionPause: function (transition: any): void {
             if (trace.enabled) {
-                trace.write(`PAUSE ${nativeTransition} transition for ${fragment}`, trace.categories.Transition);
+                trace.write(`PAUSE ${_toShortString(nativeTransition)} transition for ${fragment}`, trace.categories.Transition);
             }
         },
         onTransitionResume: function (transition: any): void {
             if (trace.enabled) {
-                trace.write(`RESUME ${nativeTransition} transition for ${fragment}`, trace.categories.Transition);
+                trace.write(`RESUME ${_toShortString(nativeTransition)} transition for ${fragment}`, trace.categories.Transition);
             }
         },
         onTransitionStart: function (transition: any): void {
             if (trace.enabled) {
-                trace.write(`START ${nativeTransition} transition for ${fragment}`, trace.categories.Transition);
+                trace.write(`START ${_toShortString(nativeTransition)} transition for ${fragment}`, trace.categories.Transition);
             }
         }
     });
@@ -419,16 +456,18 @@ function _addNativeTransitionListener(fragment: any, nativeTransition: any/*andr
 }
 
 export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): android.animation.Animator {
-    var expandedFragment = <ExpandedFragment>fragment;
-    var transitionType;
+    let expandedFragment = <ExpandedFragment>fragment;
+    let noReverse = !expandedFragment.reverseNextAnimDirection;
+    delete expandedFragment.reverseNextAnimDirection;
+    let transitionType;
     switch (nextAnim) {
-        case enterFakeResourceId: transitionType = AndroidTransitionType.enter; break;
-        case exitFakeResourceId: transitionType = AndroidTransitionType.exit; break;
-        case popEnterFakeResourceId: transitionType = AndroidTransitionType.popEnter; break;
-        case popExitFakeResourceId: transitionType = AndroidTransitionType.popExit; break;
+        case enterFakeResourceId: transitionType = noReverse ? AndroidTransitionType.enter : AndroidTransitionType.popEnter; break;
+        case exitFakeResourceId: transitionType = noReverse ? AndroidTransitionType.exit : AndroidTransitionType.popExit; break;
+        case popEnterFakeResourceId: transitionType = noReverse ? AndroidTransitionType.popEnter : AndroidTransitionType.enter; break;
+        case popExitFakeResourceId: transitionType = noReverse ? AndroidTransitionType.popExit : AndroidTransitionType.exit; break;
     }
 
-    var transition;
+    let transition;
     switch (transitionType) {
         case AndroidTransitionType.enter:
         case AndroidTransitionType.popExit:
@@ -440,10 +479,10 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
             break;
     }
 
-    var animator: android.animation.Animator;
+    let animator: android.animation.Animator;
     if (transition) {
         animator = <android.animation.Animator>transition.createAndroidAnimator(transitionType);
-        var transitionListener = new android.animation.Animator.AnimatorListener({
+        let transitionListener = new android.animation.Animator.AnimatorListener({
             onAnimationStart: function (animator: android.animation.Animator): void {
                 if (trace.enabled) {
                     trace.write(`START ${transitionType} ${transition} for ${fragment}`, trace.categories.Transition);
@@ -488,6 +527,23 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
     return animator;
 }
 
+export function _reverseTransitionsDirection(fragment: any): void {
+    trace.write(`Swapping ${fragment} transitions...`, trace.categories.Transition);
+    let expandedFragment = <ExpandedFragment>fragment;
+    expandedFragment.reverseNextAnimDirection = true;
+    if (_sdkVersion() >= 21) {
+        let enterTransition = fragment.getEnterTransition();
+        let exitTransition = fragment.getExitTransition();
+        let reenterTransition = fragment.getReenterTransition();
+        let returnTransition = fragment.getReturnTransition();
+        fragment.setEnterTransition(exitTransition);
+        fragment.setExitTransition(enterTransition);
+        fragment.setReenterTransition(returnTransition);
+        fragment.setReturnTransition(reenterTransition);
+    }
+    _printTransitions(fragment);
+}
+
 let intEvaluator: android.animation.IntEvaluator;
 function ensureIntEvaluator() {
     if (!intEvaluator) {
@@ -503,9 +559,25 @@ function _createDummyZeroDurationAnimator(): android.animation.Animator {
     let nativeArray = (<any>Array).create(java.lang.Object, 2);
     nativeArray[0] = java.lang.Integer.valueOf(0);
     nativeArray[1] = java.lang.Integer.valueOf(1);
-    var animator = android.animation.ValueAnimator.ofObject(intEvaluator, nativeArray);
+    let animator = android.animation.ValueAnimator.ofObject(intEvaluator, nativeArray);
     animator.setDuration(0);
     return animator;
+}
+
+function _printTransitions(f: any) {
+    if (f && trace.enabled){
+        let ef = <ExpandedFragment>f;
+        let result = `${ef} Transitions:`;
+        result += `${ef.enterPopExitTransition ? " enterPopExit=" + ef.enterPopExitTransition : ""}`;
+        result += `${ef.exitPopEnterTransition ? " exitPopEnter=" + ef.exitPopEnterTransition : ""}`;
+        if (_sdkVersion() >= 21) {
+            result += `${f.getEnterTransition() ? " enter=" + _toShortString(f.getEnterTransition()) : ""}`;        
+            result += `${f.getExitTransition() ? " exit=" + _toShortString(f.getExitTransition()) : ""}`;        
+            result += `${f.getReenterTransition() ? " popEnter=" + _toShortString(f.getReenterTransition()) : ""}`;        
+            result += `${f.getReturnTransition() ? " popExit=" + _toShortString(f.getReturnTransition()) : ""}`;        
+        }
+        trace.write(result, trace.categories.Transition);
+    }
 }
 
 export class Transition implements definitionTransition {
@@ -517,7 +589,7 @@ export class Transition implements definitionTransition {
     constructor(duration: number, curve: any) {
         this._duration = duration;
         if (curve) {
-            var animation: typeof animationModule = require("ui/animation");
+            let animation: typeof animationModule = require("ui/animation");
             this._interpolator = animation._resolveAnimationCurve(curve);
         }
         else {
