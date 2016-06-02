@@ -113,4 +113,8 @@ export class SlideTransition extends transition.Transition {
         animator.setInterpolator(this.getCurve());
         return animator;
     }
+    
+    public toString(): string {
+        return `${super.toString()} ${this._direction}`;
+    }
 }
