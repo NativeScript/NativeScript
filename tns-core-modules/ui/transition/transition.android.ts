@@ -6,8 +6,33 @@ import { device } from "platform";
 import * as animationModule from "ui/animation";
 import lazy from "utils/lazy";
 import trace = require("trace");
-let _sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
+let slideTransition: any;
+function ensureSlideTransition() {
+    if (!slideTransition) {
+        slideTransition = require("ui/transition/slide-transition");
+    }
+}
+let fadeTransition: any;
+function ensureFadeTransition() {
+    if (!fadeTransition) {
+        fadeTransition = require("ui/transition/fade-transition");
+    }
+}
+let flipTransition: any;
+function ensureFlipTransition() {
+    if (!flipTransition) {
+        flipTransition = require("ui/transition/flip-transition");
+    }
+}
+let animation: typeof animationModule;
+function ensureAnimationModule() {
+    if (!animation) {
+        animation = require("ui/animation");
+    }
+}
+
+let _sdkVersion = lazy(() => parseInt(device.sdkVersion));
 let _defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
 
 interface CompleteOptions {
@@ -200,21 +225,18 @@ export function _setAndroidFragmentTransitions(navigationTransition: NavigationT
         let transition: definitionTransition;
         if (name) {
             if (name.indexOf("slide") === 0) {
-                //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
-                let slideTransitionModule = require("ui/transition/slide-transition");
                 let direction = name.substr("slide".length) || "left"; //Extract the direction from the string
-                transition = new slideTransitionModule.SlideTransition(direction, navigationTransition.duration, navigationTransition.curve);
+                ensureSlideTransition();
+                transition = new slideTransition.SlideTransition(direction, navigationTransition.duration, navigationTransition.curve);
             }
             else if (name === "fade") {
-                //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
-                let fadeTransitionModule = require("ui/transition/fade-transition");
-                transition = new fadeTransitionModule.FadeTransition(navigationTransition.duration, navigationTransition.curve);
+                ensureFadeTransition();
+                transition = new fadeTransition.FadeTransition(navigationTransition.duration, navigationTransition.curve);
             }
             else if (name.indexOf("flip") === 0) {
-                //HACK: Use an absolute import to work around a webpack issue that doesn't resolve relatively-imported "xxx.android/ios" modules
-                let flipTransitionModule = require("ui/transition/flip-transition");
                 let direction = name.substr("flip".length) || "right"; //Extract the direction from the string
-                transition = new flipTransitionModule.FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
+                ensureFlipTransition();
+                transition = new flipTransition.FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
             }
         }
         else {
@@ -242,7 +264,7 @@ function _setUpNativeTransition(navigationTransition: NavigationTransition, nati
     }
 
     if (navigationTransition.curve) {
-        let animation: typeof animationModule = require("ui/animation");
+        ensureAnimationModule();
         let interpolator = animation._resolveAnimationCurve(navigationTransition.curve);
         nativeTransition.setInterpolator(interpolator);
     }
