@@ -120,7 +120,6 @@ function initLifecycleCallbacks() {
 
 let currentOrientation: number;
 function initComponentCallbacks() {
-    // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     let componentCallbacks = new android.content.ComponentCallbacks2({
         onLowMemory: function() {
             gc();
@@ -216,7 +215,7 @@ export class AndroidApplication extends observable.Observable implements definit
         let lifecycleCallbacks = initLifecycleCallbacks();
         let componentCallbacks = initComponentCallbacks();
         this.nativeApp.registerActivityLifecycleCallbacks(lifecycleCallbacks);
-        this.nativeApp.unregisterComponentCallbacks(componentCallbacks);
+        this.nativeApp.registerComponentCallbacks(componentCallbacks);
         
         this._registerPendingReceivers();
     }
