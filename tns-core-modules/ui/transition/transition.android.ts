@@ -45,7 +45,6 @@ interface ExpandedFragment {
     completePageAdditionWhenTransitionEnds: CompleteOptions;
     completePageRemovalWhenTransitionEnds: CompleteOptions;
     isDestroyed: boolean;
-    reverseNextAnimDirection: boolean;
 }
 
 let enterFakeResourceId = -10;
@@ -457,14 +456,12 @@ function _addNativeTransitionListener(fragment: any, nativeTransition: any/*andr
 
 export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): android.animation.Animator {
     let expandedFragment = <ExpandedFragment>fragment;
-    let noReverse = !expandedFragment.reverseNextAnimDirection;
-    delete expandedFragment.reverseNextAnimDirection;
     let transitionType;
     switch (nextAnim) {
-        case enterFakeResourceId: transitionType = noReverse ? AndroidTransitionType.enter : AndroidTransitionType.popEnter; break;
-        case exitFakeResourceId: transitionType = noReverse ? AndroidTransitionType.exit : AndroidTransitionType.popExit; break;
-        case popEnterFakeResourceId: transitionType = noReverse ? AndroidTransitionType.popEnter : AndroidTransitionType.enter; break;
-        case popExitFakeResourceId: transitionType = noReverse ? AndroidTransitionType.popExit : AndroidTransitionType.exit; break;
+        case enterFakeResourceId: transitionType = AndroidTransitionType.enter; break;
+        case exitFakeResourceId: transitionType = AndroidTransitionType.exit; break;
+        case popEnterFakeResourceId: transitionType = AndroidTransitionType.popEnter; break;
+        case popExitFakeResourceId: transitionType = AndroidTransitionType.popExit; break;
     }
 
     let transition;
@@ -527,19 +524,13 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
     return animator;
 }
 
-export function _reverseTransitionsDirection(fragment: any): void {
-    trace.write(`Swapping ${fragment} transitions...`, trace.categories.Transition);
+export function _prepareCurrentFragmentForClearHistory(fragment: any): void {
+    trace.write(`Preparing ${fragment} transitions fro clear history...`, trace.categories.Transition);
     let expandedFragment = <ExpandedFragment>fragment;
-    expandedFragment.reverseNextAnimDirection = true;
+    expandedFragment.enterPopExitTransition = expandedFragment.exitPopEnterTransition;
     if (_sdkVersion() >= 21) {
-        let enterTransition = fragment.getEnterTransition();
         let exitTransition = fragment.getExitTransition();
-        let reenterTransition = fragment.getReenterTransition();
-        let returnTransition = fragment.getReturnTransition();
-        fragment.setEnterTransition(exitTransition);
-        fragment.setExitTransition(enterTransition);
-        fragment.setReenterTransition(returnTransition);
-        fragment.setReturnTransition(reenterTransition);
+        fragment.setReturnTransition(exitTransition);
     }
     _printTransitions(fragment);
 }
