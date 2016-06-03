@@ -376,18 +376,20 @@ export class Animation extends common.Animation implements definition.Animation 
     private _enableHardwareAcceleration() {
         for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
             let cache = <CacheLayerType>this._propertyAnimations[i].target._nativeView;
-            let layerType = cache.getLayerType();
-            if (layerType !== android.view.View.LAYER_TYPE_HARDWARE) {
-                cache.layerType = layerType;
-                cache.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
-            } 
+            if (cache){
+                let layerType = cache.getLayerType();
+                if (layerType !== android.view.View.LAYER_TYPE_HARDWARE) {
+                    cache.layerType = layerType;
+                    cache.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+                } 
+            }
         }
     }
 
     private _disableHardwareAcceleration() {
         for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
             let cache = <CacheLayerType>this._propertyAnimations[i].target._nativeView;
-            if (cache.layerType !== undefined) {
+            if (cache && cache.layerType !== undefined) {
                 cache.setLayerType(cache.layerType, null);
                 cache.layerType = undefined;
             }
