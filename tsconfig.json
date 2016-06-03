@@ -200,6 +200,7 @@
         "tns-core-modules/ui/styling/background.android.ts",
         "tns-core-modules/ui/styling/converters.ts",
         "tns-core-modules/ui/styling/css-selector.ts",
+        "tns-core-modules/ui/styling/css-animation-parser.ts",
         "tns-core-modules/ui/styling/font-common.ts",
         "tns-core-modules/ui/styling/font.android.ts",
         "tns-core-modules/ui/styling/font.ios.ts",
