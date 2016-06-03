@@ -376,6 +376,13 @@ declare module "application" {
          * True if the application is not running (suspended), false otherwise.
          */
         paused: boolean;
+        
+        /**
+         * Initialized the android-specific application object with the native android.app.Application instance.
+         * This is useful when creating custom application types.
+         * @param nativeApp - the android.app.Application instance that started the app. 
+         */
+        init: (nativeApp) => void;
 
         /**
          * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityCreated method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
