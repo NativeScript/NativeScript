@@ -44,6 +44,7 @@ interface ExpandedFragment {
     exitPopEnterTransition: definitionTransition;
     completePageAdditionWhenTransitionEnds: CompleteOptions;
     completePageRemovalWhenTransitionEnds: CompleteOptions;
+    exitHack: boolean;
     isDestroyed: boolean;
 }
 
@@ -464,6 +465,16 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
         case popExitFakeResourceId: transitionType = AndroidTransitionType.popExit; break;
     }
 
+    // Clear history hack.
+    if ((nextAnim === popExitFakeResourceId || !nextAnim) && expandedFragment.exitHack) {
+        // fragment is the current fragment and was popped due to clear history.
+        // We have to simulate moving forward with the fragment's exit transition.
+        // nextAnim can be null if the transaction which brought us to the fragment 
+        // was without a transition and setCustomAnimations was not called.
+        trace.write(`HACK EXIT FOR ${fragment}`, trace.categories.Transition);
+        transitionType = AndroidTransitionType.exit;
+    }
+
     let transition;
     switch (transitionType) {
         case AndroidTransitionType.enter:
@@ -475,10 +486,11 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
             transition = expandedFragment.exitPopEnterTransition;
             break;
     }
-
+    
     let animator: android.animation.Animator;
     if (transition) {
         animator = <android.animation.Animator>transition.createAndroidAnimator(transitionType);
+        trace.write(`${transition}.createAndroidAnimator(${transitionType}): ${animator}`, trace.categories.Transition);
         let transitionListener = new android.animation.Animator.AnimatorListener({
             onAnimationStart: function (animator: android.animation.Animator): void {
                 if (trace.enabled) {
@@ -527,7 +539,7 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
 export function _prepareCurrentFragmentForClearHistory(fragment: any): void {
     trace.write(`Preparing ${fragment} transitions fro clear history...`, trace.categories.Transition);
     let expandedFragment = <ExpandedFragment>fragment;
-    expandedFragment.enterPopExitTransition = expandedFragment.exitPopEnterTransition;
+    expandedFragment.exitHack = true;
     if (_sdkVersion() >= 21) {
         let exitTransition = fragment.getExitTransition();
         fragment.setReturnTransition(exitTransition);
