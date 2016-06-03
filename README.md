@@ -8,20 +8,23 @@ NativeScript provides a best-of-both-worlds development experience. Our cross-pl
 
 Check out the links below to get started:
 
-* [CTO's guide to NativeScript](#for-ctos)
+* [CTO’s guide to NativeScript](#for-ctos)
 * [Getting Started and Installation](#getting-started-and-installation)
 * [Quick Links](#quick-links)
 * [Repositories](#repositories)
 * [Contributing](#contributing)
 * [Angular 2](#angular-2)
 
-## For CTO's
+## For CTOs
 
-Making the right technology choices is key to success. Our [CTO's guide to NativeScript](https://www.nativescript.org/ctos-guide) helps you understand why NativeScript is the right choice for your next mobile project.
+Making the right technology choices is key to success. Our [CTO’s guide to NativeScript](https://www.nativescript.org/ctos-guide) helps you understand why NativeScript is the right choice for your next mobile project.
 
 ## Getting Started and Installation
 
-Our [Getting Started Guide](http://docs.nativescript.org/start/getting-started) is a hands-on tutorial that walks you through installing NativeScript and building a real iOS and Android application.
+Our Getting Started Guides are hands-on tutorials that walk you through installing NativeScript and building a real iOS and Android application.
+
+* [Get started with JavaScript](http://docs.nativescript.org/tutorial/chapter-0)
+* [Get started with TypeScript and Angular 2](http://docs.nativescript.org/angular/tutorial/ng-chapter-0)
 
 ## Quick Links
 
