@@ -368,7 +368,11 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     }
 
     get currentEntry(): definition.NavigationEntry {
-        return this._currentEntry.entry;
+        if (this._currentEntry) {
+            return this._currentEntry.entry;
+        }
+        
+        return null;
     }
 
     public _pushInFrameStack() {
