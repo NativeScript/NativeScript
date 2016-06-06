@@ -147,11 +147,46 @@ export module ad {
         view.setSingleLine(value === enums.WhiteSpace.nowrap);
         view.setEllipsize(value === enums.WhiteSpace.nowrap ? android.text.TextUtils.TruncateAt.END : null);
     }
-
+    
+    let nativeApp: android.app.Application;
+    declare var com;
     export function getApplication() {
-        return <android.app.Application>(<any>com.tns).NativeScriptApplication.getInstance();
+        if(!nativeApp) {
+            // check whether the com.tns.NativeScriptApplication type exists
+            if(com.tns.NativeScriptApplication) {
+                nativeApp = com.tns.NativeScriptApplication.getInstance();
+            }
+            
+            // the getInstance might return null if com.tns.NativeScriptApplication exists but is  not the starting app type
+            if(!nativeApp) {
+                // check whether application.android.init has been explicitly called
+                let application = require("application");
+                nativeApp = application.android.nativeApp;
+                
+                if(!nativeApp) {
+                    // TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module? 
+                    let clazz = java.lang.Class.forName("android.app.ActivityThread");
+                    if(clazz) {
+                        let method = clazz.getMethod("currentApplication", null);
+                        if(method) {
+                            nativeApp = method.invoke(null, null);
+                        }
+                    }
+                }
+            }
+            
+            // we cannot work without having the app instance
+            if(!nativeApp) {
+                throw new Error("Failed to retrieve native Android Application object. If you have a custom android.app.Application type implemented make sure that you've called the '<application-module>.android.init' method.")
+            }
+        }
+        
+        return nativeApp;
     }
-    export function getApplicationContext() { return <android.content.Context>getApplication().getApplicationContext(); }
+    export function getApplicationContext() { 
+        let app = getApplication();
+        return app.getApplicationContext();
+    }
 
     var inputMethodManager: android.view.inputmethod.InputMethodManager;
     export function getInputMethodManager() {

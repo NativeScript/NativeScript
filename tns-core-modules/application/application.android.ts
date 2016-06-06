@@ -7,40 +7,9 @@ import * as typesModule from "utils/types";
 global.moduleMerge(appModule, exports);
 var typedExports: typeof definition = exports;
 
-@JavaProxy("com.tns.NativeScriptApplication")
-class NativeScriptApplication extends android.app.Application {
-
-    constructor() {
-        super();
-        return global.__native(this);
-    }
-
-    public onCreate(): void {
-        androidApp.init(this);
-        setupOrientationListener(androidApp);
-    }
-
-    public onLowMemory(): void {
-        gc();
-        java.lang.System.gc();
-        super.onLowMemory();
-
-        typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.lowMemoryEvent, object: this, android: this });
-    }
-
-    public onTrimMemory(level: number): void {
-        gc();
-        java.lang.System.gc();
-        super.onTrimMemory(level);
-    }
-}
-
-// We are using the exports object for the common events since we merge the appModule with this module's exports, which is what users will receive when require("application") is called;
-// TODO: This is kind of hacky and is "pure JS in TypeScript"
-
-function initEvents() {
+function initLifecycleCallbacks() {
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
-    var lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
+    let lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: function (activity: any, bundle: any) {
             if (!androidApp.startActivity) {
                 androidApp.startActivity = activity;
@@ -55,7 +24,6 @@ function initEvents() {
         },
 
         onActivityDestroyed: function (activity: any) {
-
             // Clear the current activity reference to prevent leak
             if (activity === androidApp.foregroundActivity) {
                 androidApp.foregroundActivity = undefined;
@@ -150,6 +118,54 @@ function initEvents() {
     return lifecycleCallbacks;
 }
 
+let currentOrientation: number;
+function initComponentCallbacks() {
+    let componentCallbacks = new android.content.ComponentCallbacks2({
+        onLowMemory: function() {
+            gc();
+            java.lang.System.gc();
+            typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.lowMemoryEvent, object: this, android: this });
+        },
+        
+        onTrimMemory: function(level: number) {
+            // TODO: This is skipped for now, test carefully for OutOfMemory exceptions
+        },
+        
+        onConfigurationChanged: function(newConfig: android.content.res.Configuration) {
+            let newOrientation = newConfig.orientation;
+            if(newOrientation === currentOrientation) {
+                return;
+            }
+            
+            currentOrientation = newOrientation;
+
+            let enums = require("ui/enums");
+            let newValue;
+        
+            switch (orientation) {
+                case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
+                    newValue = enums.DeviceOrientation.landscape;
+                    break;
+                case android.content.res.Configuration.ORIENTATION_PORTRAIT:
+                    newValue = enums.DeviceOrientation.portrait;
+                    break;
+                default:
+                    newValue = enums.DeviceOrientation.unknown;
+                    break;
+            }
+
+            typedExports.notify(<definition.OrientationChangedEventData>{
+                eventName: typedExports.orientationChangedEvent,
+                android: androidApp.nativeApp,
+                newValue: newValue,
+                object: typedExports.android,
+            });
+        }
+    });
+    
+    return componentCallbacks;
+}
+
 export class AndroidApplication extends observable.Observable implements definition.AndroidApplication {
     public static activityCreatedEvent = "activityCreated";
     public static activityDestroyedEvent = "activityDestroyed";
@@ -187,15 +203,20 @@ export class AndroidApplication extends observable.Observable implements definit
 
     public onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void;
 
-    private _eventsToken: any;
-
     public init(nativeApp: any) {
+        if(this.nativeApp) {
+            throw new Error("application.android already initialized.")
+        }
+        
         this.nativeApp = nativeApp;
         this.packageName = nativeApp.getPackageName();
         this.context = nativeApp.getApplicationContext();
 
-        this._eventsToken = initEvents();
-        this.nativeApp.registerActivityLifecycleCallbacks(this._eventsToken);
+        let lifecycleCallbacks = initLifecycleCallbacks();
+        let componentCallbacks = initComponentCallbacks();
+        this.nativeApp.registerActivityLifecycleCallbacks(lifecycleCallbacks);
+        this.nativeApp.registerComponentCallbacks(componentCallbacks);
+        
         this._registerPendingReceivers();
     }
 
@@ -240,11 +261,11 @@ export class AndroidApplication extends observable.Observable implements definit
     }
 }
 
-var androidApp = new AndroidApplication();
+let androidApp = new AndroidApplication();
 // use the exports object instead of 'export var' due to global namespace collision
 typedExports.android = androidApp;
 
-var BroadcastReceiverClass;
+let BroadcastReceiverClass;
 function ensureBroadCastReceiverClass() {
     if (BroadcastReceiverClass) {
         return;
@@ -269,10 +290,17 @@ function ensureBroadCastReceiverClass() {
     BroadcastReceiverClass = BroadcastReceiver;
 }
 
-var started = false;
+let started = false;
 export function start(entry?: frame.NavigationEntry) {
     if (started) {
         throw new Error("Application is already started.");
+    }
+    
+    if(!androidApp.nativeApp) {
+        // we are still not initialized, this is possible if no 'androidApp.init' call has been made
+        let utils = require("utils/utils");
+        let nativeApp = utils.ad.getApplication();
+        androidApp.init(nativeApp);
     }
 
     started = true;
@@ -281,42 +309,6 @@ export function start(entry?: frame.NavigationEntry) {
     }
 
     loadCss();
-}
-
-var currentOrientation: number;
-function setupOrientationListener(androidApp: AndroidApplication) {
-    androidApp.registerBroadcastReceiver(android.content.Intent.ACTION_CONFIGURATION_CHANGED, onConfigurationChanged);
-    currentOrientation = androidApp.context.getResources().getConfiguration().orientation;
-}
-
-function onConfigurationChanged(context: android.content.Context, intent: android.content.Intent) {
-    var orientation = context.getResources().getConfiguration().orientation;
-
-    if (currentOrientation !== orientation) {
-        currentOrientation = orientation;
-
-        var enums = require("ui/enums");
-
-        var newValue;
-        switch (orientation) {
-            case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
-                newValue = enums.DeviceOrientation.landscape;
-                break;
-            case android.content.res.Configuration.ORIENTATION_PORTRAIT:
-                newValue = enums.DeviceOrientation.portrait;
-                break;
-            default:
-                newValue = enums.DeviceOrientation.unknown;
-                break;
-        }
-
-        typedExports.notify(<definition.OrientationChangedEventData>{
-            eventName: typedExports.orientationChangedEvent,
-            android: context,
-            newValue: newValue,
-            object: typedExports.android,
-        });
-    }
 }
 
 function loadCss() {
