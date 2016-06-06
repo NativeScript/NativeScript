@@ -192,7 +192,7 @@ export class Frame extends frameCommon.Frame {
                 // We need to reverse the transitions because Android will ask the current fragment
                 // to create its POP EXIT animator due to popping the back stack, but in reality
                 // we need to create the EXIT animator because we are actually going forward and not back.
-                transitionModule._reverseTransitionsDirection(currentFragment);
+                transitionModule._prepareCurrentFragmentForClearHistory(currentFragment);
             }
             let firstEntryName = manager.getBackStackEntryAt(0).getName();
             if (trace.enabled) {

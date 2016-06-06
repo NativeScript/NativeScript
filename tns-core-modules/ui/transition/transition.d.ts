@@ -26,7 +26,7 @@
     export function _onFragmentShown(fragment: any, isBack: boolean): void;
     export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boolean): void;
     export function _removePageNativeViewFromAndroidParent(page: Page): void;
-    export function _reverseTransitionsDirection(fragment: any): void;
+    export function _prepareCurrentFragmentForClearHistory(fragment: any): void;
 
     export function _createIOSAnimatedTransitioning(navigationTransition: NavigationTransition, nativeCurve: any, operation: number, fromVC: any, toVC: any): any;
     //@endprivate
