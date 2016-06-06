@@ -402,6 +402,7 @@ export function _removePageNativeViewFromAndroidParent(page: Page): void {
             if (trace.enabled) {
                 trace.write(`REMOVED ${page}._nativeView from its Android parent`, trace.categories.Transition);
             }
+            page._onDetached(true);
             androidParent.removeView(page._nativeView);
         }
     }
