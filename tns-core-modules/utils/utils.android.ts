@@ -156,7 +156,9 @@ export module ad {
             if(com.tns.NativeScriptApplication) {
                 nativeApp = com.tns.NativeScriptApplication.getInstance();
             }
-            else {
+            
+            // the getInstance might return null if com.tns.NativeScriptApplication exists but is  not the starting app type
+            if(!nativeApp) {
                 // check whether application.android.init has been explicitly called
                 let application = require("application");
                 nativeApp = application.android.nativeApp;
@@ -173,6 +175,7 @@ export module ad {
                 }
             }
             
+            // we cannot work without having the app instance
             if(!nativeApp) {
                 throw new Error("Failed to retrieve native Android Application object. If you have a custom android.app.Application type implemented make sure that you've called the '<application-module>.android.init' method.")
             }
