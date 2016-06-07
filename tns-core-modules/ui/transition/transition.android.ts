@@ -1,5 +1,5 @@
 ﻿import { Transition as definitionTransition } from "ui/transition";
-import { NavigationTransition, BackstackEntry } from "ui/frame";
+import { NavigationTransition, BackstackEntry, topmost } from "ui/frame";
 import { Page} from "ui/page";
 import { getClass } from "utils/types";
 import { device } from "platform";
@@ -122,6 +122,15 @@ export function _setAndroidFragmentTransitions(navigationTransition: NavigationT
     }
     
     let useLollipopTransition = name && (name.indexOf("slide") === 0 || name === "fade" || name === "explode") && _sdkVersion() >= 21;
+    
+    // There is a problem when we have cachePagesOnNavigate on API Level 23 only.
+    // The exit transition of the current fragment ends immediately, the page UI is removed from the visual tree
+    // and a white spot is left in its place making the transition ugly. 
+    // So we will use the "old" pre-Lollipop transitions in this particular case.
+    if (topmost().android.cachePagesOnNavigate && _sdkVersion() === 23){
+        useLollipopTransition = false;
+    }
+    
     if (useLollipopTransition) {
         // setEnterTransition: Enter
         // setExitTransition: Exit
