@@ -6,7 +6,7 @@ import enums = require("ui/enums");
 
 global.moduleMerge(common, exports);
 
-common.orientationProperty.metadata.onValueChanged = function scrollViewOrientationChanged(data: dependencyObservable.PropertyChangeData) {
+common.orientationProperty.onValueChanged = function scrollViewOrientationChanged(data: dependencyObservable.PropertyChangeData) {
     (<ScrollView>data.object)._onOrientationChanged(data.oldValue, data.newValue);
 }
 

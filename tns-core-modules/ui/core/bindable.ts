@@ -1,6 +1,6 @@
 ﻿import definition = require("ui/core/bindable");
 import {Observable, PropertyChangeData} from "data/observable";
-import {DependencyObservable, Property, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData as DependencyPropertyChangeData} from "ui/core/dependency-observable";
+import {unsetValue, DependencyObservable, Property, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData as DependencyPropertyChangeData} from "ui/core/dependency-observable";
 import weakEvents = require("ui/core/weak-event-listener");
 import types = require("utils/types");
 import trace = require("trace");
@@ -60,9 +60,9 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
             binding.sourceIsBindingContext = true;
         }
 
-        if (!types.isNullOrUndefined(bindingSource)) {
-            binding.bind(bindingSource);
-        }
+        // if (!types.isNullOrUndefined(bindingSource)) {
+        binding.bind(bindingSource);
+        // }
     }
 
     public unbind(property: string) {
@@ -91,7 +91,7 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
         }
         super._onPropertyChanged(property, oldValue, newValue);
         if (this instanceof viewModule.View) {
-            if (property.metadata.inheritable && (<viewModule.View>(<any>this))._isInheritedChange() === true) {
+            if (property.inheritable && (<viewModule.View>(<any>this))._isInheritedChange() === true) {
                 return;
             }
         }
@@ -200,7 +200,7 @@ export class Binding {
             this.sourceOptions = undefined;
         }
     }
-    
+
     private sourceAsObject(source: any): any {
         /* tslint:disable */
         let objectType = typeof source;
@@ -521,7 +521,7 @@ export class Binding {
             return;
         }
 
-        this.updateOptions(this.targetOptions, value);
+        this.updateOptions(this.targetOptions, types.isNullOrUndefined(value) ? unsetValue : value);
     }
 
     private updateSource(value: any) {

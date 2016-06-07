@@ -5,6 +5,7 @@ import types = require("utils/types");
 // use private variables in the scope of the module rather than static members of the class since a member is still accessible through JavaScript and may be changed.
 var propertyFromKey = {};
 var propertyIdCounter = 0;
+export let unsetValue = new Object();
 
 function generatePropertyKey(name: string, ownerType: string, validate?: boolean) {
     if (validate) {
@@ -54,210 +55,107 @@ export module ValueSource {
 }
 
 export class PropertyMetadata implements definition.PropertyMetadata {
-    private _defaultValue: any;
-    private _options: number;
-    private _onChanged: definition.PropertyChangedCallback;
-    private _onValidateValue: definition.PropertyValidationCallback;
-    private _equalityComparer: definition.PropertyEqualityComparer;
+    public inheritable: boolean;
+    public affectsStyle: boolean;
+    public affectsLayout: boolean;
+    public onValueChanged: definition.PropertyChangedCallback;
 
     constructor(
-        defaultValue: any,
-        options?: number,
+        public defaultValue: any,
+        public options: number = PropertyMetadataSettings.None,
         onChanged?: definition.PropertyChangedCallback,
-        onValidateValue?: definition.PropertyValidationCallback,
-        equalityComparer?: definition.PropertyEqualityComparer) {
-        this._defaultValue = defaultValue;
-        this._options = options;
-        if (types.isNullOrUndefined(this._options)) {
-            this._options = PropertyMetadataSettings.None;
-        }
-        this._onChanged = onChanged;
-        this._onValidateValue = onValidateValue;
-        this._equalityComparer = equalityComparer;
-    }
-
-    public get defaultValue(): any {
-        return this._defaultValue;
-    }
-
-    public get options(): number {
-        return this._options;
-    }
-
-    public get onValueChanged(): definition.PropertyChangedCallback {
-        return this._onChanged;
-    }
-    public set onValueChanged(value: definition.PropertyChangedCallback) {
-        this._onChanged = value;
-    }
-
-    public get onValidateValue(): definition.PropertyValidationCallback {
-        return this._onValidateValue;
-    }
-
-    public get equalityComparer(): definition.PropertyEqualityComparer {
-        return this._equalityComparer;
-    }
-
-    public get affectsLayout(): boolean {
-        return (this._options & PropertyMetadataSettings.AffectsLayout) === PropertyMetadataSettings.AffectsLayout;
-    }
-
-    public get affectsStyle(): boolean {
-        return (this._options & PropertyMetadataSettings.AffectsStyle) === PropertyMetadataSettings.AffectsStyle;
-    }
-
-    public get inheritable(): boolean {
-        return (this._options & PropertyMetadataSettings.Inheritable) === PropertyMetadataSettings.Inheritable;
+        public onValidateValue?: definition.PropertyValidationCallback,
+        public equalityComparer?: definition.PropertyEqualityComparer) {
+        this.defaultValue = defaultValue;
+        this.options = options;
+        this.onValueChanged = onChanged;
+        this.onValidateValue = onValidateValue;
+        this.equalityComparer = equalityComparer;
+        this.inheritable = (options & PropertyMetadataSettings.Inheritable) === PropertyMetadataSettings.Inheritable;
+        this.affectsStyle = (options & PropertyMetadataSettings.AffectsStyle) === PropertyMetadataSettings.AffectsStyle;
+        this.affectsLayout = (options & PropertyMetadataSettings.AffectsLayout) === PropertyMetadataSettings.AffectsLayout;
     }
 }
 
+function property(property: Property): PropertyDecorator {
+    function _getValue() {
+        return this._getValue(property);
+    }
+
+    function _setValue(value: any) {
+        this._setValueInternal(property, value, ValueSource.Local);
+    }
+
+    return (target: Object, propertyKey: string) => {
+        Object.defineProperty(target, propertyKey, {
+            get: _getValue,
+            set: _setValue,
+            enumerable: true,
+            configurable: true
+        });
+    };
+}
+
 export class Property implements definition.Property {
-    private _metadata: PropertyMetadata;
-    private _key: string;
-    private _name: string;
-    private _ownerType: string;
-    private _id: number;
-    private _valueConverter: (value: any) => any;
-
-    constructor(name: string, ownerType: string, metadata: PropertyMetadata, valueConverter?: (value: string) => any) {
+    public key: string;
+    public id: number;
+    public defaultValue;
+    public onValidateValue;
+    public equalityComparer;
+    public inheritable;
+    public affectsStyle;
+    public affectsLayout;
+    public onValueChanged: definition.PropertyChangedCallback;
+    public nameEvent: string;
+    constructor(public name: string, public ownerType: string, public metadata: PropertyMetadata, public valueConverter?: (value: string) => any) {
         // register key
-        this._key = generatePropertyKey(name, ownerType, true);
+        this.key = generatePropertyKey(name, ownerType, true);
 
-        if (propertyFromKey[this._key]) {
+        if (propertyFromKey[this.key]) {
             throw new Error("Property " + name + " already registered for type " + ownerType + ".");
         }
 
-        propertyFromKey[this._key] = this;
+        propertyFromKey[this.key] = this;
 
         if (!metadata || !(metadata instanceof PropertyMetadata)) {
             throw new Error("Expected valid PropertyMetadata instance.");
         }
 
-        this._name = name;
-        this._ownerType = ownerType;
-        this._metadata = metadata;
+        this.name = name;
+        this.nameEvent = name + "Change";
+        this.ownerType = ownerType;
+        this.metadata = metadata;
 
         // generate a unique numeric id for each property (faster lookup than a string key)
-        this._id = propertyIdCounter++;
-        this._valueConverter = valueConverter;
+        this.id = propertyIdCounter++;
+        this.valueConverter = valueConverter;
+        this.defaultValue = metadata.defaultValue;
+        this.onValueChanged = metadata.onValueChanged;
+        this.onValidateValue = metadata.onValidateValue;
+        this.equalityComparer = metadata.equalityComparer || ((x, y) => x === y);
+        this.inheritable = metadata.inheritable;
+        this.affectsStyle = metadata.affectsStyle;
+        this.affectsLayout = metadata.affectsLayout;
     }
 
     public defaultValueGetter: (instance: definition.DependencyObservable) => definition.NativeValueResult;
-
-    public get name(): string {
-        return this._name;
-    }
-
-    public get id(): number {
-        return this._id;
-    }
-
-    public get metadata(): PropertyMetadata {
-        return this._metadata;
-    }
-
-    public isValidValue(value: Object): boolean {
-        if (this.metadata.onValidateValue) {
-            return this.metadata.onValidateValue(value);
-        }
-
-        // TODO: consider type check here (e.g. passing function where object is expected)
-        return true;
-    }
-
-    public get valueConverter(): (value: string) => any {
-        return this._valueConverter;
-    }
-
-    public _getEffectiveValue(entry: PropertyEntry): any {
-        if (types.isDefined(entry.localValue)) {
-            entry.valueSource = ValueSource.Local;
-            return entry.localValue;
-        }
-
-        if (types.isDefined(entry.inheritedValue)) {
-            entry.valueSource = ValueSource.Inherited;
-            return entry.inheritedValue;
-        }
-
-        entry.valueSource = ValueSource.Default;
-        return this.metadata.defaultValue;
-    }
 }
 
 export class PropertyEntry implements definition.PropertyEntry {
-    private _property: Property;
+    public valueSource: number = ValueSource.Default;
+    public inheritedValue: any;
+    public cssValue: any;
+    public localValue: any;
+    public effectiveValue: any;
+    public visualStateValue: any;
 
-    private _valueSource: number;
-    private _inheritedValue: any;
-    private _cssValue: any;
-    private _localValue: any;
-    private _effectiveValue: any;
-    private _visualStateValue: any;
-
-    constructor(property: Property) {
-        this._property = property;
-    }
-
-    get property(): Property {
-        return this._property;
-    }
-
-    get effectiveValue() {
-        if (!this._effectiveValue) {
-            this._effectiveValue = this._property._getEffectiveValue(this);
-        }
-
-        return this._effectiveValue;
-    }
-
-    get valueSource(): number {
-        return this._valueSource;
-    }
-    set valueSource(value: number) {
-        this._valueSource = value;
-    }
-
-    get localValue(): any {
-        return this._localValue;
-    }
-    set localValue(value: any) {
-        this._localValue = value;
-        this._effectiveValue = undefined;
-    }
-
-    get inheritedValue(): any {
-        return this._inheritedValue;
-    }
-    set inheritedValue(value: any) {
-        this._inheritedValue = value;
-        this._effectiveValue = undefined;
-    }
-
-    get cssValue(): any {
-        return this._cssValue;
-    }
-    set cssValue(value: any) {
-        this._cssValue = value;
-        this._effectiveValue = undefined;
-    }
-
-    get visualStateValue(): any {
-        return this._visualStateValue;
-    }
-    set visualStateValue(value: any) {
-        this._visualStateValue = value;
-        this._effectiveValue = undefined;
+    constructor(public property: Property) {
+        this.property = property;
     }
 
     public resetValue() {
-        this._valueSource = ValueSource.Default;
-        this._visualStateValue = undefined;
-        this._localValue = undefined;
-        this._cssValue = undefined;
-        this._inheritedValue = undefined;
-        this._effectiveValue = undefined;
+        this.valueSource = ValueSource.Default;
+        this.inheritedValue = this.cssValue = this.localValue = this.visualStateValue = this.effectiveValue = undefined;
     }
 }
 
@@ -269,7 +167,7 @@ export class DependencyObservable extends Observable implements definition.Depen
     public set(name: string, value: any) {
         var property = getPropertyByNameAndType(name, this);
         if (property) {
-            this._setValue(property, value, ValueSource.Local);
+            this._setValueInternal(property, value, ValueSource.Local);
         } else {
             super.set(name, value);
         }
@@ -285,16 +183,7 @@ export class DependencyObservable extends Observable implements definition.Depen
     }
 
     public _setValue(property: Property, value: any, source?: number) {
-        let realValue = WrappedValue.unwrap(value);
-        if (!property.isValidValue(realValue)) {
-            throw new Error("Invalid value " + realValue + " for property " + property.name);
-        }
-
-        if (types.isUndefined(source)) {
-            source = ValueSource.Local;
-        }
-
-        this._setValueInternal(property, value, source);
+        this._setValueInternal(property, value, source || ValueSource.Local);
     }
 
     public _getValueSource(property: Property): number {
@@ -311,12 +200,18 @@ export class DependencyObservable extends Observable implements definition.Depen
         if (entry) {
             return entry.effectiveValue;
         }
-        else if (property.defaultValueGetter) { // we check for cached properties only for these which have 'defaultValueGetter' defined;
+        else {
+            return this._getDefaultValue(property);
+        }
+    }
+
+    private _getDefaultValue(property: Property): any {
+        if (property.defaultValueGetter) { // we check for cached properties only for these which have 'defaultValueGetter' defined;
             // When DependencyProperties are removed from Style - fix this check.
             var view = (<any>this)._view || this;
             let key = types.getClass(view) + "." + property.id;
             let defaultValue = defaultValueForPropertyPerType.get(key);
-            if (types.isUndefined(defaultValue) && view._nativeView) {
+            if (!defaultValueForPropertyPerType.has(key) && view._nativeView) {
                 let defaultValueResult = property.defaultValueGetter(this);
                 defaultValue = defaultValueResult.result;
                 if (defaultValueResult.cacheable) {
@@ -327,70 +222,101 @@ export class DependencyObservable extends Observable implements definition.Depen
             return defaultValue;
         }
 
-        return property.metadata.defaultValue;
+        return property.defaultValue;
     }
 
-    public _resetValue(property: Property, source?: number) {
-        if (!(property.id in this._propertyEntries)) {
+    public _resetValue(property: Property, source: number = ValueSource.Local) {
+        let entry: PropertyEntry = this._propertyEntries[property.id];
+        if (!entry) {
             return;
         }
 
-        if (types.isDefined(source)) {
-            // resetting particular modifier to undefined will remove it from the effective value composition
-            this._setValueInternal(property, undefined, source);
-        } else {
-            var currentValue = this._getValue(property);
-            delete this._propertyEntries[property.id];
-            var newValue = this._getValue(property);
-
-            var comparer: (x: any, y: any) => boolean = property.metadata.equalityComparer || this._defaultComparer;
-            if (!comparer(currentValue, newValue)) {
-                this._onPropertyChanged(property, currentValue, newValue);
-            }
+        switch (source) {
+            case ValueSource.Inherited:
+                entry.inheritedValue = undefined;
+                break;
+            case ValueSource.Css:
+                entry.cssValue = undefined;
+                break;
+            case ValueSource.Local:
+                entry.localValue = undefined;
+                break;
+            case ValueSource.VisualState:
+                entry.visualStateValue = undefined;
+                break;
         }
+
+        let currentValueSource = entry.valueSource;
+        if (currentValueSource !== source) {
+            // If current valueSource is larget than the one we reset - do nothing. 
+            // We are reseting property will lower priority and it won't change effectValue;
+            // Reseting larger source means we somehow was able to set value without updating currentValueSource which is clearly a bug.
+            return;
+        }
+
+        let currentValue = entry.effectiveValue;
+        let newValue = this.getEffectiveValue(currentValueSource, entry, property);
+        if (!property.equalityComparer(currentValue, newValue)) {
+            // If we fallback to defalutValue - remove propertyEntry.
+            if (entry.valueSource === ValueSource.Default) {
+                delete this._propertyEntries[property.id];
+            }
+            else {
+                entry.effectiveValue = newValue;
+            }
+
+            this._onPropertyChanged(property, currentValue, newValue);
+        }
+
+        // if (types.isDefined(source)) {
+        //     // resetting particular modifier to undefined will remove it from the effective value composition
+        //     this._resetValueInternal(property, source);
+        // } else {
+        //     let currentValue = entry.effectiveValue;
+        //     delete this._propertyEntries[property.id];
+        //     let newValue = this._getDefaultValue(property);
+        //     if (!property.equalityComparer(currentValue, newValue)) {
+        //         this._onPropertyChanged(property, currentValue, newValue);
+        //     }
+        // }
     }
 
     public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
-        let realNewValue = WrappedValue.unwrap(newValue); 
-        if (property.metadata.onValueChanged) {
-            property.metadata.onValueChanged({
+        // let realNewValue = WrappedValue.unwrap(newValue);
+        let valueChanged = property.onValueChanged;
+        if (valueChanged) {
+            valueChanged({
                 object: this,
                 property: property,
                 eventName: Observable.propertyChangeEvent,
-                newValue: realNewValue,
+                newValue: newValue,
                 oldValue: oldValue
             });
         }
 
+        let propName = property.name;
         if (this.hasListeners(Observable.propertyChangeEvent)) {
-            var changeData = super._createPropertyChangeData(property.name, newValue);
+            let changeData = super._createPropertyChangeData(propName, newValue);
             this.notify(changeData);
         }
 
-        let eventName = property.name + "Change";
+        let eventName = property.nameEvent;
         if (this.hasListeners(eventName)) {
-            var ngChangedData = {
+            let ngChangedData = {
                 eventName: eventName,
-                propertyName: property.name,
+                propertyName: propName,
                 object: this,
-                value: realNewValue
+                value: newValue
             }
             this.notify(ngChangedData);
         }
     }
 
     public _eachSetProperty(callback: (property: Property) => boolean) {
-        var i;
-        var key;
-        var entry: PropertyEntry;
-        var retVal: boolean;
-        var keys = Object.keys(this._propertyEntries);
-
-        for (i = 0; i < keys.length; i++) {
-            key = keys[i];
-            entry = this._propertyEntries[key];
-            retVal = callback(entry.property);
-            if (!retVal) {
+        for (let i = 0, keys = Object.keys(this._propertyEntries); i < keys.length; i++) {
+            let key = keys[i];
+            let entry = this._propertyEntries[key];
+            if (!callback(entry.property)) {
                 break;
             }
         }
@@ -401,26 +327,46 @@ export class DependencyObservable extends Observable implements definition.Depen
     }
 
     private _setValueInternal(property: Property, value: any, source: number) {
-        let realValue = WrappedValue.unwrap(value);
-        // Convert the value to the real property type in case it is coming as a string from CSS or XML.
-        if (types.isString(realValue) && property.valueConverter) {
-            realValue = property.valueConverter(realValue);
+        if (value === unsetValue) {
+            this._resetValue(property, source);
+            return;
         }
 
-        var entry: PropertyEntry = this._propertyEntries[property.id];
+        let wrapped = value && value.wrapped;
+        let realValue = wrapped ? WrappedValue.unwrap(value) : value;
+        let validate = property.onValidateValue;
+        if (validate && !validate(realValue)) {
+            throw new Error("Invalid value " + realValue + " for property " + property.name);
+        }
+
+        // Convert the value to the real property type in case it is coming as a string from CSS or XML.
+        let converter = property.valueConverter;
+        if (converter && types.isString(realValue)) {
+            realValue = converter(realValue);
+        }
+
+        let entry: PropertyEntry = this._propertyEntries[property.id];
+        let currentValue;
         if (!entry) {
             entry = new PropertyEntry(property);
             this._propertyEntries[property.id] = entry;
+            currentValue = this._getDefaultValue(property);
+            // In rare case when we set local value equal to default value we need to update effectiveValue as well.
+            // Otherwise effectiveValue will stay undefined.
+            if (property.equalityComparer(currentValue, realValue)) {
+                entry.effectiveValue = realValue;
+            }
+        }
+        else {
+            currentValue = entry.effectiveValue;
         }
 
-        var currentValue = entry.effectiveValue;
-
         switch (source) {
-            case ValueSource.Css:
-                entry.cssValue = realValue;
-                break;
             case ValueSource.Inherited:
                 entry.inheritedValue = realValue;
+                break;
+            case ValueSource.Css:
+                entry.cssValue = realValue;
                 break;
             case ValueSource.Local:
                 entry.localValue = realValue;
@@ -430,13 +376,78 @@ export class DependencyObservable extends Observable implements definition.Depen
                 break;
         }
 
-        var comparer: (x: any, y: any) => boolean = property.metadata.equalityComparer || this._defaultComparer;
-        if ((value && value.wrapped) || !comparer(currentValue, entry.effectiveValue)) {
-            this._onPropertyChanged(property, currentValue, entry.effectiveValue);
+        let currentValueSource = entry.valueSource;
+        if (currentValueSource > source) {
+            return;
+        }
+        else if (currentValueSource < source) {
+            entry.valueSource = source;
+        }
+
+        if (wrapped || !property.equalityComparer(currentValue, realValue)) {
+            if (realValue === undefined) {
+                realValue = this.getEffectiveValue(currentValueSource, entry, property);
+            }
+
+            entry.effectiveValue = realValue;
+            this._onPropertyChanged(property, currentValue, realValue);
         }
     }
 
-    private _defaultComparer(x: any, y: any): boolean {
-        return x === y;
+    private getEffectiveValue(currentValueSource: number, entry: PropertyEntry, property: Property): any {
+        let newValue: any;
+        switch (currentValueSource) {
+            case ValueSource.Inherited:
+                newValue = property.defaultValue;
+                entry.valueSource = ValueSource.Default;
+                break;
+
+            case ValueSource.Css:
+                if (entry.inheritedValue !== undefined) {
+                    newValue = entry.inheritedValue;
+                    entry.valueSource = ValueSource.Inherited;
+                }
+                else {
+                    newValue = property.defaultValue;
+                    entry.valueSource = ValueSource.Default;
+                }
+                break;
+
+            case ValueSource.Local:
+                if (entry.cssValue !== undefined) {
+                    newValue = entry.cssValue;
+                    entry.valueSource = ValueSource.Css;
+                }
+                else if (entry.inheritedValue !== undefined) {
+                    newValue = entry.inheritedValue;
+                    entry.valueSource = ValueSource.Inherited;
+                }
+                else {
+                    newValue = property.defaultValue;
+                    entry.valueSource = ValueSource.Default;
+                }
+                break;
+
+            case ValueSource.VisualState:
+                if (entry.localValue !== undefined) {
+                    newValue = entry.localValue;
+                    entry.valueSource = ValueSource.Local;
+                }
+                else if (entry.cssValue !== undefined) {
+                    newValue = entry.cssValue;
+                    entry.valueSource = ValueSource.Css;
+                }
+                else if (entry.inheritedValue !== undefined) {
+                    newValue = entry.inheritedValue;
+                    entry.valueSource = ValueSource.Inherited;
+                }
+                else {
+                    newValue = property.defaultValue;
+                    entry.valueSource = ValueSource.Default;
+                }
+                break;
+        }
+
+        return newValue;
     }
 }

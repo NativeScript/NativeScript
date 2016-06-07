@@ -61,7 +61,7 @@ export class Button extends common.Button {
 
     public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
         super._onPropertyChanged(property, oldValue, newValue);
-        if (property.metadata.affectsStyle) {
+        if (property.affectsStyle) {
             this._updateHandler();
         }
     }

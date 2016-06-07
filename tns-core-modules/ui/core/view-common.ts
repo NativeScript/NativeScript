@@ -419,7 +419,7 @@ export class View extends ProxyObject implements definition.View {
     set opacity(value: number) {
         this.style.opacity = value;
     }
-            
+
     //END Style property shortcuts
 
     get translateX(): number {
@@ -585,16 +585,13 @@ export class View extends ProxyObject implements definition.View {
         super._onPropertyChanged(property, oldValue, newValue);
 
         if (this._childrenCount > 0) {
-            var shouldUpdateInheritableProps = ((property.metadata && property.metadata.inheritable) &&
-                !(property instanceof styling.Property));
-            var that = this;
+            let shouldUpdateInheritableProps = (property.inheritable && !(property instanceof styling.Property));
             if (shouldUpdateInheritableProps) {
-                var notifyEachChild = function (child: View) {
-                    child._setValue(property, that._getValue(property), ValueSource.Inherited);
-                    return true;
-                };
                 this._updatingInheritedProperties = true;
-                this._eachChildView(notifyEachChild);
+                this._eachChildView((child) => {
+                    child._setValue(property, this._getValue(property), ValueSource.Inherited);
+                    return true;
+                });
                 this._updatingInheritedProperties = false;
             }
         }
@@ -1010,19 +1007,13 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public _inheritProperties(parentView: View) {
-        var that = this;
-        var inheritablePropertySetCallback = function (property: Property) {
-            if (property instanceof styling.Property) {
-                return true;
-            }
-            if (property.metadata && property.metadata.inheritable) {
-                var baseValue = parentView._getValue(property);
-                that._setValue(property, baseValue, ValueSource.Inherited);
+        parentView._eachSetProperty((property) => {
+            if (!(property instanceof styling.Property) && property.inheritable) {
+                let baseValue = parentView._getValue(property);
+                this._setValue(property, baseValue, ValueSource.Inherited);
             }
             return true;
-        };
-
-        parentView._eachSetProperty(inheritablePropertySetCallback);
+        });
     }
 
     /**
@@ -1056,16 +1047,12 @@ export class View extends ProxyObject implements definition.View {
         ensureBindable();
 
         view._setValue(bindable.Bindable.bindingContextProperty, undefined, ValueSource.Inherited);
-        var inheritablePropertiesSetCallback = function (property: Property) {
-            if (property instanceof styling.Property) {
-                return true;
-            }
-            if (property.metadata && property.metadata.inheritable) {
+        view._eachSetProperty((property) => {
+            if (!(property instanceof styling.Property) && property.inheritable) {
                 view._resetValue(property, ValueSource.Inherited);
             }
             return true;
-        }
-        view._eachSetProperty(inheritablePropertiesSetCallback);
+        });
     }
 
     public _parentChanged(oldParent: View): void {
@@ -1209,7 +1196,7 @@ export class View extends ProxyObject implements definition.View {
             }
         }
     }
-    
+
     public toString(): string {
         var str = this.typeName;
         if (this.id) {

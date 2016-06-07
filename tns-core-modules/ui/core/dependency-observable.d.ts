@@ -5,6 +5,10 @@ declare module "ui/core/dependency-observable" {
     import observable = require("data/observable");
 
     /**
+     * Value specifing that Property value should be reset. Used when bindingContext on bound property is creared/null.
+     */
+    export let unsetValue: Object;
+    /**
      * Interface used by Propery 'defaultValueGetter' function to specify if the default value returned by the native instance can be cached or not.
      * One example is - android.widget.Button background. It is state drawable so it cannot be reused/cached.
      */
@@ -17,6 +21,7 @@ declare module "ui/core/dependency-observable" {
      * Represents a special Property which supports changed callback, metadata and value validation.
      */
     export class Property {
+
         /**
          * Creates a new Property instance.
          * @param name The name of the property.
@@ -25,17 +30,17 @@ declare module "ui/core/dependency-observable" {
          * @param valueConverter A function that can create an instance of the property type given a string. Used when parsing CSS and XML attribute values which are strings.
          */
         constructor(name: string, ownerType: string, metadata: PropertyMetadata, valueConverter?: (value: string) => any);
-        
+
         /**
          * Gets the name of the property. This is a read-only property.
          */
         name: string;
-        
+
         /**
          * Gets the id of the property. This is used for fast lookup. This is a read-only property.
          */
         id: number;
-        
+
         /**
          * Gets the PropertyMetadata object associated with the property. This is a read-only property.
          */
@@ -51,6 +56,14 @@ declare module "ui/core/dependency-observable" {
          * If default value is 'undefined' and this property is set this function will be used to extract the default value from the native instance.
          */
         defaultValueGetter: (instance: DependencyObservable) => NativeValueResult;
+
+        defaultValue: any;
+        onValueChanged: PropertyChangedCallback;
+        onValidateValue: PropertyValidationCallback;
+        equalityComparer: PropertyEqualityComparer;
+        affectsLayout: boolean;
+        inheritable: boolean;
+        affectsStyle: boolean;
     }
 
     /**
@@ -68,7 +81,7 @@ declare module "ui/core/dependency-observable" {
         constructor(
             defaultValue: any,
             options?: number,
-            onChanged?: PropertyChangedCallback, 
+            onChanged?: PropertyChangedCallback,
             onValidateValue?: PropertyValidationCallback,
             equalityComparer?: PropertyEqualityComparer);
 

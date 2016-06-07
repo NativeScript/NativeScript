@@ -624,7 +624,7 @@ export class ViewStyler implements style.Styler {
     }
 
     private static resetNativeLayoutParamsProperty(view: View, nativeValue: any): void {
-        ViewStyler.setNativeLayoutParamsProperty(view, style.nativeLayoutParamsProperty.metadata.defaultValue)
+        ViewStyler.setNativeLayoutParamsProperty(view, style.nativeLayoutParamsProperty.defaultValue)
     }
 
     private static setPaddingProperty(view: View, newValue: Thickness) {

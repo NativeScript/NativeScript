@@ -66,7 +66,7 @@ var runTest = function (testInfo: TestInfoEntry) {
         if (testInfo.isTest) {
             duration = time() - start;
             testInfo.duration = duration;
-            write(`--- [${testInfo.testName}] FAILED: ${e.message}, duration: ${duration}`, trace.messageType.error);
+            write(`--- [${testInfo.testName}] FAILED: ${e.message}, Stack: ${e.stack}, duration: ${duration}`, trace.messageType.error);
             testInfo.isPassed = false;
             testInfo.errorMessage = e.message;
         }
