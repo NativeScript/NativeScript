@@ -37,9 +37,10 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_default_TNS_values() {
-        TKUnit.assertEqual(this.testView.orientation, enums.Orientation.vertical, "Default this.testView.orientation");
-        TKUnit.assertEqual(this.testView.verticalOffset, 0, "Default this.testView.verticalOffset");
-        TKUnit.assertEqual(this.testView.horizontalOffset, 0, "Default this.testView.horizontalOffset");
+        let scroll = new scrollViewModule.ScrollView();
+        TKUnit.assertEqual(scroll.orientation, enums.Orientation.vertical, "Default this.testView.orientation");
+        TKUnit.assertEqual(scroll.verticalOffset, 0, "Default this.testView.verticalOffset");
+        TKUnit.assertEqual(scroll.horizontalOffset, 0, "Default this.testView.horizontalOffset");
     }
 
     public test_vertical_oriantation_creates_correct_native_view() {

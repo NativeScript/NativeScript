@@ -225,9 +225,9 @@ export function test_PropertyMetadata_Options() {
 
     var p = new dependencyObservableModule.Property(generatePropertyName(), "testOwner", new dependencyObservableModule.PropertyMetadata(0, options));
 
-    TKUnit.assert(p.metadata.affectsLayout === true, "PropertyMetadata.affectsLayout not working as expected.");
-    TKUnit.assert(p.metadata.affectsStyle === true, "PropertyMetadata.affectsStyle not working as expected.");
-    TKUnit.assert(p.metadata.inheritable === true, "PropertyMetadata.inheritable not working as expected.");
+    TKUnit.assert(p.affectsLayout === true, "Property.affectsLayout not working as expected.");
+    TKUnit.assert(p.affectsStyle === true, "Property.affectsStyle not working as expected.");
+    TKUnit.assert(p.inheritable === true, "Property.inheritable not working as expected.");
     TKUnit.assert(p.metadata.options === options, "PropertyMetadata.options not properly set.");
 }
 
@@ -236,34 +236,16 @@ export function test_PropertyEntry_effectiveValue() {
     var entry = new dependencyObservableModule.PropertyEntry(p);
 
     // default value
-    TKUnit.assert(entry.effectiveValue === p.metadata.defaultValue, "ValueSource.Default not working as expected.");
-    TKUnit.assert(entry.valueSource === dependencyObservableModule.ValueSource.Default, "ValueSource.Default not working as expected.");
-
-    // inherited value
-    entry.inheritedValue = 5;
-    TKUnit.assert(entry.effectiveValue === 5, "PropertyEntry.inheritedValue not working as expected.");
-    TKUnit.assert(entry.valueSource === dependencyObservableModule.ValueSource.Inherited, "ValueSource.Inherited not working as expected.");
+    TKUnit.assertEqual(entry.effectiveValue, undefined, "effectiveValue should be undefined.");
+    TKUnit.assertEqual(entry.valueSource, dependencyObservableModule.ValueSource.Default, "ValueSource.Default not working as expected.");
 
     // local value
     entry.localValue = 10;
-    TKUnit.assert(entry.effectiveValue === 10, "PropertyEntry.localValue not working as expected.");
-    TKUnit.assert(entry.valueSource === dependencyObservableModule.ValueSource.Local, "ValueSource.Local not working as expected.");
-
-    // the default Property implementation counts the above three modifier ONLY, it should skip the Css and VisualState ones
-    // css value
-    entry.cssValue = 20;
-    TKUnit.assert(entry.effectiveValue === 10, "PropertyEntry.cssValue should work for Style properties ONLY.");
-    TKUnit.assert(entry.valueSource === dependencyObservableModule.ValueSource.Local, "ValueSource.Local not working as expected.");
-
-    // visual state value
-    entry.visualStateValue = 30;
-    TKUnit.assert(entry.effectiveValue === 10, "PropertyEntry.visualStateValue should work for Style properties ONLY.");
-    TKUnit.assert(entry.valueSource === dependencyObservableModule.ValueSource.Local, "ValueSource.Local not working as expected.");
-
     entry.resetValue();
+    
     // default value
-    TKUnit.assert(entry.effectiveValue === p.metadata.defaultValue, "ValueSource.Default not working as expected.");
-    TKUnit.assert(entry.valueSource === dependencyObservableModule.ValueSource.Default, "ValueSource.Default not working as expected.");
+    TKUnit.assertEqual(entry.effectiveValue, undefined, "ValueSource.Default not working as expected.");
+    TKUnit.assertEqual(entry.valueSource, dependencyObservableModule.ValueSource.Default, "ValueSource.Default not working as expected.");
 }
 
 export function test_DependencyObservable_get_set_AreOverriden() {
@@ -281,29 +263,29 @@ export function test_DependencyObservable_getValue_setValue() {
 
     // implicitly use ValueSource.Local when not specified
     dO._setValue(testProperty1, 5);
-    TKUnit.assert(dO.test1 === 5, "expected true after _setValue.");
-    TKUnit.assert(dO._getValueSource(testProperty1) === dependencyObservableModule.ValueSource.Local, "_setValue without third parameter should use ValueSource.Local");
+    TKUnit.assertEqual(dO.test1, 5, "expected true after _setValue.");
+    TKUnit.assertEqual(dO._getValueSource(testProperty1), dependencyObservableModule.ValueSource.Local, "_setValue without third parameter should use ValueSource.Local");
 
     dO._setValue(testProperty1, 10, dependencyObservableModule.ValueSource.Inherited);
-    TKUnit.assert(dO.test1 === 5, "ValueSource.Local should have higher priority than Inherited.");
+    TKUnit.assertEqual(dO.test1, 5, "ValueSource.Local should have higher priority than Inherited.");
 
     // revert to default value
     dO._resetValue(testProperty1);
-    TKUnit.assert(dO.test1 === testProperty1.metadata.defaultValue, "_resetValue should revert to metadata.defaultValue");
+    TKUnit.assertEqual(dO.test1, 10, "_resetValue should revert to inheritedValue");
 
     // test the ValueSource parameter
     dO._setValue(testProperty1, 10, dependencyObservableModule.ValueSource.Inherited);
-    TKUnit.assert(dO.test1 === 10, "_setValue with three parameters not working as expected.");
-    TKUnit.assert(dO._getValueSource(testProperty1) === dependencyObservableModule.ValueSource.Inherited, "expected ValueSource.Inherited");
+    TKUnit.assertEqual(dO.test1, 10, "_setValue with three parameters not working as expected.");
+    TKUnit.assertEqual(dO._getValueSource(testProperty1), dependencyObservableModule.ValueSource.Inherited, "expected ValueSource.Inherited");
 
     dO._setValue(testProperty1, 20, dependencyObservableModule.ValueSource.Local);
-    TKUnit.assert(dO.test1 === 20, "_setValue with three parameters not working as expected.");
-    TKUnit.assert(dO._getValueSource(testProperty1) === dependencyObservableModule.ValueSource.Local, "expected ValueSource.Local");
+    TKUnit.assertEqual(dO.test1, 20, "_setValue with three parameters not working as expected.");
+    TKUnit.assertEqual(dO._getValueSource(testProperty1), dependencyObservableModule.ValueSource.Local, "expected ValueSource.Local");
 
     // reset the Local value and verify the effectiveValue will be reverted to the Inherited one.
     dO._resetValue(testProperty1, dependencyObservableModule.ValueSource.Local);
-    TKUnit.assert(dO.test1 === 10, "_resetValue for ValueSource not working as expected.");
-    TKUnit.assert(dO._getValueSource(testProperty1) === dependencyObservableModule.ValueSource.Inherited, "expected ValueSource.Inherited");
+    TKUnit.assertEqual(dO.test1, 10, "_resetValue for ValueSource not working as expected.");
+    TKUnit.assertEqual(dO._getValueSource(testProperty1), dependencyObservableModule.ValueSource.Inherited, "expected ValueSource.Inherited");
 }
 
 export function test_PropertyMetadata_onValueChanged_Callback_IsInvoked() {

@@ -910,20 +910,17 @@ export class Style extends DependencyObservable implements styling.Style {
 
         // The effective value of an inheritable property has changed
         // propagate the change down to the descendants to update their inherited properties.
-        if (this._view._childrenCount === 0 || !property.metadata.inheritable) {
+        if (this._view._childrenCount === 0 || !property.inheritable) {
             return;
         }
 
-        var eachChild = function (child: View): boolean {
+        this._view._eachChildView((child: View) => {
             child.style._inheritStyleProperty(property);
             return true;
-        }
-
-        this._view._eachChildView(eachChild);
+        });
     }
 
     private _applyStyleProperty(property: Property, newValue: any) {
-        
         if (!this._view._shouldApplyStyleHandlers()) {
             return;
         }
@@ -934,7 +931,7 @@ export class Style extends DependencyObservable implements styling.Style {
         }
 
         try {
-            var handler: definition.StylePropertyChangedHandler = getHandler(property, this._view);
+            let handler: definition.StylePropertyChangedHandler = getHandler(property, this._view);
 
             if (!handler) {
                 if (trace.enabled) {
@@ -946,12 +943,12 @@ export class Style extends DependencyObservable implements styling.Style {
                     trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
                 }
 
-                var shouldReset = false;
-                if (property.metadata.equalityComparer) {
-                    shouldReset = property.metadata.equalityComparer(newValue, property.metadata.defaultValue);
+                let shouldReset = false;
+                if (property.equalityComparer) {
+                    shouldReset = property.equalityComparer(newValue, property.defaultValue);
                 }
                 else {
-                    shouldReset = (newValue === property.metadata.defaultValue);
+                    shouldReset = (newValue === property.defaultValue);
                 }
 
                 if (shouldReset) {
@@ -971,12 +968,12 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 
     public _inheritStyleProperty(property: Property) {
-        if (!property.metadata.inheritable) {
+        if (!property.inheritable) {
             throw new Error("An attempt was made to inherit a style property which is not marked as 'inheritable'.");
         }
 
-        var currentParent = this._view.parent;
-        var valueSource: number;
+        let currentParent = this._view.parent;
+        let valueSource: number;
 
         while (currentParent) {
             valueSource = currentParent.style._getValueSource(property);
@@ -990,9 +987,8 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 
     public _inheritStyleProperties() {
-        var that = this;
         styleProperty.eachInheritableProperty((p) => {
-            that._inheritStyleProperty(p);
+            this._inheritStyleProperty(p);
         });
     }
 
