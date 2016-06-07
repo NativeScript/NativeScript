@@ -112,31 +112,23 @@ export class ActionBar extends common.ActionBar {
     }
 
     private populateMenuItems(navigationItem: UINavigationItem) {
-        var items = this.actionItems.getVisibleItems();
-        var leftBarItems = [];
-        var rightBarItems = [];
-
-        for (var i = 0; i < items.length; i++) {
-            var barButtonItem = this.createBarButtonItem(items[i]);
+        let items = this.actionItems.getVisibleItems();
+        let leftBarItems = [];
+        let rightBarItems = [];
+        for (let i = 0; i < items.length; i++) {
+            let barButtonItem = this.createBarButtonItem(items[i]);
             if (items[i].ios.position === enums.IOSActionItemPosition.left) {
                 leftBarItems.push(barButtonItem);
             }
             else {
-                rightBarItems.push(barButtonItem);
+                rightBarItems.splice(0, 0, barButtonItem);
             }
         }
-
-        var leftArray: NSMutableArray = leftBarItems.length > 0 ? NSMutableArray.new() : null;
-        leftBarItems.forEach((barItem, i, a) => leftArray.addObject(barItem));
-
-        // Right items should be added in reverse because they are added from right to left
-        var rightArray: NSMutableArray = rightBarItems.length > 0 ? NSMutableArray.new() : null;
-        rightBarItems.reverse();
-        rightBarItems.forEach((barItem, i, a) => rightArray.addObject(barItem));
-
-        navigationItem.leftItemsSupplementBackButton = true;
-        navigationItem.setLeftBarButtonItemsAnimated(leftArray, true);
-        navigationItem.setRightBarButtonItemsAnimated(rightArray, true);
+        navigationItem.setLeftBarButtonItemsAnimated(<any>leftBarItems, false);
+        navigationItem.setRightBarButtonItemsAnimated(<any>rightBarItems, false);
+        if (leftBarItems.length > 0) {
+            navigationItem.leftItemsSupplementBackButton = true;
+        }
     }
 
     private createBarButtonItem(item: dts.ActionItem): UIBarButtonItem {
