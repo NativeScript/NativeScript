@@ -41,3 +41,4 @@ tns-core-modules.es6.d.ts
 
 tests/platforms/
 tests/lib/
+*.log
