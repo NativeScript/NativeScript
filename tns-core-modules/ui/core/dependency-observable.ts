@@ -77,24 +77,24 @@ export class PropertyMetadata implements definition.PropertyMetadata {
     }
 }
 
-function property(property: Property): PropertyDecorator {
-    function _getValue() {
-        return this._getValue(property);
-    }
+// function property(property: Property): PropertyDecorator {
+//     function _getValue() {
+//         return this._getValue(property);
+//     }
 
-    function _setValue(value: any) {
-        this._setValueInternal(property, value, ValueSource.Local);
-    }
+//     function _setValue(value: any) {
+//         this._setValueInternal(property, value, ValueSource.Local);
+//     }
 
-    return (target: Object, propertyKey: string) => {
-        Object.defineProperty(target, propertyKey, {
-            get: _getValue,
-            set: _setValue,
-            enumerable: true,
-            configurable: true
-        });
-    };
-}
+//     return (target: Object, propertyKey: string) => {
+//         Object.defineProperty(target, propertyKey, {
+//             get: _getValue,
+//             set: _setValue,
+//             enumerable: true,
+//             configurable: true
+//         });
+//     };
+// }
 
 export class Property implements definition.Property {
     public key: string;
