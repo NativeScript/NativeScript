@@ -558,6 +558,38 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         }
     }
 
+    public test_RemovingChildViewsBeforeListView() {
+        var listView = this.testView;
+        var converterCalledCounter = 0;
+
+        var testConverter = function (value) {
+            converterCalledCounter++;
+            return value;
+        }
+
+        app.resources["testConverter"] = testConverter;
+
+        var listViewModel = new observable.Observable();
+        listViewModel.set("items", [1, 2, 3]);
+        listView.bindingContext = listViewModel;
+
+        listView.bind({ sourceProperty: "items", targetProperty: "items" });
+        listView.itemTemplate = "<StackLayout><Label id=\"testLabel\" text=\"{{ $value, $value | testConverter }}\" /></StackLayout>";
+
+        this.waitUntilListViewReady();
+
+        if (platform.isAndroid) {
+            // simulates Angular way of removing views
+            (<any>listView)._realizedItems.forEach((view, nativeView, map) => {
+                console.log("view: " + view);
+                listView._removeView(view);
+            });
+            this.tearDown();
+            // should not crash
+            TKUnit.assertTrue(true);
+        }
+    }
+
     public test_no_memory_leak_when_items_is_regular_array() {
         let weakRef = new WeakRef<listViewModule.ListView>(this.testView);
         weakRef.get().items = FEW_ITEMS;
