@@ -236,7 +236,7 @@ export class Frame extends frameCommon.Frame {
             // This bug is fixed on API19+
             ensureAnimationFixed();
             let trans: number;
-            if (this.android.cachePagesOnNavigate && animationFixed < 0) {
+            if (this.android.cachePagesOnNavigate && animationFixed < 0 && !navigationTransition) {
                 // Apparently, there is an Android bug with when hiding fragments with animation.
                 // https://code.google.com/p/android/issues/detail?id=32405
                 // When bug is fixed use animated variable.
