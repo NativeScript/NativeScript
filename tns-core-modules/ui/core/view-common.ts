@@ -15,17 +15,9 @@ import {PropertyMetadataSettings, PropertyChangeData, Property, ValueSource, Pro
 import {registerSpecialProperty} from "ui/builder/special-properties";
 import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
 import * as visualStateConstants from "ui/styling/visual-state-constants";
-import * as bindableModule from "ui/core/bindable";
 import * as visualStateModule from "../styling/visual-state";
 import * as animModule from "ui/animation";
 import { Source } from "utils/debug";
-
-var bindable: typeof bindableModule;
-function ensureBindable() {
-    if (!bindable) {
-        bindable = require("ui/core/bindable");
-    }
-}
 
 var visualState: typeof visualStateModule;
 function ensureVisualState() {
@@ -175,20 +167,17 @@ export class View extends ProxyObject implements definition.View {
     private _isLoaded: boolean;
     private _isLayoutValid: boolean = false;
 
+    private _updatingInheritedProperties: boolean;
     private _registeredAnimations: Array<keyframeAnimationModule.KeyframeAnimation>;
 
     public _domId: number;
     public _isAddedToNativeVisualTree = false;
-
     public _cssClasses: Array<string> = [];
-
     public _gestureObservers = {};
 
     public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver> {
         return this._gestureObservers[type];
     }
-
-    private _updatingInheritedProperties: boolean;
 
     constructor() {
         super({});
@@ -208,7 +197,6 @@ export class View extends ProxyObject implements definition.View {
 
     public addEventListener(arg: string | gestures.GestureTypes, callback: (data: observable.EventData) => void, thisArg?: any) {
         if (types.isString(arg)) {
-
             arg = getEventOrGestureName(<string>arg);
 
             var gesture = gestures.fromString(<string>arg);
@@ -521,6 +509,10 @@ export class View extends ProxyObject implements definition.View {
         throw new Error("View.style property is read-only.");
     }
 
+    get isLayoutRequired(): boolean {
+        return true;
+    }
+
     get isLayoutValid(): boolean {
         return this._isLayoutValid;
     }
@@ -687,7 +679,6 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public static layoutChild(parent: View, child: View, left: number, top: number, right: number, bottom: number): void {
-
         if (!child || !child._isVisible) {
             return;
         }
@@ -702,11 +693,11 @@ export class View extends ProxyObject implements definition.View {
         var childHeight = child.getMeasuredHeight();
 
         var vAlignment: string;
-        if (lp.height >= 0 && child.verticalAlignment === enums.VerticalAlignment.stretch) {
+        if (lp.height >= 0 && lp.verticalAlignment === enums.VerticalAlignment.stretch) {
             vAlignment = enums.VerticalAlignment.center;
         }
         else {
-            vAlignment = child.verticalAlignment;
+            vAlignment = lp.verticalAlignment;
         }
 
         let marginTop = lp.topMargin;
@@ -736,11 +727,11 @@ export class View extends ProxyObject implements definition.View {
         }
 
         var hAlignment: string;
-        if (lp.width >= 0 && child.horizontalAlignment === enums.HorizontalAlignment.stretch) {
+        if (lp.width >= 0 && lp.horizontalAlignment === enums.HorizontalAlignment.stretch) {
             hAlignment = enums.HorizontalAlignment.center;
         }
         else {
-            hAlignment = child.horizontalAlignment;
+            hAlignment = lp.horizontalAlignment;
         }
 
         switch (hAlignment) {
@@ -771,6 +762,7 @@ export class View extends ProxyObject implements definition.View {
         if (trace.enabled) {
             trace.write(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, trace.categories.Layout);
         }
+
         child.layout(childLeft, childTop, childRight, childBottom);
     }
 
@@ -779,7 +771,6 @@ export class View extends ProxyObject implements definition.View {
         var measureHeight = 0;
 
         if (child && child._isVisible) {
-
             var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
             var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -840,7 +831,7 @@ export class View extends ProxyObject implements definition.View {
                 // Parent has imposed an exact size on us
                 case utils.layout.EXACTLY:
                     resultSize = measureLength;
-                    var stretched = horizontal ? view.horizontalAlignment === enums.HorizontalAlignment.stretch : view.verticalAlignment === enums.VerticalAlignment.stretch;
+                    var stretched = horizontal ? lp.horizontalAlignment === enums.HorizontalAlignment.stretch : lp.verticalAlignment === enums.VerticalAlignment.stretch;
 
                     // if stretched - nativeView wants to be our size. So be it.
                     // else - nativeView wants to determine its own size. It can't be bigger than us.
@@ -1044,9 +1035,7 @@ export class View extends ProxyObject implements definition.View {
             view.onUnloaded();
         }
 
-        ensureBindable();
-
-        view._setValue(bindable.Bindable.bindingContextProperty, undefined, ValueSource.Inherited);
+        view._setValue(ProxyObject.bindingContextProperty, undefined, ValueSource.Inherited);
         view._eachSetProperty((property) => {
             if (!(property instanceof styling.Property) && property.inheritable) {
                 view._resetValue(property, ValueSource.Inherited);

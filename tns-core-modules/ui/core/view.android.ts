@@ -280,6 +280,10 @@ export class View extends viewCommon.View {
         return this.android;
     }
 
+    get isLayoutRequired(): boolean {
+        return !this.isLayoutValid;
+    }
+
     get isLayoutValid(): boolean {
         if (this._nativeView) {
             return !this._nativeView.isLayoutRequested();

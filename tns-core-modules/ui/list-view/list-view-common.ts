@@ -174,7 +174,8 @@ export class ListView extends view.View implements definition.ListView {
     }
 
     private _getDataItem(index: number): any {
-        return this.items.getItem ? this.items.getItem(index) : this.items[index];
+        let thisItems = this.items;
+        return thisItems.getItem ? thisItems.getItem(index) : thisItems[index];
     }
 
     public _getDefaultItemContent(index: number): view.View {

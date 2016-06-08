@@ -94,6 +94,10 @@ export class View extends viewCommon.View {
         return this.ios;
     }
 
+    get isLayoutRequired(): boolean {
+        return (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED;
+    }
+
     get isLayoutRequested(): boolean {
         return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
     }
@@ -109,7 +113,6 @@ export class View extends viewCommon.View {
     }
 
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-
         var measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
         var forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
         if (forceLayout || measureSpecsChanged) {
@@ -136,9 +139,11 @@ export class View extends viewCommon.View {
             this.onLayout(left, top, right, bottom);
             this._privateFlags &= ~PFLAG_LAYOUT_REQUIRED;
         }
+
         if (sizeChanged) {
             this._onSizeChanged();
         }
+
         this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
     }
 
