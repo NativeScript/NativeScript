@@ -49,6 +49,11 @@
         //@private
         _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData): void;
         _setFormattedTextPropertyToNative(value: any): void;
+        /**
+         * @private
+         * Called when the text property is changed to request layout.
+         */
+        _requestLayoutOnTextChanged(): void;
         //@endprivate
     }
 }
