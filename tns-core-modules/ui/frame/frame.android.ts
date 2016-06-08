@@ -728,9 +728,6 @@ class FragmentClass extends android.app.Fragment {
 
 class ActivityCallbacksImplementation implements definition.AndroidActivityCallbacks {
     private _rootView: View;
-    
-    constructor() {
-    }
 
     public onCreate(activity: android.app.Activity, savedInstanceState: android.os.Bundle, superFunc: Function): void {
         if (trace.enabled) {
