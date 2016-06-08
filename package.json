@@ -38,6 +38,8 @@
     "test-watch-android": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync android --path tests --watch\"",
     "test-watch-ios": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync ios --path tests --watch\"",
     "pretest": "npm run link-tests && npm run tsc",
-    "test": "tns run android --path tests --justlaunch && tns run ios --path tests --justlaunch"
+    "test-android": "tns run android --path tests --justlaunch",
+    "test-ios": "tns run ios --path tests --justlaunch",
+    "test": "npm run test-android && npm run test-ios"
   }
 }
