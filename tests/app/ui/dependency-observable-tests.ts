@@ -232,7 +232,6 @@ export function test_PropertyMetadata_Options() {
 }
 
 export function test_PropertyEntry_effectiveValue() {
-    var p = new dependencyObservableModule.Property(generatePropertyName(), "testOwner", new dependencyObservableModule.PropertyMetadata(0));
     var entry = new dependencyObservableModule.PropertyEntry();
 
     // default value
