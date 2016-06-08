@@ -57,8 +57,16 @@ class UILabelImpl extends UILabel {
     }
 }
 
+enum FixedSize {
+    NONE = 0,
+    WIDTH = 1,
+    HEIGHT = 2,
+    BOTH = 3
+}
+
 export class Label extends common.Label {
     private _ios: UILabel;
+    private _fixedSize: FixedSize;
 
     constructor() {
         super();
@@ -81,6 +89,17 @@ export class Label extends common.Label {
         this.style._updateTextDecoration();
         this.style._updateTextTransform();
     }
+    
+    _requestLayoutOnTextChanged(): void {
+        if (this._fixedSize === FixedSize.BOTH) {
+            return;
+        }
+        if (this._fixedSize === FixedSize.WIDTH && !this.textWrap) {
+            // Single line label with fixed width will skip request layout on text change.
+            return;
+        }
+        super._requestLayoutOnTextChanged();
+    }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var nativeView = this._nativeView;
@@ -98,6 +117,9 @@ export class Label extends common.Label {
             if (heightMode === utils.layout.UNSPECIFIED) {
                 height = Number.POSITIVE_INFINITY;
             }
+
+            this._fixedSize = (widthMode === utils.layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
+                            | (heightMode === utils.layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
 
             var nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
             var labelWidth = nativeSize.width;

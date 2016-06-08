@@ -1,4 +1,4 @@
-﻿import TKUnit = require("../../TKUnit");
+﻿import * as TKUnit from "../../TKUnit";
 import testModule = require("../../ui-test");
 import styling = require("ui/styling");
 
@@ -16,6 +16,13 @@ import enums = require("ui/enums");
 import labelTestsNative = require("./label-tests-native");
 import fs = require("file-system");
 import background = require("ui/styling/background");
+
+import {StackLayout} from "ui/layouts/stack-layout";
+import {GridLayout} from "ui/layouts/grid-layout";
+import {isIOS} from "platform";
+import {Label} from "ui/label";
+import {LayoutBase} from  "ui/layouts/layout-base";
+import * as helper from "../helper";
 
 export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
@@ -524,8 +531,77 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         page.addCss("label { < !--Test wrong comment-- > background-color: red; }");
         TKUnit.assertNotEqual(this.errorMessage, undefined);
     }
+
+    private requestLayoutFixture(expectRequestLayout: boolean, setup: (label: Label) => LayoutBase): void {
+        if (!isIOS) {
+            return;
+        }
+
+        let label = new Label();
+        let host = setup(label);
+
+        host.addChild(label);
+
+        let mainPage = helper.getCurrentPage();
+        mainPage.content = host;
+        TKUnit.waitUntilReady(() => host.isLoaded);
+
+        let called = false;
+        label.requestLayout = () => called = true;
+        label.text = "Hello World";
+
+        if (expectRequestLayout) {
+            TKUnit.assertTrue(called, "label.requestLayout should be called.");
+        } else {
+            TKUnit.assertFalse(called, "image.requestLayout should not be called.");
+        }
+    }
+
+    public test_SettingTextWhenInFixedSizeGridShouldNotRequestLayout() {
+        this.requestLayoutFixture(false, () => {
+            let host = new GridLayout();
+            host.width = 100;
+            host.height = 100;
+            return host;
+        });
+    }
+
+    public test_SettingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
+        this.requestLayoutFixture(false, label => {
+            let host = new StackLayout();
+            label.width = 100;
+            label.height = 100;
+            return host;
+        });
+    };
+
+    public test_SettingTextWhenSizedToContentShouldInvalidate() {
+        this.requestLayoutFixture(true, () => {
+            let host = new StackLayout();
+            host.orientation = "horizontal";
+            return host;
+        });
+    };
+
+    public test_SettingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldNotRequestLayout() {
+        this.requestLayoutFixture(false, () => {
+            let host = new StackLayout();
+            host.width = 100;
+            return host;
+        });
+    }
+
+    public test_SettingTextOnMultilineLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldRequestLayout() {
+        this.requestLayoutFixture(true, label => {
+            label.textWrap = true;
+            let host = new StackLayout();
+            host.width = 100;
+            return host;
+        });
+    }
 }
 
 export function createTestCase(): LabelTest {
     return new LabelTest();
 }
+

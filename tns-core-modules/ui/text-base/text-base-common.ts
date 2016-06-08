@@ -17,7 +17,7 @@ function ensureWeakEvents() {
 var textProperty = new dependencyObservable.Property(
     "text",
     "TextBase",
-    new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.AffectsLayout)
+    new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.None)
 );
 
 var formattedTextProperty = new dependencyObservable.Property(
@@ -126,6 +126,10 @@ export class TextBase extends view.View implements definition.TextBase, formatte
 
     public _addChildFromBuilder(name: string, value: any): void {
         formattedString.FormattedString.addFormattedStringToView(this, name, value);
+    }
+
+    _requestLayoutOnTextChanged(): void {
+        this.requestLayout();
     }
 }
 
