@@ -122,6 +122,8 @@ declare module "ui/frame" {
         on(event: "optionSelected", callback: (args: observable.EventData) => void, thisArg?: any);
     }
 
+    export var activityCallbacks: AndroidActivityCallbacks;
+
     /**
      * Gets the topmost frame in the frames stack. An application will typically has one frame instance. Multiple frames handle nested (hierarchical) navigation scenarios.
      */
@@ -300,6 +302,17 @@ declare module "ui/frame" {
          * @param page The Page instance to search for.
          */
         fragmentForPage(page: pages.Page): any;
+    }
+
+    export interface AndroidActivityCallbacks {
+        onCreate(activity: any, savedInstanceState: any, superFunc: Function): void;
+        onSaveInstanceState(activity: any, outState: any, superFunc: Function): void;
+        onStart(activity: any, superFunc: Function): void;
+        onStop(activity: any, superFunc: Function): void;
+        onDestroy(activity: any, superFunc: Function): void;
+        onBackPressed(activity: any, superFunc: Function): void;
+        onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void;
+        onActivityResult(activity: any, requestCode: number, resultCode: number, data: any, superFunc: Function);
     }
 
     /* tslint:disable */

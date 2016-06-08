@@ -400,8 +400,8 @@ export class Frame extends frameCommon.Frame {
     }
 }
 
-var framesCounter = 0;
-var framesCache: Array<WeakRef<AndroidFrame>> = new Array<WeakRef<AndroidFrame>>();
+let framesCounter = 0;
+let framesCache: Array<WeakRef<AndroidFrame>> = new Array<WeakRef<AndroidFrame>>();
 
 class AndroidFrame extends Observable implements definition.AndroidFrame {
     public rootViewGroup: android.view.ViewGroup;
@@ -411,7 +411,7 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
     private _showActionBar = true;
     private _owner: Frame;
     private _cachePagesOnNavigate: boolean;
-
+    
     constructor(owner: Frame) {
         super();
         this._owner = owner;
@@ -600,7 +600,7 @@ function getFrameById(frameId: number): Frame {
     return null;
 }
 
-var animationFixed;
+let animationFixed;
 function ensureAnimationFixed() {
     if (!animationFixed) {
         // android.os.Build.VERSION.KITKAT but we don't have definition for it
@@ -726,31 +726,28 @@ class FragmentClass extends android.app.Fragment {
     }
 }
 
-@JavaProxy("com.tns.NativeScriptActivity")
-class NativeScriptActivity extends android.app.Activity {
-    private rootView: View;
-
+class ActivityCallbacksImplementation implements definition.AndroidActivityCallbacks {
+    private _rootView: View;
+    
     constructor() {
-        super();
-        return global.__native(this);
     }
 
-    protected onCreate(savedInstanceState: android.os.Bundle): void {
+    public onCreate(activity: android.app.Activity, savedInstanceState: android.os.Bundle, superFunc: Function): void {
         if (trace.enabled) {
-            trace.write(`NativeScriptActivity.onCreate(${savedInstanceState})`, trace.categories.NativeLifecycle);
+            trace.write(`Activity.onCreate(${savedInstanceState})`, trace.categories.NativeLifecycle);
         }
 
         let app = application.android;
-        let intent = this.getIntent();
+        let intent = activity.getIntent();
         if (application.onLaunch) {
             application.onLaunch(intent);
         }
 
-        let args: application.LaunchEventData = { eventName: application.launchEvent, object: app, android: intent };
-        application.notify(args);
+        let launchArgs: application.LaunchEventData = { eventName: application.launchEvent, object: app, android: intent };
+        application.notify(launchArgs);
 
         let frameId = -1;
-        let rootView = args.root;
+        let rootView = launchArgs.root;
         let extras = intent.getExtras();
 
         // We have extras when we call - new Frame().navigate();
@@ -786,20 +783,20 @@ class NativeScriptActivity extends android.app.Activity {
 
             rootView = frame;
         }
-
+        
         // If there is savedInstanceState this call will recreate all fragments that were previously in the navigation.
         // We take care of associating them with a Page from our backstack in the onAttachFragment callback.
         // If there is savedInstanceState and activityInitialized is false we are restarted but process was killed.
         // For now we treat it like first run (e.g. we are not passing savedInstanceState so no fragments are being restored).
         // When we add support for application save/load state - revise this logic.
-        var isRestart = !!savedInstanceState && activityInitialized;
-        super.onCreate(isRestart ? savedInstanceState : null);
+        let isRestart = !!savedInstanceState && activityInitialized;
+        superFunc.call(activity, isRestart ? savedInstanceState : null);
 
-        this.rootView = rootView;
+        this._rootView = rootView;
 
         // Initialize native visual tree;
-        rootView._onAttached(this);
-        this.setContentView(rootView._nativeView, new org.nativescript.widgets.CommonLayoutParams());
+        rootView._onAttached(activity);
+        activity.setContentView(rootView._nativeView, new org.nativescript.widgets.CommonLayoutParams());
         // frameId is negative w
         if (frame) {
             frame.navigate(navParam);
@@ -807,50 +804,53 @@ class NativeScriptActivity extends android.app.Activity {
 
         activityInitialized = true;
     }
-
-    protected onSaveInstanceState(outState: android.os.Bundle): void {
-        super.onSaveInstanceState(outState);
-        let view = this.rootView;
+    
+    public onSaveInstanceState(activity: android.app.Activity, outState: android.os.Bundle, superFunc: Function): void {
+        superFunc.call(activity, outState);
+        let view = this._rootView;
         if (view instanceof Frame) {
             outState.putInt(INTENT_EXTRA, view.android.frameId);
         }
     }
+    
+    public onStart(activity: any, superFunc: Function): void {
+        superFunc.call(activity);
 
-    protected onStart(): void {
-        super.onStart();
         if (trace.enabled) {
             trace.write("NativeScriptActivity.onStart();", trace.categories.NativeLifecycle);
         }
-        let rootView = this.rootView
+        let rootView = this._rootView;
         if (rootView && !rootView.isLoaded) {
             rootView.onLoaded();
         }
     }
 
-    protected onStop(): void {
-        super.onStop();
+    public onStop(activity: any, superFunc: Function): void {
+        superFunc.call(activity);
+
         if (trace.enabled) {
             trace.write("NativeScriptActivity.onStop();", trace.categories.NativeLifecycle);
         }
-        let rootView = this.rootView
+        let rootView = this._rootView;
         if (rootView && rootView.isLoaded) {
             rootView.onUnloaded();
         }
     }
 
-    protected onDestroy(): void {
-        let rootView = this.rootView
+    public onDestroy(activity: any, superFunc: Function): void {
+        let rootView = this._rootView
         if (rootView && rootView._context) {
             rootView._onDetached(true);
         }
 
-        super.onDestroy();
+        superFunc.call(activity);
+        
         if (trace.enabled) {
             trace.write("NativeScriptActivity.onDestroy();", trace.categories.NativeLifecycle);
         }
     }
-
-    public onBackPressed(): void {
+    
+    public onBackPressed(activity: any, superFunc: Function): void {
         if (trace.enabled) {
             trace.write("NativeScriptActivity.onBackPressed;", trace.categories.NativeLifecycle);
         }
@@ -858,7 +858,7 @@ class NativeScriptActivity extends android.app.Activity {
         var args = <application.AndroidActivityBackPressedEventData>{
             eventName: "activityBackPressed",
             object: application.android,
-            activity: this,
+            activity: activity,
             cancel: false,
         };
         application.android.notify(args);
@@ -868,11 +868,11 @@ class NativeScriptActivity extends android.app.Activity {
         }
 
         if (!frameCommon.goBack()) {
-            super.onBackPressed();
+            superFunc.call(activity);
         }
     }
-
-    public onRequestPermissionsResult (requestCode: number, permissions: Array<String>, grantResults: Array<number>): void {
+    
+    public onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void {
         if (trace.enabled) {
             trace.write("NativeScriptActivity.onRequestPermissionsResult;", trace.categories.NativeLifecycle);
         }
@@ -880,15 +880,15 @@ class NativeScriptActivity extends android.app.Activity {
         application.android.notify(<application.AndroidActivityRequestPermissionsEventData>{
             eventName: "activityRequestPermissions",
             object: application.android,
-            activity: this,
+            activity: activity,
             requestCode: requestCode,
             permissions: permissions,
             grantResults: grantResults
         });
     }
 
-    protected onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
-        super.onActivityResult(requestCode, resultCode, data);
+    public onActivityResult(activity: any, requestCode: number, resultCode: number, data: android.content.Intent, superFunc: Function): void {
+        superFunc.call(activity, requestCode, resultCode, data);
         if (trace.enabled) {
             trace.write(`NativeScriptActivity.onActivityResult(${requestCode}, ${resultCode}, ${data})`, trace.categories.NativeLifecycle);
         }
@@ -901,10 +901,12 @@ class NativeScriptActivity extends android.app.Activity {
         application.android.notify(<application.AndroidActivityResultEventData>{
             eventName: "activityResult",
             object: application.android,
-            activity: this,
+            activity: activity,
             requestCode: requestCode,
             resultCode: resultCode,
             intent: data
         });
     }
 }
+
+export var activityCallbacks = new ActivityCallbacksImplementation();
