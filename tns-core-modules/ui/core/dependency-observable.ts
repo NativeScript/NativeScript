@@ -267,18 +267,6 @@ export class DependencyObservable extends Observable implements definition.Depen
 
             this._onPropertyChanged(property, currentValue, newValue);
         }
-
-        // if (types.isDefined(source)) {
-        //     // resetting particular modifier to undefined will remove it from the effective value composition
-        //     this._resetValueInternal(property, source);
-        // } else {
-        //     let currentValue = entry.effectiveValue;
-        //     delete this._propertyEntries[property.id];
-        //     let newValue = this._getDefaultValue(property);
-        //     if (!property.equalityComparer(currentValue, newValue)) {
-        //         this._onPropertyChanged(property, currentValue, newValue);
-        //     }
-        // }
     }
 
     public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
@@ -385,10 +373,6 @@ export class DependencyObservable extends Observable implements definition.Depen
         }
 
         if (wrapped || !property.equalityComparer(currentValue, realValue)) {
-            if (realValue === undefined) {
-                realValue = this.getEffectiveValue(currentValueSource, entry, property);
-            }
-
             entry.effectiveValue = realValue;
             this._onPropertyChanged(property, currentValue, realValue);
         }

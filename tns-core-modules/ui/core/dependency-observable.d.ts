@@ -163,19 +163,10 @@ declare module "ui/core/dependency-observable" {
      */
     export class PropertyEntry {
         /**
-         * Creates a new PropertyEntry instance, associated with the specified Property.
-         * @param property The Property this entry is attached to.
-         */
-        constructor(property: Property);
-        /**
          * Resets effective value and all the modifiers available for this entry.
          */
         resetValue(): void;
 
-        /**
-         * Gets the Property instance this entry is associated with. This is a read-only property.
-         */
-        property: Property;
         /**
          * Gets the effective value of this entry.
          * The value is composed depending on the current valueSource value, using the following priority:
