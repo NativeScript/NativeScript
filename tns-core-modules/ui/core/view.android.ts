@@ -29,30 +29,6 @@ function onIdPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 }
 (<proxy.PropertyMetadata>viewCommon.View.idProperty.metadata).onSetNativeValue = onIdPropertyChanged;
 
-function onTranslateXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    view._nativeView.setTranslationX(data.newValue * utils.layout.getDisplayDensity());
-}
-(<proxy.PropertyMetadata>viewCommon.View.translateXProperty.metadata).onSetNativeValue = onTranslateXPropertyChanged;
-
-function onTranslateYPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    view._nativeView.setTranslationY(data.newValue * utils.layout.getDisplayDensity());
-}
-(<proxy.PropertyMetadata>viewCommon.View.translateYProperty.metadata).onSetNativeValue = onTranslateYPropertyChanged;
-
-function onScaleXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    view._nativeView.setScaleX(data.newValue);
-}
-(<proxy.PropertyMetadata>viewCommon.View.scaleXProperty.metadata).onSetNativeValue = onScaleXPropertyChanged;
-
-function onScaleYPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    view._nativeView.setScaleY(data.newValue);
-}
-(<proxy.PropertyMetadata>viewCommon.View.scaleYProperty.metadata).onSetNativeValue = onScaleYPropertyChanged;
-
 function onOriginXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     org.nativescript.widgets.OriginPoint.setX((<View>data.object)._nativeView, data.newValue);
 }
@@ -62,12 +38,6 @@ function onOriginYPropertyChanged(data: dependencyObservable.PropertyChangeData)
     org.nativescript.widgets.OriginPoint.setY((<View>data.object)._nativeView, data.newValue);
 }
 (<proxy.PropertyMetadata>viewCommon.View.originYProperty.metadata).onSetNativeValue = onOriginYPropertyChanged;
-
-function onRotatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    view._nativeView.setRotation(data.newValue);
-}
-(<proxy.PropertyMetadata>viewCommon.View.rotateProperty.metadata).onSetNativeValue = onRotatePropertyChanged;
 
 function onIsEnabledPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
@@ -479,7 +449,7 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
 }
 
 export class ViewStyler implements style.Styler {
-    //Background and borders methods
+    // Background and borders methods
     private static setBackgroundBorderProperty(view: View, newValue: any, defaultValue?: any) {
         background.ad.onBackgroundOrBorderPropertyChanged(view);
     }
@@ -488,7 +458,7 @@ export class ViewStyler implements style.Styler {
         background.ad.onBackgroundOrBorderPropertyChanged(view);
     }
 
-    //Visibility methods
+    // Visibility methods
     private static setVisibilityProperty(view: View, newValue: any) {
         var androidValue = (newValue === enums.Visibility.visible) ? android.view.View.VISIBLE : android.view.View.GONE;
         (<android.view.View>view._nativeView).setVisibility(androidValue);
@@ -498,7 +468,7 @@ export class ViewStyler implements style.Styler {
         (<android.view.View>view._nativeView).setVisibility(android.view.View.VISIBLE);
     }
 
-    //Opacity methods
+    // Opacity methods
     private static setOpacityProperty(view: View, newValue: any) {
         (<android.view.View>view._nativeView).setAlpha(float(newValue));
     }
@@ -507,7 +477,7 @@ export class ViewStyler implements style.Styler {
         (<android.view.View>view._nativeView).setAlpha(float(1.0));
     }
 
-    //minWidth methods
+    // minWidth methods
     private static setMinWidthProperty(view: View, newValue: any) {
         (<android.view.View>view._nativeView).setMinimumWidth(Math.round(newValue * utils.layout.getDisplayDensity()));
     }
@@ -516,7 +486,7 @@ export class ViewStyler implements style.Styler {
         (<android.view.View>view._nativeView).setMinimumWidth(0);
     }
 
-    //minHeight methods
+    // minHeight methods
     private static setMinHeightProperty(view: View, newValue: any) {
         (<android.view.View>view._nativeView).setMinimumHeight(Math.round(newValue * utils.layout.getDisplayDensity()));
     }
@@ -647,69 +617,49 @@ export class ViewStyler implements style.Styler {
 
     // Rotate
     private static setRotateProperty(view: View, newValue: any) {
-        view.rotate = newValue;
+        view._nativeView.setRotation(newValue);
     }
 
     private static resetRotateProperty(view: View, nativeValue: any) {
-        view.rotate = nativeValue;
+        view._nativeView.setRotation(float(0));
     }
 
-    private static getRotateProperty(view: View): any {
-        return view.rotate;
-    }
-
-    //ScaleX
+    // ScaleX
     private static setScaleXProperty(view: View, newValue: any) {
-        view.scaleX = newValue;
+        view._nativeView.setScaleX(newValue);
     }
 
     private static resetScaleXProperty(view: View, nativeValue: any) {
-        view.scaleX = nativeValue;
+        view._nativeView.setScaleX(float(1.0));
     }
 
-    private static getScaleXProperty(view: View): any {
-        return view.scaleX;
-    }
-
-    //ScaleY
+    // ScaleY
     private static setScaleYProperty(view: View, newValue: any) {
-        view.scaleY = newValue;
+        view._nativeView.setScaleY(newValue);
     }
 
     private static resetScaleYProperty(view: View, nativeValue: any) {
-        view.scaleY = nativeValue;
+        view._nativeView.setScaleY(float(1.0));
     }
 
-    private static getScaleYProperty(view: View): any {
-        return view.scaleY;
-    }
-
-    //TranslateX
+    // TranslateX
     private static setTranslateXProperty(view: View, newValue: any) {
-        view.translateX = newValue;
+        view._nativeView.setTranslationX(newValue * utils.layout.getDisplayDensity());
     }
 
     private static resetTranslateXProperty(view: View, nativeValue: any) {
-        view.translateX = nativeValue;
+        view._nativeView.setTranslationX(float(0));
     }
 
-    private static getTranslateXProperty(view: View): any {
-        return view.translateX;
-    }
-
-    //TranslateY
+    // TranslateY
     private static setTranslateYProperty(view: View, newValue: any) {
-        view.translateY = newValue;
+        view._nativeView.setTranslationY(newValue * utils.layout.getDisplayDensity());
     }
 
     private static resetTranslateYProperty(view: View, nativeValue: any) {
-        view.translateY = nativeValue;
+        view._nativeView.setTranslationY(float(0));
     }
 
-    private static getTranslateYProperty(view: View): any {
-        return view.translateY;
-    }
-    
     // z-index
     private static getZIndexProperty(view: View): any {
         return view.android.getZ ? view.android.getZ() : 0;
@@ -718,7 +668,7 @@ export class ViewStyler implements style.Styler {
     private static setZIndexProperty(view: View, newValue: any) {
         if (view.android.setZ) {
             view.android.setZ(newValue);
-            
+
             if(view.android instanceof android.widget.Button){
                 view.android.setStateListAnimator(null);
             }
@@ -729,7 +679,7 @@ export class ViewStyler implements style.Styler {
         if (view.android.setZ) {
             view.android.setZ(nativeValue);
         }
-    }    
+    }
 
     public static registerHandlers() {
         style.registerHandler(style.visibilityProperty, new style.StylePropertyChangedHandler(
@@ -775,32 +725,27 @@ export class ViewStyler implements style.Styler {
         style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setPaddingProperty,
             ViewStyler.resetPaddingProperty), "LayoutBase");
-            
-             style.registerHandler(style.rotateProperty, new style.StylePropertyChangedHandler(
+
+        style.registerHandler(style.rotateProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setRotateProperty,
-            ViewStyler.resetRotateProperty,
-            ViewStyler.getRotateProperty));
+            ViewStyler.resetRotateProperty));
 
         style.registerHandler(style.scaleXProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setScaleXProperty,
-            ViewStyler.resetScaleXProperty,
-            ViewStyler.getScaleXProperty));
+            ViewStyler.resetScaleXProperty));
 
         style.registerHandler(style.scaleYProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setScaleYProperty,
-            ViewStyler.resetScaleYProperty,
-            ViewStyler.getScaleYProperty));
+            ViewStyler.resetScaleYProperty));
 
         style.registerHandler(style.translateXProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setTranslateXProperty,
-            ViewStyler.resetTranslateXProperty,
-            ViewStyler.getTranslateXProperty));
+            ViewStyler.resetTranslateXProperty));
 
         style.registerHandler(style.translateYProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setTranslateYProperty,
-            ViewStyler.resetTranslateYProperty,
-            ViewStyler.getTranslateYProperty));
-            
+            ViewStyler.resetTranslateYProperty));
+
         style.registerHandler(style.zIndexProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setZIndexProperty,
             ViewStyler.resetZIndexProperty,
