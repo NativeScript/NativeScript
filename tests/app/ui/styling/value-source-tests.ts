@@ -2,6 +2,7 @@ import color = require("color");
 import button = require("ui/button");
 import stack = require("ui/layouts/stack-layout");
 import helper = require("../helper");
+import TKUnit = require("../../TKUnit");
 
 export var test_value_Inherited_stronger_than_Default = function () {
     let page = helper.getCurrentPage();
@@ -26,7 +27,7 @@ export var test_value_Css_stronger_than_Inherited = function () {
     helper.assertViewColor(btn, "#0000FF");
 }
 
-export var test_value_Local_stronger_than_Css = function () {
+export function test_value_Local_stronger_than_Css() {
     let testPage = helper.getCurrentPage();
     let testStack = new stack.StackLayout();
     testPage.content = testStack;
@@ -39,7 +40,7 @@ export var test_value_Local_stronger_than_Css = function () {
     btn.style.color = new color.Color("#0000FF");
     helper.assertViewColor(btn, "#0000FF");
     btn.style.color = undefined;
-    helper.assertViewColor(btn, "#FF0000");
+    TKUnit.assertEqual(btn.style.color, undefined, "style.color should be undefined when set locally.");
 }
 
 export var test_value_VisualState_stronger_than_Local = function () {
