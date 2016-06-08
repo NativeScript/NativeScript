@@ -108,7 +108,10 @@ export class ListView extends common.ListView {
                 callback(view);
             }
             else {
-                callback(view.parent);
+                // in some cases (like item is unloaded from another place (like angular) view.parent becomes undefined)
+                if (view.parent) {
+                    callback(view.parent);
+                }
             }
         });
     }
@@ -124,12 +127,13 @@ export class ListView extends common.ListView {
     private clearRealizedCells(): void {
         // clear the cache
         this._realizedItems.forEach((view, nativeView, map) => {
-            // This is to clear the StackLayout that is used to wrap non LayoutBase & ProxyViewContainer instances.
-            if (!(view.parent instanceof ListView)) {
-                this._removeView(view.parent);
+            if (view.parent) {
+                // This is to clear the StackLayout that is used to wrap non LayoutBase & ProxyViewContainer instances.
+                if (!(view.parent instanceof ListView)) {
+                    this._removeView(view.parent);
+                }
+                view.parent._removeView(view);
             }
-
-            view.parent._removeView(view);
         });
 
         this._realizedItems.clear();
