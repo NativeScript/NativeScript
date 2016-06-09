@@ -156,7 +156,7 @@ function printRunTestStats() {
     let finalMessage = `\n=== ALL TESTS COMPLETE ===\n` +
         `${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n` + 
         `DURATION: ${totalTime} ms\n`;
-    TKUnit.write(finalMessage, messageType.info);
+    TKUnit.write(finalMessage, messageType.info); 
 
     for (j = 0; j < failedTestInfo.length; j++) {
         let failureMessage = failedTestInfo[j];
