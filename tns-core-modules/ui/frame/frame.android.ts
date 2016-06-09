@@ -717,8 +717,6 @@ class FragmentClass extends android.app.Fragment {
             trace.write(`${this}.onDestroy()`, trace.categories.NativeLifecycle);
         }
         super.onDestroy();
-
-        this.entry.fragmentTag = undefined;
     }
 
     public toString(): string {
