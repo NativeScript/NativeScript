@@ -97,7 +97,8 @@ export class Image extends view.View implements definition.Image {
 
             var source = new imageSource.ImageSource();
             var imageLoaded = () => {
-                if (value !== this.src) {
+                let currentValue = this.src;
+                if (!types.isString(this.src) || value !== currentValue.trim()) {
                     return;
                 }
                 this.imageSource = source;
