@@ -2,6 +2,8 @@
 import {StackLayout} from "ui/layouts/stack-layout";
 import {GridLayout} from "ui/layouts/grid-layout";
 import {isIOS} from "platform";
+import {PropertyChangeData} from "data/observable";
+
 // import {target} from "../../TKUnit";
 
 import TKUnit = require("../../TKUnit");
@@ -131,6 +133,28 @@ export var test_SettingImageSrcToDataURIAsync = function (done) {
     image.loadMode = "async";
     image.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==";
     runImageTest(done, image, image.src)
+}
+
+// NOTE: This tests that setting multiple times src will not show the imageSource of a previous src value.
+// It however will never be reliable as to properly detect failure we need to use somewhat large timeout
+// waiting for imageSource to be set to the wrong value.
+export var __test_SettingImageSrcTwiceMustNotMismatch = function(done) {
+    var image = new Image();
+    image.on("propertyChange", (args: PropertyChangeData) => {
+        if (args.propertyName === "isLoading" && args.value === false) {
+            setTimeout(() => {
+                if (image.imageSource) {
+                    done(new Error("Images source set from previous async src setting"));
+                } else {
+                    done();
+                }
+            }, 50); /* Slow! */
+        }
+    });
+    image.loadMode = "async";
+    image.src = "~/logo.png";
+    image.src = null;
+    // At somepoint image.imageSource was set to "~/logo.png";
 }
 
 export var test_SettingStretch_AspectFit = function () {

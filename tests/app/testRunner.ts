@@ -153,16 +153,19 @@ function printRunTestStats() {
 
     testFileContent = testFileContent.concat(testCases);
 
-// DO NOT CHANGE THE FIRST ROW! Used as an indicator for test run pass detection.
-    let finalMessage = `=== ALL TESTS COMPLETE ===\n` +
+    let finalMessage = `\n=== ALL TESTS COMPLETE ===\n` +
         `${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n` + 
-        `DURATION: ${totalTime} ms`;
+        `DURATION: ${totalTime} ms\n`;
     TKUnit.write(finalMessage, messageType.info);
+
     for (j = 0; j < failedTestInfo.length; j++) {
         let failureMessage = failedTestInfo[j];
         TKUnit.write(failureMessage, messageType.error);
         finalMessage += "\n" + failureMessage;
     }
+
+    // DO NOT CHANGE THE FIRST ROW! Used as an indicator for test run pass detection.
+    TKUnit.write(`Tests EOF!`, messageType.info);
 
     testFileContent.push("</testsuite>");
     testFileContent.push("</testsuites>");
