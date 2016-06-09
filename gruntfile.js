@@ -166,7 +166,8 @@ module.exports = function(grunt) {
         "!tns-core-modules/ios.d.ts",
         "!tns-core-modules/android17.d.ts",
         "!tns-core-modules/libjs.d.ts",
-        "!tests/node_modules/"
+        "!tests/node_modules/**",
+        "!tests/platforms/**"
     ]);
     localCfg.srcTsdFiles = [
         "**/*.d.ts",

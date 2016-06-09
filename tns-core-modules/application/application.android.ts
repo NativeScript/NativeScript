@@ -3,6 +3,8 @@ import definition = require("application");
 import frame = require("ui/frame");
 import observable = require("data/observable");
 import * as typesModule from "utils/types";
+import * as enumsModule from "ui/enums";
+let enums: typeof enumsModule;
 
 global.moduleMerge(appModule, exports);
 var typedExports: typeof definition = exports;
@@ -121,28 +123,30 @@ function initLifecycleCallbacks() {
 let currentOrientation: number;
 function initComponentCallbacks() {
     let componentCallbacks = new android.content.ComponentCallbacks2({
-        onLowMemory: function() {
+        onLowMemory: function () {
             gc();
             java.lang.System.gc();
             typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.lowMemoryEvent, object: this, android: this });
         },
-        
-        onTrimMemory: function(level: number) {
+
+        onTrimMemory: function (level: number) {
             // TODO: This is skipped for now, test carefully for OutOfMemory exceptions
         },
-        
-        onConfigurationChanged: function(newConfig: android.content.res.Configuration) {
+
+        onConfigurationChanged: function (newConfig: android.content.res.Configuration) {
             let newOrientation = newConfig.orientation;
-            if(newOrientation === currentOrientation) {
+            if (newOrientation === currentOrientation) {
                 return;
             }
-            
-            currentOrientation = newOrientation;
 
-            let enums = require("ui/enums");
+            if (!enums) {
+                enums = require("ui/enums");
+            }
+
+            currentOrientation = newOrientation;
             let newValue;
-        
-            switch (orientation) {
+
+            switch (newOrientation) {
                 case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
                     newValue = enums.DeviceOrientation.landscape;
                     break;
@@ -162,7 +166,7 @@ function initComponentCallbacks() {
             });
         }
     });
-    
+
     return componentCallbacks;
 }
 
@@ -204,10 +208,10 @@ export class AndroidApplication extends observable.Observable implements definit
     public onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void;
 
     public init(nativeApp: any) {
-        if(this.nativeApp) {
+        if (this.nativeApp) {
             throw new Error("application.android already initialized.")
         }
-        
+
         this.nativeApp = nativeApp;
         this.packageName = nativeApp.getPackageName();
         this.context = nativeApp.getApplicationContext();
@@ -216,7 +220,7 @@ export class AndroidApplication extends observable.Observable implements definit
         let componentCallbacks = initComponentCallbacks();
         this.nativeApp.registerActivityLifecycleCallbacks(lifecycleCallbacks);
         this.nativeApp.registerComponentCallbacks(componentCallbacks);
-        
+
         this._registerPendingReceivers();
     }
 
@@ -295,8 +299,8 @@ export function start(entry?: frame.NavigationEntry) {
     if (started) {
         throw new Error("Application is already started.");
     }
-    
-    if(!androidApp.nativeApp) {
+
+    if (!androidApp.nativeApp) {
         // we are still not initialized, this is possible if no 'androidApp.init' call has been made
         let utils = require("utils/utils");
         let nativeApp = utils.ad.getApplication();
@@ -332,7 +336,7 @@ global.__onLiveSync = function () {
     if (typedExports.android && typedExports.android.paused) {
         return;
     }
-    
+
     appModule.__onLiveSync();
 }
 
