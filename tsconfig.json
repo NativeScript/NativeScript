@@ -128,6 +128,7 @@
         "tns-core-modules/ui/editable-text-base/editable-text-base.android.ts",
         "tns-core-modules/ui/editable-text-base/editable-text-base.ios.ts",
         "tns-core-modules/ui/enums/enums.ts",
+        "tns-core-modules/ui/frame/activity.android.ts",
         "tns-core-modules/ui/frame/frame-common.ts",
         "tns-core-modules/ui/frame/frame.android.ts",
         "tns-core-modules/ui/frame/frame.ios.ts",

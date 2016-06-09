@@ -1,4 +1,6 @@
 {
 	"name" : "ui",
-	"nativescript": {}
+	"nativescript": {
+		"recursive-static-bindings": true
+	}
 }

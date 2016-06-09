@@ -2,6 +2,11 @@ import {activityCallbacks as callbacks} from "ui/frame";
 
 @JavaProxy("com.tns.NativeScriptActivity")
 class NativeScriptActivity extends android.app.Activity {
+    constructor() {
+         super();
+         return global.__native(this);
+     }
+
     protected onCreate(savedInstanceState: android.os.Bundle): void {
         callbacks.onCreate(this, savedInstanceState, super.onCreate);
     }
