@@ -344,8 +344,8 @@ export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boo
 function _completePageAddition(fragment: any, isBack: boolean) {
     let expandedFragment = <ExpandedFragment>fragment;
     expandedFragment.completePageAdditionWhenTransitionEnds = undefined;
-    let frame = fragment.frame;
-    let entry: BackstackEntry = fragment.entry;
+    let frame = fragment._callbacks.frame;
+    let entry: BackstackEntry = fragment._callbacks.entry;
     let page: Page = entry.resolvedPage;
     if (trace.enabled) {
         trace.write(`STARTING ADDITION of ${page}...`, trace.categories.Transition);
@@ -363,8 +363,8 @@ function _completePageAddition(fragment: any, isBack: boolean) {
 function _completePageRemoval(fragment: any, isBack: boolean) {
     let expandedFragment = <ExpandedFragment>fragment;
     expandedFragment.completePageRemovalWhenTransitionEnds = undefined;
-    let frame = fragment.frame;
-    let entry: BackstackEntry = fragment.entry;
+    let frame = fragment._callbacks.frame;
+    let entry: BackstackEntry = fragment._callbacks.entry;
     let page: Page = entry.resolvedPage;
     if (trace.enabled) {
         trace.write(`STARTING REMOVAL of ${page}...`, trace.categories.Transition);
