@@ -16,5 +16,5 @@ set timeout 600
 #spawn (adb logcat | tee ./__TESTRESULT__.txt)
 log_file -noappend $outfile
 eval spawn $cmd
-expect "=== ALL TESTS COMPLETE ==="
+expect "Tests EOF!"
 send \003

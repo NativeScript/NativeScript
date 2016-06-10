@@ -97,6 +97,10 @@ export class Image extends view.View implements definition.Image {
 
             var source = new imageSource.ImageSource();
             var imageLoaded = () => {
+                let currentValue = this.src;
+                if (!types.isString(this.src) || value !== currentValue.trim()) {
+                    return;
+                }
                 this.imageSource = source;
                 this._setValue(Image.isLoadingProperty, false);
             }
@@ -143,9 +147,11 @@ export class Image extends view.View implements definition.Image {
         else if (value instanceof imageSource.ImageSource) {
             // Support binding the imageSource trough the src property
             this.imageSource = value;
+            this._setValue(Image.isLoadingProperty, false);
         }
         else {
             this.imageSource = imageSource.fromNativeSource(value);
+            this._setValue(Image.isLoadingProperty, false);
         }
     }
 }
