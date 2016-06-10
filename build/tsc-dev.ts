@@ -70,6 +70,8 @@ function transpile(fileNames: string[], options: ts.CompilerOptions) {
     console.timeEnd("transpile");
     
     if (isWatching) {
+        // NOTE: Perhaps on file change before incremental compilation we should read the tsconfig.json again and update only tsconfig.json files.
+
         console.log("Watching for changes...");
         fs.watch(".", { persistent: true, recursive: true, encoding: "utf8" }, (event, file) => {
             try {
@@ -132,19 +134,13 @@ function compile(fileNames: string[], options: ts.CompilerOptions) {
     process.exit(exitCode);
 }
 
-var files = JSON.parse(fs.readFileSync("./tsconfig.json")).files;
-var options: ts.CompilerOptions = {
-    noEmitOnError: true,
-    noEmitHelpers: true,
-    target: ts.ScriptTarget.ES5,
-    module: ts.ModuleKind.CommonJS,
-    declaration: false,
-    noImplicitAny: false,
-    noImplicitUseStrict: true,
-    experimentalDecorators: true
-};
+var configFileName = path.resolve("tsconfig.json");
+var configObject = JSON.parse(fs.readFileSync("./tsconfig.json"));
+var configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName));
+
 if (isTranspile) {
-    transpile(files, { module: ts.ModuleKind.CommonJS, noImplicitUseStrict: true });
+    transpile(configParseResult.fileNames, configParseResult.options);
 } else {
-    compile(files, options);
+    compile(configParseResult.fileNames, configParseResult.options);
 }
+
