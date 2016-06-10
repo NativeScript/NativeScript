@@ -77,6 +77,10 @@ export class Frame extends frameCommon.Frame {
             throw new Error("Required page does not have a viewController created.");
         }
 
+        let clearHistory = backstackEntry.entry.clearHistory;
+        if (clearHistory) {
+            navDepth = -1;
+        }
         navDepth++;
 
         let navigationTransition: definition.NavigationTransition;
@@ -117,7 +121,7 @@ export class Frame extends frameCommon.Frame {
         }
 
         // We should clear the entire history.
-        if (backstackEntry.entry.clearHistory) {
+        if (clearHistory) {
             viewController.navigationItem.hidesBackButton = true;
             var newControllers = NSMutableArray.alloc().initWithCapacity(1);
             newControllers.addObject(viewController);
