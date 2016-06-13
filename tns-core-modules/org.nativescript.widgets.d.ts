@@ -178,3 +178,8 @@
         }
     }
 }
+
+declare class TNSLabel extends UILabel {
+	borderThickness: UIEdgeInsets;
+	padding: UIEdgeInsets;
+}
