@@ -2,7 +2,7 @@
 import * as enums from "ui/enums";
 import * as utils from "utils/utils";
 import * as backgroundModule from "ui/styling/background";
-import view = require("ui/core/view");
+import {View} from "ui/core/view";
 import style = require("ui/styling/style");
 
 global.moduleMerge(common, exports);
@@ -11,49 +11,6 @@ var background: typeof backgroundModule;
 function ensureBackground() {
     if (!background) {
         background = require("ui/styling/background");
-    }
-}
-
-class UILabelImpl extends UILabel {
-
-    private _owner: WeakRef<Label>;
-
-    public static initWithOwner(owner: WeakRef<Label>): UILabelImpl {
-        let labelImpl = <UILabelImpl>UILabelImpl.new();
-        labelImpl._owner = owner;
-        return labelImpl;
-    }
-
-    public textRectForBoundsLimitedToNumberOfLines(bounds: CGRect, numberOfLines: number): CGRect {
-        let rect = super.textRectForBoundsLimitedToNumberOfLines(bounds, numberOfLines);
-        let owner = this._owner.get();
-        if (owner) {
-            let size = rect.size;
-            rect = CGRectMake(
-                - (owner.borderWidth + owner.style.paddingLeft),
-                - (owner.borderWidth + owner.style.paddingTop),
-                size.width + (owner.borderWidth + owner.style.paddingLeft + owner.style.paddingRight + owner.borderWidth),
-                size.height + (owner.borderWidth + owner.style.paddingTop + owner.style.paddingBottom + owner.borderWidth)
-            );
-        }
-
-        return rect;
-    }
-
-    public drawTextInRect(rect: CGRect): void {
-        let owner = this._owner.get();
-        let textRect: CGRect;
-        let size = rect.size;
-        if (owner) {
-            textRect = CGRectMake((owner.borderWidth + owner.style.paddingLeft), (owner.borderWidth + owner.style.paddingTop),
-                size.width - (owner.borderWidth + owner.style.paddingLeft + owner.style.paddingRight + owner.borderWidth),
-                size.height - (owner.borderWidth + owner.style.paddingTop + owner.style.paddingBottom + owner.borderWidth));
-        }
-        else {
-            textRect = CGRectMake(0, 0, size.width, size.height);
-        }
-
-        super.drawTextInRect(textRect);
     }
 }
 
@@ -71,7 +28,7 @@ export class Label extends common.Label {
     constructor() {
         super();
 
-        this._ios = UILabelImpl.initWithOwner(new WeakRef(this));
+        this._ios = TNSLabel.new();
         this._ios.userInteractionEnabled = true;
     }
 
@@ -89,7 +46,7 @@ export class Label extends common.Label {
         this.style._updateTextDecoration();
         this.style._updateTextTransform();
     }
-    
+
     _requestLayoutOnTextChanged(): void {
         if (this._fixedSize === FixedSize.BOTH) {
             return;
@@ -119,7 +76,7 @@ export class Label extends common.Label {
             }
 
             this._fixedSize = (widthMode === utils.layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
-                            | (heightMode === utils.layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
+                | (heightMode === utils.layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
 
             var nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
             var labelWidth = nativeSize.width;
@@ -131,17 +88,19 @@ export class Label extends common.Label {
             var measureWidth = Math.max(labelWidth, this.minWidth);
             var measureHeight = Math.max(nativeSize.height, this.minHeight);
 
-            var widthAndState = view.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-            var heightAndState = view.View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+            var widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+            var heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
             this.setMeasuredDimension(widthAndState, heightAndState);
         }
     }
 }
 
+let zeroInsets = UIEdgeInsetsZero;
+
 export class LabelStyler implements style.Styler {
     //Background methods
-    private static setBackgroundInternalProperty(view: view.View, newValue: any) {
+    private static setBackgroundInternalProperty(view: View, newValue: any) {
         var uiLabel: UILabel = <UILabel>view._nativeView;
         if (uiLabel && uiLabel.layer) {
             var flipImage = true;
@@ -152,7 +111,7 @@ export class LabelStyler implements style.Styler {
         }
     }
 
-    private static resetBackgroundInternalProperty(view: view.View, nativeValue: any) {
+    private static resetBackgroundInternalProperty(view: View, nativeValue: any) {
         var uiLabel: UILabel = <UILabel>view._nativeView;
         if (uiLabel && uiLabel.layer) {
             var uiColor = <UIColor>nativeValue;
@@ -161,7 +120,7 @@ export class LabelStyler implements style.Styler {
         }
     }
 
-    private static getNativeBackgroundInternalValue(view: view.View): any {
+    private static getNativeBackgroundInternalValue(view: View): any {
         var uiLabel: UILabel = <UILabel>view._nativeView;
         if (uiLabel && uiLabel.layer && uiLabel.layer.backgroundColor) {
             return UIColor.colorWithCGColor(uiLabel.layer.backgroundColor);
@@ -170,11 +129,68 @@ export class LabelStyler implements style.Styler {
         return undefined;
     }
 
+    private static setBorderWidthProperty(view: View, newValue: number) {
+        LabelStyler.setNativeBorderWidth(view, newValue);
+    }
+
+    private static resetBorderWidthProperty(view: View, nativeValue: number) {
+        LabelStyler.setNativeBorderWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderWidth(view: View, newValue: number) {
+        let nativeView = <UIView>view._nativeView;
+        if (nativeView instanceof UIView) {
+            nativeView.layer.borderWidth = newValue;
+        }
+        if (nativeView instanceof TNSLabel) {
+            nativeView.borderThickness = { top: newValue, left: newValue, bottom: newValue, right: newValue };
+        }
+    }
+
+    private static getBorderWidthProperty(view: View): number {
+        let nativeView = <UIView>view._nativeView;
+        if (nativeView instanceof UIView) {
+            return nativeView.layer.borderWidth;
+        }
+        return 0;
+    }
+
+    private static setPaddingProperty(view: View, newValue: UIEdgeInsets) {
+        LabelStyler.setNativePadding(view, newValue);
+    }
+
+    private static resetPaddingProperty(view: View, nativeValue: UIEdgeInsets) {
+        LabelStyler.setNativePadding(view, nativeValue);
+    }
+
+    private static setNativePadding(view: View, padding: UIEdgeInsets) {
+        let nativeView = <UIView>view._nativeView;
+        if (nativeView instanceof TNSLabel) {
+            nativeView.padding = { top: padding.top, left: padding.left, bottom: padding.bottom, right: padding.right };
+        }
+    }
+
+    private static getPaddingProperty(view: View): UIEdgeInsets {
+        let nativeView = <UIView>view._nativeView;
+        if (nativeView instanceof TNSLabel) {
+            return nativeView.padding;
+        }
+        return zeroInsets;
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.backgroundInternalProperty, new style.StylePropertyChangedHandler(
             LabelStyler.setBackgroundInternalProperty,
             LabelStyler.resetBackgroundInternalProperty,
             LabelStyler.getNativeBackgroundInternalValue), "Label");
+        style.registerHandler(style.borderWidthProperty, new style.StylePropertyChangedHandler(
+            LabelStyler.setBorderWidthProperty,
+            LabelStyler.resetBorderWidthProperty,
+            LabelStyler.getBorderWidthProperty), "Label");
+        style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
+            LabelStyler.setPaddingProperty,
+            LabelStyler.resetPaddingProperty,
+            LabelStyler.getPaddingProperty), "Label");
     }
 }
 
