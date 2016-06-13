@@ -122,7 +122,15 @@ declare module "ui/frame" {
         on(event: "optionSelected", callback: (args: observable.EventData) => void, thisArg?: any);
     }
 
+    /**
+     * Gets the default AndroidActivityCallbacks implementation, used to bridge Activity events to the Frame and navigation routine. This field is initialized only for the Android platform.
+     */    
     export var activityCallbacks: AndroidActivityCallbacks;
+
+    /**
+     * Sets the extended android.app.Fragment class to the Frame and navigation routine. An instance of this class will be created to represent the Page currently visible on the srceen. This method is available only for the Android platform.
+     */
+    export function setFragmentClass(clazz: any): void;
 
     /**
      * Gets the topmost frame in the frames stack. An application will typically has one frame instance. Multiple frames handle nested (hierarchical) navigation scenarios.
@@ -313,6 +321,17 @@ declare module "ui/frame" {
         onBackPressed(activity: any, superFunc: Function): void;
         onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void;
         onActivityResult(activity: any, requestCode: number, resultCode: number, data: any, superFunc: Function);
+    }
+
+    export interface AndroidFragmentCallbacks {
+        onHiddenChanged(fragment: any, hidden: boolean, superFunc: Function): void;
+        onCreateAnimator(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
+        onCreate(fragment: any, savedInstanceState: any, superFunc: Function): void;
+        onCreateView(fragment: any, inflater: any, container: any, savedInstanceState: any, superFunc: Function): any;
+        onSaveInstanceState(fragment: any, outState: any, superFunc: Function): void;
+        onDestroyView(fragment: any, superFunc: Function): void;
+        onDestroy(fragment: any, superFunc: Function): void;
+        toStringOverride(fragment: any, superFunc: Function): string;
     }
 
     /* tslint:disable */
