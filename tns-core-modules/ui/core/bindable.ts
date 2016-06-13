@@ -61,7 +61,7 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
         }
 
         // if (!types.isNullOrUndefined(bindingSource)) {
-        binding.bind(bindingSource);
+            binding.bind(bindingSource);
         // }
     }
 
@@ -119,7 +119,11 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
                 if (trace.enabled) {
                     trace.write(`Binding ${binding.target.get()}.${binding.options.targetProperty} to new context ${newValue}`, trace.categories.Binding);
                 }
-                binding.bind(newValue);
+                if (!types.isNullOrUndefined(newValue)) {
+                    binding.bind(newValue);
+                } else {
+                    binding.clearBinding();
+                }
             }
         });
     }
@@ -222,16 +226,18 @@ export class Binding {
 
         source = this.sourceAsObject(source);
 
+        let sourceValue;
+
         if (!types.isNullOrUndefined(source)) {
             this.source = new WeakRef(source);
             this.sourceOptions = this.resolveOptions(source, this.sourceProperties);
 
-            let sourceValue = this.getSourcePropertyValue();
+            sourceValue = this.getSourcePropertyValue();
             this.updateTarget(sourceValue);
             this.addPropertyChangeListeners(this.source, this.sourceProperties);
-        }
-        else {
-            this.updateTarget(source);
+        } else if (!this.sourceIsBindingContext) {
+            sourceValue = this.getSourcePropertyValue();
+            this.updateTarget(sourceValue ? sourceValue : source);
         }
     }
 
@@ -489,7 +495,7 @@ export class Binding {
     private getSourcePropertyValue() {
         if (this.options.expression) {
             let changedModel = {};
-            changedModel[bc.bindingValueKey] = this.source.get();
+            changedModel[bc.bindingValueKey] = this.source ? this.source.get() : undefined;
             let expressionValue = this._getExpressionValue(this.options.expression, false, changedModel);
             if (expressionValue instanceof Error) {
                 trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
@@ -514,6 +520,11 @@ export class Binding {
         }
 
         return null;
+    }
+
+    public clearBinding() {
+        this.clearSource();
+        this.updateTarget(undefined);
     }
 
     private updateTarget(value: any) {

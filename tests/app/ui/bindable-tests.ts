@@ -626,6 +626,36 @@ export function test_BindingToDictionaryAtAppLevel() {
     helper.buildUIAndRunTest(createLabel(), testFunc);
 }
 
+export function test_BindingConverterCalledEvenWithNullValue() {
+    var createLabel = function () {
+        var label = new labelModule.Label();
+        return label;
+    }
+    var pageViewModel = new observable.Observable();
+    var testPropertyValue = null;
+    var expectedValue = "collapsed";
+    pageViewModel.set("testProperty", testPropertyValue);
+    appModule.resources["converter"] = function(value) {
+        if (value) {
+            return "visible";
+        } else {
+            return "collapsed";
+        }
+    };
+
+    var testFunc = function (views: Array<viewModule.View>) {
+        var testLabel = <labelModule.Label>(views[0]);
+        testLabel.bind({ sourceProperty: "testProperty", targetProperty: "text", expression: "testProperty | converter" });
+
+        var page = <pageModule.Page>(views[1]);
+        page.bindingContext = pageViewModel;
+
+        TKUnit.assertEqual(testLabel.text, expectedValue);
+    }
+
+    helper.buildUIAndRunTest(createLabel(), testFunc);
+}
+
 export function test_UpdatingNestedPropertyViaBinding() {
     var expectedValue1 = "Alabala";
     var expectedValue2 = "Tralala";
