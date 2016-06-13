@@ -41,8 +41,8 @@ public class DockLayout extends LayoutBase {
         int verticalPadding = this.getPaddingTop() + this.getPaddingBottom();
         int horizontalPadding = this.getPaddingLeft() + this.getPaddingRight();
         
-        int remainingWidth = widthMode == MeasureSpec.UNSPECIFIED ? Integer.MAX_VALUE : width - horizontalPadding;
-        int remainingHeight = heightMode == MeasureSpec.UNSPECIFIED ? Integer.MAX_VALUE : height - verticalPadding;
+        int remainingWidth = widthMode == MeasureSpec.UNSPECIFIED ? 0 : width - horizontalPadding;
+        int remainingHeight = heightMode == MeasureSpec.UNSPECIFIED ? 0 : height - verticalPadding;
 
         int tempHeight = 0;
         int tempWidth = 0;
