@@ -44,3 +44,5 @@ gradle/
 # OS-specific files
 .DS_Store
 .DS_Store?
+ios/TNSWidgets/TNSWidgets.xcodeproj/project.xcworkspace/xcuserdata/
+ios/TNSWidgets/TNSWidgets.xcodeproj/xcuserdata/
