@@ -1,3 +1,6 @@
+// When there are both <file>.d.ts and <file>.ts, The default TypeScript file resolution will ignore the .d.ts
+/// <reference path="controls-page.d.ts" />
+
 import definition = require("controls-page");
 import pagesModule = require("ui/page");
 import stackLayoutModule = require("ui/layouts/stack-layout");

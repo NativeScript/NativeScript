@@ -110,20 +110,14 @@ function compile(fileNames, options) {
     console.log("Process exiting with code " + exitCode + ".");
     process.exit(exitCode);
 }
-var files = JSON.parse(fs.readFileSync("./tsconfig.json")).files;
-var options = {
-    noEmitOnError: true,
-    noEmitHelpers: true,
-    target: ts.ScriptTarget.ES5,
-    module: ts.ModuleKind.CommonJS,
-    declaration: false,
-    noImplicitAny: false,
-    noImplicitUseStrict: true,
-    experimentalDecorators: true
-};
+// Perhaps on file change before incremental compilation we should read the tsconfig.json again.
+var configFileName = path.resolve("tsconfig.json");
+var configObject = JSON.parse(fs.readFileSync("./tsconfig.json"));
+var configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName));
+configParseResult.fileNames.forEach(console.log);
 if (isTranspile) {
-    transpile(files, { module: ts.ModuleKind.CommonJS, noImplicitUseStrict: true });
+    transpile(configParseResult.fileNames, configParseResult.options);
 }
 else {
-    compile(files, options);
+    compile(configParseResult.fileNames, configParseResult.options);
 }

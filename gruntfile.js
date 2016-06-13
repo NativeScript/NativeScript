@@ -160,7 +160,17 @@ module.exports = function(grunt) {
     localCfg.mainPackageContent = grunt.file.readJSON(localCfg.packageJsonFilePath);
     localCfg.packageVersion = getPackageVersion(localCfg.packageJsonFilePath);
     localCfg.commitSHA = getCommitSha();
-    localCfg.typeScriptSrc = tsconfig.filesGlob;
+    localCfg.typeScriptSrc = [
+        "**/*.ts",
+        "!node_modules/**/*.*",
+        "!tests/node_modules/**/*.*",
+        "!bin/**/*.*",
+        "!build/**/*.*",
+        "!Deploy/**/*.*",
+        "!out/**/*.*",
+        "!.*/**/*.*",
+        "!obj/**/*.*"
+    ];
     localCfg.defaultExcludes = localCfg.typeScriptSrc.filter(function(item) { return /^!/.test(item); });
     localCfg.typeScriptSrcForTsLint = localCfg.typeScriptSrc.concat([
         "!tns-core-modules/ios.d.ts",
@@ -399,7 +409,9 @@ module.exports = function(grunt) {
                     'tns-core-modules/module.d.ts',
                     'tns-core-modules/xml/**/*.ts',
                     'tns-core-modules/es-collections.d.ts',
-                    'node-tests/**/*.ts',
+                    'tns-core-modules/declarations.d.ts',
+                    'tns-core-modules/es6-promise.d.ts',
+                    'node-tests/**/*.ts'
                 ],
                 outDir: localCfg.outDir,
                 dest: localCfg.outDir,
