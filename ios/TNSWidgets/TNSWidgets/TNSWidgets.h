@@ -17,4 +17,4 @@ FOUNDATION_EXPORT const unsigned char TNSWidgetsVersionString[];
 // In this header, you should import all the public headers of your framework using statements like #import <TNSWidgets/PublicHeader.h>
 
 #import "UIImage+TNSBlocks.h"
-
+#import "TNSLabel.h"

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8B7321CF1D097ECD00884AC6 /* TNSLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = 8B7321CD1D097ECD00884AC6 /* TNSLabel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8B7321D01D097ECD00884AC6 /* TNSLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B7321CE1D097ECD00884AC6 /* TNSLabel.m */; };
 		F98F5CB31CD0EFEA00978308 /* TNSWidgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F98F5CB21CD0EFEA00978308 /* TNSWidgets.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F98F5CBA1CD0EFEA00978308 /* TNSWidgets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F98F5CAF1CD0EFEA00978308 /* TNSWidgets.framework */; };
 		F98F5CBF1CD0EFEA00978308 /* TNSWidgetsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F98F5CBE1CD0EFEA00978308 /* TNSWidgetsTests.m */; };
@@ -25,6 +27,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8B7321CD1D097ECD00884AC6 /* TNSLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TNSLabel.h; sourceTree = "<group>"; };
+		8B7321CE1D097ECD00884AC6 /* TNSLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TNSLabel.m; sourceTree = "<group>"; };
 		F98F5CAF1CD0EFEA00978308 /* TNSWidgets.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TNSWidgets.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F98F5CB21CD0EFEA00978308 /* TNSWidgets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TNSWidgets.h; sourceTree = "<group>"; };
 		F98F5CB41CD0EFEA00978308 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -76,6 +80,8 @@
 			isa = PBXGroup;
 			children = (
 				F98F5CB21CD0EFEA00978308 /* TNSWidgets.h */,
+				8B7321CD1D097ECD00884AC6 /* TNSLabel.h */,
+				8B7321CE1D097ECD00884AC6 /* TNSLabel.m */,
 				F98F5CC91CD0F09E00978308 /* UIImage+TNSBlocks.h */,
 				F98F5CCA1CD0F09E00978308 /* UIImage+TNSBlocks.m */,
 				F98F5CB41CD0EFEA00978308 /* Info.plist */,
@@ -101,6 +107,7 @@
 			files = (
 				F98F5CB31CD0EFEA00978308 /* TNSWidgets.h in Headers */,
 				F98F5CCB1CD0F09E00978308 /* UIImage+TNSBlocks.h in Headers */,
+				8B7321CF1D097ECD00884AC6 /* TNSLabel.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -200,6 +207,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8B7321D01D097ECD00884AC6 /* TNSLabel.m in Sources */,
 				F98F5CCC1CD0F09E00978308 /* UIImage+TNSBlocks.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
