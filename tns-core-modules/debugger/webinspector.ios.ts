@@ -115,11 +115,11 @@ export class Request {
 export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomain.NetworkDomainDispatcher {
     private _enabled: boolean;
     public events: inspectorCommandTypes.NetworkDomain.NetworkFrontend;
-
-    constructor(dispatchMessage: (message: String) => void) {
-        this.events = new inspectorCommands.NetworkDomain.NetworkFrontend(dispatchMessage);
+   
+    constructor() {
+        this.events = new inspectorCommands.NetworkDomain.NetworkFrontend();
     }
-    
+
     get enabled(): boolean {
         return this._enabled;
     }
