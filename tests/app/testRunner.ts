@@ -58,6 +58,7 @@ allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
 allTests["ACTION-BAR"] = require("./ui/action-bar/action-bar-tests");
 allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
 allTests["DOCKLAYOUT"] = require("./ui/layouts/dock-layout-tests");
+allTests["DOCKLAYOUT-IN-SCROLLVIEW"] = require("./ui/layouts/dock-layout-in-scrollView-test");
 allTests["WRAPLAYOUT"] = require("./ui/layouts/wrap-layout-tests");
 allTests["ABSOLUTELAYOUT"] = require("./ui/layouts/absolute-layout-tests");
 allTests["GRIDLAYOUT"] = require("./ui/layouts/grid-layout-tests");
