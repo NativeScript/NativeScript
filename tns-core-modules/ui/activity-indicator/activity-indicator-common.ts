@@ -1,9 +1,9 @@
-﻿import {View} from "ui/core/view";
-import definition = require("ui/activity-indicator");
-import {PropertyMetadataSettings, Property} from "ui/core/dependency-observable";
-import proxy = require("ui/core/proxy");
+﻿import definition = require("ui/activity-indicator");
+import {View} from "ui/core/view";
+import {Property} from "ui/core/dependency-observable";
+import {PropertyMetadata} from "ui/core/proxy";
 
-let busyProperty = new Property("busy", "ActivityIndicator", new proxy.PropertyMetadata(false));
+let busyProperty = new Property("busy", "ActivityIndicator", new PropertyMetadata(false));
 
 export class ActivityIndicator extends View implements definition.ActivityIndicator {
 
