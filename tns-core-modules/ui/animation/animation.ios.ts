@@ -223,7 +223,7 @@ export class Animation extends common.Animation implements definition.Animation 
         let value = animation.value;
         let originalValue;
 
-        let tempRotate = animation.target.rotate * Math.PI / 180;
+        let tempRotate = (animation.target.rotate || 0) * Math.PI / 180;
         let abs;
 
         if (valueSource === undefined) {
@@ -266,12 +266,7 @@ export class Animation extends common.Animation implements definition.Animation 
                     animation.target.style._setValue(style.rotateProperty, value, valueSource);
                 };
                 propertyNameToAnimate = "transform.rotation";
-                if (presentationLayer != null && valueSource !== dependencyObservable.ValueSource.Css) {
-                  originalValue = presentationLayer.valueForKeyPath("transform.rotation");
-                }
-                else {
-                  originalValue = nativeView.layer.valueForKeyPath("transform.rotation");
-                }
+                originalValue = tempRotate;
                 if (originalValue === 0 && animation.target.rotate !== undefined &&
                     animation.target.rotate !== 0 && Math.floor(value / 360) - value / 360 === 0) {
                     originalValue = animation.target.rotate * Math.PI / 180;
