@@ -139,6 +139,7 @@ var configObject = JSON.parse(fs.readFileSync("./tsconfig.json"));
 var configParseResult = ts.parseJsonConfigFileContent(configObject, ts.sys, path.dirname(configFileName));
 
 if (isTranspile) {
+    configParseResult.options.noEmitOnError = false;
     transpile(configParseResult.fileNames, configParseResult.options);
 } else {
     compile(configParseResult.fileNames, configParseResult.options);
