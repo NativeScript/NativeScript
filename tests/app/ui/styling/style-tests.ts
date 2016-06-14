@@ -12,6 +12,7 @@ import types = require("utils/types");
 import viewModule = require("ui/core/view");
 import styleModule = require("ui/styling/style");
 import dependencyObservableModule = require("ui/core/dependency-observable");
+import {StyleScope} from 'ui/styling/style-scope';
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     var stack = new stackModule.StackLayout();
@@ -1442,6 +1443,17 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
         helper.assertViewBackgroundColor(label, "#0000FF");
         helper.assertViewBackgroundColor(stack, "#FF0000");
     });
+}
+
+export function test_SortingOfCssSelectorsWithSameSpecificity() {
+    let scope = new StyleScope();
+    scope.css = ".button { border-color: #b2b2b2; background-color: hotpink; color: #444; margin: 5; padding: 7 2; border-width: 1; border-style: solid; border-radius: 2; text-align: center; font-size: 18; line-height: 42; } .button-small { background-color: salmon; } .button-large { font-size: 26; } .button-light { border-color: #ddd; background-color: #fff; color: #444; } .button-stable { border-color: #b2b2b2; background-color: #f8f8f8; color: #444; } .button-positive { border-color: #0c60ee; background-color: #387ef5; color: #fff; } .button-calm { border-color: #0a9dc7;background-color: #11c1f3; color: #fff; } .button-balanced { border-color: #28a54c; background-color: #33cd5f; color: #fff; } .button-energized { border-color: #e6b500; background-color: #ffc900; color: #fff; } .button-assertive { border-color: #e42112; background-color: #ef473a; color: #fff; } .button-royal { border-color: #6b46e5; background-color: #886aea; color: #fff; } .button-dark { border-color: #111; background-color: #444; color: #fff; }";
+    scope.ensureSelectors();
+    let expressions = [];
+    (<any>scope)._mergedCssSelectors.forEach((v) => {
+        expressions.push(v.expression);
+    });
+    TKUnit.assertTrue(expressions.indexOf('button') < expressions.indexOf('button-calm'), "button class selector should be before button-calm selector.");
 }
 // <snippet module="ui/styling" title="styling">
 // For information and example how to use style properties please refer to special [**Styling**](../../../styling.md) topic. 

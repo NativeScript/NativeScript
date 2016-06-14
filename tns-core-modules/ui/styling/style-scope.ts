@@ -191,7 +191,8 @@ export class StyleScope {
                 mergedResult.push.apply(mergedResult, arrays[i]);
             }
         }
-        mergedResult.sort((a, b) => a.specificity - b.specificity);
+        ensureUtils();
+        mergedResult = utils.mergeSort(mergedResult, (a, b) => { return a.specificity - b.specificity; });
 
         return mergedResult;
     }
@@ -200,9 +201,9 @@ export class StyleScope {
         this.ensureSelectors();
 
         view.style._beginUpdate();
-        let i,
-            selector: cssSelector.CssSelector,
-            matchedStateSelectors = new Array<cssSelector.CssVisualStateSelector>()
+        let i;
+        let selector: cssSelector.CssSelector;
+        let matchedStateSelectors = new Array<cssSelector.CssVisualStateSelector>();
 
         // Go trough all selectors - and directly apply all non-state selectors
         for (i = 0; i < this._mergedCssSelectors.length; i++) {
