@@ -424,6 +424,7 @@ module.exports = function(grunt) {
                     '!**/*.android.d.ts',
                     '!node_modules/**/*',
                     '!tests/node_modules/**/*.*',
+                    '!tests/platforms/**/*.*',
                     '!bin/**/*',
                     '!apps/**/*',
                     '!android17.d.ts',
