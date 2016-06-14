@@ -341,7 +341,7 @@ export var test_DimensionsAreRoundedAfterScale = function() {
     image.src = "~/ui/image/700x50.png";
 
     let density = utils.layout.getDisplayDensity();
-    let limit = 414;
+    let limit = 320;
     host.width = limit / density;
     host.height = limit / density;
     host.addChild(image);    
