@@ -405,7 +405,7 @@ module.exports = function(grunt) {
                     "module": 'commonjs',
                     "target": 'es5',
                     "out": '<%= grunt.option("out") || localCfg.outApiRefDir %>',
-                    "theme": '<%= grunt.option("theme") || "default" %>',
+                    "theme": '<%= grunt.option("theme") || "./node_modules/nativescript-typedoc-theme" %>',
                     "name": 'NativeScript',
                     "includeDeclarations": undefined,
                     "experimentalDecorators": undefined,
