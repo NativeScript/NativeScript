@@ -34,13 +34,13 @@ function ensurePlatform() {
     }
 }
 
-var completeCallback: com.tns.Async.CompleteCallback;
+var completeCallback: org.nativescript.widgets.Async.CompleteCallback;
 function ensureCompleteCallback() {
     if (completeCallback) {
         return;
     }
 
-    completeCallback = new com.tns.Async.CompleteCallback({
+    completeCallback = new org.nativescript.widgets.Async.CompleteCallback({
         onComplete: function (result: any, context: any) {
             // as a context we will receive the id of the request
             onRequestComplete(context, result);
@@ -48,7 +48,7 @@ function ensureCompleteCallback() {
     });
 }
 
-function onRequestComplete(requestId: number, result: com.tns.Async.Http.RequestResult) {
+function onRequestComplete(requestId: number, result: org.nativescript.widgets.Async.Http.RequestResult) {
     var callbacks = pendingRequests[requestId];
     delete pendingRequests[requestId];
 
@@ -63,7 +63,7 @@ function onRequestComplete(requestId: number, result: com.tns.Async.Http.Request
         var jHeaders = result.headers;
         var length = jHeaders.size();
         var i;
-        var pair: com.tns.Async.Http.KeyValuePair;
+        var pair: org.nativescript.widgets.Async.Http.KeyValuePair;
         for (i = 0; i < length; i++) {
             pair = jHeaders.get(i);
             
@@ -130,7 +130,7 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
         throw new Error("Http request must provide a valid url.");
     }
 
-    var javaOptions = new com.tns.Async.Http.RequestOptions();
+    var javaOptions = new org.nativescript.widgets.Async.Http.RequestOptions();
 
     javaOptions.url = options.url;
 
@@ -145,8 +145,8 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
     }
 
     if (options.headers) {
-        var arrayList = new java.util.ArrayList<com.tns.Async.Http.KeyValuePair>();
-        var pair = com.tns.Async.Http.KeyValuePair;
+        var arrayList = new java.util.ArrayList<org.nativescript.widgets.Async.Http.KeyValuePair>();
+        var pair = org.nativescript.widgets.Async.Http.KeyValuePair;
 
         for (var key in options.headers) {
             arrayList.add(new pair(key, options.headers[key] + ""));
@@ -186,7 +186,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
 
             ensureCompleteCallback();
             //make the actual async call
-            com.tns.Async.Http.MakeRequest(javaOptions, completeCallback, new java.lang.Integer(requestIdCounter));
+            org.nativescript.widgets.Async.Http.MakeRequest(javaOptions, completeCallback, new java.lang.Integer(requestIdCounter));
 
             // increment the id counter
             requestIdCounter++;
