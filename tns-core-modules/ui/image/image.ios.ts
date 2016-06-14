@@ -83,8 +83,8 @@ export class Image extends imageCommon.Image {
         
         if (nativeWidth !== 0 && nativeHeight !== 0 && (finiteWidth || finiteHeight)) {
             var scale = Image.computeScaleFactor(width, height, finiteWidth, finiteHeight, nativeWidth, nativeHeight, this.stretch);
-            var resultW = Math.floor(nativeWidth * scale.width);
-            var resultH = Math.floor(nativeHeight * scale.height);
+            var resultW = Math.round(nativeWidth * scale.width);
+            var resultH = Math.round(nativeHeight * scale.height);
 
             measureWidth = finiteWidth ? Math.min(resultW, width) : resultW;
             measureHeight = finiteHeight ? Math.min(resultH, height) : resultH;

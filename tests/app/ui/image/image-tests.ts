@@ -3,6 +3,7 @@ import {StackLayout} from "ui/layouts/stack-layout";
 import {GridLayout} from "ui/layouts/grid-layout";
 import {isIOS} from "platform";
 import {PropertyChangeData} from "data/observable";
+import utils = require("utils/utils");
 
 // import {target} from "../../TKUnit";
 
@@ -334,3 +335,23 @@ export var test_SettingImageSourceWhenSizedToContentShouldInvalidate = ios(() =>
     TKUnit.assertTrue(called, "image.requestLayout should be called.");
 });
 
+export var test_DimensionsAreRoundedAfterScale = function() {
+    let host = new StackLayout();
+    let image = new Image();
+    image.src = "~/ui/image/700x50.png";
+
+    let density = utils.layout.getDisplayDensity();
+    let limit = 414;
+    host.width = limit / density;
+    host.height = limit / density;
+    host.addChild(image);    
+    let mainPage = helper.getCurrentPage();
+    mainPage.content = host;
+    TKUnit.waitUntilReady(() => host.isLoaded);
+    TKUnit.waitUntilReady(() => image.isLayoutValid);
+    
+    let scale = limit / 700;
+    let expectedHeight = Math.round(50 * scale);
+    TKUnit.assertEqual(image.getMeasuredWidth(), limit, "Actual width is different from expected width.");
+    TKUnit.assertEqual(image.getMeasuredHeight(), expectedHeight, "Actual height is different from expected height.");
+};
