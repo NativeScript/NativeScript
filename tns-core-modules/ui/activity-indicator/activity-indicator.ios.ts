@@ -9,11 +9,16 @@ function onBusyPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     if (!indicator.ios) {
         return;
     }
-
+ 
+ let activityIndicator = indicator.ios;
     if (data.newValue) {
-        indicator.ios.startAnimating();
+        activityIndicator.startAnimating();
     } else {
-        indicator.ios.stopAnimating();
+        activityIndicator.stopAnimating();
+    }
+
+    if (activityIndicator.hidesWhenStopped) {
+        indicator.requestLayout();
     }
 }
 

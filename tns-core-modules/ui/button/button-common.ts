@@ -1,11 +1,16 @@
-﻿import dependencyObservable = require("ui/core/dependency-observable");
+﻿import {Property, PropertyMetadataSettings, PropertyChangeData} from "ui/core/dependency-observable";
 import view = require("ui/core/view");
 import definition = require("ui/button");
 import proxy = require("ui/core/proxy");
 import formattedString = require("text/formatted-string");
 import observable = require("data/observable");
 import * as weakEventListenerModule from "ui/core/weak-event-listener";
-import * as enumsModule from "ui/enums";
+import {WhiteSpace} from "ui/enums";
+
+import {isAndroid} from "platform";
+
+// on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
+let AffectsLayout = isAndroid ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
 var weakEvents: typeof weakEventListenerModule;
 function ensureWeakEvents() {
@@ -14,35 +19,20 @@ function ensureWeakEvents() {
     }
 }
 
-var enums: typeof enumsModule;
-function ensureEnums() {
-    if (!enums) {
-        enums = require("ui/enums");
-    }
-}
+const textProperty = new Property("text", "Button", new proxy.PropertyMetadata("", AffectsLayout));
+const formattedTextProperty = new Property("formattedText", "Button", new proxy.PropertyMetadata("", AffectsLayout));
+const textWrapProperty = new Property("textWrap", "Button", new proxy.PropertyMetadata(false, AffectsLayout));
 
-var textProperty = new dependencyObservable.Property(
-    "text",
-    "Button",
-    new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-);
-
-var formattedTextProperty = new dependencyObservable.Property(
-    "formattedText",
-    "Button",
-    new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-);
-
-function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onTextPropertyChanged(data: PropertyChangeData) {
     var button = <Button>data.object;
-    
+
     button._onTextPropertyChanged(data);
 
     button.style._updateTextDecoration();
-    button.style._updateTextTransform();   
+    button.style._updateTextTransform();
 }
 
-function onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onFormattedTextPropertyChanged(data: PropertyChangeData) {
     var button = <Button>data.object;
     button._onFormattedTextPropertyChanged(data);
 }
@@ -55,12 +45,7 @@ export class Button extends view.View implements definition.Button {
     public static tapEvent = "tap";
     public static textProperty = textProperty;
     public static formattedTextProperty = formattedTextProperty;
-
-    public static textWrapProperty = new dependencyObservable.Property(
-        "textWrap",
-        "Button",
-        new proxy.PropertyMetadata(false, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-    );
+    public static textWrapProperty = textWrapProperty;
 
     public _onBindingContextChanged(oldValue: any, newValue: any) {
         super._onBindingContextChanged(oldValue, newValue);
@@ -105,6 +90,13 @@ export class Button extends view.View implements definition.Button {
         this._setValue(Button.textWrapProperty, value);
     }
 
+    get whiteSpace(): string {
+        return this.style.whiteSpace;
+    }
+    set whiteSpace(value: string) {
+        this.style.whiteSpace = value;
+    }
+
     private onFormattedTextChanged(eventData: observable.PropertyChangeData) {
         var value = <formattedString.FormattedString>eventData.value;
         this._setFormattedTextPropertyToNative(value);
@@ -112,7 +104,7 @@ export class Button extends view.View implements definition.Button {
         this._onPropertyChangedFromNative(Button.textProperty, value.toString());
     }
 
-    public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    public _onTextPropertyChanged(data: PropertyChangeData) {
         //
     }
 
@@ -120,7 +112,7 @@ export class Button extends view.View implements definition.Button {
         //
     }
 
-    public _onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    public _onFormattedTextPropertyChanged(data: PropertyChangeData) {
         var newValue = <formattedString.FormattedString>data.newValue;
         if (newValue) {
             newValue.parent = this;
@@ -136,11 +128,9 @@ export class Button extends view.View implements definition.Button {
     }
 }
 
-function onTextWrapPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+function onTextWrapPropertyChanged(data: PropertyChangeData) {
     var v = <view.View>data.object;
-    ensureEnums();
-
-    v.style.whiteSpace = data.newValue ? enums.WhiteSpace.normal : enums.WhiteSpace.nowrap;
+    v.style.whiteSpace = data.newValue ? WhiteSpace.normal : WhiteSpace.nowrap;
 }
 
 (<proxy.PropertyMetadata>Button.textWrapProperty.metadata).onSetNativeValue = onTextWrapPropertyChanged;

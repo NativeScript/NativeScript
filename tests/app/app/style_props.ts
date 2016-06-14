@@ -1,13 +1,16 @@
 ﻿import style = require("ui/styling/style");
-import observable = require("ui/core/dependency-observable");
+import {PropertyMetadata, PropertyMetadataSettings} from "ui/core/dependency-observable";
 import styleProperty = require("ui/styling/style-property");
 import view = require("ui/core/view");
 import buttonModule = require("ui/button");
 import pages = require("ui/page");
 import stackLayoutDef = require("ui/layouts/stack-layout");
+import {isAndroid} from "platform";
 
-export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family",
-    new observable.PropertyMetadata(undefined, observable.PropertyMetadataSettings.AffectsLayout));
+// on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
+let AffectsLayout = isAndroid ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
+
+export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family", new PropertyMetadata(undefined, AffectsLayout));
 
 export class MyTextViewStyler implements style.Styler {
     public static setFontFamilyProperty(view: view.View, newValue: any) {

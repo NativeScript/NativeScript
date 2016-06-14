@@ -152,14 +152,6 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         }
     }
 
-    public test_Set_TextWrap_TNS() {
-        var label = this.testView;
-        label.textWrap = true;
-
-        var actual = label._getValue(LabelModule.Label.textWrapProperty);
-        TKUnit.assertEqual(actual, true);
-    }
-
     public test_Set_TextWrap_Native() {
         var testLabel = this.testView;
         testLabel.textWrap = true;
