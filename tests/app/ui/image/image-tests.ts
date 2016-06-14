@@ -339,19 +339,21 @@ export var test_DimensionsAreRoundedAfterScale = function() {
     let host = new StackLayout();
     let image = new Image();
     image.src = "~/ui/image/700x50.png";
+    let imageWidth = 700;
+    let imageHeight = 50;
 
     let density = utils.layout.getDisplayDensity();
-    let limit = 320;
-    host.width = limit / density;
-    host.height = limit / density;
+    let hostWidth = 320;
+    host.width = hostWidth / density;
+    host.height = hostWidth / density;
     host.addChild(image);    
     let mainPage = helper.getCurrentPage();
     mainPage.content = host;
     TKUnit.waitUntilReady(() => host.isLoaded);
     TKUnit.waitUntilReady(() => image.isLayoutValid);
     
-    let scale = limit / 700;
-    let expectedHeight = Math.round(50 * scale);
-    TKUnit.assertEqual(image.getMeasuredWidth(), limit, "Actual width is different from expected width.");
+    let scale = hostWidth / imageWidth;
+    let expectedHeight = Math.round(imageHeight * scale);
+    TKUnit.assertEqual(image.getMeasuredWidth(), hostWidth, "Actual width is different from expected width.");
     TKUnit.assertEqual(image.getMeasuredHeight(), expectedHeight, "Actual height is different from expected height.");
 };
