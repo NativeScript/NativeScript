@@ -14,6 +14,7 @@
     "exclude": [
         "node_modules",
         "tests/node_modules",
+        "tests/platforms",
         "bin",
         "build",
         "Deploy",

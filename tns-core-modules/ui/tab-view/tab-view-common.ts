@@ -1,17 +1,21 @@
 ﻿import definition = require("ui/tab-view");
-import view = require("ui/core/view");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
+import {View, AddArrayFromBuilder} from "ui/core/view";
+import {PropertyMetadataSettings, Property, PropertyChangeData} from "ui/core/dependency-observable";
+import {Bindable} from "ui/core/bindable";
+import {isAndroid} from "platform";
+import {PropertyMetadata} from "ui/core/proxy";
 import types = require("utils/types");
 import trace = require("trace");
-import bindable = require("ui/core/bindable");
 import color = require("color");
+
+// on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
+let AffectsLayout = isAndroid ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
 export var traceCategory = "TabView";
 
-export class TabViewItem extends bindable.Bindable implements definition.TabViewItem {
+export class TabViewItem extends Bindable implements definition.TabViewItem {
     private _title: string = "";
-    private _view: view.View;
+    private _view: View;
     private _iconSource: string;
 
     get title(): string {
@@ -25,15 +29,16 @@ export class TabViewItem extends bindable.Bindable implements definition.TabView
         }
     }
 
-    get view(): view.View {
+    get view(): View {
         return this._view;
     }
 
-    set view(value: view.View) {
+    set view(value: View) {
         if (this._view !== value) {
             if (this._view) {
                 throw new Error("Changing the view of an already loaded TabViewItem is not currently supported.");
             }
+
             this._view = value;
         }
     }
@@ -63,45 +68,23 @@ var TABS_BACKGROUND_COLOR = "tabsBackgroundColor";
 export module knownCollections {
     export var items = "items";
 }
-var itemsProperty = new dependencyObservable.Property(
-    ITEMS,
-    TAB_VIEW,
-    new proxy.PropertyMetadata(
-        undefined,
-        dependencyObservable.PropertyMetadataSettings.AffectsLayout));
 
-var selectedIndexProperty = new dependencyObservable.Property(
-    SELECTED_INDEX,
-    TAB_VIEW,
-    new proxy.PropertyMetadata(
-        undefined,
-        dependencyObservable.PropertyMetadataSettings.AffectsLayout));
+var itemsProperty = new Property(ITEMS, TAB_VIEW, new PropertyMetadata(undefined, AffectsLayout));
+var selectedIndexProperty = new Property(SELECTED_INDEX, TAB_VIEW, new PropertyMetadata(undefined, AffectsLayout));
+var selectedColorProperty = new Property(SELECTED_COLOR, TAB_VIEW, new PropertyMetadata(undefined));
+var tabsBackgroundColorProperty = new Property(TABS_BACKGROUND_COLOR, TAB_VIEW, new PropertyMetadata(undefined));
 
-var selectedColorProperty = new dependencyObservable.Property(
-    SELECTED_COLOR,
-    TAB_VIEW,
-    new proxy.PropertyMetadata(
-        undefined,
-        dependencyObservable.PropertyMetadataSettings.None));
-
-var tabsBackgroundColorProperty = new dependencyObservable.Property(
-    TABS_BACKGROUND_COLOR,
-    TAB_VIEW,
-    new proxy.PropertyMetadata(
-        undefined,
-        dependencyObservable.PropertyMetadataSettings.None));
-
-(<proxy.PropertyMetadata>selectedIndexProperty.metadata).onSetNativeValue = function (data: dependencyObservable.PropertyChangeData) {
+(<PropertyMetadata>selectedIndexProperty.metadata).onSetNativeValue = function (data: PropertyChangeData) {
     var tabView = <TabView>data.object;
     tabView._onSelectedIndexPropertyChangedSetNativeValue(data);
 };
 
-(<proxy.PropertyMetadata>itemsProperty.metadata).onSetNativeValue = function (data: dependencyObservable.PropertyChangeData) {
+(<PropertyMetadata>itemsProperty.metadata).onSetNativeValue = function (data: PropertyChangeData) {
     var tabView = <TabView>data.object;
     tabView._onItemsPropertyChangedSetNativeValue(data);
 }
 
-export class TabView extends view.View implements definition.TabView, view.AddArrayFromBuilder {
+export class TabView extends View implements definition.TabView, AddArrayFromBuilder {
     public static itemsProperty = itemsProperty;
     public static selectedIndexProperty = selectedIndexProperty;
     public static selectedColorProperty = selectedColorProperty;
@@ -121,7 +104,7 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
         this._setValue(TabView.itemsProperty, value);
     }
 
-    public _onItemsPropertyChangedSetNativeValue(data: dependencyObservable.PropertyChangeData) {
+    public _onItemsPropertyChangedSetNativeValue(data: PropertyChangeData) {
         if (trace.enabled) {
             trace.write("TabView.__onItemsPropertyChangedSetNativeValue(" + data.oldValue + " -> " + data.newValue + ");", traceCategory);
         }
@@ -213,7 +196,7 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
             value instanceof color.Color ? value : new color.Color(<any>value));
     }
 
-    public _onSelectedIndexPropertyChangedSetNativeValue(data: dependencyObservable.PropertyChangeData) {
+    public _onSelectedIndexPropertyChangedSetNativeValue(data: PropertyChangeData) {
         var index = this.selectedIndex;
         if (types.isUndefined(index)) {
             return;
@@ -227,7 +210,7 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
         }
     }
 
-    get _selectedView(): view.View {
+    get _selectedView(): View {
         var _items = this.items;
         var _selectedIndex = this.selectedIndex;
 
@@ -254,7 +237,7 @@ export class TabView extends view.View implements definition.TabView, view.AddAr
         return 0;
     }
 
-    public _eachChildView(callback: (child: view.View) => boolean) {
+    public _eachChildView(callback: (child: View) => boolean) {
         var _items = this.items;
 
         if (!_items) {
