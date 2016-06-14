@@ -5,6 +5,7 @@ import * as typesModule from "utils/types";
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 import font = require("ui/styling/font");
+import { Color } from "color";
 
 var types: typeof typesModule;
 function ensureTypes() {
@@ -21,12 +22,10 @@ function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 (<proxy.PropertyMetadata>common.SearchBar.textProperty.metadata).onSetNativeValue = onTextPropertyChanged;
 
 function onTextFieldBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var bar = <SearchBar>data.object;
-    var color = require("color");
-    if (data.newValue instanceof color.Color) {
-        var tf = (<any>bar)._textField;
-        if (tf) {
-            tf.backgroundColor = data.newValue.ios;
+    if (data.newValue instanceof Color) {
+        let bar = <SearchBar>data.object;
+        if (bar._textField) {
+            bar._textField.backgroundColor = data.newValue.ios;
         }
     }
 }
@@ -34,14 +33,11 @@ function onTextFieldBackgroundColorPropertyChanged(data: dependencyObservable.Pr
 (<proxy.PropertyMetadata>common.SearchBar.textFieldBackgroundColorProperty.metadata).onSetNativeValue = onTextFieldBackgroundColorPropertyChanged;
 
 function onTextFieldHintColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    // This should be in a Try Catch in case Apple eliminates which ever method in the future; 
-    try {
-        // TODO; convert this code into NativeScript Code		
-		/* if ([textField respondsToSelector:@selector(setAttributedPlaceholder:)]) {
-			textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:textField.placeholder attributes:@{NSForegroundColorAttributeName: [UIColor whiteColor]}];
-		} */
-    } catch (Err) {
-        // Do Nothing 
+    if (data.newValue instanceof Color) {
+        let bar = <SearchBar>data.object;
+        if (bar._placeholderLabel) {
+            bar._placeholderLabel.textColor = data.newValue.ios;        
+        }
     }
 }
 
@@ -115,6 +111,7 @@ export class SearchBar extends common.SearchBar {
     private _ios: UISearchBar;
     private _delegate;
     private __textField: UITextField;
+    private __placeholderLabel: UILabel;
 
     constructor() {
         super();
@@ -148,6 +145,16 @@ export class SearchBar extends common.SearchBar {
         }
 
         return this.__textField;
+    }
+    
+    get _placeholderLabel(): UILabel {
+        if (!this.__placeholderLabel) {
+            if (this._textField){
+                this.__placeholderLabel = this._textField.valueForKey("placeholderLabel");   
+            }
+        }
+
+        return this.__placeholderLabel;
     }
 }
 
