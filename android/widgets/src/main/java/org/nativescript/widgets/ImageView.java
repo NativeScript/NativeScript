@@ -73,8 +73,8 @@ public class ImageView extends android.widget.ImageView {
 
         if (measureWidth != 0 && measureHeight != 0 && (finiteWidth || finiteHeight)) {
             this.computeScaleFactor(width, height, finiteWidth, finiteHeight, measureWidth, measureHeight);
-            int resultW = (int) Math.floor(measureWidth * this.scaleW);
-            int resultH = (int) Math.floor(measureHeight * this.scaleH);
+            int resultW = (int) Math.round(measureWidth * this.scaleW);
+            int resultH = (int) Math.round(measureHeight * this.scaleH);
 
             measureWidth = finiteWidth ? Math.min(resultW, width) : resultW;
             measureHeight = finiteHeight ? Math.min(resultH, height) : resultH;
