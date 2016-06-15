@@ -1,16 +1,11 @@
-import colorModule = require("color");
-import searchBarModule = require("ui/search-bar");
+import { SearchBar } from "ui/search-bar";
+import { Color } from "color";
+import * as utils from "utils/utils";
 
-export function getNativeHintColor(searchBar: searchBarModule.SearchBar): colorModule.Color {
-    // TODO: This test needs to be created
-    return undefined;
+export function getNativeHintColor(searchBar: SearchBar): Color {
+    return (<any>searchBar)._placeholderLabel ? utils.ios.getColor((<any>searchBar)._placeholderLabel.textColor) : undefined; 
 }
-export function getNativeFontSize(searchBar: searchBarModule.SearchBar): number {
-    var sf = <UITextField>(<any>searchBar)._textField;
-    if (sf) {
-        return sf.font.pointSize;
-    }
-
-    return undefined;
+export function getNativeFontSize(searchBar: SearchBar): number {
+    return (<any>searchBar)._textField ? (<any>searchBar)._textField.font.pointSize : undefined;
 }
 
