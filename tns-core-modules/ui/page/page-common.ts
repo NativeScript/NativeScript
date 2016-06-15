@@ -60,6 +60,7 @@ export class Page extends ContentView implements dts.Page {
     private _actionBar: ActionBar;
 
     public _modal: Page;
+    public _fragmentTag: string;
 
     constructor() {
         super();

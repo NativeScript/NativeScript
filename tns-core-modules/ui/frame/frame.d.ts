@@ -123,11 +123,6 @@ declare module "ui/frame" {
     }
 
     /**
-     * Gets the default AndroidActivityCallbacks implementation, used to bridge Activity events to the Frame and navigation routine. This field is initialized only for the Android platform.
-     */    
-    export var activityCallbacks: AndroidActivityCallbacks;
-
-    /**
      * Sets the extended android.app.Fragment class to the Frame and navigation routine. An instance of this class will be created to represent the Page currently visible on the srceen. This method is available only for the Android platform.
      */
     export function setFragmentClass(clazz: any): void;
@@ -356,5 +351,7 @@ declare module "ui/frame" {
     //@private
     function reloadPage(): void;
     function resolvePageFromEntry(entry: NavigationEntry): pages.Page;
+    function setFragmentCallbacks(fragment: android.app.Fragment): void;
+    function setActivityCallbacks(activity: android.app.Activity): void;
     //@endprivate
 }

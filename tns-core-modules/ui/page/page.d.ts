@@ -218,6 +218,12 @@ declare module "ui/page" {
         //@private
 
         /**
+         * identifier for the fragment that shows this page.
+         * Android only. 
+         */
+        _fragmentTag: string;
+
+        /**
          * A method called before navigating to the page.
          * @param context - The data passed to the page through the NavigationEntry.context property.
          * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
