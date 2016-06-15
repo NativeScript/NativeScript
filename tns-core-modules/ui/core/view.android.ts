@@ -127,6 +127,7 @@ export class View extends viewCommon.View {
 
     public onUnloaded() {
         super.onUnloaded();
+        this._unregisterAllAnimations();
         if (this._nativeView && this._nativeView.setOnTouchListener) {
             this._nativeView.setOnTouchListener(null);
             this.touchListenerIsSet = false;
