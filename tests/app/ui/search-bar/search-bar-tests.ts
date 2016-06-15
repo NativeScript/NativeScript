@@ -28,11 +28,6 @@ export var testSearchBarHintColorAndroid = function () {
     helper.buildUIAndRunTest(_createSearchBarFunc(), function (views: Array<viewModule.View>) {
         var searchBar = <searchBarModule.SearchBar>views[0];
 
-        // TODO: create IOS test once IOS support is working
-        if (!searchBar.android) {
-            return;
-        }
-
         searchBar.text = "";
         searchBar.hint = "hint color test";
 
