@@ -589,7 +589,8 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
 }
 
 function startActivity(activity: android.app.Activity, frameId: number) {
-    var intent = new android.content.Intent(activity, (<any>com).tns.NativeScriptActivity.class);
+    // TODO: Implicitly, we will open the same activity type as the current one
+    var intent = new android.content.Intent(activity, activity.getClass());
     intent.setAction(android.content.Intent.ACTION_DEFAULT);
     intent.putExtra(INTENT_EXTRA, frameId);
 
