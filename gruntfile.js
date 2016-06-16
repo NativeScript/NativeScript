@@ -419,7 +419,7 @@ module.exports = function(grunt) {
             },
             buildDts: {
                 src: [
-                    '**/*.d.ts',
+                    'tns-core-modules/**/*.d.ts',
                     '!org.nativescript.widgets.d.ts',
                     '!**/*.android.d.ts',
                     '!node_modules/**/*',
@@ -427,8 +427,9 @@ module.exports = function(grunt) {
                     '!tests/platforms/**/*.*',
                     '!bin/**/*',
                     '!apps/**/*',
-                    '!android17.d.ts',
-                    '!ios.d.ts',
+                    '!tns-core-modules/android17.d.ts',
+                    '!tns-core-modules/ios.d.ts',
+                    '!tns-core-modules/org.nativescript.widgets.d.ts',
                 ],
                 outDir: localCfg.outDir,
                 dest: localCfg.outDir,
