@@ -16,13 +16,13 @@ let FRAMEID = "_frameId";
 let navDepth = -1;
 let fragmentId = -1;
 let activityInitialized = false;
-const PAGE_FRAGMENT_TAG = "_fragmentTag";
 const CALLBACKS = "_callbacks";
 
 function onFragmentShown(fragment: android.app.Fragment) {
     if (trace.enabled) {
         trace.write(`SHOWN ${fragment}`, trace.categories.NativeLifecycle);
     }
+
     let callbacks: FragmentCallbacksImplementation = fragment[CALLBACKS];
     if (callbacks.clearHistory) {
         // This is the fragment which was at the bottom of the stack (fragment0) when we cleared history and called
@@ -38,7 +38,7 @@ function onFragmentShown(fragment: android.app.Fragment) {
     let frame = callbacks.frame;
     let entry = callbacks.entry;
     let page = entry.resolvedPage;
-    page[PAGE_FRAGMENT_TAG] = entry.fragmentTag;
+    page._fragmentTag = entry.fragmentTag;
 
     let currentNavigationContext;
     let navigationQueue = (<any>frame)._navigationQueue;
@@ -72,7 +72,7 @@ function onFragmentHidden(fragment: android.app.Fragment, destroyed: boolean) {
     let callbacks: FragmentCallbacksImplementation = fragment[CALLBACKS];
     let isBack = callbacks.entry.isBack;
     callbacks.entry.isBack = undefined;
-    callbacks.entry.resolvedPage[PAGE_FRAGMENT_TAG] = undefined;
+    callbacks.entry.resolvedPage._fragmentTag = undefined;
 
     // Handle page transitions.
     transitionModule._onFragmentHidden(fragment, isBack, destroyed);
@@ -145,7 +145,7 @@ export class Frame extends frameCommon.Frame {
         }
 
         let clearHistory = backstackEntry.entry.clearHistory;
-        
+
         // New Fragment
         if (clearHistory) {
             navDepth = -1;
@@ -155,15 +155,14 @@ export class Frame extends frameCommon.Frame {
         let newFragmentTag = `fragment${fragmentId}[${navDepth}]`;
         ensureFragmentClass();
         let newFragment: android.app.Fragment = new fragmentClass();
-
-        let callbacks = new FragmentCallbacksImplementation();
-        callbacks.frame = this;
-        callbacks.entry = backstackEntry;
-
-        newFragment[CALLBACKS] = callbacks;
         let args = new android.os.Bundle();
         args.putInt(FRAMEID, this._android.frameId);
         newFragment.setArguments(args);
+        setFragmentCallbacks(newFragment);
+
+        let callbacks = newFragment[CALLBACKS];
+        callbacks.frame = this;
+        callbacks.entry = backstackEntry;
 
         // backstackEntry
         backstackEntry.isNavigation = true;
@@ -189,7 +188,7 @@ export class Frame extends frameCommon.Frame {
 
         // Clear History
         let length = manager.getBackStackEntryCount();
-        let emptyNativeBackStack = clearHistory && length > 0; 
+        let emptyNativeBackStack = clearHistory && length > 0;
         if (emptyNativeBackStack) {
             for (let i = 0; i < length; i++) {
                 let fragmentToRemove = manager.findFragmentByTag(manager.getBackStackEntryAt(i).getName());
@@ -359,7 +358,7 @@ export class Frame extends frameCommon.Frame {
 
         return true;
     }
-    
+
     protected _processNavigationContext(navigationContext: frameCommon.NavigationContext) {
         let activity = this._android.activity;
         if (activity) {
@@ -419,7 +418,7 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
     private _showActionBar = true;
     private _owner: Frame;
     private _cachePagesOnNavigate: boolean;
-    
+
     constructor(owner: Frame) {
         super();
         this._owner = owner;
@@ -491,7 +490,7 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
                 return activity;
             }
         }
-        
+
         return undefined;
     }
 
@@ -524,30 +523,31 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
         // can go back only if it is not the main one.
         return this.activity.getIntent().getAction() !== android.content.Intent.ACTION_MAIN;
     }
-    
+
     public fragmentForPage(page: pages.Page): any {
-        if(!page) {
+        if (!page) {
             return undefined;
         }
 
-        let tag = page[PAGE_FRAGMENT_TAG];
-        if(tag) {
+        let tag = page._fragmentTag;
+        if (tag) {
             let manager = this.activity.getFragmentManager();
             return manager.findFragmentByTag(tag);
         }
-        
+
         return undefined;
     }
 }
 
 function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
-    var fragmentTag = fragment.getTag();
-    var page: pages.Page;
-    var entry: definition.BackstackEntry;
+    let fragmentTag = fragment.getTag();
+    let page: pages.Page;
+    let entry: definition.BackstackEntry;
 
     if (trace.enabled) {
         trace.write(`Finding page for ${fragmentTag}.`, trace.categories.NativeLifecycle);
     }
+
     if (fragmentTag === (<any>pages).DIALOG_FRAGMENT_TAG) {
         if (trace.enabled) {
             trace.write(`No need to find page for dialog fragment.`, trace.categories.NativeLifecycle);
@@ -564,7 +564,7 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
     }
     else {
         var backStack = frame.backStack;
-        for (var i = 0; i < backStack.length; i++) {
+        for (let i = 0; i < backStack.length; i++) {
             if (backStack[i].fragmentTag === fragmentTag) {
                 entry = backStack[i];
                 break;
@@ -584,7 +584,7 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
         callbacks.entry = entry;
     }
     else {
-        //throw new Error(`Could not find a page for ${fragmentTag}.`);
+        throw new Error(`Could not find a page for ${fragmentTag}.`);
     }
 }
 
@@ -618,26 +618,27 @@ function ensureAnimationFixed() {
 }
 
 function ensureFragmentClass() {
-    if(fragmentClass) {
+    if (fragmentClass) {
         return;
     }
 
     // this require will apply the FragmentClass implementation 
     require("ui/frame/fragment");
 
-    if(!fragmentClass) {
+    if (!fragmentClass) {
         throw new Error("Failed to initialize the extended android.app.Fragment class");
     }
 }
 
 let fragmentClass: any;
 export function setFragmentClass(clazz: any) {
-    if(fragmentClass) {
+    if (fragmentClass) {
         throw new Error("Fragment class already initialized");
     }
 
     fragmentClass = clazz;
 }
+
 class FragmentCallbacksImplementation implements definition.AndroidFragmentCallbacks {
     public frame: Frame;
     public entry: definition.BackstackEntry;
@@ -802,7 +803,7 @@ class ActivityCallbacksImplementation implements definition.AndroidActivityCallb
 
             rootView = frame;
         }
-        
+
         // If there is savedInstanceState this call will recreate all fragments that were previously in the navigation.
         // We take care of associating them with a Page from our backstack in the onAttachFragment callback.
         // If there is savedInstanceState and activityInitialized is false we are restarted but process was killed.
@@ -823,7 +824,7 @@ class ActivityCallbacksImplementation implements definition.AndroidActivityCallb
 
         activityInitialized = true;
     }
-    
+
     public onSaveInstanceState(activity: android.app.Activity, outState: android.os.Bundle, superFunc: Function): void {
         superFunc.call(activity, outState);
         let view = this._rootView;
@@ -831,7 +832,7 @@ class ActivityCallbacksImplementation implements definition.AndroidActivityCallb
             outState.putInt(INTENT_EXTRA, view.android.frameId);
         }
     }
-    
+
     public onStart(activity: any, superFunc: Function): void {
         superFunc.call(activity);
 
@@ -863,12 +864,12 @@ class ActivityCallbacksImplementation implements definition.AndroidActivityCallb
         }
 
         superFunc.call(activity);
-        
+
         if (trace.enabled) {
             trace.write("NativeScriptActivity.onDestroy();", trace.categories.NativeLifecycle);
         }
     }
-    
+
     public onBackPressed(activity: any, superFunc: Function): void {
         if (trace.enabled) {
             trace.write("NativeScriptActivity.onBackPressed;", trace.categories.NativeLifecycle);
@@ -890,7 +891,7 @@ class ActivityCallbacksImplementation implements definition.AndroidActivityCallb
             superFunc.call(activity);
         }
     }
-    
+
     public onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void {
         if (trace.enabled) {
             trace.write("NativeScriptActivity.onRequestPermissionsResult;", trace.categories.NativeLifecycle);
@@ -928,4 +929,10 @@ class ActivityCallbacksImplementation implements definition.AndroidActivityCallb
     }
 }
 
-export var activityCallbacks = new ActivityCallbacksImplementation();
+export function setActivityCallbacks(activity: android.app.Activity): void {
+    activity[CALLBACKS] = new ActivityCallbacksImplementation();
+}
+
+export function setFragmentCallbacks(fragment: android.app.Fragment): void {
+    fragment[CALLBACKS] = new FragmentCallbacksImplementation();
+}

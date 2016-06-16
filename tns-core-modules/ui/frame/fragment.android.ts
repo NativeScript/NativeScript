@@ -1,9 +1,9 @@
-import * as frame from "ui/frame";
+import {AndroidFragmentCallbacks, setFragmentCallbacks, setFragmentClass} from "ui/frame";
 
 @JavaProxy("com.tns.FragmentClass")
 class FragmentClass extends android.app.Fragment {
     // This field is updated in the frame module upon `new` (although hacky this eases the Fragment->callbacks association a lot)
-    private _callbacks;
+    private _callbacks: AndroidFragmentCallbacks;
 
     constructor() {
         super();
@@ -20,7 +20,11 @@ class FragmentClass extends android.app.Fragment {
     }
 
     public onCreate(savedInstanceState: android.os.Bundle) {
-        super.setHasOptionsMenu(true);
+        if (!this._callbacks) {
+            setFragmentCallbacks(this);
+        }
+
+        this.setHasOptionsMenu(true);
         this._callbacks.onCreate(this, savedInstanceState, super.onCreate);
     }
 
@@ -46,4 +50,4 @@ class FragmentClass extends android.app.Fragment {
     }
 }
 
-frame.setFragmentClass(FragmentClass);
+setFragmentClass(FragmentClass);
