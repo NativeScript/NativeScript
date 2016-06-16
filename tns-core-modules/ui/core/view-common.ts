@@ -614,6 +614,10 @@ export class View extends ProxyObject implements definition.View {
         if (metadata.affectsStyle) {
             this.style._resetCssValues();
             this._applyStyleFromScope();
+            this._eachChildView((v) => {
+                v._checkMetadataOnPropertyChanged(metadata);
+                return true;
+            });
         }
     }
 

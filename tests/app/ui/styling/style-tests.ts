@@ -1426,6 +1426,23 @@ export function test_UsingSameSelectorsWithSpecific_ShouldApplyLatest() {
     }
     helper.buildUIAndRunTest(testButton, testFunc, testCss);
 }
+
+export function test_CascadingClassNamesAppliesAfterPageLoad() {
+    const stack = new stackModule.StackLayout();
+    const label = new labelModule.Label();
+    label.text = "Some text";
+    label.cssClass = 'lab1';
+    stack.addChild(label);
+
+    application.addCss(".added { background-color: red; } .added .lab1 { background-color: blue; } .lab1 { color: red}");
+
+    helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
+        helper.assertViewColor(label, "#FF0000");
+        stack.className = "added";
+        helper.assertViewBackgroundColor(label, "#0000FF");
+        helper.assertViewBackgroundColor(stack, "#FF0000");
+    });
+}
 // <snippet module="ui/styling" title="styling">
 // For information and example how to use style properties please refer to special [**Styling**](../../../styling.md) topic. 
 // </snippet>
