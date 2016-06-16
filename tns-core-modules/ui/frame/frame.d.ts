@@ -351,7 +351,7 @@ declare module "ui/frame" {
     //@private
     function reloadPage(): void;
     function resolvePageFromEntry(entry: NavigationEntry): pages.Page;
-    function setFragmentCallbacks(fragment: android.app.Fragment): void;
-    function setActivityCallbacks(activity: android.app.Activity): void;
+    function setFragmentCallbacks(fragment: any /*android.app.Fragment*/): void;
+    function setActivityCallbacks(activity: any /*android.app.Activity*/): void;
     //@endprivate
 }
