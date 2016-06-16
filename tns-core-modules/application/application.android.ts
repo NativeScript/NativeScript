@@ -338,6 +338,8 @@ global.__onLiveSync = function () {
     }
 
     appModule.__onLiveSync();
+
+    loadCss();
 }
 
 global.__onUncaughtError = function (error: definition.NativeScriptError) {

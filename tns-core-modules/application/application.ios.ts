@@ -277,4 +277,6 @@ global.__onLiveSync = function () {
     }
 
     common.__onLiveSync();
+
+    loadCss();
 }
