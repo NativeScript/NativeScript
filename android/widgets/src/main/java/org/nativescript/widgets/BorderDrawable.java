@@ -22,15 +22,15 @@ public class BorderDrawable extends ColorDrawable {
     private float borderWidth;
     private int borderColor;
     private float borderRadius;
-    private String clipPath = "";
+    private String clipPath;
     private int backgroundColor;
     private Bitmap backgroundImage;
     private float backgroundImageWidth;
     private float backgroundImageHeight;
-    private String backgroundRepeat = "";
-    private String backgroundPosition = "";
+    private String backgroundRepeat;
+    private String backgroundPosition;
     private CSSValue[] backgroundPositionParsedCSSValues;
-    private String backgroundSize = "";
+    private String backgroundSize;
     private CSSValue[] backgroundSizeParsedCSSValues;
 
     public BorderDrawable(float density){
@@ -68,7 +68,8 @@ public class BorderDrawable extends ColorDrawable {
             dirty = true;
         }
 
-        if (!this.clipPath.equals(clipPath)){
+
+        if (!compare(this.clipPath, clipPath)){
             this.clipPath = clipPath;
             dirty = true;
         }
@@ -93,18 +94,18 @@ public class BorderDrawable extends ColorDrawable {
             dirty = true;
         }
 
-        if (!this.backgroundRepeat.equals(backgroundRepeat)){
+        if (!compare(this.backgroundRepeat, backgroundRepeat)){
             this.backgroundRepeat = backgroundRepeat;
             dirty = true;
         }
 
-        if (!this.backgroundPosition.equals(backgroundPosition)){
+        if (!compare(this.backgroundPosition, backgroundPosition)){
             this.backgroundPosition = backgroundPosition;
             this.backgroundPositionParsedCSSValues = backgroundPositionParsedCSSValues;
             dirty = true;
         }
 
-        if (!this.backgroundSize.equals(backgroundSize)){
+        if (!compare(this.backgroundSize, backgroundSize)){
             this.backgroundSize = backgroundSize;
             this.backgroundSizeParsedCSSValues = backgroundSizeParsedCSSValues;
             dirty = true;
@@ -113,6 +114,10 @@ public class BorderDrawable extends ColorDrawable {
         if (dirty){
             this.invalidateSelf();
         }
+    }
+
+    private static boolean compare(String str1, String str2) {
+        return (str1 == null ? str2 == null : str1.equals(str2));
     }
 
     @Override
