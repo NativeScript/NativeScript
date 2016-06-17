@@ -66,6 +66,7 @@ export class CssSelector {
     }
 
     public apply(view: view.View, valueSourceModifier: number) {
+        view._unregisterAllAnimations();
         let modifier = valueSourceModifier || this.valueSourceModifier;
         this.eachSetter((property, value) => {
             if (types.isString(property)) {
@@ -92,7 +93,6 @@ export class CssSelector {
                 }
             }
         });
-        view._unregisterAllAnimations();
         if (this.animations && view.isLoaded && view._nativeView !== undefined) {
             for (let animationInfo of this.animations) {
                 let animation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo, modifier);

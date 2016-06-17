@@ -36,6 +36,7 @@ export class KeyframeAnimation {
     private _isPlaying: boolean;
     private _isForwards: boolean;
     private _nativeAnimations: Array<animationModule.Animation>;
+    private _target: view.View;
 
     public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo, valueSourceModifier: number) {
         let animations = new Array<Object>();
@@ -109,6 +110,10 @@ export class KeyframeAnimation {
                     animation.cancel();
                 }
             }
+            if (this._nativeAnimations.length > 0) {
+                let animation = this._nativeAnimations[0];
+                this._resetAnimationValues(this._target, animation);
+            }
             this._rejectAnimationFinishedPromise();
         }
     }
@@ -125,6 +130,7 @@ export class KeyframeAnimation {
 
         this._isPlaying = true;
         this._nativeAnimations = new Array<animationModule.Animation>();
+        this._target = view;
 
         if (this.delay !== 0) {
             let that = this;
@@ -174,24 +180,7 @@ export class KeyframeAnimation {
             else {
                 if (this._isForwards === false) {
                     let animation = this.animations[this.animations.length - 1];
-                    let modifier = animation["valueSource"];
-                    if ("backgroundColor" in animation) {
-                        view.style._resetValue(style.backgroundColorProperty, modifier);
-                    }
-                    if ("scale" in animation) {
-                        view.style._resetValue(style.scaleXProperty, modifier);
-                        view.style._resetValue(style.scaleYProperty, modifier);
-                    }
-                    if ("translate" in animation) {
-                        view.style._resetValue(style.translateXProperty, modifier);
-                        view.style._resetValue(style.translateYProperty, modifier);
-                    }
-                    if ("rotate" in animation) {
-                        view.style._resetValue(style.rotateProperty, modifier);
-                    }
-                    if ("opacity" in animation) {
-                        view.style._resetValue(style.opacityProperty, modifier);
-                    }
+                    this._resetAnimationValues(view, animation);
                 }
                 this._resolveAnimationFinishedPromise();
             }
@@ -210,12 +199,35 @@ export class KeyframeAnimation {
     public _resolveAnimationFinishedPromise() {
         this._nativeAnimations = new Array<animationModule.Animation>();
         this._isPlaying = false;
+        this._target = null;
         this._resolve();
     }
 
     public _rejectAnimationFinishedPromise() {
         this._nativeAnimations = new Array<animationModule.Animation>();
         this._isPlaying = false;
+        this._target = null;
         this._reject(new Error("Animation cancelled."));
+    }
+
+    private _resetAnimationValues(view: view.View, animation: Object) {
+        let modifier = animation["valueSource"];
+        if ("backgroundColor" in animation) {
+            view.style._resetValue(style.backgroundColorProperty, modifier);
+        }
+        if ("scale" in animation) {
+            view.style._resetValue(style.scaleXProperty, modifier);
+            view.style._resetValue(style.scaleYProperty, modifier);
+        }
+        if ("translate" in animation) {
+            view.style._resetValue(style.translateXProperty, modifier);
+            view.style._resetValue(style.translateYProperty, modifier);
+        }
+        if ("rotate" in animation) {
+            view.style._resetValue(style.rotateProperty, modifier);
+        }
+        if ("opacity" in animation) {
+            view.style._resetValue(style.opacityProperty, modifier);
+        }
     }
 }

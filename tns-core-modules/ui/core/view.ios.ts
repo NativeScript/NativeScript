@@ -24,16 +24,6 @@ function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChan
 }
 (<proxy.PropertyMetadata>viewCommon.View.automationTextProperty.metadata).onSetNativeValue = onAutomationTextPropertyChanged;
 
-function onTransfromPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    view._updateNativeTransform();
-}
-(<proxy.PropertyMetadata>viewCommon.View.translateXProperty.metadata).onSetNativeValue = onTransfromPropertyChanged;
-(<proxy.PropertyMetadata>viewCommon.View.translateYProperty.metadata).onSetNativeValue = onTransfromPropertyChanged;
-(<proxy.PropertyMetadata>viewCommon.View.scaleXProperty.metadata).onSetNativeValue = onTransfromPropertyChanged;
-(<proxy.PropertyMetadata>viewCommon.View.scaleYProperty.metadata).onSetNativeValue = onTransfromPropertyChanged;
-(<proxy.PropertyMetadata>viewCommon.View.rotateProperty.metadata).onSetNativeValue = onTransfromPropertyChanged;
-
 function onOriginPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
     view._updateOriginPoint();
@@ -257,7 +247,7 @@ export class View extends viewCommon.View {
         return {
             x: utils.layout.toDeviceIndependentPixels(pointInWindow.x),
             y: utils.layout.toDeviceIndependentPixels(pointInWindow.y),
-        }
+        };
     }
 
     public getLocationOnScreen(): viewDefinition.Point {
@@ -270,7 +260,7 @@ export class View extends viewCommon.View {
         return {
             x: utils.layout.toDeviceIndependentPixels(pointOnScreen.x),
             y: utils.layout.toDeviceIndependentPixels(pointOnScreen.y),
-        }
+        };
     }
 
     public getLocationRelativeTo(otherView: viewDefinition.View): viewDefinition.Point {
@@ -285,7 +275,7 @@ export class View extends viewCommon.View {
         return {
             x: utils.layout.toDeviceIndependentPixels(myPointInWindow.x - otherPointInWindow.x),
             y: utils.layout.toDeviceIndependentPixels(myPointInWindow.y - otherPointInWindow.y),
-        }
+        };
     }
 
     private _onSizeChanged() {
@@ -293,10 +283,15 @@ export class View extends viewCommon.View {
     }
 
     public _updateNativeTransform() {
-        var newTransform = CGAffineTransformIdentity;
-        newTransform = CGAffineTransformTranslate(newTransform, this.translateX, this.translateY);
-        newTransform = CGAffineTransformRotate(newTransform, this.rotate * Math.PI / 180);
-        newTransform = CGAffineTransformScale(newTransform, this.scaleX, this.scaleY);
+        let translateX = this.translateX || 0;
+        let translateY = this.translateY || 0;
+        let scaleX = this.scaleX || 1;
+        let scaleY = this.scaleY || 1;
+        let rotate = this.rotate || 0;
+        let newTransform = CGAffineTransformIdentity;
+        newTransform = CGAffineTransformTranslate(newTransform, translateX, translateY);
+        newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
+        newTransform = CGAffineTransformScale(newTransform, scaleX, scaleY);
         if (!CGAffineTransformEqualToTransform(this._nativeView.transform, newTransform)) {
             this._nativeView.transform = newTransform;
             this._hasTransfrom = this._nativeView && !CGAffineTransformEqualToTransform(this._nativeView.transform, CGAffineTransformIdentity);
@@ -382,7 +377,7 @@ export class CustomLayoutView extends View {
 }
 
 export class ViewStyler implements style.Styler {
-    //Background methods
+    // Background methods
     private static setBackgroundInternalProperty(view: View, newValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
@@ -413,7 +408,7 @@ export class ViewStyler implements style.Styler {
         return undefined;
     }
 
-    //Visibility methods
+    // Visibility methods
     private static setVisibilityProperty(view: View, newValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
@@ -428,7 +423,7 @@ export class ViewStyler implements style.Styler {
         }
     }
 
-    //Opacity methods
+    // Opacity methods
     private static setOpacityProperty(view: View, newValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
@@ -451,7 +446,7 @@ export class ViewStyler implements style.Styler {
         }
     }
 
-    //Border width methods
+    // Border width methods
     private static setBorderWidthProperty(view: View, newValue: any) {
         if (view._nativeView instanceof UIView) {
             (<UIView>view._nativeView).layer.borderWidth = newValue;
@@ -471,7 +466,7 @@ export class ViewStyler implements style.Styler {
         return 0;
     }
 
-    //Border color methods
+    // Border color methods
     private static setBorderColorProperty(view: View, newValue: any) {
         if (view._nativeView instanceof UIView && newValue instanceof UIColor) {
             (<UIView>view._nativeView).layer.borderColor = (<UIColor>newValue).CGColor;
@@ -491,7 +486,7 @@ export class ViewStyler implements style.Styler {
         return undefined;
     }
 
-    //Border radius methods
+    // Border radius methods
     private static setBorderRadiusProperty(view: View, newValue: any) {
         if (view._nativeView instanceof UIView) {
             (<UIView>view._nativeView).layer.cornerRadius = newValue;
@@ -514,70 +509,90 @@ export class ViewStyler implements style.Styler {
 
     // Rotate
     private static setRotateProperty(view: View, newValue: any) {
-        view.rotate = newValue;
+        view._updateNativeTransform();
     }
 
     private static resetRotateProperty(view: View, nativeValue: any) {
-        view.rotate = nativeValue;
+        view._updateNativeTransform();
     }
 
     private static getRotateProperty(view: View): any {
-        return view.rotate;
+        if (view._nativeView instanceof UIView) {
+            let t: CGAffineTransform = (<UIView>view._nativeView).transform;
+            return Math.atan2(t.b, t.a);
+        }
+        return 0;
     }
 
-    //ScaleX
+    // ScaleX
     private static setScaleXProperty(view: View, newValue: any) {
-        view.scaleX = newValue;
+        view._updateNativeTransform();
     }
 
     private static resetScaleXProperty(view: View, nativeValue: any) {
-        view.scaleX = nativeValue;
+        view._updateNativeTransform();
     }
 
     private static getScaleXProperty(view: View): any {
-        return view.scaleX;
+        if (view._nativeView instanceof UIView) {
+            let t: CGAffineTransform = (<UIView>view._nativeView).transform;
+            return Math.sqrt(t.a * t.a + t.c * t.c);
+        }
+        return 0;
     }
 
-    //ScaleY
+    // ScaleY
     private static setScaleYProperty(view: View, newValue: any) {
-        view.scaleY = newValue;
+        view._updateNativeTransform();
     }
 
     private static resetScaleYProperty(view: View, nativeValue: any) {
-        view.scaleY = nativeValue;
+        view._updateNativeTransform();
     }
 
     private static getScaleYProperty(view: View): any {
-        return view.scaleY;
+        if (view._nativeView instanceof UIView) {
+            let t: CGAffineTransform = (<UIView>view._nativeView).transform;
+            return Math.sqrt(t.b * t.b + t.d * t.d);
+        }
+        return 0;
     }
 
-    //TranslateX
+    // TranslateX
     private static setTranslateXProperty(view: View, newValue: any) {
-        view.translateX = newValue;
+        view._updateNativeTransform();
     }
 
     private static resetTranslateXProperty(view: View, nativeValue: any) {
-        view.translateX = nativeValue;
+        view._updateNativeTransform();
     }
 
     private static getTranslateXProperty(view: View): any {
-        return view.translateX;
+        if (view._nativeView instanceof UIView) {
+            let t: CGAffineTransform = (<UIView>view._nativeView).transform;
+            return t.tx;
+        }
+        return 0;
     }
 
-    //TranslateY
+    // TranslateY
     private static setTranslateYProperty(view: View, newValue: any) {
-        view.translateY = newValue;
+        view._updateNativeTransform();
     }
 
     private static resetTranslateYProperty(view: View, nativeValue: any) {
-        view.translateY = nativeValue;
+        view._updateNativeTransform();
     }
 
     private static getTranslateYProperty(view: View): any {
-        return view.translateY;
+        if (view._nativeView instanceof UIView) {
+            let t: CGAffineTransform = (<UIView>view._nativeView).transform;
+            return t.ty;
+        }
+        return 0;
     }
 
-    //z-index
+    // z-index
     private static setZIndexProperty(view: View, newValue: any) {
         view.ios.layer.zPosition = newValue;
     }
@@ -589,8 +604,8 @@ export class ViewStyler implements style.Styler {
     private static getZIndexProperty(view: View): any {
         return view.ios.layer.zPosition;
     }
-    
-    //Clip-path methods
+
+    // Clip-path methods
     private static setClipPathProperty(view: View, newValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {

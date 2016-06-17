@@ -121,13 +121,8 @@ var cssClassProperty = new Property("cssClass", "View", new PropertyMetadata(und
 var classNameProperty = new Property("className", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
 var idProperty = new Property("id", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle));
 var automationTextProperty = new Property("automationText", "View", new PropertyMetadata(undefined));
-var translateXProperty = new Property("translateX", "View", new PropertyMetadata(0));
-var translateYProperty = new Property("translateY", "View", new PropertyMetadata(0));
-var scaleXProperty = new Property("scaleX", "View", new PropertyMetadata(1));
-var scaleYProperty = new Property("scaleY", "View", new PropertyMetadata(1));
 var originXProperty = new Property("originX", "View", new PropertyMetadata(0.5));
 var originYProperty = new Property("originY", "View", new PropertyMetadata(0.5));
-var rotateProperty = new Property("rotate", "View", new PropertyMetadata(0));
 var isEnabledProperty = new Property("isEnabled", "View", new PropertyMetadata(true));
 var isUserInteractionEnabledProperty = new Property("isUserInteractionEnabled", "View", new PropertyMetadata(true));
 
@@ -139,13 +134,8 @@ export class View extends ProxyObject implements definition.View {
     public static idProperty = idProperty;
     public static cssClassProperty = cssClassProperty;
     public static classNameProperty = classNameProperty;
-    public static translateXProperty = translateXProperty;
-    public static translateYProperty = translateYProperty;
-    public static scaleXProperty = scaleXProperty;
-    public static scaleYProperty = scaleYProperty;
     public static originXProperty = originXProperty;
     public static originYProperty = originYProperty;
-    public static rotateProperty = rotateProperty;
     public static isEnabledProperty = isEnabledProperty;
     public static isUserInteractionEnabledProperty = isUserInteractionEnabledProperty;
 
@@ -411,31 +401,31 @@ export class View extends ProxyObject implements definition.View {
     //END Style property shortcuts
 
     get translateX(): number {
-        return this._getValue(View.translateXProperty);
+        return this.style.translateX;
     }
     set translateX(value: number) {
-        this._setValue(View.translateXProperty, value);
+        this.style.translateX = value;
     }
 
     get translateY(): number {
-        return this._getValue(View.translateYProperty);
+        return this.style.translateY;
     }
     set translateY(value: number) {
-        this._setValue(View.translateYProperty, value);
+        this.style.translateY = value;
     }
 
     get scaleX(): number {
-        return this._getValue(View.scaleXProperty);
+        return this.style.scaleX;
     }
     set scaleX(value: number) {
-        this._setValue(View.scaleXProperty, value);
+        this.style.scaleX = value;
     }
 
     get scaleY(): number {
-        return this._getValue(View.scaleYProperty);
+        return this.style.scaleY;
     }
     set scaleY(value: number) {
-        this._setValue(View.scaleYProperty, value);
+        this.style.scaleY = value;
     }
 
     get originX(): number {
@@ -453,10 +443,10 @@ export class View extends ProxyObject implements definition.View {
     }
 
     get rotate(): number {
-        return this._getValue(View.rotateProperty);
+        return this.style.rotate;
     }
     set rotate(value: number) {
-        this._setValue(View.rotateProperty, value);
+        this.style.rotate = value;
     }
 
     get isEnabled(): boolean {

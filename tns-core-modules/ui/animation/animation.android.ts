@@ -8,6 +8,7 @@ import enums = require("ui/enums");
 import styleModule = require("ui/styling/style");
 import lazy from "utils/lazy";
 import { CacheLayerType } from "utils/utils";
+import dependencyObservable = require("ui/core/dependency-observable");
 
 global.moduleMerge(common, exports);
 
@@ -75,7 +76,7 @@ export class Animation extends common.Animation implements definition.Animation 
         this._animatorSet.start();
         return animationFinishedPromise;
     }
-    
+
     public cancel(): void {
         super.cancel();
         if (trace.enabled) {
@@ -188,7 +189,7 @@ export class Animation extends common.Animation implements definition.Animation 
             }
         }
 
-        let valueSource = this._valueSource;
+        let valueSource = this._valueSource !== undefined ? this._valueSource : dependencyObservable.ValueSource.Local;
 
         switch (propertyAnimation.property) {
 
@@ -196,21 +197,18 @@ export class Animation extends common.Animation implements definition.Animation 
                 originalValue1 = nativeView.getAlpha();
                 nativeArray = (<any>Array).create("float", 1);
                 nativeArray[0] = propertyAnimation.value;
-                if (this._valueSource !== undefined) {
-                    propertyUpdateCallbacks.push(checkAnimation(() => { 
-                        propertyAnimation.target.style._setValue(styleModule.opacityProperty, propertyAnimation.value, valueSource);
-                    }));
-                }
-                else {
-                    propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.opacity = propertyAnimation.value; }));
-                }
-                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setAlpha(originalValue1); }));
+                propertyUpdateCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style._setValue(styleModule.opacityProperty, propertyAnimation.value, valueSource);
+                }));
+                propertyResetCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style._setValue(styleModule.opacityProperty, originalValue1, valueSource);
+                }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
                 break;
 
             case common.Properties.backgroundColor:
                 ensureArgbEvaluator();
-                originalValue1 = nativeView.getBackground();
+                originalValue1 = propertyAnimation.target.backgroundColor;
                 nativeArray = (<any>Array).create(java.lang.Object, 2);
                 nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<color.Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);
                 nativeArray[1] = java.lang.Integer.valueOf((<color.Color>propertyAnimation.value).argb);
@@ -222,16 +220,12 @@ export class Animation extends common.Animation implements definition.Animation 
                     }
                 }));
 
-                if (this._valueSource !== undefined) {
-                    let valueSource = this._valueSource;
-                    propertyUpdateCallbacks.push(checkAnimation(() => {
-                        propertyAnimation.target.style._setValue(styleModule.backgroundColorProperty, propertyAnimation.value, valueSource);
-                    }));
-                }
-                else {
-                    propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.backgroundColor = propertyAnimation.value; }));
-                }
-                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setBackground(originalValue1); }));
+                propertyUpdateCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style._setValue(styleModule.backgroundColorProperty, propertyAnimation.value, valueSource);
+                }));
+                propertyResetCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style._setValue(styleModule.backgroundColorProperty, originalValue1, valueSource);
+                }));
                 animators.push(animator);
                 break;
 
@@ -251,22 +245,14 @@ export class Animation extends common.Animation implements definition.Animation 
                 originalValue1 = nativeView.getTranslationX();
                 originalValue2 = nativeView.getTranslationY();
 
-                if (this._valueSource !== undefined) {
-                    propertyUpdateCallbacks.push(checkAnimation(() => {
-                        propertyAnimation.target.style._setValue(styleModule.translateXProperty, propertyAnimation.value.x, valueSource);
-                        propertyAnimation.target.style._setValue(styleModule.translateYProperty, propertyAnimation.value.y, valueSource);
-                    }));
-                }
-                else {
-                    propertyUpdateCallbacks.push(checkAnimation(() => {
-                        propertyAnimation.target.translateX = propertyAnimation.value.x;
-                        propertyAnimation.target.translateY = propertyAnimation.value.y;
-                    }));
-                }
+                propertyUpdateCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style._setValue(styleModule.translateXProperty, propertyAnimation.value.x, valueSource);
+                    propertyAnimation.target.style._setValue(styleModule.translateYProperty, propertyAnimation.value.y, valueSource);
+                }));
 
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    nativeView.setTranslationX(originalValue1);
-                    nativeView.setTranslationY(originalValue2);
+                    propertyAnimation.target.style._setValue(styleModule.translateXProperty, originalValue1, valueSource);
+                    propertyAnimation.target.style._setValue(styleModule.translateYProperty, originalValue2, valueSource);
                 }));
 
                 animatorSet = new android.animation.AnimatorSet();
@@ -291,22 +277,14 @@ export class Animation extends common.Animation implements definition.Animation 
                 originalValue1 = nativeView.getScaleX();
                 originalValue2 = nativeView.getScaleY();
 
-                if (this._valueSource !== undefined) {
-                    propertyUpdateCallbacks.push(checkAnimation(() => {
-                        propertyAnimation.target.style._setValue(styleModule.scaleXProperty, propertyAnimation.value.x, valueSource);
-                        propertyAnimation.target.style._setValue(styleModule.scaleYProperty, propertyAnimation.value.y, valueSource);
-                    }));
-                }
-                else {
-                    propertyUpdateCallbacks.push(checkAnimation(() => {
-                        propertyAnimation.target.scaleX = propertyAnimation.value.x;
-                        propertyAnimation.target.scaleY = propertyAnimation.value.y;
-                    }));
-                }
+                propertyUpdateCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style._setValue(styleModule.scaleXProperty, propertyAnimation.value.x, valueSource);
+                    propertyAnimation.target.style._setValue(styleModule.scaleYProperty, propertyAnimation.value.y, valueSource);
+                }));
 
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    nativeView.setScaleY(originalValue1);
-                    nativeView.setScaleY(originalValue2);
+                    propertyAnimation.target.style._setValue(styleModule.scaleXProperty, originalValue1, valueSource);
+                    propertyAnimation.target.style._setValue(styleModule.scaleYProperty, originalValue2, valueSource);
                 }));
 
                 animatorSet = new android.animation.AnimatorSet();
@@ -319,15 +297,12 @@ export class Animation extends common.Animation implements definition.Animation 
                 originalValue1 = nativeView.getRotation();
                 nativeArray = (<any>Array).create("float", 1);
                 nativeArray[0] = propertyAnimation.value;
-                if (this._valueSource !== undefined) {
-                    propertyUpdateCallbacks.push(checkAnimation(() => { 
-                        propertyAnimation.target.style._setValue(styleModule.rotateProperty, propertyAnimation.value, valueSource);
-                    }));
-                }
-                else {
-                    propertyUpdateCallbacks.push(checkAnimation(() => { propertyAnimation.target.rotate = propertyAnimation.value; }));
-                }
-                propertyResetCallbacks.push(checkAnimation(() => { nativeView.setRotation(originalValue1); }));
+                propertyUpdateCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style._setValue(styleModule.rotateProperty, propertyAnimation.value, valueSource);
+                }));
+                propertyResetCallbacks.push(checkAnimation(() => {
+                    propertyAnimation.target.style._setValue(styleModule.rotateProperty, originalValue1, valueSource);
+                }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
                 break;
 
@@ -358,7 +333,7 @@ export class Animation extends common.Animation implements definition.Animation 
             if (propertyAnimation.curve !== undefined) {
                 animators[i].setInterpolator(propertyAnimation.curve);
             }
-            
+
             if (trace.enabled) {
                 trace.write("Animator created: " + animators[i], trace.categories.Animation);
             }
@@ -372,7 +347,7 @@ export class Animation extends common.Animation implements definition.Animation 
     private static _getAndroidRepeatCount(iterations: number): number {
         return (iterations === Number.POSITIVE_INFINITY) ? android.view.animation.Animation.INFINITE : iterations - 1;
     }
-    
+
     private _enableHardwareAcceleration() {
         for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
             let cache = <CacheLayerType>this._propertyAnimations[i].target._nativeView;
@@ -381,7 +356,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 if (layerType !== android.view.View.LAYER_TYPE_HARDWARE) {
                     cache.layerType = layerType;
                     cache.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
-                } 
+                }
             }
         }
     }
