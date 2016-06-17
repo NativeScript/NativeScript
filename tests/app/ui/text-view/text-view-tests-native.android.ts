@@ -32,8 +32,8 @@ export function getNativeColor(textView: textViewModule.TextView): colorModule.C
 
 export function getNativeBackgroundColor(textView: textViewModule.TextView): colorModule.Color {
     var bkg = <any>textView.android.getBackground();
-    if (bkg instanceof background.ad.BorderDrawable) {
-        return (<background.ad.BorderDrawable>bkg).background.color;
+    if (bkg instanceof org.nativescript.widgets.BorderDrawable) {
+        return new colorModule.Color((<org.nativescript.widgets.BorderDrawable>bkg).getBackgroundColor());
     }
     else {
         return new colorModule.Color(bkg.backgroundColor)

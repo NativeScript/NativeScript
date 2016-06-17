@@ -23,8 +23,8 @@ export function getNativeTextAlignment(label: labelModule.Label): string {
 
 export function getNativeBackgroundColor(label: labelModule.Label): colorModule.Color {
     var bkg = <any>label.android.getBackground();
-    if (bkg instanceof background.ad.BorderDrawable) {
-        return (<background.ad.BorderDrawable>bkg).background.color;
+    if (bkg instanceof org.nativescript.widgets.BorderDrawable) {
+        return new colorModule.Color((<org.nativescript.widgets.BorderDrawable>bkg).getBackgroundColor());
     }
     else {
         return new colorModule.Color(bkg.backgroundColor)

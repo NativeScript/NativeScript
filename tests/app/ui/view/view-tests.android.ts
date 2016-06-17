@@ -269,33 +269,33 @@ export var test_StylePropertiesDefaultValuesCache = function () {
 }
 
 export function getNativeBorderWidth(v: view.View): number {
-    var bkg = <any>(<android.view.View>v.android).getBackground();
+    var bkg = <org.nativescript.widgets.BorderDrawable>v.android.getBackground();
 
-    return bkg ? bkg.borderWidth : -1;
+    return bkg ? bkg.getBorderWidth() : -1;
 }
 
 export function getNativeCornerRadius(v: view.View): number {
-    var bkg = <any>(<android.view.View>v.android).getBackground();
+    var bkg = <org.nativescript.widgets.BorderDrawable>v.android.getBackground();
 
-    return bkg ? bkg.cornerRadius : -1;
+    return bkg ? bkg.getBorderRadius() : -1;
 }
 
 export function checkNativeBorderColor(v: view.View): boolean {
-    var bkg = <background.ad.BorderDrawable>(<android.view.View>v.android).getBackground();
+    var bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
 
-    return v.borderColor && bkg && bkg.borderColor === v.borderColor.android;
+    return v.borderColor && bkg && bkg.getBorderColor() === v.borderColor.android;
 }
 
 export function checkNativeBackgroundColor(v: view.View): boolean {
-    var bkg = <background.ad.BorderDrawable>(<android.view.View>v.android).getBackground();
+    var bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
 
-    return v.backgroundColor && bkg && bkg.background && bkg.background.color.equals(v.backgroundColor);
+    return v.backgroundColor && bkg && bkg.getBackgroundColor() === v.backgroundColor.android;
 }
 
 export function checkNativeBackgroundImage(v: view.View): boolean {
-    var bkg = <background.ad.BorderDrawable>(<android.view.View>v.android).getBackground();
+    var bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
 
-    return bkg && bkg.background && !types.isNullOrUndefined(bkg.background.image);
+    return bkg && !types.isNullOrUndefined(bkg.getBackgroundImage());
 }
 
 let SDK: number;

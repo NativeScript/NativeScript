@@ -1,6 +1,44 @@
 ﻿declare module org {
     module nativescript {
         module widgets {
+            export class BorderDrawable extends android.graphics.drawable.ColorDrawable {
+                constructor(density: number);
+                public refresh(
+                    borderWidth: number,
+                    borderColor: number,
+                    borderRadius: number,
+                    clipPath: string,
+                    backgroundColor: number,
+                    backgroundImage: android.graphics.Bitmap,
+                    backgroundImageWidth: number,
+                    backgroundImageHeight: number,
+                    backgroundRepeat: string,
+                    backgroundPosition: string,
+                    backgroundPositionParsedCSSValues: native.Array<CSSValue>,
+                    backgroundSize: string,
+                    backgroundSizeParsedCSSValues: native.Array<CSSValue>
+                );
+                public getBorderWidth(): number;
+                public getBorderColor(): number;
+                public getBorderRadius(): number;
+                public getClipPath(): string;
+                public getBackgroundColor(): number;
+                public getBackgroundImage(): android.graphics.Bitmap;
+                public getBackgroundImageWidth(): number;
+                public getBackgroundImageHeight(): number;
+                public getBackgroundRepeat(): string;
+                public getBackgroundPosition(): string;
+                public getBackgroundSize(): string;
+            }
+            
+            export class CSSValue {
+                constructor(type: string, str: string, unit: string, value: number);
+                public getType(): string;
+                public getString(): string;
+                public getUnit(): string;
+                public getValue(): number;
+            }
+            
             export class CommonLayoutParams extends android.widget.FrameLayout.LayoutParams {
                 constructor();
 
