@@ -450,21 +450,4 @@ public class BorderDrawable extends ColorDrawable {
         private float sizeX;
         private float sizeY;
     }
-
-    @Override
-    public String toString(){
-        StringBuilder sb = new StringBuilder();
-        sb.append(this.getClass().getSimpleName() + "@" + Integer.toHexString(this.hashCode()));
-        sb.append("\n\tdensity: "+this.density);
-        sb.append("\n\tborderWidth: "+this.borderWidth);
-        sb.append("\n\tborderColor: "+this.borderColor);
-        sb.append("\n\tborderRadius: "+this.borderRadius);
-        sb.append("\n\tclipPath: "+this.clipPath);
-        sb.append("\n\tbackgroundColor: "+this.backgroundColor);
-        sb.append("\n\tbackgroundImage: "+this.backgroundImage+"["+this.backgroundImageWidth+"x"+this.backgroundImageHeight+"]");
-        sb.append("\n\tbackgroundRepeat: "+this.backgroundRepeat);
-        sb.append("\n\tbackgroundPosition: "+this.backgroundPosition);
-        sb.append("\n\tbackgroundSize: "+this.backgroundSize);
-        return sb.toString();
-    }
 }
