@@ -345,3 +345,21 @@ export function test_responseType(done) {
         );
     done(null);
 }
+
+export function test_getResponseHeader() {
+    const xhr = <any>new XMLHttpRequest();
+    const response = {
+        statusCode: 200,
+        content: {
+            toString: function() { return this.raw },
+            raw: '{"data": 42}'
+        },
+        headers: {
+            "content-type": "application/json"
+        }
+
+    }
+    xhr._loadResponse(response);
+
+    TKUnit.assertEqual(xhr.getResponseHeader("Content-Type"), "application/json");
+};
