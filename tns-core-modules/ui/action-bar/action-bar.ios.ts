@@ -246,7 +246,10 @@ export class ActionBar extends common.ActionBar {
         });
 
         super.onLayout(left, top, right, bottom);
-        this.ios.setNeedsLayout();
+        let navigationBar = this.ios;
+        if (navigationBar) {
+            navigationBar.setNeedsLayout();
+        }
     }
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number) {
