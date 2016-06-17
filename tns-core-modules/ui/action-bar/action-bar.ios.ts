@@ -139,14 +139,11 @@ export class ActionBar extends common.ActionBar {
         var barButtonItem: UIBarButtonItem;
 
         if (item.actionView && item.actionView.ios) {
-            let buttonView: UIButton = UIButton.buttonWithType(UIButtonType.UIButtonTypeSystem);
-            // Disable the interaction of the custom view so that the tap event of the button is triggered 
-            (<UIView>item.actionView.ios).userInteractionEnabled = false; 
-
-            buttonView.addTargetActionForControlEvents(tapHandler, "tap", UIControlEvents.UIControlEventTouchUpInside);
-            buttonView.frame = CGRectMake(0, 0, item.actionView.getMeasuredWidth(), item.actionView.getMeasuredHeight());
-            buttonView.addSubview(item.actionView.ios);
-            barButtonItem = UIBarButtonItem.alloc().initWithCustomView(buttonView);
+            if (item.hasListeners(ActionItem.tapEvent)) {
+                var recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, "tap");
+                item.actionView.ios.addGestureRecognizer(recognizer);
+            }
+            barButtonItem = UIBarButtonItem.alloc().initWithCustomView(item.actionView.ios);
         }
         else if (types.isNumber(item.ios.systemIcon)) {
             barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(item.ios.systemIcon, tapHandler, "tap");
@@ -244,16 +241,12 @@ export class ActionBar extends common.ActionBar {
             if (actionItem.actionView && actionItem.actionView.ios) {
                 let measuredWidth = actionItem.actionView.getMeasuredWidth();
                 let measuredHeight = actionItem.actionView.getMeasuredHeight();
-                let buttonView = (<UIView>actionItem.actionView.ios).superview;
-
                 view.View.layoutChild(this, actionItem.actionView, 0, 0, measuredWidth, measuredHeight);
-                if (buttonView) {
-                    buttonView.frame = CGRectMake(0, 0, measuredWidth, measuredHeight);
-                }
             }
         });
 
         super.onLayout(left, top, right, bottom);
+        this.ios.setNeedsLayout();
     }
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number) {
