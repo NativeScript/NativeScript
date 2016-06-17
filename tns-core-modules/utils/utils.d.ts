@@ -249,5 +249,12 @@
      * Converts string value to number or boolean.
      * @param value The original value. 
      */
-    export function convertString(value: any): any    
+    export function convertString(value: any): any
+
+    /**
+     * Sorts an array by using merge sort algoritm (which ensures stable sort since the built-in Array.sort() does not promise a stable sort).
+     * @param arr - array to be sorted
+     * @param compareFunc - function that will be used to compare two elements of the array
+     */
+    export function mergeSort(arr: Array<any>, compareFunc: (a: any, b: any) => number): Array<any>
 }
