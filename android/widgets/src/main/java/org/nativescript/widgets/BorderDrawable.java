@@ -173,7 +173,7 @@ public class BorderDrawable extends ColorDrawable {
 
         // We will inset background colors and images so antialiasing will not color pixels outside the border.
         // If the border is transparent we will backoff less, and we will not backoff more than half a pixel or half the border width.
-        float normalizedBorderAlpha = Color.alpha(this.borderColor) / 255;
+        float normalizedBorderAlpha = ((float)Color.alpha(this.borderColor)) / 255.0f;
         float backoffAntialias = Math.min(0.5f, halfBorderWidth) * normalizedBorderAlpha;
         RectF backgroundBoundsF = new RectF(bounds.left + backoffAntialias, bounds.top + backoffAntialias, bounds.right - backoffAntialias, bounds.bottom - backoffAntialias);
 
