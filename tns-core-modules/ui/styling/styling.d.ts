@@ -2,7 +2,6 @@
     import observable = require("ui/core/dependency-observable");
     import color = require("color");
     import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
 
     /**
      * Represents an observable property which can have its value set form CSS style.

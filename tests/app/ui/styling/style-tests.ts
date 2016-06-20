@@ -146,7 +146,6 @@ export function test_type_selector() {
     let page = helper.getClearCurrentPage();
     page.style._resetValue(styling.properties.colorProperty);
 
-    let btnWithClass: buttonModule.Button;
     let btn: buttonModule.Button;
     let label: labelModule.Label;
 
