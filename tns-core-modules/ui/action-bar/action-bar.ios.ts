@@ -139,10 +139,8 @@ export class ActionBar extends common.ActionBar {
         var barButtonItem: UIBarButtonItem;
 
         if (item.actionView && item.actionView.ios) {
-            if (item.hasListeners(ActionItem.tapEvent)) {
-                var recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, "tap");
-                item.actionView.ios.addGestureRecognizer(recognizer);
-            }
+            var recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, "tap");
+            item.actionView.ios.addGestureRecognizer(recognizer);
             barButtonItem = UIBarButtonItem.alloc().initWithCustomView(item.actionView.ios);
         }
         else if (types.isNumber(item.ios.systemIcon)) {
