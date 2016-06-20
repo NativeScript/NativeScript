@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
 
@@ -273,7 +274,7 @@ public class Async
 					HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
 					// set the request method
-					String requestMethod = options.method != null ? options.method.toUpperCase() : GetMethod;
+					String requestMethod = options.method != null ? options.method.toUpperCase(Locale.ENGLISH) : GetMethod;
 					connection.setRequestMethod(requestMethod);
 
 					// add the headers
