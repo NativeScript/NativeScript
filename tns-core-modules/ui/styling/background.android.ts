@@ -6,6 +6,7 @@ import * as styleModule from "./style";
 import * as buttonModule from "ui/button";
 import { CacheLayerType } from "utils/utils";
 import cssValue = require("css-value");
+import background = require("ui/styling/background");
 
 var button: typeof buttonModule;
 var style: typeof styleModule;
@@ -47,7 +48,7 @@ export module ad {
 
         var clipPathValue = v.style._getValue(style.clipPathProperty);
 
-        var backgroundValue = <definition.Background>v.style._getValue(style.backgroundInternalProperty);
+        var backgroundValue = <background.Background>v.style._getValue(style.backgroundInternalProperty);
         var borderWidth = v.borderWidth;
         var bkg = nativeView.getBackground();
 
