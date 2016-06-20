@@ -244,6 +244,7 @@ declare module "ui/core/dependency-observable" {
          * Iterates all the properties which have a PropertyEntry registered for this instance.
          */
         _eachSetProperty(callback: (property: Property) => boolean): void;
+        _eachSetPropertyValue(callback: (property: Property, value: any) => void): void;
         //@endprivate
     }
 

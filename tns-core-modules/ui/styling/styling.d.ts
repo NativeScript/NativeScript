@@ -218,8 +218,8 @@
         public _endUpdate();
         public _resetCssValues(): void;
         public _syncNativeProperties(): void;
-        public _inheritStyleProperty(property: dependencyObservable.Property): void;
-        public _inheritStyleProperties(): void;
+        // public _inheritStyleProperty(property: dependencyObservable.Property): void;
+        public _inheritStyleProperties(parent: view.View): void;
         public _updateTextDecoration(): void;
         public _updateTextTransform(): void;
         //@endprivate

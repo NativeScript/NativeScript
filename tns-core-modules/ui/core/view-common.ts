@@ -974,10 +974,8 @@ export class View extends ProxyObject implements definition.View {
     public _addViewCore(view: View, atIndex?: number) {
         this._propagateInheritableProperties(view);
 
-        view.style._inheritStyleProperties();
-
         if (!view._isAddedToNativeVisualTree) {
-            var nativeIndex = this._childIndexToNativeChildIndex(atIndex);
+            let nativeIndex = this._childIndexToNativeChildIndex(atIndex);
             view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view, nativeIndex);
         }
 
@@ -989,6 +987,7 @@ export class View extends ProxyObject implements definition.View {
 
     public _propagateInheritableProperties(view: View) {
         view._inheritProperties(this);
+        view.style._inheritStyleProperties(this);
     }
 
     public _inheritProperties(parentView: View) {
