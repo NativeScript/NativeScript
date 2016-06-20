@@ -169,7 +169,7 @@ public class BorderDrawable extends ColorDrawable {
     public void draw(Canvas canvas) {
         Rect bounds = this.getBounds();
         float borderWidth = this.borderWidth * this.density;
-        float halfBorderWidth = borderWidth / 2;
+        float halfBorderWidth = borderWidth / 2.0f;
 
         // We will inset background colors and images so antialiasing will not color pixels outside the border.
         // If the border is transparent we will backoff less, and we will not backoff more than half a pixel or half the border width.
@@ -291,7 +291,7 @@ public class BorderDrawable extends ColorDrawable {
         float bottom;
         switch (functionName){
             case "rect":
-                arr = value.split("\\s+");
+                arr = value.split("[\\s,]+");
                 top = cssValueToDevicePixels(arr[0], bounds.top, density);
                 left = cssValueToDevicePixels(arr[1], bounds.left, density);
                 bottom = cssValueToDevicePixels(arr[2], bounds.bottom, density);
