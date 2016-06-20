@@ -1,6 +1,7 @@
 ---
 nav-title: "animation How-To"
 title: "animation"
+environment: nativescript
 description: "Examples for using animation"
 previous_url: /ApiReference/ui/animation/HOW-TO
 ---

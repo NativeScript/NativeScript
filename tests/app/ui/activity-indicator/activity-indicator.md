@@ -1,6 +1,7 @@
 ---
 nav-title: "activity-indicator How-To"
 title: "activity-indicator"
+environment: nativescript
 description: "Examples for using activity-indicator"
 previous_url: /ApiReference/ui/activity-indicator/HOW-TO
 ---

@@ -1,6 +1,7 @@
 ---
 nav-title: "grid-layout How-To"
 title: "grid-layout"
+environment: nativescript
 description: "Examples for using grid-layout"
 previous_url: /ApiReference/ui/layouts/grid-layout/HOW-TO
 ---

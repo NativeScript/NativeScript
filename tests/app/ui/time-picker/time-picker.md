@@ -1,6 +1,7 @@
 ---
 nav-title: "TimePicker How-To"
 title: "time-picker"
+environment: nativescript
 description: "Examples for using TimePicker"
 previous_url: /ApiReference/ui/time-picker/HOW-TO
 ---

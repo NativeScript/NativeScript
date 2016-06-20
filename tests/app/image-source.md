@@ -1,6 +1,7 @@
 ---
 nav-title: "image-source How-To"
 title: "image-source"
+environment: nativescript
 description: "Examples for using image-source"
 previous_url: /ApiReference/image-source/HOW-TO
 ---

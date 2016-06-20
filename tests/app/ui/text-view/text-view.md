@@ -1,6 +1,7 @@
 ---
 nav-title: "TextView How-To"
 title: "text-view"
+environment: nativescript
 description: "Examples for using TextView"
 previous_url: /ApiReference/ui/text-view/HOW-TO
 ---

@@ -1,6 +1,7 @@
 ---
 nav-title: "TabView How-To"
 title: "tab-view"
+environment: nativescript
 description: "Examples for using TabView"
 previous_url: /ApiReference/ui/tab-view/HOW-TO
 ---

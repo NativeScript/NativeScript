@@ -1,6 +1,7 @@
 ---
 nav-title: "platform How-To"
 title: "platform"
+environment: nativescript
 description: "Examples for using platform"
 previous_url: /ApiReference/platform/HOW-TO
 ---

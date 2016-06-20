@@ -1,6 +1,7 @@
 ---
 nav-title: "dialogs How-To"
 title: "dialogs"
+environment: nativescript
 description: "Examples for using dialogs"
 previous_url: /ApiReference/ui/dialogs/HOW-TO
 ---

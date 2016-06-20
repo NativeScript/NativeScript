@@ -1,6 +1,7 @@
 ---
 nav-title: "color How-To"
 title: "color"
+environment: nativescript
 description: "Examples for using color"
 previous_url: /ApiReference/color/HOW-TO
 ---

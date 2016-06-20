@@ -1,6 +1,7 @@
 ---
 nav-title: "timer How-To"
 title: "timer"
+environment: nativescript
 description: "Examples for using timer"
 previous_url: /ApiReference/timer/HOW-TO
 ---

@@ -1,6 +1,7 @@
 ---
 nav-title: "switch How-To"
 title: "switch"
+environment: nativescript
 description: "Examples for using switch"
 previous_url: /ApiReference/ui/switch/HOW-TO
 ---

@@ -1,6 +1,7 @@
 ---
 nav-title: "location How-To"
 title: "location"
+environment: nativescript
 description: "Examples for using location"
 previous_url: /ApiReference/location/HOW-TO
 ---

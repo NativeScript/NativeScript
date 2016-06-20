@@ -1,6 +1,7 @@
 ---
 nav-title: "application-settings How-To"
 title: "application-settings"
+environment: nativescript
 description: "Examples for using application-settings"
 previous_url: /ApiReference/application-settings/HOW-TO
 ---

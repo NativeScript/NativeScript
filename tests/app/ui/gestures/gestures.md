@@ -1,6 +1,7 @@
 ---
 nav-title: "gestures How-To"
 title: "gestures"
+environment: nativescript
 description: "Examples for using gestures"
 previous_url: /ApiReference/ui/gestures/HOW-TO
 ---

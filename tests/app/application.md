@@ -1,6 +1,7 @@
 ---
 nav-title: "application How-To"
 title: "application"
+environment: nativescript
 description: "Examples for using application"
 previous_url: /ApiReference/application/HOW-TO
 ---

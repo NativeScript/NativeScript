@@ -1,6 +1,7 @@
 ---
 nav-title: "WebView How-To"
 title: "web-view"
+environment: nativescript
 description: "Examples for using WebView"
 previous_url: /ApiReference/ui/web-view/HOW-TO
 ---

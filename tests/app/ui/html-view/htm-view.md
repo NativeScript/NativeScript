@@ -1,6 +1,7 @@
 ---
 nav-title: "HtmlView How-To"
 title: "html-view"
+environment: nativescript
 description: "Examples for using HtmlView"
 previous_url: /ApiReference/ui/html-view/HOW-TO
 ---

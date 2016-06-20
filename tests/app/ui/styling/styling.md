@@ -1,6 +1,7 @@
 ---
 nav-title: "styling How-To"
 title: "styling"
+environment: nativescript
 description: "Examples for using styling"
 previous_url: ApiReference/ui/styling/HOW-TO
 ---

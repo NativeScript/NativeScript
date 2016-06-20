@@ -1,6 +1,7 @@
 ---
 nav-title: "image-cache How-To"
 title: "image-cache"
+environment: nativescript
 description: "Examples for using image-cache"
 previous_url: /ApiReference/ui/image-cache/HOW-TO
 ---

@@ -1,6 +1,7 @@
 ---
 nav-title: "data/observable How-To"
 title: "observable"
+environment: nativescript
 description: "Examples for using data/observable"
 previous_url: /ApiReference/data/observable/HOW-TO
 ---

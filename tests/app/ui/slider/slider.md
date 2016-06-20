@@ -1,6 +1,7 @@
 ---
 nav-title: "slider How-To"
 title: "slider"
+environment: nativescript
 description: "Examples for using slider"
 previous_url: /ApiReference/ui/slider/HOW-TO
 ---

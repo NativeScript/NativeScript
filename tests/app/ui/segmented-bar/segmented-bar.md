@@ -1,6 +1,7 @@
 ---
 nav-title: "SegmentedBar How-To"
 title: "segmented-bar"
+environment: nativescript
 description: "Examples for using SegmentedBar"
 previous_url: /ApiReference/ui/segmented-bar/HOW-TO
 ---
