@@ -21,6 +21,51 @@ public class BorderDrawable extends ColorDrawable {
     private float density;
     private float borderWidth;
     private int borderColor;
+
+    public float getBorderWidth() {
+        return borderWidth;
+    }
+
+    public int getBorderColor() {
+        return borderColor;
+    }
+
+    public float getBorderRadius() {
+        return borderRadius;
+    }
+
+    public String getClipPath() {
+        return clipPath;
+    }
+
+    public int getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public Bitmap getBackgroundImage() {
+        return backgroundImage;
+    }
+
+    public float getBackgroundImageWidth() {
+        return backgroundImageWidth;
+    }
+
+    public float getBackgroundImageHeight() {
+        return backgroundImageHeight;
+    }
+
+    public String getBackgroundRepeat() {
+        return backgroundRepeat;
+    }
+
+    public String getBackgroundPosition() {
+        return backgroundPosition;
+    }
+
+    public String getBackgroundSize() {
+        return backgroundSize;
+    }
+
     private float borderRadius;
     private String clipPath;
     private int backgroundColor;
