@@ -1,6 +1,5 @@
 import utils = require("utils/utils");
 import common = require("./background-common");
-import definition = require("ui/styling/background");
 import view = require("ui/core/view");
 import types = require("utils/types");
 import * as styleModule from "./style";
@@ -139,67 +138,4 @@ function createNativeCSSValueArray(css: string): any{
         );
     }
     return nativeArray;
-}
-
-function drawClipPath(clipPath: string, canvas: android.graphics.Canvas, paint: android.graphics.Paint, bounds: android.graphics.RectF) {
-    var functionName = clipPath.substring(0, clipPath.indexOf("("));
-    var value = clipPath.replace(`${functionName}(`, "").replace(")", "");
-
-    if (functionName === "rect") {
-        var arr = value.split(/[\s]+/);
-
-        var top = common.cssValueToDevicePixels(arr[0], bounds.top);
-        var left = common.cssValueToDevicePixels(arr[1], bounds.left);
-        var bottom = common.cssValueToDevicePixels(arr[2], bounds.bottom);
-        var right = common.cssValueToDevicePixels(arr[3], bounds.right);
-
-        canvas.drawRect(left, top, right, bottom, paint);
-
-    } else if (functionName === "circle") {
-        var arr = value.split(/[\s]+/);
-
-        var radius = common.cssValueToDevicePixels(arr[0], (bounds.width() > bounds.height() ? bounds.height() : bounds.width()) / 2);
-        var y = common.cssValueToDevicePixels(arr[2], bounds.height());
-        var x = common.cssValueToDevicePixels(arr[3], bounds.width());
-
-        canvas.drawCircle(x, y, radius, paint);
-
-    } else if (functionName === "ellipse") {
-        var arr = value.split(/[\s]+/);
-
-        var rX = common.cssValueToDevicePixels(arr[0], bounds.right);
-        var rY = common.cssValueToDevicePixels(arr[1], bounds.bottom);
-        var cX = common.cssValueToDevicePixels(arr[3], bounds.right);
-        var cY = common.cssValueToDevicePixels(arr[4], bounds.bottom);
-        
-        var left = cX - rX;
-        var top = cY - rY;
-        var right = (rX * 2) + left;
-        var bottom = (rY * 2) + top;
-
-        canvas.drawOval(new android.graphics.RectF(left, top, right, bottom), paint);
-
-    } else if (functionName === "polygon") {
-        var path = new android.graphics.Path();
-        var firstPoint: view.Point;
-        var arr = value.split(/[,]+/);
-        for (let i = 0; i < arr.length; i++) {
-            let xy = arr[i].trim().split(/[\s]+/);
-            let point: view.Point = {
-                x: common.cssValueToDevicePixels(xy[0], bounds.width()),
-                y: common.cssValueToDevicePixels(xy[1], bounds.height())
-            };
-            
-            if (!firstPoint) {
-                firstPoint = point;
-                path.moveTo(point.x, point.y);
-            }
-
-            path.lineTo(point.x, point.y);
-        }
-
-        path.lineTo(firstPoint.x, firstPoint.y);
-
-        canvas.drawPath(path, paint);
-    }
 }

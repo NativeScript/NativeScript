@@ -2,7 +2,6 @@
 import colorModule = require("color");
 import utilsModule = require("utils/utils");
 import enums = require("ui/enums");
-import background = require("ui/styling/background");
 
 export function getNativeText(textField: textFieldModule.TextField): string {
     return textField.android.getText().toString();

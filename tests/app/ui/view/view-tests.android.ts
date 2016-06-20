@@ -6,7 +6,6 @@ import button = require("ui/button");
 import types = require("utils/types");
 import stack = require("ui/layouts/stack-layout");
 import labelModule = require("ui/label");
-import background = require("ui/styling/background");
 import frame = require("ui/frame");
 import trace = require("trace");
 // enable the trace, it is disabled by default

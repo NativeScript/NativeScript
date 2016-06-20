@@ -15,7 +15,6 @@ import textBase = require("ui/text-base");
 import enums = require("ui/enums");
 import labelTestsNative = require("./label-tests-native");
 import fs = require("file-system");
-import background = require("ui/styling/background");
 
 import {StackLayout} from "ui/layouts/stack-layout";
 import {GridLayout} from "ui/layouts/grid-layout";
