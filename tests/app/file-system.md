@@ -1,6 +1,7 @@
 ---
 nav-title: "file-system How-To"
 title: "file-system"
+environment: nativescript
 description: "Examples for using file-system"
 previous_url: /ApiReference/file-system/HOW-TO
 ---

@@ -1,6 +1,7 @@
 ---
 nav-title: "ListPicker How-To"
 title: "list-picker"
+environment: nativescript
 description: "Examples for using ListPicker"
 previous_url: /ApiReference/ui/list-picker/HOW-TO
 ---

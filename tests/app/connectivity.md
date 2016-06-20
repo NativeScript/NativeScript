@@ -1,6 +1,7 @@
 ---
 nav-title: "connectivity How-To"
 title: "connectivity"
+environment: nativescript
 description: "Examples for using connectivity"
 previous_url: /ApiReference/connectivity/HOW-TO
 ---

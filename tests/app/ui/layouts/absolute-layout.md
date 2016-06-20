@@ -1,6 +1,7 @@
 ---
 nav-title: "absolute-layout How-To"
 title: "absolute-layout"
+environment: nativescript
 description: "Examples for using absolute-layout"
 previous_url: /ApiReference/ui/layouts/absolute-layout/HOW-TO
 ---

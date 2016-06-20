@@ -1,6 +1,7 @@
 ---
 nav-title: "Label How-To"
 title: "label"
+environment: nativescript
 description: "Examples for using Label"
 previous_url: /ApiReference/ui/label/HOW-TO
 ---

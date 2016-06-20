@@ -1,6 +1,7 @@
 ---
 nav-title: "frame How-To"
 title: "frame"
+environment: nativescript
 description: "Examples for using frame"
 previous_url: /ApiReference/ui/frame/HOW-TO
 ---

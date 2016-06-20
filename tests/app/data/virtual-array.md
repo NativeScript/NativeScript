@@ -1,6 +1,7 @@
 ---
 nav-title: "virtual-array How-To"
 title: "virtual-array"
+environment: nativescript
 description: "Examples for using virtual-array"
 previous_url: /ApiReference/data/virtual-array/HOW-TO
 ---

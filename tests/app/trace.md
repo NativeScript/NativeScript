@@ -1,6 +1,7 @@
 ---
 nav-title: "trace How-To"
 title: "trace"
+environment: nativescript
 description: "Examples for using trace"
 previous_url: /ApiReference/trace/HOW-TO
 ---

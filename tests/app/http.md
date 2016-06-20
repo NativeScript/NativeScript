@@ -1,6 +1,7 @@
 ---
 nav-title: "http How-To"
 title: "http"
+environment: nativescript
 description: "Examples for using http"
 previous_url: /ApiReference/http/HOW-TO
 ---

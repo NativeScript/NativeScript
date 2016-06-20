@@ -1,6 +1,7 @@
 ---
 nav-title: "Border How-To"
 title: "border"
+environment: nativescript
 description: "Examples for using Border"
 previous_url: /ApiReference/ui/border/HOW-TO
 ---

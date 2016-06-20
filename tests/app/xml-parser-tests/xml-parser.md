@@ -1,6 +1,7 @@
 ---
 nav-title: "xml How-To"
 title: "xml"
+environment: nativescript
 description: "Examples for using xml"
 previous_url: /ApiReference/xml/HOW-TO
 ---

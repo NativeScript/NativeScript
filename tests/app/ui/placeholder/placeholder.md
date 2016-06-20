@@ -1,6 +1,7 @@
 ---
 nav-title: "placeholder How-To"
 title: "placeholder"
+environment: nativescript
 description: "Examples for using placeholder"
 previous_url: /ApiReference/ui/placeholder/HOW-TO
 ---

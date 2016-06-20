@@ -1,6 +1,7 @@
 ---
 nav-title: "Page How-To"
 title: "page"
+environment: nativescript
 description: "Examples for using Page"
 previous_url: /ApiReference/ui/page/HOW-TO
 ---

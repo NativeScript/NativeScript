@@ -1,6 +1,7 @@
 ---
 nav-title: "fetch How-To"
 title: "fetch"
+environment: nativescript
 description: "Examples for using fetch"
 previous_url: /ApiReference/fetch/HOW-TO
 ---

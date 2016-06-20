@@ -1,6 +1,7 @@
 ---
 nav-title: "camera How-To"
 title: "camera"
+environment: nativescript
 description: "Examples for using camera"
 previous_url: /ApiReference/camera/HOW-TO
 ---

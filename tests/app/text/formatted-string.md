@@ -1,6 +1,7 @@
 ---
 nav-title: "Formatted String How-To"
 title: "formatted-string"
+environment: nativescript
 description: "Examples for using Formatted String"
 previous_url: /ApiReference/text/formatted-string/HOW-TO
 ---

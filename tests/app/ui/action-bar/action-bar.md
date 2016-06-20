@@ -1,6 +1,7 @@
 ---
 nav-title: "ActionBar How-To"
 title: "action-bar"
+environment: nativescript
 description: "Examples for using ActionBar"
 previous_url: /ApiReference/ui/action-bar/HOW-TO
 ---

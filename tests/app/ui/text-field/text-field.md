@@ -1,6 +1,7 @@
 ---
 nav-title: "TextField How-To"
 title: "text-field"
+environment: nativescript
 description: "Examples for using TextField"
 previous_url: /ApiReference/ui/text-field/HOW-TO
 ---

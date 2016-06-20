@@ -1,6 +1,7 @@
 ---
 nav-title: "Image How-To"
 title: "image"
+environment: nativescript
 description: "Examples for using Image"
 previous_url: /ApiReference/ui/image/HOW-TO
 ---

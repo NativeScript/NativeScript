@@ -1,6 +1,7 @@
 ---
 nav-title: "search-bar How-To"
 title: "search-bar"
+environment: nativescript
 description: "Examples for using search-bar"
 previous_url: /ApiReference/ui/search-bar/HOW-TO
 ---

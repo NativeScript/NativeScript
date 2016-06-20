@@ -1,6 +1,7 @@
 ---
 nav-title: "button How-To"
 title: "button"
+environment: nativescript
 description: "Examples for using button"
 previous_url: /ApiReference/ui/button/HOW-TO
 ---

@@ -1,6 +1,7 @@
 ---
 nav-title: "fps-meter How-To"
 title: "fps-meter"
+environment: nativescript
 description: "Examples for using fps-meter"
 previous_url: /ApiReference/fps-meter/HOW-TO
 ---
