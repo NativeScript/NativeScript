@@ -15,7 +15,6 @@ import textBase = require("ui/text-base");
 import enums = require("ui/enums");
 import labelTestsNative = require("./label-tests-native");
 import fs = require("file-system");
-import background = require("ui/styling/background");
 
 import {StackLayout} from "ui/layouts/stack-layout";
 import {GridLayout} from "ui/layouts/grid-layout";
@@ -261,8 +260,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             normalColor = actualColors.getDefaultColor()
             TKUnit.assert(normalColor, "Expected: " + expColor + ", Actual: " + normalColor);
 
-            var bkg = (<background.ad.BorderDrawable>testLabel.android.getBackground());
-            actualBackgroundColor = bkg.background.color.android;
+            var bkg = (<org.nativescript.widgets.BorderDrawable>testLabel.android.getBackground());
+            actualBackgroundColor = bkg.getBackgroundColor();
             expBackgroundColor = android.graphics.Color.parseColor(backgroundColor);
             TKUnit.assertEqual(actualBackgroundColor, expBackgroundColor);
         }
