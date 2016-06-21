@@ -21,6 +21,17 @@ public class BorderDrawable extends ColorDrawable {
     private float density;
     private float borderWidth;
     private int borderColor;
+    private float borderRadius;
+    private String clipPath;
+    private int backgroundColor;
+    private Bitmap backgroundImage;
+    private float backgroundImageWidth;
+    private float backgroundImageHeight;
+    private String backgroundRepeat;
+    private String backgroundPosition;
+    private CSSValue[] backgroundPositionParsedCSSValues;
+    private String backgroundSize;
+    private CSSValue[] backgroundSizeParsedCSSValues;
 
     public float getBorderWidth() {
         return borderWidth;
@@ -66,18 +77,6 @@ public class BorderDrawable extends ColorDrawable {
         return backgroundSize;
     }
 
-    private float borderRadius;
-    private String clipPath;
-    private int backgroundColor;
-    private Bitmap backgroundImage;
-    private float backgroundImageWidth;
-    private float backgroundImageHeight;
-    private String backgroundRepeat;
-    private String backgroundPosition;
-    private CSSValue[] backgroundPositionParsedCSSValues;
-    private String backgroundSize;
-    private CSSValue[] backgroundSizeParsedCSSValues;
-
     public BorderDrawable(float density){
         super();
         this.density = density;
@@ -96,73 +95,20 @@ public class BorderDrawable extends ColorDrawable {
                         CSSValue[] backgroundPositionParsedCSSValues,
                         String backgroundSize,
                         CSSValue[] backgroundSizeParsedCSSValues){
-        boolean dirty = false;
-
-        if (this.borderWidth != borderWidth){
-            this.borderWidth = borderWidth;
-            dirty = true;
-        }
-
-        if (this.borderColor != borderColor){
-            this.borderColor = borderColor;
-            dirty = true;
-        }
-
-        if (this.borderRadius != borderRadius){
-            this.borderRadius = borderRadius;
-            dirty = true;
-        }
-
-
-        if (!compare(this.clipPath, clipPath)){
-            this.clipPath = clipPath;
-            dirty = true;
-        }
-
-        if (this.backgroundColor != backgroundColor){
-            this.backgroundColor = backgroundColor;
-            dirty = true;
-        }
-
-        if (this.backgroundImage != backgroundImage){
-            this.backgroundImage = backgroundImage;
-            dirty = true;
-        }
-
-        if (this.backgroundImageWidth != backgroundImageWidth){
-            this.backgroundImageWidth = backgroundImageWidth;
-            dirty = true;
-        }
-
-        if (this.backgroundImageHeight != backgroundImageHeight){
-            this.backgroundImageHeight = backgroundImageHeight;
-            dirty = true;
-        }
-
-        if (!compare(this.backgroundRepeat, backgroundRepeat)){
-            this.backgroundRepeat = backgroundRepeat;
-            dirty = true;
-        }
-
-        if (!compare(this.backgroundPosition, backgroundPosition)){
-            this.backgroundPosition = backgroundPosition;
-            this.backgroundPositionParsedCSSValues = backgroundPositionParsedCSSValues;
-            dirty = true;
-        }
-
-        if (!compare(this.backgroundSize, backgroundSize)){
-            this.backgroundSize = backgroundSize;
-            this.backgroundSizeParsedCSSValues = backgroundSizeParsedCSSValues;
-            dirty = true;
-        }
-
-        if (dirty){
-            this.invalidateSelf();
-        }
-    }
-
-    private static boolean compare(String str1, String str2) {
-        return (str1 == null ? str2 == null : str1.equals(str2));
+        this.borderWidth = borderWidth;
+        this.borderColor = borderColor;
+        this.borderRadius = borderRadius;
+        this.clipPath = clipPath;
+        this.backgroundColor = backgroundColor;
+        this.backgroundImage = backgroundImage;
+        this.backgroundImageWidth = backgroundImageWidth;
+        this.backgroundImageHeight = backgroundImageHeight;
+        this.backgroundRepeat = backgroundRepeat;
+        this.backgroundPosition = backgroundPosition;
+        this.backgroundPositionParsedCSSValues = backgroundPositionParsedCSSValues;
+        this.backgroundSize = backgroundSize;
+        this.backgroundSizeParsedCSSValues = backgroundSizeParsedCSSValues;
+        this.invalidateSelf();
     }
 
     @Override
@@ -281,6 +227,7 @@ public class BorderDrawable extends ColorDrawable {
     }
 
     private static void drawClipPath(String clipPath, Canvas canvas, Paint paint, RectF bounds, float density) {
+        // Sample string is polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%);
         String functionName = clipPath.substring(0, clipPath.indexOf("("));
         String value = clipPath.replace(functionName+"(", "").replace(")", "");
 
@@ -469,7 +416,7 @@ public class BorderDrawable extends ColorDrawable {
         return result;
     }
 
-    private  static float cssValueToDevicePixels(String source, float total, float density) {
+    private static float cssValueToDevicePixels(String source, float total, float density) {
         float result;
         source = source.trim();
 
