@@ -291,7 +291,7 @@ export class View extends viewCommon.View {
         let newTransform = CGAffineTransformIdentity;
         newTransform = CGAffineTransformTranslate(newTransform, translateX, translateY);
         newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
-        newTransform = CGAffineTransformScale(newTransform, scaleX, scaleY);
+        newTransform = CGAffineTransformScale(newTransform, scaleX === 0 ? 0.001 : scaleX, scaleY === 0 ? 0.001 : scaleY);
         if (!CGAffineTransformEqualToTransform(this._nativeView.transform, newTransform)) {
             this._nativeView.transform = newTransform;
             this._hasTransfrom = this._nativeView && !CGAffineTransformEqualToTransform(this._nativeView.transform, CGAffineTransformIdentity);
