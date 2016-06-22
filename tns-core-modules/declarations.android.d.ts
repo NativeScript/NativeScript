@@ -49,45 +49,49 @@ declare module android {
     }
 }
 
-declare module com {
-    export module tns {
-        export module Async {
-            export class CompleteCallback {
-                constructor(implementation: ICompleteCallback);
-                onComplete(result: Object, context: Object): void;
-            }
-
-            export interface ICompleteCallback {
-                onComplete(result: Object, context: Object): void;
-            }
-
-            export module Http {
-                export class KeyValuePair {
-                    public key: string;
-                    public value: string;
-                    constructor(key: string, value: string);
+declare module org {
+    export module nativescript {
+        export module widgets {
+            export module Async {
+                export class CompleteCallback {
+                    constructor(implementation: ICompleteCallback);
+                    onComplete(result: Object, context: Object): void;
                 }
 
-                export class RequestOptions {
-                    public url: string;
-                    public method: string;
-                    public headers: java.util.ArrayList<KeyValuePair>;
-                    public content: string;
-                    public timeout: number;
-                    public screenWidth: number;
-                    public screenHeight: number;
+                export interface ICompleteCallback {
+                    onComplete(result: Object, context: Object): void;
                 }
 
-                export class RequestResult {
-                    public raw: java.io.ByteArrayOutputStream;
-                    public headers: java.util.ArrayList<KeyValuePair>;
-                    public statusCode: number;
-                    public responseAsString: string;
-                    public responseAsImage: android.graphics.Bitmap;
-                    public error: java.lang.Exception;
-                }
+                export function DownloadImage(url: string, callback: CompleteCallback, context: any);
 
-                export function MakeRequest(options: RequestOptions, callback: CompleteCallback, context: any);
+                export module Http {
+                    export class KeyValuePair {
+                        public key: string;
+                        public value: string;
+                        constructor(key: string, value: string);
+                    }
+
+                    export class RequestOptions {
+                        public url: string;
+                        public method: string;
+                        public headers: java.util.ArrayList<KeyValuePair>;
+                        public content: string;
+                        public timeout: number;
+                        public screenWidth: number;
+                        public screenHeight: number;
+                    }
+
+                    export class RequestResult {
+                        public raw: java.io.ByteArrayOutputStream;
+                        public headers: java.util.ArrayList<KeyValuePair>;
+                        public statusCode: number;
+                        public responseAsString: string;
+                        public responseAsImage: android.graphics.Bitmap;
+                        public error: java.lang.Exception;
+                    }
+
+                    export function MakeRequest(options: RequestOptions, callback: CompleteCallback, context: any);
+                }
             }
         }
     }

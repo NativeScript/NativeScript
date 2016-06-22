@@ -41,7 +41,7 @@ export class Cache extends common.Cache {
         this._cache = new LruBitmapCacheClass(cacheSize);
 
         var that = new WeakRef(this);
-        this._callback = new (<any>com).tns.Async.CompleteCallback({
+        this._callback = new org.nativescript.widgets.Async.CompleteCallback({
             onComplete: function (result: any, context: any) {
                 var instance = that.get();
                 if (instance) {
@@ -52,7 +52,7 @@ export class Cache extends common.Cache {
     }
 
     public _downloadCore(request: common.DownloadRequest) {
-        (<any>com).tns.Async.DownloadImage(request.url, this._callback, request.key);
+        org.nativescript.widgets.Async.DownloadImage(request.url, this._callback, request.key);
     }
 
     public get(key: string): any {
