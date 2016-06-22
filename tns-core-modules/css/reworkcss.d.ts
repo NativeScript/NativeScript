@@ -5,7 +5,7 @@ declare module "css" {
     }
 
     export interface Node {
-        type: string;
+        type: "rule" | "keyframes" | "declaration";
         position: Position;
     }
 
@@ -16,11 +16,15 @@ declare module "css" {
 
     export interface Rule extends Node {
         selectors: string[];
-        declarations: Declaration[];
+        declarations: Node[];
+    }
+
+    export interface Keyframes extends Rule {
+        name: string;
     }
 
     export interface StyleSheet {
-        rules: Rule[];
+        rules: Node[];
     }
 
     export interface SyntaxTree {

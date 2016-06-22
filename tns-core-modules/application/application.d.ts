@@ -2,7 +2,7 @@
  * Contains the application abstraction with all related methods.
  */
 declare module "application" {
-    import cssSelector = require("ui/styling/css-selector");
+    import {RuleSet} from "ui/styling/css-selector";
     import observable = require("data/observable");
     import frame = require("ui/frame");
     import {View} from "ui/core/view";
@@ -123,15 +123,15 @@ declare module "application" {
     export var cssFile: string;
 
     //@private
-    export var appSelectors: Array<cssSelector.CssSelector>;
-    export var additionalSelectors: Array<cssSelector.CssSelector>;
+    export var appSelectors: RuleSet[];
+    export var additionalSelectors: RuleSet[];
     /**
      * Cached css selectors created from the content of the css file.
      */
-    export var cssSelectors: Array<cssSelector.CssSelector>;
+    export var cssSelectors: RuleSet[];
     export var cssSelectorVersion: number;
     export var keyframes: any;
-    export function parseCss(cssText: string, cssFileName?: string): Array<cssSelector.CssSelector>;
+    export function parseCss(cssText: string, cssFileName?: string): RuleSet[];
     export function mergeCssSelectors(module: any): void;
     //@endprivate
 
@@ -141,7 +141,7 @@ declare module "application" {
      * Loads css file and parses to a css syntax tree.
      * @param cssFile Optional parameter to point to an arbitrary css file. If not specified, the cssFile property is used.
      */
-    export function loadCss(cssFile?: string): Array<cssSelector.CssSelector>;
+    export function loadCss(cssFile?: string): RuleSet[];
 
     /**
      * Call this method to start the application. Important: All code after this method call will not be executed!

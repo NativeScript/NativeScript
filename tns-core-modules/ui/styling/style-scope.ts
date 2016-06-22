@@ -6,10 +6,17 @@ import application = require("application");
 import * as typesModule from "utils/types";
 import * as utilsModule from "utils/utils";
 import * as fileSystemModule from "file-system";
-import * as visualStateModule from "./visual-state";
+
 import keyframeAnimation = require("ui/animation/keyframe-animation");
 import cssAnimationParser = require("./css-animation-parser");
 import observable = require("ui/core/dependency-observable");
+
+import {convertString} from "utils/utils";
+import {RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap } from "ui/styling/css-selector";
+import {StyleProperty, withStyleProperty} from "ui/styling/style-property";
+import {getSpecialPropertySetter} from "ui/builder/special-properties";
+
+const animationsSymbol: symbol = Symbol("animations");
 
 var types: typeof typesModule;
 function ensureTypes() {
@@ -32,24 +39,35 @@ function ensureFS() {
     }
 }
 
-var vs: typeof visualStateModule;
-function ensureVisualState() {
-    if (!vs) {
-        vs = require("./visual-state");
+var pattern: RegExp = /('|")(.*?)\1/;
+
+export class CssState {
+    constructor(private view: view.View, private match: SelectorsMatch<view.View>) {
+    }
+
+    public get changeMap(): ChangeMap<view.View> {
+        return this.match.changeMap;
+    }
+
+    public apply(): void {
+        this.view.style._resetCssValues();
+        let matchingSelectors = this.match.selectors.filter(sel => sel.dynamic ? sel.match(this.view) : true);
+        matchingSelectors.forEach(s => applyDescriptors(this.view, s.ruleset));
     }
 }
 
-var pattern: RegExp = /('|")(.*?)\1/;
-
 export class StyleScope {
+
+    private _selectors: SelectorsMap;
+
     // caches all the visual states by the key of the visual state selectors
     private _statesByKey = {};
     private _viewIdToKey = {};
 
     private _css: string;
     private _cssFileName: string;
-    private _mergedCssSelectors: Array<cssSelector.CssSelector>;
-    private _localCssSelectors: Array<cssSelector.CssSelector> = [];
+    private _mergedCssSelectors: cssSelector.RuleSet[];
+    private _localCssSelectors: cssSelector.RuleSet[] = [];
     private _localCssSelectorVersion: number = 0;
     private _localCssSelectorsAppliedVersion: number = 0;
     private _applicationCssSelectorsAppliedVersion: number = 0;
@@ -77,6 +95,7 @@ export class StyleScope {
         this._reset();
 
         const parsedSelectors = StyleScope.createSelectorsFromCss(this._css, cssFileName, this._keyframes);
+
         if (append) {
             this._localCssSelectors.push.apply(this._localCssSelectors, parsedSelectors);
         } else {
@@ -85,15 +104,6 @@ export class StyleScope {
 
         this._localCssSelectorVersion++;
         this.ensureSelectors();
-    }
-
-    public removeSelectors(selectorExpression: string) {
-        for (let i = this._mergedCssSelectors.length - 1; i >= 0; i--) {
-            let selector = this._mergedCssSelectors[i];
-            if (selector.expression === selectorExpression) {
-                this._mergedCssSelectors.splice(i, 1);
-            }
-        }
     }
 
     public getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo {
@@ -106,13 +116,13 @@ export class StyleScope {
         return undefined;
     }
 
-    public static createSelectorsFromCss(css: string, cssFileName: string, keyframes: Object): cssSelector.CssSelector[] {
+    public static createSelectorsFromCss(css: string, cssFileName: string, keyframes: Object): cssSelector.RuleSet[] {
         try {
             let pageCssSyntaxTree = css ? cssParser.parse(css, { source: cssFileName }) : null;
-            let pageCssSelectors = new Array<cssSelector.CssSelector>();
+            let pageCssSelectors: cssSelector.RuleSet[] = [];
             if (pageCssSyntaxTree) {
-                pageCssSelectors = StyleScope._joinCssSelectorsArrays([pageCssSelectors, StyleScope.createSelectorsFromImports(pageCssSyntaxTree, keyframes)]);
-                pageCssSelectors = StyleScope._joinCssSelectorsArrays([pageCssSelectors, StyleScope.createSelectorsFromSyntaxTree(pageCssSyntaxTree, keyframes)]);
+                pageCssSelectors = pageCssSelectors.concat(StyleScope.createSelectorsFromImports(pageCssSyntaxTree, keyframes));
+                pageCssSelectors = pageCssSelectors.concat(StyleScope.createSelectorsFromSyntaxTree(pageCssSyntaxTree, keyframes));
             }
             return pageCssSelectors;
         } catch (e) {
@@ -120,12 +130,12 @@ export class StyleScope {
         }
     }
 
-    public static createSelectorsFromImports(tree: cssParser.SyntaxTree, keyframes: Object): cssSelector.CssSelector[] {
-        let selectors = new Array<cssSelector.CssSelector>();
+    public static createSelectorsFromImports(tree: cssParser.SyntaxTree, keyframes: Object): cssSelector.RuleSet[] {
+        let selectors: cssSelector.RuleSet[] = [];
         ensureTypes();
 
         if (!types.isNullOrUndefined(tree)) {
-            let imports = tree["stylesheet"]["rules"].filter(r=> r.type === "import");
+            let imports = tree["stylesheet"]["rules"].filter(r => r.type === "import");
 
             for (let i = 0; i < imports.length; i++) {
                 let importItem = imports[i]["import"];
@@ -148,7 +158,7 @@ export class StyleScope {
                             let file = fs.File.fromPath(fileName);
                             let text = file.readTextSync();
                             if (text) {
-                                selectors = StyleScope._joinCssSelectorsArrays([selectors, StyleScope.createSelectorsFromCss(text, fileName, keyframes)]);
+                                selectors = selectors.concat(StyleScope.createSelectorsFromCss(text, fileName, keyframes));
                             }
                         }
                     }
@@ -163,8 +173,8 @@ export class StyleScope {
         let toMerge = []
         if ((this._applicationCssSelectorsAppliedVersion !== application.cssSelectorVersion) ||
             (this._localCssSelectorVersion !== this._localCssSelectorsAppliedVersion) ||
-
             (!this._mergedCssSelectors)) {
+
             toMerge.push(application.cssSelectors);
             this._applicationCssSelectorsAppliedVersion = application.cssSelectorVersion;
             toMerge.push(this._localCssSelectors);
@@ -175,139 +185,41 @@ export class StyleScope {
         }
 
         if (toMerge.length > 0) {
-            this._mergedCssSelectors = StyleScope._joinCssSelectorsArrays(toMerge);
+            this._mergedCssSelectors = toMerge.filter(m => !!m).reduce((merged, next) => merged.concat(next), []);
             this._applyKeyframesOnSelectors();
-            return true;
         } else {
             return false;
         }
+
+        this._selectors = new SelectorsMap(this._mergedCssSelectors);
+
+        return true;
     }
 
-    private static _joinCssSelectorsArrays(arrays: Array<Array<cssSelector.CssSelector>>): Array<cssSelector.CssSelector> {
-        let mergedResult = [];
-        let i;
-        for (i = 0; i < arrays.length; i++) {
-            if (arrays[i]) {
-                mergedResult.push.apply(mergedResult, arrays[i]);
-            }
-        }
-        ensureUtils();
-        mergedResult = utils.mergeSort(mergedResult, (a, b) => { return a.specificity - b.specificity; });
+    public applySelectors(view: view.View): void {
+        this.ensureSelectors(); 
 
-        return mergedResult;
+        let state = this._selectors.query(view);
+
+        let previousState = view._cssState;
+        let nextState = new CssState(view, state);
+        view._cssState = nextState;
+        view._onCssStateChange(previousState, nextState);
     }
 
-    public applySelectors(view: view.View) {
+    public query(node: Node): SelectorCore[] {
         this.ensureSelectors();
-
-        view.style._beginUpdate();
-        let i;
-        let selector: cssSelector.CssSelector;
-        let matchedStateSelectors = new Array<cssSelector.CssVisualStateSelector>();
-
-        // Go trough all selectors - and directly apply all non-state selectors
-        for (i = 0; i < this._mergedCssSelectors.length; i++) {
-            selector = this._mergedCssSelectors[i];
-            if (selector.matches(view)) {
-                if (selector instanceof cssSelector.CssVisualStateSelector) {
-                    matchedStateSelectors.push(<cssSelector.CssVisualStateSelector>selector);
-                } else {
-                    selector.apply(view, observable.ValueSource.Css);
-                }
-            }
-        }
-
-        if (matchedStateSelectors.length > 0) {
-            // Create a key for all matched selectors for this element
-            let key: string = "";
-            matchedStateSelectors.forEach((s) => key += s.key + "|");
-
-            // Associate the view to the created key
-            this._viewIdToKey[view._domId] = key;
-
-            // Create visual states for this key if there aren't already created
-            if (!this._statesByKey[key]) {
-                this._createVisualsStatesForSelectors(key, matchedStateSelectors);
-            }
-        }
-
-        view.style._endUpdate();
+        return this._selectors.query(node).selectors;
     }
 
-    public getVisualStates(view: view.View): Object {
-        let key = this._viewIdToKey[view._domId];
-        if (key === undefined) {
-            return undefined;
-        }
+    private static createSelectorsFromSyntaxTree(ast: cssParser.SyntaxTree, keyframes: Object): RuleSet[] {
+        let nodes = ast.stylesheet.rules;
+        nodes.filter(isKeyframe).forEach(node => keyframes[node.name] = node);
 
-        return this._statesByKey[key];
-    }
+        let rulesets = cssSelector.fromAstNodes(nodes);
+        rulesets.forEach(rule => rule[animationsSymbol] = cssAnimationParser.CssAnimationParser.keyframeAnimationsFromCSSDeclarations(rule.declarations));
 
-    private _createVisualsStatesForSelectors(key: string, matchedStateSelectors: Array<cssSelector.CssVisualStateSelector>) {
-        let i,
-            allStates = {},
-            stateSelector: cssSelector.CssVisualStateSelector;
-
-        this._statesByKey[key] = allStates;
-        ensureVisualState();
-
-        for (i = 0; i < matchedStateSelectors.length; i++) {
-            stateSelector = matchedStateSelectors[i];
-
-            let visualState = allStates[stateSelector.state];
-            if (!visualState) {
-                visualState = new vs.VisualState();
-                allStates[stateSelector.state] = visualState;
-            }
-
-            // add all stateSelectors instead of adding setters
-            if (stateSelector.animations && stateSelector.animations.length > 0) {
-                visualState.animatedSelectors.push(stateSelector);
-            }
-            else {
-                stateSelector.eachSetter((property, value) => {
-                    visualState.setters[property.name] = value;
-                });
-            }
-        }
-    }
-
-    private static createSelectorsFromSyntaxTree(ast: cssParser.SyntaxTree, keyframes: Object): Array<cssSelector.CssSelector> {
-        let result: Array<cssSelector.CssSelector> = [];
-        let rules = ast.stylesheet.rules;
-        let rule: cssParser.Rule;
-        let i;
-        let j;
-
-        // Create selectors form AST
-        for (i = 0; i < rules.length; i++) {
-            rule = rules[i];
-            // Skip comment nodes.
-            if (rule.type === "rule") {
-
-                // Filter comment nodes.
-                let filteredDeclarations = [];
-                if (rule.declarations) {
-                    for (j = 0; j < rule.declarations.length; j++) {
-                        let declaration = rule.declarations[j];
-                        if (declaration.type === "declaration") {
-                            filteredDeclarations.push({
-                                property: declaration.property.toLowerCase(),
-                                value: declaration.value
-                            });
-                        }
-                    }
-                }
-                for (j = 0; j < rule.selectors.length; j++) {
-                    result.push(cssSelector.createSelector(rule.selectors[j], filteredDeclarations));
-                }
-            }
-            else if (rule.type === "keyframes") {
-                keyframes[(<any>rule).name] = rule;
-            }
-        }
-
-        return result;
+        return rulesets;
     }
 
     private _reset() {
@@ -317,9 +229,10 @@ export class StyleScope {
 
     private _applyKeyframesOnSelectors() {
         for (let i = this._mergedCssSelectors.length - 1; i >= 0; i--) {
-            let selector = this._mergedCssSelectors[i];
-            if (selector.animations !== undefined) {
-                for (let animation of selector.animations) {
+            let ruleset = this._mergedCssSelectors[i];
+            let animations = ruleset[animationsSymbol];
+            if (animations !== undefined) {
+                for (let animation of animations) {
                     let keyframe = this._keyframes[animation.name];
                     if (keyframe !== undefined) {
                         animation.keyframes = cssAnimationParser.CssAnimationParser.keyframesArrayFromCSS(keyframe);
@@ -328,14 +241,78 @@ export class StyleScope {
             }
         }
     }
+
+    public getAnimations(ruleset: RuleSet): keyframeAnimation.KeyframeAnimationInfo[] {
+        return ruleset[animationsSymbol];
+    }
 }
 
 export function applyInlineSyle(view: view.View, style: string) {
     try {
         let syntaxTree = cssParser.parse("local { " + style + " }", undefined);
-        let filteredDeclarations = syntaxTree.stylesheet.rules[0].declarations.filter((val, i, arr) => { return val.type === "declaration" });
-        cssSelector.applyInlineSyle(view, filteredDeclarations);
+        let filteredDeclarations = syntaxTree.stylesheet.rules.filter(isRule)[0].declarations.filter(isDeclaration);
+        applyInlineStyle(view, filteredDeclarations);
     } catch (ex) {
         trace.write("Applying local style failed: " + ex, trace.categories.Error, trace.messageType.error);
     }
+}
+
+function isRule(node: cssParser.Node): node is cssParser.Rule {
+    return node.type === "rule";
+}
+function isDeclaration(node: cssParser.Node): node is cssParser.Declaration {
+    return node.type === "declaration";
+}
+function isKeyframe(node: cssParser.Node): node is cssParser.Keyframes {
+    return node.type === "keyframes";
+}
+
+function applyDescriptors(view: view.View, ruleset: RuleSet): void {
+    let modifier = observable.ValueSource.Css;
+
+    ruleset.declarations.forEach(d => withStyleProperty(d.property, d.value, (property, value) => {
+        if (types.isString(property)) {
+            const propertyName = <string>property;
+            let attrHandled = false;
+            let specialSetter = getSpecialPropertySetter(propertyName);
+
+            if (!attrHandled && specialSetter) {
+                specialSetter(view, value);
+                attrHandled = true;
+            }
+
+            if (!attrHandled && propertyName in view) {
+                view[propertyName] = convertString(value);
+            }
+        } else {
+            const resolvedProperty = <StyleProperty>property;
+            try {
+                view.style._setValue(resolvedProperty, value, modifier);
+            } catch (ex) {
+                if (trace.enabled) {
+                    trace.write("Error setting property: " + resolvedProperty.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+                }
+            }
+        }
+    }));
+
+    let ruleAnimations: keyframeAnimation.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
+    if (ruleAnimations && view.isLoaded && view._nativeView !== undefined) {
+        for (let animationInfo of ruleAnimations) {
+            let animation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo, modifier);
+            if (animation) {
+                view._registerAnimation(animation);
+                animation.play(view)
+                    .then(() => { view._unregisterAnimation(animation);  })
+                    .catch((e) => { view._unregisterAnimation(animation); });
+            }
+        }
+    }
+}
+
+function applyInlineStyle(view: view.View, declarations: cssSelector.Declaration[]): void {
+    declarations.forEach(d => withStyleProperty(d.property, d.value, (property, value) => {
+        const resolvedProperty = <StyleProperty>property;
+        view.style._setValue(resolvedProperty, value, observable.ValueSource.Local);
+    }));
 }

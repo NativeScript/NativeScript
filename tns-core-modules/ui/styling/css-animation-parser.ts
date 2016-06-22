@@ -1,6 +1,5 @@
 import animationModule = require("ui/animation");
 import keyframeAnimationModule = require("ui/animation/keyframe-animation");
-import cssParser = require("css");
 import converters = require("../styling/converters");
 import types = require("utils/types");
 import colorModule = require("color");
@@ -22,8 +21,7 @@ let animationProperties = {
 };
 
 export class CssAnimationParser {
-
-    public static keyframeAnimationsFromCSSDeclarations(declarations: cssParser.Declaration[]): Array<keyframeAnimationModule.KeyframeAnimationInfo> {
+    public static keyframeAnimationsFromCSSDeclarations(declarations: { property: string, value: string }[]): Array<keyframeAnimationModule.KeyframeAnimationInfo> {
         let animations: Array<keyframeAnimationModule.KeyframeAnimationInfo>  = new Array<keyframeAnimationModule.KeyframeAnimationInfo>();
         let animationInfo: keyframeAnimationModule.KeyframeAnimationInfo = undefined;
         if (declarations === null || declarations === undefined) {

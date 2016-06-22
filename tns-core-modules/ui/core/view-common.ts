@@ -14,17 +14,9 @@ import {PropertyMetadata, ProxyObject} from "ui/core/proxy";
 import {PropertyMetadataSettings, PropertyChangeData, Property, ValueSource, PropertyMetadata as doPropertyMetadata} from "ui/core/dependency-observable";
 import {registerSpecialProperty} from "ui/builder/special-properties";
 import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
-import * as visualStateConstants from "ui/styling/visual-state-constants";
-import * as visualStateModule from "../styling/visual-state";
 import * as animModule from "ui/animation";
-import { Source } from "utils/debug";
-
-var visualState: typeof visualStateModule;
-function ensureVisualState() {
-    if (!visualState) {
-        visualState = require("../styling/visual-state");
-    }
-}
+import {CssState} from "ui/styling/style-scope";
+import {Source} from "utils/debug";
 
 registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
     instance.className = propertyValue;
@@ -104,16 +96,31 @@ export function getAncestor(view: View, criterion: string | Function): definitio
     return null;
 }
 
+export function PseudoClassHandler(... pseudoClasses: string[]): MethodDecorator {
+    let stateEventNames = pseudoClasses.map(s => ":" + s);
+    let listeners = Symbol("listeners");
+    return <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
+        function update(change: number) {
+            let prev = this[listeners] || 0;
+            let next = prev + change;
+            if (prev <= 0 && next > 0) {
+                this[propertyKey](true);
+            } else if (prev > 0 && next <= 0) {
+                this[propertyKey](false);
+            }
+        }
+        stateEventNames.forEach(s => target[s] = update);
+    }
+}
+
 var viewIdCounter = 0;
 
 function onCssClassPropertyChanged(data: PropertyChangeData) {
     var view = <View>data.object;
-
+    var classes = view.cssClasses;
+    classes.clear();
     if (types.isString(data.newValue)) {
-        view._cssClasses = (<string>data.newValue).split(" ");
-    }
-    else {
-        view._cssClasses.length = 0;
+        data.newValue.split(" ").forEach(c => classes.add(c));
     }
 }
 
@@ -153,17 +160,21 @@ export class View extends ProxyObject implements definition.View {
     private _parent: definition.View;
     private _style: style.Style;
     private _visualState: string;
-    private _requestedVisualState: string;
     private _isLoaded: boolean;
     private _isLayoutValid: boolean = false;
+    private _cssType: string;
 
     private _updatingInheritedProperties: boolean;
     private _registeredAnimations: Array<keyframeAnimationModule.KeyframeAnimation>;
 
     public _domId: number;
     public _isAddedToNativeVisualTree = false;
-    public _cssClasses: Array<string> = [];
     public _gestureObservers = {};
+
+    public cssClasses: Set<string> = new Set();
+    public cssPseudoClasses: Set<string> = new Set();
+
+    public _cssState: CssState;
 
     public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver> {
         return this._gestureObservers[type];
@@ -174,7 +185,7 @@ export class View extends ProxyObject implements definition.View {
 
         this._style = new style.Style(this);
         this._domId = viewIdCounter++;
-        this._visualState = visualStateConstants.Normal;
+        this._goToVisualState("normal");
     }
 
     observe(type: gestures.GestureTypes, callback: (args: gestures.GestureEventData) => void, thisArg?: any): void {
@@ -510,12 +521,11 @@ export class View extends ProxyObject implements definition.View {
         throw new Error("isLayoutValid is read-only property.");
     }
 
-    get visualState(): string {
-        return this._visualState;
-    }
-
     get cssType(): string {
-        return this.typeName.toLowerCase();
+        if (!this._cssType) {
+            this._cssType = this.typeName.toLowerCase();
+        }
+        return this._cssType;
     }
 
     get parent(): definition.View {
@@ -545,6 +555,9 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public onUnloaded() {
+        this._onCssStateChange(this._cssState, null);
+        this._cssState = null;
+
         this._unloadEachChildView();
 
         this._isLoaded = false;
@@ -649,6 +662,20 @@ export class View extends ProxyObject implements definition.View {
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
         //
+    }
+
+    public addPseudoClass(name: string): void {
+        if (!this.cssPseudoClasses.has(name)) {
+            this.cssPseudoClasses.add(name);
+            this.notifyPseudoClassChanged(name);
+        }
+    }
+
+    public deletePseudoClass(name: string): void {
+        if (this.cssPseudoClasses.has(name)) {
+            this.cssPseudoClasses.delete(name);
+            this.notifyPseudoClassChanged(name);
+        }
     }
 
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
@@ -1071,15 +1098,13 @@ export class View extends ProxyObject implements definition.View {
         if (trace.enabled) {
             trace.write(this + " going to state: " + state, trace.categories.Style);
         }
-        if (state === this._visualState || this._requestedVisualState === state) {
+        if (state === this._visualState) {
             return;
         }
-        // we use lazy require to prevent cyclic dependencies issues
-        ensureVisualState();
-        this._visualState = visualState.goToState(this, state);
 
-        // TODO: What state should we set here - the requested or the actual one?
-        this._requestedVisualState = state;
+        this.deletePseudoClass(this._visualState);
+        this._visualState = state;
+        this.addPseudoClass(state);
     }
 
     public _applyXmlAttribute(attribute, value): boolean {
@@ -1205,5 +1230,85 @@ export class View extends ProxyObject implements definition.View {
     protected _canApplyNativeProperty(): boolean {
         // Check for a valid _nativeView instance
         return !!this._nativeView;
+    }
+
+    private notifyPseudoClassChanged(pseudoClass: string): void {
+        this.notify({ eventName: ":" + pseudoClass, object: this });
+    }
+
+    // TODO: Make sure the state is set to null and this is called on unloaded to clean up change listeners...
+    _onCssStateChange(previous: CssState, next: CssState): void {
+
+        if (!this._invalidateCssHandler) {
+            this._invalidateCssHandler = () => {
+                if (this._invalidateCssHandlerSuspended) {
+                    return;
+                }
+                this.applyCssState();
+            };
+        }
+
+        try {
+            this._invalidateCssHandlerSuspended = true;
+
+            if (next) {
+                next.changeMap.forEach((changes, view) => {
+                    if (changes.attributes) {
+                        changes.attributes.forEach(attribute => {
+                            view.addEventListener(attribute + "Change", this._invalidateCssHandler)
+                        });
+                    }
+                    if (changes.pseudoClasses) {
+                        changes.pseudoClasses.forEach(pseudoClass => {
+                            let eventName = ":" + pseudoClass;
+                            view.addEventListener(":" + pseudoClass, this._invalidateCssHandler);
+                            if (view[eventName]) {
+                                view[eventName](+1);
+                            }
+                        });
+                    }
+                });
+            }
+
+            if (previous) {
+                previous.changeMap.forEach((changes, view) => {
+                    if (changes.attributes) {
+                        changes.attributes.forEach(attribute => {
+                            view.removeEventListener("onPropertyChanged:" + attribute, this._invalidateCssHandler)
+                        });
+                    }
+                    if (changes.pseudoClasses) {
+                        changes.pseudoClasses.forEach(pseudoClass => {
+                            let eventName = ":" + pseudoClass;
+                            view.removeEventListener(eventName, this._invalidateCssHandler)
+                            if (view[eventName]) {
+                                view[eventName](-1);
+                            }
+                        });
+                    }
+                });
+            }
+
+        } finally {
+            this._invalidateCssHandlerSuspended = false;
+        }
+
+        this.applyCssState();
+    }
+
+    /**
+     * Notify that some attributes or pseudo classes that may affect the current CssState had changed.
+     */
+    private _invalidateCssHandler;
+    private _invalidateCssHandlerSuspended: boolean;
+
+    private applyCssState(): void {
+        if (!this._cssState) {
+            return;
+        }
+
+        this.style._beginUpdate();
+        this._cssState.apply();
+        this.style._endUpdate();
     }
 }

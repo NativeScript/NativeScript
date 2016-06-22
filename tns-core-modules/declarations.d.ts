@@ -157,3 +157,7 @@ declare class WeakRef<T> {
 declare var module: NativeScriptModule;
 // Same as module.exports
 declare var exports: any;
+
+interface Array<T> {
+    filter<U extends T>(pred: (a: T) => a is U): U[];
+}

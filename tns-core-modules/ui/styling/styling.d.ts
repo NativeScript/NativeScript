@@ -307,24 +307,4 @@
          */
         export function visibilityConverter(cssValue: any): number;
     }
-
-    /**
-     * Encapsulates visual states names.
-     */
-    module visualStates {
-        /**
-         * The normal visual state.
-         */
-        export var Normal: string;
-
-        /**
-         * The hovered visual state.
-         */
-        export var Hovered: string;
-
-        /**
-         * The pressed visual state.
-         */
-        export var Pressed: string;
-    }
 }

@@ -1,37 +1,17 @@
 ﻿import TKUnit = require("../../TKUnit");
 import view = require("ui/core/view");
 import page = require("ui/page");
-import vsConstants = require("ui/styling/visual-state-constants");
 import types = require("utils/types");
 import helper = require("../helper");
 
-export var test_VisualStates_Parsed = function () {
-    var test = function (views: Array<view.View>) {
-        var page = <page.Page>views[0];
-        page.css = "button:hovered { color: red; background-color: orange } button:pressed { color: white; background-color: black }";
-
-        var states = page._getStyleScope().getVisualStates(views[1]);
-        TKUnit.assert(types.isDefined(states));
-
-        var counter = 0,
-            hoveredFound = false,
-            pressedFound = false;
-
-        for (var p in states) {
-            counter++;
-            if (p === vsConstants.Hovered) {
-                hoveredFound = true;
-            } else if (p === vsConstants.Pressed) {
-                pressedFound = true;
-            }
-        }
-
-        TKUnit.assert(counter === 2);
-        TKUnit.assert(hoveredFound);
-        TKUnit.assert(pressedFound);
+function assertInState(view: view.View, state: string, knownStates: string[]): void {
+    let pseudo = view.cssPseudoClasses;
+    if (state) {
+        TKUnit.assert(pseudo.has(state), "Expected view " + view + " to have pseudo class " + state);
     }
-
-    helper.do_PageTest_WithButton(test);
+    knownStates.filter(s => s !== state).forEach(s => {
+        TKUnit.assert(!pseudo.has(s), "Expected view " + view + " not to have pseudo class " + s + (state ? " expected just " + state + "." : ""));
+    });
 }
 
 export var test_goToVisualState = function () {
@@ -40,15 +20,19 @@ export var test_goToVisualState = function () {
 
         var btn = views[1];
 
+        assertInState(btn, null, ["hovered", "pressed"]);
+
         btn._goToVisualState("hovered");
 
-        TKUnit.assert(btn.visualState === "hovered");
+        assertInState(btn, "hovered", ["hovered", "pressed"]);
+
         TKUnit.assert(types.isDefined(btn.style.color) && btn.style.color.name === "red");
         TKUnit.assert(types.isDefined(btn.style.backgroundColor) && btn.style.backgroundColor.name === "orange");
 
         btn._goToVisualState("pressed");
 
-        TKUnit.assert(btn.visualState === "pressed");
+        assertInState(btn, "pressed", ["hovered", "pressed"]);
+
         TKUnit.assert(types.isDefined(btn.style.color) && btn.style.color.name === "white");
         TKUnit.assert(types.isDefined(btn.style.backgroundColor) && btn.style.backgroundColor.name === "black");
     }
@@ -61,17 +45,18 @@ export var test_goToVisualState_NoState_ShouldResetStyledProperties = function (
         (<page.Page>views[0]).css = "button:hovered { color: red; background-color: orange }";
 
         var btn = views[1];
+        assertInState(btn, null, ["hovered", "pressed"]);
 
         btn._goToVisualState("hovered");
 
-        TKUnit.assert(btn.visualState === "hovered");
+        assertInState(btn, "hovered", ["hovered", "pressed"]);
         TKUnit.assert(types.isDefined(btn.style.color) && btn.style.color.name === "red");
         TKUnit.assert(types.isDefined(btn.style.backgroundColor) && btn.style.backgroundColor.name === "orange");
 
         btn._goToVisualState("pressed");
 
         // since there are no modifiers for the "Pressed" state, the "Normal" state is returned.
-        TKUnit.assert(btn.visualState === "normal");
+        assertInState(btn, "pressed", ["hovered", "pressed"]);
 
         // properties are reset (set to undefined)
         TKUnit.assert(types.isUndefined(btn.style.color));
@@ -87,16 +72,18 @@ export var test_goToVisualState_NoState_ShouldGoToNormal = function () {
 
         var btn = views[1];
 
+        assertInState(btn, null, ["hovered", "pressed"]);
+
         btn._goToVisualState("hovered");
 
-        TKUnit.assert(btn.visualState === "hovered");
+        assertInState(btn, "hovered", ["hovered", "pressed"]);
         TKUnit.assert(types.isDefined(btn.style.color) && btn.style.color.name === "red");
         TKUnit.assert(types.isDefined(btn.style.backgroundColor) && btn.style.backgroundColor.name === "orange");
 
         btn._goToVisualState("pressed");
 
         // since there are no modifiers for the "Pressed" state, the "Normal" state is returned.
-        TKUnit.assert(btn.visualState === "normal");
+        assertInState(btn, "pressed", ["hovered", "pressed"]);
 
         // the actual state is "normal" and properties are reverted to these settings (if any)
         TKUnit.assert(types.isDefined(btn.style.color) && btn.style.color.name === "orange");

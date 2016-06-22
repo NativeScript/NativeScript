@@ -177,11 +177,6 @@ export class Page extends ContentView implements dts.Page {
         }
     }
 
-    public removeCssSelectors(selectorExpression: string) {
-        this._styleScope.removeSelectors(selectorExpression);
-        this._refreshCss();
-    }
-
     public getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo {
         return this._styleScope.getKeyframeAnimationWithName(animationName);
     }

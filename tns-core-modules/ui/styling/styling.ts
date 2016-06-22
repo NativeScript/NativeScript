@@ -1,6 +1,5 @@
 ﻿import styleModule = require("./style");
 import stylePropertyModule = require("./style-property");
-import visualStateConstatnsModule = require("./visual-state-constants");
 import convertersModule = require("./converters");
 
 // Exports form style-property module.
@@ -29,11 +28,4 @@ export module converters {
     export var numberConverter = convertersModule.numberConverter; 
     export var visibilityConverter = convertersModule.visibilityConverter; 
 
-};
-
-// Exports form visual states module
-export module visualStates {
-    export var Normal = visualStateConstatnsModule.Normal;
-    export var Hovered = visualStateConstatnsModule.Hovered;
-    export var Pressed = visualStateConstatnsModule.Pressed; 
 };

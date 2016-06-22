@@ -1,60 +1,72 @@
 ﻿declare module "ui/styling/css-selector" {
-    import view = require("ui/core/view");
-    import cssParser = require("css");
-    import styleProperty = require("ui/styling/style-property");
-    import keyframeAnimation = require("ui/animation/keyframe-animation");
+    import * as parser from "css";
 
-    export class CssSelector {
-        constructor(expression: string, declarations: cssParser.Declaration[]);
+    /**
+     * An interface describing the shape of a type on which the selectors may apply.
+     * Note, the ui/core/view.View implements Node.
+     */
+    interface Node {
+        parent?: Node;
 
-        expression: string;
-        attrExpression: string;
-
-        declarations(): Array<{ property: string; value: any }>;
-
-        specificity: number;
-
-        animations: Array<keyframeAnimation.KeyframeAnimationInfo>;
-
-        matches(view: view.View): boolean;
-
-        apply(view: view.View, valueSourceModifier: number);
-
-        eachSetter(callback: (property: styleProperty.Property, resolvedValue: any) => void);
+        id?: string;
+        cssType?: string;
+        cssClasses?: Set<string>;
+        cssPseudoClasses?: Set<string>;
     }
 
-    class CssTypeSelector extends CssSelector {
-        specificity: number;
-        matches(view: view.View): boolean;
+    interface Declaration {
+        property: string;
+        value: string;
     }
 
-    class CssIdSelector extends CssSelector {
-        specificity: number;
-        matches(view: view.View): boolean;
+    class SelectorCore {
+        /**
+         * Dynamic selectors depend on attributes and pseudo classes.
+         */
+        dynamic: boolean;
+        match(node: Node): boolean;
+        ruleset: RuleSet;
     }
 
-    class CssClassSelector extends CssSelector {
-        specificity: number;
-        matches(view: view.View): boolean;
+    class RuleSet {
+        /**
+         * Gets the selectors in this ruleset's selector group.
+         */
+        selectors: SelectorCore[];
+
+        /**
+         * Gets the key-value list of declarations for the ruleset.
+         */
+        declarations: Declaration[];
     }
 
-    export class CssVisualStateSelector extends CssSelector {
-        specificity: number;
+    class SelectorsMap {
+        constructor(rules: RuleSet[]);
 
-        key: string;
-
-        state: string;
-
-        constructor(expression: string, declarations: cssParser.Declaration[]);
-        matches(view: view.View): boolean;
+        /**
+         * Get a list of selectors that are likely to match the node.
+         */
+        query<T extends Node>(node: T): SelectorsMatch<T>;
     }
 
-    export function createSelector(expression: string, declarations: cssParser.Declaration[]): CssSelector;
+    type ChangeMap<T extends Node> = Map<T, Changes>;
 
-    class InlineStyleSelector extends CssSelector {
-        constructor(declarations: cssParser.Declaration[]);
-        apply(view: view.View);
+    interface Changes {
+        attributes?: Set<string>;
+        pseudoClasses?: Set<string>;
     }
 
-    export function applyInlineSyle(view: view.View, declarations: cssParser.Declaration[]);
+    class SelectorsMatch<T extends Node> {
+        /**
+         * Gets the static selectors that match the queried node and the dynamic selectors that may potentially match the queried node.
+         */
+        selectors: SelectorCore[];
+
+        /**
+         * Gets a map of nodes to attributes and pseudo classes, that may affect the state of the dynamic 
+         */
+        changeMap: ChangeMap<T>;
+    }
+
+    export function fromAstNodes(astRules: parser.Node[]): RuleSet[];
 }

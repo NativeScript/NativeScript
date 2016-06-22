@@ -81,7 +81,6 @@
 /// <reference path="ui/styling/style-scope.d.ts" />
 /// <reference path="ui/styling/style.d.ts" />
 /// <reference path="ui/styling/styling.d.ts" />
-/// <reference path="ui/styling/visual-state-constants.d.ts" />
 /// <reference path="ui/switch/switch.d.ts" />
 /// <reference path="ui/tab-view/tab-view.d.ts" />
 /// <reference path="ui/text-base/text-base-styler.d.ts" />
