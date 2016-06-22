@@ -77,8 +77,8 @@ class AnimationDelegateImpl extends NSObject {
                 targetStyle._setValue(style.translateYProperty, value.y, valueSource);
                 break;
             case common.Properties.scale:
-                targetStyle._setValue(style.scaleXProperty, value.x, valueSource);
-                targetStyle._setValue(style.scaleYProperty, value.y, valueSource);
+                targetStyle._setValue(style.scaleXProperty, value.x === 0 ? 0.001 : value.x, valueSource);
+                targetStyle._setValue(style.scaleYProperty, value.y === 0 ? 0.001 : value.y, valueSource);
                 break;
             case _transform:
                 if (value[common.Properties.translate] !== undefined) {
@@ -86,8 +86,10 @@ class AnimationDelegateImpl extends NSObject {
                     targetStyle._setValue(style.translateYProperty, value[common.Properties.translate].y, valueSource);
                 }
                 if (value[common.Properties.scale] !== undefined) {
-                    targetStyle._setValue(style.scaleXProperty, value[common.Properties.scale].x, valueSource);
-                    targetStyle._setValue(style.scaleYProperty, value[common.Properties.scale].y, valueSource);
+                    let x = value[common.Properties.scale].x;
+                    let y = value[common.Properties.scale].y;
+                    targetStyle._setValue(style.scaleXProperty, x === 0 ? 0.001 : x, valueSource);
+                    targetStyle._setValue(style.scaleYProperty, y === 0 ? 0.001 : y, valueSource);
                 }
                 break;
         }
@@ -276,6 +278,12 @@ export class Animation extends common.Animation implements definition.Animation 
                 value = NSValue.valueWithCATransform3D(CATransform3DTranslate(nativeView.layer.transform, value.x, value.y, 0));
                 break;
             case common.Properties.scale:
+                if (value.x === 0) {
+                    value.x = 0.001;
+                }
+                if (value.y === 0) {
+                    value.y = 0.001;
+                }
                 animation._originalValue = { x: animation.target.scaleX, y: animation.target.scaleY };
                 animation._propertyResetCallback = (value, valueSource) => {
                     animation.target.style._setValue(style.scaleXProperty, value.x, valueSource);
@@ -453,7 +461,7 @@ export class Animation extends common.Animation implements definition.Animation 
         if (value[common.Properties.scale] !== undefined) {
             let x = value[common.Properties.scale].x;
             let y = value[common.Properties.scale].y;
-            result = CATransform3DScale(result, x, y, 1);
+            result = CATransform3DScale(result, x === 0 ? 0.001 : x, y === 0 ? 0.001 : y, 1);
         }
 
         return result;
