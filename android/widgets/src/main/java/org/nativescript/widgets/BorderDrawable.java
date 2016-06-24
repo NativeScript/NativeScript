@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Created by hristov on 6/15/2016.
@@ -25,8 +26,6 @@ public class BorderDrawable extends ColorDrawable {
     private String clipPath;
     private int backgroundColor;
     private Bitmap backgroundImage;
-    private float backgroundImageWidth;
-    private float backgroundImageHeight;
     private String backgroundRepeat;
     private String backgroundPosition;
     private CSSValue[] backgroundPositionParsedCSSValues;
@@ -57,14 +56,6 @@ public class BorderDrawable extends ColorDrawable {
         return backgroundImage;
     }
 
-    public float getBackgroundImageWidth() {
-        return backgroundImageWidth;
-    }
-
-    public float getBackgroundImageHeight() {
-        return backgroundImageHeight;
-    }
-
     public String getBackgroundRepeat() {
         return backgroundRepeat;
     }
@@ -88,8 +79,6 @@ public class BorderDrawable extends ColorDrawable {
                         String clipPath,
                         int backgroundColor,
                         Bitmap backgroundImage,
-                        float backgroundImageWidth,
-                        float backgroundImageHeight,
                         String backgroundRepeat,
                         String backgroundPosition,
                         CSSValue[] backgroundPositionParsedCSSValues,
@@ -101,8 +90,6 @@ public class BorderDrawable extends ColorDrawable {
         this.clipPath = clipPath;
         this.backgroundColor = backgroundColor;
         this.backgroundImage = backgroundImage;
-        this.backgroundImageWidth = backgroundImageWidth;
-        this.backgroundImageHeight = backgroundImageHeight;
         this.backgroundRepeat = backgroundRepeat;
         this.backgroundPosition = backgroundPosition;
         this.backgroundPositionParsedCSSValues = backgroundPositionParsedCSSValues;
@@ -226,34 +213,32 @@ public class BorderDrawable extends ColorDrawable {
         path1.op(path2, Path.Op.INTERSECT);
     }
 
+    private static Pattern spaceAndComma = Pattern.compile("[\\s,]+");
+    private static Pattern space = Pattern.compile("\\s+");
     private static void drawClipPath(String clipPath, Canvas canvas, Paint paint, RectF bounds, float density) {
         // Sample string is polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%);
         String functionName = clipPath.substring(0, clipPath.indexOf("("));
-        String value = clipPath.replace(functionName+"(", "").replace(")", "");
+        String value = clipPath.substring(clipPath.indexOf("(") + 1, clipPath.indexOf(")"));
 
         String[] arr;
-        float left;
-        float top;
-        float right;
-        float bottom;
         switch (functionName){
             case "rect":
-                arr = value.split("[\\s,]+");
-                top = cssValueToDevicePixels(arr[0], bounds.top, density);
-                left = cssValueToDevicePixels(arr[1], bounds.left, density);
-                bottom = cssValueToDevicePixels(arr[2], bounds.bottom, density);
-                right = cssValueToDevicePixels(arr[3], bounds.right, density);
+                arr = spaceAndComma.split(value);
+                float top = cssValueToDevicePixels(arr[0], bounds.top, density);
+                float left = cssValueToDevicePixels(arr[1], bounds.left, density);
+                float bottom = cssValueToDevicePixels(arr[2], bounds.bottom, density);
+                float right = cssValueToDevicePixels(arr[3], bounds.right, density);
                 canvas.drawRect(left, top, right, bottom, paint);
                 break;
             case "circle":
-                arr = value.split("\\s+");
+                arr = space.split(value);
                 float radius = cssValueToDevicePixels(arr[0], (bounds.width() > bounds.height() ? bounds.height() : bounds.width()) / 2, density);
                 float y = cssValueToDevicePixels(arr[2], bounds.height(), density);
                 float x = cssValueToDevicePixels(arr[3], bounds.width(), density);
                 canvas.drawCircle(x, y, radius, paint);
                 break;
             case "ellipse":
-                arr = value.split("\\s+");
+                arr = space.split(value);
                 float rX = cssValueToDevicePixels(arr[0], bounds.right, density);
                 float rY = cssValueToDevicePixels(arr[1], bounds.bottom, density);
                 float cX = cssValueToDevicePixels(arr[3], bounds.right, density);
@@ -269,7 +254,7 @@ public class BorderDrawable extends ColorDrawable {
                 PointF firstPoint = null;
                 arr = value.split(",");
                 for (String s : arr) {
-                    String[] xy = s.trim().split("\\s+");
+                    String[] xy = space.split(s.trim());
                     PointF point = new PointF(cssValueToDevicePixels(xy[0], bounds.width(), density), cssValueToDevicePixels(xy[1], bounds.height(), density));
 
                     if (firstPoint == null) {
@@ -308,8 +293,8 @@ public class BorderDrawable extends ColorDrawable {
             }
         }
 
-        float imageWidth = this.backgroundImageWidth;
-        float imageHeight = this.backgroundImageHeight;
+        float imageWidth = this.backgroundImage.getWidth();
+        float imageHeight = this.backgroundImage.getHeight();
 
         // size
         if (this.backgroundSize != null && !this.backgroundSize.isEmpty()) {
@@ -420,23 +405,15 @@ public class BorderDrawable extends ColorDrawable {
         float result;
         source = source.trim();
 
-        if (source.contains("px")) {
+        if (source.indexOf("px") > -1) {
             result = Float.parseFloat(source.replace("px", ""));
         }
-        else if (source.contains("%") && total > 0) {
-            result = (Float.parseFloat(source.replace("%", "")) / 100) * toDeviceIndependentPixels(total, density);
+        else if (source.indexOf("%") > -1 && total > 0) {
+            result = (Float.parseFloat(source.replace("%", "")) / 100) * (total / density);
         } else {
             result = Float.parseFloat(source);
         }
-        return toDevicePixels(result, density);
-    }
-
-    private static float toDevicePixels(float value, float density) {
-        return value * density;
-    }
-
-    private static float toDeviceIndependentPixels(float value, float density) {
-        return value / density;
+        return result * density;
     }
 
     private class BackgroundDrawParams {
