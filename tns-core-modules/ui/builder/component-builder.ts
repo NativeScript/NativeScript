@@ -50,18 +50,26 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
     try {
         if (isString(namespace)) {
-            var pathInsideTNSModules = path.join(knownFolders.currentApp().path, "tns_modules", namespace);
-
-            if (Folder.exists(pathInsideTNSModules)) {
-                moduleId = pathInsideTNSModules;
+            if (global.moduleExists(namespace)) {
+                moduleId = namespace;
             } else {
-                // We expect module at root level in the app.
-                moduleId = path.join(knownFolders.currentApp().path, namespace);
+                var pathInsideTNSModules = path.join(knownFolders.currentApp().path, "tns_modules", namespace);
+
+                try {
+                    // module inside tns_modules
+                    instanceModule = require(pathInsideTNSModules);
+                    moduleId = pathInsideTNSModules;
+                } catch (e) {
+                    // module at root level in the app.
+                    moduleId = path.join(knownFolders.currentApp().path, namespace);
+                }
             }
         }
 
-        // Require module by module id.
-        instanceModule = global.loadModule(moduleId);
+        if (!instanceModule) {
+            // Require module by module id.
+            instanceModule = global.loadModule(moduleId);
+        }
 
         // Get the component type from module.
         var instanceType = instanceModule[elementName] || Object;

@@ -60,6 +60,7 @@ function parseInternal(value: string, context: any, uri?: string): ComponentModu
 function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: Page): ComponentModule {
     var result: ComponentModule;
     componentPath = componentPath.replace("~/", "");
+    const moduleName = componentPath + "/" + componentName;
 
     var fullComponentPathFilePathWithoutExt = componentPath;
 
@@ -74,9 +75,14 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         var jsFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "js");
 
         var subExports = context;
-        if (jsFilePath) {
-            // Custom components with XML and code
-            subExports = global.loadModule(jsFilePath)
+        if (global.moduleExists(moduleName)) {
+            // Component has registered code module.
+            subExports = global.loadModule(moduleName);
+        } else {
+            if (jsFilePath) {
+                // Component has code file.
+                subExports = global.loadModule(jsFilePath)
+            }
         }
 
         result = loadInternal(xmlFilePath, subExports);
