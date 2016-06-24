@@ -2,7 +2,7 @@
 import {Page} from "ui/page";
 import {View, isEventOrGesture} from "ui/core/view";
 import {ComponentModule} from "ui/builder/component-builder";
-import {File, Folder, path, knownFolders} from "file-system";
+import {File, path, knownFolders} from "file-system";
 import {getBindingOptions, bindingConstants} from "./binding-builder";
 import * as debugModule from "utils/debug";
 import * as platformModule from "platform";
