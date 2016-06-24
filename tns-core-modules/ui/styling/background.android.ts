@@ -141,34 +141,19 @@ function refreshBorderDrawable(view: view.View, borderDrawable: org.nativescript
         }
     }
     
-    let newBackground = JSON.stringify({
-        w: borderWidth, 
-        c: borderColor,
-        r: borderRadius,
-        cp: clipPath,
-        bc: backgroundColor,
-        bi: backgroundImage ? backgroundImage.hashCode() : "",
-        br: backgroundRepeat,
-        bp: backgroundPosition,
-        bs: backgroundSize
-    }); 
-    
-    if (newBackground !== view["android-backround"]){
-        borderDrawable.refresh(
-            borderWidth, 
-            borderColor,
-            borderRadius,
-            clipPath,
-            backgroundColor,
-            backgroundImage,
-            backgroundRepeat,
-            backgroundPosition,
-            backgroundPositionParsedCSSValues,
-            backgroundSize,
-            backgroundSizeParsedCSSValues
-        );
-        view["android-backround"] = newBackground;
-    }
+    borderDrawable.refresh(
+        borderWidth, 
+        borderColor,
+        borderRadius,
+        clipPath,
+        backgroundColor,
+        backgroundImage,
+        backgroundRepeat,
+        backgroundPosition,
+        backgroundPositionParsedCSSValues,
+        backgroundSize,
+        backgroundSizeParsedCSSValues
+    );
 }
 
 function createNativeCSSValueArray(css: string): native.Array<org.nativescript.widgets.CSSValue>{
