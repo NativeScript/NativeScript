@@ -773,10 +773,13 @@ class ActivityCallbacksImplementation implements definition.AndroidActivityCallb
 
         // We have extras when we call - new Frame().navigate();
         // savedInstanceState is used when activity is recreated.
+        // NOTE: On API 23+ we get extras on first run.
+        // Check changed - first try to get frameId from Extras if not from saveInstanceState.
         if (extras) {
             frameId = extras.getInt(INTENT_EXTRA, -1);
         }
-        else if (savedInstanceState) {
+
+        if (savedInstanceState && frameId < 0) {
             frameId = savedInstanceState.getInt(INTENT_EXTRA, -1)
         }
 
