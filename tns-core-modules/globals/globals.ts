@@ -101,6 +101,9 @@ if (global.__snapshot) {
 
     var fetch = require("fetch");
     global.fetch = fetch.fetch;
+    global.Headers = fetch.Headers;
+    global.Request = fetch.Request;
+    global.Response = fetch.Response;
 } else {
     registerOnGlobalContext("setTimeout", "timer");
     registerOnGlobalContext("clearTimeout", "timer");
