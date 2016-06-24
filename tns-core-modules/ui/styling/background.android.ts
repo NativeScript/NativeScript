@@ -8,8 +8,8 @@ import { CacheLayerType } from "utils/utils";
 import cssValue = require("css-value");
 import background = require("ui/styling/background");
 
-var button: typeof buttonModule;
-var style: typeof styleModule;
+let button: typeof buttonModule;
+let style: typeof styleModule;
 
 function ensureLazyRequires() {
     if (!button) {
@@ -25,7 +25,7 @@ global.moduleMerge(common, exports);
 
 // We are using "ad" here to avoid namespace collision with the global android object
 export module ad {
-    var SDK: number;
+    let SDK: number;
     function getSDK() {
         if (!SDK) {
             SDK = android.os.Build.VERSION.SDK_INT;
@@ -34,62 +34,46 @@ export module ad {
         return SDK;
     }
 
-    var _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
+    let _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
 
     export function onBackgroundOrBorderPropertyChanged(v: view.View) {
-        var nativeView = <android.view.View>v._nativeView;
-        var cache = <CacheLayerType>v._nativeView;
-        
+        let nativeView = <android.view.View>v._nativeView;
         if (!nativeView) {
             return;
         }
-
+        
         ensureLazyRequires();
 
-        var clipPathValue = v.style._getValue(style.clipPathProperty);
-
-        var backgroundValue = <background.Background>v.style._getValue(style.backgroundInternalProperty);
-        var borderWidth = v.borderWidth;
-        var bkg = nativeView.getBackground();
-
-        var density = utils.layout.getDisplayDensity();
-
-        if (v instanceof button.Button && !types.isNullOrUndefined(bkg) && types.isFunction(bkg.setColorFilter) &&
-            v.borderWidth === 0 && v.borderRadius === 0 && !clipPathValue &&
+        let clipPath = v.style._getValue(style.clipPathProperty);
+        let background = <background.Background>v.style._getValue(style.backgroundInternalProperty);
+        let borderWidth = v.borderWidth;
+        let backgroundDrawable = nativeView.getBackground();
+        let density = utils.layout.getDisplayDensity();
+        let cache = <CacheLayerType>v._nativeView;
+        if (v instanceof button.Button && !types.isNullOrUndefined(backgroundDrawable) && types.isFunction(backgroundDrawable.setColorFilter) &&
+            v.borderWidth === 0 && v.borderRadius === 0 && !clipPath &&
             types.isNullOrUndefined(v.style._getValue(style.backgroundImageProperty)) &&
             !types.isNullOrUndefined(v.style._getValue(style.backgroundColorProperty))) {
-            let backgroundColor = (<any>bkg).backgroundColor = v.style._getValue(style.backgroundColorProperty).android;
-            bkg.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
-            (<any>bkg).backgroundColor = backgroundColor;
+            let backgroundColor = (<any>backgroundDrawable).backgroundColor = v.style._getValue(style.backgroundColorProperty).android;
+            backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
+            (<any>backgroundDrawable).backgroundColor = backgroundColor;
         } 
-        else if (v.borderWidth || v.borderRadius || clipPathValue || !backgroundValue.isEmpty()) {
-            if (!(bkg instanceof org.nativescript.widgets.BorderDrawable)) {
-                bkg = new org.nativescript.widgets.BorderDrawable(density);
+        else if (v.borderWidth || v.borderRadius || clipPath || !background.isEmpty()) {
+            if (!(backgroundDrawable instanceof org.nativescript.widgets.BorderDrawable)) {
                 let viewClass = types.getClass(v);
                 if (!(v instanceof button.Button) && !_defaultBackgrounds.has(viewClass)) {
                     _defaultBackgrounds.set(viewClass, nativeView.getBackground());
                 }
-
-                nativeView.setBackground(bkg);
+                
+                backgroundDrawable = new org.nativescript.widgets.BorderDrawable(density);
+                refreshBorderDrawable(v, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
+                nativeView.setBackground(backgroundDrawable);
+            }
+            else {
+                refreshBorderDrawable(v, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
             }
             
-            (<org.nativescript.widgets.BorderDrawable>bkg).refresh(
-                v.borderWidth, 
-                v.borderColor ? v.borderColor.android : 0,
-                v.borderRadius,
-                clipPathValue,
-                (backgroundValue.color && backgroundValue.color.android) ? backgroundValue.color.android : 0,
-                (backgroundValue.image && backgroundValue.image.android) ? backgroundValue.image.android : null,
-                (backgroundValue.image && backgroundValue.image.android) ? backgroundValue.image.width : 0,
-                (backgroundValue.image && backgroundValue.image.android) ? backgroundValue.image.height : 0,
-                backgroundValue.repeat,
-                backgroundValue.position,
-                backgroundValue.position ? createNativeCSSValueArray(backgroundValue.position) : null,
-                backgroundValue.size,
-                backgroundValue.size ? createNativeCSSValueArray(backgroundValue.size) : null
-            );
-
-            if ((v.borderWidth || v.borderRadius || clipPathValue) && getSDK() < 18) {
+            if ((v.borderWidth || v.borderRadius || clipPath) && getSDK() < 18) {
                 // Switch to software because of unsupported canvas methods if hardware acceleration is on:
                 // http://developer.android.com/guide/topics/graphics/hardware-accel.html
                 cache.layerType = cache.getLayerType();
@@ -99,7 +83,7 @@ export module ad {
         else {
             // reset the value with the default native value
             if (v instanceof button.Button) {
-                var nativeButton = new android.widget.Button(nativeView.getContext());
+                let nativeButton = new android.widget.Button(nativeView.getContext());
                 nativeView.setBackground(nativeButton.getBackground());
             }
             else {
@@ -124,7 +108,70 @@ export module ad {
     }
 }
 
-function createNativeCSSValueArray(css: string): any{
+function refreshBorderDrawable(view: view.View, borderDrawable: org.nativescript.widgets.BorderDrawable){
+    let background = <background.Background>view.style._getValue(style.backgroundInternalProperty);
+    let borderWidth: number = view.borderWidth;
+    let borderColor: number = 0;
+    if (view.borderColor && view.borderColor.android){
+        borderColor = view.borderColor.android;
+    }
+    let borderRadius: number = view.borderRadius;
+    let clipPath: string = view.style._getValue(style.clipPathProperty);
+    let backgroundColor: number = 0;
+    let backgroundImage: android.graphics.Bitmap = null;
+    let backgroundRepeat: string = null;
+    let backgroundPosition: string = null;
+    let backgroundPositionParsedCSSValues: native.Array<org.nativescript.widgets.CSSValue> = null;
+    let backgroundSize: string = null;
+    let backgroundSizeParsedCSSValues: native.Array<org.nativescript.widgets.CSSValue> = null;
+    if (background){
+        if (background.color && background.color.android){
+            backgroundColor = background.color.android;
+        }
+        if (background.image && background.image.android){
+            backgroundImage = background.image.android;
+        }
+        if (background.position){
+            backgroundPosition = background.position;
+            backgroundPositionParsedCSSValues = createNativeCSSValueArray(background.position); 
+        }
+        if (background.size){
+            backgroundSize = background.size;
+            backgroundSizeParsedCSSValues = createNativeCSSValueArray(background.size); 
+        }
+    }
+    
+    let newBackground = JSON.stringify({
+        w: borderWidth, 
+        c: borderColor,
+        r: borderRadius,
+        cp: clipPath,
+        bc: backgroundColor,
+        bi: backgroundImage ? backgroundImage.hashCode() : "",
+        br: backgroundRepeat,
+        bp: backgroundPosition,
+        bs: backgroundSize
+    }); 
+    
+    if (newBackground !== view["android-backround"]){
+        borderDrawable.refresh(
+            borderWidth, 
+            borderColor,
+            borderRadius,
+            clipPath,
+            backgroundColor,
+            backgroundImage,
+            backgroundRepeat,
+            backgroundPosition,
+            backgroundPositionParsedCSSValues,
+            backgroundSize,
+            backgroundSizeParsedCSSValues
+        );
+        view["android-backround"] = newBackground;
+    }
+}
+
+function createNativeCSSValueArray(css: string): native.Array<org.nativescript.widgets.CSSValue>{
     if (!css){
         return null;
     }

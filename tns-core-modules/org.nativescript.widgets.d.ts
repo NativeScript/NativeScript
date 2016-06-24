@@ -10,8 +10,6 @@
                     clipPath: string,
                     backgroundColor: number,
                     backgroundImage: android.graphics.Bitmap,
-                    backgroundImageWidth: number,
-                    backgroundImageHeight: number,
                     backgroundRepeat: string,
                     backgroundPosition: string,
                     backgroundPositionParsedCSSValues: native.Array<CSSValue>,
@@ -24,8 +22,6 @@
                 public getClipPath(): string;
                 public getBackgroundColor(): number;
                 public getBackgroundImage(): android.graphics.Bitmap;
-                public getBackgroundImageWidth(): number;
-                public getBackgroundImageHeight(): number;
                 public getBackgroundRepeat(): string;
                 public getBackgroundPosition(): string;
                 public getBackgroundSize(): string;
