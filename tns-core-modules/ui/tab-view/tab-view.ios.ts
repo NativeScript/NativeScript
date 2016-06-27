@@ -9,6 +9,7 @@ import proxy = require("ui/core/proxy");
 import color = require("color");
 import * as imageSourceModule from "image-source";
 import style = require("ui/styling/style");
+import { Page } from "ui/page";
 
 global.moduleMerge(common, exports);
 
@@ -52,10 +53,26 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
         return delegate;
     }
 
+    public tabBarControllerShouldSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): boolean {
+        if (trace.enabled) {
+            trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", trace.categories.Debug);
+        }
+        
+        let owner = this._owner.get();
+        if (owner) {
+            // "< More" cannot be visible after clicking on the main tab bar buttons.
+            let backToMoreWillBeVisible = false;
+            owner._handleTwoNavigationBars(backToMoreWillBeVisible);
+        }
+        
+        return true;    
+    }
+    
     public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
         if (trace.enabled) {
-            trace.write("TabView.UITabBarControllerDelegateClass.tabBarControllerDidSelectViewController(" + tabBarController + ", " + viewController + ");", trace.categories.Debug);
+            trace.write("TabView.delegate.DID_select(" + tabBarController + ", " + viewController + ");", trace.categories.Debug);
         }
+        
         let owner = this._owner.get();
         if (owner) {
             owner._onViewControllerShown(viewController);
@@ -74,9 +91,23 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
         return delegate;
     }
 
+    navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+        if (trace.enabled) {
+            trace.write("TabView.moreNavigationController.WILL_show(" + navigationController + ", " + viewController + ", " + animated + ");", trace.categories.Debug);
+        }
+        
+        let owner = this._owner.get();
+        if (owner) {
+            // If viewController is one of our tab item controllers, then "< More" will be visible shortly.
+            // Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
+            let backToMoreWillBeVisible = owner._ios.viewControllers.containsObject(viewController);
+            owner._handleTwoNavigationBars(backToMoreWillBeVisible);
+        }
+    }
+
     navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
         if (trace.enabled) {
-            trace.write("TabView.UINavigationControllerDelegateClass.navigationControllerDidShowViewControllerAnimated(" + navigationController + ", " + viewController + ", " + animated + ");", trace.categories.Debug);
+            trace.write("TabView.moreNavigationController.DID_show(" + navigationController + ", " + viewController + ", " + animated + ");", trace.categories.Debug);
         }
         // We don't need Edit button in More screen.
         navigationController.navigationBar.topItem.rightBarButtonItem = null;
@@ -127,7 +158,7 @@ function tabsBackgroundColorPropertyChanged(data: dependencyObservable.PropertyC
 (<proxy.PropertyMetadata>common.TabView.tabsBackgroundColorProperty.metadata).onSetNativeValue = tabsBackgroundColorPropertyChanged;
 
 export class TabView extends common.TabView {
-    private _ios: UITabBarControllerImpl;
+    public _ios: UITabBarControllerImpl;
     private _delegate: UITabBarControllerDelegateImpl;
     private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
     private _tabBarHeight: number = 0;
@@ -168,12 +199,40 @@ export class TabView extends common.TabView {
             trace.write("TabView._onViewControllerShown(" + viewController + ");", trace.categories.Debug);
         }
         if (this._ios.viewControllers.containsObject(viewController)) {
-            this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);;
+            this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);
         }
         else {
             if (trace.enabled) {
                 trace.write("TabView._onViewControllerShown: viewController is not one of our viewControllers", trace.categories.Debug);
             }
+        }
+    }
+    
+    private _actionBarHidden: boolean;
+    public _handleTwoNavigationBars(backToMoreWillBeVisible: boolean){
+        if (trace.enabled) {
+            trace.write(`TabView._handleTwoNavigationBars(${backToMoreWillBeVisible})`, trace.categories.Debug);
+        }
+ 
+        // The "< Back" and "< More" navigation bars should not be visible simultaneously.
+        let page = <Page>this.page;
+        let actionBarVisible = page.frame._getNavBarVisible(page);
+        let moreNavigationBar = this._ios.moreNavigationController.navigationBar;
+        
+        if (backToMoreWillBeVisible && actionBarVisible){
+            page.frame.ios._disableNavBarAnimation = true;
+            page.actionBarHidden = true;
+            page.frame.ios._disableNavBarAnimation = false;
+            this._actionBarHidden = true;
+            return;
+        }
+        
+        if (!backToMoreWillBeVisible && this._actionBarHidden){
+            page.frame.ios._disableNavBarAnimation = true;
+            page.actionBarHidden = false;
+            page.frame.ios._disableNavBarAnimation = false;
+            this._actionBarHidden = undefined;
+            return;
         }
     }
 

@@ -346,6 +346,10 @@ declare module "ui/frame" {
          * Use NavBarVisibility enumeration - auto, never, always
          */
         navBarVisibility: string;
+        
+        //@private
+        _disableNavBarAnimation: boolean;
+        //@endprivate
     }
 
     //@private
