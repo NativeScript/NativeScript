@@ -273,6 +273,14 @@ function isMinWidthHeightValid(value: number): boolean {
     return !isNaN(value) && value >= 0.0 && isFinite(value);
 }
 
+function onBackgroundColorPropertyChanged(data: PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (!Color.equals(currentBackground.color, data.newValue)) {
+        style._setValue(backgroundInternalProperty, currentBackground.withColor(data.newValue));
+    }
+}
+
 function onBackgroundImagePropertyChanged(data: PropertyChangeData) {
     var style = <Style>data.object;
     var url: string = data.newValue;
@@ -318,22 +326,6 @@ function onBackgroundImagePropertyChanged(data: PropertyChangeData) {
     }
 }
 
-function onBackgroundColorPropertyChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (!Color.equals(currentBackground.color, data.newValue)) {
-        style._setValue(backgroundInternalProperty, currentBackground.withColor(data.newValue));
-    }
-}
-
-function onBackgroundSizePropertyChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.size) {
-        style._setValue(backgroundInternalProperty, currentBackground.withSize(data.newValue));
-    }
-}
-
 function onBackgroundRepeatPropertyChanged(data: PropertyChangeData) {
     var style = <Style>data.object;
     var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
@@ -347,6 +339,46 @@ function onBackgroundPositionPropertyChanged(data: PropertyChangeData) {
     var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
     if (data.newValue !== currentBackground.position) {
         style._setValue(backgroundInternalProperty, currentBackground.withPosition(data.newValue));
+    }
+}
+
+function onBackgroundSizePropertyChanged(data: PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.size) {
+        style._setValue(backgroundInternalProperty, currentBackground.withSize(data.newValue));
+    }
+}
+
+function onBorderWidthPropertyChanged(data: PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderWidth) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderWidth(data.newValue));
+    }
+}
+
+function onBorderColorPropertyChanged(data: PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderColor) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderColor(data.newValue));
+    }
+}
+
+function onBorderRadiusPropertyChanged(data: PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderRadius) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderRadius(data.newValue));
+    }
+}
+
+function onClipPathPropertyChanged(data: PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.clipPath) {
+        style._setValue(backgroundInternalProperty, currentBackground.withClipPath(data.newValue));
     }
 }
 
@@ -399,7 +431,7 @@ function isWhiteSpaceValid(value: string): boolean {
     return value === enums.WhiteSpace.nowrap || value === enums.WhiteSpace.normal;
 }
 
-function isPaddingValid(value: number): boolean {
+function isNonNegativeFiniteNumber(value: number): boolean {
     return isFinite(value) && !isNaN(value) && value >= 0;
 }
 
@@ -1065,17 +1097,17 @@ export var backgroundSizeProperty = new styleProperty.Property("backgroundSize",
 export var backgroundPositionProperty = new styleProperty.Property("backgroundPosition", "background-position",
     new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundPositionPropertyChanged));
 
-export var borderColorProperty = new styleProperty.Property("borderColor", "border-color",
-    new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals), converters.colorConverter);
-
 export var borderWidthProperty = new styleProperty.Property("borderWidth", "border-width",
-    new PropertyMetadata(0, AffectsLayout, null, isPaddingValid), converters.numberConverter);
+    new PropertyMetadata(0, AffectsLayout, onBorderWidthPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
+
+export var borderColorProperty = new styleProperty.Property("borderColor", "border-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBorderColorPropertyChanged, Color.isValid, Color.equals), converters.colorConverter);
 
 export var borderRadiusProperty = new styleProperty.Property("borderRadius", "border-radius",
-    new PropertyMetadata(0, AffectsLayout, null, isPaddingValid), converters.numberConverter);
+    new PropertyMetadata(0, AffectsLayout, onBorderRadiusPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
     
 export var clipPathProperty = new styleProperty.Property("clipPath", "clip-path",
-    new PropertyMetadata(undefined, AffectsLayout, null, isClipPathValid));    
+    new PropertyMetadata(undefined, AffectsLayout, onClipPathPropertyChanged, isClipPathValid));    
 
 export var backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
     new PropertyMetadata(background.Background.default, PropertyMetadataSettings.None, undefined, undefined, background.Background.equals));
@@ -1204,16 +1236,16 @@ export var nativePaddingsProperty = new styleProperty.Property("paddingNative", 
 var defaultPadding = platform.device.os === platform.platformNames.android ? undefined : 0;
 
 export var paddingLeftProperty = new styleProperty.Property("paddingLeft", "padding-left",
-    new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);
+    new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), converters.numberConverter);
 
 export var paddingRightProperty = new styleProperty.Property("paddingRight", "padding-right",
-    new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);
+    new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), converters.numberConverter);
 
 export var paddingTopProperty = new styleProperty.Property("paddingTop", "padding-top",
-    new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);
+    new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), converters.numberConverter);
 
 export var paddingBottomProperty = new styleProperty.Property("paddingBottom", "padding-bottom",
-    new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isPaddingValid), converters.numberConverter);
+    new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), converters.numberConverter);
 
 // TODO: separate into .android/.ios files so that there is no need for such checks
 if (platform.device.os === platform.platformNames.android) {

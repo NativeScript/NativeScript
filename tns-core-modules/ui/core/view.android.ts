@@ -455,11 +455,11 @@ export class CustomLayoutView extends View implements viewDefinition.CustomLayou
 
 export class ViewStyler implements style.Styler {
     // Background and borders methods
-    private static setBackgroundBorderProperty(view: View, newValue: any, defaultValue?: any) {
+    private static setBackgroundAndBorder(view: View, newValue: any, defaultValue?: any) {
         background.ad.onBackgroundOrBorderPropertyChanged(view);
     }
 
-    private static resetBackgroundBorderProperty(view: View, nativeValue: any) {
+    private static resetBackgroundAndBorder(view: View, nativeValue: any) {
         background.ad.onBackgroundOrBorderPropertyChanged(view);
     }
 
@@ -705,15 +705,11 @@ export class ViewStyler implements style.Styler {
 
         // Use the same handler for all background/border properties
         // Note: There is no default value getter - the default value is handled in background.ad.onBackgroundOrBorderPropertyChanged
-        var borderHandler = new style.StylePropertyChangedHandler(
-            ViewStyler.setBackgroundBorderProperty,
-            ViewStyler.resetBackgroundBorderProperty);
+        var backgroundAndBorderHandler = new style.StylePropertyChangedHandler(
+            ViewStyler.setBackgroundAndBorder,
+            ViewStyler.resetBackgroundAndBorder);
 
-        style.registerHandler(style.backgroundInternalProperty, borderHandler);
-        style.registerHandler(style.borderWidthProperty, borderHandler);
-        style.registerHandler(style.borderColorProperty, borderHandler);
-        style.registerHandler(style.borderRadiusProperty, borderHandler);
-        style.registerHandler(style.clipPathProperty, borderHandler);
+        style.registerHandler(style.backgroundInternalProperty, backgroundAndBorderHandler);
 
         style.registerHandler(style.nativeLayoutParamsProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setNativeLayoutParamsProperty,

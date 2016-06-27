@@ -19,22 +19,32 @@ declare module "ui/styling/background" {
         repeat: string;
         position: string;
         size: string;
+        borderWidth: number;
+        borderColor: colorModule.Color;
+        borderRadius: number;
+        clipPath: string;
 
         constructor(
             color: colorModule.Color,
             image: imageSource.ImageSource,
             repeat: string,
             position: string,
-            size: string);
+            size: string,
+            borderWidth: number,
+            borderColor: colorModule.Color,
+            borderRadius: number,
+            clipPath: string
+        );
 
         public withColor(value: colorModule.Color): Background;
         public withImage(value: imageSource.ImageSource): Background;
-
         public withRepeat(value: string): Background;
-
         public withPosition(value: string): Background;
-
         public withSize(value: string): Background;
+        public withBorderWidth(value: number): Background;
+        public withBorderColor(value: colorModule.Color): Background;
+        public withBorderRadius(value: number): Background;
+        public withClipPath(value: string): Background;
 
         public getDrawParams(width: number, height: number): BackgroundDrawParams;
 
