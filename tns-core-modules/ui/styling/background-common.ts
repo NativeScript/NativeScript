@@ -21,46 +21,74 @@ interface CSSValue {
 }
 
 export class Background implements definition.Background {
-    public static default = new Background(undefined, undefined, undefined, undefined, undefined);
+    public static default = new Background(undefined, undefined, undefined, undefined, undefined, 0, undefined, 0, undefined);
 
     color: colorModule.Color;
     image: imageSource.ImageSource;
     repeat: string;
     position: string;
     size: string;
+    borderWidth: number = 0;
+    borderColor: colorModule.Color;
+    borderRadius: number = 0;
+    clipPath: string;
 
     constructor(
         color: colorModule.Color,
         image: imageSource.ImageSource,
         repeat: string,
         position: string,
-        size: string) {
-
+        size: string,
+        borderWidth: number,
+        borderColor: colorModule.Color,
+        borderRadius: number,
+        clipPath: string
+    ) {
         this.color = color;
         this.image = image;
         this.repeat = repeat;
         this.position = position;
         this.size = size;
+        this.borderWidth = borderWidth;
+        this.borderColor = borderColor;
+        this.borderRadius = borderRadius;
+        this.clipPath = clipPath;
     }
 
     public withColor(value: colorModule.Color): Background {
-        return new Background(value, this.image, this.repeat, this.position, this.size);
+        return new Background(value, this.image, this.repeat, this.position, this.size, this.borderWidth, this.borderColor, this.borderRadius, this.clipPath);
     }
 
     public withImage(value: imageSource.ImageSource): Background {
-        return new Background(this.color, value, this.repeat, this.position, this.size);
+        return new Background(this.color, value, this.repeat, this.position, this.size, this.borderWidth, this.borderColor, this.borderRadius, this.clipPath);
     }
 
     public withRepeat(value: string): Background {
-        return new Background(this.color, this.image, value, this.position, this.size);
+        return new Background(this.color, this.image, value, this.position, this.size, this.borderWidth, this.borderColor, this.borderRadius, this.clipPath);
     }
 
     public withPosition(value: string): Background {
-        return new Background(this.color, this.image, this.repeat, value, this.size);
+        return new Background(this.color, this.image, this.repeat, value, this.size, this.borderWidth, this.borderColor, this.borderRadius, this.clipPath);
     }
 
     public withSize(value: string): Background {
-        return new Background(this.color, this.image, this.repeat, this.position, value);
+        return new Background(this.color, this.image, this.repeat, this.position, value, this.borderWidth, this.borderColor, this.borderRadius, this.clipPath);
+    }
+    
+    public withBorderWidth(value: number): Background {
+        return new Background(this.color, this.image, this.repeat, this.position, this.size, value, this.borderColor, this.borderRadius, this.clipPath);
+    }
+
+    public withBorderColor(value: colorModule.Color): Background {
+        return new Background(this.color, this.image, this.repeat, this.position, this.size, this.borderWidth, value, this.borderRadius, this.clipPath);
+    }
+
+    public withBorderRadius(value: number): Background {
+        return new Background(this.color, this.image, this.repeat, this.position, this.size, this.borderWidth, this.borderColor, value, this.clipPath);
+    }
+
+    public withClipPath(value: string): Background {
+        return new Background(this.color, this.image, this.repeat, this.position, this.size, this.borderWidth, this.borderColor, this.borderRadius, value);
     }
 
     public getDrawParams(width: number, height: number): definition.BackgroundDrawParams {
@@ -222,7 +250,11 @@ export class Background implements definition.Background {
     public isEmpty(): boolean {
         ensureTypes();
 
-        return types.isNullOrUndefined(this.image) && types.isNullOrUndefined(this.color);
+        return types.isNullOrUndefined(this.image) 
+            && types.isNullOrUndefined(this.color) 
+            && !this.borderWidth
+            && !this.borderRadius
+            && !this.clipPath;
     }
 
     public static equals(value1: Background, value2: Background): boolean {
@@ -236,11 +268,15 @@ export class Background implements definition.Background {
             return false;
         }
 
-        return value1.image === value2.image &&
-            value1.position === value2.position &&
-            value1.repeat === value2.repeat &&
-            value1.size === value2.size &&
-            colorModule.Color.equals(value1.color, value2.color);
+        return value1.image === value2.image 
+            && value1.position === value2.position 
+            && value1.repeat === value2.repeat 
+            && value1.size === value2.size 
+            && colorModule.Color.equals(value1.color, value2.color) 
+            && value1.borderWidth === value2.borderWidth
+            && colorModule.Color.equals(value1.borderColor, value2.borderColor) 
+            && value1.borderRadius === value2.borderRadius
+            && value1.clipPath === value2.clipPath;
     }
 }
 
