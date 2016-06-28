@@ -57,7 +57,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
                 try {
                     // module inside tns_modules
-                    instanceModule = require(pathInsideTNSModules);
+                    instanceModule = global.require(pathInsideTNSModules);
                     moduleId = pathInsideTNSModules;
                 } catch (e) {
                     // module at root level in the app.
