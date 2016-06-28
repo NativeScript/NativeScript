@@ -661,6 +661,10 @@ class iOSFrame implements definition.iOSFrame {
     private _showNavigationBar: boolean;
     private _navBarVisibility: string;
     private _frame: Frame;
+    
+    // TabView uses this flag to disable animation while showing/hiding the navigation bar because of the "< More" bar.
+    // See the TabView._handleTwoNavigationBars method for more details.
+    public _disableNavBarAnimation: boolean;
 
     constructor(frame: Frame) {
         this._frame = frame;
@@ -681,7 +685,7 @@ class iOSFrame implements definition.iOSFrame {
         var change = this._showNavigationBar !== value;
         this._showNavigationBar = value;
 
-        let animated = !this._frame._isInitialNavigation;
+        let animated = !this._frame._isInitialNavigation && !this._disableNavBarAnimation;
         this._controller.setNavigationBarHiddenAnimated(!value, animated);
 
         let currentPage = this._controller.owner.currentPage;
