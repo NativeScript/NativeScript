@@ -1,4 +1,4 @@
-# Android-Widgets
+# Widgets
 Contains the source code of the `tns-core-modules-widgets` library.
 This library contains native code (Java and Objective-C) used by the NativeScript core modules `tns-core-modules`.
 
