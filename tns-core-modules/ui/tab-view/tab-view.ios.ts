@@ -208,30 +208,35 @@ export class TabView extends common.TabView {
         }
     }
     
-    private _actionBarHidden: boolean;
+    private _actionBarHiddenByTabView: boolean;
     public _handleTwoNavigationBars(backToMoreWillBeVisible: boolean){
         if (trace.enabled) {
-            trace.write(`TabView._handleTwoNavigationBars(${backToMoreWillBeVisible})`, trace.categories.Debug);
+            trace.write(`TabView._handleTwoNavigationBars(backToMoreWillBeVisible: ${backToMoreWillBeVisible})`, trace.categories.Debug);
         }
  
         // The "< Back" and "< More" navigation bars should not be visible simultaneously.
         let page = <Page>this.page;
         let actionBarVisible = page.frame._getNavBarVisible(page);
-        let moreNavigationBar = this._ios.moreNavigationController.navigationBar;
         
         if (backToMoreWillBeVisible && actionBarVisible){
             page.frame.ios._disableNavBarAnimation = true;
             page.actionBarHidden = true;
             page.frame.ios._disableNavBarAnimation = false;
-            this._actionBarHidden = true;
+            this._actionBarHiddenByTabView = true;
+            if (trace.enabled) {
+                trace.write(`TabView hid action bar`, trace.categories.Debug);
+            }
             return;
         }
         
-        if (!backToMoreWillBeVisible && this._actionBarHidden){
+        if (!backToMoreWillBeVisible && this._actionBarHiddenByTabView){
             page.frame.ios._disableNavBarAnimation = true;
             page.actionBarHidden = false;
             page.frame.ios._disableNavBarAnimation = false;
-            this._actionBarHidden = undefined;
+            this._actionBarHiddenByTabView = undefined;
+            if (trace.enabled) {
+                trace.write(`TabView restored action bar`, trace.categories.Debug);
+            }
             return;
         }
     }
