@@ -53,7 +53,7 @@ function onIsUserInteractionEnabledPropertyChanged(data: dependencyObservable.Pr
 
 export class View extends viewCommon.View {
     private _disableUserInteractionListener: android.view.View.OnTouchListener = new android.view.View.OnTouchListener({
-        onTouch: function(view: android.view.View, event: android.view.MotionEvent) {
+        onTouch: function (view: android.view.View, event: android.view.MotionEvent) {
             return true;
         }
     });
@@ -116,7 +116,7 @@ export class View extends viewCommon.View {
                 this._nativeView.setClickable(true);
             }
             this._nativeView.setOnTouchListener(new android.view.View.OnTouchListener({
-                onTouch: function(view: android.view.View, motionEvent: android.view.MotionEvent) {
+                onTouch: function (view: android.view.View, motionEvent: android.view.MotionEvent) {
                     var owner = that.get();
                     if (!owner) {
                         return false;
@@ -178,7 +178,7 @@ export class View extends viewCommon.View {
         if (this._childrenCount > 0) {
             // Notify each child for the _onAttached event
             var that = this;
-            var eachChild = function(child: View): boolean {
+            var eachChild = function (child: View): boolean {
                 child._onAttached(context);
                 if (!child._isAddedToNativeVisualTree) {
                     // since we have lazy loading of the android widgets, we need to add the native instances at this point.
@@ -197,7 +197,7 @@ export class View extends viewCommon.View {
         if (this._childrenCount > 0) {
             // Detach children first
             var that = this;
-            var eachChild = function(child: View): boolean {
+            var eachChild = function (child: View): boolean {
                 if (child._isAddedToNativeVisualTree) {
                     that._removeViewFromNativeVisualTree(child);
                 }
@@ -238,7 +238,7 @@ export class View extends viewCommon.View {
         }
         this._createUI();
         // Ensure layout params
-        if (this._nativeView && !(this._nativeView.getLayoutParams() instanceof org.nativescript.widgets.CommonLayoutParams)) {
+        if (this._nativeView && !this._nativeView.getLayoutParams()) {
             this._nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
         }
 
@@ -348,7 +348,7 @@ export class View extends viewCommon.View {
         return {
             x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
             y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
-        } 
+        }
     }
 
     public getLocationOnScreen(): viewDefinition.Point {
@@ -361,7 +361,7 @@ export class View extends viewCommon.View {
         return {
             x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
             y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
-        } 
+        }
     }
 
     public getLocationRelativeTo(otherView: viewDefinition.View): viewDefinition.Point {
@@ -378,7 +378,7 @@ export class View extends viewCommon.View {
         return {
             x: utils.layout.toDeviceIndependentPixels(myArray[0] - otherArray[0]),
             y: utils.layout.toDeviceIndependentPixels(myArray[1] - otherArray[1]),
-        } 
+        }
     }
 
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
@@ -500,35 +500,12 @@ export class ViewStyler implements style.Styler {
         (<android.view.View>view._nativeView).setMinimumHeight(0);
     }
 
-    private static getNativeLayoutParams(nativeView: android.view.View): org.nativescript.widgets.CommonLayoutParams {
-        var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
-        if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
-            lp = new org.nativescript.widgets.CommonLayoutParams();
-        }
-
-        return lp;
-    }
-
     private static setNativeLayoutParamsProperty(view: View, params: CommonLayoutParams): void {
-        var nativeView: android.view.View = view._nativeView;
-        var lp = ViewStyler.getNativeLayoutParams(nativeView);
+        let nativeView: android.view.View = view._nativeView;
 
-        lp.widthPercent = params.widthPercent;
-        lp.heightPercent = params.heightPercent;
+        let width = params.width * utils.layout.getDisplayDensity();
+        let height = params.height * utils.layout.getDisplayDensity();
 
-        lp.leftMarginPercent = params.leftMarginPercent;
-        lp.topMarginPercent = params.topMarginPercent;
-        lp.rightMarginPercent = params.rightMarginPercent;
-        lp.bottomMarginPercent = params.bottomMarginPercent;
-
-        lp.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
-        lp.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
-        lp.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
-        lp.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
-
-        var width = params.width * utils.layout.getDisplayDensity();
-        var height = params.height * utils.layout.getDisplayDensity();
-        
         // If width is not specified set it as WRAP_CONTENT
         if (width < 0) {
             width = -2;
@@ -539,7 +516,7 @@ export class ViewStyler implements style.Styler {
             height = -2;
         }
 
-        var gravity = 0;
+        let gravity = 0;
         switch (params.horizontalAlignment) {
             case enums.HorizontalAlignment.left:
                	gravity |= android.view.Gravity.LEFT;
@@ -591,9 +568,69 @@ export class ViewStyler implements style.Styler {
                 throw new Error("Invalid verticalAlignment value: " + params.verticalAlignment);
         }
 
-        lp.gravity = gravity;
+        let lp = nativeView.getLayoutParams();
         lp.width = Math.round(width);
         lp.height = Math.round(height);
+
+        if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
+            lp.widthPercent = params.widthPercent;
+            lp.heightPercent = params.heightPercent;
+            lp.leftMarginPercent = params.leftMarginPercent;
+            lp.topMarginPercent = params.topMarginPercent;
+            lp.rightMarginPercent = params.rightMarginPercent;
+            lp.bottomMarginPercent = params.bottomMarginPercent;
+            lp.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
+            lp.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
+            lp.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
+            lp.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
+            lp.gravity = gravity;
+        }
+        else {
+            let layoutParams: any = lp;
+            if (types.isDefined(layoutParams.widthPercent)) {
+                layoutParams.widthPercent = params.widthPercent;
+            }
+
+            if (types.isDefined(layoutParams.heightPercent)) {
+                layoutParams.heightPercent = params.heightPercent;
+            }
+
+            if (types.isDefined(layoutParams.leftMarginPercent)) {
+                layoutParams.leftMarginPercent = params.leftMarginPercent;
+            }
+
+            if (types.isDefined(layoutParams.topMarginPercent)) {
+                layoutParams.topMarginPercent = params.topMarginPercent;
+            }
+
+            if (types.isDefined(layoutParams.rightMarginPercent)) {
+                layoutParams.rightMarginPercent = params.rightMarginPercent;
+            }
+
+            if (types.isDefined(layoutParams.bottomMarginPercent)) {
+                layoutParams.bottomMarginPercent = params.bottomMarginPercent;
+            }
+
+            if (types.isDefined(layoutParams.leftMargin)) {
+                layoutParams.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
+            }
+
+            if (types.isDefined(layoutParams.topMargin)) {
+                layoutParams.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
+            }
+
+            if (types.isDefined(layoutParams.rightMargin)) {
+                layoutParams.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
+            }
+
+            if (types.isDefined(layoutParams.bottomMargin)) {
+                layoutParams.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
+            }
+
+            if (types.isDefined(layoutParams.gravity)) {
+                layoutParams.gravity = gravity;
+            }
+        }
 
         nativeView.setLayoutParams(lp);
     }
@@ -674,7 +711,7 @@ export class ViewStyler implements style.Styler {
         if (view.android.setZ) {
             view.android.setZ(newValue);
 
-            if(view.android instanceof android.widget.Button){
+            if (view.android instanceof android.widget.Button) {
                 view.android.setStateListAnimator(null);
             }
         }

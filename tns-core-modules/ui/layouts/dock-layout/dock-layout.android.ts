@@ -10,30 +10,27 @@ function setNativeDockProperty(data: PropertyChangeData) {
     var view = data.object;
     if (view instanceof View) {
         var nativeView: android.view.View = view._nativeView;
+        var lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+        if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
+            switch (data.newValue) {
+                case Dock.left:
+                    lp.dock = org.nativescript.widgets.Dock.left;
+                    break;
+                case Dock.top:
+                    lp.dock = org.nativescript.widgets.Dock.top;
+                    break;
+                case Dock.right:
+                    lp.dock = org.nativescript.widgets.Dock.right;
+                    break;
+                case Dock.bottom:
+                    lp.dock = org.nativescript.widgets.Dock.bottom;
+                    break;
+                default:
+                    throw new Error("Invalid dock value: " + data.newValue + " on element: " + view);
+            }
 
-        var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
-        if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
-            lp = new org.nativescript.widgets.CommonLayoutParams();
+            nativeView.setLayoutParams(lp);
         }
-    
-        switch (data.newValue) {
-            case Dock.left:
-                lp.dock = org.nativescript.widgets.Dock.left;
-                break;
-            case Dock.top:
-                lp.dock = org.nativescript.widgets.Dock.top;
-                break;
-            case Dock.right:
-                lp.dock = org.nativescript.widgets.Dock.right;
-                break;
-            case Dock.bottom:
-                lp.dock = org.nativescript.widgets.Dock.bottom;
-                break;
-            default:
-                throw new Error("Invalid dock value: " + data.newValue + " on element: " + view);
-        }
-
-        nativeView.setLayoutParams(lp);
     }
 }
 
