@@ -372,11 +372,20 @@ export class Page extends pageCommon.Page {
             this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFormSheet;
             this._UIModalPresentationFormSheet = true;
         }
-
+        
         super._raiseShowingModallyEvent();
 
         parent.ios.presentViewControllerAnimatedCompletion(this._ios, utils.ios.MajorVersion >= 7, null);
-        UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(parent.ios.transitionCoordinator(), null, () => this._raiseShownModallyEvent());
+        let transitionCoordinator = parent.ios.transitionCoordinator();
+        if (transitionCoordinator){
+            UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
+        }
+        else {
+            // Apparently iOS 9+ stops all transitions and animations upon application suspend and transitionCoordinator becomes null here in this case.
+            // Since we are not waiting for any transition to complete, i.e. transitionCoordinator is null, we can directly raise our shownModally event.
+            // Take a look at https://github.com/NativeScript/NativeScript/issues/2173 for more info and a sample project.
+            this._raiseShownModallyEvent();
+        }
     }
 
     protected _hideNativeModalView(parent: Page) {
