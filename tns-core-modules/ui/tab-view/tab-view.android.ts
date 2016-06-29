@@ -228,7 +228,7 @@ export class TabView extends common.TabView {
         }
 
         this._viewPager = new android.support.v4.view.ViewPager(this._context);
-        var lp = new org.nativescript.widgets.CommonLayoutParams()
+        var lp = new org.nativescript.widgets.CommonLayoutParams();
         lp.row = 1;
         this._viewPager.setLayoutParams(lp);
         this._grid.addView(this._viewPager);

@@ -10,13 +10,11 @@ function setNativeProperty(data: PropertyChangeData, setter: (lp: org.nativescri
     var view = data.object;
     if (view instanceof View) {
         var nativeView: android.view.View = view._nativeView;
-
-        var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
-        if (!(lp instanceof org.nativescript.widgets.CommonLayoutParams)) {
-            lp = new org.nativescript.widgets.CommonLayoutParams();
+        var lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+        if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
+            setter(lp);
+            nativeView.setLayoutParams(lp);
         }
-        setter(lp);
-        nativeView.setLayoutParams(lp);
     }
 }
 
