@@ -348,7 +348,7 @@ export class View extends viewCommon.View {
         return {
             x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
             y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
-        } 
+        }
     }
 
     public getLocationOnScreen(): viewDefinition.Point {
@@ -361,7 +361,7 @@ export class View extends viewCommon.View {
         return {
             x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
             y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
-        } 
+        }
     }
 
     public getLocationRelativeTo(otherView: viewDefinition.View): viewDefinition.Point {
@@ -378,7 +378,7 @@ export class View extends viewCommon.View {
         return {
             x: utils.layout.toDeviceIndependentPixels(myArray[0] - otherArray[0]),
             y: utils.layout.toDeviceIndependentPixels(myArray[1] - otherArray[1]),
-        } 
+        }
     }
 
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
@@ -501,10 +501,10 @@ export class ViewStyler implements style.Styler {
     }
 
     private static setNativeLayoutParamsProperty(view: View, params: CommonLayoutParams): void {
-        var nativeView: android.view.View = view._nativeView;
+        let nativeView: android.view.View = view._nativeView;
 
-        var width = params.width * utils.layout.getDisplayDensity();
-        var height = params.height * utils.layout.getDisplayDensity();
+        let width = params.width * utils.layout.getDisplayDensity();
+        let height = params.height * utils.layout.getDisplayDensity();
 
         // If width is not specified set it as WRAP_CONTENT
         if (width < 0) {
@@ -516,7 +516,7 @@ export class ViewStyler implements style.Styler {
             height = -2;
         }
 
-        var gravity = 0;
+        let gravity = 0;
         switch (params.horizontalAlignment) {
             case enums.HorizontalAlignment.left:
                	gravity |= android.view.Gravity.LEFT;
@@ -568,7 +568,7 @@ export class ViewStyler implements style.Styler {
                 throw new Error("Invalid verticalAlignment value: " + params.verticalAlignment);
         }
 
-        var lp: any = nativeView.getLayoutParams();
+        let lp = nativeView.getLayoutParams();
         lp.width = Math.round(width);
         lp.height = Math.round(height);
 
@@ -586,48 +586,49 @@ export class ViewStyler implements style.Styler {
             lp.gravity = gravity;
         }
         else {
-            if (types.isDefined(lp.widthPercent)) {
-                lp.widthPercent = params.widthPercent;
+            let layoutParams: any = lp;
+            if (types.isDefined(layoutParams.widthPercent)) {
+                layoutParams.widthPercent = params.widthPercent;
             }
 
-            if (types.isDefined(lp.heightPercent)) {
-                lp.heightPercent = params.heightPercent;
+            if (types.isDefined(layoutParams.heightPercent)) {
+                layoutParams.heightPercent = params.heightPercent;
             }
 
-            if (types.isDefined(lp.leftMarginPercent)) {
-                lp.leftMarginPercent = params.leftMarginPercent;
+            if (types.isDefined(layoutParams.leftMarginPercent)) {
+                layoutParams.leftMarginPercent = params.leftMarginPercent;
             }
 
-            if (types.isDefined(lp.topMarginPercent)) {
-                lp.topMarginPercent = params.topMarginPercent;
+            if (types.isDefined(layoutParams.topMarginPercent)) {
+                layoutParams.topMarginPercent = params.topMarginPercent;
             }
 
-            if (types.isDefined(lp.rightMarginPercent)) {
-                lp.rightMarginPercent = params.rightMarginPercent;
+            if (types.isDefined(layoutParams.rightMarginPercent)) {
+                layoutParams.rightMarginPercent = params.rightMarginPercent;
             }
 
-            if (types.isDefined(lp.bottomMarginPercent)) {
-                lp.bottomMarginPercent = params.bottomMarginPercent;
+            if (types.isDefined(layoutParams.bottomMarginPercent)) {
+                layoutParams.bottomMarginPercent = params.bottomMarginPercent;
             }
 
-            if (types.isDefined(lp.leftMargin)) {
-                lp.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
+            if (types.isDefined(layoutParams.leftMargin)) {
+                layoutParams.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
             }
 
-            if (types.isDefined(lp.topMargin)) {
-                lp.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
+            if (types.isDefined(layoutParams.topMargin)) {
+                layoutParams.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
             }
 
-            if (types.isDefined(lp.rightMargin)) {
-                lp.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
+            if (types.isDefined(layoutParams.rightMargin)) {
+                layoutParams.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
             }
 
-            if (types.isDefined(lp.bottomMargin)) {
-                lp.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
+            if (types.isDefined(layoutParams.bottomMargin)) {
+                layoutParams.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
             }
 
-            if (types.isDefined(lp.gravity)) {
-                lp.gravity = gravity;
+            if (types.isDefined(layoutParams.gravity)) {
+                layoutParams.gravity = gravity;
             }
         }
 
@@ -710,7 +711,7 @@ export class ViewStyler implements style.Styler {
         if (view.android.setZ) {
             view.android.setZ(newValue);
 
-            if(view.android instanceof android.widget.Button){
+            if (view.android instanceof android.widget.Button) {
                 view.android.setStateListAnimator(null);
             }
         }
