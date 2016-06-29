@@ -15,9 +15,9 @@ mkdir dist/package/platforms
 echo "Build android"
 mkdir dist/package/platforms/android
 cd android
-gradle build
+./gradlew build
 cd ..
-cp android/build/widgets-release.aar dist/package/platforms/android/widgets-release.aar
+cp android/widgets/build/outputs/aar/widgets-release.aar dist/package/platforms/android/widgets-release.aar
 
 echo "Build ios"
 mkdir dist/package/platforms/ios
