@@ -44,21 +44,23 @@ export module ad {
         
         ensureLazyRequires();
 
-        let clipPath = v.style._getValue(style.clipPathProperty);
-        let background = <background.Background>v.style._getValue(style.backgroundInternalProperty);
-        let borderWidth = v.borderWidth;
+        let background = <common.Background>v.style._getValue(style.backgroundInternalProperty);
         let backgroundDrawable = nativeView.getBackground();
         let density = utils.layout.getDisplayDensity();
         let cache = <CacheLayerType>v._nativeView;
-        if (v instanceof button.Button && !types.isNullOrUndefined(backgroundDrawable) && types.isFunction(backgroundDrawable.setColorFilter) &&
-            v.borderWidth === 0 && v.borderRadius === 0 && !clipPath &&
-            types.isNullOrUndefined(v.style._getValue(style.backgroundImageProperty)) &&
-            !types.isNullOrUndefined(v.style._getValue(style.backgroundColorProperty))) {
-            let backgroundColor = (<any>backgroundDrawable).backgroundColor = v.style._getValue(style.backgroundColorProperty).android;
+        if (v instanceof button.Button 
+        && !types.isNullOrUndefined(backgroundDrawable) 
+        && types.isFunction(backgroundDrawable.setColorFilter) 
+        && background.borderWidth === 0 
+        && background.borderRadius === 0 
+        && !background.clipPath 
+        && types.isNullOrUndefined(background.image) 
+        && !types.isNullOrUndefined(background.color)) {
+            let backgroundColor = (<any>backgroundDrawable).backgroundColor = background.color.android;
             backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
             (<any>backgroundDrawable).backgroundColor = backgroundColor;
         } 
-        else if (v.borderWidth || v.borderRadius || clipPath || !background.isEmpty()) {
+        else if (!background.isEmpty()) {
             if (!(backgroundDrawable instanceof org.nativescript.widgets.BorderDrawable)) {
                 let viewClass = types.getClass(v);
                 if (!(v instanceof button.Button) && !_defaultBackgrounds.has(viewClass)) {
@@ -73,7 +75,7 @@ export module ad {
                 refreshBorderDrawable(v, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
             }
             
-            if ((v.borderWidth || v.borderRadius || clipPath) && getSDK() < 18) {
+            if ((background.borderWidth || background.borderRadius || background.clipPath) && getSDK() < 18) {
                 // Switch to software because of unsupported canvas methods if hardware acceleration is on:
                 // http://developer.android.com/guide/topics/graphics/hardware-accel.html
                 cache.layerType = cache.getLayerType();
@@ -100,10 +102,10 @@ export module ad {
         }
 
         nativeView.setPadding(
-            Math.round((borderWidth + v.style.paddingLeft) * density),
-            Math.round((borderWidth + v.style.paddingTop) * density),
-            Math.round((borderWidth + v.style.paddingRight) * density),
-            Math.round((borderWidth + v.style.paddingBottom) * density)
+            Math.round((background.borderWidth + v.style.paddingLeft) * density),
+            Math.round((background.borderWidth + v.style.paddingTop) * density),
+            Math.round((background.borderWidth + v.style.paddingRight) * density),
+            Math.round((background.borderWidth + v.style.paddingBottom) * density)
         );
     }
 }
