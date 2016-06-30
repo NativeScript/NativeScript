@@ -110,50 +110,30 @@ export module ad {
 
 function refreshBorderDrawable(view: view.View, borderDrawable: org.nativescript.widgets.BorderDrawable){
     let background = <background.Background>view.style._getValue(style.backgroundInternalProperty);
-    let borderWidth: number = view.borderWidth;
-    let borderColor: number = 0;
-    if (view.borderColor && view.borderColor.android){
-        borderColor = view.borderColor.android;
-    }
-    let borderRadius: number = view.borderRadius;
-    let clipPath: string = view.style._getValue(style.clipPathProperty);
-    let backgroundColor: number = 0;
-    let backgroundImage: android.graphics.Bitmap = null;
-    let backgroundRepeat: string = null;
-    let backgroundPosition: string = null;
-    let backgroundPositionParsedCSSValues: native.Array<org.nativescript.widgets.CSSValue> = null;
-    let backgroundSize: string = null;
-    let backgroundSizeParsedCSSValues: native.Array<org.nativescript.widgets.CSSValue> = null;
     if (background){
-        if (background.color && background.color.android){
-            backgroundColor = background.color.android;
-        }
-        if (background.image && background.image.android){
-            backgroundImage = background.image.android;
-        }
+        let backgroundPositionParsedCSSValues: native.Array<org.nativescript.widgets.CSSValue> = null;
+        let backgroundSizeParsedCSSValues: native.Array<org.nativescript.widgets.CSSValue> = null;
         if (background.position){
-            backgroundPosition = background.position;
             backgroundPositionParsedCSSValues = createNativeCSSValueArray(background.position); 
         }
         if (background.size){
-            backgroundSize = background.size;
             backgroundSizeParsedCSSValues = createNativeCSSValueArray(background.size); 
         }
+        
+        borderDrawable.refresh(
+            background.borderWidth, 
+            (background.borderColor && background.borderColor.android) ? background.borderColor.android : 0,
+            background.borderRadius,
+            background.clipPath,
+            (background.color && background.color.android) ? background.color.android : 0,
+            (background.image && background.image.android) ? background.image.android : null,
+            background.repeat,
+            background.position,
+            backgroundPositionParsedCSSValues,
+            background.size,
+            backgroundSizeParsedCSSValues
+        );
     }
-    
-    borderDrawable.refresh(
-        borderWidth, 
-        borderColor,
-        borderRadius,
-        clipPath,
-        backgroundColor,
-        backgroundImage,
-        backgroundRepeat,
-        backgroundPosition,
-        backgroundPositionParsedCSSValues,
-        backgroundSize,
-        backgroundSizeParsedCSSValues
-    );
 }
 
 function createNativeCSSValueArray(css: string): native.Array<org.nativescript.widgets.CSSValue>{
