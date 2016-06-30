@@ -7,12 +7,11 @@ export var test_fetch_defined = function () {
 };
 
 export var test_fetch = function (done: (err: Error, res?: string) => void) {
-    var result;
     // >> fetch-response
     fetch("https://httpbin.org/get").then(function (r) {
         // Argument (r) is Response!
         // >> (hide)
-        TKUnit.assert(r instanceof Response, "Result from fetch() should be valid Response object! Actual result is: " + result);
+        TKUnit.assert(r instanceof Response, "Result from fetch() should be valid Response object! Actual result is: " + r);
         done(null);
         // << (hide)
     }, function (e) {
@@ -25,8 +24,6 @@ export var test_fetch = function (done: (err: Error, res?: string) => void) {
 };
 
 export var test_fetch_text = function (done: (err: Error, res?: string) => void) {
-    var result;
-
     // >> fetch-string'
     fetch("https://httpbin.org/get").then(response => { return response.text(); }).then(function (r) {
         // Argument (r) is string!
@@ -44,8 +41,6 @@ export var test_fetch_text = function (done: (err: Error, res?: string) => void)
 };
 
 export var test_fetch_json = function (done: (err: Error, res?: string) => void) {
-    var result;
-
     // >> fetch-json
     fetch("https://httpbin.org/get").then(response => { return response.json(); }).then(function (r) {
         // Argument (r) is JSON object!
@@ -63,8 +58,6 @@ export var test_fetch_json = function (done: (err: Error, res?: string) => void)
 };
 
 export var test_fetch_formData = function (done: (err: Error, res?: string) => void) {
-    var result;
-
     // >> fetch-formdata
     fetch("https://httpbin.org/get").then(response => { return response.formData(); }).then(function (r) {
         // Argument (r) is FormData object!
@@ -140,13 +133,11 @@ export var test_fetch_response_headers = function (done) {
 };
 
 export var test_fetch_headers_sent = function (done) {
-    var result: Headers;
-
     fetch("https://httpbin.org/get", {
         method: "GET",
         headers: { "Content-Type": "application/json" }
     }).then(function (response) {
-        result = response.headers;
+        var result = response.headers;
         try {
             TKUnit.assert(result.get("Content-Type") === "application/json", "Headers not sent/received properly! Actual result is: " + result);
             done(null);
