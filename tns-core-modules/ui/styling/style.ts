@@ -351,34 +351,42 @@ function onBackgroundSizePropertyChanged(data: PropertyChangeData) {
 }
 
 function onBorderWidthPropertyChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.borderWidth) {
-        style._setValue(backgroundInternalProperty, currentBackground.withBorderWidth(data.newValue));
+    if (platform.isAndroid){
+        var style = <Style>data.object;
+        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+        if (data.newValue !== currentBackground.borderWidth) {
+            style._setValue(backgroundInternalProperty, currentBackground.withBorderWidth(data.newValue));
+        }
     }
 }
 
 function onBorderColorPropertyChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.borderColor) {
-        style._setValue(backgroundInternalProperty, currentBackground.withBorderColor(data.newValue));
+    if (platform.isAndroid){
+        var style = <Style>data.object;
+        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+        if (data.newValue !== currentBackground.borderColor) {
+            style._setValue(backgroundInternalProperty, currentBackground.withBorderColor(data.newValue));
+        }
     }
 }
 
 function onBorderRadiusPropertyChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.borderRadius) {
-        style._setValue(backgroundInternalProperty, currentBackground.withBorderRadius(data.newValue));
+    if (platform.isAndroid){
+        var style = <Style>data.object;
+        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+        if (data.newValue !== currentBackground.borderRadius) {
+            style._setValue(backgroundInternalProperty, currentBackground.withBorderRadius(data.newValue));
+        }
     }
 }
 
 function onClipPathPropertyChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.clipPath) {
-        style._setValue(backgroundInternalProperty, currentBackground.withClipPath(data.newValue));
+    if (platform.isAndroid){
+        var style = <Style>data.object;
+        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+        if (data.newValue !== currentBackground.clipPath) {
+            style._setValue(backgroundInternalProperty, currentBackground.withClipPath(data.newValue));
+        }
     }
 }
 
