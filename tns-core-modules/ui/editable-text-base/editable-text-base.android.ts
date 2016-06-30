@@ -107,8 +107,11 @@ export class EditableTextBase extends common.EditableTextBase {
     }
 
     public _onDetached(force?: boolean) {
-        this._android = undefined;
+        if (this._android && this._textWatcher) {
+            this._android.removeTextChangedListener(this._textWatcher);
+        }
 
+        this._android = undefined;
         super._onDetached(force);
     }
 

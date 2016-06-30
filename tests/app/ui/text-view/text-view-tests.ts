@@ -481,3 +481,16 @@ export var testMemoryLeak = function (done) {
         textViewTestsNative.typeTextNatively(textView, "Hello, world!");
     }, done);
 }
+
+export function test_watch_listerer_is_removed_at_onDetach() {
+    if (platform.isAndroid) {
+        helper.buildUIAndRunTest(_createTextViewFunc(), (views: Array<viewModule.View>) => {
+            let tv = <textViewModule.TextView>views[0];
+            let page = <pagesModule.Page>tv.page;
+            let editText = tv.android;
+            editText.setText("String");
+            page.content = null;
+            editText.setText("FAIL");
+        });
+    }
+}
