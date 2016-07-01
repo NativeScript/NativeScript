@@ -44,3 +44,8 @@ tests/lib/
 *.log
 
 .DS_Store
+
+sdk-examples/platforms/
+sdk-examples/lib/
+sdk-examples/hooks/
+sdk-examples/node_modules/

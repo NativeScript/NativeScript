@@ -1,0 +1,14 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+  <StackLayout>
+    <!-- >> button-snippet -->
+    <Button text="Button" tap="onTap"/>
+    <Button text="Button" tap="onTap"/>
+    <Button text="Button" tap="onTap"/>
+    <Button text="Button" tap="onTap"/>
+    <Button text="Button" tap="onTap"/>
+    <Button text="Button" tap="onTap"/>
+    <Button text="Button" tap="onTap"/>
+    <Button text="Button" tap="onTap"/>
+    <!-- << button-snippet -->
+  </StackLayout>
+</Page>
