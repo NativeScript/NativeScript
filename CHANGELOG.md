@@ -10,6 +10,39 @@ previous_url: /Changelogs/Cross-Platform Modules
 Cross Platform Modules Changelog
 ==============================
 
+## 2.1.0 (2016, June 30)
+
+### Fixed
+
+- [(#2372)](https://github.com/NativeScript/NativeScript/issues/2372) Custom title on Android fails with exception
+
+- [(#2240)](https://github.com/NativeScript/NativeScript/issues/2240) Possible regex issue with CSS class names
+
+- [(#2225)](https://github.com/NativeScript/NativeScript/issues/2225) The exit transition of the current page is not played when navigating with clearHistory.
+
+- [(#2151)](https://github.com/NativeScript/NativeScript/issues/2151) Add z-index to the public API
+
+- [(#2053)](https://github.com/NativeScript/NativeScript/issues/2053) WebView still visible in chrome://inspect after page is destroyed
+
+- [(#2042)](https://github.com/NativeScript/NativeScript/issues/2042) Back Button crash android application.
+
+- [(#1948)](https://github.com/NativeScript/NativeScript/issues/1948) Navigation stops working after navigating with clearHistory and a transition
+
+- [(#1899)](https://github.com/NativeScript/NativeScript/issues/1899) Android layerType should not be changed if there is no need
+
+- [(#1807)](https://github.com/NativeScript/NativeScript/issues/1807) Fixed: SearchBar.textFieldHintColor not respected on iOS
+
+- [(#1425)](https://github.com/NativeScript/NativeScript/issues/1425) Images have margin when added to Layout
+
+### New
+
+- [(#2217)](https://github.com/NativeScript/NativeScript/issues/2217) Enable hardware acceleration for views animations in Android.
+
+- [(#2144)](https://github.com/NativeScript/NativeScript/issues/2144) Performance improvements
+
+- [(#1563)](https://github.com/NativeScript/NativeScript/issues/1563) Enable modules snapshot for Android
+
+
 ##2.0.1 (2016, May 18)
 
 ### Fixed
