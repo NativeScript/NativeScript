@@ -88,7 +88,7 @@ public class Async
 				OutputStream outStream = connection.getOutputStream();
 				openedStreams.push(outStream);
 
-				OutputStreamWriter writer = new java.io.OutputStreamWriter(outStream);
+				OutputStreamWriter writer = new OutputStreamWriter(outStream);
 				openedStreams.push(writer);
 
 				writer.write((String) this.content);
@@ -97,7 +97,7 @@ public class Async
 
 		public static class RequestResult
 		{
-			public static final class ByteArrayOutputStream2 extends java.io.ByteArrayOutputStream
+			public static final class ByteArrayOutputStream2 extends ByteArrayOutputStream
 			{
 				public ByteArrayOutputStream2()
 				{
@@ -171,7 +171,7 @@ public class Async
 
 				openedStreams.push(inStream);
 
-				BufferedInputStream buffer = new java.io.BufferedInputStream(inStream, 4096);
+				BufferedInputStream buffer = new BufferedInputStream(inStream, 4096);
 				openedStreams.push(buffer);
 
 				ByteArrayOutputStream2 responseStream = contentLength != -1 ? new ByteArrayOutputStream2(contentLength) : new ByteArrayOutputStream2();
@@ -363,7 +363,7 @@ public class Async
 			InputStream stream = null;
 			try
 			{
-				stream = new java.net.URL(params[0]).openStream();
+				stream = new URL(params[0]).openStream();
 				Bitmap bmp = BitmapFactory.decodeStream(stream);
 				return bmp;
 			}
