@@ -1,12 +1,3 @@
----
-title: Modules Changelog
-description: NativeScript Cross-Platform Modules Changelog
-position: 4
-slug: modules-changelog
-publish: false
-previous_url: /Changelogs/Cross-Platform Modules
----
-
 Cross Platform Modules Changelog
 ==============================
 
