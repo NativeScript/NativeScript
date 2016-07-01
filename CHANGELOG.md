@@ -18,29 +18,29 @@ Cross Platform Modules Changelog
 
 - [(#2372)](https://github.com/NativeScript/NativeScript/issues/2372) Custom title on Android fails with exception
 
-- [(#2367)](https://github.com/NativeScript/NativeScript/pull/2367) Activity intent extras are set on application run which breaks Frame …
+- [(#2367)](https://github.com/NativeScript/NativeScript/pull/2367) Android 6.0+ sets activity intent extras by default which breaks application resume
 
-- [(#2344)](https://github.com/NativeScript/NativeScript/pull/2344) Fixed: Action bar doesn't handle events properly when a custom button…
+- [(#2344)](https://github.com/NativeScript/NativeScript/pull/2344) Action bar doesn't handle events properly when a custom button
 
-- [(#2324)](https://github.com/NativeScript/NativeScript/pull/2324) Fixed issue #1655 cascading css selectors.
+- [(#1655)](https://github.com/nativescript/nativescript/issues/1655) Added CSS not cascadded after screen is built 
 
-- [(#2310)](https://github.com/NativeScript/NativeScript/pull/2310) Fixed sorting issue with Css Selectors with same specificity.
+- [(#2310)](https://github.com/NativeScript/NativeScript/pull/2310) Sorting issue with Css Selectors with same specificity.
 
 - [(#2301)](https://github.com/NativeScript/NativeScript/pull/2301) Updated webinspector interfaces
 
-- [(#2299)](https://github.com/NativeScript/NativeScript/pull/2299) Fixed binding converter calls.
+- [(#2299)](https://github.com/NativeScript/NativeScript/pull/2299) Binding converter calls.
 
-- [(#2286)](https://github.com/NativeScript/NativeScript/pull/2286) Fixed a visual glitch with manual iOS transitions
+- [(#2286)](https://github.com/NativeScript/NativeScript/pull/2286) Visual glitch with manual iOS transitions
 
 - [(#2268)](https://github.com/NativeScript/NativeScript/pull/2268) Undefined can be set as localValue to dependency observable
 
-- [(#2266)](https://github.com/NativeScript/NativeScript/pull/2266) Fixed animation value sync issues
+- [(#2266)](https://github.com/NativeScript/NativeScript/pull/2266) Animation value sync issues
 
-- [(#2263)](https://github.com/NativeScript/NativeScript/pull/2263) Fixed crash when ListView is used in a modal dialog (Android).
+- [(#2263)](https://github.com/NativeScript/NativeScript/pull/2263) Crash when ListView is used in a modal dialog (Android).
 
-- [(#2262)](https://github.com/NativeScript/NativeScript/pull/2262) Fixed a crash in action bar on iOS 9.3
+- [(#2262)](https://github.com/NativeScript/NativeScript/pull/2262) Crash in action bar on iOS 9.3
 
-- [(#2256)](https://github.com/NativeScript/NativeScript/issues/2256) Custom ActionItem gets displaced in IOS
+- [(#2256)](https://github.com/NativeScript/NativeScript/issues/2256) Custom ActionItem gets displaced in iOS
 
 - [(#2250)](https://github.com/NativeScript/NativeScript/pull/2250) Ignore the case when getting a response header
 
@@ -62,23 +62,23 @@ Cross Platform Modules Changelog
 
 - [(#2053)](https://github.com/NativeScript/NativeScript/issues/2053) WebView still visible in chrome://inspect after page is destroyed
 
-- [(#2042)](https://github.com/NativeScript/NativeScript/issues/2042) Back Button to NS app crashes the app.
-
 - [(#1948)](https://github.com/NativeScript/NativeScript/issues/1948) Navigation stops working after navigating with clearHistory and a transition
 
 - [(#1899)](https://github.com/NativeScript/NativeScript/issues/1899) Android layerType should not be changed if there is no need
 
-- [(#1807)](https://github.com/NativeScript/NativeScript/issues/1807) Fixed: SearchBar.textFieldHintColor not respected on iOS
+- [(#1807)](https://github.com/NativeScript/NativeScript/issues/1807) SearchBar.textFieldHintColor not respected on iOS
 
 - [(#1425)](https://github.com/NativeScript/NativeScript/issues/1425) Images have margin when added to Layout
 
 ### New
 
+- [(#1563)](https://github.com/NativeScript/NativeScript/issues/1563) Enable modules snapshot for Android
+- 
 - [(#2339)](https://github.com/NativeScript/NativeScript/pull/2339) Implement the BorderDrawable class used in background.android.ts in Java
 
-- [(#2322)](https://github.com/NativeScript/NativeScript/pull/2322) TypeScript debug fixed
+- [(#2322)](https://github.com/NativeScript/NativeScript/pull/2322) Added support for debugging TypeScript in WebInspector
 
-- [(#2307)](https://github.com/NativeScript/NativeScript/pull/2307) AffectsLayout done only for iOS.
+- [(#2307)](https://github.com/NativeScript/NativeScript/pull/2307) Modules won't call android requestLayout anymore. Android will handle its layout when needed
 
 - [(#2304)](https://github.com/NativeScript/NativeScript/pull/2304) Rename com.tns.Async.xxx to org.nativescript.widgets.Async.xxx
 
@@ -90,7 +90,7 @@ Cross Platform Modules Changelog
 
 - [(#2270)](https://github.com/NativeScript/NativeScript/pull/2270) Avoid excessive requestLayout calls
 
-- [(#2269)](https://github.com/NativeScript/NativeScript/pull/2269) Label will not requestLayout when its text is changed if it has fixed size
+- [(#2269)](https://github.com/NativeScript/NativeScript/pull/2269) Label won't requestLayout when its text is changed if it has fixed size
 
 - [(#2260)](https://github.com/NativeScript/NativeScript/pull/2260) Optimized DependencyObject setValue performance
 
@@ -98,13 +98,11 @@ Cross Platform Modules Changelog
 
 - [(#2217)](https://github.com/NativeScript/NativeScript/issues/2217) Enable hardware acceleration for views animations in Android.
 
-- [(#2198)](https://github.com/NativeScript/NativeScript/pull/2198) Image should not requestLayout when measured with 'exactly' spec
+- [(#2198)](https://github.com/NativeScript/NativeScript/pull/2198) Image won't requestLayout when measured with 'exactly' spec
 
-- [(#2174)](https://github.com/NativeScript/NativeScript/pull/2174) Manually applying CSS is removed and now it is done once per cell.
+- [(#2174)](https://github.com/NativeScript/NativeScript/pull/2174) ListView views will apply CSS once per view.
 
 - [(#2144)](https://github.com/NativeScript/NativeScript/issues/2144) Performance improvements
-
-- [(#1563)](https://github.com/NativeScript/NativeScript/issues/1563) Enable modules snapshot for Android
 
 
 
