@@ -7,6 +7,7 @@ import * as fileSystemModule from "file-system";
 import * as styleScopeModule from "ui/styling/style-scope";
 import * as fileResolverModule  from "file-system/file-name-resolver";
 import * as builderModule from "ui/builder";
+import "../bundle-entry-points";
 
 var builder: typeof builderModule;
 function ensureBuilder() {
