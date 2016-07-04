@@ -14,7 +14,6 @@ export class ScrollView extends common.ScrollView implements definition.ScrollVi
     private _android: org.nativescript.widgets.VerticalScrollView | org.nativescript.widgets.HorizontalScrollView;
     private _androidViewId: number = -1;
     private handler: android.view.ViewTreeObserver.OnScrollChangedListener;
-
     get android(): android.view.ViewGroup {
         return this._android;
     }
@@ -111,19 +110,35 @@ export class ScrollView extends common.ScrollView implements definition.ScrollVi
         var that = new WeakRef(this);
         this.handler = new android.view.ViewTreeObserver.OnScrollChangedListener({
             onScrollChanged: function () {
-                var rootScrollView = that.get();
-                if (rootScrollView && rootScrollView.android) {
-                    rootScrollView.notify(<definition.ScrollEventData>{
-                        object: rootScrollView,
-                        eventName: ScrollView.scrollEvent,
-                        scrollX: rootScrollView.android.getScrollX() / utils.layout.getDisplayDensity(),
-                        scrollY: rootScrollView.android.getScrollY() / utils.layout.getDisplayDensity()
-                    });
+                var owner: ScrollView = that.get();
+                if (owner){
+                    owner._onScrollChanged();
                 }
             }
         });
 
         this._android.getViewTreeObserver().addOnScrollChangedListener(this.handler);
+    }
+    
+    private _lastScrollX: number = -1;
+    private _lastScrollY: number = -1;
+    private _onScrollChanged(){
+        if (this.android) {
+            // Event is only raised if the scroll values differ from the last time in order to wokraround a native Android bug.
+            // https://github.com/NativeScript/NativeScript/issues/2362
+            let newScrollX = this.android.getScrollX(); 
+            let newScrollY = this.android.getScrollY();
+            if (newScrollX !== this._lastScrollX || newScrollY !== this._lastScrollY){
+                this.notify(<definition.ScrollEventData>{
+                    object: this,
+                    eventName: ScrollView.scrollEvent,
+                    scrollX: newScrollX / utils.layout.getDisplayDensity(),
+                    scrollY: newScrollY / utils.layout.getDisplayDensity()
+                });
+                this._lastScrollX = newScrollX;
+                this._lastScrollY = newScrollY;
+            } 
+        }
     }
 
     protected dettachNative() {
