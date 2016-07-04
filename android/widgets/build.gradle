@@ -7,65 +7,64 @@ def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
 apply plugin: 'com.android.library'
 
 def computeCompuleSdkVersion () {
-	if(project.hasProperty("compileSdk")) {
-		return compileSdk
-	}
-	else {
-		return 23
-	}
+    if(project.hasProperty("compileSdk")) {
+        return compileSdk
+    }
+    else {
+        return 23
+    }
 }
 
 def computeBuildToolsVersion() {
-	if(project.hasProperty("buildToolsVersion")) {
-		return buildToolsVersion
-	}
-	else {
-		return "22.0.1"
-	}
+    if(project.hasProperty("buildToolsVersion")) {
+        return buildToolsVersion
+    }
+    else {
+        return "22.0.1"
+    }
 }
 
 def computeTargetSdkVersion() {
-	if(project.hasProperty("targetSdk")) {
-		return targetSdk
-	}
-	else {
-		return 23
-	}
+    if(project.hasProperty("targetSdk")) {
+        return targetSdk
+    }
+    else {
+        return 23
+    }
 }
 
 android {
-	compileSdkVersion computeCompuleSdkVersion()
-	buildToolsVersion computeBuildToolsVersion()
+    compileSdkVersion computeCompuleSdkVersion()
+    buildToolsVersion computeBuildToolsVersion()
 
-	defaultConfig {
-		minSdkVersion 17
-		targetSdkVersion computeTargetSdkVersion()
-		versionCode 1
-		versionName "1.0"
-	}
-	buildTypes {
-		release {
-			minifyEnabled false
-			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-		}
-	}
+    defaultConfig {
+        minSdkVersion 17
+        targetSdkVersion computeTargetSdkVersion()
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
 }
 
 dependencies {
-	compile fileTree(include: ['*.jar'], dir: 'libs')
-	testCompile 'junit:junit:4.12'
-	compile 'com.android.support:support-v4:+'
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:support-v4:+'
 }
 
 task cleanBuildDir (type: Delete) {
-	delete "../build/"
+    delete "../build/"
 }
 
 task copyAar << {
-	copy {
-		from "build/outputs/aar/widgets-release.aar"
-		into "../build/"
-	}
+    copy {
+        from "build/outputs/aar/widgets-release.aar"
+        into "../build/"
+    }
 }
 
 assembleRelease.dependsOn(cleanBuildDir)

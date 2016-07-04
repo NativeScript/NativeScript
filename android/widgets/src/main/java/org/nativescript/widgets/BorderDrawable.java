@@ -159,9 +159,9 @@ public class BorderDrawable extends ColorDrawable {
                 if (supportsPathOp) {
                     // Path.Op can be used in API level 19+ to achieve the perfect geometry.
                     Path backgroundPath = new Path();
-                    backgroundPath.addRoundRect(backgroundBoundsF, outerRadius, outerRadius, android.graphics.Path.Direction.CCW);
+                    backgroundPath.addRoundRect(backgroundBoundsF, outerRadius, outerRadius, Path.Direction.CCW);
                     Path backgroundNoRepeatPath = new Path();
-                    backgroundNoRepeatPath.addRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight, android.graphics.Path.Direction.CCW);
+                    backgroundNoRepeatPath.addRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight, Path.Direction.CCW);
                     intersect(backgroundPath, backgroundNoRepeatPath);
                     canvas.drawPath(backgroundPath, backgroundImagePaint);
                 } else {
@@ -182,26 +182,26 @@ public class BorderDrawable extends ColorDrawable {
             borderPaint.setAntiAlias(true);
 
             if (this.clipPath != null && !this.clipPath.isEmpty()) {
-                borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
+                borderPaint.setStyle(Paint.Style.STROKE);
                 borderPaint.setStrokeWidth(borderWidth);
                 drawClipPath(this.clipPath, canvas, borderPaint, backgroundBoundsF, density);
             } else {
                 if (outerRadius <= 0) {
-                    borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
+                    borderPaint.setStyle(Paint.Style.STROKE);
                     borderPaint.setStrokeWidth(borderWidth);
                     canvas.drawRect(middleBoundsF, borderPaint);
                 } else if (outerRadius >= borderWidth) {
-                    borderPaint.setStyle(android.graphics.Paint.Style.STROKE);
+                    borderPaint.setStyle(Paint.Style.STROKE);
                     borderPaint.setStrokeWidth(borderWidth);
                     float middleRadius = Math.max(0, outerRadius - halfBorderWidth);
                     canvas.drawRoundRect(middleBoundsF, middleRadius, middleRadius, borderPaint);
                 } else {
                     Path borderPath = new Path();
                     RectF borderOuterBoundsF = new RectF(bounds.left, bounds.top, bounds.right, bounds.bottom);
-                    borderPath.addRoundRect(borderOuterBoundsF, outerRadius, outerRadius, android.graphics.Path.Direction.CCW);
+                    borderPath.addRoundRect(borderOuterBoundsF, outerRadius, outerRadius, Path.Direction.CCW);
                     RectF borderInnerBoundsF = new RectF(bounds.left + borderWidth, bounds.top + borderWidth, bounds.right - borderWidth, bounds.bottom - borderWidth);
-                    borderPath.addRect(borderInnerBoundsF, android.graphics.Path.Direction.CW);
-                    borderPaint.setStyle(android.graphics.Paint.Style.FILL);
+                    borderPath.addRect(borderInnerBoundsF, Path.Direction.CW);
+                    borderPaint.setStyle(Paint.Style.FILL);
                     canvas.drawPath(borderPath, borderPaint);
                 }
             }
@@ -247,7 +247,7 @@ public class BorderDrawable extends ColorDrawable {
                 top = cY - rY;
                 right = (rX * 2) + left;
                 bottom = (rY * 2) + top;
-                canvas.drawOval(new android.graphics.RectF(left, top, right, bottom), paint);
+                canvas.drawOval(new RectF(left, top, right, bottom), paint);
                 break;
             case "polygon":
                 Path path = new Path();
