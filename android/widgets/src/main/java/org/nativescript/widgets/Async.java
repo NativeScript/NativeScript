@@ -138,11 +138,11 @@ public class Async
 					return;
 				}
 
-				for (int i = 0; i < size - 1; i++)
-				{
-					String key = connection.getHeaderFieldKey(i);
-					String value = connection.getHeaderField(key);
-					this.headers.add(new KeyValuePair(key, value));
+				for (Map.Entry<String, List<String>> entry: headers.entrySet()) {
+					String key = entry.getKey();
+					for (String value: entry.getValue()) {
+						this.headers.add(new KeyValuePair(key, value));
+					}
 				}
 			}
 
