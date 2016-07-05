@@ -1100,10 +1100,10 @@ export var borderColorProperty = new styleProperty.Property("borderColor", "bord
     new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBorderColorPropertyChanged, Color.isValid, Color.equals), converters.colorConverter);
 
 export var borderRadiusProperty = new styleProperty.Property("borderRadius", "border-radius",
-    new PropertyMetadata(0, AffectsLayout, null, isPaddingValid), converters.numberConverter);
+    new PropertyMetadata(0, AffectsLayout, onBorderRadiusPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
 
 export var clipPathProperty = new styleProperty.Property("clipPath", "clip-path",
-    new PropertyMetadata(undefined, AffectsLayout, null, isClipPathValid));
+    new PropertyMetadata(undefined, AffectsLayout, onClipPathPropertyChanged, isClipPathValid));
 
 export var backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
     new PropertyMetadata(background.Background.default, PropertyMetadataSettings.None, undefined, undefined, background.Background.equals));
