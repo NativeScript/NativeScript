@@ -8,7 +8,7 @@ previous_url: /ApiReference/ui/text-field/HOW-TO
 # TextField
 Using a TextField requires the text-field module.
 <snippet id='require-textfield'/>
-<snippet id='require-observable'/>
+<snippet id='require-observable-textfield'/>
 ### Binding two TextFields text property to observable view-model property.
 ```XML
  <Page loaded="pageLoaded">
@@ -18,7 +18,7 @@ Using a TextField requires the text-field module.
   </StackLayout>
  </Page>
 ```
-<snippet id='binding-text-property'/>
+<snippet id='binding-text-property-textfield'/>
 ## Creating a TextField
 <snippet id='creating-textfield'/>
 ### Setting the text of a TextField
@@ -30,7 +30,7 @@ Using a TextField requires the text-field module.
 ### Setting the hint of a TextField
 <snippet id='setting-hint-text'/>
 ### Binding hint property directly to model
-<snippet id='binding-hint-property'/>
+<snippet id='binding-hint-property-textfield'/>
 ### Setting the secure property of a TextField
 <snippet id='setting-secure-property'/>
 ### Binding secure property directly to model

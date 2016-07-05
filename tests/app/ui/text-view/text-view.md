@@ -8,7 +8,7 @@ previous_url: /ApiReference/ui/text-view/HOW-TO
 # TextView
 Using a TextView requires the text-view module.
 <snippet id='require-textmodules'/>
-<snippet id='require-observable'/>
+<snippet id='require-observable-textview'/>
 ### Binding two TextViews text property to observable view-model property.
 <snippet id='text-view-xml'/>
 <snippet id='observable-declare'/>
@@ -17,11 +17,11 @@ Using a TextView requires the text-view module.
 ### Setting the text of a TextView
 <snippet id='set-text-value'/>
 ### Binding text property directly to model
-<snippet id='binding-text-property'/>
+<snippet id='binding-text-property-textview'/>
 ### Setting the hint of a TextView
 <snippet id='set-textview-hint'/>
 ### Binding hint property directly to model
-<snippet id='binding-hint-property'/>
+<snippet id='binding-hint-property-textview'/>
 ### Setting the editable property of a TextView
 <snippet id='setting-editable-property'/>
 ### Binding editable property directly to model

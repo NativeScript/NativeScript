@@ -14,10 +14,10 @@ import { Label } from "ui/label";
 import repeaterModule = require("ui/repeater");
 // << article-require-repeater-module
 
-// >> article-require-modules
+// >> article-require-modules-repeater
 import observableArray = require("data/observable-array");
 import labelModule = require("ui/label");
-// << article-require-modules
+// << article-require-modules-repeater
 
 var ASYNC = 0.2;
 var FEW_ITEMS = [0, 1, 2];

@@ -13,10 +13,10 @@ import { Page } from "ui/page";
 import listViewModule = require("ui/list-view");
 // << article-require-listview-module
 
-// >> article-require-modules
+// >> article-require-modules-listview
 import observableArray = require("data/observable-array");
 import labelModule = require("ui/label");
-// << article-require-modules
+// << article-require-modules-listview
 
 // >> article-item-tap
 function listViewItemTap(args) {

@@ -98,7 +98,7 @@ export var test_ObservableArray_joinShouldReturnStringWithAllItemsSeparatedWithC
     // >> observable-array-join
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
     var result = array.join();
-    // >> observable-array-join
+    // << observable-array-join
     TKUnit.assert(result === "1,2,3", "ObservableArray join() should return string with all items separated with comma!");
 };
 

@@ -15,12 +15,12 @@ import textFieldModule = require("ui/text-field");
 // Other frequently used modules when working with buttons include:
 
 import bindable = require("ui/core/bindable");
-// >> require-observable
+// >> require-observable-textfield
 import observable = require("data/observable");
-// << require-observable
+// << require-observable-textfield
 
 // ### Binding two TextFields text property to observable view-model property.
-// >> binding-text-property
+// >> binding-text-property-textfield
 function pageLoaded(args) {
   var page = args.object;
   var obj = new observable.Observable();
@@ -28,7 +28,7 @@ function pageLoaded(args) {
   page.bindingContext = obj;
 }
 exports.pageLoaded = pageLoaded;
-// << binding-text-property
+// << binding-text-property-textfield
 
 var _createTextFieldFunc = function (): textFieldModule.TextField {
     // >> creating-textfield
@@ -252,7 +252,7 @@ export var testBindHintDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
 
-        // >> binding-hint-property
+        // >> binding-hint-property-textfield
         var model = new observable.Observable();
         model.set("hint", "type your username here");
         var options: bindable.BindingOptions = {
@@ -271,7 +271,7 @@ export var testBindHintDirectlyToModel = function () {
         TKUnit.assert(textField.hint === "type your password here", "Actual: " + textField.text + "; Expected: " + "type your password here");
         TKUnit.assert(textFieldTestsNative.getNativeHint(textField) === "type your password here", "Actual: " + textFieldTestsNative.getNativeHint(textField) + "; Expected: " + "type your password here");
         // << (hide)
-        // << binding-hint-property
+        // << binding-hint-property-textfield
     });
 }
 

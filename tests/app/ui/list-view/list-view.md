@@ -9,7 +9,7 @@ previous_url: /ApiReference/ui/list-view/HOW-TO
 Using a ListView requires the ListView module.
 <snippet id='article-require-listview-module'/>
 Other modules which will be used in the code samples in this article:
-<snippet id='article-require-modules'/>
+<snippet id='article-require-modules-listview'/>
 ### Binding the ListView items property to collection in the view-model.
 ``` XML
 <Page>
