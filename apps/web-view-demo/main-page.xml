@@ -1,9 +1,0 @@
-<Page loaded="onPageLoaded" css="{{ css }}">
-  <GridLayout id="gridLayout" columns="35, 35, *, 35" rows="35, *">
-    <Button text="←" col="0" tap="onBackButtonTap" id="backButton"/>
-    <Button text="→" col="1" tap="onForwardButtonTap" id="forwardButton"/>
-    <TextField col="2" id="urlTextField" text="{{ url }}" />
-    <Button text="↻" col="3" tap="onReloadButtonTap" id="reloadButton"/>
-    <WebView colSpan="4" row="2" id="webView" finishedLoading="onWebViewFinishedLoading" startedLoading="onWebViewStartedLoading" url="{{ url }}"/>
-  </GridLayout>
-</Page>

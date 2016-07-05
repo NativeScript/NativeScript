@@ -1,0 +1,5 @@
+// You can add custom settings here
+// for example you can uncomment the following line to force distribution code signing
+// CODE_SIGN_IDENTITY = iPhone Distribution 
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;

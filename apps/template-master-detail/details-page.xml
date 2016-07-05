@@ -1,5 +1,0 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd"
-      xmlns:app="."
-      navigatedTo="pageNavigatedTo">
-  <app:details-view />
-</Page>

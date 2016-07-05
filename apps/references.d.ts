@@ -1,0 +1,1 @@
+/// <reference path="../tns-core-modules/tns-core-modules.d.ts" /> Needed for autocompletion and compilation.

@@ -1,7 +1,26 @@
-{ "name" : "Apps",
-  "main" : "css-perf-test/app.js",
-   "android": {  
-      "v8Flags":"--expose_gc",
-      "profilerOutputDir": "/sdcard"
-   } 
+{
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "readme": "NativeScript Application",
+  "repository": "<fill-your-repository-here>",
+  "nativescript": {
+    "id": "org.nativescript.apps",
+    "tns-android": {
+      "version": "2.1.1"
+    },
+    "tns-ios": {
+      "version": "2.1.0"
+    }
+  },
+  "dependencies": {
+    "tns-core-modules": "2.1.0"
+  },
+  "devDependencies": {
+    "babel-traverse": "6.10.4",
+    "babel-types": "6.11.1",
+    "babylon": "6.8.3",
+    "lazy": "1.0.11",
+    "nativescript-dev-typescript": "^0.3.0",
+    "typescript": "^1.8.10"
+  }
 }

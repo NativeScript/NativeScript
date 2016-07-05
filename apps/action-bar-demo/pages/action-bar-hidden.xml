@@ -1,8 +1,0 @@
-<Page actionBarHidden="true">
-  <Page.actionBar>
-    <ActionBar title="Hide Test"/>
-  </Page.actionBar>
-  <StackLayout>
-    <Button text="hide/show" tap="toggleTap" />
-  </StackLayout>
-</Page>

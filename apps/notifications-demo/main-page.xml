@@ -1,5 +1,0 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onPageLoaded" unloaded="onPageUnloaded">
-  <StackLayout>
-    <Label id="batteryLabel" text="Battery" style.fontSize="30" horizontalAlignment="stretch" textAlignment="center"/>
-  </StackLayout>
-</Page>
