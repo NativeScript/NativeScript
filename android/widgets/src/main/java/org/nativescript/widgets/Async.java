@@ -39,9 +39,9 @@ public class Async
 
 	public static class Http
 	{
-		private static final String DeleteMethod = "DELETE";
-		private static final String GetMethod = "GET";
-        private static final String HeadMethod = "HEAD";
+		private static final String DELETE_METHOD = "DELETE";
+		private static final String GET_METHOD = "GET";
+        private static final String HEAD_METHOD = "HEAD";
 		private static CookieManager cookieManager;
 
 		public static class KeyValuePair
@@ -275,7 +275,7 @@ public class Async
 					HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
 					// set the request method
-					String requestMethod = options.method != null ? options.method.toUpperCase(Locale.ENGLISH) : GetMethod;
+					String requestMethod = options.method != null ? options.method.toUpperCase(Locale.ENGLISH) : GET_METHOD;
 					connection.setRequestMethod(requestMethod);
 
 					// add the headers
@@ -288,7 +288,7 @@ public class Async
 					}
 
 					// Do not attempt to write the content (body) for DELETE method, Java will throw directly
-					if (!requestMethod.equals(DeleteMethod))
+					if (!requestMethod.equals(DELETE_METHOD))
 					{
 						options.writeContent(connection, openedStreams);
 					}
@@ -301,7 +301,7 @@ public class Async
 
 					// build the result
 					result.getHeaders(connection);
-					if (!requestMethod.equals(HeadMethod))
+					if (!requestMethod.equals(HEAD_METHOD))
                     {
 						result.readResponseStream(connection, openedStreams, options);
 					}
