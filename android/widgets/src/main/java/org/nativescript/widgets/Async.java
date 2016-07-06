@@ -41,7 +41,7 @@ public class Async
 	{
 		private static final String DELETE_METHOD = "DELETE";
 		private static final String GET_METHOD = "GET";
-        private static final String HEAD_METHOD = "HEAD";
+		private static final String HEAD_METHOD = "HEAD";
 		private static CookieManager cookieManager;
 
 		public static class KeyValuePair
@@ -302,7 +302,7 @@ public class Async
 					// build the result
 					result.getHeaders(connection);
 					if (!requestMethod.equals(HEAD_METHOD))
-                    {
+					{
 						result.readResponseStream(connection, openedStreams, options);
 					}
 
