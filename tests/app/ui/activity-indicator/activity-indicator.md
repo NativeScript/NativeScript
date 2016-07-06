@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/activity-indicator/HOW-TO
 ---
 # ActivityIndicator
 Using the activity indicator requires the ActivityIndicator module.
-<snippet id='activity-indicator-require'/>
+{%snippet activity-indicator-require%}
 
 ### Binding the activity indicator busy property to a view-model property.
 ``` XML
@@ -16,7 +16,7 @@ Using the activity indicator requires the ActivityIndicator module.
 </Page>
 ```
 ### Creating an activity indicator
-<snippet id='activity-indicator-create'/>
+{%snippet activity-indicator-create%}
 
 ### Showing activity indicator while image is loading
-<snippet id='activity-indicator-loading'/>
+{%snippet activity-indicator-loading%}

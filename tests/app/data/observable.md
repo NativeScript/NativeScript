@@ -7,10 +7,10 @@ previous_url: /ApiReference/data/observable/HOW-TO
 ---
 # Observable
 Using Observable objects requires the "data/observable" module.
-<snippet id='observable-require'/>
+{%snippet observable-require%}
 
 ### Creating an Observable
-<snippet id='observable-creating'/>
+{%snippet observable-creating%}
 
 ### Responding to property changes
-<snippet id='observable-property-change'/>
+{%snippet observable-property-change%}

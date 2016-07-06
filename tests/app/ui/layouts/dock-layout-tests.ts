@@ -6,9 +6,9 @@ import testModule = require("../../ui-test");
 import layoutHelper = require("./layout-helper");
 import commonTests = require("./common-layout-tests");
 
-// >> <snippet id='dock-layout-require'/>
+// >> dock-layout-require
 import dockModule = require("ui/layouts/dock-layout");
-// << <snippet id='dock-layout-require'/>
+// << dock-layout-require
 
 // >> dock-layout-others
 import enums = require("ui/enums");

@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/layouts/absolute-layout/HOW-TO
 ---
 # AbsoluteLayout
 Using an AbsoluteLayout requires the AbsoluteLayout module.
-<snippet id='absolute-layout-require'/>
+{%snippet absolute-layout-require%}
 
 ### Declaring an AbsoluteLayout
 ``` XML
@@ -19,4 +19,4 @@ Using an AbsoluteLayout requires the AbsoluteLayout module.
 ```
 
 ## Creating and populating a AbsoluteLayout with children
-<snippet id='absolute-layout-populating'/>
+{%snippet absolute-layout-populating%}

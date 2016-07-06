@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/slider/HOW-TO
 ---
 # Slider
 Using a slider requires the Slider module.
-<snippet id='article-require-slider'/>
+{%snippet article-require-slider%}
 ### Binding the Progress and Slider value properties to a observable view-model property.
 ``` XML
 <Page loaded="pageLoaded">
@@ -17,10 +17,10 @@ Using a slider requires the Slider module.
  </StackLayout>
 </Page>
 ```
-<snippet id='article-binding-slider-properties'/>
+{%snippet article-binding-slider-properties%}
 ### Creating a slider
-<snippet id='article-creating-slider'/>
+{%snippet article-creating-slider%}
 ### Setting the slider value and bounds
-<snippet id='article-setting-slider-values'/>
+{%snippet article-setting-slider-values%}
 ### Binding value property to a model
-<snippet id='article-binding-value-property'/>
+{%snippet article-binding-value-property%}

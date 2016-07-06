@@ -7,58 +7,58 @@ previous_url: /ApiReference/ui/gestures/HOW-TO
 ---
 # Gestures
 Detecting user gestures requires the "ui/gestures" module.
-<snippet id='gestures-require'/>
+{%snippet gestures-require%}
 
 ### Double Tap
-<snippet id='gestures-double-tap'/>
+{%snippet gestures-double-tap%}
 
 ### Double Tap
-<snippet id='gestures-double-tap-alt'/>
+{%snippet gestures-double-tap-alt%}
 
 ### Long Press
-<snippet id='gestures-long-press'/>
+{%snippet gestures-long-press%}
 
 ### Long Press
-<snippet id='gestures-long-press-alt'/>
+{%snippet gestures-long-press-alt%}
 
 ### Pan
-<snippet id='gestures-pan'/>
+{%snippet gestures-pan%}
 
 ### Pan
-<snippet id='gestures-pan-alt'/>
+{%snippet gestures-pan-alt%}
 
 ### Pinch
-<snippet id='gestures-pan-pinch'/>
+{%snippet gestures-pan-pinch%}
 
 ### Pinch
-<snippet id='gestures-pan-pinch-alt'/>
+{%snippet gestures-pan-pinch-alt%}
 
 ### Rotation
-<snippet id='gestures-rotation'/>
+{%snippet gestures-rotation%}
 
 ### Rotation
-<snippet id='gestures-rotation-alt'/>
+{%snippet gestures-rotation-alt%}
 
 ### Swipe
-<snippet id='gestures-swipe'/>
+{%snippet gestures-swipe%}
 
 ### Swipe
-<snippet id='gestures-swipe-alt'/>
+{%snippet gestures-swipe-alt%}
 
 ### Tap
-<snippet id='gestures-tap'/>
+{%snippet gestures-tap%}
 
 ### Tap
-<snippet id='gestures-tap-alt'/>
+{%snippet gestures-tap-alt%}
 
 ### Stop observing
-<snippet id='gestures-stop-observe'/>
+{%snippet gestures-stop-observe%}
 
 ### Multiple gestures
-<snippet id='gestures-multiple'/>
+{%snippet gestures-multiple%}
 
 ### Multiple gestures as comma separated string
-<snippet id='gestures-string'/>
+{%snippet gestures-string%}
 
 ### Events combined with gestures as comma separated string
-<snippet id='gestures-events-string'/>
+{%snippet gestures-events-string%}

@@ -7,13 +7,13 @@ previous_url: /ApiReference/trace/HOW-TO
 ---
 # Trace
 Tracing information about your app requires the "trace" module.
-<snippet id='trace-require'/>
+{%snippet trace-require%}
 
 ### Tracing all categories of events.
-<snippet id='trace-all-categories'/>
+{%snippet trace-all-categories%}
 
 ### Tracing specific categories of events.
-<snippet id='trace-specific-categories'/>
+{%snippet trace-specific-categories%}
 
 ### Write your own trace message.
-<snippet id='trace-message'/>
+{%snippet trace-message%}

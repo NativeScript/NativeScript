@@ -7,19 +7,19 @@ previous_url: /ApiReference/ui/dialogs/HOW-TO
 ---
 # Dialogs
 Displaying dialogs requires the "ui/dialogs" module.
-<snippet id='dialog-require'/>
+{%snippet dialog-require%}
 
 ### Action
-<snippet id='dialog-action'/>
+{%snippet dialog-action%}
 
 ### Confirm
-<snippet id='dialog-confirm'/>
+{%snippet dialog-confirm%}
 
 ### Alert
-<snippet id='dialog-alert'/>
+{%snippet dialog-alert%}
 
 ### Login
-<snippet id='dialog-login'/>
+{%snippet dialog-login%}
 
 ### Prompt
-<snippet id='dialog-prompt'/>
+{%snippet dialog-prompt%}

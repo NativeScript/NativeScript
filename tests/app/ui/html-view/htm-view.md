@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/html-view/HOW-TO
 ---
 # HtmlView
 Using a HtmlView requires the html-view module.
-<snippet id='htmlview-require'/>
+{%snippet htmlview-require%}
 
 ### Declaring a HtmlView.
 ``` XML
@@ -16,7 +16,7 @@ Using a HtmlView requires the html-view module.
  </Page>
 ```
 ### Creating a HtmlView
-<snippet id='htmlview-create'/>
+{%snippet htmlview-create%}
 
 ### Using HtmlView
-<snippet id='htmlview-using'/>
+{%snippet htmlview-using%}

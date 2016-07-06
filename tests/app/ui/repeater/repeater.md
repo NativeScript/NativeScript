@@ -7,9 +7,9 @@ previous_url: /ApiReference/ui/repeater/HOW-TO
 ---
 # Repeater
 Using a Repeater requires the repeater module.
-<snippet id='article-require-repeater-module'/>
+{%snippet article-require-repeater-module%}
 Other modules which will be used in the code samples in this article:
-<snippet id='article-require-modules-repeater'/>
+{%snippet article-require-modules-repeater%}
 ### Binding the Repeater items property to collection in the view-model.
 ``` XML
 <Page>
@@ -52,13 +52,13 @@ Other modules which will be used in the code samples in this article:
 </Page>
 ```
 ### Using Repeater with Array
-<snippet id='article-repeater-with-array'/>
+{%snippet article-repeater-with-array%}
 > Note, that changing the array after the repeater is shown will not update the UI.
 You can force-update the UI using the refresh() method.
-<snippet id='artcle-array-push-element'/>
+{%snippet artcle-array-push-element%}
 ### Using Repeater with different layout.
-<snippet id='article-repeater-layout'/>
+{%snippet article-repeater-layout%}
 ### Using Repeater with ObservableArray
-<snippet id='article-repeater-observablearray'/>
+{%snippet article-repeater-observablearray%}
 > When using ObservableArray the repeater will be automatically updated when items are added or removed form the array.
-<snippet id='article-push-to-observablearray'/>
+{%snippet article-push-to-observablearray%}

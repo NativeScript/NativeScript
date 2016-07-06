@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/layouts/dock-layout/HOW-TO
 ---
 # DockLayout
 Using a DockLayout requires the DockLayout module.
-<snippet id='dock-layout-require'/>
+{%snippet dock-layout-require%}
 
 ### Declaring a DockLayout
 ``` XML
@@ -23,16 +23,16 @@ Using a DockLayout requires the DockLayout module.
 ```
 
 Other frequently used modules when working with a DockLayout include:
-<snippet id='dock-layout-others'/>
+{%snippet dock-layout-others%}
 
 ## Create DockLayout
-<snippet id='dock-layout-create'/>
+{%snippet dock-layout-create%}
 
 ## Add child view to layout
-<snippet id='dock-layout-addchild'/>
+{%snippet dock-layout-addchild%}
 
 ## Remove child view from layout
-<snippet id='dock-layout-removechild'/>
+{%snippet dock-layout-removechild%}
 
 ## Setting the dock roperty
-<snippet id='dock-layout-setdocl'/>
+{%snippet dock-layout-setdocl%}

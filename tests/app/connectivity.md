@@ -7,10 +7,10 @@ previous_url: /ApiReference/connectivity/HOW-TO
 ---
 # Connectivity
 Obtaining connectivity information requires the "connectivity" module.
-<snippet id='connectivity-require'/>
+{%snippet connectivity-require%}
 
 ### Getting connection type
-<snippet id='connectivity-type'/>
+{%snippet connectivity-type%}
 
 ### Monitoring connection type.
-<snippet id='connectivity-monitoring'/>
+{%snippet connectivity-monitoring%}

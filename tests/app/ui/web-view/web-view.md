@@ -7,14 +7,14 @@ previous_url: /ApiReference/ui/web-view/HOW-TO
 ---
 # WebView
 Using a WebView requires the web-view module.
-<snippet id='webview-require'/>
+{%snippet webview-require%}
 ### Declaring a WebView.
-<snippet id='declare-webview-xml'/>
+{%snippet declare-webview-xml%}
 ### Creating a WebView
-<snippet id='declare-webview'/>
+{%snippet declare-webview%}
 ### Using WebView
-<snippet id='webview-url'/>
+{%snippet webview-url%}
 ### Using WebView
-<snippet id='webview-localfile'/>
+{%snippet webview-localfile%}
 ### Using WebView
-<snippet id='webview-string'/>
+{%snippet webview-string%}
