@@ -7,7 +7,7 @@ import observable = require("data/observable");
 import color = require("color");
 import platform = require("platform");
 
-// >> article-require-slider
+// >> article-require-slider
 import sliderModule = require("ui/slider");
 // << article-require-slider
 

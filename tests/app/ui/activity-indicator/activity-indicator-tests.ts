@@ -5,7 +5,7 @@ import imageModule = require("ui/image");
 import platform = require("platform");
 import color = require("color");
 
-// >> activity-indicator-require
+// >> activity-indicator-require
 import activityIndicatorModule = require("ui/activity-indicator");
 // << activity-indicator-require
 

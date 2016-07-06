@@ -6,7 +6,7 @@ import utils = require("utils/utils");
 import helper = require("../helper");
 import viewModule = require("ui/core/view");
 
-// >> article-require-placeholder-module
+// >> article-require-placeholder-module
 import placeholderModule = require("ui/placeholder");
 // << article-require-placeholder-module
 

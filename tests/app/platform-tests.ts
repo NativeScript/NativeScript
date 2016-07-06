@@ -2,7 +2,7 @@
 import app = require("application");
 import { isIOS, isAndroid } from "platform";
 
-// >> platform-require
+// >> platform-require
 import platformModule = require("platform");
 // << platform-require
 
@@ -18,7 +18,7 @@ export function test_setTimeout_isDefined() {
 };
 
 export function snippet_print_all() {
-    // >> platform-current
+    // >> platform-current
     console.log("Device model: " + platformModule.device.model);
     console.log("Device type: " + platformModule.device.deviceType);
     console.log("OS: " + platformModule.device.os);

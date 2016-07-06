@@ -10,7 +10,7 @@ import pageModule = require("ui/page");
 import gestureModule = require("ui/gestures");
 import { Label } from "ui/label";
 
-// >> article-require-repeater-module
+// >> article-require-repeater-module
 import repeaterModule = require("ui/repeater");
 // << article-require-repeater-module
 

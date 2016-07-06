@@ -5,7 +5,7 @@ import observable = require("data/observable");
 import color = require("color");
 import platform = require("platform");
 
-// >> article-require-progress-module
+// >> article-require-progress-module
 import progressModule = require("ui/progress");
 // << article-require-progress-module
 

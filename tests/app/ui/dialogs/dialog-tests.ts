@@ -1,4 +1,4 @@
-﻿// >> dialog-require
+﻿// >> dialog-require
 import dialogs = require("ui/dialogs");
 // << dialog-require
 

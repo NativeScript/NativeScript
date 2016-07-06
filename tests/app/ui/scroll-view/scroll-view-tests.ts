@@ -7,7 +7,7 @@ import layoutHelper = require("../layouts/layout-helper");
 import {Page} from "ui/page";
 import * as frame from "ui/frame";
 
-// >> article-require-scrollview-module
+// >> article-require-scrollview-module
 import scrollViewModule = require("ui/scroll-view");
 // << article-require-scrollview-module
 
