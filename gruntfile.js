@@ -140,9 +140,11 @@ module.exports = function(grunt) {
         srcDir: ".",
         srcAppsDir: "./apps",
         srcAppsTestsDir: "./tests/app",
+        srcSdkExamplesDir: "./sdk-examples/app",
         srcTnsCoreModules: "./tns-core-modules",
         packageJsonFilePath: "./tns-core-modules/package.json",
         outArticlesDir: "./bin/dist/articles",
+        outSdkExamplesArticleDir: "./bin/dist/sdk-examples-article",
         outDir: outDir,
         outTnsCoreModules: path.join(outDir, "tns-core-modules"),
         outAppsDir: "./bin/dist/apps",
@@ -164,6 +166,7 @@ module.exports = function(grunt) {
         "**/*.ts",
         "!node_modules/**/*.*",
         "!tests/node_modules/**/*.*",
+        "!sdk-examples/node_modules/**/*.*",
         "!bin/**/*.*",
         "!build/**/*.*",
         "!Deploy/**/*.*",
@@ -177,12 +180,15 @@ module.exports = function(grunt) {
         "!tns-core-modules/android17.d.ts",
         "!tns-core-modules/libjs.d.ts",
         "!tests/node_modules/**",
-        "!tests/platforms/**"
+        "!tests/platforms/**",
+        "!sdk-examples/node_modules/**",
+        "!sdk-examples/platforms/**"
     ]);
     localCfg.srcTsdFiles = [
         "**/*.d.ts",
         "!apps/**",
         "!tests/**",
+        "!sdk-examples/**",
         "!node-tests/**",
         "!tns-core-modules/org.nativescript.widgets.d.ts",
         "!tns-core-modules/android17.d.ts",
@@ -384,6 +390,16 @@ module.exports = function(grunt) {
                 dest: "<%= grunt.option('path') %>/node_modules/tns-core-modules/",
             }
         },
+        concat: {
+            options: {
+                separator: grunt.util.linefeed + grunt.util.linefeed
+            },
+            sdkExamplesMDs: {
+                src: [ localCfg.srcSdkExamplesDir + "/toc.md", localCfg.srcSdkExamplesDir + "/**/*.md" ],
+                dest: localCfg.outSdkExamplesArticleDir + "/" + "sdk-examples.md",
+                flatten: true
+            }
+        },
         ts: {
             build: {
                 tsconfig: {
@@ -468,6 +484,12 @@ module.exports = function(grunt) {
             },
             injectArticleSnippets: {
                 cmd: "node node_modules/markdown-snippet-injector/index.js --root=<%= localCfg.srcAppsTestsDir %> --docsroot=<%= localCfg.outArticlesDir %>"
+            },
+            injectSdkExamplesArticleSnippets: {
+                cmd: "node node_modules/markdown-snippet-injector/index.js --root=<%= localCfg.srcSdkExamplesDir %> --docsroot=<%= localCfg.outSdkExamplesArticleDir %> --sourceext=\".ts|.js|.css|.xml\" --snippettitles=\"TypeScript|JavaScript|CSS|XML\""
+            },
+            generateSdkExamplesArticleTOC: {
+                cmd: "node node_modules/doctoc/doctoc.js <%= localCfg.outSdkExamplesArticleDir %>"
             }
         },
         multidest: {
@@ -523,7 +545,7 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks("grunt-ts");
     grunt.loadNpmTasks("grunt-contrib-clean");
-    grunt.loadNpmTasks("grunt-contrib-copy");
+    grunt.loadNpmTasks("grunt-contrib-copy");   
     grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-tslint");
     grunt.loadNpmTasks("grunt-multi-dest");
@@ -531,6 +553,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-env");
     grunt.loadNpmTasks("grunt-simple-mocha");
     grunt.loadNpmTasks('grunt-typedoc');
+    grunt.loadNpmTasks("grunt-contrib-concat");
 
     var cloneTasks = function(originalTasks, app) {
         var clonedTasks = [];
@@ -813,6 +836,12 @@ module.exports = function(grunt) {
         "copy:articleMDs",
         "exec:injectArticleSnippets",
         "herdArticles"
+    ]);
+
+    grunt.registerTask("sdk-examples-article", [
+        "concat:sdkExamplesMDs",
+        "exec:injectSdkExamplesArticleSnippets",
+        "exec:generateSdkExamplesArticleTOC"
     ]);
 
     grunt.registerTask("docs", [

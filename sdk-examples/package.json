@@ -1,0 +1,20 @@
+{
+  "description": "NativeScript SDK Examples",
+  "nativescript": {
+    "id": "org.nativescript.sdkexamples",
+    "tns-android": {
+      "version": "2.1.1"
+    }
+  },
+  "dependencies": {
+    "tns-core-modules": "2.1.0"
+  },
+  "devDependencies": {
+    "babel-traverse": "6.10.4",
+    "babel-types": "6.11.1",
+    "babylon": "6.8.2",
+    "lazy": "1.0.11",
+    "nativescript-dev-typescript": "^0.3.0",
+    "typescript": "^1.8.10"
+  }
+}

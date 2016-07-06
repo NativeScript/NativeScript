@@ -1,0 +1,13 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+  <StackLayout>
+    <!-- >> label-snippet -->
+    <Label text="Label"/>
+    <Label text="Label"/>
+    <Label text="Label"/>
+    <Label text="Label"/>
+    <Label text="Label"/>
+    <Label text="Label"/>
+    <Label text="Label"/>
+    <!-- << label-snippet -->
+  </StackLayout>
+</Page>
