@@ -41,6 +41,7 @@ public class Async
 	{
 		private static final String DeleteMethod = "DELETE";
 		private static final String GetMethod = "GET";
+        private static final String HeadMethod = "HEAD";
 		private static CookieManager cookieManager;
 
 		public static class KeyValuePair
@@ -300,7 +301,10 @@ public class Async
 
 					// build the result
 					result.getHeaders(connection);
-					result.readResponseStream(connection, openedStreams, options);
+					if (!requestMethod.equals(HeadMethod))
+                    {
+						result.readResponseStream(connection, openedStreams, options);
+					}
 
 					// close the opened streams (saves copy-paste implementation
 					// in each method that throws IOException)
