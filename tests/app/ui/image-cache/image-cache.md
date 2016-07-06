@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/image-cache/HOW-TO
 ---
 # ImageCache
 Using the ImageCache requires the "ui/image-cache" module.
-<snippet id='image-cache-require'/>
+{%snippet image-cache-require%}
 
 ### Requesting Images
-<snippet id='image-cache-request-images'/>
+{%snippet image-cache-request-images%}

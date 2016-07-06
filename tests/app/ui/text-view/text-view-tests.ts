@@ -13,9 +13,9 @@ import textViewModule = require("ui/text-view");
 
 // Other frequently used modules when working with buttons include:
 import bindable = require("ui/core/bindable");
-// >> require-observable
+// >> require-observable-textview
 import observable = require("data/observable");
-// << require-observable
+// << require-observable-textview
 
 // >> text-view-xml
 // <Page loaded="pageLoaded">
@@ -96,7 +96,7 @@ export var testBindTextDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
 
-        // >> binding-text-property
+        // >> binding-text-property-textview
         var model = new observable.Observable();
         model.set("username", "john");
         var options: bindable.BindingOptions = {
@@ -115,7 +115,7 @@ export var testBindTextDirectlyToModel = function () {
         TKUnit.assert(textView.text === "mary", "Actual: " + textView.text + "; Expected: " + "mary");
         TKUnit.assert(textViewTestsNative.getNativeText(textView) === "mary", "Actual: " + textViewTestsNative.getNativeText(textView) + "; Expected: " + "mary");
         // << (hide)
-        // >> binding-text-property
+        // << binding-text-property-textview
     });
 }
 
@@ -176,7 +176,7 @@ export var testBindHintDirectlyToModel = function () {
         var textView = <textViewModule.TextView>views[0];
         textView.text = "";
 
-        // >> binding-hint-property
+        // >> binding-hint-property-textview
         var model = new observable.Observable();
         model.set("hint", "type your username here");
         var options: bindable.BindingOptions = {
@@ -195,7 +195,7 @@ export var testBindHintDirectlyToModel = function () {
         TKUnit.assert(textView.hint === "type your password here", "Actual: " + textView.hint + "; Expected: " + "type your password here");
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your password here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your password here");
         // << (hide)
-        // << binding-hint-property
+        // << binding-hint-property-textview
     });
 }
 

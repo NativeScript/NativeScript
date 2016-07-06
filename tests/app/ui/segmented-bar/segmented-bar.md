@@ -7,9 +7,9 @@ previous_url: /ApiReference/ui/segmented-bar/HOW-TO
 ---
 # SegmentedBar
 Using a SegmentedBar requires the "ui/segmented-bar" module.
-<snippet id='article-require-segmentedbar-module'/>
+{%snippet article-require-segmentedbar-module%}
 ## Creating a SegmentedBar
-<snippet id='article-create-segmentedbar'/>
+{%snippet article-create-segmentedbar%}
 ``` XML
 <SegmentedBar>
   <SegmentedBar.items>
@@ -22,6 +22,6 @@ Using a SegmentedBar requires the "ui/segmented-bar" module.
 ### Creating segmentedBar.items
 It is important that an items array gets created and filled with
 items first and then assigned to the segmented bar.
-<snippet id='article-creating-segmentedbar-items'/>
+{%snippet article-creating-segmentedbar-items%}
 ### Selecting an item programmatically
-<snippet id='artcile-selecting-item'/>
+{%snippet artcile-selecting-item%}

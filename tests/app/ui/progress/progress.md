@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/progress/HOW-TO
 ---
 # Progress
 Using the progress view requires the Progress module.
-<snippet id='article-require-progress-module'/>
+{%snippet article-require-progress-module%}
 Binding the Progress value property to a view-model property.
 ``` XML
 <Page loaded="pageLoaded">
@@ -22,6 +22,6 @@ function pageLoaded(args) {
 exports.pageLoaded = pageLoaded;
 ```
 ### Creating a progress view
-<snippet id='article-create-progress-view'>
+{%snippet article-create-progress-view%}
 ### Setting up the progress view
-<snippet id='article-set-value'/>
+{%snippet article-set-value%}

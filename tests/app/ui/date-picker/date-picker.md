@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/date-picker/HOW-TO
 ---
 # DatePicker
 Using a DatePicker requires the "ui/date-picker" module.
-<snippet id='date-picker-require'/>
+{%snippet date-picker-require%}
 
 ## Configuring a DatePicker
-<snippet id='date-picker-configure'/>
+{%snippet date-picker-configure%}

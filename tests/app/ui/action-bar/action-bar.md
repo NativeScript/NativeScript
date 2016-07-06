@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/action-bar/HOW-TO
 ---
 # ActionBar
 Using a ActionBar requires the action-bar module.
-<snippet id='actionbar-common-require'/>
+{%snippet actionbar-common-require%}
 
 
 ## Setting Title and Icon

@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/layouts/grid-layout/HOW-TO
 ---
 # GridLayout
 Using a GridLayout requires the GridLayout module.
-<snippet id='grid-layout-require'/>
+{%snippet grid-layout-require%}
 
 ### Declaring a GridLayout
 ``` XML
@@ -21,19 +21,19 @@ Using a GridLayout requires the GridLayout module.
 ```
 
 ## Add views to grid layout
-<snippet id='grid-layout-addviews'/>
+{%snippet grid-layout-addviews%}
 
 ## Set column property on views - btn1 in first column, btn2 is second and btn3 in third
-<snippet id='grid-layout-setcolumn'/>
+{%snippet grid-layout-setcolumn%}
 
 ## Set row property on btn4.
-<snippet id='grid-layout-setrow'/>
+{%snippet grid-layout-setrow%}
 
 ## Set columnSpan property on btn4 to stretch into all columns
-<snippet id='grid-layout-columnspan'/>
+{%snippet grid-layout-columnspan%}
 
 ## Create ItemSpec for columns and rows 3 columns - 80px, *, auto size and 2 rows - 100px and auto size
-<snippet id='grid-layout-itemspec'/>
+{%snippet grid-layout-itemspec%}
 
 ## Add columns and rows to GridLayout
-<snippet id='grid-layout-add-rowscols'/>
+{%snippet grid-layout-add-rowscols%}

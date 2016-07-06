@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/image/HOW-TO
 ---
 # Image
 Using an image requires the Image module to be loaded.
-<snippet id='img-require'/>
+{%snippet img-require%}
 
 Binding the image source property to a view-model property.
 ``` XML
@@ -25,16 +25,16 @@ Binding the image source property to a view-model property.
 </Page>
 ```
 ### Creating an image and setting its source
-<snippet id='img-create'/>
+{%snippet img-create%}
 
 ### Creating an image and setting its src
-<snippet id='img-create-src'/>
+{%snippet img-create-src%}
 
 ### Creating an image and setting its src to a file within the application
-<snippet id='img-create-local'/>
+{%snippet img-create-local%}
 
 ### Creating an image and setting its src to Data URI
-<snippet id='img-create-datauri'/>
+{%snippet img-create-datauri%}
 
 ### Setting image stretching
-<snippet id='img-set-stretch'/>
+{%snippet img-set-stretch%}

@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/switch/HOW-TO
 ---
 # Switch
 Using a switch requires the Switch module.
-<snippet id='article-require-switch'/>
+{%snippet article-require-switch%}
 ### Binding the Switch checked property and Button isEnabled property to a observable view-model property.
 ``` XML
 <Page loaded="pageLoaded">
@@ -17,10 +17,10 @@ Using a switch requires the Switch module.
  </StackLayout>
 </Page>
 ```
-<snippet id='article-binding-switch-property'/>
+{%snippet article-binding-switch-property%}
 ### Creating a switch
-<snippet id='article-create-switch'/>
+{%snippet article-create-switch%}
 ### Setting the checked property of a switch
-<snippet id='article-setting-checked-property'/>
+{%snippet article-setting-checked-property%}
 ### Binding checked property to a model
-<snippet id='aricle-binding-checked-property'/>
+{%snippet aricle-binding-checked-property%}

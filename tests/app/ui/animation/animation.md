@@ -7,19 +7,19 @@ previous_url: /ApiReference/ui/animation/HOW-TO
 ---
 # Animation
 Animating view properties requires the "ui/animation" module.
-<snippet id='animation-require'/>
+{%snippet animation-require%}
 
 # Animating properties
-<snippet id='animation-properties'/>
+{%snippet animation-properties%}
 
 # Cancelling animation
-<snippet id='animation-cancel'/>
+{%snippet animation-cancel%}
 
 # Chaining animations
-<snippet id='animation-chaining'/>
+{%snippet animation-chaining%}
 
 # Reusing animations
-<snippet id='animation-reusing'/>
+{%snippet animation-reusing%}
 
 # Animating multiple views simultaneously
-<snippet id='animation-multiple-views'/>
+{%snippet animation-multiple-views%}

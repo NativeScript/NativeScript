@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/layouts/stack-layout/HOW-TO
 ---
 # StackLayout
 Using a StackLayout requires the StackLayout module.
-<snippet id='stack-layout-require'/>
+{%snippet stack-layout-require%}
 
 ### Declaring a StackLayout.
 ``` XML
@@ -19,14 +19,14 @@ Using a StackLayout requires the StackLayout module.
 ```
 
 ## Create StackLayout
-<snippet id='stack-layout-new'/>
+{%snippet stack-layout-new%}
  
 ## Add child view to layout
-<snippet id='stack-layout-addchild'/>
+{%snippet stack-layout-addchild%}
 
 ## Remove child view from layout
-<snippet id='stack-layout-remove'/>
+{%snippet stack-layout-remove%}
 
 ## Change layout orientation to Horizontal
-<snippet id='stack-layout-horizontal'/>
+{%snippet stack-layout-horizontal%}
 

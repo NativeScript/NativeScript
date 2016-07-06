@@ -7,8 +7,8 @@ previous_url: /ApiReference/ui/text-field/HOW-TO
 ---
 # TextField
 Using a TextField requires the text-field module.
-<snippet id='require-textfield'/>
-<snippet id='require-observable'/>
+{%snippet require-textfield%}
+{%snippet require-observable-textfield%}
 ### Binding two TextFields text property to observable view-model property.
 ```XML
  <Page loaded="pageLoaded">
@@ -18,20 +18,20 @@ Using a TextField requires the text-field module.
   </StackLayout>
  </Page>
 ```
-<snippet id='binding-text-property'/>
+{%snippet binding-text-property-textfield%}
 ## Creating a TextField
-<snippet id='creating-textfield'/>
+{%snippet creating-textfield%}
 ### Setting the text of a TextField
-<snippet id='setting-text-property'/>
+{%snippet setting-text-property%}
 ### Setting the text of a TextField
-<snippet id='setting-hint-property'/>
+{%snippet setting-hint-property%}
 ### Binding text property directly to model
-<snippet id='binding-text-property-second'/>
+{%snippet binding-text-property-second%}
 ### Setting the hint of a TextField
-<snippet id='setting-hint-text'/>
+{%snippet setting-hint-text%}
 ### Binding hint property directly to model
-<snippet id='binding-hint-property'/>
+{%snippet binding-hint-property-textfield%}
 ### Setting the secure property of a TextField
-<snippet id='setting-secure-property'/>
+{%snippet setting-secure-property%}
 ### Binding secure property directly to model
-<snippet id='binding-secure-property'/>
+{%snippet binding-secure-property%}

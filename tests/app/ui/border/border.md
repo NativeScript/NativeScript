@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/border/HOW-TO
 ---
 # Border
 Using borders requires the Border module.
-<snippet id='border-require'/>
+{%snippet border-require%}
 
 ### Declaring a Border.
 ``` XML
