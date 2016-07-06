@@ -288,7 +288,7 @@ public class Async
 					}
 
 					// Do not attempt to write the content (body) for DELETE method, Java will throw directly
-					if (requestMethod != DeleteMethod)
+					if (!requestMethod.equals(DeleteMethod))
 					{
 						options.writeContent(connection, openedStreams);
 					}
