@@ -9,7 +9,7 @@ import { Label } from "ui/label";
 import helper = require("../helper");
 import { Page } from "ui/page";
 
-// >> article-require-listview-module
+// >> article-require-listview-module
 import listViewModule = require("ui/list-view");
 // << article-require-listview-module
 

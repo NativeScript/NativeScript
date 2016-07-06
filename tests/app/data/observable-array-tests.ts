@@ -319,7 +319,7 @@ export var test_ObservableArray_shiftShouldRemoveTheFirstElementAndRaiseChangeEv
 };
 
 export var test_ObservableArray_sliceShouldReturnSectionAsNewArray = function () {
-    // observable-array-slice
+    // >> observable-array-slice
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
     var result = array.slice();
     // << observable-array-slice

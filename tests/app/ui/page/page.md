@@ -7,7 +7,7 @@ previous_url: /ApiReference/ui/page/HOW-TO
 ---
 # Page
 Using a page requires the Page module.
-{%snippet article-require-page/module%}
+{%snippet article-require-page-module%}
 ### Attaching event handler for the Page loaded event to set bindingContext.
 ``` XML
 <Page loaded="pageLoaded">
