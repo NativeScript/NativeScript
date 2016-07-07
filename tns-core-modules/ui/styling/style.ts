@@ -351,7 +351,7 @@ function onBackgroundSizePropertyChanged(data: PropertyChangeData) {
 }
 
 function onBorderWidthPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid){
+    if (platform.isAndroid) {
         var style = <Style>data.object;
         var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
         if (data.newValue !== currentBackground.borderWidth) {
@@ -361,7 +361,7 @@ function onBorderWidthPropertyChanged(data: PropertyChangeData) {
 }
 
 function onBorderColorPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid){
+    if (platform.isAndroid) {
         var style = <Style>data.object;
         var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
         if (data.newValue !== currentBackground.borderColor) {
@@ -371,7 +371,7 @@ function onBorderColorPropertyChanged(data: PropertyChangeData) {
 }
 
 function onBorderRadiusPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid){
+    if (platform.isAndroid) {
         var style = <Style>data.object;
         var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
         if (data.newValue !== currentBackground.borderRadius) {
@@ -381,7 +381,7 @@ function onBorderRadiusPropertyChanged(data: PropertyChangeData) {
 }
 
 function onClipPathPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid){
+    if (platform.isAndroid) {
         var style = <Style>data.object;
         var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
         if (data.newValue !== currentBackground.clipPath) {
@@ -984,40 +984,40 @@ export class Style extends DependencyObservable implements styling.Style {
             return;
         }
 
-        // try {
-        let handler: definition.StylePropertyChangedHandler = getHandler(property, this._view);
-        if (!handler) {
-            if (trace.enabled) {
-                trace.write("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, trace.categories.Style);
-            }
-        }
-        else {
-            if (trace.enabled) {
-                trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
-            }
-
-            let shouldReset = false;
-            if (property.equalityComparer) {
-                shouldReset = property.equalityComparer(newValue, property.defaultValue);
+        try {
+            let handler: definition.StylePropertyChangedHandler = getHandler(property, this._view);
+            if (!handler) {
+                if (trace.enabled) {
+                    trace.write("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, trace.categories.Style);
+                }
             }
             else {
-                shouldReset = (newValue === property.defaultValue);
-            }
+                if (trace.enabled) {
+                    trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
+                }
 
-            if (shouldReset) {
-                (<any>handler).resetProperty(property, this._view);
-            } else {
-                (<any>handler).applyProperty(property, this._view, newValue);
-            }
+                let shouldReset = false;
+                if (property.equalityComparer) {
+                    shouldReset = property.equalityComparer(newValue, property.defaultValue);
+                }
+                else {
+                    shouldReset = (newValue === property.defaultValue);
+                }
 
-            this._view._onStylePropertyChanged(property);
+                if (shouldReset) {
+                    (<any>handler).resetProperty(property, this._view);
+                } else {
+                    (<any>handler).applyProperty(property, this._view, newValue);
+                }
+
+                this._view._onStylePropertyChanged(property);
+            }
         }
-        // }
-        // catch (ex) {
-        //     if (trace.enabled) {
-        //         trace.write("Error setting property: " + property.name + " on " + this._view + ": " + ex, trace.categories.Style, trace.messageType.error);
-        //     }
-        // }
+        catch (ex) {
+            if (trace.enabled) {
+                trace.write("Error setting property: " + property.name + " on " + this._view + ": " + ex, trace.categories.Style, trace.messageType.error);
+            }
+        }
     }
 
     get _nativeView(): any {
