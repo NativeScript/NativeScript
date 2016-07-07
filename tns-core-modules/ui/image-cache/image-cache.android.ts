@@ -52,7 +52,7 @@ export class Cache extends common.Cache {
     }
 
     public _downloadCore(request: common.DownloadRequest) {
-        org.nativescript.widgets.Async.DownloadImage(request.url, this._callback, request.key);
+        org.nativescript.widgets.Async.Image.download(request.url, this._callback, request.key);
     }
 
     public get(key: string): any {
