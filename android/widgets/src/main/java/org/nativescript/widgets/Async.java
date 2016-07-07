@@ -71,21 +71,17 @@ public class Async
 					stream = new java.net.URL(params[0]).openStream();
 					Bitmap bmp = BitmapFactory.decodeStream(stream);
 					return bmp;
-				}
-				catch (MalformedURLException e) {
+				} catch (MalformedURLException e) {
 					e.printStackTrace();
 					return null;
-				}
-				catch (IOException e) {
+				} catch (IOException e) {
 					e.printStackTrace();
 					return null;
-				}
-				finally {
+				} finally {
 					if (stream != null) {
 						try {
 							stream.close();
-						}
-						catch (IOException e) {
+						} catch (IOException e) {
 							e.printStackTrace();
 						}
 					}
@@ -113,8 +109,8 @@ public class Async
 				Resources res = this.context.getResources();
 				int id = res.getIdentifier(name, "drawable", context.getPackageName());
 
-				if(id > 0) {
-					BitmapDrawable result = (BitmapDrawable)res.getDrawable(id);
+				if (id > 0) {
+					BitmapDrawable result = (BitmapDrawable) res.getDrawable(id);
 					return result.getBitmap();
 				}
 
@@ -154,16 +150,16 @@ public class Async
 				this.requestId = requestId;
 			}
 
-		protected Bitmap doInBackground(String... params) {
-			String source = params[0];
-			byte[] bytes = Base64.decode(source, Base64.DEFAULT);
-			return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-		}
+			protected Bitmap doInBackground(String... params) {
+				String source = params[0];
+				byte[] bytes = Base64.decode(source, Base64.DEFAULT);
+				return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+			}
 
-		protected void onPostExecute(final Bitmap result) {
-			this.callback.onComplete(result, this.requestId);
+			protected void onPostExecute(final Bitmap result) {
+				this.callback.onComplete(result, this.requestId);
+			}
 		}
-	}
 	}
 
 	public static class Http
