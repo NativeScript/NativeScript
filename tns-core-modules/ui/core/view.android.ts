@@ -640,11 +640,12 @@ export class ViewStyler implements style.Styler {
     }
 
     private static setPaddingProperty(view: View, newValue: Thickness) {
-        var density = utils.layout.getDisplayDensity();
-        var left = Math.round((newValue.left + view.borderWidth) * density);
-        var top = Math.round((newValue.top + view.borderWidth) * density);
-        var right = Math.round((newValue.right + view.borderWidth) * density);
-        var bottom = Math.round((newValue.bottom + view.borderWidth) * density);
+        let density = utils.layout.getDisplayDensity();
+        let style = view.style;
+        let left = Math.round((style.paddingLeft + view.borderWidth) * density);
+        let top = Math.round((style.paddingTop + view.borderWidth) * density);
+        let right = Math.round((style.paddingRight + view.borderWidth) * density);
+        let bottom = Math.round((style.paddingBottom + view.borderWidth) * density);
         (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
     }
 
