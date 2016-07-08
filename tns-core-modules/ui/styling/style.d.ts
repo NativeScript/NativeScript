@@ -87,8 +87,8 @@ declare module "ui/styling/style" {
         public _endUpdate();
         public _resetCssValues(): void;
         public _syncNativeProperties(): void;
-        public _inheritStyleProperty(property: Property): void;
-        public _inheritStyleProperties(): void;
+        // public _inheritStyleProperty(property: Property): void;
+        public _inheritStyleProperties(parent: View): void;
         public _boundsChanged(): void;
         public _updateTextDecoration(): void;
         public _updateTextTransform(): void;

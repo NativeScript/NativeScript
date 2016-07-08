@@ -2,7 +2,6 @@
     import observable = require("ui/core/dependency-observable");
     import color = require("color");
     import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
 
     /**
      * Represents an observable property which can have its value set form CSS style.
@@ -218,8 +217,8 @@
         public _endUpdate();
         public _resetCssValues(): void;
         public _syncNativeProperties(): void;
-        public _inheritStyleProperty(property: dependencyObservable.Property): void;
-        public _inheritStyleProperties(): void;
+        // public _inheritStyleProperty(property: dependencyObservable.Property): void;
+        public _inheritStyleProperties(parent: view.View): void;
         public _updateTextDecoration(): void;
         public _updateTextTransform(): void;
         //@endprivate

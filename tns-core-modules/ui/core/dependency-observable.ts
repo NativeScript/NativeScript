@@ -303,10 +303,18 @@ export class DependencyObservable extends Observable implements definition.Depen
     public _eachSetProperty(callback: (property: Property) => boolean) {
         for (let i = 0, keys = Object.keys(this._propertyEntries); i < keys.length; i++) {
             let key = keys[i];
-            let entry = this._propertyEntries[key];
+            let entry: PropertyEntry = this._propertyEntries[key];
             if (!callback(entry.property)) {
                 break;
             }
+        }
+    }
+
+    public _eachSetPropertyValue(callback: (property: Property, value: any) => void): void {
+        for (let i = 0, keys = Object.keys(this._propertyEntries); i < keys.length; i++) {
+            let key = keys[i];
+            let entry: PropertyEntry = this._propertyEntries[key];
+            callback(entry.property, entry.effectiveValue);
         }
     }
 

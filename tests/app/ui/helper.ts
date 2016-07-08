@@ -138,6 +138,16 @@ export function getCurrentPage(): page.Page {
     return frame.topmost().currentPage;
 }
 
+export function getClearCurrentPage(): page.Page {
+    let page = frame.topmost().currentPage;
+    page.style._resetValue(styling.properties.backgroundColorProperty);
+    page.style._resetValue(styling.properties.colorProperty);
+    page._resetValue(button.Button.bindingContextProperty);
+    page._resetValue(button.Button.cssClassProperty);
+    page._resetValue(button.Button.idProperty);
+    return page;
+}
+
 export function waitUntilNavigatedFrom(oldPage: page.Page) {
     TKUnit.waitUntilReady(() => getCurrentPage() && getCurrentPage() !== oldPage);
 }

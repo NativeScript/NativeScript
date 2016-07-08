@@ -143,8 +143,9 @@ export function test_setting_css() {
 
 // Basic selector tests
 export function test_type_selector() {
-    let page = helper.getCurrentPage();
-    page.color = null;
+    let page = helper.getClearCurrentPage();
+    page.style._resetValue(styling.properties.colorProperty);
+
     let btn: buttonModule.Button;
     let label: labelModule.Label;
 
@@ -169,8 +170,7 @@ export function test_type_selector() {
 }
 
 export function test_class_selector() {
-    let page = helper.getCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    let page = helper.getClearCurrentPage();
     let btnWithClass: buttonModule.Button;
     let btnWithNoClass: buttonModule.Button;
 
@@ -195,7 +195,7 @@ export function test_class_selector() {
 }
 
 export function test_multiple_class_selector() {
-    let page = helper.getCurrentPage();
+    let page = helper.getClearCurrentPage();
     let btnWithClasses: buttonModule.Button;
 
     page.css = ".style1 { color: red; } .style2 { background-color: blue } ";
@@ -213,7 +213,7 @@ export function test_multiple_class_selector() {
 }
 
 export function test_id_selector() {
-    let page = helper.getCurrentPage();
+    let page = helper.getClearCurrentPage();
     page.style._resetValue(styling.properties.colorProperty);
     let btnWithId: buttonModule.Button;
     let btnWithNoId: buttonModule.Button;
@@ -240,7 +240,7 @@ export function test_id_selector() {
 
 // State selector tests
 export function test_state_selector() {
-    let page = helper.getCurrentPage();
+    let page = helper.getClearCurrentPage();
     page.style._resetValue(styling.properties.colorProperty);
     let btn: buttonModule.Button;
     var testStack = new stackModule.StackLayout();
@@ -255,7 +255,7 @@ export function test_state_selector() {
 }
 
 export function test_type_and_state_selector() {
-    let page = helper.getCurrentPage();
+    let page = helper.getClearCurrentPage();
     page.style._resetValue(styling.properties.colorProperty);
     var btn: buttonModule.Button;
 
@@ -273,7 +273,7 @@ export function test_type_and_state_selector() {
 }
 
 export function test_class_and_state_selector() {
-    let page = helper.getCurrentPage();
+    let page = helper.getClearCurrentPage();
     page.style._resetValue(styling.properties.colorProperty);
 
     let btn = new buttonModule.Button();
@@ -288,7 +288,7 @@ export function test_class_and_state_selector() {
 }
 
 export function test_class_and_state_selector_with_multiple_classes() {
-    let page = helper.getCurrentPage();
+    let page = helper.getClearCurrentPage();
     page.style._resetValue(styling.properties.colorProperty);
 
     let btn = new buttonModule.Button();
@@ -304,7 +304,7 @@ export function test_class_and_state_selector_with_multiple_classes() {
 }
 
 export function test_id_and_state_selector() {
-    let page = helper.getCurrentPage();
+    let page = helper.getClearCurrentPage();
     page.style._resetValue(styling.properties.colorProperty);
 
     let btn = new buttonModule.Button();
@@ -320,7 +320,7 @@ export function test_id_and_state_selector() {
 }
 
 export function test_restore_original_values_when_state_is_changed() {
-    let page = helper.getCurrentPage();
+    let page = helper.getClearCurrentPage();
     page.style._resetValue(styling.properties.colorProperty);
 
     let btn = new buttonModule.Button();
@@ -398,7 +398,7 @@ export var test_composite_selector_type_class_state = function () {
 }
 
 export var test_style_is_applied_when_control_is_added_after_load = function () {
-    let page = helper.getCurrentPage();
+    let page = helper.getClearCurrentPage();
     let btn = new buttonModule.Button();
     let testStack = new stackModule.StackLayout();
     page.content = testStack;
@@ -569,7 +569,7 @@ export function test_selector_priorities_6() {
 }
 
 function testSelectorsPrioritiesTemplate(css: string) {
-    let page = helper.getCurrentPage();
+    let page = helper.getClearCurrentPage();
     page.style._resetValue(styling.properties.colorProperty);
     let btn: buttonModule.Button;
     let btnWithClass: buttonModule.Button;

@@ -1,4 +1,4 @@
-﻿import application = require("application");
+import application = require("application");
 import styling = require("ui/styling");
 import types = require("utils/types");
 import trace = require("trace");
@@ -351,7 +351,7 @@ function onBackgroundSizePropertyChanged(data: PropertyChangeData) {
 }
 
 function onBorderWidthPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid){
+    if (platform.isAndroid) {
         var style = <Style>data.object;
         var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
         if (data.newValue !== currentBackground.borderWidth) {
@@ -361,7 +361,7 @@ function onBorderWidthPropertyChanged(data: PropertyChangeData) {
 }
 
 function onBorderColorPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid){
+    if (platform.isAndroid) {
         var style = <Style>data.object;
         var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
         if (data.newValue !== currentBackground.borderColor) {
@@ -371,7 +371,7 @@ function onBorderColorPropertyChanged(data: PropertyChangeData) {
 }
 
 function onBorderRadiusPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid){
+    if (platform.isAndroid) {
         var style = <Style>data.object;
         var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
         if (data.newValue !== currentBackground.borderRadius) {
@@ -381,7 +381,7 @@ function onBorderRadiusPropertyChanged(data: PropertyChangeData) {
 }
 
 function onClipPathPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid){
+    if (platform.isAndroid) {
         var style = <Style>data.object;
         var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
         if (data.newValue !== currentBackground.clipPath) {
@@ -445,7 +445,7 @@ function isNonNegativeFiniteNumber(value: number): boolean {
 
 var supportedPaths = ["rect", "circle", "ellipse", "polygon"];
 function isClipPathValid(value: string): boolean {
-    if (!value){
+    if (!value) {
         return true;
     }
     var functionName = value.substring(0, value.indexOf("(")).trim();
@@ -543,19 +543,19 @@ export class Style extends DependencyObservable implements styling.Style {
     set rotate(value: number) {
         this._setValue(rotateProperty, value);
     }
-    
+
     get scaleX(): number {
         return this._getValue(scaleXProperty);
     }
-    
+
     set scaleX(value: number) {
         this._setValue(scaleXProperty, value);
     }
-    
+
     get scaleY(): number {
         return this._getValue(scaleYProperty);
     }
-    
+
     set scaleY(value: number) {
         this._setValue(scaleYProperty, value);
     }
@@ -563,7 +563,7 @@ export class Style extends DependencyObservable implements styling.Style {
     get translateX(): number {
         return this._getValue(translateXProperty);
     }
-    
+
     set translateX(value: number) {
         this._setValue(translateXProperty, value);
     }
@@ -571,11 +571,11 @@ export class Style extends DependencyObservable implements styling.Style {
     get translateY(): number {
         return this._getValue(translateYProperty);
     }
-    
+
     set translateY(value: number) {
         this._setValue(translateYProperty, value);
     }
-    
+
     get color(): Color {
         return this._getValue(colorProperty);
     }
@@ -645,7 +645,7 @@ export class Style extends DependencyObservable implements styling.Style {
     set clipPath(value: string) {
         this._setValue(clipPathProperty, value);
     }
-    
+
     get fontSize(): number {
         return this._getValue(fontSizeProperty);
     }
@@ -841,20 +841,20 @@ export class Style extends DependencyObservable implements styling.Style {
     set whiteSpace(value: string) {
         this._setValue(whiteSpaceProperty, value);
     }
-    
+
     get letterSpacing(): number {
         return this._getValue(letterSpacingProperty);
     }
     set letterSpacing(value: number) {
         this._setValue(letterSpacingProperty, value);
     }
-    
+
     get zIndex(): number {
         return this._getValue(zIndexProperty);
     }
     set zIndex(value: number) {
         this._setValue(zIndexProperty, value);
-    }         
+    }
 
     public _updateTextDecoration() {
         if (this._getValue(textDecorationProperty) !== enums.TextDecoration.none) {
@@ -905,6 +905,27 @@ export class Style extends DependencyObservable implements styling.Style {
         });
     }
 
+    public _inheritStyleProperties(parent: View) {
+        parent.style._eachSetPropertyValue((property, value) => {
+            if (property.inheritable) {
+                // this._inheritStyleProperty(property, value);
+                this._setValue(property, value, ValueSource.Inherited);
+            }
+
+            return true;
+        });
+    }
+
+    // public _inheritStyleProperty(property: Property, value: any) {
+    //     // let currentParent = this._view.parent;
+    //     // if (currentParent) {
+    //         // let valueSource = currentParent.style._getValueSource(property);
+    //         // if (valueSource > ValueSource.Default) {
+    //         this._setValue(property, value, ValueSource.Inherited);
+    //         // }
+    //     // }
+    // }
+
     public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
         if (trace.enabled) {
             trace.write(
@@ -921,28 +942,22 @@ export class Style extends DependencyObservable implements styling.Style {
         this._applyProperty(property, newValue);
     }
 
-    public _syncNativeProperties() {
-        var that = this;
-        // loop all style properties and call the _applyProperty method
-        // TODO: Potential performance bottle-neck
-        styleProperty.eachProperty(function (p: styleProperty.Property) {
-            var value = that._getValue(p);
-            var valueSource = that._getValueSource(p);
-            if (valueSource !== ValueSource.Default && types.isDefined(value)) {
-                that._applyProperty(p, value);
-            }
-        });
-    }
-
     public _sizeChanged() {
         if (!(<background.Background>this._getValue(backgroundInternalProperty)).isEmpty()) {
-            this._applyProperty(backgroundInternalProperty, this._getValue(backgroundInternalProperty));
+            this._applyStyleProperty(backgroundInternalProperty, this._getValue(backgroundInternalProperty));
         }
-        
+
         var clipPathPropertyValue = this._getValue(clipPathProperty);
         if (types.isString(clipPathPropertyValue) && clipPathPropertyValue !== "") {
-            this._applyProperty(clipPathProperty, clipPathPropertyValue);
+            this._applyStyleProperty(clipPathProperty, clipPathPropertyValue);
         }
+    }
+
+    public _syncNativeProperties() {
+        this._eachSetPropertyValue((property, value) => {
+            this._applyStyleProperty(property, value);
+            return true;
+        });
     }
 
     private _applyProperty(property: Property, newValue: any) {
@@ -950,14 +965,13 @@ export class Style extends DependencyObservable implements styling.Style {
 
         // The effective value of an inheritable property has changed
         // propagate the change down to the descendants to update their inherited properties.
-        if (this._view._childrenCount === 0 || !property.inheritable) {
-            return;
+        if (property.inheritable && this._view._childrenCount > 0) {
+            this._view._eachChildView((child: View) => {
+                // child.style._inheritStyleProperty(property);
+                child.style._setValue(property, newValue, ValueSource.Inherited);
+                return true;
+            });
         }
-
-        this._view._eachChildView((child: View) => {
-            child.style._inheritStyleProperty(property);
-            return true;
-        });
     }
 
     private _applyStyleProperty(property: Property, newValue: any) {
@@ -972,7 +986,6 @@ export class Style extends DependencyObservable implements styling.Style {
 
         try {
             let handler: definition.StylePropertyChangedHandler = getHandler(property, this._view);
-
             if (!handler) {
                 if (trace.enabled) {
                     trace.write("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, trace.categories.Style);
@@ -1005,31 +1018,6 @@ export class Style extends DependencyObservable implements styling.Style {
                 trace.write("Error setting property: " + property.name + " on " + this._view + ": " + ex, trace.categories.Style, trace.messageType.error);
             }
         }
-    }
-
-    public _inheritStyleProperty(property: Property) {
-        if (!property.inheritable) {
-            throw new Error("An attempt was made to inherit a style property which is not marked as 'inheritable'.");
-        }
-
-        let currentParent = this._view.parent;
-        let valueSource: number;
-
-        while (currentParent) {
-            valueSource = currentParent.style._getValueSource(property);
-            if (valueSource > ValueSource.Default) {
-                this._setValue(property, currentParent.style._getValue(property), ValueSource.Inherited);
-                break;
-            }
-
-            currentParent = currentParent.parent;
-        }
-    }
-
-    public _inheritStyleProperties() {
-        styleProperty.eachInheritableProperty((p) => {
-            this._inheritStyleProperty(p);
-        });
     }
 
     get _nativeView(): any {
@@ -1113,9 +1101,9 @@ export var borderColorProperty = new styleProperty.Property("borderColor", "bord
 
 export var borderRadiusProperty = new styleProperty.Property("borderRadius", "border-radius",
     new PropertyMetadata(0, AffectsLayout, onBorderRadiusPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
-    
+
 export var clipPathProperty = new styleProperty.Property("clipPath", "clip-path",
-    new PropertyMetadata(undefined, AffectsLayout, onClipPathPropertyChanged, isClipPathValid));    
+    new PropertyMetadata(undefined, AffectsLayout, onClipPathPropertyChanged, isClipPathValid));
 
 export var backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
     new PropertyMetadata(background.Background.default, PropertyMetadataSettings.None, undefined, undefined, background.Background.equals));
@@ -1158,12 +1146,12 @@ export var textTransformProperty = new styleProperty.Property("textTransform", "
 
 export var whiteSpaceProperty = new styleProperty.Property("whiteSpace", "white-space",
     new PropertyMetadata(undefined, AffectsLayout, undefined, isWhiteSpaceValid), converters.whiteSpaceConverter);
-    
+
 export var letterSpacingProperty = new styleProperty.Property("letterSpacing", "letter-spacing",
     new PropertyMetadata(Number.NaN, AffectsLayout, undefined, isFloatValueValid), converters.floatConverter);
-    
+
 export var zIndexProperty = new styleProperty.Property("zIndex", "z-index",
-    new PropertyMetadata(Number.NaN, AffectsLayout, undefined, isFloatValueValid), converters.floatConverter);      
+    new PropertyMetadata(Number.NaN, AffectsLayout, undefined, isFloatValueValid), converters.floatConverter);
 
 // Helper property holding most layout related properties available in CSS.
 // When layout related properties are set in CSS we chache them and send them to the native view in a single call.

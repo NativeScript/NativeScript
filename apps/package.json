@@ -1,0 +1,7 @@
+{ "name" : "Apps",
+  "main" : "css-perf-test/app.js",
+   "android": {  
+      "v8Flags":"--expose_gc",
+      "profilerOutputDir": "/sdcard"
+   } 
+}

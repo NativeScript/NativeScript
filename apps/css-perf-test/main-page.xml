@@ -1,0 +1,307 @@
+<Page 
+    xmlns="http://schemas.nativescript.org/tns.xsd" navigatedTo="navigatedTo">
+    <ScrollView>
+        <StackLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+            <GridLayout columns="auto, *, auto" rows="auto, 25">
+                <Image src="~/css-perf-test/res/logo" class="thumbnail" rowSpan="2"/>
+                <Label text="Downloading..." textWrap="true" class="title" col="1" colSpan="2" minHeight="50" />
+                <Label text="author " class="author" col="1" row="1" />
+                <Label text="comments" class="comments" col="2" row="1" />
+            </GridLayout>
+        </StackLayout> 
+    </ScrollView>
+</Page>
