@@ -327,7 +327,7 @@ export class TabView extends common.TabView {
 
             var is = imageSource.fromFileOrResource(iconSource);
             if (is && is.ios) {
-                var originalRenderedImage = is.ios.imageWithRenderingMode(UIImageRenderingMode.UIImageRenderingModeAlwaysOriginal);
+                var originalRenderedImage = is.ios.imageWithRenderingMode(UIImageRenderingMode.UIImageRenderingModeAutomatic);
                 this._iconsCache[iconSource] = originalRenderedImage;
                 image = originalRenderedImage;
             }
