@@ -15,6 +15,8 @@
         "node_modules",
         "tests/node_modules",
         "tests/platforms",
+        "apps/node_modules",
+        "apps/platforms",
         "bin",
         "build",
         "Deploy",

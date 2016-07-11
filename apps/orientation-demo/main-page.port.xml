@@ -1,5 +1,0 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onPageLoaded" unloaded="onPageUnloaded" navigatedTo="pageNavigatedTo">
-  <GridLayout>
-    <TextView text="{{ orientation }}" />
-  </GridLayout>
-</Page>

@@ -1,2 +1,2 @@
-{ "name" : "Tests",
+{ "name" : "tns-samples-tests",
   "main" : "app/app.js" }

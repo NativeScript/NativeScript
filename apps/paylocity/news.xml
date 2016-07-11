@@ -1,3 +1,0 @@
-﻿<Page>
-  <ListView loaded="listViewLoaded" itemLoading="listViewItemLoading" />
-</Page>

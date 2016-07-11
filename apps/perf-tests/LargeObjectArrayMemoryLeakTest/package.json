@@ -1,2 +1,0 @@
-{ "name" : "LargeObjectArrayMemoryLeakTest",
-  "main" : "app.js" }

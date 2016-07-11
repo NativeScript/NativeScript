@@ -1,4 +1,0 @@
-{
-    "name" : "Performance Tests",
-    "main" : "./ApplicationSize/app.js"
-}

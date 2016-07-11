@@ -1,6 +1,0 @@
-﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onLoaded" shownModally="onShownModally" style.backgroundColor="lightgray">
-  <StackLayout>
-    <ListPicker id="listPicker"/>
-    <Button text="Done" tap="onButtonTap"/>
-  </StackLayout>
-</Page>

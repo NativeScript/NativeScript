@@ -1,5 +1,0 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd">
-  <StackLayout>
-    <Placeholder creatingView="creatingView" width="200" height="200" backgroundColor="red"/>
-  </StackLayout>
-</Page>
