@@ -62,7 +62,9 @@ declare module org {
                     onComplete(result: Object, context: Object): void;
                 }
 
-                export function DownloadImage(url: string, callback: CompleteCallback, context: any);
+                export module Image {
+                    export function download(url: string, callback: CompleteCallback, context: any);
+                }
 
                 export module Http {
                     export class KeyValuePair {
