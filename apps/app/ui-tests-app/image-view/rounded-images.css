@@ -57,5 +57,5 @@ style {
     border-width: 2;
     border-color: blue;
     border-radius: 100;
-    background-image: url('~/pages/red.png');
+    background-image: url('~/ui-tests-app/pages/red.png');
 }

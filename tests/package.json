@@ -20,6 +20,7 @@
     "babel-types": "6.9.0",
     "babylon": "6.8.0",
     "filewalker": "0.1.2",
-    "lazy": "1.0.11"
+    "lazy": "1.0.11",
+    "typescript": "^1.8.10"
   }
 }
