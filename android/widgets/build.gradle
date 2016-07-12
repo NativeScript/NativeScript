@@ -20,7 +20,7 @@ def computeBuildToolsVersion() {
         return buildToolsVersion
     }
     else {
-        return "22.0.1"
+        return "23.0.3"
     }
 }
 
