@@ -28,6 +28,45 @@ function ensureEnums() {
     }
 }
 
+interface ScheduledAsyncTask {
+    id: number;
+    object: ImageSource;
+    type: string; // fromResource, fromFile, fromBase64
+    resolve: Function;
+    reject: Function;
+}
+
+let idCounter = 0;
+let scheduledAsyncTasks = {};
+
+let completeCallback: org.nativescript.widgets.Async.CompleteCallback;
+function ensureCompleteCallback() {
+    if (completeCallback) {
+        return;
+    }
+
+    completeCallback = new org.nativescript.widgets.Async.CompleteCallback({
+        onComplete: function (result: any, id: number) {
+            let task: ScheduledAsyncTask = scheduledAsyncTasks[id];
+            if(!task) {
+                throw new Error("Received CompleteCallback for non-existing async task.");
+            }
+
+            delete scheduledAsyncTasks[id];
+
+            if(!result) {
+                // some error occurred, call reject
+                task.reject(new Error("Async task '" + task.type + "' failed."));
+            }
+            else {
+                // call resolve
+                task.object.setNativeSource(result);
+                task.resolve(true);
+            }
+        }
+    });
+}
+
 export class ImageSource implements definition.ImageSource {
     public android: android.graphics.Bitmap;
     public ios: UIImage;
@@ -54,7 +93,13 @@ export class ImageSource implements definition.ImageSource {
 
     public fromResource(name: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            resolve(this.loadFromResource(name));
+            try {
+                let task: ScheduledAsyncTask = this._prepareAsyncTask("fromResource", resolve, reject);
+                org.nativescript.widgets.Async.Image.fromResource(name, utils.ad.getApplicationContext(), task.id, completeCallback);
+            }
+            catch (e) {
+                reject(e);
+            }
         });
     }
 
@@ -72,7 +117,13 @@ export class ImageSource implements definition.ImageSource {
 
     public fromFile(path: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            resolve(this.loadFromFile(path));
+            try {
+                let task: ScheduledAsyncTask = this._prepareAsyncTask("fromFile", resolve, reject);
+                org.nativescript.widgets.Async.Image.fromFile(name, task.id, completeCallback);
+            }
+            catch (e) {
+                reject(e);
+            }
         });
     }
 
@@ -97,7 +148,13 @@ export class ImageSource implements definition.ImageSource {
 
     public fromBase64(data: any): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            resolve(this.loadFromBase64(data));
+            try {
+                let task: ScheduledAsyncTask = this._prepareAsyncTask("fromBase64", resolve, reject);
+                org.nativescript.widgets.Async.Image.fromBase64(name, task.id, completeCallback);
+            }
+            catch (e) {
+                reject(e);
+            }
         });
     }
 
@@ -137,6 +194,23 @@ export class ImageSource implements definition.ImageSource {
         outputStream.close();
 
         return outputStream.toString();
+    }
+
+    private _prepareAsyncTask(type: string, resolve: Function, reject: Function): ScheduledAsyncTask {
+        ensureUtils();
+        ensureCompleteCallback();
+
+        let task: ScheduledAsyncTask = {
+            resolve: resolve,
+            reject: reject,
+            type: type,
+            id: idCounter,
+            object: this
+        }
+        scheduledAsyncTasks[task.id] = task;
+        idCounter++;
+
+        return task;
     }
 
     get height(): number {

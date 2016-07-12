@@ -64,6 +64,9 @@ declare module org {
 
                 export module Image {
                     export function download(url: string, callback: CompleteCallback, context: any);
+                    export function fromResource(name: string, context: any, requestId: number, complete: CompleteCallback);
+                    export function fromFile(name: string, requestId: number, complete: CompleteCallback);
+                    export function fromBase64(source: string, requestId: number, complete: CompleteCallback);
                 }
 
                 export module Http {
