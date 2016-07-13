@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/NativeScript/tns-core-modules-widgets.svg?branch=master)](https://travis-ci.org/NativeScript/tns-core-modules-widgets)
-
 ##This is an Android Studio project.
 
 ### How to open?
