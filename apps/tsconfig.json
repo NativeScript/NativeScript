@@ -5,7 +5,7 @@
         "target": "es5",
         "module": "commonjs",
         "declaration": false,
-        "noImplicitAny": true,
+        "noImplicitAny": false,
         "noImplicitUseStrict": true,
         "experimentalDecorators": true,
         "diagnostics": true
