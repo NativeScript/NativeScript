@@ -15,7 +15,7 @@ mkdir dist/package/platforms
 echo "Build android"
 mkdir dist/package/platforms/android
 cd android
-./gradlew build
+./gradlew assembleRelease
 cd ..
 cp android/widgets/build/outputs/aar/widgets-release.aar dist/package/platforms/android/widgets-release.aar
 
