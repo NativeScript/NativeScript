@@ -2,7 +2,6 @@
 import { Page } from "ui/page";
 import { MianPageViewModel } from "./main-page-view-model";
 import buttonModule = require("ui/button");
-import observableArray = require("data/observable-array");
 import colorModule = require("color");
 import * as platform from "platform";
 
