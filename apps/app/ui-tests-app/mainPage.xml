@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Page loaded="pageLoaded">
-  <GridLayout rows="auto, *">
-    <Button automationText="btn" text="Run" tap="selectExample" />
-    <TextView automationText="tv" row="1" text="{{ selected }}"/>
+  <GridLayout rows="auto, auto, *">
+    <Button automationText="btn" text="Run" tap="{{ loadExampleFromRun }}" />
+    <TextView automationText="tv" row="1" text="{{ exampleName }}"/>
+    <ScrollView orientation="vertical" row="3" >
+      <WrapLayout id="wrapLayoutWithExamples"/>
+    </ScrollView>
   </GridLayout>
 </Page>
