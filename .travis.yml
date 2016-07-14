@@ -1,3 +1,8 @@
+env:
+  global:
+    - DATE=$(date +%Y-%m-%d)
+    - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
+    - PACKAGE_NAME=tns-core-modules-widgets
 sudo: false
 language: objective-c
 osx_image: xcode7.3
@@ -7,4 +12,15 @@ install:
   - echo y | android update sdk -t android-23,build-tools-23.0.3,extra-android-m2repository --no-ui --all
 before_script:
   - export ANDROID_HOME=/usr/local/opt/android-sdk
-script: ./build.sh 
+script: ./build.sh $PACKAGE_VERSION
+before_deploy:
+  - cd ./dist/package/
+  - node ../../.travis/add-publishConfig.js next
+deploy:
+  provider: npm
+  email: nativescript@telerik.com
+  on:
+    branch: master
+    skip_cleanup: true
+  api_key:
+    secure: j2gE5jnGSuCFy7s3pDB6Or2j+vhlRYIlSSB1mDI7R5PvpV0kWr8yE1rLnyqeb0pI7WY/36SV/0NZCClJhlrZFvd7QvaP3+55cGX3ijmsDp8WxfQRyHppA9RZuMFujG7swFr/s0RmoYgO9mYNe46lJTX8m0HZeNN2qlAC7LDD3x8=
