@@ -1,9 +1,7 @@
 import frame = require("ui/frame");
-import pages = require("ui/page");
 import trace = require("trace");
 import observable = require("data/observable");
 import dialogs = require("ui/dialogs");
-import observableArray = require("data/observable-array");
 
 export class MianPageViewModel extends observable.Observable {
     private _exampleName: string;
