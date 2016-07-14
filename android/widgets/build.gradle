@@ -6,7 +6,7 @@ def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
 
 apply plugin: 'com.android.library'
 
-def computeCompuleSdkVersion () {
+def computeCompileSdkVersion () {
     if(project.hasProperty("compileSdk")) {
         return compileSdk
     }
@@ -34,7 +34,7 @@ def computeTargetSdkVersion() {
 }
 
 android {
-    compileSdkVersion computeCompuleSdkVersion()
+    compileSdkVersion computeCompileSdkVersion()
     buildToolsVersion computeBuildToolsVersion()
 
     defaultConfig {
