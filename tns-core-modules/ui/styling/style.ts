@@ -890,7 +890,9 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 
     public _resetCssValues() {
-        var that = this;
+        this._view._unregisterAllAnimations();
+
+        const that = this;
         this._eachSetProperty(function (property: Property) {
             that._resetValue(property, ValueSource.Css);
             return true;
@@ -898,7 +900,7 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 
     public _resetLocalValues() {
-        var that = this;
+        const that = this;
         this._eachSetProperty(function (property: Property) {
             that._resetValue(property);
             return true;
