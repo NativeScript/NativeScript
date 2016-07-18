@@ -1262,3 +1262,45 @@ export function test_only_Bindable_BindingContext_Null_DoesNotThrow() {
         obj.bindingContext = new observable.Observable({ a: "b" });
         obj.bindingContext = null;
 }
+
+export function test_Observable_from_nested_json_binds_correctly() {
+    let expectedValue = "Test";
+    var model = new observable.Observable({
+        "firstObject": {
+            "secondObject": {
+                "dummyProperty": "text"
+            }
+        }
+    });
+
+    var obj = new bindable.Bindable();
+    obj.bind({
+        sourceProperty: "firstObject.secondObject.dummyProperty",
+        targetProperty: "test"
+    }, model);
+
+    model.get("firstObject").get("secondObject").set("dummyProperty", expectedValue);
+
+    TKUnit.assertEqual(obj.get("test"), expectedValue);
+}
+
+export function test_Observable_from_nested_json_binds_correctly_when_upper_object_is_changed() {
+    let expectedValue = "Test";
+    var model = new observable.Observable({
+        "firstObject": {
+            "secondObject": {
+                "dummyProperty": "text"
+            }
+        }
+    });
+
+    var obj = new bindable.Bindable();
+    obj.bind({
+        sourceProperty: "firstObject.secondObject.dummyProperty",
+        targetProperty: "test"
+    }, model);
+
+    model.get("firstObject").set("secondObject", new observable.Observable({"dummyProperty": expectedValue}));
+
+    TKUnit.assertEqual(obj.get("test"), expectedValue);
+}

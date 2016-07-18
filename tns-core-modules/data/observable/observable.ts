@@ -56,6 +56,9 @@ export class Observable implements definition.Observable {
             this._map = new Map<string, Object>();
             for (var prop in json) {
                 if (json.hasOwnProperty(prop)) {
+                    if (!Array.isArray(json[prop]) && typeof json[prop] === 'object') {
+                        json[prop] = new Observable(json[prop]);
+                    }
                     this._defineNewProperty(prop);
                     this.set(prop, json[prop]);
                 }
