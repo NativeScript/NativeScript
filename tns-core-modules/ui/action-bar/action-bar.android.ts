@@ -1,5 +1,4 @@
 ﻿import common = require("./action-bar-common");
-import frame = require("ui/frame");
 import types = require("utils/types");
 import enums = require("ui/enums");
 import application = require("application");
@@ -50,7 +49,7 @@ export class ActionItem extends common.ActionItem {
     private _itemId;
     constructor() {
         super();
-        this._itemId = generateItemId(); 
+        this._itemId = generateItemId();
     }
 
     public get android(): dts.AndroidActionItemSettings {
@@ -171,7 +170,7 @@ export class ActionBar extends common.ActionBar {
             this.navigationButton._raiseTap();
             return true;
         }
-        
+
         // Find item with the right ID;
         var menuItem: dts.ActionItem = undefined;
         var items = this.actionItems.getItems();
@@ -301,15 +300,13 @@ export class ActionBar extends common.ActionBar {
     }
 
     public _onTitlePropertyChanged() {
-        var topFrame = frame.topmost();
-        if (this._toolbar && topFrame && topFrame.currentPage === this.page) {
+        if (this._toolbar) {
             this._updateTitleAndTitleView();
         }
     }
 
     public _onIconPropertyChanged() {
-        var topFrame = frame.topmost();
-        if (this._toolbar && topFrame && topFrame.currentPage === this.page) {
+        if (this._toolbar) {
             this._updateIcon();
         }
     }
