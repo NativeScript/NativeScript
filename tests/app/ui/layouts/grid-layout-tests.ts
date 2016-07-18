@@ -17,13 +17,11 @@ class RemovalTrackingGridLayout extends GridLayout {
     public removedCols = 0;
 
     public _onRowRemoved(itemSpec: ItemSpec, index: number) {
-        console.log("_onRowRemoved");
         this.removedRows++;
         super._onRowRemoved(itemSpec, index);
     }
 
     public _onColumnRemoved(itemSpec: ItemSpec, index: number) {
-        console.log("_onColumnRemoved");
         this.removedCols++;
         super._onColumnRemoved(itemSpec, index);
     }

@@ -230,6 +230,31 @@ export function test_NavigateTo_WithContext() {
     TKUnit.assertNull(testPage.navigationContext, "Navigation context should be cleared on navigating back");
 }
 
+//https://github.com/NativeScript/NativeScript/issues/731
+export function test_BindingContext_Becomes_NavigationContext_When_NavigatingTo() {
+    let currentPage = frameModule.topmost().currentPage;
+    let testPage: Page;
+    let bindingContext;
+    let pageFactory = function (): Page {
+        testPage = new Page();
+        testPage.on(pageModule.Page.navigatingToEvent, function (args: NavigatedData) {
+            bindingContext = (<Page>args.object).bindingContext; 
+        });
+        return testPage;
+    };
+    let navEntry = {
+        create: pageFactory,
+        context: "This is the navigation context",
+        animated: false
+    };
+    let topFrame = frameModule.topmost();
+    topFrame.navigate(navEntry);
+    TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage !== currentPage && testPage.isLayoutValid);
+    helper.goBack();
+    
+    TKUnit.assertEqual(bindingContext, navEntry.context, "The Page's bindingContext should be set automatically to the navigation context when navigating to.");
+}
+
 export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
     let testPage: Page;
     let pageFactory = function () {

@@ -9,6 +9,7 @@ import * as fileSystemModule from "file-system";
 import * as frameModule from "ui/frame";
 import proxy = require("ui/core/proxy");
 import keyframeAnimation = require("ui/animation/keyframe-animation");
+import types = require("utils/types");
 
 let fs: typeof fileSystemModule;
 function ensureFS() {
@@ -201,6 +202,11 @@ export class Page extends ContentView implements dts.Page {
 
     public onNavigatingTo(context: any, isBackNavigation: boolean) {
         this._navigationContext = context;
+        
+        //https://github.com/NativeScript/NativeScript/issues/731
+        if (!isBackNavigation && !types.isNullOrUndefined(context)){
+            this.bindingContext = context;
+        }
         this.notify(this.createNavigatedData(Page.navigatingToEvent, isBackNavigation));
     }
 
