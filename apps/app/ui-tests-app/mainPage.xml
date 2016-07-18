@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Page loaded="pageLoaded">
-  <GridLayout rows="auto, auto, *">
-    <Button automationText="btn" text="Run" tap="{{ loadExampleFromRun }}" />
-    <TextView automationText="tv" row="1" text="{{ exampleName }}"/>
-    <ScrollView orientation="vertical" row="3" >
+  <GridLayout rows="auto, *, *">
+    <StackLayout id="parentLayout">
+      <TextView automationText="tv" id="textView" text="{{ exampleName }}"/>
+      <Button automationText="btn" id="btnRun" text="Run" tap="{{ loadOldExmaples }}"/>
+    </StackLayout>
+    <ScrollView row="1">
       <WrapLayout id="wrapLayoutWithExamples"/>
+    </ScrollView>
+    <ScrollView row="2">
+      <WrapLayout id="wrapLayoutWithOldExamples"/>
     </ScrollView>
   </GridLayout>
 </Page>

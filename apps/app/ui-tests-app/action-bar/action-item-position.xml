@@ -1,0 +1,16 @@
+<Page 
+  xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo">
+  <Page.actionBar>
+    <ActionBar>
+    <NavigationButton text="Go Back" android.systemIcon="ic_menu_back"></NavigationButton>
+      <ActionItem ios.position="right" >
+        <Button text="{{ text }}" backgroundColor="red" tap="change"/>
+      </ActionItem>
+    </ActionBar>
+  </Page.actionBar>
+  <StackLayout>
+    <Label text="Tap to change the text in the actionbar" class="title"/>
+    <Button text="Tap" tap="{{ onTap }}" />
+    <Label text="{{ text }}"/> 
+  </StackLayout>
+</Page>
