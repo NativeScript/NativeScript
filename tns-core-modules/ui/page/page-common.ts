@@ -10,14 +10,14 @@ import * as frameModule from "ui/frame";
 import proxy = require("ui/core/proxy");
 import keyframeAnimation = require("ui/animation/keyframe-animation");
 
-var fs: typeof fileSystemModule;
+let fs: typeof fileSystemModule;
 function ensureFS() {
     if (!fs) {
         fs = require("file-system");
     }
 }
 
-var frame: typeof frameModule;
+let frame: typeof frameModule;
 function ensureFrame() {
     if (!frame) {
         frame = require("ui/frame");
@@ -25,14 +25,14 @@ function ensureFrame() {
 }
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-var AffectsLayout = global.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
+const AffectsLayout = global.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
-var backgroundSpanUnderStatusBarProperty = new Property("backgroundSpanUnderStatusBar", "Page", new proxy.PropertyMetadata(false, AffectsLayout));
+const backgroundSpanUnderStatusBarProperty = new Property("backgroundSpanUnderStatusBar", "Page", new proxy.PropertyMetadata(false, AffectsLayout));
 
-var actionBarHiddenProperty = new Property("actionBarHidden", "Page", new proxy.PropertyMetadata(undefined, AffectsLayout));
+const actionBarHiddenProperty = new Property("actionBarHidden", "Page", new proxy.PropertyMetadata(undefined, AffectsLayout));
 
 function onActionBarHiddenPropertyChanged(data: PropertyChangeData) {
-    var page = <Page>data.object;
+    const page = <Page>data.object;
     if (page.isLoaded) {
         page._updateActionBar(data.newValue);
     }
@@ -167,8 +167,8 @@ export class Page extends ContentView implements dts.Page {
         }
         if (!this._cssFiles[cssFileName]) {
             if (fs.File.exists(cssFileName)) {
-                var file = fs.File.fromPath(cssFileName);
-                var text = file.readTextSync();
+                const file = fs.File.fromPath(cssFileName);
+                const text = file.readTextSync();
                 if (text) {
                     this._addCssInternal(text, cssFileName);
                     this._cssFiles[cssFileName] = true;
@@ -224,11 +224,11 @@ export class Page extends ContentView implements dts.Page {
             this._showNativeModalView(<any>frame.topmost().currentPage, undefined, undefined, true);
             return this;
         } else {
-            var context: any = arguments[1];
-            var closeCallback: Function = arguments[2];
-            var fullscreen: boolean = arguments[3];
+            const context: any = arguments[1];
+            const closeCallback: Function = arguments[2];
+            const fullscreen: boolean = arguments[3];
 
-            var page: Page;
+            let page: Page;
             if (arguments[0] instanceof Page) {
                 page = <Page>arguments[0];
             } else {
@@ -261,7 +261,7 @@ export class Page extends ContentView implements dts.Page {
 
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         parent._modal = this;
-        var that = this;
+        const that = this;
         this._modalContext = context;
         this._closeModalCallback = function () {
             if (that._closeModalCallback) {
@@ -285,7 +285,7 @@ export class Page extends ContentView implements dts.Page {
             object: this,
             context: this._modalContext,
             closeCallback: this._closeModalCallback
-        }
+        };
         this.notify(args);
     }
 
@@ -319,11 +319,11 @@ export class Page extends ContentView implements dts.Page {
 
         this._styleScope.ensureSelectors();
 
-        var scope = this._styleScope;
-        var checkSelectors = (view: view.View): boolean => {
+        const scope = this._styleScope;
+        const checkSelectors = (view: view.View): boolean => {
             scope.applySelectors(view);
             return true;
-        }
+        };
 
         checkSelectors(this);
         view.eachDescendant(this, checkSelectors);
@@ -332,10 +332,10 @@ export class Page extends ContentView implements dts.Page {
     }
 
     private _resetCssValues() {
-        var resetCssValuesFunc = (view: view.View): boolean => {
+        const resetCssValuesFunc = (view: view.View): boolean => {
             view.style._resetCssValues();
             return true;
-        }
+        };
 
         resetCssValuesFunc(this);
         view.eachDescendant(this, resetCssValuesFunc);

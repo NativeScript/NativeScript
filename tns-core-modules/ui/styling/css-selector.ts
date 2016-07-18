@@ -66,7 +66,6 @@ export class CssSelector {
     }
 
     public apply(view: view.View, valueSourceModifier: number) {
-        view._unregisterAllAnimations();
         let modifier = valueSourceModifier || this.valueSourceModifier;
         this.eachSetter((property, value) => {
             if (types.isString(property)) {
