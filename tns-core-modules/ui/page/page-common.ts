@@ -9,6 +9,7 @@ import * as fileSystemModule from "file-system";
 import * as frameModule from "ui/frame";
 import proxy = require("ui/core/proxy");
 import keyframeAnimation = require("ui/animation/keyframe-animation");
+import types = require("utils/types");
 
 let fs: typeof fileSystemModule;
 function ensureFS() {
@@ -199,13 +200,11 @@ export class Page extends ContentView implements dts.Page {
         };
     }
 
-    private _originalBindingContext: any;
     public onNavigatingTo(context: any, isBackNavigation: boolean) {
         this._navigationContext = context;
         
         //https://github.com/NativeScript/NativeScript/issues/731
-        if (!isBackNavigation && context && this.bindingContext !== context){
-            this._originalBindingContext = this.bindingContext;
+        if (!isBackNavigation && !types.isNullOrUndefined(context)){
             this.bindingContext = context;
         }
         this.notify(this.createNavigatedData(Page.navigatingToEvent, isBackNavigation));
@@ -223,12 +222,6 @@ export class Page extends ContentView implements dts.Page {
         this.notify(this.createNavigatedData(Page.navigatedFromEvent, isBackNavigation));
 
         this._navigationContext = undefined;
-        
-        //https://github.com/NativeScript/NativeScript/issues/731
-        if (isBackNavigation && this._originalBindingContext && this.bindingContext !== this._originalBindingContext){
-            this.bindingContext = this._originalBindingContext;
-            this._originalBindingContext = undefined;
-        }
     }
 
     public showModal(): Page {
