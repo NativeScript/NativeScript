@@ -34,7 +34,7 @@ export class ControlStateChangeListener implements definition.ControlStateChange
 
     public start() {
         if (!this._observing) {
-            this._control.addObserverForKeyPathOptionsContext(this._observer, "highlighted", NSKeyValueObservingOptions.NSKeyValueObservingOptionNew, null);
+            this._control.addObserverForKeyPathOptionsContext(this._observer, "highlighted", NSKeyValueObservingOptions.New, null);
             this._observing = true;
         }
     }

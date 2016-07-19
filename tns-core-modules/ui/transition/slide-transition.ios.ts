@@ -22,7 +22,7 @@ export class SlideTransition extends transition.Transition {
 
         let fromViewEndTransform: CGAffineTransform;
         let toViewBeginTransform: CGAffineTransform;
-        let push = (operation === UINavigationControllerOperation.UINavigationControllerOperationPush);
+        let push = (operation === UINavigationControllerOperation.Push);
 
         switch (this._direction) {
             case "left":
@@ -47,10 +47,10 @@ export class SlideTransition extends transition.Transition {
         fromView.transform = CGAffineTransformIdentity;
 
         switch (operation) {
-            case UINavigationControllerOperation.UINavigationControllerOperationPush:
+            case UINavigationControllerOperation.Push:
                 containerView.insertSubviewAboveSubview(toView, fromView);
                 break;
-            case UINavigationControllerOperation.UINavigationControllerOperationPop:
+            case UINavigationControllerOperation.Pop:
                 containerView.insertSubviewBelowSubview(toView, fromView);
                 break;
         }

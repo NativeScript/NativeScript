@@ -16,7 +16,7 @@ function ensureTrace() {
 }
 
 function isOrientationLandscape(orientation: number) {
-    return orientation === UIDeviceOrientation.UIDeviceOrientationLandscapeLeft || orientation === UIDeviceOrientation.UIDeviceOrientationLandscapeRight;
+    return orientation === UIDeviceOrientation.LandscapeLeft || orientation === UIDeviceOrientation.LandscapeRight;
 }
 
 export module layout {
@@ -45,13 +45,13 @@ export module ios {
     export function setTextAlignment(view: dts.ios.TextUIView, value: string) {
         switch (value) {
             case enums.TextAlignment.left:
-                view.textAlignment = NSTextAlignment.NSTextAlignmentLeft;
+                view.textAlignment = NSTextAlignment.Left;
                 break;
             case enums.TextAlignment.center:
-                view.textAlignment = NSTextAlignment.NSTextAlignmentCenter;
+                view.textAlignment = NSTextAlignment.Center;
                 break;
             case enums.TextAlignment.right:
-                view.textAlignment = NSTextAlignment.NSTextAlignmentRight;
+                view.textAlignment = NSTextAlignment.Right;
                 break;
             default:
                 break;
@@ -65,15 +65,15 @@ export module ios {
             if (v.style.textDecoration.indexOf(enums.TextDecoration.none) === -1) {
 
                 if (v.style.textDecoration.indexOf(enums.TextDecoration.underline) !== -1) {
-                    (<any>v).formattedText.underline = NSUnderlineStyle.NSUnderlineStyleSingle;
+                    (<any>v).formattedText.underline = NSUnderlineStyle.StyleSingle;
                 }
 
                 if (v.style.textDecoration.indexOf(enums.TextDecoration.lineThrough) !== -1) {
-                    (<any>v).formattedText.strikethrough = NSUnderlineStyle.NSUnderlineStyleSingle;
+                    (<any>v).formattedText.strikethrough = NSUnderlineStyle.StyleSingle;
                 }
 
             } else {
-                (<any>v).formattedText.underline = NSUnderlineStyle.NSUnderlineStyleNone;
+                (<any>v).formattedText.underline = NSUnderlineStyle.StyleNone;
             }
 
             for (let i = 0; i < v.formattedText.spans.length; i++) {
@@ -84,7 +84,7 @@ export module ios {
             if (hasLetterSpacing) {
                 let attrText; 
                 if(v._nativeView instanceof UIButton){
-                    attrText = (<UIButton>v._nativeView).attributedTitleForState(UIControlState.UIControlStateNormal);
+                    attrText = (<UIButton>v._nativeView).attributedTitleForState(UIControlState.Normal);
                 } else {
                     attrText = v._nativeView.attributedText;
                 }
@@ -92,7 +92,7 @@ export module ios {
                 attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing, { location: 0, length: v._nativeView.attributedText.length });
                 
                 if(v._nativeView instanceof UIButton){
-                    (<UIButton>v._nativeView).setAttributedTitleForState(attrText, UIControlState.UIControlStateNormal);
+                    (<UIButton>v._nativeView).setAttributedTitleForState(attrText, UIControlState.Normal);
                 } 
             }
 
@@ -107,11 +107,11 @@ export module ios {
                 let dict = new Map<string, number>();
 
                 if (decorationValues.indexOf(enums.TextDecoration.underline) !== -1) {
-                    dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                    dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 }
 
                 if (decorationValues.indexOf(enums.TextDecoration.lineThrough) !== -1) {
-                    dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                    dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 }
 
                 if (hasLetterSpacing) {
@@ -132,15 +132,15 @@ export module ios {
                 }
 
                 if (view instanceof UIButton) {
-                    (<UIButton>view).setAttributedTitleForState(result, UIControlState.UIControlStateNormal);
+                    (<UIButton>view).setAttributedTitleForState(result, UIControlState.Normal);
                 }
                 else {
                     (<dts.ios.TextUIView>view).attributedText = result;
                 }
             } else {
                 if (view instanceof UIButton) {
-                    (<UIButton>view).setAttributedTitleForState(NSMutableAttributedString.alloc().initWithString(source), UIControlState.UIControlStateNormal);
-                    (<UIButton>view).setTitleForState(<string>source, UIControlState.UIControlStateNormal);
+                    (<UIButton>view).setAttributedTitleForState(NSMutableAttributedString.alloc().initWithString(source), UIControlState.Normal);
+                    (<UIButton>view).setTitleForState(<string>source, UIControlState.Normal);
                 }
                 else {
                     (<dts.ios.TextUIView>view).text = <string>source;
@@ -177,25 +177,25 @@ export module ios {
 
     export function setWhiteSpace(view: dts.ios.TextUIView, value: string, parentView?: UIView) {
         if (value === enums.WhiteSpace.normal) {
-            view.lineBreakMode = NSLineBreakMode.NSLineBreakByWordWrapping;
+            view.lineBreakMode = NSLineBreakMode.ByWordWrapping;
             view.numberOfLines = 0;
         }
         else {
             if (parentView) {
-                view.lineBreakMode = NSLineBreakMode.NSLineBreakByTruncatingMiddle;
+                view.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
             } else {
-                view.lineBreakMode = NSLineBreakMode.NSLineBreakByTruncatingTail;
+                view.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
             }
             view.numberOfLines = 1;
         }
     }
 
     export module collections {
-        export function jsArrayToNSArray(str: string[]): NSArray {
+        export function jsArrayToNSArray(str: string[]): NSArray<any> {
             return NSArray.arrayWithArray(<any>str);
         }
 
-        export function nsArrayToJSArray(a: NSArray): Array<Object> {
+        export function nsArrayToJSArray(a: NSArray<any>): Array<Object> {
             var arr = [];
             if ("undefined" !== typeof a) {
                 let count = a.count;

@@ -83,7 +83,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
                 }
                 else {
                     if (range.location <= textField.text.length) {
-                        let newText = NSString.alloc().initWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
+                        let newText = NSString.stringWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
                         owner._onPropertyChangedFromNative(TextBase.textProperty, newText);
                     }
                 }

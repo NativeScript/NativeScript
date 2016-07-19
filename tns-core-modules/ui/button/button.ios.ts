@@ -39,10 +39,10 @@ export class Button extends common.Button {
 
     constructor() {
         super();
-        this._ios = UIButton.buttonWithType(UIButtonType.UIButtonTypeSystem);
+        this._ios = UIButton.buttonWithType(UIButtonType.System);
 
         this._tapHandler = TapHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._tapHandler, "tap", UIControlEvents.UIControlEventTouchUpInside);
+        this._ios.addTargetActionForControlEvents(this._tapHandler, "tap", UIControlEvents.TouchUpInside);
 
         this._stateChangedHandler = new stateChanged.ControlStateChangeListener(this._ios, (s: string) => {
             this._goToVisualState(s);
@@ -72,19 +72,19 @@ export class Button extends common.Button {
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         // In general, if a property is not specified for a state, the default is to use
-        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set,
+        // the UIControlState.Normal value. If the value for UIControlState.Normal is not set,
         // then the property defaults to a system value. Therefore, at a minimum, you should
         // set the value for the normal state.
-        this.ios.setTitleForState(data.newValue + "", UIControlState.UIControlStateNormal);
+        this.ios.setTitleForState(data.newValue + "", UIControlState.Normal);
     }
 
     public _setFormattedTextPropertyToNative(value) {
         // In general, if a property is not specified for a state, the default is to use
-        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set,
+        // the UIControlState.Normal value. If the value for UIControlState.Normal is not set,
         // then the property defaults to a system value. Therefore, at a minimum, you should
         // set the value for the normal state.
         let newText = value ? value._formattedText : null;
-        this.ios.setAttributedTitleForState(newText, UIControlState.UIControlStateNormal);
+        this.ios.setAttributedTitleForState(newText, UIControlState.Normal);
         this.style._updateTextDecoration();
     }
 
@@ -106,17 +106,17 @@ export class ButtonStyler implements style.Styler {
     // color
     private static setColorProperty(view: view.View, newValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
-        btn.setTitleColorForState(newValue, UIControlState.UIControlStateNormal);
+        btn.setTitleColorForState(newValue, UIControlState.Normal);
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
-        btn.setTitleColorForState(nativeValue, UIControlState.UIControlStateNormal);
+        btn.setTitleColorForState(nativeValue, UIControlState.Normal);
     }
 
     private static getNativeColorValue(view: view.View): any {
         var btn: UIButton = <UIButton>view._nativeView;
-        return btn.titleColorForState(UIControlState.UIControlStateNormal);
+        return btn.titleColorForState(UIControlState.Normal);
     }
 
     // font
@@ -143,13 +143,13 @@ export class ButtonStyler implements style.Styler {
         // Also set the contentHorizontalAlignment
         switch (newValue) {
             case enums.TextAlignment.left:
-                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentLeft;
+                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Left;
                 break;
             case enums.TextAlignment.center:
-                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentCenter;
+                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
                 break;
             case enums.TextAlignment.right:
-                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentRight;
+                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Right;
                 break;
             default:
                 break;

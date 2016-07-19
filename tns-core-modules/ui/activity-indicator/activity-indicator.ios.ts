@@ -32,7 +32,7 @@ export class ActivityIndicator extends aiCommon.ActivityIndicator  {
 
     constructor() {
         super();
-        this._ios = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.UIActivityIndicatorViewStyleGray);
+        this._ios = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
     }
 
     get ios(): UIActivityIndicatorView {

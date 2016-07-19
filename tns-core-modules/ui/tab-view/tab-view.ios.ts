@@ -136,8 +136,8 @@ export class TabViewItem extends common.TabViewItem {
             }
 
             var states = getTitleAttributesForStates(this._parent);
-            tabBarItem.setTitleTextAttributesForState(states.normalState, UIControlState.UIControlStateNormal);
-            tabBarItem.setTitleTextAttributesForState(states.selectedState, UIControlState.UIControlStateSelected);
+            tabBarItem.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
+            tabBarItem.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
             this._controller.tabBarItem = tabBarItem;
         }
     }
@@ -268,7 +268,7 @@ export class TabView extends common.TabView {
         var i: number;
         var length = newItems.length;
         var item: TabViewItem;
-        var newControllers: NSMutableArray = NSMutableArray.alloc().initWithCapacity(length);
+        var newControllers: NSMutableArray<any> = NSMutableArray.alloc().initWithCapacity(length);
         var newController: UIViewController;
 
         var states = getTitleAttributesForStates(this);
@@ -297,8 +297,8 @@ export class TabView extends common.TabView {
                     (<any>tabBarItem).titlePositionAdjustment = { horizontal: 0, vertical: -20 };
                 }
             }
-            tabBarItem.setTitleTextAttributesForState(states.normalState, UIControlState.UIControlStateNormal);
-            tabBarItem.setTitleTextAttributesForState(states.selectedState, UIControlState.UIControlStateSelected);
+            tabBarItem.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
+            tabBarItem.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
 
             newController.tabBarItem = tabBarItem;
             newControllers.addObject(newController);
@@ -327,7 +327,7 @@ export class TabView extends common.TabView {
 
             var is = imageSource.fromFileOrResource(iconSource);
             if (is && is.ios) {
-                var originalRenderedImage = is.ios.imageWithRenderingMode(UIImageRenderingMode.UIImageRenderingModeAutomatic);
+                var originalRenderedImage = is.ios.imageWithRenderingMode(UIImageRenderingMode.Automatic);
                 this._iconsCache[iconSource] = originalRenderedImage;
                 image = originalRenderedImage;
             }
@@ -420,8 +420,8 @@ export class TabView extends common.TabView {
 
         for (var i = 0; i < tabBar.items.count; i++) {
             var item = <UITabBarItem>tabBar.items[i];
-            item.setTitleTextAttributesForState(states.normalState, UIControlState.UIControlStateNormal);
-            item.setTitleTextAttributesForState(states.selectedState, UIControlState.UIControlStateSelected);
+            item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
+            item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
         }
     }
 }
@@ -480,7 +480,7 @@ export class TabViewStyler implements style.Styler {
         let currentFont;
 
         if (tab.ios && tab.ios.items && tab.ios.items.length > 0) {
-            let currentAttrs = tab.ios.items[0].titleTextAttributesForState(UIControlState.UIControlStateNormal);
+            let currentAttrs = tab.ios.items[0].titleTextAttributesForState(UIControlState.Normal);
             if (currentAttrs) {
                 currentFont = currentAttrs.objectForKey(NSFontAttributeName);
             }

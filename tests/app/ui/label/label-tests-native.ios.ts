@@ -5,11 +5,11 @@ import utilsModule = require("utils/utils");
 
 export function getNativeTextAlignment(label: labelModule.Label): string {
     switch (label.ios.textAlignment) {
-        case NSTextAlignment.NSTextAlignmentLeft:
+        case NSTextAlignment.Left:
             return enums.TextAlignment.left;
-        case NSTextAlignment.NSTextAlignmentCenter:
+        case NSTextAlignment.Center:
             return enums.TextAlignment.center;
-        case NSTextAlignment.NSTextAlignmentRight:
+        case NSTextAlignment.Right:
             return enums.TextAlignment.right;
         default:
             return "unexpected value";

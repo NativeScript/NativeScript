@@ -134,19 +134,19 @@ export class GesturesObserver extends common.GesturesObserver {
             if (type & definition.GestureTypes.swipe) {
                 nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.swipe, args => {
                     this._executeCallback(_getSwipeData(args));
-                }, UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionDown));
+                }, UISwipeGestureRecognizerDirection.Down));
 
                 nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.swipe, args => {
                     this._executeCallback(_getSwipeData(args));
-                }, UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionLeft));
+                }, UISwipeGestureRecognizerDirection.Left));
 
                 nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.swipe, args => {
                     this._executeCallback(_getSwipeData(args));
-                }, UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionRight));
+                }, UISwipeGestureRecognizerDirection.Right));
 
                 nativeView.addGestureRecognizer(this._createRecognizer(definition.GestureTypes.swipe, args => {
                     this._executeCallback(_getSwipeData(args));
-                }, UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionUp));
+                }, UISwipeGestureRecognizerDirection.Up));
             }
 
             if (type & definition.GestureTypes.rotation) {
@@ -264,25 +264,25 @@ function _getUIGestureRecognizerType(type: definition.GestureTypes): any {
 }
 
 function getState(recognizer: UIGestureRecognizer) {
-    if (recognizer.state === UIGestureRecognizerState.UIGestureRecognizerStateBegan) {
+    if (recognizer.state === UIGestureRecognizerState.Began) {
         return common.GestureStateTypes.began;
-    } else if (recognizer.state === UIGestureRecognizerState.UIGestureRecognizerStateCancelled) {
+    } else if (recognizer.state === UIGestureRecognizerState.Cancelled) {
         return common.GestureStateTypes.cancelled;
-    } else if (recognizer.state === UIGestureRecognizerState.UIGestureRecognizerStateChanged) {
+    } else if (recognizer.state === UIGestureRecognizerState.Changed) {
         return common.GestureStateTypes.changed;
-    } else if (recognizer.state === UIGestureRecognizerState.UIGestureRecognizerStateEnded) {
+    } else if (recognizer.state === UIGestureRecognizerState.Ended) {
         return common.GestureStateTypes.ended;
     }
 }
 
 function _getSwipeDirection(direction: UISwipeGestureRecognizerDirection): definition.SwipeDirection {
-    if (direction === UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionDown) {
+    if (direction === UISwipeGestureRecognizerDirection.Down) {
         return definition.SwipeDirection.down;
-    } else if (direction === UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionLeft) {
+    } else if (direction === UISwipeGestureRecognizerDirection.Left) {
         return definition.SwipeDirection.left;
-    } else if (direction === UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionRight) {
+    } else if (direction === UISwipeGestureRecognizerDirection.Right) {
         return definition.SwipeDirection.right;
-    } else if (direction === UISwipeGestureRecognizerDirection.UISwipeGestureRecognizerDirectionUp) {
+    } else if (direction === UISwipeGestureRecognizerDirection.Up) {
         return definition.SwipeDirection.up;
     }
 }
@@ -352,23 +352,23 @@ class TouchGestureRecognizer extends UIGestureRecognizer {
     public observer: GesturesObserver;
     private _eventData: TouchGestureEventData;
 
-    touchesBeganWithEvent(touches: NSSet, event: any): void {
+    touchesBeganWithEvent(touches: NSSet<any>, event: any): void {
         this.executeCallback(common.TouchAction.down, touches, event);
     }
 
-    touchesMovedWithEvent(touches: NSSet, event: any): void {
+    touchesMovedWithEvent(touches: NSSet<any>, event: any): void {
         this.executeCallback(common.TouchAction.move, touches, event);
     }
 
-    touchesEndedWithEvent(touches: NSSet, event: any): void {
+    touchesEndedWithEvent(touches: NSSet<any>, event: any): void {
         this.executeCallback(common.TouchAction.up, touches, event);
     }
 
-    touchesCancelledWithEvent(touches: NSSet, event: any): void {
+    touchesCancelledWithEvent(touches: NSSet<any>, event: any): void {
         this.executeCallback(common.TouchAction.cancel, touches, event);
     }
 
-    private executeCallback(action: string, touches: NSSet, event: any): void {
+    private executeCallback(action: string, touches: NSSet<any>, event: any): void {
         if (!this._eventData) {
             this._eventData = new TouchGestureEventData();
         }
@@ -413,14 +413,14 @@ class TouchGestureEventData implements definition.TouchGestureEventData {
     android: any = undefined;
     action: string;
     view: view.View;
-    ios: { touches: NSSet, event: { allTouches: () => NSSet } };
+    ios: { touches: NSSet<any>, event: { allTouches: () => NSSet<any> } };
     object: any;
 
     private _activePointers: Array<Pointer>;
     private _allPointers: Array<Pointer>;
     private _mainPointer: UITouch;
 
-    public prepare(view: view.View, action: string, touches: NSSet, event: any) {
+    public prepare(view: view.View, action: string, touches: NSSet<any>, event: any) {
         this.action = action;
         this.view = view;
         this.object = view;

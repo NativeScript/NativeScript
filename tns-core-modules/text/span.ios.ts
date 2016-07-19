@@ -26,10 +26,10 @@ export class Span extends spanCommon.Span {
                 var fontDescriptor = UIFontDescriptor.new();
                 var symbolicTraits;
                 if (realFontAttributes & enums.FontAttributes.Bold) {
-                    symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold;
+                    symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitBold;
                 }
                 if (realFontAttributes & enums.FontAttributes.Italic) {
-                    symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic;
+                    symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitItalic;
                 }
                 font = UIFont.fontWithDescriptorSize(fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits), realFontSize);
             }

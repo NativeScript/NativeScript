@@ -12,17 +12,17 @@ function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData)
 
     switch (data.newValue) {
         case enums.Stretch.aspectFit:
-            image.ios.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit;
+            image.ios.contentMode = UIViewContentMode.ScaleAspectFit;
             break;
         case enums.Stretch.aspectFill:
-            image.ios.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFill;
+            image.ios.contentMode = UIViewContentMode.ScaleAspectFill;
             break;
         case enums.Stretch.fill:
-            image.ios.contentMode = UIViewContentMode.UIViewContentModeScaleToFill;
+            image.ios.contentMode = UIViewContentMode.ScaleToFill;
             break;
         case enums.Stretch.none:
         default:
-            image.ios.contentMode = UIViewContentMode.UIViewContentModeTopLeft;
+            image.ios.contentMode = UIViewContentMode.TopLeft;
             break;
     }
 }
@@ -45,7 +45,7 @@ export class Image extends imageCommon.Image {
 
         //TODO: Think of unified way of setting all the default values.
         this._ios = new UIImageView();
-        this._ios.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit;
+        this._ios.contentMode = UIViewContentMode.ScaleAspectFit;
         this._ios.clipsToBounds = true;
         this._ios.userInteractionEnabled = true;
     }

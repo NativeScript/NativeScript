@@ -8,7 +8,7 @@ function onYearPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
     if (picker.ios) {
-        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitYear | NSCalendarUnit.NSCalendarUnitMonth | NSCalendarUnit.NSCalendarUnitDay, picker.ios.date);
+        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.ios.date);
         comps.year = data.newValue;
         picker.date = new Date(comps.year, comps.month - 1, comps.day);
     }
@@ -20,7 +20,7 @@ function onMonthPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
     if (picker.ios) {
-        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitYear | NSCalendarUnit.NSCalendarUnitMonth | NSCalendarUnit.NSCalendarUnitDay, picker.ios.date);
+        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.ios.date);
         comps.month = data.newValue;
         picker.date = new Date(comps.year, comps.month - 1, comps.day);
     }
@@ -32,7 +32,7 @@ function onDayPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
     if (picker.ios) {
-        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitYear | NSCalendarUnit.NSCalendarUnitMonth | NSCalendarUnit.NSCalendarUnitDay, picker.ios.date);
+        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.ios.date);
         comps.day = data.newValue;
         picker.date = new Date(comps.year, comps.month - 1, comps.day);
     }
@@ -65,7 +65,7 @@ function onDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
     if (picker.ios) {
-        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitYear | NSCalendarUnit.NSCalendarUnitMonth | NSCalendarUnit.NSCalendarUnitDay, picker.ios.date);
+        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.ios.date);
         let newDate = data.newValue;
         comps.year = newDate.getFullYear();
         comps.month = newDate.getMonth() + 1;
@@ -86,10 +86,10 @@ export class DatePicker extends common.DatePicker {
         super();
 
         this._ios = new UIDatePicker();
-        this._ios.datePickerMode = UIDatePickerMode.UIDatePickerModeDate;
+        this._ios.datePickerMode = UIDatePickerMode.Date;
 
         this._changeHandler = UIDatePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.UIControlEventValueChanged);
+        this._ios.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
     }
 
     get ios(): UIDatePicker {
@@ -108,7 +108,7 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
     }
 
     public valueChanged(sender: UIDatePicker) {
-        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitYear | NSCalendarUnit.NSCalendarUnitMonth | NSCalendarUnit.NSCalendarUnitDay, sender.date);
+        var comps = NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, sender.date);
         
         let owner = this._owner.get();
         if (!owner) {

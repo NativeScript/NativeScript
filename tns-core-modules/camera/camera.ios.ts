@@ -103,7 +103,7 @@ export var takePicture = function (options): Promise<any> {
         }
         imagePickerController.delegate = listener;
 
-        let sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera;
+        let sourceType = UIImagePickerControllerSourceType.Camera;
         let mediaTypes = UIImagePickerController.availableMediaTypesForSourceType(sourceType);
 
         if (mediaTypes) {
@@ -111,7 +111,7 @@ export var takePicture = function (options): Promise<any> {
             imagePickerController.sourceType = sourceType;
         }
 
-        imagePickerController.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationCurrentContext;
+        imagePickerController.modalPresentationStyle = UIModalPresentationStyle.CurrentContext;
 
         let frame: typeof frameModule = require("ui/frame");
 
@@ -126,5 +126,5 @@ export var takePicture = function (options): Promise<any> {
 }
 
 export var isAvailable = function () {
-    return UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera);
+    return UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera);
 }

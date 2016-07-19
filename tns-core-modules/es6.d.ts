@@ -1,4 +1,7 @@
-declare var Symbol: any;
+declare var Symbol: {
+    (name: string): symbol;
+    iterator: symbol;
+};
 
 interface ObjectConstructor {
     assign(target: any, ...sources: any[]): any;

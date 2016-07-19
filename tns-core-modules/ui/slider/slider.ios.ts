@@ -61,7 +61,7 @@ export class Slider extends common.Slider {
         this._ios.maximumValue = this.maxValue;
 
         this._changeHandler = SliderChangeHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._changeHandler, "sliderValueChanged", UIControlEvents.UIControlEventValueChanged);
+        this._ios.addTargetActionForControlEvents(this._changeHandler, "sliderValueChanged", UIControlEvents.ValueChanged);
     }
 
     get ios(): UISlider {

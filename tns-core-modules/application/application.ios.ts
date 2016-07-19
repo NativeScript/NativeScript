@@ -19,7 +19,7 @@ class Window extends UIWindow {
     initWithFrame(frame: CGRect): UIWindow {
         var window = super.initWithFrame(frame);
         if (window) {
-            window.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
+            window.autoresizingMask = UIViewAutoresizing.None;
         }
         return window;
     }
@@ -202,12 +202,12 @@ class IOSApplication implements definition.iOSApplication {
 
             var newValue;
             switch (orientation) {
-                case UIDeviceOrientation.UIDeviceOrientationLandscapeRight:
-                case UIDeviceOrientation.UIDeviceOrientationLandscapeLeft:
+                case UIDeviceOrientation.LandscapeRight:
+                case UIDeviceOrientation.LandscapeLeft:
                     newValue = enums.DeviceOrientation.landscape;
                     break;
-                case UIDeviceOrientation.UIDeviceOrientationPortrait:
-                case UIDeviceOrientation.UIDeviceOrientationPortraitUpsideDown:
+                case UIDeviceOrientation.Portrait:
+                case UIDeviceOrientation.PortraitUpsideDown:
                     newValue = enums.DeviceOrientation.portrait;
                     break;
                 default:

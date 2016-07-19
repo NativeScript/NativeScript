@@ -108,19 +108,19 @@ function addButtonsToAlertController(alertController: UIAlertController, options
     }
 
     if (types.isString(options.cancelButtonText)) {
-        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.UIAlertActionStyleDefault, (arg: UIAlertAction) => {
+        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Default, (arg: UIAlertAction) => {
             raiseCallback(callback, false);
         }));
     }
 
     if (types.isString(options.neutralButtonText)) {
-        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.neutralButtonText, UIAlertActionStyle.UIAlertActionStyleDefault, (arg: UIAlertAction) => {
+        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.neutralButtonText, UIAlertActionStyle.Default, (arg: UIAlertAction) => {
             raiseCallback(callback, undefined);
         }));
     }
 
     if (types.isString(options.okButtonText)) {
-        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.UIAlertActionStyleDefault, (arg: UIAlertAction) => {
+        alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, (arg: UIAlertAction) => {
             raiseCallback(callback, true);
         }));
     }
@@ -131,7 +131,6 @@ function raiseCallback(callback, result) {
         callback(result);
     }
 }
-
 export function alert(arg: any): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         try {
@@ -155,7 +154,7 @@ export function alert(arg: any): Promise<void> {
 
                 alert.show();
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.UIAlertControllerStyleAlert);
+                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
                 addButtonsToAlertController(alertController, options, () => { resolve(); });
 
@@ -189,7 +188,7 @@ export function confirm(arg: any): Promise<boolean> {
 
                 alert.show();
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.UIAlertControllerStyleAlert);
+                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
                 addButtonsToAlertController(alertController, options, (r) => { resolve(r); });
 
@@ -235,9 +234,9 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
                 var alert = createUIAlertView(options);
 
                 if (options.inputType === dialogs.inputType.password) {
-                    alert.alertViewStyle = UIAlertViewStyle.UIAlertViewStyleSecureTextInput;
+                    alert.alertViewStyle = UIAlertViewStyle.SecureTextInput;
                 } else {
-                    alert.alertViewStyle = UIAlertViewStyle.UIAlertViewStylePlainTextInput;
+                    alert.alertViewStyle = UIAlertViewStyle.PlainTextInput;
                 }
 
                 addButtonsToAlertDialog(alert, options);
@@ -256,7 +255,7 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
 
                 alert.show();
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.UIAlertControllerStyleAlert);
+                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
                 alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                     arg.text = types.isString(options.defaultText) ? options.defaultText : "";
@@ -317,7 +316,7 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
             if (utils.ios.MajorVersion < 8) {
                 var alert = createUIAlertView(options);
 
-                alert.alertViewStyle = UIAlertViewStyle.UIAlertViewStyleLoginAndPasswordInput;
+                alert.alertViewStyle = UIAlertViewStyle.LoginAndPasswordInput;
 
                 addButtonsToAlertDialog(alert, options);
 
@@ -338,7 +337,7 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
 
                 alert.show();
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.UIAlertControllerStyleAlert);
+                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
                 alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                     arg.placeholder = "Login";
@@ -479,13 +478,13 @@ export function action(arg: any): Promise<string> {
                 actionSheet.delegate = delegate;
                 actionSheet.showInView(UIApplication.sharedApplication().keyWindow);
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.UIAlertControllerStyleActionSheet);
+                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.ActionSheet);
 
                 if (options.actions) {
                     for (i = 0; i < options.actions.length; i++) {
                         action = options.actions[i];
                         if (types.isString(action)) {
-                            alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(action, UIAlertActionStyle.UIAlertActionStyleDefault, (arg: UIAlertAction) => {
+                            alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(action, UIAlertActionStyle.Default, (arg: UIAlertAction) => {
                                 resolve(arg.title);
                             }));
                         }
@@ -493,7 +492,7 @@ export function action(arg: any): Promise<string> {
                 }
 
                 if (types.isString(options.cancelButtonText)) {
-                    alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.UIAlertActionStyleCancel, (arg: UIAlertAction) => {
+                    alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Cancel, (arg: UIAlertAction) => {
                         resolve(arg.title);
                     }));
                 }

@@ -4,11 +4,11 @@ import utilsModule = require("utils/utils");
 import enums = require("ui/enums");
 
 export function getNativeText(button: buttonModule.Button): string {
-    return button.ios.titleForState(UIControlState.UIControlStateNormal);
+    return button.ios.titleForState(UIControlState.Normal);
 }
 
 export function getNativeTextWrap(button: buttonModule.Button): boolean {
-    return (<UIButton>button.ios).titleLabel.lineBreakMode === NSLineBreakMode.NSLineBreakByWordWrapping;
+    return (<UIButton>button.ios).titleLabel.lineBreakMode === NSLineBreakMode.ByWordWrapping;
 }
 
 export function getNativeFontSize(button: buttonModule.Button): number {
@@ -16,7 +16,7 @@ export function getNativeFontSize(button: buttonModule.Button): number {
 }
 
 export function getNativeColor(button: buttonModule.Button): colorModule.Color {
-    return utilsModule.ios.getColor(button.ios.titleColorForState(UIControlState.UIControlStateNormal));
+    return utilsModule.ios.getColor(button.ios.titleColorForState(UIControlState.Normal));
 }
 
 export function getNativeBackgroundColor(button: buttonModule.Button): colorModule.Color {
@@ -25,11 +25,11 @@ export function getNativeBackgroundColor(button: buttonModule.Button): colorModu
 
 export function getNativeTextAlignment(button: buttonModule.Button): string {
     switch (button.ios.titleLabel.textAlignment) {
-        case NSTextAlignment.NSTextAlignmentLeft:
+        case NSTextAlignment.Left:
             return enums.TextAlignment.left;
-        case NSTextAlignment.NSTextAlignmentCenter:
+        case NSTextAlignment.Center:
             return enums.TextAlignment.center;
-        case NSTextAlignment.NSTextAlignmentRight:
+        case NSTextAlignment.Right:
             return enums.TextAlignment.right;
         default:
             return "unexpected value";
@@ -37,5 +37,5 @@ export function getNativeTextAlignment(button: buttonModule.Button): string {
 }
 
 export function performNativeClick(button: buttonModule.Button): void {
-    button.ios.sendActionsForControlEvents(UIControlEvents.UIControlEventTouchUpInside);
+    button.ios.sendActionsForControlEvents(UIControlEvents.TouchUpInside);
 }

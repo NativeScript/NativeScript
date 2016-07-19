@@ -10,7 +10,7 @@ function getDate(hour: number, minute: number): NSDate {
 }
 
 function getComponents(date: NSDate): NSDateComponents {
-    return NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitHour | NSCalendarUnit.NSCalendarUnitMinute, date);
+    return NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, date);
 }
 
 global.moduleMerge(common, exports);
@@ -23,10 +23,10 @@ export class TimePicker extends common.TimePicker {
         super();
 
         this._ios = new UIDatePicker();
-        this._ios.datePickerMode = UIDatePickerMode.UIDatePickerModeTime;
+        this._ios.datePickerMode = UIDatePickerMode.Time;
 
         this._changeHandler = UITimePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.UIControlEventValueChanged);
+        this._ios.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
 
         var comps = getComponents(NSDate.date());
         this.hour = comps.hour;

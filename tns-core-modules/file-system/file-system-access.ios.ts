@@ -27,7 +27,7 @@ export class FileSystemAccess {
     public getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
         try {
             var fileManager = NSFileManager.defaultManager();
-            var nsString = NSString.alloc().initWithString(path);
+            var nsString = NSString.stringWithString(path);
 
             var parentPath = nsString.stringByDeletingLastPathComponent;
             var name = fileManager.displayNameAtPath(parentPath);
@@ -276,7 +276,7 @@ export class FileSystemAccess {
     }
 
     public writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
-        var nsString = NSString.alloc().initWithString(content);
+        var nsString = NSString.stringWithString(content);
 
         var actualEncoding = encoding;
         if (!actualEncoding) {

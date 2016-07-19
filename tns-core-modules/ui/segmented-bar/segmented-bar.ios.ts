@@ -98,7 +98,7 @@ export class SegmentedBar extends common.SegmentedBar {
         this._ios = UISegmentedControl.new();
 
         this._selectionHandler = SelectionHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._selectionHandler, "selected", UIControlEvents.UIControlEventValueChanged);
+        this._ios.addTargetActionForControlEvents(this._selectionHandler, "selected", UIControlEvents.ValueChanged);
     }
 
     get ios(): UISegmentedControl {
@@ -138,7 +138,7 @@ export class SegmentedBarStyler implements style.Styler {
     //Text color methods
     private static setColorProperty(v: view.View, newValue: any) {
         let bar = <UISegmentedControl>v.ios;
-        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
         let attrs;
         if (currentAttrs) {
             attrs = currentAttrs.mutableCopy();
@@ -147,12 +147,12 @@ export class SegmentedBarStyler implements style.Styler {
             attrs = NSMutableDictionary.new();
         }
         attrs.setValueForKey(newValue, NSForegroundColorAttributeName);
-        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
     }
 
     private static resetColorProperty(v: view.View, nativeValue: any) {
         let bar = <UISegmentedControl>v.ios;
-        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
         let attrs;
         if (currentAttrs) {
             attrs = currentAttrs.mutableCopy();
@@ -161,13 +161,13 @@ export class SegmentedBarStyler implements style.Styler {
             attrs = NSMutableDictionary.new();
         }
         attrs.setValueForKey(nativeValue, NSForegroundColorAttributeName);
-        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
     }
 
     //Text fonts methods
     private static setFontInternalProperty(v: view.View, newValue: any) {
         let bar = <UISegmentedControl>v.ios;
-        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
         let attrs;
         if (currentAttrs) {
             attrs = currentAttrs.mutableCopy();
@@ -177,12 +177,12 @@ export class SegmentedBarStyler implements style.Styler {
         }
         let newFont = (<font.Font>newValue).getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize()));
         attrs.setValueForKey(newFont, NSFontAttributeName);
-        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
     }
 
     private static resetFontInternalProperty(v: view.View, nativeValue: any) {
         let bar = <UISegmentedControl>v.ios;
-        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
         let attrs;
         if (currentAttrs) {
             attrs = currentAttrs.mutableCopy();
@@ -191,12 +191,12 @@ export class SegmentedBarStyler implements style.Styler {
             attrs = NSMutableDictionary.new();
         }
         attrs.setValueForKey(nativeValue, NSFontAttributeName);
-        bar.setTitleTextAttributesForState(attrs, UIControlState.UIControlStateNormal);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
     }
 
     private static getNativeFontValue(v: view.View) {
         let bar = <UISegmentedControl>v.ios;
-        let currentAttrs = bar.titleTextAttributesForState(UIControlState.UIControlStateNormal);
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
         let currentFont;
         if (currentAttrs) {
             currentFont = currentAttrs.objectForKey(NSFontAttributeName);
