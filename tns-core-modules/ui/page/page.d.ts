@@ -227,9 +227,9 @@ declare module "ui/page" {
          * A method called before navigating to the page.
          * @param context - The data passed to the page through the NavigationEntry.context property.
          * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
-         * @param bindingContext - An object to become the binding context of the page navigating to.
+         * @param bindingContext - An object to become the binding context of the page navigating to. Optional.
          */
-        onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext: any): void;
+        onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext?: any): void;
 
         /**
          * A method called after navigated to the page.
